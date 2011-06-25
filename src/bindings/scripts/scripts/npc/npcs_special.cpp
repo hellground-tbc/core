@@ -2065,7 +2065,7 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
                 radius = rand()%radius;
                 float fRadius = radius/100.0;
 
-                me->GetNearPoint(tmp, x, y, z, 0, 2.5f, fRadius);
+                tmp->GetNearPoint(tmp, x, y, z, 0, 5.0f, fRadius);
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
             }

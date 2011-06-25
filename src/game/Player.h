@@ -1663,6 +1663,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only);
 
         static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true);
+        static void DeleteCharacterInfoFromDB(uint32 playerGUIDLow);
 
         Corpse *GetCorpse() const;
         void SpawnCorpseBones();

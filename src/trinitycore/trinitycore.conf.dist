@@ -665,6 +665,10 @@ IrcParser = "parser.trc"
 #        Minimum character lvl for "DontDeleteChars" option.
 #        Default: 40
 #
+#    KeepDeletedCharsTime
+#        After this time characters from "DontDeleteChars" option will be deleted. (time in days) (0 - infinity)
+#        Default: 31
+#
 #    MinGMTextLevel
 #        Minimum gm lvl for SendGMText.
 #        Default: 1
@@ -721,6 +725,7 @@ Server.LoginInfo = 0
 
 DontDeleteChars = 0
 DontDeleteCharsLvl = 40
+KeepDeletedCharsTime = 31
 MinGMTextLevel = 1
 
 ###################################################################################################################

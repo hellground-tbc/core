@@ -3815,6 +3815,50 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     return TRAINER_SPELL_GREEN;
 }
 
+void Player::DeleteCharacterInfoFromDB(uint32 playerGUIDLow)
+{
+     // unsummon and delete for pets in world is not required: player deleted from CLI or character list with not loaded pet.
+    // Get guids of character's pets, will deleted in transaction
+    QueryResultAutoPtr resultPets = CharacterDatabase.PQuery("SELECT id FROM character_pet WHERE owner = '%u'", playerGUIDLow);
+
+    // NOW we can finally clear other DB data related to character
+    CharacterDatabase.BeginTransaction();
+    if (resultPets)
+    {
+        do
+        {
+            Field *fields3 = resultPets->Fetch();
+            uint32 petguidlow = fields3[0].GetUInt32();
+            //do not create separate transaction for pet delete otherwise we will get fatal error!
+            Pet::DeleteFromDB(petguidlow, false);
+        }
+        while (resultPets->NextRow());
+    }
+
+    CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM gm_tickets WHERE playerGuid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'", playerGUIDLow, playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM mail WHERE receiver = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE receiver = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE owner = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM deleted_chars WHERE char_guid = '%u'", playerGUIDLow);
+    CharacterDatabase.CommitTransaction();
+}
+
 void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars)
 {
     uint32 guid = GUID_LOPART(playerguid);
@@ -3933,7 +3977,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         while (resultMail->NextRow());
     }
 
-    if (sConfig.GetBoolDefault("DontDeleteChars", false))
+    if (sWorld.getConfig(CONFIG_DONT_DELETE_CHARS))
     {
         if (QueryResultAutoPtr result= CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u'",guid))
         {
@@ -3942,57 +3986,23 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             Tokens data = StrSplit(fields[0].GetCppString(), " ");
             uint32 plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL);
 
-            if (plLevel >= sConfig.GetIntDefault("DontDeleteCharsLvl", 40))
+            if (plLevel >= sWorld.getConfig(CONFIG_DONT_DELETE_CHARS_LVL))
             {
                 CharacterDatabase.PExecute("Call PreventCharDelete(%u)", guid);
 
-                if (updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
+                if (updateRealmChars)
+                    sWorld.UpdateRealmCharCount(accountId);
                 return;
             }
         }
     }
 
-    // unsummon and delete for pets in world is not required: player deleted from CLI or character list with not loaded pet.
-    // Get guids of character's pets, will deleted in transaction
-    QueryResultAutoPtr resultPets = CharacterDatabase.PQuery("SELECT id FROM character_pet WHERE owner = '%u'",guid);
-
-    // NOW we can finally clear other DB data related to character
-    CharacterDatabase.BeginTransaction();
-    if (resultPets)
-    {
-        do
-        {
-            Field *fields3 = resultPets->Fetch();
-            uint32 petguidlow = fields3[0].GetUInt32();
-            //do not create separate transaction for pet delete otherwise we will get fatal error!
-            Pet::DeleteFromDB(petguidlow, false);
-        } while (resultPets->NextRow());
-    }
-
-    CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM gm_tickets WHERE playerGuid = '%u'", guid);
-    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'",guid,guid);
-    CharacterDatabase.PExecute("DELETE FROM mail WHERE receiver = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE receiver = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE owner = '%u'",guid);
-    CharacterDatabase.CommitTransaction();
+    // finally delete rest character informations (pets, spells, auras, items etc)
+    DeleteCharacterInfoFromDB(guid);
 
     //LoginDatabase.PExecute("UPDATE realmcharacters SET numchars = numchars - 1 WHERE acctid = %d AND realmid = %d", accountId, realmID);
-    if (updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
+    if (updateRealmChars)
+        sWorld.UpdateRealmCharCount(accountId);
 }
 
 void Player::SetMovement(PlayerMovementType pType)
