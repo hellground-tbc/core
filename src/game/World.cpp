@@ -2634,7 +2634,7 @@ void World::CleanupDeletedChars()
     if (keepDays < 1)
         return;
 
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT char_guid FROM deleted_chars WHERE datediff(now(), date) >= %u", keepDays);
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT char_guid FROM deleted_chars WHERE datediff(now(), date) >= %u", keepDays);
     if (result)
     {
         do
