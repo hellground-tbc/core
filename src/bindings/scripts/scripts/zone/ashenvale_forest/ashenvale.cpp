@@ -558,13 +558,13 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
     {
         Phase = 0;
 
-        TalkTimer = 0;
+        TalkTimer = 5000;
         EventStarted = false;
     }
 
     void MoveInLineOfSight(Unit * unit)
     {
-        if(unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(46337, 0) && ((Player*)unit)->hasQuest(11891))
+        if(unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(46337, 0) && ((Player*)unit)->GetQuestStatus(11891) == QUEST_STATUS_INCOMPLETE)
         {
             EventStarted = true;
             player = unit;
@@ -606,7 +606,7 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
                         EventStarted = false;
                         break;
                     }
-                    TalkTimer = 3000;
+                    TalkTimer = 5000;
                 }
                 else
                     TalkTimer -= diff;
