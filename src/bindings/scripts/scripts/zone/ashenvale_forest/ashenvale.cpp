@@ -541,6 +541,89 @@ bool ItemUse_item_Totemic_Beacon(Player *player, Item* _Item, SpellCastTargets c
     return false;
 }
 
+#define NPC_ICECALLERBRIATHA        25949
+
+struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
+{
+    npc_Heretic_EmisaryAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 TalkTimer;
+    uint32 Phase;
+    uint32 Check;
+    Unit * player;
+    Creature * Briatha;
+    bool EventStarted;
+
+    void Reset()
+    {
+        Phase = 0;
+
+        TalkTimer = 0;
+        EventStarted = false;
+    }
+
+    void MoveInLineOfSight(Unit * unit)
+    {
+        if(unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(46337, 0) && ((Player*)unit)->hasQuest(11891))
+        {
+            EventStarted = true;
+            player = unit;
+            Briatha = me->GetMap()->GetCreature(me->GetMap()->GetCreatureGUID(NPC_ICECALLERBRIATHA));
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!me->getVictim())
+        {
+            if (EventStarted && Briatha)
+            {
+                if (TalkTimer < diff)
+                {
+                    switch(Phase)
+                    {
+                    case 0:
+                        Briatha->Say("These stones should be the last of them. Our coordination with Neptulon's forces will be impeccable.", LANG_NEUTRAL, 0);
+                        Phase++;
+                        break;
+                    case 1:
+                        me->Say("Yess. The Tidehunter will be pleased at this development. The Firelord's hold will weaken.", LANG_NEUTRAL, 0);
+                        Phase++;
+                        break;
+                    case 2:
+                        Briatha->Say("And your own preparations? Will the Frost Lord have a path to the portal?", LANG_NEUTRAL, 0);
+                        Phase++;
+                        break;
+                    case 3:
+                        me->Say("Skar'this has informed us well. We have worked our way into the slave pens and await your cryomancerss.", LANG_NEUTRAL, 0);
+                        Phase++;
+                        break;
+                    case 4:
+                        Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_NEUTRAL, 0);
+                        Phase = 0;
+                        if(player->HasAura(46337, 0))
+                            ((Player*)player)->AreaExploredOrEventHappens(11891);
+                        EventStarted = false;
+                        break;
+                    }
+                    TalkTimer = 3000;
+                }
+                else
+                    TalkTimer -= diff;
+            }
+            return;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_Heretic_Emisary(Creature *_Creature)
+{
+    return new npc_Heretic_EmisaryAI(_Creature);
+}
+
+
 void AddSC_ashenvale()
 {
     Script *newscript;
@@ -571,6 +654,11 @@ void AddSC_ashenvale()
     newscript = new Script;
     newscript->Name="item_Totemic_Beacon";
     newscript->pItemUse = &ItemUse_item_Totemic_Beacon;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_Heretic_Emisary";
+    newscript->GetAI = &GetAI_npc_Heretic_Emisary;
     newscript->RegisterSelf();
 
 }
