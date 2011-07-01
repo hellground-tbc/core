@@ -6165,9 +6165,9 @@ bool Player::SetOneFactionReputation(FactionEntry const* factionEntry, int32 sta
 int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest)
 {
     // for grey creature kill received 20%, in other case 100.
-    int32 percent = (!for_quest && (creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))) ? 20 : 100;
+    float percent = (!for_quest && (creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))) ? 20.0f : 100.0f;
 
-    int32 repMod = GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
+    float repMod = GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
 
     if (!for_quest)
         repMod += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_FACTION_REPUTATION_GAIN, faction);
@@ -6177,7 +6177,7 @@ int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, in
     if (percent <=0)
         return 0;
 
-    return int32(sWorld.getRate(RATE_REPUTATION_GAIN)*rep*percent/100);
+    return int32(sWorld.getRate(RATE_REPUTATION_GAIN) *rep *percent/100.0f);
 }
 
 //Calculates how many reputation points player gains in victim's enemy factions
