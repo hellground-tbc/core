@@ -1167,8 +1167,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
         if ((type == DRTYPE_PLAYER && unit->isCharmedOwnedByPlayerOrPlayer()) || type == DRTYPE_ALL)
-        {
-            if (m_caster->isCharmedOwnedByPlayerOrPlayer())
+        {                                                   // Freezing trap exception, since it is casted by GO ?
+            if (m_caster->isCharmedOwnedByPlayerOrPlayer() || m_spellInfo->SpellFamilyFlags & 0x00000000008LL)
                 unit->IncrDiminishing(m_diminishGroup);
         }
     }
