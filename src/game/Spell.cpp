@@ -1168,7 +1168,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         // Increase Diminishing on unit, current informations for actually casts will use values above
         if ((type == DRTYPE_PLAYER && unit->isCharmedOwnedByPlayerOrPlayer()) || type == DRTYPE_ALL)
         {                                                   // Freezing trap exception, since it is casted by GO ?
-            if (m_caster->isCharmedOwnedByPlayerOrPlayer() || m_spellInfo->SpellFamilyFlags & 0x00000000008LL)
+            if (m_caster->isCharmedOwnedByPlayerOrPlayer() || (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags & 0x00000000008LL))
                 unit->IncrDiminishing(m_diminishGroup);
         }
     }

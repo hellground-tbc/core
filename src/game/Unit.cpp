@@ -10039,7 +10039,7 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
     float mod = 1.0f;
 
     // Some diminishings applies to mobs too (for example, Stun)                                                                                                                                     // Freezing trap exception, since it is casted by GO ?
-    if ((GetDiminishingReturnsGroupType(group) == DRTYPE_PLAYER && (targetOwner ? targetOwner->GetTypeId():GetTypeId())  == TYPEID_PLAYER) || GetDiminishingReturnsGroupType(group) == DRTYPE_ALL || (tSpell && tSpell->->SpellFamilyFlags & 0x00000000008LL))
+    if ((GetDiminishingReturnsGroupType(group) == DRTYPE_PLAYER && (targetOwner ? targetOwner->GetTypeId():GetTypeId())  == TYPEID_PLAYER) || GetDiminishingReturnsGroupType(group) == DRTYPE_ALL || (tSpell && tSpell->SpellFamilyName == SPELLFAMILY_HUNTER && tSpell->->SpellFamilyFlags & 0x00000000008LL))
     {
         DiminishingLevels diminish = Level;
         switch (diminish)
