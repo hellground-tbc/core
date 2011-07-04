@@ -5917,8 +5917,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (triggeredByAura && castItem->GetGUID() != triggeredByAura->GetCastItemGUID())
                         return false;
 
+                    static const uint32 WF_RANK_1 = 33757;
                     // custom cooldown processing case
-                    if (cooldown && ((Player*)this)->HasSpellCooldown(dummySpell->Id))
+                    if (cooldown && ((Player*)this)->HasSpellCooldown(WF_RANK_1))
                         return false;
 
                     uint32 spellId;
@@ -5963,11 +5964,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
                     // apply cooldown before cast to prevent processing itself
                     if (cooldown)
-                        ((Player*)this)->AddSpellCooldown(dummySpell->Id,0,time(NULL) + cooldown);
+                        ((Player*)this)->AddSpellCooldown(WF_RANK_1,0,time(NULL) + cooldown);
 
                     // Attack Twice
-                    for (uint32 i = 0; i<2; ++i)
-                        CastCustomSpell(pVictim,triggered_spell_id,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
+                    for (uint32 i = 0; i<2; ++i)                                                   // if we set castitem it will force our m_cantrigger = true to false for windfury weapon due to later checks in prepareDataForTriggerSystem()
+                        CastCustomSpell(pVictim,triggered_spell_id,&basepoints0,NULL,NULL,true,NULL/*castItem*/,triggeredByAura);
 
                     return true;
                 }
