@@ -30,7 +30,11 @@
 template<class T>
 void PointMovementGenerator<T>::Initialize(T &unit)
 {
-    unit.StopMoving();
+    if (!unit.IsStopped())
+        unit.StopMoving();
+
+    unit.addUnitState(UNIT_STAT_ROAMING);
+
     Traveller<T> traveller(unit);
     i_destinationHolder.SetDestination(traveller,i_x,i_y,i_z);
 }
@@ -72,6 +76,8 @@ void PointMovementGenerator<T>:: Finalize(T &unit)
     if (unit.hasUnitState(UNIT_STAT_CHARGING))
         unit.clearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
 
+    unit.clearUnitState(UNIT_STAT_ROAMINGE);
+
     if (i_destinationHolder.HasArrived()) // without this crash!
         MovementInform(unit);
 }
@@ -105,6 +111,8 @@ template void PointMovementGenerator<Creature>::Finalize(Creature&);
 
 void AssistanceMovementGenerator::Finalize(Unit &unit)
 {
+    unit.clearUnitState(UNIT_STAT_ROAMING);
+
     ((Creature*)&unit)->SetNoCallAssistance(false);
     ((Creature*)&unit)->CallAssistance();
     if (unit.isAlive())
