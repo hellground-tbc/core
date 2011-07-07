@@ -3202,6 +3202,9 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
         case 43822:
         case 43820:
             return map_id == 568;
+        // Ritual of summoning in Zul'Aman
+        case 698:
+            return map_id != 568;
     }
 
     return true;
