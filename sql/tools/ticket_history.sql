@@ -1,3 +1,5 @@
+// -- FOR CHARACTERS DB !
+
 CREATE TABLE IF NOT `ticket_history` (
   `guid` int(10) NOT NULL AUTO_INCREMENT,
   `playerGuid` int(11) unsigned NOT NULL DEFAULT '0',
@@ -21,7 +23,7 @@ delimiter ;
 
 DROP TRIGGER IF EXISTS ticket_upd_check;
 delimiter |
-CREATE TRIGGER ticket_upd_check BEFORE UPDATE ON account
+CREATE TRIGGER ticket_upd_check BEFORE UPDATE ON gm_tickets
   FOR EACH ROW BEGIN
     UPDATE ticket_history
     SET message = NEW.message, name = NEW.name, timestamp = NEW.timestamp, closed = NEW.closed, comment = NEW.comment

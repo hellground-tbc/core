@@ -1,3 +1,5 @@
+// -- FOR CHARACTERS DB ! ("realmd" in trigger is name of realm DB)
+
 DROP TABLE IF EXISTS accchange_log;
 CREATE TABLE accchange_log
 (

@@ -1,3 +1,5 @@
+// -- FOR REALM DB !
+
 DROP TABLE IF EXISTS email_log;
 CREATE TABLE email_log
 (
