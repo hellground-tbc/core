@@ -75,6 +75,26 @@ GM_Ticket* TicketMgr::GetGMTicketByName(const char* name)
     return NULL;
 }
 
+GmTicketList TicketMgr::GetGMTicketsByName(const char* name)
+{
+    std::string pname = name;
+
+    GmTicketList tmpL;
+
+    if (!normalizePlayerName(pname))
+        return tmpL;
+
+    uint64 playerGuid = objmgr.GetPlayerGUIDByName(pname.c_str());
+    if (!playerGuid)
+        return tmpL;
+
+    for (GmTicketList::iterator i = GM_TicketList.begin(); i != GM_TicketList.end(); ++i)
+        if ((*i)->playerGuid == playerGuid)
+            tmpL.push_back(*i);
+
+    return tmpL;
+}
+
 void TicketMgr::AddGMTicket(GM_Ticket *ticket, bool startup)
 {
     ASSERT(ticket);

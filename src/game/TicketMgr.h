@@ -70,6 +70,7 @@ class TicketMgr
         GM_Ticket* GetGMTicket(uint64 ticketGuid);
         GM_Ticket* GetGMTicketByPlayer(uint64 playerGuid);
         GM_Ticket* GetGMTicketByName(const char *name);
+        GmTicketList GetGMTicketsByName(const char *name);
 
 
     protected:
