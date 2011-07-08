@@ -583,23 +583,23 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
                     switch(Phase)
                     {
                     case 0:
-                        Briatha->Say("These stones should be the last of them. Our coordination with Neptulon's forces will be impeccable.", LANG_NEUTRAL, 0);
+                        Briatha->Say("These stones should be the last of them. Our coordination with Neptulon's forces will be impeccable.", LANG_UNIVERSAL, 0);
                         Phase++;
                         break;
                     case 1:
-                        me->Say("Yess. The Tidehunter will be pleased at this development. The Firelord's hold will weaken.", LANG_NEUTRAL, 0);
+                        me->Say("Yess. The Tidehunter will be pleased at this development. The Firelord's hold will weaken.", LANG_UNIVERSAL, 0);
                         Phase++;
                         break;
                     case 2:
-                        Briatha->Say("And your own preparations? Will the Frost Lord have a path to the portal?", LANG_NEUTRAL, 0);
+                        Briatha->Say("And your own preparations? Will the Frost Lord have a path to the portal?", LANG_UNIVERSAL, 0);
                         Phase++;
                         break;
                     case 3:
-                        me->Say("Skar'this has informed us well. We have worked our way into the slave pens and await your cryomancerss.", LANG_NEUTRAL, 0);
+                        me->Say("Skar'this has informed us well. We have worked our way into the slave pens and await your cryomancerss.", LANG_UNIVERSAL, 0);
                         Phase++;
                         break;
                     case 4:
-                        Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_NEUTRAL, 0);
+                        Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_UNIVERSAL, 0);
                         Phase = 0;
                         if(player->HasAura(46337, 0))
                             ((Player*)player)->AreaExploredOrEventHappens(11891);
