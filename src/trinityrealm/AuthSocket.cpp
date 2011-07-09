@@ -371,7 +371,7 @@ bool AuthSocket::_HandleLogonChallenge()
     EndianConvert(*((uint32*)(&ch->os[0])));
     EndianConvert(*((uint32*)(&ch->country[0])));
     EndianConvert(ch->timezone_bias);
-    EndianConvert(*((uint32*)(&ch->ip*)));
+    EndianConvert(*((uint32*)(&ch->ip[0])));
 
     ///- Read the remaining of the packet
     ibuf.Read((char *)&buf[4], remaining);
@@ -383,7 +383,7 @@ bool AuthSocket::_HandleLogonChallenge()
     if (ch->os[1]) operatingSystem.push_back(ch->os[1]);
     if (ch->os[0]) operatingSystem.push_back(ch->os[0]);
 
-    std::streamstring tmpLocalIp = "";
+    std::stringstream tmpLocalIp;
     tmpLocalIp << ch->ip[0] << "." << ch->ip[1] << "." << ch->ip[2] << "." << ch->ip[3];
 
     localIp = tmpLocalIp.str();
