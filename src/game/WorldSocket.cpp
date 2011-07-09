@@ -696,7 +696,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "locale, "          //9
                                 "speciallogs, "     //10
                                 "opcodesDisabled, " //11
-                                "operatingSystem "  //12
+                                "operatingSystem, " //12
+                                "last_local_ip "    //13
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -715,6 +716,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     Field* fields = result->Fetch ();
 
+    std::string lastLocalIp = fields[13].GetString();
     uint8 operatingSystem = fields[12].GetUInt8();
     uint8 expansion = fields[8].GetUInt8();
     uint32 world_expansion = sWorld.getConfig(CONFIG_EXPANSION);
@@ -906,7 +908,9 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();
 
-    LoginDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s', SELECT last_local_ip FROM account WHERE id = %u)", id, address.c_str(), id);
+    LoginDatabase.escape_string(lastLocalIp);
+
+    LoginDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
 
     m_Session->InitWarden(&K, operatingSystem);
 

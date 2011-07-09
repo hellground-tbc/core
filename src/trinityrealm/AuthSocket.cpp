@@ -384,7 +384,7 @@ bool AuthSocket::_HandleLogonChallenge()
     if (ch->os[0]) operatingSystem.push_back(ch->os[0]);
 
     std::stringstream tmpLocalIp;
-    tmpLocalIp << ch->ip[0] << "." << ch->ip[1] << "." << ch->ip[2] << "." << ch->ip[3];
+    tmpLocalIp << (uint32)ch->ip[0] << "." << (uint32)ch->ip[1] << "." << (uint32)ch->ip[2] << "." << (uint32)ch->ip[3];
 
     localIp = tmpLocalIp.str();
 
@@ -694,6 +694,7 @@ bool AuthSocket::_HandleLogonProof()
         LoginDatabase.escape_string(localIp);
 
         LoginDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_local_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0, operatingSystem = '%u' WHERE username = '%s'", K_hex, GetRemoteAddress().c_str(), localIp.c_str(), GetLocaleByName(_localizationName), OS, _safelogin.c_str());
+
         OPENSSL_free((void*)K_hex);
 
         ///- Finish SRP6 and send the final result to the client
