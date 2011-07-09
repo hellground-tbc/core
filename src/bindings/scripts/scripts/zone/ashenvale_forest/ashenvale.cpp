@@ -550,8 +550,7 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
     uint32 TalkTimer;
     uint32 Phase;
     uint32 Check;
-    Unit * player;
-    Creature * Briatha;
+    uint64 player;
     bool EventStarted;
 
     void Reset()
@@ -564,11 +563,14 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit * unit)
     {
+        if(EventStarted)
+            return;
+
         if(unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(46337, 0) && ((Player*)unit)->GetQuestStatus(11891) == QUEST_STATUS_INCOMPLETE)
         {
             EventStarted = true;
-            player = unit;
-            Briatha = me->GetMap()->GetCreature(me->GetMap()->GetCreatureGUID(NPC_ICECALLERBRIATHA));
+            Phase = 0;
+            player = unit->GetGUID();
         }
     }
 
@@ -576,7 +578,10 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
     {
         if (!me->getVictim())
         {
-            if (EventStarted && Briatha)
+            Player * Player_;
+            Creature * Briatha = GetClosestCreatureWithEntry(me, NPC_ICECALLERBRIATHA, 20);
+            
+            if (EventStarted && Briatha) 
             {
                 if (TalkTimer < diff)
                 {
@@ -601,8 +606,9 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
                     case 4:
                         Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_UNIVERSAL, 0);
                         Phase = 0;
-                        if(player->HasAura(46337, 0))
-                            ((Player*)player)->AreaExploredOrEventHappens(11891);
+                        if(Player_ = (Player*)(me->GetUnit(player)))
+                            if(Player_->HasAura(46337, 0))
+                                Player_->AreaExploredOrEventHappens(11891);
                         EventStarted = false;
                         break;
                     }
@@ -611,6 +617,9 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
                 else
                     TalkTimer -= diff;
             }
+            else
+                EventStarted = false;
+
             return;
         }
 
