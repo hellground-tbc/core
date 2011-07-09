@@ -906,7 +906,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();
 
-    LoginDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s')", id, address.c_str());
+    LoginDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s', SELECT last_local_ip FROM account WHERE id = %u)", id, address.c_str(), id);
 
     m_Session->InitWarden(&K, operatingSystem);
 
