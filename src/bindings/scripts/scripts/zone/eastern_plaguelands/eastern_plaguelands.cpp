@@ -167,14 +167,11 @@ struct TRINITY_DLL_DECL mobs_scourge_archerAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit * unit)
     {
+        if(me->isInCombat())
+            return;
+
         if(unit->GetEntry() == NPC_INJURED_PEASANT)
             AttackStart(unit);
-    }
-
-    void AttackStart(Unit * unit)
-    {
-
-        ScriptedAI::AttackStart(unit);
     }
 
     void UpdateAI(const uint32 diff)
@@ -184,7 +181,7 @@ struct TRINITY_DLL_DECL mobs_scourge_archerAI : public ScriptedAI
 
         if (Shoot_Timer <= diff)
         {
-            if(Unit * target = GetClosestCreatureWithEntry(me, urand(NPC_INJURED_PEASANT, NPC_PLAGUED_PEASANT) , 50))
+            if(Unit * target = GetClosestCreatureWithEntry(me, RAND(NPC_INJURED_PEASANT, NPC_PLAGUED_PEASANT) , 50))
             {
                 AddSpellToCast(target, SPELL_SHOOT, true);
                 Shoot_Timer = 2000;
@@ -231,8 +228,8 @@ struct TRINITY_DLL_DECL trigger_epic_staffAI : public TriggerAI
                 float x,y,z;
                 me->GetClosePoint(x,y,z, 0.0f, 7.0f, frand(0, 2*M_PI));
                 me->SummonCreature(NPC_SCOURGE_FOOTSOLDIER, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
-                Summon_Footsoldier_Timer = 20000;
             }
+            Summon_Footsoldier_Timer = 20000;
         }
         else Summon_Footsoldier_Timer -= diff;
 
