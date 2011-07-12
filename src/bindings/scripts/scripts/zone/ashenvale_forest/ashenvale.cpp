@@ -578,12 +578,12 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
     {
         if (!me->getVictim())
         {
-            Player * Player_;
-            Creature * Briatha = GetClosestCreatureWithEntry(me, NPC_ICECALLERBRIATHA, 20);
-            
-            if (EventStarted && Briatha) 
+            if (TalkTimer < diff && EventStarted)
             {
-                if (TalkTimer < diff)
+                Player * Player_;
+                Creature * Briatha = GetClosestCreatureWithEntry(me, NPC_ICECALLERBRIATHA, 20);
+
+                if (Briatha && Briatha->isAlive()) 
                 {
                     switch(Phase)
                     {
@@ -615,10 +615,10 @@ struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
                     TalkTimer = 5000;
                 }
                 else
-                    TalkTimer -= diff;
+                    EventStarted = false;
             }
             else
-                EventStarted = false;
+                TalkTimer -= diff;
 
             return;
         }
