@@ -449,6 +449,8 @@ Player::Player (WorldSession *session): Unit()
     m_isActive = true;
 
     saving = false;
+
+    m_repoping = false;
 }
 
 Player::~Player ()
