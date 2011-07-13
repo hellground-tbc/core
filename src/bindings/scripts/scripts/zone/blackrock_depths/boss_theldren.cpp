@@ -1147,24 +1147,11 @@ CreatureAI* GetAI_boss_rezznik(Creature *_Creature)
 bool ItemUse_item_banner_of_provocation(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
     ScriptedInstance* pInstance = player->GetInstanceData();
-    if(pInstance->GetData(TYPE_THELDREN) == NOT_STARTED && pInstance->GetData(TYPE_RING_OF_LAW) == IN_PROGRESS)
-    {
-        player->SummonCreature(BOSS_THELDREN, ArenaLocations[4][0], ArenaLocations[4][1], ArenaLocations[4][2], Orientation, TEMPSUMMON_DEAD_DESPAWN, 0);
-        pInstance->SetData(TYPE_THELDREN, IN_PROGRESS);
-        return false;
-    }
-    else
-    {
-        WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
-        data << uint32(_Item->GetEntry());                      // itemId
-        data << uint8(SPELL_FAILED_NOT_READY);                  // reason
-        player->GetSession()->SendPacket(&data);                // send message
-        player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);
+    if (player->GetMapId() != 230 || !pInstance || pInstancepInstance->GetData(TYPE_THELDREN) != NOT_STARTED || pInstance->GetData(TYPE_RING_OF_LAW) != IN_PROGRESS)
         return true;
-    }
 
+    return false;
 }
-
 
 void AddSC_boss_theldren()
 {
