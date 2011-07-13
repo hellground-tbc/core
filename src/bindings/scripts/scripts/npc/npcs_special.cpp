@@ -2021,6 +2021,9 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
         {
             if (waitTimer <= diff)
                 waitTimer = 0;
+            else
+                waitTimer -= diff;
+
             return;
         }
 
