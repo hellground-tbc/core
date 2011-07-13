@@ -1966,9 +1966,11 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
     uint32 checkTimer;
     uint32 moveTimer;
     uint32 despawnTimer;
+    uint32 waitTimer;
 
     void Reset()
     {
+        waitTimer = 5000;
         machineGunTimer = urand(1000, 3000);
         netTimer = urand(10000, 20000);
         electricalTimer = urand(5000, 35000);
@@ -2015,6 +2017,13 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (waitTimer)
+        {
+            if (waitTimer <= diff)
+                waitTimer = 0;
+            return;
+        }
+
         if (!m_creature->isAlive())
             return;
 
@@ -2064,6 +2073,9 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
                 int radius = me->GetAngle(tmp) * 100;
                 radius = rand()%radius;
                 float fRadius = radius/100.0;
+
+                if (fRadius <= 0)
+                    fRadius = 0.1;
 
                 tmp->GetNearPoint(tmp, x, y, z, 0, 5.0f, fRadius);
                 me->GetMotionMaster()->Clear();
