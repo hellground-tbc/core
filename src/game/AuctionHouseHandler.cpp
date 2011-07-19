@@ -255,6 +255,14 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recv_data)
         sLog.outSpecial("Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
             GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount());
     }
+    else
+    {
+        sLog.outAuction("Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
+            GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount());
+    }
+
+
+
 
     pl->ModifyMoney(-int32(deposit));
 

@@ -380,6 +380,7 @@ mailLogFile = "sendmail.log"
 WhispLogDir = "whisps/"
 LogColors = ""
 WardenLogFile = "warden.log"
+auctionLogFile = "auction.log
 
 IrcParser = "parser.trc"
 

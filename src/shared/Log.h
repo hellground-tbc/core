@@ -115,6 +115,10 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         if (wardenLogFile != NULL)
             fclose(wardenLogFile);
         wardenLogFile = NULL;
+
+        if (auctionLogFile != NULL)
+            fclose(auctionLogFile);
+        auctionLogFile = NULL;
     }
     public:
         void Initialize();
@@ -150,6 +154,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         void outIrc( const char * str, ... )         ATTR_PRINTF(2,3);
         void outBoss( const char * str, ... )        ATTR_PRINTF(2,3);
         void outWarden( const char * str, ... )      ATTR_PRINTF(2,3);
+        void outAuction( const char * str, ... )     ATTR_PRINTF(2,3);
 
         void SetLogLevel(char * Level);
         void SetLogFileLevel(char * Level);
@@ -179,6 +184,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         FILE* bossLogFile;
         FILE* openWhisplogPerAccount(uint32 account);
         FILE* wardenLogFile;
+        FILE* auctionLogFile;
 
         // log/console control
         uint32 m_logLevel;
