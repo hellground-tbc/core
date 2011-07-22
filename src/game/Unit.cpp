@@ -3329,6 +3329,13 @@ bool Unit::IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled, bool skip
     // We don't do loop here to explicitly show that melee spell is excluded.
     // Maybe later some special spells will be excluded too.
 
+    // exclude spells with transform item effect
+    if(m_currentSpells[CURRENT_GENERIC_SPELL] && 
+        (m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[0] == SPELL_EFFECT_SUMMON_CHANGE_ITEM ||
+        m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[1] == SPELL_EFFECT_SUMMON_CHANGE_ITEM ||
+        m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[2] == SPELL_EFFECT_SUMMON_CHANGE_ITEM))
+        return(false);
+
     // generic spells are casted when they are not finished and not delayed
     if (m_currentSpells[CURRENT_GENERIC_SPELL] &&
         (m_currentSpells[CURRENT_GENERIC_SPELL]->getState() != SPELL_STATE_FINISHED) &&
