@@ -10220,8 +10220,13 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                 if (isInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer != 0)
                     return EQUIP_ERR_CANT_DO_RIGHT_NOW;         // maybe exist better err
 
-                if (IsNonMeleeSpellCasted(false))
-                    return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+                // exclude spells with transform item effect
+                if(m_currentSpells[CURRENT_GENERIC_SPELL] && 
+                    m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[0] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
+                    m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[1] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
+                    m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[2] != SPELL_EFFECT_SUMMON_CHANGE_ITEM)
+                    if(IsNonMeleeSpellCasted(false))
+                        return EQUIP_ERR_CANT_DO_RIGHT_NOW;
             }
 
             uint8 eslot = FindEquipSlot(pProto, slot, swap);
