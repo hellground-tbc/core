@@ -1702,7 +1702,7 @@ void Spell::EffectDummy(uint32 i)
                 }
                 // Summon Thelrin DND (Banner of Provocation)
                 case 27517:
-                    player->SummonCreature(16059, 590.6309, -181.061, -53.90, 5.33, TEMPSUMMON_DEAD_DESPAWN, 0);
+                    m_caster->SummonCreature(16059, 590.6309, -181.061, -53.90, 5.33, TEMPSUMMON_DEAD_DESPAWN, 0);
                     break;
             }
 

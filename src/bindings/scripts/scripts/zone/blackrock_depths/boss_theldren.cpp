@@ -1147,7 +1147,7 @@ CreatureAI* GetAI_boss_rezznik(Creature *_Creature)
 bool ItemUse_item_banner_of_provocation(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
     ScriptedInstance* pInstance = player->GetInstanceData();
-    if (player->GetMapId() != 230 || !pInstance || pInstancepInstance->GetData(TYPE_THELDREN) != NOT_STARTED || pInstance->GetData(TYPE_RING_OF_LAW) != IN_PROGRESS)
+    if (player->GetMapId() != 230 || !pInstance || pInstance->GetData(TYPE_THELDREN) != NOT_STARTED || pInstance->GetData(TYPE_RING_OF_LAW) != IN_PROGRESS)
         return true;
 
     return false;
