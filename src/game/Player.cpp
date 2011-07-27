@@ -7656,8 +7656,13 @@ void Player::RemovedInsignia(Player* looterPlr)
     if (m_deathTimer > 0)
     {
         m_deathTimer = 0;
-        BuildPlayerRepop();
-        RepopAtGraveyard();
+        if (!IsRepoping())
+        {
+            SetRepoping(true);
+            BuildPlayerRepop();
+            RepopAtGraveyard();
+            SetRepoping(false);
+        }
     }
 
     Corpse *corpse = GetCorpse();
