@@ -5268,9 +5268,12 @@ void Spell::EffectSummonObjectWild(uint32 i)
     if(m_caster->isCharmed())                               //change GO owner to charmer
     {
         if(Unit * charmer = m_caster->GetCharmer())
-        {           
+        {
             if(charmer->GetTypeId() == TYPEID_PLAYER)
+            {
+                m_caster->RemoveGameObject(pGameObj, false);
                 charmer->AddGameObject(pGameObj);
+            }
         }
     }
     map->Add(pGameObj);
