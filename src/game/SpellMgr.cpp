@@ -2905,6 +2905,8 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
             spellInfo->EffectRadiusIndex[0] = 27;   // effect radius from 65 to 50 yd
             break;
+        case 19937: //Illusion: Black Dragonkin
+            spellInfo->AreaId = 15;
         default:
             break;
         }
