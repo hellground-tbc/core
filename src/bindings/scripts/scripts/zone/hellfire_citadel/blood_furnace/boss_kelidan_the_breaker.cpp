@@ -232,7 +232,7 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
             DoScriptText(SAY_NOVA, m_creature);
 
             if (HeroicMode)
-                ForceSpellCast(me, SPELL_VORTEX);
+                ForceSpellCast(me, SPELL_VORTEX, INTERRUPT_AND_CAST_INSTANTLY);
 
             if (SpellEntry *nova = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_BURNING_NOVA))
             {
