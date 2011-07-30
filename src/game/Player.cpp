@@ -449,8 +449,6 @@ Player::Player (WorldSession *session): Unit()
     m_isActive = true;
 
     saving = false;
-
-    m_repoping = false;
 }
 
 Player::~Player ()
@@ -7656,13 +7654,8 @@ void Player::RemovedInsignia(Player* looterPlr)
     if (m_deathTimer > 0)
     {
         m_deathTimer = 0;
-        if (!IsRepoping())
-        {
-            SetRepoping(true);
-            BuildPlayerRepop();
-            RepopAtGraveyard();
-            SetRepoping(false);
-        }
+        BuildPlayerRepop();
+        RepopAtGraveyard();
     }
 
     Corpse *corpse = GetCorpse();
@@ -10228,13 +10221,13 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                 if (IsNonMeleeSpellCasted(false))
                 {
                     // exclude spells with transform item effect
-                    if (!m_currentSpells[CURRENT_GENERIC_SPELL] || 
+                    if (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
                         (m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[0] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
                         m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[1] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
                         m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[2] != SPELL_EFFECT_SUMMON_CHANGE_ITEM))
 
                         return EQUIP_ERR_CANT_DO_RIGHT_NOW;
-                }              
+                }
 
             }
 
@@ -18396,22 +18389,14 @@ void Player::ReportedAfkBy(Player* reporter)
         return;
 
     // check if player has 'Idle' or 'Inactive' debuff
-    if (m_bgAfkReporter.find(reporter->GetGUIDLow())==m_bgAfkReporter.end() && !HasAura(43680,0) && !HasAura(43681,0) && reporter->CanReportAfkDueToLimit())
+    if (m_bgAfkReporter.find(reporter->GetGUIDLow()) == m_bgAfkReporter.end() && !HasAura(43680,0) && !HasAura(43681,0) && reporter->CanReportAfkDueToLimit())
     {
         m_bgAfkReporter.insert(reporter->GetGUIDLow());
         // 3 players have to complain to apply debuff
         if (m_bgAfkReporter.size() >= 3)
         {
-            bool alive = isAlive();
-
-            if (!alive)
-                ResurrectPlayer(50);
-
             // cast 'Idle' spell
             CastSpell(this, 43680, true);
-
-            if (!alive)
-                Kill(this, true);
 
             m_bgAfkReporter.clear();
         }

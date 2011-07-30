@@ -1673,8 +1673,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         void ResurrectPlayer(float restore_percent, bool applySickness = false);
         void BuildPlayerRepop();
         void RepopAtGraveyard();
-        bool IsRepoping() { return m_repoping; }
-        void SetRepoping(bool repoping) { m_repoping = repoping; }
 
         void DurabilityLossAll(double percent, bool inventory);
         void DurabilityLoss(Item* item, double percent);
@@ -2303,8 +2301,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 m_resurrectMap;
         float m_resurrectX, m_resurrectY, m_resurrectZ;
         uint32 m_resurrectHealth, m_resurrectMana;
-
-        bool m_repoping;
 
         WorldSession *m_session;
 

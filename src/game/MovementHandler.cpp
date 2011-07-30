@@ -134,12 +134,10 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     Corpse *corpse = GetPlayer()->GetCorpse();
     if (corpse && corpse->GetType() != CORPSE_BONES && corpse->GetMapId() == GetPlayer()->GetMapId())
     {
-        if (mEntry->IsDungeon() && !GetPlayer()->IsRepoping())
+        if (mEntry->IsDungeon())
         {
-            GetPlayer()->SetRepoping(true);
             GetPlayer()->ResurrectPlayer(0.5f,false);
             GetPlayer()->SpawnCorpseBones();
-            GetPlayer()->SetRepoping(false);
         }
     }
 

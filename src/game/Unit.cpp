@@ -3648,7 +3648,7 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_
 bool Unit::AddAura(Aura *Aur)
 {
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
-    if (!isAlive() && Aur->GetId() != 20584 && Aur->GetId() != 8326 && Aur->GetId() != 2584 && Aur->GetId() != 37128 &&
+    if (!isAlive() && !IsDeathPersistentSpell(Aur->GetSpellProto()) &&
         (GetTypeId()!=TYPEID_PLAYER || !((Player*)this)->GetSession()->PlayerLoading()))
     {
         delete Aur;
@@ -12753,11 +12753,11 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
 
 void Unit::AddAura(uint32 spellId, Unit* target)
 {
-    if (!target || (!target->isAlive() && spellId != 37128))
+    if (!target)
         return;
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
-    if (!spellInfo)
+    if (!spellInfo || (!target->isAlive() && !IsDeathPersistentSpell(spellInfo)))
         return;
 
     if (target->IsImmunedToSpell(spellInfo))
