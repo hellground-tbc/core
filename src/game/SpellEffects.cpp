@@ -7187,7 +7187,7 @@ void Spell::EffectPlayerPull(uint32 i)
     if (damage && dist > damage)
         dist = damage;
 
-    unitTarget->KnockBackFrom(m_caster, -dist, m_spellInfo->EffectMiscValue[i]/10.0);
+    unitTarget->KnockBackFrom(m_caster, -dist, m_spellInfo->EffectMiscValue[i]/100.0);
 }
 
 void Spell::EffectDispelMechanic(uint32 i)
