@@ -1740,8 +1740,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             {
                 pushType = PUSH_CHAIN;
 
-                if (!m_targets.getUnitTarget())
-                    m_targets.setUnitTarget((Unit*)target);
+                m_targets.setUnitTarget((Unit*)target);
             }
             else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
                 AddGOTarget((GameObject*)target, i);

@@ -2907,6 +2907,11 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 19937: //Illusion: Black Dragonkin
             spellInfo->AreaId = 15;
+            break;
+        case 14813: //dark iron ale mug trap
+            //spellInfo->DurationIndex = 21;  // infinity
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_MINIPET;
+            break;
         default:
             break;
         }
