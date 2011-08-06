@@ -1597,7 +1597,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
 
                         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range);
                         Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(p_Creature, u_check);
-                         Cell::VisitGridObjects(m_caster, searcher, range);
+                        Cell::VisitAllObjects(m_caster, searcher, range);
 
                         if (p_Creature)
                         {
