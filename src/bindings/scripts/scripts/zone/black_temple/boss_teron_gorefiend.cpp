@@ -386,7 +386,7 @@ struct TRINITY_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
 
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
-        if(done_by->GetTypeId() == TYPEID_UNIT && done_by->isPossessedByPlayer())
+        if(done_by->HasAura(40268,2))
             damage = 0;                                         // Boss cannot be damaged by ghosts.
     }
 
