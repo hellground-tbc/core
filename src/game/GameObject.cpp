@@ -967,7 +967,7 @@ void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false *
 void GameObject::Use(Unit* user)
 {
     // by default spell caster is user
-    Unit* spellCaster = user;
+    Unit* spellCaster = user;    
     uint32 spellId = 0;
 
     switch (GetGoType())
@@ -1216,37 +1216,36 @@ void GameObject::Use(Unit* user)
 
             Player* player = (Player*)user;
 
-            Unit* caster = GetOwner();
-
             GameObjectInfo const* info = GetGOInfo();
 
-            if (!caster || caster->GetTypeId()!=TYPEID_PLAYER)
-                return;
+            if(Unit* owner = GetOwner())
+            {
+                if (owner->GetTypeId()!=TYPEID_PLAYER)
+                    return;
 
-            // accept only use by player from same group for caster except caster itself
-            if (((Player*)caster)==player || !((Player*)caster)->IsInSameRaidWith(player))
-                return;
-
+                // accept only use by player from same group for caster except caster itself
+                if (!((Player*)owner)->IsInSameRaidWith(player))
+                    return;
+            }
             AddUniqueUse(player);
+
+            player->CastSpell((Unit*)NULL, info->summoningRitual.animSpell, true);
 
             // full amount unique participants including original summoner
             if (GetUniqueUseCount() < info->summoningRitual.reqParticipants)
                 return;
 
-            // in case summoning ritual caster is GO creator
-            spellCaster = caster;
-
-            if (!caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                return;
-
             spellId = info->summoningRitual.spellId;
-
-            // finish spell
-            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
 
             // can be deleted now
             SetLootState(GO_JUST_DEACTIVATED);
+
+            if (!spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                break;
+
+            // finish spell
+            spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+            spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
 
             // go to end function to spell casting
             break;
@@ -1384,7 +1383,7 @@ void GameObject::Use(Unit* user)
         return;
     }
 
-    Spell *spell = new Spell(spellCaster, spellInfo, false);
+    Spell *spell = new Spell(spellCaster, spellInfo, false, user->GetGUID());
 
     // spell target is user of GO
     SpellCastTargets targets;
