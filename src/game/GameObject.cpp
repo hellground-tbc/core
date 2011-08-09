@@ -1220,11 +1220,12 @@ void GameObject::Use(Unit* user)
 
             if(Unit* owner = GetOwner())
             {
+                spellCaster = owner;
                 if (owner->GetTypeId()!=TYPEID_PLAYER)
                     return;
 
                 // accept only use by player from same group for caster except caster itself
-                if (!((Player*)owner)->IsInSameRaidWith(player))
+                if (((Player*)owner)==player || !((Player*)owner)->IsInSameRaidWith(player))
                     return;
             }
             AddUniqueUse(player);
@@ -1285,7 +1286,7 @@ void GameObject::Use(Unit* user)
             Player* targetPlayer = ObjectAccessor::FindPlayer(player->GetSelection());
 
             // accept only use by player from same group for caster except caster itself
-            if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameGroupWith(player))
+            if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameRaidWith(player))
                 return;
 
             //required lvl checks!
