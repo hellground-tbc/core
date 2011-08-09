@@ -79,8 +79,16 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
     {
         switch(go->GetEntry())
         {
-        case REFECTORY_DOOR: RefectoryDoorGUID = go->GetGUID(); break;
-        case SCREAMING_HALL_DOOR: ScreamingHallDoorGUID = go->GetGUID(); break;
+        case REFECTORY_DOOR:
+            RefectoryDoorGUID = go->GetGUID();
+            if (Encounter[2] == DONE)
+                go->SetGoState(GO_STATE_ACTIVE);
+            break;
+        case SCREAMING_HALL_DOOR:
+            ScreamingHallDoorGUID = go->GetGUID();
+            if (Encounter[3] == DONE)
+                go->SetGoState(GO_STATE_ACTIVE);
+            break;
         }
     }
 
@@ -93,9 +101,12 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
                 break;
             case 18794:
             //case 20645:
-                RitualistGUIDList.push_back(creature->GetGUID());
-                ++RitualistCount;
-                SetData(TYPE_RITUALIST, NOT_STARTED);
+                if (creature->isAlive())
+                {
+                    RitualistGUIDList.push_back(creature->GetGUID());
+                    ++RitualistCount;
+                    SetData(TYPE_RITUALIST, NOT_STARTED);
+                }
                 break;
         }
     }
@@ -121,27 +132,23 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
                 break;
 
             case TYPE_RITUALIST:
-                if(data == NOT_STARTED)
+                if (data == NOT_STARTED)
                     Encounter[1] = NOT_STARTED;
-                if(data == DONE && RitualistCount)
+                if (data == DONE && RitualistCount)
                     --RitualistCount;
-                if( RitualistCount == 0 )
+                if (RitualistCount == 0)
                     Encounter[1] = DONE;
                 break;
 
             case DATA_BLACKHEARTTHEINCITEREVENT:
-                if( data == DONE )
-                {
+                if (data == DONE)
                     HandleGameObject(RefectoryDoorGUID,0);
-                }
                 Encounter[2] = data;
                 break;
 
             case DATA_GRANDMASTERVORPILEVENT:
-                if( data == DONE )
-                {
+                if (data == DONE)
                     HandleGameObject(ScreamingHallDoorGUID,0);
-                }
                 Encounter[3] = data;
                 break;
 
@@ -161,36 +168,36 @@ struct TRINITY_DLL_DECL instance_shadow_labyrinth : public ScriptedInstance
 
     uint32 GetData(uint32 type)
     {
-        switch( type )
+        switch (type)
         {
-            case TYPE_HELLMAW: return Encounter[0];
-            case TYPE_RITUALIST: return Encounter[1];
-            case DATA_GRANDMASTERVORPILEVENT: return Encounter[3];
-            case DATA_MURMUREVENT: return Encounter[4];
+            case TYPE_HELLMAW:                  return Encounter[0];
+            case TYPE_RITUALIST:                return Encounter[1];
+            case DATA_GRANDMASTERVORPILEVENT:   return Encounter[3];
+            case DATA_MURMUREVENT:              return Encounter[4];
         }
         return false;
     }
 
     uint64 GetData64(uint32 identifier)
     {
-        if(identifier == DATA_GRANDMASTERVORPIL)
+        if (identifier == DATA_GRANDMASTERVORPIL)
             return GrandmasterVorpil;
 
         return 0;
     }
 
-    void Update (uint32 diff)
+    void Update(uint32 diff)
     {
-        if(!check && !RitualistGUIDList.empty())
+        if (!check && !RitualistGUIDList.empty())
         {
-            for(std::list<uint64>::iterator iter = RitualistGUIDList.begin(); iter != RitualistGUIDList.end(); ++iter)
+            for (std::list<uint64>::iterator iter = RitualistGUIDList.begin(); iter != RitualistGUIDList.end(); ++iter)
             {
                 Creature* ritualist = instance->GetCreature(*iter);
-                if(ritualist && ritualist->isDead())
+                if (ritualist && ritualist->isDead())
                     --RitualistCount;
             }
 
-            if(!RitualistCount)
+            if (!RitualistCount)
                 Encounter[1] = DONE;
 
             check = true;
