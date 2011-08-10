@@ -203,7 +203,7 @@ struct TRINITY_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
 
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
-        if(done_by->GetTypeId() == TYPEID_PLAYER)
+        if(!done_by->HasAura(40268,2))
             damage = 0;                                         // Only the ghost can deal damage.
     }
 
