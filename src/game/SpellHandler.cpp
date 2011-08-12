@@ -138,9 +138,12 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
                 continue;
             }
 
-            if (spellInfo->EffectImplicitTargetA[0] == 6 || spellInfo->EffectImplicitTargetA[1] == 6 || spellInfo->EffectImplicitTargetA[2] == 6)
+            if (spellInfo->EffectImplicitTargetA[0] == TARGET_UNIT_TARGET_ENEMY || spellInfo->EffectImplicitTargetA[1] == TARGET_UNIT_TARGET_ENEMY || spellInfo->EffectImplicitTargetA[2] == TARGET_UNIT_TARGET_ENEMY)
                 if (Unit *tUnit = Unit::GetUnit(*GetPlayer(), GetPlayer()->GetSelection()))
                     targets.setUnitTarget(tUnit);
+
+            if (spellInfo->EffectImplicitTargetA[0] == TARGET_UNIT_CASTER || spellInfo->EffectImplicitTargetA[1] == TARGET_UNIT_CASTER || spellInfo->EffectImplicitTargetA[2] == TARGET_UNIT_CASTER)
+                targets.setUnitTarget(pUser);
         }
     }
 
