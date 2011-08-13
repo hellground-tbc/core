@@ -3890,8 +3890,8 @@ uint8 Spell::CanCast(bool strict)
             return SPELL_FAILED_NOT_MOUNTED;
     }
 
-    // always (except passive spells) check items (focus object can be required for any type casts)
-    if (!IsPassiveSpell(m_spellInfo->Id))
+    // always (except passive and triggered spells) check items (focus object can be required for any type casts)
+    if (!IsPassiveSpell(m_spellInfo->Id) && !m_IsTriggeredSpell)
         if (uint8 castResult = CheckItems())
             return castResult;
 
