@@ -3895,7 +3895,7 @@ uint8 Spell::CanCast(bool strict)
         if (uint8 castResult = CheckItems())
             return castResult;
 
-    if (!m_IsTriggeredSpell)
+    if (!m_IsTriggeredSpell || m_spellInfo->Id == 33395) // hack for water elemental freeze since it is casted as triggered spell
     {
         if (uint8 castResult = CheckRange(strict))
             return castResult;
