@@ -1471,7 +1471,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             {
                 Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
                 TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
-            }
+                }
             else
                 Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             break;
@@ -3423,7 +3423,11 @@ void Spell::SendResurrectRequest(Player* target)
     data << sentName;
     data << uint8(0);
 
-    data << uint8(m_caster->GetTypeId()==TYPEID_PLAYER ?0:1);
+    data << uint8(m_caster->GetTypeId()==TYPEID_PLAYER ? 0 : 1);
+
+    if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_IGNORE_RESURRECTION_TIMER)
+        data << uint32(0);
+
     target->GetSession()->SendPacket(&data);
 }
 
@@ -3798,6 +3802,21 @@ uint8 Spell::CanCast(bool strict)
                 else
                     return SPELL_FAILED_BAD_TARGETS;
             }
+
+            // need to implement isTappedBy
+            /*if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            {
+                // Do not these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)
+                if (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CANT_TARGET_TAPPED)
+                {
+                    if (target->GetTypeId() == TYPEID_UNIT)
+                    {
+                        Creature *targetCreature = (Creature*)target;
+                        if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy((Player*)m_caster))
+                            return SPELL_FAILED_CANT_CAST_ON_TAPPED;
+                    }
+                }
+            }*/
         }
 
         // TODO: this check can be applied and for player to prevent cheating when IsPositiveSpell will return always correct result.
@@ -5410,7 +5429,10 @@ Unit* Spell::SelectMagnetTarget()
 
     if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IgnoreMagnetTargetAura(m_spellInfo))
     {
-        if (target->HasAuraType(SPELL_AURA_SPELL_MAGNET)) //Attributes & 0x10 what is this?
+        if (m_spellInfo->Attributes & SPELL_ATTR_ABILITY)
+            return target;
+
+        if (target->HasAuraType(SPELL_AURA_SPELL_MAGNET))
         {
             Unit::AuraList const& magnetAuras = target->GetAurasByType(SPELL_AURA_SPELL_MAGNET);
             for (Unit::AuraList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
