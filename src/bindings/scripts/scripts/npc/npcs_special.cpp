@@ -2215,6 +2215,59 @@ CreatureAI* GetAI_npc_lurky(Creature* pCreature)
     return new npc_lurkyAI(pCreature);
 }
 
+/*########
+# npc_Oozeling
+#########*/
+
+#define GO_DARK_IRON_ALE_MUG    165578
+
+struct TRINITY_DLL_DECL pet_AleMugDrinkerAI : public ScriptedAI
+{
+    pet_AleMugDrinkerAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 wait;
+    bool aleMug_drink;
+
+    void Reset()
+    {
+        wait = 0;
+        aleMug_drink = false;
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+    }
+
+    void SpellHit(Unit * caster, const SpellEntry * spell)
+    {
+        if(spell->Id == 14813 && caster)
+        {
+            wait = 3000;
+            aleMug_drink = true;
+            float x, y, z;
+            caster->GetPosition(x,y,z);
+            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+        }
+    } 
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!aleMug_drink)
+            return;
+
+        if (wait < diff)
+        {
+            if (GameObject* mug = FindGameObject(GO_DARK_IRON_ALE_MUG, 20.0, me))
+                mug->Delete();
+            Reset();
+        }
+        else wait -= diff;
+    }
+};
+
+CreatureAI* GetAI_pet_AleMugDrinker(Creature* pCreature)
+{
+    return new pet_AleMugDrinkerAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2344,5 +2397,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_lurky";
     newscript->GetAI = &GetAI_npc_lurky;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="pet_AleMugDrinker";
+    newscript->GetAI = GetAI_pet_AleMugDrinker;
     newscript->RegisterSelf();
 }

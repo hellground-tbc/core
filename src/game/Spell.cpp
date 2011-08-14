@@ -1100,7 +1100,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if (m_caster != unit)
     {
-        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID() && m_spellInfo->Id != 44877)   // exception for Living Flare Master
+        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID() && !CanIgnoreNotAttackableFlags())
         {
             if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             {
@@ -5333,6 +5333,7 @@ bool Spell::CanIgnoreNotAttackableFlags()
 {
     switch(m_spellInfo->Id)
     {
+        case 14813:     // Dark Iron Drunk Mug
         case 32958:     // Crystal Channel
         case 44877:     // Living Flare Master
         case 45023:     // Fel Consumption
