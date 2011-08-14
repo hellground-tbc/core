@@ -4909,8 +4909,16 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (!target)
                         return false;
 
-                    if (procSpell && procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
-                        return false;
+                    if (procSpell)
+                    {
+                        // instead of returning false need to transfer normal swing damage amount
+                        if (procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
+                            return false;
+
+                        // Limit WhirlWind to hit one target applying 1s cooldown
+                        if (procSpell->SpellFamilyName == SPELLFAMILY_WARRIOR && procSpell->SpellFamilyFlags & 0x400000000LL)
+                            cooldown = 1;
+                    }
 
                     triggered_spell_id = 12723;
                     basepoints0 = damage;
