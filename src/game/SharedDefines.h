@@ -286,7 +286,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX2_UNK1                       0x00000002            // 1 ? many triggered spells have this flag
 #define SPELL_ATTR_EX2_IGNORE_LOS                 0x00000004            // 2 used to detect when ever spell can ignore los check
 #define SPELL_ATTR_EX2_UNK3                       0x00000008            // 3
-#define SPELL_ATTR_EX2_UNK4                       0x00000010            // 4
+#define SPELL_ATTR_EX2_DISPLAY_IN_STANCE_BAR      0x00000010            // 4 client displays icon in stance bar when learned, even if not shapeshift
 #define SPELL_ATTR_EX2_AUTOREPEAT_FLAG            0x00000020            // 5
 #define SPELL_ATTR_EX2_UNK6                       0x00000040            // 6
 #define SPELL_ATTR_EX2_UNK7                       0x00000080            // 7
@@ -345,7 +345,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX3_UNK27                      0x08000000            // 27
 #define SPELL_ATTR_EX3_UNK28                      0x10000000            // 28
 #define SPELL_ATTR_EX3_UNK29                      0x20000000            // 29
-#define SPELL_ATTR_EX3_UNK30                      0x40000000            // 30
+#define SPELL_ATTR_EX3_DONT_DISPLAY_RANGE         0x40000000            // 30 client doesn't display range in tooltip for those spells
 #define SPELL_ATTR_EX3_UNK31                      0x80000000            // 31
 
 #define SPELL_ATTR_EX4_UNK0                       0x00000001            // 0
@@ -366,7 +366,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX4_UNK15                      0x00008000            // 15
 #define SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA        0x00010000            // 16 not usable in arena
 #define SPELL_ATTR_EX4_USABLE_IN_ARENA            0x00020000            // 17 usable in arena
-#define SPELL_ATTR_EX4_UNK18                      0x00040000            // 18
+#define SPELL_ATTR_EX4_AREA_TARGET_CHAIN          0x00040000            // 18 (NYI)hits area targets one after another instead of all at once
 #define SPELL_ATTR_EX4_UNK19                      0x00080000            // 19
 #define SPELL_ATTR_EX4_UNK20                      0x00100000            // 20
 #define SPELL_ATTR_EX4_UNK21                      0x00200000            // 21
@@ -415,7 +415,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX5_UNK30                      0x40000000            // 30
 #define SPELL_ATTR_EX5_UNK31                      0x80000000            // 31 Forces all nearby enemies to focus attacks caster
 
-#define SPELL_ATTR_EX6_UNK0                       0x00000001            // 0 Only Move spell have this flag
+#define SPELL_ATTR_EX6_DONT_DISPLAY_COOLDOWN      0x00000001            // 0 client doesn't display cooldown in tooltip for these spells
 #define SPELL_ATTR_EX6_UNK1                       0x00000002            // 1 not set in 2.4.2
 #define SPELL_ATTR_EX6_UNK2                       0x00000004            // 2
 #define SPELL_ATTR_EX6_UNK3                       0x00000008            // 3
@@ -433,7 +433,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX6_UNK15                      0x00008000            // 15 not set in 2.4.2
 #define SPELL_ATTR_EX6_UNK16                      0x00010000            // 16 not set in 2.4.2
 #define SPELL_ATTR_EX6_UNK17                      0x00020000            // 17 not set in 2.4.2
-#define SPELL_ATTR_EX6_UNK18                      0x00040000            // 18 not set in 2.4.2
+#define SPELL_ATTR_EX6_ONLY_CAST_WHILE_POSSESSED  0x00040000            // 18 (NYI) client won't allow to cast these spells when unit does not have possessor
 #define SPELL_ATTR_EX6_UNK19                      0x00080000            // 19 not set in 2.4.2
 #define SPELL_ATTR_EX6_UNK20                      0x00100000            // 20 not set in 2.4.2
 #define SPELL_ATTR_EX6_UNK21                      0x00200000            // 21 not set in 2.4.2

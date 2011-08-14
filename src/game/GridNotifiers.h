@@ -94,14 +94,14 @@ namespace Trinity
         void Visit(PlayerMapType   &);
     };
 
-     struct AIRelocationNotifier
-     {
-        Unit &i_unit;
-        bool isCreature;
-        explicit AIRelocationNotifier(Unit &unit) : i_unit(unit), isCreature(unit.GetTypeId() == TYPEID_UNIT)  {}
-        template<class T> void Visit(GridRefManager<T> &) {}
-        void Visit(CreatureMapType &);
-     };
+    struct AIRelocationNotifier
+    {
+       Unit &i_unit;
+       bool isCreature;
+       explicit AIRelocationNotifier(Unit &unit) : i_unit(unit), isCreature(unit.GetTypeId() == TYPEID_UNIT)  {}
+       template<class T> void Visit(GridRefManager<T> &) {}
+       void Visit(CreatureMapType &);
+    };
 
     struct TRINITY_DLL_DECL GridUpdater
     {
@@ -271,6 +271,19 @@ namespace Trinity
         }
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
+    class ObjectTypeIdCheck
+    {
+        public:
+            ObjectTypeIdCheck(TypeID typeId, bool equals) : _typeId(typeId), _equals(equals) {}
+            bool operator()(WorldObject* object)
+            {
+                return (object->GetTypeId() == _typeId) == _equals;
+            }
+        private:
+            TypeID _typeId;
+            bool _equals;
     };
 
     // Gameobject searchers
