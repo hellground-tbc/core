@@ -413,7 +413,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     }
                     break;
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if (GetGOInfo()->goober.consumable && m_cooldownTime < time(NULL))
+                    if (m_cooldownTime < time(NULL))
                     {
                         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
@@ -1078,6 +1078,16 @@ void GameObject::Use(Unit* user)
                 }
 
                 player->CastedCreatureOrGO(GetEntry(), GetGUID(), 0);
+
+                // activate event
+                if (info->goober.eventId)
+                {
+                    player->GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
+                }
+
+                SetLootState(GO_ACTIVATED);
+                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+                m_cooldownTime = time(NULL) + info->goober.cooldown;
             }
 
             if (uint32 trapEntry = info->goober.linkedTrapId)
