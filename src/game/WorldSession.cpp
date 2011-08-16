@@ -613,7 +613,7 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
             m_Warden = (WardenBase*)new WardenWin();
             break;
         case 1:
-            m_Warden = (WardenBase*)new WardenMac();
+//            m_Warden = (WardenBase*)new WardenMac();
             break;
         default:
             sLog.outWarden("Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
