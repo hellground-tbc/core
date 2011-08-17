@@ -517,7 +517,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleEmoteOpcode(WorldPacket & recv_data)
 {
-    if (!GetPlayer()->isAlive())
+    if (!GetPlayer()->isAlive() || GetPlayer()->isPossessed() || GetPlayer()->isCharmed())
         return;
     CHECK_PACKET_SIZE(recv_data,4);
 
@@ -528,7 +528,7 @@ void WorldSession::HandleEmoteOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
 {
-    if (!GetPlayer()->isAlive())
+    if (!GetPlayer()->isAlive() || GetPlayer()->isPossessed() || GetPlayer()->isCharmed())
         return;
 
     if (!GetPlayer()->CanSpeak())
