@@ -413,7 +413,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     }
                     break;
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if (m_cooldownTime < time(NULL))
+                    if (GetGOInfo()->goober.consumable && m_cooldownTime < time(NULL))
                     {
                         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
@@ -967,7 +967,7 @@ void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false *
 void GameObject::Use(Unit* user)
 {
     // by default spell caster is user
-    Unit* spellCaster = user;    
+    Unit* spellCaster = user;
     uint32 spellId = 0;
 
     switch (GetGoType())
