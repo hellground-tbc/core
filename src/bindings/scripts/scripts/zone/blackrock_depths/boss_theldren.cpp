@@ -1144,15 +1144,6 @@ CreatureAI* GetAI_boss_rezznik(Creature *_Creature)
     return new boss_rezznikAI (_Creature);
 }
 
-bool ItemUse_item_banner_of_provocation(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    ScriptedInstance* pInstance = player->GetInstanceData();
-    if (player->GetMapId() != 230 || !pInstance || pInstance->GetData(TYPE_THELDREN) != NOT_STARTED || pInstance->GetData(TYPE_RING_OF_LAW) != IN_PROGRESS)
-        return true;
-
-    return false;
-}
-
 void AddSC_boss_theldren()
 {
     Script *newscript;
@@ -1199,10 +1190,5 @@ void AddSC_boss_theldren()
     newscript = new Script;
     newscript->Name="boss_rezznik";
     newscript->GetAI = &GetAI_boss_rezznik;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_banner_of_provocation";
-    newscript->pItemUse = &ItemUse_item_banner_of_provocation;
     newscript->RegisterSelf();
 }
