@@ -413,7 +413,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     }
                     break;
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if (GetGOInfo()->goober.consumable && m_cooldownTime < time(NULL))
+                    if (m_cooldownTime < time(NULL))
                     {
                         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
@@ -469,6 +469,15 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     m_usetimes = 0;
                 }
                 //any return here in case battleground traps
+
+                // don't despawn goober object if isn't consumable
+                if (!GetGOInfo()->goober.consumable)
+                {
+                    loot.clear();
+                    SetLootState(GO_READY);
+                    m_respawnTime = 0;
+                    return;
+                }
             }
 
             if (GetOwnerGUID())
