@@ -1994,7 +1994,7 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
 void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_bounding_radius, float distance2d, float absAngle) const
 {
     GetNearPoint2D(x, y, distance2d+searcher_bounding_radius, absAngle);
-    z = GetPositionZ();
+    const float init_z = z = GetPositionZ();
 
     // if detection disabled, return first point
     if (!sWorld.getConfig(CONFIG_DETECT_POS_COLLISION) || !GetMap()->hasPosCollisionCalcEnabled() || !GetMap()->hasVMapHeight())
