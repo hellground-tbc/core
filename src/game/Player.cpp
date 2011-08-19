@@ -4619,6 +4619,13 @@ void Player::LeaveLFGChannel()
     }
 }
 
+void Player::JoinLFGChannel()
+{
+    if (ChannelMgr* cMgr = channelMgr(GetTeam()))
+        if (Channel *chn = cMgr->GetJoinChannel("LookingForGroup", 6))
+            chn->Join(GetGUID(), "");
+}
+
 void Player::UpdateDefense()
 {
     uint32 defense_skill_gain = sWorld.getConfig(CONFIG_SKILL_GAIN_DEFENSE);

@@ -271,7 +271,7 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
         if (!tmp)
             return;
 
-        if (GetEncounterForEntry(tmp->id) && pCreature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        if (pCreature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
         {
             if (ashtongueBroken)
                 pCreature->setFaction(1820);
