@@ -89,19 +89,20 @@ struct TRINITY_DLL_DECL boss_thekalAI : public ScriptedAI
         WasDead = false;
 
         if(pInstance)
-            pInstance->SetData(DATA_THEKAL_ALIVE, 0);
+            pInstance->SetData(DATA_THEKALEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+        pInstance->SetData(DATA_THEKALEVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
         if(pInstance)
-            pInstance->SetData(DATA_THEKAL_DEATH, 0);
+            pInstance->SetData(DATA_THEKALEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -169,7 +170,7 @@ struct TRINITY_DLL_DECL boss_thekalAI : public ScriptedAI
                 m_creature->AttackStop();
 
                 if(pInstance)
-                    pInstance->SetData(DATA_THEKALFAKE_DEATH, 0);
+                    pInstance->SetData(DATA_THEKALFAKEDEATH, DONE);
 
                 WasDead=true;
             }
@@ -280,7 +281,7 @@ struct TRINITY_DLL_DECL mob_zealot_lorkhanAI : public ScriptedAI
         FakeDeath = false;
 
         if(pInstance)
-            pInstance->SetData(DATA_LORKHAN_ALIVE, 0);
+            pInstance->SetData(DATA_LORKHANISDEAD, 0);
 
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -348,7 +349,7 @@ struct TRINITY_DLL_DECL mob_zealot_lorkhanAI : public ScriptedAI
         {
             if(pInstance)
             {
-                if(pInstance->GetData(DATA_THEKALISFAKEDEAD))
+                if(pInstance->GetData(DATA_THEKALFAKEDEATH))
                 {
                     //Resurrect Thekal
                     Unit *pThekal = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_THEKAL));
@@ -386,7 +387,7 @@ struct TRINITY_DLL_DECL mob_zealot_lorkhanAI : public ScriptedAI
             m_creature->AttackStop();
 
             if(pInstance)
-                pInstance->SetData(DATA_LORKHAN_DEATH, 0);
+                pInstance->SetData(DATA_LORKHANISDEAD, DONE);
 
             FakeDeath = true;
         }
@@ -426,7 +427,7 @@ struct TRINITY_DLL_DECL mob_zealot_zathAI : public ScriptedAI
         FakeDeath = false;
 
         if(pInstance)
-            pInstance->SetData(DATA_ZATH_ALIVE, 0);
+            pInstance->SetData(DATA_ZATHISDEAD, 0);
 
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -498,7 +499,7 @@ struct TRINITY_DLL_DECL mob_zealot_zathAI : public ScriptedAI
                     }
                 }
 
-                if(pInstance->GetData(DATA_THEKALISFAKEDEAD))
+                if(pInstance->GetData(DATA_THEKALFAKEDEATH))
                 {
                     //Resurrect Thekal
                     Unit *pThekal = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_THEKAL));
@@ -523,7 +524,7 @@ struct TRINITY_DLL_DECL mob_zealot_zathAI : public ScriptedAI
             m_creature->AttackStop();
 
             if(pInstance)
-                pInstance->SetData(DATA_ZATH_DEATH, 0);
+                pInstance->SetData(DATA_ZATHISDEAD, DONE);
 
             FakeDeath = true;
         }

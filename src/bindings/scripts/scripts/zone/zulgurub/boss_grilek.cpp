@@ -29,19 +29,30 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_grilekAI : public ScriptedAI
 {
-    boss_grilekAI(Creature *c) : ScriptedAI(c) {}
+    boss_grilekAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
 
     uint32 Avartar_Timer;
     uint32 GroundTremor_Timer;
+    ScriptedInstance * pInstance;
 
     void Reset()
     {
         Avartar_Timer = 15000 + rand()%10000;
         GroundTremor_Timer = 8000 + rand()%8000;
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -65,14 +76,18 @@ struct TRINITY_DLL_DECL boss_grilekAI : public ScriptedAI
                 AttackStart(target);
 
             Avartar_Timer = 25000 + rand()%10000;
-        }else Avartar_Timer -= diff;
+        }
+        else
+            Avartar_Timer -= diff;
 
         //GroundTremor_Timer
         if (GroundTremor_Timer < diff)
         {
             DoCast(m_creature->getVictim(), SPELL_GROUNDTREMOR);
             GroundTremor_Timer = 12000 + rand()%4000;
-        }else GroundTremor_Timer -= diff;
+        }
+        else
+            GroundTremor_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

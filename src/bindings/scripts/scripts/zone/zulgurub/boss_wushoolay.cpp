@@ -29,19 +29,30 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_wushoolayAI : public ScriptedAI
 {
-    boss_wushoolayAI(Creature *c) : ScriptedAI(c) {}
+    boss_wushoolayAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
 
     uint32 LightningCloud_Timer;
     uint32 LightningWave_Timer;
+    ScriptedInstance * pInstance;
 
     void Reset()
     {
         LightningCloud_Timer = 5000 + rand()%5000;
         LightningWave_Timer = 8000 + rand()%8000;
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -54,7 +65,9 @@ struct TRINITY_DLL_DECL boss_wushoolayAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_LIGHTNINGCLOUD);
             LightningCloud_Timer = 15000 + rand()%5000;
-        }else LightningCloud_Timer -= diff;
+        }
+        else
+            LightningCloud_Timer -= diff;
 
         //LightningWave_Timer
         if (LightningWave_Timer < diff)
@@ -63,7 +76,9 @@ struct TRINITY_DLL_DECL boss_wushoolayAI : public ScriptedAI
                 DoCast(target,SPELL_LIGHTNINGWAVE);
 
             LightningWave_Timer = 12000 + rand()%4000;
-        }else LightningWave_Timer -= diff;
+        }
+        else
+            LightningWave_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

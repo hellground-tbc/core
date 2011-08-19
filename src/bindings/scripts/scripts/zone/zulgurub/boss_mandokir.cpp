@@ -93,6 +93,7 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
         CombatStart = false;
 
         DoCast(m_creature, 23243);
+        pInstance->SetData(DATA_MANDOKIREVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit* victim)
@@ -107,25 +108,27 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
 
                 if (pInstance)
                 {
-                    uint64 JindoGUID = pInstance->GetData64(DATA_JINDO);
-                    if (JindoGUID)
+                    if (Unit* jTemp = Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_JINDO)))
                     {
-                        if (Unit* jTemp = Unit::GetUnit(*m_creature,JindoGUID))
-                        {
-                            if (jTemp->isAlive())
-                                DoScriptText(SAY_GRATS_JINDO, jTemp);
-                        }
+                        if (jTemp->isAlive())
+                            DoScriptText(SAY_GRATS_JINDO, jTemp);
                     }
                 }
-            DoCast(m_creature, SPELL_LEVEL_UP, true);
-             KillCount = 0;
+                DoCast(m_creature, SPELL_LEVEL_UP, true);
+                KillCount = 0;
             }
         }
     }
 
     void EnterCombat(Unit *who)
     {
-     DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, m_creature);
+        pInstance->SetData(DATA_MANDOKIREVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        pInstance->SetData(DATA_MANDOKIREVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -206,14 +209,18 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
                 {
                     DoCast(m_creature->getVictim(),SPELL_CLEAVE);
                     Cleave_Timer = 7000;
-                }else Cleave_Timer -= diff;
+                }
+                else
+                    Cleave_Timer -= diff;
 
                 //Whirlwind
                 if (Whirlwind_Timer < diff)
                 {
                     DoCast(m_creature,SPELL_WHIRLWIND);
                     Whirlwind_Timer = 18000;
-                }else Whirlwind_Timer -= diff;
+                }
+                else
+                    Whirlwind_Timer -= diff;
 
                 //If more then 3 targets in melee range mandokir will cast fear
                 if (Fear_Timer < diff)
@@ -232,7 +239,9 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
                         DoCast(m_creature->getVictim(),SPELL_FEAR);
 
                     Fear_Timer = 4000;
-                }else Fear_Timer -=diff;
+                }
+                else
+                    Fear_Timer -=diff;
 
                 //Mortal Strike if target below 50% hp
                 if (m_creature->getVictim() && m_creature->getVictim()->GetHealth() < m_creature->getVictim()->GetMaxHealth()*0.5)
@@ -241,7 +250,9 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
                     {
                         DoCast(m_creature->getVictim(),SPELL_MORTAL_STRIKE);
                         MortalStrike_Timer = 15000;
-                    }else MortalStrike_Timer -= diff;
+                    }
+                    else
+                        MortalStrike_Timer -= diff;
                 }
             }
             //Checking if Ohgan is dead. If yes Mandokir will enrage.
@@ -249,9 +260,10 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
             {
                 if(pInstance)
                 {
-                    if(pInstance->GetData(DATA_OHGANISDEAD))
+                    if (!RaptorDead)
                     {
-                        if (!RaptorDead)
+                        Creature * tmpC = me->GetCreature(pInstance->GetData64(DATA_OHGAN));
+                        if(!tmpC || !tmpC->isAlive())
                         {
                             DoCast(m_creature, SPELL_ENRAGE);
                             RaptorDead = true;
@@ -260,7 +272,9 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
                 }
 
                 Check_Timer = 1000;
-            }else Check_Timer -= diff;
+            }
+            else
+                Check_Timer -= diff;
 
             DoMeleeAttackIfReady();
         }
@@ -270,13 +284,9 @@ struct TRINITY_DLL_DECL boss_mandokirAI : public ScriptedAI
 //Ohgan
 struct TRINITY_DLL_DECL mob_ohganAI : public ScriptedAI
 {
-    mob_ohganAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-    }
+    mob_ohganAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 SunderArmor_Timer;
-    ScriptedInstance *pInstance;
 
     void Reset()
     {
@@ -285,11 +295,7 @@ struct TRINITY_DLL_DECL mob_ohganAI : public ScriptedAI
 
     void EnterCombat(Unit *who) {}
 
-    void JustDied(Unit* Killer)
-    {
-        if(pInstance)
-            pInstance->SetData(DATA_OHGAN_DEATH, 0);
-    }
+    void JustDied(Unit* Killer) {}
 
     void UpdateAI (const uint32 diff)
     {
@@ -302,7 +308,9 @@ struct TRINITY_DLL_DECL mob_ohganAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), SPELL_SUNDERARMOR);
             SunderArmor_Timer = 10000 + rand()%5000;
-        }else SunderArmor_Timer -= diff;
+        }
+        else
+            SunderArmor_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
