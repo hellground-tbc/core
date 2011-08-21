@@ -1822,6 +1822,10 @@ bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry cons
     if (spellId_1 == 43738 && (spellId_2 == 8115 || spellId_2 == 8116 || spellId_2 == 8117 || spellId_2 == 12174 || spellId_2 == 33077))
         return true;
 
+    // Enh shaman t6 bonus proc and t6 trinket proc
+    if(spellId_1 == 40466 && spellId_2 == 38430)
+        return true;
+
     if (recur)
         return IsSpecialStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
 
