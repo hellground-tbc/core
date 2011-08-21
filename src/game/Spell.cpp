@@ -3523,6 +3523,8 @@ void Spell::TakePower()
                     {
                         if (ihit->missCondition != SPELL_MISS_NONE && ihit->missCondition != SPELL_MISS_MISS/* && ihit->targetGUID!=m_caster->GetGUID()*/)
                             hit = false;
+                        else if (((Player*)m_caster)->GetClass() == CLASS_DRUID && ihit->missCondition == SPELL_MISS_MISS && m_spellInfo->powerType == POWER_ENERGY) // not sure if it's limited only to druid/energy
+                            hit = false;
                         break;
                     }
                 }
@@ -3549,10 +3551,10 @@ void Spell::TakePower()
 
     Powers powerType = Powers(m_spellInfo->powerType);
 
-    if (hit)
+    if (hit || (NeedsComboPoints(m_spellInfo) && m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetClass() == CLASS_DRUID) )  // not sure if it's limited only to druid
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
-      m_caster->ModifyPower(powerType, -m_caster->GetMap()->irand(0, m_powerCost/4));
+        m_caster->ModifyPower(powerType, -m_caster->GetMap()->irand(0, m_powerCost/4));
 
     // Set the five second timer
     if (powerType == POWER_MANA && m_powerCost > 0)
