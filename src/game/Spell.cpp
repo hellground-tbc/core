@@ -653,6 +653,9 @@ void Spell::prepareDataForTriggerSystem()
             m_procAttacker = PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT;
             if (m_attackType == OFF_ATTACK)
                 m_procAttacker |= PROC_FLAG_SUCCESSFUL_OFFHAND_HIT;
+            if (IsNextMeleeSwingSpell())
+                m_procAttacker |= PROC_FLAG_SUCCESSFUL_MELEE_HIT;
+
             m_procVictim   = PROC_FLAG_TAKEN_MELEE_SPELL_HIT;
             break;
         case SPELL_DAMAGE_CLASS_RANGED:
