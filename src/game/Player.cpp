@@ -20072,7 +20072,7 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     if (slot >= MAX_LOOKING_FOR_GROUP_SLOT)
         return;
 
-    ClearLFM();
+//    ClearLFM();
 
     tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
     uint64 guid = GetGUID();
@@ -20113,12 +20113,41 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
 
 void Player::LFMSet(uint32 entry, uint32 type)
 {
-    ClearLFG();
+//    ClearLFG();
     tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
 
+    uint64 guid = GetGUID();
 
+    if (!m_lookingForGroup.more.Empty())
+    {
+        combined = m_lookingForGroup.more.Combine();
 
-    GetSession()->SendLFGDisabled();
+        if (sWorld.lfgContainer.find(a, combined))
+        {
+            // remove player from list
+            for (std::list<uint64>::iterator itr = a->second.begin(); itr != a->second.end();)
+            {
+                std::list<uint64>::iterator tmpItr = itr;
+                ++itr;
+
+                if ((*tmpItr) == guid)
+                    a->second.erase(tmpItr);
+            }
+        }
+
+        m_lookingForGroup.more.Clear();
+        a.release();
+    }
+
+    combined = LFG_COMBINE(entry, type);
+
+    // if we can't find list in container or add new list
+    if (!sWorld.lfgContainer.find(a, combined))
+        if (!sWorld.lfgContainer.insert(a, combined))
+            return;
+
+    m_lookingForGroup.more.Set(entry, type);
+    a->second.push_back(guid);
 }
 
 void Player::ClearLFG()
