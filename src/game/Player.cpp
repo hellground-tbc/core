@@ -20117,6 +20117,7 @@ void Player::LFMSet(uint32 entry, uint32 type)
     tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
 
     uint64 guid = GetGUID();
+    uint32 combined;
 
     if (!m_lookingForGroup.more.Empty())
     {
