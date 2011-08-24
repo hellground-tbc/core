@@ -136,6 +136,9 @@ class TRINITY_DLL_SPEC WorldSession
         void SendNotification(int32 string_id,...);
         void SendPetNameInvalid(uint32 error, const std::string& name, DeclinedName *declinedName);
         void SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type);
+        void SendLFM(uint32 type, uint32 entry);
+        void SendLFG(uint32 type, uint32 entry);
+        void SendLFGDisabled();
         void SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res);
         void SendAreaTriggerMessage(const char* Text, ...) ATTR_PRINTF(2,3);
 
