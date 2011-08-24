@@ -948,7 +948,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x395*/ { "CMSG_MAELSTROM_GM_SENT_MAIL",      STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_NULL                     },
     /*0x396*/ { "SMSG_RESET_FAILED_NOTIFY",         STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x397*/ { "SMSG_REAL_GROUP_UPDATE",           STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
-    /*0x398*/ { "SMSG_LFG_DISABLED",                STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
+    /*0x398*/ { "SMSG_LFG_DISABLED",                STATUS_LOGGEDIN,    PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x399*/ { "CMSG_ACTIVE_PVP_CHEAT",            STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_NULL                     },
     /*0x39A*/ { "CMSG_CHEAT_DUMP_ITEMS_DEBUG_ONLY", STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_NULL                     },
     /*0x39B*/ { "SMSG_CHEAT_DUMP_ITEMS_DEBUG_ONLY_RESPONSE",STATUS_NEVER,PROCESS_INPLACE, &WorldSession::Handle_ServerSide           },

@@ -1628,6 +1628,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading Warden Data..." );
     WardenDataStorage.Init();
 
+    sLog.outString("Cleanup deleted characters");
+    CleanupDeletedChars();
+
     //sLog.outString("Initialize AuctionHouseBot...");
     //auctionbot.Initialize();
 
