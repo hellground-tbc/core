@@ -22,6 +22,7 @@ SDCategory: Zul'Gurub
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_zulgurub.h"
 
 #define SPELL_FROSTBREATH            21099
 #define SPELL_MASSIVEGEYSER          22421                  //Not working. Cause its a summon...
@@ -29,20 +30,33 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_gahzrankaAI : public ScriptedAI
 {
-    boss_gahzrankaAI(Creature *c) : ScriptedAI(c) {}
+    boss_gahzrankaAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (ScriptedInstance*)c->GetInstanceData();
+    }
+
     uint32 Frostbreath_Timer;
     uint32 MassiveGeyser_Timer;
     uint32 Slam_Timer;
+    ScriptedInstance * pInstance;
 
     void Reset()
     {
         Frostbreath_Timer = 8000;
         MassiveGeyser_Timer = 25000;
         Slam_Timer = 17000;
+
+        pInstance->SetData(DATA_GAHZRANKAEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        pInstance->SetData(DATA_GAHZRANKAEVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        pInstance->SetData(DATA_GAHZRANKAEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -56,7 +70,9 @@ struct TRINITY_DLL_DECL boss_gahzrankaAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_FROSTBREATH);
             Frostbreath_Timer = 7000 + rand()%4000;
-        }else Frostbreath_Timer -= diff;
+        }
+        else
+            Frostbreath_Timer -= diff;
 
         //MassiveGeyser_Timer
         if (MassiveGeyser_Timer < diff)
@@ -65,14 +81,18 @@ struct TRINITY_DLL_DECL boss_gahzrankaAI : public ScriptedAI
             DoResetThreat();
 
             MassiveGeyser_Timer = 22000 + rand()%10000;
-        }else MassiveGeyser_Timer -= diff;
+        }
+        else
+            MassiveGeyser_Timer -= diff;
 
         //Slam_Timer
         if (Slam_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_SLAM);
             Slam_Timer = 12000 + rand()%8000;
-        }else Slam_Timer -= diff;
+        }
+        else
+            Slam_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

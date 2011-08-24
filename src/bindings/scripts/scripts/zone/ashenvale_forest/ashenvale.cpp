@@ -531,6 +531,108 @@ bool GOHello_go_naga_brazier(Player* pPlayer, GameObject* pGo)
     return false;
 }
 
+#define NPC_EARTHEN_RING_GUIDE      25324
+
+bool ItemUse_item_Totemic_Beacon(Player *player, Item* _Item, SpellCastTargets const& targets)
+{
+    float x,y,z;
+    player->GetClosePoint(x,y,z, 0.0f, 3.0f, frand(0, 2*M_PI));
+    player->SummonCreature(NPC_EARTHEN_RING_GUIDE, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 120000);
+    return false;
+}
+
+#define NPC_ICECALLERBRIATHA        25949
+
+struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
+{
+    npc_Heretic_EmisaryAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 TalkTimer;
+    uint32 Phase;
+    uint32 Check;
+    uint64 player;
+    bool EventStarted;
+
+    void Reset()
+    {
+        Phase = 0;
+
+        TalkTimer = 5000;
+        EventStarted = false;
+    }
+
+    void MoveInLineOfSight(Unit * unit)
+    {
+        if(EventStarted)
+            return;
+
+        if(unit->GetTypeId() == TYPEID_PLAYER && unit->HasAura(46337, 0) && ((Player*)unit)->GetQuestStatus(11891) == QUEST_STATUS_INCOMPLETE)
+        {
+            EventStarted = true;
+            Phase = 0;
+            player = unit->GetGUID();
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!me->getVictim())
+        {
+            if (TalkTimer < diff && EventStarted)
+            {
+                Player * Player_;
+                Creature * Briatha = GetClosestCreatureWithEntry(me, NPC_ICECALLERBRIATHA, 20);
+
+                if (Briatha && Briatha->isAlive()) 
+                {
+                    switch(Phase)
+                    {
+                    case 0:
+                        Briatha->Say("These stones should be the last of them. Our coordination with Neptulon's forces will be impeccable.", LANG_UNIVERSAL, 0);
+                        Phase++;
+                        break;
+                    case 1:
+                        me->Say("Yess. The Tidehunter will be pleased at this development. The Firelord's hold will weaken.", LANG_UNIVERSAL, 0);
+                        Phase++;
+                        break;
+                    case 2:
+                        Briatha->Say("And your own preparations? Will the Frost Lord have a path to the portal?", LANG_UNIVERSAL, 0);
+                        Phase++;
+                        break;
+                    case 3:
+                        me->Say("Skar'this has informed us well. We have worked our way into the slave pens and await your cryomancerss.", LANG_UNIVERSAL, 0);
+                        Phase++;
+                        break;
+                    case 4:
+                        Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_UNIVERSAL, 0);
+                        Phase = 0;
+                        if(Player_ = (Player*)(me->GetUnit(player)))
+                            if(Player_->HasAura(46337, 0))
+                                Player_->AreaExploredOrEventHappens(11891);
+                        EventStarted = false;
+                        break;
+                    }
+                    TalkTimer = 5000;
+                }
+                else
+                    EventStarted = false;
+            }
+            else
+                TalkTimer -= diff;
+
+            return;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_Heretic_Emisary(Creature *_Creature)
+{
+    return new npc_Heretic_EmisaryAI(_Creature);
+}
+
+
 void AddSC_ashenvale()
 {
     Script *newscript;
@@ -556,6 +658,16 @@ void AddSC_ashenvale()
     newscript = new Script;
     newscript->Name = "go_naga_brazier";
     newscript->pGOHello = &GOHello_go_naga_brazier;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="item_Totemic_Beacon";
+    newscript->pItemUse = &ItemUse_item_Totemic_Beacon;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_Heretic_Emisary";
+    newscript->GetAI = &GetAI_npc_Heretic_Emisary;
     newscript->RegisterSelf();
 
 }

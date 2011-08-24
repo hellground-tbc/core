@@ -388,7 +388,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, fl
     float weapon_mindamage = GetWeaponDamageRange(attType, MINDAMAGE);
     float weapon_maxdamage = GetWeaponDamageRange(attType, MAXDAMAGE);
 
-    if (IsInFeralForm() && m_form != FORM_GHOSTWOLF)                                    //check if player is druid and in cat or bear forms
+    if (IsInFeralForm())                                    //check if player is druid and in cat or bear forms
     {
         uint32 lvl = getLevel();
         if (lvl > 60) lvl = 60;

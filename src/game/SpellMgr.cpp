@@ -280,7 +280,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
         if (Player* modOwner = spell->GetCaster()->GetSpellModOwner())
             modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
 
-        if (!(spellInfo->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_TRADESPELL)))
+        if (!(spellInfo->Attributes & (SPELL_ATTR_ABILITY|SPELL_ATTR_TRADESPELL)))
             castTime = int32(castTime * spell->GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
         else
         {
@@ -1822,6 +1822,10 @@ bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry cons
     if (spellId_1 == 43738 && (spellId_2 == 8115 || spellId_2 == 8116 || spellId_2 == 8117 || spellId_2 == 12174 || spellId_2 == 33077))
         return true;
 
+    // Enh shaman t6 bonus proc and t6 trinket proc
+    if(spellId_1 == 40466 && spellId_2 == 38430)
+        return true;
+
     if (recur)
         return IsSpecialStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
 
@@ -2594,6 +2598,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_AURA_MOD_DECREASE_SPEED:
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                     break;
+                case SPELL_AURA_MOD_POSSESS:
+                case SPELL_AURA_MOD_CONFUSE:
+                case SPELL_AURA_MOD_CHARM:
+                case SPELL_AURA_MOD_FEAR:
+                case SPELL_AURA_MOD_STUN:
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_CC;
+                    spellInfo->AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                    break;
                 default:
                     break;
             }
@@ -2619,21 +2631,12 @@ void SpellMgr::LoadSpellCustomAttr()
                         spellInfo->Targets & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
                         spellInfo->Effect[j] = SPELL_EFFECT_TRIGGER_MISSILE;
                     break;
-            }
-        }
-
-
-        for (uint32 j = 0; j < 3; ++j)
-        {
-            switch (spellInfo->EffectApplyAuraName[j])
-            {
-                case SPELL_AURA_MOD_POSSESS:
-                case SPELL_AURA_MOD_CONFUSE:
-                case SPELL_AURA_MOD_CHARM:
-                case SPELL_AURA_MOD_FEAR:
-                case SPELL_AURA_MOD_STUN:
-                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_CC;
-                    spellInfo->AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                case SPELL_EFFECT_TELEPORT_UNITS:
+                    if (spellInfo->EffectImplicitTargetA[j] == 17 && spellInfo->EffectImplicitTargetB[j] == 0)
+                    {
+                        spellInfo->EffectImplicitTargetA[j] = 1;
+                        spellInfo->EffectImplicitTargetB[j] = 17;
+                    }
                     break;
             }
         }
@@ -2904,7 +2907,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39331: // Spell In Session
             spellInfo->DurationIndex = 21;  // infinity
             spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
-            spellInfo->EffectRadiusIndex[0] = 31;   // effect radius from 65 to 80 yd
+            spellInfo->EffectRadiusIndex[0] = 27;   // effect radius from 65 to 50 yd
+            break;
+        case 19937: //Illusion: Black Dragonkin
+            spellInfo->AreaId = 15;
             break;
         default:
             break;
@@ -3197,6 +3203,15 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
         case 30567:
         case 30557:
             return map_id == 532;
+        // Zul'Aman Amani Charms
+        case 43818:
+        case 43816:
+        case 43822:
+        case 43820:
+            return map_id == 568;
+        // Ritual of summoning in Zul'Aman
+        case 698:
+            return map_id != 568;
     }
 
     return true;

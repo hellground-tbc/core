@@ -151,7 +151,20 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
             sLog.outCommand(bidder_accId,"GM %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
                 bidder_name.c_str(),bidder_accId,pItem->GetProto()->Name1,pItem->GetEntry(),pItem->GetCount(),auction->bid,owner_name.c_str(),owner_accid);
         }
+        else
+        {
+            std::string owner_name;
+            if (!objmgr.GetPlayerNameByGUID(auction->owner,owner_name))
+                owner_name = objmgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+
+            uint32 owner_accid = objmgr.GetPlayerAccountIdByGUID(auction->owner);
+
+            sLog.outAuction("Player %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
+                bidder_name.c_str(),bidder_accId,pItem->GetProto()->Name1,pItem->GetEntry(),pItem->GetCount(),auction->bid,owner_name.c_str(),owner_accid);
+        }
+
     }
+
     else if (!bidder)
         bidder_accId = objmgr.GetPlayerAccountIdByGUID(bidder_guid);
 

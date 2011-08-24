@@ -549,6 +549,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "assign",         SEC_MODERATOR,      false, &ChatHandler::HandleGMTicketAssignToCommand,         "", NULL },
         { "unassign",       SEC_MODERATOR,      false, &ChatHandler::HandleGMTicketUnAssignCommand,         "", NULL },
         { "comment",        SEC_MODERATOR,      false, &ChatHandler::HandleGMTicketCommentCommand,          "", NULL },
+        { "history",        SEC_MODERATOR,      false, &ChatHandler::HandleGMTicketHistoryCommand,          "", NULL },
         { NULL,             0,                  false, NULL,                                                "", NULL }
     };
 
@@ -645,11 +646,12 @@ ChatCommand * ChatHandler::getCommandTable()
         { "loadscripts",    SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleLoadScriptsCommand,         "", NULL },
         { "mute",           SEC_GAMEMASTER,     true,  &ChatHandler::HandleMuteCommand,                "", NULL },
         { "unmute",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleUnmuteCommand,              "", NULL },
+        { "muteinfo",       SEC_GAMEMASTER,     true,  &ChatHandler::HandleMuteInfoCommand,            "", NULL },
         { "movegens",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleMovegensCommand,            "", NULL },
         { "cometome",       SEC_ADMINISTRATOR,  false, &ChatHandler::HandleComeToMeCommand,            "", NULL },
         { "damage",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDamageCommand,              "", NULL },
         { "combatstop",     SEC_GAMEMASTER,     false, &ChatHandler::HandleCombatStopCommand,          "", NULL },
-        { "ahbotoptions",   SEC_ADMINISTRATOR,  true,    &ChatHandler::HandleAHBotOptionsCommand,        "", NULL },
+        { "ahbotoptions",   SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAHBotOptionsCommand,        "", NULL },
         { "flusharenapoints",    SEC_ADMINISTRATOR, false, &ChatHandler::HandleFlushArenaPointsCommand,         "",   NULL },
         { "chardelete",     SEC_CONSOLE,        true,  &ChatHandler::HandleCharacterDeleteCommand,     "", NULL },
         { "sendmessage",    SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleSendMessageCommand,         "", NULL },
@@ -899,7 +901,7 @@ bool ChatHandler::ContainsNotAllowedSigns(std::string text /*copy of text becaus
     for (uint32 i = 0; i < text.length(); ++i)
         text[i] = tolower(text[i]);
 
-    if ((text.find("blizz.blp") != text.npos) || (text.find("blizzardlogo.blp") != text.npos))
+    if ((text.find(".blp") != text.npos) || (text.find("t|t") != text.npos))
         return true;
     return false;
 }

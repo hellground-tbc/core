@@ -11,7 +11,6 @@
 #include <vector>
 #include <iostream>
 #include <deque>
-#include <cstdio>
 
 using namespace std;
 
@@ -120,4 +119,3 @@ inline void flipcc(char *fcc)
 }
 
 #endif
-

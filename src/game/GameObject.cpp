@@ -413,7 +413,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     }
                     break;
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if (GetGOInfo()->goober.consumable && m_cooldownTime < time(NULL))
+                    if (m_cooldownTime < time(NULL))
                     {
                         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
@@ -469,6 +469,15 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     m_usetimes = 0;
                 }
                 //any return here in case battleground traps
+
+                // don't despawn goober object if isn't consumable
+                if (!GetGOInfo()->goober.consumable)
+                {
+                    loot.clear();
+                    SetLootState(GO_READY);
+                    m_respawnTime = 0;
+                    return;
+                }
             }
 
             if (GetOwnerGUID())
@@ -810,7 +819,7 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
 
     // check distance
     const WorldObject* viewPoint = u->GetFarsightTarget();
-    if (!viewPoint) viewPoint = u;
+    if (!viewPoint || !u->HasFarsightVision()) viewPoint = u;
 
     return IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
@@ -1078,6 +1087,16 @@ void GameObject::Use(Unit* user)
                 }
 
                 player->CastedCreatureOrGO(GetEntry(), GetGUID(), 0);
+
+                // activate event
+                if (info->goober.eventId)
+                {
+                    player->GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
+                }
+
+                SetLootState(GO_ACTIVATED);
+                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+                m_cooldownTime = time(NULL) + info->goober.cooldown;
             }
 
             if (uint32 trapEntry = info->goober.linkedTrapId)
@@ -1216,37 +1235,37 @@ void GameObject::Use(Unit* user)
 
             Player* player = (Player*)user;
 
-            Unit* caster = GetOwner();
-
             GameObjectInfo const* info = GetGOInfo();
 
-            if (!caster || caster->GetTypeId()!=TYPEID_PLAYER)
-                return;
+            if(Unit* owner = GetOwner())
+            {
+                spellCaster = owner;
+                if (owner->GetTypeId()!=TYPEID_PLAYER)
+                    return;
 
-            // accept only use by player from same group for caster except caster itself
-            if (((Player*)caster)==player || !((Player*)caster)->IsInSameRaidWith(player))
-                return;
-
+                // accept only use by player from same group for caster except caster itself
+                if (((Player*)owner)==player || !((Player*)owner)->IsInSameRaidWith(player))
+                    return;
+            }
             AddUniqueUse(player);
+
+            player->CastSpell((Unit*)NULL, info->summoningRitual.animSpell, true);
 
             // full amount unique participants including original summoner
             if (GetUniqueUseCount() < info->summoningRitual.reqParticipants)
                 return;
 
-            // in case summoning ritual caster is GO creator
-            spellCaster = caster;
-
-            if (!caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                return;
-
             spellId = info->summoningRitual.spellId;
-
-            // finish spell
-            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
 
             // can be deleted now
             SetLootState(GO_JUST_DEACTIVATED);
+
+            if (!spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                break;
+
+            // finish spell
+            spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+            spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
 
             // go to end function to spell casting
             break;
@@ -1286,7 +1305,7 @@ void GameObject::Use(Unit* user)
             Player* targetPlayer = ObjectAccessor::FindPlayer(player->GetSelection());
 
             // accept only use by player from same group for caster except caster itself
-            if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameGroupWith(player))
+            if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameRaidWith(player))
                 return;
 
             //required lvl checks!
@@ -1384,7 +1403,7 @@ void GameObject::Use(Unit* user)
         return;
     }
 
-    Spell *spell = new Spell(spellCaster, spellInfo, false);
+    Spell *spell = new Spell(spellCaster, spellInfo, false, user->GetGUID());
 
     // spell target is user of GO
     SpellCastTargets targets;

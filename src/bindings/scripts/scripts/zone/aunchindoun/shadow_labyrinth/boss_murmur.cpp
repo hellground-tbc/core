@@ -47,7 +47,6 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
     uint32 SonicShock_Timer;
     uint32 ThunderingStorm_Timer;
     bool HeroicMode;
-    bool SonicBoom;
 
     void Reset()
     {
@@ -57,11 +56,12 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
         MagneticPull_Timer = 20000;
         ThunderingStorm_Timer = 15000;
         SonicShock_Timer = 10000;
-        SonicBoom = false;
 
         //database should have `RegenHealth`=0 to prevent regen
         uint32 hp = (m_creature->GetMaxHealth()*40)/100;
-        if (hp) m_creature->SetHealth(hp);
+        if (hp)
+            m_creature->SetHealth(hp);
+
         m_creature->ResetPlayerDamageReq();
     }
 
@@ -71,7 +71,7 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
     void SpellHitTarget(Unit *target, const SpellEntry *spell)
     {
         if(target && target->isAlive() && spell && spell->Id == SPELL_SONIC_BOOM_EFFECT)
-            m_creature->DealDamage(target,(target->GetHealth()*90)/100,SPELL_DIRECT_DAMAGE,SPELL_SCHOOL_MASK_NATURE,spell);
+            m_creature->DealDamage(target, (target->GetHealth()*90)/100, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NATURE, spell);
     }
 
     void UpdateAI(const uint32 diff)
@@ -80,31 +80,12 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
         if (!UpdateVictim() || m_creature->IsNonMeleeSpellCasted(false))
             return;
 
-        // Sonic Boom
-        if(SonicBoom)
-        {
-            DoCast(m_creature, SPELL_SONIC_BOOM_EFFECT, true);
-            SonicBoom = false;
-            Resonance_Timer = 1500;
-        }
-
-        if(SonicBoom_Timer < diff)
-        {
-            DoScriptText(EMOTE_SONIC_BOOM, m_creature);
-            DoCast(m_creature, SPELL_SONIC_BOOM_CAST);
-            SonicBoom_Timer = 30000;
-            SonicBoom = true;
-            return;
-        }
-        else
-            SonicBoom_Timer -= diff;
-
         // Murmur's Touch
         if (MurmursTouch_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,80,true))
-                DoCast(target, SPELL_MURMURS_TOUCH);
-            
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80, true))
+                AddSpellToCast(target, SPELL_MURMURS_TOUCH);
+
             MurmursTouch_Timer = 30000;
         }
         else
@@ -115,33 +96,18 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
         {
             if(!m_creature->hasUnitState(UNIT_STAT_CASTING))
             {
-                Unit *target = SelectUnit(SELECT_TARGET_NEAREST,0,20,true);
+                Unit *target = SelectUnit(SELECT_TARGET_NEAREST, 0, 100, true);
 
                 if(target && !m_creature->IsWithinMeleeRange(target))
-                    DoCast(m_creature, SPELL_RESONANCE);
+                    AddSpellToCast(m_creature, SPELL_RESONANCE);
 
                 Resonance_Timer = 5000;
             }
             else
                 Resonance_Timer = 2000;
-
         }
         else
             Resonance_Timer -= diff;
-
-        // Magnetic Pull
-        if (MagneticPull_Timer < diff)
-        {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, 100, true))
-            {
-                DoCast(target, SPELL_MAGNETIC_PULL);
-                MagneticPull_Timer = 20000+rand()%15000;
-                return;
-            }
-            MagneticPull_Timer = 500;
-        }
-        else
-            MagneticPull_Timer -= diff;
 
         if(HeroicMode)
         {
@@ -152,8 +118,9 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
                 for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
                     if(Unit* target = Unit::GetUnit((*m_creature),(*i)->getUnitGuid()))
                         if(target->isAlive() && m_creature->GetDistance2d(target) > 35)
-                            DoCast(target, SPELL_THUNDERING_STORM, true);
-                ThunderingStorm_Timer = 15000;
+                            ForceSpellCast(target, SPELL_THUNDERING_STORM, DONT_INTERRUPT, true);
+
+                ThunderingStorm_Timer = 5000;
             }
             else
                 ThunderingStorm_Timer -= diff;
@@ -161,14 +128,40 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
             // Sonic Shock
             if(SonicShock_Timer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,20,false))
-                    DoCast(target, SPELL_SONIC_SHOCK);
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100,false))
+                    AddSpellToCast(target, SPELL_SONIC_SHOCK);
 
-                SonicShock_Timer = 10000+rand()%10000;
+                SonicShock_Timer = urand(10000, 20000);
             }
             else
                 SonicShock_Timer -= diff;
         }
+
+        // Magnetic Pull
+        if (MagneticPull_Timer < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, 100, true))
+            {
+                ForceSpellCast(target, SPELL_MAGNETIC_PULL);
+                MagneticPull_Timer = urand (20000, 35000);
+            }
+            MagneticPull_Timer = 500;
+        }
+        else
+            MagneticPull_Timer -= diff;
+
+        // Sonic Boom
+        if(SonicBoom_Timer < diff)
+        {
+            ForceSpellCast(m_creature, SPELL_SONIC_BOOM_EFFECT, DONT_INTERRUPT, true);
+            ForceSpellCastWithScriptText(m_creature, SPELL_SONIC_BOOM_CAST, EMOTE_SONIC_BOOM);
+            SonicBoom_Timer = 30000;
+            Resonance_Timer = 1500;
+        }
+        else
+            SonicBoom_Timer -= diff;
+
+        CastNextSpellIfAnyAndReady();
 
         // Select nearest most aggro target if top aggro too far
         if(!m_creature->isAttackReady())

@@ -37,7 +37,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
 {
-    boss_balindaAI(Creature *c) : ScriptedAI(c)
+    boss_balindaAI(Creature *c) : ScriptedAI(c), summons(c)
     {
         m_creature->GetPosition(wLoc);
     }
@@ -49,7 +49,7 @@ struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
     uint32 CastTimer;
     uint32 SpellId;
     WorldLocation wLoc;
-
+    SummonList summons;
 
     void Reset()
     {
@@ -59,6 +59,8 @@ struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
         CastTimer            = 0;
         SpellId             = 0;
         WaterElementalTimer = 0;
+
+        summons.DespawnAll();
     }
 
     void EnterCombat(Unit *who)
@@ -71,50 +73,27 @@ struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
         Reset();
     }
 
-    void KilledUnit(Unit* victim){}
-
-    void JustDied(Unit* Killer){}
-
-    void DoMeleeAttackIfReady()
+    void JustSummoned(Creature* summ)
     {
-        if(me->hasUnitState(UNIT_STAT_CASTING))
-            return;
-
-        // if SpellId then cast spell and has mana
-        if(SpellId && m_creature->GetPower(POWER_MANA) >= 800)
-            DoCast(m_creature->getVictim(), SpellId);
-        else // if not selected SpellId try to use melee attack
+        if (summ)
         {
-            //Make sure our attack is ready and we aren't currently casting before checking distance
-            if (me->isAttackReady())
-            {
-                //If we are within range melee the target
-                if (me->IsWithinMeleeRange(me->getVictim()))
-                {
-                    me->AttackerStateUpdate(me->getVictim());
-                    me->resetAttackTimer();
-                }
-            }
-            if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK))
-            {
-                //If we are within range melee the target
-                if (me->IsWithinMeleeRange(me->getVictim()))
-                {
-                    me->AttackerStateUpdate(me->getVictim(), OFF_ATTACK);
-                    me->resetAttackTimer(OFF_ATTACK);
-                }
-            }
+            summons.Summon(summ);
+            summ->setFaction(me->getFaction());
+            summ->SetLevel(me->getLevel());
+            summ->SetMaxHealth(6300 + (summ->getLevel() - 60)*360);
+            summ->SetPower(POWER_MANA, 6000 + (summ->getLevel() - 60)*300);
+            summ->AI()->AttackStart(me->getVictim());
         }
-}
+    }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
 
-        if(CheckTimer < diff)
+        if (CheckTimer < diff)
         {
-            if(!m_creature->IsWithinDistInMap(&wLoc, 20))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 20))
             {
                 m_creature->InterruptNonMeleeSpells(false);
                 EnterEvadeMode();
@@ -122,66 +101,70 @@ struct TRINITY_DLL_DECL boss_balindaAI : public ScriptedAI
             }
             CheckTimer = 2000;
         }
-        else CheckTimer -= diff;
+        else
+            CheckTimer -= diff;
 
-        if(WaterElementalTimer < diff)
+        if (WaterElementalTimer < diff)
         {
-            m_creature->InterruptNonMeleeSpells(false);
-            DoCast(m_creature, SPELL_WATER_ELEMENTAL);
+            ForceSpellCast(m_creature, SPELL_WATER_ELEMENTAL);
             WaterElementalTimer = 90000; // 90s
         }
-        else WaterElementalTimer -= diff;
+        else
+            WaterElementalTimer -= diff;
 
-        if(IceBlockTimer < diff)
+        if (IceBlockTimer < diff)
         {
-            if(!m_creature->HasAura(SPELL_HYPOTHERMIA, 0))
+            if (!m_creature->HasAura(SPELL_HYPOTHERMIA, 0))
             {
                 uint32 negativeAuras = m_creature->GetAurasAmountByType(SPELL_AURA_PERIODIC_DAMAGE) + m_creature->GetAurasAmountByType(SPELL_AURA_PERIODIC_LEECH);
                 // cast if no hypothermia && has 3 or more dot/leech auras
-                if(negativeAuras >= 3)
+                if (negativeAuras >= 3)
                 {
                     m_creature->InterruptNonMeleeSpells(false);
-                    DoCast(m_creature, SPELL_ICE_BLOCK);
-                    DoCast(m_creature, SPELL_HYPOTHERMIA, true);
+                    ForceSpellCast(m_creature, SPELL_HYPOTHERMIA, DONT_INTERRUPT, true);
+                    ForceSpellCast(m_creature, SPELL_ICE_BLOCK);
                     IceBlockTimer = 60000; // 60s
                 }
             }
         }
-        else IceBlockTimer -= diff;
+        else
+            IceBlockTimer -= diff;
 
         // update CoC timer
-        if(CoCTimer > diff)
+        if (CoCTimer > diff)
             CoCTimer -= diff;
-        else CoCTimer = 0;
+        else
+            CoCTimer = 0;
 
         // select spell
-        if(CastTimer < diff)
+        if (CastTimer < diff)
         {
             // if victim is in range of 6.5 yards and there are 3 attackers cast explosion or CoC if ready
-            if(m_creature->getAttackers().size() >= 3 && m_creature->IsWithinDistInMap(m_creature->getVictim(), 6.5f, false))
+            if (m_creature->getAttackers().size() >= 3 && m_creature->IsWithinDistInMap(m_creature->getVictim(), 6.5f, false))
             {
-                if(!CoCTimer)
+                if (!CoCTimer)
                 {
-                    SpellId = SPELL_CONE_OF_COLD;
-                    CoCTimer = 8000 + rand()%4000;
+                    ForceSpellCast(me->getVictim(), SPELL_CONE_OF_COLD);
+                    CoCTimer = urand(8000, 12000);
                     CastTimer = 0;
                 }
                 else
                 {
-                    SpellId = SPELL_ARCANE_EXPLOSION;
+                    ForceSpellCast(me->getVictim(), SPELL_ARCANE_EXPLOSION);
                     CastTimer = 2000;
                 }
             }
             else
             {
-                // if victim out of range cast frostbolt or fireball
-                SpellId = (rand()%2 == 0 ? SPELL_FROSTBOLT : SPELL_FIREBALL);
+                AddSpellToCast(m_creature->getVictim(), RAND(SPELL_FROSTBOLT, SPELL_FIREBALL));
                 CastTimer = 2500;
             }
         }
-        else CastTimer -= diff;
+        else
+            CastTimer -= diff;
 
-        DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
+        //DoMeleeAttackIfReady();
     }
 };
 
@@ -189,7 +172,6 @@ CreatureAI* GetAI_boss_balinda(Creature *_Creature)
 {
     return new boss_balindaAI (_Creature);
 }
-
 
 // WATER ELEMENTAL
 
@@ -201,28 +183,9 @@ struct TRINITY_DLL_DECL mob_av_water_elementalAI : public ScriptedAI
 
     void Reset() {}
 
-    void EnterCombat(Unit *who) {}
-
-    void JustRespawned()
+    void EnterCombat(Unit *who)
     {
-        if(Unit *owner = m_creature->GetOwner())
-        {
-            m_creature->setFaction(owner->getFaction());
-            m_creature->SetLevel(owner->getLevel());
-            m_creature->SetMaxHealth(6300 + (m_creature->getLevel() - 60)*360);
-            m_creature->SetPower(POWER_MANA, 6000 + (m_creature->getLevel() - 60)*300);
-        }
-        Reset();
-    }
-
-    void KilledUnit(Unit* victim){}
-
-    void JustDied(Unit* Killer){}
-
-    void DoMeleeAttackIfReady()
-    {
-        if(!me->hasUnitState(UNIT_STAT_CASTING))
-            DoCast(m_creature->getVictim(), SPELL_WATER_BOLT);
+        SetAutocast(SPELL_WATER_BOLT, 1000, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -230,7 +193,7 @@ struct TRINITY_DLL_DECL mob_av_water_elementalAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady(diff);
     }
 };
 

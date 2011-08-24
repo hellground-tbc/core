@@ -53,7 +53,7 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket & /*recv_data*/)
 {
     sLog.outDebug("WORLD: Recvd CMSG_REPOP_REQUEST Message");
 
-    if (GetPlayer()->isAlive()||GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (GetPlayer()->isAlive() || GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     // the world update order is sessions, players, creatures
@@ -68,7 +68,7 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket & /*recv_data*/)
     }
 
     //this is spirit release confirm?
-    GetPlayer()->RemovePet(NULL,PET_SAVE_NOT_IN_SLOT, true);
+    GetPlayer()->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
     GetPlayer()->BuildPlayerRepop();
     GetPlayer()->RepopAtGraveyard();
 }

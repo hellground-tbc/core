@@ -71,17 +71,19 @@ struct TRINITY_DLL_DECL boss_venoxisAI : public ScriptedAI
 
         PhaseTwo = false;
         InBerserk= false;
+        pInstance->SetData(DATA_VENOXISEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        pInstance->SetData(DATA_VENOXISEVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
         if(pInstance)
-            pInstance->SetData(DATA_VENOXIS_DEATH, 0);
+            pInstance->SetData(DATA_VENOXISEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

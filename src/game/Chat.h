@@ -351,6 +351,7 @@ class ChatHandler
         bool HandlePLimitCommand(const char* args);
         bool HandleMuteCommand(const char* args);
         bool HandleUnmuteCommand(const char* args);
+        bool HandleMuteInfoCommand(const char* args);
         bool HandleMovegensCommand(const char* args);
         bool HandleFreezeCommand(const char *args);
         bool HandleUnFreezeCommand(const char *args);
@@ -454,6 +455,7 @@ class ChatHandler
         bool HandleGMTicketCommentCommand(const char* args);
         bool HandleGMTicketDeleteByIdCommand(const char* args);
         bool HandleGMTicketReloadCommand(const char*);
+        bool HandleGMTicketHistoryCommand(const char* args);
 
         bool HandleMaxSkillCommand(const char* args);
         bool HandleSetSkillCommand(const char* args);

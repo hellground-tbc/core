@@ -322,7 +322,16 @@ enum TrinityStrings
     LANG_CREATURE_NOT_FOLLOW_YOU_NOW    = 342,
     LANG_CREATURE_NON_TAMEABLE          = 343,
     LANG_YOU_ALREADY_HAVE_PET           = 344,
-    // Room for more level 2              345-399 not used
+
+    LANG_YOUR_CHAT_IS_DISABLED          = 345,
+    LANG_MUTEINFO_NOCHARACTER           = 346,
+    LANG_MUTEINFO_NOACCOUNTMUTE         = 347,
+    LANG_MUTEINFO_MUTEHISTORY           = 348,
+    LANG_MUTEINFO_HISTORYENTRY          = 349,
+    LANG_MUTEINFO_YES                   = 350,
+    LANG_MUTEINFO_NO                    = 351,
+
+    // Room for more level 2              346-399 not used
 
     // level 3 chat
     LANG_SCRIPTS_RELOADED               = 400,

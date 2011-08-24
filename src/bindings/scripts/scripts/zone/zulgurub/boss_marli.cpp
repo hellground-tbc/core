@@ -71,18 +71,20 @@ struct TRINITY_DLL_DECL boss_marliAI : public ScriptedAI
 
         Spawned = false;
         PhaseTwo = false;
+        pInstance->SetData(DATA_MARLIEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+        pInstance->SetData(DATA_MARLIEVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
         if(pInstance)
-            pInstance->SetData(DATA_MARLI_DEATH, 0);
+            pInstance->SetData(DATA_MARLIEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

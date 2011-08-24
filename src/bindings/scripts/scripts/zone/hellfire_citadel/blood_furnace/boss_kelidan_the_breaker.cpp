@@ -231,6 +231,9 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
 
             DoScriptText(SAY_NOVA, m_creature);
 
+            if (HeroicMode)
+                ForceSpellCast(me, SPELL_VORTEX, INTERRUPT_AND_CAST_INSTANTLY);
+
             if (SpellEntry *nova = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_BURNING_NOVA))
             {
                 for (uint32 i = 0; i < 3; ++i)
@@ -242,9 +245,6 @@ struct TRINITY_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
                     }
                 }
             }
-
-            if (HeroicMode)
-                ForceSpellCast(me, SPELL_VORTEX);
 
             BurningNova_Timer = urand(20000, 28000);
             Firenova_Timer= 6500;

@@ -1282,9 +1282,6 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     Creature* creatureTarget = (Creature*)unitTarget;
-                    if (creatureTarget->isPet())
-                        return;
-
                     creatureTarget->setDeathState(JUST_DIED);
                     creatureTarget->RemoveCorpse();
                     creatureTarget->SetHealth(0);                   // just for nice GM-mode view
@@ -1780,6 +1777,10 @@ void Spell::EffectDummy(uint32 i)
                     }
                     break;
                 }
+                // Summon Thelrin DND (Banner of Provocation)
+                case 27517:
+                    m_caster->SummonCreature(16059, 590.6309, -181.061, -53.90, 5.33, TEMPSUMMON_DEAD_DESPAWN, 0);
+                    break;
             }
 
             //All IconID Check in there
@@ -1937,7 +1938,7 @@ void Spell::EffectDummy(uint32 i)
                     return;
 
                 spell_id = 20647;
-                bp = damage + int32(m_caster->GetPower(POWER_RAGE) * m_spellInfo->DmgMultiplier[i]);
+                bp = damage + int32((m_caster->GetPower(POWER_RAGE) - GetPowerCost()) * m_spellInfo->DmgMultiplier[i]);
                 m_caster->SetPower(POWER_RAGE,0);
                 break;
             }
@@ -3539,7 +3540,7 @@ void Spell::EffectEnergize(uint32 i)
         return;
 
     int32 gain = unitTarget->ModifyPower(power,damage);
-    
+
     //No threat from life tap
     if (m_spellInfo->Id != 31818)
         unitTarget->getHostilRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
@@ -6222,6 +6223,95 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             unitTarget->CastSpell(unitTarget, 50493, true);
             return;
         }
+        // Cleansing Flames
+        case 29137: // Stormwind
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player * tmpPl = (Player*)unitTarget;
+                // check horde only quest status: Stealing Stormwind's Flame
+                if (tmpPl->GetTeam() == HORDE)
+                    if (tmpPl->GetQuestStatus(9330) != QUEST_STATUS_COMPLETE && !tmpPl->GetQuestRewardStatus(9330))
+                        if (!tmpPl->HasItemCount(23182, 1, true))
+                            tmpPl->CastSpell(tmpPl, 29101, true);
+            }
+            break;
+        case 29126: // Darnasus
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player * tmpPl = (Player*)unitTarget;
+                // check horde only quest status: Stealing Darnasus's Flame
+                if (tmpPl->GetTeam() == HORDE)
+                    if (tmpPl->GetQuestStatus(9332) != QUEST_STATUS_COMPLETE && !tmpPl->GetQuestRewardStatus(9332))
+                        if (!tmpPl->HasItemCount(23184, 1, true))
+                            tmpPl->CastSpell(tmpPl, 29099, true);
+            }
+            break;
+        case 29135: // Ironforge
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player * tmpPl = (Player*)unitTarget;
+                // check horde only quest status: Stealing Ironforge's Flame
+                if (tmpPl->GetTeam() == HORDE)
+                    if (tmpPl->GetQuestStatus(9331) != QUEST_STATUS_COMPLETE && !tmpPl->GetQuestRewardStatus(9331))
+                        if (!tmpPl->HasItemCount(23183, 1, true))
+                            tmpPl->CastSpell(tmpPl, 29102, true);
+            }
+            break;
+        case 29136: // Orgrimmar
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player * tmpPl = (Player*)unitTarget;
+                // check alliance only quest status: Stealing Orgrimmar's Flame
+                if (tmpPl->GetTeam() == ALLIANCE)
+                    if (tmpPl->GetQuestStatus(9324) != QUEST_STATUS_COMPLETE && !tmpPl->GetQuestRewardStatus(9324))
+                        if (!tmpPl->HasItemCount(23179, 1, true))
+                            tmpPl->CastSpell(tmpPl, 29130, true);
+            }
+            break;
+        case 46672: // Silvermoon
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player * tmpPl = (Player*)unitTarget;
+                // check alliance only quest status: Stealing Silvermoon's Flame
+                if (tmpPl->GetTeam() == ALLIANCE)
+                    if (tmpPl->GetQuestStatus(11935) != QUEST_STATUS_COMPLETE && !tmpPl->GetQuestRewardStatus(11935))
+                        if (!tmpPl->HasItemCount(35568, 1, true))
+                            tmpPl->CastSpell(tmpPl, 46689, true);
+            }
+            break;
+        case 29138: // Thunder Bluff
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player * tmpPl = (Player*)unitTarget;
+                // check alliance only quest status: Stealing Thunder Bluff's Flame
+                if (tmpPl->GetTeam() == ALLIANCE)
+                    if (tmpPl->GetQuestStatus(9325) != QUEST_STATUS_COMPLETE && !tmpPl->GetQuestRewardStatus(9325))
+                        if (!tmpPl->HasItemCount(23180, 1, true))
+                            tmpPl->CastSpell(tmpPl, 29132, true);
+            }
+            break;
+        case 46671: // Exodar
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player * tmpPl = (Player*)unitTarget;
+                // check horde only quest status: Stealing the Exodar's Flame
+                if (tmpPl->GetTeam() == HORDE)
+                    if (tmpPl->GetQuestStatus(11933) != QUEST_STATUS_COMPLETE && !tmpPl->GetQuestRewardStatus(11933))
+                        if (!tmpPl->HasItemCount(35569, 1, true))
+                            tmpPl->CastSpell(tmpPl, 46690, true);
+            }
+            break;
+        case 29139: // Undercity
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player * tmpPl = (Player*)unitTarget;
+                // check alliance only quest status: Stealing the Undercity's Flame
+                if (tmpPl->GetTeam() == ALLIANCE)
+                    if (tmpPl->GetQuestStatus(9326) != QUEST_STATUS_COMPLETE && !tmpPl->GetQuestRewardStatus(9326))
+                        if (!tmpPl->HasItemCount(23181, 1, true))
+                            tmpPl->CastSpell(tmpPl, 29133, true);
+            }
+            break;
     }
 
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
@@ -7178,7 +7268,8 @@ void Spell::EffectPlayerPull(uint32 i)
     if (damage && dist > damage)
         dist = damage;
 
-    unitTarget->KnockBackFrom(m_caster,-dist,float(m_spellInfo->EffectMiscValue[i])/10);}
+    unitTarget->KnockBackFrom(m_caster, -dist, m_spellInfo->EffectMiscValue[i]/100.0);
+}
 
 void Spell::EffectDispelMechanic(uint32 i)
 {

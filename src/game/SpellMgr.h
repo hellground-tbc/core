@@ -405,6 +405,9 @@ inline bool IsDeathOnlySpell(SpellEntry const *spellInfo)
 
 inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
 {
+    if (!spellInfo)
+        return false;
+
     switch (spellInfo->Id)
     {
         case 40214:                                     // Dragonmaw Illusion

@@ -46,6 +46,14 @@ struct TRINITY_DLL_DECL boss_pyroguard_emberseerAI : public ScriptedAI
     {
     }
 
+    void JustDied(Unit* killer)
+    {
+        if(GameObject* door = FindGameObject(175153, 100, killer))
+        {
+            door->Use(killer);
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target

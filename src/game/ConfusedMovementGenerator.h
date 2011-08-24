@@ -26,7 +26,7 @@
 #include "Traveller.h"
 
 #define WANDER_DISTANCE    5.0f
-#define MAX_CONF_WAYPOINTS 15
+#define MAX_CONF_WAYPOINTS 6
 
 template<class T>
 class TRINITY_DLL_SPEC ConfusedMovementGenerator

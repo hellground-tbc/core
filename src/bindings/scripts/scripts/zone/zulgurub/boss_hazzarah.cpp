@@ -29,22 +29,33 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_hazzarahAI : public ScriptedAI
 {
-    boss_hazzarahAI(Creature *c) : ScriptedAI(c) {}
+    boss_hazzarahAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
 
     uint32 ManaBurn_Timer;
     uint32 Sleep_Timer;
     uint32 Illusions_Timer;
     Creature* Illusion;
+    ScriptedInstance * pInstance;
 
     void Reset()
     {
         ManaBurn_Timer = 4000 + rand()%6000;
         Sleep_Timer = 10000 + rand()%8000;
         Illusions_Timer = 10000 + rand()%8000;
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -57,14 +68,18 @@ struct TRINITY_DLL_DECL boss_hazzarahAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(),SPELL_MANABURN);
             ManaBurn_Timer = 8000 + rand()%8000;
-        }else ManaBurn_Timer -= diff;
+        }
+        else
+            ManaBurn_Timer -= diff;
 
         //Sleep_Timer
         if (Sleep_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_SLEEP);
             Sleep_Timer = 12000 + rand()%8000;
-        }else Sleep_Timer -= diff;
+        }
+        else
+            Sleep_Timer -= diff;
 
         //Illusions_Timer
         if (Illusions_Timer < diff)
@@ -84,7 +99,9 @@ struct TRINITY_DLL_DECL boss_hazzarahAI : public ScriptedAI
             }
 
             Illusions_Timer = 15000 + rand()%10000;
-        }else Illusions_Timer -= diff;
+        }
+        else
+            Illusions_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

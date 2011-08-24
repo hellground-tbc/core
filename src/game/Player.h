@@ -1136,7 +1136,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void AddArmorProficiency(uint32 newflag) { m_ArmorProficiency |= newflag; }
         uint32 GetWeaponProficiency() const { return m_WeaponProficiency; }
         uint32 GetArmorProficiency() const { return m_ArmorProficiency; }
-        bool IsInFeralForm() const { return m_form == FORM_CAT || m_form == FORM_BEAR || m_form == FORM_DIREBEAR || m_form == FORM_GHOSTWOLF; }
+        bool IsInFeralForm(bool checkGhostWolf = false) const { return m_form == FORM_CAT || m_form == FORM_BEAR || m_form == FORM_DIREBEAR || (checkGhostWolf && m_form == FORM_GHOSTWOLF); }
         bool IsUseEquipedWeapon(bool mainhand) const
         {
             // disarm applied only to mainhand weapon
@@ -1663,6 +1663,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only);
 
         static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true);
+        static void DeleteCharacterInfoFromDB(uint32 playerGUIDLow);
 
         Corpse *GetCorpse() const;
         void SpawnCorpseBones();
@@ -1696,6 +1697,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void CleanupChannels();
         void UpdateLocalChannels(uint32 newZone);
         void LeaveLFGChannel();
+        void JoinLFGChannel();
 
         void UpdateDefense();
         void UpdateWeaponSkill (WeaponAttackType attType);

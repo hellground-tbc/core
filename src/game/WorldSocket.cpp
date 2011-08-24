@@ -693,11 +693,11 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "v, "               //6
                                 "s, "               //7
                                 "expansion, "       //8
-                                "mutetime, "        //9
-                                "locale, "          //10
-                                "speciallogs, "     //11
-                                "opcodesDisabled, " //12
-                                "operatingSystem "  //13
+                                "locale, "          //9
+                                "speciallogs, "     //10
+                                "opcodesDisabled, " //11
+                                "operatingSystem, " //12
+                                "last_local_ip "    //13
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -716,7 +716,8 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     Field* fields = result->Fetch ();
 
-    uint8 operatingSystem = fields[13].GetUInt8();
+    std::string lastLocalIp = fields[13].GetString();
+    uint8 operatingSystem = fields[12].GetUInt8();
     uint8 expansion = fields[8].GetUInt8();
     uint32 world_expansion = sWorld.getConfig(CONFIG_EXPANSION);
     if (expansion > world_expansion)
@@ -792,14 +793,12 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     security = fields[1].GetUInt16 ();
     K.SetHexStr (fields[2].GetString ());
 
-    time_t mutetime = time_t (fields[9].GetUInt64 ());
-
-    locale = LocaleConstant (fields[10].GetUInt8 ());
+    locale = LocaleConstant (fields[9].GetUInt8 ());
     if (locale >= MAX_LOCALE)
         locale = LOCALE_enUS;
 
-    uint64 speciallogs = fields[11].GetUInt64();
-    uint16 opcDis = fields[12].GetUInt16();
+    uint64 speciallogs = fields[10].GetUInt64();
+    uint16 opcDis = fields[11].GetUInt16();
 
     // Re-check account ban (same check as in realmd)
     QueryResultAutoPtr banresult =
@@ -876,11 +875,42 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             address.c_str (),
                             safe_account.c_str ());
 
+    LoginDatabase.Execute("UPDATE account_mute SET active = 0 WHERE unmutedate <= UNIX_TIMESTAMP()");
+
+    QueryResultAutoPtr muteresult =
+          LoginDatabase.PQuery ("SELECT "
+                                "unmutedate, "
+                                "mutereason "
+                                "FROM account_mute "
+                                "WHERE id = '%u' "
+                                "AND active = 1 "
+                                "ORDER BY unmutedate DESC LIMIT 1",
+                                id);
+
+    time_t mutetime;
+    std::string mutereason;
+
+    if (muteresult)
+    {
+        Field* mutefields = muteresult->Fetch ();
+        mutetime = time_t(mutefields[0].GetUInt64());
+        mutereason = mutefields[1].GetString();
+    }
+    else
+    {
+        mutetime = 0;
+        mutereason = "";
+    }
+
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale, speciallogs, opcDis), -1);
+    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, locale, mutetime, mutereason, speciallogs, opcDis), -1);
 
     m_Crypt.SetKey (&K);
     m_Crypt.Init ();
+
+    LoginDatabase.escape_string(lastLocalIp);
+
+    LoginDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
 
     m_Session->InitWarden(&K, operatingSystem);
 

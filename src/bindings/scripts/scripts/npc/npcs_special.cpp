@@ -38,6 +38,7 @@ npc_mojo                    100%    AI for companion Mojo (summoned by item: 339
 npc_master_omarion          100%    Master Craftsman Omarion, patterns menu
 npc_lorekeeper_lydros       100%    Dialogue (story) + add A Dull and Flat Elven Blade
 npc_crashin_thrashin_robot  100%    AI for Crashin' Thrashin' Robot from engineering
+npc_lurky                   100%    AI for Lurky, Blue Murloc and Pink Murloc
 EndContentData */
 
 #include "precompiled.h"
@@ -1164,6 +1165,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
             }
         }
     }
+
     void JustSummoned(Creature *add)
     {
        if(add)
@@ -1178,6 +1180,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
     {
         SummonAdvisor();
     }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -1963,9 +1966,11 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
     uint32 checkTimer;
     uint32 moveTimer;
     uint32 despawnTimer;
+    uint32 waitTimer;
 
     void Reset()
     {
+        waitTimer = 5000;
         machineGunTimer = urand(1000, 3000);
         netTimer = urand(10000, 20000);
         electricalTimer = urand(5000, 35000);
@@ -2012,6 +2017,16 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (waitTimer)
+        {
+            if (waitTimer <= diff)
+                waitTimer = 0;
+            else
+                waitTimer -= diff;
+
+            return;
+        }
+
         if (!m_creature->isAlive())
             return;
 
@@ -2046,14 +2061,26 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (!m_creature->HasAura(SPELL_NET, 0))
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
-            if (!otherCrashinTrashinRobots.empty())
+            int count = otherCrashinTrashinRobots.size();
+
+            if (count)
             {
                 float x, y, z;
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
+
+                if (count > 1)
+                    advance(itr, rand()%(count - 1));
+
                 Creature * tmp = *(itr);
 
-                me->GetNearPoint(tmp, x, y, z, 0, 2.5f, (rand()%(int)(me->GetAngle(tmp) * 100))/100.0);
+                int radius = me->GetAngle(tmp) * 100;
+                radius = rand()%radius;
+                float fRadius = radius/100.0;
+
+                if (fRadius <= 0)
+                    fRadius = 0.1;
+
+                tmp->GetNearPoint(tmp, x, y, z, 0, 5.0f, fRadius);
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
@@ -2068,10 +2095,15 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (otherCrashinTrashinRobots.empty())
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
-            if (!otherCrashinTrashinRobots.empty())
+            int count = otherCrashinTrashinRobots.size();
+
+            if (count)
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
+
+                if (count > 1)
+                    advance(itr, rand()%(count - 1));
+
                 AddSpellToCast(*itr, SPELL_MACHINE_GUN, false, true);
             }
 
@@ -2085,10 +2117,15 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (otherCrashinTrashinRobots.empty())
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
-            if (!otherCrashinTrashinRobots.empty())
+            int count = otherCrashinTrashinRobots.size();
+
+            if (count)
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
+
+                if (count > 1)
+                    advance(itr, rand()%(count - 1));
+
                 AddSpellToCast(*itr, SPELL_NET, false, true);
             }
 
@@ -2102,10 +2139,14 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             if (otherCrashinTrashinRobots.empty())
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
-            if (!otherCrashinTrashinRobots.empty())
+            int count = otherCrashinTrashinRobots.size();
+
+            if (count)
             {
                 itr = otherCrashinTrashinRobots.begin();
-                advance(itr, rand()%(otherCrashinTrashinRobots.size() - 1));
+                if (count > 1)
+                    advance(itr, rand()%(count - 1));
+
                 AddSpellToCast(*itr, SPELL_ELECTRICAL, false, true);
             }
 
@@ -2121,6 +2162,110 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
 CreatureAI* GetAI_npc_crashin_trashin_robot(Creature* pCreature)
 {
     return new npc_crashin_trashin_robotAI(pCreature);
+}
+
+/*########
+# npc_lurky
+#########*/
+
+#define MIN_DANCE_TIMER             30000
+#define MAX_DANCE_TIMER             300000
+#define SPELL_BABY_MURLOC_DANCE     25165
+
+struct TRINITY_DLL_DECL npc_lurkyAI : public ScriptedAI
+{
+    npc_lurkyAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 danceTimer;
+    bool inDance;
+
+    void Reset()
+    {
+        inDance = false;
+        danceTimer = urand(MIN_DANCE_TIMER, MAX_DANCE_TIMER);
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+    }
+
+    void OnAuraRemove(Aura* aur, bool stackRemove)
+    {
+        if (aur->GetId() == SPELL_BABY_MURLOC_DANCE)
+        {
+            inDance = false;
+            danceTimer = urand(MIN_DANCE_TIMER, MAX_DANCE_TIMER);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (inDance || m_creature->hasUnitState(UNIT_STAT_MOVE))
+            return;
+
+        if (danceTimer < diff)
+        {
+            inDance = true;
+            m_creature->CastSpell(m_creature, SPELL_BABY_MURLOC_DANCE, false);
+            m_creature->HandleEmoteCommand(EMOTE_STATE_DANCE);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_lurky(Creature* pCreature)
+{
+    return new npc_lurkyAI(pCreature);
+}
+
+/*########
+# npc_Oozeling
+#########*/
+
+#define GO_DARK_IRON_ALE_MUG    165578
+
+struct TRINITY_DLL_DECL pet_AleMugDrinkerAI : public ScriptedAI
+{
+    pet_AleMugDrinkerAI(Creature *c) : ScriptedAI(c){}
+
+    uint32 wait;
+    bool aleMug_drink;
+
+    void Reset()
+    {
+        wait = 0;
+        aleMug_drink = false;
+        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+    }
+
+    void SpellHit(Unit * caster, const SpellEntry * spell)
+    {
+        if(spell->Id == 14813 && caster)
+        {
+            wait = 3000;
+            aleMug_drink = true;
+            float x, y, z;
+            caster->GetPosition(x,y,z);
+            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+        }
+    } 
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!aleMug_drink)
+            return;
+
+        if (wait < diff)
+        {
+            if (GameObject* mug = FindGameObject(GO_DARK_IRON_ALE_MUG, 20.0, me))
+                mug->Delete();
+            Reset();
+        }
+        else wait -= diff;
+    }
+};
+
+CreatureAI* GetAI_pet_AleMugDrinker(Creature* pCreature)
+{
+    return new pet_AleMugDrinkerAI(pCreature);
 }
 
 void AddSC_npcs_special()
@@ -2247,5 +2392,15 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_crashin_trashin_robot";
     newscript->GetAI = &GetAI_npc_crashin_trashin_robot;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_lurky";
+    newscript->GetAI = &GetAI_npc_lurky;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="pet_AleMugDrinker";
+    newscript->GetAI = GetAI_pet_AleMugDrinker;
     newscript->RegisterSelf();
 }

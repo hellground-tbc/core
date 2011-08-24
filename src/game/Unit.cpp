@@ -445,7 +445,7 @@ bool Unit::haveOffhandWeapon() const
 void Unit::SendMonsterMoveWithSpeedToCurrentDestination(Player* player)
 {
     float x, y, z;
-    if (GetMotionMaster()->GetDestination(x, y, z))
+    if (!IsStopped() && GetMotionMaster()->GetDestination(x, y, z))
         SendMonsterMoveWithSpeed(x, y, z, 0, player);
 }
 
@@ -1708,7 +1708,7 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
         }
     }
 
-    if (GetTypeId() == TYPEID_PLAYER && !((Player *)this)->IsInFeralForm())
+    if (GetTypeId() == TYPEID_PLAYER && !((Player *)this)->IsInFeralForm(true))
         ((Player *)this)->CastItemCombatSpell(pVictim, damageInfo->attackType, damageInfo->procVictim, damageInfo->procEx);
 
     // Do effect if any damage done to target
@@ -3082,7 +3082,7 @@ uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) 
             return 0;
         }
 
-        if (((Player*)this)->IsInFeralForm())
+        if (((Player*)this)->IsInFeralForm(true))
             return GetMaxSkillValueForLevel();              // always maximized SKILL_FERAL_COMBAT in fact
 
         // weapon skill or (unarmed for base attack)
@@ -3648,7 +3648,7 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_
 bool Unit::AddAura(Aura *Aur)
 {
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
-    if (!isAlive() && Aur->GetId() != 20584 && Aur->GetId() != 8326 && Aur->GetId() != 2584 && Aur->GetId() != 37128 &&
+    if (!isAlive() && !IsDeathPersistentSpell(Aur->GetSpellProto()) &&
         (GetTypeId()!=TYPEID_PLAYER || !((Player*)this)->GetSession()->PlayerLoading()))
     {
         delete Aur;
@@ -4909,8 +4909,16 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (!target)
                         return false;
 
-                    if (procSpell && procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
-                        return false;
+                    if (procSpell)
+                    {
+                        // instead of returning false need to transfer normal swing damage amount
+                        if (procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
+                            return false;
+
+                        // Limit WhirlWind to hit one target applying 1s cooldown
+                        if (procSpell->SpellFamilyName == SPELLFAMILY_WARRIOR && procSpell->SpellFamilyFlags & 0x400000000LL)
+                            cooldown = 1;
+                    }
 
                     triggered_spell_id = 12723;
                     basepoints0 = damage;
@@ -5908,7 +5916,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // Windfury Weapon (Passive) 1-5 Ranks
                 case 33757:
                 {
-                    if (GetTypeId()!=TYPEID_PLAYER)
+                    if (GetTypeId() != TYPEID_PLAYER || ((Player*)this)->IsInFeralForm(true))
                         return false;
 
                     if (!castItem || !castItem->IsEquipped())
@@ -5917,8 +5925,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (triggeredByAura && castItem->GetGUID() != triggeredByAura->GetCastItemGUID())
                         return false;
 
+                    static const uint32 WF_RANK_1 = 33757;
                     // custom cooldown processing case
-                    if (cooldown && ((Player*)this)->HasSpellCooldown(dummySpell->Id))
+                    if (cooldown && ((Player*)this)->HasSpellCooldown(WF_RANK_1))
                         return false;
 
                     uint32 spellId;
@@ -5963,11 +5972,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
                     // apply cooldown before cast to prevent processing itself
                     if (cooldown)
-                        ((Player*)this)->AddSpellCooldown(dummySpell->Id,0,time(NULL) + cooldown);
+                        ((Player*)this)->AddSpellCooldown(WF_RANK_1,0,time(NULL) + cooldown);
 
                     // Attack Twice
-                    for (uint32 i = 0; i<2; ++i)
-                        CastCustomSpell(pVictim,triggered_spell_id,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
+                    for (uint32 i = 0; i<2; ++i)                                                   // if we set castitem it will force our m_cantrigger = true to false for windfury weapon due to later checks in prepareDataForTriggerSystem()
+                        CastCustomSpell(pVictim,triggered_spell_id,&basepoints0,NULL,NULL,true,NULL/*castItem*/,triggeredByAura);
 
                     return true;
                 }
@@ -10038,8 +10047,8 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
 
     float mod = 1.0f;
 
-    // Some diminishings applies to mobs too (for example, Stun)
-    if ((GetDiminishingReturnsGroupType(group) == DRTYPE_PLAYER && (targetOwner ? targetOwner->GetTypeId():GetTypeId())  == TYPEID_PLAYER) || GetDiminishingReturnsGroupType(group) == DRTYPE_ALL)
+    // Some diminishings applies to mobs too (for example, Stun)                                                                                                                                     // Freezing trap exception, since it is casted by GO ?
+    if ((GetDiminishingReturnsGroupType(group) == DRTYPE_PLAYER && (targetOwner ? targetOwner->GetTypeId() : GetTypeId())  == TYPEID_PLAYER) || GetDiminishingReturnsGroupType(group) == DRTYPE_ALL || (tSpell && tSpell->SpellFamilyName == SPELLFAMILY_HUNTER && tSpell->SpellFamilyFlags & 0x00000000008LL))
     {
         DiminishingLevels diminish = Level;
         switch (diminish)
@@ -12753,11 +12762,11 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
 
 void Unit::AddAura(uint32 spellId, Unit* target)
 {
-    if (!target || (!target->isAlive() && spellId != 37128))
+    if (!target)
         return;
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
-    if (!spellInfo)
+    if (!spellInfo || (!target->isAlive() && !IsDeathPersistentSpell(spellInfo)))
         return;
 
     if (target->IsImmunedToSpell(spellInfo))

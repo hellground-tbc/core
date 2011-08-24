@@ -775,7 +775,7 @@ struct npc_anachronosAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (100 * m_creature->GetHealth()/m_creature->GetMaxHealth() < 20)
+            if (m_creature->GetHealth()/(float)m_creature->GetMaxHealth() < 0.2)
             {
                 m_creature->Yell("A terrible and costly mistake you have made. It is not my time, mortals.", LANG_UNIVERSAL, NULL);
                 m_creature->SetVisibility(VISIBILITY_OFF);

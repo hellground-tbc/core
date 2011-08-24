@@ -69,6 +69,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         HeroicMode = c->GetMap()->IsHeroic();
+        c->setActive(true);
     }
 
     ScriptedInstance *pInstance;
@@ -182,7 +183,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
         else
             DamageMelee_Timer = 1000;
     }
-    
+
 
     void JustDied(Unit* Killer)
     {
@@ -297,6 +298,7 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         HeroicMode = c->GetMap()->IsHeroic();
+        c->setActive(true);
     }
 
     ScriptedInstance *pInstance;
@@ -324,8 +326,6 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         else if (mPortalCount > 12)
             mWaveId = 2;
         else mWaveId = 1;
-
-        m_creature->setActive(true);
 
     }
     void EnterCombat(Unit *who) {}
@@ -429,6 +429,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         HeroicMode = c->GetMap()->IsHeroic();
+        c->setActive(true);
     }
 
     ScriptedInstance *pInstance;
@@ -439,7 +440,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
     uint32 Spell_Timer2;
     uint32 Spell_Timer3;
     uint32 Spell_Timer4;
-    
+
     uint8 Type;
     bool aggro;
     bool frenzy;
@@ -702,7 +703,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                     }
                     else
                         Spell_Timer2 -= diff;
-                    
+
                     if(Spell_Timer3 < diff)    //harmstring
                     {
                         DoCast(m_creature->getVictim(), 9080, true);

@@ -80,6 +80,9 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     uint32 notspeaktime = (uint32) atoi(timetonotspeak);
 
+    if (notspeaktime == 0)
+        return false;
+
     if (!normalizePlayerName(cname))
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -121,10 +124,24 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     time_t mutetime = time(NULL) + notspeaktime*60;
 
-    if (chr)
-        chr->GetSession()->m_muteTime = mutetime;
+    LoginDatabase.escape_string(mutereasonstr);
 
-    LoginDatabase.PExecute("UPDATE account SET mutetime = " UI64FMTD " WHERE id = '%u'",uint64(mutetime), account_id);
+    if (chr)
+    {
+        chr->GetSession()->m_muteTime = mutetime;
+        chr->GetSession()->m_muteReason = mutereasonstr;
+    }
+
+    std::string author;
+
+    if (m_session)
+        author = m_session->GetPlayerName();
+    else
+        author = "[CONSOLE]";
+
+    LoginDatabase.escape_string(author);
+
+    LoginDatabase.PExecute("INSERT INTO account_mute VALUES ('%u', UNIX_TIMESTAMP(), '" UI64FMTD "', '%s', '%s', '1')", account_id, uint64(mutetime), author.c_str(), mutereasonstr.c_str());
 
     if (chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notspeaktime, mutereasonstr.c_str());
@@ -195,14 +212,73 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
         }
 
         chr->GetSession()->m_muteTime = 0;
+        chr->GetSession()->m_muteReason = "";
     }
 
-    LoginDatabase.PExecute("UPDATE account SET mutetime = '0' WHERE id = '%u'", account_id);
+    LoginDatabase.PExecute("UPDATE account_mute SET active = '0' WHERE id = '%u'", account_id);
 
     if (chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_ENABLED);
 
     PSendSysMessage(LANG_YOU_ENABLE_CHAT, cname.c_str());
+    return true;
+}
+
+bool ChatHandler::HandleMuteInfoCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    char* cname = strtok ((char*)args, "");
+    if (!cname)
+        return false;
+
+    std::string name = cname;
+    if (!normalizePlayerName(name))
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 accountid = objmgr.GetPlayerAccountIdByPlayerName(name);
+    if (!accountid)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    std::string accountname;
+    if (!accmgr.GetName(accountid,accountname))
+    {
+        PSendSysMessage(LANG_MUTEINFO_NOCHARACTER);
+        return true;
+    }
+
+    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(mutedate), unmutedate-mutedate, active, unmutedate, mutereason, mutedby FROM account_mute WHERE id = '%u' ORDER BY mutedate ASC", accountid);
+    if (!result)
+    {
+        PSendSysMessage(LANG_MUTEINFO_NOACCOUNTMUTE, accountname.c_str());
+        return true;
+    }
+
+    PSendSysMessage(LANG_MUTEINFO_MUTEHISTORY, accountname.c_str());
+    do
+    {
+        Field* fields = result->Fetch();
+
+        time_t unmutedate = time_t(fields[3].GetUInt64());
+        bool active = false;
+        if (fields[2].GetBool() && (fields[1].GetUInt64() == (uint64)0 ||unmutedate >= time(NULL)))
+            active = true;
+
+        std::string mutetime = secsToTimeString(fields[1].GetUInt64(), true);
+        PSendSysMessage(LANG_MUTEINFO_HISTORYENTRY,
+            fields[0].GetString(), mutetime.c_str(), active ? GetTrinityString(LANG_MUTEINFO_YES):GetTrinityString(LANG_MUTEINFO_NO), fields[4].GetString(), fields[5].GetString());
+    }
+    while(result->NextRow());
+
     return true;
 }
 
@@ -1801,6 +1877,8 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 total_player_time = 0;
     uint32 level = 0;
     uint32 latency = 0;
+    uint8 race;
+    uint8 Class;
 
     // get additional information from Player object
     if (target)
@@ -1812,11 +1890,13 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         total_player_time = target->GetTotalPlayedTime();
         level = target->getLevel();
         latency = target->GetSession()->GetLatency();
+        race = target->getRace();
+        Class = target->getClass();
     }
     // get additional information from DB
     else
     {
-        QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT totaltime FROM characters WHERE guid = '%u'", GUID_LOPART(targetGUID));
+        QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT totaltime, race, class FROM characters WHERE guid = '%u'", GUID_LOPART(targetGUID));
         if (!result)
         {
             SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1825,6 +1905,8 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         }
         Field *fields = result->Fetch();
         total_player_time = fields[0].GetUInt32();
+        race = fields[1].GetUInt8();
+        Class = fields[2].GetUInt8();
 
         Tokens data;
         if (!Player::LoadValuesArrayFromDB(data,targetGUID))
@@ -1865,11 +1947,38 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
 
     PSendSysMessage(LANG_PINFO_ACCOUNT, (target?"":GetTrinityString(LANG_OFFLINE)), name.c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, security, last_ip.c_str(), last_login.c_str(), latency);
 
+    std::string race_s, Class_s;
+        switch(race)
+        {
+            case RACE_HUMAN:            race_s = "Human";       break;
+            case RACE_ORC:              race_s = "Orc";         break;
+            case RACE_DWARF:            race_s = "Dwarf";       break;
+            case RACE_NIGHTELF:         race_s = "Night Elf";   break;
+            case RACE_UNDEAD_PLAYER:    race_s = "Undead";      break;
+            case RACE_TAUREN:           race_s = "Tauren";      break;
+            case RACE_GNOME:            race_s = "Gnome";       break;
+            case RACE_TROLL:            race_s = "Troll";       break;
+            case RACE_BLOODELF:         race_s = "Blood Elf";   break;
+            case RACE_DRAENEI:          race_s = "Draenei";     break;
+        }
+        switch(Class)
+        {
+            case CLASS_WARRIOR:         Class_s = "Warrior";        break;
+            case CLASS_PALADIN:         Class_s = "Paladin";        break;
+            case CLASS_HUNTER:          Class_s = "Hunter";         break;
+            case CLASS_ROGUE:           Class_s = "Rogue";          break;
+            case CLASS_PRIEST:          Class_s = "Priest";         break;
+            case CLASS_SHAMAN:          Class_s = "Shaman";         break;
+            case CLASS_MAGE:            Class_s = "Mage";           break;
+            case CLASS_WARLOCK:         Class_s = "Warlock";        break;
+            case CLASS_DRUID:           Class_s = "Druid";          break;
+        }
+
     std::string timeStr = secsToTimeString(total_player_time,true,true);
     uint32 gold = money /GOLD;
     uint32 silv = (money % GOLD) / SILVER;
     uint32 copp = (money % GOLD) % SILVER;
-    PSendSysMessage(LANG_PINFO_LEVEL,  timeStr.c_str(), level, gold,silv,copp);
+    PSendSysMessage(LANG_PINFO_LEVEL,  race_s.c_str(), Class_s.c_str(), timeStr.c_str(), level, gold,silv,copp);
 
     if (py && strncmp(py, "rep", 3) == 0)
     {

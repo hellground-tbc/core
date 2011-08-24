@@ -131,6 +131,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         {
             std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
             SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
+            ChatHandler(_player).PSendSysMessage(LANG_YOUR_CHAT_IS_DISABLED, timeStr.c_str(), m_muteReason.c_str());
             return;
         }
 
@@ -516,7 +517,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleEmoteOpcode(WorldPacket & recv_data)
 {
-    if (!GetPlayer()->isAlive())
+    if (!GetPlayer()->isAlive() || GetPlayer()->isPossessed() || GetPlayer()->isCharmed())
         return;
     CHECK_PACKET_SIZE(recv_data,4);
 
@@ -527,13 +528,14 @@ void WorldSession::HandleEmoteOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
 {
-    if (!GetPlayer()->isAlive())
+    if (!GetPlayer()->isAlive() || GetPlayer()->isPossessed() || GetPlayer()->isCharmed())
         return;
 
     if (!GetPlayer()->CanSpeak())
     {
         std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
+        ChatHandler(_player).PSendSysMessage(LANG_YOUR_CHAT_IS_DISABLED, timeStr.c_str(), m_muteReason.c_str());
         return;
     }
 

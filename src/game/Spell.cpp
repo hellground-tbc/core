@@ -334,6 +334,7 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
     m_IsTriggeredSpell = triggered;
     //m_AreaAura = false;
     m_CastItem = NULL;
+    m_castItemGUID = 0;
 
     unitTarget = NULL;
     itemTarget = NULL;
@@ -652,6 +653,9 @@ void Spell::prepareDataForTriggerSystem()
             m_procAttacker = PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT;
             if (m_attackType == OFF_ATTACK)
                 m_procAttacker |= PROC_FLAG_SUCCESSFUL_OFFHAND_HIT;
+            if (IsNextMeleeSwingSpell())
+                m_procAttacker |= PROC_FLAG_SUCCESSFUL_MELEE_HIT;
+
             m_procVictim   = PROC_FLAG_TAKEN_MELEE_SPELL_HIT;
             break;
         case SPELL_DAMAGE_CLASS_RANGED:
@@ -984,7 +988,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (missInfo != SPELL_MISS_REFLECT)
         {
             caster->ProcDamageAndSpell(unitTarget, procAttacker, procVictim, procEx, damageInfo.damage, m_attackType, m_spellInfo, m_canTrigger);
-            if (caster->GetTypeId() == TYPEID_PLAYER && !((Player *)caster)->IsInFeralForm())
+            if (caster->GetTypeId() == TYPEID_PLAYER && !((Player *)caster)->IsInFeralForm(true))
                 ((Player *)caster)->CastItemCombatSpell(unitTarget, m_attackType, procVictim, procEx, m_spellInfo);
         }
 
@@ -1099,7 +1103,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if (m_caster != unit)
     {
-        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID() && m_spellInfo->Id != 44877)   // exception for Living Flare Master
+        if (unit->GetCharmerOrOwnerGUID() != m_caster->GetGUID() && !CanIgnoreNotAttackableFlags())
         {
             if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             {
@@ -1167,8 +1171,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         DiminishingReturnsType type = GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
         if ((type == DRTYPE_PLAYER && unit->isCharmedOwnedByPlayerOrPlayer()) || type == DRTYPE_ALL)
-        {
-            if (m_caster->isCharmedOwnedByPlayerOrPlayer())
+        {                                                   // Freezing trap exception, since it is casted by GO ?
+            if (m_caster->isCharmedOwnedByPlayerOrPlayer() || (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags & 0x00000000008LL))
                 unit->IncrDiminishing(m_diminishGroup);
         }
     }
@@ -1454,16 +1458,23 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
         {
             Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
             if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
+            {
                 Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
+                TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
+            }
             else
                 Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
+
             break;
         }
         case SPELL_TARGET_TYPE_DEAD:
         {
             Trinity::SpellNotifierDeadCreature notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
             if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
+            {
                 Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
+                TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
+                }
             else
                 Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             break;
@@ -1597,7 +1608,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
 
                         Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range);
                         Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(p_Creature, u_check);
-                         Cell::VisitGridObjects(m_caster, searcher, range);
+                        Cell::VisitAllObjects(m_caster, searcher, range);
 
                         if (p_Creature)
                         {
@@ -1740,8 +1751,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             {
                 pushType = PUSH_CHAIN;
 
-                if (!m_targets.getUnitTarget())
-                    m_targets.setUnitTarget((Unit*)target);
+                m_targets.setUnitTarget((Unit*)target);
             }
             else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
                 AddGOTarget((GameObject*)target, i);
@@ -1904,10 +1914,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             m_targets.setDestination(st->target_X, st->target_Y, st->target_Z, (int32)st->target_mapId);
                         else if (st->target_mapId == m_caster->GetMapId())
                             m_targets.setDestination(st->target_X, st->target_Y, st->target_Z);
-
-                        // for spells with implicit 17, 0
-                        if (!m_targets.getUnitTarget())
-                            m_targets.setUnitTarget(m_caster);
                     }
                     else
                         sLog.outError("SPELL: unknown target coordinates for spell ID %u\n", m_spellInfo->Id);
@@ -3426,7 +3432,11 @@ void Spell::SendResurrectRequest(Player* target)
     data << sentName;
     data << uint8(0);
 
-    data << uint8(m_caster->GetTypeId()==TYPEID_PLAYER ?0:1);
+    data << uint8(m_caster->GetTypeId()==TYPEID_PLAYER ? 0 : 1);
+
+    if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_IGNORE_RESURRECTION_TIMER)
+        data << uint32(0);
+
     target->GetSession()->SendPacket(&data);
 }
 
@@ -3522,6 +3532,8 @@ void Spell::TakePower()
                     {
                         if (ihit->missCondition != SPELL_MISS_NONE && ihit->missCondition != SPELL_MISS_MISS/* && ihit->targetGUID!=m_caster->GetGUID()*/)
                             hit = false;
+                        else if (((Player*)m_caster)->GetClass() == CLASS_DRUID && ihit->missCondition == SPELL_MISS_MISS && m_spellInfo->powerType == POWER_ENERGY) // not sure if it's limited only to druid/energy
+                            hit = false;
                         break;
                     }
                 }
@@ -3548,10 +3560,10 @@ void Spell::TakePower()
 
     Powers powerType = Powers(m_spellInfo->powerType);
 
-    if (hit)
+    if (hit || (NeedsComboPoints(m_spellInfo) && m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetClass() == CLASS_DRUID) )  // not sure if it's limited only to druid
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
-      m_caster->ModifyPower(powerType, -m_caster->GetMap()->irand(0, m_powerCost/4));
+        m_caster->ModifyPower(powerType, -m_caster->GetMap()->irand(0, m_powerCost/4));
 
     // Set the five second timer
     if (powerType == POWER_MANA && m_powerCost > 0)
@@ -3801,6 +3813,21 @@ uint8 Spell::CanCast(bool strict)
                 else
                     return SPELL_FAILED_BAD_TARGETS;
             }
+
+            // need to implement isTappedBy
+            /*if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            {
+                // Do not these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)
+                if (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CANT_TARGET_TAPPED)
+                {
+                    if (target->GetTypeId() == TYPEID_UNIT)
+                    {
+                        Creature *targetCreature = (Creature*)target;
+                        if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy((Player*)m_caster))
+                            return SPELL_FAILED_CANT_CAST_ON_TAPPED;
+                    }
+                }
+            }*/
         }
 
         // TODO: this check can be applied and for player to prevent cheating when IsPositiveSpell will return always correct result.
@@ -3901,12 +3928,12 @@ uint8 Spell::CanCast(bool strict)
             return SPELL_FAILED_NOT_MOUNTED;
     }
 
-    // always (except passive spells) check items (focus object can be required for any type casts)
-    if (!IsPassiveSpell(m_spellInfo->Id))
+    // always (except passive and triggered spells) check items (focus object can be required for any type casts)
+    if (!IsPassiveSpell(m_spellInfo->Id) && !m_IsTriggeredSpell)
         if (uint8 castResult = CheckItems())
             return castResult;
 
-    if (!m_IsTriggeredSpell)
+    if (!m_IsTriggeredSpell || m_spellInfo->Id == 33395) // hack for water elemental freeze since it is casted as triggered spell
     {
         if (uint8 castResult = CheckRange(strict))
             return castResult;
@@ -4501,6 +4528,13 @@ uint8 Spell::CanCast(bool strict)
             default:
                 break;
         }
+    }
+
+    if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS))
+    {
+        if (!m_targets.getUnitTarget() && !m_targets.getGOTarget() && !m_targets.getItemTarget())
+            if (m_targets.m_destX && m_targets.m_destY && m_targets.m_destZ && !m_caster->IsWithinLOS(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ))
+                return SPELL_FAILED_LINE_OF_SIGHT;
     }
 
     // all ok
@@ -5310,6 +5344,7 @@ bool Spell::CanIgnoreNotAttackableFlags()
 {
     switch(m_spellInfo->Id)
     {
+        case 14813:     // Dark Iron Drunk Mug
         case 32958:     // Crystal Channel
         case 44877:     // Living Flare Master
         case 45023:     // Fel Consumption
@@ -5406,7 +5441,10 @@ Unit* Spell::SelectMagnetTarget()
 
     if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IgnoreMagnetTargetAura(m_spellInfo))
     {
-        if (target->HasAuraType(SPELL_AURA_SPELL_MAGNET)) //Attributes & 0x10 what is this?
+        if (m_spellInfo->Attributes & SPELL_ATTR_ABILITY)
+            return target;
+
+        if (target->HasAuraType(SPELL_AURA_SPELL_MAGNET))
         {
             Unit::AuraList const& magnetAuras = target->GetAurasByType(SPELL_AURA_SPELL_MAGNET);
             for (Unit::AuraList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)

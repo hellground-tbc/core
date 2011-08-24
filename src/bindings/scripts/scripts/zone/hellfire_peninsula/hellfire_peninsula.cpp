@@ -751,6 +751,52 @@ struct TRINITY_DLL_DECL npc_shattered_hand_berserkerAI : public ScriptedAI
     }
 };
 
+
+///////
+/// Ice Stone
+///////
+
+#define GOSSIP_ICE_STONE        "Place your hands on stone"
+
+#define NPC_GLACIAL_TEMPLAR         26216
+
+bool GossipHello_go_ice_stone(Player *player, GameObject* _GO)
+{
+    if( player->GetQuestStatus(11954) == QUEST_STATUS_INCOMPLETE )
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ICE_STONE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    }
+    player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
+    return true;
+}
+
+void SendActionMenu_go_ice_stone(Player *player, GameObject* _GO, uint32 action)
+{
+    _GO->SetGoState(GO_STATE_ACTIVE);
+    _GO->SetRespawnTime(300);
+    player->CLOSE_GOSSIP_MENU();
+
+    float x,y,z;
+    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
+
+    switch(action)
+    {
+    case GOSSIP_ACTION_INFO_DEF:
+        player->SummonCreature(NPC_GLACIAL_TEMPLAR, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
+        break;
+    }
+}
+
+bool GossipSelect_go_ice_stone(Player *player, GameObject* _GO, uint32 sender, uint32 action )
+{
+    switch(sender)
+    {
+        case GOSSIP_SENDER_MAIN:    SendActionMenu_go_ice_stone(player, _GO, action); break;
+    }
+    return true;
+}
+
+
 CreatureAI* GetAI_npc_shattered_hand_berserker(Creature *_Creature)
 {
     return new npc_shattered_hand_berserkerAI(_Creature);
@@ -822,5 +868,11 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name="npc_shattered_hand_berserker";
     newscript->GetAI = &GetAI_npc_shattered_hand_berserker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="go_ice_stone";
+    newscript->pGOHello  = &GossipHello_go_ice_stone;
+    newscript->pGOSelect = &GossipSelect_go_ice_stone;
     newscript->RegisterSelf();
 }

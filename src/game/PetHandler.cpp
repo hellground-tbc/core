@@ -209,7 +209,8 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
             if (!pet->HasSpell(spellid) || IsPassiveSpell(spellid))
                 return;
 
-            Spell *spell = new Spell(pet, spellInfo, false);
+            uint64 charmerGuid = pet->isCharmed() ? pet->GetCharmerGUID() : 0;
+            Spell *spell = new Spell(pet, spellInfo, false, charmerGuid);
 
             int16 result = spell->PetCanCast(unit_target);
 
@@ -666,7 +667,8 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
 
     caster->clearUnitState(UNIT_STAT_FOLLOW);
 
-    Spell *spell = new Spell(caster, spellInfo, spellid == 33395); // water elemental can cast freeze as triggered
+    uint64 charmerGuid = caster->isCharmed() ? caster->GetCharmerGUID() : 0;
+    Spell *spell = new Spell(caster, spellInfo, spellid == 33395, charmerGuid); // water elemental can cast freeze as triggered
     spell->m_targets = targets;
 
     int16 result = spell->PetCanCast(NULL);

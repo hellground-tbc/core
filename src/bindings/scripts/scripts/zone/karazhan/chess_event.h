@@ -21,6 +21,8 @@ EndScriptData */
 #define TRIGGER_ID          22519
 #define DUST_COVERED_CHEST  185119
 
+#define DUST_COVERED_CHEST_LOCATION -11061.6, -1900.3, 221.1, 2.219765
+
 #define ALLIANCE_DEAD_X1        -11081.2 //-11047.8
 #define ALLIANCE_DEAD_X2        -11082.8 //-11046.1
 #define ALLIANCE_DEAD_Y1        -1842.2
@@ -613,6 +615,16 @@ public:
 
     void Reset();
     void UpdateAI(const uint32 diff);
+};
+
+class TRINITY_DLL_DECL npc_chess_statusAI : public ScriptedAI
+{
+public:
+    npc_chess_statusAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset();
+
+    void UpdateAI(const uint32 diff) {}
 };
 
 #endif

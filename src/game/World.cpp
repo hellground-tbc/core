@@ -1227,7 +1227,9 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_MIN_GM_TEXT_LVL] = sConfig.GetIntDefault("MinGMTextLevel", 1);
     m_configs[CONFIG_WARDEN_KICK] = sConfig.GetBoolDefault("Warden.Kick", true);
-    m_configs[CONFIG_MIN_GM_COMMAND_LOG_LEVEL] = sConfig.GetIntDefault("GmLogMinLevel", 1);
+    m_configs[CONFIG_DONT_DELETE_CHARS] = sConfig.GetBoolDefault("DontDeleteChars", false);
+    m_configs[CONFIG_DONT_DELETE_CHARS_LVL] = sConfig.GetIntDefault("DontDeleteCharsLvl", 40);
+    m_configs[CONFIG_KEEP_DELETED_CHARS_TIME] = sConfig.GetIntDefault("KeepDeletedCharsTime", 31);
 }
 
 /// Initialize the World
@@ -2622,3 +2624,22 @@ void World::LoadDBVersion()
         m_DBVersion = "unknown world database";
 }
 
+void World::CleanupDeletedChars()
+{
+    int keepDays = getConfig(CONFIG_KEEP_DELETED_CHARS_TIME);
+
+    if (keepDays < 1)
+        return;
+
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT char_guid FROM deleted_chars WHERE datediff(now(), date) >= %u", keepDays);
+    if (result)
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+            uint32 guid = fields[0].GetUInt32();
+            Player::DeleteCharacterInfoFromDB(guid);
+        }
+        while (result->NextRow());
+    }
+}

@@ -41,6 +41,17 @@ EndScriptData */
 
 #define SPELL_BOMB                40332                     //Wrong ID but Magmadars bomb is not working...
 
+#define BAT_ID      11368
+#define BAT_COUNT   6
+
+float batLocations[BAT_COUNT][3] = {
+        {-12291.6220, -1380.2640, 144.8304},
+        {-12289.6220, -1380.2640, 144.8304},
+        {-12293.6220, -1380.2640, 144.8304},
+        {-12291.6220, -1380.2640, 144.8304},
+        {-12289.6220, -1380.2640, 144.8304},
+        {-12293.6220, -1380.2640, 144.8304}};
+
 struct TRINITY_DLL_DECL boss_jeklikAI : public ScriptedAI
 {
     boss_jeklikAI(Creature *c) : ScriptedAI(c)
@@ -75,20 +86,22 @@ struct TRINITY_DLL_DECL boss_jeklikAI : public ScriptedAI
         SpawnFlyingBats_Timer = 10000;
 
         PhaseTwo = false;
+
+        pInstance->SetData(DATA_JEKLIKEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoCast(m_creature,SPELL_BAT_FORM);
+        pInstance->SetData(DATA_JEKLIKEVENT, IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if(pInstance)
-            pInstance->SetData(DATA_JEKLIK_DEATH, 0);
+        pInstance->SetData(DATA_JEKLIKEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -96,107 +109,118 @@ struct TRINITY_DLL_DECL boss_jeklikAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if( m_creature->getVictim() && m_creature->isAlive())
+        if (m_creature->getVictim() && m_creature->isAlive())
         {
             if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth() > 50))
             {
                 if (Charge_Timer < diff)
                 {
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_CHARGE), true))
+                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CHARGE), true))
                     {
                         DoCast(target,SPELL_CHARGE);
                         AttackStart(target);
                     }
 
                     Charge_Timer = 15000 + rand()%15000;
-                }else Charge_Timer -= diff;
+                }
+                else
+                    Charge_Timer -= diff;
 
                 if (SonicBurst_Timer < diff)
                 {
                     DoCast(m_creature->getVictim(),SPELL_SONICBURST);
                     SonicBurst_Timer = 8000 + rand()%5000;
-                }else SonicBurst_Timer -= diff;
+                }
+                else
+                    SonicBurst_Timer -= diff;
 
                 if (Screech_Timer < diff)
                 {
                     DoCast(m_creature->getVictim(),SPELL_SCREECH);
                     Screech_Timer = 18000 + rand()%8000;
-                }else Screech_Timer -= diff;
+                }
+                else
+                    Screech_Timer -= diff;
 
                 if (SpawnBats_Timer < diff)
                 {
                     Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0);
 
-                    Creature* Bat = NULL;
-                    Bat = m_creature->SummonCreature(11368,-12291.6220,-1380.2640,144.8304,5.483, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                    if (target && Bat ) Bat ->AI()->AttackStart(target);
-
-                    Bat = m_creature->SummonCreature(11368,-12289.6220,-1380.2640,144.8304,5.483, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                    if(target && Bat ) Bat ->AI()->AttackStart(target);
-
-                    Bat = m_creature->SummonCreature(11368,-12293.6220,-1380.2640,144.8304,5.483, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                    if(target && Bat ) Bat ->AI()->AttackStart(target);
-
-                    Bat = m_creature->SummonCreature(11368,-12291.6220,-1380.2640,144.8304,5.483, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                    if(target && Bat ) Bat ->AI()->AttackStart(target);
-
-                    Bat = m_creature->SummonCreature(11368,-12289.6220,-1380.2640,144.8304,5.483, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                    if(target && Bat ) Bat ->AI()->AttackStart(target);
-                    Bat = m_creature->SummonCreature(11368,-12293.6220,-1380.2640,144.8304,5.483, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                    if(target && Bat ) Bat ->AI()->AttackStart(target);
+                    if (target)
+                    {
+                        Creature* Bat = NULL;
+                        for (uint8 i = 0 ; i < BAT_COUNT; ++i)
+                        {
+                            Bat = m_creature->SummonCreature(BAT_ID, batLocations[i][0], batLocations[i][1], batLocations[i][2], 5.483, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+                            if (Bat)
+                                Bat->AI()->AttackStart(target);
+                        }
+                    }
 
                     SpawnBats_Timer = 60000;
-                }else SpawnBats_Timer -= diff;
+                }
+                else
+                    SpawnBats_Timer -= diff;
             }
             else
             {
-                if(PhaseTwo)
+                if (PhaseTwo)
                 {
-                    if(PhaseTwo && ShadowWordPain_Timer < diff)
+                    if (PhaseTwo && ShadowWordPain_Timer < diff)
                     {
                         if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_SHADOW_WORD_PAIN), true))
                         {
                             DoCast(target, SPELL_SHADOW_WORD_PAIN);
                             ShadowWordPain_Timer = 12000 + rand()%6000;
                         }
-                    }ShadowWordPain_Timer -=diff;
+                    }
+                    else
+                        ShadowWordPain_Timer -=diff;
 
-                    if(MindFlay_Timer < diff)
+                    if (MindFlay_Timer < diff)
                     {
                         DoCast(m_creature->getVictim(), SPELL_MIND_FLAY);
                         MindFlay_Timer = 16000;
-                    }MindFlay_Timer -=diff;
+                    }
+                    else
+                        MindFlay_Timer -= diff;
 
-                    if(ChainMindFlay_Timer < diff)
+                    if (ChainMindFlay_Timer < diff)
                     {
                         m_creature->InterruptNonMeleeSpells(false);
                         DoCast(m_creature->getVictim(), SPELL_CHAIN_MIND_FLAY);
                         ChainMindFlay_Timer = 15000 + rand()%15000;
-                    }ChainMindFlay_Timer -=diff;
+                    }
+                    else
+                        ChainMindFlay_Timer -= diff;
 
-                    if(GreaterHeal_Timer < diff)
+                    if (GreaterHeal_Timer < diff)
                     {
                         m_creature->InterruptNonMeleeSpells(false);
                         DoCast(m_creature,SPELL_GREATERHEAL);
                         GreaterHeal_Timer = 25000 + rand()%10000;
-                    }GreaterHeal_Timer -=diff;
+                    }
+                    else
+                        GreaterHeal_Timer -= diff;
 
-                    if(SpawnFlyingBats_Timer < diff)
+                    if (SpawnFlyingBats_Timer < diff)
                     {
                         Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                        if(!target)
+                        if (!target)
                             return;
 
                         Creature* FlyingBat = m_creature->SummonCreature(14965, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ()+15, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-                        if(FlyingBat)
+                        if (FlyingBat)
                             FlyingBat->AI()->AttackStart(target);
 
                         SpawnFlyingBats_Timer = 10000 + rand()%5000;
-                    }else SpawnFlyingBats_Timer -=diff;
+                    }
+                    else
+                        SpawnFlyingBats_Timer -=diff;
                 }
                 else
                 {
-                    m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID,15219);
+                    m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, 15219);
                     DoResetThreat();
                     PhaseTwo = true;
                 }
@@ -232,25 +256,27 @@ struct TRINITY_DLL_DECL mob_batriderAI : public ScriptedAI
 
     void UpdateAI (const uint32 diff)
     {
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
         //Bomb_Timer
-        if(Bomb_Timer < diff)
+        if (Bomb_Timer < diff)
         {
             if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_BOMB), true))
             {
                 DoCast(target, SPELL_BOMB);
                 Bomb_Timer = 5000;
             }
-        }else Bomb_Timer -= diff;
+        }
+        else
+            Bomb_Timer -= diff;
 
         //Check_Timer
-        if(Check_Timer < diff)
+        if (Check_Timer < diff)
         {
-            if(pInstance)
+            if (pInstance)
             {
-                if(pInstance->GetData(DATA_JEKLIKISDEAD))
+                if (pInstance->GetData(DATA_JEKLIKEVENT) == DONE)
                 {
                     m_creature->setDeathState(JUST_DIED);
                     m_creature->RemoveCorpse();
@@ -258,7 +284,9 @@ struct TRINITY_DLL_DECL mob_batriderAI : public ScriptedAI
             }
 
             Check_Timer = 1000;
-        }else Check_Timer -= diff;
+        }
+        else
+            Check_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }

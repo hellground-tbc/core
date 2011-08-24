@@ -228,6 +228,10 @@ enum WorldConfigs
     CONFIG_WARDEN_KICK,
     CONFIG_MIN_GM_COMMAND_LOG_LEVEL,
 
+    CONFIG_DONT_DELETE_CHARS,
+    CONFIG_DONT_DELETE_CHARS_LVL,
+    CONFIG_KEEP_DELETED_CHARS_TIME,
+
     CONFIG_VALUE_COUNT
 };
 
@@ -582,6 +586,8 @@ class World
 
         void RecordTimeDiff(const char * text, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
+
+        void CleanupDeletedChars();
 
         // available heroic quests
         uint32 specialQuest[6];

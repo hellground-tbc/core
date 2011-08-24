@@ -84,8 +84,8 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint64 speciallogs, uint16 opcDisabled) :
-LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time),
+WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, uint64 speciallogs, uint16 opcDisabled) :
+LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time), m_muteReason(mute_reason),
 _player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
@@ -613,7 +613,7 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
             m_Warden = (WardenBase*)new WardenWin();
             break;
         case 1:
-            m_Warden = (WardenBase*)new WardenMac();
+//            m_Warden = (WardenBase*)new WardenMac();
             break;
         default:
             sLog.outWarden("Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);

@@ -256,10 +256,10 @@ void WorldSession::HandleTaxiNextDestinationOpcode(WorldPacket& recv_data)
         if (path && MountId)
             SendDoFlight(MountId, path, 1);               // skip start fly node
         else
-            GetPlayer()->CleanupAfterTaxiFlight();          // clear problematic path and next
+            GetPlayer()->m_taxi.ClearTaxiDestinations();          // clear problematic path and next
     }
     else
-        GetPlayer()->CleanupAfterTaxiFlight();              // not destinations, clear source node
+        GetPlayer()->m_taxi.ClearTaxiDestinations();              // not destinations, clear source node
 
     // TaxiNodes: 96 -> Zangarmarsh - Quest - As the Crow Flies - End | quest support: As the Crow Flies
     if (curDest == 96 && GetPlayer()->GetQuestStatus(9718) == QUEST_STATUS_INCOMPLETE)

@@ -29,7 +29,10 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
 {
-    boss_renatakiAI(Creature *c) : ScriptedAI(c) {}
+    boss_renatakiAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
 
     uint32 Invisible_Timer;
     uint32 Ambush_Timer;
@@ -39,6 +42,8 @@ struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
 
     bool Invisible;
     bool Ambushed;
+
+    ScriptedInstance * pInstance;
 
     void Reset()
     {
@@ -50,10 +55,18 @@ struct TRINITY_DLL_DECL boss_renatakiAI : public ScriptedAI
 
         Invisible = false;
         Ambushed = false;
+
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        pInstance->SetData(DATA_EDGEOFMADNESSEVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)

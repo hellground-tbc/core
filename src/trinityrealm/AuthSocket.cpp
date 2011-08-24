@@ -36,6 +36,8 @@
 // FG: for WorldTimer::getMSTime()
 #include "Timer.h"
 
+#include <sstream>
+
 extern RealmList m_realmList;
 
 extern DatabaseType LoginDatabase;
@@ -85,7 +87,7 @@ typedef struct AUTH_LOGON_CHALLENGE_C
     uint8   os[4];
     uint8   country[4];
     uint32  timezone_bias;
-    uint32  ip;
+    uint8   ip[4];
     uint8   I_len;
     uint8   I[1];
 } sAuthLogonChallenge_C;
@@ -369,7 +371,7 @@ bool AuthSocket::_HandleLogonChallenge()
     EndianConvert(*((uint32*)(&ch->os[0])));
     EndianConvert(*((uint32*)(&ch->country[0])));
     EndianConvert(ch->timezone_bias);
-    EndianConvert(ch->ip);
+    EndianConvert(*((uint32*)(&ch->ip[0])));
 
     ///- Read the remaining of the packet
     ibuf.Read((char *)&buf[4], remaining);
@@ -380,6 +382,11 @@ bool AuthSocket::_HandleLogonChallenge()
     if (ch->os[2]) operatingSystem.push_back(ch->os[2]);
     if (ch->os[1]) operatingSystem.push_back(ch->os[1]);
     if (ch->os[0]) operatingSystem.push_back(ch->os[0]);
+
+    std::stringstream tmpLocalIp;
+    tmpLocalIp << (uint32)ch->ip[0] << "." << (uint32)ch->ip[1] << "." << (uint32)ch->ip[2] << "." << (uint32)ch->ip[3];
+
+    localIp = tmpLocalIp.str();
 
     ByteBuffer pkt;
 
@@ -684,7 +691,10 @@ bool AuthSocket::_HandleLogonProof()
             sLog.outWarden("Client %s got unsupported operating system (%s)", _safelogin.c_str(), operatingSystem.c_str());
         }
 
-        LoginDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0, operatingSystem = '%u' WHERE username = '%s'", K_hex, GetRemoteAddress().c_str(), GetLocaleByName(_localizationName), OS, _safelogin.c_str());
+        LoginDatabase.escape_string(localIp);
+
+        LoginDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_local_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0, operatingSystem = '%u' WHERE username = '%s'", K_hex, GetRemoteAddress().c_str(), localIp.c_str(), GetLocaleByName(_localizationName), OS, _safelogin.c_str());
+
         OPENSSL_free((void*)K_hex);
 
         ///- Finish SRP6 and send the final result to the client

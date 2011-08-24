@@ -3815,6 +3815,50 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     return TRAINER_SPELL_GREEN;
 }
 
+void Player::DeleteCharacterInfoFromDB(uint32 playerGUIDLow)
+{
+     // unsummon and delete for pets in world is not required: player deleted from CLI or character list with not loaded pet.
+    // Get guids of character's pets, will deleted in transaction
+    QueryResultAutoPtr resultPets = CharacterDatabase.PQuery("SELECT id FROM character_pet WHERE owner = '%u'", playerGUIDLow);
+
+    // NOW we can finally clear other DB data related to character
+    CharacterDatabase.BeginTransaction();
+    if (resultPets)
+    {
+        do
+        {
+            Field *fields3 = resultPets->Fetch();
+            uint32 petguidlow = fields3[0].GetUInt32();
+            //do not create separate transaction for pet delete otherwise we will get fatal error!
+            Pet::DeleteFromDB(petguidlow, false);
+        }
+        while (resultPets->NextRow());
+    }
+
+    CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM gm_tickets WHERE playerGuid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'", playerGUIDLow, playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM mail WHERE receiver = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE receiver = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE owner = '%u'", playerGUIDLow);
+    CharacterDatabase.PExecute("DELETE FROM deleted_chars WHERE char_guid = '%u'", playerGUIDLow);
+    CharacterDatabase.CommitTransaction();
+}
+
 void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars)
 {
     uint32 guid = GUID_LOPART(playerguid);
@@ -3933,7 +3977,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         while (resultMail->NextRow());
     }
 
-    if (sConfig.GetBoolDefault("DontDeleteChars", false))
+    if (sWorld.getConfig(CONFIG_DONT_DELETE_CHARS))
     {
         if (QueryResultAutoPtr result= CharacterDatabase.PQuery("SELECT data FROM characters WHERE guid='%u'",guid))
         {
@@ -3942,57 +3986,23 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             Tokens data = StrSplit(fields[0].GetCppString(), " ");
             uint32 plLevel = Player::GetUInt32ValueFromArray(data,UNIT_FIELD_LEVEL);
 
-            if (plLevel >= sConfig.GetIntDefault("DontDeleteCharsLvl", 40))
+            if (plLevel >= sWorld.getConfig(CONFIG_DONT_DELETE_CHARS_LVL))
             {
                 CharacterDatabase.PExecute("Call PreventCharDelete(%u)", guid);
 
-                if (updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
+                if (updateRealmChars)
+                    sWorld.UpdateRealmCharCount(accountId);
                 return;
             }
         }
     }
 
-    // unsummon and delete for pets in world is not required: player deleted from CLI or character list with not loaded pet.
-    // Get guids of character's pets, will deleted in transaction
-    QueryResultAutoPtr resultPets = CharacterDatabase.PQuery("SELECT id FROM character_pet WHERE owner = '%u'",guid);
-
-    // NOW we can finally clear other DB data related to character
-    CharacterDatabase.BeginTransaction();
-    if (resultPets)
-    {
-        do
-        {
-            Field *fields3 = resultPets->Fetch();
-            uint32 petguidlow = fields3[0].GetUInt32();
-            //do not create separate transaction for pet delete otherwise we will get fatal error!
-            Pet::DeleteFromDB(petguidlow, false);
-        } while (resultPets->NextRow());
-    }
-
-    CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_homebind WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM group_instance WHERE leaderGuid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_reputation WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_spell_cooldown WHERE guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM gm_tickets WHERE playerGuid = '%u'", guid);
-    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE owner_guid = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' OR friend='%u'",guid,guid);
-    CharacterDatabase.PExecute("DELETE FROM mail WHERE receiver = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE receiver = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_pet WHERE owner = '%u'",guid);
-    CharacterDatabase.PExecute("DELETE FROM character_pet_declinedname WHERE owner = '%u'",guid);
-    CharacterDatabase.CommitTransaction();
+    // finally delete rest character informations (pets, spells, auras, items etc)
+    DeleteCharacterInfoFromDB(guid);
 
     //LoginDatabase.PExecute("UPDATE realmcharacters SET numchars = numchars - 1 WHERE acctid = %d AND realmid = %d", accountId, realmID);
-    if (updateRealmChars) sWorld.UpdateRealmCharCount(accountId);
+    if (updateRealmChars)
+        sWorld.UpdateRealmCharCount(accountId);
 }
 
 void Player::SetMovement(PlayerMovementType pType)
@@ -4609,6 +4619,13 @@ void Player::LeaveLFGChannel()
     }
 }
 
+void Player::JoinLFGChannel()
+{
+    if (ChannelMgr* cMgr = channelMgr(GetTeam()))
+        if (Channel *chn = cMgr->GetJoinChannel("LookingForGroup", 6))
+            chn->Join(GetGUID(), "");
+}
+
 void Player::UpdateDefense()
 {
     uint32 defense_skill_gain = sWorld.getConfig(CONFIG_SKILL_GAIN_DEFENSE);
@@ -5150,7 +5167,7 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
     if (pVictim && pVictim->isCharmedOwnedByPlayerOrPlayer())
         return;
 
-    if (IsInFeralForm())
+    if (IsInFeralForm(true))
         return;                                             // always maximized SKILL_FERAL_COMBAT in fact
 
     if (m_form == FORM_TREE)
@@ -6155,9 +6172,9 @@ bool Player::SetOneFactionReputation(FactionEntry const* factionEntry, int32 sta
 int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest)
 {
     // for grey creature kill received 20%, in other case 100.
-    int32 percent = (!for_quest && (creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))) ? 20 : 100;
+    float percent = (!for_quest && (creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))) ? 20.0f : 100.0f;
 
-    int32 repMod = GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
+    float repMod = GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
 
     if (!for_quest)
         repMod += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_FACTION_REPUTATION_GAIN, faction);
@@ -6167,7 +6184,7 @@ int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, in
     if (percent <=0)
         return 0;
 
-    return int32(sWorld.getRate(RATE_REPUTATION_GAIN)*rep*percent/100);
+    return int32(sWorld.getRate(RATE_REPUTATION_GAIN) *rep *percent/100.0f);
 }
 
 //Calculates how many reputation points player gains in victim's enemy factions
@@ -7339,7 +7356,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                                 continue;
                         }
 
-                        if (((Player*)this)->IsInFeralForm())
+                        if (((Player*)this)->IsInFeralForm(true))
                             continue;
                     }
                     ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
@@ -10209,7 +10226,16 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                     return EQUIP_ERR_CANT_DO_RIGHT_NOW;         // maybe exist better err
 
                 if (IsNonMeleeSpellCasted(false))
-                    return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+                {
+                    // exclude spells with transform item effect
+                    if (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
+                        (m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[0] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
+                        m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[1] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
+                        m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[2] != SPELL_EFFECT_SUMMON_CHANGE_ITEM))
+
+                        return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+                }
+
             }
 
             uint8 eslot = FindEquipSlot(pProto, slot, swap);
@@ -10874,7 +10900,8 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
                     {
                         m_weaponChangeTimer = spellProto->StartRecoveryTime;
 
-                        GetGlobalCooldownMgr().AddGlobalCooldown(spellProto, m_weaponChangeTimer);
+                        if (getClass() != CLASS_ROGUE)
+                            GetGlobalCooldownMgr().AddGlobalCooldown(spellProto, m_weaponChangeTimer);
 
                         WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4);
                         data << uint64(GetGUID());
@@ -16626,7 +16653,10 @@ void Player::UpdateSpeakTime()
             // prevent overwrite mute time, if message send just before mutes set, for example.
             time_t new_mute = current + sWorld.getConfig(CONFIG_CHATFLOOD_MUTE_TIME);
             if (GetSession()->m_muteTime < new_mute)
+            {
                 GetSession()->m_muteTime = new_mute;
+                GetSession()->m_muteReason = "Flood protection";
+            }
 
             m_speakCount = 0;
         }
@@ -18366,7 +18396,7 @@ void Player::ReportedAfkBy(Player* reporter)
         return;
 
     // check if player has 'Idle' or 'Inactive' debuff
-    if (m_bgAfkReporter.find(reporter->GetGUIDLow())==m_bgAfkReporter.end() && !HasAura(43680,0) && !HasAura(43681,0) && reporter->CanReportAfkDueToLimit())
+    if (m_bgAfkReporter.find(reporter->GetGUIDLow()) == m_bgAfkReporter.end() && !HasAura(43680,0) && !HasAura(43681,0) && reporter->CanReportAfkDueToLimit())
     {
         m_bgAfkReporter.insert(reporter->GetGUIDLow());
         // 3 players have to complain to apply debuff
@@ -18374,6 +18404,7 @@ void Player::ReportedAfkBy(Player* reporter)
         {
             // cast 'Idle' spell
             CastSpell(this, 43680, true);
+
             m_bgAfkReporter.clear();
         }
     }
@@ -18413,7 +18444,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
 
     // If the player is currently channeling vision, update visibility from the target unit's location
     const WorldObject* viewPoint = GetFarsightTarget();
-    if (!viewPoint) viewPoint = u;
+    if (!viewPoint || !HasFarsightVision()) viewPoint = u;
 
     // different visible distance checks
     if (isInFlight())                                     // what see player in flight
@@ -18716,8 +18747,9 @@ void Player::UpdateObjectVisibility(bool forced)
 void Player::UpdateVisibilityForPlayer()
 {
     WorldObject const *viewPoint = GetFarsightTarget();
-    if (!viewPoint) viewPoint = this;
+    if (!viewPoint || !HasFarsightVision()) viewPoint = this;
 
+    // updates visibility of all objects around point of view for current player
     Trinity::VisibleNotifier notifier(*this);
     Cell::VisitAllObjects(viewPoint, notifier, GetMap()->GetVisibilityDistance());
     notifier.SendToSelf();   // send gathered data
