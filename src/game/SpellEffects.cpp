@@ -6908,6 +6908,9 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
     SendLogExecute();
     m_needSpellLog = false;
 
+    if (unitTarget->m_currentSpells[CURRENT_MELEE_SPELL])
+        unitTarget->m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+
     unitTarget->AttackerStateUpdate(victim, BASE_ATTACK, true);
 }
 
