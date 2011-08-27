@@ -6902,11 +6902,8 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
     if (!victim || !unitTarget->IsWithinMeleeRange(victim) || !unitTarget->HasInArc(2*M_PI/3, victim))
         return;
 
-    if (unitTarget->m_currentSpells[CURRENT_MELEE_SPELL] && unitTarget->m_currentSpells[CURRENT_MELEE_SPELL]->IsNextMeleeSwingSpell())
-    {
-        unitTarget->MonsterSay("CAST", LANG_UNIVERSAL, 0);
+    if (unitTarget->m_currentSpells[CURRENT_MELEE_SPELL])
         unitTarget->m_currentSpells[CURRENT_MELEE_SPELL]->cast();
-    }
 
     // Only for proc/log informations
     unitTarget->m_extraAttacks = damage;
@@ -6914,10 +6911,14 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
     SendLogExecute();
     m_needSpellLog = false;
 
-    if (unitTarget->m_currentSpells[CURRENT_MELEE_SPELL])
-        unitTarget->MonsterSay("AGAIN", LANG_UNIVERSAL, 0);
+    unitTarget->resetAttackTimer(BASE_ATTACK);
 
-    unitTarget->AttackerStateUpdate(victim, BASE_ATTACK, true);
+    MeleeDamageLog damageInfo(unitTarget, victim, unitTarget->GetMeleeDamageSchoolMask(), BASE_ATTACK);
+    unitTarget->CalculateMeleeDamage(&damageInfo);
+
+    unitTarget->DealMeleeDamage(&damageInfo, true);
+    unitTarget->ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
+
 }
 
 void Spell::EffectParry(uint32 /*i*/)
