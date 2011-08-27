@@ -6914,6 +6914,9 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
     SendLogExecute();
     m_needSpellLog = false;
 
+    if (unitTarget->m_currentSpells[CURRENT_MELEE_SPELL])
+        unitTarget->MonsterSay("AGAIN", LANG_UNIVERSAL, 0);
+
     unitTarget->AttackerStateUpdate(victim, BASE_ATTACK, true);
 }
 
