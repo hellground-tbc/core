@@ -658,7 +658,7 @@ void Spell::prepareDataForTriggerSystem()
 
             if (IsNextMeleeSwingSpell())
             {
-                m_procAttacker |= PROC_FLAG_SUCCESSFUL_MELEE_HIT;
+                //m_procAttacker |= PROC_FLAG_SUCCESSFUL_MELEE_HIT;
                 m_procVictim   |= PROC_FLAG_TAKEN_MELEE_HIT;
             }
             break;
