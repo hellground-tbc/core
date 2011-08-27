@@ -6818,13 +6818,22 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
     if (!victim || !unitTarget->IsWithinMeleeRange(victim) || !unitTarget->HasInArc(2*M_PI/3, victim))
         return;
 
+    if (unitTarget->m_currentSpells[CURRENT_MELEE_SPELL])
+        unitTarget->m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+
     // Only for proc/log informations
     unitTarget->m_extraAttacks = damage;
     // Need to send log before attack is made
     SendLogExecute();
     m_needSpellLog = false;
 
-    unitTarget->AttackerStateUpdate(victim, BASE_ATTACK, true);
+    unitTarget->resetAttackTimer(BASE_ATTACK);
+
+    MeleeDamageLog damageInfo(unitTarget, victim, SPELL_SCHOOL_MASK_NORMAL, BASE_ATTACK);
+    unitTarget->CalculateMeleeDamage(&damageInfo);
+
+    unitTarget->DealMeleeDamage(&damageInfo, true);
+    unitTarget->ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType, m_spellInfo);
 }
 
 void Spell::EffectParry(uint32 /*i*/)
