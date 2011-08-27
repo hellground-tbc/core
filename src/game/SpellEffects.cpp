@@ -6902,14 +6902,17 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
     if (!victim || !unitTarget->IsWithinMeleeRange(victim) || !unitTarget->HasInArc(2*M_PI/3, victim))
         return;
 
+    if (unitTarget->m_currentSpells[CURRENT_MELEE_SPELL] && unitTarget->m_currentSpells[CURRENT_MELEE_SPELL]->IsNextMeleeSwingSpell())
+    {
+        unitTarget->MonsterSay("CAST", LANG_UNIVERSAL, 0);
+        unitTarget->m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+    }
+
     // Only for proc/log informations
     unitTarget->m_extraAttacks = damage;
     // Need to send log before attack is made
     SendLogExecute();
     m_needSpellLog = false;
-
-    if (unitTarget->m_currentSpells[CURRENT_MELEE_SPELL])
-        unitTarget->m_currentSpells[CURRENT_MELEE_SPELL]->cast();
 
     unitTarget->AttackerStateUpdate(victim, BASE_ATTACK, true);
 }
