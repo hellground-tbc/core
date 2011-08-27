@@ -6913,7 +6913,7 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
 
     unitTarget->resetAttackTimer(BASE_ATTACK);
 
-    MeleeDamageLog damageInfo(unitTarget, victim, unitTarget->GetMeleeDamageSchoolMask(), BASE_ATTACK);
+    MeleeDamageLog damageInfo(unitTarget, victim, SPELL_SCHOOL_MASK_NORMAL, BASE_ATTACK);
     unitTarget->CalculateMeleeDamage(&damageInfo);
 
     unitTarget->DealMeleeDamage(&damageInfo, true);
