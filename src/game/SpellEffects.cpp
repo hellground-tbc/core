@@ -6892,12 +6892,32 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
     if (!unitTarget || !unitTarget->isAlive())
         return;
 
+    Unit *victim = unitTarget->getVictim();
+
+    // attack prevented
+    // fixme, some attacks may not target current victim, this is right now not handled
+    if (!victim || !unitTarget->IsWithinMeleeRange(victim) || !unitTarget->HasInArc(2*M_PI/3, victim))
+        return;
+
     // Only for proc/log informations
     unitTarget->m_extraAttacks = damage;
 
     // Need to send log before attack is made
     SendLogExecute();
     m_needSpellLog = false;
+    
+    for (uint8 i = 0; i < damage; i++)
+    {
+        MeleeDamageLog damageInfo(unitTarget, victim, SPELL_SCHOOL_MASK_NORMAL, BASE_ATTACK);
+        CalculateMeleeDamage(&damageInfo);
+
+        DealMeleeDamage(&damageInfo, true);
+        ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
+        
+        unitTarget->m_extraAttacks--;
+    }
+    
+    unitTarget->resetAttackTimer(BASE_ATTACK);
 }
 
 void Spell::EffectParry(uint32 /*i*/)

@@ -2175,7 +2175,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
         DealMeleeDamage(&damageInfo, true);
         ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
     }
-
+    /*
     if (!extra && m_extraAttacks)
     {
         while (m_extraAttacks)
@@ -2185,6 +2185,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
                 --m_extraAttacks;
         }
     }
+    */
 }
 
 void Unit::RollMeleeHit(MeleeDamageLog *damageInfo) const
