@@ -114,11 +114,7 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
             // Thundering Storm
             if(ThunderingStorm_Timer < diff)
             {
-                std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-                for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
-                    if(Unit* target = Unit::GetUnit((*m_creature),(*i)->getUnitGuid()))
-                        if(target->isAlive() && m_creature->GetDistance2d(target) > 35)
-                            ForceSpellCast(target, SPELL_THUNDERING_STORM, DONT_INTERRUPT, true);
+                ForceSpellCast((Unit*)NULL, SPELL_THUNDERING_STORM, DONT_INTERRUPT);
 
                 ThunderingStorm_Timer = 5000;
             }
@@ -128,7 +124,7 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
             // Sonic Shock
             if(SonicShock_Timer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100,false))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, false))
                     AddSpellToCast(target, SPELL_SONIC_SHOCK);
 
                 SonicShock_Timer = urand(10000, 20000);
@@ -140,7 +136,7 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
         // Magnetic Pull
         if (MagneticPull_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, 100, true))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
                 ForceSpellCast(target, SPELL_MAGNETIC_PULL);
                 MagneticPull_Timer = urand (20000, 35000);
