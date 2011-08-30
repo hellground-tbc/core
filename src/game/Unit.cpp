@@ -2143,47 +2143,48 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
 
     // melee attack spell casted at main hand attack only
     if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL])
-    {
         m_currentSpells[CURRENT_MELEE_SPELL]->cast();
-        return;
-    }
-
-    if (pVictim->HasAuraType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER))
+    else
     {
-        Unit::AuraList const& hitTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER);
-        for (Unit::AuraList::const_iterator itr = hitTriggerAuras.begin(); itr != hitTriggerAuras.end(); ++itr)
+        if (pVictim->HasAuraType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER))
         {
-            if (Unit* hitTarget = (*itr)->GetCaster())
+            Unit::AuraList const& hitTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER);
+            for (Unit::AuraList::const_iterator itr = hitTriggerAuras.begin(); itr != hitTriggerAuras.end(); ++itr)
             {
-                if(!hitTarget->isAlive())
-                    continue;
-
-                if ((*itr)->m_procCharges > 0)
+                if (Unit* hitTarget = (*itr)->GetCaster())
                 {
-                    (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
-                    (*itr)->UpdateAuraCharges();
-                    if ((*itr)->m_procCharges <= 0)
-                        pVictim->RemoveAurasByCasterSpell((*itr)->GetId(), (*itr)->GetCasterGUID());
+                    if(!hitTarget->isAlive())
+                        continue;
+
+                    if ((*itr)->m_procCharges > 0)
+                    {
+                        (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
+                        (*itr)->UpdateAuraCharges();
+                        if ((*itr)->m_procCharges <= 0)
+                            pVictim->RemoveAurasByCasterSpell((*itr)->GetId(), (*itr)->GetCasterGUID());
+                    }
+                    pVictim = hitTarget;
+                    break;
                 }
-                pVictim = hitTarget;
-                break;
             }
         }
+
+        MeleeDamageLog damageInfo(this, pVictim, GetMeleeDamageSchoolMask(), attType);
+        CalculateMeleeDamage(&damageInfo);
+
+        DealMeleeDamage(&damageInfo, true);
+        ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
     }
 
-    MeleeDamageLog damageInfo(this, pVictim, GetMeleeDamageSchoolMask(), attType);
-    CalculateMeleeDamage(&damageInfo);
-
-    DealMeleeDamage(&damageInfo, true);
-    ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        DEBUG_LOG("AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-            GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked, damageInfo.resist);
-    else
-        DEBUG_LOG("AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-            GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked, damageInfo.resist);
-
+    if (!extra && m_extraAttacks)
+    {
+        while (m_extraAttacks)
+        {
+            AttackerStateUpdate(pVictim, BASE_ATTACK, true);
+            if (m_extraAttacks > 0)
+                --m_extraAttacks;
+        }
+    }
 }
 
 void Unit::RollMeleeHit(MeleeDamageLog *damageInfo) const
