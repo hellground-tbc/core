@@ -6905,18 +6905,18 @@ void Spell::EffectAddExtraAttacks(uint32 /*i*/)
     // Need to send log before attack is made
     SendLogExecute();
     m_needSpellLog = false;
-    
+
     for (uint8 i = 0; i < damage; i++)
     {
         MeleeDamageLog damageInfo(unitTarget, victim, SPELL_SCHOOL_MASK_NORMAL, BASE_ATTACK);
-        CalculateMeleeDamage(&damageInfo);
+        unitTarget->CalculateMeleeDamage(&damageInfo);
 
-        DealMeleeDamage(&damageInfo, true);
-        ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
-        
+        unitTarget->DealMeleeDamage(&damageInfo, true);
+        unitTarget->ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
+
         unitTarget->m_extraAttacks--;
     }
-    
+
     unitTarget->resetAttackTimer(BASE_ATTACK);
 }
 
