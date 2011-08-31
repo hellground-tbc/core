@@ -130,11 +130,6 @@ void WorldSession::HandleLookingForGroup(WorldPacket& recv_data)
     SendLFM(type, entry);
 }
 
-void ClearLFG(uint32 type, uint32 entry)
-{
-
-}
-
 void WorldSession::SendLFM(uint32 type, uint32 entry)
 {
     uint32 number = 0;
@@ -185,10 +180,13 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
                     break;
                 case 1:
                     data << plr->GetLFMCombined();
+                    for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT-1; ++j)
+                        data << uint32(0x00);
                     break;
                 default:
                     sLog.outError("WorldSession::SendLFM: wrong lfgtype (%u) for player %u (acc %u)", lfgType, plr->GetGUIDLow(), plr->GetSession()->GetAccountId());
-                    data << 0;
+                    for (uint8 j = 0; j < MAX_LOOKING_FOR_GROUP_SLOT; ++j)
+                        data << uint32(0x00);
                     break;
             }
 
