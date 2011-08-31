@@ -152,13 +152,18 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
         {
             Player * plr = ObjectAccessor::GetPlayer(*itr);
 
-            if (!plr || !plr->IsInWorld() || plr->GetTeam() != _player->GetTeam())
+            if (!plr)
             {
                 clearNeeded = true;
                 continue;
             }
 
-            if (!plr->m_lookingForGroup.Have(type, entry))
+            // skip other team
+            if (!plr->IsInWorld() || plr->GetTeam() != _player->GetTeam())
+                continue;
+
+            // skip not have in slot and not group leader cases
+            if (!plr->m_lookingForGroup.Have(type, entry) || (plr->GetGroup() && !plr->GetGroup()->IsLeader(plr->GetGUID())))
             {
                 clearNeeded = true;
                 continue;
@@ -174,11 +179,11 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
 
             switch (lfgType)
             {
-                case 0:
+                case 0: // LFG
                     for (uint8 j = 0; j < MAX_LOOKING_FOR_GROUP_SLOT; ++j)
                         data << plr->GetLFGCombined(j);
                     break;
-                case 1:
+                case 1: // LFM
                     data << plr->GetLFMCombined();
                     for (uint8 j = 0; j < MAX_LOOKING_FOR_GROUP_SLOT-1; ++j)
                         data << uint32(0x00);
@@ -195,40 +200,14 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
             Group *group = plr->GetGroup();
             if (group)
             {
-                bool leader = group->IsLeader(*itr);
-
-                if (leader)
+                data << group->GetMembersCount()-1;             // count of group members without group leader
+                for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
                 {
-                    data << group->GetMembersCount()-1;             // count of group members without group leader
-                    for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
+                    Player *member = gItr->getSource();
+                    if (member && member->GetGUID() != plr->GetGUID())
                     {
-                        Player *member = gItr->getSource();
-                        if (member && member->GetGUID() != plr->GetGUID())
-                        {
-                            data << member->GetPackGUID();          // packed guid
-                            data << member->getLevel();             // player level
-                        }
-                    }
-                }
-                else
-                {
-                    if (Player * tmpPl = ObjectAccessor::GetPlayer(group->GetLeaderGUID()))
-                    {
-                        data << group->GetMembersCount();             // count of group members
-                        data << tmpPl->GetPackGUID();
-                        data << tmpPl->getLevel();
-                    }
-                    else
-                        data << group->GetMembersCount()-1;             // count of group members without group leader
-
-                    for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
-                    {
-                        Player *member = gItr->getSource();
-                        if (member && !group->IsLeader(member->GetGUID()))
-                        {
-                            data << member->GetPackGUID();          // packed guid
-                            data << member->getLevel();             // player level
-                        }
+                        data << member->GetPackGUID();          // packed guid
+                        data << member->getLevel();             // player level
                     }
                 }
             }
@@ -244,6 +223,27 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
     data.put<uint32>(4+4+4, number);
 
     SendPacket(&data);
+
+
+    if (clearNeeded)
+    {
+        tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor accessor;
+
+        // get player container for LFM id
+        if (sWorld.lfgContainer.find(accessor, LFG_COMBINE(entry, type)))
+        {
+            for (std::list<uint64>::iterator itr = accessor->second.begin(); itr != accessor->second.end();)
+            {
+                std::list<uint64>::iterator tmpItr = itr;
+                ++itr;
+                Player * plr = ObjectAccessor::GetPlayer(*tmpItr);
+
+                if (!plr || !plr->m_lookingForGroup.Have(type, entry) ||
+                    (plr->GetGroup() && !plr->GetGroup()->IsLeader(plr->GetGUID())))
+                    accessor->second.erase(tmpItr);
+            }
+        }
+    }
 }
 
 void WorldSession::SendLFGDisabled()
