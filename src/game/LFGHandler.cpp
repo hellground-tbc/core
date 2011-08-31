@@ -127,7 +127,7 @@ void WorldSession::HandleLookingForGroup(WorldPacket& recv_data)
     if (LookingForGroup_auto_join)
         _player->LFGAttemptJoin();
 
-//    SendLfgResult(type, entry, 0);
+    SendLFM(type, entry);
 }
 
 void ClearLFG(uint32 type, uint32 entry)
@@ -171,7 +171,8 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
 
             ++number;
 
-            uint8 lfgType = plr->IsLFM(type, entry);
+//            uint8 lfgType = plr->IsLFM(type, entry);
+            uint8 lfgType = 0;
             data << plr->GetPackGUID();                         // packed guid
             data << plr->getLevel();                            // level
             data << plr->GetZoneId();                           // current zone
@@ -294,6 +295,6 @@ void WorldSession::HandleSetLfgOpcode(WorldPacket & recv_data)
     if (LookingForGroup_auto_join)
         _player->LFGAttemptJoin();
 
-    SendLfgResult(type, entry, 0);
+    SendLFM(type, entry);
 }
 
