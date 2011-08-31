@@ -15067,8 +15067,14 @@ bool Player::isAllowedToLoot(Creature* creature)
         return false;
     }
     else
+    {
+        // recipient may be offline, maybe there is list of players allowed to loot
+        if(creature->HasPlayersAllowedToLoot() && creature->IsPlayerAllowedToLoot(this))
+            return true;
+
         // prevent other players from looting if the recipient got disconnected
         return !creature->hasLootRecipient();
+    }
 }
 
 void Player::_LoadActions(QueryResultAutoPtr result)
