@@ -180,7 +180,7 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
                     break;
                 case 1:
                     data << plr->GetLFMCombined();
-                    for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT-1; ++j)
+                    for (uint8 j = 0; j < MAX_LOOKING_FOR_GROUP_SLOT-1; ++j)
                         data << uint32(0x00);
                     break;
                 default:
