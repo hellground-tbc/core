@@ -195,14 +195,40 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
             Group *group = plr->GetGroup();
             if (group)
             {
-                data << group->GetMembersCount()-1;             // count of group members without group leader
-                for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
+                bool leader = group->IsLeader(*itr);
+
+                if (leader)
                 {
-                    Player *member = gItr->getSource();
-                    if (member && member->GetGUID() != plr->GetGUID())
+                    data << group->GetMembersCount()-1;             // count of group members without group leader
+                    for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
                     {
-                        data << member->GetPackGUID();          // packed guid
-                        data << member->getLevel();             // player level
+                        Player *member = gItr->getSource();
+                        if (member && member->GetGUID() != plr->GetGUID())
+                        {
+                            data << member->GetPackGUID();          // packed guid
+                            data << member->getLevel();             // player level
+                        }
+                    }
+                }
+                else
+                {
+                    if (Player * tmpPl = ObjectAccessor::GetPlayer(group->GetLeaderGUID()))
+                    {
+                        data << group->GetMembersCount();             // count of group members
+                        data << tmpPl->GetPackGUID();
+                        data << tmpPl->getLevel();
+                    }
+                    else
+                        data << group->GetMembersCount()-1;             // count of group members without group leader
+
+                    for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
+                    {
+                        Player *member = gItr->getSource();
+                        if (member && !group->IsLeader(member->GetGUID()))
+                        {
+                            data << member->GetPackGUID();          // packed guid
+                            data << member->getLevel();             // player level
+                        }
                     }
                 }
             }
