@@ -130,11 +130,6 @@ void WorldSession::HandleLookingForGroup(WorldPacket& recv_data)
     SendLFM(type, entry);
 }
 
-void ClearLFG(uint32 type, uint32 entry)
-{
-
-}
-
 void WorldSession::SendLFM(uint32 type, uint32 entry)
 {
     uint32 number = 0;
@@ -185,10 +180,13 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
                     break;
                 case 1:
                     data << plr->GetLFMCombined();
+                    for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT-1; ++j)
+                        data << uint32(0x00);
                     break;
                 default:
                     sLog.outError("WorldSession::SendLFM: wrong lfgtype (%u) for player %u (acc %u)", lfgType, plr->GetGUIDLow(), plr->GetSession()->GetAccountId());
-                    data << 0;
+                    for (uint8 j = 0; j < MAX_LOOKING_FOR_GROUP_SLOT; ++j)
+                        data << uint32(0x00);
                     break;
             }
 
@@ -197,14 +195,40 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
             Group *group = plr->GetGroup();
             if (group)
             {
-                data << group->GetMembersCount()-1;             // count of group members without group leader
-                for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
+                bool leader = group->IsLeader(*itr);
+
+                if (leader)
                 {
-                    Player *member = gItr->getSource();
-                    if (member && member->GetGUID() != plr->GetGUID())
+                    data << group->GetMembersCount()-1;             // count of group members without group leader
+                    for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
                     {
-                        data << member->GetPackGUID();          // packed guid
-                        data << member->getLevel();             // player level
+                        Player *member = gItr->getSource();
+                        if (member && member->GetGUID() != plr->GetGUID())
+                        {
+                            data << member->GetPackGUID();          // packed guid
+                            data << member->getLevel();             // player level
+                        }
+                    }
+                }
+                else
+                {
+                    if (Player * tmpPl = ObjectAccessor::GetPlayer(group->GetLeaderGUID()))
+                    {
+                        data << group->GetMembersCount();             // count of group members
+                        data << tmpPl->GetPackGUID();
+                        data << tmpPl->getLevel();
+                    }
+                    else
+                        data << group->GetMembersCount()-1;             // count of group members without group leader
+
+                    for (GroupReference * gItr = group->GetFirstMember(); gItr != NULL; gItr = gItr->next())
+                    {
+                        Player *member = gItr->getSource();
+                        if (member && !group->IsLeader(member->GetGUID()))
+                        {
+                            data << member->GetPackGUID();          // packed guid
+                            data << member->getLevel();             // player level
+                        }
                     }
                 }
             }
