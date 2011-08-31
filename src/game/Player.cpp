@@ -20219,15 +20219,6 @@ uint32 Player::GetLFGCombined(uint8 slot)
     return m_lookingForGroup.slots[slot].Combine();
 }
 
-uint32 Player::GetLFGCombined(uint32 entry)
-{
-    for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
-        if (m_lookingForGroup.slots[i].entry == entry)
-            return m_lookingForGroup.slots[i].Combine();
-
-    return 0;
-}
-
 uint32 Player::GetLFMCombined()
 {
     return m_lookingForGroup.more.Combine();

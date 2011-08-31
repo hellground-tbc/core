@@ -2163,7 +2163,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         void ClearLFM();
         uint8 IsLFM(uint32 type, uint32 entry);
         uint32 GetLFGCombined(uint8 slot);
-        uint32 GetLFGCombined(uint32 entry);
         uint32 GetLFMCombined();
 
         GridReference<Player> &GetGridRef() { return m_gridRef; }
