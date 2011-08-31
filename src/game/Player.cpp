@@ -20075,8 +20075,6 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     if (slot >= MAX_LOOKING_FOR_GROUP_SLOT)
         return;
 
-    ClearLFM();
-
     tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
     uint64 guid = GetGUID();
     uint32 combined;
@@ -20105,6 +20103,18 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
 
     combined = LFG_COMBINE(entry, type);
 
+    // if he want set empty then only clean slot
+    if (!combined)
+    {
+        for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+            if (!m_lookingForGroup[i].Empty())
+                return;
+
+        // clear LFM (for sure, client resets presets in LFM when LFG is empty) if lfg is cleaned
+        ClearLFM();
+        return;
+    }
+
     // if we can't find list in container or add new list
     if (!sWorld.lfgContainer.find(a, combined))
         if (!sWorld.lfgContainer.insert(a, combined))
@@ -20116,6 +20126,15 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
 
 void Player::LFMSet(uint32 entry, uint32 type)
 {
+    // don't add to lfm list if still in lfg
+    for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+        if (!m_lookingForGroup.slots[i].Empty())
+            return;
+
+    // don't add to lfm if in group and not leader (for cases when group member wants check instance list or for raid assists)
+    if (GetGroup() && GetGroup()->IsLeader(GetGUID()))
+        return;
+
     ClearLFG();
     tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
 
