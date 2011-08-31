@@ -20109,6 +20109,8 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
 
     m_lookingForGroup.slots[slot].Set(entry, type);
     a->second.push_back(guid);
+
+    JoinLFGChannel();
 }
 
 void Player::LFMSet(uint32 entry, uint32 type)
@@ -20149,6 +20151,7 @@ void Player::LFMSet(uint32 entry, uint32 type)
 
     m_lookingForGroup.more.Set(entry, type);
     a->second.push_back(guid);
+    JoinLFGChannel();
 }
 
 void Player::ClearLFG()
