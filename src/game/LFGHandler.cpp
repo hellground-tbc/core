@@ -151,7 +151,7 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
     bool clearNeeded = false;
 
     // get player container for LFM id
-    if (sWorld.lfgContainer.find(a, entry))
+    if (sWorld.lfgContainer.find(a, LFG_COMBINE(entry, type)))
     {
         for (std::list<uint64>::const_iterator itr = a->second.begin(); itr != a->second.end(); ++itr)
         {
@@ -171,8 +171,7 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
 
             ++number;
 
-//            uint8 lfgType = plr->IsLFM(type, entry);
-            uint8 lfgType = 0;
+            uint8 lfgType = plr->IsLFM(type, entry);
             data << plr->GetPackGUID();                         // packed guid
             data << plr->getLevel();                            // level
             data << plr->GetZoneId();                           // current zone
@@ -295,6 +294,6 @@ void WorldSession::HandleSetLfgOpcode(WorldPacket & recv_data)
     if (LookingForGroup_auto_join)
         _player->LFGAttemptJoin();
 
-    SendLFM(type, entry);
+    SendLfgResult(type, entry, 0);
 }
 
