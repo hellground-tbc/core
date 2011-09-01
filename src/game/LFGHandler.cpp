@@ -297,6 +297,19 @@ void WorldSession::UpdateLFG()
     SendPacket(&data);
 }
 
+void WorldSession::UpdateLFM()
+{
+    if (!_player || !_player->IsInWorld())
+        return;
+
+    // start prepare packet;
+    WorldPacket data(SMSG_LFG_UPDATE_LFM);
+
+    data << _player->GetLFMCombined();
+
+    SendPacket(&data);
+}
+
 void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
 {
     switch (lfg_type)
