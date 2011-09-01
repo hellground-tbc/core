@@ -143,6 +143,7 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
             if(InciteChaosWait_Timer < diff)
             {
                 InciteChaos = false;
+                DoZoneInCombat();
                 DoResetThreat();
 
                 Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true);
