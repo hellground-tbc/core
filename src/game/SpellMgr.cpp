@@ -313,23 +313,26 @@ void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
     if (!spellInfo)
         return;
 
-    if (spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags == 256) // Searing Pain
+    if (spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x100LL) // Searing Pain
         threat *= 2.0f;
 
-    else if (spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags == SPELLFAMILYFLAG_SHAMAN_FROST_SHOCK)
+    else if (spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && spellInfo->SpellFamilyFlags & SPELLFAMILYFLAG_SHAMAN_FROST_SHOCK)
         threat *= 2.0f;
 
-    else if (spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->SpellFamilyFlags == 0x4000000000LL) // Holy shield
+    else if (spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->SpellFamilyFlags & 0x4000000000LL) // Holy shield
         threat *= 1.35f;
 
-    else if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags == 0x10000000000LL) // Lacerate
+    else if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x10000000000LL) // Lacerate
         threat *= 0.20f;
 
-    else if (spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (spellInfo->SpellFamilyFlags & 0x8400000LL))    // Holy Nova
+    else if (spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && spellInfo->SpellFamilyFlags & 0x8400000LL)    // Holy Nova
         threat = 1.0f;
 
     else if (spellInfo->Id == 33619) // Reflective shield
         threat = 1.0f;
+
+    else if (spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellFamilyFlags & 0x80LL) // Thunder Clap
+        threat *= 1.75f;
 }
 
 uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask)

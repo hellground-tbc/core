@@ -8713,21 +8713,6 @@ bool Unit::IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const
     return false;
 }
 
-bool Unit::IsDamageToThreatSpell(SpellEntry const * spellInfo) const
-{
-    if (!spellInfo)
-        return false;
-
-    uint32 family = spellInfo->SpellFamilyName;
-    uint64 flags = spellInfo->SpellFamilyFlags;
-
-    if ((family == 5 && flags == 256) ||                     //Searing Pain
-        (family == SPELLFAMILY_SHAMAN && flags == SPELLFAMILYFLAG_SHAMAN_FROST_SHOCK))
-        return true;
-
-    return false;
-}
-
 void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attType, SpellEntry const *spellProto)
 {
     if (!pVictim)
