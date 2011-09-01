@@ -280,6 +280,10 @@ struct EnchantDuration
 typedef std::list<EnchantDuration> EnchantDurationList;
 typedef std::list<Item*> ItemDurationList;
 
+
+#define MAX_LOOKING_FOR_GROUP_SLOT 3
+#define LFG_COMBINE(a, b)   uint32(a | (b << 24))
+
 struct LookingForGroupSlot
 {
     LookingForGroupSlot() : entry(0), type(0) {}
@@ -288,12 +292,11 @@ struct LookingForGroupSlot
     void Set(uint32 _entry, uint32 _type) { entry = _entry; type = _type; }
     bool Is(uint32 _entry, uint32 _type) const { return entry==_entry && type==_type; }
     bool canAutoJoin() const { return entry && (type == 1 || type == 5); }
+    uint32 Combine() { return LFG_COMBINE(entry, type); }
 
     uint32 entry;
     uint32 type;
 };
-
-#define MAX_LOOKING_FOR_GROUP_SLOT 3
 
 struct LookingForGroup
 {
@@ -301,25 +304,39 @@ struct LookingForGroup
     bool HaveInSlot(LookingForGroupSlot const& slot) const { return HaveInSlot(slot.entry,slot.type); }
     bool HaveInSlot(uint32 _entry, uint32 _type) const
     {
-        for (int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+        for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
             if (slots[i].Is(_entry,_type))
                 return true;
         return false;
     }
 
+    bool Have(uint32 type, uint32 entry)
+    {
+        if (Empty())
+            return false;
+
+        for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+            if (slots[i].Is(entry, type))
+                return true;
+
+        return more.Is(entry, type);
+    }
+
     bool canAutoJoin() const
     {
-        for (int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+        for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
             if (slots[i].canAutoJoin())
                 return true;
+
         return false;
     }
 
     bool Empty() const
     {
-        for (int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+        for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
             if (!slots[i].Empty())
                 return false;
+
         return more.Empty();
     }
 
@@ -2137,6 +2154,16 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SetAuraUpdateMask(uint8 slot) { m_auraUpdateMask |= (uint64(1) << slot); }
         void UnsetAuraUpdateMask(uint8 slot) { m_auraUpdateMask &= ~(uint64(1) << slot); }
         PartyResult CanUninviteFromGroup() const;
+
+        void LFGAttemptJoin();
+        void LFMAttemptAddMore();
+        void LFGSet(uint8 slot, uint32 entry, uint32 type);
+        void LFMSet(uint32 entry, uint32 type);
+        void ClearLFG();
+        void ClearLFM();
+        uint8 IsLFM(uint32 type, uint32 entry);
+        uint32 GetLFGCombined(uint8 slot);
+        uint32 GetLFMCombined();
 
         GridReference<Player> &GetGridRef() { return m_gridRef; }
         MapReference &GetMapRef() { return m_mapRef; }

@@ -36,6 +36,7 @@
 #include <map>
 #include <set>
 #include <list>
+#include <tbb/concurrent_hash_map.h>
 
 class Object;
 class WorldPacket;
@@ -590,6 +591,10 @@ class World
 
         // available heroic quests
         uint32 specialQuest[6];
+
+        // LFG container, lfg instance id to player guid list. Should be less lockable than prev implementation
+        tbb::concurrent_hash_map<uint32, std::list<uint64> > lfgContainer;
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -597,6 +602,7 @@ class World
 
         void InitDailyQuestResetTime();
         void ResetDailyQuests();
+
     private:
         static volatile bool m_stopEvent;
         static uint8 m_ExitCode;

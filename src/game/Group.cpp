@@ -298,6 +298,9 @@ bool Group::AddMember(const uint64 &guid, const char* name)
         }
         player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
         UpdatePlayerOutOfRange(player);
+
+        player->ClearLFG();
+        player->ClearLFM();
     }
 
     return true;
