@@ -782,6 +782,17 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
     delete [] buf;
 }
 
+void ChatHandler::SendGlobalGMSysMessage(int32 entry, ...)
+{
+    const char *format = GetTrinityString(entry);
+    va_list ap;
+    char str [1024];
+    va_start(ap, entry);
+    vsnprintf(str,1024,format, ap);
+    va_end(ap);
+    SendGlobalGMSysMessage(str);
+}
+
 void ChatHandler::SendGlobalGMSysMessage(const char *str)
 {
     // Chat output

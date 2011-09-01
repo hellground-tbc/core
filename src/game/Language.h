@@ -277,10 +277,10 @@ enum TrinityStrings
     LANG_COMMAND_MODIFY_HONOR           = 299,
 
     LANG_YOUR_CHAT_DISABLED             = 300,
-    LANG_YOU_DISABLE_CHAT               = 301,
+    LANG_GM_DISABLE_CHAT                = 301,
     LANG_CHAT_ALREADY_ENABLED           = 302,
     LANG_YOUR_CHAT_ENABLED              = 303,
-    LANG_YOU_ENABLE_CHAT                = 304,
+    LANG_GM_ENABLE_CHAT                 = 304,
 
     LANG_COMMAND_MODIFY_REP             = 305,
     LANG_COMMAND_MODIFY_ARENA           = 306,

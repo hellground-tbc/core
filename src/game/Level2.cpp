@@ -146,7 +146,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     if (chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notspeaktime, mutereasonstr.c_str());
 
-    PSendSysMessage(LANG_YOU_DISABLE_CHAT, cname.c_str(), notspeaktime, mutereasonstr.c_str());
+    SendGlobalGMSysMessage(LANG_GM_DISABLE_CHAT, author.c_str(), cname.c_str(), notspeaktime, mutereasonstr.c_str());
 
     return true;
 }
@@ -220,7 +220,15 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
     if (chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_ENABLED);
 
-    PSendSysMessage(LANG_YOU_ENABLE_CHAT, cname.c_str());
+    std::string author;
+
+    if (m_session)
+        author = m_session->GetPlayerName();
+    else
+        author = "[CONSOLE]";
+
+    SendGlobalGMSysMessage(LANG_GM_ENABLE_CHAT, author.c_str(), cname.c_str());
+
     return true;
 }
 

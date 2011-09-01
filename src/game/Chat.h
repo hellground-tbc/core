@@ -86,6 +86,7 @@ class ChatHandler
 
         void SendGlobalSysMessage(const char *str);
         void SendGlobalGMSysMessage(const char *str);
+        void SendGlobalGMSysMessage(int32 entry, ...);
 
         bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcommand);
         bool ShowHelpForCommand(ChatCommand *table, const char* cmd);
