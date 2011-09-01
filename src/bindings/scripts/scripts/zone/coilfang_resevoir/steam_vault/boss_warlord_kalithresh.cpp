@@ -95,6 +95,7 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     boss_warlord_kalithreshAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        c->GetPosition(pos);
     }
 
     ScriptedInstance *pInstance;
@@ -104,7 +105,10 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     uint32 Rage_Timer;
     uint64 CurrentDistiller;
     bool CanRage;
-    
+
+    uint32 checkTimer;
+
+    WorldLocation pos;
 
     void Reset()
     {
@@ -115,6 +119,8 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
         Rage_Timer = 45000;
         CanRage = false;
         CurrentDistiller = NULL;
+
+        checkTimer = 3000;
 
         std::list<Creature*> naga_distillers = DoFindAllCreaturesWithEntry(17954, 100);
         for(std::list<Creature*>::iterator it = naga_distillers.begin(); it != naga_distillers.end(); it++)
@@ -177,10 +183,28 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
             pInstance->SetData(TYPE_WARLORD_KALITHRESH, DONE);
     }
 
+    void DamageTaken(Unit* done_by, uint32& damage)
+    {
+        if (!done_by->IsWithinDistInMap(pos, 105.0f))
+            damage = 0;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim() )
             return;
+
+        if (checkTimer < diff)
+        {
+            if (!m_creature->IsWithinDistInMap(pos, 105.0f))
+            {
+                EnterEvadeMode();
+                return;
+            }
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (Rage_Timer < diff)
         {

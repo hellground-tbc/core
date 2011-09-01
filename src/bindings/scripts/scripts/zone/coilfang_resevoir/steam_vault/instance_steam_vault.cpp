@@ -44,10 +44,10 @@ bool GOHello_go_main_chambers_access_panel(Player *player, GameObject* _GO)
         return false;
 
     if (_GO->GetEntry() == ACCESS_PANEL_HYDRO && (pInstance->GetData(TYPE_HYDROMANCER_THESPIA) == DONE || pInstance->GetData(TYPE_HYDROMANCER_THESPIA) == SPECIAL))
-        pInstance->SetData(TYPE_HYDROMANCER_THESPIA,SPECIAL);
+        pInstance->SetData(TYPE_HYDROMANCER_THESPIA, SPECIAL);
 
     if (_GO->GetEntry() == ACCESS_PANEL_MEK && (pInstance->GetData(TYPE_MEKGINEER_STEAMRIGGER) == DONE || pInstance->GetData(TYPE_MEKGINEER_STEAMRIGGER) == SPECIAL))
-        pInstance->SetData(TYPE_MEKGINEER_STEAMRIGGER,SPECIAL);
+        pInstance->SetData(TYPE_MEKGINEER_STEAMRIGGER, SPECIAL);
 
     return true;
 }
@@ -143,6 +143,18 @@ struct TRINITY_DLL_DECL instance_steam_vault : public ScriptedInstance
                 Encounter[1] = data;
                 break;
             case TYPE_WARLORD_KALITHRESH:
+                switch (data)
+                {
+                    case NOT_STARTED:
+                    case DONE:
+                        if (GetData(TYPE_MEKGINEER_STEAMRIGGER) == SPECIAL && GetData(TYPE_HYDROMANCER_THESPIA) == SPECIAL)
+                            HandleGameObject(MainChambersDoor, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(MainChambersDoor, false);
+                        break;
+                }
+
                 Encounter[2] = data;
                 break;
             case TYPE_DISTILLER:
@@ -180,6 +192,8 @@ struct TRINITY_DLL_DECL instance_steam_vault : public ScriptedInstance
                 return MekgineerGUID;
             case DATA_KALITRESH:
                 return KalithreshGUID;
+            case DATA_MAIN_CHAMBERS_DOOR:
+                return MainChambersDoor;
         }
         return 0;
     }

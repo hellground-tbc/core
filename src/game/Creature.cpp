@@ -1206,8 +1206,17 @@ void Creature::SetLootRecipient(Unit *unit)
 
     m_lootRecipient = player->GetGUID();
 
-    if (Map* map = GetMap())
-        if (map->IsDungeon() && isWorldBoss())
+    // special case for world bosses
+    Group* group = player->GetGroup();
+    if (isWorldBoss() && group)
+    {
+        if (GetUnit(group->GetLeaderGUID()))
+            m_lootRecipient = group->GetLeaderGUID();
+        else if (GetUnit(group->GetLooterGuid()))
+            m_lootRecipient = group->GetLooterGuid();
+    
+        Map* map = GetMap();
+        if (map && map->IsDungeon())
         {
             Map::PlayerList const &PlayerList = map->GetPlayers();
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
@@ -1215,6 +1224,7 @@ void Creature::SetLootRecipient(Unit *unit)
                     if (i_pl->GetGroup() == player->GetGroup())
                         m_playersAllowedToLoot.insert(i_pl->GetGUID());
         }
+    }
 
     SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
 }
