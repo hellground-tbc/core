@@ -20107,7 +20107,7 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     if (!combined)
     {
         for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
-            if (!m_lookingForGroup[i].Empty())
+            if (!m_lookingForGroup.slots[i].Empty())
                 return;
 
         // clear LFM (for sure, client resets presets in LFM when LFG is empty) if lfg is cleaned
