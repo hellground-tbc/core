@@ -280,6 +280,23 @@ void WorldSession::SendLFG(uint32 type, uint32 entry)
     SendPacket(&data);*/
 }
 
+void WorldSession::UpdateLFG()
+{
+    if (!_player || !_player->IsInWorld())
+        return;
+
+    // start prepare packet;
+    WorldPacket data(SMSG_LFG_UPDATE_LFG);
+
+    for (uint32 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+    {
+        data << i;
+        data << _player->GetLFGCombined(i);
+    }
+
+    SendPacket(&data);
+}
+
 void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
 {
     switch (lfg_type)

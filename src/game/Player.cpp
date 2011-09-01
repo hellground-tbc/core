@@ -20127,9 +20127,9 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
 void Player::LFMSet(uint32 entry, uint32 type)
 {
     // don't add to lfm list if still in lfg
-    for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
-        if (!m_lookingForGroup.slots[i].Empty())
-            return;
+//    for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+//        if (!m_lookingForGroup.slots[i].Empty())
+//            return;
 
     // don't add to lfm if in group and not leader (for cases when group member wants check instance list or for raid assists)
     if (GetGroup() && GetGroup()->IsLeader(GetGUID()))
@@ -20201,6 +20201,7 @@ void Player::ClearLFG()
     }
 
     LeaveLFGChannel();
+    GetSession()->UpdateLFG();
 }
 
 void Player::ClearLFM()
