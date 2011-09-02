@@ -2388,7 +2388,7 @@ bool ChatHandler::HandlePlaySoundCommand(const char* args)
     return false;
 }
 
-bool ChatHandler::SendGMMail(char* pName, char* msgSubject, char* msgText)
+bool ChatHandler::SendGMMail(const char* pName, const char* msgSubject, const char* msgText)
 {
     if (!pName || !msgSubject || !msgText)
         return false;
