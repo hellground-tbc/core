@@ -20117,6 +20117,10 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     if (slot >= MAX_LOOKING_FOR_GROUP_SLOT)
         return;
 
+    // don't add GM to lfg list
+    if (GetSession()->GetSecurity() > SEC_PLAYER)
+        return;
+
     tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
     uint64 guid = GetGUID();
     uint32 combined;
@@ -20168,6 +20172,10 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
 
 void Player::LFMSet(uint32 entry, uint32 type)
 {
+    // don't add GM to lfm list
+    if (GetSession()->GetSecurity() > SEC_PLAYER)
+        return;
+
     // don't add to lfm list if still in lfg
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
         if (!m_lookingForGroup.slots[i].Empty())
