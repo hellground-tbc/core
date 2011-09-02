@@ -87,7 +87,7 @@ Group::~Group()
         delete[] m_subGroupsCounts;
 }
 
-bool Group::Create(const uint64 &guid, const char * name)
+bool Group::Create(const uint64 &guid, const char * name, bool lfg)
 {
     m_leaderGuid = guid;
     m_leaderName = name;
@@ -121,7 +121,7 @@ bool Group::Create(const uint64 &guid, const char * name)
             GUID_LOPART(m_looterGuid), uint32(m_lootThreshold), m_targetIcons[0], m_targetIcons[1], m_targetIcons[2], m_targetIcons[3], m_targetIcons[4], m_targetIcons[5], m_targetIcons[6], m_targetIcons[7], isRaidGroup(), m_difficulty);
     }
 
-    if (!AddMember(guid, name))
+    if (!AddMember(guid, name, lfg))
         return false;
 
     if (!isBGGroup())
@@ -274,7 +274,7 @@ Player* Group::GetInvited(const std::string& name) const
     return NULL;
 }
 
-bool Group::AddMember(const uint64 &guid, const char* name)
+bool Group::AddMember(const uint64 &guid, const char* name, bool lfg)
 {
     if (!_addMember(guid, name))
         return false;
@@ -299,8 +299,12 @@ bool Group::AddMember(const uint64 &guid, const char* name)
         player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
         UpdatePlayerOutOfRange(player);
 
-        player->ClearLFG();
-        player->ClearLFM();
+        // if it's not from autoadd/autojoin - prevent core freeze
+        if (!lfg)
+        {
+            player->ClearLFG();
+            player->ClearLFM();
+        }
     }
 
     return true;

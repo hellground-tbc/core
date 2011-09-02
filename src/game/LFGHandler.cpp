@@ -218,6 +218,8 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
         }
     }
 
+    a.release();
+
     // fill count placeholders
     data.put<uint32>(4+4,   number);
     data.put<uint32>(4+4+4, number);

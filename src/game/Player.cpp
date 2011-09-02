@@ -19932,6 +19932,9 @@ void Player::LFGAttemptJoin()
     if (m_lookingForGroup.canAutoJoin() || GetGroup())
         return;
 
+    bool found = false;
+    std::list<uint64> fullList;
+
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         // skip empty slot
@@ -19975,7 +19978,7 @@ void Player::LFGAttemptJoin()
             if (!plr->GetGroup())
             {
                 Group* group = new Group;
-                if (!group->Create(plr->GetGUID(), plr->GetName()))
+                if (!group->Create(plr->GetGUID(), plr->GetName(), true))
                 {
                     delete group;
                     continue;
@@ -19985,10 +19988,11 @@ void Player::LFGAttemptJoin()
             }
 
             // stop at success join
-            if (plr->GetGroup()->AddMember(GetGUID(), GetName()))
+            if (plr->GetGroup()->AddMember(GetGUID(), GetName(), true))
             {
                 if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
                     LeaveLFGChannel();
+                found = true;
                 break;
             }
             // full
@@ -19996,8 +20000,26 @@ void Player::LFGAttemptJoin()
             {
                 if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER)
                     plr->LeaveLFGChannel();
+
+                fullList.push_back(*itr);
             }
         }
+    }
+
+    if (found)
+    {
+        ClearLFG();
+        ClearLFM();
+    }
+
+    for (std::list<uint64>::const_iterator itr = fullList.begin(); itr != fullList.end(); ++itr)
+    {
+        Player * plr = ObjectAccessor::GetPlayer(*itr);
+
+        if (!plr)
+            continue;
+
+        plr->ClearLFM();
     }
 }
 
@@ -20016,6 +20038,8 @@ void Player::LFMAttemptAddMore()
     // get player container for LFM id
     if (!sWorld.lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
+
+    std::list<uint64> joinedList;
 
     for (std::list<uint64>::const_iterator iter = a->second.begin(); iter != a->second.end(); ++iter)
     {
@@ -20039,7 +20063,7 @@ void Player::LFMAttemptAddMore()
         if (!GetGroup())
         {
             Group* group = new Group;
-            if (!group->Create(GetGUID(), GetName()))
+            if (!group->Create(GetGUID(), GetName(), true))
             {
                 delete group;
                 return;                                     // can't create group (??)
@@ -20049,17 +20073,19 @@ void Player::LFMAttemptAddMore()
         }
 
         // stop at join fail (full)
-        if (!GetGroup()->AddMember(plr->GetGUID(), plr->GetName()))
+        if (!GetGroup()->AddMember(plr->GetGUID(), plr->GetName(), true))
         {
             if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
                 LeaveLFGChannel();
 
-            return;
+            break;
         }
 
         // joined
         if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER)
             plr->LeaveLFGChannel();
+
+        joinedList.push_back(*iter);
 
         // and group full
         if (GetGroup()->IsFull())
@@ -20067,8 +20093,20 @@ void Player::LFMAttemptAddMore()
             if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
                 LeaveLFGChannel();
 
-            return;
+            break;
         }
+    }
+
+    // clear LFG and LFM for players joined to our pt
+    for (std::list<uint64>::const_iterator itr = joinedList.begin(); itr != joinedList.end(); ++itr)
+    {
+        Player *plr = ObjectAccessor::GetPlayer(*iter);
+
+        if (!plr)
+            continue;
+
+        plr->ClearLFG();
+        plr->ClearLFM();
     }
 }
 
