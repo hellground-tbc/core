@@ -185,7 +185,7 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
 
     void DamageTaken(Unit* done_by, uint32& damage)
     {
-        if (!done_by->IsWithinDistInMap(pos, 105.0f))
+        if (!done_by->IsWithinDistInMap(&pos, 105.0f))
             damage = 0;
     }
 
@@ -196,7 +196,7 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(pos, 105.0f))
+            if (!m_creature->IsWithinDistInMap(&pos, 105.0f))
             {
                 EnterEvadeMode();
                 return;
