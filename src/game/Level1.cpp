@@ -502,6 +502,72 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleGMTicketResponseCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    // format: id "mail text"
+
+    char* guid = strtok((char*)args, " ");
+
+    if (!guid)
+        return false;
+
+    uint64 tguid = atoi(guid);
+    GM_Ticket *ticket = ticketmgr.GetGMTicket(tguid);
+    if (!ticket || ticket->closed != 0)
+    {
+        SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
+        return true;
+    }
+
+    if (ticket && ticket->assignedToGM != 0 && ticket->assignedToGM != m_session->GetPlayer()->GetGUID())
+    {
+        PSendSysMessage(LANG_COMMAND_TICKETCANNOTCLOSE, ticket->guid);
+        return true;
+    }
+
+    char* tail = strtok(NULL, "");
+    if (!tail)
+        return false;
+
+    char* msgText;
+    if (*tail == '"')
+        msgText = strtok(tail+1, "\"");
+    else
+    {
+        char* space = strtok(tail, "\"");
+        if (!space)
+            return false;
+        msgText = strtok(NULL, "\"");
+    }
+
+    if (!msgText)
+        return false;
+
+    if (!SendGMMail(ticket->name.c_str(), "Ticket", msgText))
+        return false;
+
+    std::stringstream ss;
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETCLOSED, m_session->GetPlayer()->GetName());
+    SendGlobalGMSysMessage(ss.str().c_str());
+    ticketmgr.RemoveGMTicket(ticket->guid, m_session->GetPlayer()->GetGUID());
+    Player *plr = objmgr.GetPlayer(ticket->playerGuid);
+
+    if (!plr || !plr->IsInWorld())
+        return true;
+
+    // send abandon ticket
+    WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
+    data << uint32(9);
+    plr->GetSession()->SendPacket(&data);
+
+    return true;
+}
+
 bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
 {
     if (!*args)
@@ -2322,6 +2388,48 @@ bool ChatHandler::HandlePlaySoundCommand(const char* args)
     return false;
 }
 
+bool ChatHandler::SendGMMail(char* pName, char* msgSubject, char* msgText)
+{
+    if (!pName || !msgSubject || !msgText)
+        return false;
+
+    // pName, msgSubject, msgText isn't NUL after prev. check
+    std::string name    = pName;
+    std::string subject = msgSubject;
+    std::string text    = msgText;
+
+    if (!normalizePlayerName(name))
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint64 receiver_guid = objmgr.GetPlayerGUIDByName(name);
+    if (!receiver_guid)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 mailId = objmgr.GenerateMailID();
+    // from console show not existed sender
+    uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
+
+    uint32 messagetype = MAIL_NORMAL;
+    uint32 stationery = MAIL_STATIONERY_GM;
+    uint32 itemTextId = !text.empty() ? objmgr.CreateItemText(text) : 0;
+
+    Player *receiver = objmgr.GetPlayer(receiver_guid);
+
+    WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
+
+    PSendSysMessage(LANG_MAIL_SENT, name.c_str());
+
+    return true;
+}
+
 //Send mail by command
 bool ChatHandler::HandleSendMailCommand(const char* args)
 {
@@ -2370,40 +2478,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
     if (!msgText)
         return false;
 
-    // pName, msgSubject, msgText isn't NUL after prev. check
-    std::string name    = pName;
-    std::string subject = msgSubject;
-    std::string text    = msgText;
-
-    if (!normalizePlayerName(name))
-    {
-        SendSysMessage(LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    uint64 receiver_guid = objmgr.GetPlayerGUIDByName(name);
-    if (!receiver_guid)
-    {
-        SendSysMessage(LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    uint32 mailId = objmgr.GenerateMailID();
-    // from console show not existed sender
-    uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
-
-    uint32 messagetype = MAIL_NORMAL;
-    uint32 stationery = MAIL_STATIONERY_GM;
-    uint32 itemTextId = !text.empty() ? objmgr.CreateItemText(text) : 0;
-
-    Player *receiver = objmgr.GetPlayer(receiver_guid);
-
-    WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
-
-    PSendSysMessage(LANG_MAIL_SENT, name.c_str());
-    return true;
+    return SendGMMail(pName, msgSubject, msgText);
 }
 
 // teleport player to given game_tele.entry

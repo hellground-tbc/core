@@ -550,6 +550,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "unassign",       SEC_MODERATOR,      false, &ChatHandler::HandleGMTicketUnAssignCommand,         "", NULL },
         { "comment",        SEC_MODERATOR,      false, &ChatHandler::HandleGMTicketCommentCommand,          "", NULL },
         { "history",        SEC_MODERATOR,      false, &ChatHandler::HandleGMTicketHistoryCommand,          "", NULL },
+        { "response",       SEC_MODERATOR,      false, &ChatHandler::HandleGMTicketResponseCommand,         "", NULL },
         { NULL,             0,                  false, NULL,                                                "", NULL }
     };
 
