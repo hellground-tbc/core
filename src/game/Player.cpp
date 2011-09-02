@@ -20100,7 +20100,7 @@ void Player::LFMAttemptAddMore()
     // clear LFG and LFM for players joined to our pt
     for (std::list<uint64>::const_iterator itr = joinedList.begin(); itr != joinedList.end(); ++itr)
     {
-        Player *plr = ObjectAccessor::GetPlayer(*iter);
+        Player *plr = ObjectAccessor::GetPlayer(*itr);
 
         if (!plr)
             continue;
