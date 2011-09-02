@@ -20097,6 +20097,8 @@ void Player::LFMAttemptAddMore()
         }
     }
 
+    a.release();
+
     // clear LFG and LFM for players joined to our pt
     for (std::list<uint64>::const_iterator itr = joinedList.begin(); itr != joinedList.end(); ++itr)
     {
