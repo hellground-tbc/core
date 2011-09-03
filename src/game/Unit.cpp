@@ -11177,7 +11177,7 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
         removedSpells.sort();
         removedSpells.unique();
         // Remove auras from removedAuras
-        for (RemoveSpellList::const_iterator i = removedSpells.begin(); i != removedSpells.end();i++)
+        for (RemoveSpellList::iterator i = removedSpells.begin(); i != removedSpells.end();i++)
         {
             if (Aura *pTemp = GetAura(*i, 0)) // should we check all 3 effects ?
             if (pTemp->m_procCharges > 0) // Aura has been refreshed after adding to removedSpells
