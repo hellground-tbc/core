@@ -2896,7 +2896,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                 advance(itr, urand(0, tmpList.size()-1));
 
                 if (Creature * tmpC = me->GetCreature((*itr).trigger))
-                    me->CastSpell(tmpC, SPELL_FURY_OF_MEDIVH, false);
+                    tmpC->CastSpell(tmpC, SPELL_FURY_OF_MEDIVH, false);
 
                 DoScriptText(SCRIPTTEXT_MEDIVH_CHEAT_1, m_creature);
 
@@ -2932,7 +2932,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                 advance(itr, urand(0, tmpList.size()-1));
 
                 if (Creature * tmpC = me->GetCreature((*itr).trigger))
-                    me->CastSpell(tmpC, SPELL_HAND_OF_MEDIVH, false);
+                    tmpC->CastSpell(tmpC, SPELL_HAND_OF_MEDIVH, false);
 
                 DoScriptText(SCRIPTTEXT_MEDIVH_CHEAT_2, m_creature);
 
@@ -2960,7 +2960,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
             thirdCheatTimer = urand(THIRD_CHEAT_TIMER_MIN, THIRD_CHEAT_TIMER_MAX)/2;
         }
         else
-            secondCheatTimer = 5000; // next check in 5 seconds
+            thirdCheatTimer = 5000; // next check in 5 seconds
     }
     else
         thirdCheatTimer -= diff;
