@@ -6068,9 +6068,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 if (procSpell->SpellFamilyFlags & 0x0000000000000002LL)
                     ((Player*)this)->RemoveSpellCooldown(spellId);
 
-                // Lightning Overload -> -100% Threat Mod -50% DMG Mod, it has 1s duration so we don't need to remove aura 
-                CastSpell(this, 39805, true);
-
                 CastSpell(pVictim, spellId, true, castItem, triggeredByAura);
 
                 if (cooldown && GetTypeId()==TYPEID_PLAYER)
