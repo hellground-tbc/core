@@ -513,6 +513,9 @@ void Player::CleanupsBeforeDelete()
         }
     }
 
+    ClearLFG();
+    ClearLFM();
+
     Unit::CleanupsBeforeDelete();
 }
 
@@ -4609,6 +4612,9 @@ void Player::UpdateLocalChannels(uint32 newZone)
 
 void Player::LeaveLFGChannel()
 {
+    if (!sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) || GetSession()->GetSecurity() != SEC_PLAYER)
+        return;
+
     for (JoinedChannelsList::iterator i = m_channels.begin(); i != m_channels.end(); ++i)
     {
         if ((*i)->IsLFG())
@@ -19990,16 +19996,14 @@ void Player::LFGAttemptJoin()
             // stop at success join
             if (plr->GetGroup()->AddMember(GetGUID(), GetName(), true))
             {
-                if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
-                    LeaveLFGChannel();
+                LeaveLFGChannel();
                 found = true;
                 break;
             }
             // full
             else
             {
-                if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER)
-                    plr->LeaveLFGChannel();
+                plr->LeaveLFGChannel();
 
                 fullList.push_back(*itr);
             }
@@ -20075,8 +20079,7 @@ void Player::LFMAttemptAddMore()
         // stop at join fail (full)
         if (!GetGroup()->AddMember(plr->GetGUID(), plr->GetName(), true))
         {
-            if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
-                LeaveLFGChannel();
+            LeaveLFGChannel();
 
             break;
         }
@@ -20090,8 +20093,7 @@ void Player::LFMAttemptAddMore()
         // and group full
         if (GetGroup()->IsFull())
         {
-            if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
-                LeaveLFGChannel();
+            LeaveLFGChannel();
 
             break;
         }
