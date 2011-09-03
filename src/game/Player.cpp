@@ -13825,11 +13825,12 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
                 if (q_status.uState != QUEST_NEW)
                     q_status.uState = QUEST_CHANGED;
             }
-        }
+
         if (CanCompleteQuest(questId))
             CompleteQuest(questId);
         else
             SendQuestComplete(questId);
+        }
     }
 }
 
