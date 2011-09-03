@@ -1147,13 +1147,7 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     {
         if (spellmgr.SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
         {
-            /*SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-            if (srange && GetSpellMaxRange(srange) == 0.0f)
-            {
-                Victim = this;
-                break;
-            }
-            else */if(!Victim)
+            if(!Victim)
             {
                 sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have unit target", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
                 return;
@@ -11157,9 +11151,9 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
             AuraMap::const_iterator upper = GetAuras().upper_bound(i->triggeredByAura_SpellPair);
             for (AuraMap::const_iterator itr = lower; itr!= upper; ++itr)
             {
-                if (itr->second == i->triggeredByAura)
+                if (itr->second == triggeredByAura)
                 {
-                     triggeredByAura->m_procCharges -=1;
+                     triggeredByAura->m_procCharges -= 1;
                      triggeredByAura->UpdateAuraCharges();
                      if (triggeredByAura->m_procCharges <= 0)
                           removedSpells.push_back(triggeredByAura->GetId());
@@ -11175,7 +11169,15 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
         removedSpells.unique();
         // Remove auras from removedAuras
         for (RemoveSpellList::const_iterator i = removedSpells.begin(); i != removedSpells.end();i++)
+        {
+            if (Aura *pTemp = GetAura(*i, 0)) // should we check all 3 effects ? I do not think so :p
+            if (pTemp->m_procCharges > 0) // Aura has been refreshed after adding to removedSpells
+            {
+                removedSpells.erase(i);
+                continue;
+            }
             RemoveAurasDueToSpell(*i);
+        }
     }
     --m_procDeep;
 }
