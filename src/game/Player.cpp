@@ -19941,16 +19941,17 @@ void Player::LFGAttemptJoin()
     bool found = false;
     std::list<uint64> fullList;
 
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         // skip empty slot
         if (m_lookingForGroup.slots[i].Empty())
             continue;
 
-        tbb::concurrent_hash_map<uint32, std::list<uint64> >::const_accessor a; // const_accessor -> write lock only
+        LfgContainerType::const_accessor a; // const_accessor -> write lock only
 
         // skip if container doesn't exist
-        if (!sWorld.lfgContainer.find(a, m_lookingForGroup.slots[i].Combine()))
+        if (!lfgContainer.find(a, m_lookingForGroup.slots[i].Combine()))
             continue;
 
         for (std::list<uint64>::const_iterator itr = a->second.begin(); itr != a->second.end(); ++itr)
@@ -19966,10 +19967,6 @@ void Player::LFGAttemptJoin()
                 continue;
 
             if (!plr->IsInWorld())
-                continue;
-
-            // skip enemies
-            if (plr->GetTeam() != GetTeam())
                 continue;
 
              // skip not auto add, not group leader cases
@@ -20037,10 +20034,11 @@ void Player::LFMAttemptAddMore()
     if (!m_lookingForGroup.more.canAutoJoin() || m_lookingForGroup.more.Empty())
         return;
 
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::const_accessor a;
+    LfgContainerType::const_accessor a;
 
     // get player container for LFM id
-    if (!sWorld.lfgContainer.find(a, m_lookingForGroup.more.Combine()))
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    if (!lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
 
     std::list<uint64> joinedList;
@@ -20052,8 +20050,8 @@ void Player::LFMAttemptAddMore()
         if (!plr || !plr->IsInWorld())
             continue;
 
-        // skip enemies and self
-        if (plr->GetGUID() == GetGUID() || plr->GetTeam() != GetTeam())
+        // skip self
+        if (plr->GetGUID() == GetGUID())
             continue;
 
         // skip not auto join or in group
@@ -20085,8 +20083,7 @@ void Player::LFMAttemptAddMore()
         }
 
         // joined
-        if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER)
-            plr->LeaveLFGChannel();
+        plr->LeaveLFGChannel();
 
         joinedList.push_back(*iter);
 
@@ -20123,16 +20120,17 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     if (GetSession()->GetSecurity() > SEC_PLAYER)
         return;
 
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
+    LfgContainerType::accessor a;
     uint64 guid = GetGUID();
     uint32 combined;
 
     // if not empty then clear slot
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!m_lookingForGroup.slots[slot].Empty())
     {
         combined = m_lookingForGroup.slots[slot].Combine();
 
-        if (sWorld.lfgContainer.find(a, combined))
+        if (lfgContainer.find(a, combined))
         {
             // remove player from list
             for (std::list<uint64>::iterator itr = a->second.begin(); itr != a->second.end();)
@@ -20164,8 +20162,8 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     }
 
     // if we can't find list in container or add new list
-    if (!sWorld.lfgContainer.find(a, combined))
-        if (!sWorld.lfgContainer.insert(a, combined))
+    if (!lfgContainer.find(a, combined))
+        if (!lfgContainer.insert(a, combined))
             return;
 
     m_lookingForGroup.slots[slot].Set(entry, type);
@@ -20191,16 +20189,17 @@ void Player::LFMSet(uint32 entry, uint32 type)
 
     // clear lfg when player want looking for more
     ClearLFG();
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;   // accessor - read and write lock
+    LfgContainerType::accessor a;   // accessor - read and write lock
 
     uint64 guid = GetGUID();
     uint32 combined;
 
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!m_lookingForGroup.more.Empty())
     {
         combined = m_lookingForGroup.more.Combine();
 
-        if (sWorld.lfgContainer.find(a, combined))
+        if (lfgContainer.find(a, combined))
         {
             // remove player from list
             for (std::list<uint64>::iterator itr = a->second.begin(); itr != a->second.end();)
@@ -20220,8 +20219,8 @@ void Player::LFMSet(uint32 entry, uint32 type)
     combined = LFG_COMBINE(entry, type);
 
     // if we can't find list in container or add new list
-    if (!sWorld.lfgContainer.find(a, combined))
-        if (!sWorld.lfgContainer.insert(a, combined))
+    if (!lfgContainer.find(a, combined))
+        if (!lfgContainer.insert(a, combined))
             return;
 
     m_lookingForGroup.more.Set(entry, type);
@@ -20233,16 +20232,17 @@ void Player::LFMSet(uint32 entry, uint32 type)
 
 void Player::ClearLFG()
 {
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         if (m_lookingForGroup.slots[i].Empty())
             continue;
 
-        tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
+        LfgContainerType::accessor a;
 
         uint32 combined = LFG_COMBINE(m_lookingForGroup.slots[i].entry, m_lookingForGroup.slots[i].type);
 
-        if (!sWorld.lfgContainer.find(a, combined))
+        if (!lfgContainer.find(a, combined))
             continue;
 
         // remove player from list
@@ -20264,9 +20264,10 @@ void Player::ClearLFG()
 
 void Player::ClearLFM()
 {
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
+    LfgContainerType::accessor a;
 
-    if (!sWorld.lfgContainer.find(a, m_lookingForGroup.more.Combine()))
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    if (!lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
 
     // remove player from list
