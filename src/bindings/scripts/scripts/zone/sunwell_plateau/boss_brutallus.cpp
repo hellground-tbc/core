@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Brutallus
 SD%Complete: 99
-SDComment: 
+SDComment:
 EndScriptData */
 
 #include "precompiled.h"
@@ -94,7 +94,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
     {
         SlashTimer = 11000;
         StompTimer = 30000;
-        BurnTimer = 60000;
+        BurnTimer = 20000;
         BerserkTimer = 360000;
         CheckTimer = 1000;
 
@@ -251,7 +251,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
     {
         if (!IsIntro && !IntroDone && who->isCharmedOwnedByPlayerOrPlayer() && !me->IsFriendlyTo(who) && me->IsWithinDist(who, 40))
             StartIntro();
-        
+
         if (IntroDone)
             ScriptedAI::MoveInLineOfSight(who);
     }
@@ -318,9 +318,9 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 AddSpellToCast(pTarget, SPELL_BURN);
 
-            BurnTimer = 60000;
+            BurnTimer = 20000;
         }
-        else 
+        else
             BurnTimer -= diff;
 
         if (BerserkTimer < diff && !Enraged)
@@ -345,8 +345,8 @@ struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
     uint32 SummonTimer;
-    
-    void Reset() 
+
+    void Reset()
     {
         SummonTimer = 1000;
     }
@@ -357,7 +357,7 @@ struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
         SummonTimer = 1000;
     }
 
-    void UpdateAI(const uint32 diff) 
+    void UpdateAI(const uint32 diff)
     {
         if (SummonTimer < diff)
         {
@@ -365,12 +365,12 @@ struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
             if (Unit* pMadrigosa= me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
             {
                 if (!me->IsWithinDist(pMadrigosa, 5.0f))
-                {      
+                {
                     z = me->GetPositionZ();
                     me->GetNearPoint2D(x, y, 5, me->GetAngle(pMadrigosa));
                     me->UpdateAllowedPositionZ(x, y, z);
                     me->SummonCreature(MOB_DEATH_CLOUD, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
-                } 
+                }
                 else
                 {
                     if (Unit* pFelmyst= me->GetUnit(pInstance->GetData64(DATA_FELMYST)))
