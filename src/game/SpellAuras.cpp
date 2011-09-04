@@ -1437,8 +1437,6 @@ void Aura::TriggerSpell()
 //                    case 25540:
 //                    case 25544:
 //                        break;
-                    // Thaumaturgy Channel
-                    case 9712: trigger_spell_id = 21029; break;
 //                    // Egan's Blaster
 //                    case 17368: break;
 //                    // Haunted
@@ -4756,6 +4754,12 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     {
         switch (m_spellProto->Id)
         {
+            case 9712:  // Thaumaturgy Channel
+            {
+                if (Unit* caster = GetCaster())
+                    caster->CastSpell(caster, 21029, true, 0, this);
+                break;
+            }
             case 43648: // Electrical Storm makes target levitating
             {
                 if (m_target->HasUnitMovementFlag(MOVEFLAG_LEVITATING))
@@ -4800,6 +4804,15 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     {
         switch (m_spellProto->Id)
         {
+            case 9712: // Thaumaturgy Channel aggro
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(m_target->GetTypeId() == TYPEID_UNIT && !m_target->isInCombat())
+                            ((Creature*)m_target)->AI()->AttackStart(caster);
+                }
+                break;
+            }
             case 43648: // Electrical Storm - stop levitating when spell ends
             {
                 if (!m_target->HasUnitMovementFlag(MOVEFLAG_LEVITATING))
