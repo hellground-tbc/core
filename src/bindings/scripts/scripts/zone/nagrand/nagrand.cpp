@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Nagrand
 SD%Complete: 90
-SDComment: Quest support: 9849, 9868, 9918, 9874, 9923, 9924, 9954, 9991, 10107, 10108, 10044, 10168, 10172, 10646, 10085, 10987. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
+SDComment: Quest support: 9849, 9868, 9879, 9918, 9874, 9923, 9924, 9954, 9991, 10107, 10108, 10044, 10168, 10172, 10646, 10085, 10987. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
 SDCategory: Nagrand
 EndScriptData */
 
@@ -32,7 +32,7 @@ npc_creditmarker_visit_with_ancestors
 mob_sparrowhawk
 npc_corki_capitive
 go_corki_cage
-npc_maghar_captive
+npc_nagrand_captive (npc_maghar_captive and npc_kurenai_captive in 1)
 EndContentData */
 
 #include "precompiled.h"
@@ -663,11 +663,11 @@ enum CorkiCage
     QUEST_HELP1                          = 9923, // HELP!
     NPC_CORKI_CAPITIVE1                  = 18445,
     GO_CORKI_CAGE1                       = 182349,
-    
+
     QUEST_HELP2                          = 9924, // Corki's Gone Missing Again!
     NPC_CORKI_CAPITIVE2                  = 20812,
     GO_CORKI_CAGE2                       = 182350,
-    
+
     QUEST_HELP3                          = 9955, // Cho'war the Pillager
     NPC_CORKI_CAPITIVE3                  = 18369,
     GO_CORKI_CAGE3                       = 182521
@@ -697,7 +697,7 @@ struct npc_corki_capitiveAI : public ScriptedAI
         cage = FindGameObject(GO_CORKI_CAGE3, 5.0f, me);
         break;
     }
-    
+
      if(cage)
       cage->ResetDoorOrButton();
   }
@@ -749,7 +749,7 @@ bool go_corki_cage(Player* pPlayer, GameObject* pGo)
 }
 
 /*#####
-## npc_maghar_captive
+## npc_nagrand_captive
 #####*/
 
 enum eMagharCaptive
@@ -768,6 +768,7 @@ enum eMagharCaptive
     SPELL_HEALING_WAVE          = 12491,
 
     QUEST_TOTEM_KARDASH_H       = 9868,
+    QUEST_TOTEM_KARDASH_A       = 9879,
 
     NPC_MURK_RAIDER             = 18203,
     NPC_MURK_BRUTE              = 18211,
@@ -775,7 +776,8 @@ enum eMagharCaptive
     NPC_MURK_PUTRIFIER          = 18202
 };
 
-static float m_afAmbushA[]= {-1568.805786, 8533.873047, 1.958};
+static float m_afAmbushAH[]= {-1568.805786, 8533.873047, 1.958};
+static float m_afAmbushAA[]= {-1512.240967, 8483.319336, -3.946};
 static float m_afAmbushB[]= {-1491.554321, 8506.483398, 1.248};
 
 struct npc_maghar_captiveAI : public npc_escortAI
@@ -817,7 +819,7 @@ struct npc_maghar_captiveAI : public npc_escortAI
                 DoScriptText(SAY_MAG_COMPLETE, me);
 
                 if (Player* pPlayer = GetPlayerForEscort())
-                    pPlayer->GroupEventHappens(QUEST_TOTEM_KARDASH_H, me);
+                    pPlayer->GroupEventHappens(pPlayer->GetTeam() == ALLIANCE ? QUEST_TOTEM_KARDASH_A : QUEST_TOTEM_KARDASH_H, me);
 
                 SetRun();
                 break;
@@ -886,30 +888,50 @@ struct npc_maghar_captiveAI : public npc_escortAI
     }
 };
 
-bool QuestAccept_npc_maghar_captive(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+bool QuestAccept_npc_nagrand_captive(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
 {
-    if (pQuest->GetQuestId() == QUEST_TOTEM_KARDASH_H)
+    switch (pQuest->GetQuestId())
     {
-        if (npc_maghar_captiveAI* pEscortAI = dynamic_cast<npc_maghar_captiveAI*>(pCreature->AI()))
-        {
-            pCreature->SetStandState(UNIT_STAND_STATE_STAND);
-            pCreature->setFaction(232);
+        case QUEST_TOTEM_KARDASH_H:
+            if (npc_nagrand_captiveAI* pEscortAI = dynamic_cast<npc_nagrand_captiveAI*>(pCreature->AI()))
+            {
+                pCreature->SetStandState(UNIT_STAND_STATE_STAND);
+                pCreature->setFaction(232);
 
-            pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest);
+                pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest);
 
-            DoScriptText(SAY_MAG_START, pCreature);
+                DoScriptText(SAY_MAG_START, pCreature);
 
-            pCreature->SummonCreature(NPC_MURK_RAIDER, m_afAmbushA[0]+2.5f, m_afAmbushA[1]-2.5f, m_afAmbushA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-            pCreature->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushA[0]-2.5f, m_afAmbushA[1]+2.5f, m_afAmbushA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-            pCreature->SummonCreature(NPC_MURK_BRUTE, m_afAmbushA[0], m_afAmbushA[1], m_afAmbushA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-        }
+                pCreature->SummonCreature(NPC_MURK_RAIDER, m_afAmbushAH[0]+2.5f, m_afAmbushAH[1]-2.5f, m_afAmbushAH[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                pCreature->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushAH[0]-2.5f, m_afAmbushAH[1]+2.5f, m_afAmbushAH[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                pCreature->SummonCreature(NPC_MURK_BRUTE, m_afAmbushAH[0], m_afAmbushAH[1], m_afAmbushAH[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+            }
+            break;
+        case QUEST_TOTEM_KARDASH_A:
+            if (npc_nagrand_captiveAI* pEscortAI = dynamic_cast<npc_nagrand_captiveAI*>(pCreature->AI()))
+            {
+                pCreature->SetStandState(UNIT_STAND_STATE_STAND);
+                pCreature->setFaction(232);
+
+                pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest);
+
+                DoScriptText(SAY_MAG_START, pCreature);
+
+                pCreature->SummonCreature(NPC_MURK_RAIDER, m_afAmbushAA[0]+2.5f, m_afAmbushAA[1]-2.5f, m_afAmbushAA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                pCreature->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushAA[0]-2.5f, m_afAmbushAA[1]+2.5f, m_afAmbushAA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                pCreature->SummonCreature(NPC_MURK_BRUTE, m_afAmbushAA[0], m_afAmbushAA[1], m_afAmbushAA[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+            }
+            break;
+        default:
+            return false;
     }
+
     return true;
 }
 
-CreatureAI* GetAI_npc_maghar_captive(Creature* pCreature)
+CreatureAI* GetAI_npc_nagrand_captive(Creature* pCreature)
 {
-    return new npc_maghar_captiveAI(pCreature);
+    return new npc_nagrand_captiveAI(pCreature);
 }
 
 /*####
@@ -977,8 +999,8 @@ void AddSC_nagrand()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "npc_maghar_captive";
-    newscript->GetAI = &GetAI_npc_maghar_captive;
-    newscript->pQuestAccept = &QuestAccept_npc_maghar_captive;
+    newscript->Name = "npc_nagrand_captive";
+    newscript->GetAI = &GetAI_npc_nagrand_captive;
+    newscript->pQuestAccept = &QuestAccept_npc_nagrand_captive;
     newscript->RegisterSelf();
 }
