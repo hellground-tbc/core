@@ -116,7 +116,22 @@ bool ChooseReward_npc_Riggle_Bassbait(Player *player, Creature *_Creature, const
     }
     return true;
 }
-    
+
+bool ChooseReward_npc_Jang(Player *player, Creature *_Creature, const Quest *_Quest, uint32 slot)
+{
+    if(_Quest->GetQuestId()==8194)
+    {
+        uint32 lvl = player->getLevel();
+        int money;
+        if(lvl==70)
+            money = 11200;
+        else
+            money = (pow(lvl,3.43)*0.0053);   // approx. formula according to official data
+        player->ModifyMoney(money);
+    }
+    return true;
+}
+
 /*######
 ##
 ######*/
@@ -133,6 +148,11 @@ void AddSC_stranglethorn_vale()
     newscript = new Script;
     newscript->Name = "npc_riggle_bassbait";
     newscript->pChooseReward = &ChooseReward_npc_Riggle_Bassbait;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_jang";
+    newscript->pChooseReward = &ChooseReward_npc_Jang;
     newscript->RegisterSelf();
 }
 
