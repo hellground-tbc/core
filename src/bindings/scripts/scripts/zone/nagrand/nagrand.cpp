@@ -780,9 +780,9 @@ static float m_afAmbushAH[]= {-1568.805786, 8533.873047, 1.958};
 static float m_afAmbushAA[]= {-1512.240967, 8483.319336, -3.946};
 static float m_afAmbushB[]= {-1491.554321, 8506.483398, 1.248};
 
-struct npc_maghar_captiveAI : public npc_escortAI
+struct npc_nagrand_captiveAI : public npc_escortAI
 {
-    npc_maghar_captiveAI(Creature* pCreature) : npc_escortAI(pCreature) { Reset(); }
+    npc_nagrand_captiveAI(Creature* pCreature) : npc_escortAI(pCreature) { Reset(); }
 
     uint32 m_uiChainLightningTimer;
     uint32 m_uiHealTimer;
