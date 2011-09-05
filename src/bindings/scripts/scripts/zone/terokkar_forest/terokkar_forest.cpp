@@ -2169,7 +2169,7 @@ struct npc_akunoAI : public npc_escortAI
                 break;
             case 13:
                 if (Player* pPlayer = GetPlayerForEscort())
-                    pPlayer->GroupEventHappens(pPlayer->GetTeam() == ALLIANCE ? QUEST_TOTEM_KARDASH_A : QUEST_TOTEM_KARDASH_H, me);
+                    pPlayer->GroupEventHappens(QUEST_ESCAPING_THE_TOMB, me);
 
                 SetRun();
                 break;
