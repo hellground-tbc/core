@@ -420,7 +420,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data)
     return true;
 }
 
-void Creature::Update(uint32 update_diff, uint32 diff) 
+void Creature::Update(uint32 update_diff, uint32 diff)
 {
     switch (m_deathState)
     {
@@ -642,7 +642,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     i_motionMaster.Initialize();
     i_AI = FactorySelector::selectAI(this);
-    
+
     if (oldAI)
         delete oldAI;
 
@@ -689,6 +689,8 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 team, float
                 break;
         }
         LoadCreaturesAddon();
+        if (GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_HASTE_IMMUNE)
+            ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
     }
     return bResult;
 }
@@ -1214,7 +1216,7 @@ void Creature::SetLootRecipient(Unit *unit)
             m_lootRecipient = group->GetLeaderGUID();
         else if (GetUnit(group->GetLooterGuid()))
             m_lootRecipient = group->GetLooterGuid();
-    
+
         Map* map = GetMap();
         if (map && map->IsDungeon())
         {

@@ -375,7 +375,6 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         ForkedLightning = urand(1000, 3000);
         Hurricane = urand(20000, 30000);
         SummonGeyser = urand(3000, 8000);
@@ -942,8 +941,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 
         immolationArrowTimer = 10000 + urand(0, 5000);
         distCheckTimer = 1000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         SetAutocast(SPELL_SKYSTALKER_SHOOT, 2500, true);
     }
 
@@ -1056,8 +1053,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         doomBoltTimer = 5000 + urand(0, 5000);
         freezeTimer = 10000 + urand(0, 5000);
         distCheckTimer = 3000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         SetAutocast(SPELL_WINDREAVER_FIREBALL, 2500, true);
     }
 
@@ -1287,8 +1282,6 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
         flamesTimer = 5000 + urand(0, 10000);
         rainTimer = 15000 + urand(0, 10000);
         stompTimer = 10000 + urand(0, 10000);
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
@@ -1964,7 +1957,6 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         ChainLightning = urand(6000, 25000);
         LightningBolt = urand(1500, 3000);
         LightningShield = 25000;
@@ -2354,7 +2346,6 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         CurseOfMending = urand(10000, 20000);
         Fear = urand(3000, 15000);
         ShadowInferno = 7000;
@@ -2541,7 +2532,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         BloodSiphon = urand(3000, 20000);
         Bloodbolt = urand(5000, 15000);
     }
@@ -4683,7 +4673,6 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         GreaterHeal = 2000;
         HolyNova = urand(5000, 10000);
         ShellOfLife = 20000;

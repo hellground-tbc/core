@@ -58,7 +58,7 @@ EndScriptData */
 //Mage
 #define SPELL_MG_FIREBALL       41383 // fireball is probably obsolete
 #define SPELL_MG_FROSTBOLT      43428
-#define SPELL_MG_FROST_NOVA     43426 
+#define SPELL_MG_FROST_NOVA     43426
 #define SPELL_MG_ICE_LANCE      43427
 
 //Paladin
@@ -265,8 +265,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 46916);
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, 50268674);
-        m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
-        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true); 
+        m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
         Intro = false;
         for(uint8 i = 0; i < 3; i++)
             PlayerAbility_Timer[i] = 999999;
@@ -459,7 +458,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             {
                 UseAbility(i);
                 PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
-            }else 
+            }else
                 PlayerAbility_Timer[i] -= diff;
         }
 

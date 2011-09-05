@@ -62,9 +62,6 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
         InfernoTimer = 60000;
         CheckTimer = 3000;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_ANETHERONEVENT, NOT_STARTED);
     }
@@ -176,7 +173,7 @@ struct TRINITY_DLL_DECL boss_anetheronAI : public hyjal_trashAI
             {
                 AddSpellToCast(target, SPELL_CARRION_SWARM, false, true);
                 SwarmTimer = 12000+rand()%6000;
-                
+
                 switch(rand()%2)
                 {
                     case 0:
@@ -255,7 +252,7 @@ struct TRINITY_DLL_DECL mob_towering_infernalAI : public ScriptedAI
 {
     mob_towering_infernalAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());  
+        pInstance = (c->GetInstanceData());
     }
 
     uint32 CheckTimer;

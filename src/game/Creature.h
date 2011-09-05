@@ -124,22 +124,23 @@ struct GossipOption
 
 enum CreatureFlagsExtra
 {
-    CREATURE_FLAG_EXTRA_INSTANCE_BIND      = 0x00000001,       // creature kill bind instance with killer and killer's group
-    CREATURE_FLAG_EXTRA_CIVILIAN           = 0x00000002,       // not aggro (ignore faction/reputation hostility)
-    CREATURE_FLAG_EXTRA_NO_PARRY           = 0x00000004,       // creature can't parry
-    CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN    = 0x00000008,       // creature can't counter-attack at parry
-    CREATURE_FLAG_EXTRA_NO_BLOCK           = 0x00000010,       // creature can't block
-    CREATURE_FLAG_EXTRA_NO_CRUSH           = 0x00000020,       // creature can't do crush attacks
-    CREATURE_FLAG_EXTRA_NO_XP_AT_KILL      = 0x00000040,       // creature kill not provide XP
-    CREATURE_FLAG_EXTRA_TRIGGER            = 0x00000080,       // trigger creature
-    CREATURE_FLAG_EXTRA_WORLDEVENT         = 0x00004000,       // custom flag for world event creatures (left room for merging)
-    CREATURE_FLAG_EXTRA_CHARM_AI           = 0x00008000,       // use ai when charmed
-    CREATURE_FLAG_EXTRA_NO_TAUNT           = 0x00010000,       // cannot be taunted
-    CREATURE_FLAG_EXTRA_NO_CRIT            = 0x00020000,       // creature can't do critical strikes
-    CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK = 0x00040000,       // creature attack's cannot be blocked
-    CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN    = 0x00080000,
-    CREATURE_FLAG_EXTRA_ALWAYS_WALK        = 0x00100000,
-    CREATURE_FLAG_EXTRA_NO_TARGET          = 0x00200000         // creature won't set UNIT_FIELD_TARGET by self (return in Attack function !)
+    CREATURE_FLAG_EXTRA_INSTANCE_BIND       = 0x00000001,       // 1 creature kill bind instance with killer and killer's group
+    CREATURE_FLAG_EXTRA_CIVILIAN            = 0x00000002,       // 2 not aggro (ignore faction/reputation hostility)
+    CREATURE_FLAG_EXTRA_NO_PARRY            = 0x00000004,       // 4 creature can't parry
+    CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN     = 0x00000008,       // 8 creature can't counter-attack at parry
+    CREATURE_FLAG_EXTRA_NO_BLOCK            = 0x00000010,       // 16 creature can't block
+    CREATURE_FLAG_EXTRA_NO_CRUSH            = 0x00000020,       // 32 creature can't do crush attacks
+    CREATURE_FLAG_EXTRA_NO_XP_AT_KILL       = 0x00000040,       // 64 creature kill not provide XP
+    CREATURE_FLAG_EXTRA_TRIGGER             = 0x00000080,       // 128 trigger creature
+    CREATURE_FLAG_EXTRA_WORLDEVENT          = 0x00004000,       // 256 custom flag for world event creatures (left room for merging)
+    CREATURE_FLAG_EXTRA_CHARM_AI            = 0x00008000,       // 512 use ai when charmed
+    CREATURE_FLAG_EXTRA_NO_TAUNT            = 0x00010000,       // 1024 cannot be taunted
+    CREATURE_FLAG_EXTRA_NO_CRIT             = 0x00020000,       // 2048 creature can't do critical strikes
+    CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK  = 0x00040000,       // 4096 creature attack's cannot be blocked
+    CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN     = 0x00080000,       // 8192
+    CREATURE_FLAG_EXTRA_ALWAYS_WALK         = 0x00100000,       // 16384
+    CREATURE_FLAG_EXTRA_NO_TARGET           = 0x00200000,       // 32768 creature won't set UNIT_FIELD_TARGET by self (return in Attack function !)
+    CREATURE_FLAG_EXTRA_HASTE_IMMUNE        = 0x00400000        // 65536
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
@@ -442,7 +443,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
         char const* GetSubName() const { return GetCreatureInfo()->SubName; }
 
-        void Update(uint32 update_diff, uint32 diff);                         // overwrited Unit::Update 
+        void Update(uint32 update_diff, uint32 diff);                         // overwrited Unit::Update
         void GetRespawnCoord(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 

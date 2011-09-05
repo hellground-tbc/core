@@ -66,9 +66,6 @@ struct TRINITY_DLL_DECL boss_rage_winterchillAI : public hyjal_trashAI
         CheckTimer = 3000;
         Enrage_Timer = 600000;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, NOT_STARTED);
     }

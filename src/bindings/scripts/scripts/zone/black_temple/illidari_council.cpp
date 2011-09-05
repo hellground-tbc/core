@@ -541,8 +541,6 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         m_aexpTimer = 3000;
         m_immunityTimer = 60000;
         SetAutocast(SPELL_ARCANE_BOLT, 2000, true, AUTOCAST_TANK, 40.0f, true);
-        // no slowing for Zerevor
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
         m_checkTimer = 1000;
     }

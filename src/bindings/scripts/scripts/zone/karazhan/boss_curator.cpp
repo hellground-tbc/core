@@ -74,11 +74,9 @@ struct TRINITY_DLL_DECL boss_curatorAI : public ScriptedAI
         CheckTimer = 3000;
         Enraged = false;
         Evocating = false;
-        m_creature->ApplySpellImmune(2, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_ARCANE, true);
-        m_creature->ApplySpellImmune(3, IMMUNITY_STATE, SPELL_AURA_PERIODIC_LEECH, true);
-        m_creature->ApplySpellImmune(4, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);
-        m_creature->ApplySpellImmune(5, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(6, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
+        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_ARCANE, true);
+        m_creature->ApplySpellImmune(1, IMMUNITY_STATE, SPELL_AURA_PERIODIC_LEECH, true);
+        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);
 
         if(pInstance && pInstance->GetData(DATA_CURATOR_EVENT) != DONE)
             pInstance->SetData(DATA_CURATOR_EVENT, NOT_STARTED);
