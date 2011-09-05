@@ -2277,6 +2277,7 @@ void Spell::cancel()
     switch (oldState)
     {
         case SPELL_STATE_PREPARING:
+            CancelGlobalCooldown();
         case SPELL_STATE_DELAYED:
         {
             SendInterrupted(0);
@@ -2307,8 +2308,6 @@ void Spell::cancel()
         default:
             break;
     }
-
-    CancelGlobalCooldown();
 
     SetReferencedFromCurrent(false);
     if (m_selfContainer && *m_selfContainer == this)
