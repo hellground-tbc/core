@@ -6911,7 +6911,7 @@ void Spell::EffectLeapForward(uint32 i)
         //Prevent Falling during swap building/outerspace
         unitTarget->UpdateGroundPositionZ(cx, cy, cz);
 
-        unitTarget->NearTeleportTo(cx, cy, cz, unitTarget->GetOrientation(), unitTarget == m_caster);
+        unitTarget->NearTeleportTo(cx, cy, cz +0.5f, unitTarget->GetOrientation(), unitTarget == m_caster);
     }
 }
 void Spell::EffectLeapBack(uint32 i)
