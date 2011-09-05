@@ -2394,6 +2394,8 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         // Groups
         GroupReference m_group;
+        GroupReference m_originalGroup;
+
         Group *m_groupInvite;
         uint32 m_groupUpdateMask;
         uint64 m_auraUpdateMask;
