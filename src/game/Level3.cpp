@@ -5704,6 +5704,8 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
             return false;
     }
 
+    SendGlobalGMSysMessage(LANG_GM_BANNED_PLAYER, m_session ? m_session->GetPlayerName() : "", nameIPOrMail, duration, reason);
+
     return true;
 }
 
