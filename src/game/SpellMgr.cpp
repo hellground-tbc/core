@@ -2720,8 +2720,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41071: // Raise Dead
         case 41172: // Rapid Shot
         case 40834: // Agonizing Flames
-        case 45032: case 45034: // Curse of Boundless Agony
+        case 45032: // Curse of Boundless Agony
             spellInfo->MaxAffectedTargets = 1;
+            break;
+        case 45034:
+            spellInfo->MaxAffectedTargets = 1;
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
             break;
         case 38281: // Static Charge (LV)
         case 39992: // Najentus: Needle Spine
@@ -2919,6 +2923,14 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 19937: //Illusion: Black Dragonkin
             spellInfo->AreaId = 15;
+            break;
+        case 5246:  // Intimidating Shout
+        case 28062: // Positive Charge
+        case 28085: // Negative Charge
+        case 39090: // Positive Charge
+        case 39093: // Negative Charge
+        case 39968: // Needle Spine Explosion
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
             break;
         default:
             break;

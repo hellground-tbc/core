@@ -2148,26 +2148,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if (!unitList.empty())
         {
-            if (m_spellInfo->Id == 27285) // Seed of Corruption proc spell
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 39968) // Needle Spine Explosion proc
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 37019) // Conflagration proc (Capernian)
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 41067) // Blood Splash proc
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 5246) //Intimidating Shout
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093)  // Positive/Negative Charge
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 45034) // Curse of Boundless Agony jump (Kalecgos)
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 43550) // Mind Control (Hex Lord Malacras)
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 42479) // Protective Ward
-                unitList.remove(m_targets.getUnitTarget());
-
-
             // We don't need immune targets to be taken into list for Fatal Attraction, i know that thix hack is ugly ;]
             // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
             // Same thing for Positive/Negative charge from Mechanar and Naxx encounters
@@ -5360,6 +5340,9 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
         if (!CheckTargetCreatureType(target))
             return false;
     }
+
+    if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF && m_caster == target)
+        return false;
 
     // Check targets for not_selectable unit flag and remove
     // A player can cast spells on his pet (or other controlled unit) though in any state
