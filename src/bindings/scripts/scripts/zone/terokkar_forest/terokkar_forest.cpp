@@ -2191,7 +2191,7 @@ struct npc_akunoAI : public npc_escortAI
 
         if (chainLightningTimer <= uiDiff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_CHAIN_LIGHTNING);
+            AddSpellToCast(me->getVictim(), SPELL_AKUNO_CHAIN_LIGHTNING);
             chainLightningTimer = urand(6000, 12000);
         }
         else
@@ -2206,7 +2206,7 @@ bool QuestAccept_npc_akuno(Player* pPlayer, Creature* pCreature, const Quest* pQ
 {
     if (pQuest->GetQuestId() == QUEST_ESCAPING_THE_TOMB)
     {
-        npc_nagrand_captiveAI* pEscortAI = dynamic_cast<npc_nagrand_captiveAI*>(pCreature->AI());
+        npc_akunoAI* pEscortAI = dynamic_cast<npc_akunoAI*>(pCreature->AI());
         if (pEscortAI)
         {
             pCreature->SetStandState(UNIT_STAND_STATE_STAND);
