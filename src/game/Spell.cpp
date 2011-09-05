@@ -1391,21 +1391,11 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
 
             if (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
                 break;
-            // Avenger's Shield
-            if(m_spellInfo->Id == 32700)
-            {
-                // ppl with interruptible CC & critters
-                while ((*next)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC) ||
-                      (*next)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*next))->GetCreatureType() == CREATURE_TYPE_CRITTER)
-                {
-                    ++next;
-                    if (next == tempUnitMap.end() || cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
-                        return;
-                }
-            }
+
             while (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
                 || !m_caster->canSeeOrDetect(*next, false)
+                || (m_spellInfo->AttributesEx6 & SPELL_ATTR_EX6_CANT_TARGET_CCD && ((*next)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC) || (*next)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*next))->GetCreatureType() == CREATURE_TYPE_CRITTER))
                 || !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !cur->IsWithinLOSInMap(*next))
             {
                 ++next;
@@ -5334,24 +5324,17 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
 
     // Check targets for not_selectable unit flag and remove
     // A player can cast spells on his pet (or other controlled unit) though in any state
-    if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID() && !CanIgnoreNotAttackableFlags())
+    if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
     {
         // any unattackable target skipped
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+        if (!CanIgnoreNotAttackableFlags() && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return false;
-
-        // unselectable targets skipped in all cases except TARGET_UNIT_NEARBY_ENTRY targeting
-        // in case TARGET_UNIT_NEARBY_ENTRY target selected by server always and can't be cheated
-        /*if(target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) &&
-            m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_NEARBY_ENTRY &&
-            m_spellInfo->EffectImplicitTargetB[eff] != TARGET_UNIT_NEARBY_ENTRY)
-            return false;*/
     }
 
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
     if (target != m_caster && target->GetTypeId()==TYPEID_PLAYER)
     {
-        if (((Player*)target)->GetVisibility()==VISIBILITY_OFF)
+        if (((Player*)target)->GetVisibility() == VISIBILITY_OFF)
             return false;
 
         if (((Player*)target)->isGameMaster() && !IsPositiveSpell(m_spellInfo->Id))

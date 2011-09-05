@@ -584,7 +584,7 @@ struct SpellEntry
     uint32    AttributesEx3;                                // 8
     uint32    AttributesEx4;                                // 9
     uint32    AttributesEx5;                                // 10
-    uint32    AttributesCu;                                 // 11 not used dbc data, but used as attributesCustom
+    uint32    AttributesEx6;                                // 11
     uint32    Stances;                                      // 12
     uint32    StancesNot;                                   // 13
     uint32    Targets;                                      // 14
@@ -672,6 +672,8 @@ struct SpellEntry
     uint32    TotemCategory[2];                             // 212-213
     uint32    AreaId;                                       // 214
     uint32    SchoolMask;                                   // 215 school mask
+
+    uint32    AttributesCu;                                 // CUSTOM ! Shouldn't be considered at filling structure with DBC data
 
     private:
         // prevent creating custom entries (copy data from original in fact)
