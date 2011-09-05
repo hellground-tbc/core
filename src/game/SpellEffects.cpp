@@ -2666,7 +2666,7 @@ void Spell::EffectTeleportUnits(uint32 i)
 
     float x = m_targets.m_destX;
     float y = m_targets.m_destY;
-    float z = m_targets.m_destZ;
+    float z = m_targets.m_destZ +0.5f;
     float orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
     sLog.outDebug("Spell::EffectTeleportUnits - teleport unit to %u %f %f %f\n", mapid, x, y, z);
     // Teleport

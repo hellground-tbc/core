@@ -1478,7 +1478,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             {
                 Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
                 TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
-                }
+            }
             else
                 Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             break;
