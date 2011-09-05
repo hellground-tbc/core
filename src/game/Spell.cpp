@@ -5284,13 +5284,14 @@ bool Spell::CanIgnoreNotAttackableFlags()
 bool Spell::CheckTarget(Unit* target, uint32 eff)
 {
     // Check targets for creature type mask and remove not appropriate (skip explicit self target case, maybe need other explicit targets)
-    if (m_spellInfo->EffectImplicitTargetA[eff]!=TARGET_UNIT_CASTER)
+    if (m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_CASTER)
     {
         if (!CheckTargetCreatureType(target))
             return false;
     }
 
-    if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF && m_caster == target)
+    if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF && m_caster == target &&
+        !(m_spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_CASTER && m_spellInfo->EffectImplicitTargetB[eff] == 0))
         return false;
 
     // Special case for target check (ignore immuned targets, targets with specific auras etc)
