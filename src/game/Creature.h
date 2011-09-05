@@ -132,15 +132,15 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_CRUSH            = 0x00000020,       // 32 creature can't do crush attacks
     CREATURE_FLAG_EXTRA_NO_XP_AT_KILL       = 0x00000040,       // 64 creature kill not provide XP
     CREATURE_FLAG_EXTRA_TRIGGER             = 0x00000080,       // 128 trigger creature
-    CREATURE_FLAG_EXTRA_WORLDEVENT          = 0x00004000,       // 256 custom flag for world event creatures (left room for merging)
-    CREATURE_FLAG_EXTRA_CHARM_AI            = 0x00008000,       // 512 use ai when charmed
-    CREATURE_FLAG_EXTRA_NO_TAUNT            = 0x00010000,       // 1024 cannot be taunted
-    CREATURE_FLAG_EXTRA_NO_CRIT             = 0x00020000,       // 2048 creature can't do critical strikes
-    CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK  = 0x00040000,       // 4096 creature attack's cannot be blocked
-    CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN     = 0x00080000,       // 8192
-    CREATURE_FLAG_EXTRA_ALWAYS_WALK         = 0x00100000,       // 16384
-    CREATURE_FLAG_EXTRA_NO_TARGET           = 0x00200000,       // 32768 creature won't set UNIT_FIELD_TARGET by self (return in Attack function !)
-    CREATURE_FLAG_EXTRA_HASTE_IMMUNE        = 0x00400000        // 65536
+    CREATURE_FLAG_EXTRA_WORLDEVENT          = 0x00004000,       // 16384 custom flag for world event creatures (left room for merging)
+    CREATURE_FLAG_EXTRA_CHARM_AI            = 0x00008000,       // 32768 use ai when charmed
+    CREATURE_FLAG_EXTRA_NO_TAUNT            = 0x00010000,       // 65536 cannot be taunted
+    CREATURE_FLAG_EXTRA_NO_CRIT             = 0x00020000,       // 131072 creature can't do critical strikes
+    CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK  = 0x00040000,       // 262144 creature attack's cannot be blocked
+    CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN     = 0x00080000,       // 524288
+    CREATURE_FLAG_EXTRA_ALWAYS_WALK         = 0x00100000,       // 1048576
+    CREATURE_FLAG_EXTRA_NO_TARGET           = 0x00200000,       // 2097152 creature won't set UNIT_FIELD_TARGET by self (return in Attack function !)
+    CREATURE_FLAG_EXTRA_HASTE_IMMUNE        = 0x00400000        // 4194304
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
