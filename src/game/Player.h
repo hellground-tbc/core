@@ -1716,6 +1716,15 @@ class TRINITY_DLL_SPEC Player : public Unit
         void LeaveLFGChannel();
         void JoinLFGChannel();
 
+        // BattleGround Group System
+        void SetBattleGroundRaid(Group *group, int8 subgroup = -1);
+        void RemoveFromBattleGroundRaid();
+       
+        Group * GetOriginalGroup() { return m_originalGroup.getTarget(); }
+        GroupReference& GetOriginalGroupRef() { return m_originalGroup; }
+        uint8 GetOriginalSubGroup() const { return m_originalGroup.getSubGroup(); }
+        void SetOriginalGroup(Group *group, int8 subgroup = -1);
+
         void UpdateDefense();
         void UpdateWeaponSkill (WeaponAttackType attType);
         void UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool defence);

@@ -19900,7 +19900,6 @@ PartyResult Player::CanUninviteFromGroup() const
     return PARTY_RESULT_OK;
 }
 
-void Player::SetBattleGroundRaid(Group* group, int8 subgroup)
 void Player::LFGAttemptJoin()
 {
     // skip autojoin disabled and player in group cases
@@ -20229,7 +20228,6 @@ void Player::ClearLFG()
 
     LeaveLFGChannel();
     GetSession()->SendUpdateLFG();
-    m_group.setSubGroup((uint8)subgroup);
 }
 
 void Player::ClearLFM()
@@ -20275,6 +20273,41 @@ uint32 Player::GetLFGCombined(uint8 slot)
 uint32 Player::GetLFMCombined()
 {
     return m_lookingForGroup.more.Combine();
+}
+
+void Player::SetBattleGroundRaid(Group* group, int8 subgroup)
+{
+    //we must move references from m_group to m_originalGroup
+    SetOriginalGroup(GetGroup(), GetSubGroup());
+
+    m_group.unlink();
+    m_group.link(group, this);
+    m_group.setSubGroup((uint8)subgroup);
+}
+
+void Player::RemoveFromBattleGroundRaid()
+{
+    //remove existing reference
+    m_group.unlink();
+    if (Group* group = GetOriginalGroup())
+    {
+        m_group.link(group, this);
+        m_group.setSubGroup(GetOriginalSubGroup());
+    }
+    SetOriginalGroup(NULL);
+}
+
+void Player::SetOriginalGroup(Group *group, int8 subgroup)
+{
+    if (group == NULL)
+        m_originalGroup.unlink();
+    else
+    {
+        // never use SetOriginalGroup without a subgroup unless you specify NULL for group
+        //MANGOS_ASSERT(subgroup >= 0);
+        m_originalGroup.link(group, this);
+        m_originalGroup.setSubGroup((uint8)subgroup);
+    }
 }
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
