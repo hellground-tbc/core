@@ -666,14 +666,12 @@ struct SpellEntry
     uint32    PreventionType;                               // 204
     //uint32    StanceBarOrder;                             // 205 not used
     float     DmgMultiplier[3];                             // 206-208
-    //uint32    MinFactionId;                               // 209 not used, and 0 in 2.4.2
+    uint32    AttributesCu;                                 // 209 not used, and 0 in 2.4.2
     //uint32    MinReputation;                              // 210 not used, and 0 in 2.4.2
     //uint32    RequiredAuraVision;                         // 211 not used
     uint32    TotemCategory[2];                             // 212-213
     uint32    AreaId;                                       // 214
     uint32    SchoolMask;                                   // 215 school mask
-
-    uint32    AttributesCu;                                 // CUSTOM ! Shouldn't be considered at filling structure with DBC data
 
     private:
         // prevent creating custom entries (copy data from original in fact)
