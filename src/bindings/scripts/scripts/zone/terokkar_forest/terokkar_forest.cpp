@@ -2340,5 +2340,6 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name="npc_akuno";
     newscript->GetAI = &GetAI_npc_akuno;
+    newscript->pQuestAccept = &QuestAccept_npc_akuno;
     newscript->RegisterSelf();
 }
