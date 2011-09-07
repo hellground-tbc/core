@@ -128,6 +128,8 @@ struct TRINITY_DLL_DECL boss_entropiusAI : public ScriptedAI
     bool Combat;
     uint32 BlackHoleSummonTimer;
 
+    uint32 checkTimer;
+
     void Reset()
     {
         if (!Combat)
@@ -141,6 +143,8 @@ struct TRINITY_DLL_DECL boss_entropiusAI : public ScriptedAI
 
             Summons.DespawnAll();
         }
+
+        checkTimer = 3000;
     }
 
     void EnterCombat(Unit *who)
@@ -183,6 +187,14 @@ struct TRINITY_DLL_DECL boss_entropiusAI : public ScriptedAI
     {
         if (!UpdateVictim())
             return;
+
+        if (checkTimer < diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (!Combat)
             Combat = true;
@@ -235,6 +247,8 @@ struct TRINITY_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
     uint8 Phase;
     uint32 Timer[4];
 
+    uint32 checkTimer;
+
     bool DarkFiend;
 
     void Reset()
@@ -250,6 +264,8 @@ struct TRINITY_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
         Summons.DespawnAll();
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetVisibility(VISIBILITY_ON);
+
+        checkTimer = 3000;
 
         pInstance->SetData(DATA_MURU_EVENT, NOT_STARTED);
     }
@@ -299,6 +315,14 @@ struct TRINITY_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
     {
         if (!UpdateVictim())
             return;
+
+        if (checkTimer < diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (Phase == 3)
         {

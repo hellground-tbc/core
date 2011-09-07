@@ -109,6 +109,8 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
     uint32 ConflagrationTimer;
     uint32 EnrageTimer;
 
+    uint32 checkTimer;
+
     void Reset()
     {
         Unit* Alythess = m_creature->GetUnit(pInstance->GetData64(DATA_ALYTHESS));
@@ -128,6 +130,8 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         ShadowimageTimer = 20000;
         ConflagrationTimer = 30000;
         EnrageTimer = 360000;
+
+        checkTimer = 3000;
 
         SisterDeath = false;
 
@@ -179,6 +183,14 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
 
         if (!UpdateVictim())
             return;
+
+        if (checkTimer < diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (SisterDeath)
         {
@@ -287,6 +299,8 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
     uint32 FlamesearTimer;
     uint32 EnrageTimer;
 
+    uint32 checkTimer;
+
     void Reset()
     {
         SetAutocast(SPELL_BLAZE, 3000, true);
@@ -314,8 +328,9 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
         SisterDeath = false;
         IntroDone = false;
 
-        if(pInstance)
-            pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
+        checkTimer = 3000;
+
+        pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
@@ -430,6 +445,14 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
         if (!UpdateVictim())
             return;
+
+        if (checkTimer < diff)
+        {
+            DoZoneInCombat();
+            checkTimer = 3000;
+        }
+        else
+            checkTimer -= diff;
 
         if (SisterDeath)
         {
