@@ -703,7 +703,7 @@ struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
 
         if(TailSweep < diff)
         {
-            AddSpellToCast((Unit*)NULL, SPELL_TAIL_SWEEP);
+            AddSpellToCast(SPELL_TAIL_SWEEP, false);
             TailSweep = urand(5000, 8000);
         }
         else

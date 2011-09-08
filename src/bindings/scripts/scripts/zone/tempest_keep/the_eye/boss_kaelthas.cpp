@@ -1606,9 +1606,9 @@ struct TRINITY_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_
             }
 
             if(InMeleeRange)
-                ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
+                ForceSpellCast(SPELL_ARCANE_EXPLOSION, true);
 
-            ArcaneExplosion_Timer = 2000+rand()%2000;
+            ArcaneExplosion_Timer = urand(2000, 4000);
         }
         else
             ArcaneExplosion_Timer -= diff;

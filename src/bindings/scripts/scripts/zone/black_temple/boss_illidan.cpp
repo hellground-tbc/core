@@ -357,7 +357,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             {
                 b_maievPhase = false;
                 me->AttackStop();
-                ForceAOESpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, YELL_ILLIDAN_INPRISON_RAID);
+                ForceSpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, true, YELL_ILLIDAN_INPRISON_RAID);
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
             }
@@ -540,8 +540,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_THROW_GLAIVE:
                 {
-                    AddSpellToCast((Unit*)NULL, SPELL_ILLIDAN_THROW_GLAIVE);
-                    AddSpellToCast((Unit*)NULL, SPELL_ILLIDAN_THROW_GLAIVE);
+                    AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, false);
+                    AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, false);
 
                     SetWarglaivesEquipped(false);
 
@@ -1100,7 +1100,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
             {
                 case EVENT_AKAMA_DOOR_CAST_FAIL:
                 {
-                    AddSpellToCastWithScriptText((Unit*)NULL, SPELL_AKAMA_DOOR_CAST_FAIL, SAY_AKAMA_DOOR_SPEECH_NO1);
+                    AddSpellToCastWithScriptText(SPELL_AKAMA_DOOR_CAST_FAIL, false, SAY_AKAMA_DOOR_SPEECH_NO1);
                     events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO1, 8500);
                     break;
                 }
@@ -1145,7 +1145,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                             pSpirit->CastSpell((Unit*)NULL, SPELL_DEATHSWORN_DOOR_CHANNEL, false);
                     }
 
-                    AddSpellToCast((Unit*)NULL, SPELL_AKAMA_DOOR_CAST_SUCCESS);
+                    AddSpellToCast(SPELL_AKAMA_DOOR_CAST_SUCCESS, false);
                     events.ScheduleEvent(EVENT_AKAMA_DOOR_OPEN, 15000);
                     break;
                 }

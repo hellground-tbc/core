@@ -221,15 +221,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                 }
         }
         else
-        {
-            if (temp.isAOECast)
-            {
-                if (temp.spellId)
-                    m_creature->CastSpell(m_creature, temp.spellId, temp.triggered);
-            }
-            else
-                m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
-        }
+            m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
 
         casted = true;
     }
@@ -323,14 +315,14 @@ void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, bo
     /*if (!victim)
         return;*/
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, false, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, visualTarget);
 
     spellList.push_back(temp);
 }
 
 void ScriptedAI::AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered, bool visualTarget)
 {
-    SpellToCast temp(x, y, z, spellId, triggered, 0, false, visualTarget);
+    SpellToCast temp(x, y, z, spellId, triggered, 0, visualTarget);
 
     spellList.push_back(temp);
 }
@@ -340,21 +332,21 @@ void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int3
     /*if (!victim)
         return;*/
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, visualTarget);
 
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddAOESpellToCast(uint32 spellId, bool triggered)
+void ScriptedAI::AddSpellToCast(uint32 spellId, bool self, bool triggered)
 {
-    SpellToCast temp(m_creature, spellId, triggered, 0, true, false);
+    SpellToCast temp(self ? m_creature->GetGUID() : NULL, spellId, triggered, 0, false);
 
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddAOESpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered)
+void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, bool self, int32 scriptTextEntry, bool triggered)
 {
-    SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true, false);
+    SpellToCast temp(self ? m_creature->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false);
 
     spellList.push_back(temp);
 }
@@ -366,20 +358,20 @@ void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell int
 
     switch (interruptCurrent)
     {
-    case INTERRUPT_AND_CAST:
-        m_creature->InterruptNonMeleeSpells(false);
-        break;
-    case INTERRUPT_AND_CAST_INSTANTLY:
-        if(visualTarget)
-            m_creature->SetSelection(victim->GetGUID());
+        case INTERRUPT_AND_CAST:
+            m_creature->InterruptNonMeleeSpells(false);
+            break;
+        case INTERRUPT_AND_CAST_INSTANTLY:
+            if(visualTarget)
+                m_creature->SetSelection(victim->GetGUID());
 
-        m_creature->CastSpell(victim, spellId, triggered);
-        return;
-    default:
-        break;
+            m_creature->CastSpell(victim, spellId, triggered);
+            return;
+        default:
+            break;
     }
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, false, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, visualTarget);
 
     spellList.push_front(temp);
 }
@@ -391,63 +383,64 @@ void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int3
 
     switch(interruptCurrent)
     {
-    case INTERRUPT_AND_CAST:
-        m_creature->InterruptNonMeleeSpells(false);
-        break;
-    case INTERRUPT_AND_CAST_INSTANTLY:
-        if (scriptTextEntry)
-            DoScriptText(scriptTextEntry, m_creature, victim);
+        case INTERRUPT_AND_CAST:
+            m_creature->InterruptNonMeleeSpells(false);
+            break;
+        case INTERRUPT_AND_CAST_INSTANTLY:
+            if (scriptTextEntry)
+                DoScriptText(scriptTextEntry, m_creature, victim);
 
-        if (visualTarget)
-            m_creature->SetSelection(victim->GetGUID());
+            if (visualTarget)
+                m_creature->SetSelection(victim->GetGUID());
 
-        m_creature->CastSpell(victim, spellId, triggered);
-        return;
-    default:
-        break;
+            m_creature->CastSpell(victim, spellId, triggered);
+            return;
+        default:
+            break;
     }
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, visualTarget);
 
     spellList.push_front(temp);
 }
 
-void ScriptedAI::ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent, bool triggered)
+void ScriptedAI::ForceSpellCast(uint32 spellId, bool self, interruptSpell interruptCurrent, bool triggered)
 {
     switch(interruptCurrent)
     {
-    case INTERRUPT_AND_CAST:
-        m_creature->InterruptNonMeleeSpells(false);
-        break;
-    case INTERRUPT_AND_CAST_INSTANTLY:
-        m_creature->CastSpell(m_creature, spellId, triggered);
-        return;
-    default:
-        break;
+        case INTERRUPT_AND_CAST:
+            m_creature->InterruptNonMeleeSpells(false);
+            break;
+        case INTERRUPT_AND_CAST_INSTANTLY:
+            m_creature->CastSpell(self ? m_creature : (Unit*)NULL, spellId, triggered);
+            return;
+        default:
+            break;
     }
 
-    SpellToCast temp(m_creature, spellId, triggered, 0, true, false);
+    SpellToCast temp(self ? m_creature->GetGUID() : NULL, spellId, triggered, 0, false);
 
     spellList.push_front(temp);
 }
 
-void ScriptedAI::ForceAOESpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered)
+void ScriptedAI::ForceSpellCastWithScriptText(uint32 spellId, bool self, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered)
 {
     switch(interruptCurrent)
     {
-    case INTERRUPT_AND_CAST:
-        m_creature->InterruptNonMeleeSpells(false);
-        break;
-    case INTERRUPT_AND_CAST_INSTANTLY:
-        if (m_creature->getVictim() && scriptTextEntry)
-            DoScriptText(scriptTextEntry, m_creature, m_creature->getVictim());
-        m_creature->CastSpell(m_creature, spellId, triggered);
-        return;
-    default:
-        break;
+        case INTERRUPT_AND_CAST:
+            m_creature->InterruptNonMeleeSpells(false);
+            break;
+        case INTERRUPT_AND_CAST_INSTANTLY:
+            if (m_creature->getVictim() && scriptTextEntry)
+                DoScriptText(scriptTextEntry, m_creature, m_creature->getVictim());
+
+            m_creature->CastSpell(self ? m_creature : (Unit*)NULL, spellId, triggered);
+            return;
+        default:
+            break;
     }
 
-    SpellToCast temp(m_creature, spellId, triggered, scriptTextEntry, true, false);
+    SpellToCast temp(self ? m_creature->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false);
 
     spellList.push_front(temp);
 }

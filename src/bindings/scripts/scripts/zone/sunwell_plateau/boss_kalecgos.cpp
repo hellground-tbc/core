@@ -155,7 +155,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         {
             pInstance->SetData(DATA_KALECGOS_EVENT, NOT_STARTED);
             pInstance->SetData(DATA_KALECGOS_PHASE, NOT_STARTED);
-        }  
+        }
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
@@ -271,7 +271,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                 else
                     BadEnding();
                 TalkSequence++;
-            }else 
+            }else
                 TalkTimer -= diff;
         }
         else
@@ -333,39 +333,39 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                     return;
                 }
                 CheckTimer = 1000;
-            }else 
+            }else
                 CheckTimer -= diff;
 
             // cast spells
             if(ArcaneBuffetTimer < diff)
             {
-                AddAOESpellToCast(SPELL_ARCANE_BUFFET);
+                AddSpellToCast(SPELL_ARCANE_BUFFET, true);
                 ArcaneBuffetTimer = 8000;
             }else ArcaneBuffetTimer -= diff;
 
             if(FrostBreathTimer < diff)
             {
-                AddAOESpellToCast(SPELL_FROST_BREATH);
+                AddSpellToCast(SPELL_FROST_BREATH, true);
                 FrostBreathTimer = 15000;
             }else FrostBreathTimer -= diff;
 
             if(TailLashTimer < diff)
             {
-                AddAOESpellToCast(SPELL_TAIL_LASH);
+                AddSpellToCast(SPELL_TAIL_LASH, true);
                 TailLashTimer = 15000;
             }else TailLashTimer -= diff;
 
             if(WildMagicTimer < diff)
             {
-                AddAOESpellToCast(WildMagic[rand()%6]);
+                AddSpellToCast(WildMagic[rand()%6], true);
                 WildMagicTimer = 20000;
             }else WildMagicTimer -= diff;
 
             if(SpectralBlastTimer < diff)
             {
-                AddSpellToCast(m_creature, SPELL_SPECTRAL_BLAST);
-                SpectralBlastTimer = 20000+(rand()%5000);
-            }else 
+                AddSpellToCast(SPELL_SPECTRAL_BLAST, true);
+                SpectralBlastTimer = urand(20000, 25000);
+            }else
                 SpectralBlastTimer -= diff;
 
             CastNextSpellIfAnyAndReady();
@@ -657,7 +657,7 @@ bool GOkalecgos_teleporter(Player *player, GameObject* _GO)
     }
     else
         return false; //player->CastSpell(player, SPELL_TELEPORT_SPECTRAL, true);
-    
+
 }
 
 CreatureAI* GetAI_boss_kalecgos(Creature *_Creature)
