@@ -125,10 +125,10 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         }
 
         ShadowbladesTimer = 10000;
-        ShadownovaTimer = 30000;
-        ConfoundingblowTimer = 25000;
+        ShadownovaTimer = urand(25000, 35000);
+        ConfoundingblowTimer = urand(20000, 30000);
         ShadowimageTimer = 20000;
-        ConflagrationTimer = 30000;
+        ConflagrationTimer = urand(30000, 35000);
         EnrageTimer = 360000;
 
         checkTimer = 3000;
@@ -175,8 +175,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             Unit* Alythess = m_creature->GetUnit(pInstance->GetData64(DATA_ALYTHESS));
             if (Alythess && Alythess->isDead())
             {
-                DoScriptText(YELL_SISTER_ALYTHESS_DEAD, m_creature);
-                AddSpellToCast(m_creature,SPELL_EMPOWER);
+                AddSelfSpellToCastWithScriptText(SPELL_EMPOWER, YELL_SISTER_ALYTHESS_DEAD);
                 SisterDeath = true;
             }
         }
@@ -216,7 +215,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
                     DoScriptText(YELL_SHADOW_NOVA, m_creature);
             }
 
-            ShadownovaTimer = urand(30000, 35000);
+            ShadownovaTimer = urand(25000, 35000);
         }
         else
             ShadownovaTimer -= diff;
@@ -228,7 +227,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             if (target)
                 AddSpellToCast(target, SPELL_CONFOUNDING_BLOW);
 
-            ConfoundingblowTimer = urand(20000, 25000);
+            ConfoundingblowTimer = urand(20000, 30000);
         }
         else
             ConfoundingblowTimer -= diff;
@@ -252,7 +251,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
 
         if (ShadowbladesTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SHADOW_BLADES);
+            AddNullSpellToCast(SPELL_SHADOW_BLADES);
             ShadowbladesTimer = 10000;
         }
         else
@@ -260,7 +259,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
 
         if (EnrageTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_ENRAGE, YELL_ENRAGE);
+            AddSelfSpellToCastWithScriptText(SPELL_ENRAGE, YELL_ENRAGE);
             EnrageTimer = 60000;
         }
         else
@@ -303,7 +302,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        SetAutocast(SPELL_BLAZE, 3000, true);
+        SetAutocast(SPELL_BLAZE, 2750, true);
 
         Unit* Sacrolash = m_creature->GetUnit(pInstance->GetData64(DATA_SACROLASH));
         if (Sacrolash)
@@ -316,7 +315,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             return;
         }
 
-        ConflagrationTimer = 45000;
+        ConflagrationTimer = urand(30000, 35000);
         BlazeTimer = 100;
         PyrogenicsTimer = 15000;
         ShadownovaTimer = 40000;
@@ -437,7 +436,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
                 Unit* Sacrolash = m_creature->GetUnit(pInstance->GetData64(DATA_SACROLASH));
                 if (Sacrolash && Sacrolash->isDead())
                 {
-                    AddSpellToCastWithScriptText(m_creature, SPELL_EMPOWER, YELL_SISTER_SACROLASH_DEAD);
+                    AddSelfSpellToCastWithScriptText(SPELL_EMPOWER, YELL_SISTER_SACROLASH_DEAD);
                     SisterDeath = true;
                 }
             }
@@ -486,15 +485,15 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
         if (FlamesearTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_FLAME_SEAR);
+            AddNullSpellToCast(SPELL_FLAME_SEAR);
             FlamesearTimer = 15000;
         }
         else
-            FlamesearTimer -=diff;
+            FlamesearTimer -= diff;
 
         if (PyrogenicsTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_PYROGENICS);
+            AddSelfSpellToCast(SPELL_PYROGENICS);
             PyrogenicsTimer = 15000;
         }
         else
@@ -502,7 +501,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
         if (EnrageTimer < diff)
         {
-            AddSpellToCastWithScriptText(m_creature, SPELL_ENRAGE, YELL_BERSERK);
+            AddSelfSpellToCastWithScriptText(SPELL_ENRAGE, YELL_BERSERK);
             EnrageTimer = 60000;
         }
         else
@@ -553,7 +552,7 @@ struct TRINITY_DLL_DECL mob_shadow_imageAI : public ScriptedAI
 
         if (ShadowfuryTimer < diff)
         {
-            DoCast(m_creature, SPELL_SHADOW_FURY);
+            DoCast((Unit*)NULL, SPELL_SHADOW_FURY);
             ShadowfuryTimer = 10000;
         }
         else

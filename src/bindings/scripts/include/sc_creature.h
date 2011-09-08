@@ -264,15 +264,25 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Casts queue
     void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false, bool visualTarget = false);
     void AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered = false, bool visualTarget = false);
-    void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
+    void AddNullSpellToCast(uint32 spellId, bool triggered = false, bool visualTarget = false);
+    void AddSelfSpellToCast(uint32 spellId, bool triggered = false, bool visualTarget = false);
     void AddAOESpellToCast(uint32 spellId, bool triggered = false);
+
+    void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
     void AddAOESpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered = false);
+    void AddNullSpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
+    void AddSelfSpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
 
     //Forces spell cast by Id
     void ForceSpellCast(Unit* victim, uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
-    void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
+    void ForceNullSpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
+    void ForceSelfSpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
     void ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
+
+    void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
     void ForceAOESpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
+    void ForceNullSpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
+    void ForceSelfSpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
 
     //Autocast
     void SetAutocast (uint32 spellId, uint32 timer, bool startImmediately = false, autocastTargetMode mode = AUTOCAST_TANK, uint32 range = 0, bool player = false);
