@@ -6312,6 +6312,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                             tmpPl->CastSpell(tmpPl, 29133, true);
             }
             break;
+        case 45235: // Eredar Twins: Blaze
+            m_caster->CastSpell(unitTarget, 45236, true);
+            break;
     }
 
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
