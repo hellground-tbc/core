@@ -93,7 +93,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
         if(ArcaneExplosion < diff)
         {
             if(InMeleeRange())
-                AddAOESpellToCast(SPELL_ARCANE_EXPLOSION);
+                AddSpellToCast(SPELL_ARCANE_EXPLOSION, true);
             ArcaneExplosion = urand(8000, 16000);
         }
         else
@@ -102,7 +102,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
         if(FrostNova < diff)
         {
             if(InMeleeRange())
-                AddAOESpellToCast(SPELL_FROST_NOVA);
+                AddSpellToCast(SPELL_FROST_NOVA, true);
             FrostNova = urand(5000, 10000);
         }
         else
@@ -110,7 +110,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
 
         if(Blink < diff)
         {
-            AddSpellToCast((Unit*)NULL, SPELL_BLINK);
+            AddSpellToCast(SPELL_BLINK, false);
             Blink = urand(30000, 40000);
         }
         else
@@ -184,7 +184,7 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
 
         if(SummonImp < diff)
         {
-            AddSpellToCast((Unit*)NULL, SPELL_SUMMON_IMP);
+            AddSpellToCast(SPELL_SUMMON_IMP, false);
             SummonImp = urand(15000, 20000);
         }
         else
@@ -277,7 +277,7 @@ struct TRINITY_DLL_DECL mob_sunblade_dawn_priestAI : public ScriptedAI
 
         if(HolyNova < diff)
         {
-            AddSpellToCast((Unit*)NULL, SPELL_HOLY_NOVA);
+            AddSpellToCast(SPELL_HOLY_NOVA, false);
             HolyNova = urand(5000, 10000);
         }
         else
@@ -711,7 +711,7 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 */
 
 /****************
-* Blazing Infernal - id 
+* Blazing Infernal - id
 *****************/
 
 /* ============================
@@ -738,7 +738,7 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 */
 
 /****************
-* Apocalypse Guard - id 
+* Apocalypse Guard - id
 *****************/
 
 /* ============================
@@ -753,7 +753,7 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 */
 
 /****************
-* Shadowsword Guardian - id 
+* Shadowsword Guardian - id
 *****************/
 
 void AddSC_sunwell_plateau_trash()

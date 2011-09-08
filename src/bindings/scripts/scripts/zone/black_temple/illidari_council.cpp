@@ -645,7 +645,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
                 {
                     if (pUnit->IsWithinDistInMap(me, 5) && pUnit->GetTypeId() == TYPEID_PLAYER && pUnit->isAlive() && !pUnit->IsImmunedToDamage(SPELL_SCHOOL_MASK_ARCANE))
                     {
-                        ForceAOESpellCast(SPELL_ARCANE_EXPLOSION);
+                        ForceSpellCast(SPELL_ARCANE_EXPLOSION, true);
                         m_aexpTimer = 3000;
                         break;
                     }

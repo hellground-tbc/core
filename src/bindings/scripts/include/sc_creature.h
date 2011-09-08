@@ -79,12 +79,11 @@ public:
     uint64 targetGUID;
     uint32 spellId;
     bool triggered;
-    bool isAOECast;
     bool isDestCast;
     bool setAsTarget;
     int32 scriptTextEntry;
 
-    SpellToCast(Unit* target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool isAOECast, bool visualTarget)
+    SpellToCast(Unit* target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool visualTarget)
     {
 
         if (target)
@@ -95,23 +94,21 @@ public:
         this->isDestCast = false;
         this->spellId = spellId;
         this->triggered = triggered;
-        this->isAOECast = isAOECast;
         this->scriptTextEntry = scriptTextEntry;
         this->setAsTarget = visualTarget;
     }
 
-    SpellToCast(uint64 target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool isAOECast, bool visualTarget)
+    SpellToCast(uint64 target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool visualTarget)
     {
         this->isDestCast = false;
         this->targetGUID = target;
         this->spellId = spellId;
         this->triggered = triggered;
-        this->isAOECast = isAOECast;
         this->scriptTextEntry = scriptTextEntry;
         this->setAsTarget = visualTarget;
     }
 
-    SpellToCast(float x, float y, float z, uint32 spellId, bool triggered, int32 scriptTextEntry, bool isAOECast, bool visualTarget)
+    SpellToCast(float x, float y, float z, uint32 spellId, bool triggered, int32 scriptTextEntry, bool visualTarget)
     {
         isDestCast = true;
         this->castDest[0] = x;
@@ -119,7 +116,6 @@ public:
         this->castDest[2] = z;
         this->spellId = spellId;
         this->triggered = triggered;
-        this->isAOECast = isAOECast;
         this->scriptTextEntry = scriptTextEntry;
         this->setAsTarget = visualTarget;
     }
@@ -129,7 +125,6 @@ public:
         this->targetGUID = 0;
         this->spellId = 0;
         this->triggered = false;
-        this->isAOECast = false;
         this->scriptTextEntry = 0;
         this->setAsTarget = false;
         this->isDestCast = false;
@@ -142,7 +137,6 @@ public:
         this->targetGUID = 0;
         this->spellId = 0;
         this->triggered = false;
-        this->isAOECast = false;
         this->scriptTextEntry = 0;
         this->setAsTarget = false;
         this->isDestCast = false;
@@ -264,25 +258,16 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //Casts queue
     void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false, bool visualTarget = false);
     void AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered = false, bool visualTarget = false);
-    void AddNullSpellToCast(uint32 spellId, bool triggered = false, bool visualTarget = false);
-    void AddSelfSpellToCast(uint32 spellId, bool triggered = false, bool visualTarget = false);
-    void AddAOESpellToCast(uint32 spellId, bool triggered = false);
-
+    void AddSpellToCast(uint32 spellId, bool self, bool triggered = false);
     void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
-    void AddAOESpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered = false);
-    void AddNullSpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
-    void AddSelfSpellToCastWithScriptText(uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
+    void AddSpellToCastWithScriptText(uint32 spellId, bool self, int32 scriptTextEntry, bool triggered = false);
 
     //Forces spell cast by Id
     void ForceSpellCast(Unit* victim, uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
-    void ForceNullSpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
-    void ForceSelfSpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
-    void ForceAOESpellCast(uint32 spellId, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
+    void ForceSpellCast(uint32 spellId, bool self, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
 
     void ForceSpellCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
-    void ForceAOESpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
-    void ForceNullSpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
-    void ForceSelfSpellCastWithScriptText(uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false, bool visualTarget = false);
+    void ForceSpellCastWithScriptText(uint32 spellId, bool self, int32 scriptTextEntry, interruptSpell interruptCurrent = DONT_INTERRUPT, bool triggered = false);
 
     //Autocast
     void SetAutocast (uint32 spellId, uint32 timer, bool startImmediately = false, autocastTargetMode mode = AUTOCAST_TANK, uint32 range = 0, bool player = false);
