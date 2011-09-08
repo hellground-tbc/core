@@ -211,7 +211,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
 
         if (ShadownovaTimer < diff)
         {
-            Unit * alythess = me->GetUnit(pInstance->GetData64(DATA_ALYTHESS));
+            Creature * alythess = me->GetCreature(pInstance->GetData64(DATA_ALYTHESS));
             if (alythess)
             {
                 Unit * target = alythess->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, 1);
@@ -487,7 +487,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
         if (ConflagrationTimer < diff)
         {
-            Unit * sacrolash = me->GetUnit(pInstance->GetData64(DATA_SACROLASH));
+            Creature * sacrolash = me->GetCreature(pInstance->GetData64(DATA_SACROLASH));
             if (sacrolash)
             {
                 Unit * target = sacrolash->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, 1);

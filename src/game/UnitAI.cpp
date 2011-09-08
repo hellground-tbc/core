@@ -362,6 +362,40 @@ Unit* UnitAI::SelectUnit(AttackingTarget target, uint32 position)
     return NULL;
 }
 
+Unit* UnitAI::SelectUnit(SelectAggroTarget target, uint32 position)
+{
+    //ThreatList m_threatlist;
+    std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
+    std::list<HostilReference*>::iterator i = m_threatlist.begin();
+    std::list<HostilReference*>::reverse_iterator r = m_threatlist.rbegin();
+
+    if (position >= m_threatlist.size() || !m_threatlist.size())
+        return NULL;
+
+    switch (target)
+    {
+        case SELECT_TARGET_RANDOM:
+        {
+            advance (i , position +  (rand() % (m_threatlist.size() - position)));
+            return Unit::GetUnit(*me,(*i)->getUnitGuid());
+        }
+        case SELECT_TARGET_TOPAGGRO:
+        {
+            advance (i , position);
+            return Unit::GetUnit(*me,(*i)->getUnitGuid());
+        }
+        case SELECT_TARGET_BOTTOMAGGRO:
+        {
+            advance (r , position);
+            return Unit::GetUnit(*me,(*r)->getUnitGuid());
+        }
+        default:
+            return SelectTarget(target, position);
+    }
+
+    return NULL;
+}
+
 bool UnitAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
 {
     //No target so we can't cast
