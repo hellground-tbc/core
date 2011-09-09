@@ -650,7 +650,7 @@ struct TRINITY_DLL_DECL boss_vajashniAI : public ScriptedAI
         {
             if(rand()%2)
             {
-                if(Unit* target = DoSelectLowestHpFriendly(50, 0))
+                if(Unit* target = SelectLowestHpFriendly(50, 0))
                     AddSpellToCast(target, SPELL_DISPEL_MAGIC);
             }
             else if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_DISPEL_MAGIC), true))
@@ -664,7 +664,7 @@ struct TRINITY_DLL_DECL boss_vajashniAI : public ScriptedAI
 
         if (FlashHeal_Timer <= diff)
         {
-            if(Unit* target = DoSelectLowestHpFriendly(50, 1000))
+            if(Unit* target = SelectLowestHpFriendly(50, 1000))
             {
                 AddSpellToCast(target, SPELL_FLASH_HEAL);
                 FlashHeal_Timer = 5000;
@@ -675,7 +675,7 @@ struct TRINITY_DLL_DECL boss_vajashniAI : public ScriptedAI
 
         if (PWShield_Timer <= diff)
         {
-            if(Unit* target = DoSelectLowestHpFriendly(50, 0))
+            if(Unit* target = SelectLowestHpFriendly(50, 0))
             {
                 AddSpellToCast(target, SPELL_PW_SHIELD);
                 PWShield_Timer = 20000;
@@ -686,7 +686,7 @@ struct TRINITY_DLL_DECL boss_vajashniAI : public ScriptedAI
 
         if (Renew_Timer <= diff)
         {
-            if(Unit* target = DoSelectLowestHpFriendly(50, 0))
+            if(Unit* target = SelectLowestHpFriendly(50, 0))
             {
                 AddSpellToCast(target, SPELL_RENEW);
                 Renew_Timer = 10000;
@@ -1009,7 +1009,7 @@ struct TRINITY_DLL_DECL boss_korvAI : public ScriptedAI
 
         if (LesserHealing_Timer <= diff)
         {
-            if(Unit* target = DoSelectLowestHpFriendly(50, 1000))
+            if(Unit* target = SelectLowestHpFriendly(50, 1000))
             {
                 AddSpellToCast(target,SPELL_LESSER_HEALING_WAVE);
                 LesserHealing_Timer = 6500;

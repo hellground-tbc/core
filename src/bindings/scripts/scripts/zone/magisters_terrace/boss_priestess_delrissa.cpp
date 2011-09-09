@@ -232,10 +232,10 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if(pInstance)
         {
             pInstance->SetData(DATA_DELRISSA_DEATH_COUNT, 1);
-            pInstance->SetData(DATA_DELRISSA_EVENT, DONE);   
+            pInstance->SetData(DATA_DELRISSA_EVENT, DONE);
         }
 
-        
+
         //if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_DELRISSA_DOOR)))
         //    Door->SetGoState(GO_STATE_ACTIVE);
     }
@@ -248,9 +248,9 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
             m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
     }
 
-    Unit* DoSelectLowestHpFriendlyMissingBuff(float range, uint32 spellid)
+    Unit* SelectLowestHpFriendlyMissingBuff(float range, uint32 spellid)
     {
-        std::list<Creature*> missingBuff = DoFindFriendlyMissingBuff(range, spellid);
+        std::list<Creature*> missingBuff = FindFriendlyMissingBuff(range, spellid);
         float healthPct = 100;
         float newHealthPct;
         Unit* target = NULL;
@@ -284,12 +284,12 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
             }
             CheckTimer = 5000;
             // DoZoneInCombat(); ??
-        }else 
+        }else
             CheckTimer -= diff;
 
         if(HealTimer < diff)
         {
-            if(Unit* target = DoSelectLowestHpFriendly(40, 200))
+            if(Unit* target = SelectLowestHpFriendly(40, 200))
             {
                 AddSpellToCast(target, SPELL_FLASH_HEAL);
                 if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
@@ -298,12 +298,12 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                     HealTimer = 10000;
             } else
                 HealTimer = 2000;
-        }else 
+        }else
             HealTimer -= diff;
 
         if(RenewTimer < diff)
         {
-            if(Unit *target = DoSelectLowestHpFriendlyMissingBuff(40, SPELL_RENEW))
+            if(Unit *target = SelectLowestHpFriendlyMissingBuff(40, SPELL_RENEW))
             {
                 AddSpellToCast(target, SPELL_RENEW);
                 if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
@@ -312,19 +312,19 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                     RenewTimer = 8000;
             } else
                 RenewTimer = 1000;
-        }else 
+        }else
             RenewTimer -= diff;
 
 
         if(ShieldTimer < diff)
         {
-            if(Unit *target = DoSelectLowestHpFriendlyMissingBuff(40, SPELL_SHIELD))
+            if(Unit *target = SelectLowestHpFriendlyMissingBuff(40, SPELL_SHIELD))
             {
                 AddSpellToCast(target, SPELL_SHIELD);
                 ShieldTimer = 15000;
             } else
                 ShieldTimer = 1000;
-        }else 
+        }else
             ShieldTimer -= diff;
 
         if(DispelTimer < diff)
@@ -338,14 +338,14 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                     if(target)
                         break;
                 case 1:
-                    friendlyCC = DoFindFriendlyCC(30);
+                    friendlyCC = FindFriendlyCC(30);
                     if(!friendlyCC.empty())
                     {
                         target = *friendlyCC.begin();
                         break;
                     }
                 case 2:
-                    target = DoSelectLowestHpFriendly(30);
+                    target = SelectLowestHpFriendly(30);
                     break;
             }
 
@@ -356,19 +356,19 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
             } else
                 DispelTimer = 1000;
 
-        }else 
+        }else
             DispelTimer -= diff;
 
         if(SWPainTimer < diff)
         {
             SWPainTimer = 1000;
-            if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true, -SPELL_SW_PAIN))  
+            if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true, -SPELL_SW_PAIN))
                 if(!target->hasUnitState(UNIT_STAT_LOST_CONTROL))
                 {
                     AddSpellToCast(target,SPELL_SW_PAIN);
                     SWPainTimer = 10000;
                 }
-        }else 
+        }else
             SWPainTimer -= diff;
 
         /*
@@ -466,7 +466,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         {
             DoResetThreat();
             ResetThreatTimer = 5000 + rand()%15000;
-        }else 
+        }else
             ResetThreatTimer -= diff;
     }
 };
@@ -543,7 +543,7 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
                 Vanish_Target = target->GetGUID();
                 m_creature->GetMotionMaster()->MoveChase(target);
             }
-        }else 
+        }else
             Vanish_Timer -= diff;
 
         if(InVanish)
@@ -576,13 +576,13 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
                 Backstab_Timer = 3000;
             } else
                 Backstab_Timer -= diff;
-                
+
             if(Gouge_Timer < diff)
             {
                 AddSpellToCast(m_creature->getVictim(), SPELL_GOUGE);
                 DoModifyThreatPercent(m_creature->getVictim(),-100);
                 Gouge_Timer = 25000;
-            }else 
+            }else
                 Gouge_Timer -= diff;
 
             if(Poison_Timer < diff)
@@ -601,19 +601,19 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
                     Kick_Timer = 7000;
                 } else
                     Kick_Timer = 1000;
-            }else 
+            }else
                 Kick_Timer -= diff;
 
             if(Eviscerate_Timer < diff)
             {
                 AddSpellToCast(m_creature->getVictim(), SPELL_EVISCERATE);
                 Eviscerate_Timer = 6000;
-            }else 
+            }else
                 Eviscerate_Timer -= diff;
         }
 
         CastNextSpellIfAnyAndReady();
-        if(!InVanish) 
+        if(!InVanish)
             DoMeleeAttackIfReady();
     }
 };

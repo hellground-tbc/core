@@ -218,7 +218,7 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 
         if(FreeFriend < diff )
         {
-            std::list<Creature*> pList = DoFindFriendlyCC(100);
+            std::list<Creature*> pList = FindFriendlyCC(100);
             if (!pList.empty())
             {
                 Unit* target = *(pList.begin());
@@ -492,7 +492,7 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
 
         if(Restoration < diff)
         {
-            Unit* healTarget = DoSelectLowestHpFriendly(40.0f);
+            Unit* healTarget = SelectLowestHpFriendly(40.0f);
             if(healTarget)
                 AddSpellToCast(healTarget, SPELL_RESTORATION);
             Restoration = urand(15000, 20000);     //check targets each 15-20s
@@ -891,7 +891,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 
     void JustDied(Unit *victim)
     {
-        std::list<Creature*> tmp = DoFindAllCreaturesWithEntry(BONECHEWER_ID, 20.0);
+        std::list<Creature*> tmp = FindAllCreaturesWithEntry(BONECHEWER_ID, 20.0);
 
         if (tmp.empty())
             return;
@@ -1234,7 +1234,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         if (fixateTimer < diff)
         {
             victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true);
-            std::list<Creature*> FriendlyList = DoFindAllFriendlyInGrid(100);
+            std::list<Creature*> FriendlyList = FindAllFriendlyInGrid(100);
             std::vector<Creature*> Friendly;
 
             for(std::list<Creature*>::iterator i = FriendlyList.begin(); i != FriendlyList.end(); ++i)
@@ -1698,7 +1698,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
                 ForceSpellCast(m_creature, SPELL_CHAIN_HEAL);
                 ChainHeal = 20000;
             }
-            else if(Unit* healTarget = DoSelectLowestHpFriendly(40, 15000))
+            else if(Unit* healTarget = SelectLowestHpFriendly(40, 15000))
             {
                 ForceSpellCast(healTarget, SPELL_CHAIN_HEAL);
                 ChainHeal = 20000;
@@ -2733,7 +2733,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
 
     uint64 SelectCorpseGUID()
     {
-        std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
+        std::list<Unit*> DeadList = FindAllDeadInRange(50);
         std::list<uint64> CorpseGUID;
         CorpseGUID.clear();
 
@@ -3924,7 +3924,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0f, true))
                 AddSpellToCast(target, SPELL_PROPHECY_OF_BLOOD_PL);
-            std::list<Creature*> Friendly = DoFindAllFriendlyInGrid(20.0f);
+            std::list<Creature*> Friendly = FindAllFriendlyInGrid(20.0f);
             if(!Friendly.empty())
             {
                 std::list<Creature*>::iterator i = Friendly.begin();
@@ -4719,7 +4719,7 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
 
         if(GreaterHeal < diff)
         {
-            Unit* healTarget = DoSelectLowestHpFriendly(40.0f, 20000);
+            Unit* healTarget = SelectLowestHpFriendly(40.0f, 20000);
             if(healTarget)
                 AddSpellToCast(healTarget, SPELL_GREATER_HEAL);
             GreaterHeal = urand(5000, 10000);     //check targets each 5-10s
@@ -5105,7 +5105,7 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
             {
                 if(!shieldCooldown)
                 {
-                    if(Unit* shieldTarget = DoSelectLowestHpFriendly(40, 20000))
+                    if(Unit* shieldTarget = SelectLowestHpFriendly(40, 20000))
                     {
                         AddSpellToCast(shieldTarget, SPELL_POWER_WORD_SHIELD, false, true);
                         shieldCooldown = true;
@@ -5120,7 +5120,7 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
                     shieldCooldownTimer -= diff;
                 if(Heal < diff)
                 {
-                    if(Unit* healTarget = DoSelectLowestHpFriendly(40, 60000))
+                    if(Unit* healTarget = SelectLowestHpFriendly(40, 60000))
                         AddSpellToCast(healTarget, SPELL_HEAL, false, true);
                     Heal = 2600;
                 }

@@ -230,7 +230,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 
     void SummonSouls()
     {
-        std::list<Creature*> triggerList = DoFindAllCreaturesWithEntry(ROS_TRIGGER_ID, 100);
+        std::list<Creature*> triggerList = FindAllCreaturesWithEntry(ROS_TRIGGER_ID, 100);
 
         for (int i = 0; i < NUMBER_ENSLAVED_SOUL; i++)
         {

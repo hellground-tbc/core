@@ -544,7 +544,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
         if(AgonyCurseTimer < diff)
         {
-            AddAOESpellToCast(SPELL_AGONY_CURSE);
+            AddSpellToCast(SPELL_AGONY_CURSE, true);
             AgonyCurseTimer = 20000;
         }else AgonyCurseTimer -= diff;
 

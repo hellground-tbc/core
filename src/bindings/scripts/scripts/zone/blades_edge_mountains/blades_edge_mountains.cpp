@@ -444,7 +444,7 @@ struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
         Player *pPlayer = NULL;
         Trinity::AnyPlayerInObjectRangeCheck p_check(m_creature, 3.0f);
         Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
-        
+
         Cell::VisitAllObjects(m_creature, searcher, 3.0f);
         return pPlayer;
     }
@@ -462,7 +462,7 @@ struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
                 }
 
                 // WE NEED HERE TO BE SURE THAT SPAWN IS VALID !
-                std::list<Creature*> triggers = DoFindAllCreaturesWithEntry(PENTAGRAM_TRIGGER, 50.0);
+                std::list<Creature*> triggers = FindAllCreaturesWithEntry(PENTAGRAM_TRIGGER, 50.0);
                 if(triggers.size() >= 5)
                 {
                     DoSpawnCreature(MAIN_SPAWN,0,0,0,0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
@@ -525,7 +525,7 @@ struct TRINITY_DLL_DECL mob_aetherrayAI : public ScriptedAI
     {
         summoned->GetMotionMaster()->MoveFollow(Unit::GetPlayer(PlayerGUID), PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
     }
-        
+
     void UpdateAI(const uint32 diff)
     {
 
@@ -549,7 +549,7 @@ struct TRINITY_DLL_DECL mob_aetherrayAI : public ScriptedAI
                 target->KilledMonster(23343, m_creature->GetGUID());
                 m_creature->AttackStop(); // delete the normal mob
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                m_creature->RemoveCorpse();          
+                m_creature->RemoveCorpse();
             }
         }
 
@@ -744,13 +744,13 @@ void AddSC_blades_edge_mountains()
     newscript->Name = "mob_aetherray";
     newscript->GetAI = &GetAI_mob_aetherray;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name="npc_wildlord_antelarion";
     newscript->pGossipHello = &GossipHello_npc_wildlord_antelarion;
     newscript->pGossipSelect = &GossipSelect_npc_wildlord_antelarion;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name="npc_kolphis_darkscale";
     newscript->pGossipHello = &GossipHello_npc_kolphis_darkscale;

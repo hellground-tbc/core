@@ -122,7 +122,7 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
 
         checkTimer = 3000;
 
-        std::list<Creature*> naga_distillers = DoFindAllCreaturesWithEntry(17954, 100);
+        std::list<Creature*> naga_distillers = FindAllCreaturesWithEntry(17954, 100);
         for(std::list<Creature*>::iterator it = naga_distillers.begin(); it != naga_distillers.end(); it++)
         {
             (*it)->Respawn();

@@ -39,19 +39,6 @@ enum SelectAggroTarget
     SELECT_TARGET_FARTHEST,
 };
 
-//Selection method used by SelectTarget (CreatureEventAI)
-enum AttackingTarget
-{
-    ATTACKING_TARGET_RANDOM = 0,                            //Just selects a random target
-    ATTACKING_TARGET_TOPAGGRO,                              //Selects targes from top aggro to bottom
-    ATTACKING_TARGET_BOTTOMAGGRO,                           //Selects targets from bottom aggro to top
-    /* not implemented
-    ATTACKING_TARGET_RANDOM_PLAYER,                         //Just selects a random target (player only)
-    ATTACKING_TARGET_TOPAGGRO_PLAYER,                       //Selects targes from top aggro to bottom (player only)
-    ATTACKING_TARGET_BOTTOMAGGRO_PLAYER,                    //Selects targets from bottom aggro to top (player only)
-    */
-};
-
 class TRINITY_DLL_SPEC UnitAI
 {
     protected:
@@ -76,9 +63,6 @@ class TRINITY_DLL_SPEC UnitAI
         virtual void SetGUID(const uint64 &guid, int32 id = 0) {}
         virtual uint64 GetGUID(int32 id = 0) { return 0; }
 
-        Unit* SelectTarget(SelectAggroTarget target, uint32 position = 0, float dist = 0, bool playerOnly = false, int32 aura = 0);
-        void SelectTargetList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist = 0, bool playerOnly = false, int32 aura = 0);
-
         void AttackStartCaster(Unit *victim, float dist);
 
         void DoCast(uint32 spellId);
@@ -96,7 +80,36 @@ class TRINITY_DLL_SPEC UnitAI
         void DoMeleeAttackIfReady();
         bool DoSpellAttackIfReady(uint32 spell);
 
-        Unit *SelectUnit(AttackingTarget target, uint32 position);
+        //Returns friendly unit with the most amount of hp missing from max hp
+        Unit* SelectLowestHpFriendly(float range, uint32 MinHPDiff = 1);
+
+        //Returns a list of creatures with specified entry in range
+        std::list<Creature*> FindAllCreaturesWithEntry(uint32 entry, float range);
+
+        //Returns a list of all friendly units in grid within range
+        std::list<Creature*> FindAllFriendlyInGrid(float range);
+
+        //Returns a list of friendly CC'd units within range
+        std::list<Creature*> FindFriendlyCC(float range);
+
+        //Returns a list of all friendly units missing a specific buff within range
+        std::list<Creature*> FindFriendlyMissingBuff(float range, uint32 spellid);
+
+        //Returns a list of all units that are flagged as DEAD or CORPSE
+        std::list<Unit*> FindAllDeadInRange(float range);
+
+        //Return a list of all players in range
+        std::list<Player*> FindAllPlayersInRange(float range, Unit* finder = NULL);
+
+        //Selects a unit from the creature's current aggro list
+        Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, uint64 = 0, float mindist = 0.0f);
+        Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, float maxdist, bool playerOnly, Powers powerOnly);
+        Unit* SelectUnit(SelectAggroTarget target, uint32 position);
+
+        void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint64 exclude = 0, float mindist = 0.0f);
+
+        Unit* SelectTarget(SelectAggroTarget target, uint32 position = 0, float dist = 0, bool playerOnly = false, int32 aura = 0);
+        void SelectTargetList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist = 0, bool playerOnly = false, int32 aura = 0);
 
         static AISpellInfoType *AISpellInfo;
         static void FillAISpellInfo();

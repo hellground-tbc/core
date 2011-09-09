@@ -764,7 +764,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
         {
             if(CheckTimer < diff)
             {
-                std::list<Creature*> skyguardTargets = DoFindAllCreaturesWithEntry(23277, 5);
+                std::list<Creature*> skyguardTargets = FindAllCreaturesWithEntry(23277, 5);
                 if(phase == 1)
                 {
                     if(!skyguardTargets.empty() && !(*skyguardTargets.begin())->HasAura(SPELL_SKYGUARD_FLARE, 0))
@@ -1935,7 +1935,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
         visual_energy->CastSpell(visual_energy,46242,true); // Visual magic ball
         visual_energy->SendMonsterMove(portal_trigger->GetPositionX(),portal_trigger->GetPositionY(),portal_trigger->GetPositionZ(),1500);
 
-        std::list<Creature*> beam_visual_triggers = DoFindAllCreaturesWithEntry(21451, 30.0f);
+        std::list<Creature*> beam_visual_triggers = FindAllCreaturesWithEntry(21451, 30.0f);
         for (std::list<Creature*>::iterator itr = beam_visual_triggers.begin(); itr != beam_visual_triggers.end(); ++itr)
             (*itr)->CastSpell(visual_energy,36878, false);
     }
@@ -1945,7 +1945,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
         if (Creature * visual_energy = GetClosestCreatureWithEntry(me, 21429, 30.0f))
             visual_energy->RemoveAurasDueToSpell(46242);
 
-        std::list<Unit*> DeadList = DoFindAllDeadInRange(90);
+        std::list<Unit*> DeadList = FindAllDeadInRange(90);
         // Remove Guardians and Harbringer corpses
         for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
         {
@@ -2001,7 +2001,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
             if (!player)
                 return;
 
-            std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
+            std::list<Unit*> DeadList = FindAllDeadInRange(50);
             bool IS_DEFENDER_DEAD=false, IS_BOSS_DEAD=false;
             for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
             {
@@ -2071,7 +2071,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
             checktimer -= diff;
 
 /* Moving Corpse event - need TO DO ;p
-        std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
+        std::list<Unit*> DeadList = FindAllDeadInRange(50);
 
         for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
         {

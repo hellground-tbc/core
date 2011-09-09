@@ -135,7 +135,7 @@ CreatureAI* GetAI_npc_forest_frog(Creature *_Creature)
 
 struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
 {
-    npc_hostageAI(Creature *c) : ScriptedAI(c) 
+    npc_hostageAI(Creature *c) : ScriptedAI(c)
     {
        pInstance = (ScriptedInstance*)c->GetInstanceData();
     }
@@ -147,7 +147,7 @@ struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
     float angle;
     bool EventStarted;
 
-    void Reset() 
+    void Reset()
     {
         CheckTimer = 5000;
         EventStarted = false;
@@ -162,7 +162,7 @@ struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
             return;
 
         if(Id == 1)
-        {   
+        {
             uint8 i = GetHostageIndex(me->GetEntry());
             GameObject *target = m_creature->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_0 + i));
             if(target && RewardReached(target))
@@ -188,12 +188,12 @@ struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
                     {
                         float x, y;
                         target->GetNearPoint2D(x, y, dist, angle);
-                        me->GetMotionMaster()->MovePoint(1, x, y, me->GetPositionZ()); 
+                        me->GetMotionMaster()->MovePoint(1, x, y, me->GetPositionZ());
                     }
                     EventStarted = true;
                 }
                 CheckTimer = 800;
-            } else 
+            } else
                 CheckTimer -= diff;
         }
     }
@@ -211,7 +211,7 @@ struct TRINITY_DLL_DECL npc_tanzarAI : public npc_hostageAI
     {
         me->CastSpell(me, 1804, false); // CHECKME: should do some emote that he is opening chest
         return true;
-    } 
+    }
 };
 
 CreatureAI* GetAI_npc_tanzar(Creature *_Creature)
@@ -221,7 +221,7 @@ CreatureAI* GetAI_npc_tanzar(Creature *_Creature)
 
 struct TRINITY_DLL_DECL npc_harkorAI : public npc_hostageAI
 {
-    npc_harkorAI(Creature *c) : npc_hostageAI(c)    
+    npc_harkorAI(Creature *c) : npc_hostageAI(c)
     {
         dist = 3;
         angle = 3.1415;
@@ -236,7 +236,7 @@ struct TRINITY_DLL_DECL npc_harkorAI : public npc_hostageAI
             target->Delete();
         }
         return true;
-    } 
+    }
 };
 
 CreatureAI* GetAI_npc_harkor(Creature *_Creature)
@@ -258,7 +258,7 @@ struct TRINITY_DLL_DECL npc_krazAI : public npc_hostageAI
     void Reset()
     {
         npc_hostageAI::Reset();
-        
+
         ExplosionChargeGUID = 0;
         Move = false;
     }
@@ -273,7 +273,7 @@ struct TRINITY_DLL_DECL npc_krazAI : public npc_hostageAI
             Move = true;
         }
         return false;
-    } 
+    }
 
     void MovementInform(uint32 Type, uint32 Id)
     {
@@ -329,7 +329,7 @@ float AshliWP[][3] = {
 
 struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
 {
-    npc_ashliAI(Creature *c) : ScriptedAI(c) 
+    npc_ashliAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
         //SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ASHLI_FIREBALL);
@@ -349,7 +349,7 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
     uint32 MovePoint;
     std::list<uint64> targets;
 
-    void Reset() 
+    void Reset()
     {
         CheckTimer = 10000;
         EventStarted = false;
@@ -376,10 +376,10 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
 
         Fire = true;
         targets.clear();
-        std::list<Creature*> t = DoFindAllCreaturesWithEntry(23746, 20);
+        std::list<Creature*> t = FindAllCreaturesWithEntry(23746, 20);
         for(std::list<Creature*>::iterator i = t.begin(); i != t.end(); ++i)
             targets.push_back((*i)->GetGUID());
-        
+
     }
 
     void SpellHitTarget(Unit *target, const SpellEntry *entry)
@@ -428,7 +428,7 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
                     DoScriptText(YELL_ASHLI_FREED, me);
                 }
                 CheckTimer = 800;
-            } else 
+            } else
                 CheckTimer -= diff;
         }
 
@@ -448,7 +448,7 @@ struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
                     DoScriptText(YELL_ASHLI_VASE1, me);
                     YellAshliVaseDone[0] = true;
                 }
-            } 
+            }
             else
             {
                 Fire = false;
@@ -492,7 +492,7 @@ bool GOHello_go_zulaman_cage(Player* pPlayer, GameObject* pGo)
         pGo->SetGoState(GO_STATE_ACTIVE);
         return false;
     }
-    return true;  
+    return true;
 }
 
 
@@ -508,7 +508,7 @@ bool GOHello_go_zulaman_timed_event_chest(Player* pPlayer, GameObject* pGo)
         pInstance->SetData(DATA_HOSTAGE_0_STATE + i, HOSTAGE_CHEST_LOOTED);
         return false;
     }
-    return true;  
+    return true;
 }
 
 bool GossipHello_npc_tanzar(Player* player, Creature* _Creature)
@@ -705,13 +705,13 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
                 m_pInstance->SetData(TYPE_EVENT_RUN,SPECIAL);
                 break;
             case 6:
-                std::list<Creature*> trolls = DoFindAllCreaturesWithEntry(23889, 100);
+                std::list<Creature*> trolls = FindAllCreaturesWithEntry(23889, 100);
                 for(std::list<Creature *>::iterator i = trolls.begin(); i != trolls.end(); i++)
                 {
                     (*i)->AI()->DoZoneInCombat();
                     (*i)->AddThreat(me, 1000);
                 }
-                trolls = DoFindAllCreaturesWithEntry(23597, 100);
+                trolls = FindAllCreaturesWithEntry(23597, 100);
                 for(std::list<Creature *>::iterator i = trolls.begin(); i != trolls.end(); i++)
                 {
                     (*i)->AI()->DoZoneInCombat();
@@ -788,7 +788,7 @@ bool GossipSelect_npc_harrison_jones_za(Player* pPlayer, Creature* pCreature, ui
     {
         if (npc_harrison_jones_zaAI* pHarrisonAI = dynamic_cast<npc_harrison_jones_zaAI*>(pCreature->AI()))
             pHarrisonAI->StartEvent(pPlayer);
-        
+
         pPlayer->CLOSE_GOSSIP_MENU();
     }
     return true;
@@ -816,7 +816,7 @@ bool GOHello_go_strange_gong(Player* pPlayer, GameObject* pGo)
 
 struct TRINITY_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMovementAI
 {
-    npc_zulaman_door_triggerAI(Creature *c) : Scripted_NoMovementAI(c) 
+    npc_zulaman_door_triggerAI(Creature *c) : Scripted_NoMovementAI(c)
     {
         pInstance = (ScriptedInstance*)c->GetInstanceData();
         Reset();
@@ -976,7 +976,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         }
     }
 
-    
+
     void JustSummoned(Creature* summoned)
     {
         Summons.Summon(summoned);
@@ -1018,17 +1018,17 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
                 Move = true;
                 MovePoint = id + 1;
             }
-            
+
         }
     }
 
-    void AttackStart(Unit *pWho) 
+    void AttackStart(Unit *pWho)
     {
         m_creature->Attack(pWho, true);
     }
 
     void UpdateAI(const uint32 diff)
-    {   
+    {
         // Event started by entering combat with gauntlet mob
         if(!EventStarted && pInstance && pInstance->GetData(DATA_AKILZONGAUNTLET) != AKILZON_GAUNTLET_NOT_STARTED)
         {
@@ -1057,7 +1057,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
                 uint8 maxEagles = RAND(5, 6);
                 for(uint8 i = 0; i < maxEagles; i++)
                     m_creature->SummonCreature(NPC_AMANISHI_EAGLE, GauntletWP[4][0] + 2*(i%2)-4, GauntletWP[4][1] + 2*(i/2) - 4, GauntletWP[4][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
-                eaglesTimer = 25000; 
+                eaglesTimer = 25000;
             }
             else
                 eaglesTimer -= diff;
@@ -1067,7 +1067,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         {
             Reset();
             m_creature->DealDamage(m_creature, m_creature->GetMaxHealth());
-        }   
+        }
 
         if(EventStarted && !UpdateVictim())
         {

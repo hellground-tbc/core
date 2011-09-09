@@ -478,11 +478,11 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             target = m_creature->getVictim();
             break;
         case ABILITY_TARGET_HEAL:
-            target = DoSelectLowestHpFriendly(50, 0);
+            target = SelectLowestHpFriendly(50, 0);
             break;
         case ABILITY_TARGET_BUFF:
             {
-                std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][i].spell);
+                std::list<Creature*> templist = FindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][i].spell);
                 if(!templist.empty()) target = *(templist.begin());
             }
             break;
@@ -522,7 +522,7 @@ struct TRINITY_DLL_DECL boss_thurgAI : public boss_hexlord_addAI
 
         if(bloodlust_timer < diff)
         {
-            std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, SPELL_BLOODLUST);
+            std::list<Creature*> templist = FindFriendlyMissingBuff(50, SPELL_BLOODLUST);
             if(!templist.empty())
             {
                 if(Unit* target = *(templist.begin()))
@@ -587,7 +587,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
 
         if(flashheal_timer < diff)
         {
-            Unit* target = DoSelectLowestHpFriendly(99, 30000);
+            Unit* target = SelectLowestHpFriendly(99, 30000);
             if(target)
             {
                 if(target->IsWithinDistInMap(m_creature, 50))
@@ -603,7 +603,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
             {
                 if(rand()%2)
                 {
-                    if(Unit* target = DoSelectLowestHpFriendly(50, 0))
+                    if(Unit* target = SelectLowestHpFriendly(50, 0))
                         m_creature->CastSpell(target, SPELL_DISPEL_MAGIC, false);
                 }
                 else if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_DISPEL_MAGIC), true))

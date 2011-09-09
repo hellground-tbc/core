@@ -311,8 +311,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
     {
         Unit *pTarget = NULL;
 
-        std::list<Creature*> m_sorcerrers = DoFindAllCreaturesWithEntry(CREATURE_SORCERER, 100.0f);
-        std::list<Creature*> m_channelers = DoFindAllCreaturesWithEntry(CREATURE_CHANNELER, 100.0f);
+        std::list<Creature*> m_sorcerrers = FindAllCreaturesWithEntry(CREATURE_SORCERER, 100.0f);
+        std::list<Creature*> m_channelers = FindAllCreaturesWithEntry(CREATURE_CHANNELER, 100.0f);
 
         if (!m_sorcerrers.empty())
         {

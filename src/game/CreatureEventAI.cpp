@@ -247,7 +247,7 @@ bool CreatureEventAI::ProcessEvent(CreatureEventAIHolder& pHolder, Unit* pAction
             if (!m_creature->isInCombat())
                 return false;
 
-            Unit* pUnit = DoSelectLowestHpFriendly(event.friendly_hp.radius, event.friendly_hp.hpDeficit);
+            Unit* pUnit = SelectLowestHpFriendly(event.friendly_hp.radius, event.friendly_hp.hpDeficit);
             if (!pUnit)
                 return false;
 
@@ -263,7 +263,7 @@ bool CreatureEventAI::ProcessEvent(CreatureEventAIHolder& pHolder, Unit* pAction
                 return false;
 
             std::list<Creature*> pList;
-            DoFindFriendlyCC(pList, event.friendly_is_cc.radius);
+            FindFriendlyCC(pList, event.friendly_is_cc.radius);
 
             //List is empty
             if (pList.empty())
@@ -279,7 +279,7 @@ bool CreatureEventAI::ProcessEvent(CreatureEventAIHolder& pHolder, Unit* pAction
         case EVENT_T_FRIENDLY_MISSING_BUFF:
         {
             std::list<Creature*> pList;
-            DoFindFriendlyMissingBuff(pList, event.friendly_buff.radius, event.friendly_buff.spellId);
+            FindFriendlyMissingBuff(pList, event.friendly_buff.radius, event.friendly_buff.spellId);
 
             //List is empty
             if (pList.empty())
@@ -537,7 +537,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         case ACTION_T_CAST_GUID:
         {
             CreatureData const* cr_data = objmgr.GetCreatureData(action.castguid.targetGUID);
-            
+
             Unit* target = m_creature->GetMap()->GetCreature(MAKE_NEW_GUID(action.castguid.targetGUID, cr_data->id, HIGHGUID_UNIT));
             Unit* caster = m_creature;
 
@@ -1268,13 +1268,13 @@ inline Unit* CreatureEventAI::GetTargetByType(uint32 Target, Unit* pActionInvoke
         case TARGET_T_HOSTILE:
             return m_creature->getVictim();
         case TARGET_T_HOSTILE_SECOND_AGGRO:
-            return SelectUnit(ATTACKING_TARGET_TOPAGGRO,1);
+            return SelectUnit(SELECT_TARGET_TOPAGGRO, 1);
         case TARGET_T_HOSTILE_LAST_AGGRO:
-            return SelectUnit(ATTACKING_TARGET_BOTTOMAGGRO,0);
+            return SelectUnit(SELECT_TARGET_BOTTOMAGGRO, 0);
         case TARGET_T_HOSTILE_RANDOM:
-            return SelectUnit(ATTACKING_TARGET_RANDOM,0);
+            return SelectUnit(SELECT_TARGET_RANDOM, 0);
         case TARGET_T_HOSTILE_RANDOM_NOT_TOP:
-            return SelectUnit(ATTACKING_TARGET_RANDOM,1);
+            return SelectUnit(SELECT_TARGET_RANDOM, 1);
         case TARGET_T_ACTION_INVOKER:
             return pActionInvoker;
         case TARGET_T_ACTION_INVOKER_NOT_PLAYER:
@@ -1285,7 +1285,7 @@ inline Unit* CreatureEventAI::GetTargetByType(uint32 Target, Unit* pActionInvoke
     };
 }
 
-Unit* CreatureEventAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
+Unit* CreatureEventAI::SelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {
     Unit* pUnit = NULL;
 
@@ -1299,7 +1299,7 @@ Unit* CreatureEventAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
     return pUnit;
 }
 
-void CreatureEventAI::DoFindFriendlyCC(std::list<Creature*>& _list, float range)
+void CreatureEventAI::FindFriendlyCC(std::list<Creature*>& _list, float range)
 {
     Trinity::FriendlyCCedInRange u_check(m_creature, range);
     Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(_list, u_check);
@@ -1307,7 +1307,7 @@ void CreatureEventAI::DoFindFriendlyCC(std::list<Creature*>& _list, float range)
     Cell::VisitGridObjects(m_creature, searcher, range);
 }
 
-void CreatureEventAI::DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid)
+void CreatureEventAI::FindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid)
 {
     Trinity::FriendlyMissingBuffInRange u_check(m_creature, range, spellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(_list, u_check);
