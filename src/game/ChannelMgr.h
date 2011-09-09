@@ -32,12 +32,14 @@ class ChannelMgr
     public:
         typedef std::map<std::string,Channel *> ChannelMap;
         ChannelMgr() {}
+
         ~ChannelMgr()
         {
             for (ChannelMap::iterator itr = channels.begin();itr!=channels.end(); ++itr)
                 delete itr->second;
             channels.clear();
         }
+
         Channel *GetJoinChannel(const std::string& name, uint32 channel_id)
         {
             if (channels.count(name) == 0)
@@ -47,6 +49,7 @@ class ChannelMgr
             }
             return channels[name];
         }
+
         Channel *GetChannel(const std::string& name, Player *p)
         {
             ChannelMap::const_iterator i = channels.find(name);
@@ -61,6 +64,7 @@ class ChannelMgr
             else
                 return i->second;
         }
+
         void LeftChannel(const std::string& name)
         {
             ChannelMap::const_iterator i = channels.find(name);
@@ -76,6 +80,16 @@ class ChannelMgr
                 delete channel;
             }
         }
+
+        std::list<std::string> GetChannelNames()
+        {
+            std::list<std::string> tmpList;
+            for (ChannelMap::const_iterator itr = channels.begin();itr!=channels.end(); ++itr)
+                tmpList.push_back(itr->first);
+
+            return tmpList;
+        }
+
     private:
         ChannelMap channels;
         void MakeNotOnPacket(WorldPacket *data, const std::string& name)

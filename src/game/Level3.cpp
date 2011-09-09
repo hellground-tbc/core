@@ -55,6 +55,7 @@
 #include "InstanceData.h"
 #include "AuctionHouseBot.h"
 #include "CreatureEventAIMgr.h"
+#include "ChannelMgr.h"
 
 bool ChatHandler::HandleAHBotOptionsCommand(const char* args)
 {
@@ -7816,6 +7817,115 @@ bool ChatHandler::HandleEventAIReloadCommand(const char* args)
     CreatureAIReInitialize[creatureId] = WorldTimer::getMSTime();
 
     PSendSysMessage("EventAI for creature %u prepared to replace", creatureId);
+
+    return true;
+}
+
+bool ChatHandler::HandleChannelPassCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    char * chName = strtok((char*)args, " ");
+    char * chPass = strtok((char*)args, " ");
+
+    if (!chName || !chPass)
+        return false;
+
+    ChannelMgr* cMgr = channelMgr(m_session->GetPlayer()->GetTeam());
+
+    if (!cMgr)
+        return false;
+
+    Channel *chn = cMgr->GetChannel(chName, m_session->GetPlayer());
+
+    if (!chn)
+    {
+        PSendSysMessage("Channel %s not found.", chName);
+        return false;
+    }
+
+    chn->SetPassword(chPass);
+
+    PSendSysMessage("Password for channel %s was succesfully set to %s", chName, chPass);
+
+    return true;
+}
+
+bool ChatHandler::HandleChannelKickCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    char * chName = strtok((char*)args, " ");
+    char * player = strtok((char*)args, " ");
+
+    if (!chName || !player)
+        return false;
+
+    std::string playerName = player;
+
+    normalizePlayerName(playerName);
+
+    ChannelMgr* cMgr = channelMgr(m_session->GetPlayer()->GetTeam());
+
+    if (!cMgr)
+        return false;
+
+    Channel *chn = cMgr->GetChannel(chName, m_session->GetPlayer());
+
+    if (!chn)
+    {
+        PSendSysMessage("Channel %s not found.", chName);
+        return false;
+    }
+
+    chn->Kick(m_session->GetPlayer()->GetGUID(), playerName.c_str());
+
+    PSendSysMessage("Player %s was succesfully kicked from channel %s", playerName.c_str(), chName);
+
+    return true;
+}
+
+bool ChatHandler::HandleChannelMassKickCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    if (!m_session->GetPlayer()->isGameMaster())
+    {
+        PSendSysMessage("You must have GM mode ON to use this command");
+        return false;
+    }
+
+    char * chName = strtok((char*)args, " ");
+
+    if (!chName)
+        return false;
+
+    ChannelMgr* cMgr = channelMgr(m_session->GetPlayer()->GetTeam());
+
+    if (!cMgr)
+        return false;
+
+    Channel *chn = cMgr->GetChannel(chName, m_session->GetPlayer());
+
+    if (!chn)
+    {
+        PSendSysMessage("Channel %s not found.", chName);
+        return false;
+    }
+
+    std::list<uint64> tmpPlList = chn->GetPlayers();
+
+    for (std::list<uint64>::const_iterator itr = tmpPlList.begin(); itr != tmpPlList.end(); ++itr)
+    {
+        Player * tmpPl = ObjectAccessor::GetPlayer(*itr);
+        if (tmpPl && !tmpPl->isGameMaster())
+            chn->Kick(m_session->GetPlayer()->GetGUID(), tmpPl->GetName());
+    }
+
+    PSendSysMessage("Players was succesfully kicked from channel %s", chName);
 
     return true;
 }

@@ -991,3 +991,12 @@ void Channel::LeaveNotify(uint64 guid)
     SendToAll(&data);
 }
 
+std::list<uint64> Channel::GetPlayers()
+{
+    std::list<uint64> tmpList;
+
+    for (PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+        tmpList.push_back(itr->second.player);
+
+    return tmpList;
+}

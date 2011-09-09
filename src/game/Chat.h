@@ -533,6 +533,11 @@ class ChatHandler
         bool HandleBindFollowCommand(const char* args);
         bool HandleUnbindFollowCommand(const char* args);
 
+        bool HandleChannelListCommand(const char* args);
+        bool HandleChannelPassCommand(const char* args);
+        bool HandleChannelKickCommand(const char* args);
+        bool HandleChannelMassKickCommand(const char* args);
+
         Player*   getSelectedPlayer();
         Creature* getSelectedCreature();
         Unit*     getSelectedUnit();
