@@ -591,6 +591,31 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
             SathGUID = pInstance->GetData64(DATA_SATHROVARR);
     }
 
+    Unit* SelectUnitToRevitalize()
+    {
+        std::list<Unit*> RealmUnitList;
+        std::list<HostilReference*>& ThreatList = me->getThreatManager().getThreatList();
+        RealmUnitList.clear();
+
+        if(ThreatList.empty())
+            return NULL;
+
+        for(std::list<HostilReference*>::iterator i = ThreatList.begin() ; i!=ThreatList.end() ; ++i)
+        {
+            Unit* target = Unit::GetUnit(*me, (*i)->getUnitGuid());
+            // only castable on players in spectral realm that have mana pool and are not revitalized yet
+            if(target && (target->HasAura(AURA_SPECTRAL_REALM, 0) || target->HasAura(SPELL_REVITALIZE, 0)) && target->GetPower(POWER_MANA))
+                RealmUnitList.push_back(target);
+        }
+
+        if(RealmUnitList.empty())
+            return NULL;
+
+        std::list<Unit*>::iterator itr = RealmUnitList.begin();
+        advance(itr, (rand()%RealmUnitList.size()));
+        return *itr;
+    }
+
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         if(done_by->GetGUID() != SathGUID)
@@ -634,16 +659,22 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
 
         if(RevitalizeTimer < diff)
         {
-            DoCast(m_creature, SPELL_REVITALIZE);
+            if(Unit* target = SelectUnitToRevitalize())
+                AddSpellToCast(target, SPELL_REVITALIZE, false, true);
             RevitalizeTimer = 5000;
-        }else RevitalizeTimer -= diff;
+        }
+        else
+            RevitalizeTimer -= diff;
 
         if(HeroicStrikeTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_HEROIC_STRIKE);
+            AddSpellToCast(m_creature->getVictim(), SPELL_HEROIC_STRIKE);
             HeroicStrikeTimer = 2000;
-        }else HeroicStrikeTimer -= diff;
+        }
+        else
+            HeroicStrikeTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
