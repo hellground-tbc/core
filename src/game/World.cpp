@@ -1392,7 +1392,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadGameobjectRespawnTimes();
 
     sLog.outString("Loading Objects Pooling Data...");
-    //poolhandler.LoadFromDB();
+    poolhandler.LoadFromDB();
 
     sLog.outString("Loading Game Event Data...");
     gameeventmgr.LoadFromDB();
