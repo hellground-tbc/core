@@ -351,7 +351,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
             if(TailLashTimer < diff)
             {
-                AddAOESpellToCast(SPELL_TAIL_LASH);
+                AddSpellToCast(SPELL_TAIL_LASH, true);
                 TailLashTimer = 15000;
             }else TailLashTimer -= diff;
 
