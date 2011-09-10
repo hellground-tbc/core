@@ -2305,6 +2305,13 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     // calculate cast time (calculated after first CanCast check to prevent charge counting for first CanCast fail)
     m_casttime = GetSpellCastTime(m_spellInfo, this);
 
+    // HACK for instant opening of Spectral Blast Portal
+    if (m_spellInfo->Id == 3365)
+    {
+        if(m_targets.getGOTarget()&& m_targets.getGOTarget()->GetEntry() == 187055)
+            m_casttime = 0;
+    }
+
     // set timer base at cast time
     ReSetTimer();
 

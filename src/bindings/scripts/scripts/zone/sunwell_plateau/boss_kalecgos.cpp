@@ -351,7 +351,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
             if(TailLashTimer < diff)
             {
-                AddSpellToCast(SPELL_TAIL_LASH, true);
+                AddAOESpellToCast(SPELL_TAIL_LASH);
                 TailLashTimer = 15000;
             }else TailLashTimer -= diff;
 
@@ -655,9 +655,8 @@ bool GOkalecgos_teleporter(Player *player, GameObject* _GO)
         player->GetSession()->SendNotification(GO_FAILED);
         return true;
     }
-    else
-        return false; //player->CastSpell(player, SPELL_TELEPORT_SPECTRAL, true);
-
+    return false;
+    
 }
 
 CreatureAI* GetAI_boss_kalecgos(Creature *_Creature)

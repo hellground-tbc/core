@@ -1217,23 +1217,6 @@ void BossAI::SummonedCreatureDespawn(Creature *summon)
     summons.Despawn(summon);
 }
 
-#define GOBJECT(x) (const_cast<GameObjectInfo*>(GetGameObjectInfo(x)))
-
-void LoadOverridenSQLData()
-{
-    GameObjectInfo *goInfo;
-
-    // Sunwell Plateau : Kalecgos : Spectral Rift
-    if(goInfo = GOBJECT(187055))
-        if(goInfo->type == GAMEOBJECT_TYPE_GOOBER)
-            goInfo->goober.lockId = 57; // need LOCKTYPE_QUICK_OPEN
-
-    // Naxxramas : Sapphiron Birth
-    if(goInfo = GOBJECT(181356))
-        if(goInfo->type == GAMEOBJECT_TYPE_TRAP)
-            goInfo->trap.radius = 50;
-}
-
 Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange)
 {
     Creature *pCreature = NULL;
