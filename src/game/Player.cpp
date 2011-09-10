@@ -20125,7 +20125,8 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
                 return;
 
         // clear LFM (for sure, client resets presets in LFM when LFG is empty) if lfg is cleaned
-        ClearLFM();
+        ClearLFM(false);
+        LeaveLFGChannel();
         return;
     }
 
@@ -20156,7 +20157,7 @@ void Player::LFMSet(uint32 entry, uint32 type)
         return;
 
     // clear lfg when player want looking for more
-    ClearLFG();
+    ClearLFG(false);
     LfgContainerType::accessor a;   // accessor - read and write lock
 
     uint64 guid = GetGUID();
@@ -20198,7 +20199,7 @@ void Player::LFMSet(uint32 entry, uint32 type)
     JoinLFGChannel();
 }
 
-void Player::ClearLFG()
+void Player::ClearLFG(bool leaveChannel)
 {
     LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
@@ -20226,11 +20227,13 @@ void Player::ClearLFG()
         m_lookingForGroup.slots[i].Clear();
     }
 
-    LeaveLFGChannel();
+    if (leaveChannel)
+        LeaveLFGChannel();
+
     GetSession()->SendUpdateLFG();
 }
 
-void Player::ClearLFM()
+void Player::ClearLFM(bool leaveChannel)
 {
     LfgContainerType::accessor a;
 
@@ -20250,7 +20253,9 @@ void Player::ClearLFM()
 
     m_lookingForGroup.more.Clear();
 
-    LeaveLFGChannel();
+    if (leaveChannel)
+        LeaveLFGChannel();
+
     GetSession()->SendUpdateLFM();
 }
 

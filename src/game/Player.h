@@ -287,7 +287,7 @@ typedef std::list<Item*> ItemDurationList;
 struct LookingForGroupSlot
 {
     LookingForGroupSlot() : entry(0), type(0) {}
-    bool Empty() const { return !entry && !type; }
+    bool Empty() const { return !entry || !type; }
     void Clear() { entry = 0; type = 0; }
     void Set(uint32 _entry, uint32 _type) { entry = _entry; type = _type; }
     bool Is(uint32 _entry, uint32 _type) const { return entry==_entry && type==_type; }
@@ -1719,7 +1719,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         // BattleGround Group System
         void SetBattleGroundRaid(Group *group, int8 subgroup = -1);
         void RemoveFromBattleGroundRaid();
-       
+
         Group * GetOriginalGroup() { return m_originalGroup.getTarget(); }
         GroupReference& GetOriginalGroupRef() { return m_originalGroup; }
         uint8 GetOriginalSubGroup() const { return m_originalGroup.getSubGroup(); }
@@ -2168,8 +2168,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void LFMAttemptAddMore();
         void LFGSet(uint8 slot, uint32 entry, uint32 type);
         void LFMSet(uint32 entry, uint32 type);
-        void ClearLFG();
-        void ClearLFM();
+        void ClearLFG(bool leaveChannel = true);
+        void ClearLFM(bool leaveChannel = true);
         uint8 IsLFM(uint32 type, uint32 entry);
         uint32 GetLFGCombined(uint8 slot);
         uint32 GetLFMCombined();
