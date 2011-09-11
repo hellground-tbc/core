@@ -52,6 +52,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
     /** GameObjects **/
     uint64 ForceField;                                      // Kalecgos Encounter
+    uint64 Collision_1;                                     // Kalecgos Encounter
+    uint64 Collision_2;                                     // Kalecgos Encounter
     uint64 FireBarrier;                                     // Brutallus Encounter
     uint64 Gate[5];                                         // Rename this to be more specific after door placement is verified.
 
@@ -79,6 +81,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
         /*** GameObjects ***/
         ForceField  = 0;
+        Collision_1 = 0;
+        Collision_2 = 0;
         FireBarrier = 0;
         Gate[0]     = 0;                                    // TODO: Rename Gate[n] with gate_<boss name> for better specificity
         Gate[1]     = 0;
@@ -200,6 +204,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         switch(gobj->GetEntry())
         {
             case 188421: ForceField     = gobj->GetGUID(); break;
+            case 188523: Collision_1    = gobj->GetGUID(); break;
+            case 188524: Collision_2    = gobj->GetGUID(); break;
             case 188075: FireBarrier    = gobj->GetGUID(); break;
             case 187979: Gate[0]        = gobj->GetGUID(); break;
             case 187770: Gate[1]        = gobj->GetGUID(); break;
@@ -257,9 +263,17 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         {
             case DATA_KALECGOS_EVENT:
                 if(data == IN_PROGRESS)
+                {
                     HandleGameObject(ForceField, CLOSE);
+                    HandleGameObject(Collision_1, CLOSE);
+                    HandleGameObject(Collision_2, CLOSE);
+                }
                 else
+                {
                     HandleGameObject(ForceField, OPEN);
+                    HandleGameObject(Collision_1, OPEN);
+                    HandleGameObject(Collision_2, OPEN);
+                }
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
                 break;
