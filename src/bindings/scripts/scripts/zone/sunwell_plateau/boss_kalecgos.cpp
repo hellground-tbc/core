@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Kalecgos
-SD%Complete: 95
-SDComment: make using portal instant, check portal cooldown
+SD%Complete: 98
+SDComment: check cooldowns, final debugging
 SDCategory: Sunwell_Plateau
 EndScriptData */
 
@@ -248,7 +248,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             {
                 ResetTimer = 0;
                 me->SetVisibility(VISIBILITY_ON);
-            } else
+            }
+            else
                 ResetTimer -= diff;
             return;
         }
@@ -271,7 +272,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                 else
                     BadEnding();
                 TalkSequence++;
-            }else
+            }
+            else
                 TalkTimer -= diff;
         }
         else
@@ -333,7 +335,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                     return;
                 }
                 CheckTimer = 1000;
-            }else
+            }
+            else
                 CheckTimer -= diff;
 
             // cast spells
@@ -341,31 +344,40 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             {
                 AddSpellToCast(SPELL_ARCANE_BUFFET, true);
                 ArcaneBuffetTimer = 8000;
-            }else ArcaneBuffetTimer -= diff;
+            }
+            else
+                ArcaneBuffetTimer -= diff;
 
             if(FrostBreathTimer < diff)
             {
                 AddSpellToCast(SPELL_FROST_BREATH, true);
                 FrostBreathTimer = 15000;
-            }else FrostBreathTimer -= diff;
+            }
+            else
+                FrostBreathTimer -= diff;
 
             if(TailLashTimer < diff)
             {
                 AddSpellToCast(SPELL_TAIL_LASH, true);
                 TailLashTimer = 15000;
-            }else TailLashTimer -= diff;
+            }
+            else
+                TailLashTimer -= diff;
 
             if(WildMagicTimer < diff)
             {
                 AddSpellToCast(WildMagic[rand()%6], true);
                 WildMagicTimer = 20000;
-            }else WildMagicTimer -= diff;
+            }
+            else
+                WildMagicTimer -= diff;
 
             if(SpectralBlastTimer < diff)
             {
                 AddSpellToCast(SPELL_SPECTRAL_BLAST, true);
                 SpectralBlastTimer = 20000+(rand()%5000);
-            }else
+            }
+            else
                 SpectralBlastTimer -= diff;
 
             CastNextSpellIfAnyAndReady();
@@ -540,19 +552,25 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             if(target)
                 AddSpellToCastWithScriptText(target, SPELL_SHADOW_BOLT, SAY_SATH_SPELL1);
             ShadowBoltTimer = 7000+(rand()%3000);
-        }else ShadowBoltTimer -= diff;
+        }
+        else
+            ShadowBoltTimer -= diff;
 
         if(AgonyCurseTimer < diff)
         {
             AddSpellToCast(SPELL_AGONY_CURSE, true);
             AgonyCurseTimer = 20000;
-        }else AgonyCurseTimer -= diff;
+        }
+        else
+            AgonyCurseTimer -= diff;
 
         if(CorruptionStrikeTimer < diff)
         {
             AddSpellToCastWithScriptText(m_creature->getVictim(), SPELL_CORRUPTION_STRIKE, SAY_SATH_SPELL2);
             CorruptionStrikeTimer = 13000;
-        }else CorruptionStrikeTimer -= diff;
+        }
+        else
+            CorruptionStrikeTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
@@ -687,7 +705,6 @@ bool GOkalecgos_teleporter(Player *player, GameObject* _GO)
         return true;
     }
     return false;
-    
 }
 
 CreatureAI* GetAI_boss_kalecgos(Creature *_Creature)
