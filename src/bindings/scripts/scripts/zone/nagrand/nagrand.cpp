@@ -752,7 +752,7 @@ bool go_corki_cage(Player* pPlayer, GameObject* pGo)
 ## npc_nagrand_captive
 #####*/
 
-enum eMagharCaptive
+enum eNagrandCaptive
 {
     SAY_MAG_START               = -1000482,
     SAY_MAG_NO_ESCAPE           = -1000483,
@@ -911,7 +911,7 @@ bool QuestAccept_npc_nagrand_captive(Player* pPlayer, Creature* pCreature, const
             if (npc_nagrand_captiveAI* pEscortAI = dynamic_cast<npc_nagrand_captiveAI*>(pCreature->AI()))
             {
                 pCreature->SetStandState(UNIT_STAND_STATE_STAND);
-                pCreature->setFaction(232);
+                pCreature->setFaction(231);
 
                 pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest);
 
