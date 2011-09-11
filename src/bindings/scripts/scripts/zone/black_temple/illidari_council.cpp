@@ -784,10 +784,10 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
         if (m_vanishTimer < diff)
         {
             float x, y, z;
-            //if(me->hasUnitState(UNIT_STAT_STUNNED))
-                //me->clearUnitState(UNIT_STAT_STUNNED);
-            if(me->HasAuraType(SPELL_AURA_MOD_STUN))
+            if(me->HasAuraType(SPELL_AURA_MOD_STUN))    // remove stun
                 m_creature->RemoveSpellsCausingAura(SPELL_AURA_MOD_STUN);
+            if(me->HasAuraType(SPELL_AURA_MOD_STALKED)) // remove Hunter's Marks and similar trackers
+                m_creature->RemoveSpellsCausingAura(SPELL_AURA_MOD_STALKED);
 
             m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
 
