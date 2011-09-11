@@ -181,6 +181,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     void EnterEvadeMode()
     {
         CreatureAI::EnterEvadeMode();
+        me->setFaction(35); //friendly for when invisible
         me->SetVisibility(VISIBILITY_OFF);
         ResetTimer = 20000;
     }
@@ -248,6 +249,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             if(ResetTimer <= diff)
             {
                 ResetTimer = 0;
+                me->setFaction(16);     //aggresive
                 me->SetVisibility(VISIBILITY_ON);
             }
             else
