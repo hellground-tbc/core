@@ -625,7 +625,7 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
         {
             Unit* target = Unit::GetUnit(*me, (*i)->getUnitGuid());
             // only castable on players in spectral realm that have mana pool and are not revitalized yet
-            if(target && (target->HasAura(AURA_SPECTRAL_REALM, 0) || target->HasAura(SPELL_REVITALIZE, 0)) && target->GetPower(POWER_MANA))
+            if(target && (!target->HasAura(AURA_SPECTRAL_REALM, 0) || !target->HasAura(SPELL_REVITALIZE, 0)) && target->GetPower(POWER_MANA))
                 RealmUnitList.push_back(target);
         }
 
