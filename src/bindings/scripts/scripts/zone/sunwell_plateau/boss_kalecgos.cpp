@@ -112,6 +112,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     boss_kalecgosAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        me->SetAggroRange(26.0f);
     }
 
     ScriptedInstance *pInstance;
