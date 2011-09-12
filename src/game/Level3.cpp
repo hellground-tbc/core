@@ -7827,7 +7827,7 @@ bool ChatHandler::HandleChannelPassCommand(const char* args)
         return false;
 
     char * chName = strtok((char*)args, " ");
-    char * chPass = strtok((char*)args, " ");
+    char * chPass = strtok(NULL, "");
 
     if (!chName || !chPass)
         return false;
@@ -7858,7 +7858,7 @@ bool ChatHandler::HandleChannelKickCommand(const char* args)
         return false;
 
     char * chName = strtok((char*)args, " ");
-    char * player = strtok((char*)args, " ");
+    char * player = strtok(NULL, "");
 
     if (!chName || !player)
         return false;
