@@ -231,7 +231,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     {
         DoScriptText(YELL_DEATH, m_creature);
 
-        if(pInstance)
+        if(pInstance && Killer->GetTypeId() != TYPEID_UNIT)
             pInstance->SetData(DATA_FELMYST_EVENT, DONE);
 
         me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);

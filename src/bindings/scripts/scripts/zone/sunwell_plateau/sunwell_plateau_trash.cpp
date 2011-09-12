@@ -250,7 +250,7 @@ struct TRINITY_DLL_DECL mob_sunblade_dawn_priestAI : public ScriptedAI
             SelfRenew = 15000;
         }
 
-        if(Unit* healTarget = DoSelectLowestHpFriendly(100, 85))
+        if(Unit* healTarget = SelectLowestHpFriendly(100, 85))
         {
             if(canRenew)
             {

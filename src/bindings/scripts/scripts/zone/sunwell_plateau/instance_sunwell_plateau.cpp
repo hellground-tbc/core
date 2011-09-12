@@ -277,7 +277,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                     HandleGameObject(Collision_1, OPEN);
                     HandleGameObject(Collision_2, OPEN);
                 }
-                if(data = DONE)  // new event needed here for Brutallus intro
+                if(data == DONE)  // new event needed here for Brutallus intro
                     HandleGameObject(IceBarrier, OPEN);
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
