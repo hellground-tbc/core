@@ -4193,7 +4193,7 @@ bool ChatHandler::HandleChannelListCommand(const char * args)
     if (!cMgr)
         return false;
 
-    std::list<std::string> tmpList = cMgr->GetChannelNames();
+    std::list<std::string> tmpList = cMgr->GetCustomChannelNames();
 
     PSendSysMessage("Channel list:");
     for (std::list<std::string>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
