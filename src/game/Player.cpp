@@ -4614,6 +4614,10 @@ void Player::LeaveLFGChannel()
     if (!sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) || GetSession()->GetSecurity() != SEC_PLAYER)
         return;
 
+    // don't kick if on lfg or lfm
+    if (!m_lookingForGroup.Empty())
+        return;
+
     for (JoinedChannelsList::iterator i = m_channels.begin(); i != m_channels.end(); ++i)
     {
         if ((*i)->IsLFG())
@@ -4626,6 +4630,10 @@ void Player::LeaveLFGChannel()
 
 void Player::JoinLFGChannel()
 {
+    for (JoinedChannelsList::iterator i = m_channels.begin(); i != m_channels.end(); ++i)
+        if ((*i)->IsLFG())
+            return;
+
     if (ChannelMgr* cMgr = channelMgr(GetTeam()))
         if (Channel *chn = cMgr->GetJoinChannel("LookingForGroup", 26))
             chn->Invite(GetGUID(), GetName());
@@ -19909,7 +19917,7 @@ void Player::LFGAttemptJoin()
     bool found = false;
     std::list<uint64> fullList;
 
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         // skip empty slot
@@ -20005,7 +20013,7 @@ void Player::LFMAttemptAddMore()
     LfgContainerType::const_accessor a;
 
     // get player container for LFM id
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
 
@@ -20093,7 +20101,7 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     uint32 combined;
 
     // if not empty then clear slot
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!m_lookingForGroup.slots[slot].Empty())
     {
         combined = m_lookingForGroup.slots[slot].Combine();
@@ -20163,7 +20171,7 @@ void Player::LFMSet(uint32 entry, uint32 type)
     uint64 guid = GetGUID();
     uint32 combined;
 
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!m_lookingForGroup.more.Empty())
     {
         combined = m_lookingForGroup.more.Combine();
@@ -20201,7 +20209,7 @@ void Player::LFMSet(uint32 entry, uint32 type)
 
 void Player::ClearLFG(bool leaveChannel)
 {
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         if (m_lookingForGroup.slots[i].Empty())
@@ -20209,9 +20217,7 @@ void Player::ClearLFG(bool leaveChannel)
 
         LfgContainerType::accessor a;
 
-        uint32 combined = LFG_COMBINE(m_lookingForGroup.slots[i].entry, m_lookingForGroup.slots[i].type);
-
-        if (!lfgContainer.find(a, combined))
+        if (!lfgContainer.find(a, GetLFGCombined(i)))
             continue;
 
         // remove player from list
@@ -20237,7 +20243,7 @@ void Player::ClearLFM(bool leaveChannel)
 {
     LfgContainerType::accessor a;
 
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
 
