@@ -89,7 +89,7 @@ struct TRINITY_DLL_DECL boss_sulfuronAI : public ScriptedAI
         if (Inspire_Timer < diff)
         {
             Creature* target = NULL;
-            std::list<Creature*> pList = DoFindFriendlyMissingBuff(45.0f,SPELL_INSPIRE);
+            std::list<Creature*> pList = FindFriendlyMissingBuff(45.0f,SPELL_INSPIRE);
             if (!pList.empty())
             {
                 std::list<Creature*>::iterator i = pList.begin();
@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL mob_flamewaker_priestAI : public ScriptedAI
         //Casting Heal to Sulfuron or other Guards.
         if(Heal_Timer < diff)
         {
-            Unit* pUnit = DoSelectLowestHpFriendly(60.0f, 1);
+            Unit* pUnit = SelectLowestHpFriendly(60.0f, 1);
             if (!pUnit)
                 return;
 

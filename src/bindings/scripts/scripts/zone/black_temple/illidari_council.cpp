@@ -541,8 +541,6 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         m_aexpTimer = 3000;
         m_immunityTimer = 60000;
         SetAutocast(SPELL_ARCANE_BOLT, 2000, true, AUTOCAST_TANK, 40.0f, true);
-        // no slowing for Zerevor
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
         m_checkTimer = 1000;
     }
@@ -758,6 +756,7 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
     {
         if(aur->GetId() == SPELL_VANISH)
         {
+            m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, false);
             DoResetThreat();
             DoStartMovement(me->getVictim());
         }
@@ -785,8 +784,13 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
         if (m_vanishTimer < diff)
         {
             float x, y, z;
-            if(me->hasUnitState(UNIT_STAT_STUNNED))
-                me->clearUnitState(UNIT_STAT_STUNNED);
+            if(me->HasAuraType(SPELL_AURA_MOD_STUN))    // remove stun
+                m_creature->RemoveSpellsCausingAura(SPELL_AURA_MOD_STUN);
+            if(me->HasAuraType(SPELL_AURA_MOD_STALKED)) // remove Hunter's Marks and similar trackers
+                m_creature->RemoveSpellsCausingAura(SPELL_AURA_MOD_STALKED);
+
+            m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+
             ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST_INSTANTLY);
             ForceSpellCast(me, SPELL_DEADLY_POISON, INTERRUPT_AND_CAST_INSTANTLY);
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1, 35, true))

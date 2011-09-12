@@ -62,6 +62,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
     boss_nightbaneAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        c->setActive(true);
         Intro = true;
         Summoned = true;
     }
@@ -127,9 +128,6 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
         m_creature->SetSpeed(MOVE_RUN, 2.0f);
         m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
         m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-        m_creature->setActive(true);
 
         if(pInstance && pInstance->GetData(DATA_NIGHTBANE_EVENT) != DONE)
             pInstance->SetData(DATA_NIGHTBANE_EVENT, NOT_STARTED);

@@ -584,7 +584,7 @@ struct SpellEntry
     uint32    AttributesEx3;                                // 8
     uint32    AttributesEx4;                                // 9
     uint32    AttributesEx5;                                // 10
-    uint32    AttributesCu;                                 // 11 not used dbc data, but used as attributesCustom
+    uint32    AttributesEx6;                                // 11
     uint32    Stances;                                      // 12
     uint32    StancesNot;                                   // 13
     uint32    Targets;                                      // 14
@@ -666,7 +666,7 @@ struct SpellEntry
     uint32    PreventionType;                               // 204
     //uint32    StanceBarOrder;                             // 205 not used
     float     DmgMultiplier[3];                             // 206-208
-    //uint32    MinFactionId;                               // 209 not used, and 0 in 2.4.2
+    uint32    AttributesCu;                                 // 209 not used, and 0 in 2.4.2
     //uint32    MinReputation;                              // 210 not used, and 0 in 2.4.2
     //uint32    RequiredAuraVision;                         // 211 not used
     uint32    TotemCategory[2];                             // 212-213

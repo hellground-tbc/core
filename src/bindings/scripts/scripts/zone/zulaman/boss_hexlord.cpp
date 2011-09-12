@@ -58,7 +58,7 @@ EndScriptData */
 //Mage
 #define SPELL_MG_FIREBALL       41383 // fireball is probably obsolete
 #define SPELL_MG_FROSTBOLT      43428
-#define SPELL_MG_FROST_NOVA     43426 
+#define SPELL_MG_FROST_NOVA     43426
 #define SPELL_MG_ICE_LANCE      43427
 
 //Paladin
@@ -265,8 +265,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 46916);
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, 50268674);
-        m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
-        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true); 
+        m_creature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
         Intro = false;
         for(uint8 i = 0; i < 3; i++)
             PlayerAbility_Timer[i] = 999999;
@@ -459,7 +458,7 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             {
                 UseAbility(i);
                 PlayerAbility_Timer[i] = PlayerAbility[PlayerClass][i].cooldown;
-            }else 
+            }else
                 PlayerAbility_Timer[i] -= diff;
         }
 
@@ -479,11 +478,11 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
             target = m_creature->getVictim();
             break;
         case ABILITY_TARGET_HEAL:
-            target = DoSelectLowestHpFriendly(50, 0);
+            target = SelectLowestHpFriendly(50, 0);
             break;
         case ABILITY_TARGET_BUFF:
             {
-                std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][i].spell);
+                std::list<Creature*> templist = FindFriendlyMissingBuff(50, PlayerAbility[PlayerClass][i].spell);
                 if(!templist.empty()) target = *(templist.begin());
             }
             break;
@@ -523,7 +522,7 @@ struct TRINITY_DLL_DECL boss_thurgAI : public boss_hexlord_addAI
 
         if(bloodlust_timer < diff)
         {
-            std::list<Creature*> templist = DoFindFriendlyMissingBuff(50, SPELL_BLOODLUST);
+            std::list<Creature*> templist = FindFriendlyMissingBuff(50, SPELL_BLOODLUST);
             if(!templist.empty())
             {
                 if(Unit* target = *(templist.begin()))
@@ -588,7 +587,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
 
         if(flashheal_timer < diff)
         {
-            Unit* target = DoSelectLowestHpFriendly(99, 30000);
+            Unit* target = SelectLowestHpFriendly(99, 30000);
             if(target)
             {
                 if(target->IsWithinDistInMap(m_creature, 50))
@@ -604,7 +603,7 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
             {
                 if(rand()%2)
                 {
-                    if(Unit* target = DoSelectLowestHpFriendly(50, 0))
+                    if(Unit* target = SelectLowestHpFriendly(50, 0))
                         m_creature->CastSpell(target, SPELL_DISPEL_MAGIC, false);
                 }
                 else if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_DISPEL_MAGIC), true))

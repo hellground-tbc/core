@@ -61,9 +61,6 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         CheckTimer = 3000;
         enraged = false;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_AZGALOREVENT, NOT_STARTED);
     }
@@ -120,7 +117,7 @@ struct TRINITY_DLL_DECL boss_azgalorAI : public hyjal_trashAI
         hyjal_trashAI::JustDied(victim);
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_AZGALOREVENT, DONE);
-        
+
         DoPlaySoundToSet(m_creature, SOUND_ONDEATH);
     }
 

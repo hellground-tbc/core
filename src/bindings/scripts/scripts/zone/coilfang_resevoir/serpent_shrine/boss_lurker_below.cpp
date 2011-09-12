@@ -84,11 +84,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
             pInstance->SetData(DATA_THELURKERBELOWEVENT, NOT_STARTED);
             pInstance->SetData(DATA_STRANGE_POOL, NOT_STARTED);
         }
-        
-        // Apply imunities: move to DB !
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-        
+
         // Do not fall to the ground ;]
         me->AddUnitMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_LEVITATING);
 
@@ -122,7 +118,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
         AttackStart(who);
     }
-    
+
     void AttackStart(Unit *pWho)
     {
         if (me->HasReactState(REACT_PASSIVE))
@@ -146,7 +142,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
         m_summons.DespawnAll();
     }
- 
+
     void SummonAdds()
     {
         for (uint8 i = 0; i < 9; i++)
@@ -168,13 +164,13 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
                 WorldLocation wLoc;
                 me->GetClosePoint(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, 0, 95.0f, 0);
-               
+
                 Map *pMap = me->GetMap();
                 Map::PlayerList const& players = pMap->GetPlayers();
                 for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                 {
                     Player *pPlayer = i->getSource();
-                    
+
                     if (uint8 count = m_immunemap[pPlayer->GetGUID()])
                     {
                         if (count >= 10)
@@ -256,7 +252,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
         {
             me->SetVisibility(VISIBILITY_ON);
             me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
-             
+
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
@@ -269,10 +265,10 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
             if (m_submerged)
             {
                 me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
-                
+
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                
+
                 m_submerged = false;
                 m_spoutTimer = 0;
                 m_whirlTimer = 2000;
@@ -297,7 +293,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
         {
              if (!me->isInCombat())
                  return;
-          
+
              DoZoneInCombat(80.0f);
              m_checkTimer = 2500;
         }
@@ -306,13 +302,13 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
 
         if (m_submerged || m_rotating || !UpdateVictim())
             return;
-        
+
         if (m_spoutTimer < diff)
         {
             if (m_emoteDone)
             {
                 me->SetReactState(REACT_PASSIVE);
-            
+
                 Map *pMap = me->GetMap();
                 Map::PlayerList const& players = pMap->GetPlayers();
                 for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
@@ -320,7 +316,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
                     Player *pPlayer = i->getSource();
                     m_immunemap[pPlayer->GetGUID()] = 0;
                 }
-                
+
                 me->SetSelection(0);
                 me->GetMotionMaster()->MoveRotate(20000, RAND(ROTATE_DIRECTION_LEFT, ROTATE_DIRECTION_RIGHT));
 
@@ -445,7 +441,7 @@ struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
     }
 
     void EnterCombat(Unit *who)
-    { 
+    {
         DoZoneInCombat(80.0f);
     }
 

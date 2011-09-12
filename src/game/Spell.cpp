@@ -1391,21 +1391,11 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
 
             if (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
                 break;
-            // Avenger's Shield
-            if(m_spellInfo->Id == 32700)
-            {
-                // ppl with interruptible CC & critters
-                while ((*next)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC) ||
-                      (*next)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*next))->GetCreatureType() == CREATURE_TYPE_CRITTER)
-                {
-                    ++next;
-                    if (next == tempUnitMap.end() || cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
-                        return;
-                }
-            }
+
             while (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
                 || !m_caster->canSeeOrDetect(*next, false)
+                || (m_spellInfo->AttributesEx6 & SPELL_ATTR_EX6_CANT_TARGET_CCD && ((*next)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC) || (*next)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*next))->GetCreatureType() == CREATURE_TYPE_CRITTER))
                 || !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !cur->IsWithinLOSInMap(*next))
             {
                 ++next;
@@ -1478,7 +1468,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             {
                 Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
                 TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
-                }
+            }
             else
                 Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             break;
@@ -2148,26 +2138,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if (!unitList.empty())
         {
-            if (m_spellInfo->Id == 27285) // Seed of Corruption proc spell
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 39968) // Needle Spine Explosion proc
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 37019) // Conflagration proc (Capernian)
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 41067) // Blood Splash proc
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 5246) //Intimidating Shout
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093)  // Positive/Negative Charge
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 45034) // Curse of Boundless Agony jump (Kalecgos)
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 43550) // Mind Control (Hex Lord Malacras)
-                unitList.remove(m_targets.getUnitTarget());
-            else if (m_spellInfo->Id == 42479) // Protective Ward
-                unitList.remove(m_targets.getUnitTarget());
-
-
             // We don't need immune targets to be taken into list for Fatal Attraction, i know that thix hack is ugly ;]
             // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
             // Same thing for Positive/Negative charge from Mechanar and Naxx encounters
@@ -2355,6 +2325,7 @@ void Spell::cancel()
     switch (oldState)
     {
         case SPELL_STATE_PREPARING:
+            CancelGlobalCooldown();
         case SPELL_STATE_DELAYED:
         {
             SendInterrupted(0);
@@ -2385,8 +2356,6 @@ void Spell::cancel()
         default:
             break;
     }
-
-    CancelGlobalCooldown();
 
     SetReferencedFromCurrent(false);
     if (m_selfContainer && *m_selfContainer == this)
@@ -5362,32 +5331,29 @@ bool Spell::CanIgnoreNotAttackableFlags()
 bool Spell::CheckTarget(Unit* target, uint32 eff)
 {
     // Check targets for creature type mask and remove not appropriate (skip explicit self target case, maybe need other explicit targets)
-    if (m_spellInfo->EffectImplicitTargetA[eff]!=TARGET_UNIT_CASTER)
+    if (m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_CASTER)
     {
         if (!CheckTargetCreatureType(target))
             return false;
     }
 
+    if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF && m_caster == target &&
+        !(m_spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_CASTER && m_spellInfo->EffectImplicitTargetB[eff] == 0))
+        return false;
+
     // Check targets for not_selectable unit flag and remove
     // A player can cast spells on his pet (or other controlled unit) though in any state
-    if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID() && !CanIgnoreNotAttackableFlags())
+    if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
     {
         // any unattackable target skipped
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+        if (!CanIgnoreNotAttackableFlags() && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             return false;
-
-        // unselectable targets skipped in all cases except TARGET_UNIT_NEARBY_ENTRY targeting
-        // in case TARGET_UNIT_NEARBY_ENTRY target selected by server always and can't be cheated
-        /*if(target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) &&
-            m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_NEARBY_ENTRY &&
-            m_spellInfo->EffectImplicitTargetB[eff] != TARGET_UNIT_NEARBY_ENTRY)
-            return false;*/
     }
 
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
     if (target != m_caster && target->GetTypeId()==TYPEID_PLAYER)
     {
-        if (((Player*)target)->GetVisibility()==VISIBILITY_OFF)
+        if (((Player*)target)->GetVisibility() == VISIBILITY_OFF)
             return false;
 
         if (((Player*)target)->isGameMaster() && !IsPositiveSpell(m_spellInfo->Id))

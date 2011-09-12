@@ -117,7 +117,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
 
     void DoSummonEagles()
     {
-        BirdsList = DoFindAllCreaturesWithEntry(NPC_SOARING_EAGLE, 200.0);
+        BirdsList = FindAllCreaturesWithEntry(NPC_SOARING_EAGLE, 200.0);
         uint32 count;
         if(BirdsList.empty())
             count = urand(6, 12);

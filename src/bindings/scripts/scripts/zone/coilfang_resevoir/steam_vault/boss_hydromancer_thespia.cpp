@@ -62,7 +62,7 @@ struct TRINITY_DLL_DECL boss_thespiaAI : public ScriptedAI
         LungBurst_Timer = 7000;
         EnvelopingWinds_Timer = 9000;
 
-        std::list<Creature*> water_elementals = DoFindAllCreaturesWithEntry(17917, 100);
+        std::list<Creature*> water_elementals = FindAllCreaturesWithEntry(17917, 100);
         for(std::list<Creature*>::iterator it = water_elementals.begin(); it != water_elementals.end(); it++)
         {
             (*it)->Respawn();
@@ -91,7 +91,7 @@ struct TRINITY_DLL_DECL boss_thespiaAI : public ScriptedAI
     {
         DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
 
-        std::list<Creature*> water_elementals = DoFindAllCreaturesWithEntry(17917, 100);
+        std::list<Creature*> water_elementals = FindAllCreaturesWithEntry(17917, 100);
         for(std::list<Creature*>::iterator it = water_elementals.begin(); it != water_elementals.end(); it++)
             (*it)->SetInCombatWith(who);
 

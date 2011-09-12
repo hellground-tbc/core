@@ -112,7 +112,7 @@ struct TRINITY_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
         for(uint8 i = 0; i < 7; ++i)
         {
             TrashEntryList.clear();
-            TrashEntryList = DoFindAllCreaturesWithEntry(trashEntry[i], 100.0f);
+            TrashEntryList = FindAllCreaturesWithEntry(trashEntry[i], 100.0f);
 
             for(std::list<Creature*>::iterator iter = TrashEntryList.begin(); iter != TrashEntryList.end(); ++iter)
                 TrashList.push_back(*iter);

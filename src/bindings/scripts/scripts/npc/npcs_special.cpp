@@ -1990,7 +1990,7 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
 
     std::list<Creature*> FindCrashinTrashinRobots()
     {
-        std::list<Creature*> crashinTrashinRobots = DoFindAllCreaturesWithEntry(CRASHIN_TRASHIN_ROBOT_ID, 10.0);
+        std::list<Creature*> crashinTrashinRobots = FindAllCreaturesWithEntry(CRASHIN_TRASHIN_ROBOT_ID, 10.0);
 
         for (std::list<Creature*>::iterator itr = crashinTrashinRobots.begin(); itr != crashinTrashinRobots.end();)
         {
@@ -2246,7 +2246,7 @@ struct TRINITY_DLL_DECL pet_AleMugDrinkerAI : public ScriptedAI
             caster->GetPosition(x,y,z);
             m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
         }
-    } 
+    }
 
     void UpdateAI(const uint32 diff)
     {

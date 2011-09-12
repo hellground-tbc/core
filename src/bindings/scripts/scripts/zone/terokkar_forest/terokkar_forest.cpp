@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Terokkar_Forest
 SD%Complete: 80
-SDComment: Quest support: 9889, 10009, 10051, 10052, 10873, 10896, 11085, 11096. Skettis->Ogri'la Flight
+SDComment: Quest support: 9889, 10009, 10051, 10052, 10873, 10896, 10887, 11085, 11096. Skettis->Ogri'la Flight
 SDCategory: Terokkar Forest
 EndScriptData */
 
@@ -31,6 +31,7 @@ npc_skyguard_handler_deesak
 npc_isla_starmane
 npc_skyguard_prisoner
 npc_razorthorn_ravager
+npc_akuno
 EndContentData */
 
 #include "precompiled.h"
@@ -763,7 +764,7 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
         {
             if(CheckTimer < diff)
             {
-                std::list<Creature*> skyguardTargets = DoFindAllCreaturesWithEntry(23277, 5);
+                std::list<Creature*> skyguardTargets = FindAllCreaturesWithEntry(23277, 5);
                 if(phase == 1)
                 {
                     if(!skyguardTargets.empty() && !(*skyguardTargets.begin())->HasAura(SPELL_SKYGUARD_FLARE, 0))
@@ -1331,12 +1332,12 @@ bool QuestAccept_npc_letoll(Player* pPlayer, Creature* pCreature, const Quest* p
 
 #define GOSSIP_SARTHIS_SELECT       "Lord Balthas sent me to gather flawless arcane essence"
 
-static float SummonCoord[][3] = 
+static float SummonCoord[][3] =
 {
     {-2469.45, 4696.66, 157.01}
 };
 
-static float MinionCoord[][3] = 
+static float MinionCoord[][3] =
 {
     {-2459.4, 4689.6, 165.5},    //Air start
     {-2474.5, 4685.7, 156.7},    //Air final
@@ -1348,7 +1349,7 @@ static float MinionCoord[][3] =
     {-2476.0, 4707.2, 155.0}     //Fire final
 };
 
-enum eSarthis 
+enum eSarthis
 {
     QUEST_THE_SOUL_CANNON_OF_RETHHEDRON     = 11089,
 
@@ -1616,7 +1617,7 @@ struct TRINITY_DLL_DECL npc_minion_of_sarthisAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        
+
     }
 };
 
@@ -1748,7 +1749,7 @@ struct TRINITY_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
                 if(charmer->GetAreaId() != 4078)
                     me->RemoveCharmedOrPossessedBy(charmer);
                 CheckTimer = 2000;
-                
+
             }
             else
                 CheckTimer -= diff;
@@ -1908,7 +1909,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
         }
     }
 
-    void IsSummonedBy(Unit *summoner) 
+    void IsSummonedBy(Unit *summoner)
     {
         owner = summoner->GetGUID();
     }
@@ -1934,7 +1935,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
         visual_energy->CastSpell(visual_energy,46242,true); // Visual magic ball
         visual_energy->SendMonsterMove(portal_trigger->GetPositionX(),portal_trigger->GetPositionY(),portal_trigger->GetPositionZ(),1500);
 
-        std::list<Creature*> beam_visual_triggers = DoFindAllCreaturesWithEntry(21451, 30.0f);
+        std::list<Creature*> beam_visual_triggers = FindAllCreaturesWithEntry(21451, 30.0f);
         for (std::list<Creature*>::iterator itr = beam_visual_triggers.begin(); itr != beam_visual_triggers.end(); ++itr)
             (*itr)->CastSpell(visual_energy,36878, false);
     }
@@ -1944,7 +1945,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
         if (Creature * visual_energy = GetClosestCreatureWithEntry(me, 21429, 30.0f))
             visual_energy->RemoveAurasDueToSpell(46242);
 
-        std::list<Unit*> DeadList = DoFindAllDeadInRange(90);
+        std::list<Unit*> DeadList = FindAllDeadInRange(90);
         // Remove Guardians and Harbringer corpses
         for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
         {
@@ -1978,7 +1979,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
             visual_1_timer-=diff;
 
         if (trash_timer <= diff)
-        {     
+        {
             trash_timer=18000;
             if (trash_counter<=4)
             {
@@ -2000,7 +2001,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
             if (!player)
                 return;
 
-            std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
+            std::list<Unit*> DeadList = FindAllDeadInRange(50);
             bool IS_DEFENDER_DEAD=false, IS_BOSS_DEAD=false;
             for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
             {
@@ -2017,15 +2018,15 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
                         for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
                         {
                             Player *pGroupie = itr->getSource();
-                            if(pGroupie && pGroupie->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE) 
+                            if(pGroupie && pGroupie->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE)
                             {
-                                if (IS_DEFENDER_DEAD) 
+                                if (IS_DEFENDER_DEAD)
                                 {
                                     pGroupie->FailQuest(10842);
                                     StopEventAndCleanUp();
                                 }
-                                else 
-                                    if (IS_BOSS_DEAD) 
+                                else
+                                    if (IS_BOSS_DEAD)
                                         pGroupie->CompleteQuest(10842);
                             }
                         }
@@ -2034,12 +2035,12 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
                     {
                         if (((Player*)player)->GetQuestStatus(10842) == QUEST_STATUS_INCOMPLETE)
                         {
-                            if (IS_DEFENDER_DEAD) 
+                            if (IS_DEFENDER_DEAD)
                             {
                                 ((Player*)player)->FailQuest(10842);
                                StopEventAndCleanUp();
                             }
-                            else 
+                            else
                                 if (IS_BOSS_DEAD)
                                    ((Player*)player)->CompleteQuest(10842);
                         }
@@ -2052,7 +2053,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
                 //summon Draenei Ascendant
                 Creature *portal_trigger = GetClosestCreatureWithEntry(me, 21463, 50.0f);
                 Creature * corpse_move_trigger = GetClosestCreatureWithEntry(me, 66012,50.0f);
-            
+
                 if (!portal_trigger || !corpse_move_trigger)
                     return;
 
@@ -2070,11 +2071,11 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
             checktimer -= diff;
 
 /* Moving Corpse event - need TO DO ;p
-        std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
-                
+        std::list<Unit*> DeadList = FindAllDeadInRange(50);
+
         for(std::list<Unit*>::iterator i = DeadList.begin(); i != DeadList.end(); ++i)
         {
-            if ((*i)->GetEntry()==21638) 
+            if ((*i)->GetEntry()==21638)
             {
              if (!corpse_moved)
              {
@@ -2122,6 +2123,105 @@ struct TRINITY_DLL_DECL mob_vengeful_draeneiAI : public ScriptedAI
 CreatureAI* GetAI_mob_vengeful_draenei(Creature *_creature)
 {
     return new mob_vengeful_draeneiAI(_creature);
+}
+
+
+/*#####
+## npc_akuno
+#####*/
+
+#define SPELL_AKUNO_CHAIN_LIGHTNING 39945
+#define QUEST_ESCAPING_THE_TOMB     10887
+
+#define CABAL_SPAWN_1_1     -2890.478271, 5411.563477, -20.220009, 0.056583
+#define CABAL_SPAWN_1_2     -2892.569336, 5415.295410, -18.824707, 6.280863
+#define CABAL_SPAWN_2_1     -2891.779053, 5385.837402, -9.306866, 1.706707
+#define CABAL_SPAWN_2_2     -2899.023926, 5385.787109, -9.301114, 1.577116
+
+#define CABAL_ID_1  21661
+#define CABAL_ID_2  21662
+#define CABAL_ID_3  21660
+
+struct npc_akunoAI : public npc_escortAI
+{
+    npc_akunoAI(Creature* pCreature) : npc_escortAI(pCreature) { Reset(); }
+
+    uint32 chainLightningTimer;
+
+    void Reset()
+    {
+        chainLightningTimer = urand(6000, 12000);
+    }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        switch(uiPointId)
+        {
+            case 7:
+                me->SummonCreature(RAND(CABAL_ID_1, CABAL_ID_2, CABAL_ID_3), CABAL_SPAWN_1_1, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                me->SummonCreature(RAND(CABAL_ID_1, CABAL_ID_2, CABAL_ID_3), CABAL_SPAWN_1_2, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+
+                break;
+            case 10:
+                me->SummonCreature(RAND(CABAL_ID_1, CABAL_ID_2, CABAL_ID_3), CABAL_SPAWN_2_1, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                me->SummonCreature(RAND(CABAL_ID_1, CABAL_ID_2, CABAL_ID_3), CABAL_SPAWN_2_2, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+
+                break;
+            case 13:
+                if (Player* pPlayer = GetPlayerForEscort())
+                    pPlayer->GroupEventHappens(QUEST_ESCAPING_THE_TOMB, me);
+
+                SetRun();
+                break;
+        }
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        pSummoned->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        pSummoned->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+        pSummoned->AI()->AttackStart(me);
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        npc_escortAI::UpdateAI(uiDiff);
+        if (!me->getVictim())
+            return;
+
+        if (chainLightningTimer <= uiDiff)
+        {
+            AddSpellToCast(me->getVictim(), SPELL_AKUNO_CHAIN_LIGHTNING);
+            chainLightningTimer = urand(6000, 12000);
+        }
+        else
+            chainLightningTimer -= uiDiff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+bool QuestAccept_npc_akuno(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_ESCAPING_THE_TOMB)
+    {
+        npc_akunoAI* pEscortAI = dynamic_cast<npc_akunoAI*>(pCreature->AI());
+        if (pEscortAI)
+        {
+            pCreature->SetStandState(UNIT_STAND_STATE_STAND);
+            pCreature->setFaction(232); // faction escortee
+
+            pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest);
+        }
+    }
+
+    return true;
+}
+
+CreatureAI* GetAI_npc_akuno(Creature* pCreature)
+{
+    return new npc_akunoAI(pCreature);
 }
 
 void AddSC_terokkar_forest()
@@ -2235,5 +2335,11 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name="mob_vengeful_draenei";
     newscript->GetAI = &GetAI_mob_vengeful_draenei;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_akuno";
+    newscript->GetAI = &GetAI_npc_akuno;
+    newscript->pQuestAccept = &QuestAccept_npc_akuno;
     newscript->RegisterSelf();
 }

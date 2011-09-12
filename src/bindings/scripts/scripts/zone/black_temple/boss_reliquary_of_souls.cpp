@@ -230,7 +230,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 
     void SummonSouls()
     {
-        std::list<Creature*> triggerList = DoFindAllCreaturesWithEntry(ROS_TRIGGER_ID, 100);
+        std::list<Creature*> triggerList = FindAllCreaturesWithEntry(ROS_TRIGGER_ID, 100);
 
         for (int i = 0; i < NUMBER_ENSLAVED_SOUL; i++)
         {
@@ -523,8 +523,6 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         emoteDone = false;
         backToCage = false;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
@@ -801,8 +799,6 @@ struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
         SpiteTargetGUID.clear();
 
         CheckedAggro = false;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void EnterCombat(Unit *who)

@@ -64,19 +64,19 @@ struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
     uint32 cleave_timer;
     uint32 cripple_timer;
     uint32 rain_timer;
-    uint32 warstomp_timer; 
+    uint32 warstomp_timer;
     uint64 banish_timer;
-    
+
 
     void JustRespawned()
     {
         DoCast(m_creature,SPELL_BANISH);
-        std::list<Creature*> warlocks = DoFindAllCreaturesWithEntry(21503, 30.0f);
+        std::list<Creature*> warlocks = FindAllCreaturesWithEntry(21503, 30.0f);
         for (std::list<Creature*>::iterator itr = warlocks.begin(); itr != warlocks.end(); ++itr)
             (*itr)->CastSpell(me,SPELL_VISUAL_BANISH, false);
     }
 
-    void EnterCombat() 
+    void EnterCombat()
     {
         DoCast(m_creature->getVictim(),SPELL_CRIPPLE);
         banish_timer  = TIME_TO_BANISH;
@@ -92,14 +92,14 @@ struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
     }
 
     void UpdateAI(const uint32 diff)
-    {    
-        if (banish_timer < diff) 
+    {
+        if (banish_timer < diff)
         {
             DoCast(m_creature,SPELL_BANISH);
             banish_timer  = TIME_TO_BANISH;
         }
- 
-        std::list<Creature*> warlocks = DoFindAllCreaturesWithEntry(21503, 20.0f);
+
+        std::list<Creature*> warlocks = FindAllCreaturesWithEntry(21503, 20.0f);
         for (std::list<Creature*>::iterator itr = warlocks.begin(); itr != warlocks.end(); ++itr)
         {
             (*itr)->GetMotionMaster()->Clear(false);
@@ -108,7 +108,7 @@ struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
         }
 
         if (!UpdateVictim())
-        {   
+        {
             banish_timer-=diff;
             return;
         }
@@ -2388,7 +2388,7 @@ struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
         Check_Timer = 0;
         Wave_Timer = 0;
         SoulstealerList.clear();
-        SoulstealerList = DoFindAllCreaturesWithEntry(22061, 80.0f);
+        SoulstealerList = FindAllCreaturesWithEntry(22061, 80.0f);
         m_creature->Relocate(x, y, z);
     }
 
@@ -2409,7 +2409,7 @@ struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
             counter = 0;
             Ccounter = 0;
             m_creature->CallAssistance();
-            SoulstealerList = DoFindAllCreaturesWithEntry(22061, 80.0f);
+            SoulstealerList = FindAllCreaturesWithEntry(22061, 80.0f);
             if(!SoulstealerList.empty())
                 for(std::list<Creature*>::iterator i = SoulstealerList.begin(); i != SoulstealerList.end(); ++i)
                 {

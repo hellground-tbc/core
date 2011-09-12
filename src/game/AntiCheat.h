@@ -11,6 +11,8 @@
 
 class Player;
 
+#define AC_MAX_LATENCY  500
+
 class ACRequest : public ACE_Method_Request
 {
     public:
@@ -70,8 +72,11 @@ class ACRequest : public ACE_Method_Request
             if (!m_newPacket.HasMovementFlag(MOVEFLAG_SWIMMING) && m_newPacket.GetMovementFlags() & (MOVEFLAG_CAN_FLY | SPLINEFLAG_FLYINGING | SPLINEFLAG_FLYINGING2) &&
                 !(pPlayer->HasAuraType(SPELL_AURA_FLY) || pPlayer->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || pPlayer->HasAuraType(SPELL_AURA_MOD_SPEED_FLIGHT)))
             {
-                if (latency == 0 || latency > 5000)
+                if (latency == 0 || latency > AC_MAX_LATENCY)
                 {
+                    sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible Fly Cheat (LATENCY KICKED). MapId: %u, coords: x: %f, y: %f, z: %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                              pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+
                     pPlayer->GetSession()->KickPlayer();
                     return 0;
                 }
@@ -85,8 +90,10 @@ class ACRequest : public ACE_Method_Request
             if ((m_newPacket.HasMovementFlag(MOVEFLAG_WATERWALKING))
                 && !pPlayer->HasAuraType(SPELL_AURA_WATER_WALK) && pPlayer->isAlive() && !pPlayer->isGameMaster())
             {
-                if (latency == 0 || latency > 5000)
+                if (latency == 0 || latency > AC_MAX_LATENCY)
                 {
+                    sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible water walk Cheat (LATENCY KICKED). MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                                      pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
                     pPlayer->GetSession()->KickPlayer();
                     return 0;
                 }
@@ -141,8 +148,10 @@ class ACRequest : public ACE_Method_Request
                 if (m_speed +0.2 > m_speed*fClientRate)
                     return -1;
 
-                if (latency == 0 || latency > 5000)
+                if (latency == 0 || latency > AC_MAX_LATENCY)
                 {
+                    sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) (LATENCY KICKED) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                              pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), fDistance2d, m_speed, m_speed*fClientRate, pPlayer->GetMapId(), m_pos.x, m_pos.y, m_pos.z, m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
                     pPlayer->GetSession()->KickPlayer();
                     return 0;
                 }

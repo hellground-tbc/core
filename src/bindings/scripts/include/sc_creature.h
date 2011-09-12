@@ -319,36 +319,8 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     bool IsCombatMovement() { return m_bCombatMovement; }
 
-    //Returns friendly unit with the most amount of hp missing from max hp
-    Unit* DoSelectLowestHpFriendly(float range, uint32 MinHPDiff = 1);
-
-    //Returns a list of creatures with specified entry in range
-    std::list<Creature*> DoFindAllCreaturesWithEntry(uint32 entry, float range);
-
-    //Returns a list of all friendly units in grid within range
-    std::list<Creature*> DoFindAllFriendlyInGrid(float range);
-
-    //Returns a list of friendly CC'd units within range
-    std::list<Creature*> DoFindFriendlyCC(float range);
-
-    //Returns a list of all friendly units missing a specific buff within range
-    std::list<Creature*> DoFindFriendlyMissingBuff(float range, uint32 spellid);
-
-    //Returns a list of all units that are flagged as DEAD or CORPSE
-    std::list<Unit*> DoFindAllDeadInRange(float range);
-
-    //Return a list of all players in range
-    std::list<Player*> DoFindAllPlayersInRange(float range, Unit* finder = NULL);
-
     //Spawns a creature relative to m_creature
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
-
-    //Selects a unit from the creature's current aggro list
-    Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, uint64 = 0, float mindist = 0.0f);
-    Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, float maxdist, bool playerOnly, Powers powerOnly);
-    Unit* SelectUnit(SelectAggroTarget target, uint32 position);
-
-    void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint64 exclude = 0, float mindist = 0.0f);
 
     //Returns spells that meet the specified criteria from the creatures spell list
     SpellEntry const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTargetType Targets,  uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
@@ -395,4 +367,3 @@ struct TRINITY_DLL_DECL BossAI : public ScriptedAI
 Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange);
 
 #endif
-

@@ -155,6 +155,8 @@ void PoolGroup<Creature>::Despawn1Object(uint32 guid)
 
         if (Creature* pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT)))
             pCreature->AddObjectToRemoveList();
+        else
+            sLog.outError("PoolGroup<Creature>::Despawn1Object: Creature (guid: %u) not found (map id %u)", guid, data->mapid);
     }
 }
 
@@ -175,6 +177,8 @@ void PoolGroup<GameObject>::Despawn1Object(uint32 guid)
 
         if (GameObject* pGameobject = tmpMap->GetGameObject(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT)))
             pGameobject->AddObjectToRemoveList();
+        else
+            sLog.outError("PoolGroup<GameObject>::Despawn1Object: Gameobject (guid: %u) not found (map id %u)", guid, data->mapid);
     }
 }
 
@@ -338,6 +342,9 @@ bool PoolGroup<Creature>::ReSpawn1Object(uint32 guid)
 
         if (Creature* pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT)))
             tmpMap->Add(pCreature);
+        else
+            sLog.outError("PoolGroup<Creature>::ReSpawn1Object: creature (guid: %u) not found (map id %u)", guid, data->mapid);
+
         return true;
     }
     return false;
@@ -360,6 +367,9 @@ bool PoolGroup<GameObject>::ReSpawn1Object(uint32 guid)
 
         if (GameObject* pGameobject = tmpMap->GetGameObject(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT)))
             tmpMap->Add(pGameobject);
+        else
+            sLog.outError("PoolGroup<GameObject>::ReSpawn1Object: gameobject (guid: %u) not found (map id %u)", guid, data->mapid);
+
         return true;
     }
     return false;

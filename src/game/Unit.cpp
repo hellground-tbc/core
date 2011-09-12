@@ -1147,13 +1147,7 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     {
         if (spellmgr.SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
         {
-            /*SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-            if (srange && GetSpellMaxRange(srange) == 0.0f)
-            {
-                Victim = this;
-                break;
-            }
-            else */if(!Victim)
+            if(!Victim)
             {
                 sLog.outError("CastSpell: spell id %i by caster: %s %u) does not have unit target", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
                 return;
@@ -2143,49 +2137,47 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
 
     // melee attack spell casted at main hand attack only
     if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL])
-        m_currentSpells[CURRENT_MELEE_SPELL]->cast();
-    else
     {
-        if (pVictim->HasAuraType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER))
-        {
-            Unit::AuraList const& hitTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER);
-            for (Unit::AuraList::const_iterator itr = hitTriggerAuras.begin(); itr != hitTriggerAuras.end(); ++itr)
-            {
-                if (Unit* hitTarget = (*itr)->GetCaster())
-                {
-                    if(!hitTarget->isAlive())
-                        continue;
+        m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+        return;
+    }
 
-                    if ((*itr)->m_procCharges > 0)
-                    {
-                        (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
-                        (*itr)->UpdateAuraCharges();
-                        if ((*itr)->m_procCharges <= 0)
-                            pVictim->RemoveAurasByCasterSpell((*itr)->GetId(), (*itr)->GetCasterGUID());
-                    }
-                    pVictim = hitTarget;
-                    break;
+    if (pVictim->HasAuraType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER))
+    {
+        Unit::AuraList const& hitTriggerAuras = pVictim->GetAurasByType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER);
+        for (Unit::AuraList::const_iterator itr = hitTriggerAuras.begin(); itr != hitTriggerAuras.end(); ++itr)
+        {
+            if (Unit* hitTarget = (*itr)->GetCaster())
+            {
+                if(!hitTarget->isAlive())
+                    continue;
+
+                if ((*itr)->m_procCharges > 0)
+                {
+                    (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
+                    (*itr)->UpdateAuraCharges();
+                    if ((*itr)->m_procCharges <= 0)
+                        pVictim->RemoveAurasByCasterSpell((*itr)->GetId(), (*itr)->GetCasterGUID());
                 }
+                pVictim = hitTarget;
+                break;
             }
         }
-
-        MeleeDamageLog damageInfo(this, pVictim, GetMeleeDamageSchoolMask(), attType);
-        CalculateMeleeDamage(&damageInfo);
-
-        DealMeleeDamage(&damageInfo, true);
-        ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
     }
-    /*
-    if (!extra && m_extraAttacks)
-    {
-        while (m_extraAttacks)
-        {
-            AttackerStateUpdate(pVictim, BASE_ATTACK, true);
-            if (m_extraAttacks > 0)
-                --m_extraAttacks;
-        }
-    }
-    */
+
+    MeleeDamageLog damageInfo(this, pVictim, GetMeleeDamageSchoolMask(), attType);
+    CalculateMeleeDamage(&damageInfo);
+
+    DealMeleeDamage(&damageInfo, true);
+    ProcDamageAndSpell(damageInfo.target, damageInfo.procAttacker, damageInfo.procVictim, damageInfo.procEx, damageInfo.damage, damageInfo.attackType);
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        DEBUG_LOG("AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+            GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked, damageInfo.resist);
+    else
+        DEBUG_LOG("AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
+            GetGUIDLow(), pVictim->GetGUIDLow(), pVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked, damageInfo.resist);
+
 }
 
 void Unit::RollMeleeHit(MeleeDamageLog *damageInfo) const
@@ -6076,9 +6068,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 if (procSpell->SpellFamilyFlags & 0x0000000000000002LL)
                     ((Player*)this)->RemoveSpellCooldown(spellId);
 
-                // Lightning Overload -> -100% Threat Mod -50% DMG Mod, it has 1s duration so we don't need to remove aura 
-                CastSpell(this, 39805, true);
-
                 CastSpell(pVictim, spellId, true, castItem, triggeredByAura);
 
                 if (cooldown && GetTypeId()==TYPEID_PLAYER)
@@ -7334,8 +7323,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
 
     //Set our target
-    if (GetTypeId() != TYPEID_UNIT || !m_currentSpells[CURRENT_GENERIC_SPELL] || !(m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->AttributesCu & SPELL_ATTR_CU_VISUAL_TARGET))
-        SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+    SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
 
     if (meleeAttack)
         addUnitState(UNIT_STAT_MELEE_ATTACKING);
@@ -11160,9 +11148,9 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
             AuraMap::const_iterator upper = GetAuras().upper_bound(i->triggeredByAura_SpellPair);
             for (AuraMap::const_iterator itr = lower; itr!= upper; ++itr)
             {
-                if (itr->second == i->triggeredByAura)
+                if (itr->second == triggeredByAura)
                 {
-                     triggeredByAura->m_procCharges -=1;
+                     triggeredByAura->m_procCharges -= 1;
                      triggeredByAura->UpdateAuraCharges();
                      if (triggeredByAura->m_procCharges <= 0)
                           removedSpells.push_back(triggeredByAura->GetId());
@@ -11177,15 +11165,17 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
         removedSpells.sort();
         removedSpells.unique();
         // Remove auras from removedAuras
-        for (RemoveSpellList::iterator i = removedSpells.begin(); i != removedSpells.end();i++)
+        for (RemoveSpellList::iterator i = removedSpells.begin(); i != removedSpells.end();)
         {
-            if (Aura *pTemp = GetAura(*i, 0)) // should we check all 3 effects ?
-            if (pTemp->m_procCharges > 0) // Aura has been refreshed after adding to removedSpells
-            {
-                removedSpells.erase(i);
-                continue;
-            }
-            RemoveAurasDueToSpell(*i);
+            RemoveSpellList::iterator tmpItr = i;
+            ++i;
+            if (Aura *pTemp = GetAura(*tmpItr, 0)) // should we check all 3 effects ? I do not think so :p
+                if (pTemp->m_procCharges > 0) // Aura has been refreshed after adding to removedSpells
+                {
+                    removedSpells.erase(tmpItr);
+                    continue;
+                }
+            RemoveAurasDueToSpell(*tmpItr);
         }
     }
     --m_procDeep;

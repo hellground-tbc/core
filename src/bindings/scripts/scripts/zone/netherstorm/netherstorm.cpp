@@ -1217,7 +1217,7 @@ struct TRINITY_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
     {
         SummonTimer = 2000;
 
-        std::list<Creature*> temp = DoFindAllCreaturesWithEntry(BOOM_BOT_TARGET, 30.0f);
+        std::list<Creature*> temp = FindAllCreaturesWithEntry(BOOM_BOT_TARGET, 30.0f);
 
         targetGUID.clear();
 
@@ -1226,7 +1226,7 @@ struct TRINITY_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
     }
 
     void UpdateAI(const uint32 diff)
-    { 
+    {
         if(SummonTimer <= diff)
         {
             if(targetGUID.size())
@@ -1274,7 +1274,7 @@ struct TRINITY_DLL_DECL mob_boom_botAI : public ScriptedAI
     void Reset()
     {
     }
-    
+
     void EnterCombat(Unit *who){ return; }
 
     void MovementInform(uint32 type, uint32 id)
@@ -1360,7 +1360,7 @@ struct TRINITY_DLL_DECL npc_maxx_a_million_escortAI : public npc_escortAI
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
                 break;
-            case 7: 
+            case 7:
             case 17:
             case 29:
                 if (GameObject* pGO = FindGameObject(GO_DRAENEI_MACHINE, INTERACTION_DISTANCE, m_creature))

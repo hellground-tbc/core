@@ -772,7 +772,7 @@ struct npc_private_hendelAI : public ScriptedAI
         m_uiPhaseCounter = 0;
         lCreatureList.clear();
     }
-    
+
     void AttackedBy(Unit* pAttacker)
     {
         if (me->getVictim())
@@ -810,7 +810,7 @@ struct npc_private_hendelAI : public ScriptedAI
         me->setFaction(FACTION_HOSTILE);
         me->AI()->AttackStart(pPlayer);
 
-        lCreatureList = DoFindAllCreaturesWithEntry(NPC_SENTRY, 20);
+        lCreatureList = FindAllCreaturesWithEntry(NPC_SENTRY, 20);
 
         if (!lCreatureList.empty())
         {
@@ -872,7 +872,7 @@ struct npc_private_hendelAI : public ScriptedAI
         }
         return;
     }
-    
+
     void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
     {
         if (uiDamage > me->GetHealth() || ((me->GetHealth() - uiDamage)*100 / me->GetMaxHealth() < 20))
@@ -916,7 +916,7 @@ struct npc_private_hendelAI : public ScriptedAI
             me->ForcedDespawn(60000);
             me->SummonCreature(NPC_TERVOSH, -2876.66f, -3346.96f, 35.6029f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
             me->SummonCreature(NPC_JAINA, -2876.95f, -3342.78f, 35.6244f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
-            me->SummonCreature(NPC_PAINED, -2877.67f, -3338.63f, 35.2548f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);       
+            me->SummonCreature(NPC_PAINED, -2877.67f, -3338.63f, 35.2548f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
         }
     }
 };
@@ -929,7 +929,7 @@ bool QuestAccept_npc_private_hendel(Player* pPlayer, Creature* pCreature, const 
         CAST_AI(npc_private_hendelAI, pCreature->AI())->PlayerGUID = pPlayer->GetGUID();
     }
 
-    return true; 
+    return true;
 }
 
 CreatureAI* GetAI_npc_private_hendel(Creature* pCreature)

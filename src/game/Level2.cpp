@@ -46,6 +46,7 @@
 #include "GlobalEvents.h"
 #include "TicketMgr.h"
 #include "CreatureAI.h"
+#include "ChannelMgr.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 
@@ -4181,6 +4182,24 @@ bool ChatHandler::HandleNpcEnterEvadeModeCommand(const char* args)
     }
 
     pCreature->AI()->EnterEvadeMode();
+
+    return true;
+}
+
+bool ChatHandler::HandleChannelListCommand(const char * args)
+{
+    ChannelMgr* cMgr = channelMgr(m_session->GetPlayer()->GetTeam());
+
+    if (!cMgr)
+        return false;
+
+    std::list<std::string> tmpList = cMgr->GetChannelNames();
+
+    PSendSysMessage("Channel list:");
+    for (std::list<std::string>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
+        PSendSysMessage("%s", (*itr).c_str());
+
+    PSendSysMessage("Channel list end.");
 
     return true;
 }

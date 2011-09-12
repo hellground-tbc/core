@@ -1693,7 +1693,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             RepopAtGraveyard();                             // teleport to near graveyard if on transport, looks blizz like :)
 
         SendTransferAborted(mapid, TRANSFER_ABORT_INSUF_EXPAN_LVL1);
-
         return false;                                       // normal client can't teleport to this map...
     }
     else
@@ -1780,7 +1779,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         {
             // don't reset teleport semaphore while logging out, otherwise m_teleport_dest won't be used in Player::SaveToDB
             SetSemaphoreTeleport(false);
-
             UpdateZone(GetZoneId());
         }
 
@@ -1900,6 +1898,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data << float(z);
                     data << float(orientation);
                 }
+
                 GetSession()->SendPacket(&data);
                 SendSavedInstances();
 
@@ -1914,7 +1913,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 }
 
                 // remove from old map now
-                if (oldmap) oldmap->Remove(this, false);
+                if(oldmap)
+                    oldmap->Remove(this, false);
             }
 
             // new final coordinates
@@ -1940,7 +1940,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // move packet sent by client always after far teleport
             // SetPosition(final_x, final_y, final_z, final_o, true);
             SetDontMove(true);
-
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
         }
         else
@@ -12599,7 +12598,7 @@ void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, 
     data << GetItemCount(item->GetEntry());                 // count of items in inventory
 
     if (broadcast && GetGroup())
-        GetGroup()->BroadcastPacket(&data);
+        GetGroup()->BroadcastPacket(&data, false);
     else
         GetSession()->SendPacket(&data);
 }
@@ -14656,6 +14655,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
                 SetBattleGroundId(currentBg->GetInstanceID());
                 SetBGTeam(bgteam);
+                currentBg->AddOrSetPlayerToCorrectBgGroup(this, GetGUID(), bgteam);
 
                 SetInviteForBattleGroundQueueType(bgQueueTypeId,currentBg->GetInstanceID());
             }
@@ -18934,40 +18934,6 @@ void Player::SendInitialPacketsAfterAddToMap()
         SendMessageToSet(&data,true);
     }
 
-    // setup BG group membership if need
-    if (BattleGround* currentBg = GetBattleGround())
-    {
-        // call for invited (join) or listed (relogin) and avoid other cases (GM teleport)
-        if (IsInvitedForBattleGroundInstance(GetBattleGroundId()) ||
-            currentBg->IsPlayerInBattleGround(GetGUID()))
-        {
-            currentBg->PlayerRelogin(GetGUID());
-            if (currentBg->GetMapId() == GetMapId())             // we teleported/login to/in bg
-            {
-                uint32 team = currentBg->GetPlayerTeam(GetGUID());
-                if (!team)
-                    team = GetTeam();
-                Group* group = currentBg->GetBgRaid(team);
-                if (!group)                                      // first player joined
-                {
-                    group = new Group;
-                    currentBg->SetBgRaid(team, group);
-                    group->Create(GetGUIDLow(), GetName());
-                }
-                else                                            // raid already exist
-                {
-                    if (group->IsMember(GetGUID()))
-                    {
-                        uint8 subgroup = group->GetMemberGroup(GetGUID());
-                        SetGroup(group, subgroup);
-                    }
-                    else
-                        currentBg->GetBgRaid(team)->AddMember(GetGUID(), GetName());
-                }
-            }
-        }
-    }
-
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
 }
@@ -18976,6 +18942,7 @@ void Player::SendUpdateToOutOfRangeGroupMembers()
 {
     if (m_groupUpdateMask == GROUP_UPDATE_FLAG_NONE)
         return;
+
     if (Group* group = GetGroup())
         group->UpdatePlayerOutOfRange(this);
 
@@ -19942,16 +19909,17 @@ void Player::LFGAttemptJoin()
     bool found = false;
     std::list<uint64> fullList;
 
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         // skip empty slot
         if (m_lookingForGroup.slots[i].Empty())
             continue;
 
-        tbb::concurrent_hash_map<uint32, std::list<uint64> >::const_accessor a; // const_accessor -> write lock only
+        LfgContainerType::const_accessor a; // const_accessor -> write lock only
 
         // skip if container doesn't exist
-        if (!sWorld.lfgContainer.find(a, m_lookingForGroup.slots[i].Combine()))
+        if (!lfgContainer.find(a, m_lookingForGroup.slots[i].Combine()))
             continue;
 
         for (std::list<uint64>::const_iterator itr = a->second.begin(); itr != a->second.end(); ++itr)
@@ -19967,10 +19935,6 @@ void Player::LFGAttemptJoin()
                 continue;
 
             if (!plr->IsInWorld())
-                continue;
-
-            // skip enemies
-            if (plr->GetTeam() != GetTeam())
                 continue;
 
              // skip not auto add, not group leader cases
@@ -19997,16 +19961,14 @@ void Player::LFGAttemptJoin()
             // stop at success join
             if (plr->GetGroup()->AddMember(GetGUID(), GetName(), true))
             {
-                if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
-                    LeaveLFGChannel();
+                LeaveLFGChannel();
                 found = true;
                 break;
             }
             // full
             else
             {
-                if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER)
-                    plr->LeaveLFGChannel();
+                plr->LeaveLFGChannel();
 
                 fullList.push_back(*itr);
             }
@@ -20040,10 +20002,11 @@ void Player::LFMAttemptAddMore()
     if (!m_lookingForGroup.more.canAutoJoin() || m_lookingForGroup.more.Empty())
         return;
 
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::const_accessor a;
+    LfgContainerType::const_accessor a;
 
     // get player container for LFM id
-    if (!sWorld.lfgContainer.find(a, m_lookingForGroup.more.Combine()))
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    if (!lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
 
     std::list<uint64> joinedList;
@@ -20055,8 +20018,8 @@ void Player::LFMAttemptAddMore()
         if (!plr || !plr->IsInWorld())
             continue;
 
-        // skip enemies and self
-        if (plr->GetGUID() == GetGUID() || plr->GetTeam() != GetTeam())
+        // skip self
+        if (plr->GetGUID() == GetGUID())
             continue;
 
         // skip not auto join or in group
@@ -20082,23 +20045,20 @@ void Player::LFMAttemptAddMore()
         // stop at join fail (full)
         if (!GetGroup()->AddMember(plr->GetGUID(), plr->GetName(), true))
         {
-            if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
-                LeaveLFGChannel();
+            LeaveLFGChannel();
 
             break;
         }
 
         // joined
-        if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER)
-            plr->LeaveLFGChannel();
+        plr->LeaveLFGChannel();
 
         joinedList.push_back(*iter);
 
         // and group full
         if (GetGroup()->IsFull())
         {
-            if (sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && GetSession()->GetSecurity() == SEC_PLAYER)
-                LeaveLFGChannel();
+            LeaveLFGChannel();
 
             break;
         }
@@ -20128,16 +20088,17 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     if (GetSession()->GetSecurity() > SEC_PLAYER)
         return;
 
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
+    LfgContainerType::accessor a;
     uint64 guid = GetGUID();
     uint32 combined;
 
     // if not empty then clear slot
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!m_lookingForGroup.slots[slot].Empty())
     {
         combined = m_lookingForGroup.slots[slot].Combine();
 
-        if (sWorld.lfgContainer.find(a, combined))
+        if (lfgContainer.find(a, combined))
         {
             // remove player from list
             for (std::list<uint64>::iterator itr = a->second.begin(); itr != a->second.end();)
@@ -20164,13 +20125,14 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
                 return;
 
         // clear LFM (for sure, client resets presets in LFM when LFG is empty) if lfg is cleaned
-        ClearLFM();
+        ClearLFM(false);
+        LeaveLFGChannel();
         return;
     }
 
     // if we can't find list in container or add new list
-    if (!sWorld.lfgContainer.find(a, combined))
-        if (!sWorld.lfgContainer.insert(a, combined))
+    if (!lfgContainer.find(a, combined))
+        if (!lfgContainer.insert(a, combined))
             return;
 
     m_lookingForGroup.slots[slot].Set(entry, type);
@@ -20195,17 +20157,18 @@ void Player::LFMSet(uint32 entry, uint32 type)
         return;
 
     // clear lfg when player want looking for more
-    ClearLFG();
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;   // accessor - read and write lock
+    ClearLFG(false);
+    LfgContainerType::accessor a;   // accessor - read and write lock
 
     uint64 guid = GetGUID();
     uint32 combined;
 
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!m_lookingForGroup.more.Empty())
     {
         combined = m_lookingForGroup.more.Combine();
 
-        if (sWorld.lfgContainer.find(a, combined))
+        if (lfgContainer.find(a, combined))
         {
             // remove player from list
             for (std::list<uint64>::iterator itr = a->second.begin(); itr != a->second.end();)
@@ -20225,8 +20188,8 @@ void Player::LFMSet(uint32 entry, uint32 type)
     combined = LFG_COMBINE(entry, type);
 
     // if we can't find list in container or add new list
-    if (!sWorld.lfgContainer.find(a, combined))
-        if (!sWorld.lfgContainer.insert(a, combined))
+    if (!lfgContainer.find(a, combined))
+        if (!lfgContainer.insert(a, combined))
             return;
 
     m_lookingForGroup.more.Set(entry, type);
@@ -20236,18 +20199,19 @@ void Player::LFMSet(uint32 entry, uint32 type)
     JoinLFGChannel();
 }
 
-void Player::ClearLFG()
+void Player::ClearLFG(bool leaveChannel)
 {
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         if (m_lookingForGroup.slots[i].Empty())
             continue;
 
-        tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
+        LfgContainerType::accessor a;
 
         uint32 combined = LFG_COMBINE(m_lookingForGroup.slots[i].entry, m_lookingForGroup.slots[i].type);
 
-        if (!sWorld.lfgContainer.find(a, combined))
+        if (!lfgContainer.find(a, combined))
             continue;
 
         // remove player from list
@@ -20263,15 +20227,18 @@ void Player::ClearLFG()
         m_lookingForGroup.slots[i].Clear();
     }
 
-    LeaveLFGChannel();
+    if (leaveChannel)
+        LeaveLFGChannel();
+
     GetSession()->SendUpdateLFG();
 }
 
-void Player::ClearLFM()
+void Player::ClearLFM(bool leaveChannel)
 {
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor a;
+    LfgContainerType::accessor a;
 
-    if (!sWorld.lfgContainer.find(a, m_lookingForGroup.more.Combine()))
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    if (!lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
 
     // remove player from list
@@ -20286,7 +20253,9 @@ void Player::ClearLFM()
 
     m_lookingForGroup.more.Clear();
 
-    LeaveLFGChannel();
+    if (leaveChannel)
+        LeaveLFGChannel();
+
     GetSession()->SendUpdateLFM();
 }
 
@@ -20309,6 +20278,41 @@ uint32 Player::GetLFGCombined(uint8 slot)
 uint32 Player::GetLFMCombined()
 {
     return m_lookingForGroup.more.Combine();
+}
+
+void Player::SetBattleGroundRaid(Group* group, int8 subgroup)
+{
+    //we must move references from m_group to m_originalGroup
+    SetOriginalGroup(GetGroup(), GetSubGroup());
+
+    m_group.unlink();
+    m_group.link(group, this);
+    m_group.setSubGroup((uint8)subgroup);
+}
+
+void Player::RemoveFromBattleGroundRaid()
+{
+    //remove existing reference
+    m_group.unlink();
+    if (Group* group = GetOriginalGroup())
+    {
+        m_group.link(group, this);
+        m_group.setSubGroup(GetOriginalSubGroup());
+    }
+    SetOriginalGroup(NULL);
+}
+
+void Player::SetOriginalGroup(Group *group, int8 subgroup)
+{
+    if (group == NULL)
+        m_originalGroup.unlink();
+    else
+    {
+        // never use SetOriginalGroup without a subgroup unless you specify NULL for group
+        //MANGOS_ASSERT(subgroup >= 0);
+        m_originalGroup.link(group, this);
+        m_originalGroup.setSubGroup((uint8)subgroup);
+    }
 }
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)

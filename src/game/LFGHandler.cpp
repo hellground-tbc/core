@@ -141,12 +141,13 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
     data << uint32(0);                                      // count, placeholder
     data << uint32(0);                                      // count again, strange, placeholder
 
-    tbb::concurrent_hash_map<uint32, std::list<uint64> >::const_accessor a;
+    LfgContainerType::const_accessor a;
 
     bool clearNeeded = false;
 
     // get player container for LFM id
-    if (sWorld.lfgContainer.find(a, LFG_COMBINE(entry, type)))
+    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetPlayer()->GetTeam());
+    if (lfgContainer.find(a, LFG_COMBINE(entry, type)))
     {
         for (std::list<uint64>::const_iterator itr = a->second.begin(); itr != a->second.end(); ++itr)
         {
@@ -158,8 +159,8 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
                 continue;
             }
 
-            // skip other team
-            if (!plr->IsInWorld() || plr->GetTeam() != _player->GetTeam())
+            // skip not in world
+            if (!plr->IsInWorld())
                 continue;
 
             // skip not have in slot and not group leader cases
@@ -229,10 +230,10 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
 
     if (clearNeeded)
     {
-        tbb::concurrent_hash_map<uint32, std::list<uint64> >::accessor accessor;
+        LfgContainerType::accessor accessor;
 
         // get player container for LFM id
-        if (sWorld.lfgContainer.find(accessor, LFG_COMBINE(entry, type)))
+        if (lfgContainer.find(accessor, LFG_COMBINE(entry, type)))
         {
             for (std::list<uint64>::iterator itr = accessor->second.begin(); itr != accessor->second.end();)
             {

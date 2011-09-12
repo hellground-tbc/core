@@ -407,7 +407,7 @@ struct CreatureEventAI_Action
         // ACTION_T_REMOVE_CORPSE                           = 43
         struct
         {
-            
+
         } remove_corpse;
         // ACTION_T_CAST_GUID                               = 44
         struct
@@ -636,9 +636,9 @@ class TRINITY_DLL_SPEC CreatureEventAI : public CreatureAI
 
         bool SpawnedEventConditionsCheck(CreatureEventAI_Event const& event);
 
-        Unit* DoSelectLowestHpFriendly(float range, uint32 MinHPDiff);
-        void DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid);
-        void DoFindFriendlyCC(std::list<Creature*>& _list, float range);
+        Unit* SelectLowestHpFriendly(float range, uint32 MinHPDiff);
+        void FindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid);
+        void FindFriendlyCC(std::list<Creature*>& _list, float range);
 
                                                             //Holder for events (stores enabled, time, and eventid)
         std::list<CreatureEventAIHolder> CreatureEventAIList;

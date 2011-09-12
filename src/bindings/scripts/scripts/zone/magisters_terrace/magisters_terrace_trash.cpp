@@ -176,7 +176,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
     {
       if(!UpdateVictim())
       return;
-       
+
             if(Poison_Timer < diff)
             {
                  if (m_creature->GetEntry()==24687)
@@ -191,7 +191,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 
             if(Prayer_of_Mending_Timer < diff)
             {
-                Unit* healTarget = DoSelectLowestHpFriendly(40.0f);
+                Unit* healTarget = SelectLowestHpFriendly(40.0f);
                  if (m_creature->GetEntry()==24687)
                      AddSpellToCast(healTarget,44583);    //normal
 
@@ -229,9 +229,9 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
     {
       if(!UpdateVictim())
       return;
-       
+
             if(Judgement_Timer < diff)
-            {  
+            {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
                  if (m_creature->GetEntry()==24684)
                      AddSpellToCast(target,44482);    //normal
@@ -258,7 +258,7 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
 
             if(Holy_Light_Timer < diff)
             {
-                Unit* healTarget = DoSelectLowestHpFriendly(40.0f);
+                Unit* healTarget = SelectLowestHpFriendly(40.0f);
                  if (m_creature->GetEntry()==24684)
                      AddSpellToCast(healTarget,44479);    //normal
 
@@ -291,7 +291,7 @@ struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
     {
       if(!UpdateVictim())
       return;
-       
+
             if(Drink_Timer < diff)
             {
                AddSpellToCast(me,44505);
@@ -330,7 +330,7 @@ struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
     {
       if(!UpdateVictim())
       return;
-       
+
             if(Drink_Timer < diff)
             {
                AddSpellToCast(me,44505);
@@ -371,7 +371,7 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
     {
       if(!UpdateVictim())
       return;
-       
+
             if(Drink_Timer < diff)
             {
                AddSpellToCast(me,44505);

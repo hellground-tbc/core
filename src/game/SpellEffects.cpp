@@ -2750,7 +2750,7 @@ void Spell::EffectTeleportUnits(uint32 i)
 
     float x = m_targets.m_destX;
     float y = m_targets.m_destY;
-    float z = m_targets.m_destZ;
+    float z = m_targets.m_destZ +0.5f;
     float orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
     sLog.outDebug("Spell::EffectTeleportUnits - teleport unit to %u %f %f %f\n", mapid, x, y, z);
     // Teleport
@@ -6995,7 +6995,7 @@ void Spell::EffectLeapForward(uint32 i)
         //Prevent Falling during swap building/outerspace
         unitTarget->UpdateGroundPositionZ(cx, cy, cz);
 
-        unitTarget->NearTeleportTo(cx, cy, cz, unitTarget->GetOrientation(), unitTarget == m_caster);
+        unitTarget->NearTeleportTo(cx, cy, cz +0.5f, unitTarget->GetOrientation(), unitTarget == m_caster);
     }
 }
 void Spell::EffectLeapBack(uint32 i)
@@ -7109,7 +7109,8 @@ void Spell::EffectCharge(uint32 /*i*/)
     target->GetContactPoint(m_caster, x, y, z);
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         ((Player *)m_caster)->m_AC_timer = 3000;
-    m_caster->GetMotionMaster()->MoveCharge(x, y, z);
+
+    m_caster->GetMotionMaster()->MoveCharge(x, y, z +0.5f);
 
     // not all charge effects used in negative spells
     if (!IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)

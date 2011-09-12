@@ -194,9 +194,6 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         Entangle = false;
         CanAttack = false;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-
         Unit *remo;
         for(uint8 i = 0; i < 4; i++)
         {

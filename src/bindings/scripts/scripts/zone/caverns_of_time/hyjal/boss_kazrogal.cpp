@@ -60,9 +60,6 @@ struct TRINITY_DLL_DECL boss_kazrogalAI : public hyjal_trashAI
         CheckTimer = 3000;
         CrippleTimer = 15000+rand()%10000;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
-
         if(pInstance && IsEvent)
             pInstance->SetData(DATA_KAZROGALEVENT, NOT_STARTED);
     }

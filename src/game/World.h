@@ -398,6 +398,8 @@ struct CliCommandHolder
 // ye place for this sucks
 #define MAX_PVP_RANKS 14
 
+typedef tbb::concurrent_hash_map<uint32, std::list<uint64> > LfgContainerType;
+
 /// The World
 class World
 {
@@ -593,8 +595,20 @@ class World
         // available heroic quests
         uint32 specialQuest[6];
 
+        LfgContainerType & GetLfgContainer(uint32 team)
+        {
+            switch (team)
+            {
+                case ALLIANCE:
+                    return lfgAllyContainer;
+                default:
+                    return lfgHordeContainer;
+            }
+        }
+
         // LFG container, lfg instance id to player guid list. Should be less lockable than prev implementation
-        tbb::concurrent_hash_map<uint32, std::list<uint64> > lfgContainer;
+        LfgContainerType lfgHordeContainer;
+        LfgContainerType lfgAllyContainer;
 
     protected:
         void _UpdateGameTime();

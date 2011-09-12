@@ -218,7 +218,7 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 
         if(FreeFriend < diff )
         {
-            std::list<Creature*> pList = DoFindFriendlyCC(100);
+            std::list<Creature*> pList = FindFriendlyCC(100);
             if (!pList.empty())
             {
                 Unit* target = *(pList.begin());
@@ -375,7 +375,6 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         ForkedLightning = urand(1000, 3000);
         Hurricane = urand(20000, 30000);
         SummonGeyser = urand(3000, 8000);
@@ -493,7 +492,7 @@ struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
 
         if(Restoration < diff)
         {
-            Unit* healTarget = DoSelectLowestHpFriendly(40.0f);
+            Unit* healTarget = SelectLowestHpFriendly(40.0f);
             if(healTarget)
                 AddSpellToCast(healTarget, SPELL_RESTORATION);
             Restoration = urand(15000, 20000);     //check targets each 15-20s
@@ -892,7 +891,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 
     void JustDied(Unit *victim)
     {
-        std::list<Creature*> tmp = DoFindAllCreaturesWithEntry(BONECHEWER_ID, 20.0);
+        std::list<Creature*> tmp = FindAllCreaturesWithEntry(BONECHEWER_ID, 20.0);
 
         if (tmp.empty())
             return;
@@ -942,8 +941,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 
         immolationArrowTimer = 10000 + urand(0, 5000);
         distCheckTimer = 1000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         SetAutocast(SPELL_SKYSTALKER_SHOOT, 2500, true);
     }
 
@@ -1056,8 +1053,6 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         doomBoltTimer = 5000 + urand(0, 5000);
         freezeTimer = 10000 + urand(0, 5000);
         distCheckTimer = 3000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
         SetAutocast(SPELL_WINDREAVER_FIREBALL, 2500, true);
     }
 
@@ -1239,7 +1234,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         if (fixateTimer < diff)
         {
             victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true);
-            std::list<Creature*> FriendlyList = DoFindAllFriendlyInGrid(100);
+            std::list<Creature*> FriendlyList = FindAllFriendlyInGrid(100);
             std::vector<Creature*> Friendly;
 
             for(std::list<Creature*>::iterator i = FriendlyList.begin(); i != FriendlyList.end(); ++i)
@@ -1287,8 +1282,6 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
         flamesTimer = 5000 + urand(0, 10000);
         rainTimer = 15000 + urand(0, 10000);
         stompTimer = 10000 + urand(0, 10000);
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
     }
 
     void EnterCombat(Unit *who) { DoZoneInCombat(80.0f); }
@@ -1705,7 +1698,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
                 ForceSpellCast(m_creature, SPELL_CHAIN_HEAL);
                 ChainHeal = 20000;
             }
-            else if(Unit* healTarget = DoSelectLowestHpFriendly(40, 15000))
+            else if(Unit* healTarget = SelectLowestHpFriendly(40, 15000))
             {
                 ForceSpellCast(healTarget, SPELL_CHAIN_HEAL);
                 ChainHeal = 20000;
@@ -1964,7 +1957,6 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         ChainLightning = urand(6000, 25000);
         LightningBolt = urand(1500, 3000);
         LightningShield = 25000;
@@ -2354,7 +2346,6 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         CurseOfMending = urand(10000, 20000);
         Fear = urand(3000, 15000);
         ShadowInferno = 7000;
@@ -2541,7 +2532,6 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         BloodSiphon = urand(3000, 20000);
         Bloodbolt = urand(5000, 15000);
     }
@@ -2743,7 +2733,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
 
     uint64 SelectCorpseGUID()
     {
-        std::list<Unit*> DeadList = DoFindAllDeadInRange(50);
+        std::list<Unit*> DeadList = FindAllDeadInRange(50);
         std::list<uint64> CorpseGUID;
         CorpseGUID.clear();
 
@@ -3934,7 +3924,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0f, true))
                 AddSpellToCast(target, SPELL_PROPHECY_OF_BLOOD_PL);
-            std::list<Creature*> Friendly = DoFindAllFriendlyInGrid(20.0f);
+            std::list<Creature*> Friendly = FindAllFriendlyInGrid(20.0f);
             if(!Friendly.empty())
             {
                 std::list<Creature*>::iterator i = Friendly.begin();
@@ -4683,7 +4673,6 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
         GreaterHeal = 2000;
         HolyNova = urand(5000, 10000);
         ShellOfLife = 20000;
@@ -4730,7 +4719,7 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
 
         if(GreaterHeal < diff)
         {
-            Unit* healTarget = DoSelectLowestHpFriendly(40.0f, 20000);
+            Unit* healTarget = SelectLowestHpFriendly(40.0f, 20000);
             if(healTarget)
                 AddSpellToCast(healTarget, SPELL_GREATER_HEAL);
             GreaterHeal = urand(5000, 10000);     //check targets each 5-10s
@@ -5116,7 +5105,7 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
             {
                 if(!shieldCooldown)
                 {
-                    if(Unit* shieldTarget = DoSelectLowestHpFriendly(40, 20000))
+                    if(Unit* shieldTarget = SelectLowestHpFriendly(40, 20000))
                     {
                         AddSpellToCast(shieldTarget, SPELL_POWER_WORD_SHIELD, false, true);
                         shieldCooldown = true;
@@ -5131,7 +5120,7 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
                     shieldCooldownTimer -= diff;
                 if(Heal < diff)
                 {
-                    if(Unit* healTarget = DoSelectLowestHpFriendly(40, 60000))
+                    if(Unit* healTarget = SelectLowestHpFriendly(40, 60000))
                         AddSpellToCast(healTarget, SPELL_HEAL, false, true);
                     Heal = 2600;
                 }

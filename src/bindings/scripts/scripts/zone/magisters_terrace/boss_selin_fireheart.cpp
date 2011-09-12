@@ -47,7 +47,7 @@ EndScriptData */
 #define CRYSTALS_NUMBER                 5
 #define DATA_CRYSTALS                   6
 
-#define CREATURE_FEL_CRYSTAL            24722  
+#define CREATURE_FEL_CRYSTAL            24722
 
 struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 {
@@ -73,7 +73,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
     void Reset()
     {
-        std::list<Creature*> fel_crystals = DoFindAllCreaturesWithEntry(CREATURE_FEL_CRYSTAL, 100);
+        std::list<Creature*> fel_crystals = FindAllCreaturesWithEntry(CREATURE_FEL_CRYSTAL, 100);
         for(std::list<Creature*>::iterator it = fel_crystals.begin(); it != fel_crystals.end(); it++)
         {
             (*it)->Respawn();
@@ -98,7 +98,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
         m_creature->SetPower(POWER_MANA, 0);
     }
-    
+
     void SelectNearestCrystal()
     {
         Creature* CrystalChosen = NULL;
@@ -141,7 +141,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
     void ShatterRemainingCrystals()
     {
-        std::list<Creature*> fel_crystals = DoFindAllCreaturesWithEntry(CREATURE_FEL_CRYSTAL, 100);
+        std::list<Creature*> fel_crystals = FindAllCreaturesWithEntry(CREATURE_FEL_CRYSTAL, 100);
         for(std::list<Creature*>::iterator it = fel_crystals.begin(); it != fel_crystals.end(); it++)
             if((*it)->isAlive())
                 (*it)->Kill(*it);
@@ -153,7 +153,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
         DoScriptText(SAY_AGGRO, m_creature);
 
         // already did in Reset(), will not hurt to do it again
-        std::list<Creature*> fel_crystals = DoFindAllCreaturesWithEntry(CREATURE_FEL_CRYSTAL, 100);
+        std::list<Creature*> fel_crystals = FindAllCreaturesWithEntry(CREATURE_FEL_CRYSTAL, 100);
         for(std::list<Creature*>::iterator it = fel_crystals.begin(); it != fel_crystals.end(); it++)
         {
             (*it)->Respawn();
@@ -209,7 +209,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
             DoScriptText(SAY_EMPOWERED, m_creature);
 
-            DrainingJustFinished = true; // killing crystal here causes crash, we kill it on next update         
+            DrainingJustFinished = true; // killing crystal here causes crash, we kill it on next update
 
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
@@ -240,7 +240,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
                     if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true))
                         AddSpellToCast(target, SPELL_DRAIN_LIFE);
                     DrainLifeTimer = 8000+rand()%4000;
-                }else 
+                }else
                     DrainLifeTimer -= diff;
 
                 // Heroic only
@@ -251,32 +251,32 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
                         if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45, true, POWER_MANA))
                             AddSpellToCast(target, SPELL_DRAIN_MANA);
                         DrainManaTimer = 8000+rand()%4000;
-                    }else 
+                    }else
                         DrainManaTimer -= diff;
                 }
 
                 if(DrainCrystalTimer < diff)
                 {
                     SelectNearestCrystal();
-                    if(Heroic)   
+                    if(Heroic)
                         DrainCrystalTimer = 10000 + rand()%5000;
-                    else         
+                    else
                         DrainCrystalTimer = 20000 + rand()%5000;
-                }else 
+                }else
                     DrainCrystalTimer -= diff;
-            } 
-            else 
+            }
+            else
             {
                 if( FelExplosionTimer < diff )
                 {
                     AddSpellToCast(m_creature, SPELL_FEL_EXPLOSION);
                     FelExplosionTimer = 1500;
-                } else 
+                } else
                     FelExplosionTimer -= diff;
             }
 
             CastNextSpellIfAnyAndReady();
-            DoMeleeAttackIfReady();  
+            DoMeleeAttackIfReady();
         }
     }
 };
@@ -288,7 +288,7 @@ CreatureAI* GetAI_boss_selin_fireheart(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_fel_crystalAI : public ScriptedAI
 {
-    mob_fel_crystalAI(Creature *c) : ScriptedAI(c) 
+    mob_fel_crystalAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = c->GetInstanceData();
     }
@@ -296,13 +296,13 @@ struct TRINITY_DLL_DECL mob_fel_crystalAI : public ScriptedAI
     ScriptedInstance *pInstance;
     uint32 Check_Timer;
 
-    void Reset() 
+    void Reset()
     {
         Check_Timer = 1000;
     }
     void AttackStart(Unit* who) {}
     void MoveInLineOfSight(Unit* who) {}
-    void UpdateAI(const uint32 diff) 
+    void UpdateAI(const uint32 diff)
     {
         if(Check_Timer < diff)
         {

@@ -335,7 +335,7 @@ struct npc_lord_gregor_lescovarAI : public npc_escortAI
     void DoGuardsDisappearAndDie()
     {
         std::list<Creature*> GuardList;
-        GuardList = DoFindAllCreaturesWithEntry(NPC_STORMWIND_ROYAL,50.0f);
+        GuardList = FindAllCreaturesWithEntry(NPC_STORMWIND_ROYAL,50.0f);
         if (!GuardList.empty())
         {
             for (std::list<Creature*>::const_iterator itr = GuardList.begin(); itr != GuardList.end(); ++itr)
@@ -795,7 +795,7 @@ bool GossipSelect_npc_squire_rowe(Player *player, Creature *_Creature, uint32 se
 * Stormwind Elite Guard
 *****/
 
-float StormwindEliteGuardMoveCoords[6][4] = 
+float StormwindEliteGuardMoveCoords[6][4] =
 {
     // right
     {-8970.5, 520.3, 96.7, 5.38},
@@ -1499,7 +1499,7 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             break;
                         case 13:
                         {
-                            std::list<Creature*> guardList = DoFindAllCreaturesWithEntry(NPC_STORMWIND_ROYAL_GUARD_ID, 27.0);
+                            std::list<Creature*> guardList = FindAllCreaturesWithEntry(NPC_STORMWIND_ROYAL_GUARD_ID, 27.0);
                             Creature * tmpc;
                             for (std::list<Creature*>::iterator i = guardList.begin(); i != guardList.end(); ++i)
                             {
@@ -1528,9 +1528,9 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                         }
                         case 14:
                         {
-                            std::list<Creature*> guardList = DoFindAllCreaturesWithEntry(NPC_LADY_ONYXIA_GUARD_ID, 40.0);
+                            std::list<Creature*> guardList = FindAllCreaturesWithEntry(NPC_LADY_ONYXIA_GUARD_ID, 40.0);
 
-                            std::list<Player*> playerList = DoFindAllPlayersInRange(40, ladyOnyxia);
+                            std::list<Player*> playerList = FindAllPlayersInRange(40, ladyOnyxia);
 
                             for (std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end();)
                             {
