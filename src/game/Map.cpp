@@ -2583,6 +2583,9 @@ void InstanceMap::InitVisibilityDistance()
         case 564:   //Black Temple
             m_VisibleDistance = sWorld.GetMaxSpecialVisibleDistance();
             break;
+        case 580:   //Sunwell Plateau (for Ice Barrier visibility)
+            m_VisibleDistance = 400.0f;
+            break;
         default:
             m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();
             break;
