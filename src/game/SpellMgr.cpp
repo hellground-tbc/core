@@ -2924,7 +2924,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 19937: //Illusion: Black Dragonkin
             spellInfo->AreaId = 15;
             break;
-        case 5246:  // Intimidating Shout
         case 28062: // Positive Charge
         case 28085: // Negative Charge
         case 39090: // Positive Charge
