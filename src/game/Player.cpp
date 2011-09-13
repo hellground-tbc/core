@@ -4645,7 +4645,7 @@ void Player::JoinLFGChannel()
     data << "LookingForGroup";  // channel name
     data << GetGUID();          // player guid
 
-    GetSession()->SendPacket(&data)
+    GetSession()->SendPacket(&data);
 }
 
 void Player::UpdateDefense()
