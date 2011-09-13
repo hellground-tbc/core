@@ -92,7 +92,7 @@ enum Creatures
     MOB_FOG_OF_CORRUPTION    =   25266,
     MOB_VAPOR          =   25265,
     MOB_VAPOR_TRAIL    =   25267,
-    MOB_KALECGOS       =   24844        // dunno if it's right one
+    MOB_KALECGOS       =   24844        // dunno if it's right one - its not ;p
 };
 
 enum PhaseFelmyst
@@ -229,12 +229,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(YELL_DEATH, m_creature);
-
         if(pInstance && Killer->GetTypeId() != TYPEID_UNIT)
+        {
+            DoScriptText(YELL_DEATH, m_creature);
             pInstance->SetData(DATA_FELMYST_EVENT, DONE);
-
-        me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
+            me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
+        }
     }
 
     void EnterEvadeMode()

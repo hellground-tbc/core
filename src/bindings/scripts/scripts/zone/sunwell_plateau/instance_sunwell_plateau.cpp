@@ -12,7 +12,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_sunwell_plateau.h"
 
-#define ENCOUNTERS 6
+#define ENCOUNTERS 7
 
 enum GoState
 {
@@ -22,11 +22,12 @@ enum GoState
 
 /* Sunwell Plateau:
 0 - Kalecgos and Sathrovarr
-1 - Brutallus
-2 - Felmyst
-3 - Eredar Twins (Alythess and Sacrolash)
-4 - M'uru
-5 - Kil'Jaeden
+1 - Brutallus & Madrigosa intro
+2 - Brutallus
+3 - Felmyst
+4 - Eredar Twins (Alythess and Sacrolash)
+5 - M'uru
+6 - Kil'Jaeden
 */
 
 struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
@@ -222,13 +223,14 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
     {
         switch(id)
         {
-            case DATA_KALECGOS_EVENT:     return Encounters[0]; break;
-            case DATA_BRUTALLUS_EVENT:    return Encounters[1]; break;
-            case DATA_FELMYST_EVENT:      return Encounters[2]; break;
-            case DATA_EREDAR_TWINS_EVENT: return Encounters[3]; break;
-            case DATA_MURU_EVENT:         return Encounters[4]; break;
-            case DATA_KILJAEDEN_EVENT:    return Encounters[5]; break;
-            case DATA_KALECGOS_PHASE:     return KalecgosPhase; break;
+            case DATA_KALECGOS_EVENT:           return Encounters[0]; break;
+            case DATA_BRUTALLUS_INTRO_EVENT:    return Encounters[1]; break;
+            case DATA_BRUTALLUS_EVENT:          return Encounters[2]; break;
+            case DATA_FELMYST_EVENT:            return Encounters[3]; break;
+            case DATA_EREDAR_TWINS_EVENT:       return Encounters[4]; break;
+            case DATA_MURU_EVENT:               return Encounters[5]; break;
+            case DATA_KILJAEDEN_EVENT:          return Encounters[6]; break;
+            case DATA_KALECGOS_PHASE:           return KalecgosPhase; break;
         }
 
         return 0;
@@ -282,24 +284,28 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
                 break;
-            case DATA_BRUTALLUS_EVENT:
+            case DATA_BRUTALLUS_INTRO_EVENT:
                 if(Encounters[1] != DONE)
                     Encounters[1] = data;
                 break;
-            case DATA_FELMYST_EVENT:
+            case DATA_BRUTALLUS_EVENT:
                 if(Encounters[2] != DONE)
+                    Encounters[2] = data;
+                break;
+            case DATA_FELMYST_EVENT:
+                if(Encounters[3] != DONE)
                 {
                     if(data == DONE)
                         HandleGameObject(FireBarrier, OPEN);
-                    Encounters[2] = data;
+                    Encounters[3] = data;
                 }
                 break;
             case DATA_EREDAR_TWINS_EVENT:
-                if(Encounters[3] != DONE)
-                    Encounters[3] = data;
+                if(Encounters[4] != DONE)
+                    Encounters[4] = data;
                 break;
             case DATA_MURU_EVENT:
-                if(Encounters[4] != DONE)
+                if(Encounters[5] != DONE)
                 {
                     switch(data){
                         case DONE:
@@ -315,12 +321,12 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                             HandleGameObject(Gate[3], OPEN);
                             break;
                     }
-                    Encounters[4] = data;
+                    Encounters[5] = data;
                 }
                 break;
             case DATA_KILJAEDEN_EVENT:
-                if(Encounters[5] != DONE)
-                    Encounters[5] = data;
+                if(Encounters[6] != DONE)
+                    Encounters[6] = data;
                 break;
             case DATA_KALECGOS_PHASE:
                 KalecgosPhase = data; 
@@ -349,7 +355,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         stream << Encounters[2] << " ";
         stream << Encounters[3] << " ";
         stream << Encounters[4] << " ";
-        stream << Encounters[5];
+        stream << Encounters[5] << " ";
+        stream << Encounters[6];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -367,7 +374,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
         stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3]
-            >> Encounters[4] >> Encounters[5];
+            >> Encounters[4] >> Encounters[5] >> Encounters[6];
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
                 Encounters[i] = NOT_STARTED;

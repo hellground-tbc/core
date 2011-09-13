@@ -131,11 +131,12 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         pInstance->SetData(DATA_BRUTALLUS_EVENT, DONE);
     }
 
+    /*
     void DamageTaken(Unit *pAttacker, uint32 &damage)
     {
         if (IsIntro && pAttacker->isCharmedOwnedByPlayerOrPlayer())
             damage = 0;
-    }
+    }*/
 
     void StartIntro()
     {
@@ -192,7 +193,8 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             case 3:
             {
                 AddSpellToCast(me, SPELL_INTRO_FROST_BLAST);
-                pMadrigosa->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+                pMadrigosa->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
+                //pMadrigosa->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
                 float x, y, z;
                 pMadrigosa->GetPosition(x, y, z);
                 pMadrigosa->GetMotionMaster()->MovePoint(1, x, y, z+10);
@@ -214,7 +216,10 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 ++IntroPhase;
                 break;
             case 6:
-                me->SetSpeed(MOVE_RUN, 4.0f, true);
+                float x, y, z;
+                pMadrigosa->GetPosition(x, y, z);
+                //me->SetSpeed(MOVE_RUN, 4.0f, true);
+                pMadrigosa->GetMotionMaster()->MoveCharge(x, y, z);
                 DoScriptText(YELL_INTRO_CHARGE, me);
                 IntroPhaseTimer = 3000;
                 ++IntroPhase;
@@ -391,6 +396,28 @@ struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
     }
 };
 
+struct TRINITY_DLL_DECL brutallus_intro_triggerAI : public ScriptedAI
+{
+    brutallus_intro_triggerAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDist(who, 30) && pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == NOT_STARTED)
+        {
+            if(Unit *pBrutallus = me->GetUnit(pInstance->GetData64(DATA_BRUTALLUS)))
+            {
+                ((boss_brutallusAI*)((Creature*)pBrutallus)->AI())->StartIntro();
+                pInstance->SetData(DATA_BRUTALLUS_INTRO_EVENT, IN_PROGRESS);
+            }
+        }
+    }
+};
+
 CreatureAI* GetAI_boss_brutallus(Creature *_Creature)
 {
     return new boss_brutallusAI (_Creature);
@@ -399,6 +426,11 @@ CreatureAI* GetAI_boss_brutallus(Creature *_Creature)
 CreatureAI* GetAI_npc_death_cloud(Creature *_Creature)
 {
     return new npc_death_cloudAI (_Creature);
+}
+
+CreatureAI* GetAI_brutallus_intro_trigger(Creature *_Creature)
+{
+    return new brutallus_intro_triggerAI (_Creature);
 }
 
 void AddSC_boss_brutallus()
@@ -413,5 +445,10 @@ void AddSC_boss_brutallus()
     newscript = new Script;
     newscript->Name="boss_brutallus";
     newscript->GetAI = &GetAI_boss_brutallus;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="brutallus_intro_trigger";
+    newscript->GetAI = &GetAI_brutallus_intro_trigger;
     newscript->RegisterSelf();
 }

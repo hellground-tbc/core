@@ -7,11 +7,12 @@
 
 /*** Encounters ***/
 #define DATA_KALECGOS_EVENT         1
-#define DATA_BRUTALLUS_EVENT        2
-#define DATA_FELMYST_EVENT          3
-#define DATA_EREDAR_TWINS_EVENT     4
-#define DATA_MURU_EVENT             5
-#define DATA_KILJAEDEN_EVENT        6
+#define DATA_BRUTALLUS_INTRO_EVENT  2
+#define DATA_BRUTALLUS_EVENT        3
+#define DATA_FELMYST_EVENT          4
+#define DATA_EREDAR_TWINS_EVENT     5
+#define DATA_MURU_EVENT             6
+#define DATA_KILJAEDEN_EVENT        7
 
 /*** Creatures ***/
 #define DATA_KALECGOS_DRAGON        7
