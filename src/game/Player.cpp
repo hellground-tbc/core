@@ -4634,9 +4634,18 @@ void Player::JoinLFGChannel()
         if ((*i)->IsLFG())
             return;
 
-    if (ChannelMgr* cMgr = channelMgr(GetTeam()))
+    /*if (ChannelMgr* cMgr = channelMgr(GetTeam()))
         if (Channel *chn = cMgr->GetJoinChannel("LookingForGroup", 26))
-            chn->Invite(GetGUID(), GetName());
+            chn->Invite(GetGUID(), GetName());*/
+
+    WorldPacket data;
+
+    data.Initialize(SMSG_CHANNEL_NOTIFY, 17);   // "LookingForGroup count + 2
+    data << uint8(0x18);        // CHAT_INVITE_NOTICE
+    data << "LookingForGroup";  // channel name
+    data << GetGUID();          // player guid
+
+    GetSession()->SendPacket(&data)
 }
 
 void Player::UpdateDefense()
