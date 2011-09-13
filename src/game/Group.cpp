@@ -371,6 +371,14 @@ void Group::ChangeLeader(const uint64 &guid)
     if (slot==m_memberSlots.end())
         return;
 
+    Player * plr = ObjectAccessor::GetPlayer(GetLeaderGUID());
+    if (plr)
+        plr->ClearLFM();
+
+    plr = ObjectAccessor::GetPlayer(guid);
+    if (plr)
+        plr->ClearLFM();
+
     _setLeader(guid);
 
     WorldPacket data(SMSG_GROUP_SET_LEADER, slot->name.size()+1);

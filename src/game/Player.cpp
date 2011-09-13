@@ -4630,6 +4630,9 @@ void Player::LeaveLFGChannel()
 
 void Player::JoinLFGChannel()
 {
+    if (m_lookingForGroup.Empty())
+        return;
+
     for (JoinedChannelsList::iterator i = m_channels.begin(); i != m_channels.end(); ++i)
         if ((*i)->IsLFG())
             return;
