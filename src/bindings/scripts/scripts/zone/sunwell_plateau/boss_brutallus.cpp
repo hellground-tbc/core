@@ -193,7 +193,9 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             case 3:
             {
                 AddSpellToCast(me, SPELL_INTRO_FROST_BLAST);
-                pMadrigosa->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
+                pMadrigosa->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+                pMadrigosa->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+                pMadrigosa->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
                 //pMadrigosa->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
                 float x, y, z;
                 pMadrigosa->GetPosition(x, y, z);
@@ -226,6 +228,8 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 break;
             case 7:
                 me->DealDamage(pMadrigosa, pMadrigosa->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, true);
+                if(pInstance)
+                    pInstance->SetData(DATA_BRUTALLUS_INTRO_EVENT, DONE);
                 DoScriptText(YELL_MADR_DEATH, pMadrigosa);
                 me->SetHealth(me->GetMaxHealth());
                 me->AttackStop();

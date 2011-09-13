@@ -56,7 +56,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
     uint64 Collision_1;                                     // Kalecgos Encounter
     uint64 Collision_2;                                     // Kalecgos Encounter
     uint64 FireBarrier;                                     // Brutallus Encounter
-    uint32 IceBarrier;                                      // Brutallus Encounter
+    uint64 IceBarrier;                                      // Brutallus Encounter
     uint64 Gate[5];                                         // Rename this to be more specific after door placement is verified.
 
     /*** Misc ***/
@@ -279,14 +279,21 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                     HandleGameObject(Collision_1, OPEN);
                     HandleGameObject(Collision_2, OPEN);
                 }
-                if(data == DONE)  // new event needed here for Brutallus intro
-                    HandleGameObject(IceBarrier, OPEN);
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
                 break;
             case DATA_BRUTALLUS_INTRO_EVENT:
                 if(Encounters[1] != DONE)
                     Encounters[1] = data;
+                switch(data)
+                {
+                    case IN_PROGRESS:
+                        HandleGameObject(IceBarrier, CLOSE);
+                        break;
+                    case DONE:
+                        HandleGameObject(IceBarrier, OPEN);
+                        break;
+                }
                 break;
             case DATA_BRUTALLUS_EVENT:
                 if(Encounters[2] != DONE)
