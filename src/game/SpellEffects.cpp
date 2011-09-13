@@ -1023,7 +1023,7 @@ void Spell::EffectDummy(uint32 i)
                 case 12850:                                 // (now good common check for this spells)
                 case 12868:
                 {
-                    if (!unitTarget)
+                    if (!unitTarget || m_caster->IsFriendlyTo(unitTarget))
                         return;
 
                     float damage;
@@ -1045,8 +1045,15 @@ void Spell::EffectDummy(uint32 i)
                     };
 
                     int32 deepWoundsDotBasePoints0 = int32(damage / 4);
-                    if (!m_caster->IsFriendlyTo(unitTarget))
-                         m_caster->CastCustomSpell(unitTarget, 12721, &deepWoundsDotBasePoints0, NULL, NULL, true, NULL);
+
+                    if (Aura *deepWounds = unitTarget->GetAura(12721, 0))
+                    {
+                        deepWounds->SetAuraDuration(deepWounds->GetAuraMaxDuration());
+                        deepWounds->UpdateAuraDuration();
+                        return;
+                    }
+
+                    m_caster->CastCustomSpell(unitTarget, 12721, &deepWoundsDotBasePoints0, NULL, NULL, true, NULL);
                     return;
                 }
                 case 12975:                                 //Last Stand
