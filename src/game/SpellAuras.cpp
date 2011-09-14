@@ -3811,6 +3811,8 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->SendMessageToSet(&data,true);
         */
 
+        
+
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
@@ -3822,6 +3824,9 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
             if (!(*iter)->hasUnitState(UNIT_STAT_CASTING))
                 continue;
 
+            if((*iter)->CanHaveThreatList()) // interrupting spells in pve later
+                continue;
+
             for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
             {
                 if ((*iter)->m_currentSpells[i]
@@ -3831,7 +3836,8 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                 }
             }
         }
-                                                            // blizz like 2.0.x
+
+                                                   // blizz like 2.0.x
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6);
                                                             // blizz like 2.0.x
         m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
@@ -3839,15 +3845,56 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
 
         m_target->addUnitState(UNIT_STAT_DIED);
-        m_target->CombatStop();
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
 
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+        
         // prevent interrupt message
         if (m_caster_guid == m_target->GetGUID() && m_target->m_currentSpells[CURRENT_GENERIC_SPELL])
             m_target->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
 
         m_target->InterruptNonMeleeSpells(true);
-        m_target->getHostilRefManager().deleteReferences();
+        m_target->AttackStop();
+        if (m_target->GetTypeId()==TYPEID_PLAYER)
+            ((Player*)m_target)->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
+
+
+        bool resisted = false;
+        HostilReference *ref = m_target->getHostilRefManager().getFirst();
+        while(ref)
+        {
+            Unit* target = ref->getSource()->getOwner();
+            ref = ref->next();
+            
+            if(!target)
+                continue;
+
+            // roll for feign death miss chance
+            // not sure if it follows formula for magic spells
+            if(m_target->MagicSpellHitResult(target, m_spellProto) == SPELL_MISS_NONE)
+            { 
+                if (target->hasUnitState(UNIT_STAT_CASTING))
+                    for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+                        if (target->m_currentSpells[i] && target->m_currentSpells[i]->m_targets.getUnitTargetGUID() == m_target->GetGUID())
+                            target->InterruptSpell(i, false);
+
+                m_target->getHostilRefManager().deleteReference(target);
+                if(target->getVictimGUID() == m_target->GetGUID())
+                    target->AttackStop();      
+            }
+            else
+            {
+                resisted = true;
+                WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
+                data<<m_target->GetGUID();
+                data<<uint8(0);
+                m_target->SendMessageToSet(&data,true);
+            }
+        }
+        
+        if(!resisted)
+            m_target->ClearInCombat();
+
+        
     }
     else
     {
