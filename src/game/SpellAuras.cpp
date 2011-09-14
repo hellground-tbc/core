@@ -3857,7 +3857,6 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         if (m_target->GetTypeId()==TYPEID_PLAYER)
             ((Player*)m_target)->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
 
-
         bool resisted = false;
         HostilReference *ref = m_target->getHostilRefManager().getFirst();
         while(ref)
@@ -3868,9 +3867,22 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
             if(!target)
                 continue;
 
-            // roll for feign death miss chance
-            // not sure if it follows formula for magic spells
-            if(m_target->MagicSpellHitResult(target, m_spellProto) == SPELL_MISS_NONE)
+            // calculate miss chance
+            int32 leveldif = int32(target->getLevelForTarget(m_target)) - int32(m_target->getLevelForTarget(target));
+            int32 modHitChance;
+            if (leveldif < 3)
+                modHitChance = 96 - leveldif;
+            else
+                modHitChance = 96 - leveldif * 11;
+
+            if (Player *modOwner = m_target->GetSpellModOwner())
+                modOwner->ApplySpellMod(m_spellProto->Id, SPELLMOD_RESIST_MISS_CHANCE, modHitChance);
+
+            if (modHitChance <  1) modHitChance =  1;
+            if (modHitChance > 99) modHitChance = 99;
+
+            uint32 rand = urand(0,100);
+            if(rand <= modHitChance) // hit
             { 
                 if (target->hasUnitState(UNIT_STAT_CASTING))
                     for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
@@ -3881,7 +3893,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                 if(target->getVictimGUID() == m_target->GetGUID())
                     target->AttackStop();      
             }
-            else
+            else // miss
             {
                 resisted = true;
                 WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
