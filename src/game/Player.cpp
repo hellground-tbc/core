@@ -20221,11 +20221,14 @@ void Player::LFMSet(uint32 entry, uint32 type)
 
 void Player::ClearLFG(bool leaveChannel)
 {
+    bool wasEmpty = true;
     LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         if (m_lookingForGroup.slots[i].Empty())
             continue;
+
+        wasEmpty = false;
 
         LfgContainerType::accessor a;
 
@@ -20248,11 +20251,17 @@ void Player::ClearLFG(bool leaveChannel)
     if (leaveChannel)
         LeaveLFGChannel();
 
-    GetSession()->SendUpdateLFG();
+    // don't send update lfg if lfg was empty
+    if (!wasEmpty)
+        GetSession()->SendUpdateLFG();
 }
 
 void Player::ClearLFM(bool leaveChannel)
 {
+    // don't clear empty slot
+    if (m_lookingForGroup.more.Empty())
+        return;
+
     LfgContainerType::accessor a;
 
     LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
