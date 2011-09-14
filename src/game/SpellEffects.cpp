@@ -1046,7 +1046,7 @@ void Spell::EffectDummy(uint32 i)
 
                     int32 deepWoundsDotBasePoints0 = int32(damage / 4);
 
-                    if (Aura *deepWounds = unitTarget->GetAura(12721, 0))
+                    if (Aura *deepWounds = unitTarget->GetAuraByCasterSpell(12721, m_caster->GetGUID()))
                     {
                         deepWounds->SetAuraDuration(deepWounds->GetAuraMaxDuration());
                         deepWounds->UpdateAuraDuration();
