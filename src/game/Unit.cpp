@@ -2225,8 +2225,8 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
     int32 victimDefenseSkill = pVictim->GetDefenseSkillValue(this);
 
     // bonus from skills is 0.04%
-    int32    skillBonus  = 4 * (attackerWeaponSkill - victimMaxSkillValueForLevel);
-    int32    skillBonus2 = 4 * (attackerMaxSkillValueForLevel - victimDefenseSkill);
+    int32    skillBonus  = attackerWeaponSkill - victimMaxSkillValueForLevel;
+    int32    skillBonus2 = attackerMaxSkillValueForLevel - victimDefenseSkill;
     int32    sum = 0;
     int32    roll = GetMap()->urand (0, 10000);
 
@@ -2290,7 +2290,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (dodge_chance)
     {
-        dodge_chance -= expertise_reduction + skillBonus;
+        dodge_chance -= expertise_reduction + skillBonus * 10;
         // Modify dodge chance by attacker SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
         dodge_chance += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
         if (dodge_chance > 0)
@@ -2310,7 +2310,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (parry_chance)
     {
-        parry_chance -= expertise_reduction + skillBonus;
+        parry_chance -= expertise_reduction + (skillBonus > 10 ? skillBonus * 60 : skillBonus * 10);
         if (parry_chance > 0)
         {
             sum += parry_chance;
@@ -2359,7 +2359,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (block_chance)
     {
-        block_chance -= skillBonus;
+        block_chance -= skillBonus * 10;
         if (block_chance > 0)
         {
             sum += block_chance;
@@ -2387,7 +2387,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (crit_chance)
     {
-        crit_chance += skillBonus2;
+        crit_chance += skillBonus2 * 10;
         if (crit_chance > 0)
         {
             sum += crit_chance;
@@ -2963,10 +2963,11 @@ float Unit::GetUnitParryChance() const
     }
     else if (GetTypeId() == TYPEID_UNIT)
     {
-        if (((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY)
+        Creature *c = (Creature*)this;
+        if (c->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_PARRY)
             return 0.0f;
 
-        if (GetCreatureType() == CREATURE_TYPE_HUMANOID)
+        if(c->GetCreatureType() == CREATURE_TYPE_HUMANOID || c->GetCreatureInfo()->equipmentId || c->isWorldBoss())
         {
             chance = 5.0f;
             chance += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
