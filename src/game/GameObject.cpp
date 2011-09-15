@@ -325,7 +325,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 bool IsBattleGroundTrap = false;
                 //FIXME: this is activation radius (in different casting radius that must be selected from spell data)
                 //TODO: move activated state code (cast itself) to GO_ACTIVATED, in this place only check activating and set state
-                float radius = (float)(goInfo->trap.radius)/2; // TODO rename radius to diameter (goInfo->trap.radius) should be (goInfo->trap.diameter)
+                float radius = float(goInfo->trap.radius);///2; // TODO rename radius to diameter (goInfo->trap.radius) should be (goInfo->trap.diameter)
 
                 if (!radius)
                 {
