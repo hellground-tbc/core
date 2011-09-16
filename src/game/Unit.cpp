@@ -2224,9 +2224,11 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
     int32 attackerWeaponSkill = GetWeaponSkillValue(attType,pVictim);
     int32 victimDefenseSkill = pVictim->GetDefenseSkillValue(this);
 
-    // bonus from skills is 0.04%
-    int32    skillBonus  = attackerWeaponSkill - victimMaxSkillValueForLevel;
-    int32    skillBonus2 = attackerMaxSkillValueForLevel - victimDefenseSkill;
+    // bonus from skills is 0.04% against players and 0.1% against mobs
+    int32    skillDiff  = attackerWeaponSkill - victimMaxSkillValueForLevel;
+    int32    skillBonus = pVictim->GetTypeId() == TYPEID_PLAYER ? skillDiff * 4  : skillDiff * 10;
+    int32    skillParryBonus = pVictim->GetTypeId() == TYPEID_PLAYER ? skillDiff * 4 : (skillBonus > 10 ? skillBonus * 60 : skillBonus * 10);
+    int32    skillCritBonus = (attackerMaxSkillValueForLevel - victimDefenseSkill) * 4;
     int32    sum = 0;
     int32    roll = GetMap()->urand (0, 10000);
 
@@ -2290,7 +2292,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (dodge_chance)
     {
-        dodge_chance -= expertise_reduction + skillBonus * 10;
+        dodge_chance -= expertise_reduction + skillBonus;
         // Modify dodge chance by attacker SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
         dodge_chance += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
         if (dodge_chance > 0)
@@ -2310,7 +2312,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (parry_chance)
     {
-        parry_chance -= expertise_reduction + (skillBonus > 10 ? skillBonus * 60 : skillBonus * 10);
+        parry_chance -= expertise_reduction + skillParryBonus;
         if (parry_chance > 0)
         {
             sum += parry_chance;
@@ -2359,7 +2361,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (block_chance)
     {
-        block_chance -= skillBonus * 10;
+        block_chance -= skillBonus;
         if (block_chance > 0)
         {
             sum += block_chance;
@@ -2387,7 +2389,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (crit_chance)
     {
-        crit_chance += skillBonus2 * 10;
+        crit_chance += skillCritBonus;
         if (crit_chance > 0)
         {
             sum += crit_chance;
