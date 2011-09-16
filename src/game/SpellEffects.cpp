@@ -2604,6 +2604,13 @@ void Spell::EffectTriggerSpell(uint32 i)
         }
     }
 
+    // intercept and charge and feral charge, delay triggered spell
+    if((m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && m_spellInfo->SpellFamilyFlags & 0x40000001) || m_spellInfo->Id == 16979)
+    {
+        m_caster->m_Events.AddEvent(new CastSpellEvent(*m_caster, unitTarget->GetGUID(), triggered_spell_id, true), m_caster->m_Events.CalculateTime(500));
+        return;
+    }
+
     // some triggered spells must be casted instantly (for example, if next effect case instant kill caster)
     /*bool instant = false;
     for (uint32 j = i+1; j < 3; ++j)
