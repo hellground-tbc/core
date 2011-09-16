@@ -824,9 +824,9 @@ private:
 class CastSpellEvent : public BasicEvent
 {
     public:
-        CastSpellEvent(Unit& owner, uint64 target, uint32 spellId, bool triggered, uint64 orginalCaster) : 
+        CastSpellEvent(Unit& owner, uint64 target, uint32 spellId, bool triggered = false, uint64 orginalCaster = 0) : 
             BasicEvent(), m_owner(owner), m_target(target),  m_spellId(spellId), m_triggered(triggered), m_orginalCaster(orginalCaster), m_custom(false) { }
-        CastSpellEvent(Unit& owner, uint64 target, uint32 spellId, int32* bp0, int32* bp1, int32* bp2, bool triggered, uint64 orginalCaster);
+        CastSpellEvent(Unit& owner, uint64 target, uint32 spellId, int32* bp0, int32* bp1, int32* bp2, bool triggered = false, uint64 orginalCaster = 0);
 
         bool Execute(uint64 e_time, uint32 p_time);
     private:

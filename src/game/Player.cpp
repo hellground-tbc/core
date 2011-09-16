@@ -289,7 +289,6 @@ Player::Player (WorldSession *session): Unit()
 
     m_comboTarget = 0;
     m_comboPoints = 0;
-    m_finishingComboPoints = 0;
 
     m_usedTalentCount = 0;
 
@@ -18846,14 +18845,6 @@ void Player::ClearComboPoints()
     m_comboPoints = 0;
 
     Unit* target = GetMap()->GetUnit(m_comboTarget);
-
-    if (m_finishingComboPoints && target) {
-        AddComboPoints(target, m_finishingComboPoints);
-        m_finishingComboPoints = 0;
-        return;
-    }
-    m_finishingComboPoints = 0;
-
     SendComboPoints();
 
     if (target)

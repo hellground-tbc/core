@@ -6823,7 +6823,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 // avoid double proc
                 if (pVictim != this && procSpell->Id != 26679)
                 {
-                    ((Player*)this)->AddFinishingComboPoints(1);
+                    m_Events.AddEvent(new CastSpellEvent(*this, pVictim->GetGUID(), trigger_spell_id, true), m_Events.CalculateTime(1));
                     return true;
                 }
                 else
