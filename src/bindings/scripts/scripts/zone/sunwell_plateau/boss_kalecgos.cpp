@@ -206,7 +206,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 3:
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
-            TalkTime = 3000;
+            TalkTimer = 3000;
             break;
         case 4:
             //m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
@@ -239,15 +239,15 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 2:
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
-            TalkTime = 3000;
+            TalkTimer = 3000;
             break;
-        case 2:
+        case 3:
             //m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 10000;
             break;
-        case 3:
+        case 4:
             EnterEvadeMode();
             break;
         default:
@@ -567,7 +567,9 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         {
             Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40);
             if(target)
-                AddSpellToCastWithScriptText(target, SPELL_SHADOW_BOLT, SAY_SATH_SPELL1);
+                AddSpellToCast(target, SPELL_SHADOW_BOLT);
+            if(!urand(0, 5))
+                DoScriptText(SAY_SATH_SPELL1, me);
             ShadowBoltTimer = 7000+(rand()%3000);
         }
         else
@@ -583,7 +585,9 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
         if(CorruptionStrikeTimer < diff)
         {
-            AddSpellToCastWithScriptText(m_creature->getVictim(), SPELL_CORRUPTION_STRIKE, SAY_SATH_SPELL2);
+            AddSpellToCast(m_creature->getVictim(), SPELL_CORRUPTION_STRIKE);
+            if(!urand(0, 5))
+                DoScriptText(SAY_SATH_SPELL2, me);
             CorruptionStrikeTimer = 13000;
         }
         else
