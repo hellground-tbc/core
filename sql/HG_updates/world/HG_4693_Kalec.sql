@@ -1,0 +1,1 @@
+UPDATE creature_template SET minmana = 169350, maxmana = 169350 WHERE entry = 24891;

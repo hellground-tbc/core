@@ -204,10 +204,18 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 10000;
             break;
         case 3:
-            m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+            me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+            TalkTime = 3000;
+            break;
+        case 4:
+            //m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 60000;
+            break;
+        case 5:
+            // fly away to rescue Anveena
             break;
         default:
             break;
@@ -229,7 +237,12 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 3000;
             break;
         case 2:
-            m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+            me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+            TalkTime = 3000;
+            break;
+        case 2:
+            //m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 10000;
@@ -431,11 +444,12 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        Creature *Kalec = m_creature->SummonCreature(MOB_KALEC, m_creature->GetPositionX() + 10, m_creature->GetPositionY() + 5, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
+        DoZoneInCombat();   // put all players into threatlist
+        Creature *Kalec = m_creature->SummonCreature(MOB_KALEC, m_creature->GetPositionX() + 10, m_creature->GetPositionY() + 10, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
         if(Kalec)
         {
             KalecGUID = Kalec->GetGUID();
-            m_creature->CombatStart(Kalec);
+            AttackStart(Kalec);
             m_creature->AddThreat(Kalec, 100.0f);
         }
         DoScriptText(SAY_SATH_AGGRO, m_creature);
@@ -593,7 +607,8 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
 
     uint64 SathGUID;
 
-    boss_kalecAI(Creature *c) : ScriptedAI(c){
+    boss_kalecAI(Creature *c) : ScriptedAI(c)
+    {
         pInstance = (c->GetInstanceData());
         SathGUID = 0;
     }
@@ -681,7 +696,7 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
         if(RevitalizeTimer < diff)
         {
             if(Unit* target = SelectUnitToRevitalize())
-                AddSpellToCast(target, SPELL_REVITALIZE, false, true);
+                AddSpellToCast(target, SPELL_REVITALIZE);
             RevitalizeTimer = 5000;
         }
         else
