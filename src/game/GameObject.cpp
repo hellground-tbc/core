@@ -470,6 +470,20 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 }
                 //any return here in case battleground traps
 
+                if(m_respawnTime <= update_diff)
+                {
+                    if (GetOwnerGUID())
+                    {
+                        if (Unit* owner = GetOwner())
+                            owner->RemoveGameObject(this, false);
+                        m_respawnTime = 0;
+                        Delete();
+                        return;
+                    }
+                }
+                else
+                    m_respawnTime -= update_diff;
+
                 // don't despawn goober object if isn't consumable
                 if (!GetGOInfo()->goober.consumable)
                 {
