@@ -2663,7 +2663,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 5171:
         case 6774:                     // Slice'n'Dice
-            spellInfo->AttributesEx3 &= ~SPELL_ATTR_EX3_NO_INITIAL_AGGRO; // Do not put caster in combat after use
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO; // Do not put caster in combat after use
             break;
         /* UNSORTED */
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods
