@@ -113,6 +113,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         me->SetAggroRange(26.0f);
+        me->GetPosition(wLoc);
     }
 
     ScriptedInstance *pInstance;
@@ -126,6 +127,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     uint32 TalkTimer;
     uint32 TalkSequence;
     uint32 ResetTimer;
+    WorldLocation wLoc;
 
     bool isFriendly;
     bool isEnraged;
@@ -315,6 +317,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             // various checks + interaction with sathrovarr
             if(CheckTimer < diff)
             {
+                if(!me->IsWithinDistInMap(&wLoc, 30))
+                    EnterEvadeMode();
                 DoZoneInCombat();
                 if (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE)
                     isEnraged = true;
