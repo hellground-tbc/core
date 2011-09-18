@@ -583,7 +583,7 @@ enum MovementFlags
     MOVEFLAG_TURN_RIGHT         = 0x00000020,
     MOVEFLAG_PITCH_UP           = 0x00000040,
     MOVEFLAG_PITCH_DOWN         = 0x00000080,
-    SPLINEFLAG_WALKMODE_MODE          = 0x00000100,               // Walking
+    SPLINEFLAG_WALKMODE_MODE    = 0x00000100,               // Walking
     MOVEFLAG_ONTRANSPORT        = 0x00000200,               // Used for flying on some creatures
     MOVEFLAG_LEVITATING         = 0x00000400,
     MOVEFLAG_ROOT               = 0x00000800,
@@ -592,8 +592,8 @@ enum MovementFlags
     MOVEFLAG_SWIMMING           = 0x00200000,               // appears with fly flag also
     MOVEFLAG_ASCENDING          = 0x00400000,               // swim up also
     MOVEFLAG_CAN_FLY            = 0x00800000,
-    SPLINEFLAG_FLYINGING             = 0x01000000,
-    SPLINEFLAG_FLYINGING2            = 0x02000000,               // Actual flying mode
+    SPLINEFLAG_FLYINGING        = 0x01000000,
+    SPLINEFLAG_FLYINGING2       = 0x02000000,               // Actual flying mode
     MOVEFLAG_SPLINE_ELEVATION   = 0x04000000,               // used for flight paths
     MOVEFLAG_SPLINE_ENABLED     = 0x08000000,               // used for flight paths
     MOVEFLAG_WATERWALKING       = 0x10000000,               // prevent unit from falling through water
@@ -1012,6 +1012,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE) const;
         void SendMeleeAttackStop(Unit* victim);
         void SendMeleeAttackStart(Unit* pVictim);
+
+        UnitAI* AI() { return i_AI; }
 
         void addUnitState(uint32 f) { m_state |= f; }
         bool hasUnitState(const uint32 f) const { return (m_state & f); }

@@ -475,7 +475,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 {
                     loot.clear();
                     SetLootState(GO_READY);
-                    m_respawnTime = 0;
+                    //m_respawnTime = 0;
                     return;
                 }
             }

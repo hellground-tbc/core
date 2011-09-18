@@ -4137,7 +4137,7 @@ void Spell::EffectDispel(uint32 i)
         for (int32 count=0; count < damage && list_size > 0; ++count)
         {
             // Random select buff for dispel
-          Aura *aur = dispel_list[m_caster->GetMap()->urand(0, list_size-1)];
+          Aura *aur = dispel_list[urand(0, list_size-1)];
 
             SpellEntry const* spellInfo = aur->GetSpellProto();
             // Base dispel chance

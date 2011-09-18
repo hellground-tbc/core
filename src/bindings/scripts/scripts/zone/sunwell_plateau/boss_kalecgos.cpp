@@ -322,8 +322,11 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                 if(!me->IsWithinDistInMap(&wLoc, 30))
                     EnterEvadeMode();
                 DoZoneInCombat();
-                if (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE)
+                if (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE && !isEnraged)
+                {
+                    me->CastSpell(m_creature, SPELL_ENRAGE, true);
                     isEnraged = true;
+                }
 
                 if (!isEnraged && HealthBelowPct(10))
                 {
@@ -489,7 +492,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
     void JustDied(Unit *killer)
     {
         DoScriptText(SAY_SATH_DEATH, m_creature);
-        m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
+        me->GetMap()->CreatureRelocation(me, m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
 
         if(pInstance)
             pInstance->SetData(DATA_KALECGOS_EVENT, DONE);
@@ -530,7 +533,10 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             DoZoneInCombat();
 
             if (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE)
+            {
+                DoCast(m_creature, SPELL_ENRAGE, true);
                 isEnraged = true;
+            }
 
             if (!isEnraged && HealthBelowPct(10))
             {
