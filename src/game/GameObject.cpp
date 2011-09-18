@@ -285,6 +285,18 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                             m_lootState = GO_JUST_DEACTIVATED;
                             return;
                         }
+                        case GAMEOBJECT_TYPE_GOOBER:
+                            if(!GetGOInfo()->goober.consumable) // delete not consumable GO when timer expired
+                            {
+                                if (GetOwnerGUID())
+                                {
+                                    if (Unit* owner = GetOwner())
+                                        owner->RemoveGameObject(this, false);
+                                    Delete();
+                                    return;
+                                }
+                            }
+                            return;
                         case GAMEOBJECT_TYPE_DOOR:
                         case GAMEOBJECT_TYPE_BUTTON:
                             //we need to open doors if they are closed (add there another condition if this code breaks some usage, but it need to be here for battlegrounds)
@@ -469,20 +481,6 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     m_usetimes = 0;
                 }
                 //any return here in case battleground traps
-
-                if(m_respawnTime <= update_diff)
-                {
-                    if (GetOwnerGUID())
-                    {
-                        if (Unit* owner = GetOwner())
-                            owner->RemoveGameObject(this, false);
-                        m_respawnTime = 0;
-                        Delete();
-                        return;
-                    }
-                }
-                else
-                    m_respawnTime -= update_diff;
 
                 // don't despawn goober object if isn't consumable
                 if (!GetGOInfo()->goober.consumable)
