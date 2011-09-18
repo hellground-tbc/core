@@ -2172,6 +2172,15 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                                 unitList.remove(*itr);
                             break;
                         case 44869:     // Spectral Blast
+                            if((*itr)->GetMapId() == m_caster->GetMapId() && !(*itr)->IsInRange3d(1704.2, 924.66, 53.16, 30, 500))
+                            {
+                                if(m_caster->GetTypeId() == TYPEID_UNIT)
+                                {
+                                    ((Creature*)m_caster)->AI()->EnterEvadeMode();
+                                    ((Creature*)m_caster)->setFaction(35); //friendly for when invisible
+                                    ((Creature*)m_caster)->SetVisibility(VISIBILITY_OFF);
+                                }
+                            }
                             if( (*itr)->HasAura(44867, 0) || (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim() == (*itr)))
                                 unitList.remove(*itr);
                             break;

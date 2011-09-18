@@ -135,9 +135,11 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void Reset()
     {
+        if(me->getFaction() == 35 && ResetTimer == 0)   // for reseting from Spell (too far Spectral Blast target)
+            ResetTimer = 20000;
         m_creature->setFaction(14);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+        m_creature->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
 
         ArcaneBuffetTimer = 8000;
