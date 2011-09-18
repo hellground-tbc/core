@@ -94,9 +94,11 @@ enum Creatures
 
 #define GO_FAILED   "You are unable to use this currently."
 
-#define FLY_X   1679
-#define FLY_Y   900
-#define FLY_Z   82
+static float FlyCoord[][3] = 
+{
+    {1679, 900, 82},
+    {1668, 690, 161}
+};
 
 #define CENTER_X    1705
 #define CENTER_Y    930
@@ -213,17 +215,22 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 3000;
             break;
         case 4:
-            //m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
             m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
+            m_creature->GetMotionMaster()->MovePoint(1,FlyCoord[0][0],FlyCoord[0][1],FlyCoord[0][2]);
             TalkTimer = 60000;
-            break;
-        case 5:
-            // fly away to rescue Anveena
             break;
         default:
             break;
         }
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+       if(type != POINT_MOTION_TYPE)
+            return;
+
+       if(id == 1)
+           me->GetMotionMaster()->MovePoint(2, FlyCoord[1][0],FlyCoord[1][1],FlyCoord[1][2]);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -246,9 +253,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 3000;
             break;
         case 3:
-            //m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
             m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
+            m_creature->GetMotionMaster()->MovePoint(0,FlyCoord[1][0],FlyCoord[1][1],FlyCoord[1][2]);
             TalkTimer = 10000;
             break;
         case 4:
