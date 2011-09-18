@@ -2172,7 +2172,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                                 unitList.remove(*itr);
                             break;
                         case 44869:     // Spectral Blast
-                            if((*itr)->GetMapId() == m_caster->GetMapId() && !(*itr)->IsInRange3d(1704.2, 924.66, 53.16, 30, 500))
+                            if((*itr)->GetMapId() == m_caster->GetMapId() && !(*itr)->IsInRange3d(1704.2, 924.66, 53.16, 0, 30))
                             {
                                 if(m_caster->GetTypeId() == TYPEID_UNIT)
                                 {
