@@ -7033,33 +7033,6 @@ void Aura::PeriodicTick()
             SpellEntry const* spellProto = GetSpellProto();
             bool haveCastItem = GetCastItemGUID()!=0;
 
-            // heal for caster damage
-            if (m_target != pCaster && spellProto->SpellVisual == 163)
-            {
-                uint32 dmg = spellProto->manaPerSecond;
-                if (pCaster->GetHealth() <= dmg && pCaster->GetTypeId()==TYPEID_PLAYER)
-                {
-                    pCaster->RemoveAurasDueToSpell(GetId());
-
-                    // finish current generic/channeling spells, don't affect autorepeat
-                    if (pCaster->m_currentSpells[CURRENT_GENERIC_SPELL])
-                        pCaster->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
-
-                    if (pCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                    {
-                        pCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                        pCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
-                    }
-                }
-                else
-                {
-                    SpellDamageLog damageInfo(GetId(), GetTarget(), GetCaster(), GetSpellProto()->SchoolMask, 1);
-                    damageInfo.damage = gain < amount * GetStackAmount() ? gain : amount * GetStackAmount();
-                    //pCaster->SendSpellNonMeleeDamageLog(pCaster, GetId(), gain, GetSpellSchoolMask(GetSpellProto()), 0, 0, false, 0, false);
-                    pCaster->DealDamage(&damageInfo, NODAMAGE, GetSpellProto(), true);
-                }
-            }
-
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;
             uint32 procEx = PROC_EX_INTERNAL_HOT | PROC_EX_NORMAL_HIT;

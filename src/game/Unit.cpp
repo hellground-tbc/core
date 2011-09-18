@@ -1825,7 +1825,12 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         // Get base victim resistance for school
         float tmpvalue2 = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
         // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
-        tmpvalue2 += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+        if(GetTypeId() == TYPEID_PLAYER)
+            tmpvalue2 += (float)GetInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE);
+        else
+            tmpvalue2 += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+
+        ((Player*)this)->Get
 
         tmpvalue2 *= (float)(0.15f / getLevel());
         if (tmpvalue2 < 0.0f)
@@ -2128,19 +2133,22 @@ bool Unit::CalcBinaryResist(Unit *pVictim, SpellSchoolMask schoolMask) {
     if (schoolMask & ~SPELL_SCHOOL_MASK_NORMAL)
     {
         // Get base victim resistance for school
-        int32 effectiveResistance = pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
+        float effectiveResistance = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
         // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
-        effectiveResistance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+        if(GetTypeId() == TYPEID_PLAYER)
+            effectiveResistance += (float)GetInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE);
+        else
+            effectiveResistance += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
 
-        effectiveResistance = effectiveResistance * 15 / getLevel();
+        effectiveResistance *= (float)(0.15f / getLevel());
 
-        if (effectiveResistance < 0)
-            effectiveResistance = 0;
-        if (effectiveResistance > 75)
-            effectiveResistance = 75;
+        if (effectiveResistance < 0.0f)
+            effectiveResistance = 0.0f;
+        if (effectiveResistance > 0.75f)
+            effectiveResistance = 0.75f;
 
-        uint32 ran = GetMap()->urand(0, 100);
-        return ran < effectiveResistance;
+        int32 ran = GetMap()->irand(0, 100);
+        return ran < effectiveResistance * 100;
     }
 
     return false;
@@ -2957,7 +2965,7 @@ uint32 Unit::GetDefenseSkillValue(Unit const* target) const
 
 float Unit::GetUnitDodgeChance() const
 {
-    if (hasUnitState(UNIT_STAT_LOST_CONTROL))
+    if (IsNonMeleeSpellCasted(false) || hasUnitState(UNIT_STAT_LOST_CONTROL))
         return 0.0f;
     if (GetTypeId() == TYPEID_PLAYER)
         return GetFloatValue(PLAYER_DODGE_PERCENTAGE);

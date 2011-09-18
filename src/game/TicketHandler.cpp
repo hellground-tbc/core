@@ -82,8 +82,7 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
     // Send ticket creation
     SendPacket(&data);
 
-    sWorld.SendGMText(LANG_COMMAND_TICKETNEW, ticket->name.c_str(), ticket->guid);
-
+    sWorld.SendGMText(LANG_COMMAND_TICKETNEW, ticket->name.c_str(), ticket->name.c_str(), ticket->guid);
 }
 
 void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recv_data)

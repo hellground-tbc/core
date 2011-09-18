@@ -222,7 +222,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
             //pPlayer->Kill(pPlayer, true);
             if (!(pPlayer->m_AC_NoFall_count % 5))
-                sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName(), pPlayer->m_AC_NoFall_count);
+                sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName(), pPlayer->GetName(), pPlayer->m_AC_NoFall_count);
         }
     }
 
