@@ -1825,7 +1825,12 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         // Get base victim resistance for school
         float tmpvalue2 = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
         // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
-        tmpvalue2 += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+        if(GetTypeId() == TYPEID_PLAYER)
+            tmpvalue2 += (float)GetInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE);
+        else
+            tmpvalue2 += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+
+        ((Player*)this)->Get
 
         tmpvalue2 *= (float)(0.15f / getLevel());
         if (tmpvalue2 < 0.0f)
@@ -2130,7 +2135,10 @@ bool Unit::CalcBinaryResist(Unit *pVictim, SpellSchoolMask schoolMask) {
         // Get base victim resistance for school
         float effectiveResistance = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
         // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
-        effectiveResistance += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+        if(GetTypeId() == TYPEID_PLAYER)
+            effectiveResistance += (float)GetInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE);
+        else
+            effectiveResistance += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
 
         effectiveResistance *= (float)(0.15f / getLevel());
 
