@@ -2659,7 +2659,7 @@ void SpellMgr::LoadSpellCustomAttr()
         {
         /* ROGUE CUSTOM ATTRIBUTES */
         case 2094:                     // Blind
-            spellInfo->speed = 590.0f; // add speed to add delay for hit.
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY; // add const fake delay
             break;
         case 5171:
         case 6774:                     // Slice'n'Dice

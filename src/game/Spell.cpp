@@ -772,6 +772,11 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         if (m_delayMoment == 0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
     }
+    else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
+    {
+        target.timeDelay = uint64(180);
+        m_delayMoment = target.timeDelay;
+    }
     else
         target.timeDelay = 0LL;
 
@@ -837,6 +842,11 @@ void Spell::AddGOTarget(GameObject* pVictim, uint32 effIndex)
         target.timeDelay = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
         if (m_delayMoment==0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
+    }
+    else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
+    {
+        target.timeDelay = uint64(180);
+        m_delayMoment = target.timeDelay;
     }
     else
         target.timeDelay = 0LL;
