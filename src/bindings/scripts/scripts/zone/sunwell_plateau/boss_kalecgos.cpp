@@ -444,15 +444,16 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        DoZoneInCombat();   // put all players into threatlist
         Creature *Kalec = m_creature->SummonCreature(MOB_KALEC, m_creature->GetPositionX() + 10, m_creature->GetPositionY() + 10, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
         if(Kalec)
         {
             KalecGUID = Kalec->GetGUID();
             AttackStart(Kalec);
+            Kalec->Attack(me, true);
             m_creature->AddThreat(Kalec, 100.0f);
         }
         DoScriptText(SAY_SATH_AGGRO, m_creature);
+        DoZoneInCombat();   // put all players into threatlist
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
