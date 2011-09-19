@@ -144,11 +144,9 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void Reset()
     {
-        if(me->getFaction() == 35 && ResetTimer == 0)   // for reseting from Spell (too far Spectral Blast target)
-            ResetTimer = 20000;
         m_creature->setFaction(14);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
+        m_creature->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
 
         ArcaneBuffetTimer = 8000;
@@ -216,7 +214,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 2:
             me->SetOrientation(M_PI);  //? check this out
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+            me->AddUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
             TalkTimer = 3000;
             break;
         case 3:
@@ -233,14 +231,13 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 5:
             DoScriptText(RAND(SAY_GOOD_GREET1, SAY_GOOD_GREET2, SAY_GOOD_GREET3), me);
             m_creature->GetMotionMaster()->MovePoint(1,FlyCoord[0][0],FlyCoord[0][1],FlyCoord[0][2]);
-            TalkTimer = 5000;
+            TalkTimer = 7000;
             break;
         case 6:
             m_creature->GetMotionMaster()->MovePoint(2, FlyCoord[1][0],FlyCoord[1][1],FlyCoord[1][2]);
             TalkTimer = 20000;
             break;
         case 7:
-            me->Kill(me);
             me->SetVisibility(VISIBILITY_OFF);
             TalkTimer = 0;
             break;
@@ -265,7 +262,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             break;
         case 2:
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+            me->AddUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
             TalkTimer = 3000;
             break;
         case 3:
@@ -274,7 +271,6 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 10000;
             break;
         case 4:
-            TalkTimer = 0;
             EnterEvadeMode();
             break;
         default:
@@ -378,12 +374,14 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                 if(pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_KALEC_DEAD)
                 {
                     TalkTimer = 1;
+                    TalkSequence = 0;
                     isFriendly = false;
                     return;
                 }
                 if(pInstance && pInstance->GetData(DATA_KALECGOS_EVENT) == DONE)
                 {
                     TalkTimer = 1;
+                    TalkSequence = 0;
                     isFriendly = true;
                     return;
                 }
