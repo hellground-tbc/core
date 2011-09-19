@@ -38,7 +38,6 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
-#include "AuctionHouseBot.h"
 
 bool WorldSession::CheckMailBox(ObjectGuid& guid)
 {

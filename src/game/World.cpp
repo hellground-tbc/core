@@ -51,7 +51,6 @@
 #include "BattleGroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
-//#include "AuctionHouseBot.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
 #include "GlobalEvents.h"
@@ -1631,9 +1630,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Cleanup deleted characters");
     CleanupDeletedChars();
 
-    //sLog.outString("Initialize AuctionHouseBot...");
-    //auctionbot.Initialize();
-
     sLog.outString("Activating AntiCheat");
     if (m_ac.activate() == -1)
         sLog.outString("Couldn't activate AntiCheat");
@@ -1782,7 +1778,6 @@ void World::Update(time_t diff)
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
-        //auctionbot.Update();
         m_timers[WUPDATE_AUCTIONS].Reset();
 
         ///- Update mails (return old mails with item, or delete them)
