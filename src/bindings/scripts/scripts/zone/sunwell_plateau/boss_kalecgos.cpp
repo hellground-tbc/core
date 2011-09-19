@@ -214,7 +214,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 8000;
             break;
         case 2:
-            me->SetOrientation(0);  //? check this out
+            me->SetOrientation(M_PI);  //? check this out
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
             TalkTimer = 3000;
@@ -233,13 +233,14 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 5:
             DoScriptText(RAND(SAY_GOOD_GREET1, SAY_GOOD_GREET2, SAY_GOOD_GREET3), me);
             m_creature->GetMotionMaster()->MovePoint(1,FlyCoord[0][0],FlyCoord[0][1],FlyCoord[0][2]);
-            TalkTimer = 3000;
+            TalkTimer = 5000;
             break;
         case 6:
             m_creature->GetMotionMaster()->MovePoint(2, FlyCoord[1][0],FlyCoord[1][1],FlyCoord[1][2]);
             TalkTimer = 20000;
             break;
         case 7:
+            me->Kill(me);
             me->SetVisibility(VISIBILITY_OFF);
             TalkTimer = 0;
             break;
