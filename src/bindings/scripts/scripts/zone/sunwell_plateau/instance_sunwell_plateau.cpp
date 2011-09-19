@@ -187,10 +187,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 25038: 
                 Felmyst = creature->GetGUID();
                 if(GetData(DATA_BRUTALLUS_EVENT) != DONE)
-                {
-                    creature->Kill(creature, false);
-                    creature->RemoveCorpse();
-                }
+                    creature->SetVisibility(VISIBILITY_OFF);
                 break;
         }
 
