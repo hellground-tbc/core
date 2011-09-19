@@ -1,4 +1,4 @@
-UPDATE script_texts SET TYPE = 6 WHERE entry BETWEEN -1580000 AND -1580017;
+UPDATE script_texts SET `type` = 6 WHERE entry BETWEEN -1580000 AND -1580017;
 UPDATE script_texts SET TYPE = 0 WHERE entry = -1580009;
 REPLACE INTO script_texts (entry, content_default, `type`, `comment`)  VALUES 
 (-1579990, "drives Kalecgos into a crazed rage!", 3, "sathrovarr EMOTE_KALECGOS_ENRAGE"),

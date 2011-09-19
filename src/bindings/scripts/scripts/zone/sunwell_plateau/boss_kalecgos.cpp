@@ -194,6 +194,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     void EnterEvadeMode()
     {
         CreatureAI::EnterEvadeMode();
+        TalkSequence = 0;
         me->setFaction(35); //friendly for when invisible
         me->SetVisibility(VISIBILITY_OFF);
         ResetTimer = 20000;
@@ -227,7 +228,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             break;
         case 4:
             DoScriptText(SAY_GOOD_PLRWIN, m_creature);
-            TalkTimer = 7000;
+            TalkTimer = 10000;
             break;
         case 5:
             DoScriptText(RAND(SAY_GOOD_GREET1, SAY_GOOD_GREET2, SAY_GOOD_GREET3), me);
@@ -269,7 +270,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 3:
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FlyCoord[1][0],FlyCoord[1][1],FlyCoord[1][2]);
-            TalkTimer = 5000;
+            TalkTimer = 10000;
             break;
         case 4:
             TalkTimer = 0;
@@ -749,6 +750,8 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
             }
             YellTimer = 5000;
         }
+        else
+            YellTimer -= diff;
 
         if(CheckTimer < diff)
         {
