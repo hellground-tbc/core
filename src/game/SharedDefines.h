@@ -428,7 +428,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX6_UNK10                      0x00000400            // 10
 #define SPELL_ATTR_EX6_UNK11                      0x00000800            // 11
 #define SPELL_ATTR_EX6_UNK12                      0x00001000            // 12 not set in 2.4.2
-#define SPELL_ATTR_EX6_CAN_TARGET_INVISIBLE       0x00002000            // NYI only Bash'ir Phasing Device in 2.4.3 
+#define SPELL_ATTR_EX6_CAN_TARGET_INVISIBLE       0x00002000            // NYI only Bash'ir Phasing Device in 2.4.3
 #define SPELL_ATTR_EX6_UNK14                      0x00004000            // 14 not set in 2.4.2
 #define SPELL_ATTR_EX6_UNK15                      0x00008000            // 15 not set in 2.4.2
 #define SPELL_ATTR_EX6_UNK16                      0x00010000            // 16 not set in 2.4.2
@@ -2290,5 +2290,31 @@ enum BanReturn
     BAN_NOTFOUND
 };
 
-#endif
+enum MailResponseType
+{
+    MAIL_SEND               = 0,
+    MAIL_MONEY_TAKEN        = 1,
+    MAIL_ITEM_TAKEN         = 2,
+    MAIL_RETURNED_TO_SENDER = 3,
+    MAIL_DELETED            = 4,
+    MAIL_MADE_PERMANENT     = 5
+};
 
+enum MailResponseResult
+{
+    MAIL_OK                            = 0,
+    MAIL_ERR_EQUIP_ERROR               = 1,
+    MAIL_ERR_CANNOT_SEND_TO_SELF       = 2,
+    MAIL_ERR_NOT_ENOUGH_MONEY          = 3,
+    MAIL_ERR_RECIPIENT_NOT_FOUND       = 4,
+    MAIL_ERR_NOT_YOUR_TEAM             = 5,
+    MAIL_ERR_INTERNAL_ERROR            = 6,
+    MAIL_ERR_DISABLED_FOR_TRIAL_ACC    = 14,
+    MAIL_ERR_RECIPIENT_CAP_REACHED     = 15,
+    MAIL_ERR_CANT_SEND_WRAPPED_COD     = 16,
+    MAIL_ERR_MAIL_AND_CHAT_SUSPENDED   = 17,
+    MAIL_ERR_TOO_MANY_ATTACHMENTS      = 18,
+    MAIL_ERR_MAIL_ATTACHMENT_INVALID   = 19,
+};
+
+#endif

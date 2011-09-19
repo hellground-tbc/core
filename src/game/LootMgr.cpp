@@ -621,6 +621,59 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
     }
 }
 
+// Calls processor of corresponding LootTemplate (which handles everything including references)
+bool Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, bool personal, bool noEmptyError)
+{
+    // Must be provided
+    if(!loot_owner)
+        return false;
+
+    LootTemplate const* tab = store.GetLootfor(loot_id);
+
+    if (!tab)
+    {
+        if (!noEmptyError)
+            sLog.outErrorDb("Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
+        return false;
+    }
+
+    items.reserve(MAX_NR_LOOT_ITEMS);
+    quest_items.reserve(MAX_NR_QUEST_ITEMS);
+
+    tab->Process(*this, store);     // Processing is done there, callback via Loot::AddItem()
+
+    // Setting access rights for group loot case
+    Group * pGroup=loot_owner->GetGroup();
+    if(!personal && pGroup)
+    {
+        for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+            if(Player* pl = itr->getSource())
+                FillNotNormalLootFor(pl);
+    }
+    // ... for personal loot
+    else
+        FillNotNormalLootFor(loot_owner);
+
+    return true;
+}
+
+void Loot::FillNotNormalLootFor(Player* pl)
+{
+    uint32 plguid = pl->GetGUIDLow();
+
+    QuestItemMap::const_iterator qmapitr = PlayerQuestItems.find(plguid);
+    if (qmapitr == PlayerQuestItems.end())
+        FillQuestLoot(pl);
+
+    qmapitr = PlayerFFAItems.find(plguid);
+    if (qmapitr == PlayerFFAItems.end())
+        FillFFALoot(pl);
+
+    qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
+    if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
+        FillNonQuestNonFFAConditionalLoot(pl);
+}
+
 QuestItemList* Loot::FillFFALoot(Player* player)
 {
     QuestItemList *ql = new QuestItemList();
@@ -861,6 +914,11 @@ LootItem* Loot::LootItemInSlot(uint32 lootSlot)
     return &items[lootSlot];
 }
 
+uint32 Loot::GetMaxSlotInLootFor(Player* player) const
+{
+    QuestItemMap::const_iterator itr = PlayerQuestItems.find(player->GetGUIDLow());
+    return items.size() + (itr != PlayerQuestItems.end() ?  itr->second->size() : 0);
+}
 
 ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
 {

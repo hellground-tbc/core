@@ -130,7 +130,9 @@ void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPri
         if (oldBidder && _player)
             oldBidder->GetSession()->SendAuctionBidderNotification(auction->GetHouseId(), auction->Id, _player->GetGUID(), newPrice, auction->GetAuctionOutBid(), auction->item_template);
 
-        WorldSession::SendMailTo(oldBidder, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->bidder, msgAuctionOutbiddedSubject.str(), 0, NULL, auction->bid, 0, MAIL_CHECK_MASK_NONE);
+        MailDraft(msgAuctionOutbiddedSubject.str())
+            .SetMoney(auction->bid)
+            .SendMailTo(MailReceiver(oldBidder, ObjectGuid(HIGHGUID_PLAYER, auction->bidder)), auction, MAIL_CHECK_MASK_COPIED);
     }
 }
 
@@ -150,7 +152,9 @@ void WorldSession::SendAuctionCancelledToBidderMail(AuctionEntry* auction)
         std::ostringstream msgAuctionCancelledSubject;
         msgAuctionCancelledSubject << auction->item_template << ":0:" << AUCTION_CANCELLED_TO_BIDDER;
 
-        WorldSession::SendMailTo(bidder, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->bidder, msgAuctionCancelledSubject.str(), 0, NULL, auction->bid, 0, MAIL_CHECK_MASK_NONE);
+        MailDraft(msgAuctionCancelledSubject.str())
+            .SetMoney(auction->bid)
+            .SendMailTo(MailReceiver(bidder, ObjectGuid(HIGHGUID_PLAYER, auction->bidder)), auction, MAIL_CHECK_MASK_COPIED);
     }
 }
 
@@ -259,7 +263,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recv_data)
     {
         sLog.outAuction("Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
             GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount());
-    } 
+    }
 */
 
 
@@ -474,11 +478,10 @@ void WorldSession::HandleAuctionRemoveItem(WorldPacket & recv_data)
             std::ostringstream msgAuctionCanceledOwner;
             msgAuctionCanceledOwner << auction->item_template << ":0:" << AUCTION_CANCELED;
 
-            MailItemsInfo mi;
-            mi.AddItem(auction->item_guidlow, auction->item_template, pItem);
-
             // item will deleted or added to received mail list
-            WorldSession::SendMailTo(pl, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), pl->GetGUIDLow(), msgAuctionCanceledOwner.str(), 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+            MailDraft(msgAuctionCanceledOwner.str())
+                .AddItem(pItem)
+                .SendMailTo(pl, auction, MAIL_CHECK_MASK_COPIED);
         }
         else
         {

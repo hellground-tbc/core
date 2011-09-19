@@ -30,7 +30,6 @@
 #include "QueryResult.h"
 #include "WardenBase.h"
 
-class MailItemsInfo;
 struct ItemPrototype;
 struct AuctionEntry;
 struct DeclinedName;
@@ -38,11 +37,11 @@ struct DeclinedName;
 class Creature;
 class Item;
 class Object;
+class ObjectGuid;
 class Player;
 class Unit;
 class WorldPacket;
 class WorldSocket;
-class WorldSession;
 class QueryResult;
 class LoginQueryHolder;
 class CharacterHandler;
@@ -218,11 +217,7 @@ class TRINITY_DLL_SPEC WorldSession
         //pet
         void SendPetNameQuery(uint64 guid, uint32 petnumber);
 
-        //mail
-                                                            //used with item_page table
         bool SendItemInfo(uint32 itemid, WorldPacket data);
-        static void SendReturnToSender(uint8 messageType, uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId = 0);
-        static void SendMailTo(Player* receiver, uint8 messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
 
         //auction
         void SendAuctionHello(uint64 guid, Creature * unit);
@@ -697,6 +692,8 @@ class TRINITY_DLL_SPEC WorldSession
     private:
         // private trade methods
         void moveItems(Item* myItems[], Item* hisItems[]);
+
+        bool CheckMailBox(ObjectGuid& guid);
 
         // logging helper
         void logUnexpectedOpcode(WorldPacket *packet, const char * reason);
