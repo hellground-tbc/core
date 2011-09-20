@@ -3824,7 +3824,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
 
             if (pGuild->GetMemberSize() < 10)
             {
-                PSendSysMessage("Only fuild Master or Officer can append announces.")
+                PSendSysMessage("Your guild is to small, you need at least 10 member.")
                 return false;
             }
 
