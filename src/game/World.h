@@ -692,7 +692,7 @@ class World
         ACE_Based::LockedQueue<WorldSession*, ACE_Thread_Mutex> addSessQueue;
 
         std::list<std::string> m_Autobroadcasts;
-        std::list<uint64, std::string> m_GuildAnnounces;
+        std::list<std::pair<uint64, std::string>> m_GuildAnnounces;
 
         //used versions
         std::string m_DBVersion;
