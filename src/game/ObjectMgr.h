@@ -121,6 +121,7 @@ typedef UNORDERED_MAP<uint32/*cell_id*/,CellObjectGuids> CellObjectGuidsMap;
 typedef UNORDERED_MAP<uint32/*(mapid,spawnMode) pair*/,CellObjectGuidsMap> MapObjectGuids;
 
 typedef UNORDERED_MAP<uint64/*(instance,guid) pair*/,time_t> RespawnTimes;
+typedef UNORDERED_MAP<uint32,time_t> GuildCooldowns;
 
 // trinity string ranges
 #define MIN_TRINITY_STRING_ID           1                    // 'TRINITY_string'
@@ -499,6 +500,7 @@ class ObjectMgr
         bool CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const;
         bool SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid);
         void LoadCreatureRespawnTimes();
+        void LoadGuildAnnCooldowns();
         void LoadUnqueuedAccountList();
         bool IsUnqueuedAccount(uint64 accid);
         void LoadCreatureAddons();
@@ -678,6 +680,9 @@ class ObjectMgr
         time_t GetGORespawnTime(uint32 loguid, uint32 instance) { return mGORespawnTimes[MAKE_PAIR64(loguid,instance)]; }
         void SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t);
         void DeleteRespawnTimeForInstance(uint32 instance);
+
+        time_t GetGuildAnnCooldown(uint32 guild_id) { return mGuildCooldownTimes[guild_id]; }
+        void SetGuildAnnCooldown(uint32 guild_id) { mGuildCooldownTimes[guild_id] = (time(NULL) + 2 * HOUR*MINUTE*IN_MILISECONDS); }
 
         // grid objects
         void AddCreatureToGrid(uint32 guid, CreatureData const* data);
@@ -881,6 +886,8 @@ class ObjectMgr
         NpcOptionLocaleMap mNpcOptionLocaleMap;
         RespawnTimes mCreatureRespawnTimes;
         RespawnTimes mGORespawnTimes;
+
+        GuildCooldowns mGuildCooldownTimes;
 
         typedef std::vector<uint32> GuildBankTabPriceMap;
         GuildBankTabPriceMap mGuildBankTabPrice;

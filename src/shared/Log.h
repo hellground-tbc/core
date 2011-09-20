@@ -37,7 +37,8 @@ enum LogFilters
 enum SpecialLogs
 {
     SPECIAL_LOG             = 0x00000001,
-    WHISP_LOG               = 0x00000002
+    WHISP_LOG               = 0x00000002,
+    DIS_GUILD_ANN           = 0x00000004
 };
 
 enum Color

@@ -56,6 +56,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "set",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", accountSetCommandTable },
         { "whisp",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAccountWhispLogCommand,     "", NULL },
         { "",               SEC_PLAYER,         false, &ChatHandler::HandleAccountCommand,             "", NULL },
+        { "gann",           SEC_PLAYER,         false, &ChatHandler::HandleAccountGuildAnnToggleCommand, "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -346,6 +347,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "invite",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildInviteCommand,          "", NULL },
         { "uninvite",       SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildUninviteCommand,        "", NULL },
         { "rank",           SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildRankCommand,            "", NULL },
+        { "ann",            SEC_PLAYER,         false, &ChatHandler::HandleGuildAnnounceCommand,        "", NULL },
         { NULL,             0,                  false, NULL,                                            "", NULL }
     };
 

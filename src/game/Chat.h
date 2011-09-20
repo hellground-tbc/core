@@ -104,6 +104,7 @@ class ChatHandler
         bool HandleAccountWeatherCommand(const char*args);
         bool HandleAccountSpecialLogCommand(const char* args);
         bool HandleAccountWhispLogCommand(const char* args);
+        bool HandleAccountGuildAnnToggleCommand(const char* args);
 
         bool HandleHelpCommand(const char* args);
         bool HandleAHBotOptionsCommand(const char * args);
@@ -427,6 +428,8 @@ class ChatHandler
         bool HandleGuildUninviteCommand(const char* args);
         bool HandleGuildRankCommand(const char* args);
         bool HandleGuildDeleteCommand(const char* args);
+        bool HandleGuildAnnounceCommand(const char *args);
+
         bool HandleUpdate(const char* args);
         bool HandleBankCommand(const char* args);
         bool HandleChangeWeather(const char* args);

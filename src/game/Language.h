@@ -696,6 +696,7 @@ enum TrinityStrings
 
     LANG_AUTO_ANN                       = 786,
     LANG_ANNOUNCE_COLOR                 = 787,
+    LANG_GUILD_ANNOUNCE                 = 788,
 
     LANG_BG_GROUP_TOO_LARGE             = 1122, // "Your group is too large for this battleground. Please regroup to join."
     LANG_ARENA_GROUP_TOO_LARGE          = 1123, // "Your group is too large for this arena. Please regroup to join."

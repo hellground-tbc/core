@@ -1297,6 +1297,42 @@ void ObjectMgr::LoadCreatureRespawnTimes()
     sLog.outString();
 }
 
+void ObjectMgr::LoadGuildAnnCooldowns()
+{
+    uint32 count = 0;
+
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT guild_id,cooldown_end FROM guildann_cooldown");
+
+    if (!result)
+    {
+        barGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString();
+        sLog.outString(">> Loaded 0 guildann_cooldowns.");
+        return;
+    }
+
+    barGoLink bar(result->GetRowCount());
+
+    do
+    {
+        Field *fields = result->Fetch();
+        bar.step();
+
+        uint32 guild_id       = fields[0].GetUInt32();
+        uint64 respawn_time = fields[1].GetUInt64();
+
+        mGuildCooldownTimes[guild_id] = time_t(respawn_time);
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog.outString(">> Loaded %u guild ann cooldowns.", mGuildCooldownTimes.size());
+    sLog.outString();
+}
+
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
     // remove outdated data
