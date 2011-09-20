@@ -3811,8 +3811,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->SendMessageToSet(&data,true);
         */
 
-        
-
+        // feign death in pvp: clear target and interrupt casts
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
@@ -3821,10 +3820,13 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
         for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         {
-            if (!(*iter)->hasUnitState(UNIT_STAT_CASTING))
+            if((*iter)->CanHaveThreatList())
                 continue;
 
-            if((*iter)->CanHaveThreatList()) // interrupting spells in pve later
+            if((*iter)->GetUInt64Value(UNIT_FIELD_TARGET) == m_target->GetGUID())
+                (*iter)->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+
+            if (!(*iter)->hasUnitState(UNIT_STAT_CASTING))
                 continue;
 
             for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
@@ -3836,18 +3838,13 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                 }
             }
         }
-
-                                                   // blizz like 2.0.x
-        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6);
-                                                            // blizz like 2.0.x
-        m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                                                            // blizz like 2.0.x
-        m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-
+                                                            
+        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6); // blizz like 2.0.x
+        m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH); // blizz like 2.0.x
+        m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD); // blizz like 2.0.x
         m_target->addUnitState(UNIT_STAT_DIED);
 
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
-        
         // prevent interrupt message
         if (m_caster_guid == m_target->GetGUID() && m_target->m_currentSpells[CURRENT_GENERIC_SPELL])
             m_target->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
@@ -3857,6 +3854,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         if (m_target->GetTypeId()==TYPEID_PLAYER)
             ((Player*)m_target)->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
 
+        // feign death in pve
         bool resisted = false;
         HostilReference *ref = m_target->getHostilRefManager().getFirst();
         while(ref)
@@ -3896,15 +3894,23 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
             else // miss
             {
                 resisted = true;
+                // Send resist info to combat log
+                // FIXME: client doesn't show miss info in combat log when sending SMSG_FEIGN_DEATH_RESISTED, sends SMSG_SPELLLOGMISS instead
+                /*
                 WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
                 data<<m_target->GetGUID();
                 data<<uint8(0);
                 m_target->SendMessageToSet(&data,true);
+                */
+                m_target->SendSpellMiss(target, m_spellProto->Id, SPELL_MISS_RESIST);
             }
         }
         
         if(!resisted)
+        {
             m_target->ClearInCombat();
+            m_target->CombatStop();
+        }
 
         
     }
