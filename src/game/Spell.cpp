@@ -5341,6 +5341,10 @@ bool Spell::CanIgnoreNotAttackableFlags()
 
 bool Spell::CheckTarget(Unit* target, uint32 eff)
 {
+    if (m_spellInfo->Effect[eff] == SPELL_EFFECT_APPLY_AURA && (m_spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_PARTY_TARGET ||
+        m_spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_CLASS_TARGET) &&  target->getLevel() < m_spellInfo->spellLevel)
+        return false;
+
     // Check targets for creature type mask and remove not appropriate (skip explicit self target case, maybe need other explicit targets)
     if (m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_CASTER)
     {
