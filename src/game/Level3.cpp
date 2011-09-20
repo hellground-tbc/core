@@ -3815,6 +3815,19 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
                 return false;
             }
 
+            Guild * pGuild = objmgr.GetGuildById(gId);
+            if (!pGuild->HasRankRight(m_session->GetPlayer()->GetRank(), GR_RIGHT_OFFCHATLISTEN))
+            {
+                PSendSysMessage("Only fuild Master or Officer can append announces.")
+                return false;
+            }
+
+            if (pGuild->GetMemberSize() < 10)
+            {
+                PSendSysMessage("Only fuild Master or Officer can append announces.")
+                return false;
+            }
+
             PSendSysMessage("Your message has been queued and will be displayed soon, please wait 2h to be able to send next message");
             objmgr.SetGuildAnnCooldown(gId);
             sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
