@@ -19665,6 +19665,10 @@ bool Player::IsAtGroupRewardDistance(WorldObject const* pRewardSource) const
     if (player->GetMapId() != pRewardSource->GetMapId() || player->GetInstanceId() != pRewardSource->GetInstanceId())
         return false;
 
+    // test increased dist for quests "Distraction at the Dead Scar" and "The Air Strikes Must Continue"
+    if(pRewardSource->GetEntry() == 25031 || pRewardSource->GetEntry() == 25030 || pRewardSource->GetEntry() == 25033)
+        return pRewardSource->GetDistance(player) <= 333.0f;
+
     return pRewardSource->GetDistance(player) <= sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE);
 }
 

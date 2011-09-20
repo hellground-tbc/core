@@ -42,6 +42,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
     uint64 Sathrovarr;
     uint64 Brutallus;
     uint64 Madrigosa;
+    uint64 BrutallusTrigger;
     uint64 Felmyst;
     uint64 Alythess;
     uint64 Sacrolash;
@@ -187,7 +188,10 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 25038: 
                 Felmyst = creature->GetGUID();
                 if(GetData(DATA_BRUTALLUS_EVENT) != DONE)
+                {
+                    creature->setFaction(35);
                     creature->SetVisibility(VISIBILITY_OFF);
+                }
                 break;
         }
 
