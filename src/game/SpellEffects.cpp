@@ -2854,6 +2854,15 @@ void Spell::EffectTeleportUnits(uint32 i)
             }
             return;
         }
+        // Teleport: Spectral Realm - also teleport pets
+        case 46019:
+        {
+            if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+            if(Pet* targets_pet = unitTarget->GetPet())
+                targets_pet->CastSpell(targets_pet, 46019, true);
+            return;
+        }
     }
 }
 
