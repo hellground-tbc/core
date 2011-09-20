@@ -3817,7 +3817,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
 
             PSendSysMessage("Your message has been queued and will be displayed soon, please wait 2h to be able to send next message");
             objmgr.SetGuildAnnCooldown(gId);
-            sWorld.QueueGuildAnnounce(gId, GetSession()->GetPlayer()->GetTeam(), msg);
+            sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
             return true;
         }
         else
