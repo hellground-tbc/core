@@ -786,8 +786,8 @@ bool ChatHandler::HandleReloadAuctionsCommand(const char* args)
 {
     ///- Reload dynamic data tables from the database
     sLog.outString("Re-Loading Auctions...");
-    auctionmgr.LoadAuctionItems();
-    auctionmgr.LoadAuctions();
+    sAuctionMgr.LoadAuctionItems();
+    sAuctionMgr.LoadAuctions();
     SendGlobalGMSysMessage("Auctions reloaded.");
     return true;
 }

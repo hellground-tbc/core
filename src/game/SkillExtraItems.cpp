@@ -63,7 +63,7 @@ void LoadSkillExtraItemTable()
 
     if (result)
     {
-        barGoLink bar(result->GetRowCount());
+        BarGoLink bar(result->GetRowCount());
 
         do
         {

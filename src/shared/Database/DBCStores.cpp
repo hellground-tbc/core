@@ -162,7 +162,7 @@ static bool LoadDBC_assert_print(uint32 fsize,uint32 rsize, const std::string& f
 }
 
 template<class T>
-inline void LoadDBC(uint32& availableDbcLocales,barGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, const std::string& dbc_path, const std::string& filename)
+inline void LoadDBC(uint32& availableDbcLocales,BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, const std::string& dbc_path, const std::string& filename)
 {
     // compatibility format and C++ structure sizes
     assert(DBCFile::GetFormatRecordSize(storage.GetFormat()) == sizeof(T) || LoadDBC_assert_print(DBCFile::GetFormatRecordSize(storage.GetFormat()),sizeof(T),filename));
@@ -203,7 +203,7 @@ void LoadDBCStores(const std::string& dataPath)
 
     const uint32 DBCFilesCount = 57;
 
-    barGoLink bar( DBCFilesCount );
+    BarGoLink bar( DBCFilesCount );
 
     StoreProblemList bad_dbc_files;
     uint32 availableDbcLocales = 0xFFFFFFFF;
@@ -452,7 +452,7 @@ void LoadDBCStores(const std::string& dataPath)
         {
             sWMOAreaInfoByTripple.insert(WMOAreaInfoByTripple::value_type(WMOAreaTableTripple(entry->rootId, entry->adtId, entry->groupId), entry));
         }
-    }    
+    }
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sWorldMapAreaStore,        dbcPath,"WorldMapArea.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sWorldSafeLocsStore,       dbcPath,"WorldSafeLocs.dbc");
 

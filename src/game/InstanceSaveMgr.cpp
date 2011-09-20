@@ -263,7 +263,7 @@ void InstanceSaveManager::CleanupInstances()
 {
     uint64 now = (uint64)time(NULL);
 
-    barGoLink bar(2);
+    BarGoLink bar(2);
     bar.step();
 
     // load reset times and clean expired instances
@@ -349,7 +349,7 @@ void InstanceSaveManager::PackInstances()
         while (result->NextRow());
     }
 
-    barGoLink bar(InstanceSet.size() + 1);
+    BarGoLink bar(InstanceSet.size() + 1);
     bar.step();
 
     uint32 InstanceNumber = 1;

@@ -102,7 +102,7 @@ void LootStore::LoadLootTable()
 
     if (result)
     {
-        barGoLink bar(result->GetRowCount());
+        BarGoLink bar(result->GetRowCount());
 
         do
         {

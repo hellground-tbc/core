@@ -162,7 +162,7 @@ extern int main(int argc, char **argv)
         while (pause > clock()) {}
     }
 
-    barGoLink::SetOutputState(sConfig.GetBoolDefault("ShowProgressBars", false));
+    BarGoLink::SetOutputState(sConfig.GetBoolDefault("ShowProgressBars", false));
 
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?

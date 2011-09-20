@@ -23,11 +23,11 @@
 #include <stdio.h>
 #include "Platform/Define.h"
 
-class TRINITY_DLL_SPEC barGoLink
+class TRINITY_DLL_SPEC BarGoLink
 {
     public:
-        barGoLink(int);
-        ~barGoLink();
+        BarGoLink(int);
+        ~BarGoLink();
 
         void step();
         static void SetOutputState(bool on);

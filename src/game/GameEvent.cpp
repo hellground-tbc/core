@@ -200,7 +200,7 @@ void GameEvent::LoadFromDB()
 
     uint32 count = 0;
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
     do
     {
         ++count;
@@ -244,7 +244,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -253,7 +253,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -290,7 +290,7 @@ void GameEvent::LoadFromDB()
     result = WorldDatabase.Query("SELECT event_id, prerequisite_event FROM game_event_prerequisite");
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -299,7 +299,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -346,7 +346,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -355,7 +355,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -390,7 +390,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -399,7 +399,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -436,7 +436,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -445,7 +445,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -491,7 +491,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -500,7 +500,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -532,7 +532,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -541,7 +541,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -573,7 +573,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -582,7 +582,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -616,7 +616,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -625,7 +625,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -659,7 +659,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -668,7 +668,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -709,7 +709,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -718,7 +718,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -750,7 +750,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -759,7 +759,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -815,7 +815,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -824,7 +824,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -858,7 +858,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar3(1);
+        BarGoLink bar3(1);
         bar3.step();
 
         sLog.outString();
@@ -867,7 +867,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar3(result->GetRowCount());
+        BarGoLink bar3(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -906,7 +906,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -915,7 +915,7 @@ void GameEvent::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();

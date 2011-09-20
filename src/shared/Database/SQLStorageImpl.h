@@ -180,7 +180,7 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
 
     char * _data= new char[store.RecordCount *recordsize];
     uint32 count=0;
-    barGoLink bar( store.RecordCount );
+    BarGoLink bar( store.RecordCount );
     do
     {
         fields = result->Fetch();

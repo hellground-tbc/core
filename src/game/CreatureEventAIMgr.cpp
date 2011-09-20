@@ -44,7 +44,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
     sLog.outString("Loading EventAI Texts additional data...");
     if (result)
     {
-        barGoLink bar(result->GetRowCount());
+        BarGoLink bar(result->GetRowCount());
         uint32 count = 0;
 
         do
@@ -103,7 +103,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
     }
     else
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
         bar.step();
         sLog.outString();
         sLog.outString(">> Loaded 0 additional CreatureEventAI Texts data. DB table `creature_ai_texts` is empty.");
@@ -157,7 +157,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
     QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM creature_ai_summons");
     if (result)
     {
-        barGoLink bar(result->GetRowCount());
+        BarGoLink bar(result->GetRowCount());
         uint32 Count = 0;
 
         do
@@ -193,7 +193,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
     }
     else
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
         bar.step();
         sLog.outString();
         sLog.outString(">> Loaded 0 CreatureEventAI Summon definitions. DB table `creature_ai_summons` is empty.");
@@ -249,7 +249,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
         "FROM creature_ai_scripts");
     if (result)
     {
-        barGoLink bar(result->GetRowCount());
+        BarGoLink bar(result->GetRowCount());
         uint32 Count = 0;
 
         do
@@ -844,7 +844,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
     }
     else
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
         bar.step();
         sLog.outString();
         sLog.outString(">> Loaded 0 CreatureEventAI scripts. DB table `creature_ai_scripts` is empty.");

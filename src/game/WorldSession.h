@@ -27,11 +27,15 @@
 
 #include "Common.h"
 #include "Log.h"
+#include "SharedDefines.h"
 #include "QueryResult.h"
+#include "AuctionHouseMgr.h"
 #include "WardenBase.h"
+#include "Item.h"
 
 struct ItemPrototype;
 struct AuctionEntry;
+struct AuctionHouseEntry;
 struct DeclinedName;
 
 class Creature;
@@ -220,12 +224,17 @@ class TRINITY_DLL_SPEC WorldSession
         bool SendItemInfo(uint32 itemid, WorldPacket data);
 
         //auction
-        void SendAuctionHello(uint64 guid, Creature * unit);
-        void SendAuctionCommandResult(uint32 auctionId, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
-        void SendAuctionBidderNotification(uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
-        void SendAuctionOwnerNotification(AuctionEntry * auction);
-        void SendAuctionOutbiddedMail(AuctionEntry * auction, uint32 newPrice);
-        void SendAuctionCancelledToBidderMail(AuctionEntry* auction);
+        void SendAuctionHello(Unit *unit);
+        void SendAuctionCommandResult(AuctionEntry *auc, AuctionAction Action, AuctionError ErrorCode, InventoryResult invError = EQUIP_ERR_OK);
+        void SendAuctionBidderNotification(AuctionEntry *auction, bool won);
+        void SendAuctionOwnerNotification(AuctionEntry *auction, bool sold);
+        void SendAuctionRemovedNotification(AuctionEntry* auction);
+        static void SendAuctionOutbiddedMail(AuctionEntry *auction);
+        void SendAuctionCancelledToBidderMail(AuctionEntry *auction);
+        void BuildListAuctionItems(std::vector<AuctionEntry*> const& auctions, WorldPacket& data, std::wstring const& searchedname, uint32 listfrom, uint32 levelmin,
+            uint32 levelmax, uint32 usable, uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality, uint32& count, uint32& totalcount, bool isFull);
+
+        AuctionHouseEntry const* GetCheckedAuctionHouseForAuctioneer(ObjectGuid guid);
 
         //Item Enchantment
         void SendEnchantmentLog(uint64 Target, uint64 Caster,uint32 ItemID,uint32 SpellID);

@@ -599,50 +599,65 @@ class ObjectMgr
             if (itr==mCreatureDataMap.end()) return NULL;
             return &itr->second;
         }
+
         CreatureData& NewOrExistCreatureData(uint32 guid) { return mCreatureDataMap[guid]; }
         void DeleteCreatureData(uint32 guid);
+
         uint32 GetLinkedRespawnGuid(uint32 guid) const
         {
             CreatureLinkedRespawnMap::const_iterator itr = mCreatureLinkedRespawnMap.find(guid);
             if (itr == mCreatureLinkedRespawnMap.end()) return 0;
             return itr->second;
         }
+
         CreatureLocale const* GetCreatureLocale(uint32 entry) const
         {
             CreatureLocaleMap::const_iterator itr = mCreatureLocaleMap.find(entry);
             if (itr==mCreatureLocaleMap.end()) return NULL;
             return &itr->second;
         }
+
+        void GetCreatureLocaleStrings(uint32 entry, int32 loc_idx, char const** namePtr, char const** subnamePtr = NULL) const;
+
         GameObjectLocale const* GetGameObjectLocale(uint32 entry) const
         {
             GameObjectLocaleMap::const_iterator itr = mGameObjectLocaleMap.find(entry);
             if (itr==mGameObjectLocaleMap.end()) return NULL;
             return &itr->second;
         }
+
         ItemLocale const* GetItemLocale(uint32 entry) const
         {
             ItemLocaleMap::const_iterator itr = mItemLocaleMap.find(entry);
             if (itr==mItemLocaleMap.end()) return NULL;
             return &itr->second;
         }
+
+        void GetItemLocaleStrings(uint32 entry, int32 loc_idx, std::string* namePtr, std::string* descriptionPtr = NULL) const;
+
         QuestLocale const* GetQuestLocale(uint32 entry) const
         {
             QuestLocaleMap::const_iterator itr = mQuestLocaleMap.find(entry);
             if (itr==mQuestLocaleMap.end()) return NULL;
             return &itr->second;
         }
+
+        void GetQuestLocaleStrings(uint32 entry, int32 loc_idx, std::string* titlePtr) const;
+
         NpcTextLocale const* GetNpcTextLocale(uint32 entry) const
         {
             NpcTextLocaleMap::const_iterator itr = mNpcTextLocaleMap.find(entry);
             if (itr==mNpcTextLocaleMap.end()) return NULL;
             return &itr->second;
         }
+
         PageTextLocale const* GetPageTextLocale(uint32 entry) const
         {
             PageTextLocaleMap::const_iterator itr = mPageTextLocaleMap.find(entry);
             if (itr==mPageTextLocaleMap.end()) return NULL;
             return &itr->second;
         }
+
         NpcOptionLocale const* GetNpcOptionLocale(uint32 entry) const
         {
             NpcOptionLocaleMap::const_iterator itr = mNpcOptionLocaleMap.find(entry);
@@ -656,6 +671,7 @@ class ObjectMgr
             if (itr==mGameObjectDataMap.end()) return NULL;
             return &itr->second;
         }
+
         GameObjectData& NewGOData(uint32 guid) { return mGameObjectDataMap[guid]; }
         void DeleteGOData(uint32 guid);
 
