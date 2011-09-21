@@ -73,6 +73,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         Sathrovarr              = 0;
         Brutallus               = 0;
         Madrigosa               = 0;
+        BrutallusTrigger        = 0;
         Felmyst                 = 0;
         Alythess                = 0;
         Sacrolash               = 0;
@@ -185,6 +186,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 26046: Anveena             = creature->GetGUID(); break;
             case 25319: KalecgosKJ          = creature->GetGUID(); break;
             case 24895: Madrigosa           = creature->GetGUID(); break;
+            case 19871: BrutallusTrigger    = creature->GetGUID(); break;
             case 25038: 
                 Felmyst = creature->GetGUID();
                 if(GetData(DATA_BRUTALLUS_EVENT) != DONE)
@@ -246,6 +248,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case DATA_SATHROVARR:           return Sathrovarr;          break;
             case DATA_BRUTALLUS:            return Brutallus;           break;
             case DATA_MADRIGOSA:            return Madrigosa;           break;
+            case DATA_BRUTALLUS_TRIGGER:    return BrutallusTrigger;    break;
             case DATA_FELMYST:              return Felmyst;             break;
             case DATA_ALYTHESS:             return Alythess;            break;
             case DATA_SACROLASH:            return Sacrolash;           break;

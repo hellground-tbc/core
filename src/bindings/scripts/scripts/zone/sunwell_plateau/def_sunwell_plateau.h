@@ -41,6 +41,7 @@
 /*** Misc ***/
 #define DATA_PLAYER_GUID            27
 #define DATA_KALECGOS_PHASE         28
+#define DATA_BRUTALLUS_TRIGGER      29
 #define SPELL_SUNWELL_RADIANCE  45769
 
 #endif
