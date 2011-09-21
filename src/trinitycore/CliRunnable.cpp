@@ -361,12 +361,12 @@ bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
 
         if (speciallogs & DIS_GUILD_ANN)
         {
-            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs | 0x04 WHERE id = '%u'", account_id);
+            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs & ~0x04 WHERE id = '%u'", account_id);
             PSendSysMessage("Guild announces enabled.");
         }
         else
         {
-            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs & ~0x04 WHERE id = '%u'", account_id);
+            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs | 0x04 WHERE id = '%u'", account_id);
             PSendSysMessage("Guild announces disabled.");
         }
     }
