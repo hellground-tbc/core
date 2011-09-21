@@ -155,29 +155,32 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
             Guild * pGuild = objmgr.GetGuildById(gId);
             if (!pGuild->HasRankRight(m_session->GetPlayer()->GetRank(), GR_RIGHT_OFFCHATLISTEN))
             {
-                PSendSysMessage("Only guild Master or Officer can append announces.");
+                PSendSysMessage("Only guild Master or Officer can append guild announce.");
                 return false;
             }
 
             if (pGuild->GetMemberSize() < 10)
             {
-                PSendSysMessage("Your guild is to small, you need at least 10 member.");
+                PSendSysMessage("Your guild is to small, you need at least 10 member to append guild announce.");
                 return false;
             }
 
-            PSendSysMessage("Your message has been queued and will be displayed soon, please wait 2h to be able to send next message");
+            PSendSysMessage("Your message has been queued and will be displayed soon, please %u little more and u will be able to send next message", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
+            
             objmgr.SetGuildAnnCooldown(gId);
+            WorldDatabase.PExecute("INSERT REPLACE INTO guildann_cooldown VALUES ('%u', "UI64FMTD")", gId, objmgr.GetGuildAnnCooldown(gId));
+            sLog.outSpecial("Player %s ("UI64FMTD") append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), msg.c_str());
             sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
             return true;
         }
         else
         {
-            PSendSysMessage("2h cooldown between messages didn't pass, come back later :]");
+            PSendSysMessage("Cooldown between messages didn't pass, come back later :]");
             return false;
         }
     }
 
-    PSendSysMessage("Your need to be in guild to send guild ann.");
+    PSendSysMessage("Your need to be in guild to append guild announce.");
     return false;
 }
 

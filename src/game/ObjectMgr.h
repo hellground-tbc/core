@@ -682,7 +682,7 @@ class ObjectMgr
         void DeleteRespawnTimeForInstance(uint32 instance);
 
         time_t GetGuildAnnCooldown(uint32 guild_id) { return mGuildCooldownTimes[guild_id]; }
-        void SetGuildAnnCooldown(uint32 guild_id) { mGuildCooldownTimes[guild_id] = (time(NULL) + 2 * HOUR*MINUTE*IN_MILISECONDS); }
+        void SetGuildAnnCooldown(uint32 guild_id) { mGuildCooldownTimes[guild_id] = (time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN)); }
 
         // grid objects
         void AddCreatureToGrid(uint32 guid, CreatureData const* data);
