@@ -1865,9 +1865,6 @@ void World::Update(time_t diff)
     ///- send guild announces every one minute
     if (m_timers[WUPDATE_GUILD_ANNOUNCES].Passed())
     {
-        if (m_GuildAnnounces[0].empty() && m_GuildAnnounces[1].empty())
-            return;
-        
         m_timers[WUPDATE_GUILD_ANNOUNCES].Reset();
         if (!m_GuildAnnounces[0].empty())
         {
