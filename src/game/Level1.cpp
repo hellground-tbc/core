@@ -133,6 +133,53 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
+{
+    if (!*args)
+        return false;
+
+    std::string msg = args;
+
+    SetSentErrorMessage(true);
+    if (uint32 gId = m_session->GetPlayer()->GetGuildId())
+    {
+        if (objmgr.GetGuildAnnCooldown(gId) < time(NULL))
+        {
+            if (msg.size() > 65) //
+            {
+                PSendSysMessage("Your message is to long, limit: 65 chars");
+                return false;
+            }
+
+            Guild * pGuild = objmgr.GetGuildById(gId);
+            if (!pGuild->HasRankRight(m_session->GetPlayer()->GetRank(), GR_RIGHT_OFFCHATLISTEN))
+            {
+                PSendSysMessage("Only guild Master or Officer can append announces.");
+                return false;
+            }
+
+            if (pGuild->GetMemberSize() < 10)
+            {
+                PSendSysMessage("Your guild is to small, you need at least 10 member.");
+                return false;
+            }
+
+            PSendSysMessage("Your message has been queued and will be displayed soon, please wait 2h to be able to send next message");
+            objmgr.SetGuildAnnCooldown(gId);
+            sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
+            return true;
+        }
+        else
+        {
+            PSendSysMessage("2h cooldown between messages didn't pass, come back later :]");
+            return false;
+        }
+    }
+
+    PSendSysMessage("Your need to be in guild to send guild ann.");
+    return false;
+}
+
 bool ChatHandler::HandleNameAnnounceCommand(const char* args)
 {
     WorldPacket data;

@@ -1865,15 +1865,27 @@ void World::Update(time_t diff)
     ///- send guild announces every one minute
     if (m_timers[WUPDATE_GUILD_ANNOUNCES].Passed())
     {
-        m_timers[WUPDATE_GUILD_ANNOUNCES].Reset();
-        if (m_GuildAnnounces.empty())
+        if (m_GuildAnnounces[0].empty() && m_GuildAnnounces[1].empty())
             return;
+        
+        m_timers[WUPDATE_GUILD_ANNOUNCES].Reset();
+        if (!m_GuildAnnounces[0].empty())
+        {
+            std::list<std::pair<uint64, std::string> >::iterator itr = m_GuildAnnounces[0].begin();
+            std::string guildName = objmgr.GetGuildNameById(PAIR64_LOPART(itr->first));
 
-        std::list<std::pair<uint64, std::string> >::iterator itr = m_GuildAnnounces.begin();
-        std::string guildName = objmgr.GetGuildNameById(PAIR64_LOPART(itr->first));
+            sWorld.SendGuildAnnounce(PAIR64_HIPART(itr->first), guildName.c_str(), itr->second.c_str());
+            m_GuildAnnounces[0].pop_front();
+        }
 
-        sWorld.SendGuildAnnounce(PAIR64_HIPART(itr->first), guildName.c_str(), itr->second.c_str());
-        m_GuildAnnounces.pop_front();
+        if (!m_GuildAnnounces[1].empty())
+        {
+            std::list<std::pair<uint64, std::string> >::iterator itr = m_GuildAnnounces[1].begin();
+            std::string guildName = objmgr.GetGuildNameById(PAIR64_LOPART(itr->first));
+
+            sWorld.SendGuildAnnounce(PAIR64_HIPART(itr->first), guildName.c_str(), itr->second.c_str());
+            m_GuildAnnounces[1].pop_front();
+        }
     }
 
     RecordTimeDiff(NULL);
@@ -1952,7 +1964,7 @@ void World::QueueGuildAnnounce(uint32 guildid, uint32 team, std::string &msg)
     //                           low, high
     temp.first = MAKE_PAIR64(guildid, team);
     temp.second = msg;
-    m_GuildAnnounces.push_back(temp);
+    m_GuildAnnounces[team == ALLIANCE ? 0 : 1].push_back(temp);
 }
 
 void World::SendGuildAnnounce(uint32 team, ...)
