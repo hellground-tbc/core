@@ -36,6 +36,7 @@
 #include "Util.h"
 #include "TicketMgr.h"
 #include "GridMap.h"
+#include "Guild.h"
 
 #ifdef _DEBUG_VMAPS
 #include "VMapFactory.h"
