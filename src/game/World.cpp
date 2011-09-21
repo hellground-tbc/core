@@ -1869,16 +1869,11 @@ void World::Update(time_t diff)
         if (m_GuildAnnounces.empty())
             return;
 
-        std::list<std::pair<uint64, std::string>>::iterator itr = m_GuildAnnounces.begin();
+        std::list<std::pair<uint64, std::string> >::iterator itr = m_GuildAnnounces.begin();
+        std::string guildName = objmgr.GetGuildNameById(PAIR64_LOPART(itr->first));
+
+        sWorld.SendGuildAnnounce(PAIR64_HIPART(itr->first), guildName.c_str(), itr->second.c_str());
         m_GuildAnnounces.pop_front();
-
-        uint32 guildID = PAIR64_LOPART(itr->first);
-        uint32 team = PAIR64_HIPART(itr->first);
-        std::string msg = itr->second;
-
-        std::string guildName = objmgr.GetGuildNameById(guildID);
-
-        sWorld.SendGuildAnnounce(team, guildName.c_str(), msg.c_str());
     }
 
     RecordTimeDiff(NULL);

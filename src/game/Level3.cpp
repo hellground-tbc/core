@@ -3818,7 +3818,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
             Guild * pGuild = objmgr.GetGuildById(gId);
             if (!pGuild->HasRankRight(m_session->GetPlayer()->GetRank(), GR_RIGHT_OFFCHATLISTEN))
             {
-                PSendSysMessage("Only fuild Master or Officer can append announces.")
+                PSendSysMessage("Only guild Master or Officer can append announces.")
                 return false;
             }
 
