@@ -3799,12 +3799,27 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
     if (!*args)
         return false;
 
-    char* par1 = strtok ((char*)args, " ");
-    if (!par1)
+    char* tail1 = strtok((char*)args, " ");
+    if (!tail1)
         return false;
 
-    std::string msg = par1;
+    char* msgSubject;
+    if (*tail1=='"')
+        msgSubject = strtok(tail1+1, "\"");
+    else
+    {
+        char* space = strtok(tail1, "\"");
+        if (!space)
+            return false;
+        msgSubject = strtok(NULL, "\"");
+    }
 
+    if (!msgSubject)
+        return false;
+
+    std::string msg = msgSubject;
+
+    SetSentErrorMessage(true);
     if (uint32 gId = m_session->GetPlayer()->GetGuildId())
     {
         if (objmgr.GetGuildAnnCooldown(gId) < time(NULL))
@@ -3824,7 +3839,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
 
             if (pGuild->GetMemberSize() < 10)
             {
-                PSendSysMessage("Your guild is to small, you need at least 10 member.")
+                PSendSysMessage("Your guild is to small, you need at least 10 member.");
                 return false;
             }
 
