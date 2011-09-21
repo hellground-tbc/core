@@ -346,7 +346,7 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
 bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
 {
 
-    if (uint32 account_id = accmgr.GetId(m_session->GetAccountId()))
+    if (uint32 account_id = m_session->GetAccountId())
     {
         QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT speciallogs FROM account WHERE id = '%u'", account_id);
         if (!result)
