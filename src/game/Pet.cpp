@@ -1894,3 +1894,41 @@ void Pet::CastPetAura(PetAura const* aura)
         CastSpell(this, auraId, true);
 }
 
+void Pet::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
+{
+    Unit* unitOwner = GetOwner();
+    if (!unitOwner || unitOwner->GetTypeId() != TYPEID_PLAYER)
+        return;
+    Player *owner = (Player*)unitOwner;
+
+                                                            // last check 2.0.10
+    WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+m_spells.size()*8);
+    data << GetGUID();
+    data << uint8(0x0);                                     // flags (0x1, 0x2)
+    time_t curTime = time(NULL);
+
+    for (PetSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+    {
+        //if (itr->second.state == PLAYERSPELL_REMOVED)
+        //    continue;
+        uint32 unSpellId = itr->first;
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(unSpellId);
+        if (!spellInfo)
+            continue;
+
+        // Not send cooldown for this spells
+        if (spellInfo->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE)
+            continue;
+
+        if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
+            continue;
+
+        if ((idSchoolMask & GetSpellSchoolMask(spellInfo)))// && owner->GetSpellCooldownDelay(unSpellId) < unTimeMs)
+        {
+            data << unSpellId;
+            data << unTimeMs;                               // in m.secs
+            //owner->AddSpellCooldown(unSpellId, 0, curTime + unTimeMs/1000);
+        }
+    }
+    owner->GetSession()->SendPacket(&data);
+}
