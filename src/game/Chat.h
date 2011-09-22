@@ -106,7 +106,6 @@ class ChatHandler
         bool HandleAccountWhispLogCommand(const char* args);
 
         bool HandleHelpCommand(const char* args);
-        bool HandleAHBotOptionsCommand(const char * args);
         bool HandleCommandsCommand(const char* args);
         bool HandleStartCommand(const char* args);
         bool HandleDismountCommand(const char* args);
@@ -555,6 +554,8 @@ class ChatHandler
         bool HandleBanHelper(BanMode mode,char const* args);
         bool HandleBanInfoHelper(uint32 accountid, char const* accountname);
         bool HandleUnBanHelper(BanMode mode,char const* args);
+
+        void ShowItemListHelper(uint32 itemId, int loc_idx);//, Player* target = NULL);
 
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
     private:

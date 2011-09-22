@@ -1387,6 +1387,13 @@ uint32 ObjectMgr::GetPlayerTeamByGUID(const uint64 &guid) const
 
 uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
 {
+    if (!IS_PLAYER_GUID(guid))
+        return 0;
+
+    // prevent DB access for online player
+    if(Player* player = GetPlayer(guid))
+        return player->GetSession()->GetAccountId();
+
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
     if (result)
     {
@@ -3975,7 +3982,7 @@ void ObjectMgr::LoadGossipText()
         pGText = new GossipText;
         pGText->Text_ID    = fields[cic++].GetUInt32();
 
-        for (int i=0; i< 8; i++)
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; i++)
         {
             pGText->Options[i].Text_0           = fields[cic++].GetCppString();
             pGText->Options[i].Text_1           = fields[cic++].GetCppString();
@@ -4105,7 +4112,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         m->messageID = fields[0].GetUInt32();
         m->messageType = fields[1].GetUInt8();
         m->sender = fields[2].GetUInt32();
-        m->receiverGuid = fields[3].GetUInt32();
+        m->receiverGuid = ObjectGuid(HIGHGUID_PLAYER, fields[3].GetUInt32());
         m->itemTextId = fields[4].GetUInt32();
         bool has_items = fields[5].GetBool();
         m->expire_time = (time_t)fields[6].GetUInt64();
@@ -4117,12 +4124,14 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         Player *pl = 0;
         if (serverUp)
             pl = GetPlayer(m->receiverGuid.GetRawValue());
-        if (pl && pl->m_mailsLoaded)
+
+        if (pl)
         {                                                   //this code will run very improbably (the time is between 4 and 5 am, in game is online a player, who has old mail
             //his in mailbox and he has already listed his mails)
             delete m;
             continue;
         }
+
         //delete or return mail:
         if (has_items)
         {
@@ -7336,6 +7345,42 @@ void ObjectMgr::GetQuestLocaleStrings(uint32 entry, int32 loc_idx, std::string* 
         {
             if (titlePtr && il->Title.size() > size_t(loc_idx) && !il->Title[loc_idx].empty())
                 *titlePtr = il->Title[loc_idx];
+        }
+    }
+}
+
+void ObjectMgr::GetNpcTextLocaleStringsAll(uint32 entry, int32 loc_idx, ObjectMgr::NpcTextArray* text0_Ptr, ObjectMgr::NpcTextArray* text1_Ptr) const
+{
+    if (loc_idx >= 0)
+    {
+        if (NpcTextLocale const *nl = GetNpcTextLocale(entry))
+        {
+            if (text0_Ptr)
+                for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
+                    if (nl->Text_0[i].size() > (size_t)loc_idx && !nl->Text_0[i][loc_idx].empty())
+                        (*text0_Ptr)[i] = nl->Text_0[i][loc_idx];
+
+            if (text1_Ptr)
+                for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
+                    if (nl->Text_1[i].size() > (size_t)loc_idx && !nl->Text_1[i][loc_idx].empty())
+                        (*text1_Ptr)[i] = nl->Text_1[i][loc_idx];
+        }
+    }
+}
+
+void ObjectMgr::GetNpcTextLocaleStrings0(uint32 entry, int32 loc_idx, std::string* text0_0_Ptr, std::string* text1_0_Ptr) const
+{
+    if (loc_idx >= 0)
+    {
+        if (NpcTextLocale const *nl = GetNpcTextLocale(entry))
+        {
+            if (text0_0_Ptr)
+                if (nl->Text_0[0].size() > (size_t)loc_idx && !nl->Text_0[0][loc_idx].empty())
+                    *text0_0_Ptr = nl->Text_0[0][loc_idx];
+
+            if (text1_0_Ptr)
+                if (nl->Text_1[0].size() > (size_t)loc_idx && !nl->Text_1[0][loc_idx].empty())
+                    *text1_0_Ptr = nl->Text_1[0][loc_idx];
         }
     }
 }

@@ -890,9 +890,6 @@ void WorldSession::HandleMsgQueryNextMailtime(WorldPacket & /*recv_data*/)
 {
     WorldPacket data(MSG_QUERY_NEXT_MAIL_TIME, 8);
 
-    if (!_player->m_mailsLoaded)
-        _player->_LoadMail();
-
     if (_player->unReadMails > 0)
     {
         data << (uint32) 0;                                 // float

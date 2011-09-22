@@ -539,7 +539,7 @@ AuctionHouseEntry const* AuctionHouseMgr::GetAuctionHouseEntry(Unit* unit)
                 case   55: houseid = 2; break;              // dwarf/gnome, and generic for alliance
                 case   68: houseid = 4; break;              // undead
                 case   80: houseid = 3; break;              // n-elf
-                case  104: houseid = 5; break;              // trolls
+                case  104: houseid = 5; break;              // taurens
                 case  120: houseid = 7; break;              // booty bay, neutral
                 case  474: houseid = 7; break;              // gadgetzan, neutral
                 case  534: houseid = 2; break;              // Alliance Generic
