@@ -779,26 +779,36 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
     float chance = float(damage) / max_dmg * 100.0f;
     bool roll;
 
-    std::list<uint32> aurasToRemove;
+    std::list<std::pair<uint32, uint64>> aurasToRemove;
+    std::set<std::pair<uint32, uint64>> aurasDone;
     for (AuraList::iterator i = m_ccAuras.begin(); i != m_ccAuras.end(); i++)
     {
+        std::pair<uint32, uint64> auraPair((*i)->GetId(), (*i)->GetCasterGUID());
+        // prevent rolling twice for two effects of the same spell
+        if(aurasDone.find(auraPair) != aurasDone.end())
+            continue;
+        aurasDone.insert(auraPair);
+
         if (*i && (!spell || (*i)->GetId() != spell))
         {
- /*           if (GetTypeId() != TYPEID_PLAYER && (((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && (*i)->GetSpellProto()->SpellFamilyFlags == 0x20000) || // Mind Control
-                ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (*i)->GetSpellProto()->SpellFamilyFlags == 0x800)))  // Enslave Demon
-            {
-                roll = roll_chance_f(chance);      // TODO: should chance be lower?
-            }
-            else */
-            roll = roll_chance_f(chance);
+            if(GetDiminishingReturnsGroupForSpell((*i)->GetSpellProto(), false) == DIMINISHING_ENSLAVE)
+                if(Unit *caster = (*i)->GetCaster())
+                {
+                    if(caster->MagicSpellHitResult(this, (*i)->GetSpellProto()) == SPELL_MISS_RESIST)
+                        aurasToRemove.push_back(auraPair);
+                    else
+                        continue;
+                }
 
+            roll = roll_chance_f(chance);
             if (roll)
-                aurasToRemove.push_back((*i)->GetId());
+                aurasToRemove.push_back(auraPair);
+                
         }
     }
-    for (std::list<uint32>::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); i++)
+    for (std::list<std::pair<uint32, uint64>>::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); i++)
     {
-        RemoveAurasDueToSpell(*i);
+        RemoveAurasByCasterSpell(i->first, i->second);
     }
 }
 
@@ -2860,6 +2870,9 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     // Decrease hit chance from victim rating bonus
     if (pVictim->GetTypeId()==TYPEID_PLAYER)
         HitChance -= int32(((Player*)pVictim)->GetRatingBonusValue(CR_HIT_TAKEN_SPELL)*100.0f);
+
+    if(GetDiminishingReturnsGroupForSpell(spell, false) == DIMINISHING_ENSLAVE)
+        HitChance -= int32(pVictim->GetDiminishing(DIMINISHING_ENSLAVE) * 1000);
 
     if (HitChance <  100) HitChance =  100;
     if (HitChance > 9900) HitChance = 9900;
@@ -9514,7 +9527,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             break;
     }
 
-    if (Unit* owner = GetOwner()) {
+    if (Unit* owner = GetCharmerOrOwner()) {
         float owner_speed = owner->GetMaxSpeedRate(mtype) * 1.1f;
         speed = owner_speed > speed ? owner_speed : speed;
     }
@@ -9534,8 +9547,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
         SetSpeed(mtype, speed, forced);
 
     // update speed of pets
-    if (Pet *pet = GetPet())
-        pet->UpdateSpeed(mtype, forced);
+    Unit *charmOrPet = GetPet() ? GetPet() : GetCharm();
+    if (charmOrPet)
+        charmOrPet->UpdateSpeed(mtype, forced);
 }
 
 float Unit::GetSpeed(UnitMoveType mtype) const
@@ -9981,6 +9995,9 @@ DiminishingLevels Unit::GetDiminishing(DiminishingGroup group)
 
         if (!i->hitTime)
             return DIMINISHING_LEVEL_1;
+
+        if(group == DIMINISHING_ENSLAVE)
+            return DiminishingLevels(i->hitCount);
 
         // If last spell was casted more than 15 seconds ago - reset the count.
         if (i->stack==0 && WorldTimer::getMSTimeDiff(i->hitTime,WorldTimer::getMSTime()) > 15000)

@@ -3336,6 +3336,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Unstable affliction dispel silence
             else if (spellproto->Id == 31117)
                 return DIMINISHING_UNSTABLE_AFFLICTION;
+            // Enslave deamon
+            else if(spellproto->SpellFamilyFlags & 0x800LL)
+                return DIMINISHING_ENSLAVE;
             break;
         }
         case SPELLFAMILY_DRUID:
