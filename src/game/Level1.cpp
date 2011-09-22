@@ -169,7 +169,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
             
             objmgr.SetGuildAnnCooldown(gId);
             WorldDatabase.PExecute("INSERT REPLACE INTO guildann_cooldown VALUES ('%u', "UI64FMTD")", gId, objmgr.GetGuildAnnCooldown(gId));
-            sLog.outSpecial("Player %s ("UI64FMTD") append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), msg.c_str());
+            sLog.outGann("Player %s ("UI64FMTD") append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), msg.c_str());
             sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
             return true;
         }

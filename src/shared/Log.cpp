@@ -39,7 +39,7 @@ enum LogType
 const int LogType_count = int(LogError) +1;
 
 Log::Log() :
-    logfile(NULL), gmLogfile(NULL), charLogfile(NULL), specialLogFile(NULL), mailLogFile(NULL), wardenLogFile(NULL), auctionLogFile(NULL),
+    logfile(NULL), gmLogfile(NULL), charLogfile(NULL), specialLogFile(NULL), mailLogFile(NULL), wardenLogFile(NULL), auctionLogFile(NULL), gannLogFile(NULL),
     dberLogfile(NULL), arenaLogFile(NULL), bossLogFile(NULL), cheatLogFile(NULL), acLogFile(NULL), m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
 {
     Initialize();
@@ -247,6 +247,8 @@ void Log::Initialize()
     wardenLogFile = openLogFile("WardenLogFile", NULL, "a");
 
     auctionLogFile = openLogFile("auctionLogFile",NULL,"a");
+
+    gannLogFile = openLogFile("gannLogFile",NULL,"a");
 
     // Main log file settings
     m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
@@ -868,6 +870,24 @@ void Log::outAuction(const char * str, ... )
         fprintf(auctionLogFile, "\n" );
         va_end(ap);
         fflush(auctionLogFile);
+    }
+}
+
+void Log::outGann(const char * str, ... )
+{
+    if (!str)
+        return;
+    
+	
+	if(gannLogFile)
+    {
+        va_list ap;
+        outTimestamp(gannLogFile);
+        va_start(ap, str);
+        vfprintf(gannLogFile, str, ap);
+        fprintf(gannLogFile, "\n" );
+        va_end(ap);
+        fflush(gannLogFile);
     }
 }
 
