@@ -35,6 +35,9 @@
 // The pHatingUnit is not used yet
 float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pThreat, SpellSchoolMask schoolMask, SpellEntry const *pThreatSpell)
 {
+    if (!pHatedUnit->IsInMap(pHatingUnit))
+        return 0.0f;
+
     if (pThreatSpell)
     {
         if (pThreatSpell->AttributesEx & SPELL_ATTR_EX_NO_THREAT)
@@ -130,9 +133,11 @@ void HostilReference::updateOnlineStatus()
     // ref is valid
     // target is no player or not gamemaster
     // target is not in flight
-    if (isValid() &&
-        ((getTarget()->GetTypeId() != TYPEID_PLAYER || !((Player*)getTarget())->isGameMaster()) ||
-        !getTarget()->hasUnitState(UNIT_STAT_IN_FLIGHT)))
+    if (isValid()
+        && (getTarget()->GetTypeId() != TYPEID_PLAYER || !((Player*)getTarget())->isGameMaster())
+        && !getTarget()->hasUnitState(UNIT_STAT_IN_FLIGHT)
+        && getTarget()->IsInMap(getSourceUnit())
+        )
     {
         Creature* creature = (Creature*) getSourceUnit();
         online = getTarget()->isInAccessiblePlacefor (creature);
