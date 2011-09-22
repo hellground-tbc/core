@@ -878,8 +878,8 @@ void Log::outGann(const char * str, ... )
     if (!str)
         return;
     
-	
-	if(gannLogFile)
+    
+    if(gannLogFile)
     {
         va_list ap;
         outTimestamp(gannLogFile);
