@@ -155,7 +155,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
             Guild * pGuild = objmgr.GetGuildById(gId);
             if (!pGuild->HasRankRight(m_session->GetPlayer()->GetRank(), GR_RIGHT_OFFCHATLISTEN))
             {
-                PSendSysMessage("Only guild Master or Officer can append guild announce.");
+                PSendSysMessage("Your guild rank is to low to use that command.");
                 return false;
             }
 
@@ -165,11 +165,11 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
                 return false;
             }
 
-            PSendSysMessage("Your message has been queued and will be displayed soon, please %u little more and u will be able to send next message", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
+            PSendSysMessage("Your message has been queued and will be displayed soon, please wait: %u seconds to be able to send next message", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
             
             objmgr.SetGuildAnnCooldown(gId);
             WorldDatabase.PExecute("INSERT REPLACE INTO guildann_cooldown VALUES ('%u', "UI64FMTD")", gId, objmgr.GetGuildAnnCooldown(gId));
-            sLog.outGann("Player %s ("UI64FMTD") append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), msg.c_str());
+            sLog.outGann("Player %s ("UI64FMTD") - guild: %s (%u) append guild announce: %s", m_session->GetPlayer()->GetName(), pGuild->GetName(), gId, m_session->GetPlayer()->GetGUID(), msg.c_str());
             sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
             return true;
         }

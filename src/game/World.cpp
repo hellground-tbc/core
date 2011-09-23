@@ -669,7 +669,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_AUTOBROADCAST_INTERVAL] = (sConfig.GetIntDefault("AutoBroadcast.Timer", 35)*MINUTE*1000);
     m_configs[CONFIG_GUILD_ANN_INTERVAL] = (sConfig.GetIntDefault("GuildAnnounce.Timer", 1)*MINUTE*1000);
-    m_configs[CONFIG_GUILD_ANN_COOLDOWN] = (sConfig.GetIntDefault("GuildAnnounce.Cooldown", 60)*MINUTE*1000);
+    m_configs[CONFIG_GUILD_ANN_COOLDOWN] = (sConfig.GetIntDefault("GuildAnnounce.Cooldown", 60)*MINUTE);
 
     m_configs[CONFIG_COMPRESSION] = sConfig.GetIntDefault("Compression", 1);
     if (m_configs[CONFIG_COMPRESSION] < 1 || m_configs[CONFIG_COMPRESSION] > 9)
