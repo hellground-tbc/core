@@ -463,7 +463,7 @@ void Log::outBoss(const char *str, ...)
     if (logFile[LOG_BOSS])
     {
         va_list ap;
-        outTimestamp(bossLogFile);
+        outTimestamp(logFile[LOG_BOSS]);
         va_start(ap, str);
         vfprintf(logFile[LOG_BOSS], str, ap);
         fprintf(logFile[LOG_BOSS], "\n" );
@@ -500,7 +500,7 @@ void Log::outCheat(const char * str, ...)
         outTimestamp(logFile[LOG_CHEAT]);
         va_start(ap, str);
         vfprintf(logFile[LOG_CHEAT], str, ap);
-        fprintf(logFile[LOG_CHEAT]e, "\n" );
+        fprintf(logFile[LOG_CHEAT], "\n" );
         va_end(ap);
         fflush(logFile[LOG_CHEAT]);
     }
@@ -517,7 +517,7 @@ void Log::outAC(const char * str, ...)
         outTimestamp(logFile[LOG_AC]);
         va_start(ap, str);
         vfprintf(logFile[LOG_AC], str, ap);
-        fprintf(logFile[LOG_AC]e, "\n" );
+        fprintf(logFile[LOG_AC], "\n" );
         va_end(ap);
         fflush(logFile[LOG_AC]);
     }
@@ -540,7 +540,7 @@ void Log::outErrorDb(const char * err, ...)
     if (logFile[LOG_DEFAULT])
     {
         outTimestamp(logFile[LOG_DEFAULT]);
-        fprintf(logFile[LOG_DEFAULT]e, "ERROR:" );
+        fprintf(logFile[LOG_DEFAULT], "ERROR:" );
 
         va_list ap;
         va_start(ap, err);
@@ -778,7 +778,7 @@ void Log::outSpecial(const char * str, ...)
         vfprintf(logFile[LOG_SPECIAL], str, ap);
         fprintf(logFile[LOG_SPECIAL], "\n" );
         va_end(ap);
-        fflush(slogFile[LOG_SPECIAL]);
+        fflush(logFile[LOG_SPECIAL]);
     }
 }
 
@@ -804,12 +804,12 @@ void Log::outMail(const char * str, ...)
     if (logFile[LOG_MAIL])
     {
         va_list ap;
-        outTimestamp(logFile[LOG_MAIL);
+        outTimestamp(logFile[LOG_MAIL]);
         va_start(ap, str);
-        vfprintf(logFile[LOG_MAIL, str, ap);
-        fprintf(logFile[LOG_MAIL, "\n" );
+        vfprintf(logFile[LOG_MAIL], str, ap);
+        fprintf(logFile[LOG_MAIL], "\n" );
         va_end(ap);
-        fflush(logFile[LOG_MAIL);
+        fflush(logFile[LOG_MAIL]);
     }
 }
 
