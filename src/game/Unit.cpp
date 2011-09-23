@@ -779,8 +779,8 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
     float chance = float(damage) / max_dmg * 100.0f;
     bool roll;
 
-    std::list<std::pair<uint32, uint64>> aurasToRemove;
-    std::set<std::pair<uint32, uint64>> aurasDone;
+    std::list<std::pair<uint32, uint64> > aurasToRemove;
+    std::set<std::pair<uint32, uint64> > aurasDone;
     for (AuraList::iterator i = m_ccAuras.begin(); i != m_ccAuras.end(); i++)
     {
         std::pair<uint32, uint64> auraPair((*i)->GetId(), (*i)->GetCasterGUID());
@@ -803,10 +803,10 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
             roll = roll_chance_f(chance);
             if (roll)
                 aurasToRemove.push_back(auraPair);
-                
+
         }
     }
-    for (std::list<std::pair<uint32, uint64>>::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); i++)
+    for (std::list<std::pair<uint32, uint64> >::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); i++)
     {
         RemoveAurasByCasterSpell(i->first, i->second);
     }

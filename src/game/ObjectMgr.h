@@ -40,6 +40,7 @@
 #include "ObjectGuid.h"
 #include "Policies/Singleton.h"
 #include "Database/SQLStorage.h"
+#include "World.h"
 
 #include <string>
 #include <map>

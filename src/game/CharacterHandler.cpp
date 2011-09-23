@@ -437,12 +437,6 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
     sLog.outDetail("Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
     sLog.outChar("Account: %d (IP: %s) Delete Character:[%s] (guid: %u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
 
-    if (sLog.IsOutCharDump())                                // optimize GetPlayerDump call
-    {
-        std::string dump = PlayerDumpWriter().GetDump(GUID_LOPART(guid));
-        sLog.outCharDump(dump.c_str(),GetAccountId(),GUID_LOPART(guid),name.c_str());
-    }
-
     Player::DeleteFromDB(guid, GetAccountId());
 
     WorldPacket data(SMSG_CHAR_DELETE, 1);
