@@ -492,8 +492,6 @@ class ChatHandler
         bool HandleSendChannelNotifyCommand(const char* args);
         bool HandleSendChatMsgCommand(const char* args);
         bool HandleRenameCommand(const char * args);
-        bool HandleLoadPDumpCommand(const char *args);
-        bool HandleWritePDumpCommand(const char *args);
         bool HandleCastCommand(const char *args);
         bool HandleCastBackCommand(const char *args);
         bool HandleCastDistCommand(const char *args);

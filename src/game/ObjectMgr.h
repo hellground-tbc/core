@@ -269,12 +269,8 @@ struct TRINITY_DLL_SPEC LanguageDesc
 extern LanguageDesc lang_description[LANGUAGES_COUNT];
 TRINITY_DLL_SPEC LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
-class PlayerDumpReader;
-
 class ObjectMgr
 {
-    friend class PlayerDumpReader;
-
     public:
         ObjectMgr();
         ~ObjectMgr();

@@ -416,13 +416,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false, NULL,                                            "", NULL }
     };
 
-    static ChatCommand pdumpCommandTable[] =
-    {
-        { "load",           SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleLoadPDumpCommand,            "", NULL },
-        { "write",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleWritePDumpCommand,           "", NULL },
-        { NULL,             0,                  false, NULL,                                            "", NULL }
-    };
-
     static ChatCommand listCommandTable[] =
     {
         { "creature",       SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleListCreatureCommand,         "", NULL },
@@ -588,7 +581,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "reload",         SEC_ADMINISTRATOR,  true,  NULL,                                            "", reloadCommandTable },
         { "list",           SEC_ADMINISTRATOR,  true,  NULL,                                            "", listCommandTable },
         { "lookup",         SEC_ADMINISTRATOR,  true,  NULL,                                            "", lookupCommandTable },
-        { "pdump",          SEC_ADMINISTRATOR,  true,  NULL,                                            "", pdumpCommandTable },
         { "guild",          SEC_ADMINISTRATOR,  true,  NULL,                                            "", guildCommandTable },
         { "cast",           SEC_ADMINISTRATOR,  false, NULL,                                            "", castCommandTable },
         { "reset",          SEC_ADMINISTRATOR,  false, NULL,                                            "", resetCommandTable },

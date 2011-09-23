@@ -177,12 +177,6 @@
     <ClCompile Include="..\..\src\game\Level3.cpp">
       <Filter>Chat Commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\PlayerDump.cpp">
-      <Filter>Tools</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\game\ScriptCalls.cpp">
-      <Filter>Tools</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\game\Tools.cpp">
       <Filter>Tools</Filter>
     </ClCompile>
@@ -493,6 +487,9 @@
     <ClCompile Include="..\..\src\game\WardenWin.cpp">
       <Filter>Warden</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\ScriptCalls.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -631,9 +628,6 @@
       <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\Language.h">
-      <Filter>Tools</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\PlayerDump.h">
       <Filter>Tools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\ScriptCalls.h">

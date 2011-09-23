@@ -192,8 +192,6 @@ SET(game_STAT_SRCS
    Player.h
    PlayerAI.cpp
    PlayerAI.h
-   PlayerDump.cpp
-   PlayerDump.h
    PointMovementGenerator.cpp
    PointMovementGenerator.h
    PoolHandler.h
