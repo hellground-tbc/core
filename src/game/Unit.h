@@ -593,7 +593,7 @@ enum MovementFlags
     MOVEFLAG_ASCENDING          = 0x00400000,               // swim up also
     MOVEFLAG_CAN_FLY            = 0x00800000,
     SPLINEFLAG_FLYINGING             = 0x01000000,
-    SPLINEFLAG_FLYINGING2            = 0x02000000,               // Actual flying mode
+    MOVEFLAG_FLYING             = 0x02000000,               // Actual flying mode
     MOVEFLAG_SPLINE_ELEVATION   = 0x04000000,               // used for flight paths
     MOVEFLAG_SPLINE_ENABLED     = 0x08000000,               // used for flight paths
     MOVEFLAG_WATERWALKING       = 0x10000000,               // prevent unit from falling through water
@@ -604,7 +604,7 @@ enum MovementFlags
         MOVEFLAG_FORWARD |MOVEFLAG_BACKWARD  |MOVEFLAG_STRAFE_LEFT |MOVEFLAG_STRAFE_RIGHT|
         MOVEFLAG_PITCH_UP|MOVEFLAG_PITCH_DOWN|MOVEFLAG_ROOT        |
         MOVEFLAG_FALLING |MOVEFLAG_FALLINGFAR|MOVEFLAG_ASCENDING   |
-        SPLINEFLAG_FLYINGING2 |MOVEFLAG_SPLINE_ELEVATION,
+        MOVEFLAG_FLYING |MOVEFLAG_SPLINE_ELEVATION,
     MOVEFLAG_TURNING        =
         MOVEFLAG_TURN_LEFT | MOVEFLAG_TURN_RIGHT,
 };
