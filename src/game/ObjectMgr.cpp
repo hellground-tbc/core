@@ -5699,6 +5699,13 @@ void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t
     WorldDatabase.CommitTransaction();
 }
 
+void ObjectMgr::SaveGuildAnnCooldown(uint32 guild_id)
+{
+    time_t tmpTime = time_t(time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
+    mGuildCooldownTimes[guild_id] = tmpTime;
+    WorldDatabase.PExecute("REPLACE INTO guildann_cooldown VALUES ('%u', '"UI64FMTD"')", guild_id, uint64(tmpTime));
+}
+
 void ObjectMgr::DeleteCreatureData(uint32 guid)
 {
     // remove mapid*cellid -> guid_set map

@@ -40,7 +40,6 @@
 #include "ObjectGuid.h"
 #include "Policies/Singleton.h"
 #include "Database/SQLStorage.h"
-#include "World.h"
 
 #include <string>
 #include <map>
@@ -683,7 +682,7 @@ class ObjectMgr
         void DeleteRespawnTimeForInstance(uint32 instance);
 
         time_t GetGuildAnnCooldown(uint32 guild_id) { return mGuildCooldownTimes[guild_id]; }
-        void SetGuildAnnCooldown(uint32 guild_id) { mGuildCooldownTimes[guild_id] = (time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN)); }
+        void SaveGuildAnnCooldown(uint32 guild_id);
 
         // grid objects
         void AddCreatureToGrid(uint32 guid, CreatureData const* data);
