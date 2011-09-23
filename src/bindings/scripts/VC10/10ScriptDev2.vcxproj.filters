@@ -1525,6 +1525,9 @@
     <ClCompile Include="..\scripts\zone\blackrock_depths\boss_theldren.cpp">
       <Filter>Scripts\zone\Blackrock Depths</Filter>
     </ClCompile>
+    <ClCompile Include="..\scripts\zone\blackrock_depths\boss_coren_direbrew.cpp">
+      <Filter>Scripts\zone\Blackrock Depths</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\scripts\creature\simple_ai.h">
