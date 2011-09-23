@@ -579,7 +579,7 @@ void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end)
     data << uint32(WorldTimer::getMSTime());
 
     data << uint8(0);
-    data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || isInFlight())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : SPLINEFLAG_WALKMODE);
+    data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || IsTaxiFlying())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : SPLINEFLAG_WALKMODE);
     data << uint32(traveltime);
     data << uint32(pathSize);
     data.append((char*)path.GetNodes(start), pathSize * 4 * 3);
@@ -848,7 +848,7 @@ bool SpellCantDealDmgToPlayer(uint32 id)
 uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, const SpellEntry *spellProto, bool durabilityLoss)
 {
     Unit *pVictim = damageInfo->target;
-    if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode() || pVictim->HasAura(27827, 2))
+    if (!pVictim->isAlive() || pVictim->IsTaxiFlying() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode() || pVictim->HasAura(27827, 2))
         return 0;
 
     //You don't lose health from damage taken from another player while in a sanctuary
@@ -1519,7 +1519,7 @@ void Unit::DealSpellDamage(SpellDamageLog *damageInfo, bool durabilityLoss)
     if (!this || !pVictim)
         return;
 
-    if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
+    if (!pVictim->isAlive() || pVictim->IsTaxiFlying() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
         return;
 
     SpellEntry const *spellProto = sSpellStore.LookupEntry(damageInfo->spell_id);
@@ -1642,7 +1642,7 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
     if (!this || !pVictim)
         return;
 
-    if (!pVictim->isAlive() || pVictim->isInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
+    if (!pVictim->isAlive() || pVictim->IsTaxiFlying() || pVictim->GetTypeId() == TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode())
         return;
 
     //You don't lose health from damage taken from another player while in a sanctuary
@@ -9238,7 +9238,7 @@ bool Unit::isAttackableByAOE() const
     if (GetTypeId()==TYPEID_PLAYER && ((Player *)this)->isGameMaster())
         return false;
 
-    return !isInFlight();
+    return !IsTaxiFlying();
 }
 
 int32 Unit::ModifyHealth(int32 dVal)
@@ -11973,7 +11973,7 @@ void Unit::BuildHeartBeatMsg(WorldPacket *data) const
 {
     data->Initialize(MSG_MOVE_HEARTBEAT, 32);
     *data << GetPackGUID();
-    *data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || isInFlight())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : GetUnitMovementFlags());
+    *data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || IsTaxiFlying())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : GetUnitMovementFlags());
     *data << uint8(0);                                      // 2.3.0
     *data << uint32(WorldTimer::getMSTime());                           // time
     *data << float(GetPositionX());
@@ -12481,7 +12481,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     if (this == charmer)
         return;
 
-    if (isInFlight())
+    if (IsTaxiFlying())
         return;
 
     if (GetTypeId() == TYPEID_PLAYER && ((Player*)this)->GetTransport())

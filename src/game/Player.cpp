@@ -2159,7 +2159,7 @@ bool Player::CanInteractWithNPCs(bool alive) const
 {
     if (alive && !isAlive())
         return false;
-    if (isInFlight())
+    if (IsTaxiFlying())
         return false;
 
     return true;
@@ -5662,7 +5662,7 @@ void Player::CheckAreaExploreAndOutdoor()
     if (!isAlive())
         return;
 
-    if (isInFlight())
+    if (IsTaxiFlying())
         return;
 
     bool isOutdoor;
@@ -6830,7 +6830,7 @@ void Player::CheckDuelDistance(time_t currTime)
 
 bool Player::IsOutdoorPvPActive()
 {
-    return (isAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(SPLINEFLAG_FLYINGING2) && !isInFlight());
+    return (isAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(SPLINEFLAG_FLYINGING2) && !IsTaxiFlying());
 }
 
 void Player::DuelComplete(DuelCompleteType type)
@@ -18479,7 +18479,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     if (!viewPoint || !HasFarsightVision()) viewPoint = u;
 
     // different visible distance checks
-    if (isInFlight())                                     // what see player in flight
+    if (IsTaxiFlying())                                     // what see player in flight
     {
         if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
@@ -18906,7 +18906,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment
-    if (HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || isInFlight())
+    if (HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || IsTaxiFlying())
         AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
 }
 
@@ -19373,7 +19373,7 @@ void Player::SummonIfPossible(bool agree)
         return;
 
     // stop taxi flight at summon
-    if (isInFlight())
+    if (IsTaxiFlying())
     {
         GetMotionMaster()->MovementExpired();
         CleanupAfterTaxiFlight();
@@ -20356,7 +20356,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
+    if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !IsTaxiFlying() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;

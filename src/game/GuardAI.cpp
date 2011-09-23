@@ -86,7 +86,7 @@ void GuardAI::EnterEvadeMode()
     {
         DEBUG_LOG("Creature stopped attacking because victim is using stealth [guid=%u]", m_creature->GetGUIDLow());
     }
-    else if (pVictim->isInFlight())
+    else if (pVictim->IsTaxiFlying())
     {
         DEBUG_LOG("Creature stopped attacking because victim is flying away [guid=%u]", m_creature->GetGUIDLow());
     }

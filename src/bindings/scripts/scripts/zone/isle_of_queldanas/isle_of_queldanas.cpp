@@ -105,7 +105,7 @@ struct TRINITY_DLL_DECL npc_shattered_sun_bombardierAI : public ScriptedAI
         if(who->GetTypeId() != TYPEID_PLAYER)
             return;
 
-        if (who->isInFlight() && who->IsWithinDistInMap(me, 40) && !PathFly)
+        if (who->IsTaxiFlying() && who->IsWithinDistInMap(me, 40) && !PathFly)
         {
             PlayerGUID = who->GetGUID();
             me->GetMotionMaster()->Clear(false);

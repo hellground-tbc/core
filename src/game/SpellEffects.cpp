@@ -2657,7 +2657,7 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
 
 void Spell::EffectTeleportUnits(uint32 i)
 {
-    if (!unitTarget || unitTarget->isInFlight())
+    if (!unitTarget || unitTarget->IsTaxiFlying())
         return;
 
     // If not exist data for dest location - return
@@ -4467,7 +4467,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
     if (!unitTarget)
         return;
 
-    if (unitTarget->isInFlight())
+    if (unitTarget->IsTaxiFlying())
         return;
 
     uint32 mapid = m_caster->GetMapId();
@@ -6443,7 +6443,7 @@ void Spell::EffectStuck(uint32 /*i*/)
     sLog.outDebug("Spell Effect: Stuck");
     sLog.outDetail("Player %s (guid %u) used auto-unstuck future at map %u (%f, %f, %f)", pTarget->GetName(), pTarget->GetGUIDLow(), m_caster->GetMapId(), m_caster->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
 
-    if (pTarget->isInFlight())
+    if (pTarget->IsTaxiFlying())
         return;
 
     // homebind location is loaded always
@@ -6853,7 +6853,7 @@ void Spell::EffectBlock(uint32 /*i*/)
 
 void Spell::EffectLeapForward(uint32 i)
 {
-    if (unitTarget->isInFlight())
+    if (unitTarget->IsTaxiFlying())
         return;
 
     if (m_spellInfo->rangeIndex== 1)                        //self range
@@ -6915,7 +6915,7 @@ void Spell::EffectLeapForward(uint32 i)
 }
 void Spell::EffectLeapBack(uint32 i)
 {
-    if (unitTarget->isInFlight())
+    if (unitTarget->IsTaxiFlying())
         return;
 
     m_caster->KnockBackFrom(unitTarget,float(m_spellInfo->EffectMiscValue[i])/10,float(damage)/10);

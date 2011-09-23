@@ -443,7 +443,7 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();
@@ -486,7 +486,7 @@ bool ChatHandler::HandleGoTicketCommand(const char * args)
     mapid = ticket->map;
 
     Player* _player = m_session->GetPlayer();
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();
@@ -530,7 +530,7 @@ bool ChatHandler::HandleGoTriggerCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();
@@ -575,7 +575,7 @@ bool ChatHandler::HandleGoGraveyardCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();
@@ -680,7 +680,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();

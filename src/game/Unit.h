@@ -377,13 +377,13 @@ enum UnitState
 {
     UNIT_STAT_DIED            = 0x00000001,
     UNIT_STAT_MELEE_ATTACKING = 0x00000002,                     // player is melee attacking someone
-    //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                     // player is melee attack by someone
+    //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                   // player is melee attack by someone
     UNIT_STAT_STUNNED         = 0x00000008,
     UNIT_STAT_ROAMING         = 0x00000010,
     UNIT_STAT_CHASE           = 0x00000020,
     //UNIT_STAT_SEARCHING       = 0x00000040,
     UNIT_STAT_FLEEING         = 0x00000080,
-    UNIT_STAT_IN_FLIGHT       = 0x00000100,                     // player is in flight mode
+    UNIT_STAT_TAXI_FLIGHT     = 0x00000100,                     // player is in flight mode
     UNIT_STAT_FOLLOW          = 0x00000200,
     UNIT_STAT_ROOT            = 0x00000400,
     UNIT_STAT_CONFUSED        = 0x00000800,
@@ -403,7 +403,7 @@ enum UnitState
     UNIT_STAT_NOT_MOVE        = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
     UNIT_STAT_CANNOT_AUTOATTACK = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING),
     UNIT_STAT_CANNOT_TURN     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING),
-    UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
+    UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_TAXI_FLIGHT)
 };
 
 enum UnitStandStateType
@@ -1038,7 +1038,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void clearUnitState(uint32 f) { m_state &= ~f; }
         bool CanFreeMove() const
         {
-            return !hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_IN_FLIGHT |
+            return !hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_TAXI_FLIGHT |
                 UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) && GetOwnerGUID()==0;
         }
 
@@ -1192,7 +1192,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         //Need fix or use this
         bool isGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
 
-        bool isInFlight()  const { return hasUnitState(UNIT_STAT_IN_FLIGHT); }
+        bool IsTaxiFlying()  const { return hasUnitState(UNIT_STAT_TAXI_FLIGHT); }
 
         bool isInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
         void CombatStart(Unit* target, bool initialAggro = true);

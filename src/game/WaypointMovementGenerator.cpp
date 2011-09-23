@@ -263,7 +263,7 @@ void
 FlightPathMovementGenerator::Initialize(Player &player)
 {
     player.getHostilRefManager().setOnlineOfflineState(false);
-    player.addUnitState(UNIT_STAT_IN_FLIGHT);
+    player.addUnitState(UNIT_STAT_TAXI_FLIGHT);
     player.SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
     LoadPath(player);
     Traveller<Player> traveller(player);
@@ -280,7 +280,7 @@ void FlightPathMovementGenerator::Finalize(Player & player)
     i_destinationHolder.GetLocationNow(player.GetBaseMap(), x, y, z);
     player.SetPosition(x, y, z, player.GetOrientation());
 
-    player.clearUnitState(UNIT_STAT_IN_FLIGHT);
+    player.clearUnitState(UNIT_STAT_TAXI_FLIGHT);
     player.Unmount();
     player.RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
 
