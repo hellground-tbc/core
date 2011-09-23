@@ -205,8 +205,8 @@ void FleeingMovementGenerator<Creature>::_Init(Creature &owner)
     if (!&owner)
         return;
 
-    is_water_ok = owner.canSwim();
-    is_land_ok  = owner.canWalk();
+    is_water_ok = owner.CanSwim();
+    is_land_ok  = owner.CanWalk();
 }
 
 template<>

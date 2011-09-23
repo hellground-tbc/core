@@ -1487,7 +1487,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
         if (isWorldBoss())
             loot.loadLootFromDB(this);
 
-        if (canFly())
+        if (CanFly())
         {
             float tz = GetMap()->GetHeight(data->posX,data->posY,data->posZ,false);
             if (data->posZ - tz > 0.1)
@@ -1638,7 +1638,7 @@ bool Creature::canStartAttack(Unit const* who) const
 {
     if (isCivilian()
         || !who->isInAccessiblePlacefor (this)
-        || !canFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE
+        || !CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE
         || !IsWithinDistInMap(who, GetAttackDistance(who)))
         return false;
 
@@ -1707,7 +1707,7 @@ void Creature::setDeathState(DeathState s)
         if (m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
 
-//        if (canFly() && FallGround())
+//        if (CanFly() && FallGround())
     }
     Unit::setDeathState(s);
 
@@ -1722,7 +1722,7 @@ void Creature::setDeathState(DeathState s)
             if (LootTemplates_Skinning.HaveLootfor (GetCreatureInfo()->SkinLootId))
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
-//        if (canFly() && FallGround())
+//        if (CanFly() && FallGround())
 
         Unit::setDeathState(CORPSE);
     }

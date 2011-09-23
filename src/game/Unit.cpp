@@ -3505,9 +3505,9 @@ bool Unit::isBetween(WorldObject *s, WorldObject *e, float offset) const
 bool Unit::isInAccessiblePlacefor (Creature const* c) const
 {
     if (IsInWater())
-        return c->canSwim();
+        return c->CanSwim();
     else
-        return c->canWalk() || c->canFly();
+        return c->CanWalk() || c->CanFly();
 }
 
 bool Unit::IsInWater() const
