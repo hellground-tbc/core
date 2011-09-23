@@ -27,7 +27,6 @@
 class WorldTimer
 {
     public:
-
         // Get current server time
         static uint32 getMSTime();
 
@@ -100,32 +99,34 @@ class IntervalTimer
 
 struct TimeTracker
 {
-    TimeTracker(time_t expiry) : i_expiryTime(expiry) {}
-    void Update(time_t diff) { i_expiryTime -= diff; }
-    bool Passed(void) const { return (i_expiryTime <= 0); }
-    void Reset(time_t interval) { i_expiryTime = interval; }
-    time_t GetExpiry(void) const { return i_expiryTime; }
-    time_t i_expiryTime;
+    public:
+        TimeTracker(time_t expiry) : i_expiryTime(expiry) {}
+        void Update(time_t diff) { i_expiryTime -= diff; }
+        bool Passed(void) const { return (i_expiryTime <= 0); }
+        void Reset(time_t interval) { i_expiryTime = interval; }
+        time_t GetExpiry(void) const { return i_expiryTime; }
+
+    private:
+        time_t i_expiryTime;
 };
 
 struct TimeTrackerSmall
 {
-    TimeTrackerSmall(int32 expiry) : i_expiryTime(expiry) {}
-    void Update(int32 diff) { i_expiryTime -= diff; }
-    bool Passed(void) const { return (i_expiryTime <= 0); }
-    void Reset(int32 interval) { i_expiryTime = interval; }
-    int32 GetExpiry(void) const { return i_expiryTime; }
-    int32 i_expiryTime;
+    public:
+        TimeTrackerSmall(int32 expiry) : i_expiryTime(expiry) {}
+        void Update(int32 diff) { i_expiryTime -= diff; }
+        bool Passed(void) const { return (i_expiryTime <= 0); }
+        void Reset(int32 interval) { i_expiryTime = interval; }
+        int32 GetExpiry(void) const { return i_expiryTime; }
+
+    private:
+        int32 i_expiryTime;
 };
 
 struct PeriodicTimer
 {
     public:
-
-        PeriodicTimer(int32 period, int32 start_time)
-            : i_expireTime(start_time), i_period(period)
-        {
-        }
+        PeriodicTimer(int32 period, int32 start_time) : i_expireTime(start_time), i_period(period) {}
 
         bool Update(const uint32 &diff)
         {
@@ -148,7 +149,6 @@ struct PeriodicTimer
         void TReset(int32 diff, int32 period)  { i_expireTime += period > diff ? period : diff; }
 
     private:
-
         int32 i_period;
         int32 i_expireTime;
 };
