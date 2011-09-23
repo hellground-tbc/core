@@ -458,6 +458,9 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool CanSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
         bool CanFly()  const { return GetCreatureInfo()->InhabitType & INHABIT_AIR; }
 
+        void SetWalk(bool enable);
+        void SetLevitate(bool enable);
+
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }

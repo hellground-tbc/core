@@ -278,7 +278,7 @@ struct npc_anchorite_truuenAI : public npc_escortAI
                 if(Creature* Ughost = m_creature->SummonCreature(NPC_GHOST_UTHER, 971.86,-1825.42 ,81.99 , 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
                 {
                     UghostGUID = Ughost->GetGUID();
-                    Ughost->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+                    Ughost->SetLevitate(true);
                     DoScriptText(SAY_WP_4, Ughost, m_creature);
                     m_uiChatTimer = 4000;
                 }

@@ -166,7 +166,7 @@ m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTabl
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
 
-    m_unit_movement_flags = SPLINEFLAG_WALKMODE_MODE;
+    m_unit_movement_flags = MOVEFLAG_WALK_MODE;
     DisableReputationGain = false;
 }
 
@@ -1736,7 +1736,7 @@ void Creature::setDeathState(DeathState s)
         Unit::setDeathState(ALIVE);
         CreatureInfo const *cinfo = GetCreatureInfo();
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
-        AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        AddUnitMovementFlag(MOVEFLAG_WALK_MODE);
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
         clearUnitState(UNIT_STAT_ALL_STATE);
         i_motionMaster.Initialize();
@@ -2557,4 +2557,30 @@ time_t Creature::GetLinkedCreatureRespawnTime() const
     }
 
     return 0;
+}
+
+void Creature::SetWalk(bool enable)
+{
+    if (enable)
+        AddUnitMovementFlag(MOVEFLAG_WALK_MODE);
+    else
+        RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
+
+    WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_WALK_MODE : SMSG_SPLINE_MOVE_SET_RUN_MODE, 9);
+    data << GetPackGUID();
+    SendMessageToSet(&data, true);
+}
+
+void Creature::SetLevitate(bool enable)
+{
+    if (enable)
+        AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+    else
+        RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
+
+    /*
+    WorldPacket data(enable ? SMSG_SPLINE_MOVE_UNSET_FLYING : SMSG_SPLINE_MOVE_SET_FLYING, 9);
+    data << GetPackGUID();
+    SendMessageToSet(&data, true);
+    */
 }

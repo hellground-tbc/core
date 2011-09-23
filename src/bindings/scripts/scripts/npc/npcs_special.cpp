@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
         float x, y, z;
         m_creature->GetPosition(x,y,z);
         m_creature->Relocate(x,y,z + 0.94f);
-        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+        m_creature->SetLevitate(true);
         m_creature->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
         WorldPacket data;                       //send update position to client
         m_creature->BuildHeartBeatMsg(&data);
@@ -413,7 +413,7 @@ struct TRINITY_DLL_DECL npc_injured_patientAI : public ScriptedAI
             DoSay(SAY_DOC1,LANG_UNIVERSAL,NULL);
 
             uint32 mobId = m_creature->GetEntry();
-            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+            m_creature->SetWalk(false);
             switch (mobId)
             {
                 case 12923:

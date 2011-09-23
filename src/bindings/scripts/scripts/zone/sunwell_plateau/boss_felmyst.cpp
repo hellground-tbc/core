@@ -131,8 +131,6 @@ float FlightNodes[2][2][3] = {
     { { 1466, 671, 60}, {1466, 517, 60} },
 };
 
-#define FELMYST_FLY_FLAGS (MOVEFLAG_LEVITATING)
-
 struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 {
     boss_felmystAI(Creature *c) : ScriptedAI(c){
@@ -177,7 +175,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         OutroPhase = 0;
         OutroTimer = 0;
 
-        m_creature->AddUnitMovementFlag(FELMYST_FLY_FLAGS);
+        m_creature->SetLevitate(true);
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
         m_creature->setHover(true);
@@ -194,7 +192,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         m_creature->setActive(true);
         DoZoneInCombat();
         m_creature->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
-        m_creature->RemoveUnitMovementFlag(FELMYST_FLY_FLAGS);
+        m_creature->SetLevitate(false);
         EnterPhase(PHASE_GROUND);
 
         if(pInstance)
@@ -260,7 +258,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         else if(summon->GetEntry() == MOB_KALECGOS)
         {
             summon->setActive(true);
-            summon->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+            summon->SetLevitate(true);
             summon->GetMotionMaster()->MovePoint(0, 1471, 632, 37);
             KalecgosGUID = summon->GetGUID();
             OutroTimer = 20000;
@@ -357,7 +355,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
         case 0:
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            m_creature->AddUnitMovementFlag(FELMYST_FLY_FLAGS);
+            m_creature->SetLevitate(true);
             DoScriptText(YELL_TAKEOFF, m_creature);
             Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
             break;
@@ -431,7 +429,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
         case 10:
-            m_creature->RemoveUnitMovementFlag(FELMYST_FLY_FLAGS);
+            m_creature->SetLevitate(false);
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
             EnterPhase(PHASE_GROUND);
             AttackStart(m_creature->getVictim());
@@ -449,7 +447,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             if(EvadeTimer <= diff)
             {
-                m_creature->AddUnitMovementFlag(FELMYST_FLY_FLAGS);
+                m_creature->SetLevitate(true);
                 EnterEvadeMode();
                 EvadeTimer = 0;
                 return;

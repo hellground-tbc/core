@@ -219,7 +219,7 @@ struct npc_rinjiAI : public npc_escortAI
 
     void JustSummoned(Creature* pSummoned)
     {
-        pSummoned->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        pSummoned->SetWalk(false);
         pSummoned->GetMotionMaster()->MovePoint(0, m_afAmbushMoveTo[m_iSpawnId].m_fX, m_afAmbushMoveTo[m_iSpawnId].m_fY, m_afAmbushMoveTo[m_iSpawnId].m_fZ);
     }
 

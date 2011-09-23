@@ -7049,7 +7049,7 @@ void Spell::EffectCharge2(uint32 /*i*/)
     else
         return;
 
-    m_caster->SendMonsterMoveWithSpeed(x, y, z, SPLINEFLAG_WALKMODE_MODE);
+    m_caster->SendMonsterMoveWithSpeed(x, y, z, MOVEFLAG_WALK_MODE);
     m_caster->Relocate(x, y, z);
 
     // not all charge effects used in negative spells

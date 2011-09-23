@@ -12487,7 +12487,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     if (GetTypeId() == TYPEID_PLAYER && ((Player*)this)->GetTransport())
         return;
 
-    RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+    RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     DeleteThreatList();

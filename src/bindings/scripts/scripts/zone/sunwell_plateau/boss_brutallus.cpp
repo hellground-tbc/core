@@ -165,7 +165,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
 
     void DoIntro()
     {
-        Unit *pMadrigosa = me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA));
+        Creature *pMadrigosa = (Creature*)me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA));
         if (!pMadrigosa)
             return;
 
@@ -192,7 +192,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             case 3:
             {
                 AddSpellToCast(me, SPELL_INTRO_FROST_BLAST);
-                pMadrigosa->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+                pMadrigosa->SetLevitate(true);
                 float x, y, z;
                 pMadrigosa->GetPosition(x, y, z);
                 pMadrigosa->GetMotionMaster()->MovePoint(1, x, y, z+10);
@@ -373,12 +373,12 @@ struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
                 } 
                 else
                 {
-                    if (Unit* pFelmyst= me->GetUnit(pInstance->GetData64(DATA_FELMYST)))
+                    if (Creature* pFelmyst= me->GetCreature(pInstance->GetData64(DATA_FELMYST)))
                     {
                         pMadrigosa->GetPosition(x, y, z);
                         ((Creature*)pFelmyst)->Respawn();
                         pFelmyst->Relocate(x, y, z);
-                        pFelmyst->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+                        pFelmyst->SetLevitate(false);
                         pFelmyst->GetMotionMaster()->MoveRandom(1);
                     }
                     ((Creature*)pMadrigosa)->RemoveCorpse();

@@ -583,7 +583,7 @@ enum MovementFlags
     MOVEFLAG_TURN_RIGHT         = 0x00000020,
     MOVEFLAG_PITCH_UP           = 0x00000040,
     MOVEFLAG_PITCH_DOWN         = 0x00000080,
-    SPLINEFLAG_WALKMODE_MODE          = 0x00000100,               // Walking
+    MOVEFLAG_WALK_MODE          = 0x00000100,               // Walking
     MOVEFLAG_ONTRANSPORT        = 0x00000200,               // Used for flying on some creatures
     MOVEFLAG_LEVITATING         = 0x00000400,
     MOVEFLAG_ROOT               = 0x00000800,

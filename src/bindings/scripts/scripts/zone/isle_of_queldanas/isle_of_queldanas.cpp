@@ -109,7 +109,7 @@ struct TRINITY_DLL_DECL npc_shattered_sun_bombardierAI : public ScriptedAI
         {
             PlayerGUID = who->GetGUID();
             me->GetMotionMaster()->Clear(false);
-            m_creature->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+            m_creature->SetLevitate(true);
             m_creature->GetMotionMaster()->MovePath(BOMBARDIER_FLY_PATH, false);
             me->SetSpeed(MOVE_WALK, 1.4*who->GetSpeed(MOVE_FLIGHT));
             me->SetVisibility(VISIBILITY_ON);

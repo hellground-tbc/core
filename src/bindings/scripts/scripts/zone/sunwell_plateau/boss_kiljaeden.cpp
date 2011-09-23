@@ -312,7 +312,7 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
         FindOrbs();
         OrbsEmpowered = 0;
         EmpowerCount = 0;
-        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+        m_creature->SetLevitate(true);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->setActive(true);
         Searched = false;
@@ -756,7 +756,7 @@ struct TRINITY_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementA
                 summoned->CastSpell(summoned, SPELL_SHADOW_CHANNELING, false);
                 break;
             case CREATURE_ANVEENA:
-                summoned->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+                summoned->SetLevitate(true);
                 summoned->CastSpell(summoned, SPELL_ANVEENA_PRISON, true);
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 break;
@@ -1055,7 +1055,7 @@ struct TRINITY_DLL_DECL mob_shield_orbAI : public ScriptedAI
     float x, y, r, c, mx, my;
 
     void InitializeAI(){
-        m_creature->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+        m_creature->SetLevitate(true);
         PointReached = true;
         Timer = 500+ rand()%500;
         CheckTimer = 1000;

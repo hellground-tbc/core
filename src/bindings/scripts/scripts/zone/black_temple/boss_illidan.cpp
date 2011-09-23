@@ -243,7 +243,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         SetWarglaivesEquipped(false);
 
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
+        me->SetLevitate(false);
         me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
         me->SetSelection(NULL);
 
@@ -262,7 +262,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         ClearCastQueue();
         events.CancelEventsByGCD(m_phase);
 
-        me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        me->SetWalk(false);
 
         switch (m_phase = phase)
         {
@@ -330,7 +330,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
                 me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+                me->SetLevitate(true);
 
                 me->GetMotionMaster()->MovePoint(0, CENTER_X +5.0f, CENTER_Y, CENTER_Z);
 
@@ -523,7 +523,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_LAND:
                 {
-                    me->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
+                    me->SetLevitate(false);
                     me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
 
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -1239,7 +1239,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                 }
                 else
                 {
-                    me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE);
+                    me->SetWalk(false);
                     me->GetMotionMaster()->MovePoint(0, 728.379f, 314.462f, 352.996f);
                 }
                 break;
@@ -1698,7 +1698,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
 
         if(check_timer < diff)
         {
-            me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+            me->SetWalk(false);
             me->UpdateSpeed(MOVE_RUN, 2.5f);
             me->UpdateSpeed(MOVE_WALK, 4.5f);       // test?
             check_timer = 2000;

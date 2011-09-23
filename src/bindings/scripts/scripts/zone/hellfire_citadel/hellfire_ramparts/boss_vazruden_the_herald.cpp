@@ -131,8 +131,8 @@ struct TRINITY_DLL_DECL boss_nazanAI : public ScriptedAI
                 flight = false;
                 BellowingRoar_Timer = 6000;
                 ConeOfFire_Timer = 12000;
-                m_creature->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
-                m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+                m_creature->SetLevitate(false);
+                m_creature->SetWalk(true);
                 m_creature->GetMotionMaster()->Clear();
                 if(Unit *victim = SelectUnit(SELECT_TARGET_NEAREST,0))
                     m_creature->AI()->AttackStart(victim);
@@ -325,7 +325,7 @@ struct TRINITY_DLL_DECL boss_vazruden_the_heraldAI : public ScriptedAI
         if(summoned->GetEntry() == ENTRY_NAZAN)
         {
             ((boss_nazanAI *)summoned->AI())->VazrudenGUID = VazrudenGUID;
-            summoned->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT | MOVEFLAG_LEVITATING);
+            summoned->SetLevitate(true);
             summoned->SetSpeed(MOVE_FLIGHT, 2.5);
             if(victim)
                 ((ScriptedAI*)summoned->AI())->AttackStart(victim,false);

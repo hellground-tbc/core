@@ -69,7 +69,7 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
         Icebolt_Count = 0;
         IsInFly = false;
 
-        m_creature->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
+        m_creature->SetLevitate(false);
 
         if (pInstance)
             pInstance->SetData(DATA_SAPPHIRON, NOT_STARTED);
@@ -121,7 +121,7 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
                     {
                         phase = 2;
                         m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                        m_creature->AddUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
+                        m_creature->SetLevitate(true);
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveIdle();
                         m_creature->setHover(true);
@@ -159,7 +159,7 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
                     {
                         phase = 1;
                         m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                        m_creature->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
+                        m_creature->SetLevitate(false);
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
                         m_creature->setHover(true);

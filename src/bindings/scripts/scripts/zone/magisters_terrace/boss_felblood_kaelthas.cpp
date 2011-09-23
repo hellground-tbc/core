@@ -609,7 +609,7 @@ struct TRINITY_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
+        m_creature->SetLevitate(true);
         DespawnTimer = 30000;
         ChangeTargetTimer = 5000;
         CheckTimer = 1000;

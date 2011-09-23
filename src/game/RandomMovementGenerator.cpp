@@ -105,7 +105,7 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     else
     {
         i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime() + urand(500, 10000));
-        creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        creature.AddUnitMovementFlag(MOVEFLAG_WALK_MODE);
     }
 }
 
@@ -118,7 +118,7 @@ void RandomMovementGenerator<Creature>::Initialize(Creature &creature)
     if (creature.CanFly())
         creature.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
     else
-        creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        creature.AddUnitMovementFlag(MOVEFLAG_WALK_MODE);
 
     _setRandomLocation(creature);
 }
@@ -156,13 +156,13 @@ bool RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 
             if (creature.CanFly())
                 creature.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
             else
-                creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+                creature.AddUnitMovementFlag(MOVEFLAG_WALK_MODE);
 
             _setRandomLocation(creature);
         }
         else if (creature.isPet() && creature.GetOwner() && !creature.IsWithinDist(creature.GetOwner(), PET_FOLLOW_DIST+2.5f))
         {
-           creature.AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+           creature.AddUnitMovementFlag(MOVEFLAG_WALK_MODE);
            _setRandomLocation(creature);
         }
     }

@@ -420,7 +420,7 @@ struct npc_marzon_silent_bladeAI : public ScriptedAI
 {
     npc_marzon_silent_bladeAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        me->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        me->SetWalk(true);
     }
 
     void Reset()
@@ -1101,7 +1101,7 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
         {
             tmpCreature = me->SummonCreature(NPC_STORMWIND_ELITE_GUARD_ID, StormwindGuardsCoords[i+1][0], StormwindGuardsCoords[i+1][1], StormwindGuardsCoords[i+1][2], StormwindGuardsCoords[i+1][3], TEMPSUMMON_TIMED_DESPAWN, 300000);
             ((npc_stormwind_elite_guardAI*)(tmpCreature->AI()))->npcNumber = i;
-            tmpCreature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+            tmpCreature->SetWalk(true);
             if (i < 3)
                 npcRight[i] = tmpCreature->GetGUID();
             else
@@ -1428,7 +1428,7 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
 
                             if (majesty)
                             {
-                                majesty->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+                                majesty->SetWalk(false);
                                 majesty->SetSpeed(MOVE_RUN, 1.5);
                                 majesty->GetMotionMaster()->MovePoint(0, MAJESTY_MOVE_COORDS);
                                 majesty->TextEmote(ANDUIN_WRYN_EMOTE, NULL);
@@ -1484,7 +1484,7 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             break;
                         case 10:
                             fordragon->SetSpeed(MOVE_RUN, 2.0);
-                            fordragon->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+                            fordragon->SetWalk(false);
                             fordragon->GetMotionMaster()->MovePoint(0, FORDRAGON_MOVE_COORDS);
                             phaseTimer = 1000;
                             break;
@@ -1574,7 +1574,7 @@ struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             break;
                         case 16:
                             fordragon->SetSpeed(MOVE_RUN, 2.0);
-                            fordragon->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+                            fordragon->SetWalk(false);
                             fordragon->GetMotionMaster()->MovePoint(0, FORDRAGON_MOVE_COORDS);
                             phaseTimer = 1500;
                             break;

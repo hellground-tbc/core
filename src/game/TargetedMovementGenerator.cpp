@@ -111,7 +111,7 @@ void TargetedMovementGenerator<T>::Initialize(T &owner)
         return;
 
     if (owner.GetTypeId() != TYPEID_UNIT || !(((Creature*)&owner)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK))
-        owner.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        owner.RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
 
     if (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->CanFly())
         owner.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);

@@ -134,7 +134,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     {
         m_creature->setFaction(14);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+        m_creature->SetLevitate(false);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
 
         ArcaneBuffetTimer = 8000;
@@ -202,7 +202,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 10000;
             break;
         case 3:
-            m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+            m_creature->SetLevitate(true);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 60000;
@@ -227,7 +227,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 3000;
             break;
         case 2:
-            m_creature->AddUnitMovementFlag(SPLINEFLAG_FLYINGING2 | MOVEFLAG_CAN_FLY);
+            m_creature->SetLevitate(true);
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePoint(0,FLY_X,FLY_Y,FLY_Z);
             TalkTimer = 10000;
