@@ -339,7 +339,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
         }
 
         // 0x02200000
-        if (moveFlags & (MOVEFLAG_SWIMMING | SPLINEFLAG_FLYINGING2))
+        if (moveFlags & (MOVEFLAG_SWIMMING | MOVEFLAG_FLYING))
         {
             if (GetTypeId() == TYPEID_PLAYER)
                 *data << (float)((Player*)this)->m_movementInfo.s_pitch;

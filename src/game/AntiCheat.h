@@ -69,7 +69,7 @@ class ACRequest : public ACE_Method_Request
             uint32 latency = pPlayer->GetSession()->GetLatency();
 
             // fly cheat
-            if (!m_newPacket.HasMovementFlag(MOVEFLAG_SWIMMING) && m_newPacket.GetMovementFlags() & (MOVEFLAG_CAN_FLY | SPLINEFLAG_FLYINGING | SPLINEFLAG_FLYINGING2) &&
+            if (!m_newPacket.HasMovementFlag(MOVEFLAG_SWIMMING) && m_newPacket.GetMovementFlags() & (MOVEFLAG_CAN_FLY | SPLINEFLAG_FLYINGING | MOVEFLAG_FLYING) &&
                 !(pPlayer->HasAuraType(SPELL_AURA_FLY) || pPlayer->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || pPlayer->HasAuraType(SPELL_AURA_MOD_SPEED_FLIGHT)))
             {
                 if (latency == 0 || latency > AC_MAX_LATENCY)

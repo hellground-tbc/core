@@ -81,7 +81,7 @@ inline float Traveller<Creature>::Speed()
         return i_traveller.m_TempSpeed;
     else if (i_traveller.HasUnitMovementFlag(MOVEFLAG_WALK_MODE))
         return i_traveller.GetSpeed(MOVE_WALK);
-    else if (i_traveller.HasUnitMovementFlag(SPLINEFLAG_FLYINGING2))
+    else if (i_traveller.HasUnitMovementFlag(MOVEFLAG_FLYING))
         return i_traveller.GetSpeed(MOVE_FLIGHT);
     else
         return i_traveller.GetSpeed(MOVE_RUN);

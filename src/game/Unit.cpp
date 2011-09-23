@@ -174,7 +174,7 @@ void MovementInfo::Read(ByteBuffer &data)
         data >> t_time;
     }
 
-    if (HasMovementFlag(MovementFlags(MOVEFLAG_SWIMMING | SPLINEFLAG_FLYINGING2)))
+    if (HasMovementFlag(MovementFlags(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING)))
         data >> s_pitch;
 
     data >> fallTime;
@@ -210,7 +210,7 @@ void MovementInfo::Write(ByteBuffer &data) const
         data << t_time;
     }
 
-    if (HasMovementFlag(MovementFlags(MOVEFLAG_SWIMMING | SPLINEFLAG_FLYINGING2)))
+    if (HasMovementFlag(MovementFlags(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING)))
         data << s_pitch;
 
     data << fallTime;
@@ -12446,12 +12446,12 @@ void Unit::SetFlying(bool apply)
     if (apply)
     {
         SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        AddUnitMovementFlag(SPLINEFLAG_FLYINGING + SPLINEFLAG_FLYINGING2);
+        AddUnitMovementFlag(SPLINEFLAG_FLYINGING + MOVEFLAG_FLYING);
     }
     else
     {
         RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING + SPLINEFLAG_FLYINGING2);
+        RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING + MOVEFLAG_FLYING);
     }
 }
 
