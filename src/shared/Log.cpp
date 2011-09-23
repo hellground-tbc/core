@@ -209,7 +209,7 @@ void Log::Initialize()
         "BossLogFile",      //LOG_BOSS
         "WardenLogFile",    //LOG_WARDEN
         "auctionLogFile",   //LOG_AUCTION
-    }
+    };
 
     /// Open specific log files
     logFile[LOG_DEFAULT] = openLogFile(logToStr[LOG_DEFAULT],"LogTimestamp","w");
@@ -249,7 +249,7 @@ void Log::Initialize()
 
     logFile[LOG_CHAR] = openLogFile(logToStr[LOG_CHAR],"CharLogTimestamp","a");
 
-    for (uint8 = LOG_DB_ERR; i < LOG_MAX_FILES; i++)
+    for (uint8 i = LOG_DB_ERR; i < LOG_MAX_FILES; i++)
         logFile[i] = openLogFile(logToStr[i], NULL, "a");
 
     // Main log file settings
@@ -366,11 +366,11 @@ void Log::outTitle( const char * str)
         ResetColor(true);
 
     //printf( "\n" );
-    if(logfile)
+    if(logFile[LOG_DEFAULT])
     {
-        fprintf(logfile, str);
-        fprintf(logfile, "\n" );
-        fflush(logfile);
+        fprintf(logFile[LOG_DEFAULT], str);
+        fprintf(logFile[LOG_DEFAULT], "\n" );
+        fflush(logFile[LOG_DEFAULT]);
     }
 
     //flush(stdout);
@@ -381,11 +381,11 @@ void Log::outString()
     if(m_includeTime)
         outTime();
     printf( "\n" );
-    if(logfile)
+    if(logFile[LOG_DEFAULT])
     {
-        outTimestamp(logfile);
-        fprintf(logfile, "\n" );
-        fflush(logfile);
+        outTimestamp(logFile[LOG_DEFAULT]);
+        fprintf(logFile[LOG_DEFAULT], "\n" );
+        fflush(logFile[LOG_DEFAULT]);
     }
     fflush(stdout);
 }
@@ -407,17 +407,17 @@ void Log::outString( const char * str, ... )
         ResetColor(true);
 
     printf( "\n" );
-    if(logfile)
+    if(logFile[LOG_DEFAULT])
     {
-        outTimestamp(logfile);
+        outTimestamp(logFile[LOG_DEFAULT]);
 
         va_list ap;
         va_start(ap, str);
-        vfprintf(logfile, str, ap);
-        fprintf(logfile, "\n" );
+        vfprintf(logFile[LOG_DEFAULT], str, ap);
+        fprintf(logFile[LOG_DEFAULT], "\n" );
         va_end(ap);
 
-        fflush(logfile);
+        fflush(logFile[LOG_DEFAULT]);
     }
     fflush(stdout);
 }
@@ -439,18 +439,18 @@ void Log::outError(const char * err, ...)
         ResetColor(false);
 
     //fprintf( stderr, "\n" );
-    if(logfile)
+    if(logFile[LOG_DEFAULT])
     {
-        outTimestamp(logfile);
-        fprintf(logfile, "ERROR:" );
+        outTimestamp(logFile[LOG_DEFAULT]);
+        fprintf(logFile[LOG_DEFAULT], "ERROR:" );
 
         va_list ap;
         va_start(ap, err);
-        vfprintf(logfile, err, ap);
+        vfprintf(logFile[LOG_DEFAULT], err, ap);
         va_end(ap);
 
-        fprintf(logfile, "\n" );
-        fflush(logfile);
+        fprintf(logFile[LOG_DEFAULT], "\n" );
+        fflush(logFile[LOG_DEFAULT]);
     }
     //fflush(stderr);
 }
