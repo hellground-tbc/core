@@ -2693,6 +2693,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 6774:                     // Slice'n'Dice
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO; // Do not put caster in combat after use
             break;
+        // Triggered spells that should be delayed
+        case 20272:                     // Illumination
+        case 32848:                     // Mana Restore
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;     
+            break;
         /* UNSORTED */
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods
             spellInfo->EffectAmplitude[1] = 1900;
