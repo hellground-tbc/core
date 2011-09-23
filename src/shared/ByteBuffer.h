@@ -392,6 +392,15 @@ class ByteBuffer
             append(packGUID, size);
         }
 
+        void appendPackXYZ(float x, float y, float z)
+        {
+            uint32 packed = 0;
+            packed |= ((int)(x / 0.25f) & 0x7FF);
+            packed |= ((int)(y / 0.25f) & 0x7FF) << 11;
+            packed |= ((int)(z / 0.25f) & 0x3FF) << 22;
+            *this << packed;
+        }
+
         void put(size_t pos, const uint8 *src, size_t cnt)
         {
             if(pos + cnt > size())
