@@ -1043,6 +1043,7 @@ void Aura::_AddAura()
         else                                                // use found slot
         {
             SetAuraSlot(slot);
+            UpdateAuraCharges();
         }
 
         UpdateSlotCounterAndDuration();
@@ -1127,16 +1128,19 @@ void Aura::_RemoveAura()
         // Conflagrate aura state
         if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 4))
         {
+            bool found = false;
             Unit::AuraList const &mPeriodic = m_target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
             for (Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
             {
                  if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (*i)->GetCasterGUID() != GetCasterGUID() && ((*i)->GetSpellProto()->SpellFamilyFlags & 4))
                  {
                      m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true);
+                     found = true;
                      break;
                  }
-                 m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
             }
+            if(!found)
+                m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
         }
 
         // Swiftmend aura state
