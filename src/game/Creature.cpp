@@ -2578,9 +2578,7 @@ void Creature::SetLevitate(bool enable)
     else
         RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
 
-    /*
-    WorldPacket data(enable ? SMSG_SPLINE_MOVE_UNSET_FLYING : SMSG_SPLINE_MOVE_SET_FLYING, 9);
+    WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
     SendMessageToSet(&data, true);
-    */
 }

@@ -6324,7 +6324,7 @@ void Player::UpdateBgTitle()
 {
     uint64 titles = GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES);
 
-    uint32 index = 0;
+    uint32 index = 0; //GetUInt32Value(PLAYER_CHOSEN_TITLE); shouldn't we use that ?
 
     if (m_team == HORDE && !HasTitle(PLAYER_TITLE_CONQUEROR) && GetReputationRank(729) == REP_EXALTED && GetReputationRank(510) == REP_EXALTED && GetReputationRank(889) == REP_EXALTED)
     {
