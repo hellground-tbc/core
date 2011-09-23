@@ -26,10 +26,12 @@
 
 class WorldTimer
 {
-        public:
+    public:
+
         // Get current server time
         static uint32 getMSTime();
-        // Get time difference between two timestamps 
+
+        // Get time difference between two timestamps
         static inline uint32 getMSTimeDiff(const uint32& oldMSTime, const uint32& newMSTime)
         {
             if (oldMSTime > newMSTime)
@@ -43,7 +45,7 @@ class WorldTimer
             return newMSTime - oldMSTime;
         }
 
-        // Get time difference between oldMSTime and current server time 
+        // Get time difference between oldMSTime and current server time
         static inline uint32 getMSTimeDiffToNow(const uint32& oldMSTime)
         {
             return getMSTimeDiff(oldMSTime, WorldTimer::getMSTime());
@@ -72,9 +74,19 @@ class IntervalTimer
     public:
         IntervalTimer() : _interval(0), _current(0) {}
 
-        void Update(time_t diff) { _current += diff; if(_current<0) _current=0;}
+        void Update(time_t diff)
+        {
+            _current += diff;
+            if (_current < 0)
+                _current = 0;
+        }
+
         bool Passed() { return _current >= _interval; }
-        void Reset() { if(_current >= _interval) _current -= _interval;  }
+        void Reset()
+        {
+            if (_current >= _interval)
+                _current -= _interval;
+        }
 
         void SetCurrent(time_t current) { _current = current; }
         void SetInterval(time_t interval) { _interval = interval; }
