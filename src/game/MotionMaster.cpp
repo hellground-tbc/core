@@ -315,39 +315,6 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z)
     }
 }
 
-void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
-{
-    //this function may make players fall below map
-    if (i_owner->GetTypeId() == TYPEID_PLAYER)
-        return;
-
-    float x, y, z;
-    float dist = speedXY * speedZ * 0.1f;
-
-    i_owner->GetClosePoint(x, y, z, i_owner->GetObjectSize(), dist, angle);
-    MoveJump(x, y, z, speedXY, speedZ);
-}
-
-void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float speedZ)
-{
-    uint32 moveFlag = SPLINEFLAG_JUMP | SPLINEFLAG_WALKMODE;
-    uint32 time = speedZ * 100;
-
-    i_owner->addUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
-    i_owner->m_TempSpeed = speedXY;
-
-    if (i_owner->GetTypeId() == TYPEID_PLAYER)
-    {
-        Mutate(new PointMovementGenerator<Player>(0,x,y,z), MOTION_SLOT_CONTROLLED);
-    }
-    else
-    {
-        Mutate(new PointMovementGenerator<Creature>(0,x,y,z), MOTION_SLOT_CONTROLLED);
-    }
-
-    i_owner->SendMonsterMove(x, y, z, moveFlag, time, speedZ);
-}
-
 void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id)
 {
     if (Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
