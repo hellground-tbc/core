@@ -2129,7 +2129,9 @@ enum DiminishingGroup
     DIMINISHING_BANISH,
     // Other
     // Don't Diminish, but limit duration to 10s
-    DIMINISHING_LIMITONLY
+    DIMINISHING_LIMITONLY,
+    // Don't reduce duration but increase resist chance
+    DIMINISHING_ENSLAVE
 };
 
 enum DungeonDifficulties

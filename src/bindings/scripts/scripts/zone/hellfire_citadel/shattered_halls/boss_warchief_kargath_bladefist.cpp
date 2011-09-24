@@ -60,7 +60,7 @@ struct TRINITY_DLL_DECL boss_warchief_kargath_bladefistAI : public ScriptedAI
         removeAdds();
 
         m_creature->SetSpeed(MOVE_RUN,2);
-        m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        m_creature->SetWalk(false);
 
         summoned = 2;
         InBlade = false;

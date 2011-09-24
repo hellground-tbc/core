@@ -489,7 +489,7 @@ namespace Trinity
             CannibalizeObjectCheck(Unit* funit, float range) : i_funit(funit), i_range(range) {}
             bool operator()(Player* u)
             {
-                if (i_funit->IsFriendlyTo(u) || u->isAlive() || u->isInFlight())
+                if (i_funit->IsFriendlyTo(u) || u->isAlive() || u->IsTaxiFlying())
                     return false;
 
                 if (i_funit->IsWithinDistInMap(u, i_range))
@@ -500,7 +500,7 @@ namespace Trinity
             bool operator()(Corpse* u);
             bool operator()(Creature* u)
             {
-                if (i_funit->IsFriendlyTo(u) || u->isAlive() || u->isInFlight() ||
+                if (i_funit->IsFriendlyTo(u) || u->isAlive() || u->IsTaxiFlying() ||
                     (u->GetCreatureTypeMask() & CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD)==0)
                     return false;
 

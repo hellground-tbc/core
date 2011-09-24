@@ -772,6 +772,11 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
         if (m_delayMoment == 0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
     }
+    else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
+    {
+        target.timeDelay = uint64(180);
+        m_delayMoment = target.timeDelay;
+    }
     else
         target.timeDelay = 0LL;
 
@@ -837,6 +842,11 @@ void Spell::AddGOTarget(GameObject* pVictim, uint32 effIndex)
         target.timeDelay = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
         if (m_delayMoment==0 || m_delayMoment>target.timeDelay)
             m_delayMoment = target.timeDelay;
+    }
+    else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
+    {
+        target.timeDelay = uint64(180);
+        m_delayMoment = target.timeDelay;
     }
     else
         target.timeDelay = 0LL;
@@ -1204,7 +1214,11 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             if (roll_chance_i(i->second))
             {
-                m_caster->CastSpell(unit, i->first, true);
+                if(i->first->Id == 14181) // delay triggering relentless strikes proc
+                    m_caster->m_Events.AddEvent(new CastSpellEvent(*m_caster, unit->GetGUID(), i->first->Id, true), m_caster->m_Events.CalculateTime(1));
+                else
+                    m_caster->CastSpell(unit, i->first, true);
+
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
                 if (GetSpellDuration(i->first)==-1)
@@ -2138,6 +2152,10 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if (!unitList.empty())
         {
+            // Intimidating Shout -> Remove current target from AOE fear effect
+            if (m_spellInfo->Id == 5246)
+                unitList.remove(m_targets.getUnitTarget());
+
             // We don't need immune targets to be taken into list for Fatal Attraction, i know that thix hack is ugly ;]
             // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
             // Same thing for Positive/Negative charge from Mechanar and Naxx encounters
@@ -3740,7 +3758,7 @@ uint8 Spell::CanCast(bool strict)
                 return SPELL_FAILED_TARGET_AURASTATE;
 
             // Not allow players casting on flying player
-            if (target->isInFlight() && m_caster->GetTypeId() == TYPEID_PLAYER)
+            if (target->IsTaxiFlying() && m_caster->GetTypeId() == TYPEID_PLAYER)
                 return SPELL_FAILED_BAD_TARGETS;
 
             if (!m_IsTriggeredSpell && !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
@@ -3896,7 +3914,7 @@ uint8 Spell::CanCast(bool strict)
     if (m_caster->IsMounted() && m_caster->GetTypeId()==TYPEID_PLAYER && !m_IsTriggeredSpell &&
         !IsPassiveSpell(m_spellInfo->Id) && !(m_spellInfo->Attributes & SPELL_ATTR_CASTABLE_WHILE_MOUNTED))
     {
-        if (m_caster->isInFlight())
+        if (m_caster->IsTaxiFlying())
             return SPELL_FAILED_NOT_FLYING;
         else
             return SPELL_FAILED_NOT_MOUNTED;
@@ -5330,6 +5348,10 @@ bool Spell::CanIgnoreNotAttackableFlags()
 
 bool Spell::CheckTarget(Unit* target, uint32 eff)
 {
+    if (m_spellInfo->Effect[eff] == SPELL_EFFECT_APPLY_AURA && (m_spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_PARTY_TARGET ||
+        m_spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_CLASS_TARGET) &&  target->getLevel() < m_spellInfo->spellLevel)
+        return false;
+
     // Check targets for creature type mask and remove not appropriate (skip explicit self target case, maybe need other explicit targets)
     if (m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_CASTER)
     {

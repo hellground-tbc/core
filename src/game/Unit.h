@@ -377,13 +377,13 @@ enum UnitState
 {
     UNIT_STAT_DIED            = 0x00000001,
     UNIT_STAT_MELEE_ATTACKING = 0x00000002,                     // player is melee attacking someone
-    //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                     // player is melee attack by someone
+    //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                   // player is melee attack by someone
     UNIT_STAT_STUNNED         = 0x00000008,
     UNIT_STAT_ROAMING         = 0x00000010,
     UNIT_STAT_CHASE           = 0x00000020,
     //UNIT_STAT_SEARCHING       = 0x00000040,
     UNIT_STAT_FLEEING         = 0x00000080,
-    UNIT_STAT_IN_FLIGHT       = 0x00000100,                     // player is in flight mode
+    UNIT_STAT_TAXI_FLIGHT     = 0x00000100,                     // player is in flight mode
     UNIT_STAT_FOLLOW          = 0x00000200,
     UNIT_STAT_ROOT            = 0x00000400,
     UNIT_STAT_CONFUSED        = 0x00000800,
@@ -403,7 +403,7 @@ enum UnitState
     UNIT_STAT_NOT_MOVE        = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
     UNIT_STAT_CANNOT_AUTOATTACK = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING),
     UNIT_STAT_CANNOT_TURN     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING),
-    UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
+    UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_TAXI_FLIGHT)
 };
 
 enum UnitStandStateType
@@ -583,7 +583,7 @@ enum MovementFlags
     MOVEFLAG_TURN_RIGHT         = 0x00000020,
     MOVEFLAG_PITCH_UP           = 0x00000040,
     MOVEFLAG_PITCH_DOWN         = 0x00000080,
-    SPLINEFLAG_WALKMODE_MODE    = 0x00000100,               // Walking
+    MOVEFLAG_WALK_MODE          = 0x00000100,               // Walking
     MOVEFLAG_ONTRANSPORT        = 0x00000200,               // Used for flying on some creatures
     MOVEFLAG_LEVITATING         = 0x00000400,
     MOVEFLAG_ROOT               = 0x00000800,
@@ -593,7 +593,7 @@ enum MovementFlags
     MOVEFLAG_ASCENDING          = 0x00400000,               // swim up also
     MOVEFLAG_CAN_FLY            = 0x00800000,
     SPLINEFLAG_FLYINGING        = 0x01000000,
-    SPLINEFLAG_FLYINGING2       = 0x02000000,               // Actual flying mode
+    MOVEFLAG_FLYING             = 0x02000000,               // Actual flying mode
     MOVEFLAG_SPLINE_ELEVATION   = 0x04000000,               // used for flight paths
     MOVEFLAG_SPLINE_ENABLED     = 0x08000000,               // used for flight paths
     MOVEFLAG_WATERWALKING       = 0x10000000,               // prevent unit from falling through water
@@ -604,7 +604,7 @@ enum MovementFlags
         MOVEFLAG_FORWARD |MOVEFLAG_BACKWARD  |MOVEFLAG_STRAFE_LEFT |MOVEFLAG_STRAFE_RIGHT|
         MOVEFLAG_PITCH_UP|MOVEFLAG_PITCH_DOWN|MOVEFLAG_ROOT        |
         MOVEFLAG_FALLING |MOVEFLAG_FALLINGFAR|MOVEFLAG_ASCENDING   |
-        SPLINEFLAG_FLYINGING2 |MOVEFLAG_SPLINE_ELEVATION,
+        MOVEFLAG_FLYING |MOVEFLAG_SPLINE_ELEVATION,
     MOVEFLAG_TURNING        =
         MOVEFLAG_TURN_LEFT | MOVEFLAG_TURN_RIGHT,
 };
@@ -821,6 +821,26 @@ private:
     GlobalCooldownList m_GlobalCooldowns;
 };
 
+class CastSpellEvent : public BasicEvent
+{
+    public:
+        CastSpellEvent(Unit& owner, uint64 target, uint32 spellId, bool triggered = false, uint64 orginalCaster = 0) : 
+            BasicEvent(), m_owner(owner), m_target(target),  m_spellId(spellId), m_triggered(triggered), m_orginalCaster(orginalCaster), m_custom(false) { }
+        CastSpellEvent(Unit& owner, uint64 target, uint32 spellId, int32* bp0, int32* bp1, int32* bp2, bool triggered = false, uint64 orginalCaster = 0);
+
+        bool Execute(uint64 e_time, uint32 p_time);
+    private:
+
+        uint64            m_target;
+        uint64            m_orginalCaster;
+        uint32            m_spellId;
+        bool              m_custom;
+        bool              m_triggered;
+        CustomSpellValues m_values;
+
+        Unit&             m_owner;
+};
+
 enum ReactStates
 {
     REACT_PASSIVE    = 0,
@@ -1013,14 +1033,12 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SendMeleeAttackStop(Unit* victim);
         void SendMeleeAttackStart(Unit* pVictim);
 
-        UnitAI* AI() { return i_AI; }
-
         void addUnitState(uint32 f) { m_state |= f; }
         bool hasUnitState(const uint32 f) const { return (m_state & f); }
         void clearUnitState(uint32 f) { m_state &= ~f; }
         bool CanFreeMove() const
         {
-            return !hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_IN_FLIGHT |
+            return !hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING | UNIT_STAT_TAXI_FLIGHT |
                 UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED) && GetOwnerGUID()==0;
         }
 
@@ -1116,6 +1134,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void HandleEmoteCommand(uint32 anim_id);
         void AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType = BASE_ATTACK, bool extra = false);
+        void HandleProcExtraAttackFor(Unit* victim);
 
         //float MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) const;
 
@@ -1173,7 +1192,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         //Need fix or use this
         bool isGuard() const  { return HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GUARD); }
 
-        bool isInFlight()  const { return hasUnitState(UNIT_STAT_IN_FLIGHT); }
+        bool IsTaxiFlying()  const { return hasUnitState(UNIT_STAT_TAXI_FLIGHT); }
 
         bool isInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
         void CombatStart(Unit* target, bool initialAggro = true);

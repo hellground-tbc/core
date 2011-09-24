@@ -4074,7 +4074,7 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
 
 void npc_chess_statusAI::Reset()
 {
-    m_creature->AddUnitMovementFlag(MOVEFLAG_CAN_FLY|MOVEFLAG_LEVITATING);
+    m_creature->SetLevitate(true);
     m_creature->Relocate(-11080.599609, -1876.380005, 231.000092);
     m_creature->SendMonsterMove(-11080.599609, -1876.380005, 231.000092, 0);
     me->CastSpell(me, SPELL_GAME_IN_SESSION, false);

@@ -1297,6 +1297,42 @@ void ObjectMgr::LoadCreatureRespawnTimes()
     sLog.outString();
 }
 
+void ObjectMgr::LoadGuildAnnCooldowns()
+{
+    uint32 count = 0;
+
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT guild_id,cooldown_end FROM guildann_cooldown");
+
+    if (!result)
+    {
+        barGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString();
+        sLog.outString(">> Loaded 0 guildann_cooldowns.");
+        return;
+    }
+
+    barGoLink bar(result->GetRowCount());
+
+    do
+    {
+        Field *fields = result->Fetch();
+        bar.step();
+
+        uint32 guild_id       = fields[0].GetUInt32();
+        uint64 respawn_time = fields[1].GetUInt64();
+
+        mGuildCooldownTimes[guild_id] = time_t(respawn_time);
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog.outString(">> Loaded %u guild ann cooldowns.", mGuildCooldownTimes.size());
+    sLog.outString();
+}
+
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
     // remove outdated data
@@ -5661,6 +5697,13 @@ void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t
     if (t)
         WorldDatabase.PExecute("INSERT INTO creature_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
     WorldDatabase.CommitTransaction();
+}
+
+void ObjectMgr::SaveGuildAnnCooldown(uint32 guild_id)
+{
+    time_t tmpTime = time_t(time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
+    mGuildCooldownTimes[guild_id] = tmpTime;
+    WorldDatabase.PExecute("REPLACE INTO guildann_cooldown VALUES ('%u', '"UI64FMTD"')", guild_id, uint64(tmpTime));
 }
 
 void ObjectMgr::DeleteCreatureData(uint32 guid)

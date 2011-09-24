@@ -26,10 +26,11 @@
 
 class WorldTimer
 {
-        public:
+    public:
         // Get current server time
         static uint32 getMSTime();
-        // Get time difference between two timestamps 
+
+        // Get time difference between two timestamps
         static inline uint32 getMSTimeDiff(const uint32& oldMSTime, const uint32& newMSTime)
         {
             if (oldMSTime > newMSTime)
@@ -43,7 +44,7 @@ class WorldTimer
             return newMSTime - oldMSTime;
         }
 
-        // Get time difference between oldMSTime and current server time 
+        // Get time difference between oldMSTime and current server time
         static inline uint32 getMSTimeDiffToNow(const uint32& oldMSTime)
         {
             return getMSTimeDiff(oldMSTime, WorldTimer::getMSTime());
@@ -72,9 +73,19 @@ class IntervalTimer
     public:
         IntervalTimer() : _interval(0), _current(0) {}
 
-        void Update(time_t diff) { _current += diff; if(_current<0) _current=0;}
+        void Update(time_t diff)
+        {
+            _current += diff;
+            if (_current < 0)
+                _current = 0;
+        }
+
         bool Passed() { return _current >= _interval; }
-        void Reset() { if(_current >= _interval) _current -= _interval;  }
+        void Reset()
+        {
+            if (_current >= _interval)
+                _current -= _interval;
+        }
 
         void SetCurrent(time_t current) { _current = current; }
         void SetInterval(time_t interval) { _interval = interval; }
@@ -88,32 +99,34 @@ class IntervalTimer
 
 struct TimeTracker
 {
-    TimeTracker(time_t expiry) : i_expiryTime(expiry) {}
-    void Update(time_t diff) { i_expiryTime -= diff; }
-    bool Passed(void) const { return (i_expiryTime <= 0); }
-    void Reset(time_t interval) { i_expiryTime = interval; }
-    time_t GetExpiry(void) const { return i_expiryTime; }
-    time_t i_expiryTime;
+    public:
+        TimeTracker(time_t expiry) : i_expiryTime(expiry) {}
+        void Update(time_t diff) { i_expiryTime -= diff; }
+        bool Passed(void) const { return (i_expiryTime <= 0); }
+        void Reset(time_t interval) { i_expiryTime = interval; }
+        time_t GetExpiry(void) const { return i_expiryTime; }
+
+    private:
+        time_t i_expiryTime;
 };
 
 struct TimeTrackerSmall
 {
-    TimeTrackerSmall(int32 expiry) : i_expiryTime(expiry) {}
-    void Update(int32 diff) { i_expiryTime -= diff; }
-    bool Passed(void) const { return (i_expiryTime <= 0); }
-    void Reset(int32 interval) { i_expiryTime = interval; }
-    int32 GetExpiry(void) const { return i_expiryTime; }
-    int32 i_expiryTime;
+    public:
+        TimeTrackerSmall(int32 expiry) : i_expiryTime(expiry) {}
+        void Update(int32 diff) { i_expiryTime -= diff; }
+        bool Passed(void) const { return (i_expiryTime <= 0); }
+        void Reset(int32 interval) { i_expiryTime = interval; }
+        int32 GetExpiry(void) const { return i_expiryTime; }
+
+    private:
+        int32 i_expiryTime;
 };
 
 struct PeriodicTimer
 {
     public:
-
-        PeriodicTimer(int32 period, int32 start_time)
-            : i_expireTime(start_time), i_period(period)
-        {
-        }
+        PeriodicTimer(int32 period, int32 start_time) : i_expireTime(start_time), i_period(period) {}
 
         bool Update(const uint32 &diff)
         {
@@ -136,7 +149,6 @@ struct PeriodicTimer
         void TReset(int32 diff, int32 period)  { i_expireTime += period > diff ? period : diff; }
 
     private:
-
         int32 i_period;
         int32 i_expireTime;
 };

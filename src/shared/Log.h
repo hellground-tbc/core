@@ -37,7 +37,8 @@ enum LogFilters
 enum SpecialLogs
 {
     SPECIAL_LOG             = 0x00000001,
-    WHISP_LOG               = 0x00000002
+    WHISP_LOG               = 0x00000002,
+    DIS_GUILD_ANN           = 0x00000004
 };
 
 enum Color
@@ -59,6 +60,26 @@ enum Color
     WHITE
 };
 
+enum logFiles
+{
+    LOG_DEFAULT   = 0,
+    LOG_IRC       = 1,
+    LOG_GM        = 2,
+    LOG_CHAR      = 3,
+    LOG_DB_ERR    = 4,
+    LOG_ARENA     = 5,
+    LOG_CHEAT     = 6,
+    LOG_AC        = 7,
+    LOG_SPECIAL   = 8,
+    LOG_MAIL      = 9,
+    LOG_GUILD_ANN = 10,
+    LOG_BOSS      = 11,
+    LOG_WARDEN    = 12,
+    LOG_AUCTION   = 13,
+
+    LOG_MAX_FILES
+};
+
 const int Color_count = int(WHITE)+1;
 
 class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_Thread_Mutex> >
@@ -68,93 +89,50 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
 
     ~Log()
     {
-        if( logfile != NULL )
-            fclose(logfile);
-        logfile = NULL;
+        for (uint8 i = LOG_DEFAULT; i < LOG_MAX_FILES; i++)
+        {
+            if (logFile[i] != NULL)
+                fclose(logFile[i]);
 
-        if( gmLogfile != NULL )
-            fclose(gmLogfile);
-        gmLogfile = NULL;
-
-        if (charLogfile != NULL)
-            fclose(charLogfile);
-        charLogfile = NULL;
-
-        if( dberLogfile != NULL )
-            fclose(dberLogfile);
-        dberLogfile = NULL;
-
-        if (ircParser != NULL)
-            fclose(ircParser);
-        ircParser = NULL;
-
-        if (specialLogFile != NULL)
-            fclose(specialLogFile);
-        specialLogFile = NULL;
-
-        if (mailLogFile != NULL)
-            fclose(mailLogFile);
-        mailLogFile = NULL;
-
-        if (arenaLogFile != NULL)
-            fclose(arenaLogFile);
-        arenaLogFile = NULL;
-
-        if (bossLogFile != NULL)
-            fclose(bossLogFile);
-        bossLogFile = NULL;
-
-        if (cheatLogFile != NULL)
-            fclose(cheatLogFile);
-        cheatLogFile = NULL;
-
-        if (acLogFile != NULL)
-            fclose(acLogFile);
-        acLogFile = NULL;
-
-        if (wardenLogFile != NULL)
-            fclose(wardenLogFile);
-        wardenLogFile = NULL;
-
-        if (auctionLogFile != NULL)
-            fclose(auctionLogFile);
-        auctionLogFile = NULL;
+            logFile[i] = NULL;
+        }
     }
+
     public:
         void Initialize();
         void InitColors(const std::string& init_str);
-        void outTitle( const char * str);
+        void outTitle(const char * str);
         void outCommand( uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
         void outString();                                   // any log level
                                                             // any log level
-        void outString( const char * str, ... )      ATTR_PRINTF(2,3);
+        void outString(const char * str, ...)      ATTR_PRINTF(2,3);
                                                             // any log level
-        void outError( const char * err, ... )       ATTR_PRINTF(2,3);
+        void outError(const char * err, ...)       ATTR_PRINTF(2,3);
                                                             // log level >= 1
-        void outBasic( const char * str, ... )       ATTR_PRINTF(2,3);
+        void outBasic(const char * str, ...)       ATTR_PRINTF(2,3);
                                                             // log level >= 2
-        void outDetail( const char * str, ... )      ATTR_PRINTF(2,3);
+        void outDetail(const char * str, ...)      ATTR_PRINTF(2,3);
                                                             // log level >= 3
-        void outDebugInLine( const char * str, ... ) ATTR_PRINTF(2,3);
+        void outDebugInLine(const char * str, ...) ATTR_PRINTF(2,3);
                                                             // log level >= 3
-        void outDebug( const char * str, ... )       ATTR_PRINTF(2,3);
+        void outDebug(const char * str, ...)       ATTR_PRINTF(2,3);
                                                             // any log level
-        void outMenu( const char * str, ... )        ATTR_PRINTF(2,3);
+        void outMenu(const char * str, ...)        ATTR_PRINTF(2,3);
                                                             // any log level
-        void outErrorDb( const char * str = "", ... )     ATTR_PRINTF(2,3);
+        void outErrorDb(const char * str = "", ...)     ATTR_PRINTF(2,3);
                                                             // any log level
-        void outChar( const char * str, ... )        ATTR_PRINTF(2,3);
-        void outSpecial( const char * str, ... )     ATTR_PRINTF(2,3);
-        void outMail( const char * str, ... )     ATTR_PRINTF(2,3);
-        void outWhisp( uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
-        void outCharDump( const char * str, uint32 account_id, uint32 guid, const char * name );
-        void outArena( const char * str, ... )       ATTR_PRINTF(2,3);
-        void outCheat( const char * str, ... )       ATTR_PRINTF(2,3);
-        void outAC( const char * str, ... )       ATTR_PRINTF(2,3);
-        void outIrc( const char * str, ... )         ATTR_PRINTF(2,3);
-        void outBoss( const char * str, ... )        ATTR_PRINTF(2,3);
-        void outWarden( const char * str, ... )      ATTR_PRINTF(2,3);
-        void outAuction( const char * str, ... )     ATTR_PRINTF(2,3);
+        void outChar(const char * str, ...)        ATTR_PRINTF(2,3);
+        void outSpecial(const char * str, ...)     ATTR_PRINTF(2,3);
+        void outMail(const char * str, ...)     ATTR_PRINTF(2,3);
+        void outWhisp(uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
+        void outArena(const char * str, ...)       ATTR_PRINTF(2,3);
+        void outCheat(const char * str, ...)       ATTR_PRINTF(2,3);
+        void outAC(const char * str, ...)       ATTR_PRINTF(2,3);
+        void outIrc(const char * str, ...)         ATTR_PRINTF(2,3);
+        void outBoss(const char * str, ...)        ATTR_PRINTF(2,3);
+        void outWarden(const char * str, ...)      ATTR_PRINTF(2,3);
+        void outAuction(const char * str, ...)     ATTR_PRINTF(2,3);
+        void outGann(const char * str, ...)        ATTR_PRINTF(2,3);
 
         void SetLogLevel(char * Level);
         void SetLogFileLevel(char * Level);
@@ -164,27 +142,16 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         static void outTimestamp(FILE* file);
         static std::string GetTimestampStr();
         uint32 getLogFilter() const { return m_logFilter; }
-        bool IsOutDebug() const { return m_logLevel > 2 || (m_logFileLevel > 2 && logfile); }
+        bool IsOutDebug() const { return m_logLevel > 2 || (m_logFileLevel > 2 && logFile[LOG_DEFAULT]); }
         bool IsOutCharDump() const { return m_charLog_Dump; }
         bool IsIncludeTime() const { return m_includeTime; }
     private:
         FILE* openLogFile(char const* configFileName,char const* configTimeStampFlag, char const* mode);
         FILE* openGmlogPerAccount(uint32 account);
 
-        FILE* ircParser;
-        FILE* logfile;
-        FILE* gmLogfile;
-        FILE* charLogfile;
-        FILE* dberLogfile;
-        FILE* arenaLogFile;
-        FILE* cheatLogFile;
-        FILE* acLogFile;
-        FILE* specialLogFile;
-        FILE* mailLogFile;
-        FILE* bossLogFile;
+        FILE *logFile[LOG_MAX_FILES];
+
         FILE* openWhisplogPerAccount(uint32 account);
-        FILE* wardenLogFile;
-        FILE* auctionLogFile;
 
         // log/console control
         uint32 m_logLevel;

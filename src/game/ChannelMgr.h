@@ -81,11 +81,12 @@ class ChannelMgr
             }
         }
 
-        std::list<std::string> GetChannelNames()
+        std::list<std::string> GetCustomChannelNames()
         {
             std::list<std::string> tmpList;
             for (ChannelMap::const_iterator itr = channels.begin();itr!=channels.end(); ++itr)
-                tmpList.push_back(itr->first);
+                if (!itr->second->GetFlags() || itr->second->HasFlag(1))
+                    tmpList.push_back(itr->first);
 
             return tmpList;
         }

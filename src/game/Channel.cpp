@@ -66,27 +66,27 @@ void Channel::Join(uint64 p, const char *pass)
         return;
     }
 
-    if (IsBanned(p))
+    Player *plr = objmgr.GetPlayer(p);
+
+    if (IsBanned(p) && (!plr || !plr->isGameMaster()))
     {
         MakeBanned(&data);
         SendToOne(&data, p);
         return;
     }
 
-    if (m_password.length() > 0 && strcmp(pass, m_password.c_str()))
+    if (m_password.length() > 0 && strcmp(pass, m_password.c_str()) && (!plr || !plr->isGameMaster()))
     {
         MakeWrongPassword(&data);
         SendToOne(&data, p);
         return;
     }
 
-    Player *plr = objmgr.GetPlayer(p);
-
     if (plr)
     {
         if (HasFlag(CHANNEL_FLAG_LFG) &&
             sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && plr->GetSession()->GetSecurity() == SEC_PLAYER &&
-            (plr->GetGroup() || plr->m_lookingForGroup.Empty()))
+            plr->m_lookingForGroup.Empty())
         {
             MakeNotInLfg(&data);
             SendToOne(&data, p);
@@ -99,7 +99,7 @@ void Channel::Join(uint64 p, const char *pass)
         plr->JoinedChannel(this);
     }
 
-    if (m_announce && (!plr || plr->GetSession()->GetSecurity() < SEC_GAMEMASTER || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
+    if (m_announce && (!plr || plr->GetSession()->GetSecurity() < SEC_MODERATOR || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
     {
         MakeJoined(&data, p);
         SendToAll(&data);

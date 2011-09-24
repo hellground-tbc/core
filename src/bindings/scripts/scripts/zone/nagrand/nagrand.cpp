@@ -834,7 +834,7 @@ struct npc_nagrand_captiveAI : public npc_escortAI
         if (pSummoned->isTotem())
             return;
 
-        pSummoned->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        pSummoned->SetWalk(false);
         pSummoned->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
         pSummoned->AI()->AttackStart(me);
 

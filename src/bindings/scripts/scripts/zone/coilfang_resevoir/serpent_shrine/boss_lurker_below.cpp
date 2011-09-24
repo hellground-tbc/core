@@ -86,7 +86,8 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public Scripted_NoMovementAI
         }
 
         // Do not fall to the ground ;]
-        me->AddUnitMovementFlag(MOVEFLAG_SWIMMING | MOVEFLAG_LEVITATING);
+        me->AddUnitMovementFlag(MOVEFLAG_SWIMMING);
+        me->SetLevitate(true);
 
         // Set reactstate to: Aggresive
         me->SetReactState(REACT_AGGRESSIVE);

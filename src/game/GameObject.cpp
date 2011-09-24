@@ -218,8 +218,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 case GAMEOBJECT_TYPE_TRAP:
                 {
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
-                    Unit* owner = GetOwner();
-                    if (owner && ((Player*)owner)->isInCombat())
+                    if (Unit* owner = GetOwner())
                         m_cooldownTime = time(NULL) + GetGOInfo()->trap.startDelay;
                     m_lootState = GO_READY;
                     break;
@@ -338,7 +337,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 bool IsBattleGroundTrap = false;
                 //FIXME: this is activation radius (in different casting radius that must be selected from spell data)
                 //TODO: move activated state code (cast itself) to GO_ACTIVATED, in this place only check activating and set state
-                float radius = (float)(goInfo->trap.radius)/2; // TODO rename radius to diameter (goInfo->trap.radius) should be (goInfo->trap.diameter)
+                float radius = float(goInfo->trap.radius);///2; // TODO rename radius to diameter (goInfo->trap.radius) should be (goInfo->trap.diameter)
 
                 if (!radius)
                 {

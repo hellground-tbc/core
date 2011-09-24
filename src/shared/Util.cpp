@@ -77,7 +77,7 @@ uint32 WorldTimer::tick()
     m_iTime = WorldTimer::getMSTime_internal(true);
 
     // return tick diff
-    return WorldTimer::getMSTimeDiff(m_iPrevTime, m_iTime);
+    return getMSTimeDiff(m_iPrevTime, m_iTime);
 }
 
 uint32 WorldTimer::getMSTime()
@@ -91,25 +91,12 @@ uint32 WorldTimer::getMSTime_internal(bool savetime /*= false*/)
     const ACE_Time_Value currTime = ACE_OS::gettimeofday();
     // calculate time diff between two world ticks
     // special case: curr_time < old_time - we suppose that our time has not ticked at all
-    // this should be constant value otherwise it is possible that our time can start ticking backwards until next world tick!! 
-    uint32 diff = 0;
-    // regular case: curr_time >= old_time
-    if (currTime > g_SystemTickTime)
-        diff = (currTime - g_SystemTickTime).msec();
+    // this should be constant value otherwise it is possible that our time can start ticking backwards until next world tick!!
+    uint64 diff = 0;
+    (currTime - g_SystemTickTime).msec(diff);
 
-    // reset last system time value
-    if (savetime)
-        g_SystemTickTime = currTime;
-
-    // lets calculate current world time
-    uint32 iRes = m_iTime;
-    // normalize world time
-    const uint32 tmp = uint32(0xFFFFFFFF) - iRes;
-    if (tmp < diff)
-        iRes = diff - tmp;
-    else
-        iRes += diff;
-
+    //lets calculate current world time
+    uint32 iRes = uint32(diff % UI64LIT(0x00000000FFFFFFFF));
     return iRes;
 }
 

@@ -67,7 +67,7 @@ struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
         POISONSTINGER_Timer = 3500;
         SUMMONSWARMER_Timer = 60000;
         phase=1;
-        m_creature->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
+        m_creature->SetLevitate(true);
 
         if (pInstance)
             pInstance->SetData(DATA_AYAMISS_THE_HUNTER, NOT_STARTED);
@@ -76,7 +76,7 @@ struct TRINITY_DLL_DECL boss_ayamissAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         pTarget = who;
-        m_creature->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
+        m_creature->SetLevitate(true);
         m_creature->GetMotionMaster()->MovePoint(0, position[0], position[1], position[2]);
 
         if (pInstance)

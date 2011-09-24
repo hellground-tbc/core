@@ -289,7 +289,6 @@ Player::Player (WorldSession *session): Unit()
 
     m_comboTarget = 0;
     m_comboPoints = 0;
-    m_finishingComboPoints = 0;
 
     m_usedTalentCount = 0;
 
@@ -2160,7 +2159,7 @@ bool Player::CanInteractWithNPCs(bool alive) const
 {
     if (alive && !isAlive())
         return false;
-    if (isInFlight())
+    if (IsTaxiFlying())
         return false;
 
     return true;
@@ -4614,6 +4613,10 @@ void Player::LeaveLFGChannel()
     if (!sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) || GetSession()->GetSecurity() != SEC_PLAYER)
         return;
 
+    // don't kick if on lfg or lfm
+    if (!m_lookingForGroup.Empty())
+        return;
+
     for (JoinedChannelsList::iterator i = m_channels.begin(); i != m_channels.end(); ++i)
     {
         if ((*i)->IsLFG())
@@ -4626,9 +4629,25 @@ void Player::LeaveLFGChannel()
 
 void Player::JoinLFGChannel()
 {
-    if (ChannelMgr* cMgr = channelMgr(GetTeam()))
+    if (m_lookingForGroup.Empty())
+        return;
+
+    for (JoinedChannelsList::iterator i = m_channels.begin(); i != m_channels.end(); ++i)
+        if ((*i)->IsLFG())
+            return;
+
+    /*if (ChannelMgr* cMgr = channelMgr(GetTeam()))
         if (Channel *chn = cMgr->GetJoinChannel("LookingForGroup", 26))
-            chn->Invite(GetGUID(), GetName());
+            chn->Invite(GetGUID(), GetName());*/
+
+    WorldPacket data;
+
+    data.Initialize(SMSG_CHANNEL_NOTIFY, 17);   // "LookingForGroup count + 2
+    data << uint8(0x18);        // CHAT_INVITE_NOTICE
+    data << "LookingForGroup";  // channel name
+    data << GetGUID();          // player guid
+
+    GetSession()->SendPacket(&data);
 }
 
 void Player::UpdateDefense()
@@ -5643,7 +5662,7 @@ void Player::CheckAreaExploreAndOutdoor()
     if (!isAlive())
         return;
 
-    if (isInFlight())
+    if (IsTaxiFlying())
         return;
 
     bool isOutdoor;
@@ -6305,7 +6324,7 @@ void Player::UpdateBgTitle()
 {
     uint64 titles = GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES);
 
-    uint32 index = 0;
+    uint32 index = 0; //GetUInt32Value(PLAYER_CHOSEN_TITLE); shouldn't we use that ?
 
     if (m_team == HORDE && !HasTitle(PLAYER_TITLE_CONQUEROR) && GetReputationRank(729) == REP_EXALTED && GetReputationRank(510) == REP_EXALTED && GetReputationRank(889) == REP_EXALTED)
     {
@@ -6811,7 +6830,7 @@ void Player::CheckDuelDistance(time_t currTime)
 
 bool Player::IsOutdoorPvPActive()
 {
-    return (isAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(SPLINEFLAG_FLYINGING2) && !isInFlight());
+    return (isAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld.IsPvPRealm())  && !HasUnitMovementFlag(MOVEFLAG_FLYING) && !IsTaxiFlying());
 }
 
 void Player::DuelComplete(DuelCompleteType type)
@@ -18460,7 +18479,7 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
     if (!viewPoint || !HasFarsightVision()) viewPoint = u;
 
     // different visible distance checks
-    if (isInFlight())                                     // what see player in flight
+    if (IsTaxiFlying())                                     // what see player in flight
     {
         if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
@@ -18826,14 +18845,6 @@ void Player::ClearComboPoints()
     m_comboPoints = 0;
 
     Unit* target = GetMap()->GetUnit(m_comboTarget);
-
-    if (m_finishingComboPoints && target) {
-        AddComboPoints(target, m_finishingComboPoints);
-        m_finishingComboPoints = 0;
-        return;
-    }
-    m_finishingComboPoints = 0;
-
     SendComboPoints();
 
     if (target)
@@ -18895,8 +18906,8 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment
-    if (HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || isInFlight())
-        AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
+    if (HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || IsTaxiFlying())
+        AddUnitMovementFlag(MOVEFLAG_FLYING);
 }
 
 void Player::SendInitialPacketsAfterAddToMap()
@@ -19362,7 +19373,7 @@ void Player::SummonIfPossible(bool agree)
         return;
 
     // stop taxi flight at summon
-    if (isInFlight())
+    if (IsTaxiFlying())
     {
         GetMotionMaster()->MovementExpired();
         CleanupAfterTaxiFlight();
@@ -19913,7 +19924,7 @@ void Player::LFGAttemptJoin()
     bool found = false;
     std::list<uint64> fullList;
 
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         // skip empty slot
@@ -20009,7 +20020,7 @@ void Player::LFMAttemptAddMore()
     LfgContainerType::const_accessor a;
 
     // get player container for LFM id
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
 
@@ -20097,7 +20108,7 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     uint32 combined;
 
     // if not empty then clear slot
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!m_lookingForGroup.slots[slot].Empty())
     {
         combined = m_lookingForGroup.slots[slot].Combine();
@@ -20167,7 +20178,7 @@ void Player::LFMSet(uint32 entry, uint32 type)
     uint64 guid = GetGUID();
     uint32 combined;
 
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!m_lookingForGroup.more.Empty())
     {
         combined = m_lookingForGroup.more.Combine();
@@ -20205,17 +20216,18 @@ void Player::LFMSet(uint32 entry, uint32 type)
 
 void Player::ClearLFG(bool leaveChannel)
 {
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    bool wasEmpty = true;
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
     {
         if (m_lookingForGroup.slots[i].Empty())
             continue;
 
+        wasEmpty = false;
+
         LfgContainerType::accessor a;
 
-        uint32 combined = LFG_COMBINE(m_lookingForGroup.slots[i].entry, m_lookingForGroup.slots[i].type);
-
-        if (!lfgContainer.find(a, combined))
+        if (!lfgContainer.find(a, GetLFGCombined(i)))
             continue;
 
         // remove player from list
@@ -20234,14 +20246,20 @@ void Player::ClearLFG(bool leaveChannel)
     if (leaveChannel)
         LeaveLFGChannel();
 
-    GetSession()->SendUpdateLFG();
+    // don't send update lfg if lfg was empty
+    if (!wasEmpty)
+        GetSession()->SendUpdateLFG();
 }
 
 void Player::ClearLFM(bool leaveChannel)
 {
+    // don't clear empty slot
+    if (m_lookingForGroup.more.Empty())
+        return;
+
     LfgContainerType::accessor a;
 
-    LfgContainerType lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
     if (!lfgContainer.find(a, m_lookingForGroup.more.Combine()))
         return;
 
@@ -20342,7 +20360,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !isInFlight() && !GetTransport())
+    if ((liquid_status.type & MAP_LIQUID_TYPE_DARK_WATER) && !IsTaxiFlying() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;

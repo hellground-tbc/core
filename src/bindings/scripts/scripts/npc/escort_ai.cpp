@@ -98,7 +98,7 @@ void npc_escortAI::MoveInLineOfSight(Unit* pWho)
         if (HasEscortState(STATE_ESCORT_ESCORTING) && AssistPlayerInCombat(pWho))
             return;
 
-        if (!m_creature->canFly() && m_creature->GetDistanceZ(pWho) > CREATURE_Z_ATTACK_RANGE)
+        if (!m_creature->CanFly() && m_creature->GetDistanceZ(pWho) > CREATURE_Z_ATTACK_RANGE)
             return;
 
         if (m_creature->IsHostileTo(pWho) && m_bIsActiveAttacker)
@@ -324,10 +324,10 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
     {
         debug_log("TSCR: EscortAI has returned to original position before combat");
 
-        if (m_bIsRunning && m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
-            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
-        else if (!m_bIsRunning && !m_creature->HasUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE))
-            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        if (m_bIsRunning && m_creature->HasUnitMovementFlag(MOVEFLAG_WALK_MODE))
+            m_creature->SetWalk(false);
+        else if (!m_bIsRunning && !m_creature->HasUnitMovementFlag(MOVEFLAG_WALK_MODE))
+            m_creature->SetWalk(true);
 
         RemoveEscortState(STATE_ESCORT_RETURNING);
 
@@ -419,14 +419,14 @@ void npc_escortAI::SetRun(bool bRun)
     if (bRun)
     {
         if (!m_bIsRunning)
-            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+            m_creature->SetWalk(false);
         else
             debug_log("TSCR: EscortAI attempt to set run mode, but is already running.");
     }
     else
     {
         if (m_bIsRunning)
-            m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+            m_creature->SetWalk(true);
         else
             debug_log("TSCR: EscortAI attempt to set walk mode, but is already walking.");
     }
@@ -493,9 +493,9 @@ void npc_escortAI::Start(bool bIsActiveAttacker, bool bRun, uint64 uiPlayerGUID,
 
     //Set initial speed
     if (m_bIsRunning)
-        m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        m_creature->SetWalk(false);
     else
-        m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        m_creature->SetWalk(true);
 
     AddEscortState(STATE_ESCORT_ESCORTING);
 }

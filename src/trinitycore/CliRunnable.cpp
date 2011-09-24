@@ -343,6 +343,43 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
+{
+
+    if (uint32 account_id = m_session->GetAccountId())
+    {
+        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT speciallogs FROM account WHERE id = '%u'", account_id);
+        if (!result)
+            return false;
+
+        Field * fields = result->Fetch();
+
+        uint64 speciallogs = fields[0].GetUInt64();
+
+        if (WorldSession *s = sWorld.FindSession(account_id))
+            s->DisableGuildAnn(s->DisplayGuildAnn());
+
+        if (speciallogs & DIS_GUILD_ANN)
+        {
+            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs & ~0x04 WHERE id = '%u'", account_id);
+            PSendSysMessage("Guild announces enabled.");
+        }
+        else
+        {
+            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs | 0x04 WHERE id = '%u'", account_id);
+            PSendSysMessage("Guild announces disabled.");
+        }
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
 {
     if(!*args)

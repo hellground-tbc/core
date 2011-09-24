@@ -66,16 +66,17 @@ enum ShutdownExitCode
 /// Timers for different object refresh rates
 enum WorldTimers
 {
-    WUPDATE_OBJECTS       = 0,
-    WUPDATE_SESSIONS      = 1,
-    WUPDATE_AUCTIONS      = 2,
-    WUPDATE_WEATHERS      = 3,
-    WUPDATE_UPTIME        = 4,
-    WUPDATE_CORPSES       = 5,
-    WUPDATE_EVENTS        = 6,
-    WUPDATE_AUTOBROADCAST = 7,
+    WUPDATE_OBJECTS         = 0,
+    WUPDATE_SESSIONS        = 1,
+    WUPDATE_AUCTIONS        = 2,
+    WUPDATE_WEATHERS        = 3,
+    WUPDATE_UPTIME          = 4,
+    WUPDATE_CORPSES         = 5,
+    WUPDATE_EVENTS          = 6,
+    WUPDATE_AUTOBROADCAST   = 7,
+    WUPDATE_GUILD_ANNOUNCES = 8,
 
-    WUPDATE_COUNT         = 8
+    WUPDATE_COUNT           = 9
 };
 
 /// Configuration elements
@@ -223,6 +224,8 @@ enum WorldConfigs
     CONFIG_NUMTHREADS,
     CONFIG_ANNOUNCE_BG_START,
     CONFIG_AUTOBROADCAST_INTERVAL,
+    CONFIG_GUILD_ANN_INTERVAL,
+    CONFIG_GUILD_ANN_COOLDOWN,
     CONFIG_DISABLE_DUEL,
     CONFIG_DISABLE_PVP,
     CONFIG_MIN_GM_TEXT_LVL,
@@ -488,6 +491,9 @@ class World
         void SetInitialWorldSettings();
         void LoadConfigSettings(bool reload = false);
 
+        void QueueGuildAnnounce(uint32 guildid, uint32 team, std::string &msg);
+        void SendGuildAnnounce(uint32 team, ...);
+
         void SendWorldText(int32 string_id, ...);
         void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
@@ -689,6 +695,7 @@ class World
         ACE_Based::LockedQueue<WorldSession*, ACE_Thread_Mutex> addSessQueue;
 
         std::list<std::string> m_Autobroadcasts;
+        std::list<std::pair<uint64, std::string> > m_GuildAnnounces[2];
 
         //used versions
         std::string m_DBVersion;

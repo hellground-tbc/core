@@ -188,7 +188,7 @@ void FleeingMovementGenerator<T>::Initialize(T &owner)
     owner.addUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
     owner.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
-    owner.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+    owner.RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
 
     i_dest_x = i_caster_x = fright->GetPositionX();
     i_dest_y = i_caster_y = fright->GetPositionY();
@@ -205,8 +205,8 @@ void FleeingMovementGenerator<Creature>::_Init(Creature &owner)
     if (!&owner)
         return;
 
-    is_water_ok = owner.canSwim();
-    is_land_ok  = owner.canWalk();
+    is_water_ok = owner.CanSwim();
+    is_land_ok  = owner.CanWalk();
 }
 
 template<>

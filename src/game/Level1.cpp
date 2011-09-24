@@ -36,6 +36,7 @@
 #include "Util.h"
 #include "TicketMgr.h"
 #include "GridMap.h"
+#include "Guild.h"
 
 #ifdef _DEBUG_VMAPS
 #include "VMapFactory.h"
@@ -131,6 +132,55 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
     pCreature->Whisper(text,receiver_guid);
 
     return true;
+}
+
+bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
+{
+    if (!*args)
+        return false;
+
+    std::string msg = args;
+
+    SetSentErrorMessage(true);
+    if (uint32 gId = m_session->GetPlayer()->GetGuildId())
+    {
+        if (objmgr.GetGuildAnnCooldown(gId) < time(NULL))
+        {
+            if (msg.size() > 65) //
+            {
+                PSendSysMessage("Your message is to long, limit: 65 chars");
+                return false;
+            }
+
+            Guild * pGuild = objmgr.GetGuildById(gId);
+            if (!pGuild->HasRankRight(m_session->GetPlayer()->GetRank(), GR_RIGHT_OFFCHATLISTEN))
+            {
+                PSendSysMessage("Your guild rank is to low to use that command.");
+                return false;
+            }
+
+            if (pGuild->GetMemberSize() < 10)
+            {
+                PSendSysMessage("Your guild is to small, you need at least 10 members to append guild announce.");
+                return false;
+            }
+
+            PSendSysMessage("Your message has been queued and will be displayed soon, please wait: %u seconds before sending another one.", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
+
+            objmgr.SaveGuildAnnCooldown(gId);
+            sLog.outGann("Player %s ("UI64FMTD") - guild: %s (%u) append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), pGuild->GetName().c_str(), gId, msg.c_str());
+            sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
+            return true;
+        }
+        else
+        {
+            PSendSysMessage("Cooldown between messages didn't pass, come back later :]");
+            return false;
+        }
+    }
+
+    PSendSysMessage("You need to be in guild to append guild announce.");
+    return false;
 }
 
 bool ChatHandler::HandleNameAnnounceCommand(const char* args)
@@ -301,7 +351,7 @@ bool ChatHandler::HandleGMTicketListCommand(const char* args)
         std::string gmname;
         std::stringstream ss;
         ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, (*itr)->guid);
-        ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, (*itr)->name.c_str());
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, (*itr)->name.c_str(), (*itr)->name.c_str());
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - (*itr)->createtime, true, false)).c_str());
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - (*itr)->timestamp, true, false)).c_str());
         if (objmgr.GetPlayerNameByGUID((*itr)->assignedToGM, gmname))
@@ -325,7 +375,7 @@ bool ChatHandler::HandleGMTicketListOnlineCommand(const char* args)
         std::string gmname;
         std::stringstream ss;
         ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, (*itr)->guid);
-        ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, (*itr)->name.c_str());
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, (*itr)->name.c_str(), (*itr)->name.c_str());
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - (*itr)->createtime, true, false)).c_str());
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - (*itr)->timestamp, true, false)).c_str());
         if (objmgr.GetPlayerNameByGUID((*itr)->assignedToGM, gmname))
@@ -348,7 +398,7 @@ bool ChatHandler::HandleGMTicketListClosedCommand(const char* args)
         std::string gmname;
         std::stringstream ss;
         ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, (*itr)->guid);
-        ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, (*itr)->name.c_str());
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, (*itr)->name.c_str(), (*itr)->name.c_str());
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - (*itr)->createtime, true, false)).c_str());
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - (*itr)->timestamp, true, false)).c_str());
         if (objmgr.GetPlayerNameByGUID((*itr)->assignedToGM, gmname))
@@ -376,7 +426,7 @@ bool ChatHandler::HandleGMTicketGetByIdCommand(const char* args)
     std::string gmname;
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str(), ticket->name.c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - ticket->createtime, true, false)).c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - ticket->timestamp, true, false)).c_str());
     if (objmgr.GetPlayerNameByGUID(ticket->assignedToGM, gmname))
@@ -407,7 +457,7 @@ bool ChatHandler::HandleGMTicketGetByNameCommand(const char* args)
     std::string gmname;
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str(), ticket->name.c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - ticket->createtime, true, false)).c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - ticket->timestamp, true, false)).c_str());
     if (objmgr.GetPlayerNameByGUID(ticket->assignedToGM, gmname))
@@ -444,7 +494,7 @@ bool ChatHandler::HandleGMTicketHistoryCommand(const char* args)
         {
             std::string gmname;
             ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, tmpTicket->guid);
-            ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, tmpTicket->name.c_str());
+            ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, tmpTicket->name.c_str(), tmpTicket->name.c_str());
             ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - tmpTicket->createtime, true, false)).c_str());
             ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - tmpTicket->timestamp, true, false)).c_str());
 
@@ -486,7 +536,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     }
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str(), ticket->name.c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETCLOSED, m_session->GetPlayer()->GetName());
     SendGlobalGMSysMessage(ss.str().c_str());
     ticketmgr.RemoveGMTicket(ticket->guid, m_session->GetPlayer()->GetGUID());
@@ -551,7 +601,7 @@ bool ChatHandler::HandleGMTicketResponseCommand(const char* args)
 
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str(), ticket->name.c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETCLOSED, m_session->GetPlayer()->GetName());
     SendGlobalGMSysMessage(ss.str().c_str());
     ticketmgr.RemoveGMTicket(ticket->guid, m_session->GetPlayer()->GetGUID());
@@ -618,7 +668,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     ticketmgr.UpdateGMTicket(ticket);
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str(), ticket->name.c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
     SendGlobalGMSysMessage(ss.str().c_str());
     return true;
@@ -655,7 +705,7 @@ bool ChatHandler::HandleGMTicketUnAssignCommand(const char* args)
 
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str(), ticket->name.c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETLISTUNASSIGNED, cplr->GetName());
     SendGlobalGMSysMessage(ss.str().c_str());
@@ -696,7 +746,7 @@ bool ChatHandler::HandleGMTicketCommentCommand(const char* args)
     ticketmgr.UpdateGMTicket(ticket);
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str(), ticket->name.c_str());
     if (objmgr.GetPlayerNameByGUID(ticket->assignedToGM, gmname))
     {
         ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, gmname.c_str());
@@ -726,7 +776,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
 
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str());
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, ticket->name.c_str(), ticket->name.c_str());
     ss << PGetParseString(LANG_COMMAND_TICKETDELETED, m_session->GetPlayer()->GetName());
     SendGlobalGMSysMessage(ss.str().c_str());
     Player *plr = objmgr.GetPlayer(ticket->playerGuid);
@@ -940,7 +990,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             ChatHandler(target).PSendSysMessage(LANG_SUMMONED_BY, GetName());
 
         // stop flight if need
-        if (target->isInFlight())
+        if (target->IsTaxiFlying())
         {
             target->GetMotionMaster()->MovementExpired();
             target->CleanupAfterTaxiFlight();
@@ -1069,7 +1119,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             ChatHandler(target).PSendSysMessage(LANG_APPEARING_TO, _player->GetName());
 
         // stop flight if need
-        if (_player->isInFlight())
+        if (_player->IsTaxiFlying())
         {
             _player->GetMotionMaster()->MovementExpired();
             _player->CleanupAfterTaxiFlight();
@@ -1097,7 +1147,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         if (Player::LoadPositionFromDB(map,x,y,z,o,in_flight,guid))
         {
             // stop flight if need
-            if (_player->isInFlight())
+            if (_player->IsTaxiFlying())
             {
                 _player->GetMotionMaster()->MovementExpired();
                 _player->CleanupAfterTaxiFlight();
@@ -1157,7 +1207,7 @@ bool ChatHandler::HandleRecallCommand(const char* args)
     }
 
     // stop flight if need
-    if (chr->isInFlight())
+    if (chr->IsTaxiFlying())
     {
         chr->GetMotionMaster()->MovementExpired();
         chr->CleanupAfterTaxiFlight();
@@ -1595,7 +1645,7 @@ bool ChatHandler::HandleModifyASpeedCommand(const char* args)
         return false;
     }
 
-    if (chr->isInFlight())
+    if (chr->IsTaxiFlying())
     {
         PSendSysMessage(LANG_CHAR_IN_FLIGHT,chr->GetName());
         SetSentErrorMessage(true);
@@ -1637,7 +1687,7 @@ bool ChatHandler::HandleModifySpeedCommand(const char* args)
         return false;
     }
 
-    if (chr->isInFlight())
+    if (chr->IsTaxiFlying())
     {
         PSendSysMessage(LANG_CHAR_IN_FLIGHT,chr->GetName());
         SetSentErrorMessage(true);
@@ -1676,7 +1726,7 @@ bool ChatHandler::HandleModifySwimCommand(const char* args)
         return false;
     }
 
-    if (chr->isInFlight())
+    if (chr->IsTaxiFlying())
     {
         PSendSysMessage(LANG_CHAR_IN_FLIGHT,chr->GetName());
         SetSentErrorMessage(true);
@@ -1715,7 +1765,7 @@ bool ChatHandler::HandleModifyBWalkCommand(const char* args)
         return false;
     }
 
-    if (chr->isInFlight())
+    if (chr->IsTaxiFlying())
     {
         PSendSysMessage(LANG_CHAR_IN_FLIGHT,chr->GetName());
         SetSentErrorMessage(true);
@@ -2204,7 +2254,7 @@ bool ChatHandler::HandleTeleCommand(const char * args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();
@@ -2538,7 +2588,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
             ChatHandler(chr).PSendSysMessage(LANG_TELEPORTED_TO_BY, GetName());
 
         // stop flight if need
-        if (chr->isInFlight())
+        if (chr->IsTaxiFlying())
         {
             chr->GetMotionMaster()->MovementExpired();
             chr->CleanupAfterTaxiFlight();
@@ -2616,7 +2666,7 @@ bool ChatHandler::HandleGroupTeleCommand(const char * args)
             ChatHandler(pl).PSendSysMessage(LANG_TELEPORTED_TO_BY, GetName());
 
         // stop flight if need
-        if (pl->isInFlight())
+        if (pl->IsTaxiFlying())
         {
             pl->GetMotionMaster()->MovementExpired();
             pl->CleanupAfterTaxiFlight();
@@ -2709,7 +2759,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
             ChatHandler(pl).PSendSysMessage(LANG_SUMMONED_BY, GetName());
 
         // stop flight if need
-        if (pl->isInFlight())
+        if (pl->IsTaxiFlying())
         {
             pl->GetMotionMaster()->MovementExpired();
             pl->CleanupAfterTaxiFlight();
@@ -2757,7 +2807,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();
@@ -2807,7 +2857,7 @@ bool ChatHandler::HandleGoXYZCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();
@@ -2873,7 +2923,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();
@@ -2920,7 +2970,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->isInFlight())
+    if (_player->IsTaxiFlying())
     {
         _player->GetMotionMaster()->MovementExpired();
         _player->CleanupAfterTaxiFlight();

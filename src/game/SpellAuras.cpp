@@ -1043,6 +1043,7 @@ void Aura::_AddAura()
         else                                                // use found slot
         {
             SetAuraSlot(slot);
+            UpdateAuraCharges();
         }
 
         UpdateSlotCounterAndDuration();
@@ -1127,16 +1128,19 @@ void Aura::_RemoveAura()
         // Conflagrate aura state
         if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 4))
         {
+            bool found = false;
             Unit::AuraList const &mPeriodic = m_target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
             for (Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
             {
                  if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (*i)->GetCasterGUID() != GetCasterGUID() && ((*i)->GetSpellProto()->SpellFamilyFlags & 4))
                  {
                      m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true);
+                     found = true;
                      break;
                  }
-                 m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
             }
+            if(!found)
+                m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
         }
 
         // Swiftmend aura state
@@ -3811,6 +3815,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->SendMessageToSet(&data,true);
         */
 
+        // feign death in pvp: clear target and interrupt casts
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
@@ -3819,6 +3824,12 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
         for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         {
+            if((*iter)->CanHaveThreatList())
+                continue;
+
+            if((*iter)->GetUInt64Value(UNIT_FIELD_TARGET) == m_target->GetGUID())
+                (*iter)->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+
             if (!(*iter)->hasUnitState(UNIT_STAT_CASTING))
                 continue;
 
@@ -3831,23 +3842,81 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                 }
             }
         }
-                                                            // blizz like 2.0.x
-        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6);
-                                                            // blizz like 2.0.x
-        m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                                                            // blizz like 2.0.x
-        m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-
+                                                            
+        m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6); // blizz like 2.0.x
+        m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH); // blizz like 2.0.x
+        m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD); // blizz like 2.0.x
         m_target->addUnitState(UNIT_STAT_DIED);
-        m_target->CombatStop();
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
 
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
         // prevent interrupt message
         if (m_caster_guid == m_target->GetGUID() && m_target->m_currentSpells[CURRENT_GENERIC_SPELL])
             m_target->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
 
         m_target->InterruptNonMeleeSpells(true);
-        m_target->getHostilRefManager().deleteReferences();
+        m_target->AttackStop();
+        if (m_target->GetTypeId()==TYPEID_PLAYER)
+            ((Player*)m_target)->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
+
+        // feign death in pve
+        bool resisted = false;
+        HostilReference *ref = m_target->getHostilRefManager().getFirst();
+        while(ref)
+        {
+            Unit* target = ref->getSource()->getOwner();
+            ref = ref->next();
+            
+            if(!target)
+                continue;
+
+            // calculate miss chance
+            int32 leveldif = int32(target->getLevelForTarget(m_target)) - int32(m_target->getLevelForTarget(target));
+            int32 modHitChance;
+            if (leveldif < 3)
+                modHitChance = 96 - leveldif;
+            else
+                modHitChance = 96 - leveldif * 11;
+
+            if (Player *modOwner = m_target->GetSpellModOwner())
+                modOwner->ApplySpellMod(m_spellProto->Id, SPELLMOD_RESIST_MISS_CHANCE, modHitChance);
+
+            if (modHitChance <  1) modHitChance =  1;
+            if (modHitChance > 99) modHitChance = 99;
+
+            uint32 rand = urand(0,100);
+            if(rand <= modHitChance) // hit
+            { 
+                if (target->hasUnitState(UNIT_STAT_CASTING))
+                    for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+                        if (target->m_currentSpells[i] && target->m_currentSpells[i]->m_targets.getUnitTargetGUID() == m_target->GetGUID())
+                            target->InterruptSpell(i, false);
+
+                m_target->getHostilRefManager().deleteReference(target);
+                if(target->getVictimGUID() == m_target->GetGUID())
+                    target->AttackStop();      
+            }
+            else // miss
+            {
+                resisted = true;
+                // Send resist info to combat log
+                // FIXME: client doesn't show miss info in combat log when sending SMSG_FEIGN_DEATH_RESISTED, sends SMSG_SPELLLOGMISS instead
+                /*
+                WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
+                data<<m_target->GetGUID();
+                data<<uint8(0);
+                m_target->SendMessageToSet(&data,true);
+                */
+                m_target->SendSpellMiss(target, m_spellProto->Id, SPELL_MISS_RESIST);
+            }
+        }
+        
+        if(!resisted)
+        {
+            m_target->ClearInCombat();
+            m_target->CombatStop();
+        }
+
+        
     }
     else
     {
@@ -6973,33 +7042,6 @@ void Aura::PeriodicTick()
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellEntry const* spellProto = GetSpellProto();
             bool haveCastItem = GetCastItemGUID()!=0;
-
-            // heal for caster damage
-            if (m_target != pCaster && spellProto->SpellVisual == 163)
-            {
-                uint32 dmg = spellProto->manaPerSecond;
-                if (pCaster->GetHealth() <= dmg && pCaster->GetTypeId()==TYPEID_PLAYER)
-                {
-                    pCaster->RemoveAurasDueToSpell(GetId());
-
-                    // finish current generic/channeling spells, don't affect autorepeat
-                    if (pCaster->m_currentSpells[CURRENT_GENERIC_SPELL])
-                        pCaster->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
-
-                    if (pCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                    {
-                        pCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                        pCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
-                    }
-                }
-                else
-                {
-                    SpellDamageLog damageInfo(GetId(), GetTarget(), GetCaster(), GetSpellProto()->SchoolMask, 1);
-                    damageInfo.damage = gain < amount * GetStackAmount() ? gain : amount * GetStackAmount();
-                    //pCaster->SendSpellNonMeleeDamageLog(pCaster, GetId(), gain, GetSpellSchoolMask(GetSpellProto()), 0, 0, false, 0, false);
-                    pCaster->DealDamage(&damageInfo, NODAMAGE, GetSpellProto(), true);
-                }
-            }
 
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
             uint32 procVictim   = PROC_FLAG_ON_TAKE_PERIODIC;

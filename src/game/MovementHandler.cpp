@@ -222,7 +222,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
             //pPlayer->Kill(pPlayer, true);
             if (!(pPlayer->m_AC_NoFall_count % 5))
-                sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName(), pPlayer->m_AC_NoFall_count);
+                sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName(), pPlayer->GetName(), pPlayer->m_AC_NoFall_count);
         }
     }
 
@@ -307,7 +307,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
-    if (recv_data.GetOpcode() == MSG_MOVE_FALL_LAND && !pPlayer->isInFlight())
+    if (recv_data.GetOpcode() == MSG_MOVE_FALL_LAND && !pPlayer->IsTaxiFlying())
         pPlayer->HandleFallDamage(movementInfo);
 
     if (movementInfo.HasMovementFlag(MOVEFLAG_SWIMMING) != pPlayer->IsInWater())

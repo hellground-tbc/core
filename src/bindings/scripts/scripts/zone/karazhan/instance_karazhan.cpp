@@ -155,6 +155,9 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
             break;
     }
 
+    // temp
+    creature->SetAggroRange(15);
+
     const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
     if (!tmp)
         return;

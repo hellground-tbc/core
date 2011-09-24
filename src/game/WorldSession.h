@@ -157,6 +157,9 @@ class TRINITY_DLL_SPEC WorldSession
         bool WhispLog() const { return m_speciallogs & WHISP_LOG; }
         void SetWhispLog(bool log) { log ? m_speciallogs |= WHISP_LOG : m_speciallogs &= ~WHISP_LOG; }
 
+        void DisableGuildAnn(bool ok) { ok ? m_speciallogs |= DIS_GUILD_ANN : m_speciallogs &= ~DIS_GUILD_ANN; }
+        bool DisplayGuildAnn() { return !(m_speciallogs & DIS_GUILD_ANN); }
+
         void SetOpcodeDisableFlag(uint16 flag);
         void RemoveOpcodeDisableFlag(uint16 flag);
         uint16 GetOpcodesDisabledFlag() { return m_opcodesDisabled;}

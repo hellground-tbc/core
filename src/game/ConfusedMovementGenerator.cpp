@@ -34,7 +34,7 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
 
     unit.CastStop();
     unit.StopMoving();
-    unit.RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+    unit.RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
     unit.addUnitState(UNIT_STAT_CONFUSED);
     unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
     unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
@@ -79,8 +79,8 @@ void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
 template<>
 void ConfusedMovementGenerator<Creature>::_InitSpecific(Creature &creature, bool &is_water_ok, bool &is_land_ok)
 {
-    is_water_ok = creature.canSwim();
-    is_land_ok  = creature.canWalk();
+    is_water_ok = creature.CanSwim();
+    is_land_ok  = creature.CanWalk();
 }
 
 template<>

@@ -189,8 +189,8 @@ struct TRINITY_DLL_DECL npc_ranger_lilathaAI : public npc_escortAI
             m_creature->AI()->AttackStart(Summ1);
             break;
             }
-        case 19: m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE); break;
-        case 25: m_creature->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE); break;
+        case 19: m_creature->SetWalk(false); break;
+        case 25: m_creature->SetWalk(true); break;
         case 30:
             player->GroupEventHappens(QUEST_ESCAPE_FROM_THE_CATACOMBS,m_creature);
             break;

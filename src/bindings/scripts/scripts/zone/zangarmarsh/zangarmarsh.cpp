@@ -296,13 +296,13 @@ struct TRINITY_DLL_DECL npc_kayra_longmaneAI : public npc_escortAI
             m_creature->SummonCreature(MOB_AMBUSH, -922.24, 5357.98, 17.93, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
             break;
         case 6: DoScriptText(SAY_PROGRESS_3, m_creature, player);
-            m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+            m_creature->SetWalk(false);
             break;
         case 18: DoScriptText(SAY_PROGRESS_4, m_creature, player);
             m_creature->SummonCreature(MOB_AMBUSH, -671.86, 5379.81, 22.12, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
             m_creature->SummonCreature(MOB_AMBUSH, -671.86, 5379.81, 22.12, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
             break;
-        case 19: m_creature->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+        case 19: m_creature->SetWalk(false);
             DoScriptText(SAY_PROGRESS_5, m_creature, player); break;
         case 26: DoScriptText(SAY_PROGRESS_6, m_creature, player);
             if(player)

@@ -55,6 +55,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "log",            SEC_MODERATOR,      true,  &ChatHandler::HandleAccountSpecialLogCommand,   "", NULL },
         { "set",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", accountSetCommandTable },
         { "whisp",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAccountWhispLogCommand,     "", NULL },
+        { "gann",           SEC_PLAYER,         false, &ChatHandler::HandleAccountGuildAnnToggleCommand, "", NULL },
         { "",               SEC_PLAYER,         false, &ChatHandler::HandleAccountCommand,             "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
@@ -346,6 +347,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "invite",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildInviteCommand,          "", NULL },
         { "uninvite",       SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildUninviteCommand,        "", NULL },
         { "rank",           SEC_GAMEMASTER,     true,  &ChatHandler::HandleGuildRankCommand,            "", NULL },
+        { "ann",            SEC_PLAYER,         false, &ChatHandler::HandleGuildAnnounceCommand,        "", NULL },
         { NULL,             0,                  false, NULL,                                            "", NULL }
     };
 
@@ -411,13 +413,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "null",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastNullCommand,             "", NULL },
         { "target",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastTargetCommand,           "", NULL },
         { "",               SEC_ADMINISTRATOR,  false, &ChatHandler::HandleCastCommand,                 "", NULL },
-        { NULL,             0,                  false, NULL,                                            "", NULL }
-    };
-
-    static ChatCommand pdumpCommandTable[] =
-    {
-        { "load",           SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleLoadPDumpCommand,            "", NULL },
-        { "write",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleWritePDumpCommand,           "", NULL },
         { NULL,             0,                  false, NULL,                                            "", NULL }
     };
 
@@ -586,7 +581,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "reload",         SEC_ADMINISTRATOR,  true,  NULL,                                            "", reloadCommandTable },
         { "list",           SEC_ADMINISTRATOR,  true,  NULL,                                            "", listCommandTable },
         { "lookup",         SEC_ADMINISTRATOR,  true,  NULL,                                            "", lookupCommandTable },
-        { "pdump",          SEC_ADMINISTRATOR,  true,  NULL,                                            "", pdumpCommandTable },
         { "guild",          SEC_ADMINISTRATOR,  true,  NULL,                                            "", guildCommandTable },
         { "cast",           SEC_ADMINISTRATOR,  false, NULL,                                            "", castCommandTable },
         { "reset",          SEC_ADMINISTRATOR,  false, NULL,                                            "", resetCommandTable },

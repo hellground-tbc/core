@@ -1377,7 +1377,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint64 GetComboTarget() { return m_comboTarget; }
 
         void AddComboPoints(Unit* target, int8 count);
-        void AddFinishingComboPoints(int8 count) { m_finishingComboPoints += count; }
         void ClearComboPoints();
         void SendComboPoints();
 
@@ -2041,7 +2040,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool isMovingOrTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING | MOVEFLAG_MOVING); }
 
         bool CanFly() const { return HasUnitMovementFlag(MOVEFLAG_CAN_FLY); }
-        bool IsFlying() const { return HasUnitMovementFlag(SPLINEFLAG_FLYINGING2); }
+        bool IsFlying() const { return HasUnitMovementFlag(MOVEFLAG_FLYING); }
 
         void HandleDrowning(uint32 time_diff);
         void HandleFallDamage(MovementInfo& movementInfo);
@@ -2314,7 +2313,6 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         uint64 m_comboTarget;
         int8 m_comboPoints;
-        int8 m_finishingComboPoints;        // combo points added by finishing move before it's procceed
 
         QuestStatusMap mQuestStatus;
 

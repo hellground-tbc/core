@@ -235,6 +235,7 @@
     <ClCompile Include="..\..\src\game\GossipDef.cpp" />
     <ClCompile Include="..\..\src\game\Mail.cpp" />
     <ClCompile Include="..\..\src\game\QuestDef.cpp" />
+    <ClCompile Include="..\..\src\game\ScriptCalls.cpp" />
     <ClCompile Include="..\..\src\game\UpdateData.cpp" />
     <ClCompile Include="..\..\src\game\WardenBase.cpp" />
     <ClCompile Include="..\..\src\game\WardenDataStorage.cpp" />
@@ -274,8 +275,6 @@
     <ClCompile Include="..\..\src\game\Level1.cpp" />
     <ClCompile Include="..\..\src\game\Level2.cpp" />
     <ClCompile Include="..\..\src\game\Level3.cpp" />
-    <ClCompile Include="..\..\src\game\PlayerDump.cpp" />
-    <ClCompile Include="..\..\src\game\ScriptCalls.cpp" />
     <ClCompile Include="..\..\src\game\Tools.cpp" />
     <ClCompile Include="..\..\src\game\FollowerReference.cpp" />
     <ClCompile Include="..\..\src\game\GroupReference.cpp" />
@@ -431,7 +430,6 @@
     <ClInclude Include="..\..\src\game\WorldSocket.h" />
     <ClInclude Include="..\..\src\game\WorldSocketMgr.h" />
     <ClInclude Include="..\..\src\game\Language.h" />
-    <ClInclude Include="..\..\src\game\PlayerDump.h" />
     <ClInclude Include="..\..\src\game\ScriptCalls.h" />
     <ClInclude Include="..\..\src\game\Tools.h" />
     <ClInclude Include="..\..\src\game\FollowerReference.h" />
