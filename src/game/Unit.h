@@ -614,10 +614,22 @@ enum MovementFlags
 enum SplineFlags
 {
     SPLINEFLAG_NONE           = 0x00000000,
-    SPLINEFLAG_JUMP           = 0x00000008,
     SPLINEFLAG_WALKMODE       = 0x00000100,
     SPLINEFLAG_FLYING         = 0x00000200,
- };
+    SPLINEFLAG_NO_SPLINE      = 0x00000400,               // former: SPLINEFLAG_LEVITATING
+    SPLINEFLAG_FALLING        = 0x00001000,
+    SPLINEFLAG_UNKNOWN7       = 0x02000000,               // swimming/flying (depends on mob?)
+    SPLINEFLAG_SPLINE         = 0x00002000,               // spline n*(float x,y,z)
+};
+
+enum SplineType
+{
+    SPLINETYPE_NORMAL       = 0,
+    SPLINETYPE_STOP         = 1,
+    SPLINETYPE_FACINGSPOT   = 2,
+    SPLINETYPE_FACINGTARGET = 3,
+    SPLINETYPE_FACINGANGLE  = 4
+};
 
 class MovementInfo
 {
