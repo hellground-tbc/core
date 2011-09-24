@@ -388,6 +388,8 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         c->GetPosition(wLoc);
     }
 
+    WorldLocation wLoc;
+
     uint32 m_sealTimer;
     uint32 m_auraTimer;
     uint32 m_hammerTimer;
@@ -396,7 +398,6 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
     uint32 m_consecrationTimer;
 
     uint32 m_checkTimer;
-    WorldLocation wLoc;
 
     void Reset()
     {
@@ -534,7 +535,12 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 // High Nethermancer Zerevor's AI
 struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_council_baseAI
 {
-    boss_high_nethermancer_zerevorAI(Creature *c) : illidari_council_baseAI(c){}
+    boss_high_nethermancer_zerevorAI(Creature *c) : illidari_council_baseAI(c)
+    {
+        c->GetPosition(wLoc);
+    }
+
+    WorldLocation wLoc;
 
     uint32 m_blizzardTimer;
     uint32 m_flamestrikeTimer;
@@ -675,7 +681,12 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
 // Lady Malande's AI
 struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 {
-    boss_lady_malandeAI(Creature *c) : illidari_council_baseAI(c){}
+    boss_lady_malandeAI(Creature *c) : illidari_council_baseAI(c)
+    {
+        c->GetPosition(wLoc);
+    }
+
+    WorldLocation wLoc;
 
     uint32 m_smiteTimer;
     uint32 m_cohTimer;
@@ -760,7 +771,12 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 // Veras Darkshadow's AI
 struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
 {
-    boss_veras_darkshadowAI(Creature *c) : illidari_council_baseAI(c){}
+    boss_veras_darkshadowAI(Creature *c) : illidari_council_baseAI(c)
+    {
+        c->GetPosition(wLoc);
+    }
+
+    WorldLocation wLoc;
 
     uint32 m_vanishTimer;
 
