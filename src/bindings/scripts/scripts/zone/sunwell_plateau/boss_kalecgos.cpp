@@ -200,7 +200,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_EVIL_SLAY1, SAY_EVIL_SLAY2), m_creature);
+        if(!urand(0, 7))
+            DoScriptText(RAND(SAY_EVIL_SLAY1, SAY_EVIL_SLAY2), m_creature);
     }
 
     void GoodEnding()
@@ -518,7 +519,8 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             return;
         }
 
-        DoScriptText(RAND(SAY_SATH_SLAY1, SAY_SATH_SLAY2), m_creature);
+        if(!urand(0, 5))
+            DoScriptText(RAND(SAY_SATH_SLAY1, SAY_SATH_SLAY2), m_creature);
     }
 
     void JustDied(Unit *killer)
