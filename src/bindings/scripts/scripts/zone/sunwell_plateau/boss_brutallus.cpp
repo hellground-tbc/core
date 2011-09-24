@@ -149,7 +149,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
 
     void DoIntro()
     {
-        Unit *pMadrigosa = me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA));
+        Creature *pMadrigosa = (Creature*)me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA));
         if (!pMadrigosa)
             return;
 
@@ -168,8 +168,8 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             case 1:
                 if(pInstance)
                     pInstance->SetData(DATA_BRUTALLUS_INTRO_EVENT, IN_PROGRESS);
-                pMadrigosa->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
-                pMadrigosa->AddUnitMovementFlag(SPLINEFLAG_WALKMODE_MODE);
+                pMadrigosa->SetLevitate(false);
+                pMadrigosa->SetWalk(true);
                 pMadrigosa->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                 IntroPhaseTimer = 2500;
                 ++IntroPhase;
@@ -207,7 +207,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 break;
             case 6:
                 me->GetMotionMaster()->MoveIdle();
-                pMadrigosa->AddUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
+                pMadrigosa->SetLevitate(true);
                 pMadrigosa->GetPosition(x, y, z);
                 pMadrigosa->GetMotionMaster()->MovePoint(2, x, y, z+15);
                 pMadrigosa->setHover(true);
@@ -231,8 +231,8 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 me->GetMotionMaster()->MoveIdle();
                 me->AttackStop();
                 pMadrigosa->setHover(false);
-                pMadrigosa->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
-                pMadrigosa->SetUnitMovementFlags(SPLINEFLAG_WALKMODE_MODE);
+                pMadrigosa->SetLevitate(false);
+                pMadrigosa->SetWalk(true);
                 pMadrigosa->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                 pMadrigosa->SendMovementFlagUpdate();
                 IntroPhaseTimer = 1000;
@@ -539,7 +539,7 @@ struct TRINITY_DLL_DECL brutallus_intro_triggerAI : public Scripted_NoMovementAI
     {
         pInstance = c->GetInstanceData();
         if(Unit *pMadrigosa = me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
-            pMadrigosa->AddUnitMovementFlag(MOVEFLAG_LEVITATING | MOVEFLAG_ONTRANSPORT);
+            ((Creature*)pMadrigosa)->SetLevitate(true);
     }
 
     ScriptedInstance* pInstance;

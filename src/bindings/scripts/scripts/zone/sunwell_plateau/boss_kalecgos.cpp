@@ -146,7 +146,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     {
         m_creature->setFaction(14);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
+        m_creature->SetLevitate(false);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
 
         ArcaneBuffetTimer = 8000;
@@ -214,7 +214,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 2:
             me->SetOrientation(M_PI);  //? check this out
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+            me->SetLevitate(true);
             TalkTimer = 3000;
             break;
         case 3:
@@ -262,7 +262,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             break;
         case 2:
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            me->AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+            me->SetLevitate(true);
             TalkTimer = 3000;
             break;
         case 3:
