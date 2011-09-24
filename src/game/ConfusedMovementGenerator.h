@@ -25,7 +25,7 @@
 #include "DestinationHolder.h"
 #include "Traveller.h"
 
-#define WANDER_DISTANCE    5.0f
+#define WANDER_DISTANCE    2.5f
 #define MAX_CONF_WAYPOINTS 6
 
 template<class T>
