@@ -6017,6 +6017,27 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             break;
         }
+        case 42924:
+        {
+            if(m_caster->HasAura(42993, 2))
+            {
+                m_caster->CastSpell(m_caster, 42994, true);
+            }
+            else if(m_caster->HasAura(42992, 2))
+            {
+                m_caster->CastSpell(m_caster, 42993, true);
+            }
+            else if(m_caster->HasAura(43310, 2))
+            {
+                m_caster->CastSpell(m_caster, 42992, true);
+            }
+            break;
+        }
+        case 43755:
+        {
+
+            break;
+        }
         case 51508:
         {
             m_caster->HandleEmoteCommand(EMOTE_STATE_DANCE);
