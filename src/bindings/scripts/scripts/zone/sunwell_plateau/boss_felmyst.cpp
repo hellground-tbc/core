@@ -68,11 +68,6 @@ enum Spells
     SPELL_FOG_CHARM             =   45717,   // fel to player
     SPELL_FOG_CHARM2            =   45726,   // link to 45717
 
-    SPELL_TRANSFORM_TRIGGER     =   44885,   // madrigosa to self, trigger 46350
-    SPELL_TRANSFORM_VISUAL      =   46350,   //46411stun?
-    SPELL_TRANSFORM_FELMYST     =   45068,   // become fel
-    SPELL_FELMYST_SUMMON        =   45069,
-
     //Other
     SPELL_BERSERK               =   45078,
     SPELL_CLOUD_VISUAL          =   45212,
@@ -160,6 +155,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     uint32 BreathCount;
     uint32 BreathPath;
 
+    uint32 IntroPhase;
+    uint32 IntroTimer;
     uint32 OutroPhase;
     uint32 OutroTimer;
     uint64 KalecgosGUID;
@@ -174,13 +171,15 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         Timer[EVENT_CHECK] = 1000;
         FlightCount = 0;
         EvadeTimer = 0;
+        IntroPhase = 0;
+        IntroTimer = 0;
         OutroPhase = 0;
         OutroTimer = 0;
 
-        m_creature->AddUnitMovementFlag(FELMYST_FLY_FLAGS);
+        //m_creature->AddUnitMovementFlag(FELMYST_FLY_FLAGS);
+        //m_creature->setHover(true);
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
-        m_creature->setHover(true);
 
         DespawnSummons(MOB_VAPOR_TRAIL);
         m_creature->setActive(true);
@@ -222,9 +221,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void JustRespawned()
     {
-        DoScriptText(YELL_BIRTH, m_creature);
-        m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-        EvadeTimer = 2000;
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetStandState(PLAYER_STATE_SLEEP);
+        me->setFaction(1771);
+        IntroTimer = 4000;
     }
 
     void JustDied(Unit* Killer)
@@ -271,7 +271,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     {
         if(Type == HOME_MOTION_TYPE)
             m_creature->setHover(true);
-        
+
         else if(Type == POINT_MOTION_TYPE)
         {        
             switch(Id)
@@ -328,6 +328,39 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             break;
         }
         Phase = NextPhase;
+    }
+
+    void DoIntro()
+    {
+        switch(IntroPhase)
+        {
+            case 0:
+                DoScriptText(YELL_BIRTH, m_creature);
+                IntroTimer = 1000;
+                break;
+            case 1:
+                m_creature->SetStandState(PLAYER_STATE_NONE);
+                IntroTimer = 2000;
+                break;
+            case 2:
+                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+                IntroTimer = 2500;
+                break;
+            case 3:
+                m_creature->AddUnitMovementFlag(FELMYST_FLY_FLAGS);
+                m_creature->setHover(true);
+                m_creature->GetMotionMaster()->MovePoint(10, me->GetPositionX()-0.5, me->GetPositionY()-0.5, me->GetPositionZ()+15);
+                IntroTimer = 9000;
+                break;
+            case 4:
+                // temporary, make some initial flying path when OOC
+                //EvadeTimer = 2000;
+                m_creature->GetMotionMaster()->MovePoint(10, me->GetPositionX()-1, me->GetPositionY()-3, me->GetPositionZ()+5);
+                IntroTimer = 0;
+                break;
+        }
+
+        IntroPhase++;
     }
 
     void DoOutro()
@@ -445,6 +478,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        /*
         if(EvadeTimer)
         {
             if(EvadeTimer <= diff)
@@ -453,16 +487,24 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 EnterEvadeMode();
                 EvadeTimer = 0;
                 return;
-            } else
+            }
+            else
                 EvadeTimer -= diff;
+        }*/
+
+        if(IntroTimer)
+        {
+            if(IntroTimer <= diff)
+                DoIntro();
+            else
+                IntroTimer -= diff;
         }
 
         if(OutroTimer)
         {
             if(OutroTimer <= diff)
-            {
                 DoOutro();
-            } else
+            else
                 OutroTimer -= diff;
         }
 

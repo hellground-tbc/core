@@ -185,9 +185,18 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 25608: KilJaedenController = creature->GetGUID(); break;
             case 26046: Anveena             = creature->GetGUID(); break;
             case 25319: KalecgosKJ          = creature->GetGUID(); break;
-            case 24895: Madrigosa           = creature->GetGUID(); break;
+            case 24895:
+                //TODO: Proper reseting when Felmyst not summoned, Brutallus not killed, etc.
+                Madrigosa = creature->GetGUID();
+                if(GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
+                {
+                    creature->setFaction(35);
+                    creature->SetVisibility(VISIBILITY_OFF);
+                }
+                break;
             case 19871: BrutallusTrigger    = creature->GetGUID(); break;
-            case 25038: 
+            case 25038:
+                // rewrite this, Felmyst summoned by spell
                 Felmyst = creature->GetGUID();
                 if(GetData(DATA_BRUTALLUS_EVENT) != DONE)
                 {
