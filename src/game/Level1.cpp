@@ -161,11 +161,11 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
 
             if (pGuild->GetMemberSize() < 10)
             {
-                PSendSysMessage("Your guild is to small, you need at least 10 member to append guild announce.");
+                PSendSysMessage("Your guild is to small, you need at least 10 members to append guild announce.");
                 return false;
             }
 
-            PSendSysMessage("Your message has been queued and will be displayed soon, please wait: %u seconds to be able to send next message", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
+            PSendSysMessage("Your message has been queued and will be displayed soon, please wait: %u secondsbefore sending another one.", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
 
             objmgr.SaveGuildAnnCooldown(gId);
             sLog.outGann("Player %s ("UI64FMTD") - guild: %s (%u) append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), pGuild->GetName().c_str(), gId, msg.c_str());
@@ -179,7 +179,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
         }
     }
 
-    PSendSysMessage("Your need to be in guild to append guild announce.");
+    PSendSysMessage("You need to be in guild to append guild announce.");
     return false;
 }
 
