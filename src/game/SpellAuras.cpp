@@ -7470,8 +7470,10 @@ void Aura::PeriodicDummyTick()
             }
             else
             {
-                m_target->CastSpell(m_target, 42992, true);
                 m_target->RemoveAurasDueToSpell(spell->Id);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42992, true);
             }
 
             if((m_maxduration - m_duration) >= 8000
@@ -7497,8 +7499,12 @@ void Aura::PeriodicDummyTick()
             }
             else
             {
-                m_target->CastSpell(m_target, 42993, true);
                 m_target->RemoveAurasDueToSpell(spell->Id);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42993, true);
             }
 
             if((m_maxduration - m_duration) >= 8000
