@@ -209,7 +209,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(Phase != PHASE_FLIGHT)
+        if(Phase != PHASE_FLIGHT && Phase != PHASE_LANDING)
             ScriptedAI::MoveInLineOfSight(who);
     }
 
@@ -221,6 +221,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void JustRespawned()
     {
+        Phase = PHASE_LANDING;
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
         me->setFaction(1771);
@@ -356,6 +357,11 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 // temporary, make some initial flying path when OOC
                 //EvadeTimer = 2000;
                 m_creature->GetMotionMaster()->MovePoint(10, me->GetPositionX()-1, me->GetPositionY()-3, me->GetPositionZ()+5);
+                IntroTimer = 5000;
+                break;
+            case 5:
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                Phase = PHASE_NULL;
                 IntroTimer = 0;
                 break;
         }
