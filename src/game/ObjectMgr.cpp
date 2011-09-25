@@ -3725,23 +3725,9 @@ void ObjectMgr::LoadEventScripts()
     // Load all possible script entries from gameobjects
     for (uint32 i = 1; i < sGOStorage.MaxEntry; ++i)
     {
-        GameObjectInfo const * goInfo = sGOStorage.LookupEntry<GameObjectInfo>(i);
-        if (goInfo)
-        {
-            switch (goInfo->type)
-            {
-                case GAMEOBJECT_TYPE_GOOBER:
-                    if (goInfo->goober.eventId)
-                        evt_scripts.insert(goInfo->goober.eventId);
-                    break;
-                case GAMEOBJECT_TYPE_CHEST:
-                    if (goInfo->chest.eventId)
-                        evt_scripts.insert(goInfo->chest.eventId);
-                    break;
-                default:
-                    break;
-            }
-        }
+        if (GameObjectInfo const * goInfo = sGOStorage.LookupEntry<GameObjectInfo>(i))
+            if (uint32 eventId = goInfo->GetEventScriptId())
+                evt_scripts.insert(eventId);
     }
 
     // Load all possible script entries from spells
@@ -3758,6 +3744,20 @@ void ObjectMgr::LoadEventScripts()
                         evt_scripts.insert(spell->EffectMiscValue[j]);
                 }
             }
+        }
+    }
+
+    for (size_t path_idx = 0; path_idx < sTaxiPathNodesByPath.size(); ++path_idx)
+    {
+        for (size_t node_idx = 0; node_idx < sTaxiPathNodesByPath[path_idx].size(); ++node_idx)
+        {
+            TaxiPathNodeEntry const& node = sTaxiPathNodesByPath[path_idx][node_idx];
+
+            if (node.arrivalEventID)
+                evt_scripts.insert(node.arrivalEventID);
+
+            if (node.departureEventID)
+                evt_scripts.insert(node.departureEventID);
         }
     }
 
@@ -4355,7 +4355,7 @@ void ObjectMgr::LoadAreaTriggerScripts()
     sLog.outString(">> Loaded %u areatrigger scripts", count);
 }
 
-uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid)
+uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team)
 {
     bool found = false;
     float dist;
@@ -4364,23 +4364,34 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid)
     for (uint32 i = 1; i < sTaxiNodesStore.GetNumRows(); ++i)
     {
         TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
-        if (node && node->map_id == mapid)
+        if (!node || node->map_id != mapid)
+            continue;
+
+        uint32 MountCreatureID = team == ALLIANCE ? node->alliance_mount_type : node->horde_mount_type;
+        if (!MountCreatureID)
+            continue;
+
+        uint8  field   = (uint8)((i - 1) / 32);
+        uint32 submask = 1<<((i-1)%32);
+
+        // skip not taxi network nodes
+        if ((sTaxiNodesMask[field] & submask)==0)
+            continue;
+
+        float dist2 = (node->x - x)*(node->x - x)+(node->y - y)*(node->y - y)+(node->z - z)*(node->z - z);
+        if (found)
         {
-            float dist2 = (node->x - x)*(node->x - x)+(node->y - y)*(node->y - y)+(node->z - z)*(node->z - z);
-            if (found)
+            if(dist2 < dist)
             {
-                if (dist2 < dist)
-                {
-                    dist = dist2;
-                    id = i;
-                }
-            }
-            else
-            {
-                found = true;
                 dist = dist2;
                 id = i;
             }
+        }
+        else
+        {
+            found = true;
+            dist = dist2;
+            id = i;
         }
     }
 
@@ -4445,46 +4456,6 @@ uint16 ObjectMgr::GetTaxiMount(uint32 id, uint32 team)
         mount_id = urand(0,1) ? mount_id : minfo->modelid_other_gender;
 
     return mount_id;
-}
-
-void ObjectMgr::GetTaxiPathNodes(uint32 path, Path &pathnodes, std::vector<uint32>& mapIds)
-{
-    if (path >= sTaxiPathNodesByPath.size())
-        return;
-
-    TaxiPathNodeList& nodeList = sTaxiPathNodesByPath[path];
-
-    pathnodes.Resize(nodeList.size());
-    mapIds.resize(nodeList.size());
-
-    for (size_t i = 0; i < nodeList.size(); ++i)
-    {
-        pathnodes[ i ].x = nodeList[i].x;
-        pathnodes[ i ].y = nodeList[i].y;
-        pathnodes[ i ].z = nodeList[i].z;
-
-        mapIds[i] = nodeList[i].mapid;
-    }
-}
-
-void ObjectMgr::GetTransportPathNodes(uint32 path, TransportPath &pathnodes)
-{
-    if (path >= sTaxiPathNodesByPath.size())
-        return;
-
-    TaxiPathNodeList& nodeList = sTaxiPathNodesByPath[path];
-
-    pathnodes.Resize(nodeList.size());
-
-    for (size_t i = 0; i < nodeList.size(); ++i)
-    {
-        pathnodes[ i ].mapid = nodeList[i].mapid;
-        pathnodes[ i ].x = nodeList[i].x;
-        pathnodes[ i ].y = nodeList[i].y;
-        pathnodes[ i ].z = nodeList[i].z;
-        pathnodes[ i ].actionFlag = nodeList[i].actionFlag;
-        pathnodes[ i ].delay = nodeList[i].delay;
-    }
 }
 
 void ObjectMgr::LoadGraveyardZones()

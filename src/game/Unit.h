@@ -37,6 +37,8 @@
 #include "Database/DBCStructure.h"
 #include <list>
 
+#include "WorldPacket.h"
+
 #define WORLD_TRIGGER   12999
 
 enum SpellInterruptFlags
@@ -267,7 +269,6 @@ class DynamicObject;
 class GameObject;
 class Item;
 class Pet;
-class Path;
 class PetAura;
 class UnitAI;
 
@@ -1264,8 +1265,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void SendMonsterStop();
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
-        //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
-        void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end);
+
+        template<typename PathElem, typename PathNode>
+        void SendMonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end, SplineFlags flags);
+
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
 
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
@@ -1794,5 +1797,33 @@ namespace Trinity
     }
 }
 
-#endif
+template<typename Elem, typename Node>
+inline void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint32 end, SplineFlags flags)
+{
+    uint32 traveltime = uint32(path.GetTotalLength(start, end) * 32.0f);
 
+    uint32 pathSize = end - start;
+
+    WorldPacket data(SMSG_MONSTER_MOVE, (GetPackGUID().size()+1+4+4+4+4+1+4+4+4+pathSize*4*3));
+    data << GetPackGUID();
+    data << GetPositionX();
+    data << GetPositionY();
+    data << GetPositionZ();
+    data << uint32(WorldTimer::getMSTime());
+    data << uint8(SPLINETYPE_NORMAL);
+    data << uint32(flags);
+    data << uint32(traveltime);
+    data << uint32(pathSize);
+
+    for (uint32 i = start; i < end; ++i)
+    {
+        data << float(path[i].x);
+        data << float(path[i].y);
+        data << float(path[i].z);
+    }
+
+    SendMessageToSet(&data, true);
+  //  addUnitState(UNIT_STAT_MOVE);
+}
+
+#endif

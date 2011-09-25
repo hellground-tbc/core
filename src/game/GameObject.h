@@ -357,6 +357,18 @@ struct GameObjectInfo
             uint32 data[24];
         } raw;
     };
+
+    uint32 GetEventScriptId() const
+    {
+        switch(type)
+        {
+            case GAMEOBJECT_TYPE_GOOBER:        return goober.eventId;
+            case GAMEOBJECT_TYPE_CHEST:         return chest.eventId;
+            case GAMEOBJECT_TYPE_CAMERA:        return camera.eventID;
+            default: return 0;
+        }
+    }
+
     uint32 ScriptId;
 };
 

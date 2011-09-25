@@ -456,7 +456,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleTaxiQueryAvailableNodesOpcode(WorldPacket& recvPacket);
         void HandleActivateTaxiOpcode(WorldPacket& recvPacket);
         void HandleActivateTaxiFarOpcode(WorldPacket& recvPacket);
-        void HandleTaxiNextDestinationOpcode(WorldPacket& recvPacket);
+        void HandleMoveSplineDoneOpcode(WorldPacket& recvPacket);
 
         void HandleTabardVendorActivateOpcode(WorldPacket& recvPacket);
         void HandleBankerActivateOpcode(WorldPacket& recvPacket);

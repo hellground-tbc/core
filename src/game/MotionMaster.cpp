@@ -397,7 +397,7 @@ void MotionMaster::MoveTaxiFlight(uint32 path, uint32 pathnode)
 {
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
     {
-        FlightPathMovementGenerator* mgen = new FlightPathMovementGenerator(path,pathnode);
+        FlightPathMovementGenerator* mgen = new FlightPathMovementGenerator(sTaxiPathNodesByPath[path],pathnode);
         Mutate(mgen, MOTION_SLOT_CONTROLLED);
     }
     else

@@ -706,8 +706,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
         for (uint32 i = 1; i < nodeList.size(); ++i)
         {
-            TaxiPathNode const& node = nodeList[i];
-            TaxiPathNode const& prevNode = nodeList[i-1];
+            TaxiPathNodeEntry const& node = nodeList[i];
+            TaxiPathNodeEntry const& prevNode = nodeList[i-1];
 
             // skip nodes at another map
             if (node.mapid != pCurrChar->GetMapId())

@@ -741,7 +741,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x2C6*/ { "SMSG_PET_ACTION_FEEDBACK",         STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x2C7*/ { "CMSG_CHAR_RENAME",                 STATUS_AUTHED,      PROCESS_INPLACE,  &WorldSession::HandleChangePlayerNameOpcode    },
     /*0x2C8*/ { "SMSG_CHAR_RENAME",                 STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
-    /*0x2C9*/ { "CMSG_MOVE_SPLINE_DONE",            STATUS_LOGGEDIN,    PROCESS_THREADSAFE,  &WorldSession::HandleTaxiNextDestinationOpcode },
+    /*0x2C9*/ { "CMSG_MOVE_SPLINE_DONE",            STATUS_LOGGEDIN,    PROCESS_THREADSAFE,  &WorldSession::HandleMoveSplineDoneOpcode  },
     /*0x2CA*/ { "CMSG_MOVE_FALL_RESET",             STATUS_LOGGEDIN,    PROCESS_THREADSAFE,  &WorldSession::HandleMovementOpcodes           },
     /*0x2CB*/ { "SMSG_INSTANCE_SAVE_CREATED",       STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x2CC*/ { "SMSG_RAID_INSTANCE_INFO",          STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
