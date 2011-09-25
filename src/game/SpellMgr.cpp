@@ -2964,6 +2964,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39968: // Needle Spine Explosion
             spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
             break;
+        case 42992: //ram - neutral
+        case 43310: //ram - trot
+            spellInfo->EffectImplicitTargetA[1] = 1;
+            break;
         default:
             break;
         }

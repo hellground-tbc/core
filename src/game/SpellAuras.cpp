@@ -2479,6 +2479,16 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(m_target->GetTypeId() == TYPEID_PLAYER)
                     ((Player*)m_target)->m_forcedReactions[960] = REP_FRIENDLY;
                 return;
+            case 43052:
+            {
+                if(GetStackAmount() >= 99)
+                {
+                    caster->CastSpell(m_target, 43332, true);
+                    //SetStackAmount(85);
+                }
+                return;
+            }
+
         }
 
         // Earth Shield
@@ -7411,6 +7421,92 @@ void Aura::PeriodicDummyTick()
         case 40084:
         {
             m_target->CastSpell((Unit*)NULL, 40085, true);
+            break;
+        }
+        case 43310:
+        {
+            if(m_target->HasAura(43052, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+            }
+            break;
+        }
+        case 42992:
+        {
+            if(m_target->HasAura(43052, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+            }
+
+            if(m_target->HasAura(42924, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(42924, 0);
+            }
+            else
+            {
+                m_target->RemoveAurasDueToSpell(spell->Id);
+                m_target->CastSpell(m_target, 43310, true);
+            }
+
+            if((m_maxduration - m_duration) >= 8000
+                && (((Player*)m_target)->GetQuestStatus(11318) == QUEST_STATUS_INCOMPLETE || ((Player*)m_target)->GetQuestStatus(11409) == QUEST_STATUS_INCOMPLETE))
+            {
+                m_target->CastSpell(m_target, 43345, true);
+            }
+
+            break;
+        }
+        case 42993:
+        {
+            m_target->CastSpell(m_target, 43052, true);
+
+            if(m_target->HasAura(42924, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(42924, 0);
+            }
+            else
+            {
+                m_target->CastSpell(m_target, 42992, true);
+                m_target->RemoveAurasDueToSpell(spell->Id);
+            }
+
+            if((m_maxduration - m_duration) >= 8000
+                && (((Player*)m_target)->GetQuestStatus(11318) == QUEST_STATUS_INCOMPLETE || ((Player*)m_target)->GetQuestStatus(11409) == QUEST_STATUS_INCOMPLETE))
+            {
+                m_target->CastSpell(m_target, 43346, true);
+            }
+
+            break;
+        }
+        case 42994:
+        {
+            m_target->CastSpell(m_target, 43052, true);
+            m_target->CastSpell(m_target, 43052, true);
+            m_target->CastSpell(m_target, 43052, true);
+            m_target->CastSpell(m_target, 43052, true);
+            m_target->CastSpell(m_target, 43052, true);
+
+            if(m_target->HasAura(42924, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(42924, 0);
+                m_target->RemoveSingleAuraFromStack(42924, 0);
+            }
+            else
+            {
+                m_target->CastSpell(m_target, 42993, true);
+                m_target->RemoveAurasDueToSpell(spell->Id);
+            }
+
+            if((m_maxduration - m_duration) >= 8000
+                && (((Player*)m_target)->GetQuestStatus(11318) == QUEST_STATUS_INCOMPLETE || ((Player*)m_target)->GetQuestStatus(11409) == QUEST_STATUS_INCOMPLETE))
+            {
+                m_target->CastSpell(m_target, 43347, true);
+            }
+
             break;
         }
 //        // Knockdown Fel Cannon: break; The Aggro Burst

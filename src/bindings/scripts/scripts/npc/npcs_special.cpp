@@ -2269,6 +2269,96 @@ CreatureAI* GetAI_pet_AleMugDrinker(Creature* pCreature)
     return new pet_AleMugDrinkerAI(pCreature);
 }
 
+/*########
+# brewfest triggers
+#########*/
+
+struct TRINITY_DLL_DECL trigger_appleAI : public ScriptedAI
+{
+    trigger_appleAI(Creature *c) : ScriptedAI(c){}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who)
+            return;
+
+        if (m_creature->IsWithinDistInMap(who, 7.0f) && who->HasAura(43052, 0))
+        {
+            who->RemoveAurasDueToSpell(43052);
+        }
+    }
+};
+
+CreatureAI* GetAI_trigger_apple(Creature* pCreature)
+{
+    return new trigger_appleAI(pCreature);
+}
+
+struct TRINITY_DLL_DECL trigger_deliveryAI : public ScriptedAI
+{
+    trigger_deliveryAI(Creature *c) : ScriptedAI(c){}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if (m_creature->IsWithinDistInMap(who, 10.0f) && who->HasAura(42146, 0) && ((Player*)who)->HasItemCount(33797, 1))
+        {
+            who->CastSpell(m_creature, 43662, true);
+            who->CastSpell(who, 44601, true);
+            ((Player*)who)->DestroyItemCount(33797, 1, true);
+        }
+    }
+};
+
+CreatureAI* GetAI_trigger_delivery(Creature* pCreature)
+{
+    return new trigger_deliveryAI(pCreature);
+}
+
+struct TRINITY_DLL_DECL trigger_delivery_kegAI : public ScriptedAI
+{
+    trigger_delivery_kegAI(Creature *c) : ScriptedAI(c){}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if (m_creature->IsWithinDistInMap(who, 10.0f) && who->HasAura(42146, 0))
+        {
+            who->CastSpell(who, 43660, true);
+        }
+    }
+};
+
+CreatureAI* GetAI_trigger_delivery_keg(Creature* pCreature)
+{
+    return new trigger_delivery_kegAI(pCreature);
+}
+
+struct TRINITY_DLL_DECL trigger_barkerAI : public ScriptedAI
+{
+    trigger_barkerAI(Creature *c) : ScriptedAI(c){}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if (m_creature->IsWithinDistInMap(who, 10.0f) && who->HasAura(42146, 0))
+        {
+            ((Player*)who)->CastedCreatureOrGO(m_creature->GetEntry(), m_creature->GetGUID(), 0);
+        }
+    }
+};
+
+CreatureAI* GetAI_trigger_barker(Creature* pCreature)
+{
+    return new trigger_barkerAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2403,5 +2493,25 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="pet_AleMugDrinker";
     newscript->GetAI = GetAI_pet_AleMugDrinker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_apple";
+    newscript->GetAI = GetAI_trigger_apple;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_delivery";
+    newscript->GetAI = GetAI_trigger_delivery;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_delivery_keg";
+    newscript->GetAI = GetAI_trigger_delivery_keg;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_barker";
+    newscript->GetAI = GetAI_trigger_barker;
     newscript->RegisterSelf();
 }

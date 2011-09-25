@@ -6019,23 +6019,31 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 42924:
         {
+            Aura* aur = m_caster->GetAura(42924, 0);
+            if(aur && aur->GetStackAmount() < 4)
+                break;
+
+            if(aur && aur->GetStackAmount() == 11)
+            {
+                m_caster->CastSpell(m_caster, 42936, true);
+                break;
+            }
+
             if(m_caster->HasAura(42993, 2))
             {
+                m_caster->RemoveAurasDueToSpell(42993);
                 m_caster->CastSpell(m_caster, 42994, true);
             }
             else if(m_caster->HasAura(42992, 2))
             {
+                m_caster->RemoveAurasDueToSpell(42992);
                 m_caster->CastSpell(m_caster, 42993, true);
             }
             else if(m_caster->HasAura(43310, 2))
             {
+                m_caster->RemoveAurasDueToSpell(43310);
                 m_caster->CastSpell(m_caster, 42992, true);
             }
-            break;
-        }
-        case 43755:
-        {
-
             break;
         }
         case 51508:
