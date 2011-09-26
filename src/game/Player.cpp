@@ -15351,8 +15351,8 @@ void Player::_LoadMailedItems(QueryResultAutoPtr result)
 void Player::_LoadMails(QueryResultAutoPtr result)
 {
     m_mail.clear();
-    //mails are in right order                                    0  1           2      3        4       5          6         7           8            9     10  11      12         13
-    //QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT id,messageType,sender,receiver,subject,itemTextId,has_items,expire_time,deliver_time,money,cod,checked,stationery,mailTemplateId FROM mail WHERE receiver = '%u' ORDER BY id DESC",GetGUIDLow());
+    //mails are in right order                                     0      1         2       3        4       5           6           7           8   9   10         11            12         13
+    //QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT id,messageType,sender,receiver,subject,itemTextId,expire_time,deliver_time,money,cod,checked,stationery,mailTemplateId,has_items FROM mail WHERE receiver = '%u' ORDER BY id DESC",GetGUIDLow());
     if(!result)
         return;
 

@@ -439,7 +439,7 @@ void AuctionHouseMgr::LoadAuctions()
             auction->itemRandomPropertyId = pItem->GetItemRandomPropertyId();
 
             //No SQL injection (no strings)
-            CharacterDatabase.PExecute("UPDATE auction SET item_template = %u, item_count = %u, item_randompropertyid = %i WHERE itemguid = %u",
+            CharacterDatabase.PExecute("UPDATE auctionhouse SET item_template = %u, item_count = %u, item_randompropertyid = %i WHERE itemguid = %u",
                 auction->itemTemplate, auction->itemCount, auction->itemRandomPropertyId, auction->itemGuidLow);
         }
 
@@ -1021,7 +1021,7 @@ bool AuctionEntry::UpdateBid(uint32 newbid, Player* newbidder /*=NULL*/)
 
         // after this update we should save player's money ...
         CharacterDatabase.BeginTransaction();
-        CharacterDatabase.PExecute("UPDATE auction SET buyguid = '%u', lastbid = '%u' WHERE id = '%u'", bidder, bid, Id);
+        CharacterDatabase.PExecute("UPDATE auctionhouse SET buyguid = '%u', lastbid = '%u' WHERE id = '%u'", bidder, bid, Id);
         if (newbidder)
             newbidder->SaveInventoryAndGoldToDB();
         CharacterDatabase.CommitTransaction();
