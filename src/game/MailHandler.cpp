@@ -153,7 +153,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
             if (!inTable)
             {
                 tmpItemGuids[items_count] = itemGuids[i];
-                items_count;
+                ++items_count;
             }
 
             itemGuids[i].Clear();
