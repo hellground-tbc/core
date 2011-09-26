@@ -1733,6 +1733,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         case TARGET_TYPE_UNIT_NEARBY:
         {
             float range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+            
+            // limit check range for some spells
+            if(range > 400)
+                range = 400;
+
             if (modOwner)
                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this);
 
