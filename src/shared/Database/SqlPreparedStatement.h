@@ -30,7 +30,8 @@ class QueryResult;
 
 union SqlStmtField
 {
-    bool boolean;
+    //bool boolean;
+    uint8 boolean;
     uint8 ui8;
     int8 i8;
     uint16 ui16;
@@ -75,7 +76,7 @@ class TRINITY_DLL_SPEC SqlStmtFieldData
         void set(T1 param1);
 
         //getters
-        bool toBool() const { ASSERT(m_type == FIELD_BOOL); return m_binaryData.boolean; }
+        bool toBool() const { ASSERT(m_type == FIELD_BOOL); return static_cast<bool>(m_binaryData.boolean); }
         uint8 toUint8() const { ASSERT(m_type == FIELD_UI8); return m_binaryData.ui8; }
         int8 toInt8() const { ASSERT(m_type == FIELD_I8); return m_binaryData.i8; }
         uint16 toUint16() const { ASSERT(m_type == FIELD_UI16); return m_binaryData.ui16; }
@@ -99,7 +100,7 @@ class TRINITY_DLL_SPEC SqlStmtFieldData
             switch (m_type)
             {
                 case FIELD_NONE:    return 0;
-                case FIELD_BOOL:    return sizeof(bool);
+                case FIELD_BOOL:    //return sizeof(bool);
                 case FIELD_UI8:     return sizeof(uint8);
                 case FIELD_UI16:    return sizeof(uint16);
                 case FIELD_UI32:    return sizeof(uint32);
@@ -151,7 +152,7 @@ class TRINITY_DLL_SPEC SqlStmtParameters
 
         //get amount of bound parameters
         int boundParams() const { return int(m_params.size()); }
-        //add parameter 
+        //add parameter
         void addParam(const SqlStmtFieldData& data) { m_params.push_back(data); }
         //empty SQL statement parameters. In case nParams > 1 - reserve memory for parameters
         //should help to reuse the same object with batched SQL requests
