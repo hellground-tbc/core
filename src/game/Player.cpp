@@ -10665,7 +10665,7 @@ bool Player::CanUseItem(ItemPrototype const *pProto)
 
         if (pProto->Class == ITEM_CLASS_RECIPE && pProto->Spells[0].SpellId != 0)
         {
-            if (pProto->Spells[0] == SPELL_ID_GENERIC_LEARN)
+            if (pProto->Spells[0].SpellId == SPELL_ID_GENERIC_LEARN)
             {
                 if (HasSpell(pProto->Spells[1].SpellId))
                     return false;
