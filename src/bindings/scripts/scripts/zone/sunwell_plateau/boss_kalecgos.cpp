@@ -581,6 +581,10 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         {
             DoZoneInCombat();
 
+            // should not leave Inner Veil
+            if(me->GetPositionZ() > -60)
+                me->GetMap()->CreatureRelocation(me, me->GetPositionX(), me->GetPositionY(), DEMON_REALM_Z, me->GetOrientation());
+
             if (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE)
             {
                 DoCast(m_creature, SPELL_ENRAGE, true);
@@ -773,6 +777,11 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
         {
             if (pInstance && pInstance->GetData(DATA_KALECGOS_PHASE) == PHASE_ENRAGE)
                 isEnraged = true;
+
+            // should not leave Inner Veil
+            if(me->GetPositionZ() > -60)
+                me->GetMap()->CreatureRelocation(me, me->GetPositionX(), me->GetPositionY(), DEMON_REALM_Z, me->GetOrientation());
+
             CheckTimer = 1000;
         }
         else
