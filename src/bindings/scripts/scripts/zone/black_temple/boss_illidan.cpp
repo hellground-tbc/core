@@ -1646,6 +1646,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
 
         me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 8.0f);
         me->SetFloatValue(UNIT_FIELD_COMBATREACH, 8.0f);
+        me->SetReactState(REACT_PASSIVE);
     }
 
     ScriptedInstance *pInstance;
