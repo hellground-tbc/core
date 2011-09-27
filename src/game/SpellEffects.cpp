@@ -6051,6 +6051,18 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             m_caster->HandleEmoteCommand(EMOTE_STATE_DANCE);
             break;
         }
+        case 42436:
+        {
+            switch(unitTarget->GetEntry())
+            {
+            case 24108:
+                ((Player*)m_caster)->CastedCreatureOrGO(unitTarget->GetEntry(), unitTarget->GetGUID(), 0);
+                break;
+            default:
+                m_caster->Kill(unitTarget, false);
+            }
+            break;
+        }
     }
 
     if (!unitTarget || !unitTarget->isAlive()) // can we remove this check?
