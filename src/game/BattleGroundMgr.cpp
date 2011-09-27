@@ -1556,7 +1556,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
 
     if (!result)
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -1565,7 +1565,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
 
     do
     {

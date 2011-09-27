@@ -20,16 +20,16 @@
 
 #include "ProgressBar.h"
 
-bool barGoLink::m_showOutput = true;
+bool BarGoLink::m_showOutput = true;
 
-char const* const barGoLink::empty = " ";
+char const* const BarGoLink::empty = " ";
 #ifdef _WIN32
-char const* const barGoLink::full  = "\x3D";
+char const* const BarGoLink::full  = "\x3D";
 #else
-char const* const barGoLink::full  = "*";
+char const* const BarGoLink::full  = "*";
 #endif
 
-barGoLink::~barGoLink()
+BarGoLink::~BarGoLink()
 {
     if (!m_showOutput)
         return;
@@ -39,12 +39,12 @@ barGoLink::~barGoLink()
 }
 
 // avoid use inline version because linking problems with private static field
-void barGoLink::SetOutputState(bool on)
+void BarGoLink::SetOutputState(bool on)
 {
     m_showOutput = on;
 }
 
-barGoLink::barGoLink(int row_count)
+BarGoLink::BarGoLink(int row_count)
 {
     if (!m_showOutput)
         return;
@@ -67,7 +67,7 @@ barGoLink::barGoLink(int row_count)
     fflush(stdout);
 }
 
-void barGoLink::step()
+void BarGoLink::step()
 {
     if (!m_showOutput)
         return;

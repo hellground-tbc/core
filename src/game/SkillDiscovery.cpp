@@ -58,7 +58,7 @@ void LoadSkillDiscoveryTable()
 
     if (result)
     {
-        barGoLink bar(result->GetRowCount());
+        BarGoLink bar(result->GetRowCount());
 
         std::ostringstream ssNonDiscoverableEntries;
 

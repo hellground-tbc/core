@@ -51,7 +51,6 @@
 #include "BattleGroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
-//#include "AuctionHouseBot.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
 #include "GlobalEvents.h"
@@ -1476,8 +1475,8 @@ void World::SetInitialWorldSettings()
 
     ///- Load dynamic data tables from the database
     sLog.outString("Loading Auctions...");
-    auctionmgr.LoadAuctionItems();
-    auctionmgr.LoadAuctions();
+    sAuctionMgr.LoadAuctionItems();
+    sAuctionMgr.LoadAuctions();
 
     sLog.outString("Loading Guilds...");
     objmgr.LoadGuilds();
@@ -1579,6 +1578,7 @@ void World::SetInitialWorldSettings()
 
     m_timers[WUPDATE_AUTOBROADCAST].SetInterval(getConfig(CONFIG_AUTOBROADCAST_INTERVAL));
     m_timers[WUPDATE_GUILD_ANNOUNCES].SetInterval(getConfig(CONFIG_GUILD_ANN_INTERVAL));
+    m_timers[WUPDATE_DELETECHARS].SetInterval(DAY*IN_MILISECONDS); // check for chars to delete every day
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -1633,9 +1633,6 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Cleanup deleted characters");
     CleanupDeletedChars();
-
-    //sLog.outString("Initialize AuctionHouseBot...");
-    //auctionbot.Initialize();
 
     sLog.outString("Activating AntiCheat");
     if (m_ac.activate() == -1)
@@ -1785,7 +1782,6 @@ void World::Update(time_t diff)
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
-        //auctionbot.Update();
         m_timers[WUPDATE_AUCTIONS].Reset();
 
         ///- Update mails (return old mails with item, or delete them)
@@ -1798,7 +1794,7 @@ void World::Update(time_t diff)
         }
         RecordTimeDiff("ReturnOldMails");
         ///-Handle expired auctions
-        auctionmgr.Update();
+        sAuctionMgr.Update();
         RecordTimeDiff("UpdateAuctions");
     }
 
@@ -1898,6 +1894,13 @@ void World::Update(time_t diff)
 
     sOutdoorPvPMgr.Update(diff);
     RecordTimeDiff("UpdateOutdoorPvPMgr");
+
+    ///- Delete all characters which have been deleted X days before
+    if (m_timers[WUPDATE_DELETECHARS].Passed())
+    {
+        m_timers[WUPDATE_DELETECHARS].Reset();
+        CleanupDeletedChars();
+    }
 
     // execute callbacks from sql queries that were queued recently
     UpdateResultQueue();

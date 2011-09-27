@@ -152,30 +152,19 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
     CreatureInfo const *ci = objmgr.GetCreatureTemplate(entry);
     if (ci)
     {
-
-        std::string Name, SubName;
-        Name = ci->Name;
-        SubName = ci->SubName;
-
         int loc_idx = GetSessionDbLocaleIndex();
-        if (loc_idx >= 0)
-        {
-            CreatureLocale const *cl = objmgr.GetCreatureLocale(entry);
-            if (cl)
-            {
-                if (cl->Name.size() > loc_idx && !cl->Name[loc_idx].empty())
-                    Name = cl->Name[loc_idx];
-                if (cl->SubName.size() > loc_idx && !cl->SubName[loc_idx].empty())
-                    SubName = cl->SubName[loc_idx];
-            }
-        }
+
+        char const* name = ci->Name;
+        char const* subName = ci->SubName;
+        sObjectMgr.GetCreatureLocaleStrings(entry, loc_idx, &name, &subName);
+
         sLog.outDetail("WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name, entry);
                                                             // guess size
         WorldPacket data(SMSG_CREATURE_QUERY_RESPONSE, 100);
         data << (uint32)entry;                              // creature entry
-        data << Name;
+        data << name;
         data << uint8(0) << uint8(0) << uint8(0);           // name2, name3, name4, always empty
-        data << SubName;
+        data << subName;
         data << ci->IconName;                               // "Directions" for guard, string for Icons 2.3.0
         data << (uint32)ci->type_flags;                     // flags          wdbFeild7=wad flags1
         data << (uint32)ci->type;
@@ -311,7 +300,7 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recv_data)
 
     if (!pGossip)
     {
-        for (uint32 i = 0; i < 8; ++i)
+        for (uint32 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
             data << float(0);
             data << "Greetings $N";
@@ -327,30 +316,18 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recv_data)
     }
     else
     {
-        std::string Text_0[8], Text_1[8];
-        for (int i=0;i<8;i++)
+        std::string Text_0[MAX_GOSSIP_TEXT_OPTIONS], Text_1[MAX_GOSSIP_TEXT_OPTIONS];
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
             Text_0[i]=pGossip->Options[i].Text_0;
             Text_1[i]=pGossip->Options[i].Text_1;
         }
 
         int loc_idx = GetSessionDbLocaleIndex();
-        if (loc_idx >= 0)
-        {
-            NpcTextLocale const *nl = objmgr.GetNpcTextLocale(textID);
-            if (nl)
-            {
-                for (int i=0;i<8;i++)
-                {
-                    if (nl->Text_0[i].size() > loc_idx && !nl->Text_0[i][loc_idx].empty())
-                        Text_0[i]=nl->Text_0[i][loc_idx];
-                    if (nl->Text_1[i].size() > loc_idx && !nl->Text_1[i][loc_idx].empty())
-                        Text_1[i]=nl->Text_1[i][loc_idx];
-                }
-            }
-        }
+        sObjectMgr.GetNpcTextLocaleStringsAll(textID, loc_idx, &Text_0, &Text_1);
 
-        for (int i=0; i<8; i++)
+
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
             data << pGossip->Options[i].Probability;
 

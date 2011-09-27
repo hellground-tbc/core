@@ -57,5 +57,6 @@ class AccountMgr
 };
 
 #define accmgr Trinity::Singleton<AccountMgr>::Instance()
+#define sAccountMgr Trinity::Singleton<AccountMgr>::Instance()
 #endif
 

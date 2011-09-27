@@ -418,7 +418,7 @@ void PoolHandler::LoadFromDB()
 
     uint32 count = 0;
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
     do
     {
         ++count;
@@ -449,7 +449,7 @@ void PoolHandler::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -458,7 +458,7 @@ void PoolHandler::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -511,7 +511,7 @@ void PoolHandler::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -520,7 +520,7 @@ void PoolHandler::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -581,7 +581,7 @@ void PoolHandler::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -590,7 +590,7 @@ void PoolHandler::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();

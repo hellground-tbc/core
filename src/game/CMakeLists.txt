@@ -11,8 +11,6 @@ SET(game_STAT_SRCS
    ArenaTeam.cpp
    ArenaTeam.h
    ArenaTeamHandler.cpp
-   AuctionHouseBot.cpp
-   AuctionHouseBot.h
    AuctionHouseHandler.cpp
    AuctionHouseMgr.cpp
    AuctionHouseMgr.h
@@ -131,6 +129,7 @@ SET(game_STAT_SRCS
    LootMgr.h
    Mail.cpp
    Mail.h
+   MailHandler.cpp
    Map.cpp
    Map.h
    MapInstanced.cpp

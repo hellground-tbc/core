@@ -101,7 +101,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     LoadDatabase();
 
     outstring_log("TSCR: Loading C++ scripts");
-    barGoLink bar(1);
+    BarGoLink bar(1);
     bar.step();
     outstring_log("");
 
@@ -181,7 +181,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget, bool wi
                 pSource->MonsterWhisper(iTextEntry, pTarget->GetGUID());
             else
                 error_log("TSCR: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", iTextEntry);
-            
+
             break;
         }
         case CHAT_TYPE_BOSS_WHISPER:
@@ -190,7 +190,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget, bool wi
                 pSource->MonsterWhisper(iTextEntry, pTarget->GetGUID(), true);
             else
                 error_log("TSCR: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", iTextEntry);
-            
+
             break;
         }
         case CHAT_TYPE_ZONE_YELL:
@@ -217,7 +217,7 @@ void DoGlobalScriptText(int32 iTextEntry, const char *npcName, Map *map)
         error_log("TSCR: DoGlobalScriptText with npc name %s could not find text entry %i.", npcName, iTextEntry);
         return;
     }
-    
+
     bool playSound = pData->uiSoundId && GetSoundEntriesStore()->LookupEntry(pData->uiSoundId);
     uint32 textType = 0;
     switch(pData->uiType)
@@ -226,7 +226,7 @@ void DoGlobalScriptText(int32 iTextEntry, const char *npcName, Map *map)
             textType = CHAT_MSG_MONSTER_SAY;
             break;
         case CHAT_TYPE_YELL:
-        case CHAT_TYPE_ZONE_YELL:    
+        case CHAT_TYPE_ZONE_YELL:
             textType = CHAT_MSG_MONSTER_YELL;
             break;
         case CHAT_TYPE_TEXT_EMOTE:
@@ -243,7 +243,7 @@ void DoGlobalScriptText(int32 iTextEntry, const char *npcName, Map *map)
             break;
     }
 
-    Map::PlayerList const &players = map->GetPlayers(); 
+    Map::PlayerList const &players = map->GetPlayers();
     for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
     {
         if(Player *player = i->getSource())

@@ -222,10 +222,12 @@ struct Loot
     QuestItemList* FillQuestLoot(Player* player);
     QuestItemList* FillNonQuestNonFFAConditionalLoot(Player* player);
 
+    void FillNotNormalLootFor(Player* pl);
+
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;
     std::set<uint32> unique_items;
-    std::set<uint64> players_allowed_to_loot;           
+    std::set<uint64> players_allowed_to_loot;
     uint32 gold;
     uint8 unlootedCount;
 
@@ -272,6 +274,7 @@ struct Loot
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
     void FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner);
+    bool FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, bool personal, bool noEmptyError = false);
 
     void saveLootToDB(Player *owner);
     void loadLootFromDB(Creature *pCreature);
@@ -290,6 +293,8 @@ struct Loot
     LootItem* LootItemInSlot(uint32 lootslot, Player* player, QuestItem** qitem = NULL, QuestItem** ffaitem = NULL, QuestItem** conditem = NULL);
 
     LootItem* LootItemInSlot(uint32 lootslot);
+
+    uint32 GetMaxSlotInLootFor(Player* player) const;
 
     private:
         std::set<uint64> PlayersLooting;

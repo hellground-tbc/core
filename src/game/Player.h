@@ -811,15 +811,15 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADREPUTATION           = 8,
     PLAYER_LOGIN_QUERY_LOADINVENTORY            = 9,
     PLAYER_LOGIN_QUERY_LOADACTIONS              = 10,
-    PLAYER_LOGIN_QUERY_LOADMAILCOUNT            = 11,
-    PLAYER_LOGIN_QUERY_LOADMAILDATE             = 12,
-    PLAYER_LOGIN_QUERY_LOADSOCIALLIST           = 13,
-    PLAYER_LOGIN_QUERY_LOADHOMEBIND             = 14,
-    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS       = 15,
-    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 16,
-    PLAYER_LOGIN_QUERY_LOADGUILD                = 17,
-    PLAYER_LOGIN_QUERY_LOADARENAINFO            = 18,
-    PLAYER_LOGIN_QUERY_LOADBGCOORD              = 19,
+    PLAYER_LOGIN_QUERY_LOADSOCIALLIST           = 11,
+    PLAYER_LOGIN_QUERY_LOADHOMEBIND             = 12,
+    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS       = 13,
+    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 14,
+    PLAYER_LOGIN_QUERY_LOADGUILD                = 15,
+    PLAYER_LOGIN_QUERY_LOADARENAINFO            = 16,
+    PLAYER_LOGIN_QUERY_LOADBGCOORD              = 17,
+    PLAYER_LOGIN_QUERY_LOADMAILS                = 18,
+    PLAYER_LOGIN_QUERY_LOADMAILEDITEMS          = 19,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1319,7 +1319,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         static void SetFloatValueInDB(uint16 index, float value, uint64 guid);
         static void SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,uint64 guid);
 
-        bool m_mailsLoaded;
         bool m_mailsUpdated;
         bool saving;
 
@@ -1384,7 +1383,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SendNewMail();
         void UpdateNextMailTimeAndUnreads();
         void AddNewMailDeliverTime(time_t deliver_time);
-        bool IsMailsLoaded() const { return m_mailsLoaded; }
 
         //void SetMail(Mail *m);
         void RemoveMail(uint32 id);
@@ -2243,9 +2241,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void _LoadAuras(QueryResultAutoPtr result, uint32 timediff);
         void _LoadBoundInstances(QueryResultAutoPtr result);
         void _LoadInventory(QueryResultAutoPtr result, uint32 timediff);
-        void _LoadMailInit(QueryResultAutoPtr resultUnread, QueryResultAutoPtr resultDelivery);
-        void _LoadMail();
-        void _LoadMailedItems(Mail *mail);
+        void _LoadMails(QueryResultAutoPtr result);
+        void _LoadMailedItems(QueryResultAutoPtr result);
         void _LoadQuestStatus(QueryResultAutoPtr result);
         void _LoadDailyQuestStatus(QueryResultAutoPtr result);
         void _LoadGroup(QueryResultAutoPtr result);
