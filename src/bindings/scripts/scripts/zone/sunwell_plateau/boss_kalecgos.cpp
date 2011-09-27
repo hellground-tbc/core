@@ -235,6 +235,11 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             TalkTimer = 7000;
             break;
         case 6:
+            if(pInstance)
+            {
+                if(Creature* Sathrovarr = Creature::GetCreature(*m_creature, pInstance->GetData64(DATA_SATHROVARR)))
+                    Sathrovarr->GetMap()->CreatureRelocation(Sathrovarr, Sathrovarr->GetPositionX(), Sathrovarr->GetPositionY(), DRAGON_REALM_Z, Sathrovarr->GetOrientation());
+            }
             m_creature->GetMotionMaster()->MovePoint(2, FlyCoord[1][0],FlyCoord[1][1],FlyCoord[1][2]);
             TalkTimer = 20000;
             break;
@@ -526,8 +531,8 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
     void JustDied(Unit *killer)
     {
         DoScriptText(SAY_SATH_DEATH, m_creature);
-        me->GetMap()->CreatureRelocation(me, m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
-        me->UpdateObjectVisibility();
+        //me->GetMap()->CreatureRelocation(me, m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
+        //me->UpdateObjectVisibility();
 
         if(pInstance)
             pInstance->SetData(DATA_KALECGOS_EVENT, DONE);
