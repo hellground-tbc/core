@@ -10648,6 +10648,7 @@ bool Player::CanUseItem(ItemPrototype const *pProto)
     {
         if ((pProto->AllowableClass & getClassMask()) == 0 || (pProto->AllowableRace & getRaceMask()) == 0)
             return false;
+
         if (pProto->RequiredSkill != 0 )
         {
             if (GetSkillValue(pProto->RequiredSkill) == 0)
@@ -10655,12 +10656,35 @@ bool Player::CanUseItem(ItemPrototype const *pProto)
             else if (GetSkillValue(pProto->RequiredSkill) < pProto->RequiredSkillRank)
                 return false;
         }
+
         if (pProto->RequiredSpell != 0 && !HasSpell(pProto->RequiredSpell))
             return false;
+
         if (getLevel() < pProto->RequiredLevel)
             return false;
+
+        if (pProto->Class == ITEM_CLASS_RECIPE && pProto->Spells[0].SpellId != 0)
+        {
+            if (pProto->Spells[0] == SPELL_ID_GENERIC_LEARN)
+            {
+                if (HasSpell(pProto->Spells[1].SpellId))
+                    return false;
+            }
+            else
+            {
+                SpellEntry const * spellInfo = GetSpellStore()->LookupEntry(Spells[0].SpellId);
+
+                if (spellInfo)
+                    for (uint8 i = 0; i < 3; ++i)
+                        if (spellInfo->Effect[i] == SPELL_EFFECT_LEARN_SPELL)
+                            if (HasSpell(spellInfo->EffectTriggerSpell[i]))
+                                return false;
+            }
+        }
+
         return true;
     }
+
     return false;
 }
 
