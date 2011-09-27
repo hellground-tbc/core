@@ -10672,7 +10672,7 @@ bool Player::CanUseItem(ItemPrototype const *pProto)
             }
             else
             {
-                SpellEntry const * spellInfo = GetSpellStore()->LookupEntry(Spells[0].SpellId);
+                SpellEntry const * spellInfo = GetSpellStore()->LookupEntry(pProto->Spells[0].SpellId);
 
                 if (spellInfo)
                     for (uint8 i = 0; i < 3; ++i)
