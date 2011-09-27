@@ -341,6 +341,10 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
                 }
             }
 
+            // if still having victim with aura, drop some threat
+            if( me->getVictim()->HasAura(AURA_SPECTRAL_REALM, 0))
+                me->getVictim()->getThreatManager().modifyThreatPercent(me->getVictim(), -10);
+
             // various checks + interaction with sathrovarr
             if(CheckTimer < diff)
             {
@@ -566,6 +570,10 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             if(!UpdateVictim())
                 return;
         }
+
+        // if still having victim w/o aura, drop some threat
+        if( !me->getVictim()->HasAura(AURA_SPECTRAL_REALM, 0))
+            me->getVictim()->getThreatManager().modifyThreatPercent(me->getVictim(), -10);
 
         // interaction with kalecgos
         if(CheckTimer < diff)
