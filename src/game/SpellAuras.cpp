@@ -7429,17 +7429,57 @@ void Aura::PeriodicDummyTick()
             m_target->CastSpell((Unit*)NULL, 40085, true);
             break;
         }
-        case 43310:
-        {
-            if(m_target->HasAura(43052, 0))
-            {
-                m_target->RemoveSingleAuraFromStack(43052, 0);
-                m_target->RemoveSingleAuraFromStack(43052, 0);
-                m_target->RemoveSingleAuraFromStack(43052, 0);
-                m_target->RemoveSingleAuraFromStack(43052, 0);
-            }
-            break;
-        }
+//        // Knockdown Fel Cannon: break; The Aggro Burst
+//        case 40119: break;
+//        // Old Mount Spell
+//        case 40154: break;
+//        // Magnetic Pull
+//        case 40581: break;
+//        // Ethereal Ring: break; The Bolt Burst
+//        case 40801: break;
+//        // Crystal Prison
+//        case 40846: break;
+//        // Copy Weapon
+//        case 41054: break;
+//        // Ethereal Ring Visual, Lightning Aura
+//        case 41477: break;
+//        // Ethereal Ring Visual, Lightning Aura (Fork)
+//        case 41525: break;
+//        // Ethereal Ring Visual, Lightning Jumper Aura
+//        case 41567: break;
+//        // No Man's Land
+//        case 41955: break;
+//        // Headless Horseman - Fire
+//        case 42074: break;
+//        // Headless Horseman - Visual - Large Fire
+//        case 42075: break;
+//        // Headless Horseman - Start Fire, Periodic Aura
+//        case 42140: break;
+//        // Ram Speed Boost
+//        case 42152: break;
+//        // Headless Horseman - Fires Out Victory Aura
+//        case 42235: break;
+//        // Pumpkin Life Cycle
+//        case 42280: break;
+//        // Brewfest Request Chick Chuck Mug Aura
+//        case 42537: break;
+//        // Squashling
+//        case 42596: break;
+//        // Headless Horseman Climax, Head: Periodic
+//        case 42603: break;
+//        // Fire Bomb
+//        case 42621: break;
+//        // Headless Horseman - Conflagrate, Periodic Aura
+//        case 42637: break;
+//        // Headless Horseman - Create Pumpkin Treats Aura
+//        case 42774: break;
+//        // Headless Horseman Climax - Summoning Rhyme Aura
+//        case 42879: break;
+//        // Tricky Treat
+//        case 42919: break;
+//        // Giddyup!
+//        case 42924: break;
+//        // Ram - Trot
         case 42992:
         {
             if(m_target->HasAura(43052, 0))
@@ -7521,64 +7561,18 @@ void Aura::PeriodicDummyTick()
 
             break;
         }
-//        // Knockdown Fel Cannon: break; The Aggro Burst
-//        case 40119: break;
-//        // Old Mount Spell
-//        case 40154: break;
-//        // Magnetic Pull
-//        case 40581: break;
-//        // Ethereal Ring: break; The Bolt Burst
-//        case 40801: break;
-//        // Crystal Prison
-//        case 40846: break;
-//        // Copy Weapon
-//        case 41054: break;
-//        // Ethereal Ring Visual, Lightning Aura
-//        case 41477: break;
-//        // Ethereal Ring Visual, Lightning Aura (Fork)
-//        case 41525: break;
-//        // Ethereal Ring Visual, Lightning Jumper Aura
-//        case 41567: break;
-//        // No Man's Land
-//        case 41955: break;
-//        // Headless Horseman - Fire
-//        case 42074: break;
-//        // Headless Horseman - Visual - Large Fire
-//        case 42075: break;
-//        // Headless Horseman - Start Fire, Periodic Aura
-//        case 42140: break;
-//        // Ram Speed Boost
-//        case 42152: break;
-//        // Headless Horseman - Fires Out Victory Aura
-//        case 42235: break;
-//        // Pumpkin Life Cycle
-//        case 42280: break;
-//        // Brewfest Request Chick Chuck Mug Aura
-//        case 42537: break;
-//        // Squashling
-//        case 42596: break;
-//        // Headless Horseman Climax, Head: Periodic
-//        case 42603: break;
-//        // Fire Bomb
-//        case 42621: break;
-//        // Headless Horseman - Conflagrate, Periodic Aura
-//        case 42637: break;
-//        // Headless Horseman - Create Pumpkin Treats Aura
-//        case 42774: break;
-//        // Headless Horseman Climax - Summoning Rhyme Aura
-//        case 42879: break;
-//        // Tricky Treat
-//        case 42919: break;
-//        // Giddyup!
-//        case 42924: break;
-//        // Ram - Trot
-//        case 42992: break;
-//        // Ram - Canter
-//        case 42993: break;
-//        // Ram - Gallop
-//        case 42994: break;
-//        // Ram Level - Neutral
-//        case 43310: break;
+        // Ram Level - Neutral
+        case 43310:
+        {
+            if(m_target->HasAura(43052, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+            }
+            break;
+        }
 //        // Headless Horseman - Maniacal Laugh, Maniacal, Delayed 17
 //        case 43884: break;
 //        // Headless Horseman - Maniacal Laugh, Maniacal, other, Delayed 17

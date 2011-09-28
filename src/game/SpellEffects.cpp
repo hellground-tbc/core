@@ -1708,6 +1708,16 @@ void Spell::EffectDummy(uint32 i)
                 case 27517:
                     m_caster->SummonCreature(16059, 590.6309, -181.061, -53.90, 5.33, TEMPSUMMON_DEAD_DESPAWN, 0);
                     break;
+                case 43755:
+                {
+                    Aura * aur = unitTarget->GetAura(43880, 0);
+                    if(aur)
+                    {
+                        aur->SetAuraDuration(aur->GetAuraDuration() + 30000);
+                        aur->UpdateAuraDuration();
+                    }
+                    break;
+                }
             }
 
             //All IconID Check in there
