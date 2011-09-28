@@ -2696,6 +2696,9 @@ void SpellMgr::LoadSpellCustomAttr()
         // Triggered spells that should be delayed
         case 20272:                     // Illumination
         case 32848:                     // Mana Restore
+        case 14189:                     // Seal Fate
+        case 14157:                     // Ruthlessness
+        case 14181:                     // Relentless Strikes
             spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;     
             break;
         /* UNSORTED */

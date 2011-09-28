@@ -1214,10 +1214,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             if (roll_chance_i(i->second))
             {
-                if(i->first->Id == 14181) // delay triggering relentless strikes proc
-                    m_caster->m_Events.AddEvent(new CastSpellEvent(*m_caster, unit->GetGUID(), i->first->Id, true), m_caster->m_Events.CalculateTime(1));
-                else
-                    m_caster->CastSpell(unit, i->first, true);
+                m_caster->CastSpell(unit, i->first, true);
 
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
