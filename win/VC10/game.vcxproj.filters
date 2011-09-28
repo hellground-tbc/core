@@ -28,9 +28,6 @@
     <Filter Include="Artificial Intelligence">
       <UniqueIdentifier>{f5855fb8-d4f4-499f-8cbc-ee3398db3c6e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Artificial Intelligence\AuctionHouseBot">
-      <UniqueIdentifier>{3a94be7f-f8a6-4f1a-a676-765211ec35f2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Artificial Intelligence\PlayerAI">
       <UniqueIdentifier>{f45ca68d-4ea9-4ba6-bf89-03e94fef2f60}</UniqueIdentifier>
     </Filter>
@@ -285,9 +282,6 @@
     <ClCompile Include="..\..\src\game\UnitAI.cpp">
       <Filter>Artificial Intelligence</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\AuctionHouseBot.cpp">
-      <Filter>Artificial Intelligence\AuctionHouseBot</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\game\PlayerAI.cpp">
       <Filter>Artificial Intelligence\PlayerAI</Filter>
     </ClCompile>
@@ -489,6 +483,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\game\ScriptCalls.cpp">
       <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\MailHandler.cpp">
+      <Filter>Handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -749,9 +746,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\UnitAI.h">
       <Filter>Artificial Intelligence</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\AuctionHouseBot.h">
-      <Filter>Artificial Intelligence\AuctionHouseBot</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\PlayerAI.h">
       <Filter>Artificial Intelligence\PlayerAI</Filter>
