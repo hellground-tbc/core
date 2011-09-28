@@ -353,6 +353,36 @@ Warden.Kick = 0
 #        Default: "warden.log"
 #                 "" - Empty name for disable
 #
+#    CheatLogFile
+#        Log file of passive anticheat
+#        Default: "cheat.log"
+#                 "" - Empty name for disable
+#
+#    MailLogFile
+#        Log file of sending in game mails
+#        Default: "sendmail.log"
+#                 "" - Empty name for disable
+#
+#    GannLogFile
+#        Log file of guild announce feature
+#        Default: "guildann.log"
+#                 "" - Empty name for disable
+#
+#    AuctionLogFile
+#        Log file of auction house
+#        Default: "auction.log"
+#                 "" - Empty name for disable
+#
+#    DiffLogFile
+#        Update Diff log file
+#        Default: "diff.log"
+#                 "" - Empty name for disable
+#
+#    IrcParser
+#        Log file for third party parsers (to provide irc/gg/etc server status)
+#        Default: "parser.irc"
+#                 "" - Empty name for disable
+#
 ###################################################################################################################
 
 LogSQL = 1
@@ -384,7 +414,7 @@ WardenLogFile = "warden.log"
 AuctionLogFile = "auction.log"
 DiffLogFile = "diff.log"
 
-IrcParser = "parser.trc"
+IrcParser = "parser.irc"
 
 ###################################################################################################################
 # SERVER SETTINGS
@@ -1420,8 +1450,19 @@ PlayerStart.String = ""
 #
 #    AutoBroadcast.Timer
 #        set interval between sending next advertising on chat(in minutes)
-#        0 = disable autoannounce
+#        0 = disable autoannounce (default)
 #
 ###################################################################################################################
 
 AutoBroadcast.Timer = 0
+
+###################################################################################################################
+#
+#    Auction.EnableSort
+#        Enable or disable auctions sorting feature.
+#        1 = enable sorting (default)
+#        0 = disable sorting
+#
+###################################################################################################################
+
+Auction.EnableSort = 1

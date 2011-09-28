@@ -850,6 +850,65 @@ void WorldSession::BuildListAuctionItems(std::vector<AuctionEntry*> const& aucti
     }
 }
 
+void WorldSession::BuildListAuctionItems(AuctionHouseObject::AuctionEntryMap const& auctions, WorldPacket& data, std::wstring const& wsearchedname, uint32 listfrom, uint32 levelmin,
+    uint32 levelmax, uint32 usable, uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality, uint32& count, uint32& totalcount, bool isFull)
+{
+    int loc_idx = _player->GetSession()->GetSessionDbLocaleIndex();
+
+    for (AuctionHouseObject::AuctionEntryMap::const_iterator itr = auctions.begin(); itr != auctions.end(); ++itr)
+    {
+        AuctionEntry *Aentry = itr->second;
+        Item *item = sAuctionMgr.GetAItem(Aentry->itemGuidLow);
+        if (!item)
+            continue;
+
+        if (isFull)
+        {
+            ++count;
+            Aentry->BuildAuctionInfo(data);
+        }
+        else
+        {
+            ItemPrototype const *proto = item->GetProto();
+
+            if (itemClass != 0xffffffff && proto->Class != itemClass)
+                continue;
+
+            if (itemSubClass != 0xffffffff && proto->SubClass != itemSubClass)
+                continue;
+
+            if (inventoryType != 0xffffffff && proto->InventoryType != inventoryType)
+                continue;
+
+            if (quality != 0xffffffff && proto->Quality < quality)
+                continue;
+
+            if (levelmin != 0x00 && (proto->RequiredLevel < levelmin || (levelmax != 0x00 && proto->RequiredLevel > levelmax)))
+                continue;
+
+            if (usable != 0x00 && !_player->CanUseItem(item))
+                continue;
+
+            std::string name = proto->Name1;
+            if (name.empty())
+                continue;
+
+            sObjectMgr.GetItemLocaleStrings(proto->ItemId, loc_idx, &name);
+
+            if (!wsearchedname.empty() && !Utf8FitTo(name, wsearchedname))
+                continue;
+
+            if (count < 50 && totalcount >= listfrom)
+            {
+                ++count;
+                Aentry->BuildAuctionInfo(data);
+            }
+        }
+
+        ++totalcount;
+    }
+}
+
 AuctionEntry* AuctionHouseObject::AddAuction(AuctionHouseEntry const* auctionHouseEntry, Item* it, uint32 etime, uint32 bid, uint32 buyout, uint32 deposit, Player * pl /*= NULL*/)
 {
     uint32 auction_time = uint32(etime * sWorld.getRate(RATE_AUCTION_TIME));

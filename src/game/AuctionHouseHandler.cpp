@@ -633,13 +633,18 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recv_data)
     // Sort
     AuctionHouseObject::AuctionEntryMap const& aucs = auctionHouse->GetAuctions();
     std::vector<AuctionEntry*> auctions;
-    auctions.reserve(aucs.size());
 
-    for (AuctionHouseObject::AuctionEntryMap::const_iterator itr = aucs.begin(); itr != aucs.end(); ++itr)
-        auctions.push_back(itr->second);
+    bool sortEnabled = sWorld.getConfig(CONFIG_ENABLE_SORT_AUCTIONS);
 
-    AuctionSorter sorter(Sort, GetPlayer());
-    std::sort(auctions.begin(), auctions.end(), sorter);
+    if (sortEnabled)
+    {
+        auctions.reserve(aucs.size());
+        for (AuctionHouseObject::AuctionEntryMap::const_iterator itr = aucs.begin(); itr != aucs.end(); ++itr)
+            auctions.push_back(itr->second);
+
+        AuctionSorter sorter(Sort, GetPlayer());
+        std::sort(auctions.begin(), auctions.end(), sorter);
+    }
 
     // remove fake death
     if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
@@ -660,8 +665,16 @@ void WorldSession::HandleAuctionListItems(WorldPacket & recv_data)
 
     wstrToLower(wsearchedname);
 
-    BuildListAuctionItems(auctions, data, wsearchedname, listfrom, levelmin, levelmax, usable,
-        auctionSlotID, auctionMainCategory, auctionSubCategory, quality, count, totalcount, isFull);
+    if (sortEnabled)
+    {
+        BuildListAuctionItems(auctions, data, wsearchedname, listfrom, levelmin, levelmax, usable,
+            auctionSlotID, auctionMainCategory, auctionSubCategory, quality, count, totalcount, isFull);
+    }
+    else
+    {
+        BuildListAuctionItems(aucs, data, wsearchedname, listfrom, levelmin, levelmax, usable,
+            auctionSlotID, auctionMainCategory, auctionSubCategory, quality, count, totalcount, isFull);
+    }
 
     data.put<uint32>(0, count);
     data << uint32(totalcount);

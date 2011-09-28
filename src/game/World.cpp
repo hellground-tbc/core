@@ -1231,6 +1231,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DONT_DELETE_CHARS] = sConfig.GetBoolDefault("DontDeleteChars", false);
     m_configs[CONFIG_DONT_DELETE_CHARS_LVL] = sConfig.GetIntDefault("DontDeleteCharsLvl", 40);
     m_configs[CONFIG_KEEP_DELETED_CHARS_TIME] = sConfig.GetIntDefault("KeepDeletedCharsTime", 31);
+
+    m_configs[CONFIG_ENABLE_SORT_AUCTIONS] = sConfig.GetBoolDefault("Auction.EnableSort", true);
 }
 
 /// Initialize the World
