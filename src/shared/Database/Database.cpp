@@ -239,11 +239,13 @@ void Database::Ping()
 
     {
         SqlConnection::Lock guard(m_pAsyncConn);
+        delete guard->Query(sql);
     }
 
     for (int i = 0; i < m_nQueryConnPoolSize; ++i)
     {
         SqlConnection::Lock guard(m_pQueryConnections[i]);
+        delete guard->Query(sql);
     }
 }
 
@@ -348,10 +350,7 @@ bool Database::Execute(const char *sql)
             return DirectExecute(sql);
 
         // Simple sql statement
-        pTrans = new SqlTransaction;
-        pTrans->DelayExecute(new SqlPlainRequest(sql));
-
-        m_threadBody->Delay(pTrans);
+        m_threadBody->Delay(new SqlPlainRequest(sql));
     }
 
     return true;
@@ -607,7 +606,7 @@ SqlStatement Database::CreateStatement(SqlStatementID& index, const char * fmt )
 std::string Database::GetStmtString(const int stmtId) const
 {
     LOCK_GUARD _guard(m_stmtGuard);
-    
+
     if(stmtId == -1 || stmtId > m_iStmtIndex)
         return std::string();
 
