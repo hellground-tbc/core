@@ -24,7 +24,7 @@
 
 #include "WorldLog.h"
 #include "Policies/SingletonImp.h"
-#include "Config/ConfigEnv.h"
+#include "Config/Config.h"
 
 #define CLASS_LOCK Trinity::ClassLevelLockable<WorldLog, ACE_Thread_Mutex>
 INSTANTIATE_SINGLETON_2(WorldLog, CLASS_LOCK);

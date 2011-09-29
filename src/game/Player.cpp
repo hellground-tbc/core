@@ -65,7 +65,6 @@
 #include "SocialMgr.h"
 #include "GameEvent.h"
 #include "GridMap.h"
-#include "Config/ConfigEnv.h"
 
 #include "PlayerAI.h"
 

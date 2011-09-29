@@ -26,7 +26,7 @@
 #include "Database/DatabaseEnv.h"
 #include "RealmList.h"
 
-#include "Config/ConfigEnv.h"
+#include "Config/Config.h"
 #include "Log.h"
 #include "sockets/ListenSocket.h"
 #include "AuthSocket.h"
@@ -343,7 +343,8 @@ void OnSignal(int s)
 /// Initialize connection to the database
 bool StartDB(std::string &dbstring)
 {
-    if(!sConfig.GetString("LoginDatabaseInfo", &dbstring))
+    dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
+    if(dbstring.empty())
     {
         sLog.outError("Database not specified");
         return false;

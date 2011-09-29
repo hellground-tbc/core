@@ -32,7 +32,6 @@
 #include "World.h"
 #include "CellImpl.h"
 #include "Corpse.h"
-#include "Config/ConfigEnv.h"
 #include "ObjectMgr.h"
 #include "GridMap.h"
 

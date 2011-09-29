@@ -267,8 +267,6 @@
     <ClCompile Include="..\..\src\shared\ProgressBar.cpp" />
     <ClCompile Include="..\..\src\shared\Util.cpp" />
     <ClCompile Include="..\..\src\shared\Config\Config.cpp" />
-    <ClCompile Include="..\..\src\shared\Config\dotconfpp\dotconfpp.cpp" />
-    <ClCompile Include="..\..\src\shared\Config\dotconfpp\mempool.cpp" />
     <ClCompile Include="..\..\src\shared\Auth\AuthCrypt.cpp" />
     <ClCompile Include="..\..\src\shared\Auth\BigNumber.cpp" />
     <ClCompile Include="..\..\src\shared\Auth\Hmac.cpp" />
@@ -314,9 +312,6 @@
     <ClInclude Include="..\..\src\shared\Timer.h" />
     <ClInclude Include="..\..\src\shared\Util.h" />
     <ClInclude Include="..\..\src\shared\Config\Config.h" />
-    <ClInclude Include="..\..\src\shared\Config\ConfigEnv.h" />
-    <ClInclude Include="..\..\src\shared\Config\dotconfpp\dotconfpp.h" />
-    <ClInclude Include="..\..\src\shared\Config\dotconfpp\mempool.h" />
     <ClInclude Include="..\..\src\shared\Auth\AuthCrypt.h" />
     <ClInclude Include="..\..\src\shared\Auth\BigNumber.h" />
     <ClInclude Include="..\..\src\shared\Auth\Hmac.h" />

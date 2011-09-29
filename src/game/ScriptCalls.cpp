@@ -26,7 +26,7 @@
 #include "Platform/Define.h"
 #include "ScriptCalls.h"
 #include "World.h"
-#include "Config/ConfigEnv.h"
+#include "Config/Config.h"
 
 ScriptsSet Script=NULL;
 
