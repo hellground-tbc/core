@@ -125,6 +125,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 {
     mob_aqueous_spawnAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
+    uint32 Zcheck;
     uint32 SludgeNova;
     uint32 MergeTimer;
     bool merging;
@@ -133,6 +134,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
     {
         ClearCastQueue();
 
+        Zcheck = 1000;
         SludgeNova = 5000;
         MergeTimer = urand(10000, 50000);
         merging = false;
@@ -144,6 +146,17 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
     {
         if(!UpdateVictim() && !merging)
             return;
+
+        // to avoid melting in textures on cb
+        if(Zcheck < diff)
+        {
+            float x, y, z;
+            me->GetPosition(x, y, z);
+            me->GetMap()->CreatureRelocation(me, x, y, z+0.8, me->GetOrientation());
+            Zcheck = 1000;
+        }
+        else
+            Zcheck -= diff;
 
         if(SludgeNova < diff)
         {
@@ -1000,6 +1013,8 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
             {
                 if (m_creature->IsWithinDistInMap(victim, 10))
                 {
+                    m_creature->SetLevitate(false);
+
                     if (!m_creature->IsNonMeleeSpellCasted(false))
                     {
                         DoResetThreat();
@@ -1124,6 +1139,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
             {
                 if (m_creature->IsWithinDistInMap(victim, 10))
                 {
+                    m_creature->SetLevitate(false);
                     if (!m_creature->IsNonMeleeSpellCasted(false))
                     {
                         DoResetThreat();
@@ -2260,8 +2276,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
-        ScriptedAI::AttackStartNoMove(who);
-
+        //ScriptedAI::AttackStartNoMove(who);
         DoStartMovement(who, 25.0f);
     }
 
@@ -4761,6 +4776,7 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
 {
     mob_charming_courtesanAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
+    uint32 check;
     uint32 Infatuation;
     uint32 PoisonousThrow;
 
@@ -4768,6 +4784,7 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
     {
         ClearCastQueue();
 
+        check = 2000;
         Infatuation = urand(5000, 8000);
         PoisonousThrow = urand(2000, 10000);
     }
@@ -4779,10 +4796,27 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
         DoZoneInCombat(80.0f);
     }
 
+    // test
+    void GroundCheck()
+    {
+        float x, y, z;
+        me->GetPosition(x, y, z);
+        me->UpdateAllowedPositionZ(x, y, z);
+        me->GetMap()->CreatureRelocation(me, x, y, z, me->GetOrientation());
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
+
+        if(check < diff)
+        {
+            GroundCheck();
+            check = 2000;
+        }
+        else
+            check -= diff;
 
         if(Infatuation < diff)
         {
@@ -4958,6 +4992,7 @@ struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
 {
     mob_temple_concubineAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
+    uint32 check;
     uint32 LoveTap;
     uint32 Polymorph;
 
@@ -4965,6 +5000,7 @@ struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
     {
         ClearCastQueue();
 
+        check = 2000;
         LoveTap = urand(2000, 15000);
         Polymorph = urand(5000, 10000);
     }
@@ -4974,10 +5010,27 @@ struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
         DoZoneInCombat(80.0f);
     }
 
+    // test
+    void GroundCheck()
+    {
+        float x, y, z;
+        me->GetPosition(x, y, z);
+        me->UpdateAllowedPositionZ(x, y, z);
+        me->GetMap()->CreatureRelocation(me, x, y, z, me->GetOrientation());
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
+
+        if(check < diff)
+        {
+            GroundCheck();
+            check = 2000;
+        }
+        else
+            check -= diff;
 
         if(LoveTap < diff)
         {
