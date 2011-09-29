@@ -239,13 +239,13 @@ void Database::Ping()
 
     {
         SqlConnection::Lock guard(m_pAsyncConn);
-        delete guard->Query(sql);
+        guard->Query(sql);
     }
 
     for (int i = 0; i < m_nQueryConnPoolSize; ++i)
     {
         SqlConnection::Lock guard(m_pQueryConnections[i]);
-        delete guard->Query(sql);
+        guard->Query(sql);
     }
 }
 
