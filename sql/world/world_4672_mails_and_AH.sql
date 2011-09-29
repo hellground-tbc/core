@@ -14,7 +14,7 @@ UPDATE auctionhouse SET houseid = 7 WHERE auctioneerguid IN (642, 8, 570, 569, 5
 UPDATE auctionhouse SET houseid = 7 WHERE auctioneerguid IN (42203); # Everlook
 
 ALTER TABLE auctionhouse
-  DROP COLUMN auctioneerguid,
+  DROP COLUMN auctioneerguid;
 
 #ALTER TABLE `auctionhouse`
 #  ADD COLUMN `moneyTime` BIGINT(40) DEFAULT '0' NOT NULL AFTER `time`;
@@ -25,8 +25,8 @@ ALTER TABLE `auctionhouse`
   ADD COLUMN `item_randompropertyid` int(11) NOT NULL default '0' AFTER `item_count`;
 
 
-UPDATE auction, item_instance
-  SET auction.item_count = SUBSTRING_INDEX(SUBSTRING_INDEX(item_instance.data, ' ', 14 + 1), ' ', -1)  WHERE auction.itemguid = item_instance.guid;
+UPDATE auctionhouse, item_instance
+  SET auctionhouse.item_count = SUBSTRING_INDEX(SUBSTRING_INDEX(item_instance.data, ' ', 14 + 1), ' ', -1)  WHERE auctionhouse.itemguid = item_instance.guid;
 
 UPDATE mail_items, mail
   SET mail_items.receiver = mail.receiver WHERE mail.id = mail_items.mail_id;

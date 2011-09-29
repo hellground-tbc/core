@@ -31,6 +31,8 @@
 #include "Log.h"
 #include "Master.h"
 
+#include <ace/Get_Opt.h>
+
 #ifndef _TRINITY_CORE_CONFIG
 # define _TRINITY_CORE_CONFIG  "trinitycore.conf"
 #endif //_TRINITY_CORE_CONFIG
@@ -53,6 +55,8 @@ char serviceDescription[] = "Massive Network Game Object Server";
  *  2 - paused
  */
 int m_ServiceStatus = -1;
+#else
+#include "PosixDaemon.h"
 #endif
 
 DatabaseType WorldDatabase;                                 ///< Accessor to the world database
@@ -65,11 +69,11 @@ uint32 realmID;                                             ///< Id of the realm
 void usage(const char *prog)
 {
     sLog.outString("Usage: \n %s [<options>]\n"
-        "    --version                print version and exit\n\r"
+        "    -v, --version            print version and exit\n\r"
         "    -c config_file           use config_file as configuration file\n\r"
         #ifdef WIN32
         "    Running as service functions:\n\r"
-        "    --service                run as service\n\r"
+        "    -s run                run as service\n\r"
         "    -s install               install service\n\r"
         "    -s uninstall             uninstall service\n\r"
         #endif
@@ -79,75 +83,100 @@ void usage(const char *prog)
 /// Launch the Trinity server
 extern int main(int argc, char **argv)
 {
-    ///- Command line parsing to get the configuration file name
+    ///- Command line parsing
     char const* cfg_file = _TRINITY_CORE_CONFIG;
-    int c=1;
-    while (c < argc)
+
+    sLog.Initialize();
+
+    char const *options = ":a:c:s:";
+
+    ACE_Get_Opt cmd_opts(argc, argv, options);
+    cmd_opts.long_option("version", 'v', ACE_Get_Opt::NO_ARG);
+
+    char serviceDaemonMode = '\0';
+
+    int option;
+    while ((option = cmd_opts()) != EOF)
     {
-        if (strcmp(argv[c],"-c") == 0)
+        switch (option)
         {
-            if (++c >= argc)
+            case 'c':
+                cfg_file = cmd_opts.opt_arg();
+                break;
+            case 'v':
+                printf("%s\n", _FULLVERSION);
+                return 0;
+            case 's':
             {
-                sLog.outError("Runtime-Error: -c option requires an input argument");
+                const char *mode = cmd_opts.opt_arg();
+
+                if (!strcmp(mode, "run"))
+                    serviceDaemonMode = 'r';
+#ifdef WIN32
+                else if (!strcmp(mode, "install"))
+                    serviceDaemonMode = 'i';
+                else if (!strcmp(mode, "uninstall"))
+                    serviceDaemonMode = 'u';
+#else
+                else if (!strcmp(mode, "stop"))
+                    serviceDaemonMode = 's';
+#endif
+                else
+                {
+                    sLog.outError("Runtime-Error: -%c unsupported argument %s", cmd_opts.opt_opt(), mode);
+                    usage(argv[0]);
+                    return 1;
+                }
+                break;
+            }
+            case ':':
+                sLog.outError("Runtime-Error: -%c option requires an input argument", cmd_opts.opt_opt());
                 usage(argv[0]);
                 return 1;
-            }
-            else
-                cfg_file = argv[c];
-        }
-
-        if (strcmp(argv[c],"--version") == 0)
-        {
-            printf("%s\n", _FULLVERSION);
-            return 0;
-        }
-
-        #ifdef WIN32
-        ////////////
-        //Services//
-        ////////////
-        if (strcmp(argv[c],"-s") == 0)
-        {
-            if( ++c >= argc )
-            {
-                sLog.outError("Runtime-Error: -s option requires an input argument");
+            default:
+                sLog.outError("Runtime-Error: bad format of commandline arguments");
                 usage(argv[0]);
                 return 1;
-            }
-            else if (strcmp(argv[c],"install") == 0)
-            {
-                if (WinServiceInstall())
-                    sLog.outString("Installing service");
-                return 1;
-            }
-            else if (strcmp(argv[c],"uninstall") == 0)
-            {
-                if(WinServiceUninstall())
-                    sLog.outString("Uninstalling service");
-                return 1;
-            }
-            else
-            {
-                sLog.outError("Runtime-Error: unsupported option %s",argv[c]);
-                usage(argv[0]);
-                return 1;
-            }
         }
-
-        if (strcmp(argv[c],"--service") == 0)
-        {
-            WinServiceRun();
-        }
-        ////
-        #endif
-        ++c;
     }
+
+#ifdef WIN32                                                // windows service command need execute before config read
+    switch (serviceDaemonMode)
+    {
+        case 'i':
+            if (WinServiceInstall())
+                sLog.outString("Installing service");
+            return 1;
+        case 'u':
+            if (WinServiceUninstall())
+                sLog.outString("Uninstalling service");
+            return 1;
+        case 'r':
+            WinServiceRun();
+            break;
+    }
+#endif
 
     if (!sConfig.SetSource(cfg_file))
     {
         sLog.outError("Could not find configuration file %s.", cfg_file);
         return 1;
     }
+
+#ifndef WIN32                                               // posix daemon commands need apply after config read
+    switch (serviceDaemonMode)
+    {
+    case 'r':
+        startDaemon();
+        break;
+    case 's':
+        stopDaemon();
+        break;
+    }
+#endif
+
+    sLog.Initialize();
+
     sLog.outString("Using configuration file %s.", cfg_file);
 
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
