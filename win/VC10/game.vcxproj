@@ -234,6 +234,7 @@
     <ClCompile Include="..\..\src\game\GameEvent.cpp" />
     <ClCompile Include="..\..\src\game\GossipDef.cpp" />
     <ClCompile Include="..\..\src\game\Mail.cpp" />
+    <ClCompile Include="..\..\src\game\MailHandler.cpp" />
     <ClCompile Include="..\..\src\game\QuestDef.cpp" />
     <ClCompile Include="..\..\src\game\ScriptCalls.cpp" />
     <ClCompile Include="..\..\src\game\UpdateData.cpp" />
@@ -311,7 +312,6 @@
     <ClCompile Include="..\..\src\game\ReactorAI.cpp" />
     <ClCompile Include="..\..\src\game\TotemAI.cpp" />
     <ClCompile Include="..\..\src\game\UnitAI.cpp" />
-    <ClCompile Include="..\..\src\game\AuctionHouseBot.cpp" />
     <ClCompile Include="..\..\src\game\PlayerAI.cpp" />
     <ClCompile Include="..\..\src\game\ConfusedMovementGenerator.cpp" />
     <ClCompile Include="..\..\src\game\FleeingMovementGenerator.cpp" />
@@ -470,7 +470,6 @@
     <ClInclude Include="..\..\src\game\ReactorAI.h" />
     <ClInclude Include="..\..\src\game\TotemAI.h" />
     <ClInclude Include="..\..\src\game\UnitAI.h" />
-    <ClInclude Include="..\..\src\game\AuctionHouseBot.h" />
     <ClInclude Include="..\..\src\game\PlayerAI.h" />
     <ClInclude Include="..\..\src\game\AnimalRandomMovementGenerator.h" />
     <ClInclude Include="..\..\src\game\ConfusedMovementGenerator.h" />
