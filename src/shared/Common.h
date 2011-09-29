@@ -230,4 +230,14 @@ inline char * mangos_strdup(const char * source)
 #define PAIR32_HIPART(x)   (uint16)((uint32(x) >> 16) & 0x0000FFFF)
 #define PAIR32_LOPART(x)   (uint16)(uint32(x)         & 0x0000FFFF)
 
+enum RunModes
+{
+    MODE_NORMAL             = 0,
+    MODE_SERVICE_STOPPED    = 1,
+    MODE_SERVICE_RUNNING    = 2,
+    MODE_SERVICE_PAUSED     = 3,
+
+    MODE_DAEMON             = 6
+};
+
 #endif

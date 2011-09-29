@@ -1,7 +1,8 @@
 ##########################################
 # Trinity Core worldd configuration file #
 ##########################################
-ConfVersion=2009102901
+[CoreConf]
+ConfVersion=2011092901
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -12,6 +13,7 @@ ConfVersion=2009102901
 #    DataDir
 #        Data directory setting.
 #        Important: DataDir needs to be quoted, as it is a string which may contain space characters.
+#        Important: In linux daemon mode string must be full path.
 #        Example: "@prefix@/share/trinitycore"
 #
 #    LogsDir
@@ -260,6 +262,7 @@ Warden.Kick = 0
 #
 #    PidFile
 #        World daemon PID file
+#        Important: In linux daemon mode string must be full path.
 #        Default: ""             - do not create PID file
 #                 "./worldd.pid" - create PID file (recommended name)
 #

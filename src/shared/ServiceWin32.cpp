@@ -39,7 +39,7 @@ extern char serviceLongName[];
 extern char serviceName[];
 extern char serviceDescription[];
 
-extern int m_ServiceStatus;
+extern RunModes runMode;
 
 SERVICE_STATUS serviceStatus;
 
@@ -178,11 +178,11 @@ void WINAPI ServiceControlHandler(DWORD controlCode)
             serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
             SetServiceStatus(serviceStatusHandle, &serviceStatus);
 
-            m_ServiceStatus = 0;
+            runMode = MODE_SERVICE_STOPPED;
             return;
 
         case SERVICE_CONTROL_PAUSE:
-            m_ServiceStatus = 2;
+            runMode = MODE_SERVICE_PAUSED;
             serviceStatus.dwCurrentState = SERVICE_PAUSED;
             SetServiceStatus(serviceStatusHandle, &serviceStatus);
             break;
@@ -190,7 +190,7 @@ void WINAPI ServiceControlHandler(DWORD controlCode)
         case SERVICE_CONTROL_CONTINUE:
             serviceStatus.dwCurrentState = SERVICE_RUNNING;
             SetServiceStatus(serviceStatusHandle, &serviceStatus);
-            m_ServiceStatus = 1;
+            runMode = MODE_SERVICE_RUNNING;
             break;
 
         default:
@@ -248,7 +248,7 @@ void WINAPI ServiceMain(DWORD argc, char *argv[])
         // service main cycle //
         ////////////////////////
 
-        m_ServiceStatus = 1;
+        runMode = MODE_SERVICE_RUNNING;
         argc = 1;
         main(argc , argv);
 

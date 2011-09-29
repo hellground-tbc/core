@@ -40,7 +40,7 @@
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
 #ifndef _TRINITY_CORE_CONFVER
-# define _TRINITY_CORE_CONFVER 2009081701
+# define _TRINITY_CORE_CONFVER 2011092901
 #endif //_TRINITY_CORE_CONFVER
 
 #ifdef WIN32
@@ -48,16 +48,19 @@
 char serviceName[] = "Trinityd";
 char serviceLongName[] = "Trinity core service";
 char serviceDescription[] = "Massive Network Game Object Server";
-/*
- * -1 - not in service mode
- *  0 - stopped
- *  1 - running
- *  2 - paused
- */
-int m_ServiceStatus = -1;
 #else
 #include "PosixDaemon.h"
 #endif
+
+/*
+ *  0 - not in daemon/service mode
+ *  1 - windows service stopped
+ *  2 - windows service running
+ *  3 - windows service paused
+ *  6 - linux daemon
+ */
+
+RunModes runMode = MODE_NORMAL;
 
 DatabaseType WorldDatabase;                                 ///< Accessor to the world database
 DatabaseType CharacterDatabase;                             ///< Accessor to the character database
@@ -167,7 +170,8 @@ extern int main(int argc, char **argv)
     switch (serviceDaemonMode)
     {
     case 'r':
-        startDaemon();
+        startDaemon("Core");
+        runMode = MODE_DAEMON;
         break;
     case 's':
         stopDaemon();
@@ -205,4 +209,3 @@ extern int main(int argc, char **argv)
 }
 
 /// @}
-

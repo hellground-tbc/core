@@ -39,7 +39,7 @@
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
 #ifndef _REALMDCONFVERSION
-# define _REALMDCONFVERSION 2007062001
+# define _REALMDCONFVERSION 2011092901
 #endif
 
 #ifndef _TRINITY_REALM_CONFIG
@@ -51,16 +51,19 @@
 char serviceName[] = "realmd";
 char serviceLongName[] = "Trinity realm service";
 char serviceDescription[] = "Massive Network Game Object Server";
-/*
- * -1 - not in service mode
- *  0 - stopped
- *  1 - running
- *  2 - paused
- */
-int m_ServiceStatus = -1;
 #else
 #include "PosixDaemon.h"
 #endif
+
+/*
+ *  0 - not in daemon/service mode
+ *  1 - windows service stopped
+ *  2 - windows service running
+ *  3 - windows service paused
+ *  6 - linux daemon
+ */
+
+extern RunModes runMode = MODE_NORMAL;
 
 // FG: for WorldTimer::getMSTime()
 #include "Timer.h"
@@ -179,7 +182,7 @@ extern int main(int argc, char **argv)
     switch (serviceDaemonMode)
     {
         case 'r':
-            startDaemon();
+            startDaemon("Realm");
             break;
         case 's':
             stopDaemon();
@@ -347,8 +350,11 @@ extern int main(int argc, char **argv)
         }
 
 #ifdef WIN32
-        if (m_ServiceStatus == 0) stopEvent = true;
-        while (m_ServiceStatus == 2) Sleep(1000);
+        if (runMode == MODE_SERVICE_STOPPED)
+            stopEvent = true;
+
+        while (runMode == MODE_SERVICE_PAUSED)
+            Sleep(1000);
 #endif
     }
 

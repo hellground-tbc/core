@@ -44,7 +44,7 @@ void daemonSignal(int s)
 }
 
 
-void startDaemon(uint32_t timeout)
+void startDaemon(const char * name, uint32_t timeout)
 {
     parent_pid = getpid();
     pid_t pid;
@@ -56,7 +56,7 @@ void startDaemon(uint32_t timeout)
 
     sid = pid = fork();
 
-    if (pid < 0) {
+    if (pid < 0 || !name) {
       exit(EXIT_FAILURE);
     }
 
@@ -77,6 +77,8 @@ void startDaemon(uint32_t timeout)
     if ((chdir("/")) < 0) {
       exit(EXIT_FAILURE);
     }
+
+    printf("%s Daemon starting...", name);
 
     freopen("/dev/null", "rt", stdin);
     freopen("/dev/null", "wt", stdout);
