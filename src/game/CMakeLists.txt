@@ -6,7 +6,6 @@ SET(game_STAT_SRCS
    AccountMgr.h
    AddonHandler.cpp
    AddonHandler.h
-   AnimalRandomMovementGenerator.h
    AntiCheat.h
    ArenaTeam.cpp
    ArenaTeam.h
