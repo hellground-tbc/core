@@ -28,6 +28,8 @@ SET(shared_STAT_SRCS
    SystemConfig.h
    Threading.cpp
    Threading.h
+   PosixDaemon.h
+   PosixDaemon.cpp
 )
 add_definitions(-fopenmp)
 add_library(shared STATIC ${shared_STAT_SRCS})

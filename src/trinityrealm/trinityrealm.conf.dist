@@ -1,7 +1,8 @@
 ##########################################
 # Trinity Core realmd configuration file #
 ##########################################
-ConfVersion=2007062001
+[RealmConf]
+ConfVersion=2011092901
 
 ###################################################################################################################
 # REALMD SETTINGS
@@ -17,6 +18,7 @@ ConfVersion=2007062001
 #    LogsDir
 #         Logs directory setting.
 #         Important: Logs dir must exists, or all logs be disable
+#         Important: In linux daemon mode string must be full path.
 #         Default: "" - no log directory prefix, if used log names isn't absolute path then logs will be
 #                       stored in current directory for run program.
 #
@@ -31,6 +33,7 @@ ConfVersion=2007062001
 #
 #    PidFile
 #        Realmd daemon PID file
+#        Important: In linux daemon mode string must be full path.
 #        Default: ""             - do not create PID file
 #                 "./realmd.pid" - create PID file (recommended name)
 #

@@ -34,10 +34,12 @@
 #include "revision.h"
 #include "Util.h"
 
+#include <ace/Get_Opt.h>
+
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
 #ifndef _REALMDCONFVERSION
-# define _REALMDCONFVERSION 2007062001
+# define _REALMDCONFVERSION 2011092901
 #endif
 
 #ifndef _TRINITY_REALM_CONFIG
@@ -49,19 +51,24 @@
 char serviceName[] = "realmd";
 char serviceLongName[] = "Trinity realm service";
 char serviceDescription[] = "Massive Network Game Object Server";
-/*
- * -1 - not in service mode
- *  0 - stopped
- *  1 - running
- *  2 - paused
- */
-int m_ServiceStatus = -1;
+#else
+#include "PosixDaemon.h"
 #endif
+
+/*
+ *  0 - not in daemon/service mode
+ *  1 - windows service stopped
+ *  2 - windows service running
+ *  3 - windows service paused
+ *  6 - linux daemon
+ */
+
+extern RunModes runMode = MODE_NORMAL;
 
 // FG: for WorldTimer::getMSTime()
 #include "Timer.h"
 
-bool StartDB(std::string &dbstring);
+bool StartDB();
 void UnhookSignals();
 void HookSignals();
 
@@ -74,13 +81,17 @@ DatabaseType LoginDatabase;                                 ///< Accessor to the
 void usage(const char *prog)
 {
     sLog.outString("Usage: \n %s [<options>]\n"
-        "    --version                print version and exit\n\r"
+        "    -v, --version            print version and exist\n\r"
         "    -c config_file           use config_file as configuration file\n\r"
         #ifdef WIN32
         "    Running as service functions:\n\r"
-        "    --service                run as service\n\r"
+        "    -s run                   run as service\n\r"
         "    -s install               install service\n\r"
         "    -s uninstall             uninstall service\n\r"
+        #else
+        "    Running as daemon functions:\n\r"
+        "    -s run                   run as daemon\n\r"
+        "    -s stop                  stop daemon\n\r"
         #endif
         ,prog);
 }
@@ -88,75 +99,99 @@ void usage(const char *prog)
 /// Launch the realm server
 extern int main(int argc, char **argv)
 {
-    ///- Command line parsing to get the configuration file name
+    ///- Command line parsing
     char const* cfg_file = _TRINITY_REALM_CONFIG;
-    int c=1;
-    while( c < argc )
+
+    char const *options = ":c:s:";
+
+    ACE_Get_Opt cmd_opts(argc, argv, options);
+    cmd_opts.long_option("version", 'v');
+
+    char serviceDaemonMode = '\0';
+
+    int option;
+    while ((option = cmd_opts()) != EOF)
     {
-        if( strcmp(argv[c],"-c") == 0)
+        switch (option)
         {
-            if( ++c >= argc )
-            {
-                sLog.outError("Runtime-Error: -c option requires an input argument");
-                usage(argv[0]);
-                return 1;
-            }
-            else
-                cfg_file = argv[c];
-        }
+            case 'c':
+                cfg_file = cmd_opts.opt_arg();
+                break;
+            case 'v':
+                printf("%s\n", _FULLVERSION);
+                return 0;
 
-        if( strcmp(argv[c],"--version") == 0)
-        {
-            printf("%s\n", _FULLVERSION);
-            return 0;
-        }
+            case 's':
+            {
+                const char *mode = cmd_opts.opt_arg();
 
-        #ifdef WIN32
-        ////////////
-        //Services//
-        ////////////
-        if( strcmp(argv[c],"-s") == 0)
-        {
-            if( ++c >= argc )
-            {
-                sLog.outError("Runtime-Error: -s option requires an input argument");
+                if (!strcmp(mode, "run"))
+                    serviceDaemonMode = 'r';
+#ifdef WIN32
+                else if (!strcmp(mode, "install"))
+                    serviceDaemonMode = 'i';
+                else if (!strcmp(mode, "uninstall"))
+                    serviceDaemonMode = 'u';
+#else
+                else if (!strcmp(mode, "stop"))
+                    serviceDaemonMode = 's';
+#endif
+                else
+                {
+                    sLog.outError("Runtime-Error: -%c unsupported argument %s", cmd_opts.opt_opt(), mode);
+                    usage(argv[0]);
+                    return 1;
+                }
+                break;
+            }
+            case ':':
+                sLog.outError("Runtime-Error: -%c option requires an input argument", cmd_opts.opt_opt());
                 usage(argv[0]);
                 return 1;
-            }
-            if( strcmp(argv[c],"install") == 0)
-            {
-                if (WinServiceInstall())
-                    sLog.outString("Installing service");
-                return 1;
-            }
-            else if( strcmp(argv[c],"uninstall") == 0)
-            {
-                if(WinServiceUninstall())
-                    sLog.outString("Uninstalling service");
-                return 1;
-            }
-            else
-            {
-                sLog.outError("Runtime-Error: unsupported option %s",argv[c]);
+            default:
+                sLog.outError("Runtime-Error: bad format of commandline arguments");
                 usage(argv[0]);
                 return 1;
-            }
         }
-        if( strcmp(argv[c],"--service") == 0)
-        {
-            WinServiceRun();
-        }
-        ////
-        #endif
-        ++c;
     }
+
+#ifdef WIN32                                                // windows service command need execute before config read
+    switch (serviceDaemonMode)
+    {
+        case 'i':
+            if (WinServiceInstall())
+                sLog.outString("Installing service");
+            return 1;
+        case 'u':
+            if (WinServiceUninstall())
+                sLog.outString("Uninstalling service");
+            return 1;
+        case 'r':
+            WinServiceRun();
+            break;
+    }
+#endif
 
     if (!sConfig.SetSource(cfg_file))
     {
         sLog.outError("Could not find configuration file %s.", cfg_file);
         return 1;
     }
+
+#ifndef WIN32                                               // posix daemon commands need apply after config read
+    switch (serviceDaemonMode)
+    {
+        case 'r':
+            startDaemon("Realm");
+            break;
+        case 's':
+            stopDaemon();
+            break;
+    }
+#endif
+
     sLog.Initialize();
+
     sLog.outString("Using configuration file %s.", cfg_file);
 
     ///- Check the version of the configuration file
@@ -191,8 +226,7 @@ extern int main(int argc, char **argv)
     }
 
     ///- Initialize the database connection
-    std::string dbstring;
-    if(!StartDB(dbstring))
+    if(!StartDB())
         return 1;
 
     ///- Get the list of realms for the server
@@ -202,6 +236,13 @@ extern int main(int argc, char **argv)
         sLog.outError("No valid realms specified.");
         return 1;
     }
+
+    // cleanup query
+    // set expired bans to inactive
+    LoginDatabase.BeginTransaction();
+    LoginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+    LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+    LoginDatabase.CommitTransaction();
 
     ///- Launch the listening network socket
     port_t rmport = sConfig.GetIntDefault( "RealmServerPort", DEFAULT_REALMSERVER_PORT );
@@ -270,6 +311,10 @@ extern int main(int argc, char **argv)
     uint32 now = WorldTimer::getMSTime();
     uint32 last_ipprops_cleanup = 0;
 
+#ifndef WIN32
+    detachDaemon();
+#endif
+
     ///- Wait for termination signal
     while (!stopEvent)
     {
@@ -305,8 +350,11 @@ extern int main(int argc, char **argv)
         }
 
 #ifdef WIN32
-        if (m_ServiceStatus == 0) stopEvent = true;
-        while (m_ServiceStatus == 2) Sleep(1000);
+        if (runMode == MODE_SERVICE_STOPPED)
+            stopEvent = true;
+
+        while (runMode == MODE_SERVICE_PAUSED)
+            Sleep(1000);
 #endif
     }
 
@@ -341,9 +389,9 @@ void OnSignal(int s)
 }
 
 /// Initialize connection to the database
-bool StartDB(std::string &dbstring)
+bool StartDB()
 {
-    dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
+    std::string dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
     if(dbstring.empty())
     {
         sLog.outError("Database not specified");

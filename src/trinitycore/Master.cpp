@@ -41,10 +41,6 @@
 #include "Util.h"
 #include "InstanceSaveMgr.h"
 
-#ifndef WIN32
-#include "vmap/BIH.h"
-#endif
-
 #include "sockets/TcpSocket.h"
 #include "sockets/Utility.h"
 #include "sockets/Parse.h"
@@ -54,8 +50,12 @@
 
 #ifdef WIN32
 #include "ServiceWin32.h"
-extern int m_ServiceStatus;
+#else
+#include "vmap/BIH.h"
+#include "PosixDaemon.h"
 #endif
+
+extern RunModes runMode;
 
 //#define ANTICHEAT_SOCK
 
@@ -235,6 +235,10 @@ int Master::Run()
         sLog.outString( "Daemon PID: %u\n", pid );
     }
 
+#ifndef WIN32
+    detachDaemon();
+#endif
+
     ///- Start the databases
     if (!_StartDB())
         return 1;
@@ -257,11 +261,8 @@ int Master::Run()
     // set server online
     LoginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0 WHERE id = '%d'",realmID);
 
-#ifdef WIN32
-    if (sConfig.GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
-#else
-    if (sConfig.GetBoolDefault("Console.Enable", true))
-#endif
+    // console should be disabled in service/daemon mode
+    if (sConfig.GetBoolDefault("Console.Enable", true) && (runMode == MODE_NORMAL))
     {
         ///- Launch CliRunnable thread
         ACE_Based::Thread td1(new CliRunnable);
@@ -427,7 +428,8 @@ bool Master::_StartDB()
 {
     ///- Get world database info from configuration file
     std::string dbstring;
-    if(!sConfig.GetString("WorldDatabaseInfo", &dbstring))
+    dbstring = sConfig.GetStringDefault("WorldDatabaseInfo", "");
+    if(dbstring.empty())
     {
         sLog.outError("Database not specified in configuration file");
         return false;
@@ -442,7 +444,8 @@ bool Master::_StartDB()
         return false;
     }
 
-    if(!sConfig.GetString("CharacterDatabaseInfo", &dbstring))
+    dbstring = sConfig.GetStringDefault("CharacterDatabaseInfo", "");
+    if(dbstring.empty())
     {
         sLog.outError("Character Database not specified in configuration file");
         return false;
@@ -458,7 +461,8 @@ bool Master::_StartDB()
     }
 
     ///- Get login database info from configuration file
-    if(!sConfig.GetString("LoginDatabaseInfo", &dbstring))
+    dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
+    if(dbstring.empty())
     {
         sLog.outError("Login database not specified in configuration file");
         return false;
