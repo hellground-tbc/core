@@ -2754,11 +2754,8 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41172: // Rapid Shot
         case 40834: // Agonizing Flames
         case 45032: // Curse of Boundless Agony
-            spellInfo->MaxAffectedTargets = 1;
-            break;
         case 45034:
             spellInfo->MaxAffectedTargets = 1;
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
             break;
         case 38281: // Static Charge (LV)
         case 39992: // Najentus: Needle Spine
