@@ -512,7 +512,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
         if (m_auraTimer < diff)
         {
-            ApplyAura(RAND(SPELL_DEVOTION_AURA, SPELL_CHROMATIC_AURA));
+            AddSpellToCast(RAND(SPELL_DEVOTION_AURA, SPELL_CHROMATIC_AURA), true);
             m_auraTimer = 60000;
         }
         else
