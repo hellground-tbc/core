@@ -760,7 +760,7 @@ bool ScriptMgr::LoadScriptLibrary(const char* libName)
     UnloadScriptLibrary();
 
     std::string name = libName;
-    //name = TRINITY_SCRIPT_PREFIX + name + TRINITY_SCRIPT_SUFFIX;
+    name = TRINITY_SCRIPT_PREFIX + name + TRINITY_SCRIPT_SUFFIX;
 
     m_hScriptLib = TRINITY_LOAD_LIBRARY(name.c_str());
 
