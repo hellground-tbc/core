@@ -42,6 +42,7 @@
 #include "OutdoorPvPMgr.h"
 #include "BattleGroundAV.h"
 #include "Map.h"
+#include "ScriptMgr.h"
 
 GameObject::GameObject() : WorldObject()
 {

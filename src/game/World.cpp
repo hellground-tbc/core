@@ -1288,7 +1288,7 @@ void World::SetInitialWorldSettings()
     DetectDBCLang();
 
     sLog.outString("Loading Script Names...");
-    objmgr.LoadScriptNames();
+    sScriptMgr.LoadScriptNames();
 
     sLog.outString("Loading InstanceTemplate");
     objmgr.LoadInstanceTemplate();
@@ -1422,7 +1422,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadTavernAreaTriggers();
 
     sLog.outString("Loading AreaTrigger script names...");
-    objmgr.LoadAreaTriggerScripts();
+    sScriptMgr.LoadAreaTriggerScripts();
 
     sLog.outString("Loading Graveyard-zone links...");
     objmgr.LoadGraveyardZones();
@@ -1531,15 +1531,15 @@ void World::SetInitialWorldSettings()
 
     ///- Load and initialize scripts
     sLog.outString("Loading Scripts...");
-    objmgr.LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
-    objmgr.LoadQuestEndScripts();                           // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
-    objmgr.LoadSpellScripts();                              // must be after load Creature/Gameobject(Template/Data)
-    objmgr.LoadGameObjectScripts();                         // must be after load Creature/Gameobject(Template/Data)
-    objmgr.LoadEventScripts();                              // must be after load Creature/Gameobject(Template/Data)
-    objmgr.LoadWaypointScripts();
+    sScriptMgr.LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
+    sScriptMgr.LoadQuestEndScripts();                           // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
+    sScriptMgr.LoadSpellScripts();                              // must be after load Creature/Gameobject(Template/Data)
+    sScriptMgr.LoadGameObjectScripts();                         // must be after load Creature/Gameobject(Template/Data)
+    sScriptMgr.LoadEventScripts();                              // must be after load Creature/Gameobject(Template/Data)
+    sScriptMgr.LoadWaypointScripts();
 
     sLog.outString("Loading Scripts text locales...");    // must be after Load*Scripts calls
-    objmgr.LoadDbScriptStrings();
+    sScriptMgr.LoadDbScriptStrings();
 
     sLog.outString("Loading CreatureEventAI Texts...");
     CreatureEAI_Mgr.LoadCreatureEventAI_Texts(false);       // false, will checked in LoadCreatureEventAI_Scripts

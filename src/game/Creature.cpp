@@ -25,6 +25,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "ScriptMgr.h"
 #include "Creature.h"
 #include "QuestDef.h"
 #include "GossipDef.h"
@@ -2419,7 +2420,7 @@ std::string Creature::GetAIName() const
 
 std::string Creature::GetScriptName()
 {
-    return objmgr.GetScriptName(GetScriptId());
+    return sScriptMgr.GetScriptName(GetScriptId());
 }
 
 uint32 Creature::GetScriptId()

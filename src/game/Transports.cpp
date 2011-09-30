@@ -23,6 +23,7 @@
 #include "Transports.h"
 #include "MapManager.h"
 #include "ObjectMgr.h"
+#include "ScriptMgr.h"
 #include "Path.h"
 
 #include "WorldPacket.h"

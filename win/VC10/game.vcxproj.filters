@@ -90,9 +90,6 @@
     <ClCompile Include="..\..\src\game\CreatureGroups.cpp">
       <Filter>Objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\DestinationHolder.cpp">
-      <Filter>Objects</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\game\DynamicObject.cpp">
       <Filter>Objects</Filter>
     </ClCompile>
@@ -486,6 +483,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\game\MailHandler.cpp">
       <Filter>Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\ScriptMgr.cpp">
+      <Filter>Managers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -906,6 +906,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\WardenWin.h">
       <Filter>Warden</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\ScriptMgr.h">
+      <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -11,6 +11,8 @@
 #include "system/ScriptLoader.h"
 #include "system/system.h"
 
+#include "../../../game/ScriptMgr.h"
+
 #define _FULLVERSION "TrinityScript"
 
 #ifndef _TRINITY_SCRIPT_CONFIG

@@ -23,6 +23,7 @@
 
 #include "Common.h"
 #include "ObjectMgr.h"
+#include "ScriptMgr.h"
 
 class Creature;
 class CreatureAI;

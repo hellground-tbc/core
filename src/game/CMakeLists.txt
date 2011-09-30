@@ -68,7 +68,6 @@ SET(game_STAT_SRCS
    CreatureGroups.cpp
    CreatureGroups.h
    Debugcmds.cpp
-   DestinationHolder.cpp
    DestinationHolder.h
    DestinationHolderImp.h
    DuelHandler.cpp
@@ -204,6 +203,8 @@ SET(game_STAT_SRCS
    ReactorAI.h
    ScriptCalls.cpp
    ScriptCalls.h
+   ScriptMgr.cpp
+   ScriptMgr.h
    SharedDefines.h
    SkillHandler.cpp
    SpellAuraDefines.h
