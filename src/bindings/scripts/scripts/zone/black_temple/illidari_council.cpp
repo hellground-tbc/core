@@ -433,15 +433,6 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         return me;
     }
 
-    void ApplyAura(uint32 m_spellId)        //should that be casted on ALL members? or just be applied as area aura within 30 yd??
-    {
-        for (uint8 i = 0; i < 4; ++i)
-        {
-            if (Unit *pCouncil = pInstance->GetCreature(m_council[i]))
-                pCouncil->CastSpell(pCouncil, m_spellId, true, 0, 0, me->GetGUID());
-        }
-    }
-
     void RegenMana()
     {
         uint32 maxMana = me->GetMaxPower(POWER_MANA);
