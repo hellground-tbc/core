@@ -161,7 +161,7 @@ bool GossipHello_npc_aged_dying_ancient_kodo(Player* pPlayer, Creature* pCreatur
 ## go_iruxos. Quest 5381
 ######*/
 
-bool GOHello_go_iruxos(Player *pPlayer, GameObject* pGO)
+bool GOUse_go_iruxos(Player *pPlayer, GameObject* pGO)
 {
         if (pPlayer->GetQuestStatus(5381) == QUEST_STATUS_INCOMPLETE)
         {
@@ -416,25 +416,25 @@ void AddSC_desolace()
     newscript = new Script;
     newscript->Name = "npc_aged_dying_ancient_kodo";
     newscript->GetAI = &GetAI_npc_aged_dying_ancient_kodo;
-    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_aged_dying_ancient_kodo;
+    newscript->pEffectDummyNPC = &EffectDummyCreature_npc_aged_dying_ancient_kodo;
     newscript->pGossipHello = &GossipHello_npc_aged_dying_ancient_kodo;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_iruxos";
-    newscript->pGOHello = &GOHello_go_iruxos;
+    newscript->pGOUse = &GOUse_go_iruxos;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_dalinda";
     newscript->GetAI = &GetAI_npc_dalinda;
-    newscript->pQuestAccept = &QuestAccept_npc_dalinda;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_dalinda;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_melizza_brimbuzzle";
     newscript->GetAI = &GetAI_npc_melizza_brimbuzzle;
-    newscript->pQuestAccept = &QuestAccept_npc_melizza_brimbuzzle;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_melizza_brimbuzzle;
     newscript->RegisterSelf();
     
     newscript = new Script;

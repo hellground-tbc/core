@@ -35,7 +35,7 @@
 #include "UpdateData.h"
 #include "LootMgr.h"
 #include "Chat.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include <zlib/zlib.h>
 #include "MapManager.h"
 #include "ObjectAccessor.h"
@@ -97,6 +97,10 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
 
     Creature *unit = NULL;
     GameObject *go = NULL;
+
+    uint32 sender = _player->PlayerTalkClass->GossipOptionSender(option);
+    uint32 action = _player->PlayerTalkClass->GossipOptionAction(option);
+
     if (IS_CREATURE_GUID(guid))
     {
         unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
@@ -125,26 +129,13 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
     if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
-    if (!code.empty())
+    if (unit)
     {
-        if (unit)
-        {
-            if (!Script->GossipSelectWithCode(_player, unit, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option), code.c_str()))
-                unit->OnGossipSelect(_player, option);
-        }
-        else
-            Script->GOSelectWithCode(_player, go, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option), code.c_str());
+        if (!sScriptMgr.OnGossipSelect(_player, unit, sender, action, code.c_str()))
+            unit->OnGossipSelect(_player, option);
     }
     else
-    {
-        if (unit)
-        {
-            if (!Script->GossipSelect(_player, unit, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option)))
-                unit->OnGossipSelect(_player, option);
-        }
-        else
-            Script->GOSelect(_player, go, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option));
-    }
+        sScriptMgr.OnGossipSelect(_player, go, sender, action, code.c_str());
 }
 
 void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
@@ -885,7 +876,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
         }
     }
 
-    if (Script->scriptAreaTrigger(GetPlayer(), atEntry))
+    if (sScriptMgr.OnAreaTrigger(GetPlayer(), atEntry))
         return;
 
     uint32 quest_id = objmgr.GetQuestForAreaTrigger(Trigger_ID);

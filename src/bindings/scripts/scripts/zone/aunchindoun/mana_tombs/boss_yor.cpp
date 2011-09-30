@@ -71,7 +71,7 @@ CreatureAI* GetAI_boss_yor(Creature *_Creature)
     return new boss_yorAI (_Creature);
 }
 
-bool GOHello_go_shaffars_stasis_chamber(Player *player, GameObject* _GO)
+bool GOUse_go_shaffars_stasis_chamber(Player *player, GameObject* _GO)
 {
     if(player->GetInstanceData() && player->GetInstanceData()->GetData(DATA_YOREVENT) != DONE)
     {
@@ -87,7 +87,7 @@ void AddSC_boss_yor()
 
     newscript = new Script;
     newscript->Name="go_shaffars_stasis_chamber";
-    newscript->pGOHello = &GOHello_go_shaffars_stasis_chamber;
+    newscript->pGOUse = &GOUse_go_shaffars_stasis_chamber;
     newscript->RegisterSelf();
 
     newscript = new Script;

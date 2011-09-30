@@ -857,7 +857,7 @@ CreatureAI* GetAI_npc_kaelthas_imageAI(Creature *_Creature)
     return new npc_kaelthas_imageAI (_Creature);
 }
 
-bool ChooseReward_npc_Adal(Player *player, Creature *_Creature, const Quest *_Quest, uint32 slot)
+bool ChooseReward_npc_Adal(Player *player, Creature *_Creature, const Quest *_Quest)
 {
     if(_Quest->GetQuestId() == QUEST_VERDANT_SPHERE)
     {
@@ -932,7 +932,7 @@ void AddSC_shattrath_city()
  
     newscript = new Script;
     newscript->Name="npc_adal";
-    newscript->pChooseReward = &ChooseReward_npc_Adal;
+    newscript->pQuestRewardedNPC = &ChooseReward_npc_Adal;
     newscript->RegisterSelf();
 }
 

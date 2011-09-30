@@ -28,6 +28,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "ScriptMgr.h"
 #include "Player.h"
 #include "Unit.h"
 #include "Spell.h"
@@ -3002,8 +3003,11 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             m_target->AddPetAura(petSpell);
         else
             m_target->RemovePetAura(petSpell);
-        return;
     }
+
+    // script has to "handle with care", only use where data are not ok to use in the above code.
+    if (m_target->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnAuraDummy(this, apply);
 }
 
 void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)

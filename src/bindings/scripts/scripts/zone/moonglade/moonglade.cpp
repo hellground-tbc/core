@@ -571,7 +571,7 @@ void AddSC_moonglade()
 
     newscript = new Script;
     newscript->Name="npc_clintar_dreamwalker";
-    newscript->pQuestAccept = &QuestAccept_npc_clintar_dreamwalker;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_clintar_dreamwalker;
     newscript->RegisterSelf();
 
     newscript = new Script;

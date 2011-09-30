@@ -557,7 +557,7 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
 };
 
 //Manticron Cube
-bool GOHello_go_Manticron_Cube(Player *player, GameObject* _GO)
+bool GOUse_go_Manticron_Cube(Player *player, GameObject* _GO)
 {
     ScriptedInstance* pInstance =(ScriptedInstance*)_GO->GetInstanceData();
 
@@ -613,7 +613,7 @@ void AddSC_boss_magtheridon()
 
     newscript = new Script;
     newscript->Name="go_manticron_cube";
-    newscript->pGOHello = &GOHello_go_Manticron_Cube;
+    newscript->pGOUse = &GOUse_go_Manticron_Cube;
     newscript->RegisterSelf();
 
     newscript = new Script;

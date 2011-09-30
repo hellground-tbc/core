@@ -236,7 +236,6 @@
     <ClCompile Include="..\..\src\game\Mail.cpp" />
     <ClCompile Include="..\..\src\game\MailHandler.cpp" />
     <ClCompile Include="..\..\src\game\QuestDef.cpp" />
-    <ClCompile Include="..\..\src\game\ScriptCalls.cpp" />
     <ClCompile Include="..\..\src\game\ScriptMgr.cpp" />
     <ClCompile Include="..\..\src\game\UpdateData.cpp" />
     <ClCompile Include="..\..\src\game\WardenBase.cpp" />
@@ -431,7 +430,6 @@
     <ClInclude Include="..\..\src\game\WorldSocket.h" />
     <ClInclude Include="..\..\src\game\WorldSocketMgr.h" />
     <ClInclude Include="..\..\src\game\Language.h" />
-    <ClInclude Include="..\..\src\game\ScriptCalls.h" />
     <ClInclude Include="..\..\src\game\Tools.h" />
     <ClInclude Include="..\..\src\game\FollowerReference.h" />
     <ClInclude Include="..\..\src\game\FollowerRefManager.h" />

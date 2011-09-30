@@ -32,7 +32,7 @@
 #include "GossipDef.h"
 #include "SpellAuras.h"
 #include "UpdateMask.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include "ObjectAccessor.h"
 #include "Creature.h"
 #include "MapManager.h"
@@ -297,7 +297,7 @@ void WorldSession::HandleGossipHelloOpcode(WorldPacket & recv_data)
         }
     }
 
-    if (!Script->GossipHello(_player, unit))
+    if (!sScriptMgr.OnGossipHello(_player, unit))
     {
         _player->TalkedToCreature(unit->GetEntry(),unit->GetGUID());
         unit->prepareGossipMenu(_player);

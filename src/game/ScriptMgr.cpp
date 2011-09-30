@@ -34,12 +34,42 @@ ScriptMapMap sWaypointScripts;
 
 INSTANTIATE_SINGLETON_1(ScriptMgr);
 
-ScriptMgr::ScriptMgr()
+ScriptMgr::ScriptMgr() :
+    m_hScriptLib(NULL),
+    m_pOnInitScriptLibrary(NULL),
+    m_pOnFreeScriptLibrary(NULL),
+    m_pGetScriptLibraryVersion(NULL),
+    m_pGetCreatureAI(NULL),
+    m_pCreateInstanceData(NULL),
+
+    m_pOnGossipHello(NULL),
+    m_pOnGOGossipHello(NULL),
+    m_pOnGossipSelect(NULL),
+    m_pOnGOGossipSelect(NULL),
+    m_pOnGossipSelectWithCode(NULL),
+    m_pOnGOGossipSelectWithCode(NULL),
+    m_pOnQuestAccept(NULL),
+    m_pOnGOQuestAccept(NULL),
+    m_pOnItemQuestAccept(NULL),
+    m_pOnQuestRewarded(NULL),
+    m_pOnGOQuestRewarded(NULL),
+    m_pGetNPCDialogStatus(NULL),
+    m_pGetGODialogStatus(NULL),
+    m_pOnGOUse(NULL),
+    m_pOnItemUse(NULL),
+    m_pOnAreaTrigger(NULL),
+    m_pOnProcessEvent(NULL),
+    m_pOnEffectDummyCreature(NULL),
+    m_pOnEffectDummyGO(NULL),
+    m_pOnEffectDummyItem(NULL),
+    m_pOnAuraDummy(NULL),
+    m_pOnReceiveEmote(NULL)
 {
 }
 
 ScriptMgr::~ScriptMgr()
 {
+    UnloadScriptLibrary();
 }
 
 void ScriptMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
@@ -414,6 +444,88 @@ void ScriptMgr::LoadEventScripts()
     }
 }
 
+void ScriptMgr::LoadEventIdScripts()
+{
+    m_EventIdScripts.clear();                           // need for reload case
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, ScriptName FROM scripted_event_id");
+
+    uint32 count = 0;
+
+    if (!result)
+    {
+        BarGoLink bar(1);
+        bar.step();
+
+        sLog.outString();
+        sLog.outString(">> Loaded %u scripted event id", count);
+        return;
+    }
+
+    BarGoLink bar((int)result->GetRowCount());
+
+    // TODO: remove duplicate code below, same way to collect event id's used in LoadEventScripts()
+    std::set<uint32> evt_scripts;
+
+    // Load all possible event entries from gameobjects
+    for(uint32 i = 1; i < sGOStorage.MaxEntry; ++i)
+        if (GameObjectInfo const* goInfo = sGOStorage.LookupEntry<GameObjectInfo>(i))
+            if (uint32 eventId = goInfo->GetEventScriptId())
+                evt_scripts.insert(eventId);
+
+    // Load all possible event entries from spells
+    for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
+    {
+        SpellEntry const* spell = sSpellStore.LookupEntry(i);
+        if (spell)
+        {
+            for(int j = 0; j < 3; ++j)
+            {
+                if (spell->Effect[j] == SPELL_EFFECT_SEND_EVENT)
+                {
+                    if (spell->EffectMiscValue[j])
+                        evt_scripts.insert(spell->EffectMiscValue[j]);
+                }
+            }
+        }
+    }
+
+    // Load all possible event entries from taxi path nodes
+    for(size_t path_idx = 0; path_idx < sTaxiPathNodesByPath.size(); ++path_idx)
+    {
+        for(size_t node_idx = 0; node_idx < sTaxiPathNodesByPath[path_idx].size(); ++node_idx)
+        {
+            TaxiPathNodeEntry const& node = sTaxiPathNodesByPath[path_idx][node_idx];
+
+            if (node.arrivalEventID)
+                evt_scripts.insert(node.arrivalEventID);
+
+            if (node.departureEventID)
+                evt_scripts.insert(node.departureEventID);
+        }
+    }
+
+    do
+    {
+        ++count;
+        bar.step();
+
+        Field *fields = result->Fetch();
+
+        uint32 eventId          = fields[0].GetUInt32();
+        const char *scriptName  = fields[1].GetString();
+
+        std::set<uint32>::const_iterator itr = evt_scripts.find(eventId);
+        if (itr == evt_scripts.end())
+            sLog.outErrorDb("Table `scripted_event_id` has id %u not referring to any gameobject_template type 10 data2 field, type 3 data6 field, type 13 data 2 field or any spell effect %u or path taxi node data",
+                eventId, SPELL_EFFECT_SEND_EVENT);
+
+        m_EventIdScripts[eventId] = GetScriptId(scriptName);
+    } while(result->NextRow());
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u scripted event id", count);
+}
+
 //Load WP Scripts
 void ScriptMgr::LoadWaypointScripts()
 {
@@ -515,9 +627,235 @@ void ScriptMgr::LoadAreaTriggerScripts()
     sLog.outString(">> Loaded %u areatrigger scripts", count);
 }
 
-ScriptMgr::ScriptNameMap & GetScriptNames()
+CreatureAI* ScriptMgr::GetCreatureAI(Creature* pCreature)
 {
-    return sScriptMgr.GetScriptNames();
+    if (!m_pGetCreatureAI)
+        return NULL;
+
+    return m_pGetCreatureAI(pCreature);
+}
+
+InstanceData* ScriptMgr::CreateInstanceData(Map* pMap)
+{
+    if (!m_pCreateInstanceData)
+        return NULL;
+
+    return m_pCreateInstanceData(pMap);
+}
+
+bool ScriptMgr::OnGossipHello(Player* pPlayer, Creature* pCreature)
+{
+    return m_pOnGossipHello != NULL && m_pOnGossipHello(pPlayer, pCreature);
+}
+
+bool ScriptMgr::OnGossipHello(Player* pPlayer, GameObject* pGameObject)
+{
+    return m_pOnGOGossipHello != NULL && m_pOnGOGossipHello(pPlayer, pGameObject);
+}
+
+bool ScriptMgr::OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action, const char* code)
+{
+    if (code)
+        return m_pOnGossipSelectWithCode != NULL && m_pOnGossipSelectWithCode(pPlayer, pCreature, sender, action, code);
+    else
+        return m_pOnGossipSelect != NULL && m_pOnGossipSelect(pPlayer, pCreature, sender, action);
+}
+
+bool ScriptMgr::OnGossipSelect(Player* pPlayer, GameObject* pGameObject, uint32 sender, uint32 action, const char* code)
+{
+    if (code)
+        return m_pOnGOGossipSelectWithCode != NULL && m_pOnGOGossipSelectWithCode(pPlayer, pGameObject, sender, action, code);
+    else
+        return m_pOnGOGossipSelect != NULL && m_pOnGOGossipSelect(pPlayer, pGameObject, sender, action);
+}
+
+bool ScriptMgr::OnQuestAccept(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
+{
+    return m_pOnQuestAccept != NULL && m_pOnQuestAccept(pPlayer, pCreature, pQuest);
+}
+
+bool ScriptMgr::OnQuestAccept(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest)
+{
+    return m_pOnGOQuestAccept != NULL && m_pOnGOQuestAccept(pPlayer, pGameObject, pQuest);
+}
+
+bool ScriptMgr::OnQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest)
+{
+    return m_pOnItemQuestAccept != NULL && m_pOnItemQuestAccept(pPlayer, pItem, pQuest);
+}
+
+bool ScriptMgr::OnQuestRewarded(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
+{
+    return m_pOnQuestRewarded != NULL && m_pOnQuestRewarded(pPlayer, pCreature, pQuest);
+}
+
+bool ScriptMgr::OnQuestRewarded(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest)
+{
+    return m_pOnGOQuestRewarded != NULL && m_pOnGOQuestRewarded(pPlayer, pGameObject, pQuest);
+}
+
+uint32 ScriptMgr::GetDialogStatus(Player* pPlayer, Creature* pCreature)
+{
+    if (!m_pGetNPCDialogStatus)
+        return 100;
+
+    return m_pGetNPCDialogStatus(pPlayer, pCreature);
+}
+
+uint32 ScriptMgr::GetDialogStatus(Player* pPlayer, GameObject* pGameObject)
+{
+    if (!m_pGetGODialogStatus)
+        return 100;
+
+    return m_pGetGODialogStatus(pPlayer, pGameObject);
+}
+
+bool ScriptMgr::OnGameObjectUse(Player* pPlayer, GameObject* pGameObject)
+{
+    return m_pOnGOUse != NULL && m_pOnGOUse(pPlayer, pGameObject);
+}
+
+bool ScriptMgr::OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
+{
+    return m_pOnItemUse != NULL && m_pOnItemUse(pPlayer, pItem, targets);
+}
+
+bool ScriptMgr::OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry)
+{
+    return m_pOnAreaTrigger != NULL && m_pOnAreaTrigger(pPlayer, atEntry);
+}
+
+bool ScriptMgr::OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget, bool isStart)
+{
+    return m_pOnProcessEvent != NULL && m_pOnProcessEvent(eventId, pSource, pTarget, isStart);
+}
+
+bool ScriptMgr::OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, Creature* pTarget)
+{
+    return m_pOnEffectDummyCreature != NULL && m_pOnEffectDummyCreature(pCaster, spellId, effIndex, pTarget);
+}
+
+bool ScriptMgr::OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, GameObject* pTarget)
+{
+    return m_pOnEffectDummyGO != NULL && m_pOnEffectDummyGO(pCaster, spellId, effIndex, pTarget);
+}
+
+bool ScriptMgr::OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, Item* pTarget)
+{
+    return m_pOnEffectDummyItem != NULL && m_pOnEffectDummyItem(pCaster, spellId, effIndex, pTarget);
+}
+
+bool ScriptMgr::OnAuraDummy(Aura const* pAura, bool apply)
+{
+    return m_pOnAuraDummy != NULL && m_pOnAuraDummy(pAura, apply);
+}
+
+bool ScriptMgr::OnReceiveEmote(Player *pPlayer, Creature *pCreature, uint32 emote)
+{
+    return m_pOnReceiveEmote != NULL && m_pOnReceiveEmote(pPlayer, pCreature, emote);
+}
+
+bool ScriptMgr::LoadScriptLibrary(const char* libName)
+{
+    UnloadScriptLibrary();
+
+    std::string name = libName;
+    //name = TRINITY_SCRIPT_PREFIX + name + TRINITY_SCRIPT_SUFFIX;
+
+    m_hScriptLib = TRINITY_LOAD_LIBRARY(name.c_str());
+
+    if (!m_hScriptLib)
+        return false;
+
+    GetScriptHookPtr(m_pOnInitScriptLibrary,        "InitScriptLibrary");
+    GetScriptHookPtr(m_pOnFreeScriptLibrary,        "FreeScriptLibrary");
+    GetScriptHookPtr(m_pGetScriptLibraryVersion,    "GetScriptLibraryVersion");
+
+    GetScriptHookPtr(m_pGetCreatureAI,              "GetCreatureAI");
+    GetScriptHookPtr(m_pCreateInstanceData,         "CreateInstanceData");
+
+    GetScriptHookPtr(m_pOnGossipHello,              "GossipHello");
+    GetScriptHookPtr(m_pOnGOGossipHello,            "GOGossipHello");
+    GetScriptHookPtr(m_pOnGossipSelect,             "GossipSelect");
+    GetScriptHookPtr(m_pOnGOGossipSelect,           "GOGossipSelect");
+    GetScriptHookPtr(m_pOnGossipSelectWithCode,     "GossipSelectWithCode");
+    GetScriptHookPtr(m_pOnGOGossipSelectWithCode,   "GOGossipSelectWithCode");
+    GetScriptHookPtr(m_pOnQuestAccept,              "QuestAccept");
+    GetScriptHookPtr(m_pOnGOQuestAccept,            "GOQuestAccept");
+    GetScriptHookPtr(m_pOnItemQuestAccept,          "ItemQuestAccept");
+    GetScriptHookPtr(m_pOnQuestRewarded,            "QuestRewarded");
+    GetScriptHookPtr(m_pOnGOQuestRewarded,          "GOQuestRewarded");
+    GetScriptHookPtr(m_pGetNPCDialogStatus,         "GetNPCDialogStatus");
+    GetScriptHookPtr(m_pGetGODialogStatus,          "GetGODialogStatus");
+    GetScriptHookPtr(m_pOnGOUse,                    "GOUse");
+    GetScriptHookPtr(m_pOnItemUse,                  "ItemUse");
+    GetScriptHookPtr(m_pOnAreaTrigger,              "AreaTrigger");
+    GetScriptHookPtr(m_pOnProcessEvent,             "ProcessEvent");
+    GetScriptHookPtr(m_pOnEffectDummyCreature,      "EffectDummyCreature");
+    GetScriptHookPtr(m_pOnEffectDummyGO,            "EffectDummyGameObject");
+    GetScriptHookPtr(m_pOnEffectDummyItem,          "EffectDummyItem");
+    GetScriptHookPtr(m_pOnAuraDummy,                "AuraDummy");
+
+    GetScriptHookPtr(m_pOnReceiveEmote,             "ReceiveEmote");
+
+
+    if (m_pOnInitScriptLibrary)
+        m_pOnInitScriptLibrary();
+
+    if (m_pGetScriptLibraryVersion)
+        sWorld.SetScriptsVersion(m_pGetScriptLibraryVersion());
+
+    return true;
+}
+
+void ScriptMgr::UnloadScriptLibrary()
+{
+    if (!m_hScriptLib)
+        return;
+
+    if (m_pOnFreeScriptLibrary)
+        m_pOnFreeScriptLibrary();
+
+    TRINITY_CLOSE_LIBRARY(m_hScriptLib);
+    m_hScriptLib = NULL;
+
+    m_pOnInitScriptLibrary      = NULL;
+    m_pOnFreeScriptLibrary      = NULL;
+    m_pGetScriptLibraryVersion  = NULL;
+
+    m_pGetCreatureAI            = NULL;
+    m_pCreateInstanceData       = NULL;
+
+    m_pOnGossipHello            = NULL;
+    m_pOnGOGossipHello          = NULL;
+    m_pOnGossipSelect           = NULL;
+    m_pOnGOGossipSelect         = NULL;
+    m_pOnGossipSelectWithCode   = NULL;
+    m_pOnGOGossipSelectWithCode = NULL;
+    m_pOnQuestAccept            = NULL;
+    m_pOnGOQuestAccept          = NULL;
+    m_pOnItemQuestAccept        = NULL;
+    m_pOnQuestRewarded          = NULL;
+    m_pOnGOQuestRewarded        = NULL;
+    m_pGetNPCDialogStatus       = NULL;
+    m_pGetGODialogStatus        = NULL;
+    m_pOnGOUse                  = NULL;
+    m_pOnItemUse                = NULL;
+    m_pOnAreaTrigger            = NULL;
+    m_pOnProcessEvent           = NULL;
+    m_pOnEffectDummyCreature    = NULL;
+    m_pOnEffectDummyGO          = NULL;
+    m_pOnEffectDummyItem        = NULL;
+    m_pOnAuraDummy              = NULL;
+}
+
+uint32 ScriptMgr::GetEventIdScriptId(uint32 eventId) const
+{
+    EventIdScriptMap::const_iterator itr = m_EventIdScripts.find(eventId);
+    if (itr != m_EventIdScripts.end())
+        return itr->second;
+
+    return 0;
 }
 
 uint32 ScriptMgr::GetScriptId(const char *name)
@@ -537,6 +875,11 @@ uint32 ScriptMgr::GetAreaTriggerScriptId(uint32 trigger_id) const
     if (i!= m_AreaTriggerScripts.end())
         return i->second;
     return 0;
+}
+
+uint32 GetEventIdScriptId(uint32 eventId)
+{
+    return sScriptMgr.GetEventIdScriptId(eventId);
 }
 
 // Functions for scripting access

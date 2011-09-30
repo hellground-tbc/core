@@ -2263,19 +2263,19 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name= "npc_isla_starmane";
     newscript->GetAI = &GetAI_npc_isla_starmaneAI;
-    newscript->pQuestAccept = &QuestAccept_npc_isla_starmane;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_isla_starmane;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_skull_pile";
-    newscript->pGOHello  = &GossipHello_go_skull_pile;
-    newscript->pGOSelect = &GossipSelect_go_skull_pile;
+    newscript->pGOUse  = &GossipHello_go_skull_pile;
+    newscript->pGossipSelectGO = &GossipSelect_go_skull_pile;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_ancient_skull_pile";
-    newscript->pGOHello  = &GossipHello_go_ancient_skull_pile;
-    newscript->pGOSelect = &GossipSelect_go_ancient_skull_pile;
+    newscript->pGOUse  = &GossipHello_go_ancient_skull_pile;
+    newscript->pGossipSelectGO = &GossipSelect_go_ancient_skull_pile;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -2296,13 +2296,13 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name= "npc_skyguard_prisoner";
     newscript->GetAI = &GetAI_npc_skyguard_prisonerAI;
-    newscript->pQuestAccept = &QuestAccept_npc_skyguard_prisoner;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_skyguard_prisoner;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name= "npc_letoll";
     newscript->GetAI = &GetAI_npc_letollAI;
-    newscript->pQuestAccept = &QuestAccept_npc_letoll;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_letoll;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -2340,6 +2340,6 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name="npc_akuno";
     newscript->GetAI = &GetAI_npc_akuno;
-    newscript->pQuestAccept = &QuestAccept_npc_akuno;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_akuno;
     newscript->RegisterSelf();
 }

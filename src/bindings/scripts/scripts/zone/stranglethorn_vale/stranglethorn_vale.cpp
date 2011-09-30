@@ -108,7 +108,7 @@ CreatureAI* GetAI_mob_yenniku(Creature *_Creature)
     return new mob_yennikuAI (_Creature);
 }
 
-bool ChooseReward_npc_Riggle_Bassbait(Player *player, Creature *_Creature, const Quest *_Quest, uint32 slot){
+bool ChooseReward_npc_Riggle_Bassbait(Player *player, Creature *_Creature, const Quest *_Quest){
     if(_Quest->GetQuestId()==8193){
     _Creature->Yell("We have this week Stranglethorn Fishing Extravaganza winner. Congratulations $N",0,player->GetGUID());
     player->Kill(_Creature);
@@ -117,7 +117,7 @@ bool ChooseReward_npc_Riggle_Bassbait(Player *player, Creature *_Creature, const
     return true;
 }
 
-bool ChooseReward_npc_Jang(Player *player, Creature *_Creature, const Quest *_Quest, uint32 slot)
+bool ChooseReward_npc_Jang(Player *player, Creature *_Creature, const Quest *_Quest)
 {
     if(_Quest->GetQuestId()==8194)
     {
@@ -147,12 +147,12 @@ void AddSC_stranglethorn_vale()
 
     newscript = new Script;
     newscript->Name = "npc_riggle_bassbait";
-    newscript->pChooseReward = &ChooseReward_npc_Riggle_Bassbait;
+    newscript->pQuestRewardedNPC = &ChooseReward_npc_Riggle_Bassbait;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_jang";
-    newscript->pChooseReward = &ChooseReward_npc_Jang;
+    newscript->pQuestRewardedNPC = &ChooseReward_npc_Jang;
     newscript->RegisterSelf();
 }
 

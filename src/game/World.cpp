@@ -45,7 +45,7 @@
 #include "LootMgr.h"
 #include "ItemEnchantmentMgr.h"
 #include "MapManager.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include "CreatureAIRegistry.h"
 #include "Policies/SingletonImp.h"
 #include "BattleGroundMgr.h"
@@ -1424,6 +1424,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading AreaTrigger script names...");
     sScriptMgr.LoadAreaTriggerScripts();
 
+    sLog.outString( "Loading event id script names..." );
+    sScriptMgr.LoadEventIdScripts();
+
     sLog.outString("Loading Graveyard-zone links...");
     objmgr.LoadGraveyardZones();
 
@@ -1551,8 +1554,7 @@ void World::SetInitialWorldSettings()
     CreatureEAI_Mgr.LoadCreatureEventAI_Scripts();
 
     sLog.outString("Initializing Scripts...");
-    if (!LoadScriptingModule())
-        exit(1);
+    sScriptMgr.LoadScriptLibrary(TRINITY_SCRIPT_NAME);
 
     ///- Initialize game time and timers
     sLog.outDebug("DEBUG:: Initialize game time and timers");

@@ -561,19 +561,19 @@ void AddSC_thousand_needles()
     newscript = new Script;
     newscript->Name = "npc_kanati";
     newscript->GetAI = &GetAI_npc_kanati;
-    newscript->pQuestAccept = &QuestAccept_npc_kanati;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_kanati;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_lakota_windsong";
     newscript->GetAI = &GetAI_npc_lakota_windsong;
-    newscript->pQuestAccept = &QuestAccept_npc_lakota_windsong;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_lakota_windsong;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_swiftmountain";
     newscript->GetAI = &GetAI_npc_swiftmountain;
-    newscript->pQuestAccept = &QuestAccept_npc_swiftmountain;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_swiftmountain;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -591,7 +591,7 @@ void AddSC_thousand_needles()
 
     newscript = new Script;
     newscript->Name="go_panther_cage";
-    newscript->pGOHello = &go_panther_cage;
+    newscript->pGOUse = &go_panther_cage;
     newscript->RegisterSelf();
 
 }

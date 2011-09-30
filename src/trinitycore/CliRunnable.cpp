@@ -26,7 +26,7 @@
 #include "Language.h"
 #include "Log.h"
 #include "World.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "WorldSession.h"
 #include "Config/Config.h"

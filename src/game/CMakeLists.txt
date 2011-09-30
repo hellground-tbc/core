@@ -201,8 +201,6 @@ SET(game_STAT_SRCS
    RandomMovementGenerator.h
    ReactorAI.cpp
    ReactorAI.h
-   ScriptCalls.cpp
-   ScriptCalls.h
    ScriptMgr.cpp
    ScriptMgr.h
    SharedDefines.h

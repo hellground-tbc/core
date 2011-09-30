@@ -266,7 +266,7 @@ public:
     }
 };
 
-bool GOHello_go_orb_of_the_blue_flight(Player *plr, GameObject* go)
+bool GOUse_go_orb_of_the_blue_flight(Player *plr, GameObject* go)
 {
     if(go->GetUInt32Value(GAMEOBJECT_FACTION) == 35){
         ScriptedInstance* pInstance = (go->GetInstanceData());
@@ -1277,7 +1277,7 @@ void AddSC_boss_kiljaeden()
     Script* newscript;
 
     newscript = new Script;
-    newscript->pGOHello = &GOHello_go_orb_of_the_blue_flight;
+    newscript->pGOUse = &GOUse_go_orb_of_the_blue_flight;
     newscript->Name = "go_orb_of_the_blue_flight";
     newscript->RegisterSelf();
 

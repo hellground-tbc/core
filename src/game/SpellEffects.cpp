@@ -28,6 +28,7 @@
 #include "UpdateMask.h"
 #include "World.h"
 #include "ObjectMgr.h"
+#include "ScriptMgr.h"
 #include "SpellMgr.h"
 #include "Player.h"
 #include "SkillExtraItems.h"
@@ -56,7 +57,6 @@
 #include "SocialMgr.h"
 #include "Util.h"
 #include "TemporarySummon.h"
-#include "ScriptCalls.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -2342,8 +2342,13 @@ void Spell::EffectDummy(uint32 i)
 
     // Script based implementation. Must be used only for not good for implementation in core spell effects
     // So called only for not proccessed cases
-    if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT && Script)
-        Script->EffectDummyCreature(m_caster, m_spellInfo->Id, i, ((Creature*)unitTarget));
+    if (gameObjTarget)
+        sScriptMgr.OnEffectDummy(m_caster, m_spellInfo->Id, i, gameObjTarget);
+    else if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnEffectDummy(m_caster, m_spellInfo->Id, i, (Creature*)unitTarget);
+    else if (itemTarget)
+        sScriptMgr.OnEffectDummy(m_caster, m_spellInfo->Id, i, itemTarget);
+
 }
 
 void Spell::EffectTriggerSpellWithValue(uint32 i)
@@ -3077,7 +3082,8 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         }
     }
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
-    m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
+    if (!sScriptMgr.OnProcessEvent(m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject, true))
+        m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
 }
 
 void Spell::EffectPowerBurn(uint32 i)
@@ -3553,7 +3559,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     if (gameObjTarget)
     {
-        if (Script->GOHello(player, gameObjTarget))
+        if (sScriptMgr.OnGameObjectUse(player, gameObjTarget))
             return;
 
         switch (gameObjTarget->GetGoType())
@@ -3590,7 +3596,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                     if (player->GetQuestStatus(gameObjTarget->GetGOInfo()->goober.questId) != QUEST_STATUS_INCOMPLETE)
                         return;
 
-                Script->GOHello(player, gameObjTarget);
+                sScriptMgr.OnGameObjectUse(player, gameObjTarget);
                 gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
 
                 gameObjTarget->AddUniqueUse(player);

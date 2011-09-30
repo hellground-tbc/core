@@ -23,7 +23,7 @@
 #include "PassiveAI.h"
 #include "Policies/SingletonImp.h"
 #include "MovementGenerator.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include "Pet.h"
 #include "TemporarySummon.h"
 #include "CreatureAIFactory.h"
@@ -40,7 +40,7 @@ namespace FactorySelector
 
         //scriptname in db
         if ((!creature->isPet() || !((Pet*)creature)->isControlled()) && !creature->isCharmed())
-            if (CreatureAI* scriptedAI = Script->GetAI(creature))
+            if (CreatureAI* scriptedAI = sScriptMgr.GetCreatureAI(creature))
                 return scriptedAI;
 
         // AIname in db

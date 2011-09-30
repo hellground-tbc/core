@@ -900,7 +900,7 @@ void AddSC_azuremyst_isle()
     newscript = new Script;
     newscript->Name = "npc_magwin";
     newscript->GetAI = &GetAI_npc_magwinAI;
-    newscript->pQuestAccept = &QuestAccept_npc_magwin;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_magwin;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -931,7 +931,7 @@ void AddSC_azuremyst_isle()
 
     newscript = new Script;
     newscript->Name="go_ravager_cage";
-    newscript->pGOHello = &go_ravager_cage;
+    newscript->pGOUse = &go_ravager_cage;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -941,6 +941,6 @@ void AddSC_azuremyst_isle()
 
     newscript = new Script;
     newscript->Name="go_bristlelimb_cage";
-    newscript->pGOHello = &go_bristlelimb_cage;
+    newscript->pGOUse = &go_bristlelimb_cage;
     newscript->RegisterSelf();
 }

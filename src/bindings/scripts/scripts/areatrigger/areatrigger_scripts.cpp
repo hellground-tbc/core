@@ -38,7 +38,7 @@ EndContentData */
 #define SPELL_TELE_A_TO   37387
 #define SPELL_TELE_H_TO   37389
 
-bool AreaTrigger_at_legion_teleporter(Player *player, AreaTriggerEntry *at)
+bool AreaTrigger_at_legion_teleporter(Player *player, AreaTriggerEntry const* at)
 {
     if (player->isAlive() && !player->isInCombat())
     {
@@ -69,7 +69,7 @@ enum eScentLarkorwi
     NPC_LARKORWI_MATE                     = 9683
 };
 
-bool AreaTrigger_at_scent_larkorwi(Player* player, AreaTriggerEntry* trigger)
+bool AreaTrigger_at_scent_larkorwi(Player* player, AreaTriggerEntry const* trigger)
 {
     if (!player->isDead() && player->GetQuestStatus(QUEST_SCENT_OF_LARKORWI) == QUEST_STATUS_INCOMPLETE)
     {
@@ -98,7 +98,7 @@ float SharkPos[3] =
     -7.488
 };
 
-bool AreaTrigger_at_nats_landing(Player* player, AreaTriggerEntry* trigger)
+bool AreaTrigger_at_nats_landing(Player* player, AreaTriggerEntry const* trigger)
 {
     if (player->GetQuestStatus(QUEST_NATS_BARGAIN) == QUEST_STATUS_INCOMPLETE && player->HasAura(AURA_PAGLE_FISH_PASTE, 0))
     {

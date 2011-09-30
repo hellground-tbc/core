@@ -293,7 +293,7 @@ CreatureAI* GetAI_npc_manaforge_control_console(Creature *_Creature)
 ######*/
 
 //TODO: clean up this workaround when Trinity adds support to do it properly (with gossip selections instead of instant summon)
-bool GOHello_go_manaforge_control_console(Player *player, GameObject* _GO)
+bool GOUse_go_manaforge_control_console(Player *player, GameObject* _GO)
 {
     if (_GO->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
     {
@@ -637,7 +637,7 @@ Creature* SearchDawnforge(Player *source, uint32 entry, float range)
     return pCreature;
 }
 
-bool AreaTrigger_at_commander_dawnforge(Player *player, AreaTriggerEntry *at)
+bool AreaTrigger_at_commander_dawnforge(Player *player, AreaTriggerEntry const*at)
 {
     //if player lost aura or not have at all, we should not try start event.
     if (!player->HasAura(SPELL_SUNFURY_DISGUISE,0))
@@ -1085,7 +1085,7 @@ float ethereum_NPC[2][7] =
     {22810,22811,22812,22813,22814,22815,0}      // fiendly npc (need script in acid ? only to cast spell reputation reward)
 };
 
-bool GOHello_go_ethereum_prison(Player *player, GameObject* _GO)
+bool GOUse_go_ethereum_prison(Player *player, GameObject* _GO)
 {
     uint32 entry;
     switch(rand()%2)
@@ -1456,7 +1456,7 @@ void AddSC_netherstorm()
 
     newscript = new Script;
     newscript->Name="go_manaforge_control_console";
-    newscript->pGOHello = &GOHello_go_manaforge_control_console;
+    newscript->pGOUse = &GOUse_go_manaforge_control_console;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1484,7 +1484,7 @@ void AddSC_netherstorm()
     newscript->Name = "npc_professor_dabiri";
     newscript->pGossipHello =   &GossipHello_npc_professor_dabiri;
     newscript->pGossipSelect =  &GossipSelect_npc_professor_dabiri;
-    newscript->pQuestAccept = &QuestAccept_npc_professor_dabiri;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_professor_dabiri;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1501,7 +1501,7 @@ void AddSC_netherstorm()
     newscript = new Script;
     newscript->Name = "npc_bessy";
     newscript->GetAI = &GetAI_npc_bessy;
-    newscript->pQuestAccept = &QuestAccept_npc_bessy;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_bessy;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1516,7 +1516,7 @@ void AddSC_netherstorm()
 
     newscript = new Script;
     newscript->Name="go_ethereum_prison";
-    newscript->pGOHello = &GOHello_go_ethereum_prison;
+    newscript->pGOUse = &GOUse_go_ethereum_prison;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1542,7 +1542,7 @@ void AddSC_netherstorm()
     newscript = new Script;
     newscript->Name = "npc_maxx_a_million";
     newscript->GetAI = &GetAI_npc_maxx_a_million;
-    newscript->pQuestAccept = &QuestAccept_npc_maxx_a_million;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_maxx_a_million;
     newscript->RegisterSelf();
 }
 

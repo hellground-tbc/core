@@ -569,7 +569,7 @@ CreatureAI* GetAI_npc_OOX17(Creature* pCreature)
 #define PATH_ENTRY_4       2093
 #define PATH_ENTRY_5       2094
 
-bool GOHello_go_landmark_treasure(Player *player, GameObject* _GO)
+bool GOUse_go_landmark_treasure(Player *player, GameObject* _GO)
 {
     if (player->GetQuestStatus(QUEST_CUERGOS_GOLD) != QUEST_STATUS_INCOMPLETE)
         return false;
@@ -820,7 +820,7 @@ void AddSC_tanaris()
     newscript->Name = "npc_steward_of_time";
     newscript->pGossipHello =  &GossipHello_npc_steward_of_time;
     newscript->pGossipSelect = &GossipSelect_npc_steward_of_time;
-    newscript->pQuestAccept =  &QuestAccept_npc_steward_of_time;
+    newscript->pQuestAcceptNPC =  &QuestAccept_npc_steward_of_time;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -832,18 +832,18 @@ void AddSC_tanaris()
     newscript = new Script;
     newscript->Name = "npc_OOX17";
     newscript->GetAI = &GetAI_npc_OOX17;
-    newscript->pQuestAccept = &QuestAccept_npc_OOX17;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_OOX17;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_landmark_treasure";
-    newscript->pGOHello = &GOHello_go_landmark_treasure;
+    newscript->pGOUse = &GOUse_go_landmark_treasure;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_tooga";
     newscript->GetAI = &GetAI_npc_tooga;
-    newscript->pQuestAccept = &QuestAccept_npc_tooga;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_tooga;
     newscript->RegisterSelf();
 
     newscript = new Script;

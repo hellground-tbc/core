@@ -37,7 +37,7 @@
 #include "Config/Config.h"
 #include "Database/DatabaseEnv.h"
 #include "CliRunnable.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include "Util.h"
 #include "InstanceSaveMgr.h"
 
@@ -346,10 +346,6 @@ int Master::Run()
         BOOL ret = WriteConsoleInput(hStdIn, b, 4, &numb);
     }
     #endif
-
-    // for some unknown reason, unloading scripts here and not in worldrunnable
-    // fixes a memory leak related to detaching threads from the module
-    UnloadScriptingModule();
 
     sInstanceSaveManager.UnbindBeforeDelete();
 

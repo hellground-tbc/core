@@ -478,9 +478,6 @@
     <ClCompile Include="..\..\src\game\WardenWin.cpp">
       <Filter>Warden</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\ScriptCalls.cpp">
-      <Filter>Tools</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\game\MailHandler.cpp">
       <Filter>Handlers</Filter>
     </ClCompile>
@@ -625,9 +622,6 @@
       <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\Language.h">
-      <Filter>Tools</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\ScriptCalls.h">
       <Filter>Tools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\Tools.h">

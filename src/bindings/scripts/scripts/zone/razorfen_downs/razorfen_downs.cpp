@@ -80,7 +80,7 @@ bool GossipSelect_npc_henry_stern (Player* pPlayer, Creature* pCreature, uint32 
 ## go_gong
 ######*/
 
-bool GOHello_go_gong(Player* pPlayer, GameObject* pGO)
+bool GOUse_go_gong(Player* pPlayer, GameObject* pGO)
 {
     //basic support, not blizzlike data is missing...
     ScriptedInstance* pInstance = (pGO->GetInstanceData());
@@ -192,7 +192,7 @@ void AddSC_razorfen_downs()
 
     newscript = new Script;
     newscript->Name = "go_gong";
-    newscript->pGOHello =           &GOHello_go_gong;
+    newscript->pGOUse =           &GOUse_go_gong;
     newscript->RegisterSelf();
 
     newscript = new Script;

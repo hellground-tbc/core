@@ -2049,7 +2049,7 @@ void AddSC_boss_illidan()
 
     newscript = new Script;
     newscript->Name = "boss_illidan_cage_trap";
-    newscript->pGOHello = &GOUse_boss_illidan_cage_trap;
+    newscript->pGOUse = &GOUse_boss_illidan_cage_trap;
     newscript->RegisterSelf();
 
     newscript = new Script;

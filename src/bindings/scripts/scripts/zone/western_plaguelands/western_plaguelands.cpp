@@ -392,7 +392,7 @@ void AddSC_western_plaguelands()
     newscript = new Script;
     newscript->Name = "npc_anchorite_truuen";
     newscript->GetAI = &GetAI_npc_anchorite_truuen;
-    newscript->pQuestAccept =  &QuestAccept_npc_anchorite_truuen;
+    newscript->pQuestAcceptNPC =  &QuestAccept_npc_anchorite_truuen;
     newscript->RegisterSelf();
     
     newscript = new Script;
