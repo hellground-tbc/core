@@ -125,6 +125,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 {
     mob_aqueous_spawnAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
+    uint32 Zcheck;
     uint32 SludgeNova;
     uint32 MergeTimer;
     bool merging;
@@ -133,6 +134,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
     {
         ClearCastQueue();
 
+        Zcheck = 1000;
         SludgeNova = 5000;
         MergeTimer = urand(10000, 50000);
         merging = false;
@@ -144,6 +146,17 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
     {
         if(!UpdateVictim() && !merging)
             return;
+
+        // to avoid melting in textures on cb
+        if(Zcheck < diff)
+        {
+            float x, y, z;
+            me->GetPosition(x, y, z);
+            me->GetMap()->CreatureRelocation(me, x, y, z+0.8, me->GetOrientation());
+            Zcheck = 1000;
+        }
+        else
+            Zcheck -= diff;
 
         if(SludgeNova < diff)
         {
@@ -1000,6 +1013,8 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
             {
                 if (m_creature->IsWithinDistInMap(victim, 10))
                 {
+                    m_creature->SetLevitate(false);
+
                     if (!m_creature->IsNonMeleeSpellCasted(false))
                     {
                         DoResetThreat();
@@ -1124,6 +1139,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
             {
                 if (m_creature->IsWithinDistInMap(victim, 10))
                 {
+                    m_creature->SetLevitate(false);
                     if (!m_creature->IsNonMeleeSpellCasted(false))
                     {
                         DoResetThreat();
@@ -2261,8 +2277,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
     void AttackStart(Unit *who)
     {
         ScriptedAI::AttackStartNoMove(who);
-
-        DoStartMovement(who, 25.0f);
+        //DoStartMovement(who, 25.0f);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2272,7 +2287,11 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 
         if(Shoot < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+            //check if victim is in melee range, if so, start normal chasing
+            if (me->IsWithinDistInMap(me->getVictim(), 8.0) && me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+                DoStartMovement(me->getVictim());
+
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, 0, 5.0))
             {
                 AddSpellToCast(target, SPELL_IH_SHOOT);
                 Shoot = 1800;
@@ -4768,7 +4787,7 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        Infatuation = urand(5000, 8000);
+        Infatuation = urand(10000, 15000);
         PoisonousThrow = urand(2000, 10000);
     }
 
