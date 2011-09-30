@@ -2276,8 +2276,8 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
-        //ScriptedAI::AttackStartNoMove(who);
-        DoStartMovement(who, 25.0f);
+        ScriptedAI::AttackStartNoMove(who);
+        //DoStartMovement(who, 25.0f);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2287,7 +2287,11 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 
         if(Shoot < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+            //check if victim is in melee range, if so, start normal chasing
+            if (me->IsWithinDistInMap(me->getVictim(), 8.0) && me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+                DoStartMovement(me->getVictim());
+
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, 0, 5.0))
             {
                 AddSpellToCast(target, SPELL_IH_SHOOT);
                 Shoot = 1800;
@@ -4776,7 +4780,6 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
 {
     mob_charming_courtesanAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
-    uint32 check;
     uint32 Infatuation;
     uint32 PoisonousThrow;
 
@@ -4784,8 +4787,7 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        check = 2000;
-        Infatuation = urand(5000, 8000);
+        Infatuation = urand(10000, 15000);
         PoisonousThrow = urand(2000, 10000);
     }
 
@@ -4796,27 +4798,10 @@ struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
         DoZoneInCombat(80.0f);
     }
 
-    // test
-    void GroundCheck()
-    {
-        float x, y, z;
-        me->GetPosition(x, y, z);
-        me->UpdateAllowedPositionZ(x, y, z);
-        me->GetMap()->CreatureRelocation(me, x, y, z, me->GetOrientation());
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
-
-        if(check < diff)
-        {
-            GroundCheck();
-            check = 2000;
-        }
-        else
-            check -= diff;
 
         if(Infatuation < diff)
         {
@@ -4992,7 +4977,6 @@ struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
 {
     mob_temple_concubineAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
-    uint32 check;
     uint32 LoveTap;
     uint32 Polymorph;
 
@@ -5000,7 +4984,6 @@ struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        check = 2000;
         LoveTap = urand(2000, 15000);
         Polymorph = urand(5000, 10000);
     }
@@ -5010,27 +4993,10 @@ struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
         DoZoneInCombat(80.0f);
     }
 
-    // test
-    void GroundCheck()
-    {
-        float x, y, z;
-        me->GetPosition(x, y, z);
-        me->UpdateAllowedPositionZ(x, y, z);
-        me->GetMap()->CreatureRelocation(me, x, y, z, me->GetOrientation());
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
-
-        if(check < diff)
-        {
-            GroundCheck();
-            check = 2000;
-        }
-        else
-            check -= diff;
 
         if(LoveTap < diff)
         {
