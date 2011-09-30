@@ -6066,10 +6066,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             switch(unitTarget->GetEntry())
             {
             case 24108:
-                ((Player*)m_caster)->CastedCreatureOrGO(unitTarget->GetEntry(), unitTarget->GetGUID(), 0);
+                //((Player*)m_caster)->CastedCreatureOrGO(unitTarget->GetEntry(), unitTarget->GetGUID(), 0);
+                m_caster->CastSpell(m_caster, 47173, true);
+                break;
+            case 23709:
+                m_caster->CastSpell(m_caster, 47171, true);
+                m_caster->Kill(unitTarget, false);
                 break;
             default:
-                m_caster->Kill(unitTarget, false);
+                break;
             }
             break;
         }
