@@ -4326,7 +4326,6 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     if (this->GetTypeId() == TYPEID_UNIT && this->IsAIEnabled)
         ((Creature *)this)->AI()->OnAuraRemove(Aur, false);
 
-
     // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
     if (Aur->GetId() == 33684)
     {
@@ -12890,4 +12889,12 @@ Unit* Unit::GetNextRandomRaidMember(float radius)
 
     uint32 randTarget = GetMap()->urand(0,nearMembers.size()-1);
     return nearMembers[randTarget];
+}
+
+bool Unit::isCrowdControlled()
+{
+    if(isFeared() || isCharmed() || isFrozen() || hasUnitState(UNIT_STAT_STUNNED) || hasUnitState(UNIT_STAT_CONFUSED))
+        return true;
+
+    return false;
 }
