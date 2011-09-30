@@ -471,7 +471,6 @@
     <ClInclude Include="..\..\src\game\TotemAI.h" />
     <ClInclude Include="..\..\src\game\UnitAI.h" />
     <ClInclude Include="..\..\src\game\PlayerAI.h" />
-    <ClInclude Include="..\..\src\game\AnimalRandomMovementGenerator.h" />
     <ClInclude Include="..\..\src\game\ConfusedMovementGenerator.h" />
     <ClInclude Include="..\..\src\game\FleeingMovementGenerator.h" />
     <ClInclude Include="..\..\src\game\HomeMovementGenerator.h" />

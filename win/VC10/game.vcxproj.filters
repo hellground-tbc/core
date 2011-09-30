@@ -750,9 +750,6 @@
     <ClInclude Include="..\..\src\game\PlayerAI.h">
       <Filter>Artificial Intelligence\PlayerAI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\game\AnimalRandomMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\game\ConfusedMovementGenerator.h">
       <Filter>Movement Generators</Filter>
     </ClInclude>
