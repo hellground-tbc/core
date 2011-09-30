@@ -12890,11 +12890,3 @@ Unit* Unit::GetNextRandomRaidMember(float radius)
     uint32 randTarget = GetMap()->urand(0,nearMembers.size()-1);
     return nearMembers[randTarget];
 }
-
-bool Unit::isCrowdControlled()
-{
-    if(isFeared() || isCharmed() || isFrozen() || hasUnitState(UNIT_STAT_STUNNED) || hasUnitState(UNIT_STAT_CONFUSED))
-        return true;
-
-    return false;
-}

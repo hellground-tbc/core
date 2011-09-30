@@ -1228,7 +1228,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
-        bool isCrowdControlled();
+        bool isCrowdControlled() const { return hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_POSSESSED); }
         bool isFeared()  const { return HasAuraType(SPELL_AURA_MOD_FEAR); }
         bool isInRoots() const { return HasAuraType(SPELL_AURA_MOD_ROOT); }
         bool IsPolymorphed() const;
