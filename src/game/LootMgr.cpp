@@ -236,7 +236,7 @@ bool LootStoreItem::Roll() const
     if (mincountOrRef < 0)                                   // reference case
         return roll_chance_f(chance*sWorld.getRate(RATE_DROP_ITEM_REFERENCED));
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(itemid);
+    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(itemid);
 
     float qualityModifier = pProto ? sWorld.getRate(qualityToRate[pProto->Quality]) : 1.0f;
 
@@ -254,7 +254,7 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
 
     if (mincountOrRef > 0)                                 // item (quest or non-quest) entry, maybe grouped
     {
-        ItemPrototype const *proto = objmgr.GetItemPrototype(itemid);
+        ItemPrototype const *proto = ObjectMgr::GetItemPrototype(itemid);
         if (!proto)
         {
             sLog.outErrorDb("Table '%s' entry %d item %d: item entry not listed in `item_template` - skipped", store.GetName(), entry, itemid);
@@ -312,7 +312,7 @@ LootItem::LootItem(LootStoreItem const& li)
     itemid      = li.itemid;
     conditionId = li.conditionId;
 
-    ItemPrototype const* proto = objmgr.GetItemPrototype(itemid);
+    ItemPrototype const* proto = ObjectMgr::GetItemPrototype(itemid);
     freeforall  = proto && (proto->Flags & ITEM_FLAGS_PARTY_LOOT);
 
     needs_quest = li.needs_quest;
@@ -342,7 +342,7 @@ bool LootItem::AllowedForPlayer(Player const * player) const
     else
     {
         // Not quest only drop (check quest starting items for already accepted non-repeatable quests)
-        ItemPrototype const *pProto = objmgr.GetItemPrototype(itemid);
+        ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(itemid);
         if (pProto && pProto->StartQuest && player->GetQuestStatus(pProto->StartQuest) != QUEST_STATUS_NONE && !player->HasQuestForItem(itemid))
             return false;
     }
@@ -366,7 +366,7 @@ void Loot::AddItem(LootStoreItem const & item)
     {
         items.push_back(LootItem(item));
 
-        ItemPrototype const* proto = objmgr.GetItemPrototype(item.itemid);
+        ItemPrototype const* proto = ObjectMgr::GetItemPrototype(item.itemid);
 
         // items with quality >= RARE are unique in loot, except for epic junk (-> tier tokens)
         if (proto->Quality >= ITEM_QUALITY_RARE &&
@@ -378,7 +378,7 @@ void Loot::AddItem(LootStoreItem const & item)
         // non-ffa conditionals are counted in FillNonQuestNonFFAConditionalLoot()
         if (!item.conditionId)
         {
-            ItemPrototype const* proto = objmgr.GetItemPrototype(item.itemid);
+            ItemPrototype const* proto = ObjectMgr::GetItemPrototype(item.itemid);
             if (!proto || (proto->Flags & ITEM_FLAGS_PARTY_LOOT)==0)
                 ++unlootedCount;
         }
@@ -526,7 +526,7 @@ void Loot::saveLootToDB(Player *owner)
         if (item->is_looted || item->conditionId)
             continue;
 
-        ItemPrototype const *item_proto = objmgr.GetItemPrototype(item->itemid);
+        ItemPrototype const *item_proto = ObjectMgr::GetItemPrototype(item->itemid);
         if (!item_proto || item_proto->Flags & ITEM_FLAGS_PARTY_LOOT)
             continue;
 
@@ -924,7 +924,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
 {
     b << uint32(li.itemid);
     b << uint32(li.count);                                  // nr of items of this type
-    b << uint32(objmgr.GetItemPrototype(li.itemid)->DisplayInfoID);
+    b << uint32(ObjectMgr::GetItemPrototype(li.itemid)->DisplayInfoID);
     b << uint32(li.randomSuffix);
     b << uint32(li.randomPropertyId);
     //b << uint8(0);                                        // slot type - will send after this function call
@@ -1073,7 +1073,7 @@ LootStoreItem const * LootTemplate::LootGroup::Roll(std::set<uint32> &except) co
             //if(item->chance >= 100.f)
             //    return item;
 
-            //ItemPrototype const *pProto = objmgr.GetItemPrototype(ExplicitlyChanced[*i].itemid);
+            //ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(ExplicitlyChanced[*i].itemid);
             Roll -= item->chance;
             if (Roll < 0)
                 return item;

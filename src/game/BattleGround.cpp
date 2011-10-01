@@ -698,7 +698,7 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
             return;
     }
 
-    if (objmgr.GetItemPrototype(mark))
+    if (ObjectMgr::GetItemPrototype(mark))
     {
         ItemPosCountVec dest;
         uint32 no_space_count = 0;
@@ -721,7 +721,7 @@ void BattleGround::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
     if (!bmEntry)
         return;
 
-    ItemPrototype const* markProto = objmgr.GetItemPrototype(mark);
+    ItemPrototype const* markProto = ObjectMgr::GetItemPrototype(mark);
     if (!markProto)
         return;
 

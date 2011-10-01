@@ -736,7 +736,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
 
             uint32 item_id = oEntry->ItemId[j];
 
-            ItemPrototype const* iProto = objmgr.GetItemPrototype(item_id);
+            ItemPrototype const* iProto = ObjectMgr::GetItemPrototype(item_id);
             if (!iProto)
             {
                 sLog.outErrorDb("Initial item id %u (race %u class %u) from CharStartOutfit.dbc not listed in `item_template`, ignoring.",item_id,getRace(),getClass());
@@ -1567,7 +1567,7 @@ void Player::BuildEnumData(QueryResultAutoPtr result, WorldPacket * p_data)
             if (slot >= EQUIPMENT_SLOT_END)
                 continue;
 
-            items[slot] = objmgr.GetItemPrototype(item_id);
+            items[slot] = ObjectMgr::GetItemPrototype(item_id);
             if (!items[slot])
             {
                 sLog.outError("Player::BuildEnumData: Player %s have unknown item (id: #%u) in inventory, skipped.", GetName(),item_id);
@@ -1580,7 +1580,7 @@ void Player::BuildEnumData(QueryResultAutoPtr result, WorldPacket * p_data)
     {
         uint32 visualbase = PLAYER_VISIBLE_ITEM_1_0 + (slot * MAX_VISIBLE_ITEM_OFFSET);
         uint32 item_id = GetUInt32Value(visualbase);
-        const ItemPrototype * proto = objmgr.GetItemPrototype(item_id);
+        const ItemPrototype * proto = ObjectMgr::GetItemPrototype(item_id);
         SpellItemEnchantmentEntry const *enchant = NULL;
 
         for (uint8 enchantSlot = PERM_ENCHANTMENT_SLOT; enchantSlot<=TEMP_ENCHANTMENT_SLOT; enchantSlot++)
@@ -3961,7 +3961,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                         uint32 item_guidlow = fields2[0].GetUInt32();
                         uint32 item_template = fields2[1].GetUInt32();
 
-                        ItemPrototype const* itemProto = objmgr.GetItemPrototype(item_template);
+                        ItemPrototype const* itemProto = ObjectMgr::GetItemPrototype(item_template);
                         if (!itemProto)
                         {
                             CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item_guidlow);
@@ -7639,7 +7639,7 @@ void Player::_ApplyAmmoBonuses()
 
     float currentAmmoDPS;
 
-    ItemPrototype const *ammo_proto = objmgr.GetItemPrototype(ammo_id);
+    ItemPrototype const *ammo_proto = ObjectMgr::GetItemPrototype(ammo_id);
     if (!ammo_proto || ammo_proto->Class!=ITEM_CLASS_PROJECTILE || !CheckAmmoCompatibility(ammo_proto))
         currentAmmoDPS = 0.0f;
     else
@@ -9333,7 +9333,7 @@ Item* Player::GetItemOrItemWithGemEquipped(uint32 item) const
             return pItem;
     }
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(item);
+    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(item);
     if (pProto && pProto->GemProperties)
     {
         for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
@@ -9352,7 +9352,7 @@ Item* Player::GetItemOrItemWithGemEquipped(uint32 item) const
 
 uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count) const
 {
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(entry);
+    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(entry);
     if (!pProto)
     {
         if (no_space_count)
@@ -9621,7 +9621,7 @@ uint8 Player::_CanStoreItem(uint8 bag, uint8 slot, ItemPosCountVec &dest, uint32
 {
     sLog.outDebug("STORAGE: CanStoreItem bag = %u, slot = %u, item = %u, count = %u", bag, slot, entry, count);
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(entry);
+    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(entry);
     if (!pProto)
     {
         if (no_space_count)
@@ -10304,7 +10304,7 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                 if (!enchantEntry)
                     continue;
 
-                ItemPrototype const* pGem = objmgr.GetItemPrototype(enchantEntry->GemID);
+                ItemPrototype const* pGem = ObjectMgr::GetItemPrototype(enchantEntry->GemID);
                 if (pGem && (pGem->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED))
                 {
                     Item* tItem = GetItemOrItemWithGemEquipped(enchantEntry->GemID);
@@ -10695,7 +10695,7 @@ uint8 Player::CanUseAmmo(uint32 item) const
         return EQUIP_ERR_YOU_ARE_DEAD;
     //if(isStunned())
     //    return EQUIP_ERR_YOU_ARE_STUNNED;
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(item);
+    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(item);
     if (pProto)
     {
         if (pProto->InventoryType!= INVTYPE_AMMO)
@@ -15213,7 +15213,7 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
             uint32 item_guid = fields[3].GetUInt32();
             uint32 item_id   = fields[4].GetUInt32();
 
-            ItemPrototype const * proto = objmgr.GetItemPrototype(item_id);
+            ItemPrototype const * proto = ObjectMgr::GetItemPrototype(item_id);
 
             if (!proto)
             {
@@ -15958,7 +15958,7 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
             if (report)
             {
                 if (missingItem)
-                    GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED_AND_ITEM), ar->levelMin, objmgr.GetItemPrototype(missingItem)->Name1);
+                    GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED_AND_ITEM), ar->levelMin, ObjectMgr::GetItemPrototype(missingItem)->Name1);
                 else if (missingKey)
                     SendTransferAborted(target_map, TRANSFER_ABORT_DIFFICULTY2);
                 else if (missingHeroicQuest)
@@ -17824,7 +17824,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
     if (!isAlive())
         return false;
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(item);
+    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(item);
     if (!pProto)
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, NULL, item, 0);

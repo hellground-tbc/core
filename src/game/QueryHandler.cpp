@@ -149,7 +149,7 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
     uint32 entry;
     recv_data >> entry;
 
-    CreatureInfo const *ci = objmgr.GetCreatureTemplate(entry);
+    CreatureInfo const *ci = ObjectMgr::GetCreatureTemplate(entry);
     if (ci)
     {
         int loc_idx = GetSessionDbLocaleIndex();
@@ -204,7 +204,7 @@ void WorldSession::HandleGameObjectQueryOpcode(WorldPacket & recv_data)
     uint32 entryID;
     recv_data >> entryID;
 
-    const GameObjectInfo *info = objmgr.GetGameObjectInfo(entryID);
+    const GameObjectInfo *info = ObjectMgr::GetGameObjectInfo(entryID);
     if (info)
     {
 

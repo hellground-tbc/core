@@ -2039,7 +2039,7 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
 
     sLog.outDetail(GetTrinityString(LANG_ADDITEM), itemId, count);
 
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(itemId);
+    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(itemId);
     if (!pProto)
     {
         PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
@@ -2178,7 +2178,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         return false;
     }
 
-    ItemPrototype const* itemProto = objmgr.GetItemPrototype(item_id);
+    ItemPrototype const* itemProto = ObjectMgr::GetItemPrototype(item_id);
     if (!itemProto)
     {
         PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, item_id);
@@ -2383,7 +2383,7 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
         return false;
     }
 
-    GameObjectInfo const * gInfo = objmgr.GetGameObjectInfo(go_id);
+    GameObjectInfo const * gInfo = ObjectMgr::GetGameObjectInfo(go_id);
     if (!gInfo)
     {
         PSendSysMessage(LANG_COMMAND_LISTOBJINVALIDID, go_id);
@@ -2460,7 +2460,7 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
             float z = fields[4].GetFloat();
             int mapid = fields[5].GetUInt16();
 
-            GameObjectInfo const * gInfo = objmgr.GetGameObjectInfo(entry);
+            GameObjectInfo const * gInfo = ObjectMgr::GetGameObjectInfo(entry);
 
             if (!gInfo)
                 continue;
@@ -2533,7 +2533,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
         return false;
     }
 
-    CreatureInfo const* cInfo = objmgr.GetCreatureTemplate(cr_id);
+    CreatureInfo const* cInfo = ObjectMgr::GetCreatureTemplate(cr_id);
     if (!cInfo)
     {
         PSendSysMessage(LANG_COMMAND_INVALIDCREATUREID, cr_id);
@@ -3342,7 +3342,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* /*args*/)
     uint32 ItemID = atoi(pItemID);
     uint32 SlotID = atoi(pSlotID);
 
-    ItemPrototype* tmpItem = objmgr.GetItemPrototype(ItemID);
+    ItemPrototype* tmpItem = ObjectMgr::GetItemPrototype(ItemID);
 
     bool added = false;
     if (tmpItem)
@@ -6511,7 +6511,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         if (!item_id)
             return false;
 
-        ItemPrototype const* item_proto = objmgr.GetItemPrototype(item_id);
+        ItemPrototype const* item_proto = ObjectMgr::GetItemPrototype(item_id);
         if (!item_proto)
         {
             PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, item_id);
@@ -7111,7 +7111,7 @@ bool ChatHandler::HandleNearGridObjectCommand(const char* args)
         if (tmp)
         {
             GameObject * tmp2 = tmp->GetMap()->GetGameObject(tmp->GetGUID());
-            GameObjectInfo const * gInfo = objmgr.GetGameObjectInfo(tmp->GetEntry());
+            GameObjectInfo const * gInfo = ObjectMgr::GetGameObjectInfo(tmp->GetEntry());
 
             if (!gInfo)
                 continue;

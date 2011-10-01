@@ -6078,7 +6078,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         }
         case CONDITION_ITEM:
         {
-            ItemPrototype const *proto = objmgr.GetItemPrototype(value1);
+            ItemPrototype const *proto = ObjectMgr::GetItemPrototype(value1);
             if (!proto)
             {
                 sLog.outErrorDb("Item condition requires to have non existing item (%u), skipped", value1);
@@ -6088,7 +6088,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         }
         case CONDITION_ITEM_EQUIPPED:
         {
-            ItemPrototype const *proto = objmgr.GetItemPrototype(value1);
+            ItemPrototype const *proto = ObjectMgr::GetItemPrototype(value1);
             if (!proto)
             {
                 sLog.outErrorDb("ItemEquipped condition requires to have non existing item (%u) equipped, skipped", value1);
@@ -6747,12 +6747,12 @@ bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value, i
 
 GameObjectInfo const *GetGameObjectInfo(uint32 id)
 {
-    return objmgr.GetGameObjectInfo(id);
+    return ObjectMgr::GetGameObjectInfo(id);
 }
 
 CreatureInfo const *GetCreatureInfo(uint32 id)
 {
-    return objmgr.GetCreatureTemplate(id);
+    return ObjectMgr::GetCreatureTemplate(id);
 }
 
 CreatureInfo const* GetCreatureTemplateStore(uint32 entry)

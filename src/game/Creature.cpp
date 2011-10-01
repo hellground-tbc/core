@@ -261,7 +261,7 @@ void Creature::RemoveCorpse()
  */
 bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data)
 {
-    CreatureInfo const *normalInfo = objmgr.GetCreatureTemplate(Entry);
+    CreatureInfo const *normalInfo = ObjectMgr::GetCreatureTemplate(Entry);
     if (!normalInfo)
     {
         sLog.outErrorDb("Creature::UpdateEntry creature entry %u does not exist.", Entry);
@@ -276,7 +276,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data)
         Map *map = GetMap();
         if (map && map->IsHeroic())
         {
-            cinfo = objmgr.GetCreatureTemplate(normalInfo->HeroicEntry);
+            cinfo = ObjectMgr::GetCreatureTemplate(normalInfo->HeroicEntry);
             if (!cinfo)
             {
                 sLog.outErrorDb("Creature::UpdateEntry creature heroic entry %u does not exist.", actualEntry);
@@ -1439,7 +1439,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
             return false;
     }
 
-    CreatureInfo const *cinfo = objmgr.GetCreatureTemplate(Entry);
+    CreatureInfo const *cinfo = ObjectMgr::GetCreatureTemplate(Entry);
     if (!cinfo)
     {
         sLog.outErrorDb("Error: creature entry %u does not exist.", Entry);
@@ -2452,7 +2452,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     if (vCount->lastIncrementTime + vItem->incrtime <= ptime)
     {
-        ItemPrototype const* pProto = objmgr.GetItemPrototype(vItem->item);
+        ItemPrototype const* pProto = ObjectMgr::GetItemPrototype(vItem->item);
 
         uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
         if ((vCount->count + diff * pProto->BuyCount) >= vItem->maxcount)
@@ -2491,7 +2491,7 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
 
     if (vCount->lastIncrementTime + vItem->incrtime <= ptime)
     {
-        ItemPrototype const* pProto = objmgr.GetItemPrototype(vItem->item);
+        ItemPrototype const* pProto = ObjectMgr::GetItemPrototype(vItem->item);
 
         uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
         if ((vCount->count + diff * pProto->BuyCount) < vItem->maxcount)

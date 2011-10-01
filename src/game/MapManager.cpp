@@ -205,7 +205,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
                     if (instance_map == mapid)
                         break;
 
-                    InstanceTemplate const* instance = objmgr.GetInstanceTemplate(instance_map);
+                    InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(instance_map);
                     instance_map = instance ? instance->parent : 0;
                 }
                 while (instance_map);
@@ -225,7 +225,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
         }
 
         // Requirements
-        InstanceTemplate const* instance = objmgr.GetInstanceTemplate(mapid);
+        InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(mapid);
         if (!instance)
             return false;
 
@@ -304,7 +304,7 @@ bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
 bool MapManager::IsValidMAP(uint32 mapid)
 {
     MapEntry const* mEntry = sMapStore.LookupEntry(mapid);
-    return mEntry && (!mEntry->Instanceable() || objmgr.GetInstanceTemplate(mapid));
+    return mEntry && (!mEntry->Instanceable() || ObjectMgr::GetInstanceTemplate(mapid));
 }
 
 /*void MapManager::LoadGrid(int mapid, float x, float y, const WorldObject* obj, bool no_unload)
