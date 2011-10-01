@@ -593,6 +593,8 @@ void Spell::FillTargetMap()
             if (dist < 5.0f) dist = 5.0f;
             m_delayMoment = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
         }
+        else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
+            m_delayMoment = SPELL_FAKE_DELAY;
     }
 }
 
@@ -775,7 +777,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     }
     else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
     {
-        target.timeDelay = uint64(180);
+        target.timeDelay = SPELL_FAKE_DELAY;
         m_delayMoment = target.timeDelay;
     }
     else
@@ -846,7 +848,7 @@ void Spell::AddGOTarget(GameObject* pVictim, uint32 effIndex)
     }
     else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
     {
-        target.timeDelay = uint64(180);
+        target.timeDelay = SPELL_FAKE_DELAY;
         m_delayMoment = target.timeDelay;
     }
     else
@@ -1106,10 +1108,11 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 
     // Recheck immune (only for delayed spells)
-    if (m_spellInfo->speed &&
-        !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
-        && (unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo),true) ||
-        unit->IsImmunedToSpell(m_spellInfo,true)))
+    if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) &&
+        !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) &&
+        (unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo),true) ||
+        unit->IsImmunedToSpell(m_spellInfo,true))
+        )
     {
         m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
         m_damage = 0;
@@ -1133,7 +1136,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             bool isVisibleForHit = ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, true)) ? false : true;
 
             // for delayed spells ignore not visible explicit target
-            if (m_spellInfo->speed > 0.0f && unit==m_targets.getUnitTarget() && !isVisibleForHit)
+            if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit==m_targets.getUnitTarget() && !isVisibleForHit)
             {
                 // that was causing CombatLog errors
                 //m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
@@ -1148,7 +1151,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // TODO: this cause soul transfer bugged
-            if (m_spellInfo->speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id))
+            if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id))
             {
                 m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
@@ -1206,6 +1209,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->IsAIEnabled)
         ((Creature*)m_caster)->AI()->SpellHitTarget(unit, m_spellInfo);
+
 
     // trigger only for first effect targets
     if (m_ChanceTriggerSpells.size() && (effectMask & 0x1))
@@ -2172,6 +2176,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     break;
                 case 44869:     // Spectral Blast
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
+                    if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim())
+                        unitList.remove(((Creature*)m_caster)->getVictim());
                     break;
                 default:
                     break;
@@ -2181,12 +2187,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
 
             for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
-            {
-                if (m_spellInfo->Id == 44869 && (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim() == (*itr)))
-                    continue;
-                else
-                    AddUnitTarget(*itr, i);
-            }
+                AddUnitTarget(*itr, i);
         }
 
         if (!goList.empty())
@@ -2487,7 +2488,7 @@ void Spell::cast(bool skipCheck)
     }
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if (m_spellInfo->speed > 0.0f && !IsChanneledSpell(m_spellInfo))
+    if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) > 0.0f && !IsChanneledSpell(m_spellInfo))
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
