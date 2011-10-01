@@ -35,7 +35,7 @@ void AddSC_spell_scripts()
     Script *newscript;
 
     newscript = new Script;
-    newscript->Name="spell_intimidating_shout";
+    newscript->Name = "spell_intimidating_shout";
     newscript->pSpellTargetMap = &Spell_intimidating_shout_5246;
     newscript->RegisterSelf();
 }

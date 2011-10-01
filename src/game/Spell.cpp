@@ -2152,52 +2152,41 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if (!unitList.empty())
         {
-            // We don't need immune targets to be taken into list for Fatal Attraction, i know that thix hack is ugly ;]
-            // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
-            // Same thing for Positive/Negative charge from Mechanar and Naxx encounters
-            // Spectral blast: exclude current target and targets with Spectral Exhaustion
-            if (m_spellInfo->Id == 40869 || m_spellInfo->Id == 43657 || m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093
-                || m_spellInfo->Id == 44869)
+            switch (m_spellInfo->Id)
             {
-                std::list<Unit*>::iterator next;
-                for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); itr = next)
-                {
-                    next = itr;
-                    ++next;
-
-                    switch (m_spellInfo->Id)
-                    {
-                        case 40869:
-                            if ((*itr)->HasAura(43690, 0))
-                                unitList.remove(*itr);
-                            break;
-                        case 43657:
-                            if ((*itr)->HasAura(44007, 0))
-                                unitList.remove(*itr);
-                            break;
-                        case 28062:     // Positive Charge
-                        case 39090:
-                            if ((*itr)->HasAura(28059, 0) || (*itr)->HasAura(39088, 0))
-                                unitList.remove(*itr);
-                            break;
-                        case 28085:     // Negative Charge
-                        case 39093:
-                            if ((*itr)->HasAura(28084, 0) || (*itr)->HasAura(39091, 0))
-                                unitList.remove(*itr);
-                            break;
-                        case 44869:     // Spectral Blast
-                            if( (*itr)->HasAura(44867, 0) || (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim() == (*itr)))
-                                unitList.remove(*itr);
-                            break;
-                    }
-                }
+                case 40869:     // Fatal Attraction
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 43690));
+                    break;
+                case 43657:
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 44007));
+                    break;
+                case 28062:     // Positive Charge
+                case 39090:
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 28059));
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 39088));
+                    break;
+                case 28085:     // Negative Charge
+                case 39093:
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 28084));
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 39091));
+                    break;
+                case 44869:     // Spectral Blast
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
+                    break;
+                default:
+                    break;
             }
 
             if (m_spellValue->MaxAffectedTargets)
                 Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
 
             for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
-                AddUnitTarget(*itr, i);
+            {
+                if (m_spellInfo->Id == 44869 && (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim() == (*itr)))
+                    continue;
+                else
+                    AddUnitTarget(*itr, i);
+            }
         }
 
         if (!goList.empty())

@@ -273,19 +273,6 @@ namespace Trinity
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-    class ObjectTypeIdCheck
-    {
-        public:
-            ObjectTypeIdCheck(TypeID typeId, bool equals) : _typeId(typeId), _equals(equals) {}
-            bool operator()(WorldObject* object)
-            {
-                return (object->GetTypeId() == _typeId) == _equals;
-            }
-        private:
-            TypeID _typeId;
-            bool _equals;
-    };
-
     // Gameobject searchers
 
     template<class Check>
@@ -1081,6 +1068,34 @@ namespace Trinity
     private:
         Unit const* i_obj;
         float i_range;
+    };
+
+    class ObjectTypeIdCheck
+    {
+        public:
+            ObjectTypeIdCheck(TypeID typeId, bool equals) : _typeId(typeId), _equals(equals) {}
+            bool operator()(WorldObject* object)
+            {
+                return (object->GetTypeId() == _typeId) == _equals;
+            }
+        private:
+            TypeID _typeId;
+            bool _equals;
+    };
+
+    class UnitAuraCheck
+    {
+        public:
+            UnitAuraCheck(bool present, uint32 spellId, uint64 casterGUID = 0) : _present(present), _spellId(spellId), _casterGUID(casterGUID) {}
+            bool operator()(Unit* unit)
+            {
+                return unit->HasAura(_spellId, _casterGUID) == _present;
+            }
+
+        private:
+            bool _present;
+            uint32 _spellId;
+            uint64 _casterGUID;
     };
 }
 
