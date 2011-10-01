@@ -22,9 +22,6 @@
     <Filter Include="Auth">
       <UniqueIdentifier>{ae1511e0-8411-4d86-85f9-20ad5597b57d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="vmaps">
-      <UniqueIdentifier>{190b0b5e-57b1-4cdf-9288-c71577ecbeaa}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\shared\Database\Database.cpp">
@@ -78,12 +75,6 @@
     <ClCompile Include="..\..\src\shared\Config\Config.cpp">
       <Filter>Config</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\shared\Config\dotconfpp\dotconfpp.cpp">
-      <Filter>Config\dotconfpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shared\Config\dotconfpp\mempool.cpp">
-      <Filter>Config\dotconfpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\shared\Auth\AuthCrypt.cpp">
       <Filter>Auth</Filter>
     </ClCompile>
@@ -95,27 +86,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\shared\Auth\Sha1.cpp">
       <Filter>Auth</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shared\vmap\BIH.cpp">
-      <Filter>vmaps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shared\vmap\MapTree.cpp">
-      <Filter>vmaps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shared\vmap\ModelInstance.cpp">
-      <Filter>vmaps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shared\vmap\TileAssembler.cpp">
-      <Filter>vmaps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shared\vmap\VMapFactory.cpp">
-      <Filter>vmaps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shared\vmap\VMapManager2.cpp">
-      <Filter>vmaps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shared\vmap\WorldModel.cpp">
-      <Filter>vmaps</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\shared\Common.cpp" />
     <ClCompile Include="..\..\src\shared\DelayExecutor.cpp" />
@@ -204,15 +174,6 @@
     <ClInclude Include="..\..\src\shared\Config\Config.h">
       <Filter>Config</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\shared\Config\ConfigEnv.h">
-      <Filter>Config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\Config\dotconfpp\dotconfpp.h">
-      <Filter>Config\dotconfpp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\Config\dotconfpp\mempool.h">
-      <Filter>Config\dotconfpp</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\shared\Auth\AuthCrypt.h">
       <Filter>Auth</Filter>
     </ClInclude>
@@ -224,36 +185,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\shared\Auth\Sha1.h">
       <Filter>Auth</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\BIH.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\IVMapManager.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\MapTree.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\ModelInstance.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\TileAssembler.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\VMapDefinitions.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\VMapFactory.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\VMapManager2.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\VMapTools.h">
-      <Filter>vmaps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\vmap\WorldModel.h">
-      <Filter>vmaps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\shared\Common.h" />
     <ClInclude Include="..\..\src\shared\DelayExecutor.h" />

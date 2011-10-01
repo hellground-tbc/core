@@ -22,9 +22,6 @@
     <Filter Include="Dynamic">
       <UniqueIdentifier>{f8206e13-7039-440b-bb6a-086842279ac3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Network">
-      <UniqueIdentifier>{1865822a-6c08-4c8a-8336-d8a434382a36}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\framework\GameSystem\Grid.h">
@@ -110,9 +107,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\framework\Dynamic\ObjectRegistry.h">
       <Filter>Dynamic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework\Network\SocketDefines.h">
-      <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

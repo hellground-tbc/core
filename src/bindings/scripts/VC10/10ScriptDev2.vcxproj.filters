@@ -426,12 +426,6 @@
     <ClCompile Include="..\scripts\guard\guards.cpp">
       <Filter>Scripts\guard</Filter>
     </ClCompile>
-    <ClCompile Include="..\scripts\npc\escort_ai.cpp">
-      <Filter>Scripts\npc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\scripts\npc\follower_ai.cpp">
-      <Filter>Scripts\npc</Filter>
-    </ClCompile>
     <ClCompile Include="..\scripts\npc\npc_innkeeper.cpp">
       <Filter>Scripts\npc</Filter>
     </ClCompile>
@@ -445,9 +439,6 @@
       <Filter>Scripts\custom</Filter>
     </ClCompile>
     <ClCompile Include="..\scripts\custom\custom_gossip_codebox.cpp">
-      <Filter>Scripts\custom</Filter>
-    </ClCompile>
-    <ClCompile Include="..\scripts\custom\test.cpp">
       <Filter>Scripts\custom</Filter>
     </ClCompile>
     <ClCompile Include="..\scripts\areatrigger\areatrigger_scripts.cpp">
@@ -1528,6 +1519,12 @@
     <ClCompile Include="..\scripts\zone\blackrock_depths\boss_coren_direbrew.cpp">
       <Filter>Scripts\zone\Blackrock Depths</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\escort_ai.cpp">
+      <Filter>Include</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\follower_ai.cpp">
+      <Filter>Include</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\scripts\creature\simple_ai.h">
@@ -1535,12 +1532,6 @@
     </ClInclude>
     <ClInclude Include="..\scripts\guard\guard_ai.h">
       <Filter>Scripts\guard</Filter>
-    </ClInclude>
-    <ClInclude Include="..\scripts\npc\escort_ai.h">
-      <Filter>Scripts\npc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\scripts\npc\follower_ai.h">
-      <Filter>Scripts\npc</Filter>
     </ClInclude>
     <ClInclude Include="..\scripts\zone\deadmines\def_deadmines.h">
       <Filter>Scripts\zone\Deadmines</Filter>
@@ -1673,6 +1664,12 @@
     </ClInclude>
     <ClInclude Include="..\scripts\zone\aunchindoun\mana_tombs\def_mana_tombs.h">
       <Filter>Scripts\zone\Aunchindoun\Mana Tombs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\escort_ai.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\follower_ai.h">
+      <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

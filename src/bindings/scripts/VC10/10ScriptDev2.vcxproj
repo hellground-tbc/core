@@ -221,6 +221,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\include\escort_ai.cpp" />
+    <ClCompile Include="..\include\follower_ai.cpp" />
     <ClCompile Include="..\scripts\boss\boss_emeriss.cpp" />
     <ClCompile Include="..\scripts\boss\boss_lethon.cpp" />
     <ClCompile Include="..\scripts\boss\boss_taerar.cpp" />
@@ -229,14 +231,11 @@
     <ClCompile Include="..\scripts\creature\simple_ai.cpp" />
     <ClCompile Include="..\scripts\guard\guard_ai.cpp" />
     <ClCompile Include="..\scripts\guard\guards.cpp" />
-    <ClCompile Include="..\scripts\npc\escort_ai.cpp" />
-    <ClCompile Include="..\scripts\npc\follower_ai.cpp" />
     <ClCompile Include="..\scripts\npc\npc_innkeeper.cpp" />
     <ClCompile Include="..\scripts\npc\npc_professions.cpp" />
     <ClCompile Include="..\scripts\npc\npcs_special.cpp" />
     <ClCompile Include="..\scripts\custom\custom_example.cpp" />
     <ClCompile Include="..\scripts\custom\custom_gossip_codebox.cpp" />
-    <ClCompile Include="..\scripts\custom\test.cpp" />
     <ClCompile Include="..\scripts\areatrigger\areatrigger_scripts.cpp" />
     <ClCompile Include="..\scripts\go\go_scripts.cpp" />
     <ClCompile Include="..\scripts\item\item_scripts.cpp" />
@@ -604,10 +603,10 @@
     <ClCompile Include="..\ScriptMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\escort_ai.h" />
+    <ClInclude Include="..\include\follower_ai.h" />
     <ClInclude Include="..\scripts\creature\simple_ai.h" />
     <ClInclude Include="..\scripts\guard\guard_ai.h" />
-    <ClInclude Include="..\scripts\npc\escort_ai.h" />
-    <ClInclude Include="..\scripts\npc\follower_ai.h" />
     <ClInclude Include="..\scripts\zone\aunchindoun\mana_tombs\def_mana_tombs.h" />
     <ClInclude Include="..\scripts\zone\deadmines\def_deadmines.h" />
     <ClInclude Include="..\scripts\zone\gruuls_lair\def_gruuls_lair.h" />
