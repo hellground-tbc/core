@@ -66,7 +66,7 @@ struct TSpellSummary
 }extern *SpellSummary;
 
 TRINITY_DLL_EXPORT
-void ScriptsFree()
+void FreeScriptLibrary()
 {
     // Free Spell Summary
     delete [] SpellSummary;
@@ -79,7 +79,7 @@ void ScriptsFree()
 }
 
 TRINITY_DLL_EXPORT
-void ScriptsInit(char const* cfg_file = "trinitycore.conf")
+void InitScriptLibrary()
 {
     //Trinity Script startup
     outstring_log(" _____     _       _ _         ____            _       _");
@@ -92,6 +92,7 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     outstring_log("");
 
     //Get configuration file
+    char const* cfg_file = "trinitycore.conf";
     if (!TScriptConfig.SetSource(cfg_file))
         error_log("TSCR: Unable to open configuration file. Database will be unaccessible. Configuration values will use default.");
     else
@@ -115,9 +116,6 @@ void ScriptsInit(char const* cfg_file = "trinitycore.conf")
     AddScripts();
 
     outstring_log(">> Loaded %i C++ Scripts.", num_sc_scripts);
-
-    outstring_log(">> Load Overriden SQL Data.");
-    LoadOverridenSQLData();
 }
 
 //*********************************
