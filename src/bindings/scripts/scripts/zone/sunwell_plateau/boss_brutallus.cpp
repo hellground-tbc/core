@@ -293,6 +293,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 pMadrigosa->DeleteThreatList();
                 pMadrigosa->setFaction(35);
                 me->CombatStop();
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
                 pMadrigosa->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 pMadrigosa->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
                 IntroPhaseTimer = 4000;
