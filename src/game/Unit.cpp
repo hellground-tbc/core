@@ -6803,12 +6803,12 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 return false;
             break;                                   // continue normal case
         }
-        // Finish movies that add combo
+        // Finish moves that add combo
         case 14189: // Seal Fate (Netherblade set)
         case 14157: // Ruthlessness
         {
             // avoid double proc, and dont proc from deadly throw
-            if(procSpell->Id == 26679 || pVictim != this)
+            if (procSpell->Id == 26679 || pVictim == this)
                 return false;
             break;
         }
