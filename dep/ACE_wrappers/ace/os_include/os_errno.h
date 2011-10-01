@@ -20,6 +20,10 @@
 
 #include "ace/config-lite.h"
 
+#if COMPILER == COMPILER_MICROSOFT
+#   pragma warning(disable:4005)                            // 'identifier' : macro redefinition
+#endif
+
 #if !defined (ACE_LACKS_PRAGMA_ONCE)
 # pragma once
 #endif /* ACE_LACKS_PRAGMA_ONCE */
