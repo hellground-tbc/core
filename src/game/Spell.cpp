@@ -2165,7 +2165,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
             // Same thing for Positive/Negative charge from Mechanar and Naxx encounters
             // Spectral blast: exclude current target and targets with Spectral Exhaustion
-            // Curse of Boundless Agony: exclude target that already has one unless its self-cast
+            // Curse of Boundless Agony: exclude target that already has one
             if (m_spellInfo->Id == 40869 || m_spellInfo->Id == 43657 || m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093
                 || m_spellInfo->Id == 45032 || m_spellInfo->Id == 45034)
             {
@@ -2174,6 +2174,13 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 {
                     next = itr;
                     ++next;
+
+                    // remove m_caster from unitList before CheckTarget()
+                    if(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF && (*itr) == m_caster)
+                    {
+                        unitList.remove(*itr);
+                        break;
+                    }
 
                     switch (m_spellInfo->Id)
                     {
@@ -2201,8 +2208,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             break;
                         case 45032:     // Curse of Boundless Agony
                         case 45034:
-                            if ((*itr)->HasAura(45032, 0) || (*itr)->HasAura(45034, 0) && (*itr) != m_caster)
+                            if ((*itr)->HasAura(45032, 0) || (*itr)->HasAura(45034, 0))
                                 unitList.remove(*itr);
+                            break;
                     }
                 }
             }
