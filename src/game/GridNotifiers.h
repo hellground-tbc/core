@@ -1086,16 +1086,16 @@ namespace Trinity
     class UnitAuraCheck
     {
         public:
-            UnitAuraCheck(bool present, uint32 spellId, uint64 casterGUID = 0) : _present(present), _spellId(spellId), _casterGUID(casterGUID) {}
+            UnitAuraCheck(bool present, uint32 spellId, uint32 effectIdx = 0) : _present(present), _spellId(spellId), _effectIdx(effectIdx) {}
             bool operator()(Unit* unit)
             {
-                return unit->HasAura(_spellId, _casterGUID) == _present;
+                return unit->HasAura(_spellId, _effectIdx) == _present;
             }
 
         private:
             bool _present;
             uint32 _spellId;
-            uint64 _casterGUID;
+            uint32 _effectIdx;
     };
 }
 
