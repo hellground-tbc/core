@@ -89,7 +89,7 @@ extern int main(int argc, char **argv)
     ///- Command line parsing
     char const* cfg_file = _TRINITY_CORE_CONFIG;
 
-    sLog.Initialize();
+    //sLog.Initialize();
 
     char const *options = ":a:c:s:";
 
@@ -126,18 +126,18 @@ extern int main(int argc, char **argv)
 #endif
                 else
                 {
-                    sLog.outError("Runtime-Error: -%c unsupported argument %s", cmd_opts.opt_opt(), mode);
+                    printf("Runtime-Error: -%c unsupported argument %s", cmd_opts.opt_opt(), mode);
                     usage(argv[0]);
                     return 1;
                 }
                 break;
             }
             case ':':
-                sLog.outError("Runtime-Error: -%c option requires an input argument", cmd_opts.opt_opt());
+                printf("Runtime-Error: -%c option requires an input argument", cmd_opts.opt_opt());
                 usage(argv[0]);
                 return 1;
             default:
-                sLog.outError("Runtime-Error: bad format of commandline arguments");
+                printf("Runtime-Error: bad format of commandline arguments");
                 usage(argv[0]);
                 return 1;
         }
@@ -148,11 +148,11 @@ extern int main(int argc, char **argv)
     {
         case 'i':
             if (WinServiceInstall())
-                sLog.outString("Installing service");
+                printf("Installing service");
             return 1;
         case 'u':
             if (WinServiceUninstall())
-                sLog.outString("Uninstalling service");
+                printf("Uninstalling service");
             return 1;
         case 'r':
             WinServiceRun();
@@ -162,7 +162,7 @@ extern int main(int argc, char **argv)
 
     if (!sConfig.SetSource(cfg_file))
     {
-        sLog.outError("Could not find configuration file %s.", cfg_file);
+        printf("Could not find configuration file %s.", cfg_file);
         return 1;
     }
 
