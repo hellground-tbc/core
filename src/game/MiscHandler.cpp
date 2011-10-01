@@ -131,11 +131,11 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
 
     if (unit)
     {
-        if (!sScriptMgr.OnGossipSelect(_player, unit, sender, action, code.c_str()))
+        if (!sScriptMgr.OnGossipSelect(_player, unit, sender, action, code.empty() ? NULL : code.c_str()))
             unit->OnGossipSelect(_player, option);
     }
     else
-        sScriptMgr.OnGossipSelect(_player, go, sender, action, code.c_str());
+        sScriptMgr.OnGossipSelect(_player, go, sender, action, code.empty() ? NULL : code.c_str());
 }
 
 void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
