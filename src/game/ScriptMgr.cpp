@@ -804,9 +804,9 @@ bool ScriptMgr::OnReceiveEmote(Player *pPlayer, Creature *pCreature, uint32 emot
 }
 
 // spell scripts
-bool ScriptMgr::OnSpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellEntry const *pSpell, uint32 effectIndex)
+bool ScriptMgr::OnSpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effectIndex)
 {
-    return m_pOnSpellSetTargetMap != NULL && m_pOnSpellSetTargetMap(pCaster, unitList, pSpell, effectIndex);
+    return m_pOnSpellSetTargetMap != NULL && m_pOnSpellSetTargetMap(pCaster, unitList, targets, pSpell, effectIndex);
 }
 
 bool ScriptMgr::LoadScriptLibrary(const char* libName)

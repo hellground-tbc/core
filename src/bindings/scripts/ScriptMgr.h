@@ -75,7 +75,7 @@ struct Script
     bool (*pReceiveEmote            )(Player*, Creature*, uint32);
 
     //spell scripts
-    bool (*pSpellTargetMap          )(Unit*, std::list<Unit*> &, SpellEntry const *, uint32);
+    bool (*pSpellTargetMap          )(Unit*, std::list<Unit*> &, SpellCastTargets const&, SpellEntry const *, uint32);
 
     CreatureAI* (*GetAI             )(Creature*);
     InstanceData* (*GetInstanceData )(Map*);

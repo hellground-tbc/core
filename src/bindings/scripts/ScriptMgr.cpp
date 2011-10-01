@@ -585,12 +585,12 @@ InstanceData* CreateInstanceData(Map* pMap)
 }
 
 TRINITY_DLL_EXPORT
-bool SetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellEntry const *pSpell, uint32 effectIndex)
+bool SetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effectIndex)
 {
     Script* pTempScript = m_scripts[GetSpellIdScriptId(pSpell->Id)];
 
     if (!pTempScript || !pTempScript->pSpellTargetMap)
         return false;
 
-    return pTempScript->pSpellTargetMap(pCaster, unitList, pSpell, effectIndex);
+    return pTempScript->pSpellTargetMap(pCaster, unitList, targets, pSpell, effectIndex);
 }

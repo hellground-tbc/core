@@ -123,7 +123,7 @@ class ScriptMgr
         bool OnReceiveEmote(Player *pPlayer, Creature *pCreature, uint32 emote);
 
         // spell scripts
-        bool OnSpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellEntry const *pSpell, uint32 effectIndex);
+        bool OnSpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const&, SpellEntry const *pSpell, uint32 effectIndex);
 
     private:
         void LoadScripts(ScriptMapMap& scripts, const char* tablename);
@@ -179,7 +179,7 @@ class ScriptMgr
         bool (TRINITY_IMPORT* m_pOnReceiveEmote) (Player *pPlayer, Creature *pCreature, uint32 emote);
 
         // spell scripts
-        bool (TRINITY_IMPORT* m_pOnSpellSetTargetMap) (Unit* pCaster, std::list<Unit*> &unitList, SpellEntry const *pSpell, uint32 effectIndex);
+        bool (TRINITY_IMPORT* m_pOnSpellSetTargetMap) (Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const&, SpellEntry const *pSpell, uint32 effectIndex);
 };
 
 #define sScriptMgr Trinity::Singleton<ScriptMgr>::Instance()

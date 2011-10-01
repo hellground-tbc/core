@@ -15,9 +15,18 @@
  */
 
 #include "precompiled.h"
+#include "Spell.h"
 
-bool Spell_test_spell_XXX(Unit* pCaster, std::list<Unit*> &unitList, SpellEntry const *pSpell, uint32 effect_index)
+bool Spell_intimidating_shout_5246(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effect_index)
 {
+    if (effect_index == 0)
+        return true;
+
+    if (unitList.empty())
+        return true;
+
+    // remove current target from AOE Fear, AOE Speed aura our target gets stun effect provided by 1st effect
+    unitList.remove(targets.getUnitTarget());
     return true;
 }
 
@@ -26,7 +35,7 @@ void AddSC_spell_scripts()
     Script *newscript;
 
     newscript = new Script;
-    newscript->Name="spell_test";
-    newscript->pSpellTargetMap = &Spell_test_spell_XXX;
+    newscript->Name="spell_intimidating_shout";
+    newscript->pSpellTargetMap = &Spell_intimidating_shout_5246;
     newscript->RegisterSelf();
 }

@@ -2148,15 +2148,10 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             }
         }
 
-        if (!unitList.empty())
-            sScriptMgr.OnSpellSetTargetMap(m_caster, unitList, m_spellInfo, i);
+        sScriptMgr.OnSpellSetTargetMap(m_caster, unitList, m_targets, m_spellInfo, i);
 
         if (!unitList.empty())
         {
-            // Intimidating Shout -> Remove current target from AOE fear effect
-            if (m_spellInfo->Id == 5246)
-                unitList.remove(m_targets.getUnitTarget());
-
             // We don't need immune targets to be taken into list for Fatal Attraction, i know that thix hack is ugly ;]
             // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
             // Same thing for Positive/Negative charge from Mechanar and Naxx encounters
