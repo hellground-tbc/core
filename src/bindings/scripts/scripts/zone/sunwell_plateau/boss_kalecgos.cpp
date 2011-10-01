@@ -66,6 +66,7 @@ enum SpellIds
 
     SPELL_SPECTRAL_BLAST        =   44869,
     SPELL_TELEPORT_SPECTRAL     =   46019,  // linked in DB
+    SPELL_TELEPORT_NORMAL       =   46020,  // linked in DB
     SPELL_ARCANE_BUFFET         =   45018,
     SPELL_FROST_BREATH          =   44799,
     SPELL_TAIL_LASH             =   45122,
@@ -537,6 +538,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void JustDied(Unit *killer)
     {
+        DoCast(me, SPELL_TELEPORT_BACK, true);
         DoScriptText(SAY_SATH_DEATH, m_creature);
         //me->GetMap()->CreatureRelocation(me, m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
         //me->UpdateObjectVisibility();
