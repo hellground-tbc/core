@@ -1,4 +1,4 @@
-file(GLOB_RECURSE trinityscripts_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.h)
+file(GLOB_RECURSE trinityscript_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.h)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -59,7 +59,7 @@ source_group("AI"
   REGULAR_EXPRESSION escort_ai|follower_ai|simple_ai|sc_creature
 )
 
-add_library(trinityscript STATIC ${trinityscripts_SRCS})
+add_library(trinityscript SHARED ${trinityscript_SRCS})
 
 add_definitions(-D_TRINITY_SCRIPT_CONFIG='"${CONF_DIR}/trinitycore.conf"')
 
@@ -67,7 +67,7 @@ IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
     SET_TARGET_PROPERTIES(trinityscript PROPERTIES LINK_FLAGS "-flat_namespace -undefined suppress")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-target_link_libraries(trinityscript game)
+target_link_libraries(trinityscript)
 
 set_target_properties(trinityscript PROPERTIES VERSION 4.2.0 SOVERSION 4)
 install(TARGETS trinityscript DESTINATION lib)

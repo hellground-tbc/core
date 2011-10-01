@@ -55,6 +55,25 @@ extern RunModes runMode;
 
 INSTANTIATE_SINGLETON_1( Master );
 
+bool IsAcceptableClientBuild(uint32 build)
+{
+    int accepted_versions[] = EXPECTED_CLIENT_BUILD;
+    for(int i = 0; accepted_versions[i]; ++i)
+        if(int(build) == accepted_versions[i])
+            return true;
+
+    return false;
+}
+
+std::string AcceptableClientBuildsListStr()
+{
+    std::ostringstream data;
+    int accepted_versions[] = EXPECTED_CLIENT_BUILD;
+    for(int i = 0; accepted_versions[i]; ++i)
+        data << accepted_versions[i] << " ";
+    return data.str();
+}
+
 volatile uint32 Master::m_masterLoopCounter = 0;
 #ifndef WIN32
 volatile bool BIH::possibleFreeze = false;
@@ -199,13 +218,9 @@ int Master::Run()
 
     // set realmbuilds depend on mangosd expected builds, and set server online
     {
-        std::ostringstream data;
-        int accepted_versions[] = EXPECTED_CLIENT_BUILD;
-
-        for(int i = 0; accepted_versions[i]; ++i)
-            data << accepted_versions[i] << " ";
-
-        LoginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0, realmbuilds = '%s'  WHERE id = '%d'", data.str().c_str(), realmID);
+        std::string builds = AcceptableClientBuildsListStr();
+        LoginDatabase.escape_string(builds);
+        LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0, realmbuilds = '%s'  WHERE id = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
     }
 
     // console should be disabled in service/daemon mode
@@ -300,8 +315,8 @@ int Master::Run()
 
     sWorldSocketMgr->Wait ();
 
-    // set server offline
-    LoginDatabase.DirectPExecute("UPDATE realmlist SET color = 2 WHERE id = '%d'",realmID);
+    ///- Set server offline in realmlist
+    LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
 
     ///- Remove signal handling before leaving
     _UnhookSignals();

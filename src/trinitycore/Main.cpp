@@ -34,7 +34,7 @@
 #include <ace/Get_Opt.h>
 
 #ifndef _TRINITY_CORE_CONFIG
-# define _TRINITY_CORE_CONFIG  "trinitycore.conf"
+# define _TRINITY_CORE_CONFIG  "../etc/trinitycore.conf"
 #endif //_TRINITY_CORE_CONFIG
 
 // Format is YYYYMMDDRR where RR is the change in the conf file

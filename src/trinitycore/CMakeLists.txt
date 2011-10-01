@@ -40,7 +40,7 @@ target_link_libraries(${EXECUTABLE_NAME}
   ${ACE_LIBRARIES}
   ${READLINE_LIBRARY}
 )
-message("readline: ${READLINE_LIBRARIES}")
+
 if(WIN32)
   target_link_libraries(${EXECUTABLE_NAME}
     zlib
