@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +26,19 @@
 
 #include "Config/Config.h"
 #include "Log.h"
-#include "sockets/ListenSocket.h"
 #include "AuthSocket.h"
 #include "SystemConfig.h"
 #include "revision.h"
 #include "Util.h"
+#include <openssl/opensslv.h>
+#include <openssl/crypto.h>
+
+#include <ace/Get_Opt.h>
+#include <ace/Dev_Poll_Reactor.h>
+#include <ace/TP_Reactor.h>
+#include <ace/ACE.h>
+#include <ace/Acceptor.h>
+#include <ace/SOCK_Acceptor.h>
 
 #include <ace/Get_Opt.h>
 
@@ -65,15 +71,11 @@ char serviceDescription[] = "Massive Network Game Object Server";
 
 extern RunModes runMode = MODE_NORMAL;
 
-// FG: for WorldTimer::getMSTime()
-#include "Timer.h"
-
 bool StartDB();
 void UnhookSignals();
 void HookSignals();
 
-bool stopEvent = false;                                     ///< Setting it to true stops the server
-RealmList m_realmList;                                      ///< Holds the list of realms for this server
+bool stopEvent = false;                                       ///< Holds the list of realms for this server
 
 DatabaseType LoginDatabase;                                 ///< Accessor to the realm server database
 
@@ -192,6 +194,8 @@ extern int main(int argc, char **argv)
 
     sLog.Initialize();
 
+    sLog.outString( "%s (realm-daemon)", _FULLVERSION );
+    sLog.outString( "<Ctrl-C> to stop.\n" );
     sLog.outString("Using configuration file %s.", cfg_file);
 
     ///- Check the version of the configuration file
@@ -208,8 +212,22 @@ extern int main(int argc, char **argv)
         while (pause > clock()) {}
     }
 
-    sLog.outString( "%s (realm-daemon)", _FULLVERSION );
-    sLog.outString( "<Ctrl-C> to stop.\n" );
+    sLog.outDetail("%s (Library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
+    if (SSLeay() < 0x009080bfL )
+    {
+        sLog.outDetail("WARNING: Outdated version of OpenSSL lib. Logins to server may not work!");
+        sLog.outDetail("WARNING: Minimal required version [OpenSSL 0.9.8k]");
+    }
+
+    sLog.outDetail("Using ACE: %s", ACE_VERSION);
+
+#if defined (ACE_HAS_EVENT_POLL) || defined (ACE_HAS_DEV_POLL)
+    ACE_Reactor::instance(new ACE_Reactor(new ACE_Dev_Poll_Reactor(ACE::max_handles(), 1), 1), true);
+#else
+    ACE_Reactor::instance(new ACE_Reactor(new ACE_TP_Reactor(), true), true);
+#endif
+
+    sLog.outBasic("Max allowed open files is %d", ACE::max_handles());
 
     /// realmd PID file creation
     std::string pidfile = sConfig.GetStringDefault("PidFile", "");
@@ -230,8 +248,8 @@ extern int main(int argc, char **argv)
         return 1;
 
     ///- Get the list of realms for the server
-    m_realmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
-    if (m_realmList.size() == 0)
+    sRealmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
+    if (sRealmList.size() == 0)
     {
         sLog.outError("No valid realms specified.");
         return 1;
@@ -245,18 +263,18 @@ extern int main(int argc, char **argv)
     LoginDatabase.CommitTransaction();
 
     ///- Launch the listening network socket
-    port_t rmport = sConfig.GetIntDefault( "RealmServerPort", DEFAULT_REALMSERVER_PORT );
+    ACE_Acceptor<AuthSocket, ACE_SOCK_Acceptor> acceptor;
+
+    uint16 rmport = sConfig.GetIntDefault("RealmServerPort", DEFAULT_REALMSERVER_PORT);
     std::string bind_ip = sConfig.GetStringDefault("BindIP", "0.0.0.0");
 
-    SocketHandler h;
-    ListenSocket<AuthSocket> authListenSocket(h);
-    if ( authListenSocket.Bind(bind_ip.c_str(),rmport))
+    ACE_INET_Addr bind_addr(rmport, bind_ip.c_str());
+
+    if (acceptor.open(bind_addr, ACE_Reactor::instance(), ACE_NONBLOCK) == -1)
     {
-        sLog.outError( "Trinity realm can not bind to %s:%d",bind_ip.c_str(), rmport );
+        sLog.outError("Realm daemon can not bind to %s:%d", bind_ip.c_str(), rmport);
         return 1;
     }
-
-    h.Add(&authListenSocket);
 
     ///- Catch termination signals
     HookSignals();
@@ -304,12 +322,12 @@ extern int main(int argc, char **argv)
     }
     #endif
 
+    //server has started up successfully => enable async DB requests
+    LoginDatabase.AllowAsyncTransactions();
+
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / 100000));
     uint32 loopCounter = 0;
-    uint32 last_ping_time = 0;
-    uint32 now = WorldTimer::getMSTime();
-    uint32 last_ipprops_cleanup = 0;
 
 #ifndef WIN32
     detachDaemon();
@@ -318,37 +336,18 @@ extern int main(int argc, char **argv)
     ///- Wait for termination signal
     while (!stopEvent)
     {
+        // dont move this outside the loop, the reactor will modify it
+        ACE_Time_Value interval(0, 100000);
 
-        h.Select(0, 100000);
-        now = WorldTimer::getMSTime();
+        if (ACE_Reactor::instance()->run_reactor_event_loop(interval) == -1)
+            break;
 
         if( (++loopCounter) == numLoops )
         {
-            // FG: protect against network system overloading
-            // if that happens, force realmd close (autorestarter ftw!)
-
-            if(WorldTimer::getMSTimeDiff(last_ping_time, now) < 10000)
-            {
-                sLog.outError("NETWORK SYSTEM OVERLOAD");
-                raise(SIGSEGV); // force close
-                abort();
-            }
-
-            last_ping_time = now;
             loopCounter = 0;
             sLog.outDetail("Ping MySQL to keep connection alive");
             LoginDatabase.Ping();
         }
-
-        // FG: clear flood protect buffer periodically
-        if(WorldTimer::getMSTimeDiff(last_ipprops_cleanup, now) > 30000) // flush stored IPs every 30 secs
-        {
-            last_ipprops_cleanup = now;
-            uint32 flushed = 0, blocked = 0, stored = 0;
-            CleanupIPPropmap(flushed, blocked, stored);
-            sLog.outDetail("IPProp: Flushed %u total, %u of them blocked, now %u stored", flushed, blocked, stored);
-        }
-
 #ifdef WIN32
         if (runMode == MODE_SERVICE_STOPPED)
             stopEvent = true;
@@ -364,7 +363,7 @@ extern int main(int argc, char **argv)
     ///- Remove signal handling before leaving
     UnhookSignals();
 
-    sLog.outString( "Halting process..." );
+    sLog.outString ("Halting process...");
     return 0;
 }
 
@@ -375,7 +374,7 @@ void OnSignal(int s)
     switch (s)
     {
         case SIGINT:
-        //case SIGTERM:
+        case SIGTERM:
             stopEvent = true;
             break;
         #ifdef _WIN32
@@ -429,4 +428,3 @@ void UnhookSignals()
 }
 
 /// @}
-

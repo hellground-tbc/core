@@ -65,11 +65,10 @@ extern ScriptMapMap sWaypointScripts;
 
 class ScriptMgr
 {
+        typedef std::vector<std::string> ScriptNameMap;
     public:
         ScriptMgr();
         ~ScriptMgr();
-
-        typedef std::vector<std::string> ScriptNameMap;
 
         void LoadGameObjectScripts();
         void LoadQuestEndScripts();
@@ -132,7 +131,6 @@ class ScriptMgr
 
         typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptMap;
         typedef UNORDERED_MAP<uint32, uint32> EventIdScriptMap;
-        typedef std::vector<std::string> ScriptNameMap;
 
         AreaTriggerScriptMap    m_AreaTriggerScripts;
         EventIdScriptMap        m_EventIdScripts;

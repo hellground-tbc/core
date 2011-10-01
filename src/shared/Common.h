@@ -177,6 +177,20 @@ enum AccountTypes
     SEC_CONSOLE        = 4                                  // must be always last in list, accounts must have less security level always also
 };
 
+// Used in mangosd/realmd
+enum RealmFlags
+{
+    REALM_FLAG_NONE         = 0x00,
+    REALM_FLAG_INVALID      = 0x01,
+    REALM_FLAG_OFFLINE      = 0x02,
+    REALM_FLAG_SPECIFYBUILD = 0x04,                         // client will show realm version in RealmList screen in form "RealmName (major.minor.revision.build)"
+    REALM_FLAG_UNK1         = 0x08,
+    REALM_FLAG_UNK2         = 0x10,
+    REALM_FLAG_NEW_PLAYERS  = 0x20,
+    REALM_FLAG_RECOMMENDED  = 0x40,
+    REALM_FLAG_FULL         = 0x80
+};
+
 enum LocaleConstant
 {
     LOCALE_enUS = 0,
@@ -190,7 +204,7 @@ enum LocaleConstant
     LOCALE_ruRU = 8
 };
 
-const uint8 MAX_LOCALE = 9;
+#define MAX_LOCALE 9
 
 extern char const* localeNames[MAX_LOCALE];
 
@@ -206,6 +220,16 @@ inline char * mangos_strdup(const char * source)
     strcpy(dest, source);
     return dest;
 }
+
+enum RunModes
+{
+    MODE_NORMAL             = 0,
+    MODE_SERVICE_STOPPED    = 1,
+    MODE_SERVICE_RUNNING    = 2,
+    MODE_SERVICE_PAUSED     = 3,
+
+    MODE_DAEMON             = 6
+};
 
 // we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some other platforms)
 #ifdef max
@@ -228,15 +252,5 @@ inline char * mangos_strdup(const char * source)
 #define MAKE_PAIR32(l, h)  uint32(uint16(l) | (uint32(h) << 16))
 #define PAIR32_HIPART(x)   (uint16)((uint32(x) >> 16) & 0x0000FFFF)
 #define PAIR32_LOPART(x)   (uint16)(uint32(x)         & 0x0000FFFF)
-
-enum RunModes
-{
-    MODE_NORMAL             = 0,
-    MODE_SERVICE_STOPPED    = 1,
-    MODE_SERVICE_RUNNING    = 2,
-    MODE_SERVICE_PAUSED     = 3,
-
-    MODE_DAEMON             = 6
-};
 
 #endif

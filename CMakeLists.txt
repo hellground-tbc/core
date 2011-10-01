@@ -1,239 +1,422 @@
-PROJECT(Trinity)
-cmake_minimum_required(VERSION 2.6)
-cmake_policy(SET CMP0005 OLD)
+#
+# Copyright (C) 2005-2011 MaNGOS project <http://getmangos.com/>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
 
-include(CheckIncludeFiles)
-include(cmake/FindAce.cmake)
-include(cmake/FindTbb.cmake)
-include(cmake/FindMySql.cmake)
-include(cmake/FindPostgreSql.cmake)
-include(cmake/FindReadline.cmake)
-CONFIGURE_FILE(
+project(HellGround)
+set(SERVER_VERSION 2.4.3)
+
+# CMake policies
+cmake_minimum_required(VERSION 2.8)
+
+set(CMAKE_MODULE_PATH
+  ${CMAKE_MODULE_PATH}
+  ${CMAKE_SOURCE_DIR}/cmake
+)
+
+# Force out-of-source build
+string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" BUILDING_IN_SOURCE)
+if(BUILDING_IN_SOURCE)
+  message(FATAL_ERROR
+    "This project requires an out of source build. Remove the file 'CMakeCache.txt' found in this directory before continuing, create a separate build directory and run 'cmake <srcs> [options]' from there."
+  )
+endif()
+
+if(WIN32 AND NOT MSVC)
+  message(FATAL_ERROR
+    "Under Windows other compiler than Microsoft Visual Studio are not supported."
+  )
+endif()
+
+find_package(Platform REQUIRED)
+
+# VS100 uses MSBuild.exe instead of devenv.com, so force it to use devenv.com
+if(WIN32 AND MSVC_VERSION MATCHES 1600)
+  find_package(VisualStudio2010)
+endif()
+
+# Output description of this script
+message(
+  "\nThis script builds the HellGround project server.
+  Options that can be used in order to configure the process:
+    PREFIX: Path where the server should be installed to
+    DEBUG : Debug mode
+    CLI   : Build with CLI (default)
+    TBB_USE_EXTERNAL: Use external TBB library instead of built in (default)
+    ACE_USE_EXTERNAL: Use external ACE library instead of built in (default)
+    USE_STD_MALLOC  : Use standard malloc instead of TBB
+    LARGE_CELL      : Use large cell size
+
+  To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.
+  For example: cmake .. -DDEBUG=1 -DPREFIX=/opt/mangos\n"
+) # TODO: PLATFORM: Sets the architecture for compile (X86,X64)
+
+# Override configuration-types - we don't use anything else than debug and release
+if(CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_CONFIGURATION_TYPES Release Debug)
+  set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
+    "Reset the configurations to what we need"
+    FORCE)
+endif()
+
+# Find out what system we use to include the needed libs
+if(WIN32)
+  if(PLATFORM MATCHES X86) # 32-bit
+    set(DEP_ARCH win32)
+  else() # 64-bit
+    set(DEP_ARCH x64)
+  endif()
+endif()
+
+option(DEBUG "Debug mode" 0)
+option(CLI "With CLI" 1)
+option(TBB_USE_EXTERNAL "Use external TBB" 1)
+option(USE_STD_MALLOC "Use standard malloc instead of TBB" 0)
+option(ACE_USE_EXTERNAL "Use external ACE" 1)
+option(LARGE_CELL "Use large cell size" 0)
+
+# Set up the install-prefix
+if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
+  get_filename_component(PREFIX_ABSOLUTE "../hellground-server" ABSOLUTE)
+  set(CMAKE_INSTALL_PREFIX ${PREFIX_ABSOLUTE} CACHE PATH "Install path prefix." FORCE)
+endif()
+if(PREFIX)
+  if(!WIN32)
+    string(REGEX REPLACE "^~" "$ENV{HOME}" PREFIX ${PREFIX})
+  endif()
+  get_filename_component(PREFIX_ABSOLUTE ${PREFIX} ABSOLUTE)
+  set(CMAKE_INSTALL_PREFIX ${PREFIX} CACHE PATH "Install path prefix." FORCE)
+else()
+  set(PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Install path prefix.")
+endif()
+
+set(BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+set(CONF_DIR ${CMAKE_INSTALL_PREFIX}/etc)
+# If win32 put it in the bin dir not lib
+if(WIN32)
+  set(LIBS_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+else()
+  set(LIBS_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+endif()
+
+# For Unix systems set the rpath so that libraries are found
+set(CMAKE_INSTALL_RPATH ${LIBS_DIR})
+set(CMAKE_INSTALL_NAME_DIR ${LIBS_DIR})
+# Run out of build tree
+set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
+
+# Find needed packages and if necessery abort if something important is missing
+unset(ACE_INCLUDE_DIR CACHE)
+unset(ACE_LIBRARIES CACHE)
+unset(ACE_LIBRARIES_DIR CACHE)
+unset(ACE_INCLUDE_DIR)
+unset(ACE_LIBRARIES)
+unset(ACE_LIBRARIES_DIR)
+if(ACE_USE_EXTERNAL)
+  find_package(ACE)
+  if(NOT ACE_FOUND)
+    message(FATAL_ERROR
+      "This project requires ACE installed when ACE_USE_EXTERNAL is set. Please download the ACE Micro Release Kit from http://download.dre.vanderbilt.edu/ and install it. If this script didn't find ACE and it was correctly installed please set ACE_ROOT to the correct path."
+    )
+  endif()
+  if(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
+    set(HAVE_ACE_STACK_TRACE_H ON) # config.h.cmake
+  endif()
+else()
+  include(cmake/ImportACE.cmake)
+endif()
+
+unset(TBB_INCLUDE_DIR CACHE)
+unset(TBB_LIBRARIES CACHE)
+unset(TBB_LIBRARIES_DIR CACHE)
+unset(TBB_INCLUDE_DIR)
+unset(TBB_LIBRARIES)
+unset(TBB_LIBRARIES_DIR)
+if(TBB_USE_EXTERNAL)
+  find_package(TBB)
+  if(NOT TBB_FOUND)
+    message(FATAL_ERROR
+      "This project requires TBB installed when TBB_USE_EXTERNAL is set. Please download the TBB Stable Release from http://www.threadingbuildingblocks.org/ and install it. If this script didn't find TBB and it was correctly installed please set TBB_ROOT to the correct path."
+    )
+  endif()
+else()
+  include(cmake/ImportTBB.cmake)
+endif()
+
+unset(READLINE_INCLUDE CACHE)
+unset(READLINE_LIBRARY CACHE)
+unset(READLINE_LIBRARIES_DIR CACHE)
+unset(READLINE_INCLUDE)
+unset(READLINE_LIBRARY)
+unset(READLINE_LIBRARIES_DIR)
+if(UNIX)
+  find_package(Readline)
+  if(NOT READLINE_FOUND)
+    message(FATAL_ERROR
+      "This project requires Readline installed. Please install Readline package"
+      )
+  endif()
+endif()
+
+# Win32 delifered packages
+if(WIN32)
+  set(MYSQL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/include/mysql)
+  set(MYSQL_LIBRARY ${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_release/libmySQL.lib)
+  set(MYSQL_DEBUG_LIBRARY ${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_debug/libmySQL.lib)
+  set(OPENSSL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/include/openssl)
+  set(OPENSSL_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_release/libeay32.lib)
+  set(OPENSSL_DEBUG_LIBRARIES ${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_debug/libeay32.lib)
+  # zlib is build
+endif()
+
+# *nix-specific packages
+if(UNIX)
+  find_package(MySQL REQUIRED)
+  find_package(OpenSSL REQUIRED)
+  find_package(ZLIB REQUIRED)
+endif()
+
+# Add uninstall script and target
+configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-  IMMEDIATE @ONLY)
-ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
-
-add_definitions("-O3 
--ggdb 
--ffast-math 
--msse3 
--fomit-frame-pointer 
--fno-delete-null-pointer-checks 
--ftracer 
--fno-strict-aliasing 
--fno-math-errno
--funsafe-math-optimizations
--funroll-loops
--m64
--pipe
--DFD_SETSIZE=4096
--frename-registers
-")
-
-OPTION(DO_MYSQL "With MySQL support" 1)
-OPTION(DO_POSTGRESQL "With PostgreSQL support" 0) # not complete yet, may not link properly.
-OPTION(DO_SCRIPTS "With trinityscripts" 1)
-OPTION(DO_CLI "With CLI" 1)
-OPTION(DO_RA "With RA" 0)
-OPTION(DO_DEBUG "Debug mode" 0)
-OPTION(DO_WARN "Enable all compile warnings" 0)
-OPTION(LARGE_CELL "Large cell size" 0)
-OPTION(SHORT_SLEEP "Short sleep" 0)
-OPTION(CENTOS "CENTOS" 0)
-
-SET(GENREV_SRC
-src/tools/genrevision/genrevision.cpp
+  IMMEDIATE @ONLY
 )
 
-ADD_EXECUTABLE(genrev
-${GENREV_SRC}
-)
-ADD_CUSTOM_TARGET("revision.h" ALL
-    COMMAND "${Trinity_BINARY_DIR}/genrev"
-    ${Trinity_SOURCE_DIR}
-    WORKING_DIRECTORY "${Trinity_SOURCE_DIR}/src/shared"
-    DEPENDS genrev
+add_custom_target(uninstall
+  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 )
 
+# Find core revision
+#if(HG_EXECUTABLE)
+  execute_process(
+#    COMMAND ${HG_EXECUTABLE} tip --template {rev}
+    COMMAND hg tip --template {rev}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    OUTPUT_VARIABLE HG_REVISION
+    RESULT_VARIABLE HG_RESULT
+    ERROR_QUIET
+  )
+  if(HG_RESULT)
+    set(HG_REVISION "Hg repository not found")
+  endif()
+#else()
+#  set(HG_REVISION "Mercurial not found")
+#endif()
 
-EXECUTE_PROCESS(
-        COMMAND hg tip --template {rev}
-        OUTPUT_VARIABLE HG_REVISION
-)
+message("")
+message("Core revision         : ${HG_REVISION}")
+message("Install server to     : ${CMAKE_INSTALL_PREFIX}")
+message("")
 
-message("* Trinity Core revision: ${HG_REVISION}")
+if(CLI)
+  message("Build with CLI        : Yes (default)")
+  add_definitions(-DENABLE_CLI)
+else()
+  message("Build with CLI        : No")
+endif()
 
-IF (PREFIX)
-    SET(CMAKE_INSTALL_PREFIX ${PREFIX})
-ENDIF (PREFIX)
-
-if(CONF_DIR)
-
-else(CONF_DIR)
-SET(CONF_DIR ${PREFIX}/etc)
-endif(CONF_DIR)
-SET(LIBSDIR ${CMAKE_INSTALL_PREFIX}/lib)
-
-message("* Will install to: ${CMAKE_INSTALL_PREFIX}")
-message("* With config dir at: ${CONF_DIR}")
-message("* Libs install dir at: ${LIBSDIR}")
-
-FIND_LIBRARY(SSLLIB NAMES ssl DOC "SSL library")
-FIND_LIBRARY(ZLIB z "Zlib library")
-
-IF(DO_POSTGRESQL)
-    MESSAGE("* With PostgreSQL")
-    FIND_PostgreSQL()
-    ADD_DEFINITIONS(-DDO_POSTGRESQL)
-ENDIF(DO_POSTGRESQL)
-
-IF(DO_MYSQL)
-    MESSAGE("* With MySQL")
-    FIND_MYSQL()
-    ADD_DEFINITIONS(-DDO_MYSQL)
-ENDIF(DO_MYSQL)
-
-if(DO_SCRIPTS)
-message("* With Trinity Scripts")
-SET(SCRIPT_LIB trinityscript)
-SET(SCRIPT_INCLUDE src/bindings/scripts/include)
-ADD_DEFINITIONS(-DDO_SCRIPTS)
-else (DO_SCRIPTS)
-message("* Without Trinity Scripts")
-SET(SCRIPT_LIB trinityinterface)
-SET(SCRIPT_INCLUDE src/bindings/interface)
-endif(DO_SCRIPTS)
-
-message("-- Miscellaneus options:")
-
-if(DO_CLI)
-message("* With CLI")
-add_definitions(-DENABLE_CLI)
-else (DO_CLI)
-message(* Without CLI)
-endif(DO_CLI)
-
-if(DO_RA)
-message("* With RA")
-add_definitions(-DENABLE_RA)
-else(DO_RA)
-message("* Without RA")
-endif(DO_RA)
-
-if(DO_DEBUG)
-message("* Debug mode ON")
-add_definitions(-g -DTRINITY_DEBUG)
-endif(DO_DEBUG)
-
-if(DO_WARN)
-    message("* All warnings mode")
-    add_definitions(-Wall -Wfatal-errors -Wextra)
-endif(DO_WARN)
+if(DEBUG)
+  message("Build in debug-mode   : Yes")
+  set(CMAKE_BUILD_TYPE Debug)
+else()
+  set(CMAKE_BUILD_TYPE Release)
+  message("Build in debug-mode   : No  (default)")
+endif()
 
 if(LARGE_CELL)
-message("* Large cell size")
-add_definitions(-DLARGE_CELL)
+  message("Build with cell size  : Large")
+  add_definitions(-DLARGE_CELL)
 else(LARGE_CELL)
-message("* Small cell size")
+  message("Build with cell size  : Small (default)")
 endif(LARGE_CELL)
 
-if(SHORT_SLEEP)
-message("* System sleep time is 50ms")
-add_definitions(-DSHORT_SLEEP)
-else(SHORT_SLEEP)
-message("* System sleep time is 100ms")
-endif(SHORT_SLEEP)
+message("")
 
-IF(CENTOS)
-add_definitions(-DCENTOS)
-    message("* Building with termcap")
-else(CENTOS)
-    message("* Building with readline")
-ENDIF(CENTOS)
+#add_definitions("-O3
+#-ggdb
+#-ffast-math
+#-msse3
+#-fomit-frame-pointer
+#-fno-delete-null-pointer-checks
+#-ftracer
+#-fno-strict-aliasing
+#-fno-math-errno
+#-funsafe-math-optimizations
+#-funroll-loops
+#-m64
+#-pipe
+#-DFD_SETSIZE=4096
+#-frename-registers
+#")
 
-FIND_ACE(ACE)
-if(ACE_FOUND)
-message(STATUS "Found ACE library: ${ACE_LIBRARY}")
-message(STATUS "Include dir is: ${ACE_INCLUDE_DIR}")
-else(ACE_FOUND)
-message(SEND_ERROR "** ACE library not found! Trinity Core cannot be compiled!")
-message(SEND_ERROR "** Please build ACE from http://www.cs.wustl.edu/~schmidt/ACE.html")
-#For now remove msg about install from repo, as ubuntu/debian don't have needed ver in repos.
-#message(SEND_ERROR "** your distro may provide a binary for ACE e.g. for ubuntu try apt-get install libace-dev")
-return()
-#SET(BUILD_ACE 1)
-#SET(ACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/dep/ACE_wrappers ${CMAKE_BINARY_DIR}/dep/ACE_wrappers")
-#SET(ACE_LIBRARY ACE)
-#message(STATUS "I will try to build ACE from: ${ACE_INCLUDE_DIR}")
-#message(STATUS "And link using: ${ACE_LIBRARY}")
-endif(ACE_FOUND)
+# Handle debugmode compiles (this will require further work for proper WIN32-setups)
+if(UNIX)
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -gdb")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdb")
+endif()
 
-FIND_TBB(tbb)
-if(TBB_FOUND)
-message(STATUS "Found TBB libraries: ${TBB_LIBRARY} ${TBB_LIBRARY_MALLOC} ${TBB_LIBRARY_MALLOC_PROXY}")
-message(STATUS "Include dir is: ${TBB_INCLUDE_DIR}")
-else(TBB_FOUND)
-message(SEND_ERROR "** TBB library not found! Trinity Core cannot be compiled!")
-return()
-endif(TBB_FOUND)
+# Set warning levels for different builds
+if(UNIX)
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} --no-warnings")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} --no-warnings")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -Wfatal-errors -Wextra")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wfatal-errors -Wextra")
+elseif(WIN32)
+  # Disable warnings in Visual Studio 8 and above and add /MP
+  if(MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio 7")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /MP")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4996 /wd4355 /wd4244 /wd4267 /MP")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /MP")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /MP")
+  endif()
+endif()
 
-#somehow line below don't work. so for now change it to if exist
-#check_include_files(${ACE_INCLUDE_DIR}/ace/Stack_Trace.h HAVE_ACE_STACK_TRACE_H)
-IF(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
-    SET(HAVE_ACE_STACK_TRACE_H 1)
-ELSE(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
-    message(STATUS "** Your libace is out of date. Please update your libace!")
-ENDIF(EXISTS ${ACE_INCLUDE_DIR}/ace/Stack_Trace.h)
+message("C flags              : ${CMAKE_C_FLAGS}")
+message("CXX flags            : ${CMAKE_CXX_FLAGS}")
+message("Debug C flags        : ${CMAKE_C_FLAGS_DEBUG}")
+message("Debug CXX flags      : ${CMAKE_CXX_FLAGS_DEBUG}")
+message("Release C flags      : ${CMAKE_C_FLAGS_RELEASE}")
+message("Release CXX flags    : ${CMAKE_CXX_FLAGS_RELEASE}")
 
-IF(UNIX AND NOT CENTOS)
-  FIND_READLINE()
-  IF(READLINE_FOUND)
-  message(STATUS "Found Readline library: ${READLINE_LIBRARY}")
-  message(STATUS "Include dir is: ${READLINE_INCLUDE_DIR}")
-  ELSE(READLINE_FOUND)
-  message(SEND_ERROR "** Readline library not found!")
-  message(SEND_ERROR "** Your distro may provide a binary for Readline e.g. for ubuntu try apt-get install libreadline5-dev")
-  return()
-  ENDIF(READLINE_FOUND)
-ENDIF(UNIX AND NOT CENTOS)
+message("")
+
+if(DEBUG)
+  message("DEBUG option is enabled")
+else()
+  message("DEBUG option is disabled")
+endif()
+
+message("")
+
+# Some small tweaks for Visual Studio 7 and above.
+if(MSVC)
+  # Mark 32 bit executables large address aware so they can use > 2GB address space
+  if(PLATFORM MATCHES X86)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE")
+  endif()
+endif()
+
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH ${LIBS_DIR})
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# Generate revision-extractor
+set(GENREV_SRC
+  src/tools/genrevision/genrevision.cpp
+)
+
+add_executable(genrev
+  ${GENREV_SRC}
+)
+
+# if(WIN32)
+#   set_target_properties(genrev PROPERTIES
+#     COMPILE_FLAGS "/MACHINE:X86"
+#   )
+# elseif(UNIX)
+#   set_target_properties(genrev PROPERTIES
+#     COMPILE_FLAGS "-m32"
+#     LINK_FLAGS "-m32"
+#   )
+# endif()
+# if(XCODE)
+#   set_target_properties(genrev PROPERTIES
+#     XCODE_ATTRIBUTE_ARCHS "i386"
+#   )
+# endif()
+
+get_target_property(GENERATE_EXE genrev LOCATION)
+add_custom_target("revision.h" ALL
+  COMMAND ${GENERATE_EXE} ${CMAKE_SOURCE_DIR}
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+  DEPENDS genrev
+)
+
+if(WIN32)
+  install(
+    FILES
+      ${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_release/libeay32.dll
+      ${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_release/libmySQL.dll
+    DESTINATION ${LIBS_DIR}
+    CONFIGURATIONS Release
+  )
+  install(
+    FILES
+      ${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_debug/libeay32.dll
+      ${CMAKE_SOURCE_DIR}/dep/lib/${DEP_ARCH}_debug/libmySQL.dll
+    DESTINATION ${LIBS_DIR}
+    CONFIGURATIONS Debug
+  )
+  if(PLATFORM MATCHES X86)
+    # Copy dll's Windows needs
+    install(
+      FILES
+        ${CMAKE_SOURCE_DIR}/dep/lib/win32_release/dbghelp.dll
+      DESTINATION ${LIBS_DIR}
+      CONFIGURATIONS Release
+    )
+    install(
+      FILES
+        ${CMAKE_SOURCE_DIR}/dep/lib/win32_debug/dbghelp.dll
+      DESTINATION ${LIBS_DIR}
+      CONFIGURATIONS Debug
+    )
+  endif()
+endif()
+
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ARCH_FLAGS}")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ARCH_FLAGS}")
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ARCH_FLAGS}")
+if(XCODE)
+  if(PLATFORM MATCHES X86)
+    set(CMAKE_OSX_ARCHITECTURES i386)
+  else()
+    set(CMAKE_OSX_ARCHITECTURES x86_64)
+  endif()
+endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
-IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  SET(OSX_LIBS /opt/local/lib/libcrypto.dylib)
-  add_definitions(-D__ASSERTMACROS__)
-ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+add_subdirectory(dep) # TODO: add vmap extractor build support
 
-
-add_definitions(--no-warnings) #to make build look nice, no gcc nazi warnings.
-
-INCLUDE_DIRECTORIES(
-dep/include 
-dep/include/g3dlite 
-dep/include/sockets
-src/shared 
-src/framework 
-src/shared/Database 
-src/shared/vmap
-src/game 
-src/bindings/scripts/scripts/npc
-${CMAKE_BINARY_DIR}
-${SCRIPT_INCLUDE}
-${MYSQL_INCLUDE_DIR} 
-${POSTGRESQL_INCLUDE_DIR} 
-${CMAKE_CURRENT_BINARY_DIR}/src/shared 
-${CMAKE_CURRENT_SOURCE_DIR}/..
-${ACE_INCLUDE_DIR}
-${TBB_INCLUDE_DIR}
-${READLINE_INCLUDE_DIR}
+# Add definitions for all build types
+# Don't place this above 'dep' subdirectory! Because of defines build will crash.
+set(DEFINITIONS
+  DO_MYSQL
+  HAVE_CONFIG_H
+  VERSION="${SERVER_VERSION}"
+  SYSCONFDIR="${CONF_DIR}/"
 )
+set(DEFINITIONS_RELEASE NDEBUG)
+set(DEFINITIONS_DEBUG _DEBUG MANGOS_DEBUG)
+if(WIN32)
+  set(DEFINITIONS ${DEFINITIONS} WIN32 _WIN32)
+  set(DEFINITIONS_RELEASE ${DEFINITIONS_RELEASE} _CRT_SECURE_NO_WARNINGS)
+endif()
+if(USE_STD_MALLOC)
+  set(DEFINITIONS ${DEFINITIONS} USE_STANDARD_MALLOC)
+endif()
 
-SET(CMAKE_SKIP_BUILD_RPATH FALSE)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "${DEFINITIONS}")
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE "${DEFINITIONS_RELEASE}")
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "${DEFINITIONS_DEBUG}")
 
-add_subdirectory(dep)
-#add_subdirectory(doc)
 add_subdirectory(src)
+# if(SQL)
+#   add_subdirectory(sql)
+# endif()

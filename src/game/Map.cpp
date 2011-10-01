@@ -3185,7 +3185,7 @@ uint64 Map::GetCreatureGUID(uint32 id, GetCreatureGuidType type)
                 break;
             case GET_RANDOM_CREATURE_GUID:
                 std::list<uint64>::const_iterator itr= a->second.begin();
-                std::advance(itr, rand()%(a->second.size()-1));
+                std::advance(itr, urand(0, a->second.size()-1));
                 returnGUID = *itr;
                 break;
         }

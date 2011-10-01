@@ -1,5 +1,12 @@
-set(g3dlite_STAT_SRCS
-	AABox.cpp
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/include
+  ${CMAKE_SOURCE_DIR}/dep/include/g3dlite
+  ${CMAKE_SOURCE_DIR}/dep/include/zlib
+)
+
+add_library(g3dlite STATIC
+  	AABox.cpp
 	Box.cpp
 	Crypto.cpp
 	format.cpp
@@ -32,6 +39,7 @@ set(g3dlite_STAT_SRCS
 	Random.cpp
 	Ray.cpp
 	ReferenceCount.cpp
+	RegistryUtil.cpp
 	Sphere.cpp
 	TextInput.cpp
 	TextOutput.cpp
@@ -40,24 +48,13 @@ set(g3dlite_STAT_SRCS
 )
 
 if(WIN32)
-  include_directories(
-    ${CMAKE_SOURCE_DIR}/dep/include/g3dlite
-    ${CMAKE_SOURCE_DIR}/dep/include/zlib
-  )
-else()
-  include_directories(
-    ${CMAKE_SOURCE_DIR}/dep/include/g3dlite
+  target_link_libraries(g3dlite
+  zlib
   )
 endif()
 
-add_library(g3dlite STATIC ${g3dlite_STAT_SRCS})
-
-if(WIN32)
+if(UNIX)
   target_link_libraries(g3dlite
-    zlib
-  )
-else()
-  target_link_libraries(g3dlite
-    ${ZLIB_LIBRARIES}
+  ${ZLIB_LIBRARIES}
   )
 endif()

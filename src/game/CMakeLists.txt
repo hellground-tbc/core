@@ -1,290 +1,72 @@
+file(GLOB_RECURSE game_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.h)
 
-########### next target ###############
-
-SET(game_STAT_SRCS
-   AccountMgr.cpp
-   AccountMgr.h
-   AddonHandler.cpp
-   AddonHandler.h
-   AntiCheat.h
-   ArenaTeam.cpp
-   ArenaTeam.h
-   ArenaTeamHandler.cpp
-   AuctionHouseHandler.cpp
-   AuctionHouseMgr.cpp
-   AuctionHouseMgr.h
-   Bag.cpp
-   Bag.h
-   BattleGround.cpp
-   BattleGroundAA.cpp
-   BattleGroundAB.cpp
-   BattleGroundAV.cpp
-   BattleGroundBE.cpp
-   BattleGroundEY.cpp
-   BattleGroundNA.cpp
-   BattleGroundRL.cpp
-   BattleGroundWS.cpp
-   BattleGround.h
-   BattleGroundAA.h
-   BattleGroundAB.h
-   BattleGroundAV.h
-   BattleGroundBE.h
-   BattleGroundEY.h
-   BattleGroundNA.h
-   BattleGroundRL.h
-   BattleGroundWS.h
-   BattleGroundHandler.cpp
-   BattleGroundMgr.cpp
-   BattleGroundMgr.h
-   Cell.h
-   CellImpl.h
-   Channel.cpp
-   Channel.h
-   ChannelHandler.cpp
-   ChannelMgr.h
-   CharacterHandler.cpp
-   Chat.cpp
-   Chat.h
-   ChatHandler.cpp
-   CombatAI.cpp
-   CombatAI.h
-   CombatHandler.cpp
-   ConfusedMovementGenerator.cpp
-   ConfusedMovementGenerator.h
-   Corpse.cpp
-   Corpse.h
-   CreatureAI.cpp
-   CreatureAI.h
-   CreatureAIFactory.h
-   CreatureAIImpl.h
-   CreatureAIRegistry.cpp
-   CreatureAIRegistry.h
-   CreatureAISelector.cpp
-   CreatureAISelector.h
-   CreatureEventAI.cpp
-   CreatureEventAIMgr.cpp
-   Creature.cpp
-   Creature.h
-   CreatureGroups.cpp
-   CreatureGroups.h
-   Debugcmds.cpp
-   DestinationHolder.h
-   DestinationHolderImp.h
-   DuelHandler.cpp
-   DynamicObject.cpp
-   DynamicObject.h
-   FleeingMovementGenerator.cpp
-   FleeingMovementGenerator.h
-   Formulas.h
-   GameEvent.cpp
-   GameEvent.h
-   GameObject.cpp
-   GameObject.h
-   GlobalEvents.cpp
-   GlobalEvents.h
-   GossipDef.cpp
-   GossipDef.h
-   GridDefines.h
-   GridNotifiers.cpp
-   GridNotifiers.h
-   GridNotifiersImpl.h
-   GridStates.cpp
-   GridStates.h
-   Group.cpp
-   Group.h
-   GroupHandler.cpp
-   GuardAI.cpp
-   GuardAI.h
-   Guild.cpp
-   Guild.h
-   GuildHandler.cpp
-   GridMap.h
-   GridMap.cpp
-   HomeMovementGenerator.cpp
-   HomeMovementGenerator.h
-   HostilRefManager.cpp
-   HostilRefManager.h
-   IdleMovementGenerator.cpp
-   IdleMovementGenerator.h
-   InstanceData.cpp
-   InstanceData.h
-   InstanceSaveMgr.cpp
-   InstanceSaveMgr.h
-   Item.cpp
-   Item.h
-   ItemEnchantmentMgr.cpp
-   ItemEnchantmentMgr.h
-   ItemHandler.cpp
-   ItemPrototype.h
-   Language.h
-   Level0.cpp
-   Level1.cpp
-   Level2.cpp
-   Level3.cpp
-   LFGHandler.cpp
-   LootHandler.cpp
-   LootMgr.cpp
-   LootMgr.h
-   Mail.cpp
-   Mail.h
-   MailHandler.cpp
-   Map.cpp
-   Map.h
-   MapInstanced.cpp
-   MapInstanced.h
-   MapManager.cpp
-   MapManager.h
-   MiscHandler.cpp
-   MotionMaster.cpp
-   MotionMaster.h
-   MovementGenerator.cpp
-   MovementGenerator.h
-   MovementGeneratorImpl.h
-   MovementHandler.cpp
-   MapUpdater.cpp
-   MapUpdater.h
-   NPCHandler.cpp
-   NPCHandler.h
-   ObjectAccessor.cpp
-   ObjectAccessor.h
-   Object.cpp
-   ObjectGuid.h
-   ObjectGuid.cpp
-   ObjectGridLoader.cpp
-   ObjectGridLoader.h
-   ObjectPosSelector.cpp
-   ObjectPosSelector.h
-   Object.h
-   ObjectMgr.cpp
-   ObjectMgr.h
-   Opcodes.cpp
-   Opcodes.h
-   OutdoorPvP.cpp
-   OutdoorPvP.h
-   OutdoorPvPEP.cpp
-   OutdoorPvPEP.h
-   OutdoorPvPHP.cpp
-   OutdoorPvPHP.h
-   OutdoorPvPImpl.h
-   OutdoorPvPMgr.cpp
-   OutdoorPvPMgr.h
-   OutdoorPvPNA.cpp
-   OutdoorPvPNA.h
-   OutdoorPvPSI.cpp
-   OutdoorPvPSI.h
-   OutdoorPvPTF.cpp
-   OutdoorPvPTF.h
-   OutdoorPvPZM.cpp
-   OutdoorPvPZM.h
-   PassiveAI.cpp
-   PassiveAI.h
-   Path.h
-   PetAI.cpp
-   PetAI.h
-   Pet.cpp
-   Pet.h
-   PetHandler.cpp
-   PetitionsHandler.cpp
-   Player.cpp
-   Player.h
-   PlayerAI.cpp
-   PlayerAI.h
-   PointMovementGenerator.cpp
-   PointMovementGenerator.h
-   PoolHandler.h
-   PoolHandler.cpp
-   QueryHandler.cpp
-   QuestDef.cpp
-   QuestDef.h
-   QuestHandler.cpp
-   RandomMovementGenerator.cpp
-   RandomMovementGenerator.h
-   ReactorAI.cpp
-   ReactorAI.h
-   ScriptMgr.cpp
-   ScriptMgr.h
-   SharedDefines.h
-   SkillHandler.cpp
-   SpellAuraDefines.h
-   SpellAuras.cpp
-   SpellAuras.h
-   Spell.cpp
-   SpellEffects.cpp
-   Spell.h
-   SkillDiscovery.cpp
-   SkillDiscovery.h
-   SkillExtraItems.cpp
-   SkillExtraItems.h
-   SpellHandler.cpp
-   SocialMgr.cpp
-   SocialMgr.h
-   SpellMgr.cpp
-   SpellMgr.h
-   StatSystem.cpp
-   TargetedMovementGenerator.cpp
-   TargetedMovementGenerator.h
-   TaxiHandler.cpp
-   TemporarySummon.cpp
-   TemporarySummon.h
-   TicketHandler.cpp
-   TicketMgr.cpp
-   TicketMgr.h 
-   Tools.cpp
-   Tools.h
-   TotemAI.cpp
-   TotemAI.h
-   Totem.cpp
-   Totem.h
-   TradeHandler.cpp
-   Transports.cpp
-   Transports.h
-   ThreatManager.cpp
-   ThreatManager.h
-   Traveller.h
-   Unit.cpp
-   Unit.h
-   UnitAI.cpp
-   UnitAI.h
-   UnitEvents.h
-   UpdateData.cpp
-   UpdateData.h
-   UpdateFields.h
-   UpdateMask.h
-   VoiceChatHandler.cpp
-   WardenBase.cpp
-   WardenBase.h
-   WardenDataStorage.cpp
-   WardenDataStorage.h
-   WardenMac.cpp
-   WardenMac.h
-   WardenModuleMac.h
-   WardenModuleWin.h
-   WardenWin.cpp
-   WardenWin.h
-   WaypointManager.cpp
-   WaypointManager.h
-   WaypointMovementGenerator.cpp
-   WaypointMovementGenerator.h
-   Weather.cpp
-   Weather.h
-   World.cpp
-   World.h
-   WorldLog.cpp
-   WorldLog.h
-   WorldSession.cpp
-   WorldSession.h
-   WorldSocket.cpp
-   WorldSocket.h
-   WorldSocketMgr.cpp
-   WorldSocketMgr.h
-   FollowerReference.cpp
-   FollowerReference.h
-   FollowerRefManager.h
-   GroupReference.cpp
-   GroupReference.h
-   GroupRefManager.h
-   ZoneScript.h
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/vmap
+  ${CMAKE_SOURCE_DIR}/dep/include/g3dlite
+  ${CMAKE_SOURCE_DIR}/dep/include
+  ${CMAKE_SOURCE_DIR}/src/shared
+  ${CMAKE_SOURCE_DIR}/src/shared/Database
+  ${CMAKE_SOURCE_DIR}/src/framework
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_BINARY_DIR}/src/shared
+  ${MYSQL_INCLUDE_DIR}
+  ${ACE_INCLUDE_DIR}
 )
-add_definitions(-fopenmp)
-add_library(game STATIC ${game_STAT_SRCS})
-ADD_DEPENDENCIES(game revision.h)
+
+source_group("Object"
+  REGULAR_EXPRESSION .*
+)
+
+source_group("World/Handlers"
+  # REGULAR_EXPRESSION Mgr|Handler|Manager|BattleGround|Cell|Channel|Chat|Gossip|Grid|Group|Instance|Mail|Map|Path|Pool|Quest|Script|Skill|Spell|Transports|Update|Weather|World
+  REGULAR_EXPRESSION Mgr|Handler|Manager|Cell|Channel|Chat|Gossip|Grid|Instance|Map|Path|Pool|Script|Skill|Transports|Update|Weather|World
+)
+
+source_group("Motion generators"
+  REGULAR_EXPRESSION Movement|Holder|Motion|Traveller
+)
+
+source_group("Server"
+  REGULAR_EXPRESSION Socket|Session|Opcodes|DBC
+  FILES
+    SharedDefines.h
+)
+
+source_group("Chat Commands"
+  REGULAR_EXPRESSION Level[0-9]
+  FILES
+    debugcmds.cpp
+)
+
+source_group("Tool"
+  REGULAR_EXPRESSION Language
+)
+
+source_group("References"
+  REGULAR_EXPRESSION Reference|RefManager|ThreatManager
+)
+
+add_library(game STATIC
+  ${game_SRCS}
+)
+
+target_link_libraries(game
+  shared
+  g3dlite
+)
+
+if(UNIX)
+  # Both systems don't have libdl and don't need them
+  if (NOT (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "NetBSD"))
+    target_link_libraries(game
+      dl
+    )
+  endif()
+endif()
+
+add_dependencies(game revision.h g3dlite)
+if(NOT ACE_USE_EXTERNAL)
+  add_dependencies(game ACE_Project)
+# add_dependencies(game ace)
+endif()

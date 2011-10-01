@@ -197,8 +197,16 @@ int Master::Run()
     ACE_Based::Thread t(new WorldRunnable);
     t.setPriority(ACE_Based::Highest);
 
-    // set server online
-    LoginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0 WHERE id = '%d'",realmID);
+    // set realmbuilds depend on mangosd expected builds, and set server online
+    {
+        std::ostringstream data;
+        int accepted_versions[] = EXPECTED_CLIENT_BUILD;
+
+        for(int i = 0; accepted_versions[i]; ++i)
+            data << accepted_versions[i] << " ";
+
+        LoginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0, realmbuilds = '%s'  WHERE id = '%d'", data.str().c_str(), realmID);
+    }
 
     // console should be disabled in service/daemon mode
     if (sConfig.GetBoolDefault("Console.Enable", true) && (runMode == MODE_NORMAL))

@@ -1,40 +1,60 @@
-add_subdirectory(vmap)
-add_subdirectory(Auth)
-add_subdirectory(Config)
-add_subdirectory(Database)
+file(GLOB_RECURSE shared_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.h)
 
-########### next target ###############
+# Exclude Win32 files
+if(WIN32)
+  list(REMOVE_ITEM shared_SRCS
+    PosixDaemon.h
+    PosixDaemon.cpp
+  )
+else()
+  list(REMOVE_ITEM shared_SRCS
+    WheatyExceptionReport.cpp
+    WheatyExceptionReport.h
+    ServiceWin32.cpp
+    ServiceWin32.h
+  )
+endif()
 
-SET(shared_STAT_SRCS
-   Base.cpp
-   Base.h
-   ByteBuffer.h
-   Common.cpp
-   Common.h
-   DelayExecutor.cpp
-   DelayExecutor.h
-   Errors.h
-   LockedQueue.h
-   Log.cpp
-   Log.h
-   Mthread.cpp
-   Mthread.h
-   ProgressBar.cpp
-   ProgressBar.h
-   Timer.h
-   Util.cpp
-   Util.h
-   WorldPacket.h
-   SystemConfig.h
-   Threading.cpp
-   Threading.h
-   PosixDaemon.h
-   PosixDaemon.cpp
+source_group("Util"
+  REGULAR_EXPRESSION .*
 )
-add_definitions(-fopenmp)
-add_library(shared STATIC ${shared_STAT_SRCS})
-target_link_libraries(
-shared
-${ACE_LIBRARY}
-vmaps
+
+foreach(SRC ${shared_SRCS})
+  get_filename_component(PTH ${SRC} PATH)
+  if(PTH)
+    if(NOT XCODE) # FIXME: Xcode Generator has bug with nested dirs
+      string(REPLACE "/" "\\\\" PTH ${PTH})
+    endif()
+    source_group(${PTH} FILES ${SRC})
+  endif()
+endforeach(SRC)
+
+source_group("DataStores"
+  REGULAR_EXPRESSION DBC
 )
+
+source_group("Log"
+  REGULAR_EXPRESSION Log
+)
+
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/Database
+  ${CMAKE_SOURCE_DIR}/dep/include
+  ${CMAKE_SOURCE_DIR}/src/framework
+  ${CMAKE_BINARY_DIR}
+  ${ACE_INCLUDE_DIR}
+  ${MYSQL_INCLUDE_DIR}
+)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SystemConfig.h ${CMAKE_CURRENT_BINARY_DIR}/SystemConfig.h)
+
+add_library(shared STATIC
+  ${shared_SRCS}
+)
+
+add_dependencies(shared revision.h)
+if(NOT ACE_USE_EXTERNAL)
+  add_dependencies(shared ACE_Project)
+# add_dependencies(shared ace)
+endif()

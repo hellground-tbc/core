@@ -1,73 +1,87 @@
 
-########### next target ###############
+set(EXECUTABLE_NAME trinitycore)
+file(GLOB_RECURSE EXECUTABLE_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.h)
 
-SET(trinity-core_SRCS
-CliRunnable.cpp 
-CliRunnable.h 
-Main.cpp 
-Master.cpp 
-Master.h 
-WorldRunnable.cpp 
-WorldRunnable.h
+if(WIN32)
+  list(APPEND EXECUTABLE_SRCS
+    TrinityCore.rc
+  )
+endif()
+
+include_directories(
+  ${CMAKE_SOURCE_DIR}/src/shared
+  ${CMAKE_SOURCE_DIR}/src/shared/Database
+  ${CMAKE_SOURCE_DIR}/dep/include
+  ${CMAKE_SOURCE_DIR}/dep/include/g3dlite
+  ${CMAKE_SOURCE_DIR}/src/framework
+  ${CMAKE_SOURCE_DIR}/src/game
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_BINARY_DIR}/src/shared
+  ${ACE_INCLUDE_DIR}
+  ${MYSQL_INCLUDE_DIR}
+  ${OPENSSL_INCLUDE_DIR}
 )
 
-SET(trinity-core_LINK_FLAGS "")
-
-add_executable(trinity-core ${trinity-core_SRCS})
-add_definitions(
--D_TRINITY_CORE_CONFIG='"${CONF_DIR}/trinitycore.conf"'
-)
-IF (DO_MYSQL)
-    SET(trinity-core_LINK_FLAGS "-pthread ${trinity-core_LINK_FLAGS}")
-ENDIF(DO_MYSQL)
-IF (DO_POSTGRESQL)
-    SET(trinity-core_LINK_FLAGS "-pthread ${trinity-core_LINK_FLAGS}")
-ENDIF(DO_POSTGRESQL)
-
-
-IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    SET(trinity-core_LINK_FLAGS "-framework Carbon ${trinity-core_LINK_FLAGS}")
-    SET(SCRIPT_LIB "")
-ENDIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-
-SET_TARGET_PROPERTIES(trinity-core PROPERTIES LINK_FLAGS "${trinity-core_LINK_FLAGS}")
-
-target_link_libraries(
-trinity-core
-${TBB_LIBRARY}
-${TBB_LIBRARY_MALLOC}
-game
-shared
-zlib
-trinityframework
-trinitysockets
-trinitydatabase
-trinityauth
-trinityconfig
-vmaps
-g3dlite
-${READLINE_LIBRARY}
-gomp
-${SCRIPT_LIB}
-${MYSQL_LIBRARIES}
-${POSTGRESQL_LIBRARIES}
-${SSLLIB}
-${ACE_LIBRARY}
-${ZLIB}
-${OSX_LIBS}
+add_executable(${EXECUTABLE_NAME}
+  ${EXECUTABLE_SRCS}
 )
 
-IF (CENTOS)
-    target_link_libraries(
-        trinity-core
-        termcap
-    )
-ENDIF (CENTOS)
+add_dependencies(${EXECUTABLE_NAME} revision.h)
+if(NOT ACE_USE_EXTERNAL)
+  add_dependencies(${EXECUTABLE_NAME} ACE_Project)
+# add_dependencies(${EXECUTABLE_NAME} ace)
+endif()
 
-install(TARGETS trinity-core DESTINATION bin)
+target_link_libraries(${EXECUTABLE_NAME}
+  game
+  shared
+  framework
+  g3dlite
+  ${ACE_LIBRARIES}
+  ${READLINE_LIBRARY}
+)
+message("readline: ${READLINE_LIBRARIES}")
+if(WIN32)
+  target_link_libraries(${EXECUTABLE_NAME}
+    zlib
+    optimized ${MYSQL_LIBRARY}
+    optimized ${OPENSSL_LIBRARIES}
+    debug ${MYSQL_DEBUG_LIBRARY}
+    debug ${OPENSSL_DEBUG_LIBRARIES}
+  )
+  if(PLATFORM MATCHES X86)
+    target_link_libraries(${EXECUTABLE_NAME})
+  endif()
+endif()
 
+if(UNIX)
+  target_link_libraries(${EXECUTABLE_NAME}
+    ${MYSQL_LIBRARY}
+    ${OPENSSL_LIBRARIES}
+    ${OPENSSL_EXTRA_LIBRARIES}
+    ${ZLIB_LIBRARIES}
+  )
+endif()
 
-########### install files ###############
+set(EXECUTABLE_LINK_FLAGS "")
 
-install(FILES  trinitycore.conf.dist DESTINATION etc)
+if(UNIX)
+  set(EXECUTABLE_LINK_FLAGS "-pthread ${EXECUTABLE_LINK_FLAGS} -rdynamic")
+endif()
 
+if(APPLE)
+  set(EXECUTABLE_LINK_FLAGS "-framework Carbon ${EXECUTABLE_LINK_FLAGS}")
+endif()
+
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
+  "${EXECUTABLE_LINK_FLAGS}"
+)
+
+install(TARGETS ${EXECUTABLE_NAME} DESTINATION ${BIN_DIR})
+#install(FILES run-mangosd DESTINATION ${BIN_DIR})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/trinitycore.conf.dist ${CMAKE_CURRENT_BINARY_DIR}/trinitycore.conf.dist)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/trinitycore.conf.dist DESTINATION ${CONF_DIR})
+
+if(WIN32 AND MSVC)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/\${BUILD_TYPE}/${EXECUTABLE_NAME}.pdb DESTINATION ${BIN_DIR} CONFIGURATIONS Debug)
+endif()
