@@ -2167,7 +2167,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             // Spectral blast: exclude current target and targets with Spectral Exhaustion
             // Curse of Boundless Agony: exclude target that already has one
             if (m_spellInfo->Id == 40869 || m_spellInfo->Id == 43657 || m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093
-                || m_spellInfo->Id == 45032 || m_spellInfo->Id == 45034)
+                || m_spellInfo->Id == 44869 || m_spellInfo->Id == 45032 || m_spellInfo->Id == 45034)
             {
                 std::list<Unit*>::iterator next;
                 for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); itr = next)
