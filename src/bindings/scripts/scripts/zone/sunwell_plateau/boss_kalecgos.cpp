@@ -218,7 +218,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             me->SetOrientation(M_PI);  //? check this out
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->SetLevitate(true);
-            me->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT);
+            me->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT);
             TalkTimer = 3000;
             break;
         case 3:
@@ -272,7 +272,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         case 2:
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->SetLevitate(true);
-            me->SetUnitMovementFlags(MOVEFLAG_ONTRANSPORT);
+            me->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT);
             TalkTimer = 3000;
             break;
         case 3:
@@ -557,6 +557,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         for(i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if(Player* i_pl = i->getSource())
             {
+                i_pl->UpdateVisibilityForPlayer();
                 i_pl->RemoveAurasDueToSpell(AURA_SPECTRAL_REALM);
                 i_pl->RemoveAurasDueToSpell(SPELL_AGONY_CURSE);
                 i_pl->RemoveAurasDueToSpell(SPELL_AGONY_CURSE2);

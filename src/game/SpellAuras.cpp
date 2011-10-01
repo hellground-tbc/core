@@ -5029,7 +5029,8 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 InstanceMap *instance = dynamic_cast<InstanceMap*>(m_target->GetMap());
                 if(instance && instance->GetInstanceData() && instance->GetInstanceData()->IsEncounterInProgress())
-                    m_target->CastSpell(m_target, 45034, true, 0, this, GetCasterGUID());
+                    // jumping visual to be tested and fixed
+                    m_target->CastSpell((Unit*)NULL, 45034, true, 0, this, GetCasterGUID());
             }
             break;
         }
