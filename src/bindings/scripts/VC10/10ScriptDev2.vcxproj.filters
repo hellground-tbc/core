@@ -400,6 +400,9 @@
     <Filter Include="System">
       <UniqueIdentifier>{8d2b5f11-d110-4fdf-8d4b-1cc831f4d1ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\spells">
+      <UniqueIdentifier>{482e753a-9af0-4b4c-9801-70933d6afb14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\scripts\boss\boss_emeriss.cpp">
@@ -1524,6 +1527,9 @@
     </ClCompile>
     <ClCompile Include="..\include\follower_ai.cpp">
       <Filter>Include</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scripts\spells\spell_scripts.cpp">
+      <Filter>Scripts\spells</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

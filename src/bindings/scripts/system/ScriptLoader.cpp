@@ -25,6 +25,9 @@ extern void AddSC_custom_gossip_codebox();
 // -- GO --
 extern void AddSC_go_scripts();
 
+// -- Spells --
+extern void AddSC_spell_scripts();
+
 // -- Guard --
 extern void AddSC_guards();
 
@@ -635,6 +638,9 @@ void AddScripts()
 
     // -- GO --
     AddSC_go_scripts();
+
+    // -- Spells --
+    AddSC_spell_scripts();
 
     // -- Guard --
     AddSC_guards();

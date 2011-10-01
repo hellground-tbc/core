@@ -1427,6 +1427,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading event id script names...");
     sScriptMgr.LoadEventIdScripts();
 
+    sLog.outString("Loading spell id script names...");
+    sScriptMgr.LoadSpellIdScripts();
+
     sLog.outString("Loading Graveyard-zone links...");
     objmgr.LoadGraveyardZones();
 

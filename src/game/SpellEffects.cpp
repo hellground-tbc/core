@@ -2348,7 +2348,6 @@ void Spell::EffectDummy(uint32 i)
         sScriptMgr.OnEffectDummy(m_caster, m_spellInfo->Id, i, (Creature*)unitTarget);
     else if (itemTarget)
         sScriptMgr.OnEffectDummy(m_caster, m_spellInfo->Id, i, itemTarget);
-
 }
 
 void Spell::EffectTriggerSpellWithValue(uint32 i)

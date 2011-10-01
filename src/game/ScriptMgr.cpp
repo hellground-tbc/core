@@ -63,7 +63,10 @@ ScriptMgr::ScriptMgr() :
     m_pOnEffectDummyGO(NULL),
     m_pOnEffectDummyItem(NULL),
     m_pOnAuraDummy(NULL),
-    m_pOnReceiveEmote(NULL)
+    m_pOnReceiveEmote(NULL),
+
+    // spell scripts
+    m_pOnSpellSetTargetMap(NULL)
 {
 }
 
@@ -526,6 +529,47 @@ void ScriptMgr::LoadEventIdScripts()
     sLog.outString(">> Loaded %u scripted event id", count);
 }
 
+void ScriptMgr::LoadSpellIdScripts()
+{
+    m_SpellIdScripts.clear();                           // need for reload case
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, ScriptName FROM scripted_spell_id");
+
+    uint32 count = 0;
+
+    if (!result)
+    {
+        BarGoLink bar(1);
+        bar.step();
+
+        sLog.outString();
+        sLog.outString(">> Loaded %u scripted spell id", count);
+        return;
+    }
+
+    BarGoLink bar(int(result->GetRowCount()));
+
+    do
+    {
+        ++count;
+        bar.step();
+
+        Field *fields = result->Fetch();
+
+        uint32 spellId          = fields[0].GetUInt32();
+        const char *scriptName  = fields[1].GetString();
+
+        SpellEntry const *pSpell = GetSpellStore()->LookupEntry(spellId);
+        if (!pSpell)
+            sLog.outErrorDb("Table `scripted_spell_id` has id %u referring to non-existing spell", spellId);
+
+        m_SpellIdScripts[spellId] = GetScriptId(scriptName);
+    }
+    while (result->NextRow());
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u scripted spell id", count);
+}
+
 //Load WP Scripts
 void ScriptMgr::LoadWaypointScripts()
 {
@@ -572,6 +616,10 @@ void ScriptMgr::LoadScriptNames()
       "SELECT DISTINCT(ScriptName) FROM item_template WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM areatrigger_scripts WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM scripted_event_id WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM scripted_spell_id WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(script) FROM instance_template WHERE script <> ''");
     if (result)
@@ -755,6 +803,12 @@ bool ScriptMgr::OnReceiveEmote(Player *pPlayer, Creature *pCreature, uint32 emot
     return m_pOnReceiveEmote != NULL && m_pOnReceiveEmote(pPlayer, pCreature, emote);
 }
 
+// spell scripts
+bool ScriptMgr::OnSpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    return m_pOnSpellSetTargetMap != NULL && m_pOnSpellSetTargetMap(pCaster, unitList, pSpell, effectIndex);
+}
+
 bool ScriptMgr::LoadScriptLibrary(const char* libName)
 {
     UnloadScriptLibrary();
@@ -797,6 +851,9 @@ bool ScriptMgr::LoadScriptLibrary(const char* libName)
     GetScriptHookPtr(m_pOnAuraDummy,                "AuraDummy");
 
     GetScriptHookPtr(m_pOnReceiveEmote,             "ReceiveEmote");
+
+    // spell scripts
+    GetScriptHookPtr(m_pOnSpellSetTargetMap,         "SetTargetMap");
 
 
     if (m_pOnInitScriptLibrary)
@@ -858,6 +915,15 @@ uint32 ScriptMgr::GetEventIdScriptId(uint32 eventId) const
     return 0;
 }
 
+uint32 ScriptMgr::GetSpellIdScriptId(uint32 eventId) const
+{
+    SpellIdScriptMap::const_iterator itr = m_SpellIdScripts.find(eventId);
+    if (itr != m_SpellIdScripts.end())
+        return itr->second;
+
+    return 0;
+}
+
 uint32 ScriptMgr::GetScriptId(const char *name)
 {
     // use binary search to find the script name in the sorted vector
@@ -880,6 +946,11 @@ uint32 ScriptMgr::GetAreaTriggerScriptId(uint32 trigger_id) const
 uint32 GetEventIdScriptId(uint32 eventId)
 {
     return sScriptMgr.GetEventIdScriptId(eventId);
+}
+
+uint32 GetSpellIdScriptId(uint32 eventId)
+{
+    return sScriptMgr.GetSpellIdScriptId(eventId);
 }
 
 // Functions for scripting access

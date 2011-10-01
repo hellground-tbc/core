@@ -30,6 +30,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "ScriptMgr.h"
 #include "Player.h"
 #include "Pet.h"
 #include "Unit.h"
@@ -2146,6 +2147,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 break;
             }
         }
+
+        if (!unitList.empty())
+            sScriptMgr.OnSpellSetTargetMap(m_caster, unitList, m_spellInfo, i);
 
         if (!unitList.empty())
         {

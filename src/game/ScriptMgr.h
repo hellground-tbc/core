@@ -37,6 +37,8 @@ class SpellCastTargets;
 class Unit;
 class WorldObject;
 
+struct SpellEntry;
+
 #define MIN_DB_SCRIPT_STRING_ID        MAX_TRINITY_STRING_ID // 'db_script_string'
 #define MAX_DB_SCRIPT_STRING_ID        2000010000
 
@@ -75,6 +77,7 @@ class ScriptMgr
         void LoadQuestStartScripts();
         void LoadEventScripts();
         void LoadEventIdScripts();
+        void LoadSpellIdScripts();
         void LoadSpellScripts();
         void LoadWaypointScripts();
 
@@ -83,9 +86,9 @@ class ScriptMgr
         void LoadScriptNames();
         void LoadAreaTriggerScripts();
 
-
         uint32 GetAreaTriggerScriptId(uint32 triggerId) const;
         uint32 GetEventIdScriptId(uint32 eventId) const;
+        uint32 GetSpellIdScriptId(uint32 eventId) const;
 
         ScriptNameMap &GetScriptNames() { return m_scriptNames; }
         const char * GetScriptName(uint32 id) { return id < m_scriptNames.size() ? m_scriptNames[id].c_str() : ""; }
@@ -119,6 +122,9 @@ class ScriptMgr
 
         bool OnReceiveEmote(Player *pPlayer, Creature *pCreature, uint32 emote);
 
+        // spell scripts
+        bool OnSpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellEntry const *pSpell, uint32 effectIndex);
+
     private:
         void LoadScripts(ScriptMapMap& scripts, const char* tablename);
         void CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids);
@@ -131,9 +137,11 @@ class ScriptMgr
 
         typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptMap;
         typedef UNORDERED_MAP<uint32, uint32> EventIdScriptMap;
+        typedef UNORDERED_MAP<uint32, uint32> SpellIdScriptMap;
 
         AreaTriggerScriptMap    m_AreaTriggerScripts;
         EventIdScriptMap        m_EventIdScripts;
+        SpellIdScriptMap        m_SpellIdScripts;
 
         ScriptNameMap           m_scriptNames;
 
@@ -169,6 +177,9 @@ class ScriptMgr
         bool (TRINITY_IMPORT* m_pOnAuraDummy) (Aura const*, bool);
 
         bool (TRINITY_IMPORT* m_pOnReceiveEmote) (Player *pPlayer, Creature *pCreature, uint32 emote);
+
+        // spell scripts
+        bool (TRINITY_IMPORT* m_pOnSpellSetTargetMap) (Unit* pCaster, std::list<Unit*> &unitList, SpellEntry const *pSpell, uint32 effectIndex);
 };
 
 #define sScriptMgr Trinity::Singleton<ScriptMgr>::Instance()
@@ -176,5 +187,6 @@ class ScriptMgr
 TRINITY_DLL_SPEC uint32 GetAreaTriggerScriptId(uint32 triggerId);
 TRINITY_DLL_SPEC uint32 GetScriptId(const char *name);
 TRINITY_DLL_SPEC uint32 GetEventIdScriptId(uint32 eventId);
+TRINITY_DLL_SPEC uint32 GetSpellIdScriptId(uint32 eventId);
 
 #endif

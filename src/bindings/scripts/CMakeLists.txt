@@ -52,6 +52,9 @@ source_group("Game Objects"
   REGULAR_EXPRESSION go*
 )
 
+source_group("Spells"
+  REGULAR_EXPRESSION spell*
+)
 source_group("AI"
   REGULAR_EXPRESSION escort_ai|follower_ai|simple_ai|sc_creature
 )

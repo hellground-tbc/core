@@ -42,7 +42,10 @@ struct Script
         pGOUse(NULL), pItemUse(NULL), pAreaTrigger(NULL), pProcessEventId(NULL),
         pReceiveEmote(NULL),
         pEffectDummyNPC(NULL), pEffectDummyGO(NULL), pEffectDummyItem(NULL), pEffectAuraDummy(NULL),
-        GetAI(NULL), GetInstanceData(NULL)
+        GetAI(NULL), GetInstanceData(NULL),
+
+        //spell scripts
+        pSpellTargetMap(NULL)
     {}
 
     std::string Name;
@@ -70,6 +73,9 @@ struct Script
     bool (*pEffectAuraDummy         )(const Aura*, bool);
 
     bool (*pReceiveEmote            )(Player*, Creature*, uint32);
+
+    //spell scripts
+    bool (*pSpellTargetMap          )(Unit*, std::list<Unit*> &, SpellEntry const *, uint32);
 
     CreatureAI* (*GetAI             )(Creature*);
     InstanceData* (*GetInstanceData )(Map*);
