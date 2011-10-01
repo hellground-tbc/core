@@ -3304,7 +3304,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                     if (form == FORM_CAT)
                     {
                         if(m_target->HasSpell(5225) && !m_target->GetUInt32Value(PLAYER_TRACK_CREATURES) && !m_target->GetUInt32Value(PLAYER_TRACK_RESOURCES))
-                            m_target->CastSpell(m_target, 5225, false);
+                            m_target->CastSpell(m_target, 5225, true);
                     }
                     break;
                 }
