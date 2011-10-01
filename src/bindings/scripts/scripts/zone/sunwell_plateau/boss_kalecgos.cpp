@@ -538,7 +538,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void JustDied(Unit *killer)
     {
-        DoCast(me, SPELL_TELEPORT_BACK, true);
+        DoCast(me, SPELL_TELEPORT_NORMAL, true);
         DoScriptText(SAY_SATH_DEATH, m_creature);
         //me->GetMap()->CreatureRelocation(me, m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
         //me->UpdateObjectVisibility();
