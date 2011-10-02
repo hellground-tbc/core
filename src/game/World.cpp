@@ -1751,9 +1751,11 @@ void World::Update(time_t diff)
     {
         if (m_updateTimeSum > m_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
-            sLog.outError("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
-            sLog.outDiff("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
-            sLog.outIrc("%u %u %u %u %u %u %s", GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(), GetPlayerAmountLimit(), _REVISION);
+            m_curAvgUpdateTime = m_updateTimeSum / m_updateTimeCount;   // from last log time
+            m_avgUpdateTime = (m_avgUpdateTime + m_curAvgUpdateTime)/2; // from server start
+            sLog.outError("Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
+            sLog.outDiff("Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
+            sLog.outIrc("%u %u %u %u %u %u %s %u %u", GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(), GetPlayerAmountLimit(), _REVISION, m_curAvgUpdateTime, m_avgUpdateTime);
 
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;

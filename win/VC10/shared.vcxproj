@@ -254,12 +254,6 @@
     <ClCompile Include="..\..\src\shared\Database\SqlPreparedStatement.cpp" />
     <ClCompile Include="..\..\src\shared\Database\SQLStorage.cpp" />
     <ClCompile Include="..\..\src\shared\Database\dbcfile.cpp" />
-    <ClCompile Include="..\..\src\shared\Database\DBCfmt.cpp">
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
-      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
-    </ClCompile>
     <ClCompile Include="..\..\src\shared\Database\DBCStores.cpp" />
     <ClCompile Include="..\..\src\shared\Log.cpp" />
     <ClCompile Include="..\..\src\shared\Base.cpp" />
@@ -283,6 +277,7 @@
     <ClInclude Include="..\..\src\shared\Database\DatabaseEnv.h" />
     <ClInclude Include="..\..\src\shared\Database\DatabaseImpl.h" />
     <ClInclude Include="..\..\src\shared\Database\DatabaseMysql.h" />
+    <ClInclude Include="..\..\src\shared\Database\DBCfmt.h" />
     <ClInclude Include="..\..\src\shared\Database\Field.h" />
     <ClInclude Include="..\..\src\shared\Database\MySQLDelayThread.h" />
     <ClInclude Include="..\..\src\shared\Database\QueryResult.h" />

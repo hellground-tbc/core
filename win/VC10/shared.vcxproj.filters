@@ -51,9 +51,6 @@
     <ClCompile Include="..\..\src\shared\Database\dbcfile.cpp">
       <Filter>Database\DataStores</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\shared\Database\DBCfmt.cpp">
-      <Filter>Database\DataStores</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\shared\Database\DBCStores.cpp">
       <Filter>Database\DataStores</Filter>
     </ClCompile>
@@ -199,6 +196,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\shared\Auth\WardenKeyGeneration.h">
       <Filter>Auth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\shared\Database\DBCfmt.h">
+      <Filter>Database\DataStores</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2161,7 +2161,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (!unitList.empty())
         {
             if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF)
-                unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
+               unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
 
             switch (m_spellInfo->Id)
             {
@@ -2184,7 +2184,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 44869:     // Spectral Blast
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
                     unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
-                    break;
                 case 45032:     // Curse of Boundless Agony
                 case 45034:
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));
@@ -3650,7 +3649,6 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
         if (!sScriptMgr.OnSpellHandleEffect(m_caster, unitTarget, itemTarget, gameObjTarget, m_spellInfo, i))
             (*this.*SpellEffects[eff])(i);
     }
-
 }
 
 void Spell::TriggerSpell()
