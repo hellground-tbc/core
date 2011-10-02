@@ -185,6 +185,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 25608: KilJaedenController = creature->GetGUID(); break;
             case 26046: Anveena             = creature->GetGUID(); break;
             case 25319: KalecgosKJ          = creature->GetGUID(); break;
+            // if Felmyst GUID exists, do not summom on Madrigosa create
+            case 25038: Felmyst             = creature->GetGUID(); break;
             case 24895:
                 //TODO: Proper reseting when Felmyst not summoned, Brutallus not killed, etc.
                 Madrigosa = creature->GetGUID();
@@ -194,8 +196,21 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                     creature->SetVisibility(VISIBILITY_OFF);
                 }
                 break;
+                if(GetData(DATA_BRUTALLUS_EVENT) == DONE || GetData(DATA_FELMYST_EVENT) != DONE)
+                {
+                    // summon Felmyst
+                    if(!Felmyst)
+                    {
+                        creature->CastSpell(creature, 45069, true);/*
+                        float x, y, z;
+                        creature->GetPosition(x, y, z);
+                        creature->UpdateAllowedPositionZ(x, y, z);
+                        if(Creature* trigger = creature->SummonTrigger(x, y, z, 0, 10000))
+                            trigger->CastSpell(trigger, 45069, true);*/
+                    }
+                }
             case 19871: BrutallusTrigger    = creature->GetGUID(); break;
-            case 25038:
+            /*case 25038:
                 // rewrite this, Felmyst summoned by spell
                 Felmyst = creature->GetGUID();
                 if(GetData(DATA_BRUTALLUS_EVENT) != DONE)
@@ -203,7 +218,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                     creature->setFaction(35);
                     creature->SetVisibility(VISIBILITY_OFF);
                 }
-                break;
+                break;*/
         }
 
         const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
