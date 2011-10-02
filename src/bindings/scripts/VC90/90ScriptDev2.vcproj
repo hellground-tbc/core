@@ -422,22 +422,6 @@
 				Name="npc"
 				>
 				<File
-					RelativePath="..\scripts\npc\escort_ai.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scripts\npc\escort_ai.h"
-					>
-				</File>
-				<File
-					RelativePath="..\scripts\npc\follower_ai.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scripts\npc\follower_ai.h"
-					>
-				</File>
-				<File
 					RelativePath="..\scripts\npc\npc_innkeeper.cpp"
 					>
 				</File>
@@ -463,10 +447,6 @@
 				</File>
 				<File
 					RelativePath="..\scripts\custom\custom_gossip_codebox.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scripts\custom\test.cpp"
 					>
 				</File>
 			</Filter>
@@ -2526,10 +2506,34 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="spells"
+				>
+				<File
+					RelativePath="..\scripts\spells\spell_scripts.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Include"
 			>
+			<File
+				RelativePath="..\include\escort_ai.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\escort_ai.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\follower_ai.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\follower_ai.h"
+				>
+			</File>
 			<File
 				RelativePath="..\include\precompiled.cpp"
 				>

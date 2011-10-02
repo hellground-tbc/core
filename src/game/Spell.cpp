@@ -2169,7 +2169,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     ++next;
 
                     // remove m_caster from unitList before CheckTarget()
-		    if ((*itr) == m_caster)
+                    if ((*itr) == m_caster)
                     {
                         unitList.remove(*itr);
                         break;
@@ -2199,9 +2199,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim())
                         unitList.remove(((Creature*)m_caster)->getVictim());
                     break;
-		case 45032:     // Curse of Boundless Agony
-		case 45034:
-		    unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));
+                case 45032:     // Curse of Boundless Agony
+                case 45034:
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 45034));
                     break;
                 default:
