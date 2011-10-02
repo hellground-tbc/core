@@ -2161,21 +2161,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (!unitList.empty())
         {
             if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF)
-               unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
-                std::list<Unit*>::iterator next;
-                for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); itr = next)
-                {
-                    next = itr;
-                    ++next;
+                unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
 
-                    // remove m_caster from unitList before CheckTarget()
-                    if ((*itr) == m_caster)
-                    {
-                        unitList.remove(*itr);
-                        break;
-                    }
-                }
-            }
             switch (m_spellInfo->Id)
             {
                 case 40869:     // Fatal Attraction
@@ -3663,6 +3650,7 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
         if (!sScriptMgr.OnSpellHandleEffect(m_caster, unitTarget, itemTarget, gameObjTarget, m_spellInfo, i))
             (*this.*SpellEffects[eff])(i);
     }
+
 }
 
 void Spell::TriggerSpell()
