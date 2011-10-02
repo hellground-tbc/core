@@ -197,6 +197,9 @@
     <ClInclude Include="..\..\src\shared\Auth\WardenKeyGeneration.h">
       <Filter>Auth</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\shared\Database\DBCfmt.h">
+      <Filter>Database\DataStores</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\shared\revision.h" />
