@@ -78,7 +78,7 @@ void FreeScriptLibrary()
 }
 
 TRINITY_DLL_EXPORT
-void InitScriptLibrary()
+void InitScriptLibrary(char const* cfg_file)
 {
     //Trinity Script startup
     outstring_log(" _____     _       _ _         ____            _       _");
@@ -91,7 +91,6 @@ void InitScriptLibrary()
     outstring_log("");
 
     //Get configuration file
-    char const* cfg_file = "trinitycore.conf";
     if (!TScriptConfig.SetSource(cfg_file))
         error_log("TSCR: Unable to open configuration file. Database will be unaccessible. Configuration values will use default.");
     else
@@ -584,7 +583,7 @@ InstanceData* CreateInstanceData(Map* pMap)
 }
 
 TRINITY_DLL_EXPORT
-bool SetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effectIndex)
+bool SpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effectIndex)
 {
     Script* pTempScript = m_scripts[GetSpellIdScriptId(pSpell->Id)];
 
@@ -592,4 +591,15 @@ bool SetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets co
         return false;
 
     return pTempScript->pSpellTargetMap(pCaster, unitList, targets, pSpell, effectIndex);
+}
+
+TRINITY_DLL_EXPORT
+bool SpellHandleEffect(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    Script* pTempScript = m_scripts[GetSpellIdScriptId(pSpell->Id)];
+
+    if (!pTempScript || !pTempScript->pSpellHandleEffect)
+        return false;
+
+    return pTempScript->pSpellHandleEffect(pCaster, pUnit, pItem, pGameObject, pSpell, effectIndex);
 }

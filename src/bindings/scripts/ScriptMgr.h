@@ -45,7 +45,7 @@ struct Script
         GetAI(NULL), GetInstanceData(NULL),
 
         //spell scripts
-        pSpellTargetMap(NULL)
+        pSpellTargetMap(NULL), pSpellHandleEffect(NULL)
     {}
 
     std::string Name;
@@ -76,6 +76,7 @@ struct Script
 
     //spell scripts
     bool (*pSpellTargetMap          )(Unit*, std::list<Unit*> &, SpellCastTargets const&, SpellEntry const *, uint32);
+    bool (*pSpellHandleEffect       )(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex);
 
     CreatureAI* (*GetAI             )(Creature*);
     InstanceData* (*GetInstanceData )(Map*);

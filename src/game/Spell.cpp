@@ -2161,7 +2161,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (!unitList.empty())
         {
             if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF)
-            {
+               unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
                 std::list<Unit*>::iterator next;
                 for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); itr = next)
                 {
@@ -2196,8 +2196,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     break;
                 case 44869:     // Spectral Blast
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
-                    if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim())
-                        unitList.remove(((Creature*)m_caster)->getVictim());
+                    unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
                 case 45032:     // Curse of Boundless Agony
                 case 45034:
@@ -3659,24 +3658,11 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
     //we do not need DamageMultiplier here.
     damage = CalculateDamage(i, NULL);
 
-    if (eff<TOTAL_SPELL_EFFECTS)
+    if (eff < TOTAL_SPELL_EFFECTS)
     {
-        //sLog.outDebug("WORLD: Spell FX %d < TOTAL_SPELL_EFFECTS ", eff);
-        (*this.*SpellEffects[eff])(i);
+        if (!sScriptMgr.OnSpellHandleEffect(m_caster, unitTarget, itemTarget, gameObjTarget, m_spellInfo, i))
+            (*this.*SpellEffects[eff])(i);
     }
-    /*
-    else
-    {
-        sLog.outDebug("WORLD: Spell FX %d > TOTAL_SPELL_EFFECTS ", eff);
-        if (m_CastItem)
-            EffectEnchantItemTmp(i);
-        else
-        {
-            sLog.outError("SPELL: unknown effect %u spell id %u\n",
-                eff, m_spellInfo->Id);
-        }
-    }
-    */
 }
 
 void Spell::TriggerSpell()

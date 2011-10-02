@@ -1070,6 +1070,19 @@ namespace Trinity
         float i_range;
     };
 
+    class ObjectGUIDCheck
+    {
+        public:
+            ObjectGUIDCheck(uint64 GUID) : _GUID(GUID) {}
+            bool operator()(WorldObject* object)
+            {
+                return object->GetGUID() == _GUID;
+            }
+
+        private:
+            uint64 _GUID;
+    };
+
     class ObjectTypeIdCheck
     {
         public:
