@@ -495,7 +495,6 @@ bool GOUse_go_zulaman_cage(Player* pPlayer, GameObject* pGo)
     return true;
 }
 
-
 bool GOUse_go_zulaman_timed_event_chest(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData();
@@ -527,7 +526,6 @@ bool GossipHello_npc_tanzar(Player* player, Creature* _Creature)
     return true;
 }
 
-
 bool GossipSelect_npc_tanzar(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
     switch(action)
@@ -542,7 +540,6 @@ bool GossipSelect_npc_tanzar(Player* player, Creature* _Creature, uint32 sender,
     }
     return true;
 }
-
 
 bool GossipHello_npc_harkor(Player* player, Creature* _Creature)
 {
@@ -559,7 +556,6 @@ bool GossipHello_npc_harkor(Player* player, Creature* _Creature)
 
     return true;
 }
-
 
 bool GossipSelect_npc_harkor(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
@@ -587,7 +583,6 @@ bool GossipHello_npc_kraz(Player* player, Creature* _Creature)
 
     return true;
 }
-
 
 bool GossipSelect_npc_kraz(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
@@ -621,7 +616,6 @@ bool GossipHello_npc_ashli(Player* player, Creature* _Creature)
     return true;
 }
 
-
 bool GossipSelect_npc_ashli(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
     switch(action)
@@ -635,8 +629,6 @@ bool GossipSelect_npc_ashli(Player* player, Creature* _Creature, uint32 sender, 
     }
     return true;
 }
-
-
 
 /*######
 ## npc_harrison_jones_za
@@ -1355,4 +1347,3 @@ void AddSC_zulaman()
     newscript->GetAI = &GetAI_npc_zulaman_door_trigger;
     newscript->RegisterSelf();
 }
-

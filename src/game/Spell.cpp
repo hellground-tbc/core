@@ -2156,6 +2156,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
         if (!unitList.empty())
         {
+            if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF)
+               unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
+
             switch (m_spellInfo->Id)
             {
                 case 40869:     // Fatal Attraction
@@ -2176,8 +2179,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     break;
                 case 44869:     // Spectral Blast
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
-                    if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim())
-                        unitList.remove(((Creature*)m_caster)->getVictim());
+                    unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
                 default:
                     break;
