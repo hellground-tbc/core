@@ -640,7 +640,7 @@ class World
         IntervalTimer m_timers[WUPDATE_COUNT];
         uint32 mail_timer;
         uint32 mail_timer_expires;
-        uint32 m_updateTime, m_updateTimeSum;
+        uint32 m_updateTime, m_updateTimeSum, m_avgUpdateTime, m_curAvgUpdateTime;
         uint32 m_updateTimeCount;
         uint32 m_currentTime;
 
