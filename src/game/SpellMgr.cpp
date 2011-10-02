@@ -1071,7 +1071,7 @@ void SpellMgr::LoadSpellTargetPositions()
     if (!result)
     {
 
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -1080,7 +1080,7 @@ void SpellMgr::LoadSpellTargetPositions()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
 
     do
     {
@@ -1154,7 +1154,7 @@ void SpellMgr::LoadSpellAffects()
     if (!result)
     {
 
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -1163,7 +1163,7 @@ void SpellMgr::LoadSpellAffects()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
 
     do
     {
@@ -1295,7 +1295,7 @@ void SpellMgr::LoadSpellProcEvents()
     if (!result)
     {
 
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -1304,7 +1304,7 @@ void SpellMgr::LoadSpellProcEvents()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
     uint32 customProc = 0;
     do
     {
@@ -1547,7 +1547,7 @@ void SpellMgr::LoadSpellElixirs()
     if (!result)
     {
 
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -1556,7 +1556,7 @@ void SpellMgr::LoadSpellElixirs()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
 
     do
     {
@@ -1604,7 +1604,7 @@ void SpellMgr::LoadSpellBonusData()
     if (!result)
     {
 
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -1613,7 +1613,7 @@ void SpellMgr::LoadSpellBonusData()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
     do
     {
         Field *fields = result->Fetch();
@@ -1655,7 +1655,7 @@ void SpellMgr::LoadSpellEnchantProcData()
     if (!result)
     {
 
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -1664,7 +1664,7 @@ void SpellMgr::LoadSpellEnchantProcData()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
     do
     {
         Field *fields = result->Fetch();
@@ -1960,7 +1960,7 @@ void SpellMgr::LoadSpellRequired()
 
     if (result == NULL)
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
         bar.step();
 
         sLog.outString();
@@ -1970,7 +1970,7 @@ void SpellMgr::LoadSpellRequired()
     }
     uint32 rows = 0;
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
     do
     {
         bar.step();
@@ -2097,7 +2097,7 @@ void SpellMgr::LoadSpellChains()
         }
     }
 
-    barGoLink bar(RankMap.size());
+    BarGoLink bar(RankMap.size());
 
     uint32 count=0;
 
@@ -2287,7 +2287,7 @@ void SpellMgr::LoadSpellLearnSpells()
     QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, SpellID FROM spell_learn_spell");
     if (!result)
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
         bar.step();
 
         sLog.outString();
@@ -2298,7 +2298,7 @@ void SpellMgr::LoadSpellLearnSpells()
 
     uint32 count = 0;
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
     do
     {
         bar.step();
@@ -2382,7 +2382,7 @@ void SpellMgr::LoadSpellScriptTarget()
 
     if (!result)
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -2392,7 +2392,7 @@ void SpellMgr::LoadSpellScriptTarget()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
 
     do
     {
@@ -2518,7 +2518,7 @@ void SpellMgr::LoadSpellPetAuras()
     if (!result)
     {
 
-        barGoLink bar(1);
+        BarGoLink bar(1);
 
         bar.step();
 
@@ -2527,7 +2527,7 @@ void SpellMgr::LoadSpellPetAuras()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
 
     do
     {
@@ -2696,6 +2696,9 @@ void SpellMgr::LoadSpellCustomAttr()
         // Triggered spells that should be delayed
         case 20272:                     // Illumination
         case 32848:                     // Mana Restore
+        case 14189:                     // Seal Fate
+        case 14157:                     // Ruthlessness
+        case 14181:                     // Relentless Strikes
             spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;     
             break;
         /* UNSORTED */
@@ -2961,6 +2964,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39968: // Needle Spine Explosion
             spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
             break;
+        case 42992: //ram - neutral
+        case 43310: //ram - trot
+            spellInfo->EffectImplicitTargetA[1] = 1;
+            break;
         default:
             break;
         }
@@ -2977,14 +2984,14 @@ void SpellMgr::LoadSpellLinked()
     QueryResultAutoPtr result = WorldDatabase.Query("SELECT spell_trigger, spell_effect, type FROM spell_linked_spell");
     if (!result)
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
         bar.step();
         sLog.outString();
         sLog.outString(">> Loaded %u linked spells", count);
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
 
     do
     {

@@ -317,7 +317,7 @@ SqlPreparedStatement * MySQLConnection::CreateStatement( const std::string& fmt 
 
 
 //////////////////////////////////////////////////////////////////////////
-MySqlPreparedStatement::MySqlPreparedStatement( const std::string& fmt, SqlConnection& conn, MYSQL * mysql ) : SqlPreparedStatement(fmt, conn), 
+MySqlPreparedStatement::MySqlPreparedStatement( const std::string& fmt, SqlConnection& conn, MYSQL * mysql ) : SqlPreparedStatement(fmt, conn),
     m_pMySQLConn(mysql), m_stmt(NULL), m_pInputArgs(NULL), m_pResult(NULL), m_pResultMetadata(NULL)
 {
 }
@@ -483,9 +483,10 @@ enum_field_types MySqlPreparedStatement::ToMySQLType( const SqlStmtFieldData &da
     switch (data.type())
     {
     case FIELD_NONE:    dataType = MYSQL_TYPE_NULL;                     break;
-    case FIELD_BOOL:    dataType = MYSQL_TYPE_BIT;      bUnsigned = 1;  break;
-    case FIELD_I8:      dataType = MYSQL_TYPE_TINY;                     break;
+    // MySQL does not support MYSQL_TYPE_BIT as input type, use tiny instead
+    case FIELD_BOOL:    //dataType = MYSQL_TYPE_BIT;      bUnsigned = 1;  break;
     case FIELD_UI8:     dataType = MYSQL_TYPE_TINY;     bUnsigned = 1;  break;
+    case FIELD_I8:      dataType = MYSQL_TYPE_TINY;                     break;
     case FIELD_I16:     dataType = MYSQL_TYPE_SHORT;                    break;
     case FIELD_UI16:    dataType = MYSQL_TYPE_SHORT;    bUnsigned = 1;  break;
     case FIELD_I32:     dataType = MYSQL_TYPE_LONG;                     break;

@@ -223,10 +223,15 @@ void WardenWin::RequestData()
     ByteBuffer buff;
     buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
 
-    for (int i = 0; i < 5; ++i)                             // for now include 5 random checks
+    uint32 count = (maxid > 5 ? 5 : maxid);
+
+    for (int i = 0; i < count; ++i)                             // for now include 5 random checks
     {
         id = irand(1, maxid - 1);
         wd = WardenDataStorage.GetWardenDataById(id);
+
+        if (!wd)
+            break;
 
         SendDataId.push_back(id);
         switch (wd->Type)
@@ -398,13 +403,13 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     continue;
                 }
 
-                if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), rd->Length) != 0)
+                if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0, false), rd->Length) != 0)
                 {
                     string tmpStrContentsRev, tmpStrContents, tmpStrByteArray;
 
                     uint8 * tmpContentsRev = new uint8[rd->Length];
                     uint8 * tmpContents = new uint8[rd->Length];
-                    uint8 * tmpByteArray = rs->res.AsByteArray(0);
+                    uint8 * tmpByteArray = rs->res.AsByteArray(0, false);
 
                     for (int i = 0; i < rd->Length; ++i)
                     {

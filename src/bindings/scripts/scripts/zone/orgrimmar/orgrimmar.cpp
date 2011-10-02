@@ -328,7 +328,7 @@ void AddSC_orgrimmar()
     newscript = new Script;
     newscript->Name="npc_shenthul";
     newscript->GetAI = &GetAI_npc_shenthul;
-    newscript->pQuestAccept =  &QuestAccept_npc_shenthul;
+    newscript->pQuestAcceptNPC =  &QuestAccept_npc_shenthul;
     newscript->pReceiveEmote = &ReciveEmote_npc_shenthul;
     newscript->RegisterSelf();
 

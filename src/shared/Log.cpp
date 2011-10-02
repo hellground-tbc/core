@@ -21,7 +21,7 @@
 #include "Common.h"
 #include "Log.h"
 #include "Policies/SingletonImp.h"
-#include "Config/ConfigEnv.h"
+#include "Config/Config.h"
 #include "Util.h"
 
 #include <stdarg.h>
@@ -204,11 +204,12 @@ void Log::Initialize()
         "CheatLogFile",     //LOG_CHEAT
         "ACLogFile",        //LOG_AC
         "SpecialLogFile",   //LOG_SPECIAL
-        "mailLogFile",      //LOG_MAIL
-        "gannLogFile",      //LOG_GUILD_ANN
+        "MailLogFile",      //LOG_MAIL
+        "GannLogFile",      //LOG_GUILD_ANN
         "BossLogFile",      //LOG_BOSS
         "WardenLogFile",    //LOG_WARDEN
-        "auctionLogFile",   //LOG_AUCTION
+        "AuctionLogFile",   //LOG_AUCTION
+        "DiffLogFile",      //LOG_DIFF
     };
 
     /// Open specific log files
@@ -749,7 +750,6 @@ void Log::outCommand(uint32 account, const char * str, ...)
 
 void Log::outChar(const char * str, ...)
 {
-
     if (!str)
         return;
 
@@ -864,6 +864,25 @@ void Log::outGann(const char * str, ...)
     }
 }
 
+void Log::outDiff(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if(logFile[LOG_DIFF])
+    {
+        outTimestamp(logFile[LOG_DIFF]);
+
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(logFile[LOG_DIFF], str, ap);
+        va_end(ap);
+
+        fprintf(logFile[LOG_DIFF], "\n" );
+        fflush(logFile[LOG_DIFF]);
+    }
+}
+
 void Log::outMenu( const char * str, ... )
 {
     if( !str )
@@ -887,6 +906,25 @@ void Log::outMenu( const char * str, ... )
 
         fprintf(logFile[LOG_DEFAULT], "\n" );
         fflush(logFile[LOG_DEFAULT]);
+    }
+}
+
+void Log::OutLogToFile(logFiles log, const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if(logFile[log])
+    {
+        outTimestamp(logFile[log]);
+
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(logFile[log], str, ap);
+        va_end(ap);
+
+        fprintf(logFile[log], "\n" );
+        fflush(logFile[log]);
     }
 }
 

@@ -58,10 +58,12 @@ struct GossipTextOption
     QEmote Emotes[3];
 };
 
+#define MAX_GOSSIP_TEXT_OPTIONS 8
+
 struct GossipText
 {
     uint32 Text_ID;
-    GossipTextOption Options[8];
+    GossipTextOption Options[MAX_GOSSIP_TEXT_OPTIONS];
 };
 
 struct PageTextLocale

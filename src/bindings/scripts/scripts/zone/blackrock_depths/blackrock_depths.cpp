@@ -75,7 +75,7 @@ float RingLocations[6][3]=
     {627.390381, -201.075974, -52.692917}                   // hiding in corner
 };
 
-bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry *at)
+bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry const* at)
 {
     ScriptedInstance* pInstance = (player->GetInstanceData());
 
@@ -1382,7 +1382,7 @@ CreatureAI* GetAI_npc_rocknot(Creature *_Creature)
     return (CreatureAI*)Rocknot_AI;
 }
 
-bool ChooseReward_npc_rocknot(Player *player, Creature *_Creature, const Quest *_Quest, uint32 item)
+bool ChooseReward_npc_rocknot(Player *player, Creature *_Creature, const Quest *_Quest)
 {
     ScriptedInstance* pInstance = (_Creature->GetInstanceData());
 
@@ -1501,7 +1501,7 @@ void AddSC_blackrock_depths()
 
     newscript = new Script;
     newscript->Name="npc_marshal_windsor";
-    newscript->pQuestAccept = &QuestAccept_npc_marshal_windsor;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_marshal_windsor;
     newscript->GetAI = &GetAI_npc_marshal_windsor;
     newscript->RegisterSelf();
 
@@ -1513,7 +1513,7 @@ void AddSC_blackrock_depths()
      newscript = new Script;
      newscript->Name = "npc_rocknot";
      newscript->GetAI = &GetAI_npc_rocknot;
-     newscript->pChooseReward = &ChooseReward_npc_rocknot;
+     newscript->pQuestRewardedNPC = &ChooseReward_npc_rocknot;
      newscript->RegisterSelf();
 
      newscript = new Script;

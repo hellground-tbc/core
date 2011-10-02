@@ -24,7 +24,6 @@
 #include "Policies/Singleton.h"
 #include "Database/DatabaseEnv.h"
 #include "Util.h"
-#include "Config/ConfigEnv.h"
 #include <map>
 
 struct GM_Ticket

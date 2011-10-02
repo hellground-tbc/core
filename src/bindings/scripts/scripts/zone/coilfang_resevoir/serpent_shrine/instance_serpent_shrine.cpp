@@ -43,7 +43,7 @@ EndScriptData */
 5 - Lady Vashj Event
 */
 
-bool GOHello_go_bridge_console(Player *player, GameObject* go)
+bool GOUse_go_bridge_console(Player *player, GameObject* go)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)go->GetInstanceData();
 
@@ -477,6 +477,6 @@ void AddSC_instance_serpentshrine_cavern()
 
     newscript = new Script;
     newscript->Name="go_bridge_console";
-    newscript->pGOHello = &GOHello_go_bridge_console;
+    newscript->pGOUse = &GOUse_go_bridge_console;
     newscript->RegisterSelf();
 }

@@ -23,6 +23,7 @@
 #include "Transports.h"
 #include "MapManager.h"
 #include "ObjectMgr.h"
+#include "ScriptMgr.h"
 #include "Path.h"
 
 #include "WorldPacket.h"
@@ -39,7 +40,7 @@ void MapManager::LoadTransports()
 
     if (!result)
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
         bar.step();
 
         sLog.outString();
@@ -47,7 +48,7 @@ void MapManager::LoadTransports()
         return;
     }
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
 
     do
     {
@@ -61,7 +62,7 @@ void MapManager::LoadTransports()
         std::string name = fields[1].GetCppString();
         t->m_period = fields[2].GetUInt32();
 
-        const GameObjectInfo *goinfo = objmgr.GetGameObjectInfo(entry);
+        const GameObjectInfo *goinfo = ObjectMgr::GetGameObjectInfo(entry);
 
         if (!goinfo)
         {
@@ -152,7 +153,7 @@ bool Transport::Create(uint32 guidlow, uint32 mapid, float x, float y, float z, 
 
     Object::_Create(guidlow, 0, HIGHGUID_MO_TRANSPORT);
 
-    GameObjectInfo const* goinfo = objmgr.GetGameObjectInfo(guidlow);
+    GameObjectInfo const* goinfo = ObjectMgr::GetGameObjectInfo(guidlow);
 
     if (!goinfo)
     {
@@ -206,22 +207,22 @@ struct keyFrame
 
 bool Transport::GenerateWaypoints(uint32 pathid, std::set<uint32> &mapids)
 {
-    TransportPath path;
-    objmgr.GetTransportPathNodes(pathid, path);
-
-    if (path.Empty())
+    if (pathid >= sTaxiPathNodesByPath.size())
         return false;
+
+    TaxiPathNodeList const& path = sTaxiPathNodesByPath[pathid];
 
     std::vector<keyFrame> keyFrames;
     int mapChange = 0;
     mapids.clear();
-    for (size_t i = 1; i < path.Size() - 1; i++)
+    for (size_t i = 1; i < path.size() - 1; i++)
     {
         if (mapChange == 0)
         {
-            if ((path[i].mapid == path[i+1].mapid))
+            TaxiPathNodeEntry const& node_i = path[i];
+            if (node_i.mapid == path[i+1].mapid)
             {
-                keyFrame k(path[i].x, path[i].y, path[i].z, path[i].mapid, path[i].actionFlag, path[i].delay);
+                keyFrame k(node_i.x, node_i.y, node_i.z, node_i.mapid, node_i.actionFlag, node_i.delay);
                 keyFrames.push_back(k);
                 mapids.insert(k.mapid);
             }
@@ -496,7 +497,10 @@ void Transport::CheckForEvent(uint32 entry, uint32 wp_id)
 {
     uint32 key = entry*100+wp_id;
     if (objmgr.TransportEventMap.find(key) != objmgr.TransportEventMap.end())
-        GetMap()->ScriptsStart(sEventScripts, objmgr.TransportEventMap[key], this, NULL);
+    {
+        if (!sScriptMgr.OnProcessEvent(objmgr.TransportEventMap[key], this, this, true))
+            GetMap()->ScriptsStart(sEventScripts, objmgr.TransportEventMap[key], this, NULL);
+    }
 }
 
 void Transport::Update(uint32 update_diff, uint32 p_diff)

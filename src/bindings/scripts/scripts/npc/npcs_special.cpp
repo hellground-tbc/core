@@ -2073,14 +2073,7 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
 
                 Creature * tmp = *(itr);
 
-                int radius = me->GetAngle(tmp) * 100;
-                radius = rand()%radius;
-                float fRadius = radius/100.0;
-
-                if (fRadius <= 0)
-                    fRadius = 0.1;
-
-                tmp->GetNearPoint(tmp, x, y, z, 0, 5.0f, fRadius);
+                tmp->GetNearPoint(tmp, x, y, z, 0, 5.0f, frand(0.0f, M_PI*2));
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
@@ -2268,6 +2261,128 @@ CreatureAI* GetAI_pet_AleMugDrinker(Creature* pCreature)
     return new pet_AleMugDrinkerAI(pCreature);
 }
 
+/*########
+# brewfest triggers
+#########*/
+
+struct TRINITY_DLL_DECL trigger_appleAI : public ScriptedAI
+{
+    trigger_appleAI(Creature *c) : ScriptedAI(c){}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who)
+            return;
+
+        if (m_creature->IsWithinDistInMap(who, 7.0f) && who->HasAura(43052, 0))
+        {
+            who->RemoveAurasDueToSpell(43052);
+        }
+    }
+};
+
+CreatureAI* GetAI_trigger_apple(Creature* pCreature)
+{
+    return new trigger_appleAI(pCreature);
+}
+
+struct TRINITY_DLL_DECL trigger_deliveryAI : public ScriptedAI
+{
+    trigger_deliveryAI(Creature *c) : ScriptedAI(c){}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if (m_creature->IsWithinDistInMap(who, 20.0f) && (who->HasAura(43880, 0) || who->HasAura(43883, 0)) && ((Player*)who)->HasItemCount(33797, 1))
+        {
+            who->CastSpell(m_creature, 43662, true);
+            who->CastSpell(who, 44601, true);
+            ((Player*)who)->DestroyItemCount(33797, 1, true);
+
+            if(who->HasAura(43534, 0))
+            {
+                who->CastSpell(who, 44501, true);
+                who->CastSpell(who, 43755, true);
+            }
+        }
+    }
+};
+
+CreatureAI* GetAI_trigger_delivery(Creature* pCreature)
+{
+    return new trigger_deliveryAI(pCreature);
+}
+
+struct TRINITY_DLL_DECL trigger_delivery_kegAI : public ScriptedAI
+{
+    trigger_delivery_kegAI(Creature *c) : ScriptedAI(c){}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if (m_creature->IsWithinDistInMap(who, 20.0f) && (who->HasAura(43880, 0) || who->HasAura(43883, 0)) && !((Player*)who)->HasItemCount(33797, 1))
+        {
+            who->CastSpell(who, 43660, true);
+        }
+    }
+};
+
+CreatureAI* GetAI_trigger_delivery_keg(Creature* pCreature)
+{
+    return new trigger_delivery_kegAI(pCreature);
+}
+
+bool GossipHello_npc_delivery_daily(Player *player, Creature *_Creature)
+{
+    if( _Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    if(!player->HasAura(44689, 0) && (player->GetQuestStatus(11122) == QUEST_STATUS_COMPLETE || player->GetQuestStatus(11412) == QUEST_STATUS_COMPLETE))
+    {
+        player->PlayerTalkClass->GetGossipMenu().AddMenuItem(0, "Do you have additional work?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF, "", 0);
+    }
+
+    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_delivery_daily(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if(action == GOSSIP_ACTION_INFO_DEF)
+    {
+        player->CLOSE_GOSSIP_MENU();
+        _Creature->CastSpell(player, 44368, true);
+        _Creature->CastSpell(player, 44262, true);
+    }
+
+    return true;
+}
+
+struct TRINITY_DLL_DECL trigger_barkerAI : public ScriptedAI
+{
+    trigger_barkerAI(Creature *c) : ScriptedAI(c){}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who || who->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if (m_creature->IsWithinDistInMap(who, 10.0f) && who->HasAura(43883, 0))
+        {
+            ((Player*)who)->CastedCreatureOrGO(m_creature->GetEntry(), m_creature->GetGUID(), 0);
+        }
+    }
+};
+
+CreatureAI* GetAI_trigger_barker(Creature* pCreature)
+{
+    return new trigger_barkerAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2281,8 +2396,8 @@ void AddSC_npcs_special()
     newscript->Name="npc_chicken_cluck";
     newscript->GetAI = &GetAI_npc_chicken_cluck;
     newscript->pReceiveEmote =  &ReceiveEmote_npc_chicken_cluck;
-    newscript->pQuestAccept =   &QuestAccept_npc_chicken_cluck;
-    newscript->pQuestComplete = &QuestComplete_npc_chicken_cluck;
+    newscript->pQuestAcceptNPC =   &QuestAccept_npc_chicken_cluck;
+    newscript->pQuestRewardedNPC = &QuestComplete_npc_chicken_cluck;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -2299,7 +2414,7 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_doctor";
     newscript->GetAI = &GetAI_npc_doctor;
-    newscript->pQuestAccept = &QuestAccept_npc_doctor;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_doctor;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -2402,5 +2517,31 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="pet_AleMugDrinker";
     newscript->GetAI = GetAI_pet_AleMugDrinker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_apple";
+    newscript->GetAI = GetAI_trigger_apple;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_delivery";
+    newscript->GetAI = GetAI_trigger_delivery;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_delivery_daily";
+    newscript->pGossipHello = &GossipHello_npc_delivery_daily;
+    newscript->pGossipSelect = &GossipSelect_npc_delivery_daily;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_delivery_keg";
+    newscript->GetAI = GetAI_trigger_delivery_keg;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="trigger_barker";
+    newscript->GetAI = GetAI_trigger_barker;
     newscript->RegisterSelf();
 }

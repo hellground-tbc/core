@@ -21,10 +21,10 @@
 #include "Timer.h"
 #include "Util.h"
 
-#include "sockets/socket_include.h"
 #include "utf8cpp/utf8.h"
 #include "mersennetwister/MersenneTwister.h"
 #include <ace/TSS_T.h>
+#include <ace/INET_Addr.h>
 
 typedef ACE_TSS<MTRand> MTRandTSS;
 
@@ -232,7 +232,7 @@ bool IsIPAddress(char const* ipaddress)
 
     // Let the big boys do it.
     // Drawback: all valid ip address formats are recognized e.g.: 12.23,121234,0xABCD)
-    return inet_addr(ipaddress) != INADDR_NONE;
+    return ACE_OS::inet_addr(ipaddress) != INADDR_NONE;
 }
 
 /// create PID file

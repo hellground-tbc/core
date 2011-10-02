@@ -52,7 +52,7 @@ EndContentData */
 
 #define SPELL_SUMMON_GHOST_SABER    5968
 
-bool GOHello_go_cat_figurine(Player *player, GameObject* _GO)
+bool GOUse_go_cat_figurine(Player *player, GameObject* _GO)
 {
     player->CastSpell(player,SPELL_SUMMON_GHOST_SABER,true);
     return false;
@@ -62,7 +62,7 @@ bool GOHello_go_cat_figurine(Player *player, GameObject* _GO)
 ## go_crystal_pylons (3x)
 ######*/
 
-bool GOHello_go_northern_crystal_pylon(Player *player, GameObject* _GO)
+bool GOUse_go_northern_crystal_pylon(Player *player, GameObject* _GO)
 {
     if (_GO->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
     {
@@ -76,7 +76,7 @@ bool GOHello_go_northern_crystal_pylon(Player *player, GameObject* _GO)
     return true;
 }
 
-bool GOHello_go_eastern_crystal_pylon(Player *player, GameObject* _GO)
+bool GOUse_go_eastern_crystal_pylon(Player *player, GameObject* _GO)
 {
     if (_GO->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
     {
@@ -90,7 +90,7 @@ bool GOHello_go_eastern_crystal_pylon(Player *player, GameObject* _GO)
     return true;
 }
 
-bool GOHello_go_western_crystal_pylon(Player *player, GameObject* _GO)
+bool GOUse_go_western_crystal_pylon(Player *player, GameObject* _GO)
 {
     if (_GO->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
     {
@@ -108,7 +108,7 @@ bool GOHello_go_western_crystal_pylon(Player *player, GameObject* _GO)
 ## go_barov_journal
 ######*/
 
-bool GOHello_go_barov_journal(Player *player, GameObject* _GO)
+bool GOUse_go_barov_journal(Player *player, GameObject* _GO)
 {
     if(player->HasSkill(SKILL_TAILORING) && player->GetBaseSkillValue(SKILL_TAILORING) >= 280 && !player->HasSpell(26086))
     {
@@ -121,7 +121,7 @@ bool GOHello_go_barov_journal(Player *player, GameObject* _GO)
 ## go_field_repair_bot_74A
 ######*/
 
-bool GOHello_go_field_repair_bot_74A(Player *player, GameObject* _GO)
+bool GOUse_go_field_repair_bot_74A(Player *player, GameObject* _GO)
 {
     if(player->HasSkill(SKILL_ENGINERING) && player->GetBaseSkillValue(SKILL_ENGINERING) >= 300 && !player->HasSpell(22704))
     {
@@ -137,7 +137,7 @@ bool GOHello_go_field_repair_bot_74A(Player *player, GameObject* _GO)
 #define GOSSIP_ORB_OF_COMMAND       "<Place my hand on the orb.>"
 #define QUEST_BLACKHANDS_COMMAND    7761
 
-bool GOHello_go_orb_of_command(Player* pPlayer, GameObject* pGO)
+bool GOUse_go_orb_of_command(Player* pPlayer, GameObject* pGO)
 {
     if (pPlayer->GetQuestRewardStatus(QUEST_BLACKHANDS_COMMAND))
     {
@@ -148,7 +148,7 @@ bool GOHello_go_orb_of_command(Player* pPlayer, GameObject* pGO)
     return true;
 }
 
-bool GOSelect_go_orb_of_command(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
+bool GOGossipSelect_go_orb_of_command(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
 {
     switch(action)
     {
@@ -165,7 +165,7 @@ bool GOSelect_go_orb_of_command(Player* pPlayer, GameObject* pGO, uint32 Sender,
 ## go_tablet_of_madness
 ######*/
 
-bool GOHello_go_tablet_of_madness(Player *player, GameObject* _GO)
+bool GOUse_go_tablet_of_madness(Player *player, GameObject* _GO)
 {
     if (player->HasSkill(SKILL_ALCHEMY) && player->GetSkillValue(SKILL_ALCHEMY) >= 300 && !player->HasSpell(24266))
     {
@@ -179,7 +179,7 @@ bool GOHello_go_tablet_of_madness(Player *player, GameObject* _GO)
 ######*/
 
 //TODO: use gossip option ("Transcript the Tablet") instead, if Trinity adds support.
-bool GOHello_go_tablet_of_the_seven(Player *player, GameObject* _GO)
+bool GOUse_go_tablet_of_the_seven(Player *player, GameObject* _GO)
 {
     if (_GO->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER)
         return true;
@@ -194,7 +194,7 @@ bool GOHello_go_tablet_of_the_seven(Player *player, GameObject* _GO)
 ## go_jump_a_tron
 ######*/
 
-bool GOHello_go_jump_a_tron(Player *player, GameObject* _GO)
+bool GOUse_go_jump_a_tron(Player *player, GameObject* _GO)
 {
     if (player->GetQuestStatus(10111) == QUEST_STATUS_INCOMPLETE)
      player->CastSpell(player,33382,true);
@@ -208,7 +208,7 @@ bool GOHello_go_jump_a_tron(Player *player, GameObject* _GO)
 
 #define NPC_ARIKARA  10882
 
-bool GOHello_go_sacred_fire_of_life(Player* pPlayer, GameObject* pGO)
+bool GOUse_go_sacred_fire_of_life(Player* pPlayer, GameObject* pGO)
 {
     if (pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
         pPlayer->SummonCreature(NPC_ARIKARA, -5008.338, -2118.894, 83.657, 0.874, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
@@ -238,7 +238,7 @@ enum BASHIRFORGE
     SPELL_CREATE_5_FLASK_OF_SORCERER   = 40970,
 };
 
-bool GOHello_go_crystalforge(Player* pPlayer, GameObject* pGO)
+bool GOUse_go_crystalforge(Player* pPlayer, GameObject* pGO)
 {
     switch(pGO->GetEntry())
     {
@@ -256,7 +256,7 @@ bool GOHello_go_crystalforge(Player* pPlayer, GameObject* pGO)
     return true;
 }
 
-bool GOSelect_go_crystalforge(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
+bool GOGossipSelect_go_crystalforge(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
 {
     switch(action)
     {
@@ -293,7 +293,7 @@ enum eMatrixPunchograph
     MATRIX_PUNCHOGRAPH_3005_D = 142696,
 };
 
-bool GOHello_go_matrix_punchograph(Player *pPlayer, GameObject *pGO)
+bool GOUse_go_matrix_punchograph(Player *pPlayer, GameObject *pGO)
 {
     switch(pGO->GetEntry())
     {
@@ -337,7 +337,7 @@ bool GOHello_go_matrix_punchograph(Player *pPlayer, GameObject *pGO)
 
 #define NPC_ZELEMAR  17830
 
-bool GOHello_go_blood_filled_orb(Player *pPlayer, GameObject *pGO)
+bool GOUse_go_blood_filled_orb(Player *pPlayer, GameObject *pGO)
 {
     if (pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
         pPlayer->SummonCreature(NPC_ZELEMAR, -369.746, 166.759, -21.50, 5.235, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
@@ -355,7 +355,7 @@ const uint32 NpcStasisEntry[] =
     22825, 20888, 22827, 22826, 22828
 };
 
-bool GOHello_go_ethereum_stasis(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_ethereum_stasis(Player* pPlayer, GameObject* pGo)
 {
     pGo->SetGoState(GO_STATE_ACTIVE);
     pPlayer->SummonCreature(NpcStasisEntry[rand()%5],pGo->GetPositionX(), pGo->GetPositionY(), pGo->GetPositionZ(), pGo->GetAngle(pPlayer), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
@@ -372,7 +372,7 @@ enum eResoniteCask
     NPC_GOGGEROC    = 11920
 };
 
-bool GOHello_go_resonite_cask(Player *pPlayer, GameObject *pGO)
+bool GOUse_go_resonite_cask(Player *pPlayer, GameObject *pGO)
 {
     if (pGO->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
     {
@@ -390,7 +390,7 @@ bool GOHello_go_resonite_cask(Player *pPlayer, GameObject *pGO)
 
 #define SPELL_WINGS 42867
 
-bool GOHello_go_darkmoon_cannon(Player *player, GameObject* _GO)
+bool GOUse_go_darkmoon_cannon(Player *player, GameObject* _GO)
 {
     // player->Relocate(    //przeniesc gracza na czubek armaty :]
     player->CastSpell(player,SPELL_WINGS,true);
@@ -407,7 +407,7 @@ enum eHives
     NPC_HIVE_AMBUSHER                             = 13301
 };
 
-bool GOHello_go_hive_pod(Player *pPlayer, GameObject *pGO)
+bool GOUse_go_hive_pod(Player *pPlayer, GameObject *pGO)
 {
     pPlayer->SendLoot(pGO->GetGUID(), LOOT_CORPSE);
     pGO->SummonCreature(NPC_HIVE_AMBUSHER,pGO->GetPositionX()-1,pGO->GetPositionY(),pGO->GetPositionZ(),pGO->GetAngle(pPlayer),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
@@ -420,7 +420,7 @@ bool GOHello_go_hive_pod(Player *pPlayer, GameObject *pGO)
 ## go_warmaul_prison
 ######*/
 
-bool GOHello_go_warmaul_prison(Player* pPlayer, GameObject* pGO)
+bool GOUse_go_warmaul_prison(Player* pPlayer, GameObject* pGO)
 {
     //Working, but still count while the cage is empty. Any ideas?
     Unit *Prisoner = FindCreature(18428, 4.0f, pPlayer);
@@ -444,7 +444,7 @@ bool GOHello_go_warmaul_prison(Player* pPlayer, GameObject* pGO)
 
 #define SPELL_LISTEN_TO_THE_MUSIC   50493
 
-bool GOHello_go_DISCO(Player* pPlayer, GameObject* pGO)
+bool GOUse_go_DISCO(Player* pPlayer, GameObject* pGO)
 {
     pPlayer->CastSpell(pPlayer, SPELL_LISTEN_TO_THE_MUSIC, true);
 
@@ -457,104 +457,104 @@ void AddSC_go_scripts()
 
     newscript = new Script;
     newscript->Name="go_northern_crystal_pylon";
-    newscript->pGOHello =           &GOHello_go_northern_crystal_pylon;
+    newscript->pGOUse =           &GOUse_go_northern_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_eastern_crystal_pylon";
-    newscript->pGOHello =           &GOHello_go_eastern_crystal_pylon;
+    newscript->pGOUse =           &GOUse_go_eastern_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_western_crystal_pylon";
-    newscript->pGOHello =           &GOHello_go_western_crystal_pylon;
+    newscript->pGOUse =           &GOUse_go_western_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_barov_journal";
-    newscript->pGOHello =           &GOHello_go_barov_journal;
+    newscript->pGOUse =           &GOUse_go_barov_journal;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_field_repair_bot_74A";
-    newscript->pGOHello =           &GOHello_go_field_repair_bot_74A;
+    newscript->pGOUse =           &GOUse_go_field_repair_bot_74A;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_orb_of_command";
-    newscript->pGOHello =           &GOHello_go_orb_of_command;
-    newscript->pGOSelect =          &GOSelect_go_orb_of_command;
+    newscript->pGOUse =           &GOUse_go_orb_of_command;
+    newscript->pGossipSelectGO =  &GOGossipSelect_go_orb_of_command;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_tablet_of_madness";
-    newscript->pGOHello =           &GOHello_go_tablet_of_madness;
+    newscript->pGOUse =           &GOUse_go_tablet_of_madness;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_tablet_of_the_seven";
-    newscript->pGOHello =           &GOHello_go_tablet_of_the_seven;
+    newscript->pGOUse =           &GOUse_go_tablet_of_the_seven;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_jump_a_tron";
-    newscript->pGOHello =           &GOHello_go_jump_a_tron;
+    newscript->pGOUse =           &GOUse_go_jump_a_tron;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_sacred_fire_of_life";
-    newscript->pGOHello =           &GOHello_go_sacred_fire_of_life;
+    newscript->pGOUse =           &GOUse_go_sacred_fire_of_life;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_crystalforge";
-    newscript->pGOHello =           &GOHello_go_crystalforge;
-    newscript->pGOSelect =          &GOSelect_go_crystalforge;
+    newscript->pGOUse =           &GOUse_go_crystalforge;
+    newscript->pGossipSelectGO =  &GOGossipSelect_go_crystalforge;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_matrix_punchograph";
-    newscript->pGOHello =           &GOHello_go_matrix_punchograph;
+    newscript->pGOUse =           &GOUse_go_matrix_punchograph;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_cat_figurine";
-    newscript->pGOHello =           &GOHello_go_cat_figurine;
+    newscript->pGOUse =           &GOUse_go_cat_figurine;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_blood_filled_orb";
-    newscript->pGOHello =           &GOHello_go_blood_filled_orb;
+    newscript->pGOUse =           &GOUse_go_blood_filled_orb;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_ethereum_stasis";
-    newscript->pGOHello =           &GOHello_go_ethereum_stasis;
+    newscript->pGOUse =           &GOUse_go_ethereum_stasis;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_resonite_cask";
-    newscript->pGOHello =           &GOHello_go_resonite_cask;
+    newscript->pGOUse =           &GOUse_go_resonite_cask;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_darkmoon_cannon";
-    newscript->pGOHello =           &GOHello_go_darkmoon_cannon;
+    newscript->pGOUse =           &GOUse_go_darkmoon_cannon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_hive_pod";
-    newscript->pGOHello = &GOHello_go_hive_pod;
+    newscript->pGOUse = &GOUse_go_hive_pod;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_warmaul_prison";
-    newscript->pGOHello = &GOHello_go_warmaul_prison;
+    newscript->pGOUse = &GOUse_go_warmaul_prison;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_DISCO";
-    newscript->pGOHello = &GOHello_go_DISCO;
+    newscript->pGOUse = &GOUse_go_DISCO;
     newscript->RegisterSelf();
 }
 

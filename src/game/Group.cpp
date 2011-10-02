@@ -606,7 +606,7 @@ void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
 
     for (i=loot->items.begin(); i != loot->items.end(); ++i, ++itemSlot)
     {
-        item = objmgr.GetItemPrototype(i->itemid);
+        item = ObjectMgr::GetItemPrototype(i->itemid);
         if (!item)
         {
             //sLog.outDebug("Group::GroupLoot: missing item prototype for item with id: %d", i->itemid);
@@ -662,7 +662,7 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
     uint8 itemSlot = 0;
     for (std::vector<LootItem>::iterator i=loot->items.begin(); i != loot->items.end(); ++i, ++itemSlot)
     {
-        item = objmgr.GetItemPrototype(i->itemid);
+        item = ObjectMgr::GetItemPrototype(i->itemid);
 
         //only roll for one-player items, not for ones everyone can get
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)

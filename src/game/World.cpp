@@ -25,7 +25,7 @@
 #include "Common.h"
 //#include "WorldSocket.h"
 #include "Database/DatabaseEnv.h"
-#include "Config/ConfigEnv.h"
+#include "Config/Config.h"
 #include "SystemConfig.h"
 #include "Log.h"
 #include "Opcodes.h"
@@ -45,13 +45,12 @@
 #include "LootMgr.h"
 #include "ItemEnchantmentMgr.h"
 #include "MapManager.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include "CreatureAIRegistry.h"
 #include "Policies/SingletonImp.h"
 #include "BattleGroundMgr.h"
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
-//#include "AuctionHouseBot.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
 #include "GlobalEvents.h"
@@ -1232,6 +1231,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DONT_DELETE_CHARS] = sConfig.GetBoolDefault("DontDeleteChars", false);
     m_configs[CONFIG_DONT_DELETE_CHARS_LVL] = sConfig.GetIntDefault("DontDeleteCharsLvl", 40);
     m_configs[CONFIG_KEEP_DELETED_CHARS_TIME] = sConfig.GetIntDefault("KeepDeletedCharsTime", 31);
+
+    m_configs[CONFIG_ENABLE_SORT_AUCTIONS] = sConfig.GetBoolDefault("Auction.EnableSort", true);
 }
 
 /// Initialize the World
@@ -1287,7 +1288,7 @@ void World::SetInitialWorldSettings()
     DetectDBCLang();
 
     sLog.outString("Loading Script Names...");
-    objmgr.LoadScriptNames();
+    sScriptMgr.LoadScriptNames();
 
     sLog.outString("Loading InstanceTemplate");
     objmgr.LoadInstanceTemplate();
@@ -1421,7 +1422,13 @@ void World::SetInitialWorldSettings()
     objmgr.LoadTavernAreaTriggers();
 
     sLog.outString("Loading AreaTrigger script names...");
-    objmgr.LoadAreaTriggerScripts();
+    sScriptMgr.LoadAreaTriggerScripts();
+
+    sLog.outString("Loading event id script names...");
+    sScriptMgr.LoadEventIdScripts();
+
+    sLog.outString("Loading spell id script names...");
+    sScriptMgr.LoadSpellIdScripts();
 
     sLog.outString("Loading Graveyard-zone links...");
     objmgr.LoadGraveyardZones();
@@ -1476,8 +1483,8 @@ void World::SetInitialWorldSettings()
 
     ///- Load dynamic data tables from the database
     sLog.outString("Loading Auctions...");
-    auctionmgr.LoadAuctionItems();
-    auctionmgr.LoadAuctions();
+    sAuctionMgr.LoadAuctionItems();
+    sAuctionMgr.LoadAuctions();
 
     sLog.outString("Loading Guilds...");
     objmgr.LoadGuilds();
@@ -1530,15 +1537,15 @@ void World::SetInitialWorldSettings()
 
     ///- Load and initialize scripts
     sLog.outString("Loading Scripts...");
-    objmgr.LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
-    objmgr.LoadQuestEndScripts();                           // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
-    objmgr.LoadSpellScripts();                              // must be after load Creature/Gameobject(Template/Data)
-    objmgr.LoadGameObjectScripts();                         // must be after load Creature/Gameobject(Template/Data)
-    objmgr.LoadEventScripts();                              // must be after load Creature/Gameobject(Template/Data)
-    objmgr.LoadWaypointScripts();
+    sScriptMgr.LoadQuestStartScripts();                         // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
+    sScriptMgr.LoadQuestEndScripts();                           // must be after load Creature/Gameobject(Template/Data) and QuestTemplate
+    sScriptMgr.LoadSpellScripts();                              // must be after load Creature/Gameobject(Template/Data)
+    sScriptMgr.LoadGameObjectScripts();                         // must be after load Creature/Gameobject(Template/Data)
+    sScriptMgr.LoadEventScripts();                              // must be after load Creature/Gameobject(Template/Data)
+    sScriptMgr.LoadWaypointScripts();
 
     sLog.outString("Loading Scripts text locales...");    // must be after Load*Scripts calls
-    objmgr.LoadDbScriptStrings();
+    sScriptMgr.LoadDbScriptStrings();
 
     sLog.outString("Loading CreatureEventAI Texts...");
     CreatureEAI_Mgr.LoadCreatureEventAI_Texts(false);       // false, will checked in LoadCreatureEventAI_Scripts
@@ -1550,8 +1557,7 @@ void World::SetInitialWorldSettings()
     CreatureEAI_Mgr.LoadCreatureEventAI_Scripts();
 
     sLog.outString("Initializing Scripts...");
-    if (!LoadScriptingModule())
-        exit(1);
+    sScriptMgr.LoadScriptLibrary(TRINITY_SCRIPT_NAME);
 
     ///- Initialize game time and timers
     sLog.outDebug("DEBUG:: Initialize game time and timers");
@@ -1579,6 +1585,7 @@ void World::SetInitialWorldSettings()
 
     m_timers[WUPDATE_AUTOBROADCAST].SetInterval(getConfig(CONFIG_AUTOBROADCAST_INTERVAL));
     m_timers[WUPDATE_GUILD_ANNOUNCES].SetInterval(getConfig(CONFIG_GUILD_ANN_INTERVAL));
+    m_timers[WUPDATE_DELETECHARS].SetInterval(DAY*IN_MILISECONDS); // check for chars to delete every day
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -1633,9 +1640,6 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Cleanup deleted characters");
     CleanupDeletedChars();
-
-    //sLog.outString("Initialize AuctionHouseBot...");
-    //auctionbot.Initialize();
 
     sLog.outString("Activating AntiCheat");
     if (m_ac.activate() == -1)
@@ -1707,7 +1711,7 @@ void World::RecordTimeDiff(const char *text, ...)
         va_start(ap, text);
         vsnprintf(str,256,text, ap);
         va_end(ap);
-        sLog.outError("Difftime %s: %u.", str, diff);
+        sLog.outDiff("Difftime %s: %u.", str, diff);
     }
 
     m_currentTime = thisTime;
@@ -1747,7 +1751,8 @@ void World::Update(time_t diff)
     {
         if (m_updateTimeSum > m_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
-            sLog.outBasic("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
+            sLog.outError("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
+            sLog.outDiff("Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
             sLog.outIrc("%u %u %u %u %u %u %s", GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(), GetPlayerAmountLimit(), _REVISION);
 
             m_updateTimeSum = m_updateTime;
@@ -1769,8 +1774,8 @@ void World::Update(time_t diff)
         else
             m_timers[i].SetCurrent(0);
     }
-
     RecordTimeDiff("UpdateTimers");
+
     ///- Update the game time and check for shutdown time
     _UpdateGameTime();
     RecordTimeDiff("UpdateGameTime");
@@ -1785,7 +1790,6 @@ void World::Update(time_t diff)
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
-        //auctionbot.Update();
         m_timers[WUPDATE_AUCTIONS].Reset();
 
         ///- Update mails (return old mails with item, or delete them)
@@ -1798,7 +1802,7 @@ void World::Update(time_t diff)
         }
         RecordTimeDiff("ReturnOldMails");
         ///-Handle expired auctions
-        auctionmgr.Update();
+        sAuctionMgr.Update();
         RecordTimeDiff("UpdateAuctions");
     }
 
@@ -1836,6 +1840,7 @@ void World::Update(time_t diff)
             }
         }
     }
+
     /// <li> Update uptime table
     if (m_timers[WUPDATE_UPTIME].Passed())
     {
@@ -1846,6 +1851,7 @@ void World::Update(time_t diff)
         WorldDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " UI64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
     }
 
+    RecordTimeDiff(NULL);
     if (sWorld.getConfig(CONFIG_AUTOBROADCAST_INTERVAL))
     {
         if (m_timers[WUPDATE_AUTOBROADCAST].Passed())
@@ -1863,6 +1869,7 @@ void World::Update(time_t diff)
             sWorld.SendWorldText(LANG_AUTO_ANN, msg.c_str());
         }
     }
+    RecordTimeDiff("Send Autobroadcast");
 
     ///- send guild announces every one minute
     if (m_timers[WUPDATE_GUILD_ANNOUNCES].Passed())
@@ -1886,8 +1893,8 @@ void World::Update(time_t diff)
             m_GuildAnnounces[1].pop_front();
         }
     }
+    RecordTimeDiff("Send Guild announce");
 
-    RecordTimeDiff(NULL);
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures,...)
     sMapMgr.Update(diff);                // As interval = 0
@@ -1898,6 +1905,13 @@ void World::Update(time_t diff)
 
     sOutdoorPvPMgr.Update(diff);
     RecordTimeDiff("UpdateOutdoorPvPMgr");
+
+    ///- Delete all characters which have been deleted X days before
+    if (m_timers[WUPDATE_DELETECHARS].Passed())
+    {
+        m_timers[WUPDATE_DELETECHARS].Reset();
+        CleanupDeletedChars();
+    }
 
     // execute callbacks from sql queries that were queued recently
     UpdateResultQueue();
@@ -2507,20 +2521,6 @@ void World::UpdateSessions(time_t diff)
 
         if (!itr->second)
             continue;
-
-#ifdef ANTICHEAT_SOCK
-        if (m_ac_auth[itr->second->GetRemoteAddress()] < diff)
-        {
-            //sLog.outString("KICKING PLAYER %s", itr->second->GetRemoteAddress().c_str());
-            itr->second->KickPlayer();
-            m_ac_auth.erase(itr->second->GetRemoteAddress());
-        }
-        else
-        {
-            m_ac_auth[itr->second->GetRemoteAddress()] -= diff;
-            //sLog.outString("TIME TO KICK %s %i", itr->second->GetRemoteAddress().c_str(), m_ac_auth[itr->second->GetRemoteAddress()]);
-        }
-#endif // ANTICHEAT_SOCK
 
         ///- and remove not active sessions from the list
         WorldSession * pSession = itr->second;

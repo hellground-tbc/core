@@ -192,7 +192,7 @@ CreatureAI* GetAI_npc_princess_stillpineAI(Creature *_Creature)
     return new npc_princess_stillpineAI (_Creature);
 }
 
-bool GOHello_go_princess_stillpine_cage(Player* pPlayer, GameObject* pGO)
+bool GOUse_go_princess_stillpine_cage(Player* pPlayer, GameObject* pGO)
 {
     Unit *Prisoner = FindCreature(17682, 4.0f, pPlayer);
     if(!Prisoner)
@@ -237,7 +237,7 @@ void AddSC_bloodmyst_isle()
     
     newscript = new Script;
     newscript->Name = "go_princess_stillpine_cage";
-    newscript->pGOHello = &GOHello_go_princess_stillpine_cage;
+    newscript->pGOUse = &GOUse_go_princess_stillpine_cage;
     newscript->RegisterSelf();
 }
 

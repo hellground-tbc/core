@@ -1052,18 +1052,6 @@
 				>
 			</File>
 			<Filter
-				Name="AuctionHouseBot"
-				>
-				<File
-					RelativePath="..\..\src\game\AuctionHouseBot.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\game\AuctionHouseBot.h"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="PlayerAI"
 				>
 				<File
@@ -1397,6 +1385,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\LootHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\MailHandler.cpp"
 				>
 			</File>
 			<File

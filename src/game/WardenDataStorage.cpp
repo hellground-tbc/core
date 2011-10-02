@@ -55,7 +55,7 @@ void CWardenDataStorage::LoadWardenDataResult()
 
     if (!result)
     {
-        barGoLink bar(1);
+        BarGoLink bar(1);
         bar.step();
 
         sLog.outString();
@@ -63,7 +63,7 @@ void CWardenDataStorage::LoadWardenDataResult()
         return;
     }
 
-    barGoLink bar((int)result->GetRowCount());
+    BarGoLink bar((int)result->GetRowCount());
 
     do
     {

@@ -379,8 +379,8 @@ void AddSC_silithus()
 
     newscript = new Script;
     newscript->Name="go_wind_stone";
-    newscript->pGOHello  = &GossipHello_go_wind_stone;
-    newscript->pGOSelect = &GossipSelect_go_wind_stone;
+    newscript->pGOUse  = &GossipHello_go_wind_stone;
+    newscript->pGossipSelectGO = &GossipSelect_go_wind_stone;
     newscript->RegisterSelf();
 }
 

@@ -34,87 +34,45 @@
 #include "Timer.h"
 #include "Policies/SingletonImp.h"
 #include "SystemConfig.h"
-#include "Config/ConfigEnv.h"
+#include "Config/Config.h"
 #include "Database/DatabaseEnv.h"
 #include "CliRunnable.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include "Util.h"
 #include "InstanceSaveMgr.h"
 
-#ifndef WIN32
-#include "vmap/BIH.h"
-#endif
-
-#include "sockets/TcpSocket.h"
-#include "sockets/Utility.h"
-#include "sockets/Parse.h"
-#include "sockets/Socket.h"
-#include "sockets/SocketHandler.h"
-#include "sockets/ListenSocket.h"
-
 #ifdef WIN32
 #include "ServiceWin32.h"
-extern int m_ServiceStatus;
+#else
+#include "vmap/BIH.h"
+#include "PosixDaemon.h"
 #endif
 
-//#define ANTICHEAT_SOCK
+extern RunModes runMode;
 
 /// \todo Warning disabling not useful under VC++2005. Can somebody say on which compiler it is useful?
 #pragma warning(disable:4305)
 
 INSTANTIATE_SINGLETON_1( Master );
 
-#ifdef ANTICHEAT_SOCK
-class AntiCheatSocket : public TcpSocket
+bool IsAcceptableClientBuild(uint32 build)
 {
-    public:
-        AntiCheatSocket(ISocketHandler &h) : TcpSocket(h) {}
-    private:
-        void OnRead()
-        {
-            TcpSocket::OnRead();
-            if (ibuf.GetLength() != 2)
-            {
-                //sLog.outString("wrong packet size %i", ibuf.GetLength());
-                sLog.outError("Invalid packet size in AntiCheatSocket::OnRead()!");
-                ibuf.Remove(ibuf.GetLength());
-                return;
-            }
+    int accepted_versions[] = EXPECTED_CLIENT_BUILD;
+    for(int i = 0; accepted_versions[i]; ++i)
+        if(int(build) == accepted_versions[i])
+            return true;
 
-            char cmd;
-            char val;
-            ibuf.Read(&cmd, 1);
-            ibuf.Read(&val, 1);
-            //sLog.outString("Processing %c %c", cmd, val);
-            sWorld.ProcessAnticheat(&cmd, &val, GetRemoteAddress());
-        }
-};
+    return false;
+}
 
-class AntiCheatRunnable : public ACE_Based::Runnable
+std::string AcceptableClientBuildsListStr()
 {
-    public:
-        AntiCheatRunnable() {}
-
-        void run()
-        {
-            sLog.outString("Starting up anti-cheat socket.");
-            SocketHandler h;
-            ListenSocket<AntiCheatSocket> lsock(h);
-
-            if (lsock.Bind(5600))
-            {
-                sLog.outError("Failed to bind anti-cheat listening socket!.");
-                return;
-            }
-
-            h.Add(&lsock);
-            while (1)
-            {
-                h.Select(0, 500000);
-            }
-        }
-};
-#endif//anticheatsock
+    std::ostringstream data;
+    int accepted_versions[] = EXPECTED_CLIENT_BUILD;
+    for(int i = 0; accepted_versions[i]; ++i)
+        data << accepted_versions[i] << " ";
+    return data.str();
+}
 
 volatile uint32 Master::m_masterLoopCounter = 0;
 #ifndef WIN32
@@ -235,6 +193,10 @@ int Master::Run()
         sLog.outString( "Daemon PID: %u\n", pid );
     }
 
+#ifndef WIN32
+    detachDaemon();
+#endif
+
     ///- Start the databases
     if (!_StartDB())
         return 1;
@@ -254,14 +216,15 @@ int Master::Run()
     ACE_Based::Thread t(new WorldRunnable);
     t.setPriority(ACE_Based::Highest);
 
-    // set server online
-    LoginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0 WHERE id = '%d'",realmID);
+    // set realmbuilds depend on mangosd expected builds, and set server online
+    {
+        std::string builds = AcceptableClientBuildsListStr();
+        LoginDatabase.escape_string(builds);
+        LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0, realmbuilds = '%s'  WHERE id = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
+    }
 
-#ifdef WIN32
-    if (sConfig.GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
-#else
-    if (sConfig.GetBoolDefault("Console.Enable", true))
-#endif
+    // console should be disabled in service/daemon mode
+    if (sConfig.GetBoolDefault("Console.Enable", true) && (runMode == MODE_NORMAL))
     {
         ///- Launch CliRunnable thread
         ACE_Based::Thread td1(new CliRunnable);
@@ -340,7 +303,7 @@ int Master::Run()
 #endif
 
     ///- Launch the world listener socket
-    port_t wsport = sWorld.getConfig (CONFIG_PORT_WORLD);
+    uint16 wsport = sWorld.getConfig (CONFIG_PORT_WORLD);
     std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
 
     if (sWorldSocketMgr->StartNetwork (wsport, bind_ip.c_str ()) == -1)
@@ -352,8 +315,8 @@ int Master::Run()
 
     sWorldSocketMgr->Wait ();
 
-    // set server offline
-    LoginDatabase.DirectPExecute("UPDATE realmlist SET color = 2 WHERE id = '%d'",realmID);
+    ///- Set server offline in realmlist
+    LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
 
     ///- Remove signal handling before leaving
     _UnhookSignals();
@@ -407,10 +370,6 @@ int Master::Run()
     }
     #endif
 
-    // for some unknown reason, unloading scripts here and not in worldrunnable
-    // fixes a memory leak related to detaching threads from the module
-    UnloadScriptingModule();
-
     sInstanceSaveManager.UnbindBeforeDelete();
 
     ///- Wait for delay threads to end
@@ -427,7 +386,8 @@ bool Master::_StartDB()
 {
     ///- Get world database info from configuration file
     std::string dbstring;
-    if(!sConfig.GetString("WorldDatabaseInfo", &dbstring))
+    dbstring = sConfig.GetStringDefault("WorldDatabaseInfo", "");
+    if(dbstring.empty())
     {
         sLog.outError("Database not specified in configuration file");
         return false;
@@ -442,7 +402,8 @@ bool Master::_StartDB()
         return false;
     }
 
-    if(!sConfig.GetString("CharacterDatabaseInfo", &dbstring))
+    dbstring = sConfig.GetStringDefault("CharacterDatabaseInfo", "");
+    if(dbstring.empty())
     {
         sLog.outError("Character Database not specified in configuration file");
         return false;
@@ -458,7 +419,8 @@ bool Master::_StartDB()
     }
 
     ///- Get login database info from configuration file
-    if(!sConfig.GetString("LoginDatabaseInfo", &dbstring))
+    dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
+    if(dbstring.empty())
     {
         sLog.outError("Login database not specified in configuration file");
         return false;

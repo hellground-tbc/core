@@ -30,6 +30,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "ScriptMgr.h"
 #include "Player.h"
 #include "Pet.h"
 #include "Unit.h"
@@ -592,6 +593,8 @@ void Spell::FillTargetMap()
             if (dist < 5.0f) dist = 5.0f;
             m_delayMoment = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
         }
+        else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
+            m_delayMoment = SPELL_FAKE_DELAY;
     }
 }
 
@@ -774,7 +777,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     }
     else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
     {
-        target.timeDelay = uint64(180);
+        target.timeDelay = SPELL_FAKE_DELAY;
         m_delayMoment = target.timeDelay;
     }
     else
@@ -845,7 +848,7 @@ void Spell::AddGOTarget(GameObject* pVictim, uint32 effIndex)
     }
     else if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY)
     {
-        target.timeDelay = uint64(180);
+        target.timeDelay = SPELL_FAKE_DELAY;
         m_delayMoment = target.timeDelay;
     }
     else
@@ -1105,10 +1108,11 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 
     // Recheck immune (only for delayed spells)
-    if (m_spellInfo->speed &&
-        !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
-        && (unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo),true) ||
-        unit->IsImmunedToSpell(m_spellInfo,true)))
+    if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) &&
+        !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) &&
+        (unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo),true) ||
+        unit->IsImmunedToSpell(m_spellInfo,true))
+        )
     {
         m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
         m_damage = 0;
@@ -1132,7 +1136,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             bool isVisibleForHit = ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, true)) ? false : true;
 
             // for delayed spells ignore not visible explicit target
-            if (m_spellInfo->speed > 0.0f && unit==m_targets.getUnitTarget() && !isVisibleForHit)
+            if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit==m_targets.getUnitTarget() && !isVisibleForHit)
             {
                 // that was causing CombatLog errors
                 //m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
@@ -1147,7 +1151,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // TODO: this cause soul transfer bugged
-            if (m_spellInfo->speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id))
+            if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id))
             {
                 m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
@@ -1214,10 +1218,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             if (roll_chance_i(i->second))
             {
-                if(i->first->Id == 14181) // delay triggering relentless strikes proc
-                    m_caster->m_Events.AddEvent(new CastSpellEvent(*m_caster, unit->GetGUID(), i->first->Id, true), m_caster->m_Events.CalculateTime(1));
-                else
-                    m_caster->CastSpell(unit, i->first, true);
+                m_caster->CastSpell(unit, i->first, true);
 
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
@@ -2155,19 +2156,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             }
         }
 
+        sScriptMgr.OnSpellSetTargetMap(m_caster, unitList, m_targets, m_spellInfo, i);
+
         if (!unitList.empty())
         {
-            // Intimidating Shout -> Remove current target from AOE fear effect
-            if (m_spellInfo->Id == 5246)
-                unitList.remove(m_targets.getUnitTarget());
-
-            // We don't need immune targets to be taken into list for Fatal Attraction, i know that thix hack is ugly ;]
-            // Same thing happens with Akil'zon: Eye of the Storm effect of Electrical Storm
-            // Same thing for Positive/Negative charge from Mechanar and Naxx encounters
-            // Spectral blast: exclude current target and targets with Spectral Exhaustion
-            // Curse of Boundless Agony: exclude target that already has one
-            if (m_spellInfo->Id == 40869 || m_spellInfo->Id == 43657 || m_spellInfo->Id == 28062 || m_spellInfo->Id == 28085 || m_spellInfo->Id == 39090 || m_spellInfo->Id == 39093
-                || m_spellInfo->Id == 44869 || m_spellInfo->Id == 45032 || m_spellInfo->Id == 45034)
+            if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF)
             {
                 std::list<Unit*>::iterator next;
                 for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); itr = next)
@@ -2176,43 +2169,43 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     ++next;
 
                     // remove m_caster from unitList before CheckTarget()
-                    if(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF && (*itr) == m_caster)
+		    if ((*itr) == m_caster)
                     {
                         unitList.remove(*itr);
                         break;
                     }
-
-                    switch (m_spellInfo->Id)
-                    {
-                        case 40869:
-                            if ((*itr)->HasAura(43690, 0))
-                                unitList.remove(*itr);
-                            break;
-                        case 43657:
-                            if ((*itr)->HasAura(44007, 0))
-                                unitList.remove(*itr);
-                            break;
-                        case 28062:     // Positive Charge
-                        case 39090:
-                            if ((*itr)->HasAura(28059, 0) || (*itr)->HasAura(39088, 0))
-                                unitList.remove(*itr);
-                            break;
-                        case 28085:     // Negative Charge
-                        case 39093:
-                            if ((*itr)->HasAura(28084, 0) || (*itr)->HasAura(39091, 0))
-                                unitList.remove(*itr);
-                            break;
-                        case 44869:     // Spectral Blast
-                            if( (*itr)->HasAura(44867, 0) || (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim() == (*itr)))
-                                unitList.remove(*itr);
-                            break;
-                        case 45032:     // Curse of Boundless Agony
-                        case 45034:
-                            if ((*itr)->HasAura(45032, 0) || (*itr)->HasAura(45034, 0))
-                                unitList.remove(*itr);
-                            break;
-                    }
                 }
+            }
+            switch (m_spellInfo->Id)
+            {
+                case 40869:     // Fatal Attraction
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 43690));
+                    break;
+                case 43657:
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 44007));
+                    break;
+                case 28062:     // Positive Charge
+                case 39090:
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 28059));
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 39088));
+                    break;
+                case 28085:     // Negative Charge
+                case 39093:
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 28084));
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 39091));
+                    break;
+                case 44869:     // Spectral Blast
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
+                    if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->getVictim())
+                        unitList.remove(((Creature*)m_caster)->getVictim());
+                    break;
+		case 45032:     // Curse of Boundless Agony
+		case 45034:
+		    unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 45034));
+                    break;
+                default:
+                    break;
             }
 
             if (m_spellValue->MaxAffectedTargets)
@@ -2527,7 +2520,7 @@ void Spell::cast(bool skipCheck)
     }
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if (m_spellInfo->speed > 0.0f && !IsChanneledSpell(m_spellInfo))
+    if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && !IsChanneledSpell(m_spellInfo))
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
@@ -3172,7 +3165,7 @@ void Spell::WriteAmmoToPacket(WorldPacket * data)
                 uint32 ammoID = ((Player*)m_caster)->GetUInt32Value(PLAYER_AMMO_ID);
                 if (ammoID)
                 {
-                    ItemPrototype const *pProto = objmgr.GetItemPrototype(ammoID);
+                    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(ammoID);
                     if (pProto)
                     {
                         ammoDisplayID = pProto->DisplayInfoID;
@@ -5160,7 +5153,7 @@ uint8 Spell::CheckItems()
                             return SPELL_FAILED_NO_AMMO;
                         }
 
-                        ItemPrototype const *ammoProto = objmgr.GetItemPrototype(ammo);
+                        ItemPrototype const *ammoProto = ObjectMgr::GetItemPrototype(ammo);
                         if (!ammoProto)
                             return SPELL_FAILED_NO_AMMO;
 

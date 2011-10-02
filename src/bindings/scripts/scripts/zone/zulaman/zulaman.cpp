@@ -479,7 +479,7 @@ CreatureAI* GetAI_npc_ashli(Creature *_Creature)
     return new npc_ashliAI(_Creature);
 }
 
-bool GOHello_go_zulaman_cage(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_zulaman_cage(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData();
     if(!pInstance)
@@ -496,7 +496,7 @@ bool GOHello_go_zulaman_cage(Player* pPlayer, GameObject* pGo)
 }
 
 
-bool GOHello_go_zulaman_timed_event_chest(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_zulaman_timed_event_chest(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData();
     if(!pInstance)
@@ -803,7 +803,7 @@ CreatureAI* GetAI_npc_harrison_jones_za(Creature* pCreature)
 ## go_strange_gong
 ######*/
 
-bool GOHello_go_strange_gong(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_strange_gong(Player* pPlayer, GameObject* pGo)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)pGo->GetInstanceData();
 
@@ -1330,12 +1330,12 @@ void AddSC_zulaman()
 
     newscript = new Script;
     newscript->Name = "go_zulaman_cage";
-    newscript->pGOHello = &GOHello_go_zulaman_cage;
+    newscript->pGOUse = &GOUse_go_zulaman_cage;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_zulaman_timed_event_chest";
-    newscript->pGOHello = &GOHello_go_zulaman_timed_event_chest;
+    newscript->pGOUse = &GOUse_go_zulaman_timed_event_chest;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -1347,7 +1347,7 @@ void AddSC_zulaman()
 
     newscript = new Script;
     newscript->Name = "go_strange_gong";
-    newscript->pGOHello = &GOHello_go_strange_gong;
+    newscript->pGOUse = &GOUse_go_strange_gong;
     newscript->RegisterSelf();
 
     newscript = new Script;

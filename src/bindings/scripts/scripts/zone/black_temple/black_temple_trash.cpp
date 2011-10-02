@@ -623,11 +623,11 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
             {
                 if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 50)
                     CanBeShielded = true;
-                ShellShield = 3000;
+                ShellShield = 1000;
             }
             else
             {
-                AddSpellToCast(m_creature, SPELL_SHELL_SHIELD);
+                AddSpellToCast(SPELL_SHELL_SHIELD, true);
                 ShellShield = urand(20000, 30000);
             }
         }
@@ -640,7 +640,7 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
                     AddSpellToCast(target, SPELL_WATER_SPIT);
-                WaterSpit = urand(8000,12000);
+                WaterSpit = 4000;
             }
             else
             {
@@ -5413,7 +5413,7 @@ struct TRINITY_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
 
         if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 20 && !shielded)
         {
-            ForceSpellCast(m_creature, SPELL_DIVINE_SHIELD, INTERRUPT_AND_CAST);
+            ForceSpellCast(m_creature, SPELL_DIVINE_SHIELD, INTERRUPT_AND_CAST, true);
             shielded = true;
         }
 

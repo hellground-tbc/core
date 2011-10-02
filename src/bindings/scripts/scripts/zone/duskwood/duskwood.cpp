@@ -31,7 +31,7 @@ bool CorrupterSummoned = false;
 # at_twilight_grove
 ######*/
 
-bool AreaTrigger_at_twilight_grove(Player* pPlayer, AreaTriggerEntry *at)
+bool AreaTrigger_at_twilight_grove(Player* pPlayer, AreaTriggerEntry const* at)
 {
     if (pPlayer->HasQuestForItem(21149) && !CorrupterSummoned)
     {

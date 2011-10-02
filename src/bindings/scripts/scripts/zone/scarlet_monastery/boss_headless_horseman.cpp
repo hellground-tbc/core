@@ -866,7 +866,7 @@ struct TRINITY_DLL_DECL mob_pulsing_pumpkinAI : public ScriptedAI
     }
 };
 
-bool GOHello_go_loosely_turned_soil(Player *plr, GameObject* soil)
+bool GOUse_go_loosely_turned_soil(Player *plr, GameObject* soil)
 {
 /*  if (soil->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER && plr->getLevel() > 64)
     {
@@ -886,7 +886,7 @@ bool GOHello_go_loosely_turned_soil(Player *plr, GameObject* soil)
     //}
     return true;
 }
-bool GOReward_go_loosely_turned_soil(Player *plr, GameObject* soil, Quest const* quest, uint32 iot)
+bool GOReward_go_loosely_turned_soil(Player *plr, GameObject* soil, Quest const* quest)
 {
     if(quest->GetQuestId() == 11392 || quest->GetQuestId() == 11405)
     {
@@ -947,8 +947,8 @@ void AddSC_boss_headless_horseman()
 
     newscript = new Script;
     newscript->Name = "go_loosely_turned_soil";
-    //newscript->pGOHello = &GOHello_go_loosely_turned_soil;
-    newscript->pGOChooseReward = &GOReward_go_loosely_turned_soil;
+    //newscript->pGOUse = &GOUse_go_loosely_turned_soil;
+    newscript->pQuestRewardedGO = &GOReward_go_loosely_turned_soil;
     newscript->RegisterSelf();
 }
 

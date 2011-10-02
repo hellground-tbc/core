@@ -38,7 +38,7 @@ struct ItemSetEffect
     SpellEntry const *spells[8];
 };
 
-enum InventoryChangeFailure
+enum InventoryResult
 {
     EQUIP_ERR_OK                                 = 0,
     EQUIP_ERR_CANT_EQUIP_LEVEL_I                 = 1,

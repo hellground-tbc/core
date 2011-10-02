@@ -546,7 +546,7 @@ CreatureAI* GetAI_npc_secondTrial(Creature *_Creature)
 ## go_second_trial
 ######*/
 
-bool GOHello_go_second_trial(Player *player, GameObject* _GO)
+bool GOUse_go_second_trial(Player *player, GameObject* _GO)
 {
     // find spawn :: master_kelerun_bloodmourn
     Creature* event_controller = NULL;
@@ -780,7 +780,7 @@ void AddSC_eversong_woods()
     newscript->Name="npc_second_trial_controller";
     newscript->GetAI = &GetAI_master_kelerun_bloodmourn;
     newscript->pGossipHello = &GossipHello_master_kelerun_bloodmourn;
-    newscript->pQuestAccept = &QuestAccept_master_kelerun_bloodmourn;
+    newscript->pQuestAcceptNPC = &QuestAccept_master_kelerun_bloodmourn;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -790,13 +790,13 @@ void AddSC_eversong_woods()
 
     newscript = new Script;
     newscript->Name="go_second_trial";
-    newscript->pGOHello =  &GOHello_go_second_trial;
+    newscript->pGOUse =  &GOUse_go_second_trial;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_apprentice_mirveda";
     newscript->GetAI = &GetAI_npc_apprentice_mirvedaAI;
-    newscript->pQuestAccept = &QuestAccept_npc_apprentice_mirveda;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_apprentice_mirveda;
     newscript->RegisterSelf();
 
     newscript = new Script;

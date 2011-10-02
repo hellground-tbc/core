@@ -28,6 +28,7 @@
 #include "UpdateMask.h"
 #include "World.h"
 #include "ObjectMgr.h"
+#include "ScriptMgr.h"
 #include "SpellMgr.h"
 #include "Player.h"
 #include "SkillExtraItems.h"
@@ -56,7 +57,6 @@
 #include "SocialMgr.h"
 #include "Util.h"
 #include "TemporarySummon.h"
-#include "ScriptCalls.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -1788,6 +1788,16 @@ void Spell::EffectDummy(uint32 i)
                 case 27517:
                     m_caster->SummonCreature(16059, 590.6309, -181.061, -53.90, 5.33, TEMPSUMMON_DEAD_DESPAWN, 0);
                     break;
+                case 43755:
+                {
+                    Aura * aur = unitTarget->GetAura(43880, 0);
+                    if(aur)
+                    {
+                        aur->SetAuraDuration(aur->GetAuraDuration() + 30000);
+                        aur->UpdateAuraDuration();
+                    }
+                    break;
+                }
             }
 
             //All IconID Check in there
@@ -2412,8 +2422,12 @@ void Spell::EffectDummy(uint32 i)
 
     // Script based implementation. Must be used only for not good for implementation in core spell effects
     // So called only for not proccessed cases
-    if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT && Script)
-        Script->EffectDummyCreature(m_caster, m_spellInfo->Id, i, ((Creature*)unitTarget));
+    if (gameObjTarget)
+        sScriptMgr.OnEffectDummy(m_caster, m_spellInfo->Id, i, gameObjTarget);
+    else if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnEffectDummy(m_caster, m_spellInfo->Id, i, (Creature*)unitTarget);
+    else if (itemTarget)
+        sScriptMgr.OnEffectDummy(m_caster, m_spellInfo->Id, i, itemTarget);
 }
 
 void Spell::EffectTriggerSpellWithValue(uint32 i)
@@ -3160,7 +3174,8 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         }
     }
     sLog.outDebug("Spell ScriptStart %u for spellid %u in EffectSendEvent ", m_spellInfo->EffectMiscValue[EffectIndex], m_spellInfo->Id);
-    m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
+    if (!sScriptMgr.OnProcessEvent(m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject, true))
+        m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->EffectMiscValue[EffectIndex], m_caster, focusObject);
 }
 
 void Spell::EffectPowerBurn(uint32 i)
@@ -3372,7 +3387,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
     Player* player = (Player*)unitTarget;
 
     uint32 newitemid = itemtype;
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(newitemid);
+    ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(newitemid);
     if (!pProto)
     {
         player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
@@ -3636,7 +3651,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     if (gameObjTarget)
     {
-        if (Script->GOHello(player, gameObjTarget))
+        if (sScriptMgr.OnGameObjectUse(player, gameObjTarget))
             return;
 
         switch (gameObjTarget->GetGoType())
@@ -3673,7 +3688,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                     if (player->GetQuestStatus(gameObjTarget->GetGOInfo()->goober.questId) != QUEST_STATUS_INCOMPLETE)
                         return;
 
-                Script->GOHello(player, gameObjTarget);
+                sScriptMgr.OnGameObjectUse(player, gameObjTarget);
                 gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
 
                 gameObjTarget->AddUniqueUse(player);
@@ -6112,28 +6127,53 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 42924:
         {
+            Aura* aur = m_caster->GetAura(42924, 0);
+            if(aur && aur->GetStackAmount() < 4)
+                break;
+
+            if(aur && aur->GetStackAmount() == 11)
+            {
+                m_caster->CastSpell(m_caster, 42936, true);
+                break;
+            }
+
             if(m_caster->HasAura(42993, 2))
             {
+                m_caster->RemoveAurasDueToSpell(42993);
                 m_caster->CastSpell(m_caster, 42994, true);
             }
             else if(m_caster->HasAura(42992, 2))
             {
+                m_caster->RemoveAurasDueToSpell(42992);
                 m_caster->CastSpell(m_caster, 42993, true);
             }
             else if(m_caster->HasAura(43310, 2))
             {
+                m_caster->RemoveAurasDueToSpell(43310);
                 m_caster->CastSpell(m_caster, 42992, true);
             }
-            break;
-        }
-        case 43755:
-        {
-
             break;
         }
         case 51508:
         {
             m_caster->HandleEmoteCommand(EMOTE_STATE_DANCE);
+            break;
+        }
+        case 42436:
+        {
+            switch(unitTarget->GetEntry())
+            {
+            case 24108:
+                //((Player*)m_caster)->CastedCreatureOrGO(unitTarget->GetEntry(), unitTarget->GetGUID(), 0);
+                m_caster->CastSpell(m_caster, 47173, true);
+                break;
+            case 23709:
+                m_caster->CastSpell(m_caster, 47171, true);
+                m_caster->Kill(unitTarget, false);
+                break;
+            default:
+                break;
+            }
             break;
         }
     }
@@ -7526,7 +7566,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
                 name_id = 183510;
     }
 
-    GameObjectInfo const* goinfo = objmgr.GetGameObjectInfo(name_id);
+    GameObjectInfo const* goinfo = ObjectMgr::GetGameObjectInfo(name_id);
 
     if (!goinfo)
     {

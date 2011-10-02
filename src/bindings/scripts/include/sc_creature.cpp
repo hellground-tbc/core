@@ -312,8 +312,8 @@ void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool trigger
 
 void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, bool visualTarget)
 {
-    /*if (!victim)
-        return;*/
+    if(m_creature->isCrowdControlled())
+        return;
 
     SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, visualTarget);
 
@@ -322,6 +322,9 @@ void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, bo
 
 void ScriptedAI::AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered, bool visualTarget)
 {
+    if(m_creature->isCrowdControlled())
+        return;
+
     SpellToCast temp(x, y, z, spellId, triggered, 0, visualTarget);
 
     spellList.push_back(temp);
@@ -329,8 +332,8 @@ void ScriptedAI::AddSpellToCast(float x, float y, float z, uint32 spellId, bool 
 
 void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered, bool visualTarget)
 {
-    /*if (!victim)
-        return;*/
+    if(m_creature->isCrowdControlled())
+        return;
 
     SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, visualTarget);
 
@@ -339,6 +342,9 @@ void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int3
 
 void ScriptedAI::AddSpellToCast(uint32 spellId, bool self, bool triggered)
 {
+    if(m_creature->isCrowdControlled())
+        return;
+
     SpellToCast temp(self ? m_creature->GetGUID() : NULL, spellId, triggered, 0, false);
 
     spellList.push_back(temp);
@@ -346,6 +352,9 @@ void ScriptedAI::AddSpellToCast(uint32 spellId, bool self, bool triggered)
 
 void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, bool self, int32 scriptTextEntry, bool triggered)
 {
+    if(m_creature->isCrowdControlled())
+        return;
+
     SpellToCast temp(self ? m_creature->GetGUID() : NULL, spellId, triggered, scriptTextEntry, false);
 
     spellList.push_back(temp);
@@ -353,8 +362,8 @@ void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, bool self, int32 s
 
 void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell interruptCurrent, bool triggered, bool visualTarget)
 {
-    /*if (!victim)
-        return;*/
+    if(m_creature->isCrowdControlled())
+        return;
 
     switch (interruptCurrent)
     {
@@ -378,8 +387,8 @@ void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell int
 
 void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered, bool visualTarget)
 {
-    /*if (!victim)
-        return;*/
+    if(m_creature->isCrowdControlled())
+        return;
 
     switch(interruptCurrent)
     {
@@ -406,6 +415,9 @@ void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int3
 
 void ScriptedAI::ForceSpellCast(uint32 spellId, bool self, interruptSpell interruptCurrent, bool triggered)
 {
+    if(m_creature->isCrowdControlled())
+        return;
+
     switch(interruptCurrent)
     {
         case INTERRUPT_AND_CAST:
@@ -425,6 +437,9 @@ void ScriptedAI::ForceSpellCast(uint32 spellId, bool self, interruptSpell interr
 
 void ScriptedAI::ForceSpellCastWithScriptText(uint32 spellId, bool self, int32 scriptTextEntry, interruptSpell interruptCurrent, bool triggered)
 {
+    if(m_creature->isCrowdControlled())
+        return;
+
     switch(interruptCurrent)
     {
         case INTERRUPT_AND_CAST:

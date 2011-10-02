@@ -2326,7 +2326,7 @@ CreatureAI* GetAI_npc_Akama(Creature *_Creature)
 {
     return new npc_AkamaAI(_Creature);
 }
-bool ChooseReward_npc_Akama(Player *player, Creature *_Creature, const Quest *_Quest, uint32 slot)
+bool ChooseReward_npc_Akama(Player *player, Creature *_Creature, const Quest *_Quest)
 {
     bool EventStarted = ((npc_AkamaAI*)_Creature->AI())->EventStarted;
     bool PreludeEventStarted = ((npc_AkamaAI*)_Creature->AI())->PreludeEventStarted;
@@ -3561,7 +3561,7 @@ bool GossipSelect_npc_thane_yoregar(Player *player, Creature *_Creature, uint32 
     return true;
 }
 
-bool GOHello_go_forged_illidari_bane(Player *pPlayer, GameObject *pGo)
+bool GOUse_go_forged_illidari_bane(Player *pPlayer, GameObject *pGo)
 {
     ItemPosCountVec dest;
     uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30876, 1);
@@ -3633,7 +3633,7 @@ void AddSC_shadowmoon_valley()
 
     newscript = new Script;
     newscript->Name = "npc_karynaku";
-    newscript->pQuestAccept = &QuestAccept_npc_karynaku;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_karynaku;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -3645,13 +3645,13 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name = "npc_overlord_morghor";
     newscript->GetAI = &GetAI_npc_overlord_morghorAI;
-    newscript->pQuestAccept = &QuestAccept_npc_overlord_morghor;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_overlord_morghor;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_earthmender_wilda";
     newscript->GetAI = &GetAI_npc_earthmender_wildaAI;
-    newscript->pQuestAccept = &QuestAccept_npc_earthmender_wilda;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_earthmender_wilda;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -3661,7 +3661,7 @@ void AddSC_shadowmoon_valley()
 
     newscript = new Script;
     newscript->Name = "go_crystal_prison";
-    newscript->pGOQuestAccept = &GOQuestAccept_GO_crystal_prison;
+    newscript->pQuestAcceptGO = &GOQuestAccept_GO_crystal_prison;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -3682,7 +3682,7 @@ void AddSC_shadowmoon_valley()
     newscript = new Script;
     newscript->Name = "npc_Akama";
     newscript->GetAI = &GetAI_npc_Akama;
-    newscript->pChooseReward = &ChooseReward_npc_Akama;
+    newscript->pQuestRewardedNPC = &ChooseReward_npc_Akama;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -3756,6 +3756,6 @@ void AddSC_shadowmoon_valley()
 
     newscript = new Script;
     newscript->Name="go_forged_illidari_bane";
-    newscript->pGOHello = &GOHello_go_forged_illidari_bane;
+    newscript->pGOUse = &GOUse_go_forged_illidari_bane;
     newscript->RegisterSelf();
 }

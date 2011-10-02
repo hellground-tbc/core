@@ -663,7 +663,7 @@ struct TRINITY_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
     }
 };
 
-bool GOHello_go_kael_orb(Player *player, GameObject* _GO)
+bool GOUse_go_kael_orb(Player *player, GameObject* _GO)
 {
     ScriptedInstance* pInst = (ScriptedInstance*)_GO->GetInstanceData();
     if (pInst && player)
@@ -675,7 +675,7 @@ bool GOHello_go_kael_orb(Player *player, GameObject* _GO)
     return true;
 }
 
-bool GOHello_go_movie_orb(Player *player, GameObject* _GO)
+bool GOUse_go_movie_orb(Player *player, GameObject* _GO)
 {
     if (player)
     {
@@ -749,12 +749,12 @@ void AddSC_boss_felblood_kaelthas()
 
     newscript = new Script;
     newscript->Name="go_kael_orb";
-    newscript->pGOHello = &GOHello_go_kael_orb;
+    newscript->pGOUse = &GOUse_go_kael_orb;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_movie_orb";
-    newscript->pGOHello = &GOHello_go_movie_orb;
+    newscript->pGOUse = &GOUse_go_movie_orb;
     newscript->RegisterSelf();
 }
 

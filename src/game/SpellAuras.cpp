@@ -28,6 +28,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "ScriptMgr.h"
 #include "Player.h"
 #include "Unit.h"
 #include "Spell.h"
@@ -2479,6 +2480,16 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(m_target->GetTypeId() == TYPEID_PLAYER)
                     ((Player*)m_target)->m_forcedReactions[960] = REP_FRIENDLY;
                 return;
+            case 43052:
+            {
+                if(GetStackAmount() >= 99)
+                {
+                    caster->CastSpell(m_target, 43332, true);
+                    //SetStackAmount(85);
+                }
+                return;
+            }
+
         }
 
         // Earth Shield
@@ -2992,8 +3003,11 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             m_target->AddPetAura(petSpell);
         else
             m_target->RemovePetAura(petSpell);
-        return;
     }
+
+    // script has to "handle with care", only use where data are not ok to use in the above code.
+    if (m_target->GetTypeId() == TYPEID_UNIT)
+        sScriptMgr.OnAuraDummy(this, apply);
 }
 
 void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
@@ -3046,7 +3060,7 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
 
     if (apply)
     {
-        CreatureInfo const* ci = objmgr.GetCreatureTemplate(m_modifier.m_miscvalue);
+        CreatureInfo const* ci = ObjectMgr::GetCreatureTemplate(m_modifier.m_miscvalue);
         if (!ci)
         {
             sLog.outErrorDb("AuraMounted: `creature_template`='%u' not found in database (only need it modelid)", m_modifier.m_miscvalue);
@@ -3286,6 +3300,12 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                         if (urand(1,100) <= FurorChance)
                             m_target->CastSpell(m_target,17057,true,NULL,this);
                     }
+
+                    if (form == FORM_CAT)
+                    {
+                        if(m_target->HasSpell(5225) && !m_target->GetUInt32Value(PLAYER_TRACK_CREATURES) && !m_target->GetUInt32Value(PLAYER_TRACK_RESOURCES))
+                            m_target->CastSpell(m_target, 5225, true);
+                    }
                     break;
                 }
                 case FORM_BATTLESTANCE:
@@ -3483,7 +3503,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
         }
         else
         {
-            CreatureInfo const * ci = objmgr.GetCreatureTemplate(m_modifier.m_miscvalue);
+            CreatureInfo const * ci = ObjectMgr::GetCreatureTemplate(m_modifier.m_miscvalue);
             if (!ci)
             {
                                                             //pig pink ^_^
@@ -3548,7 +3568,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
             if (!m_target->GetAurasByType(SPELL_AURA_MOUNTED).empty())
             {
                 uint32 cr_id = m_target->GetAurasByType(SPELL_AURA_MOUNTED).front()->GetModifier()->m_miscvalue;
-                if (CreatureInfo const* ci = objmgr.GetCreatureTemplate(cr_id))
+                if (CreatureInfo const* ci = ObjectMgr::GetCreatureTemplate(cr_id))
                 {
                     uint32 team = 0;
                     if (m_target->GetTypeId()==TYPEID_PLAYER)
@@ -6352,7 +6372,7 @@ void Aura::HandleAuraEmpathy(bool apply, bool Real)
     if (m_target->GetTypeId() != TYPEID_UNIT)
         return;
 
-    CreatureInfo const * ci = objmgr.GetCreatureTemplate(m_target->GetEntry());
+    CreatureInfo const * ci = ObjectMgr::GetCreatureTemplate(m_target->GetEntry());
     if (ci && ci->type == CREATURE_TYPE_BEAST)
         m_target->ApplyModUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_SPECIALINFO, apply);
 }
@@ -7466,13 +7486,99 @@ void Aura::PeriodicDummyTick()
 //        // Giddyup!
 //        case 42924: break;
 //        // Ram - Trot
-//        case 42992: break;
-//        // Ram - Canter
-//        case 42993: break;
-//        // Ram - Gallop
-//        case 42994: break;
-//        // Ram Level - Neutral
-//        case 43310: break;
+        case 42992:
+        {
+            if(m_target->HasAura(43052, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+            }
+
+            if(m_target->HasAura(42924, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(42924, 0);
+            }
+            else
+            {
+                m_target->RemoveAurasDueToSpell(spell->Id);
+                m_target->CastSpell(m_target, 43310, true);
+            }
+
+            if((m_maxduration - m_duration) >= 8000
+                && (((Player*)m_target)->GetQuestStatus(11318) == QUEST_STATUS_INCOMPLETE || ((Player*)m_target)->GetQuestStatus(11409) == QUEST_STATUS_INCOMPLETE))
+            {
+                m_target->CastSpell(m_target, 43345, true);
+            }
+
+            break;
+        }
+        case 42993:
+        {
+            m_target->CastSpell(m_target, 43052, true);
+
+            if(m_target->HasAura(42924, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(42924, 0);
+            }
+            else
+            {
+                m_target->RemoveAurasDueToSpell(spell->Id);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42992, true);
+            }
+
+            if((m_maxduration - m_duration) >= 8000
+                && (((Player*)m_target)->GetQuestStatus(11318) == QUEST_STATUS_INCOMPLETE || ((Player*)m_target)->GetQuestStatus(11409) == QUEST_STATUS_INCOMPLETE))
+            {
+                m_target->CastSpell(m_target, 43346, true);
+            }
+
+            break;
+        }
+        case 42994:
+        {
+            m_target->CastSpell(m_target, 43052, true);
+            m_target->CastSpell(m_target, 43052, true);
+            m_target->CastSpell(m_target, 43052, true);
+            m_target->CastSpell(m_target, 43052, true);
+            m_target->CastSpell(m_target, 43052, true);
+
+            if(m_target->HasAura(42924, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(42924, 0);
+                m_target->RemoveSingleAuraFromStack(42924, 0);
+            }
+            else
+            {
+                m_target->RemoveAurasDueToSpell(spell->Id);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42924, true);
+                m_target->CastSpell(m_target, 42993, true);
+            }
+
+            if((m_maxduration - m_duration) >= 8000
+                && (((Player*)m_target)->GetQuestStatus(11318) == QUEST_STATUS_INCOMPLETE || ((Player*)m_target)->GetQuestStatus(11409) == QUEST_STATUS_INCOMPLETE))
+            {
+                m_target->CastSpell(m_target, 43347, true);
+            }
+
+            break;
+        }
+        // Ram Level - Neutral
+        case 43310:
+        {
+            if(m_target->HasAura(43052, 0))
+            {
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+                m_target->RemoveSingleAuraFromStack(43052, 0);
+            }
+            break;
+        }
 //        // Headless Horseman - Maniacal Laugh, Maniacal, Delayed 17
 //        case 43884: break;
 //        // Headless Horseman - Maniacal Laugh, Maniacal, other, Delayed 17

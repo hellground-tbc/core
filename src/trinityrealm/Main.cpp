@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,22 +24,32 @@
 #include "Database/DatabaseEnv.h"
 #include "RealmList.h"
 
-#include "Config/ConfigEnv.h"
+#include "Config/Config.h"
 #include "Log.h"
-#include "sockets/ListenSocket.h"
 #include "AuthSocket.h"
 #include "SystemConfig.h"
 #include "revision.h"
 #include "Util.h"
+#include <openssl/opensslv.h>
+#include <openssl/crypto.h>
+
+#include <ace/Get_Opt.h>
+#include <ace/Dev_Poll_Reactor.h>
+#include <ace/TP_Reactor.h>
+#include <ace/ACE.h>
+#include <ace/Acceptor.h>
+#include <ace/SOCK_Acceptor.h>
+
+#include <ace/Get_Opt.h>
 
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
 #ifndef _REALMDCONFVERSION
-# define _REALMDCONFVERSION 2007062001
+# define _REALMDCONFVERSION 2011092901
 #endif
 
 #ifndef _TRINITY_REALM_CONFIG
-# define _TRINITY_REALM_CONFIG  "trinityrealm.conf"
+# define _TRINITY_REALM_CONFIG  "../etc/trinityrealm.conf"
 #endif //_TRINITY_REALM_CONFIG
 
 #ifdef WIN32
@@ -49,24 +57,25 @@
 char serviceName[] = "realmd";
 char serviceLongName[] = "Trinity realm service";
 char serviceDescription[] = "Massive Network Game Object Server";
-/*
- * -1 - not in service mode
- *  0 - stopped
- *  1 - running
- *  2 - paused
- */
-int m_ServiceStatus = -1;
+#else
+#include "PosixDaemon.h"
 #endif
 
-// FG: for WorldTimer::getMSTime()
-#include "Timer.h"
+/*
+ *  0 - not in daemon/service mode
+ *  1 - windows service stopped
+ *  2 - windows service running
+ *  3 - windows service paused
+ *  6 - linux daemon
+ */
 
-bool StartDB(std::string &dbstring);
+extern RunModes runMode = MODE_NORMAL;
+
+bool StartDB();
 void UnhookSignals();
 void HookSignals();
 
-bool stopEvent = false;                                     ///< Setting it to true stops the server
-RealmList m_realmList;                                      ///< Holds the list of realms for this server
+bool stopEvent = false;                                       ///< Holds the list of realms for this server
 
 DatabaseType LoginDatabase;                                 ///< Accessor to the realm server database
 
@@ -74,13 +83,17 @@ DatabaseType LoginDatabase;                                 ///< Accessor to the
 void usage(const char *prog)
 {
     sLog.outString("Usage: \n %s [<options>]\n"
-        "    --version                print version and exit\n\r"
+        "    -v, --version            print version and exist\n\r"
         "    -c config_file           use config_file as configuration file\n\r"
         #ifdef WIN32
         "    Running as service functions:\n\r"
-        "    --service                run as service\n\r"
+        "    -s run                   run as service\n\r"
         "    -s install               install service\n\r"
         "    -s uninstall             uninstall service\n\r"
+        #else
+        "    Running as daemon functions:\n\r"
+        "    -s run                   run as daemon\n\r"
+        "    -s stop                  stop daemon\n\r"
         #endif
         ,prog);
 }
@@ -88,75 +101,101 @@ void usage(const char *prog)
 /// Launch the realm server
 extern int main(int argc, char **argv)
 {
-    ///- Command line parsing to get the configuration file name
+    ///- Command line parsing
     char const* cfg_file = _TRINITY_REALM_CONFIG;
-    int c=1;
-    while( c < argc )
+
+    char const *options = ":c:s:";
+
+    ACE_Get_Opt cmd_opts(argc, argv, options);
+    cmd_opts.long_option("version", 'v');
+
+    char serviceDaemonMode = '\0';
+
+    int option;
+    while ((option = cmd_opts()) != EOF)
     {
-        if( strcmp(argv[c],"-c") == 0)
+        switch (option)
         {
-            if( ++c >= argc )
-            {
-                sLog.outError("Runtime-Error: -c option requires an input argument");
-                usage(argv[0]);
-                return 1;
-            }
-            else
-                cfg_file = argv[c];
-        }
+            case 'c':
+                cfg_file = cmd_opts.opt_arg();
+                break;
+            case 'v':
+                printf("%s\n", _FULLVERSION);
+                return 0;
 
-        if( strcmp(argv[c],"--version") == 0)
-        {
-            printf("%s\n", _FULLVERSION);
-            return 0;
-        }
+            case 's':
+            {
+                const char *mode = cmd_opts.opt_arg();
 
-        #ifdef WIN32
-        ////////////
-        //Services//
-        ////////////
-        if( strcmp(argv[c],"-s") == 0)
-        {
-            if( ++c >= argc )
-            {
-                sLog.outError("Runtime-Error: -s option requires an input argument");
+                if (!strcmp(mode, "run"))
+                    serviceDaemonMode = 'r';
+#ifdef WIN32
+                else if (!strcmp(mode, "install"))
+                    serviceDaemonMode = 'i';
+                else if (!strcmp(mode, "uninstall"))
+                    serviceDaemonMode = 'u';
+#else
+                else if (!strcmp(mode, "stop"))
+                    serviceDaemonMode = 's';
+#endif
+                else
+                {
+                    printf("Runtime-Error: -%c unsupported argument %s", cmd_opts.opt_opt(), mode);
+                    usage(argv[0]);
+                    return 1;
+                }
+                break;
+            }
+            case ':':
+                printf("Runtime-Error: -%c option requires an input argument", cmd_opts.opt_opt());
                 usage(argv[0]);
                 return 1;
-            }
-            if( strcmp(argv[c],"install") == 0)
-            {
-                if (WinServiceInstall())
-                    sLog.outString("Installing service");
-                return 1;
-            }
-            else if( strcmp(argv[c],"uninstall") == 0)
-            {
-                if(WinServiceUninstall())
-                    sLog.outString("Uninstalling service");
-                return 1;
-            }
-            else
-            {
-                sLog.outError("Runtime-Error: unsupported option %s",argv[c]);
+            default:
+                printf("Runtime-Error: bad format of commandline arguments");
                 usage(argv[0]);
                 return 1;
-            }
         }
-        if( strcmp(argv[c],"--service") == 0)
-        {
-            WinServiceRun();
-        }
-        ////
-        #endif
-        ++c;
     }
+
+#ifdef WIN32                                                // windows service command need execute before config read
+    switch (serviceDaemonMode)
+    {
+        case 'i':
+            if (WinServiceInstall())
+                printf("Installing service");
+            return 1;
+        case 'u':
+            if (WinServiceUninstall())
+                printf("Uninstalling service");
+            return 1;
+        case 'r':
+            WinServiceRun();
+            break;
+    }
+#endif
 
     if (!sConfig.SetSource(cfg_file))
     {
-        sLog.outError("Could not find configuration file %s.", cfg_file);
+        printf("Could not find configuration file %s.", cfg_file);
         return 1;
     }
+
+#ifndef WIN32                                               // posix daemon commands need apply after config read
+    switch (serviceDaemonMode)
+    {
+        case 'r':
+            startDaemon("Realm");
+            break;
+        case 's':
+            stopDaemon();
+            break;
+    }
+#endif
+
     sLog.Initialize();
+
+    sLog.outString( "%s (realm-daemon)", _FULLVERSION );
+    sLog.outString( "<Ctrl-C> to stop.\n" );
     sLog.outString("Using configuration file %s.", cfg_file);
 
     ///- Check the version of the configuration file
@@ -173,8 +212,22 @@ extern int main(int argc, char **argv)
         while (pause > clock()) {}
     }
 
-    sLog.outString( "%s (realm-daemon)", _FULLVERSION );
-    sLog.outString( "<Ctrl-C> to stop.\n" );
+    sLog.outDetail("%s (Library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
+    if (SSLeay() < 0x009080bfL )
+    {
+        sLog.outDetail("WARNING: Outdated version of OpenSSL lib. Logins to server may not work!");
+        sLog.outDetail("WARNING: Minimal required version [OpenSSL 0.9.8k]");
+    }
+
+    sLog.outDetail("Using ACE: %s", ACE_VERSION);
+
+#if defined (ACE_HAS_EVENT_POLL) || defined (ACE_HAS_DEV_POLL)
+    ACE_Reactor::instance(new ACE_Reactor(new ACE_Dev_Poll_Reactor(ACE::max_handles(), 1), 1), true);
+#else
+    ACE_Reactor::instance(new ACE_Reactor(new ACE_TP_Reactor(), true), true);
+#endif
+
+    sLog.outBasic("Max allowed open files is %d", ACE::max_handles());
 
     /// realmd PID file creation
     std::string pidfile = sConfig.GetStringDefault("PidFile", "");
@@ -191,31 +244,37 @@ extern int main(int argc, char **argv)
     }
 
     ///- Initialize the database connection
-    std::string dbstring;
-    if(!StartDB(dbstring))
+    if(!StartDB())
         return 1;
 
     ///- Get the list of realms for the server
-    m_realmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
-    if (m_realmList.size() == 0)
+    sRealmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
+    if (sRealmList.size() == 0)
     {
         sLog.outError("No valid realms specified.");
         return 1;
     }
 
+    // cleanup query
+    // set expired bans to inactive
+    LoginDatabase.BeginTransaction();
+    LoginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+    LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+    LoginDatabase.CommitTransaction();
+
     ///- Launch the listening network socket
-    port_t rmport = sConfig.GetIntDefault( "RealmServerPort", DEFAULT_REALMSERVER_PORT );
+    ACE_Acceptor<AuthSocket, ACE_SOCK_Acceptor> acceptor;
+
+    uint16 rmport = sConfig.GetIntDefault("RealmServerPort", DEFAULT_REALMSERVER_PORT);
     std::string bind_ip = sConfig.GetStringDefault("BindIP", "0.0.0.0");
 
-    SocketHandler h;
-    ListenSocket<AuthSocket> authListenSocket(h);
-    if ( authListenSocket.Bind(bind_ip.c_str(),rmport))
+    ACE_INET_Addr bind_addr(rmport, bind_ip.c_str());
+
+    if (acceptor.open(bind_addr, ACE_Reactor::instance(), ACE_NONBLOCK) == -1)
     {
-        sLog.outError( "Trinity realm can not bind to %s:%d",bind_ip.c_str(), rmport );
+        sLog.outError("Realm daemon can not bind to %s:%d", bind_ip.c_str(), rmport);
         return 1;
     }
-
-    h.Add(&authListenSocket);
 
     ///- Catch termination signals
     HookSignals();
@@ -263,50 +322,38 @@ extern int main(int argc, char **argv)
     }
     #endif
 
+    //server has started up successfully => enable async DB requests
+    LoginDatabase.AllowAsyncTransactions();
+
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / 100000));
     uint32 loopCounter = 0;
-    uint32 last_ping_time = 0;
-    uint32 now = WorldTimer::getMSTime();
-    uint32 last_ipprops_cleanup = 0;
+
+#ifndef WIN32
+    detachDaemon();
+#endif
 
     ///- Wait for termination signal
     while (!stopEvent)
     {
+        // dont move this outside the loop, the reactor will modify it
+        ACE_Time_Value interval(0, 100000);
 
-        h.Select(0, 100000);
-        now = WorldTimer::getMSTime();
+        if (ACE_Reactor::instance()->run_reactor_event_loop(interval) == -1)
+            break;
 
         if( (++loopCounter) == numLoops )
         {
-            // FG: protect against network system overloading
-            // if that happens, force realmd close (autorestarter ftw!)
-
-            if(WorldTimer::getMSTimeDiff(last_ping_time, now) < 10000)
-            {
-                sLog.outError("NETWORK SYSTEM OVERLOAD");
-                raise(SIGSEGV); // force close
-                abort();
-            }
-
-            last_ping_time = now;
             loopCounter = 0;
             sLog.outDetail("Ping MySQL to keep connection alive");
             LoginDatabase.Ping();
         }
-
-        // FG: clear flood protect buffer periodically
-        if(WorldTimer::getMSTimeDiff(last_ipprops_cleanup, now) > 30000) // flush stored IPs every 30 secs
-        {
-            last_ipprops_cleanup = now;
-            uint32 flushed = 0, blocked = 0, stored = 0;
-            CleanupIPPropmap(flushed, blocked, stored);
-            sLog.outDetail("IPProp: Flushed %u total, %u of them blocked, now %u stored", flushed, blocked, stored);
-        }
-
 #ifdef WIN32
-        if (m_ServiceStatus == 0) stopEvent = true;
-        while (m_ServiceStatus == 2) Sleep(1000);
+        if (runMode == MODE_SERVICE_STOPPED)
+            stopEvent = true;
+
+        while (runMode == MODE_SERVICE_PAUSED)
+            Sleep(1000);
 #endif
     }
 
@@ -316,7 +363,7 @@ extern int main(int argc, char **argv)
     ///- Remove signal handling before leaving
     UnhookSignals();
 
-    sLog.outString( "Halting process..." );
+    sLog.outString ("Halting process...");
     return 0;
 }
 
@@ -327,7 +374,7 @@ void OnSignal(int s)
     switch (s)
     {
         case SIGINT:
-        //case SIGTERM:
+        case SIGTERM:
             stopEvent = true;
             break;
         #ifdef _WIN32
@@ -341,9 +388,10 @@ void OnSignal(int s)
 }
 
 /// Initialize connection to the database
-bool StartDB(std::string &dbstring)
+bool StartDB()
 {
-    if(!sConfig.GetString("LoginDatabaseInfo", &dbstring))
+    std::string dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
+    if(dbstring.empty())
     {
         sLog.outError("Database not specified");
         return false;
@@ -380,4 +428,3 @@ void UnhookSignals()
 }
 
 /// @}
-

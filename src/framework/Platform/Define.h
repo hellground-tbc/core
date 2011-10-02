@@ -24,6 +24,8 @@
 #include <sys/types.h>
 
 #include <ace/Basic_Types.h>
+#include <ace/Default_Constants.h>
+#include <ace/OS_NS_dlfcn.h>
 #include <ace/ACE_export.h>
 
 #include "Platform/CompilerDefs.h"
@@ -39,42 +41,26 @@
 #  endif //ACE_BYTE_ORDER
 #endif //TRINITY_ENDIAN
 
+typedef ACE_SHLIB_HANDLE TRINITY_LIBRARY_HANDLE;
+
+#define TRINITY_SCRIPT_NAME "trinityscript"
+#define TRINITY_SCRIPT_SUFFIX ACE_DLL_SUFFIX
+#define TRINITY_SCRIPT_PREFIX ACE_DLL_PREFIX
+#define TRINITY_LOAD_LIBRARY(libname)    ACE_OS::dlopen(libname)
+#define TRINITY_CLOSE_LIBRARY(hlib)      ACE_OS::dlclose(hlib)
+#define TRINITY_GET_PROC_ADDR(hlib,name) ACE_OS::dlsym(hlib,name)
+
 #if PLATFORM == PLATFORM_WINDOWS
 #  define TRINITY_EXPORT __declspec(dllexport)
-#  define TRINITY_LIBRARY_HANDLE HMODULE
-#  define TRINITY_LOAD_LIBRARY(a) LoadLibrary(a)
-#  define TRINITY_CLOSE_LIBRARY FreeLibrary
-#  define TRINITY_GET_PROC_ADDR GetProcAddress
 #  define TRINITY_IMPORT __cdecl
-#  define TRINITY_SCRIPT_EXT ".dll"
-#  define TRINITY_SCRIPT_NAME "TrinityScript"
 #  define TRINITY_PATH_MAX MAX_PATH
 #else //PLATFORM != PLATFORM_WINDOWS
-#  define TRINITY_LIBRARY_HANDLE void*
 #  define TRINITY_EXPORT export
-#  define TRINITY_LOAD_LIBRARY(a) dlopen(a,RTLD_NOW)
-#  define TRINITY_CLOSE_LIBRARY dlclose
-#  define TRINITY_GET_PROC_ADDR dlsym
 #  if defined(__APPLE_CC__) && defined(BIG_ENDIAN)
 #    define TRINITY_IMPORT __attribute__ ((longcall))
 #  else
 #    define TRINITY_IMPORT __attribute__ ((cdecl))
 #  endif //__APPLE_CC__ && BIG_ENDIAN
-#  if defined(__APPLE_CC__)
-#    define TRINITY_SCRIPT_EXT ".dylib"
-#    if defined(DO_SCRIPTS)
-#      define TRINITY_SCRIPT_NAME "../lib/libtrinityscript"
-#    else
-#      define TRINITY_SCRIPT_NAME "../lib/libtrinityinterface"
-#    endif // DO_SCRIPTS
-#  else
-#    define TRINITY_SCRIPT_EXT ".so"
-#    if defined(DO_SCRIPTS)
-#      define TRINITY_SCRIPT_NAME "libtrinityscript"
-#    else
-#      define TRINITY_SCRIPT_NAME "libtrinityinterface"
-#    endif // DO_SCRIPTS
-#  endif //__APPLE_CC__
 #  define TRINITY_PATH_MAX PATH_MAX
 #endif //PLATFORM
 

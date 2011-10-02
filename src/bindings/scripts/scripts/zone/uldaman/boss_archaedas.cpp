@@ -302,7 +302,7 @@ uint64 altarOfArchaedasCount[5];
 int32 altarOfArchaedasCounter=0;
 
 
-bool GOHello_go_altar_of_archaedas(Player *player, GameObject* go)
+bool GOUse_go_altar_of_archaedas(Player *player, GameObject* go)
 {
     bool alreadyUsed;
     // avoid crash
@@ -421,7 +421,7 @@ EndScriptData */
 static uint64 altarOfTheKeeperCount[5];
 static uint32 altarOfTheKeeperCounter=0;
 
-bool GOHello_go_altar_of_the_keepers(Player *player, GameObject* go)
+bool GOUse_go_altar_of_the_keepers(Player *player, GameObject* go)
 {
     ScriptedInstance* pInstance = (player->GetInstanceData());
     if (!pInstance) return true;
@@ -479,7 +479,7 @@ void AddSC_boss_archaedas()
 
     newscript = new Script;
     newscript->Name="go_altar_of_archaedas";
-    newscript->pGOHello = &GOHello_go_altar_of_archaedas;
+    newscript->pGOUse = &GOUse_go_altar_of_archaedas;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -489,7 +489,7 @@ void AddSC_boss_archaedas()
 
     newscript = new Script;
     newscript->Name="go_altar_of_the_keepers";
-    newscript->pGOHello = &GOHello_go_altar_of_the_keepers;
+    newscript->pGOUse = &GOUse_go_altar_of_the_keepers;
     newscript->RegisterSelf();
 
     newscript = new Script;

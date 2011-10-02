@@ -271,12 +271,12 @@ void AddSC_darkshore()
     newscript = new Script;
     newscript->Name="npc_prospector_remtravel";
     newscript->GetAI = &GetAI_npc_prospector_remtravel;
-    newscript->pQuestAccept = &QuestAccept_npc_prospector_remtravel;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_prospector_remtravel;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="npc_therylune";
     newscript->GetAI = &GetAI_npc_therylune;
-    newscript->pQuestAccept = &QuestAccept_npc_therylune;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_therylune;
     newscript->RegisterSelf();
 }

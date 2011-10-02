@@ -246,7 +246,7 @@ InstanceData* GetInstanceData_instance_mechanar(Map* map)
     return new instance_mechanar(map);
 }
 
-bool GOHello_go_cache_of_the_legion(Player *player, GameObject* _GO)
+bool GOUse_go_cache_of_the_legion(Player *player, GameObject* _GO)
 {
     Map* m = player->GetMap();
     if (!m->IsHeroic())
@@ -294,6 +294,6 @@ void AddSC_instance_mechanar()
 
     newscript = new Script;
     newscript->Name = "go_cache_of_the_legion";
-    newscript->pGOHello = &GOHello_go_cache_of_the_legion;
+    newscript->pGOUse = &GOUse_go_cache_of_the_legion;
     newscript->RegisterSelf();
 }

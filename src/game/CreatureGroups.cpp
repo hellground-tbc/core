@@ -96,7 +96,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     }
 
     uint32 total_records = result->GetRowCount();
-    barGoLink bar(total_records);
+    BarGoLink bar(total_records);
     Field *fields;
 
     FormationInfo *group_member;

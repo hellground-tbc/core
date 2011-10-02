@@ -273,19 +273,6 @@ namespace Trinity
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-    class ObjectTypeIdCheck
-    {
-        public:
-            ObjectTypeIdCheck(TypeID typeId, bool equals) : _typeId(typeId), _equals(equals) {}
-            bool operator()(WorldObject* object)
-            {
-                return (object->GetTypeId() == _typeId) == _equals;
-            }
-        private:
-            TypeID _typeId;
-            bool _equals;
-    };
-
     // Gameobject searchers
 
     template<class Check>
@@ -978,7 +965,7 @@ namespace Trinity
         bool operator()(Unit* u)
         {
             if (u->isAlive() && u->isInCombat() && !i_obj->IsHostileTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                (u->isFeared() || u->isCharmed() || u->isFrozen() || u->hasUnitState(UNIT_STAT_STUNNED) || u->hasUnitState(UNIT_STAT_CONFUSED)))
+                u->isCrowdControlled())
             {
                 return true;
             }
@@ -1081,6 +1068,34 @@ namespace Trinity
     private:
         Unit const* i_obj;
         float i_range;
+    };
+
+    class ObjectTypeIdCheck
+    {
+        public:
+            ObjectTypeIdCheck(TypeID typeId, bool equals) : _typeId(typeId), _equals(equals) {}
+            bool operator()(WorldObject* object)
+            {
+                return (object->GetTypeId() == _typeId) == _equals;
+            }
+        private:
+            TypeID _typeId;
+            bool _equals;
+    };
+
+    class UnitAuraCheck
+    {
+        public:
+            UnitAuraCheck(bool present, uint32 spellId, uint32 effectIdx = 0) : _present(present), _spellId(spellId), _effectIdx(effectIdx) {}
+            bool operator()(Unit* unit)
+            {
+                return unit->HasAura(_spellId, _effectIdx) == _present;
+            }
+
+        private:
+            bool _present;
+            uint32 _spellId;
+            uint32 _effectIdx;
     };
 }
 

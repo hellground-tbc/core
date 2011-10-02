@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,52 +8,46 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "Common.h"
 #include <Policies/Singleton.h>
 #include "Platform/Define.h"
 
-class DOTCONFDocument;
+class ACE_Configuration_Heap;
 
 class TRINITY_DLL_SPEC Config
 {
     public:
+
         Config();
         ~Config();
 
-        bool SetSource(const char *file, bool ignorecase = true);
+        bool SetSource(const char *file);
         bool Reload();
 
-        bool GetString(const char* name, std::string *value);
-        bool GetString(const char* name, char const **value);
         std::string GetStringDefault(const char* name, const char* def);
-
-        bool GetBool(const char* name, bool *value);
         bool GetBoolDefault(const char* name, const bool def = false);
-
-        bool GetInt(const char* name, int *value);
-        int GetIntDefault(const char* name, const int def);
-
-        bool GetFloat(const char* name, float *value);
+        int32 GetIntDefault(const char* name, const int32 def);
         float GetFloatDefault(const char* name, const float def);
 
         std::string GetFilename() const { return mFilename; }
+
     private:
+
         std::string mFilename;
-        bool mIgnoreCase;
-        DOTCONFDocument *mConf;
+        ACE_Configuration_Heap *mConf;
 };
 
 #define sConfig Trinity::Singleton<Config>::Instance()
 
 #endif
-

@@ -182,7 +182,7 @@ bool GossipSelect_npc_lore_keeper_of_norgannon(Player *player, Creature *_Creatu
 ## go_keystone_chamber
 ######*/
 
-bool GOHello_go_keystone_chamber(Player *player, GameObject* go)
+bool GOUse_go_keystone_chamber(Player *player, GameObject* go)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)go->GetInstanceData();
 
@@ -200,7 +200,7 @@ bool GOHello_go_keystone_chamber(Player *player, GameObject* go)
 ## at_map_chamber
 ######*/
 
-bool AT_map_chamber(Player *pPlayer, AreaTriggerEntry *at)
+bool AT_map_chamber(Player *pPlayer, AreaTriggerEntry const* at)
 {
     if (pPlayer && ((Player*)pPlayer)->GetQuestStatus(QUEST_HIDDEN_CHAMBER) == QUEST_STATUS_INCOMPLETE)
         pPlayer->AreaExploredOrEventHappens(QUEST_HIDDEN_CHAMBER);
@@ -227,7 +227,7 @@ void AddSC_uldaman()
     
     newscript = new Script;
     newscript->Name="go_keystone_chamber";
-    newscript->pGOHello = &GOHello_go_keystone_chamber;
+    newscript->pGOUse = &GOUse_go_keystone_chamber;
     newscript->RegisterSelf();
 
     newscript = new Script;

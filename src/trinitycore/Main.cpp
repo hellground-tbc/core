@@ -26,19 +26,21 @@
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
-#include "Config/ConfigEnv.h"
+#include "Config/Config.h"
 #include "ProgressBar.h"
 #include "Log.h"
 #include "Master.h"
 
+#include <ace/Get_Opt.h>
+
 #ifndef _TRINITY_CORE_CONFIG
-# define _TRINITY_CORE_CONFIG  "trinitycore.conf"
+# define _TRINITY_CORE_CONFIG  "../etc/trinitycore.conf"
 #endif //_TRINITY_CORE_CONFIG
 
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
 #ifndef _TRINITY_CORE_CONFVER
-# define _TRINITY_CORE_CONFVER 2009081701
+# define _TRINITY_CORE_CONFVER 2011092901
 #endif //_TRINITY_CORE_CONFVER
 
 #ifdef WIN32
@@ -46,14 +48,19 @@
 char serviceName[] = "Trinityd";
 char serviceLongName[] = "Trinity core service";
 char serviceDescription[] = "Massive Network Game Object Server";
-/*
- * -1 - not in service mode
- *  0 - stopped
- *  1 - running
- *  2 - paused
- */
-int m_ServiceStatus = -1;
+#else
+#include "PosixDaemon.h"
 #endif
+
+/*
+ *  0 - not in daemon/service mode
+ *  1 - windows service stopped
+ *  2 - windows service running
+ *  3 - windows service paused
+ *  6 - linux daemon
+ */
+
+RunModes runMode = MODE_NORMAL;
 
 DatabaseType WorldDatabase;                                 ///< Accessor to the world database
 DatabaseType CharacterDatabase;                             ///< Accessor to the character database
@@ -65,11 +72,11 @@ uint32 realmID;                                             ///< Id of the realm
 void usage(const char *prog)
 {
     sLog.outString("Usage: \n %s [<options>]\n"
-        "    --version                print version and exit\n\r"
+        "    -v, --version            print version and exit\n\r"
         "    -c config_file           use config_file as configuration file\n\r"
         #ifdef WIN32
         "    Running as service functions:\n\r"
-        "    --service                run as service\n\r"
+        "    -s run                run as service\n\r"
         "    -s install               install service\n\r"
         "    -s uninstall             uninstall service\n\r"
         #endif
@@ -79,74 +86,101 @@ void usage(const char *prog)
 /// Launch the Trinity server
 extern int main(int argc, char **argv)
 {
-    ///- Command line parsing to get the configuration file name
+    ///- Command line parsing
     char const* cfg_file = _TRINITY_CORE_CONFIG;
-    int c=1;
-    while( c < argc )
+
+    //sLog.Initialize();
+
+    char const *options = ":a:c:s:";
+
+    ACE_Get_Opt cmd_opts(argc, argv, options);
+    cmd_opts.long_option("version", 'v', ACE_Get_Opt::NO_ARG);
+
+    char serviceDaemonMode = '\0';
+
+    int option;
+    while ((option = cmd_opts()) != EOF)
     {
-        if( strcmp(argv[c],"-c") == 0)
+        switch (option)
         {
-            if( ++c >= argc )
+            case 'c':
+                cfg_file = cmd_opts.opt_arg();
+                break;
+            case 'v':
+                printf("%s\n", _FULLVERSION);
+                return 0;
+            case 's':
             {
-                sLog.outError("Runtime-Error: -c option requires an input argument");
-                usage(argv[0]);
-                return 1;
-            }
-            else
-                cfg_file = argv[c];
-        }
+                const char *mode = cmd_opts.opt_arg();
 
-        if( strcmp(argv[c],"--version") == 0)
-        {
-            printf("%s\n", _FULLVERSION);
-            return 0;
-        }
-
-        #ifdef WIN32
-        ////////////
-        //Services//
-        ////////////
-        if( strcmp(argv[c],"-s") == 0)
-        {
-            if( ++c >= argc )
-            {
-                sLog.outError("Runtime-Error: -s option requires an input argument");
+                if (!strcmp(mode, "run"))
+                    serviceDaemonMode = 'r';
+#ifdef WIN32
+                else if (!strcmp(mode, "install"))
+                    serviceDaemonMode = 'i';
+                else if (!strcmp(mode, "uninstall"))
+                    serviceDaemonMode = 'u';
+#else
+                else if (!strcmp(mode, "stop"))
+                    serviceDaemonMode = 's';
+#endif
+                else
+                {
+                    printf("Runtime-Error: -%c unsupported argument %s", cmd_opts.opt_opt(), mode);
+                    usage(argv[0]);
+                    return 1;
+                }
+                break;
+            }
+            case ':':
+                printf("Runtime-Error: -%c option requires an input argument", cmd_opts.opt_opt());
                 usage(argv[0]);
                 return 1;
-            }
-            if( strcmp(argv[c],"install") == 0)
-            {
-                if (WinServiceInstall())
-                    sLog.outString("Installing service");
-                return 1;
-            }
-            else if( strcmp(argv[c],"uninstall") == 0)
-            {
-                if(WinServiceUninstall())
-                    sLog.outString("Uninstalling service");
-                return 1;
-            }
-            else
-            {
-                sLog.outError("Runtime-Error: unsupported option %s",argv[c]);
+            default:
+                printf("Runtime-Error: bad format of commandline arguments");
                 usage(argv[0]);
                 return 1;
-            }
         }
-        if( strcmp(argv[c],"--service") == 0)
-        {
-            WinServiceRun();
-        }
-        ////
-        #endif
-        ++c;
     }
+
+#ifdef WIN32                                                // windows service command need execute before config read
+    switch (serviceDaemonMode)
+    {
+        case 'i':
+            if (WinServiceInstall())
+                printf("Installing service");
+            return 1;
+        case 'u':
+            if (WinServiceUninstall())
+                printf("Uninstalling service");
+            return 1;
+        case 'r':
+            WinServiceRun();
+            break;
+    }
+#endif
 
     if (!sConfig.SetSource(cfg_file))
     {
-        sLog.outError("Could not find configuration file %s.", cfg_file);
+        printf("Could not find configuration file %s.", cfg_file);
         return 1;
     }
+
+#ifndef WIN32                                               // posix daemon commands need apply after config read
+    switch (serviceDaemonMode)
+    {
+    case 'r':
+        startDaemon("Core");
+        runMode = MODE_DAEMON;
+        break;
+    case 's':
+        stopDaemon();
+        break;
+    }
+#endif
+
+    sLog.Initialize();
+
     sLog.outString("Using configuration file %s.", cfg_file);
 
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
@@ -162,7 +196,7 @@ extern int main(int argc, char **argv)
         while (pause > clock()) {}
     }
 
-    barGoLink::SetOutputState(sConfig.GetBoolDefault("ShowProgressBars", false));
+    BarGoLink::SetOutputState(sConfig.GetBoolDefault("ShowProgressBars", false));
 
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?
@@ -175,4 +209,3 @@ extern int main(int argc, char **argv)
 }
 
 /// @}
-

@@ -963,7 +963,7 @@ void AddSC_nagrand()
     newscript->Name="npc_altruis_the_sufferer";
     newscript->pGossipHello =  &GossipHello_npc_altruis_the_sufferer;
     newscript->pGossipSelect = &GossipSelect_npc_altruis_the_sufferer;
-    newscript->pQuestAccept =  &QuestAccept_npc_altruis_the_sufferer;
+    newscript->pQuestAcceptNPC =  &QuestAccept_npc_altruis_the_sufferer;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -995,12 +995,12 @@ void AddSC_nagrand()
 
     newscript = new Script;
     newscript->Name="go_corki_cage";
-    newscript->pGOHello = &go_corki_cage;
+    newscript->pGOUse = &go_corki_cage;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_nagrand_captive";
     newscript->GetAI = &GetAI_npc_nagrand_captive;
-    newscript->pQuestAccept = &QuestAccept_npc_nagrand_captive;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_nagrand_captive;
     newscript->RegisterSelf();
 }

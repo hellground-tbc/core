@@ -262,7 +262,7 @@ struct TRINITY_DLL_DECL boss_najentusAI : public ScriptedAI
     }
 };
 
-bool GOHello_go_najentus_spine(Player *player, GameObject* _GO)
+bool GOUse_go_najentus_spine(Player *player, GameObject* _GO)
 {
     if(ScriptedInstance* pInstance = (ScriptedInstance*)_GO->GetInstanceData())
         if(Creature* Najentus = Unit::GetCreature(*_GO, pInstance->GetData64(DATA_HIGHWARLORDNAJENTUS)))
@@ -290,7 +290,7 @@ void AddSC_boss_najentus()
 
     newscript = new Script;
     newscript->Name = "go_najentus_spine";
-    newscript->pGOHello = &GOHello_go_najentus_spine;
+    newscript->pGOUse = &GOUse_go_najentus_spine;
     newscript->RegisterSelf();
 }
 

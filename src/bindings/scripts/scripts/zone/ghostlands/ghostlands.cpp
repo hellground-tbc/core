@@ -120,7 +120,7 @@ bool GossipSelect_npc_rathis_tomber(Player *player, Creature *_Creature, uint32 
 ## go_gilded_brazier (Paladin First Trail quest (9678))
 #####*/
 
-bool GOHello_gilded_brazier(Player *player, GameObject* _GO)
+bool GOUse_gilded_brazier(Player *player, GameObject* _GO)
 {
     if (player->GetQuestStatus(9678) == QUEST_STATUS_INCOMPLETE)
     {
@@ -299,13 +299,13 @@ void AddSC_ghostlands()
 
     newscript = new Script;
     newscript->Name = "go_gilded_brazier";
-    newscript->pGOHello = &GOHello_gilded_brazier;
+    newscript->pGOUse = &GOUse_gilded_brazier;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_ranger_lilatha";
     newscript->GetAI = &GetAI_npc_ranger_lilathaAI;
-    newscript->pQuestAccept = &QuestAccept_npc_ranger_lilatha;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_ranger_lilatha;
     newscript->RegisterSelf();
 }
 

@@ -142,7 +142,7 @@ bool GossipSelect_npc_ragged_john(Player *player, Creature *_Creature, uint32 se
 
 #define NPC_SHANI_PROUDTUSK 9136 
 
-bool GOHello_go_proudtuskremains(Player *player, GameObject* _GO)
+bool GOUse_go_proudtuskremains(Player *player, GameObject* _GO)
 {
     if (!GetClosestCreatureWithEntry(_GO, NPC_SHANI_PROUDTUSK, 30.0f))
     {
@@ -234,7 +234,7 @@ void AddSC_burning_steppes()
 
     newscript = new Script;
     newscript->Name = "go_proudtuskremains";
-    newscript->pGOHello = &GOHello_go_proudtuskremains;
+    newscript->pGOUse = &GOUse_go_proudtuskremains;
     newscript->RegisterSelf();
 
     newscript = new Script;

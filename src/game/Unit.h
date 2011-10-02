@@ -37,6 +37,8 @@
 #include "Database/DBCStructure.h"
 #include <list>
 
+#include "WorldPacket.h"
+
 #define WORLD_TRIGGER   12999
 
 enum SpellInterruptFlags
@@ -267,7 +269,6 @@ class DynamicObject;
 class GameObject;
 class Item;
 class Pet;
-class Path;
 class PetAura;
 class UnitAI;
 
@@ -614,10 +615,22 @@ enum MovementFlags
 enum SplineFlags
 {
     SPLINEFLAG_NONE           = 0x00000000,
-    SPLINEFLAG_JUMP           = 0x00000008,
     SPLINEFLAG_WALKMODE       = 0x00000100,
     SPLINEFLAG_FLYING         = 0x00000200,
- };
+    SPLINEFLAG_NO_SPLINE      = 0x00000400,               // former: SPLINEFLAG_LEVITATING
+    SPLINEFLAG_FALLING        = 0x00001000,
+    SPLINEFLAG_UNKNOWN7       = 0x02000000,               // swimming/flying (depends on mob?)
+    SPLINEFLAG_SPLINE         = 0x00002000,               // spline n*(float x,y,z)
+};
+
+enum SplineType
+{
+    SPLINETYPE_NORMAL       = 0,
+    SPLINETYPE_STOP         = 1,
+    SPLINETYPE_FACINGSPOT   = 2,
+    SPLINETYPE_FACINGTARGET = 3,
+    SPLINETYPE_FACINGANGLE  = 4
+};
 
 class MovementInfo
 {
@@ -1215,6 +1228,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
+        bool isCrowdControlled() const { return hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_POSSESSED); }
         bool isFeared()  const { return HasAuraType(SPELL_AURA_MOD_FEAR); }
         bool isInRoots() const { return HasAuraType(SPELL_AURA_MOD_ROOT); }
         bool IsPolymorphed() const;
@@ -1252,8 +1266,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void SendMonsterStop();
         void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
-        //void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint8 type, uint32 MovementFlags, uint32 Time, Player* player = NULL);
-        void SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end);
+
+        template<typename PathElem, typename PathNode>
+        void SendMonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end, SplineFlags flags);
+
         void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
 
         void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
@@ -1782,5 +1798,33 @@ namespace Trinity
     }
 }
 
-#endif
+template<typename Elem, typename Node>
+inline void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint32 end, SplineFlags flags)
+{
+    uint32 traveltime = uint32(path.GetTotalLength(start, end) * 32.0f);
 
+    uint32 pathSize = end - start;
+
+    WorldPacket data(SMSG_MONSTER_MOVE, (GetPackGUID().size()+1+4+4+4+4+1+4+4+4+pathSize*4*3));
+    data << GetPackGUID();
+    data << GetPositionX();
+    data << GetPositionY();
+    data << GetPositionZ();
+    data << uint32(WorldTimer::getMSTime());
+    data << uint8(SPLINETYPE_NORMAL);
+    data << uint32(flags);
+    data << uint32(traveltime);
+    data << uint32(pathSize);
+
+    for (uint32 i = start; i < end; ++i)
+    {
+        data << float(path[i].x);
+        data << float(path[i].y);
+        data << float(path[i].z);
+    }
+
+    SendMessageToSet(&data, true);
+  //  addUnitState(UNIT_STAT_MOVE);
+}
+
+#endif

@@ -815,6 +815,8 @@ enum AttributesCu
     SPELL_ATTR_CU_FAKE_DELAY      = 0x00010000
 };
 
+#define SPELL_FAKE_DELAY 200LL
+
 inline bool IgnoreMagnetTargetAura(SpellEntry const* spellInfo)
 {
     switch (spellInfo->Id)

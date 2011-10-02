@@ -517,7 +517,7 @@ bool QuestAccept_npc_muglash(Player* pPlayer, Creature* pCreature, const Quest* 
     return true;
 }
 
-bool GOHello_go_naga_brazier(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_naga_brazier(Player* pPlayer, GameObject* pGo)
 {
     if (Creature* pCreature = GetClosestCreatureWithEntry(pGo, NPC_MUGLASH, INTERACTION_DISTANCE*2))
     {
@@ -640,24 +640,24 @@ void AddSC_ashenvale()
     newscript = new Script;
     newscript->Name = "npc_torek";
     newscript->GetAI = &GetAI_npc_torek;
-    newscript->pQuestAccept = &QuestAccept_npc_torek;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_torek;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_ruul_snowhoof";
     newscript->GetAI = &GetAI_npc_ruul_snowhoofAI;
-    newscript->pQuestAccept = &QuestAccept_npc_ruul_snowhoof;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_ruul_snowhoof;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_muglash";
     newscript->GetAI = &GetAI_npc_muglash;
-    newscript->pQuestAccept = &QuestAccept_npc_muglash;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_muglash;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_naga_brazier";
-    newscript->pGOHello = &GOHello_go_naga_brazier;
+    newscript->pGOUse = &GOUse_go_naga_brazier;
     newscript->RegisterSelf();
 
     newscript = new Script;

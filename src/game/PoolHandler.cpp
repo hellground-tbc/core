@@ -418,7 +418,7 @@ void PoolHandler::LoadFromDB()
 
     uint32 count = 0;
 
-    barGoLink bar(result->GetRowCount());
+    BarGoLink bar(result->GetRowCount());
     do
     {
         ++count;
@@ -449,7 +449,7 @@ void PoolHandler::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -458,7 +458,7 @@ void PoolHandler::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -511,7 +511,7 @@ void PoolHandler::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -520,7 +520,7 @@ void PoolHandler::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -537,7 +537,7 @@ void PoolHandler::LoadFromDB()
                 sLog.outErrorDb("`pool_gameobject` has a non existing gameobject spawn (GUID: %u) defined for pool id (%u), skipped.", guid, pool_id);
                 continue;
             }
-            GameObjectInfo const* goinfo = objmgr.GetGameObjectInfo(data->id);
+            GameObjectInfo const* goinfo = ObjectMgr::GetGameObjectInfo(data->id);
             if (goinfo->type != GAMEOBJECT_TYPE_CHEST &&
                 goinfo->type != GAMEOBJECT_TYPE_GOOBER &&
                 goinfo->type != GAMEOBJECT_TYPE_FISHINGHOLE)
@@ -581,7 +581,7 @@ void PoolHandler::LoadFromDB()
     count = 0;
     if (!result)
     {
-        barGoLink bar2(1);
+        BarGoLink bar2(1);
         bar2.step();
 
         sLog.outString();
@@ -590,7 +590,7 @@ void PoolHandler::LoadFromDB()
     else
     {
 
-        barGoLink bar2(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();

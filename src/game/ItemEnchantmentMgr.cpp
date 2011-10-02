@@ -59,7 +59,7 @@ void LoadRandomEnchantmentsTable()
 
     if (result)
     {
-        barGoLink bar(result->GetRowCount());
+        BarGoLink bar(result->GetRowCount());
 
         do
         {
@@ -124,7 +124,7 @@ uint32 GetItemEnchantMod(uint32 entry)
 
 uint32 GenerateEnchSuffixFactor(uint32 item_id)
 {
-    ItemPrototype const *itemProto = objmgr.GetItemPrototype(item_id);
+    ItemPrototype const *itemProto = ObjectMgr::GetItemPrototype(item_id);
 
     if (!itemProto)
         return 0;

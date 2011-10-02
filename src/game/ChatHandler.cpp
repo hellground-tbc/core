@@ -32,7 +32,7 @@
 #include "Guild.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
-#include "ScriptCalls.h"
+#include "ScriptMgr.h"
 #include "Player.h"
 #include "SpellAuras.h"
 #include "Language.h"
@@ -595,8 +595,8 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
         GetPlayer()->SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
 
         //Send scripted event call
-        if (pCreature && Script)
-            Script->ReceiveEmote(GetPlayer(),pCreature,text_emote);
+        if (pCreature)
+            sScriptMgr.OnReceiveEmote(GetPlayer(),pCreature,text_emote);
     }
 }
 

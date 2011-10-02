@@ -132,6 +132,7 @@ class TRINITY_DLL_SPEC Object
         }
 
         const uint64& GetGUID() const { return GetUInt64Value(0); }
+        ObjectGuid const& GetObjectGuid() const { return GetGuidValue(OBJECT_FIELD_GUID); }
         uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(0)); }
         uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(0)); }
         uint32 GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(0)); }
@@ -188,6 +189,8 @@ class TRINITY_DLL_SPEC Object
             ASSERT(offset < 2);
             return *(((uint16*)&m_uint32Values[ index ])+offset);
         }
+
+        ObjectGuid const& GetGuidValue( uint16 index ) const { return *reinterpret_cast<ObjectGuid const*>(&GetUInt64Value(index)); }
 
         void SetInt32Value( uint16 index,        int32  value);
         void SetUInt32Value(uint16 index,       uint32  value);
@@ -346,23 +349,23 @@ class TRINITY_DLL_SPEC Object
 
 struct WorldObjectChangeAccumulator;
 
-class WorldUpdateCounter 
+class WorldUpdateCounter
 {
-    public: 
-        WorldUpdateCounter() : m_tmStart(0) {} 
+    public:
+        WorldUpdateCounter() : m_tmStart(0) {}
 
-        time_t timeElapsed() 
-        { 
-            if (!m_tmStart) 
-                m_tmStart = WorldTimer::tickPrevTime(); 
+        time_t timeElapsed()
+        {
+            if (!m_tmStart)
+                m_tmStart = WorldTimer::tickPrevTime();
 
-            return WorldTimer::getMSTimeDiff(m_tmStart, WorldTimer::tickTime()); 
-        } 
+            return WorldTimer::getMSTimeDiff(m_tmStart, WorldTimer::tickTime());
+        }
 
-        void Reset() { m_tmStart = WorldTimer::tickTime(); } 
+        void Reset() { m_tmStart = WorldTimer::tickTime(); }
 
-    private: 
-       uint32 m_tmStart; 
+    private:
+       uint32 m_tmStart;
 };
 
 class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
@@ -370,28 +373,28 @@ class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
     friend struct WorldObjectChangeAccumulator;
 
     public:
-        class UpdateHelper 
+        class UpdateHelper
         {
-            public: 
-                explicit UpdateHelper(WorldObject * obj) : m_obj(obj) {} 
-                ~UpdateHelper() {} 
+            public:
+                explicit UpdateHelper(WorldObject * obj) : m_obj(obj) {}
+                ~UpdateHelper() {}
 
-                void Update(uint32 time_diff) 
-                { 
-                    m_obj->Update(m_obj->m_updateTracker.timeElapsed(), time_diff); 
-                    m_obj->m_updateTracker.Reset(); 
-                } 
+                void Update(uint32 time_diff)
+                {
+                    m_obj->Update(m_obj->m_updateTracker.timeElapsed(), time_diff);
+                    m_obj->m_updateTracker.Reset();
+                }
 
-            private: 
-                UpdateHelper(const UpdateHelper&); 
-                UpdateHelper& operator=(const UpdateHelper&); 
+            private:
+                UpdateHelper(const UpdateHelper&);
+                UpdateHelper& operator=(const UpdateHelper&);
 
                 WorldObject * const m_obj;
         };
 
         virtual ~WorldObject () {}
 
-        virtual void Update(uint32 /*update_diff*/, uint32 /*time_diff*/) {} 
+        virtual void Update(uint32 /*update_diff*/, uint32 /*time_diff*/) {}
 
         void _Create(uint32 guidlow, HighGuid guidhigh, uint32 mapid);
 
@@ -621,7 +624,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
         uint16 m_executed_notifies;
 
         bool mSemaphoreTeleport;
-        WorldUpdateCounter m_updateTracker; 
+        WorldUpdateCounter m_updateTracker;
 };
 
 #endif

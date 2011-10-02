@@ -62,20 +62,21 @@ enum Color
 
 enum logFiles
 {
-    LOG_DEFAULT   = 0,
-    LOG_IRC       = 1,
-    LOG_GM        = 2,
-    LOG_CHAR      = 3,
-    LOG_DB_ERR    = 4,
-    LOG_ARENA     = 5,
-    LOG_CHEAT     = 6,
-    LOG_AC        = 7,
-    LOG_SPECIAL   = 8,
-    LOG_MAIL      = 9,
-    LOG_GUILD_ANN = 10,
-    LOG_BOSS      = 11,
-    LOG_WARDEN    = 12,
-    LOG_AUCTION   = 13,
+    LOG_DEFAULT     = 0,
+    LOG_IRC         = 1,
+    LOG_GM          = 2,
+    LOG_CHAR        = 3,
+    LOG_DB_ERR      = 4,
+    LOG_ARENA       = 5,
+    LOG_CHEAT       = 6,
+    LOG_AC          = 7,
+    LOG_SPECIAL     = 8,
+    LOG_MAIL        = 9,
+    LOG_GUILD_ANN   = 10,
+    LOG_BOSS        = 11,
+    LOG_WARDEN      = 12,
+    LOG_AUCTION     = 13,
+    LOG_DIFF        = 14,
 
     LOG_MAX_FILES
 };
@@ -133,6 +134,9 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         void outWarden(const char * str, ...)      ATTR_PRINTF(2,3);
         void outAuction(const char * str, ...)     ATTR_PRINTF(2,3);
         void outGann(const char * str, ...)        ATTR_PRINTF(2,3);
+        void outDiff(const char * str, ...)        ATTR_PRINTF(2,3);
+
+        void OutLogToFile(logFiles log, const char * str, ...)    ATTR_PRINTF(3,4);
 
         void SetLogLevel(char * Level);
         void SetLogFileLevel(char * Level);

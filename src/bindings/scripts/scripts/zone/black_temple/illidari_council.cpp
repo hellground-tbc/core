@@ -383,7 +383,12 @@ struct TRINITY_DLL_DECL illidari_council_baseAI : public ScriptedAI
 // Gathios the Shatterer's AI
 struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_baseAI
 {
-    boss_gathios_the_shattererAI(Creature *c) : illidari_council_baseAI(c){}
+    boss_gathios_the_shattererAI(Creature *c) : illidari_council_baseAI(c)
+    {
+        c->GetPosition(wLoc);
+    }
+
+    WorldLocation wLoc;
 
     uint32 m_sealTimer;
     uint32 m_auraTimer;
@@ -428,15 +433,6 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
         return me;
     }
 
-    void ApplyAura(uint32 m_spellId)        //should that be casted on ALL members? or just be applied as area aura within 30 yd??
-    {
-        for (uint8 i = 0; i < 4; ++i)
-        {
-            if (Unit *pCouncil = pInstance->GetCreature(m_council[i]))
-                pCouncil->CastSpell(pCouncil, m_spellId, true, 0, 0, me->GetGUID());
-        }
-    }
-
     void RegenMana()
     {
         uint32 maxMana = me->GetMaxPower(POWER_MANA);
@@ -451,7 +447,14 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
         if (m_checkTimer < diff)
         {
-            DoZoneInCombat();
+            if (m_creature->IsWithinDistInMap(&wLoc, 100.0f))
+                DoZoneInCombat();
+            else
+            {
+                EnterEvadeMode();
+                return;
+            }
+
             m_creature->SetSpeed(MOVE_RUN, 2.0);
             uint32 damage = 0;
             SharedRule(damage);
@@ -509,7 +512,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
         if (m_auraTimer < diff)
         {
-            ApplyAura(RAND(SPELL_DEVOTION_AURA, SPELL_CHROMATIC_AURA));
+            AddSpellToCast(RAND(SPELL_DEVOTION_AURA, SPELL_CHROMATIC_AURA), true);
             m_auraTimer = 60000;
         }
         else
@@ -523,7 +526,12 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 // High Nethermancer Zerevor's AI
 struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_council_baseAI
 {
-    boss_high_nethermancer_zerevorAI(Creature *c) : illidari_council_baseAI(c){}
+    boss_high_nethermancer_zerevorAI(Creature *c) : illidari_council_baseAI(c)
+    {
+        c->GetPosition(wLoc);
+    }
+
+    WorldLocation wLoc;
 
     uint32 m_blizzardTimer;
     uint32 m_flamestrikeTimer;
@@ -572,6 +580,14 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
 
         if (m_checkTimer < diff)
         {
+            if (m_creature->IsWithinDistInMap(&wLoc, 100.0f))
+                DoZoneInCombat();
+            else
+            {
+                EnterEvadeMode();
+                return;
+            }
+
             if (me->GetDistance2d(me->getVictim()) <= 40.0f)
                 me->GetMotionMaster()->MoveIdle();
             else
@@ -582,7 +598,6 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
 
             uint32 damage = 0;
             SharedRule(damage);
-            DoZoneInCombat();
             m_creature->SetSpeed(MOVE_RUN, 2.0);
             m_checkTimer = 1000;
         }
@@ -620,13 +635,8 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         {
             if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
-                if(!m_creature->IsWithinLOSInMap(pTarget))
-                {
-                    m_flamestrikeTimer = 0;
-                    return;
-                }
                 m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, true);
-                AddSpellToCast(pTarget, SPELL_FLAMESTRIKE);
+                ForceSpellCast(pTarget, SPELL_FLAMESTRIKE);
                 m_flamestrikeTimer = urand(9000, 12000);
                 m_immunityTimer = 3000;
             }
@@ -662,7 +672,12 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
 // Lady Malande's AI
 struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 {
-    boss_lady_malandeAI(Creature *c) : illidari_council_baseAI(c){}
+    boss_lady_malandeAI(Creature *c) : illidari_council_baseAI(c)
+    {
+        c->GetPosition(wLoc);
+    }
+
+    WorldLocation wLoc;
 
     uint32 m_smiteTimer;
     uint32 m_cohTimer;
@@ -688,9 +703,16 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
         if (m_checkTimer < diff)
         {
+            if (m_creature->IsWithinDistInMap(&wLoc, 100.0f))
+                DoZoneInCombat();
+            else
+            {
+                EnterEvadeMode();
+                return;
+            }
+
             uint32 damage = 0;
             SharedRule(damage);
-            DoZoneInCombat();
             m_creature->SetSpeed(MOVE_RUN, 2.0);
             m_checkTimer = 1000;
         }
@@ -740,7 +762,12 @@ struct TRINITY_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 // Veras Darkshadow's AI
 struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
 {
-    boss_veras_darkshadowAI(Creature *c) : illidari_council_baseAI(c){}
+    boss_veras_darkshadowAI(Creature *c) : illidari_council_baseAI(c)
+    {
+        c->GetPosition(wLoc);
+    }
+
+    WorldLocation wLoc;
 
     uint32 m_vanishTimer;
 
@@ -769,9 +796,16 @@ struct TRINITY_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
 
         if (m_checkTimer < diff)
         {
+            if (m_creature->IsWithinDistInMap(&wLoc, 100.0f))
+                DoZoneInCombat();
+            else
+            {
+                EnterEvadeMode();
+                return;
+            }
+
             uint32 damage = 0;
             SharedRule(damage);
-            DoZoneInCombat();
             m_creature->SetSpeed(MOVE_RUN, 2.0);
             // move always after stun recovery
             if(!me->hasUnitState(UNIT_STAT_STUNNED) && !me->HasAura(SPELL_VANISH, 1))

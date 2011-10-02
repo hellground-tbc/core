@@ -29,7 +29,7 @@ EndScriptData */
 ## go_barrel_old_hillsbrad
 ######*/
 
-bool GOHello_go_barrel_old_hillsbrad(Player *player, GameObject* _GO)
+bool GOUse_go_barrel_old_hillsbrad(Player *player, GameObject* _GO)
 {
     ScriptedInstance* pInstance = (ScriptedInstance*)_GO->GetInstanceData();
 
@@ -181,7 +181,7 @@ void AddSC_boss_lieutenant_drake()
 
     newscript = new Script;
     newscript->Name="go_barrel_old_hillsbrad";
-    newscript->pGOHello = &GOHello_go_barrel_old_hillsbrad;
+    newscript->pGOUse = &GOUse_go_barrel_old_hillsbrad;
     newscript->RegisterSelf();
 
     newscript = new Script;

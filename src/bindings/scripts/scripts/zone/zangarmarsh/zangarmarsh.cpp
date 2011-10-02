@@ -392,7 +392,7 @@ void AddSC_zangarmarsh()
     newscript = new Script;
     newscript->Name="npc_kayra_longmane";
     newscript->GetAI = &GetAI_npc_kayra_longmaneAI;
-    newscript->pQuestAccept = &QuestAccept_npc_kayra_longmane;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_kayra_longmane;
     newscript->RegisterSelf();
 }
 

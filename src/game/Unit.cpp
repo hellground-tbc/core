@@ -546,14 +546,7 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 M
     data << uint8(0);
     data << MoveFlags;
 
-    if (MoveFlags & SPLINEFLAG_JUMP)
-    {
-        data << time;
-        data << speedZ;
-        data << (uint32)0; // walk time after jump
-    }
-    else
-        data << time;
+    data << time;
 
     data << uint32(1);                                      // 1 single waypoint
     data << NewPosX << NewPosY << NewPosZ;                  // the single waypoint Point B
@@ -562,32 +555,6 @@ void Unit::SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 M
         player->GetSession()->SendPacket(&data);
     else
         SendMessageToSet(&data, true);
-}
-
-void Unit::SendMonsterMoveByPath(Path const& path, uint32 start, uint32 end)
-{
-    uint32 traveltime = uint32(path.GetTotalLength(start, end) * 32);
-
-    uint32 pathSize = end-start;
-
-    WorldPacket data(SMSG_MONSTER_MOVE, (GetPackGUID().size()+4+4+4+4+1+4+4+4+pathSize*4*3));
-    data << GetPackGUID();
-    data << GetPositionX();
-    data << GetPositionY();
-    data << GetPositionZ();
-
-    data << uint32(WorldTimer::getMSTime());
-
-    data << uint8(0);
-    data << uint32(((GetUnitMovementFlags() & MOVEFLAG_LEVITATING) || IsTaxiFlying())? (SPLINEFLAG_FLYING|SPLINEFLAG_WALKMODE) : SPLINEFLAG_WALKMODE);
-    data << uint32(traveltime);
-    data << uint32(pathSize);
-    data.append((char*)path.GetNodes(start), pathSize * 4 * 3);
-
-    //WPAssert(data.size() == 37 + pathnodes.Size() * 4 * 3);
-    SendMessageToSet(&data, true);
-
-    addUnitState(UNIT_STAT_MOVE);
 }
 
 void Unit::resetAttackTimer(WeaponAttackType type)
@@ -4359,7 +4326,6 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     if (this->GetTypeId() == TYPEID_UNIT && this->IsAIEnabled)
         ((Creature *)this)->AI()->OnAuraRemove(Aur, false);
 
-
     // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
     if (Aur->GetId() == 33684)
     {
@@ -6837,23 +6803,13 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 return false;
             break;                                   // continue normal case
         }
-        // Finish movies that add combo
+        // Finish moves that add combo
         case 14189: // Seal Fate (Netherblade set)
         case 14157: // Ruthlessness
         {
-            // Need add combopoint AFTER finish movie (or they dropped in finish phase)
-            if (GetTypeId()==TYPEID_PLAYER && procSpell->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE__FINISHING_MOVE)
-            {
-                // avoid double proc
-                if (pVictim != this && procSpell->Id != 26679)
-                {
-                    m_Events.AddEvent(new CastSpellEvent(*this, pVictim->GetGUID(), trigger_spell_id, true), m_Events.CalculateTime(1));
-                    return true;
-                }
-                else
-                    return false;
-
-            }
+            // avoid double proc, and dont proc from deadly throw
+            if (procSpell->Id == 26679 || pVictim == this)
+                return false;
             break;
         }
         // Hunter: Expose Weakness

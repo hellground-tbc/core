@@ -102,7 +102,7 @@ GameObject* SearchMausoleumGo(Unit *source, uint32 entry, float range)
     return pGo;
 }
 
-bool GOHello_go_mausoleum_door(Player *player, GameObject* _GO)
+bool GOUse_go_mausoleum_door(Player *player, GameObject* _GO)
 {
     if (player->GetQuestStatus(QUEST_ULAG) != QUEST_STATUS_INCOMPLETE)
         return false;
@@ -117,7 +117,7 @@ bool GOHello_go_mausoleum_door(Player *player, GameObject* _GO)
     return false;
 }
 
-bool GOHello_go_mausoleum_trigger(Player *player, GameObject* _GO)
+bool GOUse_go_mausoleum_trigger(Player *player, GameObject* _GO)
 {
     if (player->GetQuestStatus(QUEST_ULAG) != QUEST_STATUS_INCOMPLETE)
         return false;
@@ -139,17 +139,17 @@ void AddSC_tirisfal_glades()
     newscript = new Script;
     newscript->Name="npc_calvin_montague";
     newscript->GetAI = &GetAI_npc_calvin_montague;
-    newscript->pQuestAccept = &QuestAccept_npc_calvin_montague;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_calvin_montague;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_mausoleum_door";
-    newscript->pGOHello = &GOHello_go_mausoleum_door;
+    newscript->pGOUse = &GOUse_go_mausoleum_door;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_mausoleum_trigger";
-    newscript->pGOHello = &GOHello_go_mausoleum_trigger;
+    newscript->pGOUse = &GOUse_go_mausoleum_trigger;
     newscript->RegisterSelf();
 }
 

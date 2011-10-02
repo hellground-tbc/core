@@ -240,7 +240,7 @@ CreatureAI* GetAI_boss_broggokAI(Creature *_Creature)
     return new boss_broggokAI (_Creature);
 }
 
-bool GOHello_go_broggok_lever(Player* pPlayer, GameObject* pGo)
+bool GOUse_go_broggok_lever(Player* pPlayer, GameObject* pGo)
 {
     if(InstanceData *pInstance = pGo->GetInstanceData())
     {
@@ -263,6 +263,6 @@ void AddSC_boss_broggok()
 
     newscript = new Script;
     newscript->Name = "go_broggok_lever";
-    newscript->pGOHello = &GOHello_go_broggok_lever;
+    newscript->pGOUse = &GOUse_go_broggok_lever;
     newscript->RegisterSelf();
 }
