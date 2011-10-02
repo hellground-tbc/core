@@ -66,7 +66,8 @@ ScriptMgr::ScriptMgr() :
     m_pOnReceiveEmote(NULL),
 
     // spell scripts
-    m_pOnSpellSetTargetMap(NULL)
+    m_pOnSpellSetTargetMap(NULL),
+    m_pOnSpellHandleEffect(NULL)
 {
 }
 
@@ -809,6 +810,11 @@ bool ScriptMgr::OnSpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, S
     return m_pOnSpellSetTargetMap != NULL && m_pOnSpellSetTargetMap(pCaster, unitList, targets, pSpell, effectIndex);
 }
 
+bool ScriptMgr::OnSpellHandleEffect(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    return m_pOnSpellHandleEffect != NULL && m_pOnSpellHandleEffect(pCaster, pUnit, pItem, pGameObject, pSpell, effectIndex);
+}
+
 bool ScriptMgr::LoadScriptLibrary(const char* libName)
 {
     UnloadScriptLibrary();
@@ -853,7 +859,8 @@ bool ScriptMgr::LoadScriptLibrary(const char* libName)
     GetScriptHookPtr(m_pOnReceiveEmote,             "ReceiveEmote");
 
     // spell scripts
-    GetScriptHookPtr(m_pOnSpellSetTargetMap,         "SetTargetMap");
+    GetScriptHookPtr(m_pOnSpellSetTargetMap,         "SpellSetTargetMap");
+    GetScriptHookPtr(m_pOnSpellHandleEffect,         "SpellHandleEffect");
 
 
     if (m_pOnInitScriptLibrary)

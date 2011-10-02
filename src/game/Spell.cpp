@@ -3629,24 +3629,11 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
     //we do not need DamageMultiplier here.
     damage = CalculateDamage(i, NULL);
 
-    if (eff<TOTAL_SPELL_EFFECTS)
+    if (eff < TOTAL_SPELL_EFFECTS)
     {
-        //sLog.outDebug("WORLD: Spell FX %d < TOTAL_SPELL_EFFECTS ", eff);
-        (*this.*SpellEffects[eff])(i);
+        if (!sScriptMgr.OnSpellHandleEffect(m_caster, unitTarget, itemTarget, gameObjTarget, m_spellInfo, i))
+            (*this.*SpellEffects[eff])(i);
     }
-    /*
-    else
-    {
-        sLog.outDebug("WORLD: Spell FX %d > TOTAL_SPELL_EFFECTS ", eff);
-        if (m_CastItem)
-            EffectEnchantItemTmp(i);
-        else
-        {
-            sLog.outError("SPELL: unknown effect %u spell id %u\n",
-                eff, m_spellInfo->Id);
-        }
-    }
-    */
 }
 
 void Spell::TriggerSpell()

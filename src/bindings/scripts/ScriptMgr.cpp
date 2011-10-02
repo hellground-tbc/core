@@ -585,7 +585,7 @@ InstanceData* CreateInstanceData(Map* pMap)
 }
 
 TRINITY_DLL_EXPORT
-bool SetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effectIndex)
+bool SpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effectIndex)
 {
     Script* pTempScript = m_scripts[GetSpellIdScriptId(pSpell->Id)];
 
@@ -593,4 +593,15 @@ bool SetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets co
         return false;
 
     return pTempScript->pSpellTargetMap(pCaster, unitList, targets, pSpell, effectIndex);
+}
+
+TRINITY_DLL_EXPORT
+bool SpellHandleEffect(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    Script* pTempScript = m_scripts[GetSpellIdScriptId(pSpell->Id)];
+
+    if (!pTempScript || !pTempScript->pSpellHandleEffect)
+        return false;
+
+    return pTempScript->pSpellHandleEffect(pCaster, pUnit, pItem, pGameObject, pSpell, effectIndex);
 }

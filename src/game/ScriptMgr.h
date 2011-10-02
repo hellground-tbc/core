@@ -124,6 +124,7 @@ class ScriptMgr
 
         // spell scripts
         bool OnSpellSetTargetMap(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const&, SpellEntry const *pSpell, uint32 effectIndex);
+        bool OnSpellHandleEffect(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex);
 
     private:
         void LoadScripts(ScriptMapMap& scripts, const char* tablename);
@@ -180,6 +181,7 @@ class ScriptMgr
 
         // spell scripts
         bool (TRINITY_IMPORT* m_pOnSpellSetTargetMap) (Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const&, SpellEntry const *pSpell, uint32 effectIndex);
+        bool (TRINITY_IMPORT* m_pOnSpellHandleEffect) (uint8 eff, Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex);
 };
 
 #define sScriptMgr Trinity::Singleton<ScriptMgr>::Instance()
