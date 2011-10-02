@@ -24,6 +24,8 @@
 #include "WaypointManager.h"
 #include "World.h"
 
+#include "../shared/Config/Config.h"
+
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
 ScriptMapMap sSpellScripts;
@@ -864,7 +866,7 @@ bool ScriptMgr::LoadScriptLibrary(const char* libName)
 
 
     if (m_pOnInitScriptLibrary)
-        m_pOnInitScriptLibrary();
+        m_pOnInitScriptLibrary(sConfig.GetFilename().c_str());
 
     if (m_pGetScriptLibraryVersion)
         sWorld.SetScriptsVersion(m_pGetScriptLibraryVersion());

@@ -148,7 +148,7 @@ class ScriptMgr
 
         TRINITY_LIBRARY_HANDLE   m_hScriptLib;
 
-        void (TRINITY_IMPORT* m_pOnInitScriptLibrary)();
+        void (TRINITY_IMPORT* m_pOnInitScriptLibrary)(char const*);
         void (TRINITY_IMPORT* m_pOnFreeScriptLibrary)();
         const char* (TRINITY_IMPORT* m_pGetScriptLibraryVersion)();
 
@@ -181,7 +181,7 @@ class ScriptMgr
 
         // spell scripts
         bool (TRINITY_IMPORT* m_pOnSpellSetTargetMap) (Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const&, SpellEntry const *pSpell, uint32 effectIndex);
-        bool (TRINITY_IMPORT* m_pOnSpellHandleEffect) (uint8 eff, Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex);
+        bool (TRINITY_IMPORT* m_pOnSpellHandleEffect) (Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex);
 };
 
 #define sScriptMgr Trinity::Singleton<ScriptMgr>::Instance()

@@ -79,7 +79,7 @@ void FreeScriptLibrary()
 }
 
 TRINITY_DLL_EXPORT
-void InitScriptLibrary()
+void InitScriptLibrary(char const* cfg_file)
 {
     //Trinity Script startup
     outstring_log(" _____     _       _ _         ____            _       _");
@@ -92,7 +92,6 @@ void InitScriptLibrary()
     outstring_log("");
 
     //Get configuration file
-    char const* cfg_file = "trinitycore.conf";
     if (!TScriptConfig.SetSource(cfg_file))
         error_log("TSCR: Unable to open configuration file. Database will be unaccessible. Configuration values will use default.");
     else
