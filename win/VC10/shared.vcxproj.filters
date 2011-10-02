@@ -51,9 +51,6 @@
     <ClCompile Include="..\..\src\shared\Database\dbcfile.cpp">
       <Filter>Database\DataStores</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\shared\Database\DBCfmt.cpp">
-      <Filter>Database\DataStores</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\shared\Database\DBCStores.cpp">
       <Filter>Database\DataStores</Filter>
     </ClCompile>
