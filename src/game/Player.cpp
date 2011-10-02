@@ -6337,14 +6337,14 @@ void Player::UpdateBgTitle()
 {
     uint64 titles = GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES);
 
-    uint32 index = 0; //GetUInt32Value(PLAYER_CHOSEN_TITLE); shouldn't we use that ?
+    uint32 index = GetUInt32Value(PLAYER_CHOSEN_TITLE); //shouldn't we use that ? i don't know, but we can try it
 
-    if (m_team == HORDE && !HasTitle(PLAYER_TITLE_CONQUEROR) && GetReputationRank(729) == REP_EXALTED && GetReputationRank(510) == REP_EXALTED && GetReputationRank(889) == REP_EXALTED)
+    if (m_team == HORDE && (titles & PLAYER_TITLE_CONQUEROR) && GetReputationRank(729) == REP_EXALTED && GetReputationRank(510) == REP_EXALTED && GetReputationRank(889) == REP_EXALTED)
     {
         SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES, titles | PLAYER_TITLE_CONQUEROR);
         SetUInt32Value(PLAYER_CHOSEN_TITLE, index);
     }
-    else if (m_team == ALLIANCE && !HasTitle(PLAYER_TITLE_JUSTICAR) && GetReputationRank(730) == REP_EXALTED && GetReputationRank(509) == REP_EXALTED && GetReputationRank(890) == REP_EXALTED)
+    else if (m_team == ALLIANCE && (titles & PLAYER_TITLE_JUSTICAR) && GetReputationRank(730) == REP_EXALTED && GetReputationRank(509) == REP_EXALTED && GetReputationRank(890) == REP_EXALTED)
     {
         SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES, titles | PLAYER_TITLE_JUSTICAR);
         SetUInt32Value(PLAYER_CHOSEN_TITLE, index);
