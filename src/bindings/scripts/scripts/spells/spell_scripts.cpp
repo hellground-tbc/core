@@ -30,6 +30,48 @@ bool Spell_intimidating_shout_5246(Unit* pCaster, std::list<Unit*> &unitList, Sp
     return true;
 }
 
+// Warrior: Deep Wounds dummyeffect implementation: 12162, 12850, 12868
+bool Spell_deep_wounds(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    // handle only dummy efect
+    if (pSpell->Effect[effectIndex] != SPELL_EFFECT_DUMMY)
+        return false;
+
+    if (!pUnit || pCaster->IsFriendlyTo(pUnit))
+        return true;
+
+    Unit* pTarget = pUnit;
+
+    float damage;
+    if (pCaster->haveOffhandWeapon() && pCaster->getAttackTimer(BASE_ATTACK) > pCaster->getAttackTimer(OFF_ATTACK))
+        damage = (pCaster->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE) + pCaster->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE))/2;
+    else
+        damage = (pCaster->GetFloatValue(UNIT_FIELD_MINDAMAGE) + pCaster->GetFloatValue(UNIT_FIELD_MAXDAMAGE))/2;
+
+    switch (pSpell->Id)
+    {
+        case 12162: damage *= 0.2f; break;
+        case 12850: damage *= 0.4f; break;
+        case 12868: damage *= 0.6f; break;
+        default:
+            // not handled spell assigned
+            return false;
+    };
+
+    int32 deepWoundsDotBasePoints0 = int32(damage / 4);
+
+    if (Aura *deepWounds = pUnit->GetAuraByCasterSpell(12721, pCaster->GetGUID()))
+    {
+        deepWounds->SetAuraDuration(deepWounds->GetAuraMaxDuration());
+        deepWounds->UpdateAuraDuration();
+        return true;
+    }
+
+    pCaster->CastCustomSpell(pTarget, 12721, &deepWoundsDotBasePoints0, NULL, NULL, true, NULL);
+    // we handled our effect, returning true will prevent from processing effect by core :]
+    return true;
+}
+
 void AddSC_spell_scripts()
 {
     Script *newscript;
@@ -37,5 +79,10 @@ void AddSC_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_intimidating_shout";
     newscript->pSpellTargetMap = &Spell_intimidating_shout_5246;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "spell_deep_wounds";
+    newscript->pSpellHandleEffect = &Spell_deep_wounds;
     newscript->RegisterSelf();
 }

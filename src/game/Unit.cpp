@@ -6805,6 +6805,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         }
         // Finish moves that add combo
         case 14189: // Seal Fate (Netherblade set)
+            // prevent proc Seal Fate on eviscerate/deadly throw ;P familyflags are messed for rogue o.O (exception for netherblade 4p bonus
+            if (triggeredByAura->GetId() != 37168 && procSpell->AttributesEx & SPELL_ATTR_EX_REQ_COMBO_POINTS1)
+                return false;
         case 14157: // Ruthlessness
         {
             // avoid double proc, and dont proc from deadly throw

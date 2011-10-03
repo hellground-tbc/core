@@ -33,16 +33,6 @@
 
 #include <ace/Get_Opt.h>
 
-#ifndef _TRINITY_CORE_CONFIG
-# define _TRINITY_CORE_CONFIG  "../etc/trinitycore.conf"
-#endif //_TRINITY_CORE_CONFIG
-
-// Format is YYYYMMDDRR where RR is the change in the conf file
-// for that day.
-#ifndef _TRINITY_CORE_CONFVER
-# define _TRINITY_CORE_CONFVER 2011092901
-#endif //_TRINITY_CORE_CONFVER
-
 #ifdef WIN32
 #include "ServiceWin32.h"
 char serviceName[] = "Trinityd";

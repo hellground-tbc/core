@@ -43,5 +43,26 @@
 #define DEFAULT_WORLDSERVER_PORT 8085                       //8129
 #define DEFAULT_REALMSERVER_PORT 3724
 #define DEFAULT_SOCKET_SELECT_TIME 10000
+
+// The path to config files
+#ifndef SYSCONFDIR
+# define SYSCONFDIR ""
+#endif
+
+#define _TRINITY_CORE_CONFIG  SYSCONFDIR"trinitycore.conf"
+#define _TRINITY_REALM_CONFIG  SYSCONFDIR"trinityrealm.conf"
+
+// Format is YYYYMMDDRR where RR is the change in the conf file
+// for that day.
+#ifndef _TRINITY_CORE_CONFVER
+# define _TRINITY_CORE_CONFVER 2011092901
+#endif //_TRINITY_CORE_CONFVER
+
+// Format is YYYYMMDDRR where RR is the change in the conf file
+// for that day.
+#ifndef _REALMDCONFVERSION
+# define _REALMDCONFVERSION 2011092901
+#endif
+
 #endif
 
