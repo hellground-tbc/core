@@ -556,11 +556,13 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 float *posFog = FogCoords[counter][path];
                 if(Creature *Fog = m_creature->SummonCreature(MOB_FOG_OF_CORRUPTION, posFog[0], posFog[1], posFog[2], 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
                     Fog->CastSpell(Fog, SPELL_FOG_TRIGGER, true);
-                side ? counter-- : counter++;
                 if((side && !counter) || (!side && counter == (path ? (path%2 ? 15 : 24) : 14)))
                     Timer[EVENT_SUMMON_FOG] = 0;
                 else
-                    Timer[EVENT_SUMMON_FOG] = (7000/(path ? (path%2 ? 16 : 25) : 15));  // check this timer
+                {
+                    side ? counter-- : counter++;
+                    Timer[EVENT_SUMMON_FOG] = (6300/(path ? (path%2 ? 16 : 25) : 15));  // check this timer
+                }
                 break;
         }
     }
