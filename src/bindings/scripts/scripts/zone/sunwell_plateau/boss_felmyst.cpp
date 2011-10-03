@@ -349,7 +349,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             case 3:
                 m_creature->SetLevitate(true);
                 m_creature->setHover(true);
-                m_creature->SendMovementFlagUpdate();
                 m_creature->GetMotionMaster()->MovePoint(6, me->GetPositionX()-0.5, me->GetPositionY()-0.5, me->GetPositionZ()+15);
                 IntroTimer = 9000;
                 break;
@@ -386,12 +385,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void MovementInform(uint32 Type, uint32 Id)
     {
-        if(Phase != PHASE_FLIGHT)
+        if(Phase == PHASE_NULL || Phase == PHASE_LANDING)
         {
             switch(Id)  // OOC fly path from right to left side
             {
                 case 10:
-                    if(Phase != PHASE_NULL)
+                    if(Phase == PHASE_LANDING)
                     {
                         Phase = PHASE_NULL;
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -416,7 +415,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             m_creature->SetLevitate(true);
             m_creature->setHover(true);
-            m_creature->SendMovementFlagUpdate();
         }
         else if(Type == POINT_MOTION_TYPE)
         {
