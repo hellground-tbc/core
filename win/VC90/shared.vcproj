@@ -381,6 +381,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared\Database\DBCfmt.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\shared\Database\Field.cpp"
 				>
 			</File>
@@ -454,42 +458,6 @@
 				<File
 					RelativePath="..\..\src\shared\Database\dbcfile.h"
 					>
-				</File>
-				<File
-					RelativePath="..\..\src\shared\Database\DBCfmt.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\shared\Database\DBCStores.cpp"
@@ -626,78 +594,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\shared\Auth\WardenKeyGeneration.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="vmaps"
-			>
-			<File
-				RelativePath="..\..\src\shared\vmap\BIH.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\BIH.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\IVMapManager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\MapTree.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\MapTree.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\ModelInstance.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\ModelInstance.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\TileAssembler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\TileAssembler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\VMapDefinitions.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\VMapFactory.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\VMapFactory.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\VMapManager2.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\VMapManager2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\VMapTools.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\WorldModel.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\shared\vmap\WorldModel.h"
 				>
 			</File>
 		</Filter>

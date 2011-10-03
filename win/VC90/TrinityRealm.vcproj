@@ -424,7 +424,23 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\trinityrealm\BufferedSocket.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\trinityrealm\BufferedSocket.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\trinityrealm\Main.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\trinityrealm\PatchHandler.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\trinityrealm\PatchHandler.h"
 			>
 		</File>
 		<File
