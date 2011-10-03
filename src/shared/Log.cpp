@@ -821,6 +821,7 @@ void Log::outWarden(const char * str, ...)
     if (logFile[LOG_WARDEN])
     {
         va_list ap;
+        outTimestamp(logFile[LOG_WARDEN]);
         va_start(ap, str);
         vfprintf(logFile[LOG_WARDEN], str, ap);
         fprintf(logFile[LOG_WARDEN], "\n");
