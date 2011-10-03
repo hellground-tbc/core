@@ -3646,10 +3646,10 @@ void Aura::HandleChannelDeathItem(bool apply, bool Real)
         if (spellInfo->EffectItemType[m_effIndex] == 0)
             return;
 
-        // Soul Shard only from non-grey units
+        // Soul Shard only from non-grey units and non-totems
         if (spellInfo->EffectItemType[m_effIndex] == 6265 &&
             (victim->getLevel() <= Trinity::XP::GetGrayLevel(caster->getLevel()) ||
-             victim->GetTypeId()==TYPEID_UNIT && !((Player*)caster)->isAllowedToLoot((Creature*)victim)))
+            (victim->GetTypeId()==TYPEID_UNIT && (!((Player*)caster)->isAllowedToLoot((Creature*)victim) || ((Creature*)victim)->isTotem()))))
             return;
 
         ItemPosCountVec dest;
@@ -3862,7 +3862,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                 }
             }
         }
-                                                            
+
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6); // blizz like 2.0.x
         m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH); // blizz like 2.0.x
         m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD); // blizz like 2.0.x
@@ -3885,7 +3885,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         {
             Unit* target = ref->getSource()->getOwner();
             ref = ref->next();
-            
+
             if(!target)
                 continue;
 
@@ -3905,7 +3905,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
             uint32 rand = urand(0,100);
             if(rand <= modHitChance) // hit
-            { 
+            {
                 if (target->hasUnitState(UNIT_STAT_CASTING))
                     for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
                         if (target->m_currentSpells[i] && target->m_currentSpells[i]->m_targets.getUnitTargetGUID() == m_target->GetGUID())
@@ -3913,7 +3913,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
                 m_target->getHostilRefManager().deleteReference(target);
                 if(target->getVictimGUID() == m_target->GetGUID())
-                    target->AttackStop();      
+                    target->AttackStop();
             }
             else // miss
             {
@@ -3929,14 +3929,14 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                 m_target->SendSpellMiss(target, m_spellProto->Id, SPELL_MISS_RESIST);
             }
         }
-        
+
         if(!resisted)
         {
             m_target->ClearInCombat();
             m_target->CombatStop();
         }
 
-        
+
     }
     else
     {
