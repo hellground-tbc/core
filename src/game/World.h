@@ -644,6 +644,8 @@ class World
         uint32 m_updateTimeCount;
         uint32 m_currentTime;
 
+        uint64 m_serverUpdateTimeSum, m_serverUpdateTimeCount;
+
         typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
         WeatherMap m_weathers;
         typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
