@@ -389,6 +389,15 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             switch(Id)  // OOC fly path from right to left side
             {
+                case 0: // on landing after aggroing
+                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                    m_creature->SetLevitate(false);
+                    m_creature->SetWalk(false);
+                    m_creature->SendMovementFlagUpdate();
+                    me->SetSpeed(MOVE_RUN, 2.0, true);
+                    EnterPhase(PHASE_GROUND);
+                    AttackStart(m_creature->getVictim());
+                    break;
                 case 10:
                     if(Phase == PHASE_LANDING)
                     {
@@ -420,15 +429,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             switch(Id)
             {
-                case 0: // on landing after aggroing
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                    m_creature->SetLevitate(false);
-                    m_creature->SetWalk(false);
-                    m_creature->SendMovementFlagUpdate();
-                    me->SetSpeed(MOVE_RUN, 2.0, true);
-                    EnterPhase(PHASE_GROUND);
-                    AttackStart(m_creature->getVictim());
-                    break;
                 case 1: // on starting phase 2
                     Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
                     break;
