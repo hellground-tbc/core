@@ -291,6 +291,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             summon->setActive(true);
             summon->SetLevitate(true);
+            m_creature->SendMovementFlagUpdate();
             summon->GetMotionMaster()->MovePoint(60, 1471, 632, 37);
             KalecgosGUID = summon->GetGUID();
             OutroTimer = 20000;
@@ -348,6 +349,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             case 3:
                 m_creature->SetLevitate(true);
                 m_creature->setHover(true);
+                m_creature->SendMovementFlagUpdate();
                 m_creature->GetMotionMaster()->MovePoint(6, me->GetPositionX()-0.5, me->GetPositionY()-0.5, me->GetPositionZ()+15);
                 IntroTimer = 9000;
                 break;
@@ -384,12 +386,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void MovementInform(uint32 Type, uint32 Id)
     {
-        if(Phase == PHASE_NULL)
+        if(Phase != PHASE_FLIGHT)
         {
             switch(Id)  // OOC fly path from right to left side
             {
                 case 10:
-                    if(Phase != NULL)
+                    if(Phase != PHASE_NULL)
                     {
                         Phase = PHASE_NULL;
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -414,6 +416,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             m_creature->SetLevitate(true);
             m_creature->setHover(true);
+            m_creature->SendMovementFlagUpdate();
         }
         else if(Type == POINT_MOTION_TYPE)
         {
@@ -423,6 +426,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     m_creature->SetLevitate(false);
                     m_creature->SetWalk(false);
+                    m_creature->SendMovementFlagUpdate();
                     me->SetSpeed(MOVE_RUN, 2.0, true);
                     EnterPhase(PHASE_GROUND);
                     AttackStart(m_creature->getVictim());
@@ -467,6 +471,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             m_creature->SetLevitate(true);
             me->setHover(true);
+            m_creature->SendMovementFlagUpdate();
             DoScriptText(YELL_TAKEOFF, m_creature);
             Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
             break;
@@ -532,6 +537,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             me->SetSpeed(MOVE_RUN, 2.0, true);
             m_creature->SetLevitate(false);
             m_creature->SetWalk(false);
+            m_creature->SendMovementFlagUpdate();
             EnterPhase(PHASE_GROUND);
             AttackStart(m_creature->getVictim());
             break;

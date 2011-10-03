@@ -265,6 +265,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 break;
             case 14:
                 me->RemoveAurasDueToSpell(44883);
+                me->RemoveAurasDueToSpell(45661);
                 pMadrigosa->InterruptNonMeleeSpells(false);
                 pMadrigosa->GetMotionMaster()->MoveIdle();
                 DoScriptText(YELL_INTRO_CHARGE, me);
