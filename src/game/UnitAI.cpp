@@ -49,6 +49,10 @@ void UnitAI::DoMeleeAttackIfReady()
     //Make sure our attack is ready and we aren't currently casting before checking distance
     if (me->isAttackReady())
     {
+        // set selection back to attacked victim if not selected (after spell casting)
+        if(me->GetSelection() != me->getVictimGUID())
+            me->SetSelection(me->getVictimGUID());
+
         //If we are within range melee the target
         if (me->IsWithinMeleeRange(me->getVictim()))
         {
