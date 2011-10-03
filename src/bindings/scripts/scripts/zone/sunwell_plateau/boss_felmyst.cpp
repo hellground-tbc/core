@@ -561,7 +561,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 else
                 {
                     side ? counter-- : counter++;
-                    Timer[EVENT_SUMMON_FOG] = (6300/(path ? (path%2 ? 16 : 25) : 15));  // check this timer
+                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 16 : 25) : 15));  // check this timer
                 }
                 break;
         }
