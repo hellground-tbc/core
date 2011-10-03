@@ -291,7 +291,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             summon->setActive(true);
             summon->SetLevitate(true);
-            summon->GetMotionMaster()->MovePoint(0, 1471, 632, 37);
+            summon->GetMotionMaster()->MovePoint(60, 1471, 632, 37);
             KalecgosGUID = summon->GetGUID();
             OutroTimer = 20000;
         }
@@ -354,8 +354,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             case 4:
                 // flying path when OOC
                 uint8 i = urand(0,2);
-                m_creature->GetMotionMaster()->MovePoint(10, FlightMarker[i][1][0], FlightMarker[i][1][1], FlightMarker[i][1][2]);
                 Phase = PHASE_NULL;
+                m_creature->GetMotionMaster()->MovePoint(10, FlightMarker[i][1][0], FlightMarker[i][1][1], FlightMarker[i][1][2]);
                 IntroTimer = 0;
                 break;
         }
@@ -376,7 +376,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 OutroTimer = 10000;
                 break;
             case 1:
-                Kalecgos->GetMotionMaster()->MovePoint(0, 1768, 598, 173);
+                Kalecgos->GetMotionMaster()->MovePoint(50, 1768, 598, 173);
                 OutroTimer = 0;
                 break;
         }
@@ -435,18 +435,30 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             {
                 switch(Id)  // OOC fly path from right to left side
                 {
-                    case 10:    // second right node
+                    case 10:    // first right node
+                        {
                         uint8 i = urand(0,2);
                         m_creature->GetMotionMaster()->MovePoint(11, FlightMarker[i][1][0], FlightMarker[i][1][1], FlightMarker[i][1][2]);
                         break;
-                    case 11:    // first left node
+                        }
+                    case 11:    // second right node
+                        {
                         uint8 i = urand(0,2);
                         m_creature->GetMotionMaster()->MovePoint(12, FlightMarker[i][0][0], FlightMarker[i][0][1], FlightMarker[i][0][2]);
                         break;
-                    case 12:    // second left node
+                        }
+                    case 12:    // first left node
+                        {
                         uint8 i = urand(0,2);
-                        m_creature->GetMotionMaster()->MovePoint(10, FlightMarker[i][0][0], FlightMarker[i][0][1], FlightMarker[i][0][2]);
+                        m_creature->GetMotionMaster()->MovePoint(13, FlightMarker[i][0][0], FlightMarker[i][0][1], FlightMarker[i][0][2]);
                         break;
+                        }
+                    case 13:    // second left node
+                        {
+                        uint8 i = urand(0,2);
+                        m_creature->GetMotionMaster()->MovePoint(10, FlightMarker[i][1][0], FlightMarker[i][1][1], FlightMarker[i][1][2]);
+                        break;
+                        }
                     default:
                         break;
                 }

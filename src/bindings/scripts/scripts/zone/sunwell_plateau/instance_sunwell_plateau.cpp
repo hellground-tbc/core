@@ -61,8 +61,6 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
     uint64 Gate[5];                                         // Rename this to be more specific after door placement is verified.
 
     /*** Misc ***/
-    uint32 SpectralRealmTimer;
-    std::vector<uint64> SpectralRealmList;
     uint32 KalecgosPhase;
 
     void Initialize()
@@ -98,9 +96,6 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         /*** Encounters ***/
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
-
-        /*** Misc ***/
-        SpectralRealmTimer = 5000;
     }
 
     bool IsEncounterInProgress() const
