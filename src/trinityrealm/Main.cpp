@@ -42,16 +42,6 @@
 
 #include <ace/Get_Opt.h>
 
-// Format is YYYYMMDDRR where RR is the change in the conf file
-// for that day.
-#ifndef _REALMDCONFVERSION
-# define _REALMDCONFVERSION 2011092901
-#endif
-
-#ifndef _TRINITY_REALM_CONFIG
-# define _TRINITY_REALM_CONFIG  "../etc/trinityrealm.conf"
-#endif //_TRINITY_REALM_CONFIG
-
 #ifdef WIN32
 #include "ServiceWin32.h"
 char serviceName[] = "realmd";

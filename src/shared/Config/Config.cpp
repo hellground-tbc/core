@@ -69,6 +69,7 @@ bool Config::Reload()
     if (mConf->open() == 0)
     {
         ACE_Ini_ImpExp config_importer(*mConf);
+
         if (config_importer.import_config(mFilename.c_str()) == 0)
             return true;
     }
