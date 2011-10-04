@@ -334,7 +334,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                 me->GetMotionMaster()->MovePoint(0, CENTER_X +5.0f, CENTER_Y, CENTER_Z);
 
-                SetAutocast(SPELL_ILLIDAN_FIREBALL, 3000, false, AUTOCAST_RANDOM, 0, true);
+                SetAutocast(SPELL_ILLIDAN_FIREBALL, 3000, false, CAST_RANDOM, 0, true);
 
                 events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 15000, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_EYE_BLAST, urand(30000, 40000), m_phase);
@@ -347,7 +347,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
                     pMaiev->AI()->DoAction(4); // SET RANGE ATTACK TYPE
 
-                SetAutocast(SPELL_ILLIDAN_SHADOW_BLAST, 3000, false, AUTOCAST_TANK);
+                SetAutocast(SPELL_ILLIDAN_SHADOW_BLAST, 3000, false, CAST_TANK);
                 events.ScheduleEvent(EVENT_ILLIDAN_TRANSFORM_NO1, 0, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_FLAME_BURST, 20000, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_SHADOW_DEMON, 30000, m_phase);
@@ -357,7 +357,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             {
                 b_maievPhase = false;
                 me->AttackStop();
-                ForceSpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, true, YELL_ILLIDAN_INPRISON_RAID);
+                ForceSpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, CAST_SELF, YELL_ILLIDAN_INPRISON_RAID);
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
             }
@@ -540,8 +540,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_THROW_GLAIVE:
                 {
-                    AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, false);
-                    AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, false);
+                    AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, CAST_NULL);
+                    AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, CAST_NULL);
 
                     SetWarglaivesEquipped(false);
 
@@ -1017,7 +1017,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
 
         m_pathId = 0;
 
-        SetAutocast(SPELL_AKAMA_CHAIN_LIGHTNING, 10000, false, AUTOCAST_TANK);
+        SetAutocast(SPELL_AKAMA_CHAIN_LIGHTNING, 10000, false, CAST_TANK);
 
         me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
         me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -1100,7 +1100,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
             {
                 case EVENT_AKAMA_DOOR_CAST_FAIL:
                 {
-                    AddSpellToCastWithScriptText(SPELL_AKAMA_DOOR_CAST_FAIL, false, SAY_AKAMA_DOOR_SPEECH_NO1);
+                    AddSpellToCastWithScriptText(SPELL_AKAMA_DOOR_CAST_FAIL, CAST_NULL, SAY_AKAMA_DOOR_SPEECH_NO1);
                     events.ScheduleEvent(EVENT_AKAMA_TALK_SEQUENCE_NO1, 8500);
                     break;
                 }
@@ -1145,7 +1145,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                             pSpirit->CastSpell((Unit*)NULL, SPELL_DEATHSWORN_DOOR_CHANNEL, false);
                     }
 
-                    AddSpellToCast(SPELL_AKAMA_DOOR_CAST_SUCCESS, false);
+                    AddSpellToCast(SPELL_AKAMA_DOOR_CAST_SUCCESS, CAST_NULL);
                     events.ScheduleEvent(EVENT_AKAMA_DOOR_OPEN, 15000);
                     break;
                 }
@@ -1445,7 +1445,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                         me->SetSelection(pIllidan->GetGUID());
                     }
 
-                    SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, AUTOCAST_TANK);
+                    SetAutocast(SPELL_MAIEV_THROW_DAGGER, 2000, false, CAST_TANK);
                     StartAutocast();
                 }
                 else

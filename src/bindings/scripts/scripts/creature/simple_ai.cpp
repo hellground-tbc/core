@@ -138,7 +138,7 @@ void SimpleAI::KilledUnit(Unit *victim)
 
     switch (Kill_Target_Type)
     {
-    case CAST_SELF:
+    case CAST_SELF_SAI:
         target = m_creature;
         break;
     case CAST_HOSTILE_TARGET:
@@ -188,7 +188,7 @@ void SimpleAI::DamageTaken(Unit *killer, uint32 &damage)
 
     switch (Death_Target_Type)
     {
-    case CAST_SELF:
+    case CAST_SELF_SAI:
         target = m_creature;
         break;
     case CAST_HOSTILE_TARGET:
@@ -239,7 +239,7 @@ void SimpleAI::UpdateAI(const uint32 diff)
 
                 switch (Spell[i].Cast_Target_Type)
                 {
-                case CAST_SELF:
+                case CAST_SELF_SAI:
                     target = m_creature;
                     break;
                 case CAST_HOSTILE_TARGET:

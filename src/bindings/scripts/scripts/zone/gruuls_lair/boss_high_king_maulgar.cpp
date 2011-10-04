@@ -756,7 +756,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
             }
 
             if(InRange)
-                ForceSpellCast(SPELL_BLAST_WAVE, true);
+                ForceSpellCast(SPELL_BLAST_WAVE, CAST_SELF);
                 //DoCastAOE(SPELL_BLAST_WAVE);
 
             BlastWave_Timer = 3000 +rand()%2000;

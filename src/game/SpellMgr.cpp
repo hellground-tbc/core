@@ -2699,7 +2699,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 14189:                     // Seal Fate
         case 14157:                     // Ruthlessness
         case 14181:                     // Relentless Strikes
-            spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;     
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;
             break;
         /* UNSORTED */
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods

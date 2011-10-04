@@ -512,7 +512,7 @@ struct TRINITY_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_b
 
         if (m_auraTimer < diff)
         {
-            AddSpellToCast(RAND(SPELL_DEVOTION_AURA, SPELL_CHROMATIC_AURA), true);
+            AddSpellToCast(RAND(SPELL_DEVOTION_AURA, SPELL_CHROMATIC_AURA), CAST_SELF);
             m_auraTimer = 60000;
         }
         else
@@ -548,7 +548,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
         m_dampenTimer = 67200;
         m_aexpTimer = 3000;
         m_immunityTimer = 60000;
-        SetAutocast(SPELL_ARCANE_BOLT, 2000, true, AUTOCAST_TANK, 40.0f, true);
+        SetAutocast(SPELL_ARCANE_BOLT, 2000, true, CAST_TANK, 40.0f, true);
 
         m_checkTimer = 1000;
     }
@@ -653,7 +653,7 @@ struct TRINITY_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_counc
                 {
                     if (pUnit->IsWithinDistInMap(me, 5) && pUnit->GetTypeId() == TYPEID_PLAYER && pUnit->isAlive() && !pUnit->IsImmunedToDamage(SPELL_SCHOOL_MASK_ARCANE))
                     {
-                        ForceSpellCast(SPELL_ARCANE_EXPLOSION, true);
+                        ForceSpellCast(SPELL_ARCANE_EXPLOSION, CAST_SELF);
                         m_aexpTimer = 3000;
                         break;
                     }

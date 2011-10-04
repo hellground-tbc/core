@@ -555,7 +555,7 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
         if (ab1)
         {
             if (IsNullTargetSpell(ability1ID))
-                AddSpellToCast(ability1ID, false);
+                AddSpellToCast(ability1ID, CAST_NULL);
             else
             {
                 Unit * victim = me->GetUnit(ab1);
@@ -569,7 +569,7 @@ void npc_chesspieceAI::UpdateAI(const uint32 diff)
         else if (ab2)
         {
             if (IsNullTargetSpell(ability2ID))
-                AddSpellToCast(ability2ID, false);
+                AddSpellToCast(ability2ID, CAST_NULL);
             else
             {
                 Unit * victim = me->GetUnit(ab2);

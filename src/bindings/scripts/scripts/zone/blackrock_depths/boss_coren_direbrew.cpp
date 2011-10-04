@@ -77,10 +77,10 @@ struct TRINITY_DLL_DECL boss_coren_direbrewAI : public ScriptedAI
 
         if(Disarm_Timer < diff)
         {
-            AddSpellToCast(SPELL_DISARM_GROW, true, true);
-            AddSpellToCast(SPELL_DISARM_GROW, true, true);
-            AddSpellToCast(SPELL_DISARM_GROW, true, true);
-            AddSpellToCast(SPELL_DIREBREWS_DISARM, false);
+            AddSpellToCast(SPELL_DISARM_GROW, CAST_SELF, true);
+            AddSpellToCast(SPELL_DISARM_GROW, CAST_SELF, true);
+            AddSpellToCast(SPELL_DISARM_GROW, CAST_SELF, true);
+            AddSpellToCast(SPELL_DIREBREWS_DISARM, CAST_NULL);
             Disarm_Timer = 30000;
         }
         else Disarm_Timer -= diff;
