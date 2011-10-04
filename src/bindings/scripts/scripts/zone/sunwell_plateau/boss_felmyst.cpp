@@ -216,13 +216,14 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
+        EnterPhase(PHASE_GROUND);
+        Phase = PHASE_NULL; // not attack yet, but counters on
         m_creature->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
         if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
         {
             float x, y, z;
             target->GetPosition(x, y, z);
-            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
-            EnterPhase(PHASE_GROUND);
+            m_creature->GetMotionMaster()->MovePoint(0, x+2, y+1, z+5);
         }
         else
         {
@@ -235,12 +236,18 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
+        if(Phase == PHASE_NULL)
+            return;
+
         if(Phase != PHASE_FLIGHT && Phase != PHASE_RESPAWNING)
             ScriptedAI::AttackStart(who);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
+        if(Phase == PHASE_NULL)
+            return;
+
         if(Phase != PHASE_FLIGHT && Phase != PHASE_RESPAWNING)
             ScriptedAI::MoveInLineOfSight(who);
     }
@@ -274,7 +281,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     void EnterEvadeMode()
     {
         CreatureAI::EnterEvadeMode();
-        me->SetSpeed(MOVE_FLIGHT, 2.0, true);
+        me->SetSpeed(MOVE_FLIGHT, 4.0, false);
         m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
         Map::PlayerList const &players = me->GetMap()->GetPlayers();
         for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
@@ -353,7 +360,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 IntroTimer = 0;
                 break;
             case 4:
-                me->SetSpeed(MOVE_FLIGHT, 2.0, true);
+                me->SetSpeed(MOVE_FLIGHT, 4.0, false);
                 m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
                 IntroTimer = 10000;
                 break;
@@ -361,6 +368,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 Phase = PHASE_NULL;
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 IntroTimer = 0;
+                break;
+            case 6:
+                Phase = PHASE_GROUND;
+                AttackStart(m_creature->getVictim());
                 break;
         }
 
@@ -397,13 +408,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             switch(Id)
             {
                 case 0: // on landing after aggroing
-                    Phase = PHASE_GROUND;
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     m_creature->SetLevitate(false);
                     m_creature->SetWalk(false);
                     me->setHover(false);
-                    me->SetSpeed(MOVE_RUN, 2.0, true);
-                    AttackStart(m_creature->getVictim());
+                    me->SetSpeed(MOVE_RUN, 2.0,false);
+                    IntroTimer = 2000;
                     break;
                 case 1: // on starting phase 2
                     Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
@@ -412,11 +422,11 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     Timer[EVENT_FLIGHT_SEQUENCE] = 6000;
                     break;
                 case 3: // on path start node
-                    me->SetSpeed(MOVE_FLIGHT, 4.0, true);
+                    me->SetSpeed(MOVE_FLIGHT, 8.0, false);
                     Timer[EVENT_FLIGHT_SEQUENCE] = 200;
                     break;
                 case 4: // on path stop node
-                    me->SetSpeed(MOVE_FLIGHT, 2.0, true);
+                    me->SetSpeed(MOVE_FLIGHT, 4.0, false);
                     m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
                     side = side?LEFT_SIDE:RIGHT_SIDE;
                     BreathCount++;
@@ -472,7 +482,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             }
         case 4: // go to side left/right marker
             {
-            me->SetSpeed(MOVE_FLIGHT, 2.0, true);
+            me->SetSpeed(MOVE_FLIGHT, 4.0, false);
             m_creature->GetMotionMaster()->MovePoint(2, FlightSide[side][0], FlightSide[side][1], FlightSide[side][2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
@@ -511,7 +521,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
         case 9: // ..and go for phase 1
-            me->SetSpeed(MOVE_RUN, 2.0, true);
+            me->SetSpeed(MOVE_RUN, 2.0, false);
             m_creature->SetLevitate(false);
             m_creature->SetWalk(false);
             me->setHover(false);
@@ -536,7 +546,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
             case EVENT_CHECK:
                 DoZoneInCombat();
-                me->SetSpeed(MOVE_RUN, 2.0, true);
+                me->SetSpeed(MOVE_RUN, 2.0, false);
                 Timer[EVENT_CHECK]=1000;
                 break;
             case EVENT_CLEAVE:
@@ -600,7 +610,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(Phase == PHASE_GROUND)
+        if(Phase == PHASE_GROUND || Phase == PHASE_NULL)
         {
             for(uint32 i = 1; i <= 7; i++)
             {
@@ -647,7 +657,8 @@ struct TRINITY_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
     void JustRespawned()
     {
         DoZoneInCombat();
-        me->CastSpell(me, SPELL_VAPOR_TRIGGER, false);
+        me->CastSpell(me, SPELL_VAPOR_TRIGGER, false);  // summons 9 trail triggers, so..
+        me->CastSpell(me, SPELL_TRAIL_SUMMON, true);    // ..summon one more trail trigger just on spawn
         me->CastSpell((Unit*)NULL, SPELL_VAPOR_FORCE, false);
         me->setFaction(1771);
     }
