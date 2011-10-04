@@ -46,8 +46,7 @@ enum Spells
     SPELL_CORROSION             =   45866,
     SPELL_GAS_NOVA              =   45855,
     SPELL_ENCAPSULATE_CHANNEL   =   45661,
-    // SPELL_ENCAPSULATE_EFFECT    =   45665,
-    // SPELL_ENCAPSULATE_AOE       =   45662,
+    SPELL_ENCAPSULATE_EFFECT    =   45665, // linked in DB
 
     //Flight phase
     SPELL_VAPOR_SELECT          =   45391,   // fel to player, force cast 45392, 50000y selete target
@@ -60,7 +59,7 @@ enum Spells
     SPELL_TRAIL_TRIGGER         =   45399,   // trail to self, trigger 45402
     SPELL_TRAIL_DAMAGE          =   45402,   // trail damage, 2000 + 2000 dot
     SPELL_DEAD_SUMMON           =   45400,   // summon blazing dead, 5min
-    SPELL_DEAD_PASSIVE          =   45415,
+    SPELL_DEAD_PASSIVE          =   45415,   // aura in creature_template_addon
     SPELL_FOG_BREATH            =   45495,   // fel to self, speed burst
     SPELL_FOG_TRIGGER           =   45582,   // fog to self, trigger 45782
     SPELL_FOG_FORCE             =   45782,   // fog to player, force cast 45714
@@ -70,8 +69,6 @@ enum Spells
 
     //Other
     SPELL_BERSERK               =   45078,
-    SPELL_CLOUD_VISUAL          =   45212,
-    SPELL_CLOUD_SUMMON          =   45884
 };
 
 enum Creatures

@@ -64,7 +64,7 @@ enum Spells
     SPELL_INTRO_FROST_BREATH           =   45065,
     SPELL_INTRO_FROST_BLAST            =   45203,
     SPELL_INTRO_FROSTBOLT              =   44843,
-    SPELL_INTRO_ENCAPSULATE            =   45661,
+    SPELL_INTRO_ENCAPSULATE            =   44883,
     SPELL_INTRO_BREAK_ICE              =   46637,
     SPELL_INTRO_BREAK_ICE_KNOCKBACK    =   47030,
 
@@ -265,7 +265,6 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 break;
             case 14:
                 me->RemoveAurasDueToSpell(44883);
-                me->RemoveAurasDueToSpell(45661);
                 pMadrigosa->InterruptNonMeleeSpells(false);
                 pMadrigosa->GetMotionMaster()->MoveIdle();
                 DoScriptText(YELL_INTRO_CHARGE, me);
