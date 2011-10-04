@@ -94,7 +94,7 @@ enum PhaseFelmyst
     PHASE_NULL      = 0,
     PHASE_GROUND    = 1,
     PHASE_FLIGHT    = 2,
-    PHASE_LANDING   = 3
+    PHASE_RESPAWNING   = 3
 };
 
 enum EventFelmyst
@@ -112,6 +112,8 @@ enum EventFelmyst
     EVENT_FLIGHT_SEQUENCE   =   8,
     EVENT_SUMMON_FOG        =   9
 };
+
+#define FELMYST_OOC_PATH    2500
 
 enum Side
 {
@@ -223,7 +225,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             float x, y, z;
             target->GetPosition(x, y, z);
             m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
-            EnterPhase(PHASE_LANDING);
+            EnterPhase(PHASE_GROUND);
         }
         else
         {
@@ -236,13 +238,13 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
-        if(Phase != PHASE_FLIGHT && Phase != PHASE_LANDING)
+        if(Phase != PHASE_FLIGHT && Phase != PHASE_RESPAWNING)
             ScriptedAI::AttackStart(who);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(Phase != PHASE_FLIGHT && Phase != PHASE_LANDING)
+        if(Phase != PHASE_FLIGHT && Phase != PHASE_RESPAWNING)
             ScriptedAI::MoveInLineOfSight(who);
     }
 
@@ -254,7 +256,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void JustRespawned()
     {
-        Phase = PHASE_LANDING;
+        Phase = PHASE_RESPAWNING;
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
         m_creature->CastSpell(m_creature, SPELL_SUNWELL_RADIANCE, true);
@@ -275,6 +277,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     void EnterEvadeMode()
     {
         CreatureAI::EnterEvadeMode();
+        me->SetSpeed(MOVE_FLIGHT, 2.0, true);
+        m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
         Map::PlayerList const &players = me->GetMap()->GetPlayers();
         for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
             if(Player *p = i->getSource())
@@ -285,7 +289,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     }
 
 
-    void JustSummoned(Creature *summon)
+    /*void JustSummoned(Creature *summon)
     {
         if(summon->GetEntry() == MOB_KALECGOS)
         {
@@ -296,7 +300,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             KalecgosGUID = summon->GetGUID();
             OutroTimer = 20000;
         }
-    }
+    }*/
 
     void DamageTaken(Unit*, uint32 &damage)
     {
@@ -348,13 +352,17 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
             case 3:
                 m_creature->SetLevitate(true);
-                m_creature->setHover(true);
-                m_creature->GetMotionMaster()->MovePoint(6, me->GetPositionX()-0.5, me->GetPositionY()-0.5, me->GetPositionZ()+15);
-                IntroTimer = 9000;
+                m_creature->GetMotionMaster()->MovePoint(6, me->GetPositionX()-0.5, me->GetPositionY()-0.5, me->GetPositionZ()+20);
+                IntroTimer = 0;
                 break;
             case 4:
-                // flying path when OOC
-                m_creature->GetMotionMaster()->MovePoint(10, 1458, 587.4, 58);
+                me->SetSpeed(MOVE_FLIGHT, 2.0, true);
+                m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
+                IntroTimer = 10000;
+                break;
+            case 5:
+                Phase = PHASE_NULL;
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 IntroTimer = 0;
                 break;
         }
@@ -385,50 +393,21 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void MovementInform(uint32 Type, uint32 Id)
     {
-        if(Phase == PHASE_NULL || Phase == PHASE_LANDING)
-        {
-            switch(Id)  // OOC fly path from right to left side
-            {
-                case 0: // on landing after aggroing
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                    m_creature->SetLevitate(false);
-                    m_creature->SetWalk(false);
-                    m_creature->SendMovementFlagUpdate();
-                    me->SetSpeed(MOVE_RUN, 2.0, true);
-                    EnterPhase(PHASE_GROUND);
-                    AttackStart(m_creature->getVictim());
-                    break;
-                case 10:
-                    if(Phase == PHASE_LANDING)
-                    {
-                        Phase = PHASE_NULL;
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    }
-                    m_creature->GetMotionMaster()->MovePoint(11, 1498, 560, 55);
-                    break;
-                case 11:
-                    m_creature->GetMotionMaster()->MovePoint(12, 1505, 656.5, 53);
-                    break;
-                case 12:
-                    m_creature->GetMotionMaster()->MovePoint(13, 1460, 623, 56);
-                    break;
-                case 13:
-                    m_creature->GetMotionMaster()->MovePoint(10, 1458, 587, 58);
-                    break;
-                default:
-                    break;
-            }
-        }
-
         if(Type == HOME_MOTION_TYPE)
-        {
             m_creature->SetLevitate(true);
-            m_creature->setHover(true);
-        }
         else if(Type == POINT_MOTION_TYPE)
         {
             switch(Id)
             {
+                case 0: // on landing after aggroing
+                    Phase = PHASE_GROUND;
+                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                    m_creature->SetLevitate(false);
+                    m_creature->SetWalk(false);
+                    me->setHover(false);
+                    me->SetSpeed(MOVE_RUN, 2.0, true);
+                    AttackStart(m_creature->getVictim());
+                    break;
                 case 1: // on starting phase 2
                     Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
                     break;
@@ -436,11 +415,11 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     Timer[EVENT_FLIGHT_SEQUENCE] = 6000;
                     break;
                 case 3: // on path start node
-                    me->SetSpeed(MOVE_FLIGHT, 3.6, true);
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
+                    me->SetSpeed(MOVE_FLIGHT, 4.0, true);
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 200;
                     break;
                 case 4: // on path stop node
-                    me->SetSpeed(MOVE_FLIGHT, 1.8, true);
+                    me->SetSpeed(MOVE_FLIGHT, 2.0, true);
                     m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
                     side = side?LEFT_SIDE:RIGHT_SIDE;
                     BreathCount++;
@@ -453,6 +432,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 case 5: // on landing after phase 2
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     Timer[EVENT_FLIGHT_SEQUENCE] = 1500;
+                    break;
+                case 6:
+                    me->setHover(true);
+                    IntroTimer = 8000;
                     break;
                 default:
                     break;
@@ -469,7 +452,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             m_creature->SetLevitate(true);
             me->setHover(true);
-            m_creature->SendMovementFlagUpdate();
             DoScriptText(YELL_TAKEOFF, m_creature);
             Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
             break;
@@ -493,7 +475,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             }
         case 4: // go to side left/right marker
             {
-            me->SetSpeed(MOVE_FLIGHT, 1.8, true);
+            me->SetSpeed(MOVE_FLIGHT, 2.0, true);
             m_creature->GetMotionMaster()->MovePoint(2, FlightSide[side][0], FlightSide[side][1], FlightSide[side][2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
@@ -535,6 +517,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             me->SetSpeed(MOVE_RUN, 2.0, true);
             m_creature->SetLevitate(false);
             m_creature->SetWalk(false);
+            me->setHover(false);
             m_creature->SendMovementFlagUpdate();
             EnterPhase(PHASE_GROUND);
             AttackStart(m_creature->getVictim());
