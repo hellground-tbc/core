@@ -282,10 +282,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     {
         CreatureAI::EnterEvadeMode();
         me->SetSpeed(MOVE_FLIGHT, 1.8, false);
-        me->setHover(true); // until fixing path
-        m_creature->GetMotionMaster()->MovePoint(12, me->GetPositionX()-0.5, me->GetPositionY()-0.5, me->GetPositionZ()+10);
-        Phase = PHASE_NULL; // until fixing path
-        //m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
+        m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
         Map::PlayerList const &players = me->GetMap()->GetPlayers();
         for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
             if(Player *p = i->getSource())
@@ -364,7 +361,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
             case 4:
                 me->SetSpeed(MOVE_FLIGHT, 1.8, false);
-                //m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
+                m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
                 IntroTimer = 10000;
                 break;
             case 5:
