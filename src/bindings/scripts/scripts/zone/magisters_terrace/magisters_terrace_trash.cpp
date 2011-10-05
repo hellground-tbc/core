@@ -34,12 +34,8 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 {
-    mob_sunwell_mage_guardAI(Creature *c) : ScriptedAI(c)
-    {
-        HeroicMode = c->GetMap()->IsHeroic();
-    }
+    mob_sunwell_mage_guardAI(Creature *c) : ScriptedAI(c) {}
 
-    bool HeroicMode;
     uint32 Glaive_Timer;
     uint32 Magic_Field_Timer;
 
@@ -56,7 +52,8 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 
       if(Glaive_Timer < diff)
       {
-          AddSpellToCast(m_creature->getVictim(), SPELL_GLAIVE_THROW);
+          if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0, true))
+              AddSpellToCast(target, SPELL_GLAIVE_THROW);
           Glaive_Timer = urand(16000,20000);
       }
       else
@@ -64,7 +61,8 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 
        if(Magic_Field_Timer < diff)
        {
-           AddSpellToCast(m_creature->getVictim(), SPELL_MAGIC_DAMPENING_FIELD);
+           if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0, true))
+               AddSpellToCast(m_creature->getVictim(), SPELL_MAGIC_DAMPENING_FIELD);
            Magic_Field_Timer = urand(50000,65000);
        }
        else
@@ -78,22 +76,27 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 #define SPELL_ARCANE_NOVA                   (HeroicMode?46036:44644)
 #define SPELL_FROSTBOLT                     (HeroicMode?46035:44606)
 #define SPELL_ENCHANTMENT_OF_SPELL_HASTE    44604
+#define SPELL_SPELL_HASTE                   44605
 
 struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 {
     mob_sunblade_magisterAI(Creature *c) : ScriptedAI(c)
     {
-        HeroicMode = c->GetMap()->IsHeroic();
         DoCast(c, SPELL_ENCHANTMENT_OF_SPELL_HASTE, true);
     }
 
-    bool HeroicMode;
     uint32 Arcane_Nova_Timer;
 
     void Reset()
     {
-        SetAutocast(SPELL_FROSTBOLT, 2000, true);
+        SetAutocast(SPELL_FROSTBOLT, 2000, true);   // initial cast speed
         Arcane_Nova_Timer = urand (12000, 20000);
+    }
+
+    void OnAuraApply(Aura* aur, Unit* /*caster*/, bool /*stackApply*/)
+    {
+        if(aur->GetSpellProto()->Id == SPELL_SPELL_HASTE)
+            SetAutocast(SPELL_FROSTBOLT, GetSpellCastTime(sSpellStore.LookupEntry(SPELL_FROSTBOLT)), true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -123,13 +126,11 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 {
     mob_sunblade_warlockAI(Creature *c) : ScriptedAI(c)
     {
-        HeroicMode = c->GetMap()->IsHeroic();
         DoCast(c, SPELL_FEL_ARMOR, true);
         FelArmor_Timer = 120000;    //check each 2 minutes
         hasSummoned = false;
     }
 
-    bool HeroicMode;
     bool hasSummoned;
     uint32 FelArmor_Timer;
     uint32 Immolate_Timer;
@@ -182,12 +183,8 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 {
-    mob_sunblade_physicianAI(Creature *c) : ScriptedAI(c)
-    {
-        HeroicMode = c->GetMap()->IsHeroic();
-    }
+    mob_sunblade_physicianAI(Creature *c) : ScriptedAI(c) { }
 
-    bool HeroicMode;
     uint32 Poison_Timer;
     uint32 Prayer_of_Mending_Timer;
     
@@ -230,12 +227,8 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
 {
-    mob_sunblade_blood_knightAI(Creature *c) : ScriptedAI(c)
-    {
-        HeroicMode = c->GetMap()->IsHeroic();
-    }
+    mob_sunblade_blood_knightAI(Creature *c) : ScriptedAI(c) { }
 
-    bool HeroicMode;
     uint32 Judgement_Timer;
     uint32 Holy_Light_Timer;
     uint32 Seal_Timer;
