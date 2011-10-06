@@ -102,62 +102,37 @@ class TRINITY_DLL_SPEC UnitAI
         std::list<Player*> FindAllPlayersInRange(float range, Unit* finder = NULL);
 
         //Selects a unit from the creature's current aggro list
+        Unit* SelectUnit(SelectAggroTarget target, uint32 position);
         Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, uint64 = 0, float mindist = 0.0f);
         Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, float maxdist, bool playerOnly, Powers powerOnly);
-        Unit* SelectUnit(SelectAggroTarget target, uint32 position);
 
         template <class PREDICATE>
         Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
         {
-            const std::list<HostilReference*>& threatlist = me->getThreatManager().getThreatList();
-            if (position >= threatlist.size())
-                return NULL;
-
             std::list<Unit*> targetList;
-            for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
-                if (predicate((*itr)->getTarget()))
-                    targetList.push_back((*itr)->getTarget());
+            SelectUnitList(targetList, 0, targetType, 0, false);
 
-            if (position >= targetList.size())
-                return NULL;
-
-            if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
-                targetList.sort(Trinity::ObjectDistanceOrder(me));
-
-            switch (targetType)
+            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end();)
             {
-                case SELECT_TARGET_NEAREST:
-                case SELECT_TARGET_TOPAGGRO:
-                {
-                    std::list<Unit*>::iterator itr = targetList.begin();
-                    std::advance(itr, position);
-                    return *itr;
-                }
-                case SELECT_TARGET_FARTHEST:
-                case SELECT_TARGET_BOTTOMAGGRO:
-                {
-                    std::list<Unit*>::reverse_iterator ritr = targetList.rbegin();
-                    std::advance(ritr, position);
-                    return *ritr;
-                }
-                case SELECT_TARGET_RANDOM:
-                {
-                    std::list<Unit*>::iterator itr = targetList.begin();
-                    std::advance(itr, urand(position, targetList.size() - 1));
-                    return *itr;
-                }
-                default:
-                    break;
+                if (!predicate(*itr))
+                    targetList.erase(itr++);
+                else
+                    ++itr;
             }
 
-            return NULL;
-        }
+            if (targetList.empty())
+                return NULL;
 
+            return ReturnTargetHelper(targetType, position, targetList);
+        }
 
         void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint64 exclude = 0, float mindist = 0.0f);
 
         static AISpellInfoType *AISpellInfo;
         static void FillAISpellInfo();
+
+    private:
+        Unit *ReturnTargetHelper(SelectAggroTarget target, uint32 position, std::list<Unit*> &targetList);
 };
 
 #endif
