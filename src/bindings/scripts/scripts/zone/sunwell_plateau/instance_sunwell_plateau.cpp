@@ -63,6 +63,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
     /*** Misc ***/
     uint32 KalecgosPhase;
 
+    uint32 EredarTwinsAliveInfo[2];
+
     void Initialize()
     {
         /*** Creatures ***/
@@ -92,6 +94,9 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         Gate[2]     = 0;
         Gate[3]     = 0;
         Gate[4]     = 0;
+
+        EredarTwinsAliveInfo[0] = 0;
+        EredarTwinsAliveInfo[1] = 0;
 
         /*** Encounters ***/
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
@@ -253,6 +258,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case DATA_MURU_EVENT:               return Encounters[5]; break;
             case DATA_KILJAEDEN_EVENT:          return Encounters[6]; break;
             case DATA_KALECGOS_PHASE:           return KalecgosPhase; break;
+            case DATA_ALYTHESS:                 return EredarTwinsAliveInfo[0];
+            case DATA_SACROLASH:                return EredarTwinsAliveInfo[1];
         }
 
         return 0;
@@ -361,6 +368,23 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case DATA_KALECGOS_PHASE:
                 KalecgosPhase = data; 
                 break;
+            case DATA_ALYTHESS:
+                EredarTwinsAliveInfo[0] = data;
+
+                if (data == DONE && IsEncounterInProgress())
+                {
+                    if (Creature *pSacrolash = GetCreature(DATA_SACROLASH))
+                        pSacrolash->AI()->DoAction(SISTER_DEATH);
+                }
+                return;
+            case DATA_SACROLASH:
+                EredarTwinsAliveInfo[1] = data;
+                if (data == DONE && IsEncounterInProgress())
+                {
+                    if (Creature *pAlythess = GetCreature(DATA_ALYTHESS))
+                        pAlythess->AI()->DoAction(SISTER_DEATH);
+                }
+                return;
         }
 
         if(data == DONE)
