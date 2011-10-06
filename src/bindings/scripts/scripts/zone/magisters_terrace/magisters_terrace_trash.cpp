@@ -85,18 +85,13 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
         DoCast(c, SPELL_ENCHANTMENT_OF_SPELL_HASTE, true);
     }
 
+    uint32 Frostbolt_Timer;
     uint32 Arcane_Nova_Timer;
 
     void Reset()
     {
-        SetAutocast(SPELL_FROSTBOLT, 2000, true);   // initial cast speed
+        Frostbolt_Timer = 2000;
         Arcane_Nova_Timer = urand (12000, 20000);
-    }
-
-    void OnAuraApply(Aura* aur, Unit* /*caster*/, bool /*stackApply*/)
-    {
-        if(aur->GetSpellProto()->Id == SPELL_SPELL_HASTE)
-            SetAutocast(SPELL_FROSTBOLT, GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT)), true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -104,8 +99,17 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
       if(!UpdateVictim())
           return;
 
+      if(Frostbolt_Timer < diff)
+      {
+          AddSpellToCast(me->getVictim(), SPELL_FROSTBOLT);
+          Frostbolt_Timer = GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT));
+      }
+      else
+          Frostbolt_Timer -= diff;
+
       if(Arcane_Nova_Timer < diff)
       {
+          ClearCastQueue();
           AddSpellToCast(SPELL_ARCANE_NOVA, CAST_SELF);
           Arcane_Nova_Timer = urand(16000, 20000);
       }
