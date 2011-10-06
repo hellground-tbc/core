@@ -175,7 +175,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     PhaseFelmyst Phase;
     EventFelmyst Event;
     uint32 Timer[10];
-    uint32 EvadeTimer;
 
     uint8 side;
     uint8 path;
@@ -196,7 +195,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         Timer[EVENT_BERSERK] = 600000;
         Timer[EVENT_CHECK] = 1000;
         FlightCount = 0;
-        EvadeTimer = 0;
         IntroPhase = 0;
         IntroTimer = 0;
         OutroPhase = 0;
@@ -219,6 +217,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         EnterPhase(PHASE_GROUND);
         Phase = PHASE_NULL; // not attack yet, but counters on
         m_creature->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
+        m_creature->GetMotionMaster()->Clear();
         if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
         {
             float x, y, z;
