@@ -409,9 +409,8 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             // cast spells
             if(ArcaneBuffetTimer < diff)
             {
-                if(!urand(0,5))
+                AddSpellToCast(SPELL_ARCANE_BUFFET, CAST_SELF);
                     DoScriptText(RAND(SAY_EVIL_SPELL1, SAY_EVIL_SPELL2), me);
-                AddSpellToCast(SPELL_ARCANE_BUFFET, true);
                 ArcaneBuffetTimer = 8000;
             }
             else
@@ -439,7 +438,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
             if(WildMagicTimer < diff)
             {
-                AddSpellToCast(WildMagic[rand()%6], true);
+                AddSpellToCast(WildMagic[rand()%6], CAST_SELF);
                 WildMagicTimer = 20000;
             }
             else
@@ -447,7 +446,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
             if(SpectralBlastTimer < diff)
             {
-                AddSpellToCast(SPELL_SPECTRAL_BLAST, true);
+                AddSpellToCast(SPELL_SPECTRAL_BLAST, CAST_SELF);
                 SpectralBlastTimer = 20000+(rand()%5000);
             }
             else
@@ -658,7 +657,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
         if(AgonyCurseTimer < diff)
         {
-            AddSpellToCast(SPELL_AGONY_CURSE, true);
+            AddSpellToCast(SPELL_AGONY_CURSE, CAST_SELF);
             AgonyCurseTimer = 20000;
         }
         else

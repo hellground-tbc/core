@@ -7,7 +7,7 @@
 
 enum CastTarget
 {
-    CAST_SELF = 0,                  //Self cast
+    CAST_SELF_SAI = 0,              //Self cast
     CAST_HOSTILE_TARGET,            //Our current target (ie: highest aggro)
     CAST_HOSTILE_SECOND_AGGRO,      //Second highest aggro (generaly used for cleaves and some special attacks)
     CAST_HOSTILE_LAST_AGGRO,        //Dead last on aggro (no idea what this could be used for)

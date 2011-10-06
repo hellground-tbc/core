@@ -54,7 +54,7 @@ CREATE TABLE `auctionhouse` (
   `houseid` int(11) unsigned NOT NULL DEFAULT '0',
   `itemguid` int(11) unsigned NOT NULL DEFAULT '0',
   `item_template` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Item Identifier',
-  `item_count` int(11) unsigned NOT NULL default '0',
+  `item_count` int(11) unsigned NOT NULL default '0',  
   `item_randompropertyid` int(11) NOT NULL default '0',
   `itemowner` int(11) unsigned NOT NULL DEFAULT '0',
   `buyoutprice` int(11) NOT NULL DEFAULT '0',
@@ -63,7 +63,7 @@ CREATE TABLE `auctionhouse` (
   `lastbid` int(11) NOT NULL DEFAULT '0',
   `startbid` int(11) NOT NULL DEFAULT '0',
   `deposit` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `bugreport` */

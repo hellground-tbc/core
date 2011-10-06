@@ -627,7 +627,7 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
             }
             else
             {
-                AddSpellToCast(SPELL_SHELL_SHIELD, true);
+                AddSpellToCast(SPELL_SHELL_SHIELD, CAST_SELF);
                 ShellShield = urand(20000, 30000);
             }
         }
@@ -716,7 +716,7 @@ struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
 
         if(TailSweep < diff)
         {
-            AddSpellToCast(SPELL_TAIL_SWEEP, false);
+            AddSpellToCast(SPELL_TAIL_SWEEP, CAST_NULL);
             TailSweep = urand(5000, 8000);
         }
         else
@@ -5089,7 +5089,7 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
                     Heal = 2500;
                     shieldCooldownTimer = 15000;
                     shieldCooldown = true;
-                    SetAutocast(SPELL_HOLY_SMITE, 4800, true, AUTOCAST_TANK, 40, true);
+                    SetAutocast(SPELL_HOLY_SMITE, 4800, true, CAST_TANK, 40, true);
                     StartAutocast();
                     break;
                 }

@@ -114,7 +114,7 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
             // Thundering Storm
             if(ThunderingStorm_Timer < diff)
             {
-                ForceSpellCast(SPELL_THUNDERING_STORM, false, DONT_INTERRUPT);
+                ForceSpellCast(SPELL_THUNDERING_STORM, CAST_NULL, DONT_INTERRUPT);
 
                 ThunderingStorm_Timer = 5000;
             }
