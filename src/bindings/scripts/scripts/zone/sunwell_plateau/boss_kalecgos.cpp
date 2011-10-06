@@ -543,7 +543,8 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         DoScriptText(SAY_SATH_DEATH, m_creature);
         //me->GetMap()->CreatureRelocation(me, m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
         //me->UpdateObjectVisibility();
-        me->NearTeleportTo(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
+        //me->NearTeleportTo(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
+        me->SendMonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, 0);
 
         if(pInstance)
             pInstance->SetData(DATA_KALECGOS_EVENT, DONE);

@@ -254,6 +254,7 @@ void Creature::RemoveCorpse()
     GetRespawnCoord(x, y, z, &o);
     SetHomePosition(x,y,z,o);
     GetMap()->CreatureRelocation(this,x,y,z,o);
+    SendMonsterMove(x,y,z,0);   //test
 }
 
 /**
