@@ -224,6 +224,29 @@ void CreatureGroup::FormationReset(bool dismiss)
     m_Formed = !dismiss;
 }
 
+void CreatureGroup::RespawnFormation(Creature *member)
+{
+    if(!member)
+        return;
+
+    for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        // Called at EnterEvadeMode, do not check self
+        if (itr->first == member->GetGUID())
+            continue;
+
+        if (Creature *mem = member->GetMap()->GetCreature(itr->first))
+        {
+            if (mem->isAlive())
+            {
+                mem->AI()->EnterEvadeMode();
+                continue;
+            }
+            mem->Respawn();
+        }
+    }
+}
+
 void CreatureGroup::LeaderMoveTo(float x, float y, float z)
 {
     if (!m_leader)

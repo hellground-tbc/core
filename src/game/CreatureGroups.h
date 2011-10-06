@@ -68,6 +68,8 @@ class CreatureGroup
         void AddMember(Creature *member);
         void RemoveMember(Creature *member);
         void FormationReset(bool dismiss);
+        // as for now, used in scripts to respawn whole group when one member enters evade mode
+        TRINITY_DLL_SPEC void RespawnFormation(Creature *member);
 
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);

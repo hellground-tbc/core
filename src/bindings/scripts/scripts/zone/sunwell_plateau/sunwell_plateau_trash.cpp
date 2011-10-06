@@ -66,6 +66,14 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
         FrostNova = urand(5000, 10000);
         Blink = urand(10000, 18000);
     }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
     bool InMeleeRange()
@@ -158,6 +166,14 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
         ShadowBolt = urand(500, 1000);
         SummonImp = urand(1000, 8000);
     }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
     void UpdateAI(const uint32 diff)
@@ -236,6 +252,14 @@ struct TRINITY_DLL_DECL mob_sunblade_dawn_priestAI : public ScriptedAI
         canRenew = true;
         canSelfRenew = true;
     }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
     void UpdateAI(const uint32 diff)
@@ -324,6 +348,14 @@ struct TRINITY_DLL_DECL mob_sunblade_dusk_priestAI : public ScriptedAI
         WordPain = urand(6000, 12000);
         MindFlay = urand(10000, 25000);
     }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
     void UpdateAI(const uint32 diff)
@@ -474,6 +506,13 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
         SinisterStrike = urand(3000, 10000);
     }
 
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
     bool ActivateProtector()
     {
         if(Unit* Protector = GetClosestCreatureWithEntry(me, 25507, 65))
@@ -575,6 +614,13 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
         SlayingShot = urand(8000, 15000);
     }
 
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
     void UpdateAI(const uint32 diff)
@@ -649,7 +695,13 @@ struct TRINITY_DLL_DECL mob_sunblade_vindicatorAI : public ScriptedAI
         BrutalStrike = urand(1000, 5000);
         Cleave = urand(4000, 9000);
         MortalStrike = urand(5000, 15000);
+    }
 
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
     }
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
