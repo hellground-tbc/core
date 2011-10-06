@@ -79,9 +79,7 @@ enum Spells
     SPELL_FLAME_TOUCHED     =   45348,
     SPELL_CONFLAGRATION     =   45342, //30-35 secs
     SPELL_BLAZE             =   45235, //on main target every 3 secs
-    SPELL_FLAME_SEAR        =   46771,
-    SPELL_BLAZE_SUMMON      =   45236, //187366 GO
-    SPELL_BLAZE_BURN        =   45246
+    SPELL_FLAME_SEAR        =   46771
 };
 
 enum Creatures
@@ -199,12 +197,8 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         if (ShadowimageTimer < diff)
         {
             for (int i = 0; i < 3; i++)
-            {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                Creature* shadowImage = DoSpawnCreature(MOB_SHADOW_IMAGE,0,0,0,0,TEMPSUMMON_CORPSE_DESPAWN,10000);
-                if(shadowImage && target)
-                    shadowImage->AI()->AttackStart(target);
-            }
+                DoSpawnCreature(MOB_SHADOW_IMAGE,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN, 15000);
+
             ShadowimageTimer = 20000;
         }
         else
@@ -453,52 +447,49 @@ struct TRINITY_DLL_DECL mob_shadow_imageAI : public ScriptedAI
 
     void AttackStart(Unit * target)
     {
-        if (target)
-            me->getThreatManager().addThreat(target, 10000.0f);
+        if (me->getVictim())
+            return;
 
+        me->getThreatManager().addThreat(target, 100000.0f);
         ScriptedAI::AttackStart(target);
+    }
+
+    void IsSummonedBy(Unit *pSummoner)
+    {
+        ForceSpellCast(SPELL_IMAGE_VISUAL, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
+        DoZoneInCombat();
+
+        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            AttackStart(pTarget);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!me->HasAura(SPELL_IMAGE_VISUAL, 0))
-            DoCast(me, SPELL_IMAGE_VISUAL);
-
-        if (KillTimer < diff)
-        {
-            me->SetVisibility(VISIBILITY_OFF);
-            me->DestroyForNearbyPlayers();
-            me->Kill(me, false);
-            KillTimer = 9999999;
-        }
-        else
-            KillTimer -=diff;
-
         if (!UpdateVictim())
             return;
 
         if (ShadowfuryTimer < diff)
         {
-            me->CastSpell((Unit*)NULL, SPELL_SHADOW_FURY, false);
+            AddSpellToCast(SPELL_SHADOW_FURY, CAST_NULL);
             ShadowfuryTimer = 10000;
         }
         else
             ShadowfuryTimer -= diff;
 
-        // i think it should be handled by proc aura ?
         if (DarkstrikeTimer < diff)
         {
             if (!me->IsNonMeleeSpellCasted(false))
             {
                 //If we are within range melee the target
                 if (me->IsWithinMeleeRange(me->getVictim()))
-                    me->CastSpell(me->getVictim(), SPELL_DARK_STRIKE, false);
+                    AddSpellToCast(SPELL_DARK_STRIKE, CAST_TANK);
             }
-
             DarkstrikeTimer = 1000;
         }
         else
             DarkstrikeTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 
