@@ -420,7 +420,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             {
                 if(!urand(0,3))
                     DoScriptText(RAND(SAY_EVIL_SPELL1, SAY_EVIL_SPELL2), me);
-                AddSpellToCast(SPELL_FROST_BREATH, true);
+                AddSpellToCast(SPELL_FROST_BREATH, CAST_SELF);
                 FrostBreathTimer = 15000;
             }
             else
@@ -430,7 +430,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             {
                 if(!urand(0,3))
                     DoScriptText(RAND(SAY_EVIL_SPELL1, SAY_EVIL_SPELL2), me);
-                AddSpellToCast(SPELL_TAIL_LASH, true);
+                AddSpellToCast(SPELL_TAIL_LASH, CAST_SELF);
                 TailLashTimer = 15000;
             }
             else

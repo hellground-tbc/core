@@ -93,7 +93,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
         if(ArcaneExplosion < diff)
         {
             if(InMeleeRange())
-                AddSpellToCast(SPELL_ARCANE_EXPLOSION, true);
+                AddSpellToCast(SPELL_ARCANE_EXPLOSION, CAST_SELF);
             ArcaneExplosion = urand(8000, 16000);
         }
         else
@@ -102,7 +102,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
         if(FrostNova < diff)
         {
             if(InMeleeRange())
-                AddSpellToCast(SPELL_FROST_NOVA, true);
+                AddSpellToCast(SPELL_FROST_NOVA, CAST_SELF);
             FrostNova = urand(5000, 10000);
         }
         else
@@ -110,7 +110,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
 
         if(Blink < diff)
         {
-            AddSpellToCast(SPELL_BLINK, false);
+            AddSpellToCast(SPELL_BLINK, CAST_NULL);
             Blink = urand(30000, 40000);
         }
         else
@@ -184,7 +184,7 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
 
         if(SummonImp < diff)
         {
-            AddSpellToCast(SPELL_SUMMON_IMP, false);
+            AddSpellToCast(SPELL_SUMMON_IMP, CAST_NULL);
             SummonImp = urand(15000, 20000);
         }
         else
@@ -277,7 +277,7 @@ struct TRINITY_DLL_DECL mob_sunblade_dawn_priestAI : public ScriptedAI
 
         if(HolyNova < diff)
         {
-            AddSpellToCast(SPELL_HOLY_NOVA, false);
+            AddSpellToCast(SPELL_HOLY_NOVA, CAST_NULL);
             HolyNova = urand(5000, 10000);
         }
         else

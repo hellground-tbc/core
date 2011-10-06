@@ -96,7 +96,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
     void OnAuraApply(Aura* aur, Unit* /*caster*/, bool /*stackApply*/)
     {
         if(aur->GetSpellProto()->Id == SPELL_SPELL_HASTE)
-            SetAutocast(SPELL_FROSTBOLT, GetSpellCastTime(sSpellStore.LookupEntry(SPELL_FROSTBOLT)), true);
+            SetAutocast(SPELL_FROSTBOLT, GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT)), true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -106,7 +106,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 
       if(Arcane_Nova_Timer < diff)
       {
-          AddSpellToCast(SPELL_ARCANE_NOVA, false);
+          AddSpellToCast(SPELL_ARCANE_NOVA, CAST_SELF);
           Arcane_Nova_Timer = urand(16000, 20000);
       }
       else
@@ -201,7 +201,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 
       if(Poison_Timer < diff)
       {
-          AddSpellToCast(SPELL_INJECT_POISON, true);
+          AddSpellToCast(SPELL_INJECT_POISON, CAST_SELF);
           Poison_Timer = urand(16000, 22000);
       }
       else
@@ -247,7 +247,7 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
 
         if(Seal_Timer < diff)
         {
-            AddSpellToCast(SPELL_SEAL_OF_WRATH, true);
+            AddSpellToCast(SPELL_SEAL_OF_WRATH, CAST_SELF);
             Seal_Timer = urand(20000, 30000);
         }
         else
