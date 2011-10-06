@@ -1344,19 +1344,6 @@ struct ChainHealingOrder : public std::binary_function<const Unit*, const Unit*,
     }
 };
 
-// Helper for targets nearest to the spell target
-// The spell target is always first unless there is a target at _completely_ the same position (unbelievable case)
-struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
-{
-    const Unit* MainTarget;
-    TargetDistanceOrder(const Unit* Target) : MainTarget(Target) {};
-    // functor for operator ">"
-    bool operator()(const Unit* _Left, const Unit* _Right) const
-    {
-        return (MainTarget->GetDistance(_Left) < MainTarget->GetDistance(_Right));
-    }
-};
-
 void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uint32 num, SpellTargets TargetType)
 {
     Unit *cur = m_targets.getUnitTarget();
@@ -1402,7 +1389,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         }
         else
         {
-            tempUnitMap.sort(TargetDistanceOrder(cur));
+            tempUnitMap.sort(Trinity::ObjectDistanceOrder(cur));
             next = tempUnitMap.begin();
 
             if (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)

@@ -87,7 +87,7 @@ struct TRINITY_DLL_DECL boss_coren_direbrewAI : public ScriptedAI
 
         if(Summon_Timer < diff)
         {
-            if(Unit * target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45, true))
+            if(Unit * target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45, true))
             {
                 AddSpellToCast(target, SPELL_SUMMON_MOLE_MACHINE);
                 //me->SummonGameObject(188478, me->getVictim()->GetPositionX(), me->getVictim()->GetPositionY(), me->getVictim()->GetPositionZ(), 0,0 ,0 ,0 ,0, 4);

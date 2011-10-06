@@ -612,20 +612,6 @@ struct TRINITY_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
             flashheal_timer = 2500;
         }else flashheal_timer -= diff;
 
-        /*if(dispelmagic_timer < diff)
-        {
-        if(rand()%2)
-        {
-        Unit* target = SelectTarget();
-
-        m_creature->CastSpell(target, SPELL_DISPEL_MAGIC, false);
-        }
-        else
-        m_creature->CastSpell(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_DISPEL_MAGIC, false);
-
-        dispelmagic_timer = 12000;
-        }else dispelmagic_timer -= diff;*/
-
         boss_hexlord_addAI::UpdateAI(diff);
     }
 };
@@ -666,7 +652,7 @@ struct TRINITY_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
 
         if(firebolt_timer < diff)
         {
-            if(Unit *target = SelectTarget(SELECT_TARGET_RANDOM))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
             {
                 m_creature->CastSpell(target,SPELL_FIREBOLT, false);
                 firebolt_timer = 700;

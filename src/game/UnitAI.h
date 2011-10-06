@@ -106,10 +106,55 @@ class TRINITY_DLL_SPEC UnitAI
         Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, float maxdist, bool playerOnly, Powers powerOnly);
         Unit* SelectUnit(SelectAggroTarget target, uint32 position);
 
-        void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint64 exclude = 0, float mindist = 0.0f);
+        template <class PREDICATE>
+        Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
+        {
+            const std::list<HostilReference*>& threatlist = me->getThreatManager().getThreatList();
+            if (position >= threatlist.size())
+                return NULL;
 
-        Unit* SelectTarget(SelectAggroTarget target, uint32 position = 0, float dist = 0, bool playerOnly = false, int32 aura = 0);
-        void SelectTargetList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist = 0, bool playerOnly = false, int32 aura = 0);
+            std::list<Unit*> targetList;
+            for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+                if (predicate((*itr)->getTarget()))
+                    targetList.push_back((*itr)->getTarget());
+
+            if (position >= targetList.size())
+                return NULL;
+
+            if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
+                targetList.sort(Trinity::ObjectDistanceOrder(me));
+
+            switch (targetType)
+            {
+                case SELECT_TARGET_NEAREST:
+                case SELECT_TARGET_TOPAGGRO:
+                {
+                    std::list<Unit*>::iterator itr = targetList.begin();
+                    std::advance(itr, position);
+                    return *itr;
+                }
+                case SELECT_TARGET_FARTHEST:
+                case SELECT_TARGET_BOTTOMAGGRO:
+                {
+                    std::list<Unit*>::reverse_iterator ritr = targetList.rbegin();
+                    std::advance(ritr, position);
+                    return *ritr;
+                }
+                case SELECT_TARGET_RANDOM:
+                {
+                    std::list<Unit*>::iterator itr = targetList.begin();
+                    std::advance(itr, urand(position, targetList.size() - 1));
+                    return *itr;
+                }
+                default:
+                    break;
+            }
+
+            return NULL;
+        }
+
+
+        void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint64 exclude = 0, float mindist = 0.0f);
 
         static AISpellInfoType *AISpellInfo;
         static void FillAISpellInfo();

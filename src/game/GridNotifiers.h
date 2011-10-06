@@ -1110,6 +1110,18 @@ namespace Trinity
             uint32 _spellId;
             uint32 _effectIdx;
     };
+
+    // sorter
+    struct ObjectDistanceOrder : public std::binary_function<const Unit *, const Unit *, bool>
+    {
+        const Unit * me;
+        ObjectDistanceOrder(const Unit* Target) : me(Target) {};
+        // functor for operator ">"
+        bool operator()(const Unit * _Left, const Unit * _Right) const
+        {
+            return (me->GetExactDistSq(_Left) < me->GetExactDistSq(_Right));
+        }
+    };
 }
 
 #endif

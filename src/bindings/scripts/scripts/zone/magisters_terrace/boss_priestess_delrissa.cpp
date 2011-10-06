@@ -362,7 +362,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if(SWPainTimer < diff)
         {
             SWPainTimer = 1000;
-            if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true, -SPELL_SW_PAIN))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true)) // targetselector needed later
                 if(!target->hasUnitState(UNIT_STAT_LOST_CONTROL))
                 {
                     AddSpellToCast(target,SPELL_SW_PAIN);
