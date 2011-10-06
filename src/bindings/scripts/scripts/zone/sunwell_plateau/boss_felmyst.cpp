@@ -283,6 +283,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         CreatureAI::EnterEvadeMode();
         me->SetSpeed(MOVE_FLIGHT, 1.8, false);
         m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
+        IntroPhase = 5; // to make proper landing on next EnterCombat
+
         Map::PlayerList const &players = me->GetMap()->GetPlayers();
         for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
             if(Player *p = i->getSource())
