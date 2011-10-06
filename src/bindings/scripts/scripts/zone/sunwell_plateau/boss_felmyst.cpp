@@ -218,6 +218,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         Phase = PHASE_NULL; // not attack yet, but counters on
         m_creature->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
         m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->MoveIdle();
         if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
         {
             float x, y, z;
