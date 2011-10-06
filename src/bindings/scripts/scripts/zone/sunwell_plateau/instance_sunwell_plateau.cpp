@@ -373,7 +373,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
                 if (data == DONE && IsEncounterInProgress())
                 {
-                    if (Creature *pSacrolash = GetCreature(DATA_SACROLASH))
+                    if (Creature *pSacrolash = GetCreature(GetData64(DATA_SACROLASH)))
                         pSacrolash->AI()->DoAction(SISTER_DEATH);
                 }
                 return;
@@ -381,7 +381,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                 EredarTwinsAliveInfo[1] = data;
                 if (data == DONE && IsEncounterInProgress())
                 {
-                    if (Creature *pAlythess = GetCreature(DATA_ALYTHESS))
+                    if (Creature *pAlythess = GetCreature(GetData64(DATA_ALYTHESS)))
                         pAlythess->AI()->DoAction(SISTER_DEATH);
                 }
                 return;
