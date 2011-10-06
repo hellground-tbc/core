@@ -6353,7 +6353,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         case 45235: // Eredar Twins: Blaze
-            m_caster->CastSpell(unitTarget, 45236, true);
+            unitTarget->CastSpell(unitTarget, 45236, true, NULL, NULL, m_caster->GetGUID());
             break;
     }
 

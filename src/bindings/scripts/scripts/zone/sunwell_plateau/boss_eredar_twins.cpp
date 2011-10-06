@@ -272,7 +272,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         pInstance->SetData(DATA_ALYTHESS, NOT_STARTED);
 
-        SetAutocast(SPELL_BLAZE, 3000, true);
+        SetAutocast(SPELL_BLAZE, 3000, false);
     }
 
     void EnterCombat(Unit *who)
@@ -360,6 +360,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             if (Creature *pSacrolash = pInstance->GetCreature(pInstance->GetData64(DATA_SACROLASH)))
                 pSacrolash->Respawn();
         }
+
         ScriptedAI::EnterEvadeMode();
     }
 
@@ -383,7 +384,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             if (ShadownovaTimer < diff)
             {
                 AddSpellToCast(SPELL_SHADOW_NOVA, CAST_RANDOM);
-                ShadownovaTimer = 30000+(rand()%5000);
+                ShadownovaTimer = urand(30000, 35000);
             }
             else 
                 ShadownovaTimer -= diff;
@@ -425,6 +426,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
         else
             EnrageTimer -= diff;
 
+        DoMeleeAttackIfReady();
         CastNextSpellIfAnyAndReady(diff);
     }
 };
