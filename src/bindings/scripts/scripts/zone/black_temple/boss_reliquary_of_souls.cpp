@@ -475,18 +475,6 @@ struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
     void UpdateAI(const uint32 diff){}
 };
 
-//This is used to sort the players by distance in preparation for the Fixate cast.
-struct ROSTargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
-{
-    const Unit* MainTarget;
-    ROSTargetDistanceOrder(const Unit* Target) : MainTarget(Target) {};
-    // functor for operator "<"
-    bool operator()(const Unit* _Left, const Unit* _Right) const
-    {
-        return (MainTarget->GetDistanceSq(_Left->GetPositionX(), _Left->GetPositionY(), _Left->GetPositionZ()) < MainTarget->GetDistanceSq(_Right->GetPositionX(), _Right->GetPositionY(), _Right->GetPositionZ()));
-    }
-};
-
 struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 {
     boss_essence_of_sufferingAI(Creature *c) : ScriptedAI(c)
@@ -577,7 +565,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if(targets.empty())
             return; // No targets added for some reason. No point continuing.
 
-        targets.sort(ROSTargetDistanceOrder(m_creature)); // Sort players by distance.
+        targets.sort(Trinity::ObjectDistanceOrder(m_creature)); // Sort players by distance.
         targets.resize(1); // Only need closest target.
 
         Unit* target = targets.front();
