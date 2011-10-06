@@ -151,6 +151,16 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
             AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_ALYTHESS_DEAD);
     }
 
+    void EnterEvadeMode()
+    {
+        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
+        {
+            if (Creature *pAlythess = pInstance->GetCreature(pInstance->GetData64(DATA_ALYTHESS)))
+                pAlythess->Respawn();
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -341,6 +351,16 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
     {
         if (action == SISTER_DEATH)
             AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_SACROLASH_DEAD);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (pInstance->GetData(DATA_SACROLASH) == DONE)
+        {
+            if (Creature *pSacrolash = pInstance->GetCreature(pInstance->GetData64(DATA_SACROLASH)))
+                pSacrolash->Respawn();
+        }
+        ScriptedAI::EnterEvadeMode();
     }
 
     void UpdateAI(const uint32 diff)
