@@ -1528,14 +1528,14 @@ void Aura::TriggerSpell()
                     // Nitrous Boost
                     case 27746:
                     {
-                        if (caster->GetPower(POWER_MANA) >= 10)
+                        if (m_target->GetPower(POWER_MANA) >= 10)
                         {
-                            caster->ModifyPower(POWER_MANA, -10);
-                            caster->SendEnergizeSpellLog(caster, 27746, -10, POWER_MANA);
+                            m_target->ModifyPower(POWER_MANA, -10);
+                            m_target->SendEnergizeSpellLog(m_target, 27746, -10, POWER_MANA);
                         }
                         else
                         {
-                            caster->RemoveAurasDueToSpell(27746);
+                            m_target->RemoveAurasDueToSpell(27746);
                             return;
                         }
                     } break;
