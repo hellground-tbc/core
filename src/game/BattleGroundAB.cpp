@@ -428,7 +428,7 @@ void BattleGroundAB::_NodeDeOccupied(uint8 node)
         Player *plr;
         for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
-            plr = objmgr.GetPlayer(*ghost_list.begin());
+            plr = objmgr.GetPlayer(*itr);
             if (!plr)
                 continue;
             if (!ClosestGrave)
