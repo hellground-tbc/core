@@ -47,18 +47,18 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         // only const version for outer users
         void DeleteInstance(uint32 mapid, uint32 instanceId);
 
-        inline uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
+        uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
         {
             Map const* m = CreateBaseMap(mapid);
             return m->GetAreaFlag(x, y, z);
         }
-        inline uint32 GetAreaId(uint32 mapid, float x, float y, float z) { return Map::GetAreaId(GetAreaFlag(mapid, x, y, z),mapid); }
-        inline uint32 GetZoneId(uint32 mapid, float x, float y, float z) { return Map::GetZoneId(GetAreaFlag(mapid, x, y, z),mapid); }
+        uint32 GetAreaId(uint32 mapid, float x, float y, float z) { return Map::GetAreaId(GetAreaFlag(mapid, x, y, z),mapid); }
+        uint32 GetZoneId(uint32 mapid, float x, float y, float z) { return Map::GetZoneId(GetAreaFlag(mapid, x, y, z),mapid); }
 
         void Initialize(void);
         void Update(uint32 diff);
 
-        inline void SetGridCleanUpDelay(uint32 t)
+        void SetGridCleanUpDelay(uint32 t)
         {
             if (t < MIN_GRID_DELAY)
                 i_gridCleanUpDelay = MIN_GRID_DELAY;
@@ -66,7 +66,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
                 i_gridCleanUpDelay = t;
         }
 
-        inline void SetMapUpdateInterval(uint32 t)
+        void SetMapUpdateInterval(uint32 t)
         {
             if (t > MIN_MAP_UPDATE_DELAY)
                 t = MIN_MAP_UPDATE_DELAY;
@@ -128,7 +128,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
 
         bool CanPlayerEnter(uint32 mapid, Player* player);
         void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
-        inline uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
+        uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
         void InitMaxInstanceId();
         void InitializeVisibilityDistanceInfo();
 

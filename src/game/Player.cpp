@@ -13067,8 +13067,6 @@ void Player::AddQuest(Quest const *pQuest, Object *questGiver)
 
     // if not exist then created with set uState==NEW and rewarded=false
     QuestStatusData& questStatusData = mQuestStatus[quest_id];
-    if (questStatusData.uState != QUEST_NEW)
-        questStatusData.uState = QUEST_CHANGED;
 
     // check for repeatable quests status reset
     questStatusData.m_status = QUEST_STATUS_INCOMPLETE;
@@ -13109,6 +13107,9 @@ void Player::AddQuest(Quest const *pQuest, Object *questGiver)
         questStatusData.m_timer = 0;
 
     SetQuestSlot(log_slot, quest_id, qtime);
+
+    if (questStatusData.uState != QUEST_NEW)
+        questStatusData.uState = QUEST_CHANGED;
 
     //starting initial quest script
     if (questGiver && pQuest->GetQuestStartScript()!=0)
@@ -13284,8 +13285,9 @@ void Player::FailTimedQuest(uint32 quest_id)
     {
         QuestStatusData& q_status = mQuestStatus[quest_id];
 
-        if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
         q_status.m_timer = 0;
+        if (q_status.uState != QUEST_NEW)
+            q_status.uState = QUEST_CHANGED;
 
         IncompleteQuest(quest_id);
 
@@ -13778,7 +13780,7 @@ uint32 Player::GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry)
     return 0;
 }
 
-void Player::AdjustQuestReqItemCount(Quest const* pQuest)
+void Player::AdjustQuestReqItemCount(Quest const* pQuest, QuestStatusData& questStatusData)
 {
     if (pQuest->HasFlag(QUEST_TRINITY_FLAGS_DELIVER))
     {
@@ -13790,9 +13792,9 @@ void Player::AdjustQuestReqItemCount(Quest const* pQuest)
                 uint32 quest_id = pQuest->GetQuestId();
                 uint32 curitemcount = GetItemCount(pQuest->ReqItemId[i],true);
 
-                QuestStatusData& q_status = mQuestStatus[quest_id];
-                q_status.m_itemcount[i] = std::min(curitemcount, reqitemcount);
-                if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
+                questStatusData.m_itemcount[i] = std::min(curitemcount, reqitemcount);
+                if (questStatusData.uState != QUEST_NEW)
+                    questStatusData.uState = QUEST_CHANGED;
             }
         }
     }
@@ -14830,12 +14832,12 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     // clear charm/summon related fields
     SetCharm(NULL);
     SetPet(NULL);
-    SetCharmerGUID(NULL);
-    SetOwnerGUID(NULL);
-    SetCreatorGUID(NULL);
+    SetCharmerGUID(0);
+    SetOwnerGUID(0);
+    SetCreatorGUID(0);
 
     // reset some aura modifiers before aura apply
-    SetFarSight(NULL);
+    SetFarSight(0);
     SetUInt32Value(PLAYER_TRACK_CREATURES, 0);
     SetUInt32Value(PLAYER_TRACK_RESOURCES, 0);
 
