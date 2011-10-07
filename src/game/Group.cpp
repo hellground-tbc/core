@@ -212,6 +212,11 @@ void Group::ConvertToRaid()
         CharacterDatabase.PExecute("UPDATE groups SET isRaid = 1 WHERE leaderGuid='%u'", GUID_LOPART(m_leaderGuid));
 
     SendUpdate();
+
+    // update quest related GO states (quest activity dependent from raid membership)
+    for (member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
+        if (Player* player = objmgr.GetPlayer(citr->guid))
+            player->UpdateForQuestsGO();
 }
 
 bool Group::AddInvite(Player *player)
@@ -306,6 +311,10 @@ bool Group::AddMember(const uint64 &guid, const char* name, bool lfg)
         player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
         UpdatePlayerOutOfRange(player);
 
+        // quest related GO state dependent from raid memebership
+        if (isRaidGroup())
+            player->UpdateForQuestsGO();
+
         // if it's not from autoadd/autojoin - prevent core freeze
         if (!lfg)
         {
@@ -328,6 +337,10 @@ uint32 Group::RemoveMember(const uint64 &guid, const uint8 &method)
 
         if (Player *player = objmgr.GetPlayer(guid))
         {
+            // quest related GO state dependent from raid membership
+            if (isRaidGroup())
+                player->UpdateForQuestsGO();
+
             WorldPacket data;
 
             if (method == 1)
@@ -463,6 +476,9 @@ void Group::Disband(bool hideDestroy)
                 player->SetOriginalGroup(NULL);
             else
                 player->SetGroup(NULL);
+
+            if (isRaidGroup())
+                player->UpdateForQuestsGO();
         }
 
         if (!player->GetSession())
