@@ -1829,7 +1829,10 @@ bool Pet::HasSpell(uint32 spell) const
     if(getPetType() == POSSESSED_PET)
         return Creature::HasSpell(spell);
     else
-        return (m_spells.find(spell) != m_spells.end());
+    {
+        PetSpellMap::const_iterator itr = m_spells.find(spell);
+        return (itr != m_spells.end() && itr->second->state != PETSPELL_REMOVED);
+    }
 }
 
 // Get all passive spells in our skill line
