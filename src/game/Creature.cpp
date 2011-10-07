@@ -59,7 +59,8 @@ void TrainerSpellData::Clear()
 {
     for (TrainerSpellList::iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
         delete (*itr);
-    spellList.empty();
+
+    spellList.clear();
 }
 
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
