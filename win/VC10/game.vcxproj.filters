@@ -52,6 +52,9 @@
     <Filter Include="vmaps">
       <UniqueIdentifier>{629ee75b-cc1b-4345-9a97-8bc3e13fd8d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Storages">
+      <UniqueIdentifier>{5097b489-a564-484e-b008-d4e31f9a8052}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\game\Channel.cpp">
@@ -508,6 +511,9 @@
     <ClCompile Include="..\..\src\game\vmap\WorldModel.cpp">
       <Filter>vmaps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\DBCStores.cpp">
+      <Filter>Storages</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -957,6 +963,18 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\vmap\WorldModel.h">
       <Filter>vmaps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\DBCEnums.h">
+      <Filter>Storages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\DBCfmt.h">
+      <Filter>Storages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\DBCStores.h">
+      <Filter>Storages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\DBCStructure.h">
+      <Filter>Storages</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

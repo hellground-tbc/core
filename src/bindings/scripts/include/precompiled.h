@@ -5,7 +5,7 @@
 #ifndef SC_PRECOMPILED_H
 #define SC_PRECOMPILED_H
 
-#include "Database/DBCStores.h"
+#include "DBCStores.h"
 
 #include "../ScriptMgr.h"
 #include "Cell.h"

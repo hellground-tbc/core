@@ -1,6 +1,6 @@
 #include "PlayerAI.h"
 #include "Player.h"
-#include "Database/DBCStores.h"
+#include "DBCStores.h"
 #include "SpellMgr.h"
 
 class Player;

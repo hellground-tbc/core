@@ -1,8 +1,4 @@
 SET(trinitydatabase_STAT_SRCS
-   DBCStores.cpp
-   DBCStores.h
-   DBCStructure.h
-   DBCfmt.cpp
    Database.cpp
    Database.h
    DatabaseEnv.h
