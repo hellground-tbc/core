@@ -112,8 +112,8 @@ inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
     if (!u->isAlive() || !c->isAlive() || c == u)
         return;
 
-    // hacky exception for Sunblade Lookout, Shattered Sun Bombardier and Brutallus
-    if (u->IsTaxiFlying() && c->GetEntry() != 25132 && c->GetEntry() != 25144 && c->GetEntry() != 25158)
+
+    if (u->IsTaxiFlying() && !c->CanReactToPlayerOnTaxi())
         return;
 
     if (c->HasReactState(REACT_AGGRESSIVE) && !c->hasUnitState(UNIT_STAT_SIGHTLESS))

@@ -2575,3 +2575,17 @@ void Creature::SetLevitate(bool enable)
     data << GetPackGUID();
     SendMessageToSet(&data, true);
 }
+
+bool Creature::CanReactToPlayerOnTaxi()
+{
+    // hacky exception for Sunblade Lookout, Shattered Sun Bombardier and Brutallus
+    switch (GetEntry())
+    {
+        case 25132:
+        case 25144:
+        case 25158:
+            return true;
+        default:
+            return false;
+    }
+}
