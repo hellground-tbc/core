@@ -1744,7 +1744,7 @@ void World::LoadAutobroadcasts()
 }
 
 /// Update the World !
-void World::Update(time_t diff)
+void World::Update(uint32 diff)
 {
     m_updateTime = uint32(diff);
     if (m_configs[CONFIG_INTERVAL_LOG_UPDATE])
@@ -2512,7 +2512,7 @@ void World::SendServerMessage(uint32 type, const char *text, Player* player)
         SendGlobalMessage(&data);
 }
 
-void World::UpdateSessions(time_t diff)
+void World::UpdateSessions(uint32 diff)
 {
     ///- Add new sessions
     WorldSession* sess;

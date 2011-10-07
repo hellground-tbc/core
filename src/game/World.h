@@ -516,9 +516,9 @@ class World
         static bool IsStopped() { return m_stopEvent; }
 
         void LoadAutobroadcasts();
-        void Update(time_t diff);
+        void Update(uint32 diff);
 
-        void UpdateSessions(time_t diff);
+        void UpdateSessions(uint32 diff);
         /// Set a server rate (see #Rates)
         void setRate(Rates rate,float value) { rate_values[rate]=value; }
         /// Get a server rate (see #Rates)

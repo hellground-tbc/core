@@ -1037,7 +1037,7 @@ void Group::SendUpdate()
 }
 
 // Automatic Update by World thread
-void Group::Update(time_t diff)
+void Group::Update(uint32 diff)
 {
     if (m_leaderLogoutTime)
     {

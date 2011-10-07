@@ -56,7 +56,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         inline uint32 GetZoneId(uint32 mapid, float x, float y, float z) { return Map::GetZoneId(GetAreaFlag(mapid, x, y, z),mapid); }
 
         void Initialize(void);
-        void Update(time_t);
+        void Update(uint32 diff);
 
         inline void SetGridCleanUpDelay(uint32 t)
         {

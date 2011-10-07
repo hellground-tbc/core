@@ -292,7 +292,7 @@ class TRINITY_DLL_SPEC Group
         //void SendInit(WorldSession *session);
         void SendTargetIconList(WorldSession *session);
         void SendUpdate();
-        void Update(time_t diff);
+        void Update(uint32 diff);
         void UpdatePlayerOutOfRange(Player* pPlayer);
                                                             // ignore: GUID of player that will be ignored
         void BroadcastPacket(WorldPacket *packet, bool ignorePlayersInBGRaid, int group=-1, uint64 ignore=0);
