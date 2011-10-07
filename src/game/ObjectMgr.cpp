@@ -4502,9 +4502,6 @@ void ObjectMgr::SetHighestGuids()
     if (result)
         m_hiCreatureGuid = (*result)[0].GetUInt32()+1;
 
-    // pet guids are not saved to DB, set to 0 (pet guid != pet id)
-    m_hiPetGuid = 0;
-
     result = CharacterDatabase.Query("SELECT MAX(guid) FROM item_instance");
     if (result)
         m_hiItemGuid = (*result)[0].GetUInt32()+1;
