@@ -2144,7 +2144,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (!unitList.empty())
         {
             if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF)
-               unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
+                unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
 
             switch (m_spellInfo->Id)
             {
@@ -4346,6 +4346,8 @@ uint8 Spell::CanCast(bool strict)
                             continue;
                         // only beneficial effects count
                         if (!IsPositiveSpell(spellInfo->Id))
+                            continue;
+                        if (spellInfo->Dispel != DISPEL_MAGIC)
                             continue;
                         priest_buffs.push_back(spellInfo->Id);
                     }
