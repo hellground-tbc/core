@@ -200,6 +200,8 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
                 mem->AI()->AttackStart(target);
         }
     }
+    if(m_Respawned)
+        m_Respawned = false;
 }
 
 void CreatureGroup::FormationReset(bool dismiss)
@@ -226,7 +228,7 @@ void CreatureGroup::FormationReset(bool dismiss)
 
 void CreatureGroup::RespawnFormation(Creature *member)
 {
-    if(!member)
+    if(!member || m_Respawned)
         return;
 
     for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
@@ -245,6 +247,7 @@ void CreatureGroup::RespawnFormation(Creature *member)
             mem->Respawn();
         }
     }
+    m_Respawned = true;
 }
 
 void CreatureGroup::LeaderMoveTo(float x, float y, float z)
