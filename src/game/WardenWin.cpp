@@ -447,7 +447,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     sLog.outWarden("RESULT MEM_CHECK fail CheckId %u account Id %u got: %s  should be: %s;", *itr, Client->GetAccountId(), tmpStrContents.c_str(), tmpStrByteArray.c_str());
                     //sLog.outWarden("UPDATE warden_data_result SET result = '%s' WHERE id = %u;", tmpStrContentsRev.c_str(), *itr);
 
-                    //found = true;
+                    found = true;
                     buff.rpos(buff.rpos() + rd->Length);
                     continue;
                 }
