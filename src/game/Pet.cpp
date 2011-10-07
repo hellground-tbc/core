@@ -73,7 +73,7 @@ Pet::Pet(PetType type) : Creature()
     m_auraUpdateMask = 0;
 
     // pets always have a charminfo, even if they are not actually charmed
-    CharmInfo* charmInfo = InitCharmInfo();
+    InitCharmInfo();
 
     if (type == MINI_PET || type == POSSESSED_PET)                                    // always passive
         SetReactState(REACT_PASSIVE);
@@ -1224,7 +1224,9 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
             }
             break;
         default:
-            sLog.outError("Pet have incorrect type (%u) for levelup.", getPetType());
+            SetCreateHealth(urand(cinfo->minhealth, cinfo->maxhealth));
+            SetCreateMana(urand(cinfo->minmana, cinfo->maxmana));
+            //sLog.outError("Pet have incorrect type (%u) for levelup.", getPetType());
             break;
     }
 
@@ -1824,7 +1826,10 @@ bool Pet::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 pet_number)
 
 bool Pet::HasSpell(uint32 spell) const
 {
-    return (m_spells.find(spell) != m_spells.end());
+    if(getPetType() == POSSESSED_PET)
+        return Creature::HasSpell(spell);
+    else
+        return (m_spells.find(spell) != m_spells.end());
 }
 
 // Get all passive spells in our skill line

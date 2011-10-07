@@ -1858,6 +1858,12 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         }
     }
 
+    if (petType == POSSESSED_PET)
+    {
+        pet->GetCharmInfo()->InitEmptyActionBar(false);
+        pet->GetCharmInfo()->InitPossessCreateSpells();
+    }
+
     if (duration > 0)
         pet->SetDuration(duration);
 
