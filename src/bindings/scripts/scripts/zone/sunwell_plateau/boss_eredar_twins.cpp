@@ -435,14 +435,12 @@ struct TRINITY_DLL_DECL mob_shadow_imageAI : public ScriptedAI
     mob_shadow_imageAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 ShadowfuryTimer;
-    uint32 KillTimer;
     uint32 DarkstrikeTimer;
 
     void Reset()
     {
         ShadowfuryTimer = urand(5000, 20000);
         DarkstrikeTimer = 3000;
-        KillTimer = 15000;
     }
 
     void AttackStart(Unit * target)

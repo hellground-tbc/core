@@ -1810,6 +1810,8 @@ void Creature::Respawn()
         if (poolid)
             poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_UNIT);
     }
+
+    SendMonsterStop();
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn)
