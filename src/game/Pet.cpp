@@ -1673,6 +1673,9 @@ bool Pet::_removeSpell(uint16 spell_id)
 void Pet::InitPetCreateSpells()
 {
     m_charmInfo->InitPetActionBar();
+    for (PetSpellMap::iterator i = m_spells.begin(); i != m_spells.end(); ++i)
+        delete i->second;
+
     m_spells.clear();
 
     int32 usedtrainpoints = 0, petspellid;
