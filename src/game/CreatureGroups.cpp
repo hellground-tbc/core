@@ -240,10 +240,8 @@ void CreatureGroup::RespawnFormation(Creature *member)
         if (Creature *mem = member->GetMap()->GetCreature(itr->first))
         {
             if (mem->isAlive())
-            {
-                mem->AI()->EnterEvadeMode();
                 continue;
-            }
+
             mem->Respawn();
         }
     }
