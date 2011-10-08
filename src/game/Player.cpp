@@ -13085,7 +13085,7 @@ void Player::AddQuest(Quest const *pQuest, Object *questGiver)
     }
 
     GiveQuestSourceItem(pQuest);
-    AdjustQuestReqItemCount(pQuest);
+    AdjustQuestReqItemCount(pQuest, questStatusData);
 
     if (pQuest->GetRepObjectiveFaction())
         SetFactionVisibleForFactionId(pQuest->GetRepObjectiveFaction());
