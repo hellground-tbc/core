@@ -214,8 +214,12 @@ void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggr
             break;
     }
 
-    if (targetList.size() > num)
-        targetList.resize(num);
+    // already resized
+    if (targetType != SELECT_TARGET_RANDOM)
+    {
+        if (targetList.size() > num)
+            targetList.resize(num);
+    }
 }
 
 Unit* UnitAI::SelectLowestHpFriendly(float range, uint32 MinHPDiff)
