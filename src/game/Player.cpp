@@ -16135,11 +16135,12 @@ void Player::SaveToDB()
         ss << GetUInt32Value(i) << " ";
     }
 
+    ss << "', ";
+
     ss << m_taxi;                                           // string with TaxiMaskSize numbers
 
     ss << ", ";
 
-    ss << "', ";
     ss << (inworld ? 1 : 0);
 
     ss << ", ";
