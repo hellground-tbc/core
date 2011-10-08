@@ -143,7 +143,7 @@ Unit *UnitAI::ReturnTargetHelper(SelectAggroTarget targetType, uint32 position, 
 Unit* UnitAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float max_dist, bool playerOnly, uint64 excludeGUID, float min_dist)
 {
     std::list<Unit*> targetList;
-    SelectUnitList(targetList, 0, targetType, max_dist, playerOnly);
+    SelectUnitList(targetList, 0, targetType, max_dist, playerOnly, excludeGUID, min_dist);
 
     if (targetList.empty())
         return NULL;
