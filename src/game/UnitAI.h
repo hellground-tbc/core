@@ -112,7 +112,7 @@ class TRINITY_DLL_SPEC UnitAI
             std::list<Unit*> targetList;
             SelectUnitList(targetList, 0, targetType, 0, false);
 
-            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end();)
+            for (std::list<Unit*>::iterator itr = targetList.begin(); itr != targetList.end();)
             {
                 if (!predicate(*itr))
                     targetList.erase(itr++);
