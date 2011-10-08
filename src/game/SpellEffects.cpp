@@ -4432,7 +4432,7 @@ void Spell::EffectSummonPossessed(uint32 i)
 
     int32 duration = GetSpellDuration(m_spellInfo);
 
-    Pet* pet = ((Player*)m_caster)->SummonPet(entry, x, y, z, m_caster->GetOrientation(), POSSESSED_PET, duration);
+    Pet* pet = ((Player*)m_caster)->SummonPet(entry, x, y, z + 0.5f, m_caster->GetOrientation(), POSSESSED_PET, duration);
     if (!pet)
         return;
 
