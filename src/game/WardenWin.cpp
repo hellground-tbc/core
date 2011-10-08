@@ -18,6 +18,7 @@
 
 #include "Auth/Hmac.h"
 #include "Auth/WardenKeyGeneration.h"
+#include "AccountMgr.h"
 #include "Common.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -364,7 +365,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
         if (result == 0x00)
         {
             sLog.outWarden("TIMING CHECK FAIL result 0x00, account %u", Client->GetAccountId());
-            found = true;
+            //found = true;
         }
 
         uint32 newClientTicks;
@@ -399,7 +400,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                 if (Mem_Result != 0)
                 {
                     sLog.outWarden("RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", *itr, Client->GetAccountId());
-                    found = true;
+                    //found = true;
                     continue;
                 }
 
@@ -487,7 +488,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         sLog.outWarden("RESULT MODULE_CHECK fail, CheckId %u account Id %u", *itr, Client->GetAccountId());
                     if (type == DRIVER_CHECK)
                         sLog.outWarden("RESULT DRIVER_CHECK fail, CheckId %u account Id %u", *itr, Client->GetAccountId());
-                    found = true;
+                    //found = true;
                     buff.rpos(buff.rpos() + 1);
                     continue;
                 }
@@ -509,7 +510,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
                 if (Lua_Result != 0)
                 {
                     sLog.outWarden("RESULT LUA_STR_CHECK fail, CheckId %u account Id %u", *itr, Client->GetAccountId());
-                    found = true;
+                    //found = true;
                     continue;
                 }
 
@@ -536,14 +537,14 @@ void WardenWin::HandleData(ByteBuffer &buff)
                 if (Mpq_Result != 0)
                 {
                     sLog.outWarden("RESULT MPQ_CHECK not 0x00 account id %u", Client->GetAccountId());
-                    found = true;
+                    //found = true;
                     continue;
                 }
 
                 if (memcmp(buff.contents() + buff.rpos(), rs->res.AsByteArray(0), 20) != 0) // SHA1
                 {
                     sLog.outWarden("RESULT MPQ_CHECK fail, CheckId %u account Id %u", *itr, Client->GetAccountId());
-                    found = true;
+                    //found = true;
                     buff.rpos(buff.rpos() + 20);            // 20 bytes SHA1
                     continue;
                 }
@@ -557,6 +558,18 @@ void WardenWin::HandleData(ByteBuffer &buff)
         }
     }
 
-    if (found && sWorld.getConfig(CONFIG_WARDEN_KICK))
-        Client->KickPlayer();
+    if (found && sWorld.getConfig(CONFIG_WARDEN_KICK) && !sWorld.getConfig(CONFIG_WARDEN_BAN))
+    {
+       Client->KickPlayer();
+    }
+
+    if (found && sWorld.getConfig(CONFIG_WARDEN_BAN))
+    {
+                std::string accountname;
+                if (accmgr.GetName(Client->GetAccountId(), accountname))
+                {
+                    sWorld.BanAccount(BAN_ACCOUNT, accountname.c_str(), "-1", "Cheat", "CONSOLE");
+                }
+                return;
+    }
 }

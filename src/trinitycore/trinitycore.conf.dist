@@ -214,6 +214,10 @@ EAIErrorLevel = 2
 #        Kick player on failed check
 #        Default: 0 (Disabled)
 #                 1 (Enabled)
+#    Warden.Ban
+#        Ban player on failed check
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
 #
 ###################################################################################################################
 
@@ -249,6 +253,7 @@ AddonChannel = 1
 MapUpdate.Threads = 1
 
 Warden.Kick = 0
+Warden.Ban = 0
 
 ###################################################################################################################
 # SERVER LOGGING
