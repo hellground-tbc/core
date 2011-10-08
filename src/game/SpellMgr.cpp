@@ -2965,6 +2965,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39090: // Positive Charge
         case 39093: // Negative Charge
         case 39968: // Needle Spine Explosion
+        case 39692: // Cannon
             spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
             break;
         case 42992: //ram - neutral
