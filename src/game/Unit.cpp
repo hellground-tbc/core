@@ -88,6 +88,7 @@ static Unit::AuraTypeSet GenerateVictimProcCastAuraTypes()
     static Unit::AuraTypeSet auraTypes;
     auraTypes.insert(SPELL_AURA_DUMMY);
     auraTypes.insert(SPELL_AURA_PRAYER_OF_MENDING);
+    auraTypes.insert(SPELL_AURA_PRAYER_OF_MENDING_NPC);
     auraTypes.insert(SPELL_AURA_PROC_TRIGGER_SPELL);
     return auraTypes;
 }
@@ -10872,6 +10873,7 @@ void InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_MOD_HASTE] = true;
     isTriggerAura[SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE]=true;
     isTriggerAura[SPELL_AURA_PRAYER_OF_MENDING] = true;
+    isTriggerAura[SPELL_AURA_PRAYER_OF_MENDING_NPC] = true;
     isTriggerAura[SPELL_AURA_PROC_TRIGGER_SPELL_WITH_VALUE] = true;
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN]=true;
@@ -11102,7 +11104,12 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
             {
                 sLog.outDebug("ProcDamageAndSpell: casting mending (triggered by %s dummy aura of spell %u)",
                     (isVictim?"a victim's":"an attacker's"),triggeredByAura->GetId());
-                HandleMeandingAuraProc(triggeredByAura);
+                HandleMendingAuraProc(triggeredByAura);
+                break;
+            }
+            case SPELL_AURA_PRAYER_OF_MENDING_NPC:
+            {
+                HandleMendingNPCAuraProc(triggeredByAura);
                 break;
             }
             case SPELL_AURA_PROC_TRIGGER_SPELL_WITH_VALUE:
@@ -11838,7 +11845,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     return roll_chance_f(chance);
 }
 
-bool Unit::HandleMeandingAuraProc(Aura* triggeredByAura)
+bool Unit::HandleMendingAuraProc(Aura* triggeredByAura)
 {
     // aura can be deleted at casts
     SpellEntry const* spellProto = triggeredByAura->GetSpellProto();
@@ -11885,6 +11892,57 @@ bool Unit::HandleMeandingAuraProc(Aura* triggeredByAura)
             }
         }
         heal = caster->SpellHealingBonus(spellProto, heal, HEAL, this);
+    }
+
+    // heal
+    CastCustomSpell(this,33110,&heal,NULL,NULL,true);
+    return true;
+}
+
+bool Unit::HandleMendingNPCAuraProc(Aura* triggeredByAura)
+{
+    SpellEntry const* spellProto = triggeredByAura->GetSpellProto();
+    uint32 effIdx = triggeredByAura->GetEffIndex();
+    int32 heal = triggeredByAura->GetModifier()->m_amount;
+
+    // jumps
+    int32 jumps = triggeredByAura->m_procCharges-1;
+
+    if (Unit* caster = triggeredByAura->GetCaster())
+    {
+        if(caster->GetTypeId() != TYPEID_UNIT)
+            return false;
+
+        Creature* CreatureCaster = (Creature*)caster;
+
+        // next target selection
+        if (jumps >= 0)
+        {
+            //triggeredByAura->m_procCharges = jumps;
+            triggeredByAura->UpdateAuraCharges();
+            float radius = 20.0;
+
+            CreatureGroup * formation = (CreatureCaster->GetFormation());
+            // only search for targets if having group formation !
+            if(!formation)
+                return false;
+
+            if (Creature* target = formation->GetNextRandomCreatureGroupMember(CreatureCaster, radius))
+            {
+                if(jumps > 0)
+                {
+                    //remove aura on caster
+                    RemoveAurasDueToSpell(spellProto->Id);
+                    // manually apply aura on target, to update charges count
+                    Aura* aura = CreateAura(spellProto, effIdx, NULL, this, NULL);
+                    aura->SetLoadedState(target->GetGUID(), heal, triggeredByAura->GetAuraMaxDuration(), triggeredByAura->GetAuraMaxDuration(), jumps);
+                    aura->SetTarget(target);
+                    target->AddAura(aura);
+                    // visual jump
+                    CastSpell(target, 41637, true, NULL, triggeredByAura, caster->GetGUID());
+                }
+            }
+        }
     }
 
     // heal

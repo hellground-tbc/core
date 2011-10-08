@@ -292,3 +292,27 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
         member->SetHomePosition(dx, dy, dz, pathangle);
     }
 }
+
+Creature* CreatureGroup::GetNextRandomCreatureGroupMember(Creature* member, float radius)
+{
+    std::vector<Creature*> nearMembers;
+    nearMembers.reserve(m_members.size()*2);
+
+    for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        printf("w petli for  ");
+        if (Creature *mem = member->GetMap()->GetCreature(itr->first))
+        {
+            // IsHostileTo check controlled by enemy
+            if (itr->first != member->GetGUID() && member->IsWithinDistInMap(mem, radius)
+            && !member->IsHostileTo(mem) && mem->isAlive() && !mem->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+                nearMembers.push_back(mem);
+        }
+    }
+
+    if (nearMembers.empty())
+        return NULL;
+
+    uint32 randTarget = urand(0,nearMembers.size()-1);
+    return nearMembers[randTarget];
+}

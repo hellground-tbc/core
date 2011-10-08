@@ -74,6 +74,7 @@ class CreatureGroup
 
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);
+        Creature* GetNextRandomCreatureGroupMember(Creature* member, float radius);
 };
 
 #define formation_mgr Trinity::Singleton<CreatureGroupManager>::Instance()
