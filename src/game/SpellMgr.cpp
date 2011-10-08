@@ -2699,6 +2699,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 14189:                     // Seal Fate
         case 14157:                     // Ruthlessness
         case 14181:                     // Relentless Strikes
+        case 17794:                     // Improved Shadow Bolt ranks 1-5
+        case 17797:
+        case 17798:
+        case 17799:
+        case 17800:
             spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;
             break;
         /* UNSORTED */
