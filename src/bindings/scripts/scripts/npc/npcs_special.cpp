@@ -43,6 +43,7 @@ EndContentData */
 
 #include "precompiled.h"
 #include "Totem.h"
+#include "PetAI.h"
 #include <list>
 
 /*########
@@ -912,35 +913,8 @@ bool GossipSelect_npc_sayge(Player *player, Creature *_Creature, uint32 sender, 
     return true;
 }
 
-struct TRINITY_DLL_DECL npc_steam_tonkAI : public ScriptedAI
-{
-    npc_steam_tonkAI(Creature *c) : ScriptedAI(c) {}
-
-    void Reset() {}
-    void EnterCombat(Unit *who) {}
-
-    void OnPossess(bool apply)
-    {
-        if (apply)
-        {
-            // Initialize the action bar without the melee attack command
-            m_creature->InitCharmInfo();
-            m_creature->GetCharmInfo()->InitEmptyActionBar(false);
-
-            m_creature->SetReactState(REACT_PASSIVE);
-        }
-        else
-            m_creature->SetReactState(REACT_AGGRESSIVE);
-    }
-
-};
-
-CreatureAI* GetAI_npc_steam_tonk(Creature *_Creature)
-{
-    return new npc_steam_tonkAI(_Creature);
-}
-
 #define SPELL_TONK_MINE_DETONATE 25099
+#define NPC_STEAM_TONK 19405
 
 struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
 {
@@ -949,11 +923,13 @@ struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
         m_creature->SetReactState(REACT_PASSIVE);
     }
 
-    uint32 ExplosionTimer;
+    uint32 ArmingTimer;
+    uint32 CheckTimer;
 
     void Reset()
     {
-        ExplosionTimer = 3000;
+        ArmingTimer = 3000;
+        CheckTimer = 1000;
     }
 
     void EnterCombat(Unit *who) {}
@@ -962,12 +938,27 @@ struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (ExplosionTimer < diff)
+        if(ArmingTimer)
         {
-            m_creature->CastSpell(m_creature, SPELL_TONK_MINE_DETONATE, true);
-            m_creature->setDeathState(DEAD); // unsummon it
+            if(ArmingTimer <= diff)
+            {
+                ArmingTimer = 0;
+            }
+            else
+                ArmingTimer -= diff;
         } else
-            ExplosionTimer -= diff;
+        {
+            if (CheckTimer < diff)
+            {
+                if(GetClosestCreatureWithEntry(me, NPC_STEAM_TONK, 2))
+                {
+                    m_creature->CastSpell(m_creature, SPELL_TONK_MINE_DETONATE, true);
+                    m_creature->setDeathState(DEAD);
+                }
+                CheckTimer = 1000;
+            } else
+                CheckTimer -= diff;
+        }
     }
 };
 
@@ -2438,11 +2429,6 @@ void AddSC_npcs_special()
     newscript->Name="npc_sayge";
     newscript->pGossipHello = &GossipHello_npc_sayge;
     newscript->pGossipSelect = &GossipSelect_npc_sayge;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="npc_steam_tonk";
-    newscript->GetAI = &GetAI_npc_steam_tonk;
     newscript->RegisterSelf();
 
     newscript = new Script;
