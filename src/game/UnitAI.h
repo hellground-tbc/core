@@ -102,8 +102,7 @@ class TRINITY_DLL_SPEC UnitAI
         std::list<Player*> FindAllPlayersInRange(float range, Unit* finder = NULL);
 
         //Selects a unit from the creature's current aggro list
-        Unit* SelectUnit(SelectAggroTarget target, uint32 position);
-        Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, uint64 = 0, float mindist = 0.0f);
+        Unit* SelectUnit(SelectAggroTarget target, uint32 position = 0, float max_dist = 0, bool playerOnly = false, uint64 excludeGUID = 0, float mind_ist = 0.0f);
         Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, float maxdist, bool playerOnly, Powers powerOnly);
 
         template <class PREDICATE>

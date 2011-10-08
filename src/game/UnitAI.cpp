@@ -140,11 +140,6 @@ Unit *UnitAI::ReturnTargetHelper(SelectAggroTarget targetType, uint32 position, 
     return NULL;
 }
 
-Unit* UnitAI::SelectUnit(SelectAggroTarget target, uint32 position)
-{
-    return SelectUnit(target, position, 0.0f, false);
-}
-
 Unit* UnitAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float max_dist, bool playerOnly, uint64 excludeGUID, float min_dist)
 {
     std::list<Unit*> targetList;
@@ -211,7 +206,7 @@ void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggr
             while (targetList.size() > num)
             {
                 i = targetList.begin();
-                advance(i, urand(0, targetList.size()));
+                advance(i, urand(0, targetList.size()-1));
                 targetList.erase(i);
             }
         }
