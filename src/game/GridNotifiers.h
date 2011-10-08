@@ -1132,7 +1132,7 @@ namespace Trinity
             ObjectDistanceCheck(WorldObject *source, uint32 dist, bool greater) : _source(source), _dist(dist), _greater(greater) {}
             bool operator()(WorldObject* object)
             {
-                return (_greater ? _source->GetExactDistSq(object) > _dist : _source->GetExactDistSq(object) < _dist);
+                return (_greater ? _source->GetExactDist2d(object->GetPositionX(), object->GetPositionY()) > _dist : _source->GetExactDist2d(object->GetPositionX(), object->GetPositionY()) < _dist);
             }
 
         private:
