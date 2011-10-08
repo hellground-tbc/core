@@ -1132,7 +1132,7 @@ namespace Trinity
             ObjectDistanceCheck(WorldObject *source, uint32 dist, bool greater) : _source(source), _dist(dist), _greater(greater) {}
             bool operator()(WorldObject* object)
             {
-                return (_greater ? _source->GetExactDistSq(object) > (_dist*_dist) : _source->GetExactDistSq(object) < (_dist*_dist));
+                return (_greater ? _source->GetExactDistSq(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ()) > (_dist*_dist) : _source->GetExactDistSq(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ()) < (_dist*_dist));
             }
 
         private:
@@ -1149,7 +1149,7 @@ namespace Trinity
         // functor for operator ">"
         bool operator()(const Unit * _Left, const Unit * _Right) const
         {
-            return (me->GetExactDistSq(_Left) < me->GetExactDistSq(_Right));
+            return (me->GetExactDistSq(_Left->GetPositionX(), _Left->GetPositionY(), _Left->GetPositionZ()) < me->GetExactDistSq(_Right->GetPositionX(), _Right->GetPositionY(), _Right->GetPositionZ()));
         }
     };
 }
