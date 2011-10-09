@@ -176,7 +176,7 @@ void BattleGroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
     ginfo->Players[plr->GetGUID()]  = &info;
 }
 
-void BattleGroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
+void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCount)
 {
     Player *plr = objmgr.GetPlayer(guid);
 
@@ -1789,13 +1789,6 @@ void BattleGroundMgr::SendAreaSpiritHealerQueryOpcode(Player *pl, BattleGround *
         time_ = 0;
     data << guid << time_;
     pl->GetSession()->SendPacket(&data);
-}
-
-void BattleGroundMgr::RemoveBattleGround(uint32 instanceID)
-{
-    BattleGroundSet::iterator itr = m_BattleGrounds.find(instanceID);
-    if (itr!=m_BattleGrounds.end())
-        m_BattleGrounds.erase(itr);
 }
 
 bool BattleGroundMgr::IsArenaType(uint32 bgTypeId) const

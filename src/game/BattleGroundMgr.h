@@ -95,7 +95,7 @@ class BattleGroundQueue
 
         GroupQueueInfo * AddGroup(Player * leader, uint32 BgTypeId, uint8 ArenaType, bool isRated, uint32 ArenaRating, uint32 ArenaTeamId = 0);
         void AddPlayer(Player *plr, GroupQueueInfo *ginfo);
-        void RemovePlayer(uint64 guid, bool decreaseInvitedCount);
+        void RemovePlayer(const uint64& guid, bool decreaseInvitedCount);
         void DecreaseGroupLength(uint32 queueId, uint32 AsGroup);
         void BGEndedRemoveInvites(BattleGround * bg);
 
@@ -229,7 +229,7 @@ class BattleGroundMgr
         uint32 CreateBattleGround(uint32 bgTypeId, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam, uint32 LevelMin, uint32 LevelMax, char* BattleGroundName, uint32 MapID, float Team1StartLocX, float Team1StartLocY, float Team1StartLocZ, float Team1StartLocO, float Team2StartLocX, float Team2StartLocY, float Team2StartLocZ, float Team2StartLocO);
 
         void AddBattleGround(uint32 ID, BattleGround* BG) { m_BattleGrounds[ID] = BG; };
-        void RemoveBattleGround(uint32 instanceID);
+        inline void RemoveBattleGround(uint32 instanceID) { m_BattleGrounds.erase(instanceID); }
 
         void CreateInitialBattleGrounds();
         void DeleteAlllBattleGrounds();
