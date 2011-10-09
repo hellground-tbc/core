@@ -300,7 +300,6 @@ Creature* CreatureGroup::GetNextRandomCreatureGroupMember(Creature* member, floa
 
     for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
-        printf("w petli for  ");
         if (Creature *mem = member->GetMap()->GetCreature(itr->first))
         {
             // IsHostileTo check controlled by enemy

@@ -90,7 +90,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 
     void Reset()
     {
-        Frostbolt_Timer = 2000;
+        Frostbolt_Timer = 0;
         Arcane_Nova_Timer = urand (12000, 20000);
     }
 
@@ -102,7 +102,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
       if(Frostbolt_Timer < diff)
       {
           AddSpellToCast(me->getVictim(), SPELL_FROSTBOLT);
-          Frostbolt_Timer = GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT));
+          Frostbolt_Timer = GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT))-(diff+100);
       }
       else
           Frostbolt_Timer -= diff;
@@ -116,7 +116,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
       else
           Arcane_Nova_Timer -= diff;
 
-    CastNextSpellIfAnyAndReady(diff);
+    CastNextSpellIfAnyAndReady();
     DoMeleeAttackIfReady();
     }
 };
@@ -144,7 +144,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
         if(!hasSummoned)
             DoCast(m_creature,44517,false);
 
-        SetAutocast(SPELL_INCINERATE, 2000);
+        SetAutocast(SPELL_INCINERATE, 1900);
         Immolate_Timer = 1000;
     }
 
@@ -170,6 +170,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
       if(Immolate_Timer < diff)
       {
+          ClearCastQueue();
           AddSpellToCast(m_creature->getVictim(), SPELL_IMMOLATE);
           StartAutocast();
           Immolate_Timer = urand(14000, 20000);
@@ -195,7 +196,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
     void Reset()
     {
         Poison_Timer = urand(5000, 8000);
-        Prayer_of_Mending_Timer = urand(10000, 30000);
+        Prayer_of_Mending_Timer = urand(3000, 8000);
     }
 
     void UpdateAI(const uint32 diff)
@@ -206,7 +207,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
       if(Poison_Timer < diff)
       {
           AddSpellToCast(SPELL_INJECT_POISON, CAST_SELF);
-          Poison_Timer = urand(16000, 22000);
+          Poison_Timer = urand(12000, 18000);
       }
       else
           Poison_Timer -= diff;
@@ -215,7 +216,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
       {
           Unit* healTarget = SelectLowestHpFriendly(40.0f);
           AddSpellToCast(healTarget, SPELL_PRAYER_OF_MENDING);
-          Prayer_of_Mending_Timer = urand(20000, 30000);
+          Prayer_of_Mending_Timer = 10000;
       }
       else
           Prayer_of_Mending_Timer -= diff;
