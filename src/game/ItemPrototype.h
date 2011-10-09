@@ -563,6 +563,8 @@ struct ItemPrototype
 
         return false;
     }
+
+    uint32 GetMaxStackSize() const { return Stackable; }
 };
 
 struct ItemLocale
