@@ -20,6 +20,7 @@
 
 #include "MapManager.h"
 #include "Player.h"
+#include "TemporarySummon.h"
 #include "GridNotifiers.h"
 #include "WorldSession.h"
 #include "Log.h"
@@ -2551,7 +2552,7 @@ template void Map::Remove(DynamicObject *, bool);
 
 InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
   : Map(id, expiry, InstanceId, SpawnMode), i_data(NULL),
-    m_resetAfterUnload(false), m_unloadWhenEmpty(false)
+    m_resetAfterUnload(false), m_unloadWhenEmpty(false), m_unlootedCreaturesSummoned(false)
 {
 
     InstanceMap::InitVisibilityDistance();
@@ -2559,7 +2560,7 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 Spaw
     // the timer is started by default, and stopped when the first player joins
     // this make sure it gets unloaded if for some reason no player joins
     m_unloadTimer = std::max(sWorld.getConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
-
+    
     m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodInInstances();
 }
 
@@ -2740,6 +2741,9 @@ void InstanceMap::Update(const uint32& t_diff)
 
     if (i_data)
         i_data->Update(t_diff);
+
+    if (!m_unlootedCreaturesSummoned)
+        SummonUnlootedCreatures();
 }
 
 void InstanceMap::Remove(Player *player, bool remove)
@@ -2901,6 +2905,34 @@ void InstanceMap::SetResetSchedule(bool on)
             sLog.outError("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d (mapid: %d)", on ? "on" : "off", GetInstanceId(), GetId());
         else
             sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
+    }
+}
+
+void InstanceMap::SummonUnlootedCreatures()
+{
+    m_unlootedCreaturesSummoned = true;
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT DISTINCT creatureId, position_x, position_y, position_z FROM group_saved_loot WHERE instanceId='%u' AND summoned = TRUE", GetInstanceId());
+    if (result)
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+
+            uint32 creatureId = fields[0].GetUInt32();
+            float pos_x = fields[1].GetFloat();
+            float pos_y = fields[2].GetFloat();
+            float pos_z = fields[3].GetFloat();
+            
+            TemporarySummon* pCreature = new TemporarySummon();
+            if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), this, creatureId, 0, pos_x, pos_y, pos_z, 0))
+            {
+                delete pCreature;
+                continue;
+            }
+            pCreature->Summon(TEMPSUMMON_MANUAL_DESPAWN, 0);
+            pCreature->loot.loadLootFromDB(pCreature);
+        }
+        while (result->NextRow());
     }
 }
 
