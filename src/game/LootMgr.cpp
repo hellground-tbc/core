@@ -397,25 +397,23 @@ void Loot::setCreatureGUID(Creature *pCreature)
 
     pCreature->FillPlayersAllowedToLoot(&players_allowed_to_loot);
 
-    if (!pCreature->isWorldBoss())
+    if (!pCreature->isWorldBoss() && pCreature->GetMap()->IsDungeon())
         return;
 
-    save = true;
     m_creatureGUID = pCreature->GetGUID();
 }
 
-void Loot::loadLootFromDB(Creature *pCreature)
+void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
 {
-    if (!pCreature)
-        return;
-
-    m_creatureGUID = pCreature->GetGUID();
-
-    items.clear();
-
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
     if (result)
     {
+        m_creatureGUID = pCreature->GetGUID();
+
+        clear();
+        std::stringstream ss;
+        ss << "Loaded LootedItems: ";
+
         do
         {
             Field *fields = result->Fetch();
@@ -424,6 +422,8 @@ void Loot::loadLootFromDB(Creature *pCreature)
             uint32 itemcount = fields[1].GetUInt32();
             for (uint8 i = 0; i < itemcount; ++i)
             {
+                ss << "[" << itemid << "] ";
+
                 LootItem item(itemid);
                 items.push_back(item);
                 unlootedCount++;
@@ -431,31 +431,37 @@ void Loot::loadLootFromDB(Creature *pCreature)
         }
         while (result->NextRow());
 
-        load = true;
-        save = true;
+        ss << " players in instance: ";
+        Map *pMap = pCreature->GetMap();
+        if (pMap && pMap->IsDungeon())
+        {
+            Map::PlayerList const &PlayerList = pMap->GetPlayers();
+            for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                if (Player* i_pl = i->getSource())
+                    ss << i_pl->GetName() << " (" << i_pl->GetGUIDLow() << ")  ";
+        }
+        sLog.outBoss(ss.str().c_str());
 
         // make body visible to loot
-        pCreature->SetCorpseDelay(3600);
         pCreature->setDeathState(JUST_DIED);
-        pCreature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        pCreature->SetCorpseDelay(3600);
+
+        pCreature->LowerPlayerDamageReq(pCreature->GetMaxHealth());
+
         pCreature->SetVisibility(VISIBILITY_ON);
+
+        pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+        pCreature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
     }
+
+    //set variable to true even if we don't load anything so new loot won't be generated
+    m_lootLoadedFromDB = true;
 }
 
-void Loot::removeItemFromSavedLoot(uint8 lootIndex)
+void Loot::removeItemFromSavedLoot(LootItem *item)
 {
     if (!m_creatureGUID)
-    {
-        //sLog.outError("Loot::removeItemFromSavedLoot: cant' find m_creatureGUID: %u", m_creatureGUID);
         return;
-    }
-
-    LootItem const *item = LootItemInSlot(lootIndex);
-    if (!item)
-    {
-        //sLog.outBoss("Loot::removeItemFromSavedLoot: cant' find item in slot: %u", lootIndex);
-        return;
-    }
 
     uint32 p_guid = 0;
     if (PlayersLooting.begin() != PlayersLooting.end())
@@ -463,12 +469,9 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
 
     Player *pPlayer = ObjectAccessor::FindPlayer(p_guid);
     if (!pPlayer)
-    {
-        //sLog.outBoss("Loot::removeItemFromSavedLoot: cant' find looting player to get map.");
         return;
-    }
 
-    Map * tmpMap = pPlayer->GetMap();
+    Map *tmpMap = pPlayer->GetMap();
 
     Creature *pCreature = tmpMap->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
@@ -533,6 +536,9 @@ void Loot::saveLootToDB(Player *owner)
     SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCreatureLoot, "DELETE FROM group_saved_loot WHERE creatureId=? AND instanceId=?");
     stmt.PExecute(pCreature->GetEntry(), pCreature->GetInstanceId());
 
+    std::stringstream ss;
+    ss << "Player's group: " << owner->GetName() << ":(" << owner->GetGUIDLow() << ") " << "LootedItems: ";
+
     for (std::vector<LootItem>::iterator iter = items.begin(); iter != items.end(); ++iter)
     {
         LootItem const *item = &(*iter);
@@ -566,8 +572,11 @@ void Loot::saveLootToDB(Player *owner)
                 stmt.addFloat(pCreature->GetPositionZ());
                 stmt.Execute();
             }
+            ss << "[" << item->itemid << "] ";
         }
     }
+
+    sLog.outBoss(ss.str().c_str());
     CharacterDatabase.CommitTransaction();
 }
 
@@ -578,62 +587,32 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, 
     if (!loot_owner)
         return;
 
-    if (!load)
+    LootTemplate const* tab = store.GetLootfor(loot_id);
+
+    if (!tab)
     {
-        LootTemplate const* tab = store.GetLootfor (loot_id);
-
-        if (!tab)
-        {
-            sLog.outErrorDb("Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
-            return;
-        }
-
-        items.reserve(MAX_NR_LOOT_ITEMS);
-        quest_items.reserve(MAX_NR_QUEST_ITEMS);
-        tab->Process(*this, store);                             // Processing is done there, callback via Loot::AddItem()
+        sLog.outErrorDb("Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
+        return;
     }
 
-    if (!load)
-    {
-        // Setting access rights for group loot case
-        Group * pGroup=loot_owner->GetGroup();
-        if (!personal && pGroup)
-        {
-            for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-                if (Player* pl = itr->getSource())
-                    FillNotNormalLootFor(pl);
-        }
-        // ... for personal loot
-        else
-            FillNotNormalLootFor(loot_owner);
-    }
+    items.reserve(MAX_NR_LOOT_ITEMS);
+    quest_items.reserve(MAX_NR_QUEST_ITEMS);
+    tab->Process(*this, store);                             // Processing is done there, callback via Loot::AddItem()
 
-    if (save)
+    // Setting access rights for group loot case
+    Group * pGroup=loot_owner->GetGroup();
+    if (!personal && pGroup)
     {
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+            if (Player* pl = itr->getSource())
+                FillNotNormalLootFor(pl);
+    }
+    // ... for personal loot
+    else
+        FillNotNormalLootFor(loot_owner);
+
+    if (m_creatureGUID)
         saveLootToDB(loot_owner);
-        std::stringstream ss;
-        if (load)
-            ss << "Loaded loot: ";
-        ss << "Player's group: " << loot_owner->GetName() << ":(" << loot_owner->GetGUIDLow() << ") "
-           << "LootedItems: ";
-        for (std::vector<LootItem>::iterator iter = items.begin(); iter != items.end(); ++iter)
-            ss << "[" << (*iter).itemid << "] ";
-
-        if (load)
-        {
-            ss << " players in instance: ";
-            Map * tmpMap = loot_owner->GetMap();
-            if (tmpMap && (tmpMap->IsDungeon() || tmpMap->IsRaid()))
-            {
-                Map::PlayerList const &PlayerList = tmpMap->GetPlayers();
-                for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                    if (Player* i_pl = i->getSource())
-                        ss << i_pl->GetName() << " (" << i_pl->GetGUIDLow() << ")  ";
-            }
-        }
-
-        sLog.outBoss(ss.str().c_str());
-    }
 }
 
 void Loot::FillNotNormalLootFor(Player* pl)
@@ -754,7 +733,6 @@ void Loot::NotifyItemRemoved(uint8 lootIndex)
         else
             PlayersLooting.erase(i);
     }
-    removeItemFromSavedLoot(lootIndex);
 }
 
 void Loot::NotifyMoneyRemoved()
@@ -808,9 +786,6 @@ void Loot::NotifyQuestItemRemoved(uint8 questIndex)
 
 void Loot::generateMoneyLoot(uint32 minAmount, uint32 maxAmount)
 {
-    if (load)
-        return;
-
     if (maxAmount > 0)
     {
         if (maxAmount <= minAmount)
@@ -820,6 +795,12 @@ void Loot::generateMoneyLoot(uint32 minAmount, uint32 maxAmount)
         else
             gold = uint32(urand(minAmount >> 8, maxAmount >> 8) * sWorld.getRate(RATE_DROP_MONEY)) << 8;
     }
+}
+
+void Loot::setItemLooted(LootItem *pLootItem)
+{
+    pLootItem->is_looted = true;
+    removeItemFromSavedLoot(pLootItem);
 }
 
 LootItem* Loot::LootItemInSlot(uint32 lootSlot, Player* player, QuestItem **qitem, QuestItem **ffaitem, QuestItem **conditem)

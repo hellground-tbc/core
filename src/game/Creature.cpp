@@ -1485,8 +1485,8 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     if (m_respawnTime)                          // respawn on Update
     {
         m_deathState = DEAD;
-        if (isWorldBoss())
-            loot.loadLootFromDB(this);
+        if (isWorldBoss() && map->IsDungeon())
+            loot.FillLootFromDB(this, NULL);
 
         if (CanFly())
         {
