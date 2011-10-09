@@ -7786,7 +7786,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 sLog.outDebug("       if (lootid)");
                 loot->clear();
-                loot->FillLoot(lootid, LootTemplates_Gameobject, this);
+                loot->FillLoot(lootid, LootTemplates_Gameobject, this, false);
 
                 //if chest apply 2.1.x rules
                 if ((go->GetGoType() == GAMEOBJECT_TYPE_CHEST)&&(go->GetGOInfo()->chest.groupLootRules))
@@ -7815,7 +7815,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             }
 
             if (loot_type == LOOT_FISHING)
-                go->getFishLoot(loot);
+                go->getFishLoot(loot, this);
 
             go->SetLootState(GO_ACTIVATED);
         }
@@ -7838,7 +7838,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetProto()->DisenchantID, LootTemplates_Disenchant, this);
+                loot->FillLoot(item->GetProto()->DisenchantID, LootTemplates_Disenchant, this,true);
             }
         }
         else if (loot_type == LOOT_PROSPECTING)
@@ -7849,7 +7849,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetEntry(), LootTemplates_Prospecting, this);
+                loot->FillLoot(item->GetEntry(), LootTemplates_Prospecting, this,true);
             }
         }
         else
@@ -7860,7 +7860,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetEntry(), LootTemplates_Item, this);
+                loot->FillLoot(item->GetEntry(), LootTemplates_Item, this,true);
 
                 loot->generateMoneyLoot(item->GetProto()->MinMoneyLoot,item->GetProto()->MaxMoneyLoot);
             }
@@ -7885,7 +7885,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             bones->loot.clear();
             if (BattleGround *bg = GetBattleGround())
                 if (bg->GetTypeID() == BATTLEGROUND_AV)
-                    loot->FillLoot(1, LootTemplates_Creature, this);
+                    loot->FillLoot(1, LootTemplates_Creature, this, true);
             // It may need a better formula
             // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
             bones->loot.gold = (uint32)(GetMap()->urand(50, 150) * 0.016f * pow(((float)pLevel)/5.76f, 2.5f) * sWorld.getRate(RATE_DROP_MONEY));
@@ -7921,7 +7921,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 loot->clear();
 
                 if (uint32 lootid = creature->GetCreatureInfo()->pickpocketLootId)
-                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this);
+                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this, false);
 
                 // Generate extra money for pick pocket loot
                 const uint32 a = GetMap()->urand(0, creature->getLevel()/2);
@@ -7954,7 +7954,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 if (uint32 lootid = creature->GetCreatureInfo()->lootid)
                 {
                     loot->setCreatureGUID(creature);
-                    loot->FillLoot(lootid, LootTemplates_Creature, recipient);
+                    loot->FillLoot(lootid, LootTemplates_Creature, recipient, false);
                 }
 
                 loot->generateMoneyLoot(creature->GetCreatureInfo()->mingold,creature->GetCreatureInfo()->maxgold);
@@ -7985,7 +7985,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             if (loot_type == LOOT_SKINNING)
             {
                 loot->clear();
-                loot->FillLoot(creature->GetCreatureInfo()->SkinLootId, LootTemplates_Skinning, this);
+                loot->FillLoot(creature->GetCreatureInfo()->SkinLootId, LootTemplates_Skinning, this, false);
             }
             // set group rights only for loot_type != LOOT_SKINNING
             else
@@ -8019,39 +8019,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
     SetLootGUID(guid);
 
-    QuestItemList *q_list = 0;
-    if (permission != NONE_PERMISSION)
-    {
-        QuestItemMap const& lootPlayerQuestItems = loot->GetPlayerQuestItems();
-        QuestItemMap::const_iterator itr = lootPlayerQuestItems.find(GetGUIDLow());
-        if (itr == lootPlayerQuestItems.end())
-            q_list = loot->FillQuestLoot(this);
-        else
-            q_list = itr->second;
-    }
-
-    QuestItemList *ffa_list = 0;
-    if (permission != NONE_PERMISSION)
-    {
-        QuestItemMap const& lootPlayerFFAItems = loot->GetPlayerFFAItems();
-        QuestItemMap::const_iterator itr = lootPlayerFFAItems.find(GetGUIDLow());
-        if (itr == lootPlayerFFAItems.end())
-            ffa_list = loot->FillFFALoot(this);
-        else
-            ffa_list = itr->second;
-    }
-
-    QuestItemList *conditional_list = 0;
-    if (permission != NONE_PERMISSION)
-    {
-        QuestItemMap const& lootPlayerNonQuestNonFFAConditionalItems = loot->GetPlayerNonQuestNonFFAConditionalItems();
-        QuestItemMap::const_iterator itr = lootPlayerNonQuestNonFFAConditionalItems.find(GetGUIDLow());
-        if (itr == lootPlayerNonQuestNonFFAConditionalItems.end())
-            conditional_list = loot->FillNonQuestNonFFAConditionalLoot(this);
-        else
-            conditional_list = itr->second;
-    }
-
     // LOOT_PICKPOCKETING, LOOT_PROSPECTING, LOOT_DISENCHANTING and LOOT_INSIGNIA unsupported by client, sending LOOT_SKINNING instead
     if (loot_type == LOOT_PICKPOCKETING || loot_type == LOOT_DISENCHANTING || loot_type == LOOT_PROSPECTING || loot_type == LOOT_INSIGNIA)
         loot_type = LOOT_SKINNING;
@@ -8063,7 +8030,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
     data << uint64(guid);
     data << uint8(loot_type);
-    data << LootView(*loot, q_list, ffa_list, conditional_list, this, permission);
+    data << LootView(*loot, this, permission);
 
     SendDirectMessage(&data);
 
@@ -20513,6 +20480,30 @@ void Player::SetTitle(CharTitlesEntry const* title)
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
     SetFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
+}
+
+void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast)
+{
+    Loot loot;
+    loot.FillLoot (loot_id,store,this,true);
+    if(loot.items.empty ())
+        return;
+    LootItem const* lootItem = &loot.items[0];
+
+    ItemPosCountVec dest;
+    uint8 msg = CanStoreNewItem (bag,slot,dest,lootItem->itemid,lootItem->count);
+    if(msg != EQUIP_ERR_OK && slot != NULL_SLOT)
+        msg = CanStoreNewItem( bag, NULL_SLOT,dest,lootItem->itemid,lootItem->count);
+    if( msg != EQUIP_ERR_OK && bag != NULL_BAG)
+        msg = CanStoreNewItem( NULL_BAG, NULL_SLOT,dest,lootItem->itemid,lootItem->count);
+    if(msg != EQUIP_ERR_OK)
+    {
+        SendEquipError( msg, NULL, NULL );
+        return;
+    }
+
+    Item* pItem = StoreNewItem (dest,lootItem->itemid,true,lootItem->randomPropertyId);
+    SendNewItem(pItem, lootItem->count, false, false,broadcast);
 }
 
 

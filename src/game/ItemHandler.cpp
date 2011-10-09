@@ -1106,6 +1106,9 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recv_data)
     if (!item_guid)
          return;
 
+    for(int i = 0; i < MAX_GEM_SOCKETS; ++i)
+        recv_data >> gem_guids[i];
+
     //cheat -> tried to socket same gem multiple times
     if ((gem_guids[0] && (gem_guids[0] == gem_guids[1] || gem_guids[0] == gem_guids[2])) ||
         (gem_guids[1] && (gem_guids[1] == gem_guids[2])))

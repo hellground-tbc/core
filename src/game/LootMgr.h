@@ -210,19 +210,19 @@ class LootValidatorRefManager : public RefManager<Loot, LootValidatorRef>
         iterator rend() { return iterator(NULL); }
 };
 
-//=====================================================
+struct LootView;
 
+ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li);
+ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
+
+//=====================================================
 struct Loot
 {
+    friend ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
+
     QuestItemMap const& GetPlayerQuestItems() const { return PlayerQuestItems; }
     QuestItemMap const& GetPlayerFFAItems() const { return PlayerFFAItems; }
     QuestItemMap const& GetPlayerNonQuestNonFFAConditionalItems() const { return PlayerNonQuestNonFFAConditionalItems; }
-
-    QuestItemList* FillFFALoot(Player* player);
-    QuestItemList* FillQuestLoot(Player* player);
-    QuestItemList* FillNonQuestNonFFAConditionalLoot(Player* player);
-
-    void FillNotNormalLootFor(Player* pl);
 
     std::vector<LootItem> items;
     std::vector<LootItem> quest_items;
@@ -273,8 +273,7 @@ struct Loot
     void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
-    void FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner);
-    bool FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, bool personal, bool noEmptyError = false);
+    void FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, bool personal);
 
     void saveLootToDB(Player *owner);
     void loadLootFromDB(Creature *pCreature);
@@ -297,6 +296,11 @@ struct Loot
     uint32 GetMaxSlotInLootFor(Player* player) const;
 
     private:
+        void FillNotNormalLootFor(Player* player);
+        QuestItemList* FillFFALoot(Player* player);
+        QuestItemList* FillQuestLoot(Player* player);
+        QuestItemList* FillNonQuestNonFFAConditionalLoot(Player* player);
+
         std::set<uint64> PlayersLooting;
         QuestItemMap PlayerQuestItems;
         QuestItemMap PlayerFFAItems;
@@ -306,19 +310,15 @@ struct Loot
 
         // All rolls are registered here. They need to know, when the loot is not valid anymore
         LootValidatorRefManager i_LootValidatorRefManager;
-
 };
 
 struct LootView
 {
     Loot &loot;
-    QuestItemList *qlist;
-    QuestItemList *ffalist;
-    QuestItemList *conditionallist;
     Player *viewer;
     PermissionTypes permission;
-    LootView(Loot &_loot, QuestItemList *_qlist, QuestItemList *_ffalist, QuestItemList *_conditionallist, Player *_viewer,PermissionTypes _permission = ALL_PERMISSION)
-        : loot(_loot), qlist(_qlist), ffalist(_ffalist), conditionallist(_conditionallist), viewer(_viewer), permission(_permission) {}
+    LootView(Loot &_loot, Player *_viewer,PermissionTypes _permission = ALL_PERMISSION)
+        : loot(_loot), viewer(_viewer), permission(_permission) {}
 };
 
 extern LootStore LootTemplates_Creature;
@@ -356,7 +356,5 @@ inline void LoadLootTables()
     LoadLootTemplates_Reference();
 }
 
-ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li);
-ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
 #endif
 
