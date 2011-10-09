@@ -492,14 +492,21 @@ void Loot::removeItemFromSavedLoot(uint8 lootIndex)
     Field *fields = result->Fetch();
     count = fields[0].GetUInt32();
 
+    static SqlStatementID updateItemCount;
+    static SqlStatementID deleteItem;
+
     //CharacterDatabase.BeginTransaction();
     if (count > 1)
     {
         count--;
-        CharacterDatabase.PExecute("UPDATE group_saved_loot SET itemCount='%u' WHERE instanceId='%u' AND itemId='%u' AND creatureId='%u'", count, pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
+        SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemCount, "UPDATE group_saved_loot SET itemCount=? WHERE instanceId=? AND itemId=? AND creatureId=?");
+        stmt.PExecute(count, pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
     }
     else
-        CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceId='%u' AND itemId='%u' AND creatureId='%u'", pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
+    {
+        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItem, "DELETE FROM group_saved_loot WHERE instanceId=? AND itemId=? AND creatureId=?");
+        stmt.PExecute(pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
+    }
     //CharacterDatabase.CommitTransaction();
 }
 
@@ -517,8 +524,15 @@ void Loot::saveLootToDB(Player *owner)
 
     std::map<uint32, uint32> item_count;
     CharacterDatabase.BeginTransaction();
+    
+    static SqlStatementID deleteCreatureLoot;
+    static SqlStatementID updateItemCount;
+    static SqlStatementID insertItem;
+
     // delete old saved loot
-    CharacterDatabase.PExecute("DELETE FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
+    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCreatureLoot, "DELETE FROM group_saved_loot WHERE creatureId=? AND instanceId=?");
+    stmt.PExecute(pCreature->GetEntry(), pCreature->GetInstanceId());
+
     for (std::vector<LootItem>::iterator iter = items.begin(); iter != items.end(); ++iter)
     {
         LootItem const *item = &(*iter);
@@ -535,9 +549,23 @@ void Loot::saveLootToDB(Player *owner)
             item_count[item->itemid] += 1;
             uint32 count = item_count[item->itemid];
             if (count > 1)
-                CharacterDatabase.PExecute("UPDATE group_saved_loot SET itemCount='%u' WHERE itemId='%u' AND instanceId='%u'", count, item->itemid, pCreature->GetInstanceId());
+            {
+                SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemCount, "UPDATE group_saved_loot SET itemCount=? WHERE itemId=? AND instanceId=?");
+                stmt.PExecute(count, item->itemid, pCreature->GetInstanceId());
+            }
             else
-                CharacterDatabase.PExecute("INSERT INTO group_saved_loot VALUES ('%u', '%u', '%u', '%u')", pCreature->GetEntry(), pCreature->GetInstanceId(), item->itemid, count);
+            {
+                SqlStatement stmt = CharacterDatabase.CreateStatement(insertItem, "INSERT INTO group_saved_loot VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                stmt.addUInt32(pCreature->GetEntry());
+                stmt.addUInt32(pCreature->GetInstanceId());
+                stmt.addUInt32(item->itemid);
+                stmt.addUInt32(count);
+                stmt.addBool(pCreature->IsTempSummon());
+                stmt.addFloat(pCreature->GetPositionX());
+                stmt.addFloat(pCreature->GetPositionY());
+                stmt.addFloat(pCreature->GetPositionZ());
+                stmt.Execute();
+            }
         }
     }
     CharacterDatabase.CommitTransaction();
