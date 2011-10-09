@@ -175,7 +175,10 @@ class BGQueueInviteEvent : public BasicEvent
 class BGQueueRemoveEvent : public BasicEvent
 {
     public:
-        BGQueueRemoveEvent(uint64 pl_guid, uint32 bgInstanceGUID, uint32 playersTeam) : m_PlayerGuid(pl_guid), m_BgInstanceGUID(bgInstanceGUID), m_PlayersTeam(playersTeam) {};
+        BGQueueRemoveEvent(const uint64& pl_guid, uint32 bgInstanceGUID, uint32 playersTeam) :
+          m_PlayerGuid(pl_guid), m_BgInstanceGUID(bgInstanceGUID), m_PlayersTeam(playersTeam)
+          {
+          };
         virtual ~BGQueueRemoveEvent() {};
 
         virtual bool Execute(uint64 e_time, uint32 p_time);
@@ -197,12 +200,14 @@ class BattleGroundMgr
         /* Packet Building */
         void BuildPlayerJoinedBattleGroundPacket(WorldPacket *data, Player *plr);
         void BuildPlayerLeftBattleGroundPacket(WorldPacket *data, Player *plr);
-        void BuildBattleGroundListPacket(WorldPacket *data, uint64 guid, Player *plr, uint32 bgTypeId);
+        void BuildBattleGroundListPacket(WorldPacket *data, const uint64& guid, Player *plr, uint32 bgTypeId);
         void BuildGroupJoinedBattlegroundPacket(WorldPacket *data, uint32 bgTypeId);
         void BuildUpdateWorldStatePacket(WorldPacket *data, uint32 field, uint32 value);
         void BuildPvpLogDataPacket(WorldPacket *data, BattleGround *bg);
         void BuildBattleGroundStatusPacket(WorldPacket *data, BattleGround *bg, uint32 team, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint32 arenatype = 0, uint8 israted = 0);
         void BuildPlaySoundPacket(WorldPacket *data, uint32 soundid);
+
+        void SendAreaSpiritHealerQueryOpcode(Player *pl, BattleGround *bg, const uint64& guid);
 
         /* Player invitation */
         // called from Queue update, or from Addplayer to queue
@@ -210,15 +215,12 @@ class BattleGroundMgr
 
         /* Battlegrounds */
         BattleGroundSet::iterator GetBattleGroundsBegin() { return m_BattleGrounds.begin(); };
-        BattleGroundSet::iterator GetBattleGroundsEnd() { return m_BattleGrounds.end(); };
+        BattleGroundSet::iterator GetBattleGroundsEnd()   { return m_BattleGrounds.end(); };
 
         BattleGround* GetBattleGround(uint32 ID)
         {
             BattleGroundSet::iterator i = m_BattleGrounds.find(ID);
-            if (i != m_BattleGrounds.end())
-                return i->second;
-            else
-                return NULL;
+            return ((i != m_BattleGrounds.end()) ? i->second : NULL);
         };
 
         BattleGround * GetBattleGroundTemplate(uint32 bgTypeId);
@@ -240,8 +242,6 @@ class BattleGroundMgr
 
         BGFreeSlotQueueType BGFreeSlotQueue[MAX_BATTLEGROUND_TYPES];
 
-        void SendAreaSpiritHealerQueryOpcode(Player *pl, BattleGround *bg, uint64 guid);
-
         bool IsArenaType(uint32 bgTypeId) const;
         bool IsBattleGroundType(uint32 bgTypeId) const;
         static uint32 BGQueueTypeId(uint32 bgTypeId, uint8 arenaType);
@@ -250,14 +250,14 @@ class BattleGroundMgr
 
         void ScheduleQueueUpdate(uint32 bgQueueTypeId, uint32 bgTypeId, uint32 bracket_id);
 
-        uint32 GetMaxRatingDifference() const {return m_MaxRatingDifference;}
-        uint32 GetRatingDiscardTimer() const {return m_RatingDiscardTimer;}
+        uint32 GetMaxRatingDifference() const { return sWorld.getConfig(CONFIG_ARENA_MAX_RATING_DIFFERENCE); }
+        uint32 GetRatingDiscardTimer()  const { return sWorld.getConfig(CONFIG_ARENA_RATING_DISCARD_TIMER); }
+        uint32 GetPrematureFinishTime() const { return sWorld.getConfig(CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER); }
 
         void InitAutomaticArenaPointDistribution();
         void DistributeArenaPoints();
-        uint32 GetPrematureFinishTime() const {return m_PrematureFinishTimer;}
         void ToggleArenaTesting();
-        const bool isArenaTesting() const { return m_ArenaTesting; }
+        bool isArenaTesting() const { return m_ArenaTesting; }
 
         void SetHolidayWeekends(uint32 mask);
     private:
