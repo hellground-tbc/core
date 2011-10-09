@@ -158,7 +158,8 @@ m_deathTimer(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_res
 m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_AlreadyCallAssistance(false),
 m_regenHealth(true), m_isDeadByDefault(false), m_AlreadySearchedAssistance(false), m_creatureData(NULL),
-m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL), m_PlayerDamageReq(0)
+m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL), m_PlayerDamageReq(0),
+m_tempSummon(false)
 {
     m_valuesCount = UNIT_END;
 
@@ -1290,7 +1291,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     static SqlStatementID saveCreature;
     static SqlStatementID deleteCreature;
 
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreature,"DELETE FROM creature WHERE guid = ?");
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreature, "DELETE FROM creature WHERE guid = ?");
     stmt.PExecute(m_DBTableGuid);
 
     stmt = WorldDatabase.CreateStatement(saveCreature, "INSERT INTO creature VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");

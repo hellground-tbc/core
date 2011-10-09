@@ -692,6 +692,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         bool CanReactToPlayerOnTaxi();
 
+        bool IsTempSummon() { return m_tempSummon; }
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -747,6 +749,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool DisableReputationGain;
 
         CreatureData const* m_creatureData;
+
+        bool m_tempSummon;
 
     private:
         //WaypointMovementGenerator vars
