@@ -495,6 +495,7 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
         void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
         virtual void InitVisibilityDistance();
+        uint32 GetMaxPlayers() const;
 
     private:
         bool m_resetAfterUnload;

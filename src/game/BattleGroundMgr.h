@@ -21,6 +21,7 @@
 #ifndef __BATTLEGROUNDMGR_H
 #define __BATTLEGROUNDMGR_H
 
+#include "World.h"
 #include "BattleGround.h"
 #include "Policies/Singleton.h"
 
@@ -147,13 +148,7 @@ class BattleGroundQueue
 
         bool BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers, SelectionPoolBuildMode mode, uint8 ArenaType = 0, bool isRated = false, uint32 MinRating = 0, uint32 MaxRating = 0, uint32 DisregardTime = 0, uint32 excludeTeam = 0, bool premade = false);
 
-        static bool IsArenaType(uint32 bgTypeId);
-        static bool IsBattleGroundType(uint32 bgTypeId) { return !BattleGroundMgr::IsArenaType(bgTypeId); }
-        static uint32 BGQueueTypeId(uint32 bgTypeId, uint8 arenaType);
-        static uint32 BGTemplateId(uint32 bgQueueTypeId);
-        static uint8 BGArenaType(uint32 bgQueueTypeId);
     private:
-
         bool InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * bg, uint32 side);
 };
 
@@ -257,6 +252,12 @@ class BattleGroundMgr
         void DistributeArenaPoints();
         void ToggleArenaTesting();
         bool isArenaTesting() const { return m_ArenaTesting; }
+
+        static bool IsArenaType(uint32 bgTypeId);
+        static bool IsBattleGroundType(uint32 bgTypeId) { return !BattleGroundMgr::IsArenaType(bgTypeId); }
+        static uint32 BGQueueTypeId(uint32 bgTypeId, uint8 arenaType);
+        static uint32 BGTemplateId(uint32 bgQueueTypeId);
+        static uint8 BGArenaType(uint32 bgQueueTypeId);
 
         void SetHolidayWeekends(uint32 mask);
     private:
