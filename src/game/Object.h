@@ -60,6 +60,7 @@ enum TempSummonType
     TEMPSUMMON_DEAD_DESPAWN                = 7,             // despawns when the creature disappears
     TEMPSUMMON_MANUAL_DESPAWN              = 8              // despawns when UnSummon() is called
 };
+#define MAX_TYPEID         10
 
 enum NotifyFlags
 {
@@ -505,7 +506,11 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
         float GetExactDist(const WorldLocation *pos) const
             { return sqrt(GetExactDistSq(pos)); }
 
-        bool IsInMap(const WorldObject* obj) const { return GetMapId()==obj->GetMapId() && GetInstanceId()==obj->GetInstanceId(); }
+        bool IsInMap(const WorldObject* obj) const
+        {
+            return IsInWorld() && obj->IsInWorld() && GetMapId()==obj->GetMapId() &&
+                GetInstanceId()==obj->GetInstanceId();
+        }
 
         bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
         bool _IsWithinDist(WorldLocation const* wLoc, float dist2compare, bool is3D) const;
