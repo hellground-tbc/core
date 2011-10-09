@@ -147,6 +147,11 @@ class BattleGroundQueue
 
         bool BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uint32 MinPlayers, uint32 MaxPlayers, SelectionPoolBuildMode mode, uint8 ArenaType = 0, bool isRated = false, uint32 MinRating = 0, uint32 MaxRating = 0, uint32 DisregardTime = 0, uint32 excludeTeam = 0, bool premade = false);
 
+        static bool IsArenaType(uint32 bgTypeId);
+        static bool IsBattleGroundType(uint32 bgTypeId) { return !BattleGroundMgr::IsArenaType(bgTypeId); }
+        static uint32 BGQueueTypeId(uint32 bgTypeId, uint8 arenaType);
+        static uint32 BGTemplateId(uint32 bgQueueTypeId);
+        static uint8 BGArenaType(uint32 bgQueueTypeId);
     private:
 
         bool InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * bg, uint32 side);
@@ -241,12 +246,6 @@ class BattleGroundMgr
         BattleGroundQueue m_BattleGroundQueues[MAX_BATTLEGROUND_QUEUE_TYPES]; // public, because we need to access them in BG handler code
 
         BGFreeSlotQueueType BGFreeSlotQueue[MAX_BATTLEGROUND_TYPES];
-
-        bool IsArenaType(uint32 bgTypeId) const;
-        bool IsBattleGroundType(uint32 bgTypeId) const;
-        static uint32 BGQueueTypeId(uint32 bgTypeId, uint8 arenaType);
-        uint32 BGTemplateId(uint32 bgQueueTypeId) const;
-        uint8 BGArenaType(uint32 bgQueueTypeId) const;
 
         void ScheduleQueueUpdate(uint32 bgQueueTypeId, uint32 bgTypeId, uint32 bracket_id);
 
