@@ -368,7 +368,7 @@ class WorldUpdateCounter
        uint32 m_tmStart;
 };
 
-class TRINITY_DLL_SPEC WorldObject : public Object, public WorldLocation
+class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
 {
     friend struct WorldObjectChangeAccumulator;
 
