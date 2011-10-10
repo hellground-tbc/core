@@ -225,6 +225,7 @@ extern int main(int argc, char **argv)
         VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file);
 
 
+    return 0;
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?
     return sMaster.Run();

@@ -20,6 +20,7 @@
 #define _VMAPMANAGER2_H
 
 #include "IVMapManager.h"
+#include "VMapCluster.h"
 #include "Utilities/UnorderedMap.h"
 #include "Platform/Define.h"
 #include <G3D/Vector3.h>
@@ -69,6 +70,7 @@ namespace VMAP
             InstanceTreeMap iInstanceMapTrees;
             // UNORDERED_MAP<unsigned int , bool> iMapsSplitIntoTiles;
             // UNORDERED_MAP<unsigned int , bool> iIgnoreMapIds;
+            PipeWrapper m_pipe;
 
             bool _loadMap(uint32 pMapId, const std::string &basePath, uint32 tileX, uint32 tileY);
             /* void _unloadMap(uint32 pMapId, uint32 x, uint32 y); */
@@ -92,6 +94,7 @@ namespace VMAP
             void unloadMap(unsigned int pMapId);
 
             bool isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2) ;
+            bool isInLineOfSight2(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2);
             /**
             fill the hit pos and return true, if an object was hit
             */
