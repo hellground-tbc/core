@@ -405,12 +405,13 @@ void Loot::setCreatureGUID(Creature *pCreature)
 
 void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
 {
+    clear();
+
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
     if (result)
     {
         m_creatureGUID = pCreature->GetGUID();
 
-        clear();
         std::stringstream ss;
         ss << "Loaded LootedItems: ";
 
