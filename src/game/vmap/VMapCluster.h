@@ -2,7 +2,6 @@
 #define _VMAPCLUSTER_H
 
 #include "Common.h"
-
 #include <ace/SPIPE_Stream.h>
 
 #define VMAP_CLUSTER_MANAGER_PROCESS    "VMAP_MANAGER"
@@ -13,12 +12,15 @@ class ByteBuffer;
 
 namespace VMAP
 {
+    typedef ACE_Thread_Mutex LockType;
+    typedef ACE_Guard<LockType> Guard;
+
     class PipeWrapper 
     {
     public:
         explicit PipeWrapper() : m_counter(0), m_bufferSize(0), m_eof(false), m_connected(false) {}
-        ByteBuffer RecvPacket();
-        void SendPacket(ByteBuffer &packet);
+        virtual ByteBuffer RecvPacket();
+        virtual void SendPacket(ByteBuffer &packet);
         bool Eof() { return m_eof; }
 
         void Connect(const char* name, int32 id = -1);
@@ -35,6 +37,21 @@ namespace VMAP
 
         ACE_SPIPE_Stream m_stream;
     };
+
+
+    class SynchronizedPipeWrapper : public PipeWrapper
+    {
+    public:
+        explicit SynchronizedPipeWrapper() {}
+
+        ByteBuffer RecvPacket();
+        void SendPacket(ByteBuffer &packet);
+
+    private:
+        LockType m_readLock;
+        LockType m_sendLock;
+    };
+
 
     class LoSProcess
     {
@@ -64,7 +81,7 @@ namespace VMAP
 
     private:
         ThreadCallback m_callbacks;
-        PipeWrapper m_requester;
+        SynchronizedPipeWrapper m_requester;
     };
 
     class TRINITY_DLL_DECL VMapClusterManager
@@ -73,10 +90,7 @@ namespace VMAP
         explicit VMapClusterManager(uint32 processNumber);
         ~VMapClusterManager();
 
-        int Run();
-
-        LoSProcess* FindProcess();
-        PipeWrapper* GetCallbackPipe(ACE_thread_t tid);
+        int Start();
 
         static int SpawnVMapProcesses(const char* runnable, const char* cfg_file, int count);
         static void RunTest();
@@ -84,11 +98,17 @@ namespace VMAP
     private:
         uint32 m_processNumber;
 
-        PipeWrapper m_coreStream;
+        SynchronizedPipeWrapper m_coreStream;
         std::list<LoSProcess*> m_losProcess;
         ThreadCallback m_callbackStreams;
 
+        LockType m_processLock;
 
+        LoSProcess* FindProcess();
+        PipeWrapper* GetCallbackPipe(ACE_thread_t tid);
+
+        void Run();
+        static ACE_THR_FUNC_RETURN RunThread(void *arg);
         static int SpawnVMapProcess(const char* runnable, const char* cfg_file, const char* name, int32 id = -1);
     };
 
@@ -99,7 +119,6 @@ namespace VMAP
 
         int Run();
 
-        
     private:
         uint32 m_processId;
         PipeWrapper m_pipe;

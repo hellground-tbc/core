@@ -177,7 +177,7 @@ extern int main(int argc, char **argv)
         if(strcmp(process, VMAP_CLUSTER_MANAGER_PROCESS) == 0)
         {
             VMAP::VMapClusterManager vmap_manager(vmapProcess);
-            return vmap_manager.Run();
+            return vmap_manager.Start();
         }
         else if(strcmp(process, VMAP_CLUSTER_PROCESS) == 0)
         {

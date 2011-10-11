@@ -89,10 +89,20 @@ namespace VMAP
             delete (*it).second;
             m_callbackStreams.erase(it);
         }
+
+     /*   while(!m_threads.empty())
+        {
+            delete m_threads.front();
+            m_threads.pop_front();
+        }
+*/
     }
 
     LoSProcess* VMapClusterManager::FindProcess()
     {
+        Guard g(m_processLock);
+        if(!g.locked())
+            return NULL; // handle error
         std::list<LoSProcess*>::iterator it;
         for(it = m_losProcess.begin(); it != m_losProcess.end(); ++it)
         {
@@ -119,58 +129,90 @@ namespace VMAP
 
     }
 
-    int VMapClusterManager::Run()
+    int VMapClusterManager::Start()
     {
+        ACE_thread_t tids[100];
+        int n = ACE_Thread::spawn_n(tids, m_processNumber, &VMapClusterManager::RunThread, this, THR_NEW_LWP|THR_JOINABLE);
+        if(n != m_processNumber)
+            printf("Started %d out of %d processes because of error %d\n", n, m_processNumber, ACE_OS::last_error());
+
+        ACE_OS::sleep(2);
+        for(int i = 0; i < n; i++)
+            if(ACE_Thread::join(tids[i], 0, 0) == -1)
+                printf("Failed to join thread id=%d tid=%d because of error %d\n", i, tids[i], ACE_OS::last_error());
+        
+        ACE_OS::sleep(15);
+        
+        return 0;
+    }
+
+    ACE_THR_FUNC_RETURN VMapClusterManager::RunThread(void *param)
+    {
+        ((VMapClusterManager*)param)->Run();
+
+        return (ACE_THR_FUNC_RETURN)0;
+    }
+
+    void VMapClusterManager::Run()
+    {
+        printf("VMapClusterManager::Run()\n");
         ACE_thread_t tid;
         PipeWrapper *pipe;
         LoSProcess *process;
         ByteBuffer packet;
         while(true)
         {
-            // TODO: lock on
+            printf("1\n");
             packet = m_coreStream.RecvPacket();
-            // lock off
+            printf("2\n");
             if(m_coreStream.Eof())
             {
                 printf(VMAP_CLUSTER_MANAGER_PROCESS" pipe. EOF on pipe encountered. Returning...\n", packet.size());
-                return 0;
+                return;
             }
 
             if(packet.size() != 1+4+4+sizeof(float)*6)
             {
                 printf(VMAP_CLUSTER_MANAGER_PROCESS" pipe. Received packet with invalid size %d\n", packet.size());
-                return 1;
+                return;
             }
+            printf("3\n");
             packet.read_skip<uint8>();
             tid = packet.read<uint32>();
 
+            printf("4\n");
             packet.rpos(0);
-            // TODO: lock on
             process = FindProcess();
-            // TODO: lock off
+
+            printf("5\n");
             if(!process) 
             {// TODO: send failure code and log this
                 printf("Failed to find free vmap process, exiting thread...\n");
-                return 1;
+                return;
             }
-            
+            printf("6\n");
             process->GetPipe()->SendPacket(packet);
-            // yeld
+            printf("7\n");
+            ACE_Thread::yield();
+            printf("8\n");
             packet = process->GetPipe()->RecvPacket();
-
+            printf("9\n");
             process->SetInUse(false);
 
             if(packet.size() != 2)
             {
                 printf(VMAP_CLUSTER_PROCESS" pipe. Received packet with invalid size %d\n", packet.size());
-                return 1;
+                return;
             }
+            printf("10\n");
             pipe = GetCallbackPipe(tid);
+            printf("11\n");
             pipe->SendPacket(packet);
+            printf("12\n");
         }
 
         printf("Exiting cluster process manager\n");
-        return 0;
+        return;
     }
 
 
@@ -182,6 +224,7 @@ namespace VMAP
 
     int VMapClusterProcess::Run()
     {
+        printf("VMapClusterProcess::Run()\n");
         ByteBuffer packet;
         uint32 mapId;
         float x1, y1, z1, x2, y2, z2;
@@ -245,7 +288,7 @@ namespace VMAP
                 m_connected = true;
                 return;
             }
-            // yeld
+            ACE_Thread::yield();
         }
 
     }
@@ -272,6 +315,16 @@ namespace VMAP
             m_connected = true;
     }
 
+    ByteBuffer SynchronizedPipeWrapper::RecvPacket()
+    {
+        Guard g(m_readLock);
+        if(!g.locked())
+        {
+             // TODO: handle error
+        }
+        return PipeWrapper::RecvPacket();
+    }
+
     ByteBuffer PipeWrapper::RecvPacket()
     {
         ByteBuffer packet;
@@ -291,7 +344,7 @@ namespace VMAP
                 }
             } else if(n == 0)
             {
-                // yeld
+                ACE_Thread::yield();
                 printf("[DEBUG]Recv_n n == 0\n");
                 continue;
             }
@@ -316,7 +369,7 @@ namespace VMAP
                 }   
                 else if (n == 0)
                 {
-                    //yeld
+                    ACE_Thread::yield();
                     printf("[DEBUG]Recv_n2 n == 0\n");
                     continue;
                 }
@@ -325,6 +378,15 @@ namespace VMAP
                 break;
             }
         return packet;
+    }
+
+    void SynchronizedPipeWrapper::SendPacket(ByteBuffer &packet)
+    {
+        Guard g(m_sendLock);
+        if(!g.locked())
+            return; // TODO: handle error
+            
+        return PipeWrapper::SendPacket(packet);
     }
 
     void PipeWrapper::SendPacket(ByteBuffer &packet)
@@ -362,9 +424,7 @@ namespace VMAP
         packet << x1 << y1 << z1 << x2 << y2 << z2;
 
         printf("[LoSProxy]About to send packet\n");
-        // TODO: lock
         m_requester.SendPacket(packet);
-        // end lock
         printf("[LoSProxy]Packet send\n");
 
         PipeWrapper *pipe;
