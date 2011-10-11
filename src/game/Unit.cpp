@@ -11925,7 +11925,11 @@ bool Unit::HandleMendingNPCAuraProc(Aura* triggeredByAura)
             CreatureGroup * formation = (CreatureCaster->GetFormation());
             // only search for targets if having group formation !
             if(!formation)
+            {
+                RemoveAurasDueToSpell(spellProto->Id);
+                CastCustomSpell(this,33110,&heal,NULL,NULL,true);
                 return false;
+            }
 
             if (Creature* target = formation->GetNextRandomCreatureGroupMember(CreatureCaster, radius))
             {

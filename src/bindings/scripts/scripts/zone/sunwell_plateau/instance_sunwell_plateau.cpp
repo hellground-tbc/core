@@ -330,12 +330,10 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                     Encounters[2] = data;
                 break;
             case DATA_FELMYST_EVENT:
+                if(data == DONE)
+                    HandleGameObject(FireBarrier, OPEN);
                 if(Encounters[3] != DONE)
-                {
-                    if(data == DONE)
-                        HandleGameObject(FireBarrier, OPEN);
                     Encounters[3] = data;
-                }
                 break;
             case DATA_EREDAR_TWINS_EVENT:
                 if(Encounters[4] != DONE)
