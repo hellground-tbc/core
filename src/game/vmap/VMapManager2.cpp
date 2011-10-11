@@ -25,6 +25,7 @@
 #include "ModelInstance.h"
 #include "WorldModel.h"
 #include "VMapDefinitions.h"
+#include "VMapCluster.h"
 
 using G3D::Vector3;
 
@@ -219,10 +220,13 @@ namespace VMAP
 
     bool VMapManager2::isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2)
     {
-        if (!isLineOfSightCalcEnabled(pMapId))
+        if (false) // FIXME !isLineOfSightCalcEnabled(pMapId))
             return true;
 
-        return isInLineOfSight2(pMapId, x1, y1, z1, x2, y2, z2);
+        if(isClusterComputingEnabled())
+            return sLoSProxy.isInLineOfSight(pMapId, x1, y1, z1, x2, y2, z2);
+        else
+            return isInLineOfSight2(pMapId, x1, y1, z1, x2, y2, z2);
     }
 
 

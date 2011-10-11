@@ -170,11 +170,13 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
+    int vmapProcess = sConfig.GetIntDefault("VMapProcess", 4); // TODO: name + add to conf
+
     if(process)
     {
         if(strcmp(process, VMAP_CLUSTER_MANAGER_PROCESS) == 0)
         {
-            VMAP::VMapClusterManager vmap_manager;
+            VMAP::VMapClusterManager vmap_manager(vmapProcess);
             return vmap_manager.Run();
         }
         else if(strcmp(process, VMAP_CLUSTER_PROCESS) == 0)
@@ -222,9 +224,13 @@ extern int main(int argc, char **argv)
 
 
     if(sConfig.GetBoolDefault("VMapProcess", true)) // TODO: change to false on release
-        VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file);
+    {
+        VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file, vmapProcess);
+    }
 
+    VMAP::VMapClusterManager::RunTest();
 
+    ACE_OS::sleep(4);
     return 0;
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?

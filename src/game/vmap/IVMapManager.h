@@ -48,12 +48,13 @@ namespace VMAP
         private:
             bool iEnableLineOfSightCalc;
             bool iEnableHeightCalc;
+            bool iEnableClusterComputing;
         protected:
             G3D::Table<unsigned int , bool> mapsWithLOS;
             G3D::Table<unsigned int , bool> mapsWithHeight;
             G3D::Table<unsigned int , bool> mapsWithPosCollision;
         public:
-            IVMapManager() : iEnableLineOfSightCalc(true), iEnableHeightCalc(true) {}
+            IVMapManager() : iEnableLineOfSightCalc(true), iEnableHeightCalc(true), iEnableClusterComputing(false) {}
 
             virtual ~IVMapManager(void) {}
 
@@ -87,10 +88,13 @@ namespace VMAP
             */
             void setEnableHeightCalc(bool pVal) { iEnableHeightCalc = pVal; }
 
+            void setEnableClusterComputing(bool pVal) { iEnableClusterComputing = pVal; }
+
             bool isLineOfSightCalcEnabled(unsigned int pMapId) const { return(iEnableLineOfSightCalc && mapsWithLOS.containsKey(pMapId)); }
             bool isHeightCalcEnabled(unsigned int pMapId) const { return(iEnableHeightCalc && mapsWithHeight.containsKey(pMapId)); }
             bool isPosCollisionCalcEnabled(unsigned int pMapId) const { return mapsWithPosCollision.containsKey(pMapId); }
             bool isMapLoadingEnabled(unsigned int pMapId) const { return isHeightCalcEnabled(pMapId) || isLineOfSightCalcEnabled(pMapId); }
+            bool isClusterComputingEnabled() const { return iEnableClusterComputing; }
 
             virtual std::string getDirFileName(unsigned int pMapId, int x, int y) const =0;
             /**
