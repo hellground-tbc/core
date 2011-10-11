@@ -22,12 +22,16 @@ namespace VMAP
         VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(true);
         printf("Running test1\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 20, 20, 20);
+        ACE_OS::sleep(2);
         printf("Running test2\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 30, 30, 30, 20, 20, 20);
+        ACE_OS::sleep(2);
         printf("Running test3\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 40, 40, 40, 20, 20, 20);
+        ACE_OS::sleep(2);
         printf("Running test4\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 50, 50, 50);
+        ACE_OS::sleep(2);
         printf("Test finished\n");
     }
 
@@ -230,9 +234,9 @@ namespace VMAP
         {
             if (connetor.connect(m_stream, addr) == -1)
             {
+                printf("[DEBUG]Error in ACE_SPIPE_Connector.connect() %d\n", ACE_OS::last_error());
                 if(ACE_OS::last_error() != 2) // TODO: how it works on nix?
                 {
-                    printf("Error in ACE_SPIPE_Connector.connect() %d", ACE_OS::last_error());
                     return;
                 }
             }
@@ -279,14 +283,18 @@ namespace VMAP
             n = m_stream.recv_n(m_buffer, 1);
             if (n < 0) 
             {
-                if(ACE_OS::last_error() != 234)
+                printf("[DEBUG]Recv_n error %d\n", ACE_OS::last_error());
+                if(ACE_OS::last_error() != 234) // TODO:handle eof error,  how it works on *nix?
                 {
-                    printf("Recv_n error %d\n", ACE_OS::last_error());
                     m_eof = true;
                     return packet;
                 }
             } else if(n == 0)
+            {
+                // yeld
+                printf("[DEBUG]Recv_n n == 0\n");
                 continue;
+            }
             break;
         }
 
@@ -299,13 +307,17 @@ namespace VMAP
                 n = m_stream.recv_n(m_buffer, size - 1);
                 if (n < 0)
                 {
-                    printf("Recv_n error %d\n", ACE_OS::last_error());
-                    m_eof = true;
-                    return packet;
+                    printf("[DEBUG]Recv_n2 error %d\n", ACE_OS::last_error());
+                    if(ACE_OS::last_error() != 234) // TODO:handle eof error,  how it works on *nix?
+                    {
+                        m_eof = true;
+                        return packet;
+                    }
                 }   
                 else if (n == 0)
                 {
                     //yeld
+                    printf("[DEBUG]Recv_n2 n == 0\n");
                     continue;
                 }
                 for(int i = 0; i < size - 1; i++)
