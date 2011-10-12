@@ -1237,6 +1237,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_KEEP_DELETED_CHARS_TIME] = sConfig.GetIntDefault("KeepDeletedCharsTime", 31);
 
     m_configs[CONFIG_ENABLE_SORT_AUCTIONS] = sConfig.GetBoolDefault("Auction.EnableSort", true);
+
+    m_configs[CONFIG_CHAT_DENY_MASK] = sConfig.GetIntDefault("Chat.DenyMask", 0);
+    m_configs[CONFIG_CHAT_MINIMUM_LVL] = sConfig.GetIntDefault("Chat.MinimumLevel", 5);
 }
 
 /// Initialize the World
