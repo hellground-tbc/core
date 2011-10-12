@@ -4,9 +4,10 @@
 #include "Common.h"
 #include <ace/SPIPE_Stream.h>
 
-#define VMAP_CLUSTER_MANAGER_PROCESS    "VMAP_MANAGER"
-#define VMAP_CLUSTER_PROCESS            "VMAP_PROCESS"
-#define VMAP_CLUSTER_MANAGER_CALLBACK   "VMAP_CALLBACK"
+#define VMAP_CLUSTER_MANAGER_PROCESS        "VMAP_MANAGER"
+#define VMAP_CLUSTER_PROCESS                "VMAP_PROCESS"
+#define VMAP_CLUSTER_PROCESS_REPLY          "VMAP_PROCESS_R"
+#define VMAP_CLUSTER_MANAGER_CALLBACK       "VMAP_CALLBACK"
 
 class ByteBuffer;
 
@@ -28,12 +29,16 @@ namespace VMAP
 
         bool IsConnected() { return m_connected; }
 
+    protected:
+        bool m_eof;
+        bool m_connected;
+
     private:
         int32 m_counter;
         int32 m_bufferSize;
         uint8 m_buffer[100];
-        bool m_eof;
-        bool m_connected;
+
+        bool recv(uint32 size);
 
         ACE_SPIPE_Stream m_stream;
     };
@@ -58,13 +63,15 @@ namespace VMAP
     public:
         explicit LoSProcess() : m_inUse(false) {}
 
-        PipeWrapper* GetPipe() { return &m_pipe; }
+        PipeWrapper* GetInPipe() { return &m_inPipe; }
+        PipeWrapper* GetOutPipe() { return &m_outPipe; }
 
         void SetInUse(bool inUse) { m_inUse = inUse; }
         bool InUse() { return m_inUse; }
 
     private:
-        PipeWrapper m_pipe;
+        PipeWrapper m_inPipe;
+        PipeWrapper m_outPipe;
         bool m_inUse;
 
     };
@@ -107,6 +114,8 @@ namespace VMAP
         LoSProcess* FindProcess();
         PipeWrapper* GetCallbackPipe(ACE_thread_t tid);
 
+        void SendFailCode(ACE_thread_t tid);
+
         void Run();
         static ACE_THR_FUNC_RETURN RunThread(void *arg);
         static int SpawnVMapProcess(const char* runnable, const char* cfg_file, const char* name, int32 id = -1);
@@ -121,7 +130,8 @@ namespace VMAP
 
     private:
         uint32 m_processId;
-        PipeWrapper m_pipe;
+        PipeWrapper m_inPipe;
+        PipeWrapper m_outPipe;
     };
 }
 

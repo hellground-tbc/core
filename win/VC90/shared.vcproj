@@ -459,18 +459,6 @@
 					RelativePath="..\..\src\shared\Database\dbcfile.h"
 					>
 				</File>
-				<File
-					RelativePath="..\..\src\shared\Database\DBCStores.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\shared\Database\DBCStores.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\shared\Database\DBCStructure.h"
-					>
-				</File>
 			</Filter>
 		</Filter>
 		<Filter

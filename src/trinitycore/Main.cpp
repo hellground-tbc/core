@@ -80,8 +80,6 @@ extern int main(int argc, char **argv)
     ///- Command line parsing
     char const* cfg_file = _TRINITY_CORE_CONFIG;
 
-    //sLog.Initialize();
-
     char const *options = ":a:c:s:p:i:";
 
     char const *process = 0;

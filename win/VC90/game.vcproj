@@ -1633,6 +1633,18 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\..\src\game\DBCStores.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\DBCStores.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\DBCStructure.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\game\MapUpdater.cpp"
 			>
 		</File>

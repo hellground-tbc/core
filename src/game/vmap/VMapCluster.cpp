@@ -12,8 +12,30 @@
 #include <ace/Thread.h>
 
 #include "Policies/SingletonImp.h"
+#include "Log.h"
+#include "Util.h"
 
 INSTANTIATE_SINGLETON_1(VMAP::LoSProxy);
+
+#define ERROR_CONNECT_NO_PIPE   2
+
+#define ERROR_EOF_ON_PIPE       109
+#define ERROR_MORE_DATA_IN_PIPE 234
+
+#define sLog Logger::Instance()
+
+class Logger
+{
+public:
+    static Logger& Instance() { return logger; }
+    static Logger logger;
+    void outError(const char *fmt, ...) 
+    {
+        UTF8PRINTF(stdout, fmt,);
+    }
+};
+
+Logger Logger::logger = Logger();
 
 namespace VMAP
 {
@@ -22,16 +44,16 @@ namespace VMAP
         VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(true);
         printf("Running test1\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 20, 20, 20);
-        ACE_OS::sleep(2);
+        //ACE_OS::sleep(2);
         printf("Running test2\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 30, 30, 30, 20, 20, 20);
-        ACE_OS::sleep(2);
+        //ACE_OS::sleep(2);
         printf("Running test3\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 40, 40, 40, 20, 20, 20);
-        ACE_OS::sleep(2);
+        //ACE_OS::sleep(2);
         printf("Running test4\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 50, 50, 50);
-        ACE_OS::sleep(2);
+        //ACE_OS::sleep(2);
         printf("Test finished\n");
     }
 
@@ -55,7 +77,9 @@ namespace VMAP
             options.command_line("%s -c \"%s\" -p %s -i %d", runnable, cfg_file, name, id);
         else
             options.command_line("%s -c \"%s\" -p %s", runnable, cfg_file, name);
-        process.spawn(options);
+
+        if(process.spawn(options) == -1)
+            sLog.outError("SpawnVMapProcess: failed to create process %s with id %d because of error %d", name, id, ACE_OS::last_error());
 
         return 0;
     }
@@ -65,7 +89,8 @@ namespace VMAP
         for(uint32 i = 0; i < processNumber; i++)
         {
             LoSProcess* process = new LoSProcess();
-            process->GetPipe()->Connect(VMAP_CLUSTER_PROCESS, i);
+            process->GetOutPipe()->Connect(VMAP_CLUSTER_PROCESS, i);
+            process->GetInPipe()->Accept(VMAP_CLUSTER_PROCESS_REPLY, i);
             m_losProcess.push_back(process);
         }
         printf("VMapClusterManager connected to %u vmap processes\n", processNumber);
@@ -89,20 +114,16 @@ namespace VMAP
             delete (*it).second;
             m_callbackStreams.erase(it);
         }
-
-     /*   while(!m_threads.empty())
-        {
-            delete m_threads.front();
-            m_threads.pop_front();
-        }
-*/
     }
 
     LoSProcess* VMapClusterManager::FindProcess()
     {
         Guard g(m_processLock);
         if(!g.locked())
-            return NULL; // handle error
+        {
+            sLog.outError("FindProcess: failed to aquire lock");
+            return NULL;
+        }
         std::list<LoSProcess*>::iterator it;
         for(it = m_losProcess.begin(); it != m_losProcess.end(); ++it)
         {
@@ -132,16 +153,18 @@ namespace VMAP
     int VMapClusterManager::Start()
     {
         ACE_thread_t tids[100];
-        int n = ACE_Thread::spawn_n(tids, m_processNumber, &VMapClusterManager::RunThread, this, THR_NEW_LWP|THR_JOINABLE);
-        if(n != m_processNumber)
-            printf("Started %d out of %d processes because of error %d\n", n, m_processNumber, ACE_OS::last_error());
+        ACE_hthread_t htids[100];
 
-        ACE_OS::sleep(2);
+        int n = ACE_Thread::spawn_n(tids, m_processNumber, &VMapClusterManager::RunThread, this, THR_NEW_LWP|THR_JOINABLE, 0, 0, 0, htids);
+        if(n != m_processNumber)
+            sLog.outError("VMapClusterManager::Start(): started only %d out of %d threads because of error %d", n, m_processNumber, ACE_OS::last_error());
+
+        //ACE_OS::sleep(2); // FIXME: remove
         for(int i = 0; i < n; i++)
-            if(ACE_Thread::join(tids[i], 0, 0) == -1)
-                printf("Failed to join thread id=%d tid=%d because of error %d\n", i, tids[i], ACE_OS::last_error());
+            if(ACE_Thread::join(htids[i]) == -1)
+                sLog.outError("VMapClusterManager::Start(): failed to join thread id=%d tid=%d because of error %d", i, tids[i], ACE_OS::last_error());
         
-        ACE_OS::sleep(15);
+        //ACE_OS::sleep(15);
         
         return 0;
     }
@@ -153,6 +176,15 @@ namespace VMAP
         return (ACE_THR_FUNC_RETURN)0;
     }
 
+    void VMapClusterManager::SendFailCode(ACE_thread_t tid)
+    {
+        ByteBuffer packet;
+        packet << (uint8)2;
+        packet << (uint8)2;
+        PipeWrapper *pipe = GetCallbackPipe(tid);
+        pipe->SendPacket(packet);
+    }
+
     void VMapClusterManager::Run()
     {
         printf("VMapClusterManager::Run()\n");
@@ -162,53 +194,48 @@ namespace VMAP
         ByteBuffer packet;
         while(true)
         {
-            printf("1\n");
             packet = m_coreStream.RecvPacket();
-            printf("2\n");
             if(m_coreStream.Eof())
-            {
-                printf(VMAP_CLUSTER_MANAGER_PROCESS" pipe. EOF on pipe encountered. Returning...\n", packet.size());
                 return;
-            }
 
             if(packet.size() != 1+4+4+sizeof(float)*6)
             {
-                printf(VMAP_CLUSTER_MANAGER_PROCESS" pipe. Received packet with invalid size %d\n", packet.size());
+                sLog.outError("VMapClusterManager::Run(): received packet with invalid size %d (%d)", packet.size(),  1+4+4+sizeof(float)*6);
                 return;
             }
-            printf("3\n");
             packet.read_skip<uint8>();
             tid = packet.read<uint32>();
 
-            printf("4\n");
             packet.rpos(0);
             process = FindProcess();
 
-            printf("5\n");
             if(!process) 
-            {// TODO: send failure code and log this
-                printf("Failed to find free vmap process, exiting thread...\n");
+            {
+                SendFailCode(tid);
+                sLog.outError("VMapClusterManager::Run(): failed to find free vmap process", packet.size());
                 return;
             }
-            printf("6\n");
-            process->GetPipe()->SendPacket(packet);
-            printf("7\n");
+            process->GetOutPipe()->SendPacket(packet);
             ACE_Thread::yield();
-            printf("8\n");
-            packet = process->GetPipe()->RecvPacket();
-            printf("9\n");
+
+            packet = process->GetInPipe()->RecvPacket();
             process->SetInUse(false);
 
-            if(packet.size() != 2)
+            if(process->GetInPipe()->Eof())
             {
-                printf(VMAP_CLUSTER_PROCESS" pipe. Received packet with invalid size %d\n", packet.size());
+                SendFailCode(tid);
                 return;
             }
-            printf("10\n");
+            
+            if(packet.size() != 2)
+            {
+                SendFailCode(tid);
+                sLog.outError("VMapClusterManager::Run(): received packet with invalid size %d (2)", packet.size());
+                return;
+            }
+
             pipe = GetCallbackPipe(tid);
-            printf("11\n");
             pipe->SendPacket(packet);
-            printf("12\n");
         }
 
         printf("Exiting cluster process manager\n");
@@ -218,8 +245,9 @@ namespace VMAP
 
     VMapClusterProcess::VMapClusterProcess(uint32 processId) : m_processId(processId) 
     {
-        m_pipe.Accept(VMAP_CLUSTER_PROCESS, processId);
-        printf(VMAP_CLUSTER_PROCESS"_%d accepted\n", processId);
+        m_inPipe.Accept(VMAP_CLUSTER_PROCESS, processId);
+        m_outPipe.Connect(VMAP_CLUSTER_PROCESS_REPLY, processId);
+        printf(VMAP_CLUSTER_PROCESS"_%d connected\n", processId);
     }
 
     int VMapClusterProcess::Run()
@@ -233,10 +261,15 @@ namespace VMAP
 
         while(true)
         {
-            packet = m_pipe.RecvPacket();
-            if(m_pipe.Eof())
+            packet = m_inPipe.RecvPacket();
+            if(m_inPipe.Eof())
             {
                 printf(VMAP_CLUSTER_PROCESS"_%d exiting process because of EOF encountered on pipe\n", m_processId);
+                return 0;
+            }
+            if(packet.size() != 1+4+4+sizeof(float)*6)
+            {
+                sLog.outError("VMapClusterProcess::Run(): received packet with invalid size %d (%d)", packet.size(), 1+4+4+sizeof(float)*6);
                 return 0;
             }
             packet.read_skip(1+4);
@@ -245,11 +278,13 @@ namespace VMAP
 
             bool res = vMapManager->isInLineOfSight(mapId, x1, y1, z1, x2, y2, z2);
 
+            ACE_OS::sleep(2); // FIXME: remove after tests
+
             printf(VMAP_CLUSTER_PROCESS"_%d finished vmap computing\n", m_processId);
             packet.clear();
             packet << (uint8)2;
             packet << (uint8)res;
-            m_pipe.SendPacket(packet);
+            m_outPipe.SendPacket(packet);
             printf(VMAP_CLUSTER_PROCESS"_%d send packet\n", m_processId);
         }
         return 0;
@@ -277,9 +312,9 @@ namespace VMAP
         {
             if (connetor.connect(m_stream, addr) == -1)
             {
-                printf("[DEBUG]Error in ACE_SPIPE_Connector.connect() %d\n", ACE_OS::last_error());
-                if(ACE_OS::last_error() != 2) // TODO: how it works on nix?
+                if(ACE_OS::last_error() != ERROR_CONNECT_NO_PIPE)
                 {
+                    sLog.outError("Connect: failed to connect to stream %s because of error %d", addr.get_path_name(), ACE_OS::last_error());
                     return;
                 }
             }
@@ -310,7 +345,7 @@ namespace VMAP
 
         ACE_SPIPE_Acceptor acceptor = ACE_SPIPE_Acceptor(addr);
         if(acceptor.accept(m_stream) == -1)
-            printf("acceptor.accept error %d", ACE_OS::last_error());
+            sLog.outError("Accept: failed to accept on stream %s becaus of error %d", addr.get_path_name(), ACE_OS::last_error());
         else
             m_connected = true;
     }
@@ -320,9 +355,47 @@ namespace VMAP
         Guard g(m_readLock);
         if(!g.locked())
         {
-             // TODO: handle error
+            ByteBuffer packet;
+            sLog.outError("RecvPacket: failed to aquire lock");
+            m_eof = true;
+            return packet;
         }
         return PipeWrapper::RecvPacket();
+    }
+
+    bool PipeWrapper::recv(uint32 size)
+    {
+        uint32 n;
+        while(true) // this while is ugly and maybe not needed, but to be sure...
+        {
+            n = m_stream.recv_n(m_buffer, size);
+            if (n < 0) 
+            {
+                int err = ACE_OS::last_error();
+                if(err == ERROR_MORE_DATA_IN_PIPE)
+                {
+                    break;
+                }
+                else if(err == ERROR_EOF_ON_PIPE)
+                {
+                    m_eof = true;
+                    return false;
+                } 
+                else
+                {
+                    sLog.outError("recv: failed to receive datafrom stream because of error %d", err);
+                    m_eof = true;
+                    return false;
+                }
+            } 
+            else if(n == 0) // should not happen, but..
+            {
+                ACE_Thread::yield();
+                continue;
+            }
+            break;
+        }
+        return true;
     }
 
     ByteBuffer PipeWrapper::RecvPacket()
@@ -330,53 +403,21 @@ namespace VMAP
         ByteBuffer packet;
         uint8 size;
 
-        int32 n;
-        while(true)
-        {
-            n = m_stream.recv_n(m_buffer, 1);
-            if (n < 0) 
-            {
-                printf("[DEBUG]Recv_n error %d\n", ACE_OS::last_error());
-                if(ACE_OS::last_error() != 234) // TODO:handle eof error,  how it works on *nix?
-                {
-                    m_eof = true;
-                    return packet;
-                }
-            } else if(n == 0)
-            {
-                ACE_Thread::yield();
-                printf("[DEBUG]Recv_n n == 0\n");
-                continue;
-            }
-            break;
-        }
+        if(!recv(1))
+            return packet;
 
         size = m_buffer[0];
         packet << size;
 
         if (size > 1)
-            while (true)
-            {
-                n = m_stream.recv_n(m_buffer, size - 1);
-                if (n < 0)
-                {
-                    printf("[DEBUG]Recv_n2 error %d\n", ACE_OS::last_error());
-                    if(ACE_OS::last_error() != 234) // TODO:handle eof error,  how it works on *nix?
-                    {
-                        m_eof = true;
-                        return packet;
-                    }
-                }   
-                else if (n == 0)
-                {
-                    ACE_Thread::yield();
-                    printf("[DEBUG]Recv_n2 n == 0\n");
-                    continue;
-                }
-                for(int i = 0; i < size - 1; i++)
-                    packet << m_buffer[i];
-                break;
-            }
+        {
+            if(!recv(size - 1))
+                return packet;
+
+            for(int i = 0; i < size - 1; i++)
+                packet << m_buffer[i];
+        }
+
         return packet;
     }
 
@@ -384,7 +425,7 @@ namespace VMAP
     {
         Guard g(m_sendLock);
         if(!g.locked())
-            return; // TODO: handle error
+            sLog.outError("SendPacket: failed to aquire lock, unintended bahaviour possible");
             
         return PipeWrapper::SendPacket(packet);
     }
@@ -443,6 +484,11 @@ namespace VMAP
         packet.read_skip(1);
         uint8 response;
         packet >> response;
+        if (response == 2)
+        {
+            sLog.outError("LoSProxy::isInLineOfSight: cluster failed to check line of sight, checking locally");
+            return VMapFactory::createOrGetVMapManager()->isInLineOfSight2(pMapId, x1, y1, z1, x2, y2, z2);
+        }
 
         return response;
     }
