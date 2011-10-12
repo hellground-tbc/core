@@ -38,7 +38,7 @@ namespace VMAP
         int32 m_bufferSize;
         uint8 m_buffer[100];
 
-        bool recv(uint32 size);
+        bool recv(ByteBuffer &packet, uint32 size);
 
         ACE_SPIPE_Stream m_stream;
     };
