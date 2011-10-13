@@ -168,7 +168,7 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
-    int vmapProcess = sConfig.GetIntDefault("VMapProcess", 4); // TODO: name + add to conf
+    int vmapProcess = sConfig.GetIntDefault("vmap.clusterProcesses", 1);
 
     if(process)
     {
@@ -221,15 +221,17 @@ extern int main(int argc, char **argv)
     BarGoLink::SetOutputState(sConfig.GetBoolDefault("ShowProgressBars", false));
 
 
-    if(sConfig.GetBoolDefault("VMapProcess", true)) // TODO: change to false on release
+    if(sConfig.GetBoolDefault("vmap.enableCluster", false))
     {
         VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file, vmapProcess);
     }
 
+    /*
     VMAP::VMapClusterManager::RunTest();
 
     ACE_OS::sleep(4);
     return 0;
+    */
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?
     return sMaster.Run();

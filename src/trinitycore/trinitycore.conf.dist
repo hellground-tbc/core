@@ -2,7 +2,7 @@
 # Trinity Core worldd configuration file #
 ##########################################
 [CoreConf]
-ConfVersion=2011092901
+ConfVersion=2011101301
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -173,6 +173,14 @@ EAIErrorLevel = 2
 #        Use VMAP for totem summon place calculation
 #        Default: 0 (disable, less CPU usage)
 #                 1 (enable, each totem created check LOS)
+#   
+#    vmap.enableCluster
+#        Enable/Disable VMmap calculations in cluster
+#        Default: 0 (false)
+#                 1 (true)
+#
+#    vmap.clusterProcesses
+#        Number of calculation processes created in cluster
 #
 #    DetectPosCollision
 #        Check final move position, summon position, etc for visible collision with other objects or
@@ -243,6 +251,8 @@ vmap.posCollisionMaps = ""
 vmap.ignoreSpellIds = "7720"
 vmap.petLOS = 0
 vmap.totem = 0
+vmap.enableCluster = 0
+vmap.clusterProcesses = 4
 
 DetectPosCollision = 1
 TargetPosRecalculateRange = 1.5
