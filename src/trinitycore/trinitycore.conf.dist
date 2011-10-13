@@ -14,7 +14,7 @@ ConfVersion=2011101301
 #        Data directory setting.
 #        Important: DataDir needs to be quoted, as it is a string which may contain space characters.
 #        Important: In linux daemon mode string must be full path.
-#        Example: "@prefix@/share/trinitycore"
+#        Example: "/share/trinitycore"
 #
 #    LogsDir
 #        Logs directory setting.

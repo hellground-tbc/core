@@ -394,9 +394,18 @@ namespace VMAP
 
         packet = pipe->RecvPacket();
         printf("[LoSProxy]Packet recv\n");
-        packet.read_skip(1);
         uint8 response;
-        packet >> response;
+        if (packet.size() != 2)
+        {
+            sLog.outError("LoSProxy::isInLineOfSight: received packet with invalid size %d (2)", packet.size());
+            response = 2;
+        }
+        else
+        {
+            packet.read_skip(1);
+            packet >> response;
+        }
+
         if (response == 2)
         {
             sLog.outError("LoSProxy::isInLineOfSight: cluster failed to check line of sight, checking locally");

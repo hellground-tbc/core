@@ -5,6 +5,7 @@ namespace VMAP
     Logger Logger::logger = Logger();
 
 
+    template<>
     void _SendPipeWrapper<ACE_SPIPE_Stream>::Connect(const char* name, int32 id)
     {
         if(m_connected)
@@ -45,6 +46,7 @@ namespace VMAP
         }
     }
 
+    template<>
     void _SendPipeWrapper<ACE_FIFO_Send>::Connect(const char* name, int32 id)
     {
         if(m_connected)
@@ -59,20 +61,35 @@ namespace VMAP
         
 
         m_stream = new ACE_FIFO_Send();
-        if(m_stream->open(addr_buf) == -1)
+        while(true)
         {
-            sLog.outError("Connect: failed to connect to stream %s because of error %d", addr_buf, ACE_OS::last_error());
-            delete m_stream;
-            m_stream = 0;
+
+            if(m_stream->open(addr_buf) == -1)
+            {
+                if(ACE_OS::last_error() != ERROR_CONNECT_NO_PIPE)
+                {
+                    sLog.outError("Connect: failed to connect to stream %s because of error %d", addr_buf, ACE_OS::last_error());
+                    delete m_stream;
+                    m_stream = 0;
+                }
+                
+            } 
+            else
+            {
+                m_connected = true;
+                return;
+            }
+            ACE_Thread::yield();
         }
-        m_connected = true;
     }
 
+    template<>
     _SendPipeWrapper<ACE_FIFO_Send>::~_SendPipeWrapper()
     {
         m_stream->close();
     }
 
+    template<>
     void _RecvPipeWrapper<ACE_SPIPE_Stream>::Accept(const char* name, int32 id)
     {
         if(m_connected)
@@ -101,6 +118,7 @@ namespace VMAP
             m_connected = true;
     }
 
+    template<>
     void _RecvPipeWrapper<ACE_FIFO_Recv>::Accept(const char *name, int32 id)
     {
         if(m_connected)
@@ -124,6 +142,7 @@ namespace VMAP
 
     }
 
+    template<>
     _RecvPipeWrapper<ACE_FIFO_Recv>::~_RecvPipeWrapper()
     {
         m_stream->close();

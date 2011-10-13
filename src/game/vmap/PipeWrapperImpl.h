@@ -34,7 +34,7 @@ namespace VMAP
         if(!g.locked())
             sLog.outError("Connect: failed to aquire lock");
 
-        SendPipeWrapper::Connect(name, id);
+        _SendPipeWrapper<STREAM>::Connect(name, id);
     }
 
     template<class STREAM>
@@ -44,7 +44,7 @@ namespace VMAP
         if(!g.locked())
             sLog.outError("Accept: failed to aquire log");
 
-        RecvPipeWrapper::Accept(name, id);    
+        _RecvPipeWrapper<STREAM>::Accept(name, id);    
     }
 
     template<class STREAM>
@@ -55,11 +55,11 @@ namespace VMAP
         {
             ByteBuffer packet;
             sLog.outError("RecvPacket: failed to aquire lock");
-            m_eof = true;
+            _RecvPipeWrapper<STREAM>::m_eof = true;
             return packet;
         }
         printf("SynchronizedRecvPipeWrapper::RecvPacket() into recv\n");
-        return RecvPipeWrapper::RecvPacket();
+        return _RecvPipeWrapper<STREAM>::RecvPacket();
     }
 
     template<class STREAM>
@@ -68,7 +68,7 @@ namespace VMAP
         int n;
         while(true)
         {
-            n = m_stream->recv_n(m_buffer, size);
+            n = _PipeWrapper<STREAM>::m_stream->recv_n(m_buffer, size);
             if (n < 0) 
             {
                 int code = ACE_OS::last_error();
@@ -79,6 +79,7 @@ namespace VMAP
                 } 
                 else if(code == ERROR_MORE_DATA_IN_PIPE) 
                 {
+                    sLog.outError("recv: failed to recv data from stream because of error %d", code);
                     // ignore error
                 }
                 else 
@@ -127,7 +128,7 @@ namespace VMAP
         if(!g.locked())
             sLog.outError("SendPacket: failed to aquire lock, unintended bahaviour possible");
 
-        return SendPipeWrapper::SendPacket(packet);
+        return _SendPipeWrapper<STREAM>::SendPacket(packet);
     }
 
     template<class STREAM>
@@ -140,7 +141,7 @@ namespace VMAP
 
         uint32 offset = 0;
         while(offset < len)
-            offset += m_stream->send(buf + offset, len - offset);
+            offset += _PipeWrapper<STREAM>::m_stream->send(buf + offset, len - offset);
 
         delete [] buf;
     }

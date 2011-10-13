@@ -91,18 +91,6 @@ namespace VMAP
         LockType m_lock;
     };
 
-#ifdef afdsadf
-    typedef _RecvPipeWrapper<ACE_SPIPE_Stream> RecvPipeWrapper;
-    typedef _SendPipeWrapper<ACE_SPIPE_Stream> SendPipeWrapper;
-    typedef _SynchronizedSendPipeWrapper<ACE_SPIPE_Stream> SynchronizedSendPipeWrapper;
-    typedef _SynchronizedRecvPipeWrapper<ACE_SPIPE_Stream> SynchronizedRecvPipeWrapper;
-#else
-    typedef _RecvPipeWrapper<ACE_FIFO_Recv> RecvPipeWrapper;
-    typedef _SendPipeWrapper<ACE_FIFO_Send> SendPipeWrapper;
-    typedef _SynchronizedSendPipeWrapper<ACE_FIFO_Send> SynchronizedSendPipeWrapper;
-    typedef _SynchronizedRecvPipeWrapper<ACE_FIFO_Recv> SynchronizedRecvPipeWrapper;
-#endif
-
 // temporary
 
     class Logger
@@ -120,5 +108,21 @@ namespace VMAP
 }
 
 #include "PipeWrapperImpl.h"
+
+namespace VMAP
+{
+#ifdef afdsadf
+    typedef _RecvPipeWrapper<ACE_SPIPE_Stream> RecvPipeWrapper;
+    typedef _SendPipeWrapper<ACE_SPIPE_Stream> SendPipeWrapper;
+    typedef _SynchronizedSendPipeWrapper<ACE_SPIPE_Stream> SynchronizedSendPipeWrapper;
+    typedef _SynchronizedRecvPipeWrapper<ACE_SPIPE_Stream> SynchronizedRecvPipeWrapper;
+#else
+    typedef _RecvPipeWrapper<ACE_FIFO_Recv> RecvPipeWrapper;
+    typedef _SendPipeWrapper<ACE_FIFO_Send> SendPipeWrapper;
+    typedef _SynchronizedSendPipeWrapper<ACE_FIFO_Send> SynchronizedSendPipeWrapper;
+    typedef _SynchronizedRecvPipeWrapper<ACE_FIFO_Recv> SynchronizedRecvPipeWrapper;
+#endif
+}
+
 
 #endif
