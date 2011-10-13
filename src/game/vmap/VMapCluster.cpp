@@ -14,6 +14,7 @@
 #include "Policies/SingletonImp.h"
 #include "Log.h"
 #include "Util.h"
+#include "GridDefines.h"
 
 INSTANTIATE_SINGLETON_1(VMAP::LoSProxy);
 
@@ -275,12 +276,56 @@ namespace VMAP
         return;
     }
 
-
     VMapClusterProcess::VMapClusterProcess(uint32 processId) : m_processId(processId) 
     {
+        m_dataPath = sConfig.GetStringDefault("DataDir","./");
+        if (m_dataPath.at(m_dataPath.length()-1)!='/' && m_dataPath.at(m_dataPath.length()-1)!='\\')
+            m_dataPath.append("/");
+
+
         m_inPipe.Accept(VMAP_CLUSTER_PROCESS, processId);
         m_outPipe.Connect(VMAP_CLUSTER_PROCESS_REPLY, processId);
         printf(VMAP_CLUSTER_PROCESS"_%d connected\n", processId);
+    }
+
+    VMapClusterProcess::~VMapClusterProcess()
+    {
+        while(!m_gridLoaded.empty())
+        {
+            GridLoadedMap::iterator it = m_gridLoaded.begin();
+            delete [] (*it).second;
+            m_gridLoaded.erase(it);
+        }
+    }
+
+    void VMapClusterProcess::EnsureVMapLoaded(uint32 mapId, float x, float y)
+    {
+        VMAP::IVMapManager *vMapManager = VMAP::VMapFactory::createOrGetVMapManager();
+        GridLoadedMap::iterator it = m_gridLoaded.find(mapId);
+        bool *grid;
+        if (it == m_gridLoaded.end())
+        {
+            grid = new bool[MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS];
+            for(int i = 0; i < MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS; i++)
+                grid[i] = false;
+            m_gridLoaded.insert(GridLoadedMap::value_type(mapId, grid));
+            char buff[20];
+            sprintf(buff, "%d", mapId);
+            vMapManager->setLOSonmaps(buff);
+        } 
+        else
+            grid = it->second;
+
+        GridPair p = Trinity::ComputeGridPair(x, y);
+        if (!grid[p.y_coord*MAX_NUMBER_OF_GRIDS+p.x_coord])
+        {
+            int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
+            int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;
+            VMAPLoadResult res = vMapManager->loadMap((m_dataPath + "vmaps").c_str(),  mapId, gx, gy);
+            printf("VMAP LOAD: %d\n", res); // TODO: log errors
+            grid[p.y_coord*MAX_NUMBER_OF_GRIDS+p.x_coord] = true;
+        }
+
     }
 
     int VMapClusterProcess::Run()
@@ -291,6 +336,7 @@ namespace VMAP
         float x1, y1, z1, x2, y2, z2;
 
         VMAP::IVMapManager *vMapManager = VMAP::VMapFactory::createOrGetVMapManager();
+        vMapManager->setEnableLineOfSightCalc(true);
 
         while(true)
         {
@@ -309,9 +355,13 @@ namespace VMAP
             packet >> mapId >> x1 >> y1 >> z1 >> x2 >> y2 >> z2;
             printf(VMAP_CLUSTER_PROCESS"_%d received packet %d %f %f %f %f %f %f\n", m_processId, mapId, x1, y1, z1, x2, y2, z2);
 
-            bool res = vMapManager->isInLineOfSight(mapId, x1, y1, z1, x2, y2, z2);
+            EnsureVMapLoaded(mapId, x1, y1);
+            EnsureVMapLoaded(mapId, x2, y2);
+            EnsureVMapLoaded(mapId, x2, y1);
+            EnsureVMapLoaded(mapId, x1, y2);
+            bool res = vMapManager->isInLineOfSight2(mapId, x1, y1, z1, x2, y2, z2);
 
-            ACE_OS::sleep(5); // FIXME: remove after tests
+            printf("RES: %d\n", (int32)res);
 
             printf(VMAP_CLUSTER_PROCESS"_%d finished vmap computing\n", m_processId);
             packet.clear();
@@ -531,7 +581,9 @@ namespace VMAP
             sLog.outError("LoSProxy::isInLineOfSight: cluster failed to check line of sight, checking locally");
             return VMapFactory::createOrGetVMapManager()->isInLineOfSight2(pMapId, x1, y1, z1, x2, y2, z2);
         }
-
+        bool a = VMapFactory::createOrGetVMapManager()->isInLineOfSight2(pMapId, x1, y1, z1, x2, y2, z2);
+        if(a != (bool)response)
+            printf("!!!!!!!!!!!!!!!!!!error %d %d\n", (int32)a, (int32)response);
         return response;
     }
 }

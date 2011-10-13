@@ -123,17 +123,23 @@ namespace VMAP
         static int SpawnVMapProcess(const char* runnable, const char* cfg_file, const char* name, int32 id = -1);
     };
 
+    typedef UNORDERED_MAP<uint32, bool*> GridLoadedMap;
+
     class TRINITY_DLL_DECL VMapClusterProcess
     {
     public:
         explicit VMapClusterProcess(uint32 processId);
+        ~VMapClusterProcess();
 
         int Run();
+        void EnsureVMapLoaded(uint32 mapId, float x, float y);
 
     private:
         uint32 m_processId;
         PipeWrapper m_inPipe;
         PipeWrapper m_outPipe;
+        GridLoadedMap m_gridLoaded;
+        std::string m_dataPath;
     };
 }
 
