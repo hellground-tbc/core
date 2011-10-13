@@ -89,6 +89,8 @@ namespace VMAP
     private:
         ThreadCallback m_callbacks;
         SynchronizedPipeWrapper m_requester;
+        LockType m_pipeLock;
+        LockType m_callbackLock;
     };
 
     class TRINITY_DLL_DECL VMapClusterManager

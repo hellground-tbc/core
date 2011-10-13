@@ -41,9 +41,11 @@ Logger Logger::logger = Logger();
 ACE_THR_FUNC_RETURN VMapClusterTest(void *arg)
 {
         VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(true);
+
+//        ACE_OS::sleep(urand(1, 2));
         printf("Running test1\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 20, 20, 20);
-        //ACE_OS::sleep(2);
+        
         printf("Running test2\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 30, 30, 30, 20, 20, 20);
         //ACE_OS::sleep(2);
@@ -62,11 +64,9 @@ namespace VMAP
 {
     void VMapClusterManager::RunTest()
     {
-        VMapClusterTest(0);
-        /*
         ACE_thread_t tids[100];
         ACE_hthread_t htids[100];
-        int k = 1;
+        int k = 6;
 
         int n = ACE_Thread::spawn_n(tids, k, &VMapClusterTest, 0, THR_NEW_LWP|THR_JOINABLE, 0, 0, 0, htids);
         if(n != k)
@@ -78,7 +78,6 @@ namespace VMAP
                 sLog.outError("VMapClusterManager::RunTest(): failed to join thread id=%d tid=%d because of error %d", i, tids[i], ACE_OS::last_error());
         
         //ACE_OS::sleep(15);   
-        */
     }
 
 
@@ -176,9 +175,6 @@ namespace VMAP
 
     int VMapClusterManager::Start()
     {
-        Run();
-        return 0;
-
         ACE_thread_t tids[100];
         ACE_hthread_t htids[100];
 
@@ -490,8 +486,13 @@ namespace VMAP
     bool LoSProxy::isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2)
     { 
         printf("[LoSProxy]isInLineOfSight\n");
-        if (!m_requester.IsConnected())
-            m_requester.Connect(VMAP_CLUSTER_MANAGER_PROCESS);
+        {
+            Guard g(m_pipeLock);
+            if(!g.locked())
+                sLog.outError("LoSProxy::isInLineOfSight: failed to aquire pipe lock, unintended bahaviour possible\n");
+            if (!m_requester.IsConnected())
+                m_requester.Connect(VMAP_CLUSTER_MANAGER_PROCESS);
+        }
 
         ACE_thread_t tid = ACE_Thread::self();
         ByteBuffer packet;
@@ -505,15 +506,20 @@ namespace VMAP
         printf("[LoSProxy]Packet send\n");
 
         PipeWrapper *pipe;
-        ThreadCallback::iterator it = m_callbacks.find(tid);
-        if (it == m_callbacks.end())
         {
-            pipe = new PipeWrapper();
-            pipe->Accept(VMAP_CLUSTER_MANAGER_CALLBACK, tid);
-            printf("[LoSProxy]Callback accepted\n");
-            m_callbacks.insert(ThreadCallback::value_type(tid, pipe));
-        } else
-            pipe = (*it).second;
+            Guard g(m_callbackLock);
+            if(!g.locked())
+                 sLog.outError("LoSProxy::isInLineOfSight: failed to aquire callback lock, unintended bahaviour possible\n");
+            ThreadCallback::iterator it = m_callbacks.find(tid);
+            if (it == m_callbacks.end())
+            {
+                pipe = new PipeWrapper();
+                pipe->Accept(VMAP_CLUSTER_MANAGER_CALLBACK, tid);
+                printf("[LoSProxy]Callback accepted\n");
+                m_callbacks.insert(ThreadCallback::value_type(tid, pipe));
+            } else
+                pipe = (*it).second;
+        }
 
         packet = pipe->RecvPacket();
         printf("[LoSProxy]Packet recv\n");
