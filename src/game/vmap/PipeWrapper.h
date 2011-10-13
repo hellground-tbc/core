@@ -3,8 +3,10 @@
 
 #include "Common.h"
 #include "Util.h"
-#include <ace/SPIPE_Stream.h>
 
+#include <ace/SPIPE_Stream.h>
+#include <ace/FIFO_Send.h>
+#include <ace/FIFO_Recv.h>
 
 class ByteBuffer;
 
@@ -13,36 +15,37 @@ namespace VMAP
     typedef ACE_Thread_Mutex LockType;
     typedef ACE_Guard<LockType> Guard;
 
-
-    class PipeWrapper
+    template<class STREAM>
+    class _PipeWrapper
     {
     public:
-        explicit PipeWrapper() : m_stream(0), m_connected(false) {}
-        virtual ~PipeWrapper();
+        explicit _PipeWrapper() : m_stream(0), m_connected(false) {}
+        virtual ~_PipeWrapper();
 
         bool IsConnected() { return m_connected; }
 
     protected:
         bool m_connected;
-        ACE_SPIPE_Stream *m_stream;
+        STREAM *m_stream;
     };
 
-
-    class SendPipeWrapper : public PipeWrapper
+    template<class STREAM>
+    class _SendPipeWrapper : public _PipeWrapper<STREAM>
     {
     public:
-        explicit SendPipeWrapper() {}
-        ~SendPipeWrapper() {}
+        explicit _SendPipeWrapper() {}
+        ~_SendPipeWrapper() {}
         
         virtual void SendPacket(ByteBuffer &packet);
         virtual void Connect(const char* name, int32 id = -1);        
     };
 
-    class RecvPipeWrapper : public PipeWrapper
+    template<class STREAM>
+    class _RecvPipeWrapper : public _PipeWrapper<STREAM>
     {
     public:
-        explicit RecvPipeWrapper() : m_eof(false) {}
-        ~RecvPipeWrapper() {}
+        explicit _RecvPipeWrapper() : m_eof(false) {}
+        ~_RecvPipeWrapper() {}
 
         virtual ByteBuffer RecvPacket();
         virtual void Accept(const char* name, int32 id = -1);
@@ -60,12 +63,12 @@ namespace VMAP
         bool recv(ByteBuffer &packet, uint32 size);
     };
 
-
-    class SynchronizedSendPipeWrapper : public SendPipeWrapper
+    template<class STREAM>
+    class _SynchronizedSendPipeWrapper : public _SendPipeWrapper<STREAM>
     {
     public:
-        explicit SynchronizedSendPipeWrapper() {}
-        ~SynchronizedSendPipeWrapper() {}
+        explicit _SynchronizedSendPipeWrapper() {}
+        ~_SynchronizedSendPipeWrapper() {}
 
         void SendPacket(ByteBuffer &packet);
         void Connect(const char* name, int32 id = -1);        
@@ -74,11 +77,12 @@ namespace VMAP
         LockType m_lock;
     };
 
-    class SynchronizedRecvPipeWrapper : public RecvPipeWrapper
+    template<class STREAM>
+    class _SynchronizedRecvPipeWrapper : public _RecvPipeWrapper<STREAM>
     {
     public:
-        explicit SynchronizedRecvPipeWrapper() {}
-        ~SynchronizedRecvPipeWrapper() {}
+        explicit _SynchronizedRecvPipeWrapper() {}
+        ~_SynchronizedRecvPipeWrapper() {}
 
         ByteBuffer RecvPacket();
         void Accept(const char* name, int32 id = -1);
@@ -86,6 +90,18 @@ namespace VMAP
     private:
         LockType m_lock;
     };
+
+#ifdef afdsadf
+    typedef _RecvPipeWrapper<ACE_SPIPE_Stream> RecvPipeWrapper;
+    typedef _SendPipeWrapper<ACE_SPIPE_Stream> SendPipeWrapper;
+    typedef _SynchronizedSendPipeWrapper<ACE_SPIPE_Stream> SynchronizedSendPipeWrapper;
+    typedef _SynchronizedRecvPipeWrapper<ACE_SPIPE_Stream> SynchronizedRecvPipeWrapper;
+#else
+    typedef _RecvPipeWrapper<ACE_FIFO_Recv> RecvPipeWrapper;
+    typedef _SendPipeWrapper<ACE_FIFO_Send> SendPipeWrapper;
+    typedef _SynchronizedSendPipeWrapper<ACE_FIFO_Send> SynchronizedSendPipeWrapper;
+    typedef _SynchronizedRecvPipeWrapper<ACE_FIFO_Recv> SynchronizedRecvPipeWrapper;
+#endif
 
 // temporary
 
@@ -102,5 +118,7 @@ namespace VMAP
     };
 
 }
+
+#include "PipeWrapperImpl.h"
 
 #endif

@@ -20,12 +20,13 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include "VMapCluster.h"
 #include "VMapManager2.h"
 #include "MapTree.h"
 #include "ModelInstance.h"
 #include "WorldModel.h"
 #include "VMapDefinitions.h"
-#include "VMapCluster.h"
+
 
 using G3D::Vector3;
 

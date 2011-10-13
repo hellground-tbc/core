@@ -1,8 +1,8 @@
 #ifndef _VMAPCLUSTER_H
 #define _VMAPCLUSTER_H
 
-#include "Common.h"
 #include "PipeWrapper.h"
+#include "Common.h"
 
 #define VMAP_CLUSTER_MANAGER_PROCESS        "VMAP_MANAGER"
 #define VMAP_CLUSTER_PROCESS                "VMAP_PROCESS"

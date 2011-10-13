@@ -1,37 +1,11 @@
 #include "PipeWrapper.h"
-#include "ByteBuffer.h"
-
-#include <ace/SPIPE_Acceptor.h>
-#include <ace/SPIPE_Connector.h>
-#include <ace/SPIPE_Addr.h>
-
-#define ERROR_CONNECT_NO_PIPE   2
-
-#define ERROR_EOF_ON_PIPE       109
-#define ERROR_MORE_DATA_IN_PIPE 234
-
-#define sLog Logger::Instance()
 
 namespace VMAP
 {
     Logger Logger::logger = Logger();
 
-    PipeWrapper::~PipeWrapper()
-    {
-        if(m_stream)
-            delete m_stream;
-    }
 
-    void SynchronizedSendPipeWrapper::Connect(const char* name, int32 id)
-    {
-        Guard g(m_lock);
-        if(!g.locked())
-            sLog.outError("Connect: failed to aquire lock");
-
-        SendPipeWrapper::Connect(name, id);
-    }
-
-    void SendPipeWrapper::Connect(const char* name, int32 id)
+    void _SendPipeWrapper<ACE_SPIPE_Stream>::Connect(const char* name, int32 id)
     {
         if(m_connected)
             return;
@@ -71,16 +45,35 @@ namespace VMAP
         }
     }
 
-    void SynchronizedRecvPipeWrapper::Accept(const char* name, int32 id)
+    void _SendPipeWrapper<ACE_FIFO_Send>::Connect(const char* name, int32 id)
     {
-        Guard g(m_lock);
-        if(!g.locked())
-            sLog.outError("Accept: failed to aquire log");
+        if(m_connected)
+            return;
 
-        RecvPipeWrapper::Accept(name, id);    
+        char addr_buf[50];
+        if (id >= 0)
+            sprintf(addr_buf, "%s_%u", name, id);
+        else
+            sprintf(addr_buf, "%s", name);
+
+        
+
+        m_stream = new ACE_FIFO_Send();
+        if(m_stream->open(addr_buf) == -1)
+        {
+            sLog.outError("Connect: failed to connect to stream %s because of error %d", addr_buf, ACE_OS::last_error());
+            delete m_stream;
+            m_stream = 0;
+        }
+        m_connected = true;
     }
 
-    void RecvPipeWrapper::Accept(const char* name, int32 id)
+    _SendPipeWrapper<ACE_FIFO_Send>::~_SendPipeWrapper()
+    {
+        m_stream->close();
+    }
+
+    void _RecvPipeWrapper<ACE_SPIPE_Stream>::Accept(const char* name, int32 id)
     {
         if(m_connected)
             return;
@@ -108,97 +101,32 @@ namespace VMAP
             m_connected = true;
     }
 
-    ByteBuffer SynchronizedRecvPipeWrapper::RecvPacket()
+    void _RecvPipeWrapper<ACE_FIFO_Recv>::Accept(const char *name, int32 id)
     {
-        Guard g(m_lock);
-        if(!g.locked())
+        if(m_connected)
+            return;
+
+        char addr_buf[50];
+        if (id >= 0)
+            sprintf(addr_buf, "%s_%u", name, id);
+        else
+            sprintf(addr_buf, "%s", name);
+
+        m_stream = new ACE_FIFO_Recv();
+
+        if(m_stream->open(addr_buf) == -1)
         {
-            ByteBuffer packet;
-            sLog.outError("RecvPacket: failed to aquire lock");
-            m_eof = true;
-            return packet;
+            sLog.outError("Connect: failed to accept to stream %s because of error %d", addr_buf, ACE_OS::last_error());
+            delete m_stream;
+            m_stream = 0;
         }
-        printf("SynchronizedRecvPipeWrapper::RecvPacket() into recv\n");
-        return RecvPipeWrapper::RecvPacket();
+        m_connected = true;
+
     }
 
-    bool RecvPipeWrapper::recv(ByteBuffer &packet, uint32 size)
+    _RecvPipeWrapper<ACE_FIFO_Recv>::~_RecvPipeWrapper()
     {
-        int n;
-        while(true)
-        {
-            n = m_stream->recv_n(m_buffer, size);
-            if (n < 0) 
-            {
-                int code = ACE_OS::last_error();
-                if(code == ERROR_EOF_ON_PIPE)
-                {
-                    m_eof = true;
-                    return false;
-                } 
-                else if(code == ERROR_MORE_DATA_IN_PIPE) 
-                {
-                    // ignore error
-                }
-                else 
-                {
-                    sLog.outError("recv: failed to recv data from stream because of error %d", code);
-                    m_eof = true;
-                    return false;
-                }
-            } 
-            else if(n == 0)
-            {
-                ACE_Thread::yield();
-                printf("[DEBUG]Recv_n n == 0\n");
-                continue;
-            }
-            break;
-        }
-
-        for(uint32 i = 0; i < size; i++)
-            packet << m_buffer[i];
-
-        return true;
+        m_stream->close();
     }
-
-    ByteBuffer RecvPipeWrapper::RecvPacket()
-    {
-        ByteBuffer packet;
-        uint8 size;
-
-        if(!recv(packet, 1))
-            return packet;
-
-        size = m_buffer[0];
-
-        if (size > 1)
-            if(!recv(packet, size - 1))
-                return packet;
-        return packet;
-    }
-
-    void SynchronizedSendPipeWrapper::SendPacket(ByteBuffer &packet)
-    {
-        Guard g(m_lock);
-        if(!g.locked())
-            sLog.outError("SendPacket: failed to aquire lock, unintended bahaviour possible");
-
-        return SendPipeWrapper::SendPacket(packet);
-    }
-
-    void SendPipeWrapper::SendPacket(ByteBuffer &packet)
-    {
-        uint32 len = packet.size();
-        uint8 *buf = new uint8[len];
-        packet.read(buf, len);
-        packet.rpos(0);
-
-        uint32 offset = 0;
-        while(offset < len)
-            offset += m_stream->send(buf + offset, len - offset);
-
-        delete [] buf;
-    }
-
 }
+
