@@ -57,6 +57,16 @@ struct Wave
     uint32 PortalBoss;                                      //protector of current portal
 };
 
+Wave RiftWaves[]=
+{
+    {RIFT_BOSS},
+    {C_DEJA},
+    {RIFT_BOSS},
+    {C_TEMPO},
+    {RIFT_BOSS},
+    {C_AEONUS}
+};
+
 struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 {
     instance_dark_portal(Map *map) : ScriptedInstance(map)
@@ -381,16 +391,6 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 
         return 0;
     }
-
-    Wave RiftWaves[]=
-    {
-        {RIFT_BOSS},
-        {C_DEJA},
-        {RIFT_BOSS},
-        {C_TEMPO},
-        {RIFT_BOSS},
-        {C_AEONUS}
-    };
 
     Unit* SummonedPortalBoss(Unit* source)
     {

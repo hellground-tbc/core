@@ -200,7 +200,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
         if (sWorld.getConfig(CONFIG_CHAT_DENY_MASK) & mask)
         {
-            recv_data.read_skip();
             SendNotification("You can't send message of this type until you reach level %i.", sWorld.getConfig(CONFIG_CHAT_MINIMUM_LVL));
             return;
         }
