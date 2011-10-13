@@ -100,8 +100,9 @@ namespace VMAP
         static Logger logger;
         void outError(const char *fmt, ...) 
         {
+            printf("!!!!ERROR!!!!!\n");
             UTF8PRINTF(stdout, fmt,);
-            printf("\n");
+            printf("\n!!!!!!!\n");
         }
     };
 

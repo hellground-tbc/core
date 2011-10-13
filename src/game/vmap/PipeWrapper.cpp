@@ -53,7 +53,7 @@ namespace VMAP
             return;
 
         char addr_buf[50];
-        if (id >= 0)
+        if (id != -1)
             sprintf(addr_buf, "%s_%u", name, id);
         else
             sprintf(addr_buf, "%s", name);
@@ -86,7 +86,7 @@ namespace VMAP
     template<>
     _SendPipeWrapper<ACE_FIFO_Send>::~_SendPipeWrapper()
     {
-        m_stream->close();
+        m_stream->remove();
     }
 
     template<>
@@ -125,7 +125,7 @@ namespace VMAP
             return;
 
         char addr_buf[50];
-        if (id >= 0)
+        if (id != -1)
             sprintf(addr_buf, "%s_%u", name, id);
         else
             sprintf(addr_buf, "%s", name);
@@ -140,12 +140,13 @@ namespace VMAP
         }
         m_connected = true;
 
+        printf("Accept stream name %s\n", addr_buf);
     }
 
     template<>
     _RecvPipeWrapper<ACE_FIFO_Recv>::~_RecvPipeWrapper()
     {
-        m_stream->close();
+        m_stream->remove();
     }
 }
 

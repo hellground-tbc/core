@@ -25,7 +25,7 @@ ACE_THR_FUNC_RETURN VMapClusterTest(void *arg)
         printf("Running test1\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 20, 20, 20);
         
-        printf("Running test2\n");
+        //printf("Running test2\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 30, 30, 30, 20, 20, 20);
         //ACE_OS::sleep(2);
         printf("Running test3\n");
@@ -366,9 +366,10 @@ namespace VMAP
             m_requester.Connect(VMAP_CLUSTER_MANAGER_PROCESS);        
 
         ACE_thread_t tid = ACE_Thread::self();
+        printf("tid = %d\n", tid);
         ByteBuffer packet;
         packet << (uint8)(1+4+4+sizeof(float)*6);
-        packet << (uint32)tid;
+        packet << (int32)tid;
         packet << (uint32)pMapId;
         packet << x1 << y1 << z1 << x2 << y2 << z2;
 

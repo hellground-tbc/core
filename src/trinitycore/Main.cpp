@@ -233,7 +233,6 @@ extern int main(int argc, char **argv)
     
     VMAP::VMapClusterManager::RunTest();
 
-    ACE_OS::sleep(4);
     return 0;
     
     ///- and run the 'Master'
