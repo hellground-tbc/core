@@ -17,20 +17,21 @@ namespace VMAP
     public:
         explicit LoSProcess() : m_inUse(false) {}
 
-        PipeWrapper* GetInPipe() { return &m_inPipe; }
-        PipeWrapper* GetOutPipe() { return &m_outPipe; }
+        RecvPipeWrapper* GetInPipe() { return &m_inPipe; }
+        SendPipeWrapper* GetOutPipe() { return &m_outPipe; }
 
         void SetInUse(bool inUse) { m_inUse = inUse; }
         bool InUse() { return m_inUse; }
 
     private:
-        PipeWrapper m_inPipe;
-        PipeWrapper m_outPipe;
+        RecvPipeWrapper m_inPipe;
+        SendPipeWrapper m_outPipe;
         bool m_inUse;
 
     };
 
-    typedef UNORDERED_MAP<ACE_thread_t, PipeWrapper*> ThreadCallback;
+    typedef UNORDERED_MAP<ACE_thread_t, SendPipeWrapper*> ThreadSendCallback;
+    typedef UNORDERED_MAP<ACE_thread_t, RecvPipeWrapper*> ThreadRecvCallback;
 
     class LoSProxy
     {
@@ -41,10 +42,9 @@ namespace VMAP
         bool isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2);
 
     private:
-        ThreadCallback m_callbacks;
-        SynchronizedPipeWrapper m_requester;
-        LockType m_pipeLock;
-        LockType m_callbackLock;
+        ThreadRecvCallback m_callbacks;
+        SynchronizedSendPipeWrapper m_requester;
+        LockType m_lock;
     };
 
     class TRINITY_DLL_DECL VMapClusterManager
@@ -61,14 +61,14 @@ namespace VMAP
     private:
         uint32 m_processNumber;
 
-        SynchronizedPipeWrapper m_coreStream;
+        SynchronizedRecvPipeWrapper m_coreStream;
         std::list<LoSProcess*> m_losProcess;
-        ThreadCallback m_callbackStreams;
+        ThreadSendCallback m_callbackStreams;
 
         LockType m_processLock;
 
         LoSProcess* FindProcess();
-        PipeWrapper* GetCallbackPipe(ACE_thread_t tid);
+        SendPipeWrapper* GetCallbackPipe(ACE_thread_t tid);
 
         void SendFailCode(ACE_thread_t tid);
 
@@ -90,8 +90,8 @@ namespace VMAP
 
     private:
         uint32 m_processId;
-        PipeWrapper m_inPipe;
-        PipeWrapper m_outPipe;
+        RecvPipeWrapper m_inPipe;
+        SendPipeWrapper m_outPipe;
         GridLoadedMap m_gridLoaded;
         std::string m_dataPath;
     };

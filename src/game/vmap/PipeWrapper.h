@@ -14,45 +14,77 @@ namespace VMAP
     typedef ACE_Guard<LockType> Guard;
 
 
-    class PipeWrapper 
+    class PipeWrapper
     {
     public:
-        explicit PipeWrapper() : m_counter(0), m_bufferSize(0), m_eof(false), m_connected(false) {}
-        virtual ByteBuffer RecvPacket();
-        virtual void SendPacket(ByteBuffer &packet);
-        bool Eof() { return m_eof; }
-
-        void Connect(const char* name, int32 id = -1);
-        void Accept(const char* name, int32 id = -1);
+        explicit PipeWrapper() : m_stream(0), m_connected(false) {}
+        virtual ~PipeWrapper();
 
         bool IsConnected() { return m_connected; }
 
     protected:
-        bool m_eof;
         bool m_connected;
-
-    private:
-        int32 m_counter;
-        int32 m_bufferSize;
-        uint8 m_buffer[100];
-
-        bool recv(ByteBuffer &packet, uint32 size);
-
-        ACE_SPIPE_Stream m_stream;
+        ACE_SPIPE_Stream *m_stream;
     };
 
 
-    class SynchronizedPipeWrapper : public PipeWrapper
+    class SendPipeWrapper : public PipeWrapper
     {
     public:
-        explicit SynchronizedPipeWrapper() {}
+        explicit SendPipeWrapper() {}
+        ~SendPipeWrapper() {}
+        
+        virtual void SendPacket(ByteBuffer &packet);
+        virtual void Connect(const char* name, int32 id = -1);        
+    };
 
-        ByteBuffer RecvPacket();
-        void SendPacket(ByteBuffer &packet);
+    class RecvPipeWrapper : public PipeWrapper
+    {
+    public:
+        explicit RecvPipeWrapper() : m_eof(false) {}
+        ~RecvPipeWrapper() {}
+
+        virtual ByteBuffer RecvPacket();
+        virtual void Accept(const char* name, int32 id = -1);
+        bool Eof() { return m_eof; }
+
+    protected:
+        bool m_eof;
 
     private:
-        LockType m_readLock;
-        LockType m_sendLock;
+        //int32 m_counter;
+        //int32 m_bufferSize;
+        uint8 m_buffer[100];
+        
+
+        bool recv(ByteBuffer &packet, uint32 size);
+    };
+
+
+    class SynchronizedSendPipeWrapper : public SendPipeWrapper
+    {
+    public:
+        explicit SynchronizedSendPipeWrapper() {}
+        ~SynchronizedSendPipeWrapper() {}
+
+        void SendPacket(ByteBuffer &packet);
+        void Connect(const char* name, int32 id = -1);        
+
+    private:
+        LockType m_lock;
+    };
+
+    class SynchronizedRecvPipeWrapper : public RecvPipeWrapper
+    {
+    public:
+        explicit SynchronizedRecvPipeWrapper() {}
+        ~SynchronizedRecvPipeWrapper() {}
+
+        ByteBuffer RecvPacket();
+        void Accept(const char* name, int32 id = -1);
+
+    private:
+        LockType m_lock;
     };
 
 // temporary
