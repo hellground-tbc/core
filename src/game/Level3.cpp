@@ -3393,6 +3393,12 @@ bool ChatHandler::HandleDieCommand(const char* /*args*/)
 
     if (target->isAlive())
     {
+        // for PTR only ;)
+        if(target->GetTypeId() == TYPEID_PLAYER)
+        {
+            m_session->GetPlayer()->Kill(m_session->GetPlayer(), true);
+            return true;
+        }
         //m_session->GetPlayer()->DealDamage(target, target->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         m_session->GetPlayer()->Kill(target);
     }
