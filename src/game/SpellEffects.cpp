@@ -453,6 +453,13 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                     }
                 }
+                // Incinerate, Sunwell Warlock in MgT
+                if (m_spellInfo->Id == 44519 || m_spellInfo->Id == 46043)
+                {
+                    // Incinerate does more dmg (dmg*0.25) if the target is Immolated.
+                    if (unitTarget->HasAura(44518, 0) || unitTarget->HasAura(46042, 0))
+                        damage += int32(damage*0.25);
+                }
                 // Shadow bolt
                 if (m_spellInfo->SpellFamilyFlags & 1)
                 {
