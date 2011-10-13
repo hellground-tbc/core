@@ -11946,6 +11946,12 @@ bool Unit::HandleMendingNPCAuraProc(Aura* triggeredByAura)
                     CastSpell(target, 41637, true, NULL, triggeredByAura, caster->GetGUID());
                 }
             }
+            else
+            {
+                RemoveAurasDueToSpell(spellProto->Id);
+                CastCustomSpell(this,33110,&heal,NULL,NULL,true);
+                return false;
+            }
         }
     }
 

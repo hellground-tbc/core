@@ -94,6 +94,11 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
         Arcane_Nova_Timer = urand (12000, 20000);
     }
 
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
+    }
+
     void UpdateAI(const uint32 diff)
     {
       if(!UpdateVictim())
@@ -132,30 +137,49 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
     {
         DoCast(c, SPELL_FEL_ARMOR, true);
         FelArmor_Timer = 120000;    //check each 2 minutes
-        hasSummoned = false;
+        SummonGUID = NULL;
     }
 
-    bool hasSummoned;
+    uint32 SummonImp_Timer;
     uint32 FelArmor_Timer;
     uint32 Immolate_Timer;
-    
+    uint64 SummonGUID;
+
     void Reset()
     {
-        if(!hasSummoned)
-            DoCast(m_creature,44517,false);
-
+        SummonImp_Timer = 5000;
         SetAutocast(SPELL_INCINERATE, 1900);
         Immolate_Timer = 1000;
     }
 
-    void JustSummoned(Creature* cre)
+    void JustSummoned(Creature* summon)
     {
-         if(cre->GetEntry() == 24815)
-             hasSummoned = true;
+        SummonGUID = summon->GetGUID();
+    }
+
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
     }
 
     void UpdateAI(const uint32 diff)
     {
+      if(!me->isInCombat())
+      {
+          if(SummonImp_Timer < diff)
+          {
+              // check if still having pet ;]
+              if(!me->GetMap()->GetCreature(SummonGUID))
+                  SummonGUID = NULL;
+
+              if(!SummonGUID)
+                  DoCast(m_creature, SPELL_SUMMON_SUNBLADE_IMP, false);
+              SummonImp_Timer = 15000;
+          }
+          else
+              SummonImp_Timer -= diff;
+      }
+
       if(!UpdateVictim())
       return;
 
@@ -173,13 +197,38 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
           ClearCastQueue();
           AddSpellToCast(m_creature->getVictim(), SPELL_IMMOLATE);
           StartAutocast();
-          Immolate_Timer = urand(14000, 20000);
+          Immolate_Timer = urand(16000, 25000);
       }
       else
           Immolate_Timer -= diff;
 
       CastNextSpellIfAnyAndReady(diff);
       DoMeleeAttackIfReady();
+    }
+};
+
+#define SPELL_FIREBALL                      (HeroicMode?46044:44577)
+
+struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
+{
+    mob_sunblade_impAI(Creature *c) : ScriptedAI(c) { }
+
+    uint64 OwnerGUID;
+
+    void Reset() { }
+
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
+        DoCast(who, SPELL_FIREBALL);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+      CastNextSpellIfAnyAndReady(diff);
     }
 };
 
@@ -199,24 +248,41 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
         Prayer_of_Mending_Timer = urand(3000, 8000);
     }
 
+    bool CanCastPoM()
+    {
+        std::list<Creature*> FriendList = FindAllFriendlyInGrid(40);
+        if(FriendList.empty())
+            return false;
+
+        for(std::list<Creature*>::iterator i = FriendList.begin(); i !=  FriendList.end(); ++i)
+        {
+            if((*i)->HasAura(44586, 0))
+                return false;
+        }
+        return true;
+    }
+
     void UpdateAI(const uint32 diff)
     {
-      if(!UpdateVictim())
-      return;
+        if(!UpdateVictim())
+            return;
 
       if(Poison_Timer < diff)
       {
           AddSpellToCast(SPELL_INJECT_POISON, CAST_SELF);
-          Poison_Timer = urand(12000, 18000);
+          Poison_Timer = urand(16000, 20000);
       }
       else
           Poison_Timer -= diff;
 
       if(Prayer_of_Mending_Timer < diff)
       {
-          Unit* healTarget = SelectLowestHpFriendly(40.0f);
-          AddSpellToCast(healTarget, SPELL_PRAYER_OF_MENDING);
-          Prayer_of_Mending_Timer = 10000;
+          if(CanCastPoM())  // only one PoM active at a time
+          {
+              if(Unit* healTarget = SelectLowestHpFriendly(40))
+                  AddSpellToCast(healTarget, SPELL_PRAYER_OF_MENDING);
+          }
+          Prayer_of_Mending_Timer = urand(7000, 12000);
       }
       else
           Prayer_of_Mending_Timer -= diff;
@@ -227,7 +293,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 };
 
 #define SPELL_SEAL_OF_WRATH                 (HeroicMode?46030:44480)
-#define SPELL_JUDGEMENT_OF_WRATH            (HeroicMode?46045:44583)
+#define SPELL_JUDGEMENT_OF_WRATH            (HeroicMode?46033:44482)
 #define SPELL_HOLY_LIGHT                    (HeroicMode?46029:44479)
 
 struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
@@ -264,7 +330,7 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
             {
                 AddSpellToCast(me->getVictim(), SPELL_JUDGEMENT_OF_WRATH);
                 me->RemoveAurasDueToSpell(SPELL_SEAL_OF_WRATH);
-                Seal_Timer = urand(2000, 5000);
+                Seal_Timer = urand(5000, 10000);
                 Judgement_Timer = urand(13000, 20000);
             }
         }
@@ -275,7 +341,7 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
         {
             Unit* healTarget = SelectLowestHpFriendly(40.0f, 10000);
             AddSpellToCast(healTarget, SPELL_HOLY_LIGHT);
-            Holy_Light_Timer = urand(10000, 15000);
+            Holy_Light_Timer = urand(7000, 10000);
         }
         else
             Holy_Light_Timer -= diff;
@@ -424,6 +490,10 @@ CreatureAI* GetAI_mob_sunblade_warlock(Creature *_Creature)
 {
     return new mob_sunblade_warlockAI (_Creature);
 }
+CreatureAI* GetAI_mob_sunblade_imp(Creature *_Creature)
+{
+    return new mob_sunblade_impAI (_Creature);
+}
 CreatureAI* GetAI_mob_sunblade_physician(Creature *_Creature)
 {
     return new mob_sunblade_physicianAI (_Creature);
@@ -432,7 +502,6 @@ CreatureAI* GetAI_mob_sunblade_blood_knight(Creature *_Creature)
 {
     return new mob_sunblade_blood_knightAI (_Creature);
 }
-
 CreatureAI* GetAI_mob_wretched_skulker(Creature *_Creature)
 {
     return new mob_wretched_skulkerAI (_Creature);
@@ -463,6 +532,11 @@ void AddSC_magisters_terrace_trash()
     newscript = new Script;
     newscript->Name = "mob_sunblade_warlock";
     newscript->GetAI = &GetAI_mob_sunblade_warlock;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_sunblade_imp";
+    newscript->GetAI = &GetAI_mob_sunblade_imp;
     newscript->RegisterSelf();
 
     newscript = new Script;
