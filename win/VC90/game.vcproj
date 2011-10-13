@@ -1584,6 +1584,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\vmap\PipeWrapper.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\vmap\PipeWrapper.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\vmap\TileAssembler.cpp"
 				>
 			</File>

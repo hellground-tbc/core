@@ -2,62 +2,16 @@
 #define _VMAPCLUSTER_H
 
 #include "Common.h"
-#include <ace/SPIPE_Stream.h>
+#include "PipeWrapper.h"
 
 #define VMAP_CLUSTER_MANAGER_PROCESS        "VMAP_MANAGER"
 #define VMAP_CLUSTER_PROCESS                "VMAP_PROCESS"
 #define VMAP_CLUSTER_PROCESS_REPLY          "VMAP_PROCESS_R"
 #define VMAP_CLUSTER_MANAGER_CALLBACK       "VMAP_CALLBACK"
 
-class ByteBuffer;
 
 namespace VMAP
 {
-    typedef ACE_Thread_Mutex LockType;
-    typedef ACE_Guard<LockType> Guard;
-
-    class PipeWrapper 
-    {
-    public:
-        explicit PipeWrapper() : m_counter(0), m_bufferSize(0), m_eof(false), m_connected(false) {}
-        virtual ByteBuffer RecvPacket();
-        virtual void SendPacket(ByteBuffer &packet);
-        bool Eof() { return m_eof; }
-
-        void Connect(const char* name, int32 id = -1);
-        void Accept(const char* name, int32 id = -1);
-
-        bool IsConnected() { return m_connected; }
-
-    protected:
-        bool m_eof;
-        bool m_connected;
-
-    private:
-        int32 m_counter;
-        int32 m_bufferSize;
-        uint8 m_buffer[100];
-
-        bool recv(ByteBuffer &packet, uint32 size);
-
-        ACE_SPIPE_Stream m_stream;
-    };
-
-
-    class SynchronizedPipeWrapper : public PipeWrapper
-    {
-    public:
-        explicit SynchronizedPipeWrapper() {}
-
-        ByteBuffer RecvPacket();
-        void SendPacket(ByteBuffer &packet);
-
-    private:
-        LockType m_readLock;
-        LockType m_sendLock;
-    };
-
-
     class LoSProcess
     {
     public:
