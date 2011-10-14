@@ -10,6 +10,11 @@
 #define VMAP_CLUSTER_PROCESS_REPLY          VMAP_CLUSTER_PREFIX"PROCESS_R"
 #define VMAP_CLUSTER_MANAGER_CALLBACK       VMAP_CLUSTER_PREFIX"CALLBACK"
 
+#if PLATFORM == PLATFORM_WINDOWS
+#define WAIT(pid) ACE::wait((pid), 0, 0, 0)
+#else
+#define WAIT(pid) while(true) { if(kill(pid, 0)==-1) if(ACE_OS::last_error() == ESRCH) break; ACE_OS::sleep(1); }
+#endif
 
 namespace VMAP
 {

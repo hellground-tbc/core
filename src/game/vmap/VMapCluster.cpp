@@ -25,7 +25,7 @@ ACE_THR_FUNC_RETURN VMapClusterTest(void *arg)
         printf("Running test1\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 20, 20, 20);
         
-        //printf("Running test2\n");
+        printf("Running test2\n");
         VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 30, 30, 30, 20, 20, 20);
         //ACE_OS::sleep(2);
         printf("Running test3\n");
@@ -179,9 +179,12 @@ namespace VMAP
         if(n != m_processNumber)
             sLog.outError("VMapClusterManager::Start(): started only %d out of %d threads because of error %d", n, m_processNumber, ACE_OS::last_error());
 
+
+        printf("M1\n");
         if (m_masterPid)    // end when master ends
         {
-            ACE_OS::wait(m_masterPid, 0, 0, 0);
+            printf("wait pid %d\n", m_masterPid);
+            WAIT(m_masterPid);
             for(int i = 0; i < n; i++)
                 ACE_Thread::cancel(tids[i]);
         }
@@ -195,6 +198,7 @@ namespace VMAP
         }
         
         //ACE_OS::sleep(15);
+        printf("M2\n");
         
         return 0;
     }
@@ -351,12 +355,14 @@ namespace VMAP
     {   
         ACE_thread_t tid;
         ACE_hthread_t htid;
+        printf("1\n");
         if(ACE_Thread::spawn(&VMapClusterProcess::RunThread, this, THR_NEW_LWP|THR_JOINABLE, &tid, &htid) == -1)
             sLog.outError("VMapClusterProcess::Start(): failed to start thread because of error %d", ACE_OS::last_error());
 
+        printf("2\n");
         if (m_masterPid)    // end when master ends
         {
-            ACE_OS::wait(m_masterPid, 0, 0, 0);
+            WAIT(m_masterPid);
             ACE_Thread::cancel(tid);
         }
         else // no master, just wait for threads to finish
@@ -364,6 +370,7 @@ namespace VMAP
             if(ACE_Thread::join(htid) == -1)
                 sLog.outError("VMapClusterProcess::Start(): failed to join thread because of error %d",  ACE_OS::last_error());
         }
+        printf("3\n");
         
         //ACE_OS::sleep(15);
         

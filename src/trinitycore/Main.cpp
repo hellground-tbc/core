@@ -175,12 +175,6 @@ extern int main(int argc, char **argv)
     int vmapProcess = sConfig.GetIntDefault("vmap.clusterProcesses", 1);
     bool vmapCluster = sConfig.GetBoolDefault("vmap.enableCluster", false);
 
-    if(vmapCluster)
-    {
-#ifdef USING_FIFO_PIPES
-        ACE_OS::system("rm -f "VMAP_CLUSTER_PREFIX"*");
-#endif
-    }
 
     if(process)
     {
@@ -199,6 +193,12 @@ extern int main(int argc, char **argv)
             return 1;
     }
 
+#ifdef USING_FIFO_PIPES
+    if(vmapCluster)
+    {
+        ACE_OS::system("rm -f "VMAP_CLUSTER_PREFIX"*");
+    }
+#endif
 
 #ifndef WIN32                                               // posix daemon commands need apply after config read
     switch (serviceDaemonMode)
