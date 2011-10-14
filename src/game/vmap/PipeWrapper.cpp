@@ -6,16 +6,16 @@ namespace VMAP
 
 
     template<>
-    void _SendPipeWrapper<ACE_SPIPE_Stream>::Connect(const char* name, int32 id)
+    void _SendPipeWrapper<ACE_SPIPE_Stream>::Connect(const char* name, int32 *id)
     {
         if(m_connected)
             return;
 
         ACE_SPIPE_Addr addr;
-        if (id >= 0)
+        if (id)
         {
             char addr_buf[50];
-            sprintf(addr_buf, "%s_%u", name, id);
+            sprintf(addr_buf, "%s_%u", name, *id);
             addr.set(addr_buf);
         } 
         else
@@ -47,14 +47,14 @@ namespace VMAP
     }
 
     template<>
-    void _SendPipeWrapper<ACE_FIFO_Send>::Connect(const char* name, int32 id)
+    void _SendPipeWrapper<ACE_FIFO_Send>::Connect(const char* name, int32 *id)
     {
         if(m_connected)
             return;
 
         char addr_buf[50];
-        if (id != -1)
-            sprintf(addr_buf, "%s_%u", name, id);
+        if (id)
+            sprintf(addr_buf, "%s_%u", name, *id);
         else
             sprintf(addr_buf, "%s", name);
 
@@ -90,16 +90,16 @@ namespace VMAP
     }
 
     template<>
-    void _RecvPipeWrapper<ACE_SPIPE_Stream>::Accept(const char* name, int32 id)
+    void _RecvPipeWrapper<ACE_SPIPE_Stream>::Accept(const char* name, int32 *id)
     {
         if(m_connected)
             return;
 
         ACE_SPIPE_Addr addr;
-        if (id >= 0)
+        if (id)
         {
             char addr_buf[50];
-            sprintf(addr_buf, "%s_%u", name, id);
+            sprintf(addr_buf, "%s_%u", name, *id);
             addr.set(addr_buf);
         } 
         else
@@ -119,14 +119,14 @@ namespace VMAP
     }
 
     template<>
-    void _RecvPipeWrapper<ACE_FIFO_Recv>::Accept(const char *name, int32 id)
+    void _RecvPipeWrapper<ACE_FIFO_Recv>::Accept(const char *name, int32 *id)
     {
         if(m_connected)
             return;
 
         char addr_buf[50];
-        if (id != -1)
-            sprintf(addr_buf, "%s_%u", name, id);
+        if (id)
+            sprintf(addr_buf, "%s_%u", name, *id);
         else
             sprintf(addr_buf, "%s", name);
 

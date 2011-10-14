@@ -28,7 +28,7 @@ namespace VMAP
     }
 
     template<class STREAM>
-    void _SynchronizedSendPipeWrapper<STREAM>::Connect(const char* name, int32 id)
+    void _SynchronizedSendPipeWrapper<STREAM>::Connect(const char* name, int32 *id)
     {
         Guard g(m_lock);
         if(!g.locked())
@@ -38,7 +38,7 @@ namespace VMAP
     }
 
     template<class STREAM>
-    void _SynchronizedRecvPipeWrapper<STREAM>::Accept(const char* name, int32 id)
+    void _SynchronizedRecvPipeWrapper<STREAM>::Accept(const char* name, int32 *id)
     {
         Guard g(m_lock);
         if(!g.locked())
@@ -79,7 +79,6 @@ namespace VMAP
                 } 
                 else if(code == ERROR_MORE_DATA_IN_PIPE) 
                 {
-                    sLog.outError("recv: failed to recv data from stream because of error %d", code);
                     // ignore error
                 }
                 else 

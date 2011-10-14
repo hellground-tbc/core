@@ -37,7 +37,7 @@ namespace VMAP
         ~_SendPipeWrapper() {}
         
         virtual void SendPacket(ByteBuffer &packet);
-        virtual void Connect(const char* name, int32 id = -1);        
+        virtual void Connect(const char* name, int32 *id = 0);        
     };
 
     template<class STREAM>
@@ -48,18 +48,15 @@ namespace VMAP
         ~_RecvPipeWrapper() {}
 
         virtual ByteBuffer RecvPacket();
-        virtual void Accept(const char* name, int32 id = -1);
+        virtual void Accept(const char* name, int32 *id = 0);
         bool Eof() { return m_eof; }
 
     protected:
         bool m_eof;
 
     private:
-        //int32 m_counter;
-        //int32 m_bufferSize;
         uint8 m_buffer[100];
         
-
         bool recv(ByteBuffer &packet, uint32 size);
     };
 
@@ -71,7 +68,7 @@ namespace VMAP
         ~_SynchronizedSendPipeWrapper() {}
 
         void SendPacket(ByteBuffer &packet);
-        void Connect(const char* name, int32 id = -1);        
+        void Connect(const char* name, int32 *id = 0);        
 
     private:
         LockType m_lock;
@@ -85,7 +82,7 @@ namespace VMAP
         ~_SynchronizedRecvPipeWrapper() {}
 
         ByteBuffer RecvPacket();
-        void Accept(const char* name, int32 id = -1);
+        void Accept(const char* name, int32 *id = 0);
 
     private:
         LockType m_lock;
@@ -112,7 +109,7 @@ namespace VMAP
 
 namespace VMAP
 {
-#ifdef afdsadf
+#if (defined ACE_HAS_STREAM_PIPES) || (PLATFORM == PLATFORM_WINDOWS)
     typedef _RecvPipeWrapper<ACE_SPIPE_Stream> RecvPipeWrapper;
     typedef _SendPipeWrapper<ACE_SPIPE_Stream> SendPipeWrapper;
     typedef _SynchronizedSendPipeWrapper<ACE_SPIPE_Stream> SynchronizedSendPipeWrapper;

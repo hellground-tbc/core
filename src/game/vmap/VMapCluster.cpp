@@ -90,11 +90,11 @@ namespace VMAP
 
     VMapClusterManager::VMapClusterManager(uint32 processNumber) : m_processNumber(processNumber)
     {
-        for(uint32 i = 0; i < processNumber; i++)
+        for(int32 i = 0; i < processNumber; i++)
         {
             LoSProcess* process = new LoSProcess();
-            process->GetOutPipe()->Connect(VMAP_CLUSTER_PROCESS, i);
-            process->GetInPipe()->Accept(VMAP_CLUSTER_PROCESS_REPLY, i);
+            process->GetOutPipe()->Connect(VMAP_CLUSTER_PROCESS, (int32*)&i);
+            process->GetInPipe()->Accept(VMAP_CLUSTER_PROCESS_REPLY, (int32*)&i);
             m_losProcess.push_back(process);
         }
         printf("VMapClusterManager connected to %u vmap processes\n", processNumber);
@@ -146,7 +146,7 @@ namespace VMAP
         if (it == m_callbackStreams.end())
         {
             SendPipeWrapper *pipe = new SendPipeWrapper();
-            pipe->Connect(VMAP_CLUSTER_MANAGER_CALLBACK, tid);
+            pipe->Connect(VMAP_CLUSTER_MANAGER_CALLBACK, (int32*)&tid);
             m_callbackStreams.insert(ThreadSendCallback::value_type(tid, pipe));
             return pipe;
         } else
@@ -209,7 +209,7 @@ namespace VMAP
             }
             printf("VMapClusterManager::recved\n");
 
-            if(packet.size() != 1+4+4+sizeof(float)*6)
+            if (packet.size() != 1+4+4+sizeof(float)*6)
             {
                 sLog.outError("VMapClusterManager::Run(): received packet with invalid size %d (%d)", packet.size(),  1+4+4+sizeof(float)*6);
                 return;
@@ -263,8 +263,8 @@ namespace VMAP
             m_dataPath.append("/");
 
 
-        m_inPipe.Accept(VMAP_CLUSTER_PROCESS, processId);
-        m_outPipe.Connect(VMAP_CLUSTER_PROCESS_REPLY, processId);
+        m_inPipe.Accept(VMAP_CLUSTER_PROCESS, (int32*)&processId);
+        m_outPipe.Connect(VMAP_CLUSTER_PROCESS_REPLY, (int32*)&processId);
         printf(VMAP_CLUSTER_PROCESS"_%d connected\n", processId);
     }
 
@@ -386,7 +386,7 @@ namespace VMAP
             if (it == m_callbacks.end())
             {
                 pipe = new RecvPipeWrapper();
-                pipe->Accept(VMAP_CLUSTER_MANAGER_CALLBACK, tid);
+                pipe->Accept(VMAP_CLUSTER_MANAGER_CALLBACK, (int32*)&tid);
                 printf("[LoSProxy]Callback accepted\n");
                 m_callbacks.insert(ThreadRecvCallback::value_type(tid, pipe));
             } else
