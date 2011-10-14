@@ -181,6 +181,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
                 CrystalChosen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 CrystalChosen->CastSpell(m_creature, SPELL_MANA_RAGE, false);
                 me->CastSpell(CrystalChosen, SPELL_FEL_CRYSTAL_COSMETIC, false);
+                me->SetInFront(CrystalChosen);
                 IsDraining = true;
             }
             else
