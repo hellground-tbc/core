@@ -7321,7 +7321,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
 
     // remove SPELL_AURA_MOD_UNATTACKABLE at attack (in case non-interruptible spells stun aura applied also that not let attack)
-    if (HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+    if (HasAuraType(SPELL_AURA_MOD_UNATTACKABLE) && !HasAura(40282, 2))
         RemoveSpellsCausingAura(SPELL_AURA_MOD_UNATTACKABLE);
 
     if (m_attacking)
