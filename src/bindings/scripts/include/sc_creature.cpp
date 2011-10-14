@@ -109,6 +109,9 @@ void ScriptedAI::AttackStartNoMove(Unit* pWho)
     if (!pWho)
         return;
 
+    if (me->IsInEvadeMode())
+        return;
+
     if(m_creature->Attack(pWho, false))
         DoStartNoMovement(pWho);
 }
@@ -116,6 +119,9 @@ void ScriptedAI::AttackStartNoMove(Unit* pWho)
 void ScriptedAI::AttackStart(Unit* pWho)
 {
     if (!pWho)
+        return;
+
+    if (me->IsInEvadeMode())
         return;
 
     if (m_creature->Attack(pWho, true))

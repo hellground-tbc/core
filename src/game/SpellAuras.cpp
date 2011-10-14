@@ -2330,6 +2330,15 @@ void Aura::TriggerSpell()
             case 43120:
                 target = m_target;
                 break;
+            // Mana Rage bloodlust sound on trigger
+            case 44320:
+            {
+                WorldPacket data(4);
+                data.SetOpcode(SMSG_PLAY_SOUND);
+                data << uint32(10030);
+                target->SendMessageToSet(&data,false);
+                break;
+            }
         }
     }
     if (!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
