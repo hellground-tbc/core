@@ -984,6 +984,21 @@ ListenRange.Yell = 300
 #        Default: 0 (join announcement in normal way)
 #                 1 (GM join without announcement)
 #
+#    Chat.DenyMask
+#        Mask to disable chat if player don't have required lvl from Chat.MinimumLevel option.
+#        Default: 0 (don't block anything)
+#                 1 (say, yell)
+#                 2 (emote, text emote)
+#                 4 (party, raid, BG)
+#                 8 (guild)
+#                 16 (whisp)
+#                 32 (channels)
+#                 64 (addon)
+#
+#    Chat.MinimumLevel
+#        Minimum level to use chat masked in Chat.DenyMask option.
+#        Default: 5
+#
 ###################################################################################################################
 
 ChatFakeMessagePreventing = 0

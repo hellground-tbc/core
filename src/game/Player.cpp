@@ -7899,7 +7899,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         Creature *creature = GetMap()->GetCreature(guid);
 
         // must be in range and creature must be alive for pickpocket and must be dead for another loot
-        if (!creature || creature->isAlive()!=(loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this,INTERACTION_DISTANCE))
+        if (!creature || creature->isAlive() != (loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this,INTERACTION_DISTANCE))
         {
             SendLootRelease(guid);
             return;
@@ -7911,7 +7911,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             return;
         }
 
-        loot   = &creature->loot;
+        loot = &creature->loot;
 
         if (loot_type == LOOT_PICKPOCKETING)
         {
@@ -7948,20 +7948,23 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             if (!creature->lootForBody)
             {
                 creature->lootForBody = true;
-                if (!loot->load)
+
+                if (!loot->LootLoadedFromDB())
+                {
                     loot->clear();
 
-                if (uint32 lootid = creature->GetCreatureInfo()->lootid)
-                {
-                    loot->setCreatureGUID(creature);
-                    loot->FillLoot(lootid, LootTemplates_Creature, recipient, false);
-                }
+                    if (uint32 lootid = creature->GetCreatureInfo()->lootid)
+                    {
+                        loot->setCreatureGUID(creature);
+                        loot->FillLoot(lootid, LootTemplates_Creature, recipient, false);
+                    }
 
-                loot->generateMoneyLoot(creature->GetCreatureInfo()->mingold,creature->GetCreatureInfo()->maxgold);
+                    loot->generateMoneyLoot(creature->GetCreatureInfo()->mingold,creature->GetCreatureInfo()->maxgold);
+                }
 
                 if (Group* group = recipient->GetGroup())
                 {
-                    group->UpdateLooterGuid(creature,true);
+                    group->UpdateLooterGuid(creature, true);
 
                     switch (group->GetLootMethod())
                     {
@@ -15011,18 +15014,20 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
 bool Player::isAllowedToLoot(Creature* creature)
 {
-    if (creature->isDead() && !creature->IsDamageEnoughForLootingAndReward() && !creature->loot.load)
+    if (creature->isDead() && !creature->IsDamageEnoughForLootingAndReward())
        return false;
 
     if (Player* recipient = creature->GetLootRecipient())
     {
         if (recipient == this)
             return true;
+
         if (Group* otherGroup = recipient->GetGroup())
         {
             Group* thisGroup = GetGroup();
             if (!thisGroup)
                 return false;
+
             return thisGroup == otherGroup && creature->IsPlayerAllowedToLoot(this);
         }
         return false;
@@ -15030,7 +15035,7 @@ bool Player::isAllowedToLoot(Creature* creature)
     else
     {
         // recipient may be offline, maybe there is list of players allowed to loot
-        if(creature->HasPlayersAllowedToLoot() && creature->IsPlayerAllowedToLoot(this))
+        if (creature->HasPlayersAllowedToLoot() && creature->IsPlayerAllowedToLoot(this))
             return true;
 
         // prevent other players from looting if the recipient got disconnected

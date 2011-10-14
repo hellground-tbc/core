@@ -2930,7 +2930,7 @@ void InstanceMap::SummonUnlootedCreatures()
                 continue;
             }
             pCreature->Summon(TEMPSUMMON_MANUAL_DESPAWN, 0);
-            pCreature->loot.loadLootFromDB(pCreature);
+            pCreature->loot.FillLootFromDB(pCreature, NULL);
         }
         while (result->NextRow());
     }

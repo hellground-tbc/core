@@ -476,11 +476,6 @@ void Master::_OnSignal(int s)
         case SIGINT:
             World::StopNow(RESTART_EXIT_CODE);
             break;
-        case SIGTERM:
-            // 3 - LANG_SYSTEMMESSAGE
-            sWorld.SendWorldText(3, "Server is going to perform daily database backups. We are back online in approx ~30 min.");
-            sWorld.ShutdownServ(600, 0 ,SHUTDOWN_EXIT_CODE);
-            break;
         #ifdef _WIN32
         case SIGBREAK:
             World::StopNow(SHUTDOWN_EXIT_CODE);
@@ -495,7 +490,6 @@ void Master::_OnSignal(int s)
 void Master::_HookSignals()
 {
     signal(SIGINT, _OnSignal);
-    signal(SIGTERM, _OnSignal);
     #ifdef _WIN32
     signal(SIGBREAK, _OnSignal);
     #endif
@@ -505,7 +499,6 @@ void Master::_HookSignals()
 void Master::_UnhookSignals()
 {
     signal(SIGINT, 0);
-    signal(SIGTERM, 0);
     #ifdef _WIN32
     signal(SIGBREAK, 0);
     #endif

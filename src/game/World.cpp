@@ -186,89 +186,6 @@ Player* World::FindPlayerInZone(uint32 zone)
     return NULL;
 }
 
-enum
-{
-    CMD_AUTH = 'A',
-    VAL_AUTH_OK = 'o',
-
-    CMD_KEEP_ALIVE = 'P',
-
-    CMD_KICK = 'K',
-    VAL_KICK_LAUNCHER_EXIT  = 'e',
-    VAL_KICK_CHEAT_DETECTED = 'c',
-
-    KICK_TIME = 15000,
-};
-
-void kick_player(std::string ip)
-{
-    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
-    if (!result)
-    {
-        sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
-        return;
-    }
-
-    do
-    {
-        Field *acc_field = result->Fetch();
-        uint32 account = acc_field->GetUInt32();
-
-        if (WorldSession* sess = sWorld.FindSession(account))
-        {
-            sLog.outString("KICKING PLAYER %s", sess->GetPlayerName());
-            sess->KickPlayer();
-        }
-    }
-    while (result->NextRow());
-}
-
-void ACLogPlayer(std::string ip)
-{
-    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
-    if (!result)
-    {
-        sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
-        return;
-    }
-
-    sLog.outAC("AC: Cheat Detected! ip: %s", ip.c_str());
-
-    do
-    {
-        Field *acc_field = result->Fetch();
-        uint32 account = acc_field->GetUInt32();
-
-        if (WorldSession* sess = sWorld.FindSession(account))
-            sLog.outAC("AC: Player Name (ip: %s): %s", ip.c_str(), sess->GetPlayerName());
-    }
-    while (result->NextRow());
-}
-
-void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
-{
-    switch (*cmd)
-    {
-        case CMD_KEEP_ALIVE:
-        {
-            //m_ac_auth[ip] = KICK_TIME;
-        }
-        break;
-        case CMD_KICK:
-            if (*val == VAL_KICK_CHEAT_DETECTED)
-            {
-                ACLogPlayer(ip);
-                //kick_player(ip);
-                // delete from auth list
-                //m_ac_auth.erase(ip.c_str());
-            }
-            break;
-        default:
-            sLog.outError("Unknown CMD in World::ProcessAnticheat()");
-            break;
-    }
-}
-
 /// Find a session by its id
 WorldSession* World::FindSession(uint32 id) const
 {
@@ -1237,6 +1154,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_KEEP_DELETED_CHARS_TIME] = sConfig.GetIntDefault("KeepDeletedCharsTime", 31);
 
     m_configs[CONFIG_ENABLE_SORT_AUCTIONS] = sConfig.GetBoolDefault("Auction.EnableSort", true);
+
+    m_configs[CONFIG_CHAT_DENY_MASK] = sConfig.GetIntDefault("Chat.DenyMask", 0);
+    m_configs[CONFIG_CHAT_MINIMUM_LVL] = sConfig.GetIntDefault("Chat.MinimumLevel", 5);
 }
 
 /// Initialize the World

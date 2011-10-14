@@ -243,6 +243,9 @@ enum WorldConfigs
     CONFIG_RETURNOLDMAILS_MODE,
     CONFIG_RETURNOLDMAILS_INTERVAL,
 
+    CONFIG_CHAT_DENY_MASK,
+    CONFIG_CHAT_MINIMUM_LVL,
+
     CONFIG_VALUE_COUNT
 };
 
@@ -414,8 +417,6 @@ typedef tbb::concurrent_hash_map<uint32, std::list<uint64> > LfgContainerType;
 class World
 {
     public:
-        void ProcessAnticheat(char *cmd, char *val, std::string ip);
-
         DelayExecutor m_ac;
 
         uint32 m_honorRanks[MAX_PVP_RANKS];

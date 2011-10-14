@@ -133,23 +133,23 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recv_data)
             if (ffaitem)
             {
                 //freeforall case, notify only one player of the removal
-                ffaitem->is_looted=true;
+                ffaitem->is_looted = true;
+
                 player->SendNotifyLootItemRemoved(lootSlot);
             }
             else
             {
                 //not freeforall, notify everyone
                 if (conditem)
-                    conditem->is_looted=true;
+                    conditem->is_looted = true;
+
                 loot->NotifyItemRemoved(lootSlot);
             }
         }
 
-        loot->removeItemFromSavedLoot(lootSlot);
-
         //if only one person is supposed to loot the item, then set it to looted
         if (!item->freeforall)
-            item->is_looted = true;
+            loot->setItemLooted(item);
 
         --loot->unlootedCount;
 
@@ -500,14 +500,12 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket & recv_data)
     Item * newitem = target->StoreNewItem(dest, item.itemid, true, item.randomPropertyId);
     target->SendNewItem(newitem, uint32(item.count), false, false, true);
 
-    if (pLoot->save)
-        target->SaveToDB();
+    target->SaveToDB();
 
     // mark as looted
     item.count=0;
-    item.is_looted=true;
 
-
+    pLoot->setItemLooted(&item);
     pLoot->NotifyItemRemoved(slotid);
     --pLoot->unlootedCount;
 }

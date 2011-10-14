@@ -128,7 +128,9 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
         cur_wp = 4;
         m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
         m_creature->SetSpeed(MOVE_RUN, 3.0);
+        m_creature->SetSpeed(MOVE_FLIGHT, 3.0);
         m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
+        m_creature->SetWalk(false);
         m_creature->SetLevitate(true);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -141,6 +143,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             pInstance->SetData(DATA_ALAREVENT, IN_PROGRESS);
 
         m_creature->SetSpeed(MOVE_RUN, DefaultMoveSpeedRate);
+        m_creature->SetSpeed(MOVE_FLIGHT, DefaultMoveSpeedRate);
         m_creature->SetLevitate(true); // after enterevademode will be set walk movement
         m_creature->setActive(true);
         DoZoneInCombat();
@@ -207,6 +210,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                 m_creature->AttackStop();
                 m_creature->SetSelection(0);
                 m_creature->SetSpeed(MOVE_RUN, 5.0f);
+                m_creature->SetSpeed(MOVE_FLIGHT, 5.0f);
                 ForceMove = true;
                 ForceTimer = 0;
                 cur_wp = 5;
@@ -325,6 +329,7 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
                         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
                         m_creature->SetHealth(m_creature->GetMaxHealth());
                         m_creature->SetSpeed(MOVE_RUN, DefaultMoveSpeedRate);
+                        m_creature->SetSpeed(MOVE_FLIGHT, DefaultMoveSpeedRate);
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         DoZoneInCombat();
                         m_creature->CastSpell(m_creature, SPELL_REBIRTH, true);
