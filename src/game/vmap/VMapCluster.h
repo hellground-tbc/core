@@ -4,10 +4,11 @@
 #include "PipeWrapper.h"
 #include "Common.h"
 
-#define VMAP_CLUSTER_MANAGER_PROCESS        "VMAP_MANAGER"
-#define VMAP_CLUSTER_PROCESS                "VMAP_PROCESS"
-#define VMAP_CLUSTER_PROCESS_REPLY          "VMAP_PROCESS_R"
-#define VMAP_CLUSTER_MANAGER_CALLBACK       "VMAP_CALLBACK"
+#define VMAP_CLUSTER_PREFIX                 "VMAP_CLUSTER_"
+#define VMAP_CLUSTER_MANAGER_PROCESS        VMAP_CLUSTER_PREFIX"MANAGER"
+#define VMAP_CLUSTER_PROCESS                VMAP_CLUSTER_PREFIX"PROCESS"
+#define VMAP_CLUSTER_PROCESS_REPLY          VMAP_CLUSTER_PREFIX"PROCESS_R"
+#define VMAP_CLUSTER_MANAGER_CALLBACK       VMAP_CLUSTER_PREFIX"CALLBACK"
 
 
 namespace VMAP
@@ -40,6 +41,8 @@ namespace VMAP
         ~LoSProxy();
 
         bool isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2);
+        void Send(ByteBuffer &packet);
+        void Init();
 
     private:
         ThreadRecvCallback m_callbacks;
@@ -60,6 +63,7 @@ namespace VMAP
 
     private:
         uint32 m_processNumber;
+        pid_t m_masterPid;
 
         SynchronizedRecvPipeWrapper m_coreStream;
         std::list<LoSProcess*> m_losProcess;
@@ -85,7 +89,7 @@ namespace VMAP
         explicit VMapClusterProcess(uint32 processId);
         ~VMapClusterProcess();
 
-        int Run();
+        int Start();
         void EnsureVMapLoaded(uint32 mapId, float x, float y);
 
     private:
@@ -94,6 +98,10 @@ namespace VMAP
         SendPipeWrapper m_outPipe;
         GridLoadedMap m_gridLoaded;
         std::string m_dataPath;
+        pid_t m_masterPid;
+
+        int Run();
+        static ACE_THR_FUNC_RETURN RunThread(void *arg);
     };
 }
 

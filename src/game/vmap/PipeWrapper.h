@@ -23,6 +23,7 @@ namespace VMAP
         virtual ~_PipeWrapper();
 
         bool IsConnected() { return m_connected; }
+        virtual void Close();
 
     protected:
         bool m_connected;
@@ -110,11 +111,13 @@ namespace VMAP
 namespace VMAP
 {
 #if (defined ACE_HAS_STREAM_PIPES) || (PLATFORM == PLATFORM_WINDOWS)
+    #define USING_STREAM_PIPES
     typedef _RecvPipeWrapper<ACE_SPIPE_Stream> RecvPipeWrapper;
     typedef _SendPipeWrapper<ACE_SPIPE_Stream> SendPipeWrapper;
     typedef _SynchronizedSendPipeWrapper<ACE_SPIPE_Stream> SynchronizedSendPipeWrapper;
     typedef _SynchronizedRecvPipeWrapper<ACE_SPIPE_Stream> SynchronizedRecvPipeWrapper;
 #else
+    #define USING_FIFO_PIPES
     typedef _RecvPipeWrapper<ACE_FIFO_Recv> RecvPipeWrapper;
     typedef _SendPipeWrapper<ACE_FIFO_Send> SendPipeWrapper;
     typedef _SynchronizedSendPipeWrapper<ACE_FIFO_Send> SynchronizedSendPipeWrapper;

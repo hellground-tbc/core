@@ -70,6 +70,12 @@ namespace VMAP
 // FIXME: for test only
         VMAP::VMapFactory::createOrGetVMapManager()->setLOSonmaps("0");
 
+        ByteBuffer packet;
+        packet << (uint8)(1+sizeof(pid_t));
+        packet << ACE_OS::getpid();
+        sLoSProxy.Init();
+        sLoSProxy.Send(packet);
+
         return 0;
     }
 
@@ -88,19 +94,29 @@ namespace VMAP
         return 0;
     }
 
-    VMapClusterManager::VMapClusterManager(uint32 processNumber) : m_processNumber(processNumber)
+    VMapClusterManager::VMapClusterManager(uint32 processNumber) : m_processNumber(processNumber), m_masterPid(0)
     {
+        m_coreStream.Accept(VMAP_CLUSTER_MANAGER_PROCESS);
+        printf("VMapClusterManager connected to main core process\n");
+        ByteBuffer packet = m_coreStream.RecvPacket();
+        if(packet.size() != 1+sizeof(pid_t))
+            sLog.outError("VMapClusterManager: failed to receive master pid, invalid packet size %d (%d)", packet.size(), 1+sizeof(pid_t));
+        else
+        {
+            packet.read_skip(1);
+            packet >> m_masterPid;
+        }
+        
         for(int32 i = 0; i < processNumber; i++)
         {
+            packet.rpos(0);
             LoSProcess* process = new LoSProcess();
             process->GetOutPipe()->Connect(VMAP_CLUSTER_PROCESS, (int32*)&i);
             process->GetInPipe()->Accept(VMAP_CLUSTER_PROCESS_REPLY, (int32*)&i);
+            process->GetOutPipe()->SendPacket(packet);
             m_losProcess.push_back(process);
         }
         printf("VMapClusterManager connected to %u vmap processes\n", processNumber);
-
-        m_coreStream.Accept(VMAP_CLUSTER_MANAGER_PROCESS);
-        printf("VMapClusterManager connected to main core process\n");
     }
 
 
@@ -163,12 +179,20 @@ namespace VMAP
         if(n != m_processNumber)
             sLog.outError("VMapClusterManager::Start(): started only %d out of %d threads because of error %d", n, m_processNumber, ACE_OS::last_error());
 
-        //ACE_OS::sleep(2); // FIXME: remove
-        for(int i = 0; i < n; i++)
-            if(ACE_Thread::join(htids[i]) == -1)
-                sLog.outError("VMapClusterManager::Start(): failed to join thread id=%d tid=%d because of error %d", i, tids[i], ACE_OS::last_error());
-            else
-                printf("Joined with thread\n");
+        if (m_masterPid)    // end when master ends
+        {
+            ACE_OS::wait(m_masterPid, 0, 0, 0);
+            for(int i = 0; i < n; i++)
+                ACE_Thread::cancel(tids[i]);
+        }
+        else // no master, just wait for threads to finish
+        {
+            for(int i = 0; i < n; i++)
+                if(ACE_Thread::join(htids[i]) == -1)
+                    sLog.outError("VMapClusterManager::Start(): failed to join thread id=%d tid=%d because of error %d", i, tids[i], ACE_OS::last_error());
+                else
+                    printf("Joined with thread\n");
+        }
         
         //ACE_OS::sleep(15);
         
@@ -256,7 +280,7 @@ namespace VMAP
         return;
     }
 
-    VMapClusterProcess::VMapClusterProcess(uint32 processId) : m_processId(processId) 
+    VMapClusterProcess::VMapClusterProcess(uint32 processId) : m_processId(processId), m_masterPid(0)
     {
         m_dataPath = sConfig.GetStringDefault("DataDir","./");
         if (m_dataPath.at(m_dataPath.length()-1)!='/' && m_dataPath.at(m_dataPath.length()-1)!='\\')
@@ -265,6 +289,14 @@ namespace VMAP
 
         m_inPipe.Accept(VMAP_CLUSTER_PROCESS, (int32*)&processId);
         m_outPipe.Connect(VMAP_CLUSTER_PROCESS_REPLY, (int32*)&processId);
+        ByteBuffer packet = m_inPipe.RecvPacket();
+        if(packet.size() != 1+sizeof(pid_t))
+            sLog.outError("VMapClusterProcess: failed to receive master pid, invalid packet size %d (%d)", packet.size(), 1+sizeof(pid_t));
+        else
+        {
+            packet.read_skip(1);
+            packet >> m_masterPid;
+        }
         printf(VMAP_CLUSTER_PROCESS"_%d connected\n", processId);
     }
 
@@ -306,6 +338,36 @@ namespace VMAP
             grid[p.y_coord*MAX_NUMBER_OF_GRIDS+p.x_coord] = true;
         }
 
+    }
+
+    ACE_THR_FUNC_RETURN VMapClusterProcess::RunThread(void* arg)
+    {
+        ((VMapClusterProcess*)arg)->Run();
+
+        return (ACE_THR_FUNC_RETURN)0;
+    }
+
+    int VMapClusterProcess::Start()
+    {   
+        ACE_thread_t tid;
+        ACE_hthread_t htid;
+        if(ACE_Thread::spawn(&VMapClusterProcess::RunThread, this, THR_NEW_LWP|THR_JOINABLE, &tid, &htid) == -1)
+            sLog.outError("VMapClusterProcess::Start(): failed to start thread because of error %d", ACE_OS::last_error());
+
+        if (m_masterPid)    // end when master ends
+        {
+            ACE_OS::wait(m_masterPid, 0, 0, 0);
+            ACE_Thread::cancel(tid);
+        }
+        else // no master, just wait for threads to finish
+        {
+            if(ACE_Thread::join(htid) == -1)
+                sLog.outError("VMapClusterProcess::Start(): failed to join thread because of error %d",  ACE_OS::last_error());
+        }
+        
+        //ACE_OS::sleep(15);
+        
+        return 0;
     }
 
     int VMapClusterProcess::Run()
@@ -359,11 +421,14 @@ namespace VMAP
             delete (*it).second;
     }
 
+    void LoSProxy::Init()
+    {
+        m_requester.Connect(VMAP_CLUSTER_MANAGER_PROCESS);       
+    }
+
     bool LoSProxy::isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2)
     { 
-        printf("[LoSProxy]isInLineOfSight\n");
-        if (!m_requester.IsConnected())
-            m_requester.Connect(VMAP_CLUSTER_MANAGER_PROCESS);        
+        printf("[LoSProxy]isInLineOfSight\n"); 
 
         ACE_thread_t tid = ACE_Thread::self();
         printf("tid = %d\n", tid);
@@ -413,5 +478,10 @@ namespace VMAP
             return VMapFactory::createOrGetVMapManager()->isInLineOfSight2(pMapId, x1, y1, z1, x2, y2, z2);
         }
         return response;
+    }
+
+    void LoSProxy::Send(ByteBuffer &packet)
+    {
+        m_requester.SendPacket(packet);
     }
 }

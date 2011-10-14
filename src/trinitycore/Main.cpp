@@ -173,6 +173,14 @@ extern int main(int argc, char **argv)
     }
 
     int vmapProcess = sConfig.GetIntDefault("vmap.clusterProcesses", 1);
+    bool vmapCluster = sConfig.GetBoolDefault("vmap.enableCluster", false);
+
+    if(vmapCluster)
+    {
+#ifdef USING_FIFO_PIPES
+        ACE_OS::system("rm -f "VMAP_CLUSTER_PREFIX"*");
+#endif
+    }
 
     if(process)
     {
@@ -184,7 +192,7 @@ extern int main(int argc, char **argv)
         else if(strcmp(process, VMAP_CLUSTER_PROCESS) == 0)
         {
             VMAP::VMapClusterProcess process(process_id);
-            return process.Run();
+            return process.Start();
         } 
         else
             printf("Runtime-Error: bad format of process arguments\n");
@@ -225,7 +233,7 @@ extern int main(int argc, char **argv)
     BarGoLink::SetOutputState(sConfig.GetBoolDefault("ShowProgressBars", false));
 
 
-    if(sConfig.GetBoolDefault("vmap.enableCluster", false))
+    if(vmapCluster)
     {
         VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file, vmapProcess);
     }

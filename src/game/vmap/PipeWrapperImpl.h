@@ -23,6 +23,9 @@ namespace VMAP
     template<class STREAM>
     _PipeWrapper<STREAM>::~_PipeWrapper()
     {
+        if(m_stream && m_connected)
+            Close();
+        
         if(m_stream)
             delete m_stream;
     }
@@ -145,6 +148,14 @@ namespace VMAP
         delete [] buf;
     }
 
+    template<class STREAM>
+    void _PipeWrapper<STREAM>::Close()
+    {
+        m_stream->remove();
+        delete m_stream;
+        m_stream = 0;
+        m_connected = false;
+    }
 }
 
 

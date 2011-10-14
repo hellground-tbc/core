@@ -84,12 +84,6 @@ namespace VMAP
     }
 
     template<>
-    _SendPipeWrapper<ACE_FIFO_Send>::~_SendPipeWrapper()
-    {
-        m_stream->remove();
-    }
-
-    template<>
     void _RecvPipeWrapper<ACE_SPIPE_Stream>::Accept(const char* name, int32 *id)
     {
         if(m_connected)
@@ -143,10 +137,5 @@ namespace VMAP
         printf("Accept stream name %s\n", addr_buf);
     }
 
-    template<>
-    _RecvPipeWrapper<ACE_FIFO_Recv>::~_RecvPipeWrapper()
-    {
-        m_stream->remove();
-    }
 }
 
