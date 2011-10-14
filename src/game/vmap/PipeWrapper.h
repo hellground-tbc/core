@@ -8,6 +8,8 @@
 #include <ace/FIFO_Send.h>
 #include <ace/FIFO_Recv.h>
 
+#define sMLog Trinity::Singleton<VMAP::MultiProcessLog>::Instance()
+
 class ByteBuffer;
 
 namespace VMAP
@@ -89,19 +91,18 @@ namespace VMAP
         LockType m_lock;
     };
 
-// temporary
-
-    class Logger
+    class MultiProcessLog
     {
     public:
-        static Logger& Instance() { return logger; }
-        static Logger logger;
-        void outError(const char *fmt, ...) 
-        {
-            printf("!!!!ERROR!!!!!\n");
-            UTF8PRINTF(stdout, fmt,);
-            printf("\n!!!!!!!\n");
-        }
+        explicit MultiProcessLog();
+        ~MultiProcessLog();
+
+        void outString(const char *fmt, ...);
+        void outError(const char *fmt, ...);
+        
+    private:
+        FILE* m_logFile;
+        bool m_includeTime;
     };
 
 }

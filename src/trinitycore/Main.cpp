@@ -21,7 +21,6 @@
 /// \addtogroup Trinityd Trinity Daemon
 /// @{
 /// \file
-#include "vmap/VMapCluster.h"  // TODO: przerzucic nizej
 
 #include "SystemConfig.h"
 #include "revision.h"
@@ -32,11 +31,9 @@
 #include "ProgressBar.h"
 #include "Log.h"
 #include "Master.h"
-
+#include "vmap/VMapCluster.h"
 
 #include <ace/Get_Opt.h>
-
-#define sLog Trinity::Singleton<Log>::Instance() // TODO: remove
 
 #ifdef WIN32
 #include "ServiceWin32.h"
@@ -234,10 +231,7 @@ extern int main(int argc, char **argv)
 
 
     if(vmapCluster)
-    {
         VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file, vmapProcess);
-    }
-
     
     VMAP::VMapClusterManager::RunTest();
 

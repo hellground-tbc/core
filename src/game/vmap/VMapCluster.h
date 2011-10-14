@@ -11,10 +11,12 @@
 #define VMAP_CLUSTER_MANAGER_CALLBACK       VMAP_CLUSTER_PREFIX"CALLBACK"
 
 #if PLATFORM == PLATFORM_WINDOWS
-#define WAIT(pid) ACE::wait((pid), 0, 0, 0)
+#define WAIT(pid) ACE_OS::wait((pid), 0, 0, 0)
 #else
 #define WAIT(pid) while(true) { if(kill(pid, 0)==-1) if(ACE_OS::last_error() == ESRCH) break; ACE_OS::sleep(1); }
 #endif
+
+#define sLoSProxy Trinity::Singleton<VMAP::LoSProxy>::Instance()
 
 namespace VMAP
 {
@@ -109,8 +111,5 @@ namespace VMAP
         static ACE_THR_FUNC_RETURN RunThread(void *arg);
     };
 }
-
-#define sLoSProxy Trinity::Singleton<LoSProxy>::Instance()
-
 
 #endif

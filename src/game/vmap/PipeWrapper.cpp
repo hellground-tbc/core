@@ -1,10 +1,12 @@
 #include "PipeWrapper.h"
+#include "Config/Config.h"
+#include "Log.h"
+#include "Policies/SingletonImp.h"
+
+INSTANTIATE_SINGLETON_1(VMAP::MultiProcessLog);
 
 namespace VMAP
 {
-    Logger Logger::logger = Logger();
-
-
     template<>
     void _SendPipeWrapper<ACE_SPIPE_Stream>::Connect(const char* name, int32 *id)
     {
@@ -33,7 +35,7 @@ namespace VMAP
             {
                 if(ACE_OS::last_error() != ERROR_CONNECT_NO_PIPE)
                 {
-                    sLog.outError("Connect: failed to connect to stream %s because of error %d", addr.get_path_name(), ACE_OS::last_error());
+                    sMLog.outError("Connect: failed to connect to stream %s because of error %d", addr.get_path_name(), ACE_OS::last_error());
                     return;
                 }
             }
@@ -68,7 +70,7 @@ namespace VMAP
             {
                 if(ACE_OS::last_error() != ERROR_CONNECT_NO_PIPE)
                 {
-                    sLog.outError("Connect: failed to connect to stream %s because of error %d", addr_buf, ACE_OS::last_error());
+                    sMLog.outError("Connect: failed to connect to stream %s because of error %d", addr_buf, ACE_OS::last_error());
                     delete m_stream;
                     m_stream = 0;
                 }
@@ -104,7 +106,7 @@ namespace VMAP
         ACE_SPIPE_Acceptor acceptor = ACE_SPIPE_Acceptor(addr);
         if(acceptor.accept(*m_stream) == -1)
         {
-            sLog.outError("Accept: failed to accept on stream %s becaus of error %d", addr.get_path_name(), ACE_OS::last_error());
+            sMLog.outError("Accept: failed to accept on stream %s becaus of error %d", addr.get_path_name(), ACE_OS::last_error());
             delete m_stream;
             m_stream = 0;
         }
@@ -128,7 +130,7 @@ namespace VMAP
 
         if(m_stream->open(addr_buf) == -1)
         {
-            sLog.outError("Connect: failed to accept to stream %s because of error %d", addr_buf, ACE_OS::last_error());
+            sMLog.outError("Connect: failed to accept to stream %s because of error %d", addr_buf, ACE_OS::last_error());
             delete m_stream;
             m_stream = 0;
         }
@@ -137,5 +139,86 @@ namespace VMAP
         printf("Accept stream name %s\n", addr_buf);
     }
 
+    MultiProcessLog::MultiProcessLog() : m_logFile(NULL)
+    {
+        std::string logsDir = sConfig.GetStringDefault("LogsDir","");
+        if(!logsDir.empty())
+        {
+            if((logsDir.at(logsDir.length()-1)!='/') && (logsDir.at(logsDir.length()-1)!='\\'))
+                logsDir.append("/");
+        }
+
+        std::string logfn = sConfig.GetStringDefault("LogFile", "");
+        if(logfn.empty())
+            return;
+
+        std::stringstream postfix;
+        postfix << "_" << ACE_OS::getpid();
+
+        if(sConfig.GetBoolDefault("LogTimestamp",false))
+            postfix << "_" << Log::GetTimestampStr();
+
+        size_t dot_pos = logfn.find_last_of(".");
+        if(dot_pos != logfn.npos)
+            logfn.insert(dot_pos, postfix.str());
+        else
+            logfn += postfix.str();
+     
+        m_logFile = fopen((logsDir+logfn).c_str(), "w");
+
+        m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
+    }
+
+    MultiProcessLog::~MultiProcessLog()
+    {
+        if(m_logFile)
+            fclose(m_logFile);
+    }
+
+    void MultiProcessLog::outString(const char *str, ...)
+    {
+        if( !str )
+            return;
+
+        UTF8PRINTF(stdout,str,);
+        printf( "\n" );
+
+        if(m_logFile)
+        {
+            Log::outTimestamp(m_logFile);
+
+            va_list ap;
+            va_start(ap, str);
+            vfprintf(m_logFile, str, ap);
+            fprintf(m_logFile, "\n" );
+            va_end(ap);
+
+            fflush(m_logFile);
+        }
+        fflush(stdout);        
+    }
+
+    void MultiProcessLog::outError(const char *str, ...)
+    {
+        if( !str )
+            return;
+
+        UTF8PRINTF(stdout,str,);
+        printf( "\n" );
+
+        if(m_logFile)
+        {
+            Log::outTimestamp(m_logFile);
+            fprintf(m_logFile, "ERROR:" );
+
+            va_list ap;
+            va_start(ap, str);
+            vfprintf(m_logFile, str, ap);
+            va_end(ap);
+
+            fprintf(m_logFile, "\n" );
+            fflush(m_logFile);
+        }
+    }
 }
 

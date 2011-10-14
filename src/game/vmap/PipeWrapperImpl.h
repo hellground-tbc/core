@@ -7,15 +7,10 @@
 #include <ace/SPIPE_Connector.h>
 #include <ace/SPIPE_Addr.h>
 
-
 #define ERROR_CONNECT_NO_PIPE   2
 
 #define ERROR_EOF_ON_PIPE       109
 #define ERROR_MORE_DATA_IN_PIPE 234
-
-#include "Log.h"
-#define sLog Logger::Instance()
-
 
 namespace VMAP
 {
@@ -35,7 +30,7 @@ namespace VMAP
     {
         Guard g(m_lock);
         if(!g.locked())
-            sLog.outError("Connect: failed to aquire lock");
+            sMLog.outError("Connect: failed to aquire lock");
 
         _SendPipeWrapper<STREAM>::Connect(name, id);
     }
@@ -45,7 +40,7 @@ namespace VMAP
     {
         Guard g(m_lock);
         if(!g.locked())
-            sLog.outError("Accept: failed to aquire log");
+            sMLog.outError("Accept: failed to aquire log");
 
         _RecvPipeWrapper<STREAM>::Accept(name, id);    
     }
@@ -57,11 +52,10 @@ namespace VMAP
         if(!g.locked())
         {
             ByteBuffer packet;
-            sLog.outError("RecvPacket: failed to aquire lock");
+            sMLog.outError("RecvPacket: failed to aquire lock");
             _RecvPipeWrapper<STREAM>::m_eof = true;
             return packet;
         }
-        printf("SynchronizedRecvPipeWrapper::RecvPacket() into recv\n");
         return _RecvPipeWrapper<STREAM>::RecvPacket();
     }
 
@@ -86,7 +80,7 @@ namespace VMAP
                 }
                 else 
                 {
-                    sLog.outError("recv: failed to recv data from stream because of error %d", code);
+                    sMLog.outError("recv: failed to recv data from stream because of error %d", code);
                     m_eof = true;
                     return false;
                 }
@@ -94,7 +88,6 @@ namespace VMAP
             else if(n == 0)
             {
                 ACE_Thread::yield();
-                printf("[DEBUG]Recv_n n == 0\n");
                 continue;
             }
             break;
@@ -128,7 +121,7 @@ namespace VMAP
     {
         Guard g(m_lock);
         if(!g.locked())
-            sLog.outError("SendPacket: failed to aquire lock, unintended bahaviour possible");
+            sMLog.outError("SendPacket: failed to aquire lock, unintended bahaviour possible");
 
         return _SendPipeWrapper<STREAM>::SendPacket(packet);
     }
