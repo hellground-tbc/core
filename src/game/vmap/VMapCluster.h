@@ -66,7 +66,6 @@ namespace VMAP
         int Start();
 
         static int SpawnVMapProcesses(const char* runnable, const char* cfg_file, int count);
-        static void RunTest();
 
     private:
         uint32 m_processNumber;

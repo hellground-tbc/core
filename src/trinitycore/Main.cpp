@@ -232,14 +232,10 @@ extern int main(int argc, char **argv)
 
     if(vmapCluster)
         VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file, vmapProcess);
-    
-    VMAP::VMapClusterManager::RunTest();
-
-    return 0;
-    
+        
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?
-    //return sMaster.Run();
+    return sMaster.Run();
 
     // at sMaster return function exist with codes
     // 0 - normal shutdown

@@ -15,49 +15,8 @@
 
 INSTANTIATE_SINGLETON_1(VMAP::LoSProxy);
 
-ACE_THR_FUNC_RETURN VMapClusterTest(void *arg)
-{
-        VMAP::VMapFactory::createOrGetVMapManager()->setEnableLineOfSightCalc(true);
-
-//        ACE_OS::sleep(urand(1, 2));
-        printf("Running test1\n");
-        VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 20, 20, 20);
-        
-        printf("Running test2\n");
-        VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 30, 30, 30, 20, 20, 20);
-        //ACE_OS::sleep(2);
-        printf("Running test3\n");
-        VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 40, 40, 40, 20, 20, 20);
-        //ACE_OS::sleep(2);
-        printf("Running test4\n");
-        VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(0, 10, 10, 10, 50, 50, 50);
-        //ACE_OS::sleep(2);
-        printf("Test finished\n");
-
-        return 0;
-}
-
 namespace VMAP
 {
-    void VMapClusterManager::RunTest()
-    {
-        ACE_thread_t tids[100];
-        ACE_hthread_t htids[100];
-        int k = 6;
-
-        int n = ACE_Thread::spawn_n(tids, k, &VMapClusterTest, 0, THR_NEW_LWP|THR_JOINABLE, 0, 0, 0, htids);
-        if(n != k)
-            sMLog.outError("VMapClusterManager::RunTest(): started only %d out of %d threads because of error %d", n, k, ACE_OS::last_error());
-
-
-        for(int i = 0; i < n; i++)
-            if(ACE_Thread::join(htids[i]) == -1)
-                sMLog.outError("VMapClusterManager::RunTest(): failed to join thread id=%d tid=%d because of error %d", i, tids[i], ACE_OS::last_error());
-        
-        //ACE_OS::sleep(15);   
-    }
-
-
     int VMapClusterManager::SpawnVMapProcesses(const char* runnable, const char* cfg_file, int count)
     {
         SpawnVMapProcess(runnable, cfg_file, VMAP_CLUSTER_MANAGER_PROCESS);
@@ -299,9 +258,6 @@ namespace VMAP
             for(int i = 0; i < MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS; i++)
                 grid[i] = false;
             m_gridLoaded.insert(GridLoadedMap::value_type(mapId, grid));
-            char buff[20];
-            sprintf(buff, "%d", mapId);
-            vMapManager->setLOSonmaps(buff);
         } 
         else
             grid = it->second;
@@ -366,6 +322,10 @@ namespace VMAP
             }
             packet.read_skip(1+4);
             packet >> mapId >> x1 >> y1 >> z1 >> x2 >> y2 >> z2;
+
+            char buff[20];
+            sprintf(buff, "%d", mapId);
+            vMapManager->setLOSonmaps(buff);
 
             EnsureVMapLoaded(mapId, x1, y1);
             EnsureVMapLoaded(mapId, x2, y2);
