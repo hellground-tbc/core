@@ -351,36 +351,87 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
     }
 };
 
+uint32 DrainingList[8] = 
+{
+    96837, 96829,
+    96828, 96838,
+    96836, 96826,
+    96835, 96831
+};
+
+const char* SAY_OOC1     = "The power! More, more, more!";
+const char* SAY_AGGRO1   = "Get away from my crystals!";
+const char* SAY_AGGRO2   = "It's MINE!";
+
+#define SPELL_DRINK_FEL_INFUSION            44505
+#define SPELL_FEL_CRYSTAL_COSMETIC          44374
+#define SPELL_WRETCHED_STAB                 44533
+#define SPELL_DUAL_WIELD                    29651
+
 struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
 {
     mob_wretched_skulkerAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 Drink_Timer;
     uint32 Wretched_Stab_Timer;
+    uint32 OOCTimer;
 
     void Reset()
     {
-        Drink_Timer = 1000;
-        Wretched_Stab_Timer = 4000;
+        me->SetStandState(PLAYER_STATE_SIT);
+        DoCast(me, SPELL_DUAL_WIELD);
+        OOCTimer = 10000;
+        Drink_Timer = urand(25000, 35000);
+        Wretched_Stab_Timer = urand(4000, 7000);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
+        if(roll_chance_f(10.0))
+            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2), 0, me->getVictim());
+    }
+
+    void HandleOffCombatEffects()
+    {
+        for (uint8 i = 0; i < 8; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == DrainingList[i]) // draining fel crystal
+                me->CastSpell((Unit*)NULL, SPELL_FEL_CRYSTAL_COSMETIC, false);
+            if(roll_chance_f(1.0f))
+                    DoSay(SAY_OOC1, 0, me);
+        }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+        {
+            if(OOCTimer < diff)
+            {
+                HandleOffCombatEffects();
+                OOCTimer = 10000;
+            }
+            else
+                OOCTimer -= diff;
+        }
+
         if(!UpdateVictim())
             return;
 
         if(Drink_Timer < diff)
         {
-            AddSpellToCast(me, 44505);
-            Drink_Timer = 15000;
+            AddSpellToCast(SPELL_DRINK_FEL_INFUSION, CAST_SELF);
+            Drink_Timer = urand(25000, 35000);
         }
         else
             Drink_Timer -= diff;
 
        if(Wretched_Stab_Timer < diff)
        {
-           AddSpellToCast(m_creature->getVictim(), 44533);
-           Wretched_Stab_Timer = 3000;
+           AddSpellToCast(m_creature->getVictim(), SPELL_WRETCHED_STAB);
+           Wretched_Stab_Timer = urand(3000, 7000);
        }
        else
            Wretched_Stab_Timer -= diff;
@@ -390,36 +441,71 @@ struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
     }
 };
 
+#define SPELL_WRETCHED_STRIKE               44534
+
 struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
 {
     mob_wretched_bruiserAI(Creature *c) : ScriptedAI(c) {}
 
+    uint32 OOCTimer;
     uint32 Drink_Timer;
     uint32 Wretched_Strike_Timer;
 
     void Reset()
     {
-        Drink_Timer = 1000;
-        Wretched_Strike_Timer = 3000;
+        me->SetStandState(PLAYER_STATE_SIT);
+        OOCTimer = 10000;
+        Drink_Timer = urand(25000, 35000);
+        Wretched_Strike_Timer = urand(6000, 10000);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
+        if(roll_chance_f(10.0))
+            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2), 0, me->getVictim());
+    }
+
+    void HandleOffCombatEffects()
+    {
+        for (uint8 i = 0; i < 8; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == DrainingList[i]) // draining fel crystal
+                me->CastSpell((Unit*)NULL, SPELL_FEL_CRYSTAL_COSMETIC, false);
+            if(roll_chance_f(1.0f))
+                    DoSay(SAY_OOC1, 0, me);
+        }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+        {
+            if(OOCTimer < diff)
+            {
+                HandleOffCombatEffects();
+                OOCTimer = 10000;
+            }
+            else
+                OOCTimer -= diff;
+        }
+
         if(!UpdateVictim())
             return;
 
         if(Drink_Timer < diff)
         {
-            AddSpellToCast(me, 44505);
-            Drink_Timer = 15000;
+            AddSpellToCast(SPELL_DRINK_FEL_INFUSION, CAST_SELF);
+            Drink_Timer = urand(25000, 35000);
         }
         else
             Drink_Timer -= diff;
 
         if(Wretched_Strike_Timer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), 44533);
-            Wretched_Strike_Timer = 3000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_WRETCHED_STRIKE);
+            Wretched_Strike_Timer = urand(7000, 16000);
         }
         else
             Wretched_Strike_Timer -= diff;
@@ -429,49 +515,83 @@ struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
     }
 };
 
+#define SPELL_WRETCHED_FIREBALL               44503
+#define SPELL_WRETCHED_FROSTBOLT              44504
+
 struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
 {
     mob_wretched_huskAI(Creature *c) : ScriptedAI(c) {}
 
+    uint32 OOCTimer;
     uint32 Drink_Timer;
-    uint32 Wretched_Fireball_Timer;
-    uint32 Wretched_Frostbolt_Timer;
+    uint32 Wretched_Cast_Timer;
 
     void Reset()
     {
-        Drink_Timer = 1000;
-        Wretched_Fireball_Timer = 3000;
-        Wretched_Frostbolt_Timer = 1500;
+        me->SetStandState(PLAYER_STATE_SIT);
+        OOCTimer = 5000;
+        Drink_Timer = urand(25000, 35000);
+        Wretched_Cast_Timer = 0;
+    }
+
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
+        if(roll_chance_f(10.0))
+            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2), 0, me->getVictim());
+    }
+
+    void HandleOffCombatEffects()
+    {
+        for (uint8 i = 0; i < 8; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == DrainingList[i]) // draining fel crystal
+            {
+                me->CastSpell((Unit*)NULL, SPELL_FEL_CRYSTAL_COSMETIC, false);
+                if(roll_chance_f(1.0f))
+                    DoSay(SAY_OOC1, 0, me);
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+        {
+            if(OOCTimer < diff)
+            {
+                HandleOffCombatEffects();
+                OOCTimer = 10000;
+            }
+            else
+                OOCTimer -= diff;
+        }
+
         if(!UpdateVictim())
             return;
 
         if(Drink_Timer < diff)
         {
-            AddSpellToCast(me, 44505);
-            Drink_Timer = 15000;
+            ClearCastQueue();
+            AddSpellToCast(SPELL_DRINK_FEL_INFUSION, CAST_SELF);
+            Drink_Timer = urand(25000, 35000);
         }
         else
             Drink_Timer -= diff;
 
-       if(Wretched_Fireball_Timer < diff)
+       if(Wretched_Cast_Timer < diff)
        {
-           AddSpellToCast(m_creature->getVictim(), 44503);
-           Wretched_Fireball_Timer = 3000;
+           AddSpellToCast(m_creature->getVictim(), RAND(SPELL_WRETCHED_FIREBALL, SPELL_WRETCHED_FROSTBOLT));
+           Wretched_Cast_Timer = me->HasAura(SPELL_DRINK_FEL_INFUSION, 1) ? 1400 : 2900;
        }
        else
-           Wretched_Fireball_Timer -= diff;
-
-       if(Wretched_Frostbolt_Timer < diff)
-       {
-           AddSpellToCast(m_creature->getVictim(), 44504);
-           Wretched_Frostbolt_Timer = 4000;
-       }
-       else
-           Wretched_Frostbolt_Timer -= diff;
+           Wretched_Cast_Timer -= diff;
 
        CastNextSpellIfAnyAndReady(diff);
        DoMeleeAttackIfReady();
