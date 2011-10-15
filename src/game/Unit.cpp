@@ -7899,6 +7899,11 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 if (pVictim->isFrozen())                     // and compensate this for frozen target.
                     TakenTotalMod *= 3.0f;
             }
+            else if (spellProto->Id == 12723) // Sweeping Strikes
+            {
+                DoneTotalMod = 1.0f;
+            }
+            break;
         case SPELLFAMILY_MAGE:
             // Ignite - do not modify, it is (8*Rank)% damage of procing Spell
             if (spellProto->Id==12654)

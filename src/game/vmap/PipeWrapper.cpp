@@ -135,8 +135,6 @@ namespace VMAP
             m_stream = 0;
         }
         m_connected = true;
-
-        printf("Accept stream name %s\n", addr_buf);
     }
 
     MultiProcessLog::MultiProcessLog() : m_logFile(NULL)
