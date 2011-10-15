@@ -1203,9 +1203,6 @@ void World::SetInitialWorldSettings()
     ///- Remove the bones after a restart
     CharacterDatabase.PExecute("DELETE FROM corpse WHERE corpse_type = '0'");
 
-    ///- Cleanup deleted characters
-    CharacterDatabase.Execute("Call CleanupDeletedChars()");
-
     ///- Load the DBC files
     sLog.outString("Initialize data stores...");
     LoadDBCStores(m_dataPath);
