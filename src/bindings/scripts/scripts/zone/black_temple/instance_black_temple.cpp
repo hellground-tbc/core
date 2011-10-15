@@ -178,6 +178,9 @@ struct TRINITY_DLL_DECL instance_black_temple : public ScriptedInstance
             case 22952:
                 return EVENT_ILLIDARICOUNCIL;
             case 22856:
+            case 23418:
+            case 23420:
+            case 23419:
                 return EVENT_RELIQUARYOFSOULS;
             default:
                 return 0;
