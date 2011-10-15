@@ -285,7 +285,7 @@ bool DropAggro(Creature* pAttacker, Unit * target)
 
     if (pAttacker->IsNonMeleeSpellCasted(false))
     {
-        SpellSchoolMask schoolMask = SPELL_SCHOOLMASK_NONE;
+        SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NONE;
         if (Spell*pSpell = pAttacker->m_currentSpells[CURRENT_GENERIC_SPELL])
             schoolMask = pSpell->GetSpellProto()->SchoolMask;
         else if (Spell*pSpell = pAttacker->m_currentSpells[CURRENT_CHANNELED_SPELL])
