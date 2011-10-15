@@ -1249,7 +1249,7 @@ void GameObject::Use(Unit* user)
             }
             AddUniqueUse(player);
 
-            player->CastSpell((Unit*)NULL, info->summoningRitual.animSpell, true);
+            player->CastSpell(player, info->summoningRitual.animSpell, true);
 
             // full amount unique participants including original summoner
             if (GetUniqueUseCount() < info->summoningRitual.reqParticipants)
