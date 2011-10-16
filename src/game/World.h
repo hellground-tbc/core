@@ -434,6 +434,7 @@ class World
         WorldSession* FindSession(uint32 id) const;
         void AddSession(WorldSession *s);
         bool RemoveSession(uint32 id);
+        void AddSessionToRemove(SessionMap::iterator itr) { removedSessions.push_back(itr); }
         /// Get the number of current active sessions
         void UpdateMaxSessionCounters();
         uint32 GetActiveAndQueuedSessionCount() const { return m_sessions.size(); }
@@ -645,6 +646,8 @@ class World
 
         uint32 sessionThreads;
 
+        std::list<SessionMap::iterator> removedSessions;
+
         //atomic op counter for active scripts amount
         ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
 
@@ -736,23 +739,21 @@ public:
         SessionMap::iterator itr = sessions->begin();
         advance(itr, r.begin());
         SessionMap::iterator itrEnd = sessions->begin();
-        advance(itr, r.end());
-        for (; itr != itrEnd;)
-        {
-            SessionMap::iterator tmpItr = itr;
-            ++itr;
+        advance(itrEnd, r.end());
 
-            if (!tmpItr->second)
+        for (; itr != itrEnd; ++itr)
+        {
+            if (!itr->second)
                 continue;
 
             ///- and remove not active sessions from the list
-            WorldSession * pSession = tmpItr->second;
+            WorldSession * pSession = itr->second;
             WorldSessionFilter updater(pSession);
             if (!pSession->Update(diff, updater))    // As interval = 0
             {
                 sWorld.RemoveQueuedPlayer(pSession);
 
-                sessions->erase(tmpItr);
+                sWorld.AddSessionToRemove(itr);
                 delete pSession;
             }
         }

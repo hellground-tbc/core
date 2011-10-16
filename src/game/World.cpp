@@ -1906,6 +1906,11 @@ void World::UpdateSessions(const uint32 & diff)
         tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size(), m_sessions.size()/sessionThreads), SessionsUpdater(&m_sessions, diff));
     else
         tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size()), SessionsUpdater(&m_sessions, diff), tbb::auto_partitioner());
+
+    for (std::list<SessionMap::iterator>::iterator itr = removedSessions.begin(); itr != removedSessions.end(); ++itr)
+        m_sessions.erase(*itr);
+
+    removedSessions.clear();
 }
 
 void World::ForceGameEventUpdate()
