@@ -32,11 +32,13 @@
 #include "ace/Atomic_Op.h"
 #include "DelayExecutor.h"
 #include "QueryResult.h"
+#include "WorldSession.h"
 
 #include <map>
 #include <set>
 #include <list>
 #include <tbb/concurrent_hash_map.h>
+#include <tbb/blocked_range.h>
 
 class Object;
 class WorldPacket;
@@ -408,10 +410,13 @@ struct CliCommandHolder
     ~CliCommandHolder() { delete[] m_command; }
 };
 
+
+
 // ye place for this sucks
 #define MAX_PVP_RANKS 14
 
 typedef tbb::concurrent_hash_map<uint32, std::list<uint64> > LfgContainerType;
+typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
 
 /// The World
 class World
@@ -523,8 +528,8 @@ class World
 
         void LoadAutobroadcasts();
         void Update(uint32 diff);
+        void UpdateSessions(const uint32 & diff);
 
-        void UpdateSessions(uint32 diff);
         /// Set a server rate (see #Rates)
         void setRate(Rates rate,float value) { rate_values[rate]=value; }
         /// Get a server rate (see #Rates)
@@ -638,6 +643,8 @@ class World
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;
 
+        uint32 sessionThreads;
+
         //atomic op counter for active scripts amount
         ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
 
@@ -654,7 +661,6 @@ class World
 
         typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
         WeatherMap m_weathers;
-        typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
         SessionMap m_sessions;
         typedef UNORDERED_MAP<uint32, time_t> DisconnectMap;
         DisconnectMap m_disconnects;
@@ -715,6 +721,44 @@ class World
 extern uint32 realmID;
 
 #define sWorld Trinity::Singleton<World>::Instance()
+
+class SessionsUpdater
+{
+private:
+    SessionMap * sessions;
+    uint32 diff;
+
+public:
+    SessionsUpdater(SessionMap * sess, uint32 diff) : sessions(sess), diff(diff) {}
+
+    void operator () (const tbb::blocked_range<int>& r) const
+    {
+        SessionMap::iterator itr = sessions->begin();
+        advance(itr, r.begin());
+        SessionMap::iterator itrEnd = sessions->begin();
+        advance(itr, r.end());
+        for (; itr != itrEnd;)
+        {
+            SessionMap::iterator tmpItr = itr;
+            ++itr;
+
+            if (!tmpItr->second)
+                continue;
+
+            ///- and remove not active sessions from the list
+            WorldSession * pSession = tmpItr->second;
+            WorldSessionFilter updater(pSession);
+            if (!pSession->Update(diff, updater))    // As interval = 0
+            {
+                sWorld.RemoveQueuedPlayer(pSession);
+
+                sessions->erase(tmpItr);
+                delete pSession;
+            }
+        }
+    }
+};
+
 #endif
 /// @}
 

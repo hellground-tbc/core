@@ -72,7 +72,8 @@ void WorldRunnable::run()
     }
 
     sWorld.KickAll();                                       // save and kick all players
-    sWorld.UpdateSessions( 1 );                             // real players unload required UpdateSessions call
+    uint32 tmp = 1;
+    sWorld.UpdateSessions(tmp);                             // real players unload required UpdateSessions call
 
     // unload battleground templates before different singletons destroyed
     sBattleGroundMgr.DeleteAlllBattleGrounds();

@@ -29,7 +29,6 @@
 #include "SystemConfig.h"
 #include "Log.h"
 #include "Opcodes.h"
-#include "WorldSession.h"
 #include "WorldPacket.h"
 #include "Weather.h"
 #include "Player.h"
@@ -67,6 +66,8 @@
 #include "Transports.h"
 #include "CreatureEventAIMgr.h"
 #include "WardenDataStorage.h"
+
+#include <tbb/parallel_for.h>
 
 INSTANTIATE_SINGLETON_1(World);
 
@@ -1157,6 +1158,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_CHAT_DENY_MASK] = sConfig.GetIntDefault("Chat.DenyMask", 0);
     m_configs[CONFIG_CHAT_MINIMUM_LVL] = sConfig.GetIntDefault("Chat.MinimumLevel", 5);
+
+    sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 1);
 }
 
 /// Initialize the World
@@ -1758,6 +1761,7 @@ void World::Update(uint32 diff)
         m_timers[WUPDATE_SESSIONS].Reset();
 
         UpdateSessions(diff);
+
         // Update groups
         for (ObjectMgr::GroupSet::iterator itr = objmgr.GetGroupSetBegin(); itr != objmgr.GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
@@ -1889,6 +1893,19 @@ void World::Update(uint32 diff)
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
+}
+
+void World::UpdateSessions(const uint32 & diff)
+{
+    ///- Add new sessions
+    WorldSession* sess;
+    while (addSessQueue.next(sess))
+        AddSession_ (sess);
+
+    if (sessionThreads)
+        tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size(), m_sessions.size()/sessionThreads), SessionsUpdater(&m_sessions, diff));
+    else
+        tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size()), SessionsUpdater(&m_sessions, diff), tbb::auto_partitioner());
 }
 
 void World::ForceGameEventUpdate()
@@ -2449,35 +2466,6 @@ void World::SendServerMessage(uint32 type, const char *text, Player* player)
         player->GetSession()->SendPacket(&data);
     else
         SendGlobalMessage(&data);
-}
-
-void World::UpdateSessions(uint32 diff)
-{
-    ///- Add new sessions
-    WorldSession* sess;
-    while (addSessQueue.next(sess))
-        AddSession_ (sess);
-
-    ///- Then send an update signal to remaining ones
-    for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)
-    {
-        next = itr;
-        ++next;
-
-        if (!itr->second)
-            continue;
-
-        ///- and remove not active sessions from the list
-        WorldSession * pSession = itr->second;
-        WorldSessionFilter updater(pSession);
-        if (!pSession->Update(diff, updater))    // As interval = 0
-        {
-            RemoveQueuedPlayer(pSession);
-
-            m_sessions.erase(itr);
-            delete pSession;
-        }
-    }
 }
 
 // This handles the issued and queued CLI commands

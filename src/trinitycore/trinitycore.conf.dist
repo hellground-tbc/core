@@ -173,7 +173,7 @@ EAIErrorLevel = 2
 #        Use VMAP for totem summon place calculation
 #        Default: 0 (disable, less CPU usage)
 #                 1 (enable, each totem created check LOS)
-#   
+#
 #    vmap.enableCluster
 #        Enable/Disable VMmap calculations in cluster
 #        Default: 0 (false)
@@ -218,14 +218,9 @@ EAIErrorLevel = 2
 #         Number of threads to update maps.
 #         Default: 1
 #
-#    Warden.Kick
-#        Kick player on failed check
-#        Default: 0 (Disabled)
-#                 1 (Enabled)
-#    Warden.Ban
-#        Ban player on failed check
-#        Default: 0 (Disabled)
-#                 1 (Enabled)
+#    SessionUpdate.Threads
+#         Number of threads to update sessions (0 - auto).
+#         Default: 1
 #
 ###################################################################################################################
 
@@ -261,9 +256,7 @@ MaxCoreStuckTime = 0
 MaxVmapCalcTime = 30
 AddonChannel = 1
 MapUpdate.Threads = 1
-
-Warden.Kick = 0
-Warden.Ban = 0
+SessionUpdate.Threads = 1
 
 ###################################################################################################################
 # SERVER LOGGING
@@ -1499,9 +1492,20 @@ PlayerStart.String = ""
 #        If Mail.OldReturnMode is set to 1 then this value contains time beatween each old mails return attempt (in seconds).
 #        Default: 60
 #
+#    Warden.Kick
+#        Kick player on failed check
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
+#    Warden.Ban
+#        Ban player on failed check
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
+#
 ###################################################################################################################
 
 AutoBroadcast.Timer = 0
 Auction.EnableSort = 1
 Mail.OldReturnMode = 0
 Mail.OldReturnTimer = 60
+Warden.Kick = 0
+Warden.Ban = 0

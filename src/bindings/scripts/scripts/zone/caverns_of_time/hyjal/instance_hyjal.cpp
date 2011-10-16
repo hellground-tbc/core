@@ -182,7 +182,7 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
 
         // to prevent respawning bosses if loot is loaded from db
         if (GetData(GetEncounterForEntry(creature_entry)) == DONE)
-            pCreature->Kill(pCreature, false);
+            creature->Kill(creature, false);
     }
 
     uint64 GetData64(uint32 identifier)
