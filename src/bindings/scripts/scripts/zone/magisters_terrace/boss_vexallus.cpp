@@ -163,8 +163,8 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
 
     void Reset()
     {
-        me->SetWalk(true);
-        me->SetSpeed(MOVE_WALK, 0.8);   //to be tested
+        me->SetLevitate(true);
+        me->SetSpeed(MOVE_FLIGHT, 0.5);   //to be tested
         DoCast(me, SPELL_ENERGY_BOLT_AURA);
         DoCast(me, SPELL_ENERGY_PASSIVE);
     }
@@ -178,7 +178,6 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
             me->DeleteThreatList();
             me->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
             me->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->CastSpell(killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
             killer->CastSpell(killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, m_creature->GetGUID());
         }
