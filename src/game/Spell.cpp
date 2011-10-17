@@ -2057,6 +2057,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (modOwner)
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, radius, this);
 
+        if(radius > 333)
+            radius = 333;
+
         std::list<Unit*> unitList;
         std::list<GameObject*> goList;
 

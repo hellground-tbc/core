@@ -176,6 +176,7 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
         if(Unit* Trigger = me->SummonTrigger(x, y, z, 0, 10000))
             Trigger->CastSpell(killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
         killer->CastSpell(killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, m_creature->GetGUID());
+        me->RemoveCorpse();
     }
 
     void EnterCombat(Unit *who){}
