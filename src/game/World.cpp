@@ -1908,7 +1908,12 @@ void World::UpdateSessions(const uint32 & diff)
         tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size()), SessionsUpdater(&m_sessions, diff), tbb::auto_partitioner());
 
     for (std::list<SessionMap::iterator>::iterator itr = removedSessions.begin(); itr != removedSessions.end(); ++itr)
+    {
+        sess = itr->second;
         m_sessions.erase(*itr);
+        delete sess;
+        sess = NULL;
+    }
 
     removedSessions.clear();
 }

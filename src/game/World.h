@@ -754,7 +754,6 @@ public:
                 sWorld.RemoveQueuedPlayer(pSession);
 
                 sWorld.AddSessionToRemove(itr);
-                delete pSession;
             }
         }
     }
