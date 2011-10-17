@@ -169,24 +169,13 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
         DoCast(me, SPELL_ENERGY_PASSIVE);
     }
 
-    void DamageTaken(Unit* killer, uint32& damage)
+    void JustDied(Unit* killer)
     {
-        if(damage > me->GetHealth())
-        {
-            me->GetMotionMaster()->MoveIdle();
-            me->CombatStop();
-            me->DeleteThreatList();
-            me->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-            me->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-            me->CastSpell(killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
-            killer->CastSpell(killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, m_creature->GetGUID());
-        }
-    }
-
-    void OnAuraRemove(Aura* aur, bool)
-    {
-        if(aur->GetId() == 44328)
-            me->Kill(me, false);
+        float x, y, z;
+        me->GetPosition(x, y, z);
+        if(Unit* Trigger = me->SummonTrigger(x, y, z, 0, 10000))
+            Trigger->CastSpell(killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
+        killer->CastSpell(killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, m_creature->GetGUID());
     }
 
     void EnterCombat(Unit *who){}
