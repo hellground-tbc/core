@@ -360,8 +360,10 @@ uint32 DrainingList[8] =
 };
 
 const char* SAY_OOC1     = "The power! More, more, more!";
+const char* SAY_OOC2     = "It seethes and burns...";
 const char* SAY_AGGRO1   = "Get away from my crystals!";
 const char* SAY_AGGRO2   = "It's MINE!";
+const char* SAY_AGGRO3   = "You wish to steal the power! Die!";
 
 #define SPELL_DRINK_FEL_INFUSION            44505
 #define SPELL_FEL_CRYSTAL_COSMETIC          44374
@@ -390,7 +392,7 @@ struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
         if(me->IsNonMeleeSpellCasted(false))
             me->InterruptNonMeleeSpells(false);
         if(roll_chance_f(10.0))
-            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2), 0, me->getVictim());
+            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), 0, me->getVictim());
     }
 
     void HandleOffCombatEffects()
@@ -399,8 +401,8 @@ struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
         {
             if(me->GetDBTableGUIDLow() == DrainingList[i]) // draining fel crystal
                 me->CastSpell((Unit*)NULL, SPELL_FEL_CRYSTAL_COSMETIC, false);
-            if(roll_chance_f(1.0f))
-                    DoSay(SAY_OOC1, 0, me);
+            if(roll_chance_f(2.0f))
+                    DoSay(RAND(SAY_OOC1, SAY_OOC2), 0, me);
         }
     }
 
@@ -464,7 +466,7 @@ struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
         if(me->IsNonMeleeSpellCasted(false))
             me->InterruptNonMeleeSpells(false);
         if(roll_chance_f(10.0))
-            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2), 0, me->getVictim());
+            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), 0, me->getVictim());
     }
 
     void HandleOffCombatEffects()
@@ -473,8 +475,8 @@ struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
         {
             if(me->GetDBTableGUIDLow() == DrainingList[i]) // draining fel crystal
                 me->CastSpell((Unit*)NULL, SPELL_FEL_CRYSTAL_COSMETIC, false);
-            if(roll_chance_f(1.0f))
-                    DoSay(SAY_OOC1, 0, me);
+            if(roll_chance_f(2.0f))
+                    DoSay(RAND(SAY_OOC1, SAY_OOC2), 0, me);
         }
     }
 
@@ -544,7 +546,7 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
         if(me->IsNonMeleeSpellCasted(false))
             me->InterruptNonMeleeSpells(false);
         if(roll_chance_f(10.0))
-            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2), 0, me->getVictim());
+            DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), 0, me->getVictim());
     }
 
     void HandleOffCombatEffects()
@@ -554,8 +556,8 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
             if(me->GetDBTableGUIDLow() == DrainingList[i]) // draining fel crystal
             {
                 me->CastSpell((Unit*)NULL, SPELL_FEL_CRYSTAL_COSMETIC, false);
-                if(roll_chance_f(1.0f))
-                    DoSay(SAY_OOC1, 0, me);
+                if(roll_chance_f(2.0f))
+                    DoSay(RAND(SAY_OOC1, SAY_OOC2), 0, me);
             }
         }
     }
@@ -610,15 +612,20 @@ struct TRINITY_DLL_DECL mob_brightscale_wyrmAI : public ScriptedAI
         me->GetMotionMaster()->MoveRandom(10.0);
     }
 
-    void JustDied(Unit* killer)
+    void DamageTaken(Unit* done_by, uint32& damage)
+    {
+        if(damage && damage >= me->GetHealth())
+            DoCast((Unit*)NULL, SPELL_ENERGY_INFUSION);
+    }
+
+    /*void JustDied(Unit* killer)
     {
         ForceSpellCast(SPELL_ENERGY_INFUSION, CAST_NULL);
-    }
+    }*/
 
     void UpdateAI(const uint32 diff)
     {
        DoMeleeAttackIfReady();
-       CastNextSpellIfAnyAndReady();
     }
 };
 
