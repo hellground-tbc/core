@@ -598,6 +598,30 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
     }
 };
 
+#define SPELL_ENERGY_INFUSION                 44406
+
+struct TRINITY_DLL_DECL mob_brightscale_wyrmAI : public ScriptedAI
+{
+    mob_brightscale_wyrmAI(Creature *c) : ScriptedAI(c) {}
+    //TODO: make Nether Energy Feeding cosmetics when Sunblade Keeper implemented?
+    void Reset()
+    {
+        me->SetLevitate(true);
+        me->GetMotionMaster()->MoveRandom(10.0);
+    }
+
+    void JustDied(Unit* killer)
+    {
+        ForceSpellCast(SPELL_ENERGY_INFUSION, CAST_NULL);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+       DoMeleeAttackIfReady();
+       CastNextSpellIfAnyAndReady();
+    }
+};
+
 CreatureAI* GetAI_mob_sunwell_mage_guard(Creature *_Creature)
 {
     return new mob_sunwell_mage_guardAI (_Creature);
@@ -633,6 +657,10 @@ CreatureAI* GetAI_mob_wretched_bruiser(Creature *_Creature)
 CreatureAI* GetAI_mob_wretched_husk(Creature *_Creature)
 {
     return new mob_wretched_huskAI (_Creature);
+}
+CreatureAI* GetAI_mob_brightscale_wyrm(Creature *_Creature)
+{
+    return new mob_brightscale_wyrmAI (_Creature);
 }
 
 void AddSC_magisters_terrace_trash()
@@ -682,5 +710,10 @@ void AddSC_magisters_terrace_trash()
     newscript = new Script;
     newscript->Name = "mob_wretched_husk";
     newscript->GetAI = &GetAI_mob_wretched_husk;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_brightscale_wyrm";
+    newscript->GetAI = &GetAI_mob_brightscale_wyrm;
     newscript->RegisterSelf();
 }
