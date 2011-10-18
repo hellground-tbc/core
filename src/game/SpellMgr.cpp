@@ -2816,7 +2816,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectTriggerSpell[0] = 33760;
             break;
         case 32727: // Arena Preparation - remove invisibility aura
-        case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
+        //case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect) not needed anymore - fixed in core ?
             spellInfo->Effect[1] = NULL;
             break;
         case 12723: // Sweeping Strikes proc
