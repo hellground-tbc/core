@@ -781,9 +781,11 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
     mob_ethereum_smugglerAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 ExplosionCombo_Timer;
+    uint32 Check_Timer;
 
     void Reset()
     {
+        Check_Timer = 0;
         ExplosionCombo_Timer = 5000;
     }
 
@@ -792,9 +794,17 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
       if(!UpdateVictim())
           return;
 
-      // when not casting AE, chase victim
-      if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !me->IsNonMeleeSpellCasted(false))
-          DoStartMovement(me->getVictim());
+      if(Check_Timer)
+      {
+          // when not casting AE, chase victim
+          if(Check_Timer <= diff)
+          {
+              DoStartMovement(me->getVictim());
+              Check_Timer = 0;
+          }
+          else
+              Check_Timer -= diff;
+      }
 
       if(ExplosionCombo_Timer < diff)
       {
@@ -806,6 +816,7 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
               me->GetMotionMaster()->MoveIdle();
               for(uint8 i = 0; i < 3; ++i)
                 AddSpellToCast(SPELL_ARCANE_EXPLOSION, CAST_NULL);
+              Check_Timer = 2500;
           }
           ExplosionCombo_Timer = 30000;
       }
