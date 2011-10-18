@@ -2627,6 +2627,9 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
     // Miss = 100 - hit
     float miss_chance= 100.0f - HitChance;
 
+    if (GetTypeId() == TYPEID_UNIT && ((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CANT_MISS)
+        return 0;
+
     // Bonuses from attacker aura and ratings
     if (attType == RANGED_ATTACK)
         miss_chance -= m_modRangedHitChance;
