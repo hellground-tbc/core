@@ -7,8 +7,8 @@
 
 /* ScriptData
 SDName: Magister_Terrace_Trash
-SD%Complete: 25% (1/4)
-SDComment: Trash NPCs divided by to boss links
+SD%Complete: 90%
+SDComment: Check timers, spell Ids and cosmetics mostly for heroic versions. Implement Sunblade Keeper event.
 SDCategory: Magister Terrace
 EndScriptData */
 
@@ -26,6 +26,11 @@ EndScriptData */
 * mob_wretched_skulker        - ID 
 * mob_wretched_bruiser        - ID 
 * mob_wretched_husk           - ID 
+* mob_brightscale_wyrm        - ID 
+* mob_sister_of_torment       - ID 
+* mob_sunblade_sentinel       - ID 
+* mob_coilskar_witch          - ID 
+* mob_ethereum_smuggler       - ID 
 *
 **********/
 
@@ -62,7 +67,7 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
        if(Magic_Field_Timer < diff)
        {
            if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0, true))
-               AddSpellToCast(m_creature->getVictim(), SPELL_MAGIC_DAMPENING_FIELD);
+               AddSpellToCast(target, SPELL_MAGIC_DAMPENING_FIELD);
            Magic_Field_Timer = urand(50000,65000);
        }
        else
@@ -121,8 +126,8 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
       else
           Arcane_Nova_Timer -= diff;
 
-    CastNextSpellIfAnyAndReady();
-    DoMeleeAttackIfReady();
+      CastNextSpellIfAnyAndReady();
+      DoMeleeAttackIfReady();
     }
 };
 
@@ -609,7 +614,6 @@ struct TRINITY_DLL_DECL mob_brightscale_wyrmAI : public ScriptedAI
     void Reset()
     {
         me->SetLevitate(true);
-        me->GetMotionMaster()->MoveRandom(10.0);
     }
 
     void DamageTaken(Unit* done_by, uint32& damage)
@@ -618,14 +622,198 @@ struct TRINITY_DLL_DECL mob_brightscale_wyrmAI : public ScriptedAI
             DoCast((Unit*)NULL, SPELL_ENERGY_INFUSION);
     }
 
-    /*void JustDied(Unit* killer)
-    {
-        ForceSpellCast(SPELL_ENERGY_INFUSION, CAST_NULL);
-    }*/
-
     void UpdateAI(const uint32 diff)
     {
        DoMeleeAttackIfReady();
+    }
+};
+
+#define SPELL_LASH_OF_PAIN              44640
+#define SPELL_DEADLY_EMRACE             44547
+
+struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
+{
+    mob_sister_of_tormentAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 LashOfPain_Timer;
+    uint32 DeadlyEmbrace_Timer;
+
+    void Reset()
+    {
+        LashOfPain_Timer = urand(8000,14000);
+        DeadlyEmbrace_Timer = (17000, 23000);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+      if(!UpdateVictim())
+          return;
+
+      if(LashOfPain_Timer < diff)
+      {
+          //int32 damage = 1000;
+          //me->CastCustomSpell(me->getVictim(), SPELL_LASH_OF_PAIN, &damage, NULL, NULL, false);
+          AddSpellToCast(SPELL_LASH_OF_PAIN, CAST_TANK);
+          LashOfPain_Timer = urand(8000,14000);
+      }
+      else
+          LashOfPain_Timer -= diff;
+
+       if(DeadlyEmbrace_Timer < diff)
+       {
+           if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 20.0, true))
+               AddSpellToCast(target, SPELL_DEADLY_EMRACE);
+           DeadlyEmbrace_Timer = (17000, 23000);
+       }
+       else
+            DeadlyEmbrace_Timer -= diff;
+
+       CastNextSpellIfAnyAndReady();
+       DoMeleeAttackIfReady();
+    }
+};
+
+#define SPELL_FEL_LIGHTNING_AURA        (HeroicMode?46048:44537)
+
+struct TRINITY_DLL_DECL mob_sunblade_sentinelAI : public ScriptedAI
+{
+    mob_sunblade_sentinelAI(Creature *c) : ScriptedAI(c) {}
+
+    void EnterCombat(Unit* )
+    {
+        DoCast(me, SPELL_FEL_LIGHTNING_AURA);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+      if(!UpdateVictim())
+          return;
+       DoMeleeAttackIfReady();
+    }
+};
+
+#define SPELL_SHOOT                     (HeroicMode?/*22907*/35946:35946)   // 5-30 yd
+#define SPELL_MANA_SHIELD               (HeroicMode?46151:17741)
+#define SPELL_FROST_ARROW               (HeroicMode?/*??*/44639:44639)      // up to 50 yd
+#define SPELL_FORKED_LIGHTNING          (HeroicMode?46150:20299)
+
+struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
+{
+    mob_coilskar_witchAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Check_Timer;
+    uint32 Shoot_Timer;
+    uint32 FrostArrow_Timer;
+    uint32 ForkedLightning_Timer;
+    bool canShield;
+
+    void Reset()
+    {
+        Check_Timer = 1500;
+        Shoot_Timer = 0;
+        FrostArrow_Timer = urand(2000, 12000);;
+        ForkedLightning_Timer = urand(5000, 10000);
+        canShield = true;
+    }
+
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+      if(!UpdateVictim())
+          return;
+
+      if(Check_Timer < diff)
+      {
+          if(HealthBelowPct(51) && canShield)
+          {
+              canShield = false;
+              ForceSpellCast(SPELL_MANA_SHIELD, CAST_SELF);
+          }
+          Check_Timer = 1500;
+      }
+      else
+          Check_Timer -= diff;
+
+      if(Shoot_Timer < diff)
+      {
+          Unit* meleeTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 5.0f, true);
+
+          if(!meleeTarget)
+          {
+              if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true, 5.0f))
+                  AddSpellToCast(target, SPELL_SHOOT);
+          }
+          Shoot_Timer = 3000;
+      }
+      else
+          Shoot_Timer -= diff;
+
+      if(FrostArrow_Timer < diff)
+      {
+          if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+              AddSpellToCast(target, SPELL_FROST_ARROW);
+          FrostArrow_Timer = urand(9000, 12000);
+      }
+      else
+          FrostArrow_Timer -= diff;
+
+      if(ForkedLightning_Timer < diff)
+      {
+          AddSpellToCast(SPELL_FORKED_LIGHTNING, CAST_NULL);
+          ForkedLightning_Timer = urand(12000, 18000);
+      }
+      else
+          ForkedLightning_Timer -= diff;
+
+      CastNextSpellIfAnyAndReady();
+      DoMeleeAttackIfReady();
+    }
+};
+
+#define SPELL_ARCANE_EXPLOSION          (HeroicMode?/*22907*/44538:44538)
+
+struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
+{
+    mob_ethereum_smugglerAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 ExplosionCombo_Timer;
+
+    void Reset()
+    {
+        ExplosionCombo_Timer = 5000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+      if(!UpdateVictim())
+          return;
+
+      // when not casting AE, chase victim
+      if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !me->IsNonMeleeSpellCasted(false))
+          DoStartMovement(me->getVictim());
+
+      if(ExplosionCombo_Timer < diff)
+      {
+          if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+          {
+              float x, y, z;
+              me->GetNearPoint(target, x, y, z, 0, 7.0, 0);
+              DoTeleportTo(x, y, z);
+              me->GetMotionMaster()->MoveIdle();
+              for(uint8 i = 0; i < 3; ++i)
+                AddSpellToCast(SPELL_ARCANE_EXPLOSION, CAST_NULL);
+          }
+          ExplosionCombo_Timer = 30000;
+      }
+      else
+          ExplosionCombo_Timer -= diff;
+
+      CastNextSpellIfAnyAndReady();
+      DoMeleeAttackIfReady();
     }
 };
 
@@ -668,6 +856,22 @@ CreatureAI* GetAI_mob_wretched_husk(Creature *_Creature)
 CreatureAI* GetAI_mob_brightscale_wyrm(Creature *_Creature)
 {
     return new mob_brightscale_wyrmAI (_Creature);
+}
+CreatureAI* GetAI_mob_sister_of_torment(Creature *_Creature)
+{
+    return new mob_sister_of_tormentAI (_Creature);
+}
+CreatureAI* GetAI_mob_sunblade_sentinel(Creature *_Creature)
+{
+    return new mob_sunblade_sentinelAI (_Creature);
+}
+CreatureAI* GetAI_mob_coilskar_witch(Creature *_Creature)
+{
+    return new mob_coilskar_witchAI (_Creature);
+}
+CreatureAI* GetAI_mob_ethereum_smuggler(Creature *_Creature)
+{
+    return new mob_ethereum_smugglerAI (_Creature);
 }
 
 void AddSC_magisters_terrace_trash()
@@ -722,5 +926,25 @@ void AddSC_magisters_terrace_trash()
     newscript = new Script;
     newscript->Name = "mob_brightscale_wyrm";
     newscript->GetAI = &GetAI_mob_brightscale_wyrm;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_sister_of_torment";
+    newscript->GetAI = &GetAI_mob_sister_of_torment;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_sunblade_sentinel";
+    newscript->GetAI = &GetAI_mob_sunblade_sentinel;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_coilskar_witch";
+    newscript->GetAI = &GetAI_mob_coilskar_witch;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_ethereum_smuggler";
+    newscript->GetAI = &GetAI_mob_ethereum_smuggler;
     newscript->RegisterSelf();
 }
