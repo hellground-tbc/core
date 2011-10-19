@@ -36,6 +36,8 @@ EndScriptData */
 
 #define SPELL_GLAIVE_THROW              (HeroicMode?46028:44478)
 #define SPELL_MAGIC_DAMPENING_FIELD     44475
+#define NPC_BROKEN_SENTINEL             24808
+#define SPELL_FEL_CRYSTAL_COSMETIC      44374
 
 struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 {
@@ -43,15 +45,40 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 
     uint32 Glaive_Timer;
     uint32 Magic_Field_Timer;
+    uint32 OOCTimer;
 
     void Reset()
     {
         Glaive_Timer = urand(5000,10000);
         Magic_Field_Timer = (10000, 20000);
+        OOCTimer = 5000;
+    }
+
+    void HandleOffCombatEffects()
+    {
+        if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
+            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
     {
+      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      {
+          if(OOCTimer < diff)
+          {
+              HandleOffCombatEffects();
+              OOCTimer = 10000;
+          }
+          else
+              OOCTimer -= diff;
+      }
+
       if(!UpdateVictim())
           return;
 
@@ -92,11 +119,25 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 
     uint32 Frostbolt_Timer;
     uint32 Arcane_Nova_Timer;
+    uint32 OOCTimer;
 
     void Reset()
     {
         Frostbolt_Timer = 0;
         Arcane_Nova_Timer = urand (12000, 20000);
+        OOCTimer = 5000;
+    }
+
+    void HandleOffCombatEffects()
+    {
+        if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
+            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     void AttackStart(Unit* who)
@@ -106,6 +147,17 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      {
+          if(OOCTimer < diff)
+          {
+              HandleOffCombatEffects();
+              OOCTimer = 10000;
+          }
+          else
+              OOCTimer -= diff;
+      }
+
       if(!UpdateVictim())
           return;
 
@@ -148,6 +200,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
     uint32 SummonImp_Timer;
     uint32 FelArmor_Timer;
     uint32 Immolate_Timer;
+    uint32 OOCTimer;
     uint64 SummonGUID;
 
     void Reset()
@@ -155,6 +208,19 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
         SummonImp_Timer = 5000;
         SetAutocast(SPELL_INCINERATE, 1900);
         Immolate_Timer = 1000;
+        OOCTimer = 5000;
+    }
+
+    void HandleOffCombatEffects()
+    {
+        if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
+            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     void JustSummoned(Creature* summon)
@@ -183,6 +249,17 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
           }
           else
               SummonImp_Timer -= diff;
+      }
+
+      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      {
+          if(OOCTimer < diff)
+          {
+              HandleOffCombatEffects();
+              OOCTimer = 10000;
+          }
+          else
+              OOCTimer -= diff;
       }
 
       if(!UpdateVictim())
@@ -246,11 +323,25 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 
     uint32 Poison_Timer;
     uint32 Prayer_of_Mending_Timer;
-    
+    uint32 OOCTimer;
+
     void Reset()
     {
         Poison_Timer = urand(5000, 8000);
         Prayer_of_Mending_Timer = urand(3000, 8000);
+        OOCTimer = 5000;
+    }
+
+    void HandleOffCombatEffects()
+    {
+        if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
+            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     bool CanCastPoM()
@@ -269,8 +360,19 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim())
-            return;
+      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      {
+          if(OOCTimer < diff)
+          {
+             HandleOffCombatEffects();
+             OOCTimer = 10000;
+          }
+          else
+              OOCTimer -= diff;
+      }
+
+      if(!UpdateVictim())
+          return;
 
       if(Poison_Timer < diff)
       {
@@ -308,16 +410,41 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
     uint32 Judgement_Timer;
     uint32 Holy_Light_Timer;
     uint32 Seal_Timer;
+    uint32 OOCTimer;
 
     void Reset()
     {
         Seal_Timer = urand(1000, 6000);
         Judgement_Timer = urand(10000, 15000);
         Holy_Light_Timer = urand(8000, 20000);
+        OOCTimer = 5000;
+    }
+
+    void HandleOffCombatEffects()
+    {
+        if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
+            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+        {
+            if(OOCTimer < diff)
+            {
+               HandleOffCombatEffects();
+               OOCTimer = 10000;
+            }
+            else
+                OOCTimer -= diff;
+        }
+
         if(!UpdateVictim())
             return;
 
@@ -371,7 +498,6 @@ const char* SAY_AGGRO2   = "It's MINE!";
 const char* SAY_AGGRO3   = "You wish to steal the power! Die!";
 
 #define SPELL_DRINK_FEL_INFUSION            44505
-#define SPELL_FEL_CRYSTAL_COSMETIC          44374
 #define SPELL_WRETCHED_STAB                 44533
 #define SPELL_DUAL_WIELD                    29651
 
@@ -637,15 +763,40 @@ struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
 
     uint32 LashOfPain_Timer;
     uint32 DeadlyEmbrace_Timer;
+    uint32 OOCTimer;
 
     void Reset()
     {
         LashOfPain_Timer = urand(8000,14000);
         DeadlyEmbrace_Timer = (17000, 23000);
+        OOCTimer = 5000;
+    }
+
+    void HandleOffCombatEffects()
+    {
+        if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
+            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
     {
+      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      {
+          if(OOCTimer < diff)
+          {
+             HandleOffCombatEffects();
+             OOCTimer = 10000;
+          }
+          else
+              OOCTimer -= diff;
+      }
+
       if(!UpdateVictim())
           return;
 
@@ -705,6 +856,7 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
     uint32 Shoot_Timer;
     uint32 FrostArrow_Timer;
     uint32 ForkedLightning_Timer;
+    uint32 OOCTimer;
     bool canShield;
 
     void Reset()
@@ -713,7 +865,20 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
         Shoot_Timer = 0;
         FrostArrow_Timer = urand(2000, 12000);;
         ForkedLightning_Timer = urand(5000, 10000);
+        OOCTimer = 5000;
         canShield = true;
+    }
+
+    void HandleOffCombatEffects()
+    {
+        if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
+            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     void AttackStart(Unit* who)
@@ -723,6 +888,17 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      {
+          if(OOCTimer < diff)
+          {
+             HandleOffCombatEffects();
+             OOCTimer = 10000;
+          }
+          else
+              OOCTimer -= diff;
+      }
+
       if(!UpdateVictim())
           return;
 
@@ -782,15 +958,40 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
 
     uint32 ExplosionCombo_Timer;
     uint32 Check_Timer;
+    uint32 OOCTimer;
 
     void Reset()
     {
         Check_Timer = 0;
         ExplosionCombo_Timer = 5000;
+        OOCTimer = 5000;
+    }
+
+    void HandleOffCombatEffects()
+    {
+        if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
+            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
     {
+      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      {
+          if(OOCTimer < diff)
+          {
+             HandleOffCombatEffects();
+             OOCTimer = 10000;
+          }
+          else
+              OOCTimer -= diff;
+      }
+
       if(!UpdateVictim())
           return;
 
@@ -811,7 +1012,7 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
           if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
           {
               float x, y, z;
-              me->GetNearPoint(target, x, y, z, 0, 7.0, 0);
+              me->GetNearPoint(target, x, y, z, 0, 2.0, frand(0, 2*M_PI));
               DoTeleportTo(x, y, z);
               me->GetMotionMaster()->MoveIdle();
               for(uint8 i = 0; i < 3; ++i)
