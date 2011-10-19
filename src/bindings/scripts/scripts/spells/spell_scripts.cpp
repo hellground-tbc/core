@@ -62,24 +62,18 @@ bool Spell_deep_wounds(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGam
 
     if (Aura *deepWounds = pUnit->GetAuraByCasterSpell(12721, pCaster->GetGUID()))
     {
-        Unit::AuraList const& targetTriggers = pCaster->GetAurasByType(SPELL_AURA_ADD_TARGET_TRIGGER);
-        for (Unit::AuraList::const_iterator i = targetTriggers.begin(); i != targetTriggers.end(); ++i)
-        {
-            SpellEntry const *auraSpellInfo = (*i)->GetSpellProto();
-            uint32 auraSpellIdx = (*i)->GetEffIndex();
-            if (spellmgr.IsAffectedBySpell(deepWounds->GetSpellProto(), auraSpellInfo->Id, auraSpellIdx, auraSpellInfo->EffectItemType[auraSpellIdx]))
-            {
-                if (SpellEntry const *spellInfo = sSpellStore.LookupEntry(auraSpellInfo->EffectTriggerSpell[auraSpellIdx]))
-                {
-                // Calculate chance at that moment (can be depend for example from combo points)
-                    if (roll_chance_f(pCaster->CalculateSpellDamage(auraSpellInfo, auraSpellIdx, (*i)->GetBasePoints(), NULL)*(*i)->GetStackAmount()))
-                        pCaster->CastSpell(pTarget, spellInfo->Id, true);
-                }
-            }
-        }
-
         deepWounds->SetAuraDuration(deepWounds->GetAuraMaxDuration());
         deepWounds->UpdateAuraDuration();
+
+        Aura *bloodFrenzy = pUnit->GetAuraByCasterSpell(30070, pCaster->GetGUID());
+        if (!bloodFrenzy)
+            pUnit->GetAuraByCasterSpell(30069, pCaster->GetGUID());
+
+        if (bloodFrenzy)
+        {
+            bloodFrenzy->SetAuraDuration(deepWounds->GetAuraMaxDuration());
+            bloodFrenzy->UpdateAuraDuration();
+        }
         return true;
     }
 
