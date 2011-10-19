@@ -38,6 +38,7 @@ EndScriptData */
 #define SPELL_MAGIC_DAMPENING_FIELD     44475
 #define NPC_BROKEN_SENTINEL             24808
 #define SPELL_FEL_CRYSTAL_COSMETIC      44374
+#define SPELL_FEL_ENERGY_COSMETIC       44574
 
 struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 {
@@ -57,7 +58,7 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
     void HandleOffCombatEffects()
     {
         if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
-            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+            DoCast(sentinel, SPELL_FEL_ENERGY_COSMETIC);
     }
 
     void EnterCombat(Unit* who)
@@ -131,7 +132,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
     void HandleOffCombatEffects()
     {
         if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
-            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+            DoCast(sentinel, SPELL_FEL_ENERGY_COSMETIC);
     }
 
     void EnterCombat(Unit* who)
@@ -214,7 +215,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
     void HandleOffCombatEffects()
     {
         if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
-            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+            DoCast(sentinel, SPELL_FEL_ENERGY_COSMETIC);
     }
 
     void EnterCombat(Unit* who)
@@ -335,7 +336,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
     void HandleOffCombatEffects()
     {
         if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
-            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+            DoCast(sentinel, SPELL_FEL_ENERGY_COSMETIC);
     }
 
     void EnterCombat(Unit* who)
@@ -423,7 +424,7 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
     void HandleOffCombatEffects()
     {
         if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
-            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+            DoCast(sentinel, SPELL_FEL_ENERGY_COSMETIC);
     }
 
     void EnterCombat(Unit* who)
@@ -775,7 +776,7 @@ struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
     void HandleOffCombatEffects()
     {
         if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
-            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+            DoCast(sentinel, SPELL_FEL_ENERGY_COSMETIC);
     }
 
     void EnterCombat(Unit* who)
@@ -872,7 +873,7 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
     void HandleOffCombatEffects()
     {
         if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
-            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+            DoCast(sentinel, SPELL_FEL_ENERGY_COSMETIC);
     }
 
     void EnterCombat(Unit* who)
@@ -970,7 +971,7 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
     void HandleOffCombatEffects()
     {
         if(Unit* sentinel = FindCreature(NPC_BROKEN_SENTINEL, 10.0f, me))
-            DoCast(sentinel, SPELL_FEL_CRYSTAL_COSMETIC);
+            DoCast(sentinel, SPELL_FEL_ENERGY_COSMETIC);
     }
 
     void EnterCombat(Unit* who)
