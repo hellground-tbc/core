@@ -1909,7 +1909,7 @@ void World::UpdateSessions(const uint32 & diff)
 
     for (std::list<SessionMap::iterator>::iterator itr = removedSessions.begin(); itr != removedSessions.end(); ++itr)
     {
-        sess = itr->second;
+        sess = (*itr)->second;
         m_sessions.erase(*itr);
         delete sess;
         sess = NULL;
