@@ -287,15 +287,13 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             case 16:
                 DoScriptText(YELL_MADR_DEATH, pMadrigosa);
                 pMadrigosa->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                pMadrigosa->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-                pMadrigosa->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                pMadrigosa->SetFlag(UNIT_DYNAMIC_FLAGS, (UNIT_DYNFLAG_DEAD | UNIT_FLAG_NON_ATTACKABLE));
                 pMadrigosa->CombatStop();
                 pMadrigosa->DeleteThreatList();
                 pMadrigosa->setFaction(35);
                 me->CombatStop();
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
-                pMadrigosa->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                pMadrigosa->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, (UNIT_FLAG_PET_IN_COMBAT | UNIT_FLAG_PVP_ATTACKABLE));
+                pMadrigosa->SetFlag(UNIT_FIELD_FLAGS, (UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED));
                 IntroPhaseTimer = 4000;
                 ++IntroPhase;
                 break;
