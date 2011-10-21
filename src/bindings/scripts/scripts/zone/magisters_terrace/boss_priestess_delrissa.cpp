@@ -406,17 +406,19 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
     //std::vector<Add*> Group;
 
     uint32 ResetThreatTimer;
+    bool ResetThreat;
 
     bool UsedPotion;
 
     void Reset()
     {
         UsedPotion = false;
+        ResetThreat = true;
         if(pInstance)
             if(Creature *boss = m_creature->GetCreature(pInstance->GetData64(DATA_DELRISSA)))
                 if(boss->isDead())
                     boss->Respawn();
-        ResetThreatTimer = 5000 + rand()%15000;             // These guys like to switch targets often, and are not meant to be tanked.
+        ResetThreatTimer = urand(5000, 35000);             // These guys like to switch targets often, and are not meant to be tanked.
     }
 
     void JustDied(Unit* killer)
@@ -462,18 +464,27 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
             UsedPotion = true;
         }
 
-        if(ResetThreatTimer < diff)
+        if(ResetThreat)
         {
-            DoResetThreat();
-            ResetThreatTimer = 5000 + rand()%15000;
-        }else
-            ResetThreatTimer -= diff;
+            if(ResetThreatTimer < diff)
+            {
+                DoResetThreat();
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+                {
+                    AttackStart(target);
+                    me->AddThreat(target, 10000);
+                }
+                ResetThreatTimer = urand(15000, 35000);
+            }
+            else
+                ResetThreatTimer -= diff;
+        }
     }
 };
 
-#define SPELL_KIDNEY_SHOT        27615
 #define SPELL_GOUGE              12540
 #define SPELL_KICK               27613
+#define SPELL_KIDNEY_SHOT        27615
 #define SPELL_VANISH             44290
 #define SPELL_BACKSTAB           (HeroicMode?15582:15657)
 #define SPELL_EVISCERATE         (HeroicMode?46189:27611)
@@ -486,36 +497,39 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
     boss_kagani_nightstrikeAI(Creature *c) : boss_priestess_guestAI(c) {}
 
     uint32 Gouge_Timer;
-    uint32 Kick_Timer;
+    uint32 Kick_Cooldown;
     uint32 Vanish_Timer;
     uint32 Eviscerate_Timer;
-    uint32 Wait_Timer;
     uint32 Backstab_Timer;
-    uint32 Poison_Timer;
     uint32 Check_Timer;
 
-    uint64 Vanish_Target;
+    bool canKick;
     bool InVanish;
 
     void Reset()
     {
-        Gouge_Timer = 5500;
-        Kick_Timer = 7000;
-        Vanish_Timer = 2000;
-        Eviscerate_Timer = 6000;
-        Wait_Timer = 5000;
-        Backstab_Timer = 3000;
-        Poison_Timer = 2000;
-        InVanish = false;
-        Vanish_Target = 0;
-        Check_Timer = 0;
-
-        DoCast(m_creature, SPELL_DUALWIELD, true);
-
         boss_priestess_guestAI::Reset();
-        ResetThreatTimer = 3600000; // don't use default threat reseting
+        Gouge_Timer = 5500;
+        Kick_Cooldown = 7000;
+        Vanish_Timer = urand(5000, 15000);
+        Eviscerate_Timer = urand(6000, 12000);
+        Backstab_Timer = 3000;
+        Check_Timer = 0;
+        canKick = true;
+        InVanish = false;
+        ResetThreat = false;
+
+        DoCast(m_creature, SPELL_DUALWIELD);
     }
 
+    void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
+    {
+        if(target->HasAura(SPELL_CRIPPLING_POISON, 0))
+            return;
+
+        if(damage && direct_damage && roll_chance_f(50))
+            DoCast(target, SPELL_CRIPPLING_POISON, true);
+    }
 
     void OnAuraRemove(Aura *aur, bool stackRemove)
     {
@@ -525,136 +539,160 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
 
     void UpdateAI(const uint32 diff)
     {
-        if(!InVanish && !UpdateVictim())
+        if(!UpdateVictim())
             return;
-
-        boss_priestess_guestAI::UpdateAI(diff);
-
-        if(Vanish_Timer < diff)
-        {
-            AddSpellToCast(m_creature, SPELL_VANISH);
-            InVanish = true;
-            Vanish_Timer = 30000;
-            Wait_Timer = 8000;
-            DoResetThreat();
-            Check_Timer = 1000;
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
-            {
-                Vanish_Target = target->GetGUID();
-                m_creature->GetMotionMaster()->MoveChase(target);
-            }
-        }else
-            Vanish_Timer -= diff;
 
         if(InVanish)
         {
             if(Check_Timer < diff)
             {
-                if(Unit* target = m_creature->GetUnit(Vanish_Target))
+                if(me->IsWithinMeleeRange(me->getVictim()))
                 {
-                    if(m_creature->IsWithinMeleeRange(target))
-                    {
-                        AddSpellToCast(target, SPELL_KIDNEY_SHOT);
-                        m_creature->AddThreat(target, 10000);
-                        m_creature->AI()->AttackStart(target);
-                        InVanish = false;
-                        Gouge_Timer = 15000;
-                    }
+                    if(!me->getVictim()->HasInArc(M_PI, me))
+                        AddSpellToCast(me->getVictim(), SPELL_BACKSTAB);
+
+                    AddSpellToCast(SPELL_KIDNEY_SHOT, CAST_TANK);
+                    me->RemoveAurasDueToSpell(SPELL_VANISH);
+                    Gouge_Timer = urand(10000, 15000);
                 }
                 Check_Timer = 2000;
             }
             else
                 Check_Timer -= diff;
+
+            CastNextSpellIfAnyAndReady();
+            return;
         }
 
-        if(!InVanish)
+        boss_priestess_guestAI::UpdateAI(diff);
+
+        if(Vanish_Timer < diff)
         {
-            if(Backstab_Timer < diff)
+            ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST);
+            DoResetThreat();
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
-                if(!m_creature->getVictim()->HasInArc(M_PI, m_creature))
-                    AddSpellToCast(m_creature->getVictim(), SPELL_BACKSTAB);
-                Backstab_Timer = 3000;
-            } else
-                Backstab_Timer -= diff;
-
-            if(Gouge_Timer < diff)
-            {
-                AddSpellToCast(m_creature->getVictim(), SPELL_GOUGE);
-                DoModifyThreatPercent(m_creature->getVictim(),-100);
-                Gouge_Timer = 25000;
-            }else
-                Gouge_Timer -= diff;
-
-            if(Poison_Timer < diff)
-            {
-                AddSpellToCast(m_creature->getVictim(), SPELL_CRIPPLING_POISON);
-                Poison_Timer = 2000;
-            } else
-                Poison_Timer -= diff;
-
-
-            if(Kick_Timer < diff)
-            {
-                if(m_creature->getVictim()->IsNonMeleeSpellCasted(true))
-                {
-                    AddSpellToCast(m_creature->getVictim(), SPELL_KICK);
-                    Kick_Timer = 7000;
-                } else
-                    Kick_Timer = 1000;
-            }else
-                Kick_Timer -= diff;
-
-            if(Eviscerate_Timer < diff)
-            {
-                AddSpellToCast(m_creature->getVictim(), SPELL_EVISCERATE);
-                Eviscerate_Timer = 6000;
-            }else
-                Eviscerate_Timer -= diff;
+                float x, y, z;
+                me->GetNearPoint(target, x, y, z, 0, 5.0, frand(0, 2*M_PI));
+                AttackStart(target);
+                me->AddThreat(target, 10000);
+                me->GetMotionMaster()->MovePoint(0, x, y, z);
+            }
+            InVanish = true;
+            Check_Timer = 2000;
+            Vanish_Timer = urand(20000, 30000);
         }
+        else
+            Vanish_Timer -= diff;
+
+        if(!canKick)
+        {
+            if(Kick_Cooldown < diff)
+            {
+                canKick = true;
+                Kick_Cooldown = urand(15000, 18000);
+            }
+            else
+                Kick_Cooldown -= diff;
+        }
+
+        if(canKick && (me->getVictim()->IsNonMeleeSpellCasted(true) || roll_chance_f(15.0)))
+        {
+            if(me->IsWithinMeleeRange(me->getVictim()))
+            {
+                ForceSpellCast(SPELL_KICK, CAST_TANK);
+                canKick = false;
+            }
+        }
+
+        if(Backstab_Timer < diff)
+        {
+            if(!m_creature->getVictim()->HasInArc(M_PI, m_creature))
+                ForceSpellCast(SPELL_BACKSTAB, CAST_TANK, INTERRUPT_AND_CAST);
+            Backstab_Timer = 3000;
+        }
+        else
+            Backstab_Timer -= diff;
+
+        if(Gouge_Timer < diff)
+        {
+            AddSpellToCast(SPELL_GOUGE, CAST_TANK);
+            //DoModifyThreatPercent(m_creature->getVictim(),-100);
+            Gouge_Timer = urand(12000, 25000);
+        }
+        else
+            Gouge_Timer -= diff;
+
+        if(Eviscerate_Timer < diff)
+        {
+            AddSpellToCast(SPELL_EVISCERATE, CAST_TANK);
+            Eviscerate_Timer = urand(4000, 10000);
+        }
+        else
+            Eviscerate_Timer -= diff;
 
         CastNextSpellIfAnyAndReady();
-        if(!InVanish)
-            DoMeleeAttackIfReady();
+        DoMeleeAttackIfReady();
     }
 };
 
-#define SPELL_IMMOLATE               44267
-#define SPELL_SHADOW_BOLT            12471
+#define SPELL_CURSE_OF_AGONY         (HeroicMode?46190:14875)
+#define SPELL_IMMOLATE               (HeroicMode?46191:44267)
+#define SPELL_SHADOW_BOLT            (HeroicMode?15232:12471)
 #define SPELL_SEED_OF_CORRUPTION     44141
-#define SPELL_CURSE_OF_AGONY         14875
+#define SPELL_DEATH_COIL             44142
 #define SPELL_FEAR                   38595
-#define SPELL_IMP_FIREBALL           44164
-#define SPELL_SUMMON_IMP             44163
 
-//#define CREATURE_IMP                 44163
-//#define CREATURE_FIZZLE              24656
+#define SPELL_SUMMON_IMP             44163
+#define SPELL_IMP_FIREBALL           44164
+
+enum EllrisSpec
+{
+    SPEC_SHADOW = 0,
+    SPEC_FIRE   = 1
+};
 
 struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 {
     //Warlock
     boss_ellris_duskhallowAI(Creature *c) : boss_priestess_guestAI(c)
     {
+        spec = urand(0,1);
     }
 
-    bool HasSummonedImp;
-
-    uint32 Immolate_Timer;
-    uint32 Shadow_Bolt_Timer;
+    uint8 spec;
+    uint32 Check_Timer;
+    uint32 SummonImp_Timer;
     uint32 Seed_of_Corruption_Timer;
     uint32 Curse_of_Agony_Timer;
     uint32 Fear_Timer;
 
+    uint64 SummonGUID;
+
     void Reset()
     {
-        //HasSummonedImp = false;
-
-        Immolate_Timer = 6000;
-        Shadow_Bolt_Timer = 3000;
+        Check_Timer = 2000;
+        SummonImp_Timer = 5000;
         Seed_of_Corruption_Timer = 2000;
         Curse_of_Agony_Timer = 1000;
         Fear_Timer = 10000;
+        SummonGUID = NULL;
 
         boss_priestess_guestAI::Reset();
+    }
+
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
+        switch(spec)
+        {
+            case SPEC_FIRE:
+                SetAutocast(SPELL_IMMOLATE, 1900, true);
+                break;
+            case SPEC_SHADOW:
+                SetAutocast(SPELL_SHADOW_BOLT, 2900, true);
+                break;
+        }
     }
 
     void JustDied(Unit* killer)
@@ -662,70 +700,104 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
         boss_priestess_guestAI::JustDied(killer);
     }
 
+    void JustSummoned(Creature* summon)
+    {
+        SummonGUID = summon->GetGUID();
+    }
+
     void UpdateAI(const uint32 diff)
     {
-        if(!HasSummonedImp)
+        if(!me->isInCombat())
         {
-            //Imp will not despawn unless it's killed, even if owner dies, this is correct way.
-            DoCast(m_creature,SPELL_SUMMON_IMP);
-            HasSummonedImp = true;
+            if(SummonImp_Timer < diff)
+            {
+                // check if still having pet ;]
+                if(!me->GetMap()->GetCreature(SummonGUID))
+                    SummonGUID = NULL;
+
+                if(!SummonGUID)
+                    DoCast(m_creature, SPELL_SUMMON_IMP, false);
+                SummonImp_Timer = 15000;
+            }
+            else
+                SummonImp_Timer -= diff;
         }
 
-        if(!UpdateVictim() )
+        if(!UpdateVictim())
             return;
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        if(Immolate_Timer < diff)
+        if(Check_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_IMMOLATE);
-            Immolate_Timer = 6000;
-        }else Immolate_Timer -= diff;
-
-        if(Shadow_Bolt_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(),SPELL_SHADOW_BOLT);
-            Shadow_Bolt_Timer = 5000;
-        }else Shadow_Bolt_Timer -= diff;
+            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+            {
+                if(!me->IsWithinDistInMap(me->getVictim(), 29))
+                    me->GetMotionMaster()->MoveChase(me->getVictim(), 28.0);
+            }
+            else
+            {
+                if(me->IsWithinDistInMap(me->getVictim(), 30))
+                    me->GetMotionMaster()->MoveIdle();
+            }
+            Check_Timer = 2000;
+        }
+        else
+            Check_Timer -= diff;
 
         if(Seed_of_Corruption_Timer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_SEED_OF_CORRUPTION);
+            AddSpellToCast(SPELL_SEED_OF_CORRUPTION, CAST_RANDOM);
             Seed_of_Corruption_Timer = 10000;
-        }else Seed_of_Corruption_Timer -= diff;
+        }
+        else
+            Seed_of_Corruption_Timer -= diff;
 
         if(Curse_of_Agony_Timer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_CURSE_OF_AGONY);
-            Curse_of_Agony_Timer = 13000;
-        }else Curse_of_Agony_Timer -= diff;
+            AddSpellToCast(SPELL_CURSE_OF_AGONY, CAST_TANK);
+            Curse_of_Agony_Timer = urand(12000, 15000);
+        }
+        else
+            Curse_of_Agony_Timer -= diff;
 
         if(Fear_Timer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FEAR);
-            Fear_Timer = 10000;
-        }else Fear_Timer -= diff;
+            AddSpellToCast(SPELL_FEAR, CAST_RANDOM);
+            Fear_Timer = urand(8000, 12000);
+        }
+        else
+            Fear_Timer -= diff;
 
-        if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 10))
-            m_creature->StopMoving();
-        //DoMeleeAttackIfReady();//should not melee, she's a warlock
+        CastNextSpellIfAnyAndReady(diff);
     }
 };
 
-/*void mob_fizzleAI::JustDied(Unit* killer)
+struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
 {
-    if(Creature* Ellris = (Unit::GetCreature(*m_creature, EllrisGUID)))
-        ((boss_ellris_duskhallowAI*)Ellris->AI())->ImpGUID = 0;
-}
+    mob_fizzleAI(Creature *c) : ScriptedAI(c) { }
 
-void mob_fizzleAI::KilledUnit(Unit* victim)
-{
-    if(Creature* Ellris = (Unit::GetCreature(*m_creature, EllrisGUID)))
-        ((boss_ellris_duskhallowAI*)Ellris->AI())->KilledUnit(victim);
-}*/
+    void Reset() { }
 
-#define SPELL_KNOCKDOWN            11428
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who);
+        SetAutocast(SPELL_IMP_FIREBALL, 1900, true);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+      CastNextSpellIfAnyAndReady(diff);
+    }
+};
+
+#define SPELL_KNOCKDOWN            (HeroicMode?46183:11428)
 #define SPELL_SNAP_KICK            46182
+#define SPELL_FISTS_OF_ARCANE_FURY 44120
+#define SPELL_CHACRA_DRAIN         44121
 
 struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestAI
 {
@@ -734,13 +806,21 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
 
     uint32 Knockdown_Timer;
     uint32 Snap_Kick_Timer;
+    uint32 ChacraDrain_Timer;
 
     void Reset()
     {
-        Knockdown_Timer = 6000;
-        Snap_Kick_Timer = 4500;
+        Knockdown_Timer = urand(10000, 20000);
+        Snap_Kick_Timer = urand(4000, 8000);
+        ChacraDrain_Timer = urand(10000, 20000);
 
         boss_priestess_guestAI::Reset();
+    }
+
+    void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
+    {
+        if(damage && direct_damage && roll_chance_f(50))
+            AddSpellToCast(target, SPELL_FISTS_OF_ARCANE_FURY, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -752,16 +832,36 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
 
         if(Knockdown_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_KNOCKDOWN);
-            Knockdown_Timer = 6000;
-        }else Knockdown_Timer -= diff;
+            if(me->IsWithinMeleeRange(me->getVictim()))
+            {
+                AddSpellToCast(SPELL_KNOCKDOWN, CAST_TANK);
+                Knockdown_Timer = 6000;
+            }
+        }
+        else
+            Knockdown_Timer -= diff;
 
         if(Snap_Kick_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SNAP_KICK);
-            Snap_Kick_Timer  = 4500;
-        }else Snap_Kick_Timer -= diff;
+            if(me->IsWithinMeleeRange(me->getVictim()))
+            {
+                AddSpellToCast(SPELL_SNAP_KICK, CAST_TANK);
+                Snap_Kick_Timer  = 12000;
+            }
+        }
+        else
+            Snap_Kick_Timer -= diff;
 
+        if(ChacraDrain_Timer < diff)
+        {
+            if(HeroicMode)
+                AddSpellToCast(SPELL_CHACRA_DRAIN, CAST_RANDOM);
+            ChacraDrain_Timer = urand(10000, 20000);
+        }
+        else
+            ChacraDrain_Timer -= diff;
+
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -883,16 +983,17 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         if (m_creature->getVictim() && m_creature->IsWithinDistInMap(m_creature->getVictim(), 10))
             m_creature->StopMoving();
 
+        CastNextSpellIfAnyAndReady(diff);
         //DoMeleeAttackIfReady(); //mage type, no melee needed
     }
 };
 
-#define SPELL_INTERCEPT_STUN         27577
+#define SPELL_BATTLE_SHOUT           27578
+#define SPELL_INTERCEPT              27577
 #define SPELL_DISARM                 27581
 #define SPELL_PIERCING_HOWL          23600
 #define SPELL_FRIGHTENING_SHOUT      19134
 #define SPELL_HAMSTRING              27584
-#define SPELL_BATTLE_SHOUT           27578
 #define SPELL_MORTAL_STRIKE          44268
 
 struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
@@ -900,7 +1001,8 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
     //Warrior
     boss_warlord_salarisAI(Creature *c) : boss_priestess_guestAI(c) {}
 
-    uint32 Intercept_Stun_Timer;
+    uint32 BattleShout_Timer;
+    uint32 Intercept_Timer;
     uint32 Disarm_Timer;
     uint32 Piercing_Howl_Timer;
     uint32 Frightening_Shout_Timer;
@@ -909,78 +1011,95 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
 
     void Reset()
     {
-        Intercept_Stun_Timer = 500;
-        Disarm_Timer = 6000;
-        Piercing_Howl_Timer = 10000;
-        Frightening_Shout_Timer = 18000;
-        Hamstring_Timer = 4500;
-        Mortal_Strike_Timer = 8000;
-        DoCast(m_creature, SPELL_BATTLE_SHOUT);
         boss_priestess_guestAI::Reset();
+        BattleShout_Timer = 110000;
+        Intercept_Timer = 1000;
+        Disarm_Timer = urand(10000, 15000);
+        Hamstring_Timer = urand(4000, 5000);
+        Mortal_Strike_Timer = urand(8000, 12000);
+        Piercing_Howl_Timer = urand(5000, 8000);
+        Frightening_Shout_Timer = urand(15000, 24000);
+        ResetThreat = false;
     }
 
     void EnterCombat(Unit* who)
     {
-        DoCast(m_creature, SPELL_BATTLE_SHOUT);
+        ForceSpellCast(SPELL_BATTLE_SHOUT, CAST_NULL);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim() )
+        if(!UpdateVictim())
             return;
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        if(Intercept_Stun_Timer < diff)
+        if(BattleShout_Timer < diff)
         {
-            bool InMeleeRange = false;
-            std::list<HostilReference*>& t_list = m_creature->getThreatManager().getThreatList();
-            for(std::list<HostilReference*>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            ForceSpellCast(SPELL_BATTLE_SHOUT, CAST_NULL);
+            BattleShout_Timer = 110000;
+        }
+        else
+            BattleShout_Timer -= diff;
+
+        if(Intercept_Timer < diff)
+        {
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 25.0, true, 0, 8.0);
+            if(target)
             {
-                if(Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()))
-                                                            //if in melee range
-                    if (target->IsWithinDistInMap(m_creature, 5))
-                {
-                    InMeleeRange = true;
-                    break;
-                }
+                DoResetThreat();
+                AttackStart(target);
+                me->AddThreat(target, 10000);
+                ForceSpellCast(target, SPELL_INTERCEPT, INTERRUPT_AND_CAST);
+                Intercept_Timer = urand(15000, 25000);
             }
-            //if nobody is in melee range than try to use Intercept
-            if(!InMeleeRange)
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_INTERCEPT_STUN);
-            Intercept_Stun_Timer = 10000;
-        }else Intercept_Stun_Timer -= diff;
+            else
+                Intercept_Timer = 2000;
+        }
+        else
+            Intercept_Timer -= diff;
 
         if(Disarm_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_DISARM);
-            Disarm_Timer = 6000;
-        }else Disarm_Timer -= diff;
+            AddSpellToCast(SPELL_DISARM, CAST_TANK);
+            Disarm_Timer = 60000;
+        }
+        else
+            Disarm_Timer -= diff;
 
         if(Hamstring_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_HAMSTRING);
-            Hamstring_Timer = 4500;
-        }else Hamstring_Timer -= diff;
+            AddSpellToCast(SPELL_HAMSTRING, CAST_TANK);
+            Hamstring_Timer = urand(4000, 5000);
+        }
+        else
+            Hamstring_Timer -= diff;
 
         if(Mortal_Strike_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
-            Mortal_Strike_Timer = 4500;
-        }else Mortal_Strike_Timer -= diff;
+            AddSpellToCast(SPELL_MORTAL_STRIKE, CAST_TANK);
+            Mortal_Strike_Timer = urand(8000, 12000);
+        }
+        else
+            Mortal_Strike_Timer -= diff;
 
         if(Piercing_Howl_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_PIERCING_HOWL);
-            Piercing_Howl_Timer = 10000;
-        }else Piercing_Howl_Timer -= diff;
+            AddSpellToCast(SPELL_PIERCING_HOWL, CAST_NULL);
+            Piercing_Howl_Timer = urand(20000, 35000);
+        }
+        else
+            Piercing_Howl_Timer -= diff;
 
         if(Frightening_Shout_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FRIGHTENING_SHOUT);
-            Frightening_Shout_Timer = 18000;
-        }else Frightening_Shout_Timer -= diff;
+            AddSpellToCast(SPELL_FRIGHTENING_SHOUT, CAST_NULL);
+            Frightening_Shout_Timer = urand(15000, 40000);
+        }
+        else
+            Frightening_Shout_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -1000,9 +1119,7 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
     //Hunter
     boss_garaxxasAI(Creature *c) : boss_priestess_guestAI(c) {}
 
-    //uint64 SliverGUID;
-    bool HasSummonedSliver;
-
+    uint32 GetSliver_Timer;
     uint32 Aimed_Shot_Timer;
     uint32 Shoot_Timer;
     uint32 Concussive_Shot_Timer;
@@ -1010,13 +1127,11 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
     uint32 Wing_Clip_Timer;
     uint32 Freezing_Trap_Timer;
     uint32 StopMoving;
+    uint64 SliverGUID;
     bool Stopped;
 
     void Reset()
     {
-        //SliverGUID = 0;
-        //HasSummonedSliver = false;
-
         Aimed_Shot_Timer = 6000;
         Shoot_Timer = 2500;
         Concussive_Shot_Timer = 8000;
@@ -1024,6 +1139,7 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         Wing_Clip_Timer = 4000;
         Freezing_Trap_Timer = 15000;
         StopMoving = 2000;
+        SliverGUID = 0;
         Stopped = false;
 
         boss_priestess_guestAI::Reset();
@@ -1036,15 +1152,26 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!HasSummonedSliver)
+        if(!me->isInCombat())
         {
-            Creature* Sliver = m_creature->SummonCreature(CREATURE_SLIVER, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-            if(Sliver)
+            if(GetSliver_Timer < diff)
             {
-                //((mob_sliverAI*)Sliver->AI())->GaraxxasGUID = m_creature->GetGUID();
-                //SliverGUID = Sliver->GetGUID();
-                HasSummonedSliver = true;
+                // check if still having pet ;]
+                if(!me->GetMap()->GetCreature(SliverGUID))
+                    SliverGUID = NULL;
+
+                if(!SliverGUID)
+                {
+                    float x, y, z;
+                    me->GetNearPoint(me, x, y, z, 0, 3.0, frand(0, 2*M_PI));
+                    Creature* Sliver = m_creature->SummonCreature(CREATURE_SLIVER, x, y, z, me->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
+                    if(Sliver)
+                        SliverGUID = Sliver->GetGUID();
+                }
+                GetSliver_Timer = 15000;
             }
+            else
+                GetSliver_Timer -= diff;
         }
 
         if(!UpdateVictim() )
@@ -1108,25 +1235,31 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
     }
 };
 
-/*void mob_sliverAI::JustDied(Unit* killer)
+struct TRINITY_DLL_DECL mob_sliverAI : public ScriptedAI
 {
-    if(Creature* Garaxxas = (Unit::GetCreature(*m_creature, GaraxxasGUID)))
-        ((boss_garaxxasAI*)Garaxxas->AI())->SliverGUID = 0;
-}
+    mob_sliverAI(Creature *c) : ScriptedAI(c) { }
 
-void mob_sliverAI::KilledUnit(Unit* victim)
-{
-    if(Creature* Garaxxas = (Unit::GetCreature(*m_creature, GaraxxasGUID)))
-        ((boss_garaxxasAI*)Garaxxas->AI())->KilledUnit(victim);
-}*/
+    void Reset() { }
 
-#define SPELL_WINDFURY_TOTEM         27621
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+      DoMeleeAttackIfReady();
+    }
+};
+
 #define SPELL_WAR_STOMP              46026
 #define SPELL_PURGE                  27626
 #define SPELL_LESSER_HEALING_WAVE    44256
 #define SPELL_FROST_SHOCK            21401
+#define SPELL_WINDFURY_TOTEM         27621
 #define SPELL_FIRE_NOVA_TOTEM        44257
 #define SPELL_EARTHBIND_TOTEM        15786
+
+#define NPC_WINDFURY_TOTEM            7484
+#define SPELL_WINFURY_WEAPON         32911
 
 struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 {
@@ -1137,19 +1270,26 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
     uint8  Totem_Amount;
     uint32 War_Stomp_Timer;
     uint32 Purge_Timer;
-    uint32 Healing_Wave_Timer;
+    uint32 Healing_Wave_Cooldown;
     uint32 Frost_Shock_Timer;
+    bool canHeal;
 
     void Reset()
     {
-        Totem_Timer = 2000;
-        Totem_Amount = 1;
-        War_Stomp_Timer = 10000;
-        Purge_Timer = 8000;
-        Healing_Wave_Timer = 5000;
-        Frost_Shock_Timer = 7000;
+        Totem_Timer = urand(3000, 5000);
+        War_Stomp_Timer = urand(2000, 10000);
+        Healing_Wave_Cooldown = 5000;
+        Purge_Timer = urand(8000, 15000);
+        Frost_Shock_Timer = urand(5000, 10000);
+        canHeal = true;
 
         boss_priestess_guestAI::Reset();
+    }
+
+    void JustSummoned(Creature* summon)
+    {
+        if(summon->GetEntry() == NPC_WINDFURY_TOTEM)
+            summon->CastSpell(summon, SPELL_WINFURY_WEAPON, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1159,57 +1299,57 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
+        if(canHeal)
+        {
+            if(Unit* healTarget = SelectLowestHpFriendly(40.0f, 10000))
+                ForceSpellCast(healTarget, SPELL_LESSER_HEALING_WAVE, INTERRUPT_AND_CAST);
+            canHeal = false;
+        }
+        else
+        {
+            if(Healing_Wave_Cooldown < diff)
+            {
+                canHeal = true;
+                DoCast(m_creature, SPELL_LESSER_HEALING_WAVE);
+                Healing_Wave_Cooldown = (HeroicMode?urand(5000, 8000):urand(6000, 10000));
+            }
+            else
+                Healing_Wave_Cooldown -= diff;
+        }
+
         if(Totem_Timer < diff)
         {
-            DoCast(m_creature, RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM));
-
-            ++Totem_Amount;
-            Totem_Timer = Totem_Amount*2000;
+            AddSpellToCast(RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM), CAST_SELF);
+            Totem_Timer = urand(5000, 15000);
         }
         else
             Totem_Timer -= diff;
 
         if(War_Stomp_Timer < diff)
         {
-            DoCast(m_creature, SPELL_WAR_STOMP);
-            War_Stomp_Timer = 10000;
+            AddSpellToCast(SPELL_WAR_STOMP, CAST_NULL);
+            War_Stomp_Timer = urand(8000, 15000);
         }
         else
             War_Stomp_Timer -= diff;
 
         if(Purge_Timer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_PURGE);
-            Purge_Timer = 15000;
+            AddSpellToCast(SPELL_PURGE, CAST_RANDOM);
+            Purge_Timer = urand(8000, 15000);
         }
         else
             Purge_Timer -= diff;
 
         if(Frost_Shock_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FROST_SHOCK);
-            Frost_Shock_Timer = 7000;
+            AddSpellToCast(SPELL_FROST_SHOCK, CAST_TANK);
+            Frost_Shock_Timer = urand(5000, 10000);
         }
         else
             Frost_Shock_Timer -= diff;
 
-        if(Healing_Wave_Timer < diff)
-        {
-            // std::vector<Add*>::iterator itr = Group.begin() + rand()%Group.size();
-            // uint64 guid = (*itr)->guid;
-            // if(guid)
-            // {
-            //   Unit* pAdd = Unit::GetUnit(*m_creature, (*itr)->guid);
-            //   if(pAdd && pAdd->isAlive())
-            //   {
-            DoCast(m_creature, SPELL_LESSER_HEALING_WAVE);
-            Healing_Wave_Timer = 5000;
-            //    }
-            // }
-        }
-        else
-            Healing_Wave_Timer -= diff;
-
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -1319,20 +1459,10 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
 //    }
 //};
 
-/*CreatureAI* GetAI_mob_sliver(Creature *_Creature)
-{
-    return new mob_sliverAI (_Creature);
-};*/
-
 //CreatureAI* GetAI_mob_high_explosive_sheep(Creature *_Creature)
 //{
 //    return new mob_high_explosive_sheepAI (_Creature);
 //};
-
-/*CreatureAI* GetAI_mob_fizzle(Creature *_Creature)
-{
-    return new mob_fizzleAI (_Creature);
-};*/
 
 CreatureAI* GetAI_boss_priestess_delrissa(Creature *_Creature)
 {
@@ -1348,6 +1478,11 @@ CreatureAI* GetAI_ellris_duskhallow(Creature *_Creature)
 {
     return new boss_ellris_duskhallowAI (_Creature);
 }
+
+CreatureAI* GetAI_mob_fizzle(Creature *_Creature)
+{
+    return new mob_fizzleAI (_Creature);
+};
 
 CreatureAI* GetAI_eramas_brightblaze(Creature *_Creature)
 {
@@ -1368,6 +1503,11 @@ CreatureAI* GetAI_garaxxas(Creature *_Creature)
 {
     return new boss_garaxxasAI (_Creature);
 }
+
+CreatureAI* GetAI_mob_sliver(Creature *_Creature)
+{
+    return new mob_sliverAI (_Creature);
+};
 
 CreatureAI* GetAI_apoko(Creature *_Creature)
 {
@@ -1399,6 +1539,11 @@ void AddSC_boss_priestess_delrissa()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name="mob_fizzle";
+    newscript->GetAI = &GetAI_mob_fizzle;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name="boss_eramas_brightblaze";
     newscript->GetAI = &GetAI_eramas_brightblaze;
     newscript->RegisterSelf();
@@ -1419,6 +1564,11 @@ void AddSC_boss_priestess_delrissa()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name="mob_sliver";
+    newscript->GetAI = &GetAI_mob_sliver;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name="boss_apoko";
     newscript->GetAI = &GetAI_apoko;
     newscript->RegisterSelf();
@@ -1431,16 +1581,6 @@ void AddSC_boss_priestess_delrissa()
     /*newscript = new Script;
     newscript->Name="mob_high_explosive_sheep";
     newscript->GetAI = &GetAI_mob_high_explosive_sheep;
-    newscript->RegisterSelf();*/
-
-    /*newscript = new Script;
-    newscript->Name="mob_fizzle";
-    newscript->GetAI = &GetAI_mob_fizzle;
-    newscript->RegisterSelf();*/
-
-    /*newscript = new Script;
-    newscript->Name="mob_sliver";
-    newscript->GetAI = &GetAI_mob_sliver;
     newscript->RegisterSelf();*/
 }
 
