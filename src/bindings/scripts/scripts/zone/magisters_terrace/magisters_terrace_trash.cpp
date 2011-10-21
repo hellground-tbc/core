@@ -50,7 +50,7 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 
     void Reset()
     {
-        Glaive_Timer = urand(5000,10000);
+        Glaive_Timer = (HeroicMode?urand(3000, 6000):urand(5000,10000));
         Magic_Field_Timer = (10000, 20000);
         OOCTimer = 5000;
     }
@@ -87,7 +87,7 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
       {
           if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0, true))
               AddSpellToCast(target, SPELL_GLAIVE_THROW);
-          Glaive_Timer = urand(16000,20000);
+          Glaive_Timer = urand(14000,20000);
       }
       else
           Glaive_Timer -= diff;
@@ -207,8 +207,8 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
     void Reset()
     {
         SummonImp_Timer = 5000;
-        SetAutocast(SPELL_INCINERATE, 1900);
-        Immolate_Timer = 1000;
+        SetAutocast(SPELL_INCINERATE, 1900, true);
+        Immolate_Timer = urand(8000, 12000);
         OOCTimer = 5000;
     }
 
@@ -279,7 +279,6 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
       {
           ClearCastQueue();
           AddSpellToCast(m_creature->getVictim(), SPELL_IMMOLATE);
-          StartAutocast();
           Immolate_Timer = urand(16000, 25000);
       }
       else
@@ -296,14 +295,12 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
 {
     mob_sunblade_impAI(Creature *c) : ScriptedAI(c) { }
 
-    uint64 OwnerGUID;
-
     void Reset() { }
 
     void AttackStart(Unit* who)
     {
         ScriptedAI::AttackStartNoMove(who);
-        DoCast(who, SPELL_FIREBALL);
+        SetAutocast(SPELL_FIREBALL, 1900, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -844,9 +841,9 @@ struct TRINITY_DLL_DECL mob_sunblade_sentinelAI : public ScriptedAI
     }
 };
 
-#define SPELL_SHOOT                     (HeroicMode?/*22907*/35946:35946)   // 5-30 yd
+#define SPELL_SHOOT                     (HeroicMode?22907:35946)   // 5-30 yd
 #define SPELL_MANA_SHIELD               (HeroicMode?46151:17741)
-#define SPELL_FROST_ARROW               (HeroicMode?/*??*/44639:44639)      // up to 50 yd
+#define SPELL_FROST_ARROW               44639
 #define SPELL_FORKED_LIGHTNING          (HeroicMode?46150:20299)
 
 struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
@@ -951,7 +948,7 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
     }
 };
 
-#define SPELL_ARCANE_EXPLOSION          (HeroicMode?/*22907*/44538:44538)
+#define SPELL_ARCANE_EXPLOSION          44538
 
 struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
 {
@@ -1001,6 +998,7 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
           // when not casting AE, chase victim
           if(Check_Timer <= diff)
           {
+              me->setHover(false);
               DoStartMovement(me->getVictim());
               Check_Timer = 0;
           }
@@ -1013,8 +1011,9 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
           if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
           {
               float x, y, z;
-              me->GetNearPoint(target, x, y, z, 0, 2.0, frand(0, 2*M_PI));
+              target->GetPosition(x, y, z);
               DoTeleportTo(x, y, z);
+              me->setHover(true);
               me->GetMotionMaster()->MoveIdle();
               for(uint8 i = 0; i < 3; ++i)
                 AddSpellToCast(SPELL_ARCANE_EXPLOSION, CAST_NULL);
