@@ -573,7 +573,7 @@ void ScriptedAI::SetAutocast (uint32 spellId, uint32 timer, bool startImmediatel
 
     autocastId = spellId;
 
-    autocastTimer = timer;
+    autocastTimer = startImmediately ? 0 : timer;
     autocastTimerDef = timer;
 
     autocastMode = mode;
