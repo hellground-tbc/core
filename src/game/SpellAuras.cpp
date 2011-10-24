@@ -4574,7 +4574,7 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
         uint32 mechanic = 1 << m_modifier.m_miscvalue;
 
         //immune movement impairment and loss of control
-        if (GetId()==42292)
+        if (GetId()==42292 || GetId()==46227) // 46227 - NPC version in MgT
             mechanic=IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
 
         Unit::AuraMap& Auras = m_target->GetAuras();

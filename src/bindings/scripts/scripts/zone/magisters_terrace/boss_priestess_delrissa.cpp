@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Priestess_Delrissa
-SD%Complete: 45
-SDComment: No Heroic support yet. Needs further testing. Several scripts for pets disabled, not seem to require any special script.
+SD%Complete: 85
+SDComment: Verify timers, long and tiring debugging :)
 SDCategory: Magister's Terrace
 EndScriptData */
 
@@ -46,21 +46,20 @@ static Speech PlayerDeath[]=
     {-1585021},
 };
 
-#define SAY_AGGRO               -1585012
-#define SAY_DEATH               -1585022
+#define SAY_AGGRO                   -1585012
+#define SAY_DEATH                   -1585022
 
-#define SPELL_DISPEL_MAGIC      27609
-#define SPELL_FLASH_HEAL        17843
-#define SPELL_SW_PAIN_NORMAL    14032
-#define SPELL_SW_PAIN_HEROIC    15654
-#define SPELL_SW_PAIN           (Heroic?SPELL_SW_PAIN_HEROIC:SPELL_SW_PAIN_NORMAL)
-#define SPELL_SHIELD            44291
-#define SPELL_RENEW_NORMAL      44174
-#define SPELL_RENEW_HEROIC      46192
-#define SPELL_RENEW             (Heroic?SPELL_RENEW_HEROIC:SPELL_RENEW_NORMAL)
+#define SPELL_DISPEL_MAGIC          27609
+#define SPELL_FLASH_HEAL            17843
+#define SPELL_PHYSIC_SCREAM         27610
+#define SPELL_WEAKENED_SOUL         6788
+#define SPELL_SHIELD                (HeroicMode?46193:44175)
+#define SPELL_SW_PAIN               (HeroicMode?15654:14032)
+#define SPELL_RENEW                 (HeroicMode?46192:44174)
+#define SPELL_MEDALION_OF_IMMUNITY  46227
 
-#define ORIENT                  4.98
-#define POS_Z                   -19.9215
+#define ORIENT                      4.98
+#define POS_Z                       -19.9215
 
 float LackeyLocations[4][2]=
 {
@@ -99,26 +98,29 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
     boss_priestess_delrissaAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        me->GetPosition(wLoc);
         Adds.clear();
-        //SummonAdds();
-        Heroic = c->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
+    WorldLocation wLoc;
 
     std::vector<Add> Adds;
 
     uint8 LackeysKilled;
     uint8 PlayersKilled;
 
-    uint32 HealTimer;
-    uint32 RenewTimer;
-    uint32 ShieldTimer;
-    uint32 SWPainTimer;
-    uint32 DispelTimer;
-    uint32 CheckTimer;
+    bool canFear;
+    bool canUseMedalion;
 
-    bool Heroic;
+    uint32 Heal_Timer;
+    uint32 Renew_Timer;
+    uint32 Scream_Cooldown;
+    uint32 Medalion_Cooldown;
+    uint32 Shield_Timer;
+    uint32 SWPain_Timer;
+    uint32 Dispel_Timer;
+    uint32 Check_Timer;
 
     void Reset()
     {
@@ -126,12 +128,17 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         LackeysKilled = 0;
         PlayersKilled = 0;
 
-        HealTimer   = 15000;
-        RenewTimer  = 10000;
-        ShieldTimer = 2000;
-        SWPainTimer = 5000;
-        DispelTimer = 7500;
-        CheckTimer = 5000;
+        canFear = true;
+        canUseMedalion = true;
+
+        Heal_Timer   = 15000;
+        Renew_Timer  = 10000;
+        Scream_Cooldown = HeroicMode?15000:30000;
+        Medalion_Cooldown = 30000;
+        Shield_Timer = 2000;
+        SWPain_Timer = 5000;
+        Dispel_Timer = 7500;
+        Check_Timer = 2000;
 
         CheckAdds();
 
@@ -153,14 +160,12 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
     void SummonAdds()
     {
-        /*if (m_creature->isDead())
-            return;*/
         std::vector<uint32> AddList;
-        for(uint8 i = 0; i < 8; ++i)
-            AddList.push_back(AddEntry[i]);
 
-        while(AddList.size() > 4)
-            AddList.erase(AddList.begin() + rand()%AddList.size());
+        while(AddList.size() <= 4)
+        {
+            AddList.push_back(AddEntry[urand(0, 7)]);
+        }
 
         for(uint8 i = 0; i < AddList.size(); ++i)
         {
@@ -175,8 +180,6 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
     void CheckAdds()
     {
-        //if (m_creature->isDead())
-        //  return;
         if(Adds.empty())
         {
             SummonAdds();
@@ -216,34 +219,27 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if(m_creature->isAlive())
         {
             DoScriptText(LackeyDeath[LackeysKilled].id, m_creature);
-            if( LackeysKilled < 3 )
+            if(LackeysKilled < 3)
                 ++LackeysKilled;
         }
-
         CheckLootable();
     }
 
     void JustDied(Unit* killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
-
         CheckLootable();
-
         if(pInstance)
-        {
             pInstance->SetData(DATA_DELRISSA_DEATH_COUNT, 1);
-            pInstance->SetData(DATA_DELRISSA_EVENT, DONE);
-        }
-
-
-        //if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_DELRISSA_DOOR)))
-        //    Door->SetGoState(GO_STATE_ACTIVE);
     }
 
     void CheckLootable()
     {
         if(pInstance && pInstance->GetData(DATA_DELRISSA_DEATH_COUNT) >= 4)
+        {
             m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            pInstance->SetData(DATA_DELRISSA_EVENT, DONE);
+        }
         else
             m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
     }
@@ -268,66 +264,113 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         return target;
     }
 
+    void RegenMana()
+    {
+        uint32 maxMana = me->GetMaxPower(POWER_MANA);
+        uint32 Mana = me->GetPower(POWER_MANA);
+        me->SetPower(POWER_MANA, Mana+0.03*maxMana);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
 
-        if(CheckTimer < diff)
+        if(Check_Timer < diff)
         {
-            float x, y, z, o;
-            m_creature->GetHomePosition(x, y, z, o);
-            if(m_creature->GetPositionZ() >= z+10)
+            DoZoneInCombat();
+            RegenMana();
+            if(!me->IsWithinDistInMap(&wLoc, 60.0))
             {
                 EnterEvadeMode();
                 return;
             }
-            CheckTimer = 5000;
-            // DoZoneInCombat(); ??
-        }else
-            CheckTimer -= diff;
+            if(canFear && me->IsWithinMeleeRange(me->getVictim()))
+            {
+                ForceSpellCast(SPELL_PHYSIC_SCREAM, CAST_SELF, INTERRUPT_AND_CAST);
+                canFear = false;
+            }
+            Check_Timer = 2000;
+        }
+        else
+            Check_Timer -= diff;
 
-        if(HealTimer < diff)
+        if(!canFear)
+        {
+            if(Scream_Cooldown < diff)
+            {
+                canFear = true;
+                Scream_Cooldown = HeroicMode?15000:30000;
+            }
+            else
+                Scream_Cooldown -= diff;
+        }
+
+        if(HeroicMode)
+        {
+            if(canUseMedalion)
+            {
+                DoCast(me, SPELL_MEDALION_OF_IMMUNITY, true);
+                canUseMedalion = false;
+            }
+            else
+            {
+                if(Medalion_Cooldown < diff)
+                {
+                    canUseMedalion = true;
+                    Medalion_Cooldown = 30000;
+                }
+                else
+                    Medalion_Cooldown -= diff;
+            }
+        }
+
+        if(Heal_Timer < diff)
         {
             if(Unit* target = SelectLowestHpFriendly(40, 200))
             {
                 AddSpellToCast(target, SPELL_FLASH_HEAL);
                 if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
-                    HealTimer = 3000;
+                    Heal_Timer = 3000;
                 else
-                    HealTimer = 10000;
-            } else
-                HealTimer = 2000;
-        }else
-            HealTimer -= diff;
+                    Heal_Timer = 10000;
+            }
+            else
+                Heal_Timer = 2000;
+        }
+        else
+            Heal_Timer -= diff;
 
-        if(RenewTimer < diff)
+        if(Renew_Timer < diff)
         {
             if(Unit *target = SelectLowestHpFriendlyMissingBuff(40, SPELL_RENEW))
             {
                 AddSpellToCast(target, SPELL_RENEW);
                 if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
-                    RenewTimer = 4000;
+                    Renew_Timer = 4000;
                 else
-                    RenewTimer = 8000;
-            } else
-                RenewTimer = 1000;
-        }else
-            RenewTimer -= diff;
+                    Renew_Timer = 8000;
+            }
+            else
+                Renew_Timer = 1000;
+        }
+        else
+            Renew_Timer -= diff;
 
-
-        if(ShieldTimer < diff)
+        if(Shield_Timer < diff)
         {
-            if(Unit *target = SelectLowestHpFriendlyMissingBuff(40, SPELL_SHIELD))
+            if(Unit *target = SelectLowestHpFriendlyMissingBuff(40, SPELL_WEAKENED_SOUL))
             {
-                AddSpellToCast(target, SPELL_SHIELD);
-                ShieldTimer = 15000;
-            } else
-                ShieldTimer = 1000;
-        }else
-            ShieldTimer -= diff;
+                ForceSpellCast(target, SPELL_SHIELD, INTERRUPT_AND_CAST);
+                Shield_Timer = 15000;
+            }
+            else
+                Shield_Timer = 1000;
+        }
+        else
+            Shield_Timer -= diff;
 
-        if(DispelTimer < diff)
+        if(Dispel_Timer < diff)
         {
             Unit* target = NULL;
             std::list<Creature*> friendlyCC;
@@ -352,73 +395,74 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
             if(target)
             {
                 AddSpellToCast(target, SPELL_DISPEL_MAGIC);
-                DispelTimer = 10000;
-            } else
-                DispelTimer = 1000;
+                Dispel_Timer = 10000;
+            }
+            else
+                Dispel_Timer = 1000;
+        }
+        else
+            Dispel_Timer -= diff;
 
-        }else
-            DispelTimer -= diff;
-
-        if(SWPainTimer < diff)
+        if(SWPain_Timer < diff)
         {
-            SWPainTimer = 1000;
+            SWPain_Timer = 1000;
             if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true, -SPELL_SW_PAIN))
+            {
                 if(!target->hasUnitState(UNIT_STAT_LOST_CONTROL))
                 {
                     AddSpellToCast(target,SPELL_SW_PAIN);
-                    SWPainTimer = 10000;
+                    SWPain_Timer = 10000;
                 }
-        }else
-            SWPainTimer -= diff;
-
-        /*
-        if(CombatPulseTimer < diff)
-        {
-            DoZoneInCombat();
-            for(uint8 i = 0; i < Adds.size(); ++i)
-            {
-                if(Unit* pAdd = Unit::GetUnit(*m_creature, Add[i]->guid))
-                    if(pAdd->isAlive())
-                        DoZoneInCombat(pAdd);
             }
-
-            CombatPulseTimer = 10000;
-        }else CombatPulseTimer -= diff;*/
+        }
+        else
+            SWPain_Timer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
 
-#define SPELL_HEALING_POTION    15503
+#define SPELL_HEALING_POTION        15503
 
 struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
 {
     boss_priestess_guestAI(Creature* c) : ScriptedAI(c)
     {
-        //Group.clear();
         pInstance = (c->GetInstanceData());
-        //AcquireGUIDs();
     }
 
     ScriptedInstance* pInstance;
 
-    //std::vector<Add*> Group;
-
+    bool resetThreat;
+    bool canUseMedalion;
+    bool usedPotion;
     uint32 ResetThreatTimer;
-    bool ResetThreat;
-
-    bool UsedPotion;
+    uint32 Medalion_Cooldown;
+    float targetRange;
 
     void Reset()
     {
-        UsedPotion = false;
-        ResetThreat = true;
+        usedPotion = false;
+        resetThreat = true;
+        canUseMedalion = true;
+        ResetThreatTimer = urand(8000, 20000);             // These guys like to switch targets often, and are not meant to be tanked.
+        Medalion_Cooldown = 30000;
+        targetRange = 100;
+
         if(pInstance)
+        {
             if(Creature *boss = m_creature->GetCreature(pInstance->GetData64(DATA_DELRISSA)))
+            {
                 if(boss->isDead())
                     boss->Respawn();
-        ResetThreatTimer = urand(5000, 35000);             // These guys like to switch targets often, and are not meant to be tanked.
+            }
+        }
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoZoneInCombat();
     }
 
     void JustDied(Unit* killer)
@@ -434,47 +478,50 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
     void KilledUnit(Unit* victim)
     {
         if(pInstance)
+        {
             if(Creature* Delrissa = m_creature->GetCreature(pInstance->GetData64(DATA_DELRISSA)))
                 Delrissa->AI()->KilledUnit(victim);
-    }
-
-    /*
-    void AcquireGUIDs()
-    {
-        if(!pInstance)
-        {
-            error_log(ERROR_INST_DATA);
-            return;
-        }
-
-        Creature* Delrissa = (Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_DELRISSA)));
-        if(Delrissa)
-        {
-            Group = ((boss_priestess_delrissaAI*)Delrissa->AI())->Adds;
-            Add* dAdd = new Add(Delrissa->GetEntry(), Delrissa->GetGUID());
-            Group.push_back(dAdd);
         }
     }
-*/
+
     void UpdateAI(const uint32 diff)
     {
-        if(HealthBelowPct(25) && !UsedPotion)
+        if(HealthBelowPct(25) && !usedPotion)
         {
             AddSpellToCast(m_creature, SPELL_HEALING_POTION);
-            UsedPotion = true;
+            usedPotion = true;
         }
 
-        if(ResetThreat)
+        if(HeroicMode)
+        {
+            if(canUseMedalion)
+            {
+                DoCast(me, SPELL_MEDALION_OF_IMMUNITY, true);
+                canUseMedalion = false;
+            }
+            else
+            {
+                if(Medalion_Cooldown < diff)
+                {
+                    canUseMedalion = true;
+                    Medalion_Cooldown = 30000;
+                }
+                else
+                    Medalion_Cooldown -= diff;
+            }
+        }
+
+        if(resetThreat)
         {
             if(ResetThreatTimer < diff)
             {
                 DoResetThreat();
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, targetRange, true))
                 {
                     AttackStart(target);
                     me->AddThreat(target, 10000);
                 }
-                ResetThreatTimer = urand(15000, 35000);
+                ResetThreatTimer = urand(8000, 20000);
             }
             else
                 ResetThreatTimer -= diff;
@@ -517,7 +564,7 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
         Check_Timer = 0;
         canKick = true;
         InVanish = false;
-        ResetThreat = false;
+        resetThreat = false;
 
         DoCast(m_creature, SPELL_DUALWIELD);
     }
@@ -868,42 +915,71 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
 
 #define SPELL_POLYMORPH             13323
 #define SPELL_ICE_BLOCK             27619
-#define SPELL_BLIZZARD              44178
-#define SPELL_ICE_LANCE             46194
-#define SPELL_CONE_OF_COLD          38384
-#define SPELL_FROSTBOLT             15043
+#define SPELL_FROST_NOVA            44177
 #define SPELL_BLINK                 14514
+#define SPELL_BLIZZARD              (HeroicMode?46195:44178)
+#define SPELL_ICE_LANCE             (HeroicMode?46194:44176)
+#define SPELL_CONE_OF_COLD          (HeroicMode?38384:12611)
+#define SPELL_FROSTBOLT             (HeroicMode?15530:15043)
 
 struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 {
     //Mage
     boss_yazzaiAI(Creature *c) : boss_priestess_guestAI(c)  {}
 
-    bool HasIceBlocked;
+    bool canFroze;
+    bool canCoC;
+    bool canBlink;
+    bool hasIceBlocked;
 
+    uint32 FrostNova_Cooldown;
+    uint32 ConeOfCold_Cooldown;
+    uint32 Blink_Cooldown;
+
+    uint32 MeleeCheck_Timer;
     uint32 Polymorph_Timer;
     uint32 Ice_Block_Timer;
-    uint32 Wait_Timer;
     uint32 Blizzard_Timer;
     uint32 Ice_Lance_Timer;
-    uint32 Cone_of_Cold_Timer;
-    uint32 Frostbolt_Timer;
-    uint32 Blink_Timer;
 
     void Reset()
     {
-        HasIceBlocked = false;
-
-        Polymorph_Timer = 1000;
-        Ice_Block_Timer = 20000;
-        Wait_Timer = 10000;
-        Blizzard_Timer = 8000;
-        Ice_Lance_Timer = 12000;
-        Cone_of_Cold_Timer = 10000;
-        Frostbolt_Timer = 3000;
-        Blink_Timer = 8000;
+        hasIceBlocked = false;
+        canFroze = true;
+        canCoC = true;
+        canBlink = true;
+        FrostNova_Cooldown = 25000;
+        ConeOfCold_Cooldown = 10000;
+        Blink_Cooldown = 15000;
+        Polymorph_Timer = 0;
+        MeleeCheck_Timer = 2000;
+        Blizzard_Timer = urand(3000, 10000);
+        SetAutocast(SPELL_FROSTBOLT, 3000, true);
 
         boss_priestess_guestAI::Reset();
+    }
+
+    void AttackStart(Unit* who)
+    {
+        if(who->IsWithinDistInMap(me, 40.0))
+            ScriptedAI::AttackStartNoMove(who);
+        else
+            me->GetMotionMaster()->MoveChase(who, 35);
+    }
+
+    void MovementInform(uint32 Type, uint32 Id)
+    {
+        if(Type == POINT_MOTION_TYPE)
+        {
+            switch(Id)
+            {
+                case 1:
+                    me->GetMotionMaster()->MoveIdle();
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -913,78 +989,104 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
+        if(!canFroze)
+        {
+            if(FrostNova_Cooldown < diff)
+            {
+                ClearCastQueue();
+                SetAutocast(SPELL_FROSTBOLT, 3000, true);
+                canFroze = true;
+                FrostNova_Cooldown = 25000;
+            }
+            else
+                FrostNova_Cooldown -= diff;
+        }
+        if(!canCoC)
+        {
+            if(ConeOfCold_Cooldown < diff)
+            {
+                canCoC = true;
+                ConeOfCold_Cooldown = 10000;
+            }
+            else
+                ConeOfCold_Cooldown -= diff;
+        }
+        if(!canBlink)
+        {
+            if(Blink_Cooldown < diff)
+            {
+                canBlink = true;
+                Blink_Cooldown = 15000;
+            }
+            else
+                Blink_Cooldown -= diff;
+        }
+
+        if(me->IsWithinMeleeRange(me->getVictim()))
+        {
+            if(MeleeCheck_Timer < diff)
+            {
+                if(canFroze)
+                {
+                    ForceSpellCast(SPELL_FROST_NOVA, CAST_NULL, INTERRUPT_AND_CAST);
+                    ClearCastQueue();
+                    SetAutocast(SPELL_ICE_LANCE, 1400, true);
+                    canFroze = false;
+                }
+                else if(canCoC)
+                {
+                    ForceSpellCast(SPELL_CONE_OF_COLD, CAST_NULL, INTERRUPT_AND_CAST);
+                    canCoC = false;
+                }
+
+                if(canBlink)
+                {
+                    ForceSpellCast(SPELL_BLINK, CAST_SELF);
+                    MeleeCheck_Timer = urand(5000, 10000);
+                    canBlink = false;
+                    return;
+                }
+                else
+                {
+                    float x, y, z;
+                    me->GetClosePoint(x, y, z, 0, 7.0, me->GetAngle(me->getVictim()));
+                    me->GetMotionMaster()->MovePoint(1, x, y, z);
+                }
+                MeleeCheck_Timer = 2000;
+            }
+            else
+                MeleeCheck_Timer -= diff;
+        }
+
         if(Polymorph_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
             {
-                DoCast(target, SPELL_POLYMORPH);
+                AddSpellToCast(target, SPELL_POLYMORPH);
                 DoModifyThreatPercent(target,-100);
-                Polymorph_Timer = 20000;
+                Polymorph_Timer = urand(15000, 25000);
             }
-        }else Polymorph_Timer -= diff;
+            else
+                Polymorph_Timer = 1000;
+        }
+        else
+            Polymorph_Timer -= diff;
 
-        if(((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 35) && !HasIceBlocked)
+        if(HealthBelowPct(35) && !hasIceBlocked)
         {
-            DoCast(m_creature, SPELL_ICE_BLOCK);
-            HasIceBlocked = true;
+            ForceSpellCast(SPELL_ICE_BLOCK, CAST_SELF);
+            hasIceBlocked = true;
         }
 
         if(Blizzard_Timer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_BLIZZARD);
-            Blizzard_Timer = 8000;
-        }else Blizzard_Timer -= diff;
-
-        if(Ice_Lance_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(), SPELL_ICE_LANCE);
-            Ice_Lance_Timer = 12000;
-        }else Ice_Lance_Timer -= diff;
-
-        if(Cone_of_Cold_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(), SPELL_CONE_OF_COLD);
-            Cone_of_Cold_Timer = 10000;
-        }else Cone_of_Cold_Timer -= diff;
-
-        if(Frostbolt_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(), SPELL_FROSTBOLT);
-            Frostbolt_Timer = 8000;
-        }else Frostbolt_Timer -= diff;
-
-        if(Blink_Timer < diff)
-        {
-            bool InMeleeRange = false;
-            std::list<HostilReference*>& t_list = m_creature->getThreatManager().getThreatList();
-            for(std::list<HostilReference*>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
-            {
-                if(Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()))
-                    //if in melee range
-                    if (target->IsWithinDistInMap(m_creature, 5))
-                    {
-                        InMeleeRange = true;
-                        break;
-                    }
-            }
-            //if anybody is in melee range than escape by blink
-            if(InMeleeRange)
-            {
-                //DoCast(m_creature, SPELL_BLINK);  //blink does not work on npcs
-                float x,y,z;
-                m_creature->GetPosition(x,y,z);
-                x = rand()%2 ? x+10+rand()%10 : x-10-rand()%10;
-                y = rand()%2 ? y+10+rand()%10 : y-10-rand()%10;
-                DoTeleportTo(x, y, z);
-            }
-            Blink_Timer = 8000;
-        }else Blink_Timer -= diff;
-
-        if (m_creature->getVictim() && m_creature->IsWithinDistInMap(m_creature->getVictim(), 10))
-            m_creature->StopMoving();
+            AddSpellToCast(SPELL_BLIZZARD, CAST_RANDOM);
+            Blizzard_Timer = urand(8000, 16000);
+        }
+        else
+            Blizzard_Timer -= diff;
 
         CastNextSpellIfAnyAndReady(diff);
-        //DoMeleeAttackIfReady(); //mage type, no melee needed
     }
 };
 
@@ -1019,7 +1121,7 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
         Mortal_Strike_Timer = urand(8000, 12000);
         Piercing_Howl_Timer = urand(5000, 8000);
         Frightening_Shout_Timer = urand(15000, 24000);
-        ResetThreat = false;
+        resetThreat = false;
     }
 
     void EnterCombat(Unit* who)
@@ -1104,11 +1206,10 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
     }
 };
 
+#define SPELL_SHOOT                 (HeroicMode?22907:15620)
+#define SPELL_MULTI_SHOT            (HeroicMode?44285:31942)
 #define SPELL_AIMED_SHOT            44271
-#define SPELL_SHOOT                 15620
 #define SPELL_CONCUSSIVE_SHOT       27634
-#define TRIGGER_CONCUSSIVE_SHOT     19410
-#define SPELL_MULTI_SHOT            31942
 #define SPELL_WING_CLIP             44286
 #define SPELL_FREEZING_TRAP         44136
 
@@ -1126,23 +1227,45 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
     uint32 Multi_Shot_Timer;
     uint32 Wing_Clip_Timer;
     uint32 Freezing_Trap_Timer;
-    uint32 StopMoving;
     uint64 SliverGUID;
-    bool Stopped;
 
     void Reset()
     {
-        Aimed_Shot_Timer = 6000;
+        targetRange = 30;
+        Aimed_Shot_Timer = 500;
         Shoot_Timer = 2500;
-        Concussive_Shot_Timer = 8000;
-        Multi_Shot_Timer = 10000;
+        Concussive_Shot_Timer = urand(6000, 8000);
+        Multi_Shot_Timer = urand(16000, 20000);
         Wing_Clip_Timer = 4000;
         Freezing_Trap_Timer = 15000;
-        StopMoving = 2000;
         SliverGUID = 0;
-        Stopped = false;
 
         boss_priestess_guestAI::Reset();
+    }
+
+    void AttackStart(Unit* who)
+    {
+        if(who->IsWithinDistInMap(me, 30.0))
+            ScriptedAI::AttackStartNoMove(who);
+        else if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, 0, 5.0))
+            ScriptedAI::AttackStartNoMove(target);
+        else
+            me->GetMotionMaster()->MoveChase(who, 25);
+    }
+
+    void MovementInform(uint32 Type, uint32 Id)
+    {
+        if(Type == POINT_MOTION_TYPE)
+        {
+            switch(Id)
+            {
+                case 1:
+                    me->GetMotionMaster()->MoveIdle();
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     void JustDied(Unit* killer)
@@ -1183,55 +1306,70 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         {
             if(Wing_Clip_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_WING_CLIP);
-                Wing_Clip_Timer = 4000;
-            }else Wing_Clip_Timer -= diff;
+                AddSpellToCast(SPELL_WING_CLIP, CAST_TANK);
+                float x, y, z;
+                me->GetClosePoint(x, y, z, 0, 8.0);
+                me->UpdateAllowedPositionZ(x, y, z);
+                me->GetMotionMaster()->MovePoint(1, x, y, z);
+                Wing_Clip_Timer = urand(4000, 8000);
+            }
+            else
+                Wing_Clip_Timer -= diff;
 
-            if(Freezing_Trap_Timer < diff)
-            {
-                DoCast(m_creature->getVictim(), SPELL_FREEZING_TRAP);
-                DoModifyThreatPercent(m_creature->getVictim(),-100);
-                Freezing_Trap_Timer = 30000;
-            }else Freezing_Trap_Timer -= diff;
-
-            if(!m_creature->getVictim()->hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_ROOT | UNIT_STAT_CONFUSED | UNIT_STAT_DISTRACTED))
-                DoMeleeAttackIfReady();
-        }else
+            DoMeleeAttackIfReady();
+        }
+        else
         {
             if(Concussive_Shot_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_CONCUSSIVE_SHOT);
-                Concussive_Shot_Timer = 8000;
-            }else Concussive_Shot_Timer -= diff;
+                AddSpellToCast(SPELL_CONCUSSIVE_SHOT, CAST_RANDOM);
+                Concussive_Shot_Timer = urand(8000, 12000);
+            }
+            else
+                Concussive_Shot_Timer -= diff;
 
             if(Multi_Shot_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_MULTI_SHOT);
-                Multi_Shot_Timer = 10000;
-            }else Multi_Shot_Timer -= diff;
+                AddSpellToCast(SPELL_MULTI_SHOT, CAST_TANK);
+                Multi_Shot_Timer = urand(10000, 15000);
+            }
+            else
+                Multi_Shot_Timer -= diff;
 
             if(Aimed_Shot_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_AIMED_SHOT);
-                Aimed_Shot_Timer = 6000;
-            }else Aimed_Shot_Timer -= diff;
+                AddSpellToCast(SPELL_AIMED_SHOT, CAST_TANK);
+                Aimed_Shot_Timer = urand(12000, 18000);
+            }
+            else
+                Aimed_Shot_Timer -= diff;
 
             if(Shoot_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_SHOOT);
-                Shoot_Timer = 2500;
-            }else Shoot_Timer -= diff;
-        }
-        if(StopMoving < diff)
-        {
-            if(Stopped)
-                Stopped = false;
+                if(me->IsWithinDistInMap(me->getVictim(), 30))
+                    AddSpellToCast(me->getVictim(), SPELL_SHOOT);
+                else
+                    ResetThreatTimer = 0;
+                Shoot_Timer = urand(2500, 6000);
+            }
             else
-                Stopped = true;
-            StopMoving = 2000+rand()%5000;
-        }else StopMoving -= diff;
-        if (Stopped)
-            m_creature->StopMoving();
+                Shoot_Timer -= diff;
+
+            if(Freezing_Trap_Timer < diff)
+            {
+                AddSpellToCast(SPELL_FREEZING_TRAP, CAST_SELF);
+                DoModifyThreatPercent(m_creature->getVictim(),-100);
+                float x, y, z;
+                me->GetClosePoint(x, y, z, 0, 7.0);
+                me->UpdateAllowedPositionZ(x, y, z);
+                me->GetMotionMaster()->MovePoint(1, x, y, z);
+                Freezing_Trap_Timer = urand(20000, 40000);
+            }
+            else
+                Freezing_Trap_Timer -= diff;
+        }
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -1320,7 +1458,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
         if(Totem_Timer < diff)
         {
             AddSpellToCast(RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM), CAST_SELF);
-            Totem_Timer = urand(5000, 15000);
+            Totem_Timer = urand(3000, 8000);
         }
         else
             Totem_Timer -= diff;
@@ -1344,7 +1482,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
         if(Frost_Shock_Timer < diff)
         {
             AddSpellToCast(SPELL_FROST_SHOCK, CAST_TANK);
-            Frost_Shock_Timer = urand(5000, 10000);
+            Frost_Shock_Timer = urand(4000, 8000);
         }
         else
             Frost_Shock_Timer -= diff;
@@ -1354,11 +1492,11 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
     }
 };
 
-#define SPELL_GOBLIN_DRAGON_GUN        44272
-#define SPELL_ROCKET_LAUNCH            44137
+#define SPELL_GOBLIN_DRAGON_GUN        (HeroicMode?46185:44272)
+#define SPELL_ROCKET_LAUNCH            (HeroicMode?46187:44137)
+#define SPELL_FEL_IRON_BOMB            (HeroicMode?46184:46024)
 #define SPELL_RECOMBOBULATE            44274
 #define SPELL_HIGH_EXPLOSIVE_SHEEP     44276
-#define SPELL_FEL_IRON_BOMB            46024
 #define SPELL_SHEEP_EXPLOSION          44279
 
 #define CREATURE_EXPLOSIVE_SHEEP        24715
@@ -1376,13 +1514,24 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
 
     void Reset()
     {
-        Goblin_Dragon_Gun_Timer = 20000;
-        Rocket_Launch_Timer = 7000;
-        Recombobulate_Timer = 4000;
-        High_Explosive_Sheep_Timer = 10000;
-        Fel_Iron_Bomb_Timer = 15000;
+        Goblin_Dragon_Gun_Timer = urand(5000, 20000);
+        Rocket_Launch_Timer = 1000;
+        Recombobulate_Timer = urand(3000, 6000);
+        High_Explosive_Sheep_Timer = urand(8000, 15000);
+        Fel_Iron_Bomb_Timer = urand(4000, 15000);
 
         boss_priestess_guestAI::Reset();
+    }
+
+    void JustSummoned(Creature* summon)
+    {
+        if(summon->GetEntry() != CREATURE_EXPLOSIVE_SHEEP)
+            return;
+        if(Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 100.0, true))
+        {
+            summon->AI()->AttackStart(target);
+            summon->AddThreat(target, 50000);
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -1394,75 +1543,99 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
 
         if(Goblin_Dragon_Gun_Timer < diff)
         {
-            if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 5))
+            if (me->IsWithinDistInMap(me->getVictim(), 5))
             {
-                Goblin_Dragon_Gun_Timer = 10000;
-                DoCast(m_creature->getVictim(), SPELL_GOBLIN_DRAGON_GUN);
-            }else Goblin_Dragon_Gun_Timer = 2000;
-        }else Goblin_Dragon_Gun_Timer -= diff;
+                ForceSpellCast(SPELL_GOBLIN_DRAGON_GUN, CAST_TANK, INTERRUPT_AND_CAST);
+                Goblin_Dragon_Gun_Timer = urand(10000, 15000);
+            }
+            else
+                Goblin_Dragon_Gun_Timer = 2000;
+        }
+        else
+            Goblin_Dragon_Gun_Timer -= diff;
 
         if(Rocket_Launch_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_ROCKET_LAUNCH);
-            Rocket_Launch_Timer = 9000;
-        }else Rocket_Launch_Timer -= diff;
+            AddSpellToCast(SPELL_ROCKET_LAUNCH, CAST_RANDOM);
+            Rocket_Launch_Timer = urand(6000, 9000);
+        }
+        else
+            Rocket_Launch_Timer -= diff;
 
         if(Fel_Iron_Bomb_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FEL_IRON_BOMB);
-            Fel_Iron_Bomb_Timer = 15000;
-        }else Fel_Iron_Bomb_Timer -= diff;
-/*
+            AddSpellToCast(SPELL_FEL_IRON_BOMB, CAST_RANDOM);
+            Fel_Iron_Bomb_Timer = urand(15000, 20000);
+        }
+        else
+            Fel_Iron_Bomb_Timer -= diff;
+
         if(Recombobulate_Timer < diff)
         {
-            for(uint8 i = 0; i < Group.size(); ++i)
-                if(Unit* pAdd = Unit::GetUnit(*m_creature, Group[i]->guid))
-                    if(pAdd->IsPolymorphed())
+            std::list<Creature*> CC_list = FindFriendlyCC(30.0);
+            if(!CC_list.empty())
+            {
+                for(std::list<Creature*>::iterator i = CC_list.begin(); i != CC_list.end(); ++i)
+                {
+                    if((*i)->IsPolymorphed())
                     {
-                        DoCast(pAdd, SPELL_RECOMBOBULATE);
+                        ForceSpellCast((*i), SPELL_RECOMBOBULATE, INTERRUPT_AND_CAST);
+                        Recombobulate_Timer = urand(15000, 30000);
                         break;
                     }
-        }else Recombobulate_Timer -= diff;
-*/
+                }
+            }
+            Recombobulate_Timer = 5000;
+        }
+        else
+            Recombobulate_Timer -= diff;
+
         if(High_Explosive_Sheep_Timer < diff)
         {
-            DoCast(m_creature, SPELL_HIGH_EXPLOSIVE_SHEEP);
-            High_Explosive_Sheep_Timer = 65000;
-        }else High_Explosive_Sheep_Timer -= diff;
+            AddSpellToCast(SPELL_HIGH_EXPLOSIVE_SHEEP, CAST_SELF);
+            High_Explosive_Sheep_Timer = urand(45000, 65000);
+        }
+        else
+            High_Explosive_Sheep_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
 
-//struct TRINITY_DLL_DECL mob_high_explosive_sheepAI : public ScriptedAI
-//{
-//    mob_high_explosive_sheepAI(Creature *c) : ScriptedAI(c) {}
-//
-//    uint32 Explosion_Timer;
-//
-//    void Reset()
-//    {
-//        Explosion_Timer = 60000;
-//    }
-//
-//    void JustDied(Unit *Killer){}
-//
-//    void EnterCombat(Unit *who){}
-//
-//    void UpdateAI(const uint32 diff)
-//    {
-//        if(Explosion_Timer < diff)
-//        {
-//            DoCast(m_creature->getVictim(), SPELL_SHEEP_EXPLOSION);
-//        }else
-//            Explosion_Timer -= diff;
-//    }
-//};
+struct TRINITY_DLL_DECL mob_high_explosive_sheepAI : public ScriptedAI
+{
+    mob_high_explosive_sheepAI(Creature *c) : ScriptedAI(c) {}
 
-//CreatureAI* GetAI_mob_high_explosive_sheep(Creature *_Creature)
-//{
-//    return new mob_high_explosive_sheepAI (_Creature);
-//};
+    uint32 SelfDestro_Timer;
+    uint32 Check_Timer;
+
+    void Reset()
+    {
+        SelfDestro_Timer = 60000;
+        Check_Timer = 1000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Check_Timer < diff)
+        {
+            if(me->IsWithinMeleeRange(me->getVictim()))
+                DoCast(me, SPELL_SHEEP_EXPLOSION);
+            Check_Timer = 1000;
+        }
+        else
+            Check_Timer -= diff;
+
+        if(SelfDestro_Timer < diff)
+            DoCast(me, SPELL_SHEEP_EXPLOSION);
+        else
+            SelfDestro_Timer -= diff;
+    }
+};
 
 CreatureAI* GetAI_boss_priestess_delrissa(Creature *_Creature)
 {
@@ -1518,6 +1691,11 @@ CreatureAI* GetAI_zelfan(Creature *_Creature)
 {
     return new boss_zelfanAI (_Creature);
 }
+
+CreatureAI* GetAI_mob_high_explosive_sheep(Creature *_Creature)
+{
+    return new mob_high_explosive_sheepAI (_Creature);
+};
 
 void AddSC_boss_priestess_delrissa()
 {
@@ -1578,9 +1756,9 @@ void AddSC_boss_priestess_delrissa()
     newscript->GetAI = &GetAI_zelfan;
     newscript->RegisterSelf();
 
-    /*newscript = new Script;
+    newscript = new Script;
     newscript->Name="mob_high_explosive_sheep";
     newscript->GetAI = &GetAI_mob_high_explosive_sheep;
-    newscript->RegisterSelf();*/
+    newscript->RegisterSelf();
 }
 

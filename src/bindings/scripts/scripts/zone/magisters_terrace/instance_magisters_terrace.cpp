@@ -116,7 +116,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_VEXALLUS_EVENT:
                 if(Encounters[1] != DONE)
                     Encounters[1] = data;
-                if(data == DONE)        
+                if(data == DONE)
                     HandleGameObject(VexallusDoorGUID, true);
                 break;
             case DATA_DELRISSA_EVENT:
@@ -130,7 +130,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
                     Encounters[3] = data;
                 break;
             case DATA_DELRISSA_DEATH_COUNT:
-                if(data)  
+                if(data)
                     ++DelrissaDeathCount;
                 else
                     DelrissaDeathCount = 0;
