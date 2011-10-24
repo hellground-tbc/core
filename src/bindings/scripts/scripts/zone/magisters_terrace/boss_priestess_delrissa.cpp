@@ -463,6 +463,11 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
     void EnterCombat(Unit* who)
     {
         DoZoneInCombat();
+        if(pInstance)
+        {
+            if(Creature* Delrissa = me->GetCreature(pInstance->GetData64(DATA_DELRISSA)))
+                Delrissa->AI()->EnterCombat(who);
+        }
     }
 
     void JustDied(Unit* killer)
