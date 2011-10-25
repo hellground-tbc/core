@@ -505,6 +505,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
     {
         if(HealthBelowPct(25) && !usedPotion)
         {
+            ClearCastQueue();
             AddSpellToCast(m_creature, SPELL_HEALING_POTION);
             usedPotion = true;
         }
@@ -543,6 +544,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
             else
                 ResetThreatTimer -= diff;
         }
+        CastNextSpellIfAnyAndReady();
     }
 };
 
