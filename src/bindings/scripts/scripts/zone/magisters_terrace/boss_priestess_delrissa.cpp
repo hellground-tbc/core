@@ -465,6 +465,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         {
             if(Creature *boss = m_creature->GetCreature(pInstance->GetData64(DATA_DELRISSA)))
             {
+                me->SetOrientation(boss->GetOrientation());
                 if(boss->isDead())
                     boss->Respawn();
             }
@@ -959,6 +960,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
     uint32 ConeOfCold_Cooldown;
     uint32 Blink_Cooldown;
 
+    uint32 Check_Timer;
     uint32 MeleeCheck_Timer;
     uint32 Polymorph_Timer;
     uint32 Ice_Block_Timer;
@@ -976,6 +978,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         Blink_Cooldown = 15000;
         Polymorph_Timer = 0;
         MeleeCheck_Timer = 2000;
+        Check_Timer = 2000;
         Blizzard_Timer = urand(3000, 10000);
         SetAutocast(SPELL_FROSTBOLT, 3000, true);
 
@@ -1023,6 +1026,14 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
+        if(Check_Timer < diff)
+        {
+            RegenMana();
+            Check_Timer = 2000;
+        }
+        else
+            Check_Timer -= diff;
+
         if(!canFroze)
         {
             if(FrostNova_Cooldown < diff)
@@ -1056,9 +1067,9 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
                 Blink_Cooldown -= diff;
         }
 
-        if(me->IsWithinMeleeRange(me->getVictim()))
+        if(MeleeCheck_Timer < diff)
         {
-            if(MeleeCheck_Timer < diff)
+            if(me->IsWithinMeleeRange(me->getVictim()))
             {
                 if(canFroze)
                 {
@@ -1067,18 +1078,11 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
                     SetAutocast(SPELL_ICE_LANCE, 1400, true);
                     canFroze = false;
                 }
-                else if(canCoC)
-                {
-                    ForceSpellCast(SPELL_CONE_OF_COLD, CAST_SELF, INTERRUPT_AND_CAST);
-                    canCoC = false;
-                }
-
                 if(canBlink)
                 {
                     ForceSpellCast(SPELL_BLINK, CAST_SELF);
                     MeleeCheck_Timer = urand(5000, 10000);
                     canBlink = false;
-                    RegenMana();
                     return;
                 }
                 else
@@ -1087,12 +1091,20 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
                     me->GetClosePoint(x, y, z, 0, 7.0, me->GetAngle(me->getVictim()));
                     me->GetMotionMaster()->MovePoint(1, x, y, z);
                 }
-                RegenMana();
                 MeleeCheck_Timer = 2000;
             }
-            else
-                MeleeCheck_Timer -= diff;
+
+            if(me->IsWithinDistInMap(me->getVictim(), 10.0))
+            {
+                if(canCoC)
+                {
+                    ForceSpellCast(SPELL_CONE_OF_COLD, CAST_TANK, INTERRUPT_AND_CAST);
+                    canCoC = false;
+                }
+            }
         }
+        else
+            MeleeCheck_Timer -= diff;
 
         if(Polymorph_Timer < diff)
         {
@@ -1663,7 +1675,7 @@ struct TRINITY_DLL_DECL mob_high_explosive_sheepAI : public ScriptedAI
     void Reset()
     {
         SelfDestro_Timer = 60000;
-        Check_Timer = 1000;
+        Check_Timer = 500;
     }
 
     void UpdateAI(const uint32 diff)
@@ -1675,7 +1687,7 @@ struct TRINITY_DLL_DECL mob_high_explosive_sheepAI : public ScriptedAI
         {
             if(me->IsWithinMeleeRange(me->getVictim()))
                 DoCast(me, SPELL_SHEEP_EXPLOSION);
-            Check_Timer = 1000;
+            Check_Timer = 500;
         }
         else
             Check_Timer -= diff;
