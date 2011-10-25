@@ -278,7 +278,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
     {
         uint32 maxMana = me->GetMaxPower(POWER_MANA);
         uint32 Mana = me->GetPower(POWER_MANA);
-        me->SetPower(POWER_MANA, Mana+0.03*maxMana);
+        me->SetPower(POWER_MANA, Mana+(HeroicMode?0.08:0.05)*maxMana);
     }
 
     void UpdateAI(const uint32 diff)
@@ -765,7 +765,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
     {
         uint32 maxMana = me->GetMaxPower(POWER_MANA);
         uint32 Mana = me->GetPower(POWER_MANA);
-        me->SetPower(POWER_MANA, Mana+0.05*maxMana);
+        me->SetPower(POWER_MANA, Mana+0.02*maxMana);
     }
 
     void UpdateAI(const uint32 diff)
