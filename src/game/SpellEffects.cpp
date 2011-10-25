@@ -7038,6 +7038,8 @@ void Spell::EffectLeapForward(uint32 i)
         unitTarget->UpdateGroundPositionZ(cx, cy, cz);
 
         unitTarget->NearTeleportTo(cx, cy, cz +0.5f, unitTarget->GetOrientation(), unitTarget == m_caster);
+        if(unitTarget->GetTypeId() == TYPEID_UNIT)
+            unitTarget->SendMonsterStop();
     }
 }
 void Spell::EffectLeapBack(uint32 i)

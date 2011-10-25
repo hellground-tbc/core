@@ -149,10 +149,14 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         }
     }
 
+    void AttackStart(Unit* who)
+    {
+        DoScriptText(SAY_AGGRO, me);
+        ScriptedAI::AttackStart(who);
+    }
+
     void EnterCombat(Unit* who)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
-
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = m_creature->GetUnit(Adds[i].guid))
                 pAdd->AddThreat(who, 1.0f);
@@ -333,7 +337,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
                     Heal_Timer = 3000;
                 else
-                    Heal_Timer = 10000;
+                    Heal_Timer = urand(4000, 10000);
             }
             else
                 Heal_Timer = 2000;
@@ -465,8 +469,8 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         DoZoneInCombat();
         if(pInstance)
         {
-            if(Creature* Delrissa = me->GetCreature(pInstance->GetData64(DATA_DELRISSA)))
-                Delrissa->AI()->EnterCombat(who);
+            if(Creature* Delrissa = m_creature->GetCreature(pInstance->GetData64(DATA_DELRISSA)))
+                ((boss_priestess_delrissaAI*)Delrissa->AI())->EnterCombat(who);
         }
     }
 
@@ -698,6 +702,8 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
 #define SPELL_SUMMON_IMP             44163
 #define SPELL_IMP_FIREBALL           44164
 
+#define NPC_FIZZLE                   24656
+
 enum EllrisSpec
 {
     SPEC_SHADOW = 0,
@@ -719,8 +725,6 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
     uint32 Curse_of_Agony_Timer;
     uint32 Fear_Timer;
 
-    uint64 SummonGUID;
-
     void Reset()
     {
         Check_Timer = 2000;
@@ -728,7 +732,6 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
         Seed_of_Corruption_Timer = 2000;
         Curse_of_Agony_Timer = 1000;
         Fear_Timer = 10000;
-        SummonGUID = NULL;
 
         boss_priestess_guestAI::Reset();
     }
@@ -752,9 +755,11 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
         boss_priestess_guestAI::JustDied(killer);
     }
 
-    void JustSummoned(Creature* summon)
+    void RegenMana()
     {
-        SummonGUID = summon->GetGUID();
+        uint32 maxMana = me->GetMaxPower(POWER_MANA);
+        uint32 Mana = me->GetPower(POWER_MANA);
+        me->SetPower(POWER_MANA, Mana+0.05*maxMana);
     }
 
     void UpdateAI(const uint32 diff)
@@ -763,12 +768,17 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
         {
             if(SummonImp_Timer < diff)
             {
-                // check if still having pet ;]
-                if(!me->GetMap()->GetCreature(SummonGUID))
-                    SummonGUID = NULL;
+                // check if still having pet nearby;]
+                Unit* Fizzle = FindCreature(NPC_FIZZLE, 60.0, me);
 
-                if(!SummonGUID)
+                if(!Fizzle)
                     DoCast(m_creature, SPELL_SUMMON_IMP, false);
+
+                if(Fizzle && !Fizzle->isAlive())
+                {
+                    ((Creature*)Fizzle)->RemoveCorpse();
+                    DoCast(m_creature, SPELL_SUMMON_IMP, false);
+                }
                 SummonImp_Timer = 15000;
             }
             else
@@ -792,6 +802,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
                 if(me->IsWithinDistInMap(me->getVictim(), 30))
                     me->GetMotionMaster()->MoveIdle();
             }
+            RegenMana();
             Check_Timer = 2000;
         }
         else
@@ -969,7 +980,11 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         if(who->IsWithinDistInMap(me, 40.0))
             ScriptedAI::AttackStartNoMove(who);
         else
-            me->GetMotionMaster()->MoveChase(who, 35);
+        {
+            float x, y, z;
+            me->GetClosePoint(x, y, z, 0, me->GetDistance2d(who)/2, me->GetAngle(who));
+            me->GetMotionMaster()->MovePoint(1, x, y, z);
+        }
     }
 
     void MovementInform(uint32 Type, uint32 Id)
@@ -987,6 +1002,13 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         }
     }
 
+    void RegenMana()
+    {
+        uint32 maxMana = me->GetMaxPower(POWER_MANA);
+        uint32 Mana = me->GetPower(POWER_MANA);
+        me->SetPower(POWER_MANA, Mana+0.05*maxMana);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )
@@ -998,8 +1020,6 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         {
             if(FrostNova_Cooldown < diff)
             {
-                ClearCastQueue();
-                SetAutocast(SPELL_FROSTBOLT, 3000, true);
                 canFroze = true;
                 FrostNova_Cooldown = 25000;
             }
@@ -1020,6 +1040,8 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         {
             if(Blink_Cooldown < diff)
             {
+                ClearCastQueue();
+                SetAutocast(SPELL_FROSTBOLT, 3000, true);
                 canBlink = true;
                 Blink_Cooldown = 15000;
             }
@@ -1033,14 +1055,14 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             {
                 if(canFroze)
                 {
-                    ForceSpellCast(SPELL_FROST_NOVA, CAST_NULL, INTERRUPT_AND_CAST);
+                    ForceSpellCast(SPELL_FROST_NOVA, CAST_SELF, INTERRUPT_AND_CAST);
                     ClearCastQueue();
                     SetAutocast(SPELL_ICE_LANCE, 1400, true);
                     canFroze = false;
                 }
                 else if(canCoC)
                 {
-                    ForceSpellCast(SPELL_CONE_OF_COLD, CAST_NULL, INTERRUPT_AND_CAST);
+                    ForceSpellCast(SPELL_CONE_OF_COLD, CAST_SELF, INTERRUPT_AND_CAST);
                     canCoC = false;
                 }
 
@@ -1049,6 +1071,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
                     ForceSpellCast(SPELL_BLINK, CAST_SELF);
                     MeleeCheck_Timer = urand(5000, 10000);
                     canBlink = false;
+                    RegenMana();
                     return;
                 }
                 else
@@ -1057,6 +1080,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
                     me->GetClosePoint(x, y, z, 0, 7.0, me->GetAngle(me->getVictim()));
                     me->GetMotionMaster()->MovePoint(1, x, y, z);
                 }
+                RegenMana();
                 MeleeCheck_Timer = 2000;
             }
             else
@@ -1086,7 +1110,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         if(Blizzard_Timer < diff)
         {
             AddSpellToCast(SPELL_BLIZZARD, CAST_RANDOM);
-            Blizzard_Timer = urand(8000, 16000);
+            Blizzard_Timer = urand(16000, 24000);
         }
         else
             Blizzard_Timer -= diff;
@@ -1218,7 +1242,7 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
 #define SPELL_WING_CLIP             44286
 #define SPELL_FREEZING_TRAP         44136
 
-#define CREATURE_SLIVER             24552
+#define NPC_SLIVER                  24552
 
 struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
 {
@@ -1232,7 +1256,6 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
     uint32 Multi_Shot_Timer;
     uint32 Wing_Clip_Timer;
     uint32 Freezing_Trap_Timer;
-    uint64 SliverGUID;
 
     void Reset()
     {
@@ -1243,7 +1266,6 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         Multi_Shot_Timer = urand(16000, 20000);
         Wing_Clip_Timer = 4000;
         Freezing_Trap_Timer = 15000;
-        SliverGUID = 0;
 
         boss_priestess_guestAI::Reset();
     }
@@ -1255,7 +1277,11 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         else if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, 0, 5.0))
             ScriptedAI::AttackStartNoMove(target);
         else
-            me->GetMotionMaster()->MoveChase(who, 25);
+        {
+            float x, y, z;
+            me->GetClosePoint(x, y, z, 0, me->GetDistance2d(who)/2, me->GetAngle(who));
+            me->GetMotionMaster()->MovePoint(1, x, y, z);
+        }
     }
 
     void MovementInform(uint32 Type, uint32 Id)
@@ -1285,16 +1311,21 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
             if(GetSliver_Timer < diff)
             {
                 // check if still having pet ;]
-                if(!me->GetMap()->GetCreature(SliverGUID))
-                    SliverGUID = NULL;
+                Unit* Sliver = FindCreature(NPC_SLIVER, 60.0, me);
 
-                if(!SliverGUID)
+                if(!Sliver)
                 {
                     float x, y, z;
                     me->GetNearPoint(me, x, y, z, 0, 3.0, frand(0, 2*M_PI));
-                    Creature* Sliver = m_creature->SummonCreature(CREATURE_SLIVER, x, y, z, me->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
-                    if(Sliver)
-                        SliverGUID = Sliver->GetGUID();
+                    Creature* Sliver = m_creature->SummonCreature(NPC_SLIVER, x, y, z, me->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
+                }
+
+                if(Sliver && !Sliver->isAlive())
+                {
+                    ((Creature*)Sliver)->RemoveCorpse();
+                    float x, y, z;
+                    me->GetNearPoint(me, x, y, z, 0, 3.0, frand(0, 2*M_PI));
+                    Creature* Sliver = m_creature->SummonCreature(NPC_SLIVER, x, y, z, me->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
                 }
                 GetSliver_Timer = 15000;
             }
@@ -1320,8 +1351,6 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
             }
             else
                 Wing_Clip_Timer -= diff;
-
-            DoMeleeAttackIfReady();
         }
         else
         {
@@ -1375,6 +1404,7 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         }
 
         CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -1435,6 +1465,13 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
             summon->CastSpell(summon, SPELL_WINFURY_WEAPON, true);
     }
 
+    void RegenMana()
+    {
+        uint32 maxMana = me->GetMaxPower(POWER_MANA);
+        uint32 Mana = me->GetPower(POWER_MANA);
+        me->SetPower(POWER_MANA, Mana+0.05*maxMana);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim() )
@@ -1463,6 +1500,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
         if(Totem_Timer < diff)
         {
             AddSpellToCast(RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM), CAST_SELF);
+            RegenMana();
             Totem_Timer = urand(3000, 8000);
         }
         else
