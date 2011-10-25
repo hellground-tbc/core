@@ -112,6 +112,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
     bool canFear;
     bool canUseMedalion;
+    bool aggroSpeach;
 
     uint32 Heal_Timer;
     uint32 Renew_Timer;
@@ -130,6 +131,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
         canFear = true;
         canUseMedalion = true;
+        aggroSpeach = false;
 
         Heal_Timer   = 15000;
         Renew_Timer  = 10000;
@@ -149,14 +151,14 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         }
     }
 
-    void AttackStart(Unit* who)
-    {
-        DoScriptText(SAY_AGGRO, me);
-        ScriptedAI::AttackStart(who);
-    }
-
     void EnterCombat(Unit* who)
     {
+        if(!aggroSpeach)
+        {
+            DoScriptText(SAY_AGGRO, me);
+            aggroSpeach= true;
+        }
+
         for(uint8 i = 0; i < Adds.size(); ++i)
             if(Unit* pAdd = m_creature->GetUnit(Adds[i].guid))
                 pAdd->AddThreat(who, 1.0f);
