@@ -168,16 +168,17 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
     {
         std::set<uint32> AddList;
 
-        while(AddList.size() <= 4)
+        while(AddList.size() < 4)
         {
             uint8 i = urand(0, 7); 
             if(AddList.find(AddEntry[i]) == AddList.end())
                 AddList.insert(AddEntry[i]);
         }
 
+        uint8 i = 0;
+
         for(std::set<uint32>::iterator iter = AddList.begin(); iter != AddList.end(); ++iter)
         {
-            uint8 i = 0;
             Creature* pAdd = m_creature->SummonCreature((*iter), LackeyLocations[i][0], LackeyLocations[i][1], POS_Z, ORIENT, TEMPSUMMON_DEAD_DESPAWN, 0);
             if(pAdd)
             {
