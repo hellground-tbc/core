@@ -202,7 +202,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        if(!urand(0, 7))
+        if(roll_chance_f(10.0))
             DoScriptText(RAND(SAY_EVIL_SLAY1, SAY_EVIL_SLAY2), m_creature);
     }
 
@@ -410,6 +410,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             if(ArcaneBuffetTimer < diff)
             {
                 AddSpellToCast(SPELL_ARCANE_BUFFET, CAST_SELF);
+                if(roll_chance_f(20.0))
                     DoScriptText(RAND(SAY_EVIL_SPELL1, SAY_EVIL_SPELL2), me);
                 ArcaneBuffetTimer = 8000;
             }
@@ -418,7 +419,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
             if(FrostBreathTimer < diff)
             {
-                if(!urand(0,3))
+                if(roll_chance_f(20.0))
                     DoScriptText(RAND(SAY_EVIL_SPELL1, SAY_EVIL_SPELL2), me);
                 AddSpellToCast(SPELL_FROST_BREATH, CAST_SELF);
                 FrostBreathTimer = 15000;
@@ -428,7 +429,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
             if(TailLashTimer < diff)
             {
-                if(!urand(0,3))
+                if(roll_chance_f(20.0))
                     DoScriptText(RAND(SAY_EVIL_SPELL1, SAY_EVIL_SPELL2), me);
                 AddSpellToCast(SPELL_TAIL_LASH, CAST_SELF);
                 TailLashTimer = 15000;
@@ -533,7 +534,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             return;
         }
 
-        if(!urand(0, 5))
+        if(roll_chance_f(10.0))
             DoScriptText(RAND(SAY_SATH_SLAY1, SAY_SATH_SLAY2), m_creature);
     }
 
@@ -649,7 +650,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40);
             if(target)
                 AddSpellToCast(target, SPELL_SHADOW_BOLT);
-            if(!urand(0, 5))
+            if(roll_chance_f(10.0))
                 DoScriptText(SAY_SATH_SPELL1, me);
             ShadowBoltTimer = 7000+(rand()%3000);
         }
@@ -667,7 +668,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         if(CorruptionStrikeTimer < diff)
         {
             AddSpellToCast(m_creature->getVictim(), SPELL_CORRUPTION_STRIKE);
-            if(!urand(0, 5))
+            if(roll_chance_f(10.0))
                 DoScriptText(SAY_SATH_SPELL2, me);
             CorruptionStrikeTimer = 13000;
         }
