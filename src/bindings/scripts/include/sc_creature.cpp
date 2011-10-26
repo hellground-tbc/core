@@ -222,12 +222,19 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                 {
                     if(temp.setAsTarget)
                         m_creature->SetSelection(temp.targetGUID);
-
-                    m_creature->CastSpell(tempU, temp.spellId, temp.triggered);
+                    if(temp.hasCustomValues)
+                        m_creature->CastCustomSpell(tempU, temp.spellId, temp.damage[0], temp.damage[1], temp.damage[2], temp.triggered);
+                    else
+                        m_creature->CastSpell(tempU, temp.spellId, temp.triggered);
                 }
         }
         else
-            m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
+        {
+            if(temp.hasCustomValues)
+                m_creature->CastCustomSpell((Unit*)NULL, temp.spellId, temp.damage[0], temp.damage[1], temp.damage[2], temp.triggered);
+            else
+                m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
+        }
 
         casted = true;
     }
@@ -326,6 +333,16 @@ void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, bo
     spellList.push_back(temp);
 }
 
+void ScriptedAI::AddCustomSpellToCast(Unit* victim, uint32 spellId, const int32 *dmg0, const int32 *dmg1, const int32 *dmg2, bool triggered, bool visualTarget)
+{
+    if(m_creature->isCrowdControlled())
+        return;
+
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, dmg0, dmg1, dmg2, triggered, 0, visualTarget);
+
+    spellList.push_back(temp);
+}
+
 void ScriptedAI::AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered, bool visualTarget)
 {
     if(m_creature->isCrowdControlled())
@@ -376,6 +393,40 @@ void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool 
     };
 
     SpellToCast temp(targetGUID, spellId, triggered, 0, false);
+
+    spellList.push_back(temp);
+}
+
+void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode, const int32 *dmg0, const int32 *dmg1, const int32 *dmg2, bool triggered)
+{
+    if (m_creature->isCrowdControlled())
+        return;
+
+    uint64 targetGUID = 0;
+    switch (targetMode)
+    {
+        case CAST_TANK:
+            targetGUID = me->getVictimGUID();
+            break;
+        case CAST_NULL:
+            targetGUID = 0;
+            break;
+        case CAST_RANDOM:
+        case CAST_RANDOM_WITHOUT_TANK:
+        {
+            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
+            Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
+            if(pTarget)
+                targetGUID = pTarget->GetGUID();
+            break;
+        }
+        case CAST_SELF:
+            targetGUID = me->GetGUID();
+        default:
+            break;
+    };
+
+    SpellToCast temp(targetGUID, spellId, dmg0, dmg1, dmg2, triggered, 0, false);
 
     spellList.push_back(temp);
 }

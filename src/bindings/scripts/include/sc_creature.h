@@ -76,10 +76,12 @@ class SpellToCast
 {
 public:
     float castDest[3];
+    const int32 *damage[3];
     uint64 targetGUID;
     uint32 spellId;
     bool triggered;
     bool isDestCast;
+    bool hasCustomValues;
     bool setAsTarget;
     int32 scriptTextEntry;
 
@@ -92,6 +94,7 @@ public:
             this->targetGUID = 0;
 
         this->isDestCast = false;
+        this->hasCustomValues = false;
         this->spellId = spellId;
         this->triggered = triggered;
         this->scriptTextEntry = scriptTextEntry;
@@ -101,6 +104,7 @@ public:
     SpellToCast(uint64 target, uint32 spellId, bool triggered, int32 scriptTextEntry, bool visualTarget)
     {
         this->isDestCast = false;
+        this->hasCustomValues = false;
         this->targetGUID = target;
         this->spellId = spellId;
         this->triggered = triggered;
@@ -110,10 +114,25 @@ public:
 
     SpellToCast(float x, float y, float z, uint32 spellId, bool triggered, int32 scriptTextEntry, bool visualTarget)
     {
-        isDestCast = true;
+        this->isDestCast = true;
+        this->hasCustomValues = false;
         this->castDest[0] = x;
         this->castDest[1] = y;
         this->castDest[2] = z;
+        this->spellId = spellId;
+        this->triggered = triggered;
+        this->scriptTextEntry = scriptTextEntry;
+        this->setAsTarget = visualTarget;
+    }
+
+    SpellToCast(uint64 target, uint32 spellId, const int32 *dmg0, const int32 *dmg1, const int32 *dmg2, bool triggered, int32 scriptTextEntry, bool visualTarget)
+    {
+        this->isDestCast = false;
+        this->hasCustomValues = true;
+        this->damage[0] = dmg0;
+        this->damage[1] = dmg1;
+        this->damage[2] = dmg2;
+        this->targetGUID = target;
         this->spellId = spellId;
         this->triggered = triggered;
         this->scriptTextEntry = scriptTextEntry;
@@ -129,7 +148,10 @@ public:
         this->setAsTarget = false;
         this->isDestCast = false;
         for(uint8 i=0;i<3;++i)
+        {
             this->castDest[i] = 0;
+            this->damage[i] = 0;
+        }
     }
 
     ~SpellToCast()
@@ -141,7 +163,10 @@ public:
         this->setAsTarget = false;
         this->isDestCast = false;
         for(uint8 i=0;i<3;++i)
+        {
             this->castDest[i] = 0;
+            this->damage[i] = 0;
+        }
     }
 };
 
@@ -257,8 +282,10 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     //Casts queue
     void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false, bool visualTarget = false);
+    void AddCustomSpellToCast(Unit* victim, uint32 spellId, const int32 *dmg0 = NULL, const int32 *dmg1 = NULL, const int32 *dmg2 = NULL, bool triggered = false, bool visualTarget = false);
     void AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered = false, bool visualTarget = false);
     void AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool triggered = false);
+    void AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode, const int32 *dmg0 = NULL, const int32 *dmg1 = NULL, const int32 *dmg2 = NULL, bool triggered = false);
     void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
     void AddSpellToCastWithScriptText(uint32 spellId, castTargetMode self, int32 scriptTextEntry, bool triggered = false);
 
