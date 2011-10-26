@@ -684,7 +684,7 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
         if(Gouge_Timer < diff)
         {
             AddSpellToCast(SPELL_GOUGE, CAST_TANK);
-            //DoModifyThreatPercent(m_creature->getVictim(),-100);
+            DoModifyThreatPercent(m_creature->getVictim(),-100);
             Gouge_Timer = urand(12000, 25000);
         }
         else
@@ -715,22 +715,13 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
 
 #define NPC_FIZZLE                   24656
 
-enum EllrisSpec
-{
-    SPEC_SHADOW = 0,
-    SPEC_FIRE   = 1
-};
-
 struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 {
     //Warlock
-    boss_ellris_duskhallowAI(Creature *c) : boss_priestess_guestAI(c)
-    {
-        spec = urand(0,1);
-    }
+    boss_ellris_duskhallowAI(Creature *c) : boss_priestess_guestAI(c) { }
 
-    uint8 spec;
     uint32 Check_Timer;
+    uint32 Autocast_Timer;
     uint32 SummonImp_Timer;
     uint32 Seed_of_Corruption_Timer;
     uint32 Curse_of_Agony_Timer;
@@ -739,6 +730,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
     void Reset()
     {
         Check_Timer = 2000;
+        Autocast_Timer = 0;
         SummonImp_Timer = 5000;
         Seed_of_Corruption_Timer = 2000;
         Curse_of_Agony_Timer = 1000;
@@ -750,15 +742,6 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
     void AttackStart(Unit* who)
     {
         ScriptedAI::AttackStartNoMove(who);
-        switch(spec)
-        {
-            case SPEC_FIRE:
-                SetAutocast(SPELL_IMMOLATE, 1900, true);
-                break;
-            case SPEC_SHADOW:
-                SetAutocast(SPELL_SHADOW_BOLT, 2900, true);
-                break;
-        }
     }
 
     void JustDied(Unit* killer)
@@ -819,6 +802,17 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
         else
             Check_Timer -= diff;
 
+        if(Autocast_Timer < diff)
+        {
+            int32 damage = (HeroicMode?690:345);
+            AddCustomSpellToCast(SPELL_SHADOW_BOLT, CAST_TANK, &damage);
+            if(roll_chance_f(20.0))
+                AddSpellToCast(SPELL_IMMOLATE, CAST_TANK);
+            Autocast_Timer = 3000;
+        }
+        else
+            Autocast_Timer -= diff;
+
         if(Seed_of_Corruption_Timer < diff)
         {
             AddSpellToCast(SPELL_SEED_OF_CORRUPTION, CAST_RANDOM);
@@ -829,7 +823,8 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
         if(Curse_of_Agony_Timer < diff)
         {
-            AddSpellToCast(SPELL_CURSE_OF_AGONY, CAST_TANK);
+            int32 damage = (HeroicMode?180:120);
+            AddCustomSpellToCast(SPELL_CURSE_OF_AGONY, CAST_TANK, &damage);
             Curse_of_Agony_Timer = urand(12000, 15000);
         }
         else
@@ -851,12 +846,16 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
 {
     mob_fizzleAI(Creature *c) : ScriptedAI(c) { }
 
-    void Reset() { }
+    uint32 Autocast_Timer;
+
+    void Reset()
+    {
+        Autocast_Timer = 0;
+    }
 
     void AttackStart(Unit* who)
     {
         ScriptedAI::AttackStartNoMove(who);
-        SetAutocast(SPELL_IMP_FIREBALL, 1900, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -864,7 +863,16 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-      CastNextSpellIfAnyAndReady(diff);
+        if(Autocast_Timer < diff)
+        {
+            int32 damage = 118;
+            AddCustomSpellToCast(SPELL_IMP_FIREBALL, CAST_TANK, &damage);
+            Autocast_Timer = 1900;
+        }
+        else
+            Autocast_Timer -= diff;
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -964,6 +972,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
     uint32 Blink_Cooldown;
 
     uint32 Check_Timer;
+    uint32 Autocast_Timer;
     uint32 MeleeCheck_Timer;
     uint32 Polymorph_Timer;
     uint32 Ice_Block_Timer;
@@ -982,8 +991,8 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         Polymorph_Timer = 0;
         MeleeCheck_Timer = 2000;
         Check_Timer = 5000;
+        Autocast_Timer = 0;
         Blizzard_Timer = urand(3000, 10000);
-        SetAutocast(SPELL_FROSTBOLT, 3000, true);
 
         boss_priestess_guestAI::Reset();
     }
@@ -1037,6 +1046,15 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         else
             Check_Timer -= diff;
 
+        if(Autocast_Timer < diff)
+        {
+            int32 damage = (HeroicMode?600:350);
+            AddCustomSpellToCast(SPELL_FROSTBOLT, CAST_TANK, &damage);
+            Autocast_Timer = 3000;
+        }
+        else
+            Autocast_Timer -= diff;
+
         if(!canFroze)
         {
             if(FrostNova_Cooldown < diff)
@@ -1076,7 +1094,8 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             {
                 if(canFroze)
                 {
-                    ForceSpellCast(SPELL_FROST_NOVA, CAST_SELF, INTERRUPT_AND_CAST);
+                    int32 damage = 600;
+                    AddCustomSpellToCast(SPELL_FROST_NOVA, CAST_SELF, &damage, 0, 0, true);
                     SetAutocast(SPELL_ICE_LANCE, 1400, true);
                     canFroze = false;
                 }
@@ -1100,7 +1119,8 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             {
                 if(canCoC)
                 {
-                    ForceSpellCast(SPELL_CONE_OF_COLD, CAST_TANK, INTERRUPT_AND_CAST);
+                    int32 damage = (HeroicMode?950:350);
+                    AddCustomSpellToCast(SPELL_CONE_OF_COLD, CAST_TANK, 0, &damage, 0);
                     canCoC = false;
                 }
             }
@@ -1401,11 +1421,12 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
 
             if(Shoot_Timer < diff)
             {
+                int32 damage = (HeroicMode?774:260);
                 if(me->IsWithinDistInMap(me->getVictim(), 30))
-                    AddSpellToCast(me->getVictim(), SPELL_SHOOT);
+                    AddCustomSpellToCast(me->getVictim(), SPELL_SHOOT, &damage);
                 else
                     ResetThreatTimer = 0;
-                Shoot_Timer = urand(2500, 6000);
+                Shoot_Timer = urand(2500, 4000);
             }
             else
                 Shoot_Timer -= diff;
@@ -1511,7 +1532,6 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
             if(Healing_Wave_Cooldown < diff)
             {
                 canHeal = true;
-                DoCast(m_creature, SPELL_LESSER_HEALING_WAVE);
                 Healing_Wave_Cooldown = (HeroicMode?urand(5000, 8000):urand(6000, 10000));
             }
             else
@@ -1520,6 +1540,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         if(Totem_Timer < diff)
         {
+            // TODO: fix totems despawning after evade, also remove winfury aura on totem despawn
             AddSpellToCast(RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM), CAST_SELF);
             RegenMana();
             Totem_Timer = urand(3000, 8000);
@@ -1545,7 +1566,8 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         if(Frost_Shock_Timer < diff)
         {
-            AddSpellToCast(SPELL_FROST_SHOCK, CAST_TANK);
+            int32 damage = 270;
+            AddCustomSpellToCast(SPELL_FROST_SHOCK, CAST_TANK, 0, &damage);
             Frost_Shock_Timer = urand(4000, 8000);
         }
         else
@@ -1629,7 +1651,8 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
         if(Fel_Iron_Bomb_Timer < diff)
         {
             AddSpellToCast(SPELL_FEL_IRON_BOMB, CAST_RANDOM);
-            Fel_Iron_Bomb_Timer = urand(15000, 20000);
+            Fel_Iron_Bomb_Timer =HeroicMode?urand(2500, 4000):urand(4000, 10000);
+            ResetThreatTimer = 0;
         }
         else
             Fel_Iron_Bomb_Timer -= diff;
@@ -1649,7 +1672,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
                     }
                 }
             }
-            Recombobulate_Timer = 5000;
+            Recombobulate_Timer = 3000;
         }
         else
             Recombobulate_Timer -= diff;
@@ -1657,7 +1680,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
         if(High_Explosive_Sheep_Timer < diff)
         {
             AddSpellToCast(SPELL_HIGH_EXPLOSIVE_SHEEP, CAST_SELF);
-            High_Explosive_Sheep_Timer = urand(45000, 65000);
+            High_Explosive_Sheep_Timer = HeroicMode?urand(15000, 20000):urand(22000, 32000);
         }
         else
             High_Explosive_Sheep_Timer -= diff;

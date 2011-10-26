@@ -1,0 +1,1 @@
+UPDATE creature_template SET equipment_id = 2387, minrangedmg = 700, maxrangedmg = 950, rangedattackpower = 33 WHERE entry IN (24555, 25555);;
