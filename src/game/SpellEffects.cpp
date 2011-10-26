@@ -3323,6 +3323,7 @@ void Spell::EffectHealthLeech(uint32 i)
     sLog.outDebug("HealthLeech :%i", damage);
 
     float multiplier = m_spellInfo->EffectMultipleValue[i];
+    multiplier = multiplier ? multiplier : 1.0;
 
     if (Player *modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_MULTIPLE_VALUE, multiplier);
