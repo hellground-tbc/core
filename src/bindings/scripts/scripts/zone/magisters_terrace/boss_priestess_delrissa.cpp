@@ -340,7 +340,8 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         {
             if(Unit* target = SelectLowestHpFriendly(40, 200))
             {
-                AddSpellToCast(target, SPELL_FLASH_HEAL);
+                int32 heal = 620;
+                AddCustomSpellToCast(target, SPELL_FLASH_HEAL, &heal, 0, 0, false, true);
                 if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
                     Heal_Timer = 3000;
                 else
@@ -980,7 +981,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         Blink_Cooldown = 15000;
         Polymorph_Timer = 0;
         MeleeCheck_Timer = 2000;
-        Check_Timer = 2000;
+        Check_Timer = 5000;
         Blizzard_Timer = urand(3000, 10000);
         SetAutocast(SPELL_FROSTBOLT, 3000, true);
 
@@ -1018,7 +1019,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
     {
         uint32 maxMana = me->GetMaxPower(POWER_MANA);
         uint32 Mana = me->GetPower(POWER_MANA);
-        me->SetPower(POWER_MANA, Mana+(HeroicMode?0.03:0.02)*maxMana);
+        me->SetPower(POWER_MANA, Mana+(HeroicMode?0.02:0.01)*maxMana);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1031,7 +1032,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         if(Check_Timer < diff)
         {
             RegenMana();
-            Check_Timer = 2000;
+            Check_Timer = 5000;
         }
         else
             Check_Timer -= diff;
