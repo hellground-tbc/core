@@ -7884,7 +7884,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 0;
             }
-            else if (spellProto->Id == 43427 || spellProto->Id == 46194 || spellProto->Id == 44176)) // Ice Lance (Hex Lord Malacrass / Yazzai)
+            else if (spellProto->Id == 43427 || spellProto->Id == 46194 || spellProto->Id == 44176) // Ice Lance (Hex Lord Malacrass / Yazzai)
             {
                 CastingTime /= 3;                            // applied 1/3 bonuses in case generic target
                 if (pVictim->isFrozen())                     // and compensate this for frozen target.
