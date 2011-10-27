@@ -151,6 +151,17 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         }
     }
 
+    void EnterEvadeMode()
+    {
+        ScriptedAI::EnterEvadeMode();
+
+        for(uint8 i = 0; i < Adds.size(); ++i)
+        {
+            if(Creature* pAdd = m_creature->GetCreature(Adds[i].guid))
+                pAdd->AI()->EnterEvadeMode();
+        }
+    }
+
     void EnterCombat(Unit* who)
     {
         if(!aggroSpeach)
@@ -160,8 +171,13 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         }
 
         for(uint8 i = 0; i < Adds.size(); ++i)
-            if(Unit* pAdd = m_creature->GetUnit(Adds[i].guid))
+        {
+            if(Creature* pAdd = m_creature->GetCreature(Adds[i].guid))
+            {
+                pAdd->AI()->AttackStart(who);
                 pAdd->AddThreat(who, 1.0f);
+            }
+        }
     }
 
     void SummonAdds()
@@ -287,14 +303,25 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
+
         if(Check_Timer < diff)
         {
             DoZoneInCombat();
             RegenMana();
-            if(!me->IsWithinDistInMap(&wLoc, 60.0))
+            if(abs(me->GetPositionZ() - wLoc.coord_z) > 10.0)
             {
                 EnterEvadeMode();
                 return;
+            }
+            if(HeroicMode && canUseMedalion)
+            {
+                if(me->isCrowdControlled())
+                {
+                    DoCast(me, SPELL_MEDALION_OF_IMMUNITY, true);
+                    canUseMedalion = false;
+                }
             }
             if(canFear && me->IsWithinMeleeRange(me->getVictim()))
             {
@@ -317,23 +344,15 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 Scream_Cooldown -= diff;
         }
 
-        if(HeroicMode)
+        if(HeroicMode && !canUseMedalion)
         {
-            if(canUseMedalion)
+            if(Medalion_Cooldown < diff)
             {
-                DoCast(me, SPELL_MEDALION_OF_IMMUNITY, true);
-                canUseMedalion = false;
+                canUseMedalion = true;
+                Medalion_Cooldown = 30000;
             }
             else
-            {
-                if(Medalion_Cooldown < diff)
-                {
-                    canUseMedalion = true;
-                    Medalion_Cooldown = 30000;
-                }
-                else
-                    Medalion_Cooldown -= diff;
-            }
+                Medalion_Cooldown -= diff;
         }
 
         if(Heal_Timer < diff)
@@ -341,7 +360,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
             if(Unit* target = SelectLowestHpFriendly(40, 200))
             {
                 AddCustomSpellToCast(target, SPELL_FLASH_HEAL, 620, 0, 0, false, true);
-                if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
+                if(target->GetHealth() * 100 / target->GetMaxHealth() < 50)
                     Heal_Timer = 3000;
                 else
                     Heal_Timer = urand(4000, 10000);
@@ -357,7 +376,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
             if(Unit *target = SelectLowestHpFriendlyMissingBuff(40, SPELL_RENEW))
             {
                 AddSpellToCast(target, SPELL_RENEW);
-                if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
+                if(target->GetHealth() * 100 / target->GetMaxHealth() < 40)
                     Renew_Timer = 4000;
                 else
                     Renew_Timer = 8000;
@@ -419,7 +438,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
             SWPain_Timer = 1000;
             if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true, -SPELL_SW_PAIN))
             {
-                if(!target->hasUnitState(UNIT_STAT_LOST_CONTROL))
+                if(!target->isCrowdControlled())
                 {
                     AddSpellToCast(target,SPELL_SW_PAIN);
                     SWPain_Timer = 10000;
@@ -449,6 +468,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
     bool canUseMedalion;
     bool usedPotion;
     uint32 ResetThreatTimer;
+    uint32 Check_Timer;
     uint32 Medalion_Cooldown;
     float targetRange;
 
@@ -458,6 +478,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         resetThreat = true;
         canUseMedalion = true;
         ResetThreatTimer = urand(8000, 20000);             // These guys like to switch targets often, and are not meant to be tanked.
+        Check_Timer = 2000;
         Medalion_Cooldown = 30000;
         targetRange = 100;
 
@@ -510,23 +531,30 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
             usedPotion = true;
         }
 
-        if(HeroicMode)
+        if(Check_Timer < diff)
         {
-            if(canUseMedalion)
+            if(HeroicMode && canUseMedalion)
             {
-                DoCast(me, SPELL_MEDALION_OF_IMMUNITY, true);
-                canUseMedalion = false;
+                if(me->isCrowdControlled())
+                {
+                    DoCast(me, SPELL_MEDALION_OF_IMMUNITY, true);
+                    canUseMedalion = false;
+                }
+            }
+            Check_Timer = 2000;
+        }
+        else
+            Check_Timer -= diff;
+
+        if(HeroicMode && !canUseMedalion)
+        {
+            if(Medalion_Cooldown < diff)
+            {
+                canUseMedalion = true;
+                Medalion_Cooldown = 30000;
             }
             else
-            {
-                if(Medalion_Cooldown < diff)
-                {
-                    canUseMedalion = true;
-                    Medalion_Cooldown = 30000;
-                }
-                else
-                    Medalion_Cooldown -= diff;
-            }
+                Medalion_Cooldown -= diff;
         }
 
         if(resetThreat)
@@ -783,6 +811,9 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
+
         if(Check_Timer < diff)
         {
             if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
@@ -860,6 +891,9 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
+
         if(Autocast_Timer < diff)
         {
             AddCustomSpellToCast(SPELL_IMP_FIREBALL, CAST_TANK, 118);
@@ -907,6 +941,9 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
             return;
 
         boss_priestess_guestAI::UpdateAI(diff);
+
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
 
         if(Knockdown_Timer < diff)
         {
@@ -1033,6 +1070,9 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             return;
 
         boss_priestess_guestAI::UpdateAI(diff);
+
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
 
         if(Check_Timer < diff)
         {
@@ -1198,6 +1238,9 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
             return;
 
         boss_priestess_guestAI::UpdateAI(diff);
+
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
 
         if(BattleShout_Timer < diff)
         {
@@ -1372,6 +1415,9 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
+
         if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5))
         {
             if(Wing_Clip_Timer < diff)
@@ -1453,7 +1499,10 @@ struct TRINITY_DLL_DECL mob_sliverAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-      DoMeleeAttackIfReady();
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
+
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -1496,7 +1545,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
     void JustSummoned(Creature* summon)
     {
         if(summon->GetEntry() == NPC_WINDFURY_TOTEM)
-            summon->CastSpell(summon, SPELL_WINFURY_WEAPON, true);
+            summon->CastSpell((Unit*)NULL, SPELL_WINFURY_WEAPON, true, 0, 0, me->GetGUID());
     }
 
     void RegenMana()
@@ -1512,6 +1561,9 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
             return;
 
         boss_priestess_guestAI::UpdateAI(diff);
+
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
 
         if(canHeal)
         {
@@ -1617,6 +1669,9 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
             return;
 
         boss_priestess_guestAI::UpdateAI(diff);
+
+        if(me->getVictim()->isCrowdControlled())
+            DoModifyThreatPercent(me->getVictim(), -100);
 
         if(Goblin_Dragon_Gun_Timer < diff)
         {
