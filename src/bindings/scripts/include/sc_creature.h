@@ -76,7 +76,7 @@ class SpellToCast
 {
 public:
     float castDest[3];
-    const int32 *damage[3];
+    int32 damage[3];
     uint64 targetGUID;
     uint32 spellId;
     bool triggered;
@@ -125,7 +125,7 @@ public:
         this->setAsTarget = visualTarget;
     }
 
-    SpellToCast(uint64 target, uint32 spellId, const int32 *dmg0, const int32 *dmg1, const int32 *dmg2, bool triggered, int32 scriptTextEntry, bool visualTarget)
+    SpellToCast(uint64 target, uint32 spellId, int32 dmg0, int32 dmg1, int32 dmg2, bool triggered, int32 scriptTextEntry, bool visualTarget)
     {
         this->isDestCast = false;
         this->hasCustomValues = true;
@@ -282,10 +282,10 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     //Casts queue
     void AddSpellToCast(Unit* victim, uint32 spellId, bool triggered = false, bool visualTarget = false);
-    void AddCustomSpellToCast(Unit* victim, uint32 spellId, const int32 *dmg0 = NULL, const int32 *dmg1 = NULL, const int32 *dmg2 = NULL, bool triggered = false, bool visualTarget = false);
+    void AddCustomSpellToCast(Unit* victim, uint32 spellId, int32 dmg0 = 0, int32 dmg1 = 0, int32 dmg2 = 0, bool triggered = false, bool visualTarget = false);
     void AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered = false, bool visualTarget = false);
     void AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool triggered = false);
-    void AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode, const int32 *dmg0 = NULL, const int32 *dmg1 = NULL, const int32 *dmg2 = NULL, bool triggered = false);
+    void AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode, int32 dmg0 = 0, int32 dmg1 = 0, int32 dmg2 = 0, bool triggered = false);
     void AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int32 scriptTextEntry, bool triggered = false, bool visualTarget = false);
     void AddSpellToCastWithScriptText(uint32 spellId, castTargetMode self, int32 scriptTextEntry, bool triggered = false);
 

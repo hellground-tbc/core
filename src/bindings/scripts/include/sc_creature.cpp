@@ -223,7 +223,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                     if(temp.setAsTarget)
                         m_creature->SetSelection(temp.targetGUID);
                     if(temp.hasCustomValues)
-                        m_creature->CastCustomSpell(tempU, temp.spellId, temp.damage[0], temp.damage[1], temp.damage[2], temp.triggered);
+                        m_creature->CastCustomSpell(tempU, temp.spellId, &temp.damage[0], &temp.damage[1], &temp.damage[2], temp.triggered);
                     else
                         m_creature->CastSpell(tempU, temp.spellId, temp.triggered);
                 }
@@ -231,7 +231,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
         else
         {
             if(temp.hasCustomValues)
-                m_creature->CastCustomSpell((Unit*)NULL, temp.spellId, temp.damage[0], temp.damage[1], temp.damage[2], temp.triggered);
+                m_creature->CastCustomSpell((Unit*)NULL, temp.spellId, &temp.damage[0], &temp.damage[1], &temp.damage[2], temp.triggered);
             else
                 m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
         }
@@ -333,7 +333,7 @@ void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, bo
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddCustomSpellToCast(Unit* victim, uint32 spellId, const int32 *dmg0, const int32 *dmg1, const int32 *dmg2, bool triggered, bool visualTarget)
+void ScriptedAI::AddCustomSpellToCast(Unit* victim, uint32 spellId, int32 dmg0, int32 dmg1, int32 dmg2, bool triggered, bool visualTarget)
 {
     if(m_creature->isCrowdControlled())
         return;
@@ -397,7 +397,7 @@ void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool 
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode, const int32 *dmg0, const int32 *dmg1, const int32 *dmg2, bool triggered)
+void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode, int32 dmg0, int32 dmg1, int32 dmg2, bool triggered)
 {
     if (m_creature->isCrowdControlled())
         return;

@@ -340,8 +340,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         {
             if(Unit* target = SelectLowestHpFriendly(40, 200))
             {
-                int32 heal = 620;
-                AddCustomSpellToCast(target, SPELL_FLASH_HEAL, &heal, 0, 0, false, true);
+                AddCustomSpellToCast(target, SPELL_FLASH_HEAL, 620, 0, 0, false, true);
                 if(target->GetHealth() * 100 / target->GetMaxHealth() < 20)
                     Heal_Timer = 3000;
                 else
@@ -804,8 +803,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
         if(Autocast_Timer < diff)
         {
-            int32 damage = (HeroicMode?690:345);
-            AddCustomSpellToCast(SPELL_SHADOW_BOLT, CAST_TANK, &damage);
+            AddCustomSpellToCast(SPELL_SHADOW_BOLT, CAST_TANK, (HeroicMode?690:345));
             if(roll_chance_f(20.0))
                 AddSpellToCast(SPELL_IMMOLATE, CAST_TANK);
             Autocast_Timer = 3000;
@@ -823,8 +821,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
         if(Curse_of_Agony_Timer < diff)
         {
-            int32 damage = (HeroicMode?180:120);
-            AddCustomSpellToCast(SPELL_CURSE_OF_AGONY, CAST_TANK, &damage);
+            AddCustomSpellToCast(SPELL_CURSE_OF_AGONY, CAST_TANK, (HeroicMode?180:120));
             Curse_of_Agony_Timer = urand(12000, 15000);
         }
         else
@@ -865,8 +862,7 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
 
         if(Autocast_Timer < diff)
         {
-            int32 damage = 118;
-            AddCustomSpellToCast(SPELL_IMP_FIREBALL, CAST_TANK, &damage);
+            AddCustomSpellToCast(SPELL_IMP_FIREBALL, CAST_TANK, 118);
             Autocast_Timer = 1900;
         }
         else
@@ -1048,8 +1044,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         if(Autocast_Timer < diff)
         {
-            int32 damage = (HeroicMode?600:350);
-            AddCustomSpellToCast(SPELL_FROSTBOLT, CAST_TANK, &damage);
+            AddCustomSpellToCast(SPELL_FROSTBOLT, CAST_TANK, (HeroicMode?600:350));
             Autocast_Timer = 3000;
         }
         else
@@ -1094,8 +1089,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             {
                 if(canFroze)
                 {
-                    int32 damage = 600;
-                    AddCustomSpellToCast(SPELL_FROST_NOVA, CAST_SELF, &damage, 0, 0, true);
+                    AddCustomSpellToCast(SPELL_FROST_NOVA, CAST_SELF, 600, 0, 0, true);
                     SetAutocast(SPELL_ICE_LANCE, 1400, true);
                     canFroze = false;
                 }
@@ -1119,8 +1113,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             {
                 if(canCoC)
                 {
-                    int32 damage = (HeroicMode?950:350);
-                    AddCustomSpellToCast(SPELL_CONE_OF_COLD, CAST_TANK, 0, &damage, 0);
+                    AddCustomSpellToCast(SPELL_CONE_OF_COLD, CAST_TANK, 0, (HeroicMode?950:350), 0);
                     canCoC = false;
                 }
             }
@@ -1421,9 +1414,8 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
 
             if(Shoot_Timer < diff)
             {
-                int32 damage = (HeroicMode?774:260);
                 if(me->IsWithinDistInMap(me->getVictim(), 30))
-                    AddCustomSpellToCast(me->getVictim(), SPELL_SHOOT, &damage);
+                    AddCustomSpellToCast(me->getVictim(), SPELL_SHOOT, (HeroicMode?774:260));
                 else
                     ResetThreatTimer = 0;
                 Shoot_Timer = urand(2500, 4000);
@@ -1566,8 +1558,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         if(Frost_Shock_Timer < diff)
         {
-            int32 damage = 270;
-            AddCustomSpellToCast(SPELL_FROST_SHOCK, CAST_TANK, 0, &damage);
+            AddCustomSpellToCast(SPELL_FROST_SHOCK, CAST_TANK, 0, 270);
             Frost_Shock_Timer = urand(4000, 8000);
         }
         else
