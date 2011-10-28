@@ -1568,13 +1568,15 @@ CreatureAI* GetAI_mob_ashtongue_feral_spirit(Creature *_Creature)
 #define NPC_SUMMONED_WINDFURY_TOTEM 22897
 #define SPELL_CYCLON                39594
 #define SPELL_ATTACK                39593
-#define SPELL_WINDFURY_WEAPON       33727   //rank 5
+#define SPELL_WINDFURY_WEAPON       32911   //rank 3 AoE aura
+#define AURA_WINDFURY               32912
 
 struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
 {
     totem_ashtongue_mysticAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
     uint32 SpellTimer;
+    uint64 SummonerGUID;
 
     void Reset()
     {
@@ -1593,18 +1595,35 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
                 break;
             case NPC_SUMMONED_WINDFURY_TOTEM:
                 m_creature->SetMaxHealth(urand(1800,1900));
+                m_creature->CastSpell((Unit*)NULL, SPELL_WINDFURY_WEAPON, true, 0, 0, SummonerGUID);
                 break;
         }
         m_creature->SetHealth(m_creature->GetMaxHealth());
+    }
+    void IsSummonedBy(Unit* summoner)
+    {
+        if(summoner)
+            SummonerGUID = summoner->GetGUID();
     }
     void JustDied(Unit* killer)
     {
         if(m_creature->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
         {
-            if(Unit* Mystic = GetClosestCreatureWithEntry(m_creature, 22845, 15.0))
+            std::list<Creature*> pList;
+            Trinity::AllFriendlyCreaturesInGrid u_check(me);
+            Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+            Cell::VisitAllObjects(me, searcher, 60.0);  // range than of aura, in case mobs moved too far from totem when killed
+
+            if(!pList.empty())
             {
-                if(Mystic->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                    m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
+                for(std::list<Creature*>::iterator iter = pList.begin(); iter != pList.end(); ++iter)
+                {
+                    if((*iter)->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                    {
+                        (*iter)->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
+                        (*iter)->RemoveAurasDueToSpell(AURA_WINDFURY);
+                    }
+                }
             }
         }
     }

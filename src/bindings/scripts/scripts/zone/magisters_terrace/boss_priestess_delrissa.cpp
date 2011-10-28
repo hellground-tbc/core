@@ -1510,17 +1510,17 @@ struct TRINITY_DLL_DECL mob_sliverAI : public ScriptedAI
 #define SPELL_PURGE                  27626
 #define SPELL_LESSER_HEALING_WAVE    44256
 #define SPELL_FROST_SHOCK            21401
-#define SPELL_WINDFURY_TOTEM         27621
+#define SPELL_WINDFURY_TOTEM         39586  // 27621 is not well supported, lets use NPCs totem spell: AI in file black_temple_trash
 #define SPELL_FIRE_NOVA_TOTEM        44257
 #define SPELL_EARTHBIND_TOTEM        15786
 
 #define NPC_WINDFURY_TOTEM            7484
-#define SPELL_WINFURY_WEAPON         32911
+#define SPELL_WINDFURY_WEAPON         32911
 
 struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 {
     //Shaman
-    boss_apokoAI(Creature *c) : boss_priestess_guestAI(c) {}
+    boss_apokoAI(Creature *c) : boss_priestess_guestAI(c), summons(c) {}
 
     uint32 Totem_Timer;
     uint8  Totem_Amount;
@@ -1529,9 +1529,11 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
     uint32 Healing_Wave_Cooldown;
     uint32 Frost_Shock_Timer;
     bool canHeal;
+    SummonList summons;
 
     void Reset()
     {
+        summons.DespawnAll();
         Totem_Timer = urand(3000, 5000);
         War_Stomp_Timer = urand(2000, 10000);
         Healing_Wave_Cooldown = 5000;
@@ -1544,8 +1546,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
     void JustSummoned(Creature* summon)
     {
-        if(summon->GetEntry() == NPC_WINDFURY_TOTEM)
-            summon->CastSpell((Unit*)NULL, SPELL_WINFURY_WEAPON, true, 0, 0, me->GetGUID());
+        summons.Summon(summon);
     }
 
     void RegenMana()
@@ -1584,7 +1585,6 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         if(Totem_Timer < diff)
         {
-            // TODO: fix totems despawning after evade, also remove winfury aura on totem despawn
             AddSpellToCast(RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM), CAST_SELF);
             RegenMana();
             Totem_Timer = urand(3000, 8000);
