@@ -3678,22 +3678,13 @@ bool Unit::AddAura(Aura *Aur)
         return false;
     }
 
-    if (Aur->GetTarget() != this)
-    {
-        sLog.outError("Aura (spell %u eff %u) add to aura list of %s (lowguid: %u) but Aura target is %s (lowguid: %u)",
-            Aur->GetId(),Aur->GetEffIndex(),(GetTypeId()==TYPEID_PLAYER?"player":"creature"),GetGUIDLow(),
-            (Aur->GetTarget()->GetTypeId()==TYPEID_PLAYER?"player":"creature"),Aur->GetTarget()->GetGUIDLow());
-        delete Aur;
-        return false;
-    }
-
     SpellEntry const* aurSpellInfo = Aur->GetSpellProto();
 
     spellEffectPair spair = spellEffectPair(Aur->GetId(), Aur->GetEffIndex());
 
     bool stackModified = false;
-    // passive and persistent auras can stack with themselves any number of times
-    if (!Aur->IsPassive() && !Aur->IsPersistent())
+    // passive and persistent auras can stack with themselves any number of times (with NPCs windfury exception)
+    if ((Aur->GetId() == 32912) || !Aur->IsPassive() && !Aur->IsPersistent())
     {
         bool isDotOrHot = false;
         for (uint8 i = 0; i < 3; i++)
@@ -3726,7 +3717,7 @@ bool Unit::AddAura(Aura *Aur)
                 }
             }
 
-            if (i2->second->GetId() == 31944)    //HACK check for Doomfire DoT stacking
+            if (i2->second->GetId() == 31944 || i2->second->GetId() == 32911)    //HACK check for Doomfire DoT stacking and NPCs windfury
             {
                 RemoveAura(i2, AURA_REMOVE_BY_STACK);
                 i2 = m_Auras.lower_bound(spair);
@@ -6871,6 +6862,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     if (cooldown && GetTypeId()==TYPEID_PLAYER && ((Player*)this)->HasSpellCooldown(trigger_spell_id))
         return false;
 
+    // only for windfury proc for a moment
+    if(GetTypeId() == TYPEID_UNIT && ((Creature*)this)->HasSpellCooldown(trigger_spell_id))
+        return false;
+
     // try detect target manually if not set
     if (target == NULL)
        target = !(procFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL) && IsPositiveSpell(trigger_spell_id) ? this : pVictim;
@@ -6887,6 +6882,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         CastCustomSpell(target,trigger_spell_id,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
     else
         CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
+
+    // workaround: 3 sec cooldown for NPCs windfury proc
+    if(trigger_spell_id == 32910 && GetTypeId() == TYPEID_UNIT)
+        ((Creature*)this)->_AddCreatureSpellCooldown(32910, time(NULL) + 3);
 
     return true;
 }
@@ -9900,6 +9899,7 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
     if (!basePointsPerLevel && (spellProto->Attributes & SPELL_ATTR_LEVEL_DAMAGE_CALCULATION && spellProto->spellLevel) &&
             spellProto->Effect[effect_index] != SPELL_EFFECT_WEAPON_PERCENT_DAMAGE &&
             spellProto->Effect[effect_index] != SPELL_EFFECT_KNOCK_BACK &&
+            spellProto->Effect[effect_index] != SPELL_EFFECT_ADD_EXTRA_ATTACKS &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_SPEED_ALWAYS &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_SPEED_NOT_STACK &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_INCREASE_SPEED &&
