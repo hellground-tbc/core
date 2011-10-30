@@ -1081,7 +1081,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
     {
         uint32 maxMana = me->GetMaxPower(POWER_MANA);
         uint32 Mana = me->GetPower(POWER_MANA);
-        me->SetPower(POWER_MANA, Mana+(HeroicMode?0.02:0.01)*maxMana);
+        me->SetPower(POWER_MANA, Mana+(HeroicMode?0.01:0.005)*maxMana);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1096,8 +1096,23 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         if(Check_Timer < diff)
         {
+            if(Check_Timer < diff)
+        {
+            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+            {
+                if(!me->IsWithinLOSInMap(me->getVictim()) || !me->IsWithinDistInMap(me->getVictim(), 29))
+                    me->GetMotionMaster()->MoveChase(me->getVictim());
+            }
+            else
+            {
+                if(me->IsWithinDistInMap(me->getVictim(), 30) || me->IsWithinLOSInMap(me->getVictim()))
+                    me->GetMotionMaster()->MoveIdle();
+            }
             RegenMana();
-            Check_Timer = 5000;
+            Check_Timer = 2000;
+        }
+        else
+            Check_Timer -= diff;
         }
         else
             Check_Timer -= diff;
