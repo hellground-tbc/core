@@ -1514,8 +1514,9 @@ struct TRINITY_DLL_DECL mob_sliverAI : public ScriptedAI
 #define SPELL_FIRE_NOVA_TOTEM        44257
 #define SPELL_EARTHBIND_TOTEM        15786
 
-#define NPC_WINDFURY_TOTEM            7484
+#define NPC_WINDFURY_TOTEM            22897
 #define SPELL_WINDFURY_WEAPON         32911
+#define AURA_WINDFURY                 32912
 
 struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 {
@@ -1528,6 +1529,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
     uint32 Purge_Timer;
     uint32 Healing_Wave_Cooldown;
     uint32 Frost_Shock_Timer;
+    uint32 TotemSpell;
     bool canHeal;
     SummonList summons;
 
@@ -1539,6 +1541,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
         Healing_Wave_Cooldown = 5000;
         Purge_Timer = urand(8000, 15000);
         Frost_Shock_Timer = urand(5000, 10000);
+        TotemSpell = RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM);
         canHeal = true;
 
         boss_priestess_guestAI::Reset();
@@ -1546,6 +1549,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
     void JustSummoned(Creature* summon)
     {
+        summon->SetMaxHealth(5);
         summons.Summon(summon);
     }
 
@@ -1585,7 +1589,14 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         if(Totem_Timer < diff)
         {
-            AddSpellToCast(RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM), CAST_SELF);
+            // do not summon same totem twice in row
+            uint32 tempSpell = RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM);
+            while(TotemSpell == tempSpell)
+            {
+                tempSpell = RAND(SPELL_WINDFURY_TOTEM, SPELL_FIRE_NOVA_TOTEM, SPELL_EARTHBIND_TOTEM);
+            }
+            TotemSpell = tempSpell;
+            AddSpellToCast(TotemSpell, CAST_SELF);
             RegenMana();
             Totem_Timer = urand(3000, 8000);
         }

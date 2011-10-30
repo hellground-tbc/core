@@ -1595,7 +1595,7 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
                 break;
             case NPC_SUMMONED_WINDFURY_TOTEM:
                 m_creature->SetMaxHealth(urand(1800,1900));
-                m_creature->CastSpell((Unit*)NULL, SPELL_WINDFURY_WEAPON, true, 0, 0, SummonerGUID);
+                m_creature->CastSpell((Unit*)NULL, SPELL_WINDFURY_WEAPON, true);
                 break;
         }
         m_creature->SetHealth(m_creature->GetMaxHealth());
@@ -1685,28 +1685,10 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_BLOODLUST);
     }
-
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
-
-        if(CheckTimer < diff)
-        {
-            if(Unit* WindTotem = GetClosestCreatureWithEntry(m_creature, NPC_SUMMONED_WINDFURY_TOTEM, 15.0))
-            {
-                if(!m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                    m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
-            }
-            else
-            {
-                if(m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                    m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
-            }
-            CheckTimer = 1500;
-        }
-        else
-            CheckTimer -= diff;
 
         if(FrostShock < diff)
         {
@@ -1747,7 +1729,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         if(SearingTotem < diff)
         {
             AddSpellToCast(m_creature, SPELL_SEARING_TOTEM);
-            SearingTotem = urand(30000, 40000);
+            SearingTotem = urand(8000, 15000);
         }
         else
             SearingTotem -= diff;
@@ -1755,7 +1737,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         if(WindfuryTotem < diff)
         {
             AddSpellToCast(m_creature, SPELL_SUMMON_WINDFURY_TOTEM);
-            WindfuryTotem = urand(30000, 40000);
+            WindfuryTotem = urand(8000, 15000);
         }
         else
             WindfuryTotem -= diff;
@@ -1763,7 +1745,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         if(CycloneTotem < diff)
         {
             AddSpellToCast(m_creature, SPELL_CYCLONE_TOTEM);
-            CycloneTotem = urand(30000, 40000);
+            CycloneTotem = urand(8000, 15000);
         }
         else
             CycloneTotem -= diff;
