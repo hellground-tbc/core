@@ -962,8 +962,8 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        if(me->getVictim()->isCrowdControlled())
-            DoModifyThreatPercent(me->getVictim(), -100);
+        //if(me->getVictim()->isCrowdControlled())
+            //DoModifyThreatPercent(me->getVictim(), -100);
 
         if(Knockdown_Timer < diff)
         {
@@ -1587,8 +1587,8 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        if(me->getVictim()->isCrowdControlled())
-            DoModifyThreatPercent(me->getVictim(), -100);
+        //if(me->getVictim()->isCrowdControlled())
+           // DoModifyThreatPercent(me->getVictim(), -100);
 
         if(canHeal)
         {
