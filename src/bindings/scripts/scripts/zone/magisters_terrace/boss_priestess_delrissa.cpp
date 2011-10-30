@@ -819,12 +819,12 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
         {
             if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
             {
-                if(!me->IsWithinDistInMap(me->getVictim(), 29))
-                    me->GetMotionMaster()->MoveChase(me->getVictim(), 28.0);
+                if(!me->IsWithinLOSInMap(me->getVictim()) || !me->IsWithinDistInMap(me->getVictim(), 29))
+                    me->GetMotionMaster()->MoveChase(me->getVictim());
             }
             else
             {
-                if(me->IsWithinDistInMap(me->getVictim(), 30))
+                if(me->IsWithinDistInMap(me->getVictim(), 30) || me->IsWithinLOSInMap(me->getVictim()))
                     me->GetMotionMaster()->MoveIdle();
             }
             RegenMana();
@@ -876,10 +876,12 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
     mob_fizzleAI(Creature *c) : ScriptedAI(c) { }
 
     uint32 Autocast_Timer;
+    uint32 Check_Timer;
 
     void Reset()
     {
         Autocast_Timer = 0;
+        Check_Timer = 2000;
     }
 
     void AttackStart(Unit* who)
@@ -894,6 +896,23 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
 
         if(me->getVictim()->isCrowdControlled())
             DoModifyThreatPercent(me->getVictim(), -100);
+
+        if(Check_Timer < diff)
+        {
+            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+            {
+                if(!me->IsWithinLOSInMap(me->getVictim()) || !me->IsWithinDistInMap(me->getVictim(), 29))
+                    me->GetMotionMaster()->MoveChase(me->getVictim());
+            }
+            else
+            {
+                if(me->IsWithinDistInMap(me->getVictim(), 30) || me->IsWithinLOSInMap(me->getVictim()))
+                    me->GetMotionMaster()->MoveIdle();
+            }
+            Check_Timer = 2000;
+        }
+        else
+            Check_Timer -= diff;
 
         if(Autocast_Timer < diff)
         {
