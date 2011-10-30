@@ -628,7 +628,10 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
     void OnAuraRemove(Aura *aur, bool stackRemove)
     {
         if(aur->GetId() == 26888)
+        {
+            AddSpellToCast(SPELL_KIDNEY_SHOT, CAST_TANK);
             InVanish = false;
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -644,8 +647,6 @@ struct TRINITY_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestA
                 {
                     if(!me->getVictim()->HasInArc(M_PI, me))
                         AddSpellToCast(me->getVictim(), SPELL_BACKSTAB);
-
-                    AddSpellToCast(SPELL_KIDNEY_SHOT, CAST_TANK);
                     me->RemoveAurasDueToSpell(SPELL_VANISH);
                     Gouge_Timer = urand(10000, 15000);
                 }
