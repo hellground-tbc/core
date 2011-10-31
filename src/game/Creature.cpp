@@ -1665,26 +1665,36 @@ float Creature::GetAttackDistance(Unit const* pl) const
         leveldif = -25;
 
     // "The aggro radius of a mob having the same level as the player is roughly 20 yards"
-    float RetDistance = 20;
+    float RetDistance = m_aggroRange ? m_aggroRange : 20.0;
 
     // "Aggro Radius varies with level difference at a rate of roughly 1 yard/level"
     // radius grow if playlevel < creaturelevel
     RetDistance -= (float)leveldif;
 
-    if (creaturelevel+5 <= sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
+    int32 CreatureMod = 0;
+    int32 PlayerMod = 0;
+    //get detect range aura modifiers on creatures
+    AuraList const& mTotalAuraList = GetAurasByType(SPELL_AURA_MOD_DETECT_RANGE);
+    for (AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        // detect range auras
-        RetDistance += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE);
-
-        // detected range auras
-        RetDistance += pl->GetTotalAuraModifier(SPELL_AURA_MOD_DETECTED_RANGE);
+        if(creaturelevel <= (*i)->GetSpellProto()->MaxTargetLevel)
+            CreatureMod += (*i)->GetModifierValue();
     }
+    //get detect range aura modifiers on players
+    AuraList const& mTotalPlayerAuraList = pl->GetAurasByType(SPELL_AURA_MOD_DETECT_RANGE);
+    for (AuraList::const_iterator i = mTotalPlayerAuraList.begin();i != mTotalPlayerAuraList.end(); ++i)
+    {
+        if(playerlevel <= (*i)->GetSpellProto()->MaxTargetLevel)
+            PlayerMod += (*i)->GetModifierValue();
+    }
+
+    RetDistance += (CreatureMod + PlayerMod);
 
     // "Minimum Aggro Radius for a mob seems to be combat range (5 yards)"
     if (RetDistance < 5)
         RetDistance = 5;
 
-    return m_aggroRange ? m_aggroRange : (RetDistance*aggroRate);
+    return RetDistance*aggroRate;
 }
 
 void Creature::setDeathState(DeathState s)

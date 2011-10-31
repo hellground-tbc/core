@@ -1096,8 +1096,6 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         if(Check_Timer < diff)
         {
-            if(Check_Timer < diff)
-        {
             if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
             {
                 if(!me->IsWithinLOSInMap(me->getVictim()) || !me->IsWithinDistInMap(me->getVictim(), 29))
@@ -1110,9 +1108,6 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             }
             RegenMana();
             Check_Timer = 2000;
-        }
-        else
-            Check_Timer -= diff;
         }
         else
             Check_Timer -= diff;

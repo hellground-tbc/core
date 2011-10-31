@@ -10707,7 +10707,6 @@ void CharmInfo::InitPossessCreateSpells()
         return;
     }
 
-
     InitEmptyActionBar();
 
     if (m_unit->GetTypeId() == TYPEID_UNIT)
