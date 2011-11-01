@@ -151,15 +151,17 @@ enum SunbladeCabalist
 
 struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
 {
-    mob_sunblade_cabalistAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_sunblade_cabalistAI(Creature *c) : ScriptedAI(c), summons(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 IgniteMana;
     uint32 ShadowBolt;
     uint32 SummonImp;
+    SummonList summons;
 
     void Reset()
     {
         ClearCastQueue();
+        summons.DespawnAll();
         DoCast(me, SPELL_SUNWELL_RADIANCE, true);
 
         IgniteMana = urand(3000, 10000);;
@@ -175,6 +177,11 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
     }
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void JustSummoned(Creature* summon)
+    {
+        summons.Summon(summon);
+    }
 
     void UpdateAI(const uint32 diff)
     {
