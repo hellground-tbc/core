@@ -2111,30 +2111,32 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     sLog.outDebug("DEBUG: HandleWpAddCommand");
 
     // optional
-    char* path_number = NULL;
+    char* str = NULL;
     uint32 pathid = 0;
-
-    if (*args)
-        path_number = strtok((char*)args, " ");
+    uint32 delay = 0;
+    uint32 moveflag = 0;
 
     uint32 point = 0;
     Creature* target = getSelectedCreature();
 
-    if (!path_number)
-        {
-        if (target)
-            pathid = target->GetWaypointPath();
-                else
-                {
-                    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT MAX(id) FROM waypoint_data");
-                    uint32 maxpathid = result->Fetch()->GetInt32();
-                    pathid = maxpathid+1;
-                    sLog.outDebug("DEBUG: HandleWpAddCommand - New path started.");
-                    PSendSysMessage("%s%s|r", "|cff00ff00", "New path started.");
-                }
-        }
-        else
-            pathid = atoi(path_number);
+  
+    if (target)
+        pathid = target->GetWaypointPath();
+    else if(*args)
+    {
+        str = strtok((char*)args, " ");
+        pathid = atoi(str);
+    }
+    else
+    {
+        QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT MAX(id) FROM waypoint_data");
+        uint32 maxpathid = result->Fetch()->GetInt32();
+        pathid = maxpathid+1;
+        sLog.outDebug("DEBUG: HandleWpAddCommand - New path started.");
+        PSendSysMessage("%s%s|r", "|cff00ff00", "New path started.");
+    }
+    
+  
 
     // path_id -> ID of the Path
     // point   -> number of the waypoint (if not 0)
@@ -2146,6 +2148,11 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
         return true;
     }
 
+    if (str = strtok(str ? NULL : (char*)args, " "))
+        moveflag = atoi(str);
+    if (str = strtok(NULL, " "))
+        delay = atoi(str);
+
     sLog.outDebug("DEBUG: HandleWpAddCommand - point == 0");
 
     QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT MAX(point) FROM waypoint_data WHERE id = '%u'",pathid);
@@ -2156,10 +2163,10 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     Player* player = m_session->GetPlayer();
     Map *map = player->GetMap();
 
-    WorldDatabase.PExecuteLog("INSERT INTO waypoint_data (id, point, position_x, position_y, position_z) VALUES ('%u','%u','%f', '%f', '%f')",
-        pathid, point+1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+    WorldDatabase.PExecuteLog("INSERT INTO waypoint_data (id, point, position_x, position_y, position_z, move_flag, delay) VALUES ('%u','%u','%f', '%f', '%f', '%u', '%u')",
+        pathid, point+1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), moveflag, delay);
 
-        PSendSysMessage("%s%s%u%s%u%s|r", "|cff00ff00", "PathID: |r|cff00ffff", pathid, "|r|cff00ff00: Waypoint |r|cff00ffff", point,"|r|cff00ff00 created. ");
+    PSendSysMessage("%s%s%u%s%u%s|r", "|cff00ff00", "PathID: |r|cff00ffff", pathid, "|r|cff00ff00: Waypoint |r|cff00ffff", point,"|r|cff00ff00 created. ");
 
     return true;
 }                                                           // HandleWpAddCommand
@@ -4086,6 +4093,40 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 
     return true;
  }
+
+bool ChatHandler::HandleNpcDeleteFormationCommand(const char* args)
+{
+    Creature *pCreature = getSelectedCreature();    
+
+    if (!pCreature || !pCreature->GetDBTableGUIDLow())
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 lowguid = pCreature->GetDBTableGUIDLow();
+    if (!pCreature->GetFormation() || !CreatureGroupMap[lowguid])
+    {
+        if(pCreature->GetFormation())
+            formation_mgr.RemoveCreatureFromGroup(pCreature->GetFormation(), pCreature);
+
+        PSendSysMessage("Selected creature is not member of group");
+        return false;
+    }
+
+
+    uint32 leaderGUID = CreatureGroupMap[lowguid]->leaderGUID;
+    if (!lowguid)
+        return false;
+
+    CreatureGroupMap.erase(lowguid);
+    formation_mgr.RemoveCreatureFromGroup(pCreature->GetFormation(), pCreature);
+    WorldDatabase.PExecuteLog("DELETE FROM `creature_formations` WHERE `memberGUID` = '%u'", lowguid);
+    PSendSysMessage("Creature %u removed from formation with leader %u", lowguid, leaderGUID);
+
+    return true;
+}
 
 bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
 {
