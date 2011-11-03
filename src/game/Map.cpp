@@ -1403,9 +1403,13 @@ bool Map::IsInWater(float x, float y, float pZ, GridMapLiquidData *data) const
     {
         GridMapLiquidData liquid_status;
         GridMapLiquidData *liquid_ptr = data ? data : &liquid_status;
-        if (getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr))
+        switch(getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr))
         {
-            //if (liquid_prt->level - liquid_prt->depth_level > 2) //???
+            case LIQUID_MAP_ABOVE_WATER:
+            case LIQUID_MAP_NO_WATER:
+            case LIQUID_MAP_WATER_WALK:
+                return false;
+            default:
                 return true;
         }
     }
@@ -1416,7 +1420,7 @@ bool Map::IsUnderWater(float x, float y, float z) const
 {
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
-        if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN) & LIQUID_MAP_UNDER_WATER)
+        if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN) == LIQUID_MAP_UNDER_WATER)
             return true;
     }
     return false;
