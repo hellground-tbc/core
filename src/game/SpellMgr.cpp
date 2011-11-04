@@ -670,6 +670,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 34970:                                         // Frenzy
         case 43550:                                         // Mind Control (Hex Lord Malacrass)
         case 35336:                                         // Energizing Spores
+        case 40604:                                         // Fel Rage 1
+        case 40616:                                         // Fel Rage 2
+        case 41625:                                         // Fel Rage 3
+        case 46787:                                         // Fel Rage scale
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault
