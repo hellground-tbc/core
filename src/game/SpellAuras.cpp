@@ -2667,6 +2667,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
 
                 return;
             }
+            case 39042:                                     // Rampant Infection
+            case 39032:                                     // Initial Infection    
+                if (m_removeMode == AURA_REMOVE_BY_EXPIRE)
+                {
+                    int32 bp = GetModifierValue() * 11 / 10;
+                    m_target->CastCustomSpell(m_target, 39042, &bp, &bp, 0, true, 0, this);           
+                }
+                return;
         }
     }
 
@@ -5045,6 +5053,15 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                 InstanceMap *instance = dynamic_cast<InstanceMap*>(m_target->GetMap());
                 if(instance && instance->GetInstanceData() && instance->GetInstanceData()->IsEncounterInProgress())
                     m_target->CastSpell(m_target, 45034, true, 0, this, GetCasterGUID());
+            }
+            // Serpentshrine Parasite
+            if (m_spellProto->Id == 39053 && !apply)
+            {
+                int count = 1;
+                if(m_removeMode == AURA_REMOVE_BY_DEATH)
+                    count = 5;
+                for(int i = 0; i < count; i++)
+                    m_target->CastSpell(m_target, 39045, true);
             }
             break;
         }

@@ -2711,6 +2711,9 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;
             break;
         /* UNSORTED */
+        case 39042: // Rampant Infection
+            spellInfo->MaxAffectedTargets = 1;
+            break;
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods
             spellInfo->EffectAmplitude[1] = 1900;
             break;

@@ -381,10 +381,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\shared\Database\DBCfmt.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\shared\Database\Field.cpp"
 				>
 			</File>
