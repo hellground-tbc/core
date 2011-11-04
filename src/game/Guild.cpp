@@ -1936,6 +1936,22 @@ void Guild::SetGuildBankTabText(uint8 TabId, std::string text)
     CharacterDatabase.PExecute("UPDATE guild_bank_tab SET TabText='%s' WHERE guildid='%u' AND TabId='%u'", text.c_str(), Id, uint32(TabId));
 }
 
+void Guild::SendGuildBankTabTextToAll(uint8 TabId)
+{
+    if (TabId > GUILD_BANK_MAX_TABS)
+        return;
+
+    GuildBankTab const *tab = GetBankTab(TabId);
+    if (!tab)
+        return;
+
+    WorldPacket data(MSG_QUERY_GUILD_BANK_TEXT, 1+tab->Text.size()+1);
+    data << uint8(TabId);
+    data << tab->Text;
+
+    BroadcastPacket(&data);
+}
+
 void Guild::SendGuildBankTabText(WorldSession *session, uint8 TabId)
 {
     if (TabId > GUILD_BANK_MAX_TABS)
