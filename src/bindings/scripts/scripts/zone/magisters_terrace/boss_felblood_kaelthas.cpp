@@ -476,7 +476,6 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
         pInstance = (c->GetInstanceData());
     }
     uint32 HatchTimer;
-    uint64 PhoenixGUID;
     ScriptedInstance* pInstance;
 
     void Reset()
@@ -486,12 +485,20 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
 
     void JustDied(Unit* slayer)
     {
+        // kill own phoenix when killed by player
         if(slayer->GetGUID() != me->GetGUID())
         {
-            if(PhoenixGUID)
+            std::list<Creature*> ClosePhoenixList = FindAllCreaturesWithEntry(CREATURE_PHOENIX, 20);
+
+            if(ClosePhoenixList.empty())
+                me->Kill(me, false);
+
+            for(std::list<Creature*>::iterator i = ClosePhoenixList.begin(); i != ClosePhoenixList.end(); ++i)
             {
-                if(Unit* Phoenix = me->GetMap()->GetCreature(PhoenixGUID))
-                    Phoenix->Kill(Phoenix, false);
+                if((*i)->GetAuraByCasterSpell(SPELL_EMBER_BLAST, me->GetGUID()))
+                {
+                    (*i)->Kill((*i), false);
+                }
             }
         }
     }
@@ -500,10 +507,17 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
     {
         if(HatchTimer < diff)
         {
-            if(PhoenixGUID)
+            std::list<Creature*> ClosePhoenixList = FindAllCreaturesWithEntry(CREATURE_PHOENIX, 20);
+
+            if(ClosePhoenixList.empty())
+                me->Kill(me, false);
+
+            for(std::list<Creature*>::iterator i = ClosePhoenixList.begin(); i != ClosePhoenixList.end(); ++i)
             {
-                if(Unit* Phoenix = me->GetMap()->GetCreature(PhoenixGUID))
-                    Phoenix->RemoveAurasDueToSpell(SPELL_EMBER_BLAST);
+                if((*i)->GetAuraByCasterSpell(SPELL_EMBER_BLAST, me->GetGUID()))
+                {
+                    (*i)->RemoveAurasDueToSpell(SPELL_EMBER_BLAST);
+                }
             }
             me->Kill(me, false);
         }
@@ -527,7 +541,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
     {
         DoZoneInCombat();
         me->SetWalk(false);
-        me->SetSpeed(MOVE_RUN, 1.0f);
+        me->SetSpeed(MOVE_RUN, 0.75f);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         AddSpellToCast(SPELL_REBIRTH_PHOENIX, CAST_NULL);
         AddSpellToCast(SPELL_PHOENIX_BURN, CAST_SELF);
@@ -541,7 +555,8 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
         if(Aur->GetId() == SPELL_EMBER_BLAST)
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-            me->SetStunned(false);
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+                AttackStart(target);
             AddSpellToCast(SPELL_REBIRTH_EGG, CAST_SELF);
             AddSpellToCast(SPELL_PHOENIX_BURN, CAST_SELF);
         }
@@ -554,12 +569,12 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
             damage = 0;
             me->RemoveAurasDueToSpell(SPELL_PHOENIX_BURN);
             ForceSpellCast(SPELL_EMBER_BLAST, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
-            me->SetStunned(true);
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveIdle();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             Creature* egg = DoSpawnCreature(CREATURE_PHOENIX_EGG, 0, 0, 0, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
             if(egg)
             {
-                ((mob_felkael_phoenix_eggAI*)egg)->PhoenixGUID = me->GetGUID();
                 EggGUID = egg->GetGUID();
             }
         }
