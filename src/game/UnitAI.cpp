@@ -281,6 +281,7 @@ Unit* UnitAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float di
     {
         std::list<HostilReference*> &m_threatlist = me->getThreatManager().getThreatList();
         if(m_threatlist.empty()) return NULL;
+        if(dist > 200) dist = 200;  //for some spells with unlimited range, 200yd should be enough
         std::list<Unit*> targetList;
         std::list<HostilReference*>::iterator itr = m_threatlist.begin();
         for(; itr!= m_threatlist.end(); ++itr)

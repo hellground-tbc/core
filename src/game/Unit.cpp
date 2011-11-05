@@ -9449,7 +9449,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             return;
         case MOVE_FLIGHT:
         {
-            if (IsMounted()) // Use on mount auras
+            if(HasAuraType(SPELL_AURA_MOD_SPEED_MOUNTED)) // Use for Ragged Flying Carpet & MgT Kael'thas Gravity Lapse
+                main_speed_mod  = GetTotalAuraModifier(SPELL_AURA_MOD_SPEED_MOUNTED);
+            else if (IsMounted()) // Use on mount auras
                 main_speed_mod  = GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
             else             // Use not mount (shapeshift for example) auras (should stack)
                 main_speed_mod  = GetTotalAuraModifier(SPELL_AURA_MOD_SPEED_FLIGHT);
