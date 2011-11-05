@@ -546,7 +546,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
         DoZoneInCombat();
         me->SetWalk(false);
         me->SetSpeed(MOVE_RUN, 0.6f);
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         AddSpellToCast(SPELL_REBIRTH_PHOENIX, CAST_NULL);
         AddSpellToCast(SPELL_PHOENIX_BURN, CAST_SELF);
         CheckTimer = 1000;
@@ -558,7 +558,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
     {
         if(Aur->GetId() == SPELL_EMBER_BLAST)
         {
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             DoZoneInCombat();
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                 AttackStart(target);
@@ -573,11 +573,13 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
         {
             damage = 0;
             me->RemoveAurasDueToSpell(SPELL_PHOENIX_BURN);
+            me->SetHealth(me->GetMaxHealth());
+            me->AttackStop();
             ForceSpellCast(SPELL_EMBER_BLAST, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
             me->GetMap()->CreatureRelocation(me, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
             me->GetMotionMaster()->Clear();
             me->GetMotionMaster()->MoveIdle();
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             Creature* egg = DoSpawnCreature(CREATURE_PHOENIX_EGG, 0, 0, 0, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
             if(egg)
             {
