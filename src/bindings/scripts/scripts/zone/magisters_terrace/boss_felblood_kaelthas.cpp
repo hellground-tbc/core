@@ -347,6 +347,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
                 {
                     ResetStatues(false);    // shatter statues
                     ClearCastQueue();
+                    StopAutocast();
                     me->SetSelection(0);
                     ForceSpellCastWithScriptText(SPELL_TELEPORT_CENTER, CAST_SELF, SAY_GRAVITY_LAPSE, INTERRUPT_AND_CAST_INSTANTLY);
                     m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
@@ -510,7 +511,10 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
             std::list<Creature*> ClosePhoenixList = FindAllCreaturesWithEntry(CREATURE_PHOENIX, 20);
 
             if(ClosePhoenixList.empty())
+            {
                 me->Kill(me, false);
+                return;
+            }
 
             for(std::list<Creature*>::iterator i = ClosePhoenixList.begin(); i != ClosePhoenixList.end(); ++i)
             {
@@ -541,7 +545,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
     {
         DoZoneInCombat();
         me->SetWalk(false);
-        me->SetSpeed(MOVE_RUN, 0.75f);
+        me->SetSpeed(MOVE_RUN, 0.6f);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         AddSpellToCast(SPELL_REBIRTH_PHOENIX, CAST_NULL);
         AddSpellToCast(SPELL_PHOENIX_BURN, CAST_SELF);
@@ -555,6 +559,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
         if(Aur->GetId() == SPELL_EMBER_BLAST)
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
+            DoZoneInCombat();
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
                 AttackStart(target);
             AddSpellToCast(SPELL_REBIRTH_EGG, CAST_SELF);
@@ -569,6 +574,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
             damage = 0;
             me->RemoveAurasDueToSpell(SPELL_PHOENIX_BURN);
             ForceSpellCast(SPELL_EMBER_BLAST, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
+            me->GetMap()->CreatureRelocation(me, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
             me->GetMotionMaster()->Clear();
             me->GetMotionMaster()->MoveIdle();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
