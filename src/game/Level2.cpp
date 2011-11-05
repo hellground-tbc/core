@@ -2543,9 +2543,11 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
     sLog.outDebug("DEBUG: HandleWpModifyCommand - User did select an NPC");
     // The visual waypoint
-    Creature* wpCreature = NULL;
-    wpGuid = target->GetGUIDLow();
+    Creature* wpCreature = target;
 
+    
+    wpGuid = target->GetDBTableGUIDLow();
+    /*
     // Did the user select a visual spawnpoint?
     if (wpGuid)
         wpCreature = m_session->GetPlayer()->GetMap()->GetCreature(MAKE_NEW_GUID(wpGuid, VISUAL_WAYPOINT, HIGHGUID_UNIT));
@@ -2555,6 +2557,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
         PSendSysMessage(LANG_WAYPOINT_CREATNOTFOUND, wpGuid);
         return false;
     }
+    */
     // User did select a visual waypoint?
     // Check the creature
     if (wpCreature->GetEntry() == VISUAL_WAYPOINT)
@@ -2609,12 +2612,8 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
     {
         PSendSysMessage("|cff00ff00DEBUG: wp modify del, PathID: |r|cff00ffff%u|r", pathid);
 
-        // wpCreature
-        Creature* wpCreature = NULL;
-
-        if (wpGuid != 0)
+        if (wpCreature)
         {
-            wpCreature = m_session->GetPlayer()->GetMap()->GetCreature(MAKE_NEW_GUID(wpGuid, VISUAL_WAYPOINT, HIGHGUID_UNIT));
             wpCreature->CombatStop();
             wpCreature->DeleteFromDB();
             wpCreature->AddObjectToRemoveList();
@@ -2635,39 +2634,31 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
         Player *chr = m_session->GetPlayer();
         Map *map = chr->GetMap();
+     
+        // What to do:
+        // Move the visual spawnpoint
+        // Respawn the owner of the waypoints
+        float x, y, z, o;
+        chr->GetPosition(x, y, z);
+        o = chr->GetOrientation();
+        if (wpCreature)
         {
-            // wpCreature
-            Creature* wpCreature = NULL;
-            // What to do:
-            // Move the visual spawnpoint
-            // Respawn the owner of the waypoints
-            if (wpGuid != 0)
+            if (CreatureData const* data = objmgr.GetCreatureData(wpCreature->GetDBTableGUIDLow()))
             {
-                wpCreature = m_session->GetPlayer()->GetMap()->GetCreature(MAKE_NEW_GUID(wpGuid, VISUAL_WAYPOINT, HIGHGUID_UNIT));
-                wpCreature->CombatStop();
-                wpCreature->DeleteFromDB();
-                wpCreature->AddObjectToRemoveList();
-                // re-create
-                Creature* wpCreature2 = new Creature;
-                if (!wpCreature2->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), map, VISUAL_WAYPOINT, 0, chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetOrientation()))
-                {
-                    PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
-                    delete wpCreature2;
-                    return false;
-                }
-
-                wpCreature2->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
-                // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
-                wpCreature2->LoadFromDB(wpCreature2->GetDBTableGUIDLow(), map);
-                map->Add(wpCreature2);
-                //MapManager::Instance().GetMap(npcCreature->GetMapId())->Add(wpCreature2);
+                const_cast<CreatureData*>(data)->posX = x;
+                const_cast<CreatureData*>(data)->posY = y;
+                const_cast<CreatureData*>(data)->posZ = z;
+                const_cast<CreatureData*>(data)->orientation = o;
             }
-
-            WorldDatabase.PExecuteLog("UPDATE waypoint_data SET position_x = '%f',position_y = '%f',position_z = '%f' where id = '%u' AND point='%u'",
-                chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), pathid, point);
-
-            PSendSysMessage(LANG_WAYPOINT_CHANGED);
+            Map *pMap = wpCreature->GetMap();
+            pMap->CreatureRelocation(wpCreature,x, y, z,o);
         }
+
+        WorldDatabase.PExecuteLog("UPDATE waypoint_data SET position_x = '%f',position_y = '%f',position_z = '%f' where id = '%u' AND point='%u'",
+            x, y, z, pathid, point);
+
+        PSendSysMessage(LANG_WAYPOINT_CHANGED);
+        
         return true;
     }                                                       // move
 
@@ -2773,8 +2764,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             return false;
         }
 
-
-        QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT id, point, delay, move_flag, action, action_chance FROM waypoint_data WHERE wpguid = %u", target->GetGUIDLow());
+        QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT id, point, delay, move_flag, action, action_chance FROM waypoint_data WHERE wpguid = '%u'", target->GetDBTableGUIDLow());
 
         if (!result)
 
@@ -2819,7 +2809,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         PSendSysMessage("|cff00ff00DEBUG: wp on, PathID: |cff00ffff%u|r", pathid);
 
         // Delete all visuals for this NPC
-         QueryResultAutoPtr result2 = WorldDatabase.PQuery("SELECT wpguid FROM waypoint_data WHERE id = '%u' and wpguid <> 0", pathid);
+         QueryResultAutoPtr result2 = WorldDatabase.PQuery("SELECT DISTINCT wpguid FROM waypoint_data WHERE id = '%u' and wpguid <> 0", pathid);
 
         if (result2)
         {
@@ -2881,6 +2871,9 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
             wpCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
             wpCreature->LoadFromDB(wpCreature->GetDBTableGUIDLow(),map);
+            wpCreature->SetMaxHealth(point);
+            wpCreature->SetHealth(point);
+            wpCreature->SetLevel(point > 70 ? 70 : point);
             map->Add(wpCreature);
 
             if (target)
@@ -2988,7 +2981,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
     if (show == "off")
     {
-        QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT guid FROM creature WHERE id = '%u'", 1);
+        QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT guid FROM creature WHERE id = '%u'", VISUAL_WAYPOINT);
         if (!result)
         {
             SendSysMessage(LANG_WAYPOINT_VP_NOTFOUND);
