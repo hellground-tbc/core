@@ -5530,6 +5530,47 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             unitTarget->CastCustomSpell(unitTarget, 41067, &damage, NULL, NULL, true, 0, 0, m_caster->GetGUID());
             break;
         }
+        // Gravity Lapse teleports for Kael'thas in MgT
+        case 44224:
+        {
+            if(!m_caster->CanHaveThreatList())
+                return;
+
+            uint32 GravityLapseSpellId = 44219; // Id for first teleport spell
+            uint32 GravityLapseDOT = (m_caster->GetMap()->IsHeroic()?44226:49887); // knocback + damage
+            uint32 GravityLapseFly = 44227; // flying + flight speed
+            uint32 GravityLapseChannel = 44251; // visual self-casted, triggers AoE beams
+            uint8 counter = 0;
+
+            std::list<HostilReference*> PlayerList = m_caster->getThreatManager().getThreatList();
+
+            if(PlayerList.empty() && m_caster->isInCombat())
+                ((Creature*)m_caster)->AI()->EnterEvadeMode();
+
+            for(std::list<HostilReference*>::iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                Unit* pUnit = (*i)->getSource()->getOwner();
+                if(!pUnit)
+                    continue;
+                if(pUnit->GetTypeId() != TYPEID_PLAYER)
+                    continue;
+                if(((Player*)pUnit)->isGameMaster())
+                    continue;
+                if(pUnit->IsInWorld() && pUnit->IsInMap(m_caster))
+                {
+                    if(counter < 5) // safety counter for not to pass 5 teleporting spells
+                        counter++;
+                    else
+                        break;
+                    m_caster->CastSpell(pUnit, GravityLapseSpellId, true);
+                    m_caster->CastSpell(pUnit, GravityLapseFly, true);
+                    m_caster->CastSpell(pUnit, GravityLapseDOT, true);
+                    GravityLapseSpellId++;
+                }
+            }
+            m_caster->CastSpell(m_caster, GravityLapseChannel, true);
+            break;
+        }
         // Void Reaver: Knock Back
         case 25778:
         {
