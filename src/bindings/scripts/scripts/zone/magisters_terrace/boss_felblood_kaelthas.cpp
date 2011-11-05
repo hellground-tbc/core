@@ -87,9 +87,9 @@ EndScriptData */
 };*/
 //#define LOCATION_Z      -16.727455
 
-struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
 {
-    boss_felblood_kaelthasAI(Creature* c) : ScriptedAI(c)
+    boss_felblood_kaelthasAI(Creature* c) : Scripted_NoMovementAI(c)
     {
         pInstance = (c->GetInstanceData());
     }
@@ -152,6 +152,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         //DoScriptText(SAY_AGGRO, m_creature);  // move to when trash killed
+        DoZoneInCombat();
         if(pInstance)
             pInstance->SetData(DATA_KAELTHAS_EVENT, IN_PROGRESS);
     }
@@ -445,9 +446,9 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_felkael_flamestrikeAI : public ScriptedAI
+struct TRINITY_DLL_DECL mob_felkael_flamestrikeAI : public Scripted_NoMovementAI
 {
-    mob_felkael_flamestrikeAI(Creature *c) : ScriptedAI(c) { }
+    mob_felkael_flamestrikeAI(Creature *c) : Scripted_NoMovementAI(c) { }
 
     uint32 FlameStrikeTimer;
 
@@ -526,7 +527,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
     {
         DoZoneInCombat();
         me->SetWalk(false);
-        me->SetSpeed(MOVE_RUN, 0.5f);
+        me->SetSpeed(MOVE_RUN, 1.0f);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         AddSpellToCast(SPELL_REBIRTH_PHOENIX, CAST_NULL);
         AddSpellToCast(SPELL_PHOENIX_BURN, CAST_SELF);
@@ -555,7 +556,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
             ForceSpellCast(SPELL_EMBER_BLAST, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
             me->SetStunned(true);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-            Unit* egg = DoSpawnCreature(CREATURE_PHOENIX_EGG, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 45000);
+            Creature* egg = DoSpawnCreature(CREATURE_PHOENIX_EGG, 0, 0, 0, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
             if(egg)
             {
                 ((mob_felkael_phoenix_eggAI*)egg)->PhoenixGUID = me->GetGUID();
