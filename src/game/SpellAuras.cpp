@@ -2330,6 +2330,13 @@ void Aura::TriggerSpell()
             case 43120:
                 target = m_target;
                 break;
+            // Burn should self-damage Phoenix
+            case 44197:
+            {
+                uint32 damage = caster->CalculateSpellDamage(triggeredSpellInfo, 0, 1750,caster);
+                caster->DealDamage(caster, damage, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_FIRE, GetSpellProto(), false);
+                break;
+            }
             // Mana Rage bloodlust sound on trigger
             case 44320:
             {
