@@ -2192,6 +2192,10 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 45034));
                     break;
+                // Phoenix Burn should also damage itself
+                case 44197:
+                    unitList.push_front(m_caster);
+                    break;
                 default:
                     break;
             }
