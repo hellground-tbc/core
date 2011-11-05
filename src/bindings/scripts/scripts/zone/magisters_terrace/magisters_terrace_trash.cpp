@@ -19,18 +19,18 @@ EndScriptData */
 * Contents:
 *
 * mob_sunwell_mage_guard      - ID 24683
-* mob_sunblade_magister       - ID 
-* mob_sunblade_warlock        - ID 
-* mob_sunblade_physician      - ID 
-* mob_sunblade_blood_knight   - ID 
-* mob_wretched_skulker        - ID 
-* mob_wretched_bruiser        - ID 
-* mob_wretched_husk           - ID 
-* mob_brightscale_wyrm        - ID 
-* mob_sister_of_torment       - ID 
-* mob_sunblade_sentinel       - ID 
-* mob_coilskar_witch          - ID 
-* mob_ethereum_smuggler       - ID 
+* mob_sunblade_magister       - ID 24685
+* mob_sunblade_warlock        - ID 24686
+* mob_sunblade_physician      - ID 24687
+* mob_sunblade_blood_knight   - ID 24684
+* mob_wretched_skulker        - ID 24688
+* mob_wretched_bruiser        - ID 24689
+* mob_wretched_husk           - ID 24690
+* mob_brightscale_wyrm        - ID 24761
+* mob_sister_of_torment       - ID 24697
+* mob_sunblade_sentinel       - ID 24777
+* mob_coilskar_witch          - ID 24696
+* mob_ethereum_smuggler       - ID 24698
 *
 **********/
 

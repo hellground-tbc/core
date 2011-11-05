@@ -187,28 +187,33 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
     {
         switch(go->GetEntry())
         {
+            // Vexallus Doors
             case 187896:
                 VexallusDoorGUID = go->GetGUID();
                 go->SetGoState(GOState(GetData(DATA_VEXALLUS_EVENT) != DONE));
                 break;
-            //SunwellRaid Gate 02
+            // SunwellRaid Gate 02
             case 187979:
                 SelinDoorGUID = go->GetGUID();
                 go->SetGoState(GOState(GetData(DATA_SELIN_EVENT) != DONE));
                 break;
-            //Assembly Chamber Door
-            case 188065:  
+            // Assembly Chamber Door
+            case 188065:
                 SelinEncounterDoorGUID = go->GetGUID();
                 break;
             case 187770:
                 DelrissaDoorGUID = go->GetGUID();
                 go->SetGoState(GOState(GetData(DATA_DELRISSA_EVENT) != DONE));
                 break;
-            case 188165:  
+            // Left Statue
+            case 188165:
                 KaelStatue[0] = go->GetGUID();
+                go->SetGoState(GOState(GetData(DATA_KAELTHAS_EVENT) != DONE));
                 break;
-            case 188166:  
+            // Right Statue
+            case 188166:
                 KaelStatue[1] = go->GetGUID();
+                go->SetGoState(GOState(GetData(DATA_KAELTHAS_EVENT) != DONE));
                 break;
         }
     }

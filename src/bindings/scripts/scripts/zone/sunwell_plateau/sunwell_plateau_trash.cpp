@@ -390,8 +390,7 @@ struct TRINITY_DLL_DECL mob_sunblade_dusk_priestAI : public ScriptedAI
 
         if(MindFlay < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true, me->getVictim()->GetGUID()))
-                AddSpellToCast(target, SPELL_MIND_FLAY);
+            AddSpellToCast(SPELL_MIND_FLAY, CAST_TANK);
             MindFlay = urand(9000, 25000);
         }
         else
