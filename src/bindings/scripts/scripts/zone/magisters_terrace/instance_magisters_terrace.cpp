@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Instance_Magisters_Terrace
-SD%Complete: 60
-SDComment:  Designed only for Selin Fireheart
+SD%Complete: 90
+SDComment: Make Kael trash pack, final debugging
 SDCategory: Magister's Terrace
 EndScriptData */
 
@@ -26,23 +26,38 @@ EndScriptData */
 
 #define ENCOUNTERS      4
 
+// TODO
+#define TRASH_Z         -14.38
+float KaelTrashLocations[6][2]=
+{
+};
+uint32 TrashPackEntry[8] = 
+{
+    24683,  // mob_sunwell_mage_guard
+    24685,  // mob_sunblade_magister
+    24686,  // mob_sunblade_warlock
+    24687,  // mob_sunblade_physician
+    24684,  // mob_sunblade_blood_knight
+    24697,  // mob_sister_of_torment
+    24696,  // mob_coilskar_witch
+    24698   // mob_ethereum_smuggler
+};
+
 /*
 0  - Selin Fireheart
 1  - Vexallus
 2  - Priestess Delrissa
 3  - Kael'thas Sunstrider
+4  - Kael'thas trash pack event
 */
 
 struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
 {
     instance_magisters_terrace(Map* map) : ScriptedInstance(map) {Initialize();}
 
-    //uint32 DoorState[3];//0seline, 1vexallus, 2derlissa
+    uint8 KaelPhase;
     uint32 Encounters[ENCOUNTERS];
     uint32 DelrissaDeathCount;
-
-    //std::list<uint64> FelCrystals;
-    //std::list<uint64>::iterator CrystalItr;
 
     uint64 KaelGUID;
     uint64 SelinGUID;
@@ -53,20 +68,16 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
     uint64 DelrissaDoorGUID;
     uint64 KaelStatue[2];
 
-    //bool InitializedItr;
+    std::vector<std::pair<uint32, uint64>> KaelTrashMob;
 
     void Initialize()
     {
-        //for(uint8 i = 0; i < 3; i++)
-        //    DoorState[i] = 1;//1 closed, 0 opened
-
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
 
-        //FelCrystals.clear();
-
         DelrissaDeathCount = 0;
 
+        KaelPhase = 0;
         KaelGUID = 0;
         SelinGUID = 0;
         DelrissaGUID = 0;
@@ -76,8 +87,6 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         DelrissaDoorGUID = 0;
         KaelStatue[0] = 0;
         KaelStatue[1] = 0;
-
-        //InitializedItr = false;
     }
 
     bool IsEncounterInProgress() const
@@ -97,7 +106,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_DELRISSA_EVENT:       return Encounters[2];
             case DATA_KAELTHAS_EVENT:       return Encounters[3];
             case DATA_DELRISSA_DEATH_COUNT: return DelrissaDeathCount;
-            //case DATA_FEL_CRYSTAL_SIZE:     return FelCrystals.size();
+            case DATA_KAEL_PHASE:           return KaelPhase;
         }
         return 0;
     }
@@ -125,7 +134,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
                 if(data == DONE)
                     HandleGameObject(DelrissaDoorGUID, true);
                 break;
-            case DATA_KAELTHAS_EVENT:    
+            case DATA_KAELTHAS_EVENT:
                 if(Encounters[3] != DONE)
                     Encounters[3] = data;
                 break;
@@ -134,6 +143,9 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
                     ++DelrissaDeathCount;
                 else
                     DelrissaDeathCount = 0;
+                break;
+            case DATA_KAEL_PHASE:
+                KaelPhase = data;
                 break;
         }
 
@@ -178,7 +190,6 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         {
             case 24723: SelinGUID = creature->GetGUID(); break;
             case 24560: DelrissaGUID = creature->GetGUID(); break;
-//            case 24722: FelCrystals.push_back(creature->GetGUID()); break;
             case 24664: KaelGUID = creature->GetGUID(); break;
         }
     }
