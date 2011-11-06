@@ -6765,6 +6765,46 @@ void Aura::PeriodicTick()
                         m_modifier.m_amount = 100 * m_tickNumber;
                     }
                     break;
+                    // Gravity Lapse (MgT) knock back players again if not flying
+                    case 44226:
+                    case 49887:
+                    {
+                        if(m_target->GetTypeId() != TYPEID_PLAYER)
+                            return;
+                        if(Aura* GLapse = m_target->GetAura(GetId(), 1))
+                        {
+                            int32 duration = GLapse->GetAuraDuration();
+                            float height = m_target->GetPositionZ();
+
+                            if(m_target->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR) | m_target->HasUnitMovementFlag(MOVEFLAG_FALLING))
+                            {
+                                if(height < 0)
+                                {
+                                    m_target->CastSpell(m_target, 44227, true);
+                                    if (Aura* aur = m_target->GetAura(44227, 0))
+                                    {
+                                        aur->SetAuraDuration(duration);
+                                        aur->UpdateAuraDuration();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if(m_target->GetPositionZ() <= -16.0)
+                                {
+                                    // re-cast knockback but keep same aura duration
+                                    m_target->RemoveAurasDueToSpell(GetId());
+                                    m_target->CastSpell(m_target, GetId(), true);
+                                    if(Aura* newGLapse = m_target->GetAura(GetId(), 1))
+                                    {
+                                        newGLapse->SetAuraDuration(duration);
+                                        newGLapse->UpdateAuraDuration();
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
                     // Curse of Agony - Sathrovarr
                     case 45032:
                     case 45034:
