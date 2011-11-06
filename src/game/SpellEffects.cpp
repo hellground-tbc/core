@@ -4550,15 +4550,24 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
         return;
 
     uint32 mapid = m_caster->GetMapId();
-    float dis = GetSpellRadius(m_spellInfo,i,false);
 
-    float fx,fy,fz;
-    m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
+    if(!m_targets.HasDst())
+    {
+        float dis = GetSpellRadius(m_spellInfo,i,false);
 
-    if (mapid == unitTarget->GetMapId())
-        unitTarget->NearTeleportTo(fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster);
-    else if (unitTarget->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)unitTarget)->TeleportTo(mapid, fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster ? TELE_TO_SPELL : 0);
+        float fx,fy,fz;
+        m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
+
+        if (mapid == unitTarget->GetMapId())
+            unitTarget->NearTeleportTo(fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster);
+        else if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)unitTarget)->TeleportTo(mapid, fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster ? TELE_TO_SPELL : 0);
+    }
+    else
+    {
+        if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)unitTarget)->TeleportTo(mapid, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, unitTarget->GetOrientation());
+    }
 
 }
 
@@ -5538,7 +5547,6 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             uint32 GravityLapseSpellId = 44219; // Id for first teleport spell
             uint32 GravityLapseDOT = (m_caster->GetMap()->IsHeroic()?44226:49887); // knocback + damage
-            uint32 GravityLapseFly = 44227; // flying + flight speed
             uint32 GravityLapseChannel = 44251; // visual self-casted, triggers AoE beams
             uint8 counter = 0;
 
@@ -5549,7 +5557,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             for(std::list<HostilReference*>::iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
-                Unit* pUnit = (*i)->getSource()->getOwner();
+                Unit* pUnit = m_caster->GetMap()->GetUnit((*i)->getUnitGuid());
                 if(!pUnit)
                     continue;
                 if(pUnit->GetTypeId() != TYPEID_PLAYER)
@@ -5563,8 +5571,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     else
                         break;
                     m_caster->CastSpell(pUnit, GravityLapseSpellId, true);
-                    m_caster->CastSpell(pUnit, GravityLapseFly, true);
-                    m_caster->CastSpell(pUnit, GravityLapseDOT, true);
+                    pUnit->CastSpell(pUnit, GravityLapseDOT, true, 0, 0, m_caster->GetGUID());
                     GravityLapseSpellId++;
                 }
             }
