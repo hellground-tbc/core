@@ -46,7 +46,7 @@ EndScriptData */
 #define SPELL_PHOENIX_FIREBALL        (HeroicMode?44237:44202)
 #define SPELL_EMBER_BLAST             44199
 
-#define SPELL_TELEPORT_PLAYER         20477 // currently not used, should prevent phoenix kiting
+#define SPELL_TELEPORT_PLAYER         20477 // should also prevent phoenix kiting ?
 
 #define SPELL_SUMMON_FLAMESTRIKE      44192
 #define SPELL_FLAMESTRIKE_VISUAL      44191
@@ -118,7 +118,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
         Phase = 0;
         SetAutocast(SPELL_FIREBALL, 2000, true);
         me->HandleEmoteCommand(EMOTE_STATE_NONE);
-        me->SetReactState(REACT_AGGRESSIVE);
+        me->setFaction(16); // probably should be using another faction here
 
         if(pInstance)
         {
@@ -137,12 +137,11 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
             DoScriptText(SAY_DEATH, m_creature);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             RemoveGravityLapse();
-            me->SetReactState(REACT_PASSIVE);
             me->DeleteThreatList();
-            me->CombatStop(true);
             me->RemoveAllAuras();
-            // TODO: make him do emotes while in combat
-            //me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
+            me->CombatStop(true);
+            me->setFaction(35);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
             if(pInstance)
                 pInstance->SetData(DATA_KAELTHAS_EVENT, DONE);
             me->SetLootRecipient(done_by);
@@ -217,8 +216,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
             if(OutroTimer < diff)
             {
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                // TODO: make him do emotes while in combat
-                //me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+                me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
                 me->DealDamage(me, me->GetHealth());
             }
             OutroTimer -= diff;
@@ -233,7 +231,12 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
             if(pInstance)
             {
                 if(pInstance->GetData(DATA_KAELTHAS_EVENT) == IN_PROGRESS)
+                {
                     DoZoneInCombat();
+                    // teleport victim to self if not in range or not in LoS
+                    if(!me->IsWithinDistInMap(me->getVictim(), 40) || !me->IsWithinLOSInMap(me->getVictim()))
+                        ForceSpellCast(SPELL_TELEPORT_PLAYER, CAST_TANK, INTERRUPT_AND_CAST);
+                }
             }
             CheckTimer = 2000;
         }
