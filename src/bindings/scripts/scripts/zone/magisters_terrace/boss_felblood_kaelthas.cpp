@@ -32,6 +32,7 @@ EndScriptData */
 #define SAY_TIRED                   -1585027
 #define SAY_RECAST_GRAVITY          -1585028
 #define SAY_DEATH                   -1585029
+#define EMOTE_HEROIC_PYROBLAST      -1585030
 
 /*** Spells ***/
 
@@ -216,7 +217,6 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
             if(OutroTimer < diff)
             {
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-                me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
                 me->DealDamage(me, me->GetHealth());
             }
             OutroTimer -= diff;
@@ -251,7 +251,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
                 {
                     if(PyroblastTimer < diff)
                     {
-                        AddSpellToCast(SPELL_SHOCK_BARRIER, CAST_SELF);
+                        ForceSpellCastWithScriptText(SPELL_SHOCK_BARRIER, CAST_SELF, EMOTE_HEROIC_PYROBLAST, INTERRUPT_AND_CAST);
                         AddSpellToCast(SPELL_PYROBLAST, CAST_TANK);
                         PyroblastTimer = 60000;
                     }
