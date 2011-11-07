@@ -68,8 +68,6 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
     uint64 DelrissaDoorGUID;
     uint64 KaelStatue[2];
 
-    std::vector<std::pair<uint32, uint64>> KaelTrashMob;
-
     void Initialize()
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
