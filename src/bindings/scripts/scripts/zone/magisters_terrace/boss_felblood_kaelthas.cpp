@@ -103,9 +103,8 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        // TODO: Timers
-        PhoenixTimer = 30000;
-        FlameStrikeTimer = 25000;
+        PhoenixTimer = urand(15000,20000);
+        FlameStrikeTimer = urand(25000, 35000);
         CheckTimer = 2000;
         OutroTimer = 11000;
         Outro = false;
@@ -260,7 +259,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
                 if(PhoenixTimer < diff)
                 {
                     AddSpellToCastWithScriptText(SPELL_PHOENIX, CAST_SELF, SAY_PHOENIX);
-                    PhoenixTimer = 40000;
+                    PhoenixTimer = urand(45000, 55000);
                 }
                 else
                     PhoenixTimer -= diff;
@@ -270,7 +269,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
                     AddSpellToCast(SPELL_SUMMON_FLAMESTRIKE, CAST_RANDOM);
                     if(roll_chance_f(40))
                         DoScriptText(SAY_FLAMESTRIKE, me);
-                    FlameStrikeTimer = urand(20000, 25000);
+                    FlameStrikeTimer = urand(25000, 35000);
                 }
                 else
                     FlameStrikeTimer -= diff;
