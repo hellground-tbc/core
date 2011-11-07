@@ -95,6 +95,7 @@ struct ArenaTeamMember
     uint32 games_season;
     uint32 wins_season;
     uint32 personal_rating;
+    uint32 matchmaker_rating;
 
     void ModifyPersonalRating(Player* plr, int32 mod, uint32 slot)
     {
@@ -102,8 +103,51 @@ struct ArenaTeamMember
             personal_rating = 0;
         else
             personal_rating += mod;
+
         if (plr)
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot*6) + 5, personal_rating);
+    }
+
+    void ModifyMatchmakerRating(int32 mod, int type)
+    {
+        static SqlStatementID updateH2Rating;
+        static SqlStatementID updateH3Rating;
+        static SqlStatementID updateH5Rating;
+
+        if (int32(matchmaker_rating) + mod <  0)
+            matchmaker_rating = 0;
+        else
+            matchmaker_rating += mod;
+
+        switch (type)
+        {
+            case 2:
+            {
+                SqlStatement stmt = CharacterDatabase.CreateStatement(updateH2Rating, "UPDATE hidden_rating SET rating2 = ? WHERE guid = ?");
+                stmt.addUInt32(matchmaker_rating);
+                stmt.addUInt32(guid);
+                stmt.Execute();
+                break;
+            }
+            case 3:
+            {
+                SqlStatement stmt = CharacterDatabase.CreateStatement(updateH3Rating, "UPDATE hidden_rating SET rating3 = ? WHERE guid = ?");
+                stmt.addUInt32(matchmaker_rating);
+                stmt.addUInt32(guid);
+                stmt.Execute();
+                break;
+            }
+            case 5:
+            {
+                SqlStatement stmt = CharacterDatabase.CreateStatement(updateH5Rating, "UPDATE hidden_rating SET rating5 = ? WHERE guid = ?");
+                stmt.addUInt32(matchmaker_rating);
+                stmt.addUInt32(guid);
+                stmt.Execute();
+                break;
+            }
+            default:
+                return;
+        }
     }
 };
 
@@ -208,15 +252,17 @@ class ArenaTeam
         uint32 GetPoints(uint32 MemberRating);
         float GetChanceAgainst(uint32 own_rating, uint32 enemy_rating);
         int32 WonAgainst(uint32 againstRating);
-        void MemberWon(Player * plr, uint32 againstRating);
+        void MemberWon(Player * plr, uint32 againstRating, uint32 againstHiddenRating);
         int32 LostAgainst(uint32 againstRating);
-        void MemberLost(Player * plr, uint32 againstRating);
+        void MemberLost(Player * plr, uint32 againstRating, uint32 againstHiddenRating);
 
         void UpdateArenaPointsHelper(std::map<uint32, uint32> & PlayerPoints);
 
         void NotifyStatsChanged();
 
         void FinishWeek();
+
+        uint32 GetAverageMMR(Group *group) const;
 
     protected:
 

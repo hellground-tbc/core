@@ -230,6 +230,8 @@ void AuthSocket::OnRead()
 
         size_t i;
 
+        printf("\n_cmd: %u\n", _cmd);
+
         ///- Circle through known commands and call the correct command handler
         for (i = 0; i < AUTH_TOTAL_COMMANDS; ++i)
         {

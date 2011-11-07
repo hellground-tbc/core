@@ -135,7 +135,7 @@ void BattleGroundQueue::SelectionPool::AddGroup(GroupQueueInfo * ginfo)
 }
 
 // add group to bg queue with the given leader and bg specifications
-GroupQueueInfo * BattleGroundQueue::AddGroup(Player *leader, uint32 BgTypeId, uint8 ArenaType, bool isRated, uint32 arenaRating, uint32 arenateamid)
+GroupQueueInfo * BattleGroundQueue::AddGroup(Player *leader, uint32 BgTypeId, uint8 ArenaType, bool isRated, uint32 arenaRating, uint32 hiddenRating, uint32 arenateamid)
 {
     uint32 queue_id = leader->GetBattleGroundQueueIdFromLevel();
 
@@ -151,7 +151,9 @@ GroupQueueInfo * BattleGroundQueue::AddGroup(Player *leader, uint32 BgTypeId, ui
     ginfo->JoinTime                  = WorldTimer::getMSTime();
     ginfo->Team                      = leader->GetTeam();
     ginfo->ArenaTeamRating           = arenaRating;
+    ginfo->HiddenRating              = hiddenRating;
     ginfo->OpponentsTeamRating       = 0;                       //initialize it to 0
+    ginfo->OpponentsHiddenRating     = 0;                       //initialize it to 0
 
     ginfo->Players.clear();
 
@@ -493,7 +495,7 @@ should be called after removeplayer functions in some cases
 
 #define PREMADE_REMOVE_TIME MINUTE*15*1000
 
-void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype, bool isRated, uint32 arenaRating)
+void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype, bool isRated, uint32 arenaRating, uint32 hiddenRating)
 {
     if (queue_id >= MAX_BATTLEGROUND_QUEUES)
     {
@@ -590,11 +592,13 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
         }
     }
 
+    bool hiddenEnabled = sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING);
+
     // found out the minimum and maximum ratings the newly added team should battle against
     // arenaRating is the rating of the latest joined team
-    uint32 arenaMinRating = (arenaRating <= sBattleGroundMgr.GetMaxRatingDifference()) ? 0 : arenaRating - sBattleGroundMgr.GetMaxRatingDifference();
+    uint32 arenaMinRating = ((hiddenEnabled ? hiddenRating : arenaRating) <= sBattleGroundMgr.GetMaxRatingDifference()) ? 0 : (hiddenEnabled ? hiddenRating : arenaRating) - sBattleGroundMgr.GetMaxRatingDifference();
     // if no rating is specified, set maxrating to 0
-    uint32 arenaMaxRating = (arenaRating == 0)? 0 : arenaRating + sBattleGroundMgr.GetMaxRatingDifference();
+    uint32 arenaMaxRating = ((hiddenEnabled ? hiddenRating : arenaRating) == 0)? 0 : (hiddenEnabled ? hiddenRating : arenaRating) + sBattleGroundMgr.GetMaxRatingDifference();
     uint32 discardTime = 0;
     // if max rating difference is set and the time past since server startup is greater than the rating discard time
     // (after what time the ratings aren't taken into account when making teams) then
@@ -740,8 +744,10 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             std::list<GroupQueueInfo* >::iterator itr_alliance = m_SelectionPools[NORMAL_ALLIANCE].SelectedGroups.begin();
             std::list<GroupQueueInfo* >::iterator itr_horde = m_SelectionPools[NORMAL_HORDE].SelectedGroups.begin();
             (*itr_alliance)->OpponentsTeamRating = (*itr_horde)->ArenaTeamRating;
+            (*itr_alliance)->OpponentsHiddenRating = (*itr_horde)->HiddenRating;
             sLog.outDebug("setting opposite team rating for team %u to %u", (*itr_alliance)->ArenaTeamId, (*itr_alliance)->OpponentsTeamRating);
             (*itr_horde)->OpponentsTeamRating = (*itr_alliance)->ArenaTeamRating;
+            (*itr_horde)->OpponentsHiddenRating = (*itr_alliance)->HiddenRating;
             sLog.outDebug("setting opposite team rating for team %u to %u", (*itr_horde)->ArenaTeamId, (*itr_horde)->OpponentsTeamRating);
         }
 
@@ -892,6 +898,8 @@ void BattleGroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                 std::list<GroupQueueInfo* >::iterator itr_horde = m_SelectionPools[mode2].SelectedGroups.begin();
                 (*itr_alliance)->OpponentsTeamRating = (*itr_horde)->ArenaTeamRating;
                 (*itr_horde)->OpponentsTeamRating = (*itr_alliance)->ArenaTeamRating;
+                (*itr_alliance)->OpponentsHiddenRating = (*itr_horde)->HiddenRating;
+                (*itr_horde)->OpponentsHiddenRating = (*itr_alliance)->HiddenRating;
             }
 
             bg2->StartBattleGround();
@@ -982,7 +990,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                 if (at)
                 {
                     sLog.outDebug("UPDATING memberLost's personal arena rating for %u by opponents rating: %u", GUID_LOPART(plr->GetGUID()), qMapItr->second.GroupInfo->OpponentsTeamRating);
-                    at->MemberLost(plr, qMapItr->second.GroupInfo->OpponentsTeamRating);
+                    at->MemberLost(plr, qMapItr->second.GroupInfo->OpponentsTeamRating, qMapItr->second.GroupInfo->OpponentsHiddenRating);
                     at->SaveToDB();
                 }
             }

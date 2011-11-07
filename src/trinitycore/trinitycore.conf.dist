@@ -1330,12 +1330,17 @@ Death.Bones.BattlegroundOrArena = 1
 #                         in days
 #             Default: 7 (weekly)
 #
+# EnableMMR: MMR (Matchmaking rating) should be enabled ?
+#             Default: 0 (disabled)
+#
+#
 ###################################################################################################################
 
 Arena.MaxRatingDifference = 0
 Arena.RatingDiscardTimer = 60000
 Arena.AutoDistributePoints = 0
 Arena.AutoDistributeInterval = 7
+Arena.EnableMMR = 0
 
 ###################################################################################################################
 #

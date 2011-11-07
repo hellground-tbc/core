@@ -61,7 +61,9 @@ struct GroupQueueInfo                                       // stores informatio
     uint32  JoinTime;                                       // time when group was added
     uint32  IsInvitedToBGInstanceGUID;                      // was invited to certain BG
     uint32  ArenaTeamRating;                                // if rated match, inited to the rating of the team
+    uint32  HiddenRating;                                   // if rated match, inited to the rating of the team
     uint32  OpponentsTeamRating;                            // for rated arena matches
+    uint32  OpponentsHiddenRating;                          // for rated arena matches
     bool Premade;
 };
 
@@ -92,9 +94,9 @@ class BattleGroundQueue
         BattleGroundQueue();
         ~BattleGroundQueue();
 
-        void Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype = 0, bool isRated = false, uint32 minRating = 0);
+        void Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype = 0, bool isRated = false, uint32 arenaRating = 0, uint32 hiddenRating = 0);
 
-        GroupQueueInfo * AddGroup(Player * leader, uint32 BgTypeId, uint8 ArenaType, bool isRated, uint32 ArenaRating, uint32 ArenaTeamId = 0);
+        GroupQueueInfo * AddGroup(Player * leader, uint32 BgTypeId, uint8 ArenaType, bool isRated, uint32 ArenaRating, uint32 hiddenRating, uint32 ArenaTeamId = 0);
         void AddPlayer(Player *plr, GroupQueueInfo *ginfo);
         void RemovePlayer(const uint64& guid, bool decreaseInvitedCount);
         void DecreaseGroupLength(uint32 queueId, uint32 AsGroup);

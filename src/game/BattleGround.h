@@ -473,6 +473,7 @@ class BattleGround
         void AddOrSetPlayerToCorrectBgGroup(Player *plr, uint64 guid, uint32 team);
         // since arenas can be AvA or Hvh, we have to get the "temporary" team of a player
         uint32 GetPlayerTeam(uint64 guid);
+        static uint32 GetOtherTeam(uint32 team){ return team ? ((team == ALLIANCE) ? HORDE : ALLIANCE) : TEAM_NONE; }
         bool IsPlayerInBattleGround(uint64 guid);
         void PlayerRelogin(uint64 guid);
 
