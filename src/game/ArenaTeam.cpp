@@ -607,15 +607,12 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHid
         {
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, hiddenEnabled ? againstHiddenRating : againstRating);
-            float K;
             int32 mod = (int32)ceil(32.0f * (0.0f - chance));
             itr->ModifyPersonalRating(plr, mod, GetSlot());
 
             // update matchmaker rating
             chance = GetChanceAgainst(itr->matchmaker_rating, againstHiddenRating);
-            K = (itr->matchmaker_rating < 1000) ? 48.0f : 32.0f;
-            // calculate the rating modification (ELO system with k=32 or k=48 if rating<1000)
-            mod = (int32)ceil(K * (0.0f - chance));
+            mod = (int32)ceil(32.0f * (0.0f - chance));
             itr->ModifyMatchmakerRating(mod, GetType());
 
             // update personal played stats
@@ -641,15 +638,12 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating, uint32 againstHidd
         {
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, hiddenEnabled ? againstHiddenRating : againstRating);
-            float K;
             int32 mod = (int32)floor(32.0f * (1.0f - chance));
             itr->ModifyPersonalRating(plr, mod, GetSlot());
 
             // update matchmaker rating
             chance = GetChanceAgainst(itr->matchmaker_rating, againstHiddenRating);
-            K = (itr->matchmaker_rating < 1000) ? 48.0f : 32.0f;
-            mod = (int32)ceil(K * (1.0f - chance));
-            // calculate the rating modification (ELO system with k=32 or k=48 if rating<1000)
+            mod = (int32)ceil(32.0f * (1.0f - chance));
             itr->ModifyMatchmakerRating(mod, GetType());
 
             // update personal stats
