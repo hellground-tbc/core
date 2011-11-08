@@ -528,6 +528,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
         float GetSpellDamageMod(int32 Rank);
 
+        void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
         void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); }
         uint64 GetSelection() { return GetUInt64Value(UNIT_FIELD_TARGET); }
 

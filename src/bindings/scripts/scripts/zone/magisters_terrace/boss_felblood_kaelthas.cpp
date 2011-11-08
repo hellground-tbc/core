@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Felblood_Kaelthas
 SD%Complete: 95
-SDComment: Check Timers, make trash pack event, final debugging
+SDComment: Final debugging, force him to make death animations
 SDCategory: Magisters' Terrace
 EndScriptData */
 
@@ -88,8 +88,11 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
     SummonList summons;
     uint32 PhoenixTimer;
     uint32 FlameStrikeTimer;
+    uint32 TrashCheckTimer;
     uint32 CheckTimer;
+    uint32 IntroTimer;
     uint32 OutroTimer;
+    bool Intro;
     bool Outro;
 
     //Heroic only
@@ -106,8 +109,11 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
     {
         PhoenixTimer = urand(15000,20000);
         FlameStrikeTimer = urand(25000, 35000);
+        TrashCheckTimer = 2000;
         CheckTimer = 2000;
+        IntroTimer = 36000;
         OutroTimer = 11000;
+        Intro = false;
         Outro = false;
         summons.DespawnAll();
 
@@ -125,6 +131,8 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
         {
             pInstance->SetData(DATA_KAELTHAS_EVENT, NOT_STARTED);
             pInstance->SetData(DATA_KAEL_PHASE, Phase);
+            if(pInstance->GetData(DATA_KAEL_TRASH_EVENT) != DONE)
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
         ResetStatues(true);
     }
@@ -153,7 +161,6 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
 
     void EnterCombat(Unit *who)
     {
-        //DoScriptText(SAY_AGGRO, m_creature);  // move to when trash killed
         DoZoneInCombat();
         Phase = 1;
         if(pInstance)
@@ -161,6 +168,13 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
             pInstance->SetData(DATA_KAELTHAS_EVENT, IN_PROGRESS);
             pInstance->SetData(DATA_KAEL_PHASE, Phase);
         }
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if(Intro || (pInstance && pInstance->GetData(DATA_KAEL_TRASH_EVENT) != DONE))
+            return;
+        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void JustSummoned(Creature* summon)
@@ -212,6 +226,32 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(pInstance && pInstance->GetData(DATA_KAEL_TRASH_EVENT) != DONE)
+        {
+            if(TrashCheckTimer < diff)
+            {
+                if(pInstance->GetData(DATA_KAEL_TRASH_COUNTER) >= 6)
+                {
+                    pInstance->SetData(DATA_KAEL_TRASH_EVENT, DONE);
+                    DoScriptText(SAY_AGGRO, m_creature);
+                    Intro = true;
+                }
+                TrashCheckTimer = 2000;
+            }
+            else
+                TrashCheckTimer -= diff;
+        }
+
+        if(Intro)
+        {
+            if(IntroTimer < diff)
+            {
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                Intro = false;
+            }
+            IntroTimer -= diff;
+        }
+
         if(Outro)
         {
             if(OutroTimer < diff)

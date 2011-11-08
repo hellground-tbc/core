@@ -16,20 +16,25 @@
 
 /* ScriptData
 SDName: Instance_Magisters_Terrace
-SD%Complete: 90
-SDComment: Make Kael trash pack, final debugging
+SD%Complete: 95%
+SDComment: Final debugging
 SDCategory: Magister's Terrace
 EndScriptData */
 
 #include "precompiled.h"
 #include "def_magisters_terrace.h"
 
-#define ENCOUNTERS      4
+#define ENCOUNTERS      5
 
-// TODO
-#define TRASH_Z         -14.38
-float KaelTrashLocations[6][2]=
+// mobs DB GUIDs that should respawn group formation on evade
+uint32 KaelTrashGuid[6]=
 {
+    96850,
+    96781,
+    96841,
+    96809,
+    96770,
+    96847
 };
 uint32 TrashPackEntry[8] = 
 {
@@ -58,6 +63,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
     uint8 KaelPhase;
     uint32 Encounters[ENCOUNTERS];
     uint32 DelrissaDeathCount;
+    uint32 KaelTrashCounter;
 
     uint64 KaelGUID;
     uint64 SelinGUID;
@@ -67,6 +73,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
     uint64 SelinEncounterDoorGUID;
     uint64 DelrissaDoorGUID;
     uint64 KaelStatue[2];
+    std::list<uint32> TrashEntry;
 
     void Initialize()
     {
@@ -74,6 +81,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             Encounters[i] = NOT_STARTED;
 
         DelrissaDeathCount = 0;
+        KaelTrashCounter = 0;
 
         KaelPhase = 0;
         KaelGUID = 0;
@@ -85,6 +93,24 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         DelrissaDoorGUID = 0;
         KaelStatue[0] = 0;
         KaelStatue[1] = 0;
+        TrashEntry.clear();
+        BuildKaelTrashEntries();
+    }
+
+    void BuildKaelTrashEntries()
+    {
+        std::set<uint32> TrashList;
+        TrashList.clear();
+        while(TrashList.size() < 6)
+        {
+            uint8 i = urand(0, 7); 
+            if(TrashList.find(TrashPackEntry[i]) == TrashList.end())
+                TrashList.insert(TrashPackEntry[i]);
+        }
+        for(std::set<uint32>::iterator i = TrashList.begin(); i != TrashList.end(); ++i)
+        {
+            TrashEntry.push_back(*i);
+        }
     }
 
     bool IsEncounterInProgress() const
@@ -103,7 +129,9 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_VEXALLUS_EVENT:       return Encounters[1];
             case DATA_DELRISSA_EVENT:       return Encounters[2];
             case DATA_KAELTHAS_EVENT:       return Encounters[3];
+            case DATA_KAEL_TRASH_EVENT:     return Encounters[4];
             case DATA_DELRISSA_DEATH_COUNT: return DelrissaDeathCount;
+            case DATA_KAEL_TRASH_COUNTER:   return KaelTrashCounter;
             case DATA_KAEL_PHASE:           return KaelPhase;
         }
         return 0;
@@ -142,6 +170,16 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
                 else
                     DelrissaDeathCount = 0;
                 break;
+            case DATA_KAEL_TRASH_COUNTER:
+                if(data)
+                    ++KaelTrashCounter;
+                else
+                    KaelTrashCounter = 0;
+                break;
+            case DATA_KAEL_TRASH_EVENT:
+                if(Encounters[4] != DONE)
+                    Encounters[4] = data;
+                break;
             case DATA_KAEL_PHASE:
                 KaelPhase = data;
                 break;
@@ -159,7 +197,8 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         stream << Encounters[0] << " ";
         stream << Encounters[1] << " ";
         stream << Encounters[2] << " ";
-        stream << Encounters[3];
+        stream << Encounters[3] << " ";
+        stream << Encounters[4];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -175,7 +214,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         }
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
-        stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3];
+        stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4];
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounters[i] == IN_PROGRESS)
                 Encounters[i] = NOT_STARTED;
@@ -188,7 +227,21 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         {
             case 24723: SelinGUID = creature->GetGUID(); break;
             case 24560: DelrissaGUID = creature->GetGUID(); break;
-            case 24664: KaelGUID = creature->GetGUID(); break;
+            case 24664: KaelGUID = creature->GetGUID();
+                break;
+        }
+        if(TrashEntry.empty())
+            return;
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(creature->GetDBTableGUIDLow() == KaelTrashGuid[i])
+            {
+                creature->UpdateEntry(TrashEntry.front());
+                creature->SetOriginalEntry(TrashEntry.front());
+                creature->AIM_Initialize();
+                TrashEntry.pop_front();
+                break;
+            }
         }
     }
 

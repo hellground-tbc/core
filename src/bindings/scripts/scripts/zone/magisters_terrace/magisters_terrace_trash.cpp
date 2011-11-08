@@ -7,7 +7,7 @@
 
 /* ScriptData
 SDName: Magister_Terrace_Trash
-SD%Complete: 90%
+SD%Complete: 95%
 SDComment: Check timers, spell Ids and cosmetics mostly for heroic versions. Implement Sunblade Keeper event.
 SDCategory: Magister Terrace
 EndScriptData */
@@ -34,6 +34,17 @@ EndScriptData */
 *
 **********/
 
+// mobs DB GUIDs that should respawn group formation on evade
+uint32 KaelTrashDBguid[6]=
+{
+    96850,
+    96781,
+    96841,
+    96809,
+    96770,
+    96847
+};
+
 #define SPELL_GLAIVE_THROW              (HeroicMode?46028:44478)
 #define SPELL_MAGIC_DAMPENING_FIELD     44475
 #define NPC_BROKEN_SENTINEL             24808
@@ -42,8 +53,12 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 {
-    mob_sunwell_mage_guardAI(Creature *c) : ScriptedAI(c) {}
+    mob_sunwell_mage_guardAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
 
+    ScriptedInstance* pInstance;
     uint32 Glaive_Timer;
     uint32 Magic_Field_Timer;
     uint32 OOCTimer;
@@ -53,6 +68,34 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
         Glaive_Timer = (HeroicMode?urand(3000, 6000):urand(5000,10000));
         Magic_Field_Timer = (10000, 20000);
         OOCTimer = 5000;
+    }
+
+    void EnterEvadeMode()
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 0);
+                if(CreatureGroup *formation = me->GetFormation())
+                    formation->RespawnFormation(me);
+                break;
+            }
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
+            }
+        }
     }
 
     void HandleOffCombatEffects()
@@ -115,8 +158,11 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 {
     mob_sunblade_magisterAI(Creature *c) : ScriptedAI(c)
     {
+        pInstance = (c->GetInstanceData());
         DoCast(c, SPELL_ENCHANTMENT_OF_SPELL_HASTE, true);
     }
+
+    ScriptedInstance* pInstance;
 
     uint32 Frostbolt_Timer;
     uint32 Arcane_Nova_Timer;
@@ -127,6 +173,34 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
         Frostbolt_Timer = 0;
         Arcane_Nova_Timer = urand (12000, 20000);
         OOCTimer = 5000;
+    }
+
+    void EnterEvadeMode()
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 0);
+                if(CreatureGroup *formation = me->GetFormation())
+                    formation->RespawnFormation(me);
+                break;
+            }
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
+            }
+        }
     }
 
     void HandleOffCombatEffects()
@@ -193,10 +267,13 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 {
     mob_sunblade_warlockAI(Creature *c) : ScriptedAI(c)
     {
+        pInstance = (c->GetInstanceData());
         DoCast(c, SPELL_FEL_ARMOR, true);
         FelArmor_Timer = 120000;    //check each 2 minutes
         SummonGUID = NULL;
     }
+
+    ScriptedInstance* pInstance;
 
     uint32 SummonImp_Timer;
     uint32 FelArmor_Timer;
@@ -210,6 +287,34 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
         SetAutocast(SPELL_INCINERATE, 1900, true);
         Immolate_Timer = urand(8000, 12000);
         OOCTimer = 5000;
+    }
+
+    void EnterEvadeMode()
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 0);
+                if(CreatureGroup *formation = me->GetFormation())
+                    formation->RespawnFormation(me);
+                break;
+            }
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
+            }
+        }
     }
 
     void HandleOffCombatEffects()
@@ -317,7 +422,12 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 {
-    mob_sunblade_physicianAI(Creature *c) : ScriptedAI(c) { }
+    mob_sunblade_physicianAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 Poison_Timer;
     uint32 Prayer_of_Mending_Timer;
@@ -328,6 +438,34 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
         Poison_Timer = urand(5000, 8000);
         Prayer_of_Mending_Timer = urand(3000, 8000);
         OOCTimer = 5000;
+    }
+
+    void EnterEvadeMode()
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 0);
+                if(CreatureGroup *formation = me->GetFormation())
+                    formation->RespawnFormation(me);
+                break;
+            }
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
+            }
+        }
     }
 
     void HandleOffCombatEffects()
@@ -403,7 +541,12 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
 {
-    mob_sunblade_blood_knightAI(Creature *c) : ScriptedAI(c) { }
+    mob_sunblade_blood_knightAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 Judgement_Timer;
     uint32 Holy_Light_Timer;
@@ -416,6 +559,34 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
         Judgement_Timer = urand(10000, 15000);
         Holy_Light_Timer = urand(8000, 20000);
         OOCTimer = 5000;
+    }
+
+    void EnterEvadeMode()
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 0);
+                if(CreatureGroup *formation = me->GetFormation())
+                    formation->RespawnFormation(me);
+                break;
+            }
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
+            }
+        }
     }
 
     void HandleOffCombatEffects()
@@ -757,7 +928,12 @@ struct TRINITY_DLL_DECL mob_brightscale_wyrmAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
 {
-    mob_sister_of_tormentAI(Creature *c) : ScriptedAI(c) {}
+    mob_sister_of_tormentAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 LashOfPain_Timer;
     uint32 DeadlyEmbrace_Timer;
@@ -768,6 +944,34 @@ struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
         LashOfPain_Timer = urand(8000,14000);
         DeadlyEmbrace_Timer = (17000, 23000);
         OOCTimer = 5000;
+    }
+
+    void EnterEvadeMode()
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 0);
+                if(CreatureGroup *formation = me->GetFormation())
+                    formation->RespawnFormation(me);
+                break;
+            }
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
+            }
+        }
     }
 
     void HandleOffCombatEffects()
@@ -848,7 +1052,12 @@ struct TRINITY_DLL_DECL mob_sunblade_sentinelAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
 {
-    mob_coilskar_witchAI(Creature *c) : ScriptedAI(c) { }
+    mob_coilskar_witchAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 Check_Timer;
     uint32 Shoot_Timer;
@@ -865,6 +1074,34 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
         ForkedLightning_Timer = urand(5000, 10000);
         OOCTimer = 5000;
         canShield = true;
+    }
+
+    void EnterEvadeMode()
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 0);
+                if(CreatureGroup *formation = me->GetFormation())
+                    formation->RespawnFormation(me);
+                break;
+            }
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
+            }
+        }
     }
 
     void HandleOffCombatEffects()
@@ -952,7 +1189,12 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
 
 struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
 {
-    mob_ethereum_smugglerAI(Creature *c) : ScriptedAI(c) {}
+    mob_ethereum_smugglerAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 ExplosionCombo_Timer;
     uint32 Check_Timer;
@@ -963,6 +1205,40 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
         Check_Timer = 0;
         ExplosionCombo_Timer = 5000;
         OOCTimer = 5000;
+    }
+
+    void EnterEvadeMode()
+    {
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                if(pInstance)
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 0);
+                if(CreatureGroup *formation = me->GetFormation())
+                    formation->RespawnFormation(me);
+                break;
+            }
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        printf("JustDied \n");
+        for(uint8 i = 0; i < 6; ++i)
+        {
+            printf("szukam \n");
+            if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
+            {
+                printf("racja\n");
+                if(pInstance)
+                {
+                    printf("ustawiam counter \n");
+                    pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
+                }
+            }
+        }
     }
 
     void HandleOffCombatEffects()
