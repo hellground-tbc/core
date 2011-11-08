@@ -1821,6 +1821,13 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }
+                case 38642: // Blink
+                {
+                    if(!unitTarget)
+                        return;
+                    m_caster->CastSpell(unitTarget, 29884, true);
+                    return;
+                }
             }
             break;
         case SPELLFAMILY_WARRIOR:
@@ -6291,6 +6298,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                             tmpPl->CastSpell(tmpPl, 29133, true);
             }
             break;
+        case 38650: // Rancid Mushroom
+            m_caster->SummonCreature(22250, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), unitTarget->GetOrientation(),
+                    TEMPSUMMON_DEAD_DESPAWN, 0);
+            break'
+            
     }
 
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
