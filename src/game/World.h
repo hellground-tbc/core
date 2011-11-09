@@ -584,7 +584,7 @@ class World
         static float GetMaxVisibleDistanceInInstances()     { return m_MaxVisibleDistanceInInstances;  }
         static float GetMaxVisibleDistanceInArenas()        { return m_MaxVisibleDistanceInArenas;   }
         static float GetMaxVisibleDistanceInBG()            { return m_MaxVisibleDistanceInBG;   }
-        static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject;   }
+        static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject; }
 
         static float GetMaxVisibleDistanceInFlight()        { return m_MaxVisibleDistanceInFlight;    }
         static float GetVisibleUnitGreyDistance()           { return m_VisibleUnitGreyDistance;       }

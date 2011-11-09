@@ -292,11 +292,15 @@ struct FactionTemplateEntry
 
 struct GameObjectDisplayInfoEntry
 {
-    uint32      Displayid;                                  // 0        m_ID
-    // char* filename;                                      // 1
-    // uint32 unknown2[10];                                 // 2-11     unknown data
-    float  unknown12;                                       // 12-17    unknown size data, use first value as interact dist, mostly in hacks way
-    // float  unknown13[5];                                 // 12-17    unknown size data
+    uint32 Displayid; // 0
+    // char* filename; // 1 m_modelName
+    // uint32 unknown2[10]; // 2-11 m_Sound
+    float minX; // 12 m_geoBoxMinX (use first value as interact dist, mostly in hacks way)
+    float minY; // 13 m_geoBoxMinY
+    float minZ; // 14 m_geoBoxMinZ
+    float maxX; // 15 m_geoBoxMaxX
+    float maxY; // 16 m_geoBoxMaxY
+    float maxZ; // 17 m_geoBoxMaxZ
 };
 
 struct GemPropertiesEntry

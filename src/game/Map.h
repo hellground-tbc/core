@@ -155,7 +155,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
         void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
 
-        float GetVisibilityDistance() const { return m_VisibleDistance; }
+        float GetVisibilityDistance(WorldObject* obj = NULL) const;
         virtual void InitVisibilityDistance();
 
         void PlayerRelocation(Player *, float x, float y, float z, float angl);

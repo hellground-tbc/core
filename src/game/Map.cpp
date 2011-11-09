@@ -480,7 +480,7 @@ void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool 
 void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor)
 {
     Trinity::ObjectMessageDeliverer post_man(*obj, msg, to_possessor);
-    Cell::VisitWorldObjects(obj, post_man, GetVisibilityDistance());
+    Cell::VisitWorldObjects(obj, post_man, GetVisibilityDistance(obj));
 }
 
 void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, bool to_self, bool to_possessor, bool own_team_only)
@@ -1456,7 +1456,7 @@ void Map::UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair)
     cell.SetNoCreate();
     Trinity::VisibleChangesNotifier notifier(*obj);
     TypeContainerVisitor<Trinity::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
-    cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityDistance());
+    cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityDistance(obj));
 }
 
 void Map::UpdateObjectsVisibilityFor(Player* player, Cell cell, CellPair cellpair)
@@ -3479,4 +3479,12 @@ void Map::ForcedUnload()
     UnloadAll();
 
     SetBroken(false);
+}
+
+float Map::GetVisibilityDistance(WorldObject* obj) const
+{
+    if (obj && obj->GetObjectGuid().IsGameObject())
+        return (m_VisibleDistance + ((GameObject*)obj)->GetDeterminativeSize());    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
+    else
+        return m_VisibleDistance;
 }
