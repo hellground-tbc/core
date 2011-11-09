@@ -344,6 +344,11 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
             i_objectsToClientUpdate.erase(obj);
         }
 
+        // map restarting system
+        bool const IsBroken() { return m_broken; };
+        void SetBroken( bool _value = true ) { m_broken = _value; };
+        void ForcedUnload();
+
     private:
         void LoadVMap(int gx, int gy);
         void LoadMap(int gx,int gy, bool reload = false);
@@ -392,6 +397,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         DObjectMapType                  dynamicObjectsMap;
         CreaturesMapType                creaturesMap;
         CreatureIdToGuidListMapType     creatureIdToGuidMap;
+
+        bool m_broken;
 
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
@@ -496,7 +503,7 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
         void SetResetSchedule(bool on);
         virtual void InitVisibilityDistance();
         uint32 GetMaxPlayers() const;
-        
+
         void SummonUnlootedCreatures();
     private:
         bool m_resetAfterUnload;

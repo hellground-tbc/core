@@ -6301,8 +6301,8 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 38650: // Rancid Mushroom
             m_caster->SummonCreature(22250, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), unitTarget->GetOrientation(),
                     TEMPSUMMON_DEAD_DESPAWN, 0);
-            break'
-            
+            break;
+
     }
 
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
