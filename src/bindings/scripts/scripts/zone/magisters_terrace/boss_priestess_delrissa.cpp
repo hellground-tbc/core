@@ -186,7 +186,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
         while(AddList.size() < 4)
         {
-            uint8 i = urand(0, 7); 
+            uint8 i = urand(0, 7);
             if(AddList.find(AddEntry[i]) == AddList.end())
                 AddList.insert(AddEntry[i]);
         }
@@ -436,7 +436,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if(SWPain_Timer < diff)
         {
             SWPain_Timer = 1000;
-            if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true, -SPELL_SW_PAIN))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, -SPELL_SW_PAIN))
             {
                 if(!target->isCrowdControlled())
                 {

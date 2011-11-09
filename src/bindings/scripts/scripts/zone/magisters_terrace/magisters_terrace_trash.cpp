@@ -128,7 +128,7 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 
       if(Glaive_Timer < diff)
       {
-          if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0, true))
+          if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60.0, true))
               AddSpellToCast(target, SPELL_GLAIVE_THROW);
           Glaive_Timer = urand(14000,20000);
       }
@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 
        if(Magic_Field_Timer < diff)
        {
-           if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0, true))
+           if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60.0, true))
                AddSpellToCast(target, SPELL_MAGIC_DAMPENING_FIELD);
            Magic_Field_Timer = urand(50000,65000);
        }
@@ -652,7 +652,7 @@ struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
     }
 };
 
-uint32 DrainingList[8] = 
+uint32 DrainingList[8] =
 {
     96837, 96829,
     96828, 96838,
@@ -1014,7 +1014,7 @@ struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
 
        if(DeadlyEmbrace_Timer < diff)
        {
-           if(Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 20.0, true))
+           if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0, true))
                AddSpellToCast(target, SPELL_DEADLY_EMRACE);
            DeadlyEmbrace_Timer = (17000, 23000);
        }
@@ -1151,7 +1151,7 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
 
       if(Shoot_Timer < diff)
       {
-          Unit* meleeTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 5.0f, true);
+          Unit* meleeTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 5.0f, true);
 
           if(!meleeTarget)
           {
