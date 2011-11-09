@@ -1734,6 +1734,7 @@ void WorldSession::HandleGuildBankSetTabText(WorldPacket &recv_data)
     recv_data >> Text;
 
     pGuild->SetGuildBankTabText(TabId, Text);
+    pGuild->SendGuildBankTabTextToAll(TabId);
 }
 
 void WorldSession::SendSaveGuildEmblem(uint32 msg)

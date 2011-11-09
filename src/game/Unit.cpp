@@ -1773,20 +1773,22 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
     // Ignore enemy armor by SPELL_AURA_MOD_TARGET_RESISTANCE aura
     armor += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, SPELL_SCHOOL_MASK_NORMAL);
 
-    if (armor<0.0f) armor=0.0f;
+    if (armor < 0.0f)
+        armor = 0.0f;
 
-    float tmpvalue = 0.0f;
-    if (getLevel() <= 59)                                    //Level 1-59
-        tmpvalue = armor / (armor + 400.0f + 85.0f * getLevel());
-    else if (getLevel() < 70)                                //Level 60-69
-        tmpvalue = armor / (armor - 22167.5f + 467.5f * getLevel());
-    else                                                    //Level 70+
-        tmpvalue = armor / (armor + 10557.5f);
+    float levelModifier = getLevel();
+    if (levelModifier > 59)
+        levelModifier = levelModifier + (4.5f * (levelModifier-59));
+
+    float tmpvalue = 0.1f * armor / (8.5f * levelModifier + 40);
+    tmpvalue = tmpvalue/(1.0f + tmpvalue);
 
     if (tmpvalue < 0.0f)
         tmpvalue = 0.0f;
+
     if (tmpvalue > 0.75f)
         tmpvalue = 0.75f;
+
     newdamage = uint32(damage - (damage * tmpvalue));
 
     return (newdamage > 1) ? newdamage : 1;
@@ -2014,7 +2016,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             currentAbsorb = RemainingDamage;
 
         float manaMultiplier = (*i)->GetSpellProto()->EffectMultipleValue[(*i)->GetEffIndex()];
-        if (Player *modOwner = GetSpellModOwner())
+        if (Player *modOwner = pVictim->GetSpellModOwner())
             modOwner->ApplySpellMod((*i)->GetId(), SPELLMOD_MULTIPLE_VALUE, manaMultiplier);
 
         if (manaMultiplier)
@@ -4543,6 +4545,17 @@ Aura* Unit::GetAura(uint32 spellId, uint32 effindex)
     if (iter != m_Auras.end())
         return iter->second;
     return NULL;
+}
+
+bool Unit::HasAura(uint32 spellId) const
+{
+    for (int i = 0; i < 3 ; ++i)
+    {
+        AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, i));
+        if (iter != m_Auras.end())
+            return true;
+    }
+    return false;
 }
 
 void Unit::AddDynObject(DynamicObject* dynObj)
@@ -7323,7 +7336,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     }
 
     // remove SPELL_AURA_MOD_UNATTACKABLE at attack (in case non-interruptible spells stun aura applied also that not let attack)
-    if (HasAuraType(SPELL_AURA_MOD_UNATTACKABLE) && !HasAura(40282, 2))
+    if (HasAuraType(SPELL_AURA_MOD_UNATTACKABLE) && !HasAura(40282))    // do not remove Possess Spirit Immune aura when attacking
         RemoveSpellsCausingAura(SPELL_AURA_MOD_UNATTACKABLE);
 
     if (m_attacking)
@@ -7889,6 +7902,11 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 if (pVictim->isFrozen())                     // and compensate this for frozen target.
                     TakenTotalMod *= 3.0f;
             }
+            else if (spellProto->Id == 12723) // Sweeping Strikes
+            {
+                DoneTotalMod = 1.0f;
+            }
+            break;
         case SPELLFAMILY_MAGE:
             // Ignite - do not modify, it is (8*Rank)% damage of procing Spell
             if (spellProto->Id==12654)

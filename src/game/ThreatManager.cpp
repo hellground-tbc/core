@@ -27,6 +27,7 @@
 #include "Player.h"
 #include "ObjectAccessor.h"
 #include "UnitEvents.h"
+#include "Spell.h"
 
 //==============================================================
 //================= ThreatCalcHelper ===========================
@@ -280,8 +281,20 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (!target)
         return false;
 
-    if (pAttacker && target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false))
+    if (target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false))
         return true;
+
+    if (pAttacker->IsNonMeleeSpellCasted(false))
+    {
+        SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NONE;
+        if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_GENERIC_SPELL])
+            schoolMask = SpellSchoolMask(pSpell->m_spellInfo->SchoolMask);
+        else if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            schoolMask = SpellSchoolMask(pSpell->m_spellInfo->SchoolMask);
+
+        if (target->IsImmunedToDamage(schoolMask, false))
+            return true;
+    }
 
     /*if (target->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_DAMAGE) && target->hasUnitState(UNIT_STAT_LOST_CONTROL))
         return true;*/
@@ -301,7 +314,7 @@ bool DropAggro(Creature* pAttacker, Unit * target)
         if (forceItr!=((Player const*)target)->m_forcedReactions.end() && forceItr->second >= REP_FRIENDLY)
             return true;
     }
-    
+
 
     //target has Spirit of Redemption aura (shapeshift effect)
     if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || target->HasAuraType(SPELL_AURA_IGNORED))

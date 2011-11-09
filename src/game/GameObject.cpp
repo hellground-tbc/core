@@ -567,7 +567,7 @@ void GameObject::Delete()
         AddObjectToRemoveList();
 }
 
-void GameObject::getFishLoot(Loot *fishloot)
+void GameObject::getFishLoot(Loot *fishloot, Player* loot_owner)
 {
     fishloot->clear();
 
@@ -575,10 +575,10 @@ void GameObject::getFishLoot(Loot *fishloot)
 
     // if subzone loot exist use it
     if (LootTemplates_Fishing.HaveLootfor (subzone))
-        fishloot->FillLoot(subzone, LootTemplates_Fishing, NULL);
+        fishloot->FillLoot(subzone, LootTemplates_Fishing, loot_owner,true);
     // else use zone loot
     else
-        fishloot->FillLoot(GetZoneId(), LootTemplates_Fishing, NULL);
+        fishloot->FillLoot(GetZoneId(), LootTemplates_Fishing, loot_owner,true);
 }
 
 void GameObject::SaveToDB()
@@ -831,12 +831,13 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
 
     // check distance
     const WorldObject* viewPoint = u->GetFarsightTarget();
-    if (!viewPoint || !u->HasFarsightVision()) viewPoint = u;
+    if (!viewPoint || !u->HasFarsightVision())
+        viewPoint = u;
 
-    if(GetEntry() == 188119)
-        return true;
-    else
-    return IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
+//    if(GetEntry() == 188119)
+//        return true;
+//    else
+    return IsWithinDistInMap(viewPoint, GetMap()->GetVisibilityDistance(const_cast<GameObject*>(this)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
 
 bool GameObject::canDetectTrap(Player const* u, float distance) const
@@ -1264,7 +1265,7 @@ void GameObject::Use(Unit* user)
             }
             AddUniqueUse(player);
 
-            player->CastSpell((Unit*)NULL, info->summoningRitual.animSpell, true);
+            player->CastSpell(player, info->summoningRitual.animSpell, true);
 
             // full amount unique participants including original summoner
             if (GetUniqueUseCount() < info->summoningRitual.reqParticipants)
@@ -1434,6 +1435,14 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
     if (!trigger) return;
 
     trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
+
+    if(spell == 7353) // cozy fire, TODO: find general rule?
+    {
+        trigger->setFaction(14);
+        trigger->CastSpell(target, spell, true); // no orginal caster should prevent 'on spell cast' triggering
+        return;
+    }
+
     if (Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
@@ -1489,7 +1498,7 @@ float GameObject::GetObjectBoundingRadius() const
     // 1. This is clearly hack way because GameObjectDisplayInfoEntry have 6 floats related to GO sizes, but better that use DEFAULT_WORLD_OBJECT_SIZE
     // 2. In some cases this must be only interactive size, not GO size, current way can affect creature target point auto-selection in strange ways for big underground/virtual GOs
     if (GameObjectDisplayInfoEntry const* dispEntry = sGameObjectDisplayInfoStore.LookupEntry(GetGOInfo()->displayId))
-        return fabs(dispEntry->unknown12) * GetGOInfo()->size;
+        return fabs(dispEntry->minX) * GetGOInfo()->size;
 
     return DEFAULT_WORLD_OBJECT_SIZE;
 }
@@ -1515,4 +1524,21 @@ void GameObject::HandleNonDbcSpell(uint32 spellId, Player* pUser)
             sLog.outDebug("Gameobject: %s, %u type: %u. casted non-handled and non-existing spell: %u", GetName(), GetEntry(), GetGoType(), spellId);
             break;
     }
+}
+
+float GameObject::GetDeterminativeSize() const
+{
+    if (!IsInWorld())
+        return 0.0f;
+
+    GameObjectDisplayInfoEntry const *info = sGameObjectDisplayInfoStore.LookupEntry(GetUInt32Value(GAMEOBJECT_DISPLAYID));
+    if (!info)
+        return 0.0f;
+
+    float dx = info->maxX - info->minX;
+    float dy = info->maxY - info->minY;
+    float dz = info->maxZ - info->minZ;
+    float _size = sqrt(dx*dx + dy*dy +dz*dz);
+
+    return _size;
 }

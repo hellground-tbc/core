@@ -461,6 +461,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "yell",           SEC_MODERATOR,      false, &ChatHandler::HandleNpcYellCommand,              "", NULL },
         { "addtemp",        SEC_GAMEMASTER,     false, &ChatHandler::HandleTempAddSpwCommand,           "", NULL },
         { "addformation",   SEC_MODERATOR,      false, &ChatHandler::HandleNpcAddFormationCommand,      "", NULL },
+        { "deleteformation",SEC_MODERATOR,      false, &ChatHandler::HandleNpcDeleteFormationCommand,   "", NULL },
         { "setlink",        SEC_MODERATOR,      false, &ChatHandler::HandleNpcSetLinkCommand,           "", NULL },
         { "resetai",        SEC_MODERATOR,      false, &ChatHandler::HandleNpcResetAICommand,           "", NULL },
         { "doaction",       SEC_MODERATOR,      false, &ChatHandler::HandleNpcDoActionCommand,          "", NULL },

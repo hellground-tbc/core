@@ -59,7 +59,8 @@ void TrainerSpellData::Clear()
 {
     for (TrainerSpellList::iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
         delete (*itr);
-    spellList.empty();
+
+    spellList.clear();
 }
 
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
@@ -157,7 +158,8 @@ m_deathTimer(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_res
 m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_AlreadyCallAssistance(false),
 m_regenHealth(true), m_isDeadByDefault(false), m_AlreadySearchedAssistance(false), m_creatureData(NULL),
-m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL), m_PlayerDamageReq(0)
+m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL), m_PlayerDamageReq(0),
+m_tempSummon(false)
 {
     m_valuesCount = UNIT_END;
 
@@ -951,13 +953,11 @@ void Creature::sendPreparedGossip(Player* player)
     if (!player)
         return;
 
-    GossipMenu& gossipmenu = player->PlayerTalkClass->GetGossipMenu();
-
     if (GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_WORLDEVENT) // if world event npc then
         gameeventmgr.HandleWorldEventGossip(player, this);      // update world state with progress
 
-    // in case empty gossip menu open quest menu if any
-    if (gossipmenu.Empty() && GetNpcTextId() == 0)
+    // in case no gossip flag and quest menu not empty, open quest menu (client expect gossip menu with this flag)
+    if (!HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_GOSSIP) && !player->PlayerTalkClass->GetQuestMenu().Empty())
     {
         player->SendPreparedQuest(GetGUID());
         return;
@@ -1291,7 +1291,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     static SqlStatementID saveCreature;
     static SqlStatementID deleteCreature;
 
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreature,"DELETE FROM creature WHERE guid = ?");
+    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreature, "DELETE FROM creature WHERE guid = ?");
     stmt.PExecute(m_DBTableGuid);
 
     stmt = WorldDatabase.CreateStatement(saveCreature, "INSERT INTO creature VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -1485,8 +1485,8 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     if (m_respawnTime)                          // respawn on Update
     {
         m_deathState = DEAD;
-        if (isWorldBoss())
-            loot.loadLootFromDB(this);
+        if (isWorldBoss() && map->IsDungeon())
+            loot.FillLootFromDB(this, NULL);
 
         if (CanFly())
         {
@@ -2586,4 +2586,18 @@ void Creature::SetLevitate(bool enable)
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
     SendMessageToSet(&data, true);
+}
+
+bool Creature::CanReactToPlayerOnTaxi()
+{
+    // hacky exception for Sunblade Lookout, Shattered Sun Bombardier and Brutallus
+    switch (GetEntry())
+    {
+        case 25132:
+        case 25144:
+        case 25158:
+            return true;
+        default:
+            return false;
+    }
 }

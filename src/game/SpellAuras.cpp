@@ -416,19 +416,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
 
     if (m_spellProto->procCharges)
     {
-        switch (m_spellProto->Id)
-        {
-            case 17794:
-            case 17797:
-            case 17798:
-            case 17799:
-            case 17800:
-                m_procCharges = m_spellProto->procCharges + 1;
-                break;
-            default:
-                m_procCharges = m_spellProto->procCharges;
-        }
-
+        m_procCharges = m_spellProto->procCharges;
         if (modOwner)
             modOwner->ApplySpellMod(GetId(), SPELLMOD_CHARGES, m_procCharges);
     }
@@ -581,25 +569,32 @@ void Aura::Update(uint32 diff)
                          GetTriggerTarget()) ? GetTriggerTarget() : m_target;
 
 
-    if (IsChanneledSpell(m_spellProto) && !pRealTarget->isPossessed() && pRealTarget->GetGUID() != GetCasterGUID())
+    if (IsChanneledSpell(m_spellProto))
     {
         Unit* caster = GetCaster();
-        if (!caster)
-        {
-            m_target->RemoveAura(GetId(),GetEffIndex());
-            return;
-        }
-        if (caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT) == m_target->GetGUID())
-        {
-            float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
 
-            if (Player* modOwner = caster->GetSpellModOwner())
-                modOwner->ApplySpellMod(GetId(), SPELLMOD_RANGE, max_range, NULL);
+        if(caster && !caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            caster->RemoveAurasByCasterSpell(GetId(), caster->GetGUID());
 
-            if (!caster->IsWithinDistInMap(m_target, max_range))
+        if(!pRealTarget->isPossessed() && pRealTarget->GetGUID() != GetCasterGUID())
+        {
+            if (!caster)
             {
-                m_target->RemoveAura(GetId(), GetEffIndex());
+                m_target->RemoveAura(GetId(),GetEffIndex());
                 return;
+            }
+            if (caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT) == m_target->GetGUID())
+            {
+                float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
+
+                if (Player* modOwner = caster->GetSpellModOwner())
+                    modOwner->ApplySpellMod(GetId(), SPELLMOD_RANGE, max_range, NULL);
+
+                if (!caster->IsWithinDistInMap(m_target, max_range))
+                {
+                    m_target->RemoveAura(GetId(), GetEffIndex());
+                    return;
+                }
             }
         }
     }
@@ -1528,14 +1523,14 @@ void Aura::TriggerSpell()
                     // Nitrous Boost
                     case 27746:
                     {
-                        if (caster->GetPower(POWER_MANA) >= 10)
+                        if (m_target->GetPower(POWER_MANA) >= 10)
                         {
-                            caster->ModifyPower(POWER_MANA, -10);
-                            caster->SendEnergizeSpellLog(caster, 27746, -10, POWER_MANA);
+                            m_target->ModifyPower(POWER_MANA, -10);
+                            m_target->SendEnergizeSpellLog(m_target, 27746, -10, POWER_MANA);
                         }
                         else
                         {
-                            caster->RemoveAurasDueToSpell(27746);
+                            m_target->RemoveAurasDueToSpell(27746);
                             return;
                         }
                     } break;
@@ -1599,7 +1594,7 @@ void Aura::TriggerSpell()
 
                             Loot *loot = &creature->loot;
                             loot->clear();
-                            loot->FillLoot(creature->GetCreatureInfo()->SkinLootId, LootTemplates_Skinning, NULL);
+                            loot->FillLoot(creature->GetCreatureInfo()->SkinLootId, LootTemplates_Skinning, player, true);
                             for (uint8 i=0;i<loot->items.size();i++)
                             {
                                 LootItem *item = loot->LootItemInSlot(i,player);
@@ -2638,9 +2633,9 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     ((Player*)m_target)->RemovePet(m_target->GetPet(), PET_SAVE_NOT_IN_SLOT);
 
                 m_target->CastSpell(m_target, 40266, true);     //summon Vengeful Spirit and 4 Shadowy Constructs
-                m_target->AddAura(40282, m_target);             //Possess Spirit Immune
+                //m_target->AddAura(40282, m_target);             //Possess Spirit Immune
                 m_target->CastSpell((Unit*)NULL, 40268, false); //Possess Vengeful Spirit
-                //m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
+                m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
 
                 Map *pMap = m_target->GetMap();
                 if (((InstanceMap*)pMap)->GetInstanceData())
@@ -2688,6 +2683,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
 
                 return;
             }
+            case 39042:                                     // Rampant Infection
+            case 39032:                                     // Initial Infection    
+                if (m_removeMode == AURA_REMOVE_BY_EXPIRE)
+                {
+                    int32 bp = GetModifierValue() * 11 / 10;
+                    m_target->CastCustomSpell(m_target, 39042, &bp, &bp, 0, true, 0, this);           
+                }
+                return;
         }
     }
 
@@ -5068,6 +5071,15 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     // jumping visual to be tested and fixed
                     m_target->CastSpell((Unit*)NULL, 45034, true, 0, this, GetCasterGUID());
             }
+            // Serpentshrine Parasite
+            if (m_spellProto->Id == 39053 && !apply)
+            {
+                int count = 1;
+                if(m_removeMode == AURA_REMOVE_BY_DEATH)
+                    count = 5;
+                for(int i = 0; i < count; i++)
+                    m_target->CastSpell(m_target, 39045, true);
+            }
             break;
         }
         case SPELLFAMILY_WARRIOR:
@@ -5682,7 +5694,7 @@ void Aura::HandleModPowerRegen(bool apply, bool Real)       // drinking
         else if (GetId() == 20577)
         {
             // cannibalize anim
-            m_target->HandleEmoteCommand(398);
+            m_target->HandleEmoteCommand(EMOTE_STATE_CANNIBALIZE);
         }
 
         // Warrior talent, gain 1 rage every 3 seconds while in combat

@@ -29,7 +29,6 @@
 #include "SystemConfig.h"
 #include "Log.h"
 #include "Opcodes.h"
-#include "WorldSession.h"
 #include "WorldPacket.h"
 #include "Weather.h"
 #include "Player.h"
@@ -41,7 +40,7 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "Chat.h"
-#include "Database/DBCStores.h"
+#include "DBCStores.h"
 #include "LootMgr.h"
 #include "ItemEnchantmentMgr.h"
 #include "MapManager.h"
@@ -67,6 +66,8 @@
 #include "Transports.h"
 #include "CreatureEventAIMgr.h"
 #include "WardenDataStorage.h"
+
+#include <tbb/parallel_for.h>
 
 INSTANTIATE_SINGLETON_1(World);
 
@@ -184,89 +185,6 @@ Player* World::FindPlayerInZone(uint32 zone)
         }
     }
     return NULL;
-}
-
-enum
-{
-    CMD_AUTH = 'A',
-    VAL_AUTH_OK = 'o',
-
-    CMD_KEEP_ALIVE = 'P',
-
-    CMD_KICK = 'K',
-    VAL_KICK_LAUNCHER_EXIT  = 'e',
-    VAL_KICK_CHEAT_DETECTED = 'c',
-
-    KICK_TIME = 15000,
-};
-
-void kick_player(std::string ip)
-{
-    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
-    if (!result)
-    {
-        sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
-        return;
-    }
-
-    do
-    {
-        Field *acc_field = result->Fetch();
-        uint32 account = acc_field->GetUInt32();
-
-        if (WorldSession* sess = sWorld.FindSession(account))
-        {
-            sLog.outString("KICKING PLAYER %s", sess->GetPlayerName());
-            sess->KickPlayer();
-        }
-    }
-    while (result->NextRow());
-}
-
-void ACLogPlayer(std::string ip)
-{
-    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'", ip.c_str());
-    if (!result)
-    {
-        sLog.outError("ANTICHEAT: Couldn't find accounts with last_ip = '%s'", ip.c_str());
-        return;
-    }
-
-    sLog.outAC("AC: Cheat Detected! ip: %s", ip.c_str());
-
-    do
-    {
-        Field *acc_field = result->Fetch();
-        uint32 account = acc_field->GetUInt32();
-
-        if (WorldSession* sess = sWorld.FindSession(account))
-            sLog.outAC("AC: Player Name (ip: %s): %s", ip.c_str(), sess->GetPlayerName());
-    }
-    while (result->NextRow());
-}
-
-void World::ProcessAnticheat(char *cmd, char *val, std::string ip)
-{
-    switch (*cmd)
-    {
-        case CMD_KEEP_ALIVE:
-        {
-            //m_ac_auth[ip] = KICK_TIME;
-        }
-        break;
-        case CMD_KICK:
-            if (*val == VAL_KICK_CHEAT_DETECTED)
-            {
-                ACLogPlayer(ip);
-                //kick_player(ip);
-                // delete from auth list
-                //m_ac_auth.erase(ip.c_str());
-            }
-            break;
-        default:
-            sLog.outError("Unknown CMD in World::ProcessAnticheat()");
-            break;
-    }
 }
 
 /// Find a session by its id
@@ -669,6 +587,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_AUTOBROADCAST_INTERVAL] = (sConfig.GetIntDefault("AutoBroadcast.Timer", 35)*MINUTE*1000);
     m_configs[CONFIG_GUILD_ANN_INTERVAL] = (sConfig.GetIntDefault("GuildAnnounce.Timer", 1)*MINUTE*1000);
     m_configs[CONFIG_GUILD_ANN_COOLDOWN] = (sConfig.GetIntDefault("GuildAnnounce.Cooldown", 60)*MINUTE);
+
+    m_configs[CONFIG_RETURNOLDMAILS_MODE] = sConfig.GetIntDefault("Mail.OldReturnMode", 0);
+    m_configs[CONFIG_RETURNOLDMAILS_INTERVAL] = sConfig.GetIntDefault("Mail.OldReturnTimer", 60);
 
     m_configs[CONFIG_COMPRESSION] = sConfig.GetIntDefault("Compression", 1);
     if (m_configs[CONFIG_COMPRESSION] < 1 || m_configs[CONFIG_COMPRESSION] > 9)
@@ -1228,11 +1149,27 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_MIN_GM_TEXT_LVL] = sConfig.GetIntDefault("MinGMTextLevel", 1);
     m_configs[CONFIG_WARDEN_KICK] = sConfig.GetBoolDefault("Warden.Kick", true);
+    m_configs[CONFIG_WARDEN_BAN] = sConfig.GetBoolDefault("Warden.Ban", true);
     m_configs[CONFIG_DONT_DELETE_CHARS] = sConfig.GetBoolDefault("DontDeleteChars", false);
     m_configs[CONFIG_DONT_DELETE_CHARS_LVL] = sConfig.GetIntDefault("DontDeleteCharsLvl", 40);
     m_configs[CONFIG_KEEP_DELETED_CHARS_TIME] = sConfig.GetIntDefault("KeepDeletedCharsTime", 31);
 
     m_configs[CONFIG_ENABLE_SORT_AUCTIONS] = sConfig.GetBoolDefault("Auction.EnableSort", true);
+
+    m_configs[CONFIG_CHAT_DENY_MASK] = sConfig.GetIntDefault("Chat.DenyMask", 0);
+    m_configs[CONFIG_CHAT_MINIMUM_LVL] = sConfig.GetIntDefault("Chat.MinimumLevel", 5);
+
+    m_configs[CONFIG_ENABLE_HIDDEN_RATING] = sConfig.GetBoolDefault("Arena.EnableMMR", false);
+
+    sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 1);
+
+    // VMSS system
+    m_configs[CONFIG_VMSS_ENABLE] = sConfig.GetBoolDefault("VMSS.Enable", false);
+    m_configs[CONFIG_VMSS_MAXTHREADBREAKS] = sConfig.GetIntDefault("VMSS.MaxThreadBreaks", 5);
+    m_configs[CONFIG_VMSS_TBREMTIME] = sConfig.GetIntDefault("VMSS.ThreadBreakRememberTime", 3600);
+    m_configs[CONFIG_VMSS_MAPFREEMETHOD] = sConfig.GetIntDefault("VMSS.MapFreeMethod", 0);
+    m_configs[CONFIG_VMSS_FREEZECHECKPERIOD] = sConfig.GetIntDefault("VMSS.FreezeCheckPeriod", 1000);
+    m_configs[CONFIG_VMSS_FREEZEDETECTTIME] = sConfig.GetIntDefault("VMSS.MapFreezeDetectTime", 1000);
 }
 
 /// Initialize the World
@@ -1278,9 +1215,6 @@ void World::SetInitialWorldSettings()
 
     ///- Remove the bones after a restart
     CharacterDatabase.PExecute("DELETE FROM corpse WHERE corpse_type = '0'");
-
-    ///- Cleanup deleted characters
-    CharacterDatabase.Execute("Call CleanupDeletedChars()");
 
     ///- Load the DBC files
     sLog.outString("Initialize data stores...");
@@ -1586,13 +1520,14 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_AUTOBROADCAST].SetInterval(getConfig(CONFIG_AUTOBROADCAST_INTERVAL));
     m_timers[WUPDATE_GUILD_ANNOUNCES].SetInterval(getConfig(CONFIG_GUILD_ANN_INTERVAL));
     m_timers[WUPDATE_DELETECHARS].SetInterval(DAY*IN_MILISECONDS); // check for chars to delete every day
+    m_timers[WUPDATE_OLDMAILS].SetInterval(getConfig(CONFIG_RETURNOLDMAILS_INTERVAL)*1000);
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
     //one second is 1000 -(tested on win system)
-    mail_timer = ((((localtime(&m_gameTime)->tm_hour + 20) % 24)* HOUR * 1000) / m_timers[WUPDATE_AUCTIONS].GetInterval());
+    mail_timer = ((((localtime(&m_gameTime)->tm_hour + 20) % 24)* HOUR * 1000) / m_timers[WUPDATE_OLDMAILS].GetInterval());
                                                             //1440
-    mail_timer_expires = ((DAY * 1000) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
+    mail_timer_expires = ((DAY * 1000) / (m_timers[WUPDATE_OLDMAILS].GetInterval()));
     sLog.outDebug("Mail timer set to: %u, mail return is called every %u minutes", mail_timer, mail_timer_expires);
 
     ///- Initilize static helper structures
@@ -1744,7 +1679,7 @@ void World::LoadAutobroadcasts()
 }
 
 /// Update the World !
-void World::Update(time_t diff)
+void World::Update(uint32 diff)
 {
     m_updateTime = uint32(diff);
     if (m_configs[CONFIG_INTERVAL_LOG_UPDATE])
@@ -1794,19 +1729,36 @@ void World::Update(time_t diff)
     }
 
     /// <ul><li> Handle auctions when the timer has passed
+    if (m_timers[WUPDATE_OLDMAILS].Passed())
+    {
+        m_timers[WUPDATE_OLDMAILS].Reset();
+
+        ///- Update mails (return old mails with item, or delete them)
+        RecordTimeDiff(NULL);
+
+        switch (m_configs[CONFIG_RETURNOLDMAILS_MODE])
+        {
+            case 1:
+                objmgr.ReturnOrDeleteOldMails(true);
+                break;
+            case 0:
+            default:
+                if (++mail_timer > mail_timer_expires)
+                {
+                    mail_timer = 0;
+                    objmgr.ReturnOrDeleteOldMails(true);
+                }
+                break;
+        }
+
+        RecordTimeDiff("ReturnOldMails");
+    }
+
+    /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
         m_timers[WUPDATE_AUCTIONS].Reset();
-
-        ///- Update mails (return old mails with item, or delete them)
-        //(tested... works on win)
         RecordTimeDiff(NULL);
-        if (++mail_timer > mail_timer_expires)
-        {
-            mail_timer = 0;
-            objmgr.ReturnOrDeleteOldMails(true);
-        }
-        RecordTimeDiff("ReturnOldMails");
         ///-Handle expired auctions
         sAuctionMgr.Update();
         RecordTimeDiff("UpdateAuctions");
@@ -1819,6 +1771,7 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_SESSIONS].Reset();
 
         UpdateSessions(diff);
+
         // Update groups
         for (ObjectMgr::GroupSet::iterator itr = objmgr.GetGroupSetBegin(); itr != objmgr.GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
@@ -1950,6 +1903,29 @@ void World::Update(time_t diff)
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
+}
+
+void World::UpdateSessions(const uint32 & diff)
+{
+    ///- Add new sessions
+    WorldSession* sess;
+    while (addSessQueue.next(sess))
+        AddSession_ (sess);
+
+    if (sessionThreads)
+        tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size(), m_sessions.size()/sessionThreads), SessionsUpdater(&m_sessions, diff));
+    else
+        tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size()), SessionsUpdater(&m_sessions, diff), tbb::auto_partitioner());
+
+    for (std::list<SessionMap::iterator>::iterator itr = removedSessions.begin(); itr != removedSessions.end(); ++itr)
+    {
+        sess = (*itr)->second;
+        m_sessions.erase(*itr);
+        delete sess;
+        sess = NULL;
+    }
+
+    removedSessions.clear();
 }
 
 void World::ForceGameEventUpdate()
@@ -2510,35 +2486,6 @@ void World::SendServerMessage(uint32 type, const char *text, Player* player)
         player->GetSession()->SendPacket(&data);
     else
         SendGlobalMessage(&data);
-}
-
-void World::UpdateSessions(time_t diff)
-{
-    ///- Add new sessions
-    WorldSession* sess;
-    while (addSessQueue.next(sess))
-        AddSession_ (sess);
-
-    ///- Then send an update signal to remaining ones
-    for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)
-    {
-        next = itr;
-        ++next;
-
-        if (!itr->second)
-            continue;
-
-        ///- and remove not active sessions from the list
-        WorldSession * pSession = itr->second;
-        WorldSessionFilter updater(pSession);
-        if (!pSession->Update(diff, updater))    // As interval = 0
-        {
-            RemoveQueuedPlayer(pSession);
-
-            m_sessions.erase(itr);
-            delete pSession;
-        }
-    }
 }
 
 // This handles the issued and queued CLI commands

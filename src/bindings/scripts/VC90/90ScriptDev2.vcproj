@@ -153,7 +153,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="trinitycore.lib ACE.lib"
-				OutputFile="$(OutDir)/trinityscript.dll"
+				OutputFile="$(OutDir)/TrinityScript.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;..\..\..\..\dep\lib\$(PlatformName)_$(ConfigurationName)&quot;;&quot;..\..\..\..\win\VC90\trinitycore__$(PlatformName)_$(ConfigurationName)&quot;"
 				GenerateDebugInformation="false"
@@ -2069,6 +2069,10 @@
 						</File>
 						<File
 							RelativePath="..\scripts\zone\coilfang_resevoir\serpent_shrine\instance_serpent_shrine.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\zone\coilfang_resevoir\serpent_shrine\serpent_shrine_trash.cpp"
 							>
 						</File>
 					</Filter>

@@ -1584,11 +1584,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\vmap\PipeWrapper.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\vmap\PipeWrapper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\vmap\PipeWrapperImpl.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\vmap\TileAssembler.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\game\vmap\TileAssembler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\vmap\VMapCluster.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\vmap\VMapCluster.h"
 				>
 			</File>
 			<File
@@ -1624,6 +1644,18 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\..\src\game\DBCStores.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\DBCStores.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\DBCStructure.h"
+			>
+		</File>
 		<File
 			RelativePath="..\..\src\game\MapUpdater.cpp"
 			>

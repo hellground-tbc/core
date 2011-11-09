@@ -2,7 +2,7 @@
 # Trinity Core worldd configuration file #
 ##########################################
 [CoreConf]
-ConfVersion=2011092901
+ConfVersion=2011101301
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -14,7 +14,7 @@ ConfVersion=2011092901
 #        Data directory setting.
 #        Important: DataDir needs to be quoted, as it is a string which may contain space characters.
 #        Important: In linux daemon mode string must be full path.
-#        Example: "@prefix@/share/trinitycore"
+#        Example: "/share/trinitycore"
 #
 #    LogsDir
 #        Logs directory setting.
@@ -174,6 +174,14 @@ EAIErrorLevel = 2
 #        Default: 0 (disable, less CPU usage)
 #                 1 (enable, each totem created check LOS)
 #
+#    vmap.enableCluster
+#        Enable/Disable VMmap calculations in cluster
+#        Default: 0 (false)
+#                 1 (true)
+#
+#    vmap.clusterProcesses
+#        Number of calculation processes created in cluster
+#
 #    DetectPosCollision
 #        Check final move position, summon position, etc for visible collision with other objects or
 #        wall (wall only if vmaps are enabled)
@@ -210,10 +218,9 @@ EAIErrorLevel = 2
 #         Number of threads to update maps.
 #         Default: 1
 #
-#    Warden.Kick
-#        Kick player on failed check
-#        Default: 0 (Disabled)
-#                 1 (Enabled)
+#    SessionUpdate.Threads
+#         Number of threads to update sessions (0 - auto).
+#         Default: 1
 #
 ###################################################################################################################
 
@@ -239,6 +246,8 @@ vmap.posCollisionMaps = ""
 vmap.ignoreSpellIds = "7720"
 vmap.petLOS = 0
 vmap.totem = 0
+vmap.enableCluster = 0
+vmap.clusterProcesses = 4
 
 DetectPosCollision = 1
 TargetPosRecalculateRange = 1.5
@@ -247,8 +256,7 @@ MaxCoreStuckTime = 0
 MaxVmapCalcTime = 30
 AddonChannel = 1
 MapUpdate.Threads = 1
-
-Warden.Kick = 0
+SessionUpdate.Threads = 1
 
 ###################################################################################################################
 # SERVER LOGGING
@@ -974,6 +982,21 @@ ListenRange.Yell = 300
 #        Default: 0 (join announcement in normal way)
 #                 1 (GM join without announcement)
 #
+#    Chat.DenyMask
+#        Mask to disable chat if player don't have required lvl from Chat.MinimumLevel option.
+#        Default: 0 (don't block anything)
+#                 1 (say, yell)
+#                 2 (emote, text emote)
+#                 4 (party, raid, BG)
+#                 8 (guild)
+#                 16 (whisp)
+#                 32 (channels)
+#                 64 (addon)
+#
+#    Chat.MinimumLevel
+#        Minimum level to use chat masked in Chat.DenyMask option.
+#        Default: 5
+#
 ###################################################################################################################
 
 ChatFakeMessagePreventing = 0
@@ -1312,12 +1335,17 @@ Death.Bones.BattlegroundOrArena = 1
 #                         in days
 #             Default: 7 (weekly)
 #
+# EnableMMR: MMR (Matchmaking rating) should be enabled ?
+#             Default: 0 (disabled)
+#
+#
 ###################################################################################################################
 
 Arena.MaxRatingDifference = 0
 Arena.RatingDiscardTimer = 60000
 Arena.AutoDistributePoints = 0
 Arena.AutoDistributeInterval = 7
+Arena.EnableMMR = 0
 
 ###################################################################################################################
 #
@@ -1455,22 +1483,79 @@ MinRecordUpdateTimeDiff = 10
 PlayerStart.String = ""
 
 ###################################################################################################################
+# Virtual map serving system (VMSS) configuration
+#
+#    VMSS.Enable
+#        Enabling VMSS support (signals handling)
+#        Default: 0 - off
+#                 1 - on
+#
+#    VMSS.MaxThreadBreaks
+#        Maximum single instance map fails before stopping world
+#        Default: 5
+#
+#    VMSS.ThreadBreakRememberTime
+#        Time (in seconds) before cleaning counter of MaxThreadBreaks
+#        Default: 3600 (1 hour)
+#
+#    VMSS.MapFreeMethod
+#        Method for freeing breaked map
+#        0 - safe cleaning (clean auras, save and logout player)
+#        1 - not safe cleaning (kick players, not clean auras, not save players/worldstates)
+#        2 - not safe cleaning (another type - logout players without save)
+#        Default: 0
+#
+#    VMSS.FreezeCheckPeriod
+#        Time period (in milliseconds) for activate FreezeDetect thread
+#        Default: 1000 (1 sec) - default mangos freeze detect period.
+#
+#    VMSS.MapFreezeDetectTime
+#        Time (in milliseconds) for detect freeze in map thread
+#        Default: 1000 (1 sec)
+#
+###################################################################################################################
+
+VMSS.Enable = 0
+VMSS.MaxThreadBreaks = 5
+VMSS.ThreadBreakRememberTime = 3600
+VMSS.MapFreeMethod = 0
+VMSS.FreezeCheckPeriod = 1000
+VMSS.MapFreezeDetectTime = 1000
+
+###################################################################################################################
 #
 #    AutoBroadcast.Timer
 #        set interval between sending next advertising on chat(in minutes)
 #        0 = disable autoannounce (default)
-#
-###################################################################################################################
-
-AutoBroadcast.Timer = 0
-
-###################################################################################################################
 #
 #    Auction.EnableSort
 #        Enable or disable auctions sorting feature.
 #        1 = enable sorting (default)
 #        0 = disable sorting
 #
+#    Mail.OldReturnMode
+#        0 - Return old mails only once per day.
+#        1 - Return old mails based on Mail.ReturnTimer.
+#        Default: 1
+#
+#    Mail.OldReturnTimer
+#        If Mail.OldReturnMode is set to 1 then this value contains time beatween each old mails return attempt (in seconds).
+#        Default: 60
+#
+#    Warden.Kick
+#        Kick player on failed check
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
+#    Warden.Ban
+#        Ban player on failed check
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
+#
 ###################################################################################################################
 
+AutoBroadcast.Timer = 0
 Auction.EnableSort = 1
+Mail.OldReturnMode = 0
+Mail.OldReturnTimer = 60
+Warden.Kick = 0
+Warden.Ban = 0

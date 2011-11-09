@@ -476,6 +476,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\trinitycore\trinitycore.conf.dist"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\trinitycore\TrinityCore.rc"
 			>
 		</File>

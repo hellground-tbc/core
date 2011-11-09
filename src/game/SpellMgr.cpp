@@ -23,7 +23,7 @@
 #include "ObjectMgr.h"
 #include "SpellAuraDefines.h"
 #include "ProgressBar.h"
-#include "Database/DBCStores.h"
+#include "DBCStores.h"
 #include "World.h"
 #include "Chat.h"
 #include "Spell.h"
@@ -670,6 +670,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 34970:                                         // Frenzy
         case 43550:                                         // Mind Control (Hex Lord Malacrass)
         case 35336:                                         // Energizing Spores
+        case 40604:                                         // Fel Rage 1
+        case 40616:                                         // Fel Rage 2
+        case 41625:                                         // Fel Rage 3
+        case 46787:                                         // Fel Rage scale
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault
@@ -1008,7 +1012,7 @@ bool IsBinaryResistable(SpellEntry const* spellInfo)
                     if(spellInfo->EffectApplyAuraName[eff] != SPELL_AURA_PERIODIC_DAMAGE)       // spells that apply aura other then DOT are binary resistable
                         return true;
                     break;
-                default:                            
+                default:
                     return true;                                                                // spells that have other effects then damage or apply aura are binary resistable
             }
         }
@@ -2699,9 +2703,17 @@ void SpellMgr::LoadSpellCustomAttr()
         case 14189:                     // Seal Fate
         case 14157:                     // Ruthlessness
         case 14181:                     // Relentless Strikes
+        case 17794:                     // Improved Shadow Bolt ranks 1-5
+        case 17797:
+        case 17798:
+        case 17799:
+        case 17800:
             spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;
             break;
         /* UNSORTED */
+        case 39042: // Rampant Infection
+            spellInfo->MaxAffectedTargets = 1;
+            break;
         case 40017: // If we can't adjust speed :P we spawn it in bigger periods
             spellInfo->EffectAmplitude[1] = 1900;
             break;
@@ -2962,6 +2974,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 39090: // Positive Charge
         case 39093: // Negative Charge
         case 39968: // Needle Spine Explosion
+        case 39692: // Cannon
             spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
             break;
         case 42992: //ram - neutral
@@ -3235,7 +3248,7 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
         }
         case 40216:                                         // Dragonmaw Illusion
         case 42016:                                         // Dragonmaw Illusion
-            return area_id == 3759 || area_id == 3966 || area_id == 3939;
+            return area_id == 3759 || area_id == 3966 || area_id == 3939 || area_id == 3965;
         case 2584:                                          // Waiting to Resurrect
         case 22011:                                         // Spirit Heal Channel
         case 22012:                                         // Spirit Heal

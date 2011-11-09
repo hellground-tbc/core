@@ -860,9 +860,7 @@ class TRINITY_DLL_SPEC PlayerTaxi
         // Nodes
         void InitTaxiNodesForLevel(uint32 race, uint32 level);
         void LoadTaxiMask(const char* data);
-        void SaveTaxiMask(const char* data);
 
-        uint32 GetTaximask(uint8 index) const { return m_taximask[index]; }
         bool IsTaximaskNodeKnown(uint32 nodeidx) const
         {
             uint8  field   = uint8((nodeidx - 1) / 32);
@@ -898,6 +896,9 @@ class TRINITY_DLL_SPEC PlayerTaxi
             return GetTaxiDestination();
         }
         bool empty() const { return m_TaxiDestinations.empty(); }
+
+        friend std::ostringstream& operator<< (std::ostringstream& ss, PlayerTaxi const& taxi);
+
     private:
         TaxiMask m_taximask;
         std::deque<uint32> m_TaxiDestinations;
@@ -1112,6 +1113,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         Item* EquipItem(uint16 pos, Item *pItem, bool update);
         void AutoUnequipOffhandIfNeed();
         bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count);
+        void AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast = false);
+        void AutoStoreLoot(uint32 loot_id, LootStore const& store, bool broadcast = false) { AutoStoreLoot(NULL_BAG,NULL_SLOT,loot_id,store,broadcast); }
 
         uint8 _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = NULL) const;
         uint8 _CanStoreItem(uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL) const;
@@ -1258,7 +1261,6 @@ class TRINITY_DLL_SPEC Player : public Unit
             }
         }
         uint32 GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry);
-        void AdjustQuestReqItemCount(Quest const* pQuest);
         void AreaExploredOrEventHappens(uint32 questId);
         void GroupEventHappens(uint32 questId, WorldObject const* pEventObject);
         void ItemAddedQuestCheck(uint32 entry, uint32 count);
@@ -2429,6 +2431,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint8 _CanStoreItem_InBag(uint8 bag, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool merge, bool non_specialized, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot) const;
         uint8 _CanStoreItem_InInventorySlots(uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemPrototype const *pProto, uint32& count, bool merge, Item *pSrcItem, uint8 skip_bag, uint8 skip_slot) const;
         Item* _StoreItem(uint16 pos, Item *pItem, uint32 count, bool clone, bool update);
+
+        void AdjustQuestReqItemCount(Quest const* pQuest, QuestStatusData& questStatusData);
 
         int32 m_MirrorTimer[MAX_TIMERS];
         uint8 m_MirrorTimerFlags;

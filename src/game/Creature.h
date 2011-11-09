@@ -185,7 +185,7 @@ struct CreatureInfo
     uint32  rangeattacktime;
     uint32  unit_flags;                                     // enum UnitFlags mask values
     uint32  dynamicflags;
-    uint32  family;                                         // enum CreatureFamily values for type==CREATURE_TYPE_BEAST, or 0 in another cases
+    uint32  family;                                         // enum CreatureFamily values (optional)
     uint32  trainer_type;
     uint32  trainer_spell;
     uint32  classNum;
@@ -376,6 +376,8 @@ struct VendorItemData
     {
         for (VendorItemList::iterator itr = m_items.begin(); itr != m_items.end(); ++itr)
             delete (*itr);
+
+        m_items.clear();
     }
 };
 
@@ -690,6 +692,10 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         void SetAggroRange(float t) { m_aggroRange = t; }
 
+        bool CanReactToPlayerOnTaxi();
+
+        bool IsTempSummon() { return m_tempSummon; }
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -745,6 +751,8 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool DisableReputationGain;
 
         CreatureData const* m_creatureData;
+
+        bool m_tempSummon;
 
     private:
         //WaypointMovementGenerator vars

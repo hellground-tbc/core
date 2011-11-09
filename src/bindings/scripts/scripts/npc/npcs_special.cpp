@@ -43,6 +43,7 @@ EndContentData */
 
 #include "precompiled.h"
 #include "Totem.h"
+#include "PetAI.h"
 #include <list>
 
 /*########
@@ -912,35 +913,8 @@ bool GossipSelect_npc_sayge(Player *player, Creature *_Creature, uint32 sender, 
     return true;
 }
 
-struct TRINITY_DLL_DECL npc_steam_tonkAI : public ScriptedAI
-{
-    npc_steam_tonkAI(Creature *c) : ScriptedAI(c) {}
-
-    void Reset() {}
-    void EnterCombat(Unit *who) {}
-
-    void OnPossess(bool apply)
-    {
-        if (apply)
-        {
-            // Initialize the action bar without the melee attack command
-            m_creature->InitCharmInfo();
-            m_creature->GetCharmInfo()->InitEmptyActionBar(false);
-
-            m_creature->SetReactState(REACT_PASSIVE);
-        }
-        else
-            m_creature->SetReactState(REACT_AGGRESSIVE);
-    }
-
-};
-
-CreatureAI* GetAI_npc_steam_tonk(Creature *_Creature)
-{
-    return new npc_steam_tonkAI(_Creature);
-}
-
 #define SPELL_TONK_MINE_DETONATE 25099
+#define NPC_STEAM_TONK 19405
 
 struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
 {
@@ -949,11 +923,13 @@ struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
         m_creature->SetReactState(REACT_PASSIVE);
     }
 
-    uint32 ExplosionTimer;
+    uint32 ArmingTimer;
+    uint32 CheckTimer;
 
     void Reset()
     {
-        ExplosionTimer = 3000;
+        ArmingTimer = 3000;
+        CheckTimer = 1000;
     }
 
     void EnterCombat(Unit *who) {}
@@ -962,12 +938,27 @@ struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (ExplosionTimer < diff)
+        if(ArmingTimer)
         {
-            m_creature->CastSpell(m_creature, SPELL_TONK_MINE_DETONATE, true);
-            m_creature->setDeathState(DEAD); // unsummon it
+            if(ArmingTimer <= diff)
+            {
+                ArmingTimer = 0;
+            }
+            else
+                ArmingTimer -= diff;
         } else
-            ExplosionTimer -= diff;
+        {
+            if (CheckTimer < diff)
+            {
+                if(GetClosestCreatureWithEntry(me, NPC_STEAM_TONK, 2))
+                {
+                    m_creature->CastSpell(m_creature, SPELL_TONK_MINE_DETONATE, true);
+                    m_creature->setDeathState(DEAD);
+                }
+                CheckTimer = 1000;
+            } else
+                CheckTimer -= diff;
+        }
     }
 };
 
@@ -1683,64 +1674,61 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
         m_checkTimer = 2000;
     }
 
-    void Despawn()
+    void AttackStart(Unit *pWho)
     {
-        m_creature->Kill(m_creature, false);
-        m_creature->RemoveCorpse();
-    }
+        const AreaTableEntry *area = GetAreaEntryByAreaID(me->GetAreaId());
+        if (area && area->flags & AREA_FLAG_SANCTUARY)       //sanctuary
+            return;
 
-    void EnterCombat(Unit *who){}
+        ScriptedAI::AttackStart(pWho);
+    }
 
     void MoveInLineOfSight(Unit *pWho)
     {
-        if(pWho->GetTypeId() == TYPEID_PLAYER && pWho->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
-            return;
-
-        if(!m_creature->getVictim() && m_creature->IsHostileTo(pWho))
+        if (!me->getVictim() && me->IsHostileTo(pWho))
         {
             Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
-            if(pTotem && pTotem->IsWithinDistInMap(pWho, 30.0f))
-                AttackStart(pWho);
+            if (pTotem && pTotem->IsWithinDistInMap(pWho, 30.0f))
+                ScriptedAI::MoveInLineOfSight(pWho);
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(m_checkTimer < diff)
+        if (m_checkTimer < diff)
         {
-            Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
-
-            if(!me->getVictim() && pTotem)
+            Creature *pTotem = me->GetCreature(me->GetOwnerGUID());
+            if (!me->getVictim() && pTotem)
             {
-                if(!m_creature->hasUnitState(UNIT_STAT_FOLLOW))
-                    m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+                if(!me->hasUnitState(UNIT_STAT_FOLLOW))
+                    me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
 
-                if(Unit *pOwner = pTotem->GetOwner())
+                if (Unit *pOwner = pTotem->GetOwner())
                 {
-                    if(pOwner->GetTypeId() != TYPEID_PLAYER || !pOwner->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
+                    if (pOwner->GetTypeId() != TYPEID_PLAYER)
                     {
-                        if(Unit *pTemp = pTotem->SelectNearestTarget(30.0))
+                        if (Unit *pTemp = pTotem->SelectNearestTarget(30.0))
                             AttackStart(pTemp);
                     }
                 }
             }
 
-            if(pTotem)
+            if (pTotem)
             {
                 if(!pTotem->isAlive())
                 {
-                    Despawn();
+                    me->ForcedDespawn();
                     return;
                 }
 
                 if(!m_creature->IsWithinDistInMap(pTotem, 30.0f))
                 {
                     EnterEvadeMode();
-                    m_creature->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+                    me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
                 }
             }
             else
-                Despawn();
+                me->ForcedDespawn();
 
             m_checkTimer = 2000;
         }
@@ -2438,11 +2426,6 @@ void AddSC_npcs_special()
     newscript->Name="npc_sayge";
     newscript->pGossipHello = &GossipHello_npc_sayge;
     newscript->pGossipSelect = &GossipSelect_npc_sayge;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="npc_steam_tonk";
-    newscript->GetAI = &GetAI_npc_steam_tonk;
     newscript->RegisterSelf();
 
     newscript = new Script;

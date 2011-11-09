@@ -647,7 +647,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         // cast spells
         if(ShadowBoltTimer < diff)
         {
-            Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true);
             if(target)
                 AddSpellToCast(target, SPELL_SHADOW_BOLT);
             if(roll_chance_f(10.0))

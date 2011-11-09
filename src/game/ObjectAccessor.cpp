@@ -45,38 +45,6 @@ INSTANTIATE_CLASS_MUTEX(ObjectAccessor, ACE_Thread_Mutex);
 
 //ACE_Thread_Mutex ObjectAccessor::m_Lock;
 
-/*namespace Trinity
-{
-    struct TRINITY_DLL_DECL BuildUpdateForPlayer
-    {
-        Player &i_player;
-        UpdateDataMapType &i_updatePlayers;
-
-        BuildUpdateForPlayer(Player &player, UpdateDataMapType &data_map) : i_player(player), i_updatePlayers(data_map) {}
-
-        void Visit(PlayerMapType &m)
-        {
-            for (PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
-            {
-                if (iter->getSource() == &i_player)
-                    continue;
-
-                UpdateDataMapType::iterator iter2 = i_updatePlayers.find(iter->getSource());
-                if (iter2 == i_updatePlayers.end())
-                {
-                    std::pair<UpdateDataMapType::iterator, bool> p = i_updatePlayers.insert(ObjectAccessor::UpdateDataValueType(iter->getSource(), UpdateData()));
-                    assert(p.second);
-                    iter2 = p.first;
-                }
-
-                i_player.BuildValuesUpdateBlockForPlayer(&iter2->second, iter2->first);
-            }
-        }
-
-        template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
-    };
-}*/
-
 Pet * ObjectAccessor::GetPet(uint64 guid)
 {
     return HashMapHolder<Pet>::Find(guid);

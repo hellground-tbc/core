@@ -1033,10 +1033,11 @@ bool Object::PrintIndexError(uint32 index, bool set) const
 
 WorldObject::WorldObject()
     : m_mapId(0), m_InstanceId(0),
-    m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f)
+    m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f),
+    mSemaphoreTeleport(false)
     , m_map(NULL), m_zoneScript(NULL)
     , m_isActive(false), IsTempWorldObject(false)
-    , m_name(""), m_notifyflags(0), m_executed_notifies(0)
+    , m_notifyflags(0), m_executed_notifies(0)
 {
 
     m_groupLootTimer    = 0;
@@ -1858,6 +1859,12 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         }
     }
 
+    if (petType == POSSESSED_PET)
+    {
+        pet->GetCharmInfo()->InitEmptyActionBar(false);
+        pet->GetCharmInfo()->InitPossessCreateSpells();
+    }
+
     if (duration > 0)
         pet->SetDuration(duration);
 
@@ -2225,8 +2232,7 @@ struct WorldObjectChangeAccumulator
 void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
 {
      WorldObjectChangeAccumulator notifier(*this, data_map);
+     Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance(this));
 
-    Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance());
-
-    ClearUpdateMask(false);
+     ClearUpdateMask(false);
 }

@@ -20,6 +20,7 @@
 
 #include "MapManager.h"
 #include "Player.h"
+#include "TemporarySummon.h"
 #include "GridNotifiers.h"
 #include "WorldSession.h"
 #include "Log.h"
@@ -174,6 +175,7 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
 
     //lets initialize visibility distance for map
     Map::InitVisibilityDistance();
+    SetBroken(false);
 }
 
 void Map::InitVisibilityDistance()
@@ -478,7 +480,7 @@ void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool 
 void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor)
 {
     Trinity::ObjectMessageDeliverer post_man(*obj, msg, to_possessor);
-    Cell::VisitWorldObjects(obj, post_man, GetVisibilityDistance());
+    Cell::VisitWorldObjects(obj, post_man, GetVisibilityDistance(obj));
 }
 
 void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, bool to_self, bool to_possessor, bool own_team_only)
@@ -1402,9 +1404,13 @@ bool Map::IsInWater(float x, float y, float pZ, GridMapLiquidData *data) const
     {
         GridMapLiquidData liquid_status;
         GridMapLiquidData *liquid_ptr = data ? data : &liquid_status;
-        if (getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr))
+        switch(getLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr))
         {
-            //if (liquid_prt->level - liquid_prt->depth_level > 2) //???
+            case LIQUID_MAP_ABOVE_WATER:
+            case LIQUID_MAP_NO_WATER:
+            case LIQUID_MAP_WATER_WALK:
+                return false;
+            default:
                 return true;
         }
     }
@@ -1415,7 +1421,7 @@ bool Map::IsUnderWater(float x, float y, float z) const
 {
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
-        if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN) & LIQUID_MAP_UNDER_WATER)
+        if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN) == LIQUID_MAP_UNDER_WATER)
             return true;
     }
     return false;
@@ -1450,7 +1456,7 @@ void Map::UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair)
     cell.SetNoCreate();
     Trinity::VisibleChangesNotifier notifier(*obj);
     TypeContainerVisitor<Trinity::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
-    cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityDistance());
+    cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityDistance(obj));
 }
 
 void Map::UpdateObjectsVisibilityFor(Player* player, Cell cell, CellPair cellpair)
@@ -2551,7 +2557,7 @@ template void Map::Remove(DynamicObject *, bool);
 
 InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
   : Map(id, expiry, InstanceId, SpawnMode), i_data(NULL),
-    m_resetAfterUnload(false), m_unloadWhenEmpty(false)
+    m_resetAfterUnload(false), m_unloadWhenEmpty(false), m_unlootedCreaturesSummoned(false)
 {
 
     InstanceMap::InitVisibilityDistance();
@@ -2615,10 +2621,10 @@ bool InstanceMap::CanEnter(Player *player)
     }
 
     // cannot enter if the instance is full (player cap), GMs don't count
-    InstanceTemplate const* iTemplate = ObjectMgr::GetInstanceTemplate(GetId());
-    if (!player->isGameMaster() && GetPlayersCountExceptGMs() >= iTemplate->maxPlayers)
+    uint32 maxPlayers = GetMaxPlayers();
+    if (!player->isGameMaster() && GetPlayersCountExceptGMs() >= maxPlayers)
     {
-        sLog.outDetail("InstanceMap: Instance '%u' of map '%s' cannot have more than '%u' players. Player '%s' rejected", GetInstanceId(), GetMapName(), iTemplate->maxPlayers, player->GetName());
+        sLog.outDetail("MAP: Instance '%u' of map '%s' cannot have more than '%u' players. Player '%s' rejected", GetInstanceId(), GetMapName(), maxPlayers, player->GetName());
         player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAX_PLAYERS);
         return false;
     }
@@ -2743,6 +2749,9 @@ void InstanceMap::Update(const uint32& t_diff)
 
     if (i_data)
         i_data->Update(t_diff);
+
+    if (!m_unlootedCreaturesSummoned)
+        SummonUnlootedCreatures();
 }
 
 void InstanceMap::Remove(Player *player, bool remove)
@@ -2905,6 +2914,42 @@ void InstanceMap::SetResetSchedule(bool on)
         else
             sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
     }
+}
+
+void InstanceMap::SummonUnlootedCreatures()
+{
+    m_unlootedCreaturesSummoned = true;
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT DISTINCT creatureId, position_x, position_y, position_z FROM group_saved_loot WHERE instanceId='%u' AND summoned = TRUE", GetInstanceId());
+    if (result)
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+
+            uint32 creatureId = fields[0].GetUInt32();
+            float pos_x = fields[1].GetFloat();
+            float pos_y = fields[2].GetFloat();
+            float pos_z = fields[3].GetFloat();
+
+            TemporarySummon* pCreature = new TemporarySummon();
+            if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), this, creatureId, 0, pos_x, pos_y, pos_z, 0))
+            {
+                delete pCreature;
+                continue;
+            }
+            pCreature->Summon(TEMPSUMMON_MANUAL_DESPAWN, 0);
+            pCreature->loot.FillLootFromDB(pCreature, NULL);
+        }
+        while (result->NextRow());
+    }
+}
+
+uint32 InstanceMap::GetMaxPlayers() const
+{
+    InstanceTemplate const* iTemplate = objmgr.GetInstanceTemplate(GetId());
+    if(!iTemplate)
+        return 0;
+    return iTemplate->maxPlayers;
 }
 
 /* ******* Battleground Instance Maps ******* */
@@ -3368,4 +3413,81 @@ inline GridMap *Map::GetGrid(float x, float y)
     EnsureGridCreated(GridPair(63-gx,63-gy));
 
     return GridMaps[gx][gy];
+}
+
+void Map::ForcedUnload()
+{
+    sLog.outError("Map::ForcedUnload called for map %u instance %u. Map crushed. Cleaning up...", GetId(), GetInstanceId());
+
+    // Immediately cleanup update sets/queues
+    i_objectsToClientUpdate.clear();
+
+    Map::PlayerList const pList = GetPlayers();
+
+    for (PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
+    {
+        Player* player = itr->getSource();
+        if (!player || !player->GetSession())
+            continue;
+
+        if (player->IsBeingTeleported())
+        {
+            WorldLocation old_loc;
+            player->GetPosition(old_loc);
+            if (!player->TeleportTo(old_loc))
+            {
+                sLog.outDetail("Map::ForcedUnload: %u is in teleport state, cannot be ported to his previous place, teleporting him to his homebind place...",
+                    player->GetGUIDLow());
+                player->TeleportToHomebind();
+            }
+            player->SetSemaphoreTeleport(false);
+        }
+
+        switch (sWorld.getConfig(CONFIG_VMSS_MAPFREEMETHOD))
+        {
+            case 0:
+            {
+                player->RemoveAllAurasOnDeath();
+                if (Pet* pet = player->GetPet())
+                    pet->RemoveAllAurasOnDeath();
+                player->GetSession()->LogoutPlayer(true);
+                break;
+            }
+            case 1:
+            {
+                player->GetSession()->KickPlayer();
+                break;
+            }
+            case 2:
+            {
+                player->GetSession()->LogoutPlayer(false);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    switch (sWorld.getConfig(CONFIG_VMSS_MAPFREEMETHOD))
+    {
+        case 0:
+            if (InstanceMap *instance = dynamic_cast<InstanceMap*>(this))
+                if (InstanceData* iData = instance->GetInstanceData())
+                    iData->SaveToDB();
+            break;
+        default:
+            break;
+    }
+
+    UnloadAll();
+
+    SetBroken(false);
+}
+
+float Map::GetVisibilityDistance(WorldObject* obj) const
+{
+    if (obj && obj->GetObjectGuid().IsGameObject())
+        return (m_VisibleDistance + ((GameObject*)obj)->GetDeterminativeSize());    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
+    else
+        return m_VisibleDistance;
 }

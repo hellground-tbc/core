@@ -38,6 +38,18 @@
 #include "Language.h"
 #include "Util.h"
 
+enum ChatDenyMask
+{
+    DENY_NONE       = 0,
+    DENY_SAY        = 1,
+    DENY_EMOTE      = 2,
+    DENY_PARTY      = 4,
+    DENY_GUILD      = 8,
+    DENY_WHISP      = 16,
+    DENY_CHANNEL    = 32,
+    DENY_ADDON      = 64,
+};
+
 void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 {
     CHECK_PACKET_SIZE(recv_data,4+4+1);
@@ -139,11 +151,56 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
             GetPlayer()->UpdateSpeakTime();
     }
 
-    if (type == CHAT_MSG_WHISPER || type == CHAT_MSG_YELL || type == CHAT_MSG_CHANNEL)
+    if (GetPlayer()->getLevel() < sWorld.getConfig(CONFIG_CHAT_MINIMUM_LVL))
     {
-        if (GetPlayer()->getLevel() < 5)
+        int mask = 0;
+        switch (type)
         {
-            SendNotification("You can't send message of this type until you reach level 5.");
+            case CHAT_MSG_SAY:
+            case CHAT_MSG_YELL:
+                mask = DENY_SAY;
+                break;
+            case CHAT_MSG_EMOTE:
+            case CHAT_MSG_TEXT_EMOTE:
+                mask = DENY_EMOTE;
+                break;
+            case CHAT_MSG_PARTY:
+            case CHAT_MSG_RAID:
+            case CHAT_MSG_RAID_LEADER:
+            case CHAT_MSG_RAID_WARNING:
+            case CHAT_MSG_BATTLEGROUND:
+            case CHAT_MSG_BATTLEGROUND_LEADER:
+                mask = DENY_PARTY;
+                break;
+            case CHAT_MSG_GUILD:
+            case CHAT_MSG_OFFICER:
+                mask = DENY_GUILD;
+                break;
+            case CHAT_MSG_WHISPER:
+            case CHAT_MSG_WHISPER_INFORM:
+            case CHAT_MSG_REPLY:
+                mask = DENY_WHISP;
+                break;
+            case CHAT_MSG_CHANNEL:
+            case CHAT_MSG_CHANNEL_JOIN:
+            case CHAT_MSG_CHANNEL_LEAVE:
+            case CHAT_MSG_CHANNEL_NOTICE:
+            case CHAT_MSG_CHANNEL_NOTICE_USER:
+                mask = DENY_CHANNEL;
+                break;
+            case CHAT_MSG_ADDON:
+                mask = DENY_ADDON;
+                break;
+            default:
+                break;
+        }
+
+        if (lang == LANG_ADDON)
+            mask |= DENY_ADDON;
+
+        if (sWorld.getConfig(CONFIG_CHAT_DENY_MASK) & mask)
+        {
+            SendNotification("You can't send message of this type until you reach level %i.", sWorld.getConfig(CONFIG_CHAT_MINIMUM_LVL));
             return;
         }
     }

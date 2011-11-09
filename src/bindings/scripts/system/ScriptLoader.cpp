@@ -204,6 +204,7 @@ extern void AddSC_boss_leotheras_the_blind();
 extern void AddSC_boss_morogrim_tidewalker();
 extern void AddSC_instance_serpentshrine_cavern();
 extern void AddSC_boss_the_lurker_below();
+extern void AddSC_serpent_shrine_trash();
 
 //--Slave Pens
 extern void AddSC_boss_lord_ahune();
@@ -815,6 +816,7 @@ void AddScripts()
     AddSC_boss_morogrim_tidewalker();
     AddSC_instance_serpentshrine_cavern();
     AddSC_boss_the_lurker_below();
+    AddSC_serpent_shrine_trash();
 
     //--Slave Pens
     AddSC_boss_lord_ahune();

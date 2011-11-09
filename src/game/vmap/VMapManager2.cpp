@@ -20,11 +20,13 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include "VMapCluster.h"
 #include "VMapManager2.h"
 #include "MapTree.h"
 #include "ModelInstance.h"
 #include "WorldModel.h"
 #include "VMapDefinitions.h"
+
 
 using G3D::Vector3;
 
@@ -222,6 +224,15 @@ namespace VMAP
         if (!isLineOfSightCalcEnabled(pMapId))
             return true;
 
+        if(isClusterComputingEnabled())
+            return sLoSProxy.isInLineOfSight(pMapId, x1, y1, z1, x2, y2, z2);
+        else
+            return isInLineOfSight2(pMapId, x1, y1, z1, x2, y2, z2);
+    }
+
+
+    bool VMapManager2::isInLineOfSight2(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2)
+    {
         bool result = true;
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(pMapId);
         if (instanceTree != iInstanceMapTrees.end())
@@ -235,6 +246,7 @@ namespace VMAP
         }
         return result;
     }
+
     //=========================================================
     /**
     get the hit position and return true if we hit something

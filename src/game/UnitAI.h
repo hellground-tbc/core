@@ -102,17 +102,36 @@ class TRINITY_DLL_SPEC UnitAI
         std::list<Player*> FindAllPlayersInRange(float range, Unit* finder = NULL);
 
         //Selects a unit from the creature's current aggro list
-        Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, uint64 = 0, float mindist = 0.0f);
+        Unit* SelectUnit(SelectAggroTarget target, uint32 position = 0, float max_dist = 0, bool playerOnly = false, uint64 excludeGUID = 0, float mind_dist = 0.0f);
         Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, float maxdist, bool playerOnly, Powers powerOnly);
-        Unit* SelectUnit(SelectAggroTarget target, uint32 position);
+
+        template <class PREDICATE>
+        Unit* SelectUnit(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
+        {
+            std::list<Unit*> targetList;
+            SelectUnitList(targetList, 0, targetType, 0, false);
+
+            for (std::list<Unit*>::iterator itr = targetList.begin(); itr != targetList.end();)
+            {
+                if (!predicate(*itr))
+                    targetList.erase(itr++);
+                else
+                    ++itr;
+            }
+
+            if (targetList.empty())
+                return NULL;
+
+            return ReturnTargetHelper(targetType, position, targetList);
+        }
 
         void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint64 exclude = 0, float mindist = 0.0f);
 
-        Unit* SelectTarget(SelectAggroTarget target, uint32 position = 0, float dist = 0, bool playerOnly = false, int32 aura = 0);
-        void SelectTargetList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist = 0, bool playerOnly = false, int32 aura = 0);
-
         static AISpellInfoType *AISpellInfo;
         static void FillAISpellInfo();
+
+    private:
+        Unit *ReturnTargetHelper(SelectAggroTarget target, uint32 position, std::list<Unit*> &targetList);
 };
 
 #endif

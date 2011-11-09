@@ -1908,6 +1908,13 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }
+                case 38642: // Blink
+                {
+                    if(!unitTarget)
+                        return;
+                    m_caster->CastSpell(unitTarget, 29884, true);
+                    return;
+                }
             }
             break;
         case SPELLFAMILY_WARRIOR:
@@ -2710,6 +2717,38 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
 
     if (m_CastItem)
         DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
+
+    // some triggered spells require specific equipment
+    if (spellInfo->EquippedItemClass >=0 && m_caster->GetTypeId()==TYPEID_PLAYER)
+    {
+        // main hand weapon required
+        if (spellInfo->AttributesEx3 & SPELL_ATTR_EX3_MAIN_HAND)
+        {
+            Item* item = ((Player*)m_caster)->GetWeaponForAttack(BASE_ATTACK);
+
+            // skip spell if no weapon in slot or broken
+            if (!item || item->IsBroken())
+                return;
+
+            // skip spell if weapon not fit to triggered spell
+            if (!item->IsFitToSpellRequirements(spellInfo))
+                return;
+        }
+
+        // offhand hand weapon required
+        if (spellInfo->AttributesEx3 & SPELL_ATTR_EX3_REQ_OFFHAND)
+        {
+            Item* item = ((Player*)m_caster)->GetWeaponForAttack(OFF_ATTACK);
+
+            // skip spell if no weapon in slot or broken
+            if (!item || item->IsBroken())
+                return;
+
+            // skip spell if weapon not fit to triggered spell
+            if (!item->IsFitToSpellRequirements(spellInfo))
+                return;
+        }
+    }
 
     Spell *spell = new Spell(m_caster, spellInfo, true, m_originalCasterGUID);
 
@@ -4533,7 +4572,7 @@ void Spell::EffectSummonPossessed(uint32 i)
 
     int32 duration = GetSpellDuration(m_spellInfo);
 
-    Pet* pet = ((Player*)m_caster)->SummonPet(entry, x, y, z, m_caster->GetOrientation(), POSSESSED_PET, duration);
+    Pet* pet = ((Player*)m_caster)->SummonPet(entry, x, y, z + 0.5f, m_caster->GetOrientation(), POSSESSED_PET, duration);
     if (!pet)
         return;
 
@@ -6407,6 +6446,10 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         if (!tmpPl->HasItemCount(23181, 1, true))
                             tmpPl->CastSpell(tmpPl, 29133, true);
             }
+            break;
+        case 38650: // Rancid Mushroom
+            m_caster->SummonCreature(22250, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), unitTarget->GetOrientation(),
+                    TEMPSUMMON_DEAD_DESPAWN, 0);
             break;
         case 45235: // Eredar Twins: Blaze
             unitTarget->CastSpell(unitTarget, 45236, true, NULL, NULL, m_caster->GetGUID());

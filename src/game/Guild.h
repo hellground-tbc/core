@@ -371,6 +371,7 @@ class Guild
         void   DisplayGuildBankTabsInfo(WorldSession *session);
         void   CreateNewBankTab();
         void   SetGuildBankTabText(uint8 TabId, std::string text);
+        void   SendGuildBankTabTextToAll(uint8 TabId);
         void   SendGuildBankTabText(WorldSession *session, uint8 TabId);
         void   SetGuildBankTabInfo(uint8 TabId, std::string name, std::string icon);
         void   CreateBankRightForTab(uint32 rankid, uint8 TabId);

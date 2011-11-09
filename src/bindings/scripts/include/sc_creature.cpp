@@ -381,9 +381,10 @@ void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool 
         case CAST_RANDOM_WITHOUT_TANK:
         {
             SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
-            Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
-            if(pTarget)
+            if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0))
                 targetGUID = pTarget->GetGUID();
+            else
+                return;
             break;
         }
         case CAST_SELF:
@@ -418,6 +419,9 @@ void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode,
             Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
             if(pTarget)
                 targetGUID = pTarget->GetGUID();
+            else
+                return;
+
             break;
         }
         case CAST_SELF:
@@ -449,8 +453,10 @@ void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode tar
         case CAST_RANDOM_WITHOUT_TANK:
         {
             SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
-            Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
-            targetGUID = pTarget->GetGUID();
+            if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0))
+                targetGUID = pTarget->GetGUID();
+            else 
+                return;
             break;
         }
         case CAST_SELF:

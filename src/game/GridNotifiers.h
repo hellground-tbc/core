@@ -1091,6 +1091,7 @@ namespace Trinity
             {
                 return (object->GetTypeId() == _typeId) == _equals;
             }
+
         private:
             TypeID _typeId;
             bool _equals;
@@ -1109,6 +1110,47 @@ namespace Trinity
             bool _present;
             uint32 _spellId;
             uint32 _effectIdx;
+    };
+
+    class UnitPowerTypeCheck
+    {
+        public:
+            UnitPowerTypeCheck(Powers power, bool present = true) : _present(present), _power(power) {}
+            bool operator()(Unit* unit)
+            {
+                return unit->getPowerType() == _power && _present;
+            }
+
+        private:
+            bool _present;
+            uint32 _power;
+    };
+
+    class ObjectDistanceCheck
+    {
+        public:
+            ObjectDistanceCheck(WorldObject *source, uint32 dist, bool greater) : _source(source), _dist(dist), _greater(greater) {}
+            bool operator()(WorldObject* object)
+            {
+                return (_greater ? _source->GetExactDistSq(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ()) > (_dist*_dist) : _source->GetExactDistSq(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ()) < (_dist*_dist));
+            }
+
+        private:
+            WorldObject *_source;
+            uint32 _dist;
+            bool _greater;
+    };
+
+    // sorter
+    struct ObjectDistanceOrder : public std::binary_function<const Unit *, const Unit *, bool>
+    {
+        const Unit * me;
+        ObjectDistanceOrder(const Unit* Target) : me(Target) {};
+        // functor for operator ">"
+        bool operator()(const Unit * _Left, const Unit * _Right) const
+        {
+            return (me->GetExactDistSq(_Left->GetPositionX(), _Left->GetPositionY(), _Left->GetPositionZ()) < me->GetExactDistSq(_Right->GetPositionX(), _Right->GetPositionY(), _Right->GetPositionZ()));
+        }
     };
 }
 

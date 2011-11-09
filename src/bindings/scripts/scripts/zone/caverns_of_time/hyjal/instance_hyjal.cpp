@@ -147,9 +147,28 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
             Door->SetUInt32Value(GAMEOBJECT_STATE, open ? 0 : 1);
     }
 
+    uint32 GetEncounterForEntry(uint32 entry)
+    {
+        switch (entry)
+        {
+            case 17808:
+                return DATA_ANETHERONEVENT;
+            case 17968:
+                return DATA_ARCHIMONDEEVENT;
+            case 17842:
+                return DATA_AZGALOREVENT;
+            case 17888:
+                return DATA_KAZROGALEVENT;
+            case 17767:
+                return DATA_RAGEWINTERCHILLEVENT;
+            default:
+                return 0;
+        }
+    }
+
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
-        switch(creature_entry)
+        switch (creature_entry)
         {
             case 17767: RageWinterchill = creature->GetGUID(); break;
             case 17808: Anetheron = creature->GetGUID(); break;
@@ -160,6 +179,10 @@ struct TRINITY_DLL_DECL instance_mount_hyjal : public ScriptedInstance
             case 17852: Thrall = creature->GetGUID(); break;
             case 17948: TyrandeWhisperwind = creature->GetGUID(); break;
         }
+
+        // to prevent respawning bosses if loot is loaded from db
+        if (GetData(GetEncounterForEntry(creature_entry)) == DONE)
+            creature->Kill(creature, false);
     }
 
     uint64 GetData64(uint32 identifier)

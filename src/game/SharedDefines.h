@@ -520,6 +520,7 @@ enum TeamId
 
 enum Team
 {
+    TEAM_NONE           = 0,                                // used when team value unknown or not set, 0 is also meaning that can be used !team check
     HORDE               = 67,
     ALLIANCE            = 469,
     //TEAM_STEAMWHEEDLE_CARTEL = 169,                       // not used in code

@@ -26,7 +26,7 @@
 #include "ace/RW_Thread_Mutex.h"
 #include "ace/Thread_Mutex.h"
 
-#include "Database/DBCStructure.h"
+#include "DBCStructure.h"
 #include "GridDefines.h"
 #include "Cell.h"
 #include "Timer.h"
@@ -155,7 +155,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
         void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
 
-        float GetVisibilityDistance() const { return m_VisibleDistance; }
+        float GetVisibilityDistance(WorldObject* obj = NULL) const;
         virtual void InitVisibilityDistance();
 
         void PlayerRelocation(Player *, float x, float y, float z, float angl);
@@ -344,6 +344,11 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
             i_objectsToClientUpdate.erase(obj);
         }
 
+        // map restarting system
+        bool const IsBroken() { return m_broken; };
+        void SetBroken( bool _value = true ) { m_broken = _value; };
+        void ForcedUnload();
+
     private:
         void LoadVMap(int gx, int gy);
         void LoadMap(int gx,int gy, bool reload = false);
@@ -392,6 +397,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         DObjectMapType                  dynamicObjectsMap;
         CreaturesMapType                creaturesMap;
         CreatureIdToGuidListMapType     creatureIdToGuidMap;
+
+        bool m_broken;
 
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
@@ -495,10 +502,13 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
         void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
         virtual void InitVisibilityDistance();
+        uint32 GetMaxPlayers() const;
 
+        void SummonUnlootedCreatures();
     private:
         bool m_resetAfterUnload;
         bool m_unloadWhenEmpty;
+        bool m_unlootedCreaturesSummoned;
         InstanceData* i_data;
         uint32 i_script_id;
 };

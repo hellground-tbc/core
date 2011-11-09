@@ -64,6 +64,15 @@ bool Spell_deep_wounds(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGam
     {
         deepWounds->SetAuraDuration(deepWounds->GetAuraMaxDuration());
         deepWounds->UpdateAuraDuration();
+
+        Aura *bloodFrenzy = pUnit->GetAuraByCasterSpell(30070, pCaster->GetGUID());
+        bloodFrenzy ? bloodFrenzy = bloodFrenzy/* do nothing */: bloodFrenzy = pUnit->GetAuraByCasterSpell(30069, pCaster->GetGUID());
+
+        if (bloodFrenzy)
+        {
+            bloodFrenzy->SetAuraDuration(deepWounds->GetAuraMaxDuration());
+            bloodFrenzy->UpdateAuraDuration();
+        }
         return true;
     }
 

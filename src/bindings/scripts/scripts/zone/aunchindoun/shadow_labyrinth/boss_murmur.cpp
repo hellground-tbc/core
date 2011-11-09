@@ -141,7 +141,8 @@ struct TRINITY_DLL_DECL boss_murmurAI : public Scripted_NoMovementAI
                 ForceSpellCast(target, SPELL_MAGNETIC_PULL);
                 MagneticPull_Timer = urand (20000, 35000);
             }
-            MagneticPull_Timer = 500;
+            else
+                MagneticPull_Timer = 500;
         }
         else
             MagneticPull_Timer -= diff;

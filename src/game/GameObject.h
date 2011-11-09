@@ -545,7 +545,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         void Delete();
         void SetSpellId(uint32 id) { m_spellId = id;}
         uint32 GetSpellId() const { return m_spellId;}
-        void getFishLoot(Loot *loot);
+        void getFishLoot(Loot *loot, Player* loot_owner);
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetUInt32Value(GAMEOBJECT_TYPE_ID)); }
         void SetGoType(GameobjectTypes type) { SetUInt32Value(GAMEOBJECT_TYPE_ID, type); }
 
@@ -630,6 +630,9 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
 
         void CastSpell(Unit *target, uint32 spell);
         void CastSpell(GameObject *target, uint32 spell);
+
+        float GetDeterminativeSize() const;
+
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;

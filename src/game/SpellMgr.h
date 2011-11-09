@@ -25,7 +25,8 @@
 // For more high level function for sSpellStore data
 
 #include "SharedDefines.h"
-#include "Database/DBCStructure.h"
+#include "DBCStructure.h"
+#include "DBCStores.h"
 #include "Database/SQLStorage.h"
 
 #include "Utilities/UnorderedMap.h"
@@ -832,7 +833,7 @@ inline bool IgnoreMagnetTargetAura(SpellEntry const* spellInfo)
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
-class SpellMgr
+class TRINITY_DLL_SPEC SpellMgr
 {
     // Constructors
     public:

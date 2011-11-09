@@ -249,6 +249,15 @@ uint32 PlayerTaxi::GetCurrentTaxiPath() const
     return path;
 }
 
+std::ostringstream& operator<< (std::ostringstream& ss, PlayerTaxi const& taxi)
+{
+    ss << "'";
+    for(int i = 0; i < TaxiMaskSize; ++i)
+        ss << taxi.m_taximask[i] << " ";
+    ss << "'";
+    return ss;
+}
+
 //== Player ====================================================
 
 const int32 Player::ReputationRank_Length[MAX_REPUTATION_RANK] = {36000, 3000, 3000, 3000, 6000, 12000, 21000, 1000};
@@ -4213,8 +4222,7 @@ void Player::CreateCorpse()
     Corpse *corpse = new Corpse((m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH) ? CORPSE_RESURRECTABLE_PVP : CORPSE_RESURRECTABLE_PVE);
     SetPvPDeath(false);
 
-    if (!corpse->Create(objmgr.GenerateLowGuid(HIGHGUID_CORPSE), this, GetMapId(), GetPositionX(),
-        GetPositionY(), GetPositionZ(), GetOrientation()))
+    if (!corpse->Create(objmgr.GenerateLowGuid(HIGHGUID_CORPSE), this))
     {
         delete corpse;
         return;
@@ -6945,8 +6953,9 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
     if (slot >= INVENTORY_SLOT_BAG_END || !item)
         return;
 
-    // not apply mods for broken item
-    if (item->IsBroken() && apply)
+    // not apply/remove mods for broken item (_ApplyItemMods is used before setting durability to 0 when item
+    // loss durability so there is no need to check for 'apply' (prevent bug abuse by stats stacking))
+    if (item->IsBroken())
         return;
 
     ItemPrototype const *proto = item->GetProto();
@@ -7778,7 +7787,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 sLog.outDebug("       if (lootid)");
                 loot->clear();
-                loot->FillLoot(lootid, LootTemplates_Gameobject, this);
+                loot->FillLoot(lootid, LootTemplates_Gameobject, this, false);
 
                 //if chest apply 2.1.x rules
                 if ((go->GetGoType() == GAMEOBJECT_TYPE_CHEST)&&(go->GetGOInfo()->chest.groupLootRules))
@@ -7807,7 +7816,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             }
 
             if (loot_type == LOOT_FISHING)
-                go->getFishLoot(loot);
+                go->getFishLoot(loot, this);
 
             go->SetLootState(GO_ACTIVATED);
         }
@@ -7830,7 +7839,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetProto()->DisenchantID, LootTemplates_Disenchant, this);
+                loot->FillLoot(item->GetProto()->DisenchantID, LootTemplates_Disenchant, this,true);
             }
         }
         else if (loot_type == LOOT_PROSPECTING)
@@ -7841,7 +7850,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetEntry(), LootTemplates_Prospecting, this);
+                loot->FillLoot(item->GetEntry(), LootTemplates_Prospecting, this,true);
             }
         }
         else
@@ -7852,7 +7861,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 item->m_lootGenerated = true;
                 loot->clear();
-                loot->FillLoot(item->GetEntry(), LootTemplates_Item, this);
+                loot->FillLoot(item->GetEntry(), LootTemplates_Item, this,true);
 
                 loot->generateMoneyLoot(item->GetProto()->MinMoneyLoot,item->GetProto()->MaxMoneyLoot);
             }
@@ -7877,7 +7886,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             bones->loot.clear();
             if (BattleGround *bg = GetBattleGround())
                 if (bg->GetTypeID() == BATTLEGROUND_AV)
-                    loot->FillLoot(1, LootTemplates_Creature, this);
+                    loot->FillLoot(1, LootTemplates_Creature, this, true);
             // It may need a better formula
             // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
             bones->loot.gold = (uint32)(GetMap()->urand(50, 150) * 0.016f * pow(((float)pLevel)/5.76f, 2.5f) * sWorld.getRate(RATE_DROP_MONEY));
@@ -7891,7 +7900,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         Creature *creature = GetMap()->GetCreature(guid);
 
         // must be in range and creature must be alive for pickpocket and must be dead for another loot
-        if (!creature || creature->isAlive()!=(loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this,INTERACTION_DISTANCE))
+        if (!creature || creature->isAlive() != (loot_type == LOOT_PICKPOCKETING) || !creature->IsWithinDistInMap(this,INTERACTION_DISTANCE))
         {
             SendLootRelease(guid);
             return;
@@ -7903,7 +7912,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             return;
         }
 
-        loot   = &creature->loot;
+        loot = &creature->loot;
 
         if (loot_type == LOOT_PICKPOCKETING)
         {
@@ -7913,7 +7922,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 loot->clear();
 
                 if (uint32 lootid = creature->GetCreatureInfo()->pickpocketLootId)
-                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this);
+                    loot->FillLoot(lootid, LootTemplates_Pickpocketing, this, false);
 
                 // Generate extra money for pick pocket loot
                 const uint32 a = GetMap()->urand(0, creature->getLevel()/2);
@@ -7940,20 +7949,23 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             if (!creature->lootForBody)
             {
                 creature->lootForBody = true;
-                if (!loot->load)
+
+                if (!loot->LootLoadedFromDB())
+                {
                     loot->clear();
 
-                if (uint32 lootid = creature->GetCreatureInfo()->lootid)
-                {
-                    loot->setCreatureGUID(creature);
-                    loot->FillLoot(lootid, LootTemplates_Creature, recipient);
-                }
+                    if (uint32 lootid = creature->GetCreatureInfo()->lootid)
+                    {
+                        loot->setCreatureGUID(creature);
+                        loot->FillLoot(lootid, LootTemplates_Creature, recipient, false);
+                    }
 
-                loot->generateMoneyLoot(creature->GetCreatureInfo()->mingold,creature->GetCreatureInfo()->maxgold);
+                    loot->generateMoneyLoot(creature->GetCreatureInfo()->mingold,creature->GetCreatureInfo()->maxgold);
+                }
 
                 if (Group* group = recipient->GetGroup())
                 {
-                    group->UpdateLooterGuid(creature,true);
+                    group->UpdateLooterGuid(creature, true);
 
                     switch (group->GetLootMethod())
                     {
@@ -7977,7 +7989,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             if (loot_type == LOOT_SKINNING)
             {
                 loot->clear();
-                loot->FillLoot(creature->GetCreatureInfo()->SkinLootId, LootTemplates_Skinning, this);
+                loot->FillLoot(creature->GetCreatureInfo()->SkinLootId, LootTemplates_Skinning, this, false);
             }
             // set group rights only for loot_type != LOOT_SKINNING
             else
@@ -8011,39 +8023,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
     SetLootGUID(guid);
 
-    QuestItemList *q_list = 0;
-    if (permission != NONE_PERMISSION)
-    {
-        QuestItemMap const& lootPlayerQuestItems = loot->GetPlayerQuestItems();
-        QuestItemMap::const_iterator itr = lootPlayerQuestItems.find(GetGUIDLow());
-        if (itr == lootPlayerQuestItems.end())
-            q_list = loot->FillQuestLoot(this);
-        else
-            q_list = itr->second;
-    }
-
-    QuestItemList *ffa_list = 0;
-    if (permission != NONE_PERMISSION)
-    {
-        QuestItemMap const& lootPlayerFFAItems = loot->GetPlayerFFAItems();
-        QuestItemMap::const_iterator itr = lootPlayerFFAItems.find(GetGUIDLow());
-        if (itr == lootPlayerFFAItems.end())
-            ffa_list = loot->FillFFALoot(this);
-        else
-            ffa_list = itr->second;
-    }
-
-    QuestItemList *conditional_list = 0;
-    if (permission != NONE_PERMISSION)
-    {
-        QuestItemMap const& lootPlayerNonQuestNonFFAConditionalItems = loot->GetPlayerNonQuestNonFFAConditionalItems();
-        QuestItemMap::const_iterator itr = lootPlayerNonQuestNonFFAConditionalItems.find(GetGUIDLow());
-        if (itr == lootPlayerNonQuestNonFFAConditionalItems.end())
-            conditional_list = loot->FillNonQuestNonFFAConditionalLoot(this);
-        else
-            conditional_list = itr->second;
-    }
-
     // LOOT_PICKPOCKETING, LOOT_PROSPECTING, LOOT_DISENCHANTING and LOOT_INSIGNIA unsupported by client, sending LOOT_SKINNING instead
     if (loot_type == LOOT_PICKPOCKETING || loot_type == LOOT_DISENCHANTING || loot_type == LOOT_PROSPECTING || loot_type == LOOT_INSIGNIA)
         loot_type = LOOT_SKINNING;
@@ -8055,7 +8034,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
     data << uint64(guid);
     data << uint8(loot_type);
-    data << LootView(*loot, q_list, ffa_list, conditional_list, this, permission);
+    data << LootView(*loot, this, permission);
 
     SendDirectMessage(&data);
 
@@ -13058,8 +13037,6 @@ void Player::AddQuest(Quest const *pQuest, Object *questGiver)
 
     // if not exist then created with set uState==NEW and rewarded=false
     QuestStatusData& questStatusData = mQuestStatus[quest_id];
-    if (questStatusData.uState != QUEST_NEW)
-        questStatusData.uState = QUEST_CHANGED;
 
     // check for repeatable quests status reset
     questStatusData.m_status = QUEST_STATUS_INCOMPLETE;
@@ -13078,7 +13055,7 @@ void Player::AddQuest(Quest const *pQuest, Object *questGiver)
     }
 
     GiveQuestSourceItem(pQuest);
-    AdjustQuestReqItemCount(pQuest);
+    AdjustQuestReqItemCount(pQuest, questStatusData);
 
     if (pQuest->GetRepObjectiveFaction())
         SetFactionVisibleForFactionId(pQuest->GetRepObjectiveFaction());
@@ -13100,6 +13077,9 @@ void Player::AddQuest(Quest const *pQuest, Object *questGiver)
         questStatusData.m_timer = 0;
 
     SetQuestSlot(log_slot, quest_id, qtime);
+
+    if (questStatusData.uState != QUEST_NEW)
+        questStatusData.uState = QUEST_CHANGED;
 
     //starting initial quest script
     if (questGiver && pQuest->GetQuestStartScript()!=0)
@@ -13275,8 +13255,9 @@ void Player::FailTimedQuest(uint32 quest_id)
     {
         QuestStatusData& q_status = mQuestStatus[quest_id];
 
-        if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
         q_status.m_timer = 0;
+        if (q_status.uState != QUEST_NEW)
+            q_status.uState = QUEST_CHANGED;
 
         IncompleteQuest(quest_id);
 
@@ -13769,7 +13750,7 @@ uint32 Player::GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry)
     return 0;
 }
 
-void Player::AdjustQuestReqItemCount(Quest const* pQuest)
+void Player::AdjustQuestReqItemCount(Quest const* pQuest, QuestStatusData& questStatusData)
 {
     if (pQuest->HasFlag(QUEST_TRINITY_FLAGS_DELIVER))
     {
@@ -13781,9 +13762,9 @@ void Player::AdjustQuestReqItemCount(Quest const* pQuest)
                 uint32 quest_id = pQuest->GetQuestId();
                 uint32 curitemcount = GetItemCount(pQuest->ReqItemId[i],true);
 
-                QuestStatusData& q_status = mQuestStatus[quest_id];
-                q_status.m_itemcount[i] = std::min(curitemcount, reqitemcount);
-                if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
+                questStatusData.m_itemcount[i] = std::min(curitemcount, reqitemcount);
+                if (questStatusData.uState != QUEST_NEW)
+                    questStatusData.uState = QUEST_CHANGED;
             }
         }
     }
@@ -14821,12 +14802,12 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     // clear charm/summon related fields
     SetCharm(NULL);
     SetPet(NULL);
-    SetCharmerGUID(NULL);
-    SetOwnerGUID(NULL);
-    SetCreatorGUID(NULL);
+    SetCharmerGUID(0);
+    SetOwnerGUID(0);
+    SetCreatorGUID(0);
 
     // reset some aura modifiers before aura apply
-    SetFarSight(NULL);
+    SetFarSight(0);
     SetUInt32Value(PLAYER_TRACK_CREATURES, 0);
     SetUInt32Value(PLAYER_TRACK_RESOURCES, 0);
 
@@ -15034,18 +15015,20 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
 bool Player::isAllowedToLoot(Creature* creature)
 {
-    if (creature->isDead() && !creature->IsDamageEnoughForLootingAndReward() && !creature->loot.load)
+    if (creature->isDead() && !creature->IsDamageEnoughForLootingAndReward())
        return false;
 
     if (Player* recipient = creature->GetLootRecipient())
     {
         if (recipient == this)
             return true;
+
         if (Group* otherGroup = recipient->GetGroup())
         {
             Group* thisGroup = GetGroup();
             if (!thisGroup)
                 return false;
+
             return thisGroup == otherGroup && creature->IsPlayerAllowedToLoot(this);
         }
         return false;
@@ -15053,7 +15036,7 @@ bool Player::isAllowedToLoot(Creature* creature)
     else
     {
         // recipient may be offline, maybe there is list of players allowed to loot
-        if(creature->HasPlayersAllowedToLoot() && creature->IsPlayerAllowedToLoot(this))
+        if (creature->HasPlayersAllowedToLoot() && creature->IsPlayerAllowedToLoot(this))
             return true;
 
         // prevent other players from looting if the recipient got disconnected
@@ -16124,12 +16107,12 @@ void Player::SaveToDB()
         ss << GetUInt32Value(i) << " ";
     }
 
-    ss << "', '";
-
-    for (i = 0; i < 8; i++)
-        ss << m_taxi.GetTaximask(i) << " ";
-
     ss << "', ";
+
+    ss << m_taxi;                                           // string with TaxiMaskSize numbers
+
+    ss << ", ";
+
     ss << (inworld ? 1 : 0);
 
     ss << ", ";
@@ -20507,6 +20490,30 @@ void Player::SetTitle(CharTitlesEntry const* title)
     uint32 fieldIndexOffset = title->bit_index/32;
     uint32 flag = 1 << (title->bit_index%32);
     SetFlag(PLAYER__FIELD_KNOWN_TITLES+fieldIndexOffset, flag);
+}
+
+void Player::AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast)
+{
+    Loot loot;
+    loot.FillLoot (loot_id,store,this,true);
+    if(loot.items.empty ())
+        return;
+    LootItem const* lootItem = &loot.items[0];
+
+    ItemPosCountVec dest;
+    uint8 msg = CanStoreNewItem (bag,slot,dest,lootItem->itemid,lootItem->count);
+    if(msg != EQUIP_ERR_OK && slot != NULL_SLOT)
+        msg = CanStoreNewItem( bag, NULL_SLOT,dest,lootItem->itemid,lootItem->count);
+    if( msg != EQUIP_ERR_OK && bag != NULL_BAG)
+        msg = CanStoreNewItem( NULL_BAG, NULL_SLOT,dest,lootItem->itemid,lootItem->count);
+    if(msg != EQUIP_ERR_OK)
+    {
+        SendEquipError( msg, NULL, NULL );
+        return;
+    }
+
+    Item* pItem = StoreNewItem (dest,lootItem->itemid,true,lootItem->randomPropertyId);
+    SendNewItem(pItem, lootItem->count, false, false,broadcast);
 }
 
 

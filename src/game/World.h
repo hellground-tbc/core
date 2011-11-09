@@ -32,11 +32,13 @@
 #include "ace/Atomic_Op.h"
 #include "DelayExecutor.h"
 #include "QueryResult.h"
+#include "WorldSession.h"
 
 #include <map>
 #include <set>
 #include <list>
 #include <tbb/concurrent_hash_map.h>
+#include <tbb/blocked_range.h>
 
 class Object;
 class WorldPacket;
@@ -76,6 +78,7 @@ enum WorldTimers
     WUPDATE_AUTOBROADCAST   = 7,
     WUPDATE_GUILD_ANNOUNCES = 8,
     WUPDATE_DELETECHARS     = 9,
+    WUPDATE_OLDMAILS        = 10,
 
     WUPDATE_COUNT
 };
@@ -231,6 +234,7 @@ enum WorldConfigs
     CONFIG_DISABLE_PVP,
     CONFIG_MIN_GM_TEXT_LVL,
     CONFIG_WARDEN_KICK,
+    CONFIG_WARDEN_BAN,
     CONFIG_MIN_GM_COMMAND_LOG_LEVEL,
 
     CONFIG_DONT_DELETE_CHARS,
@@ -238,6 +242,21 @@ enum WorldConfigs
     CONFIG_KEEP_DELETED_CHARS_TIME,
 
     CONFIG_ENABLE_SORT_AUCTIONS,
+
+    CONFIG_RETURNOLDMAILS_MODE,
+    CONFIG_RETURNOLDMAILS_INTERVAL,
+
+    CONFIG_CHAT_DENY_MASK,
+    CONFIG_CHAT_MINIMUM_LVL,
+
+    CONFIG_ENABLE_HIDDEN_RATING,
+
+    CONFIG_VMSS_MAXTHREADBREAKS,
+    CONFIG_VMSS_TBREMTIME,
+    CONFIG_VMSS_MAPFREEMETHOD,
+    CONFIG_VMSS_FREEZECHECKPERIOD,
+    CONFIG_VMSS_FREEZEDETECTTIME,
+    CONFIG_VMSS_ENABLE,
 
     CONFIG_VALUE_COUNT
 };
@@ -405,13 +424,12 @@ struct CliCommandHolder
 #define MAX_PVP_RANKS 14
 
 typedef tbb::concurrent_hash_map<uint32, std::list<uint64> > LfgContainerType;
+typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
 
 /// The World
 class World
 {
     public:
-        void ProcessAnticheat(char *cmd, char *val, std::string ip);
-
         DelayExecutor m_ac;
 
         uint32 m_honorRanks[MAX_PVP_RANKS];
@@ -424,6 +442,7 @@ class World
         WorldSession* FindSession(uint32 id) const;
         void AddSession(WorldSession *s);
         bool RemoveSession(uint32 id);
+        void AddSessionToRemove(SessionMap::iterator itr) { removedSessions.push_back(itr); }
         /// Get the number of current active sessions
         void UpdateMaxSessionCounters();
         uint32 GetActiveAndQueuedSessionCount() const { return m_sessions.size(); }
@@ -517,9 +536,9 @@ class World
         static bool IsStopped() { return m_stopEvent; }
 
         void LoadAutobroadcasts();
-        void Update(time_t diff);
+        void Update(uint32 diff);
+        void UpdateSessions(const uint32 & diff);
 
-        void UpdateSessions(time_t diff);
         /// Set a server rate (see #Rates)
         void setRate(Rates rate,float value) { rate_values[rate]=value; }
         /// Get a server rate (see #Rates)
@@ -564,7 +583,7 @@ class World
         static float GetMaxVisibleDistanceInInstances()     { return m_MaxVisibleDistanceInInstances;  }
         static float GetMaxVisibleDistanceInArenas()        { return m_MaxVisibleDistanceInArenas;   }
         static float GetMaxVisibleDistanceInBG()            { return m_MaxVisibleDistanceInBG;   }
-        static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject;   }
+        static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject; }
 
         static float GetMaxVisibleDistanceInFlight()        { return m_MaxVisibleDistanceInFlight;    }
         static float GetVisibleUnitGreyDistance()           { return m_VisibleUnitGreyDistance;       }
@@ -633,6 +652,10 @@ class World
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;
 
+        uint32 sessionThreads;
+
+        std::list<SessionMap::iterator> removedSessions;
+
         //atomic op counter for active scripts amount
         ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
 
@@ -649,7 +672,6 @@ class World
 
         typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
         WeatherMap m_weathers;
-        typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
         SessionMap m_sessions;
         typedef UNORDERED_MAP<uint32, time_t> DisconnectMap;
         DisconnectMap m_disconnects;
@@ -710,6 +732,41 @@ class World
 extern uint32 realmID;
 
 #define sWorld Trinity::Singleton<World>::Instance()
+
+class SessionsUpdater
+{
+private:
+    SessionMap * sessions;
+    uint32 diff;
+
+public:
+    SessionsUpdater(SessionMap * sess, uint32 diff) : sessions(sess), diff(diff) {}
+
+    void operator () (const tbb::blocked_range<int>& r) const
+    {
+        SessionMap::iterator itr = sessions->begin();
+        advance(itr, r.begin());
+        SessionMap::iterator itrEnd = sessions->begin();
+        advance(itrEnd, r.end());
+
+        for (; itr != itrEnd; ++itr)
+        {
+            if (!itr->second)
+                continue;
+
+            ///- and remove not active sessions from the list
+            WorldSession * pSession = itr->second;
+            WorldSessionFilter updater(pSession);
+            if (!pSession->Update(diff, updater))    // As interval = 0
+            {
+                sWorld.RemoveQueuedPlayer(pSession);
+
+                sWorld.AddSessionToRemove(itr);
+            }
+        }
+    }
+};
+
 #endif
 /// @}
 

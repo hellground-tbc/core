@@ -57,9 +57,19 @@ struct Wave
     uint32 PortalBoss;                                      //protector of current portal
 };
 
+Wave RiftWaves[]=
+{
+    {RIFT_BOSS},
+    {C_DEJA},
+    {RIFT_BOSS},
+    {C_TEMPO},
+    {RIFT_BOSS},
+    {C_AEONUS}
+};
+
 struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 {
-    instance_dark_portal(Map *map) : ScriptedInstance(map) 
+    instance_dark_portal(Map *map) : ScriptedInstance(map)
     {
         Heroic = map->IsHeroic();
         Initialize();
@@ -384,16 +394,6 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
 
     Unit* SummonedPortalBoss(Unit* source)
     {
-        Wave RiftWaves[]=
-        {
-            {RIFT_BOSS},
-            {C_DEJA},
-            {RIFT_BOSS},
-            {C_TEMPO},
-            {RIFT_BOSS},
-            {C_AEONUS}
-        };
-
         uint32 entry;
 
         if(Heroic)
@@ -414,7 +414,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
         float x,y,z;
         source->GetRandomPoint(source->GetPositionX(),source->GetPositionY(),source->GetPositionZ(),10.0f,x,y,z);
         //normalize Z-level if we can, if rift is not at ground level.
-        z = instance->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
+        source->UpdateAllowedPositionZ(x, y, z);
 
         debug_log("TSCR: Instance Dark Portal: Summoning rift boss entry %u.",entry);
 
@@ -523,7 +523,7 @@ struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
             DoSpawnPortal();
             NextPortal_Timer = GetTimer(mRiftPortalCount);
         }
-        else 
+        else
                 NextPortal_Timer -= diff;
     }
 

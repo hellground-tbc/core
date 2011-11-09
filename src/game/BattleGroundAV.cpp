@@ -296,7 +296,7 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
     return creature;
 }
 
-void BattleGroundAV::Update(time_t diff)
+void BattleGroundAV::Update(uint32 diff)
 {
     BattleGround::Update(diff);
     if (GetStatus() == STATUS_WAIT_JOIN && GetPlayersSize())
@@ -1054,7 +1054,7 @@ void BattleGroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
                 WorldSafeLocsEntry const *ClosestGrave = NULL;
                 for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
                 {
-                    plr = objmgr.GetPlayer(*ghost_list.begin());
+                    plr = objmgr.GetPlayer(*itr);
                     if (!plr)
                         continue;
                     if (!ClosestGrave)

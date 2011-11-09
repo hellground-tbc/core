@@ -24,6 +24,10 @@ SET(vmaps_STAT_SRCS
    VMapTools.h
    WorldModel.h
    WorldModel.cpp
+   VMapCluster.h
+   VMapCluster.cpp
+   PipeWrapper.h
+   PipeWrapper.cpp
 )
 
 add_library(vmaps STATIC ${vmaps_STAT_SRCS})

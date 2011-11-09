@@ -78,6 +78,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     uint32 LurkerSubEvent;
     uint32 WaterCheckTimer;
     uint32 FrenzySpawnTimer;
+    uint32 PlayerInWaterTimer;
     uint32 Water;
     uint32 TrashCount;
 
@@ -113,6 +114,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         LurkerSubEvent = 0;
         WaterCheckTimer = 500;
         FrenzySpawnTimer = 2000;
+        PlayerInWaterTimer = 0;
         DoSpawnFrenzy = false;
         TrashCount = 0;
 
@@ -418,12 +420,14 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             if (PlayerList.isEmpty())
                 return;
 
+            bool PlayerInWater = false;
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
                 if(Player* pPlayer = i->getSource())
-                {
+                {                    
                     if(pPlayer->isAlive() && pPlayer->IsInWater())
                     {
+                        PlayerInWater = true;
                         if(Water == WATERSTATE_SCALDING)
                         {
                             if(!pPlayer->HasAura(SPELL_SCALDINGWATER,0))
@@ -434,7 +438,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                             //spawn frenzy
                             if(DoSpawnFrenzy)
                             {
-                                if(Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,2000))
+                                if(Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
                                 {
                                     frenzy->AddUnitMovementFlag(MOVEFLAG_SWIMMING);
                                     frenzy->SetLevitate(true);
@@ -446,7 +450,20 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                     }
                 }
             }
-            WaterCheckTimer = 500; //remove stress from core
+            if(PlayerInWater)
+                PlayerInWaterTimer = 5000;
+            else
+            {
+                if (PlayerInWaterTimer <= diff)
+                    PlayerInWaterTimer = 0;
+                else
+                    PlayerInWaterTimer -= diff;
+            }
+
+            if(PlayerInWaterTimer)
+                WaterCheckTimer = 1;
+            else
+                WaterCheckTimer = 500; //remove stress from core
         }
         else
             WaterCheckTimer -= diff;
@@ -454,7 +471,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         if(FrenzySpawnTimer < diff)
         {
             DoSpawnFrenzy = true;
-            FrenzySpawnTimer = 2000;
+            FrenzySpawnTimer = 500;
         }
         else
             FrenzySpawnTimer -= diff;

@@ -19,6 +19,7 @@
 #include "WorldPacket.h"
 #include "ObjectMgr.h"
 #include "ArenaTeam.h"
+#include "World.h"
 
 ArenaTeam::ArenaTeam()
 {
@@ -129,6 +130,36 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
     newmember.wins_season       = 0;
     newmember.wins_week         = 0;
     newmember.personal_rating   = 1500;
+
+    {
+        QueryResultAutoPtr result;
+        switch (GetType())
+        {
+            case 2:
+                result = CharacterDatabase.PQuery("SELECT rating2 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
+                break;
+            case 3:
+                result = CharacterDatabase.PQuery("SELECT rating3 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
+                break;
+            case 5:
+                result = CharacterDatabase.PQuery("SELECT rating5 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
+                break;
+            default:
+                break;
+        }
+
+        if (!result)
+        {
+            newmember.matchmaker_rating = 1500;
+            CharacterDatabase.PExecute("INSERT INTO hidden_rating(guid) VALUES ('%u')", GUID_LOPART(newmember.guid));
+        }
+        else
+        {
+            Field * fields = result->Fetch();
+            newmember.matchmaker_rating = fields[0].GetUInt32();
+        }
+    }
+
     members.push_back(newmember);
 
     CharacterDatabase.PExecute("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating);
@@ -204,10 +235,11 @@ void ArenaTeam::LoadStatsFromDB(uint32 ArenaTeamId)
 
 void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
 {
-    //                                                           0                1           2         3             4        5        6    7
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT member.guid,played_week,wons_week,played_season,wons_season,personal_rating,name,class "
+    //                                                                 0           1          2            3              4             5           6      7       8       9         10
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT member.guid, played_week, wons_week, played_season, wons_season, personal_rating, name, class, rating2, rating3, rating5 "
                                                    "FROM arena_team_member member "
                                                    "INNER JOIN characters chars on member.guid = chars.guid "
+                                                   "JOIN hidden_rating hidden ON member.guid = hidden.guid"
                                                    "WHERE member.arenateamid = '%u'", ArenaTeamId);
     if (!result)
         return;
@@ -224,8 +256,26 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
         newmember.personal_rating = fields[5].GetUInt32();
         newmember.name          = fields[6].GetCppString();
         newmember.Class         = fields[7].GetUInt8();
+
+        switch (GetType())
+        {
+            case 2:
+                newmember.matchmaker_rating = fields[8].GetUInt32();
+                break;
+            case 3:
+                newmember.matchmaker_rating = fields[9].GetUInt32();
+                break;
+            case 5:
+                newmember.matchmaker_rating = fields[10].GetUInt32();
+                break;
+            default:
+                newmember.matchmaker_rating = 1500;
+                break;
+        }
+
         members.push_back(newmember);
-    }while (result->NextRow());
+    }
+    while (result->NextRow());
 }
 
 void ArenaTeam::SetCaptain(const uint64& guid)
@@ -314,18 +364,19 @@ void ArenaTeam::Roster(WorldSession *session)
     {
         pl = objmgr.GetPlayer(itr->guid);
 
-        data << uint64(itr->guid);                      // guid
-        data << uint8((pl ? 1 : 0));                    // online flag
-        data << itr->name;                              // member name
+        data << uint64(itr->guid);                          // guid
+        data << uint8((pl ? 1 : 0));                        // online flag
+        data << itr->name;                                  // member name
         data << uint32((itr->guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
-        data << uint8((pl ? pl->getLevel() : 0));       // unknown, level?
-        data << uint8(itr->Class);                      // class
-        data << uint32(itr->games_week);                // played this week
-        data << uint32(itr->wins_week);                 // wins this week
-        data << uint32(itr->games_season);              // played this season
-        data << uint32(itr->wins_season);               // wins this season
-        data << uint32(itr->personal_rating);           // personal rating
+        data << uint8((pl ? pl->getLevel() : 0));           // unknown, level?
+        data << uint8(itr->Class);                          // class
+        data << uint32(itr->games_week);                    // played this week
+        data << uint32(itr->wins_week);                     // wins this week
+        data << uint32(itr->games_season);                  // played this season
+        data << uint32(itr->wins_season);                   // wins this season
+        data << uint32(itr->personal_rating);               // personal rating
     }
+
     session->SendPacket(&data);
     sLog.outDebug("WORLD: Sent SMSG_ARENA_TEAM_ROSTER");
 }
@@ -545,17 +596,24 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
     return mod;
 }
 
-void ArenaTeam::MemberLost(Player * plr, uint32 againstRating)
+void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHiddenRating)
 {
+    bool hiddenEnabled = sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING);
+
     // called for each participant of a match after losing
     for (MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
         if (itr->guid == plr->GetGUID())
         {
             // update personal rating
-            float chance = GetChanceAgainst(itr->personal_rating, againstRating);
+            float chance = GetChanceAgainst(itr->personal_rating, hiddenEnabled ? againstHiddenRating : againstRating);
             int32 mod = (int32)ceil(32.0f * (0.0f - chance));
             itr->ModifyPersonalRating(plr, mod, GetSlot());
+
+            // update matchmaker rating
+            chance = GetChanceAgainst(itr->matchmaker_rating, againstHiddenRating);
+            mod = (int32)ceil(32.0f * (0.0f - chance));
+            itr->ModifyMatchmakerRating(mod, GetType());
 
             // update personal played stats
             itr->games_week +=1;
@@ -569,17 +627,25 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating)
     }
 }
 
-void ArenaTeam::MemberWon(Player * plr, uint32 againstRating)
+void ArenaTeam::MemberWon(Player * plr, uint32 againstRating, uint32 againstHiddenRating)
 {
+    bool hiddenEnabled = sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING);
+
     // called for each participant after winning a match
     for (MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
         if (itr->guid == plr->GetGUID())
         {
             // update personal rating
-            float chance = GetChanceAgainst(itr->personal_rating, againstRating);
+            float chance = GetChanceAgainst(itr->personal_rating, hiddenEnabled ? againstHiddenRating : againstRating);
             int32 mod = (int32)floor(32.0f * (1.0f - chance));
             itr->ModifyPersonalRating(plr, mod, GetSlot());
+
+            // update matchmaker rating
+            chance = GetChanceAgainst(itr->matchmaker_rating, againstHiddenRating);
+            mod = (int32)ceil(32.0f * (1.0f - chance));
+            itr->ModifyMatchmakerRating(mod, GetType());
+
             // update personal stats
             itr->games_week +=1;
             itr->games_season +=1;
@@ -626,6 +692,9 @@ void ArenaTeam::SaveToDB()
 {
     static SqlStatementID updateATeam;
     static SqlStatementID updateAMembers;
+    static SqlStatementID updateH2Rating;
+    static SqlStatementID updateH3Rating;
+    static SqlStatementID updateH5Rating;
 
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateATeam, "UPDATE arena_team_stats SET rating = ?, games = ?, played = ?, rank = ?, wins = ?, wins2 = ? WHERE arenateamid = ?");
     stmt.addUInt32(stats.rating);
@@ -653,6 +722,25 @@ void ArenaTeam::SaveToDB()
         stmt.addUInt32(itr->guid);
 
         stmt.Execute();
+
+        switch (GetType())
+        {
+            case 2:
+                stmt = CharacterDatabase.CreateStatement(updateH2Rating, "UPDATE hidden_rating SET rating2 = ? WHERE guid = ?");
+                break;
+            case 3:
+                stmt = CharacterDatabase.CreateStatement(updateH3Rating, "UPDATE hidden_rating SET rating3 = ? WHERE guid = ?");
+                break;
+            case 5:
+                stmt = CharacterDatabase.CreateStatement(updateH5Rating, "UPDATE hidden_rating SET rating5 = ? WHERE guid = ?");
+                break;
+            default:
+                continue;
+        }
+
+        stmt.addUInt32(itr->matchmaker_rating);
+        stmt.addUInt32(itr->guid);
+        stmt.Execute();
     }
 }
 
@@ -665,6 +753,22 @@ void ArenaTeam::FinishWeek()
         itr->games_week = 0;
         itr->wins_week = 0;
     }
+}
+
+uint32 ArenaTeam::GetAverageMMR(Group *group) const
+{
+    if (!group) //should never happen
+        return 0;
+    uint32 matchmakerrating = 0;
+    for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
+    {
+        if (group->IsMember(itr->guid))
+            matchmakerrating += itr->matchmaker_rating;
+    }
+
+    matchmakerrating /= GetType();
+
+    return matchmakerrating;
 }
 
 /*
@@ -688,4 +792,3 @@ arenateam fields (id from 2.3.3 client):
 1430 - unk - rank?
 1431 - personal arena rating
 */
-

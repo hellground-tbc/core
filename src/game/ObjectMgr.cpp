@@ -1598,18 +1598,33 @@ void ObjectMgr::LoadItemPrototypes()
             const_cast<ItemPrototype*>(proto)->RequiredSkill = 0;
         }
 
-        if (!(proto->AllowableClass & CLASSMASK_ALL_PLAYABLE))
         {
-            sLog.outErrorDb("Item (Entry: %u) not have in `AllowableClass` any playable classes (%u) and can't be equipped.",i,proto->AllowableClass);
-        }
+            // can be used in equip slot, as page read use in inventory, or spell casting at use
+            bool req = proto->InventoryType!=INVTYPE_NON_EQUIP || proto->PageText;
+            if(!req)
+            {
+                for (int j = 0; j < 5; ++j)
+                {
+                    if(proto->Spells[j].SpellId)
+                    {
+                        req = true;
+                        break;
+                    }
+                }
+            }
 
-        if (!(proto->AllowableRace & RACEMASK_ALL_PLAYABLE))
-        {
-            sLog.outErrorDb("Item (Entry: %u) not have in `AllowableRace` any playable races (%u) and can't be equipped.",i,proto->AllowableRace);
+            if(req)
+            {
+                if(!(proto->AllowableClass & CLASSMASK_ALL_PLAYABLE))
+                    sLog.outErrorDb("Item (Entry: %u) not have in `AllowableClass` any playable classes (%u) and can't be equipped or use.",i,proto->AllowableClass);
+
+                if(!(proto->AllowableRace & RACEMASK_ALL_PLAYABLE))
+                    sLog.outErrorDb("Item (Entry: %u) not have in `AllowableRace` any playable races (%u) and can't be equipped or use.",i,proto->AllowableRace);
+            }
         }
 
         if (proto->RequiredSpell && !sSpellStore.LookupEntry(proto->RequiredSpell))
-        {
+       {
             sLog.outErrorDb("Item (Entry: %u) have wrong (non-existed) spell in RequiredSpell (%u)",i,proto->RequiredSpell);
             const_cast<ItemPrototype*>(proto)->RequiredSpell = 0;
         }
@@ -4501,9 +4516,6 @@ void ObjectMgr::SetHighestGuids()
     result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");
     if (result)
         m_hiCreatureGuid = (*result)[0].GetUInt32()+1;
-
-    // pet guids are not saved to DB, set to 0 (pet guid != pet id)
-    m_hiPetGuid = 0;
 
     result = CharacterDatabase.Query("SELECT MAX(guid) FROM item_instance");
     if (result)

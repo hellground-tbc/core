@@ -470,7 +470,7 @@ bool AuthSocket::_HandleLogonChallenge()
                         ///- Get the password from the account table, upper it, and make the SRP6 calculation
                         std::string rI = (*result)[0].GetCppString();
 
-                        ///- Don't calculate (v, s) if there are already some in the database
+/*                        ///- Don't calculate (v, s) if there are already some in the database
                         std::string databaseV = (*result)[5].GetCppString();
                         std::string databaseS = (*result)[6].GetCppString();
 
@@ -478,13 +478,13 @@ bool AuthSocket::_HandleLogonChallenge()
 
                         // multiply with 2, bytes are stored as hexstring
                         if(databaseV.size() != s_BYTE_SIZE*2 || databaseS.size() != s_BYTE_SIZE*2)
-                            _SetVSFields(rI);
-                        else
+*/                            _SetVSFields(rI);
+/*                        else
                         {
                             s.SetHexStr(databaseS.c_str());
                             v.SetHexStr(databaseV.c_str());
                         }
-
+*/
                         b.SetRand(19 * 8);
                         BigNumber gmod = g.ModExp(b, N);
                         B = ((v * 3) + gmod) % N;
@@ -767,7 +767,7 @@ bool AuthSocket::_HandleLogonProof()
                     if(WrongPassBanType)
                     {
                         uint32 acc_id = fields[0].GetUInt32();
-                        LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','MaNGOS realmd','Failed login autoban',1)",
+                        LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','Realm','Failed login autoban',1)",
                             acc_id, WrongPassBanTime);
                         sLog.outBasic("[AuthChallenge] account %s got banned for '%u' seconds because it failed to authenticate '%u' times",
                             _login.c_str(), WrongPassBanTime, failed_logins);
@@ -776,7 +776,7 @@ bool AuthSocket::_HandleLogonProof()
                     {
                         std::string current_ip = get_remote_address();
                         LoginDatabase.escape_string(current_ip);
-                        LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','MaNGOS realmd','Failed login autoban')",
+                        LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','Realm','Failed login autoban')",
                             current_ip.c_str(), WrongPassBanTime);
                         sLog.outBasic("[AuthChallenge] IP %s got banned for '%u' seconds because account %s failed to authenticate '%u' times",
                             current_ip.c_str(), WrongPassBanTime, _login.c_str(), failed_logins);

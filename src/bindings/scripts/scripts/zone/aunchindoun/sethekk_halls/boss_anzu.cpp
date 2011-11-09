@@ -139,7 +139,7 @@ struct TRINITY_DLL_DECL boss_anzuAI : public ScriptedAI
 
             if(SpellBomb_Timer < diff)
             {
-                if(Unit *target = SelectTarget(SELECT_TARGET_RANDOM))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     AddSpellToCast(target, SPELL_SPELL_BOMB);
                 SpellBomb_Timer = 30000;
             } else
@@ -147,7 +147,7 @@ struct TRINITY_DLL_DECL boss_anzuAI : public ScriptedAI
 
             if(CycloneOfFeathers_Timer < diff)
             {
-                if(Unit *target = SelectTarget(SELECT_TARGET_RANDOM, 1, 45))
+                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 1, 45.0f, true))
                     AddSpellToCast(target, SPELL_CYCLONE_OF_FEATHERS);
                 CycloneOfFeathers_Timer = 21000;
             } else

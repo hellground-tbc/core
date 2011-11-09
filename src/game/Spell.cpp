@@ -1343,19 +1343,6 @@ struct ChainHealingOrder : public std::binary_function<const Unit*, const Unit*,
     }
 };
 
-// Helper for targets nearest to the spell target
-// The spell target is always first unless there is a target at _completely_ the same position (unbelievable case)
-struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
-{
-    const Unit* MainTarget;
-    TargetDistanceOrder(const Unit* Target) : MainTarget(Target) {};
-    // functor for operator ">"
-    bool operator()(const Unit* _Left, const Unit* _Right) const
-    {
-        return (MainTarget->GetDistance(_Left) < MainTarget->GetDistance(_Right));
-    }
-};
-
 void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uint32 num, SpellTargets TargetType)
 {
     Unit *cur = m_targets.getUnitTarget();
@@ -1401,7 +1388,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         }
         else
         {
-            tempUnitMap.sort(TargetDistanceOrder(cur));
+            tempUnitMap.sort(Trinity::ObjectDistanceOrder(cur));
             next = tempUnitMap.begin();
 
             if (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
@@ -2164,7 +2151,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (!unitList.empty())
         {
             if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF)
-               unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
+                unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
 
             switch (m_spellInfo->Id)
             {
@@ -2813,7 +2800,7 @@ void Spell::SendSpellCooldown()
                 if (*i_scset == m_spellInfo->Id)             // skip main spell, already handled above
                     continue;
 
-                _player->AddSpellCooldown(m_spellInfo->Id, m_CastItem ? m_CastItem->GetEntry() : 0, catrecTime);
+                _player->AddSpellCooldown(*i_scset, m_CastItem ? m_CastItem->GetEntry() : 0, catrecTime);
             }
         }
     }
@@ -4377,6 +4364,8 @@ uint8 Spell::CanCast(bool strict)
                             continue;
                         // only beneficial effects count
                         if (!IsPositiveSpell(spellInfo->Id))
+                            continue;
+                        if (spellInfo->Dispel != DISPEL_MAGIC)
                             continue;
                         priest_buffs.push_back(spellInfo->Id);
                     }
