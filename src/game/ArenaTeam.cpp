@@ -239,7 +239,7 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT member.guid, played_week, wons_week, played_season, wons_season, personal_rating, name, class, rating2, rating3, rating5 "
                                                    "FROM arena_team_member member "
                                                    "INNER JOIN characters chars on member.guid = chars.guid "
-                                                   "JOIN hidden_rating hidden ON member.guid = hidden.guid"
+                                                   "JOIN hidden_rating hidden ON member.guid = hidden.guid "
                                                    "WHERE member.arenateamid = '%u'", ArenaTeamId);
     if (!result)
         return;
