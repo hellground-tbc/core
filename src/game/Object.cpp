@@ -2232,8 +2232,7 @@ struct WorldObjectChangeAccumulator
 void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
 {
      WorldObjectChangeAccumulator notifier(*this, data_map);
+     Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance(this));
 
-    Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance());
-
-    ClearUpdateMask(false);
+     ClearUpdateMask(false);
 }

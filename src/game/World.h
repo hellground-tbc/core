@@ -250,6 +250,13 @@ enum WorldConfigs
 
     CONFIG_ENABLE_HIDDEN_RATING,
 
+    CONFIG_VMSS_MAXTHREADBREAKS,
+    CONFIG_VMSS_TBREMTIME,
+    CONFIG_VMSS_MAPFREEMETHOD,
+    CONFIG_VMSS_FREEZECHECKPERIOD,
+    CONFIG_VMSS_FREEZEDETECTTIME,
+    CONFIG_VMSS_ENABLE,
+
     CONFIG_VALUE_COUNT
 };
 
@@ -577,7 +584,7 @@ class World
         static float GetMaxVisibleDistanceInInstances()     { return m_MaxVisibleDistanceInInstances;  }
         static float GetMaxVisibleDistanceInArenas()        { return m_MaxVisibleDistanceInArenas;   }
         static float GetMaxVisibleDistanceInBG()            { return m_MaxVisibleDistanceInBG;   }
-        static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject;   }
+        static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject; }
 
         static float GetMaxVisibleDistanceInFlight()        { return m_MaxVisibleDistanceInFlight;    }
         static float GetVisibleUnitGreyDistance()           { return m_VisibleUnitGreyDistance;       }
