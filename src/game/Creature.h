@@ -394,6 +394,12 @@ typedef std::list<VendorItemCount> VendorItemCounts;
 
 struct TrainerSpell
 {
+    TrainerSpell() : spell(0), spellCost(0), reqSkill(0), reqSkillValue(0), reqLevel(0) {}
+
+    TrainerSpell(uint32 _spell, uint32 _spellCost, uint32 _reqSkill, uint32 _reqSkillValue, uint32 _reqLevel)
+        : spell(_spell), spellCost(_spellCost), reqSkill(_reqSkill), reqSkillValue(_reqSkillValue), reqLevel(_reqLevel)
+    {}
+
     uint32 spell;
     uint32 spellcost;
     uint32 reqskill;
@@ -401,17 +407,17 @@ struct TrainerSpell
     uint32 reqlevel;
 };
 
-typedef std::vector<TrainerSpell*> TrainerSpellList;
+typedef UNORDERED_MAP<uint32 /*spellid*/, TrainerSpell> TrainerSpellMap;
 
 struct TrainerSpellData
 {
     TrainerSpellData() : trainerType(0) {}
 
-    TrainerSpellList spellList;
+    TrainerSpellMap spellList;
     uint32 trainerType;                                     // trainer type based at trainer spells, can be different from creature_template value.
                                                             // req. for correct show non-prof. trainers like weaponmaster, allowed values 0 and 2.
 
-    void Clear();
+    void Clear() { spellList.clear(); }
     TrainerSpell const* Find(uint32 spell_id) const;
 };
 

@@ -3764,8 +3764,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         }
 
         // update skill if really known
-        uint32 SkillValue = player->GetPureSkillValue(SkillId);
-        if (SkillValue)                                      // non only item base skill
+        if (uint32 SkillValue = player->GetPureSkillValue(SkillId))
         {
             if (gameObjTarget)
             {
@@ -3777,7 +3776,6 @@ void Spell::EffectOpenLock(uint32 /*i*/)
             else if (itemTarget)
             {
                 // Do one skill-up
-                uint32 SkillValue = player->GetPureSkillValue(SkillId);
                 player->UpdateGatherSkill(SkillId, SkillValue, reqSkillValue);
             }
         }
