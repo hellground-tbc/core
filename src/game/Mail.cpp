@@ -304,9 +304,9 @@ void MailDraft::SendMailTo(MailReceiver const& receiver, MailSender const& sende
     // auction mail without any items and money (auction sale note) pending 1 hour
     if (sender.GetMailMessageType() == MAIL_AUCTION && m_items.empty() && !m_money)
         expire_delay = HOUR;
-//    // mail from battlemaster (rewardmarks) should last only one day //TODO: uncomment when bgmgr will handle it
-//    else if (sender.GetMailMessageType() == MAIL_CREATURE && sBattleGroundMgr.GetBattleMasterBG(sender.GetSenderId()) != BATTLEGROUND_TYPE_NONE)
-//        expire_delay = DAY;
+    // mail from battlemaster (rewardmarks) should last only one day
+    else if (sender.GetMailMessageType() == MAIL_CREATURE && sBattleGroundMgr.GetBattleMasterBG(sender.GetSenderId()) != BATTLEGROUND_TYPE_NONE)
+        expire_delay = DAY;
     // default case: expire time if COD 3 days, if no COD 30 days
     else
         expire_delay = (m_COD > 0) ? 3 * DAY : 30 * DAY;

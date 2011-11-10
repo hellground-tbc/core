@@ -367,14 +367,6 @@ class ObjectMgr
         bool IsTavernAreaTrigger(uint32 Trigger_ID) const { return mTavernAreaTriggerSet.count(Trigger_ID) != 0; }
         bool IsGameObjectForQuests(uint32 entry) const { return mGameObjectForQuestSet.count(entry) != 0; }
 
-        uint32 GetBattleMasterBG(uint32 entry) const
-        {
-            BattleMastersMap::const_iterator itr = mBattleMastersMap.find(entry);
-            if (itr != mBattleMastersMap.end())
-                return itr->second;
-            return 2;                                       //BATTLEGROUND_WS - i will not add include only for constant usage!
-        }
-
         void AddGossipText(GossipText *pGText);
         GossipText *GetGossipText(uint32 Text_ID);
 
@@ -476,7 +468,6 @@ class ObjectMgr
         void LoadAccessRequirements();
         void LoadQuestAreaTriggers();
         void LoadTavernAreaTriggers();
-        void LoadBattleMastersEntry();
         void LoadGameObjectForQuests();
 
         void LoadItemTexts();
@@ -766,7 +757,6 @@ class ObjectMgr
 
         typedef UNORDERED_MAP<uint32, GossipText*> GossipTextMap;
         typedef UNORDERED_MAP<uint32, uint32> QuestAreaTriggerMap;
-        typedef UNORDERED_MAP<uint32, uint32> BattleMastersMap;
         typedef UNORDERED_MAP<uint32, std::string> ItemTextMap;
         typedef std::set<uint32> TavernAreaTriggerSet;
         typedef std::set<uint32> GameObjectForQuestSet;
@@ -780,7 +770,6 @@ class ObjectMgr
         ItemTextMap         mItemTexts;
 
         QuestAreaTriggerMap mQuestAreaTriggerMap;
-        BattleMastersMap    mBattleMastersMap;
         TavernAreaTriggerSet mTavernAreaTriggerSet;
         GameObjectForQuestSet mGameObjectForQuestSet;
         GossipTextMap       mGossipText;

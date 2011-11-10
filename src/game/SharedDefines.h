@@ -2320,6 +2320,22 @@ enum MailResponseResult
     MAIL_ERR_MAIL_ATTACHMENT_INVALID   = 19,
 };
 
+// indexes of BattlemasterList.dbc
+enum BattleGroundTypeId
+{
+    BATTLEGROUND_TYPE_NONE      = 0,
+    BATTLEGROUND_AV             = 1,
+    BATTLEGROUND_WS             = 2,
+    BATTLEGROUND_AB             = 3,
+    BATTLEGROUND_NA             = 4,
+    BATTLEGROUND_BE             = 5,
+    BATTLEGROUND_AA             = 6,
+    BATTLEGROUND_EY             = 7,
+    BATTLEGROUND_RL             = 8
+};
+#define MAX_BATTLEGROUND_TYPE_ID 9
+
+
 #define CONTACT_DISTANCE            0.5f
 #define INTERACTION_DISTANCE        5.0f
 #define MAX_VISIBILITY_DISTANCE     500.0f      // max distance for visible object show, limited in 500 yards

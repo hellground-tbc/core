@@ -1,13 +1,12 @@
 #ifndef _ANTICHEAT_H
 #define _ANTICHEAT_H
 
-
-///////////////// old
 #include <ace/Method_Request.h>
 
 #include "Common.h"
 #include "Player.h"
 #include "Language.h"
+#include "ObjectMgr.h"
 
 class Player;
 
