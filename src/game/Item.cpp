@@ -261,7 +261,7 @@ bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
     SetUInt32Value(ITEM_FIELD_MAXDURABILITY, itemProto->MaxDurability);
     SetUInt32Value(ITEM_FIELD_DURABILITY, itemProto->MaxDurability);
 
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
         SetSpellCharges(i,itemProto->Spells[i].SpellCharges);
 
     SetUInt32Value(ITEM_FIELD_FLAGS, itemProto->Flags);
@@ -322,7 +322,7 @@ void Item::SaveToDB()
             stmt.PExecute(guid);
 
             stmt = CharacterDatabase.CreateStatement(saveItem, "INSERT INTO item_instance (guid, owner_guid, data) VALUES (?, ?, ?)");
-            
+
             std::ostringstream ss;
             for (uint16 i = 0; i < m_valuesCount; i++)
                 ss << GetUInt32Value(i) << " ";

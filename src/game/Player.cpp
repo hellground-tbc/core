@@ -6988,7 +6988,7 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
     if (slot >= INVENTORY_SLOT_BAG_END || !proto)
         return;
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < MAX_ITEM_PROTO_STATS; i++)
     {
         float val = float (proto->ItemStat[i].ItemStatValue);
 
@@ -7263,7 +7263,7 @@ void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
     if (!proto)
         return;
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; i++)
     {
         _Spell const& spellData = proto->Spells[i];
 
@@ -7415,7 +7415,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
     // Can do effect if any damage done to target
     if (procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE)
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; i++)
         {
             _Spell const& spellData = proto->Spells[i];
 
@@ -14663,6 +14663,14 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         {
             if ((*iter)->GetGUIDLow() == transGUID)
             {
+                MapEntry const* transMapEntry = sMapStore.LookupEntry((*iter)->GetMapId());
+                // client without expansion support
+                if(GetSession()->Expansion() < transMapEntry->Expansion())
+                {
+                    sLog.outDebug("Player %s using client without required expansion tried login at transport at non accessible map %u", GetName(), (*iter)->GetMapId());
+                    break;
+                }
+
                 m_transport = *iter;
                 m_transport->AddPassenger(this);
                 SetMapId(m_transport->GetMapId());
@@ -14672,7 +14680,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
         if (!m_transport)
         {
-            sLog.outError("ERROR: Player (guidlow %d) have invalid transport guid (%u). Teleport to default race/class locations.",
+            sLog.outError("ERROR: Player (guidlow %d) have problems with transport guid (%u). Teleport to default race/class locations.",
                 guid,transGUID);
 
             RelocateToHomebind();
@@ -14680,6 +14688,16 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             m_movementInfo.ClearTransportData();
 
             transGUID = 0;
+        }
+    }
+    else                                                    // not transport case
+    {
+        MapEntry const* mapEntry = sMapStore.LookupEntry(GetMapId());
+        // client without expansion support
+        if(GetSession()->Expansion() < mapEntry->Expansion())
+        {
+            sLog.outError("Player %s (%u acc: %u) using client without required expansion tried login at non accessible map %u", GetName(), GetGUIDLow(), GetSession()->GetAccountId(), GetMapId());
+            RelocateToHomebind();
         }
     }
 
@@ -15984,9 +16002,11 @@ bool Player::_LoadHomeBind(QueryResultAutoPtr result)
         m_homebindY = fields[3].GetFloat();
         m_homebindZ = fields[4].GetFloat();
 
-        // accept saved data only for valid position (and non instanceable)
+        MapEntry const* bindMapEntry = sMapStore.LookupEntry(m_homebindMapId);
+
+        // accept saved data only for valid position (and non instanceable), and accessable
         if (MapManager::IsValidMapCoord(m_homebindMapId,m_homebindX,m_homebindY,m_homebindZ) &&
-            !sMapStore.LookupEntry(m_homebindMapId)->Instanceable())
+            !bindMapEntry->Instanceable() && GetSession()->Expansion() >= bindMapEntry->Expansion())
         {
             ok = true;
         }
@@ -18924,7 +18944,7 @@ void Player::SendInstanceResetWarning(uint32 mapid, uint32 time)
 
 void Player::ApplyEquipCooldown(Item * pItem)
 {
-    for (int i = 0; i <5; ++i)
+    for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         _Spell const& spellData = pItem->GetProto()->Spells[i];
 

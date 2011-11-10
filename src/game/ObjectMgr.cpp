@@ -1594,7 +1594,7 @@ void ObjectMgr::LoadItemPrototypes()
             bool req = proto->InventoryType!=INVTYPE_NON_EQUIP || proto->PageText;
             if(!req)
             {
-                for (int j = 0; j < 5; ++j)
+                for (int j = 0; j < MAX_ITEM_PROTO_SPELLS; ++j)
                 {
                     if(proto->Spells[j].SpellId)
                     {
@@ -1654,7 +1654,7 @@ void ObjectMgr::LoadItemPrototypes()
             const_cast<ItemPrototype*>(proto)->ContainerSlots = MAX_BAG_SIZE;
         }
 
-        for (int j = 0; j < 10; j++)
+        for (int j = 0; j < MAX_ITEM_PROTO_STATS; ++j)
         {
             // for ItemStatValue != 0
             if (proto->ItemStat[j].ItemStatValue && proto->ItemStat[j].ItemStatType >= MAX_ITEM_MOD)
@@ -1664,7 +1664,7 @@ void ObjectMgr::LoadItemPrototypes()
             }
         }
 
-        for (int j = 0; j < 5; j++)
+        for (int j = 0; j < MAX_ITEM_PROTO_DAMAGES; ++j)
         {
             if (proto->Damage[j].DamageType >= MAX_SPELL_SCHOOL)
             {
@@ -1721,7 +1721,7 @@ void ObjectMgr::LoadItemPrototypes()
             }
 
             // spell_3*,spell_4*,spell_5* is empty
-            for (int j = 2; j < 5; j++)
+            for (int j = 2; j < MAX_ITEM_PROTO_SPELLS; j++)
             {
                 if (proto->Spells[j].SpellTrigger != ITEM_SPELLTRIGGER_ON_USE)
                 {
@@ -1739,7 +1739,7 @@ void ObjectMgr::LoadItemPrototypes()
         // normal spell list
         else
         {
-            for (int j = 0; j < 5; j++)
+            for (int j = 0; j < MAX_ITEM_PROTO_SPELLS; j++)
             {
                 if (proto->Spells[j].SpellTrigger >= MAX_ITEM_SPELLTRIGGER || proto->Spells[j].SpellTrigger == ITEM_SPELLTRIGGER_LEARN_SPELL_ID)
                 {
@@ -1808,7 +1808,7 @@ void ObjectMgr::LoadItemPrototypes()
         if (proto->TotemCategory && !sTotemCategoryStore.LookupEntry(proto->TotemCategory))
             sLog.outErrorDb("Item (Entry: %u) has wrong TotemCategory (%u)",i,proto->TotemCategory);
 
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < MAX_ITEM_PROTO_SOCKETS; j++)
         {
             if (proto->Socket[j].Color && (proto->Socket[j].Color & SOCKET_COLOR_ALL) != proto->Socket[j].Color)
             {

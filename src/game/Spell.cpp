@@ -303,8 +303,8 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
                 m_attackType = RANGED_ATTACK;
                 if (m_caster->getClassMask() & CLASSMASK_WAND_USERS && m_caster->GetTypeId()==TYPEID_PLAYER)
                 {
-                    if (Item* pItem = dynamic_cast<Player *>(m_caster)->GetWeaponForAttack(RANGED_ATTACK))
-                    m_spellSchoolMask = SpellSchoolMask(1 << pItem->GetProto()->Damage->DamageType);
+                    if (Item* pItem = ((Player*)m_caster)->GetWeaponForAttack(RANGED_ATTACK))
+                        m_spellSchoolMask = SpellSchoolMask(1 << pItem->GetProto()->Damage[0].DamageType);
                 }
             }
             else
@@ -2721,7 +2721,7 @@ void Spell::SendSpellCooldown()
         ItemPrototype const* proto = m_CastItem->GetProto();
         if (proto)
         {
-            for (int idx = 0; idx < 5; ++idx)
+            for (int idx = 0; idx < MAX_ITEM_PROTO_SPELLS; ++idx)
             {
                 if (proto->Spells[idx].SpellId == m_spellInfo->Id)
                 {
@@ -3433,7 +3433,7 @@ void Spell::TakeCastItem()
     bool expendable = false;
     bool withoutCharges = false;
 
-    for (int i = 0; i<5; i++)
+    for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         if (proto->Spells[i].SpellId)
         {
@@ -3558,7 +3558,7 @@ void Spell::TakeReagents()
             ItemPrototype const *proto = m_CastItem->GetProto();
             if (proto && proto->ItemId == itemid)
             {
-                for (int s=0;s<5;s++)
+                for (int s = 0; s < MAX_ITEM_PROTO_SPELLS; ++s)
                 {
                     // CastItem will be used up and does not count as reagent
                     int32 charges = m_CastItem->GetSpellCharges(s);
@@ -4908,7 +4908,7 @@ uint8 Spell::CheckItems()
                 ItemPrototype const *proto = m_CastItem->GetProto();
                 if (!proto)
                     return SPELL_FAILED_ITEM_NOT_READY;
-                for (int s=0;s<5;s++)
+                for (int s = 0; s < MAX_ITEM_PROTO_SPELLS; ++s)
                 {
                     // CastItem will be used up and does not count as reagent
                     int32 charges = m_CastItem->GetSpellCharges(s);
