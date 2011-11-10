@@ -30,7 +30,6 @@
 #include "DBCStores.h"
 #include "ProgressBar.h"
 
-#include "World.h"
 
 void MapManager::LoadTransports()
 {

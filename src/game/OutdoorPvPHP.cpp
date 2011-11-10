@@ -22,7 +22,6 @@
 #include "Player.h"
 #include "WorldPacket.h"
 #include "World.h"
-#include "MapManager.h"
 #include "ObjectMgr.h"
 #include "Language.h"
 

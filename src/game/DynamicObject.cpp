@@ -24,7 +24,6 @@
 #include "Opcodes.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
-#include "World.h"
 #include "ObjectAccessor.h"
 #include "Database/DatabaseEnv.h"
 #include "SpellAuras.h"
@@ -32,6 +31,7 @@
 #include "GridNotifiers.h"
 #include "CellImpl.h"
 #include "GridNotifiersImpl.h"
+#include "World.h"
 
 DynamicObject::DynamicObject() : WorldObject()
 {

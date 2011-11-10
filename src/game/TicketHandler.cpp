@@ -19,13 +19,11 @@
  */
 
 #include "Language.h"
-#include "ObjectAccessor.h"
 #include "WorldPacket.h"
 #include "Common.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
-#include "Chat.h"
 #include "TicketMgr.h"
 #include "World.h"
 #include "Chat.h"

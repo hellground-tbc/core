@@ -23,7 +23,6 @@
 #include "CreatureEventAIMgr.h"
 #include "ObjectMgr.h"
 #include "Spell.h"
-#include "World.h"
 #include "Cell.h"
 #include "CellImpl.h"
 #include "GameEvent.h"

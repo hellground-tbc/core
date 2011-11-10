@@ -21,7 +21,6 @@
 //Extended headers
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
-#include "World.h"
 //Creature-specific headers
 #include "Creature.h"
 #include "CreatureAI.h"

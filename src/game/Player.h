@@ -1082,6 +1082,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         Item * HasEquiped(uint32 item) const;
         bool HasItemCount(uint32 item, uint32 count, bool inBankAlso = false) const;
         bool HasItemFitToSpellReqirements(SpellEntry const* spellInfo, Item const* ignoreItem = NULL);
+        bool CanNoReagentCast(SpellEntry const* spellInfo) const;
         Item* GetItemOrItemWithGemEquipped(uint32 item) const;
         uint8 CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
         uint8 CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,NULL); }
@@ -2358,7 +2359,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;
 
-        uint32 m_regenTimer;
         uint32 m_drunkTimer;
         uint16 m_drunk;
         uint32 m_weaponChangeTimer;

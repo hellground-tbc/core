@@ -24,7 +24,6 @@
 #include "Creature.h"
 #include "MapManager.h"
 #include "DestinationHolderImp.h"
-#include "World.h"
 #include "Spell.h"
 
 #define SMALL_ALPHA 0.05f

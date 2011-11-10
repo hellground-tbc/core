@@ -151,7 +151,7 @@ class Pet : public Creature
         static void DeleteFromDB(uint32 guidlow, bool separate_transaction = true);
 
         void setDeathState(DeathState s);                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
-        void Update(uint32 update_diff, uint32 diff);       // overwrite virtual Creature::Update and Unit::Update 
+        void Update(uint32 update_diff, uint32 diff);       // overwrite virtual Creature::Update and Unit::Update
 
         uint8 GetPetAutoSpellSize() const { return m_autospells.size(); }
         uint32 GetPetAutoSpellOnPos(uint8 pos) const
@@ -161,7 +161,7 @@ class Pet : public Creature
             else
                 return m_autospells[pos];
         }
-        
+
         void ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
 
         void RegenerateFocus();
@@ -242,7 +242,6 @@ class Pet : public Creature
         bool    m_loading;
         bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
     protected:
-        uint32  m_regenTimer;
         uint32  m_happinessTimer;
         uint32  m_loyaltyTimer;
         PetType m_petType;

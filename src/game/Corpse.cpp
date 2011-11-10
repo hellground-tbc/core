@@ -117,7 +117,7 @@ void Corpse::SaveToDB()
     stmt.addFloat(GetOrientation());
     stmt.addUInt32(GetZoneId());
     stmt.addUInt32(GetMapId());
-    
+
     std::ostringstream ss;
     for (uint16 i = 0; i < m_valuesCount; i++)
         ss << GetUInt32Value(i) << " ";

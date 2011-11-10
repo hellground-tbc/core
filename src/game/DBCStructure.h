@@ -254,39 +254,55 @@ struct FactionTemplateEntry
     uint32      ourMask;                                    // 3 if mask set (see FactionMasks) then faction included in masked team
     uint32      friendlyMask;                               // 4 if mask set (see FactionMasks) then faction friendly to masked team
     uint32      hostileMask;                                // 5 if mask set (see FactionMasks) then faction hostile to masked team
-    uint32      enemyFaction1;                              // 6
-    uint32      enemyFaction2;                              // 7
-    uint32      enemyFaction3;                              // 8
-    uint32      enemyFaction4;                              // 9
-    uint32      friendFaction1;                             // 10
-    uint32      friendFaction2;                             // 11
-    uint32      friendFaction3;                             // 12
-    uint32      friendFaction4;                             // 13
+    uint32      enemyFaction[4];                            // 6-9
+    uint32      friendFaction[4];                           // 10-13
     //-------------------------------------------------------  end structure
 
     // helpers
     bool IsFriendlyTo(FactionTemplateEntry const& entry) const
     {
-        if(ID == entry.ID)
+        if (ID == entry.ID)
             return true;
-        if(enemyFaction1  == entry.faction || enemyFaction2  == entry.faction || enemyFaction3 == entry.faction || enemyFaction4 == entry.faction )
-            return false;
-        if(friendFaction1 == entry.faction || friendFaction2 == entry.faction || friendFaction3 == entry.faction || friendFaction4 == entry.faction )
-            return true;
+
+        if (entry.faction)
+        {
+            for (int i = 0; i < 4; ++i)
+                if (enemyFaction[i] == entry.faction)
+                    return false;
+            for (int i = 0; i < 4; ++i)
+                if (friendFaction[i] == entry.faction)
+                    return true;
+        }
+
         return (friendlyMask & entry.ourMask) || (ourMask & entry.friendlyMask);
     }
     bool IsHostileTo(FactionTemplateEntry const& entry) const
     {
         if(ID == entry.ID)
             return false;
-        if(enemyFaction1  == entry.faction || enemyFaction2  == entry.faction || enemyFaction3 == entry.faction || enemyFaction4 == entry.faction )
-            return true;
-        if(friendFaction1 == entry.faction || friendFaction2 == entry.faction || friendFaction3 == entry.faction || friendFaction4 == entry.faction )
-            return false;
+
+        if (entry.faction)
+        {
+            for (int i = 0; i < 4; ++i)
+                if (enemyFaction[i]  == entry.faction)
+                    return true;
+            for (int i = 0; i < 4; ++i)
+                if (friendFaction[i] == entry.faction)
+                    return false;
+        }
+
         return (hostileMask & entry.ourMask) != 0;
     }
     bool IsHostileToPlayers() const { return (hostileMask & FACTION_MASK_PLAYER) !=0; }
-    bool IsNeutralToAll() const { return hostileMask == 0 && friendlyMask == 0 && enemyFaction1==0 && enemyFaction2==0 && enemyFaction3==0 && enemyFaction4==0; }
+
+    bool IsNeutralToAll() const
+    {
+        for (int i = 0; i < 4; ++i)
+            if (enemyFaction[i] != 0)
+                return false;
+        return hostileMask == 0 && friendlyMask == 0;
+    }
+
     bool IsContestedGuardFaction() const { return (factionFlags & FACTION_TEMPLATE_FLAG_CONTESTED_GUARD)!=0; }
 };
 
@@ -423,16 +439,15 @@ struct ItemSetEntry
     uint32    required_skill_value;                         // 52
 };
 
+#define MAX_LOCK_CASE 8
+
 struct LockEntry
 {
-    uint32      ID;                                         // 0
-    uint32      keytype[5];                                 // 1-5
-                                                            // 6-8, not used
-    uint32      key[5];                                     // 9-13
-                                                            // 14-16, not used
-    uint32      requiredminingskill;                        // 17
-    uint32      requiredlockskill;                          // 18
-                                                            // 19-32, not used
+    uint32      ID;                                         // 0        m_ID
+    uint32      Type[MAX_LOCK_CASE];                        // 1-5      m_Type
+    uint32      Index[MAX_LOCK_CASE];                       // 9-16     m_Index
+    uint32      Skill[MAX_LOCK_CASE];                       // 17-24    m_Skill
+    //uint32      Action[MAX_LOCK_CASE];                    // 25-32    m_Action
 };
 
 struct MailTemplateEntry
