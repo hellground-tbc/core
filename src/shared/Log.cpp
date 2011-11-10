@@ -210,6 +210,7 @@ void Log::Initialize()
         "WardenLogFile",    //LOG_WARDEN
         "AuctionLogFile",   //LOG_AUCTION
         "DiffLogFile",      //LOG_DIFF
+        "CrashLogFile",     //LOG_CRASH
     };
 
     /// Open specific log files
@@ -881,6 +882,25 @@ void Log::outDiff(const char * str, ...)
 
         fprintf(logFile[LOG_DIFF], "\n" );
         fflush(logFile[LOG_DIFF]);
+    }
+}
+
+void Log::outCrash(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if(logFile[LOG_CHAR])
+    {
+        outTimestamp(logFile[LOG_CHAR]);
+
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(logFile[LOG_CHAR], str, ap);
+        va_end(ap);
+
+        fprintf(logFile[LOG_CHAR], "\n" );
+        fflush(logFile[LOG_CHAR]);
     }
 }
 

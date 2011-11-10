@@ -78,9 +78,6 @@ std::string AcceptableClientBuildsListStr()
 }
 
 volatile uint32 Master::m_masterLoopCounter = 0;
-#ifndef WIN32
-volatile bool BIH::possibleFreeze = false;
-#endif
 
 class FreezeDetectorRunnable : public ACE_Based::Runnable
 {
@@ -89,7 +86,7 @@ public:
     uint32 m_loops, m_lastchange;
     uint32 w_loops, w_lastchange;
     uint32 _delaytime;
-    uint32 maxVmapCalcTime, freezeCheckPeriod;
+    uint32 freezeCheckPeriod;
     void SetDelayTime(uint32 t) { _delaytime = t; }
     void run(void)
     {
@@ -102,10 +99,6 @@ public:
         w_lastchange = 0;
         freezeCheckPeriod = sWorld.getConfig(CONFIG_VMSS_FREEZECHECKPERIOD);
 
-        #ifndef WIN32
-        maxVmapCalcTime = sConfig.GetIntDefault("MaxVmapCalcTime", 30);
-        maxVmapCalcTime *= 1000;
-        #endif
         while(!World::IsStopped())
         {
             ACE_Based::Thread::Sleep(freezeCheckPeriod);
@@ -120,9 +113,6 @@ public:
             {
                 w_lastchange = curtime;
                 w_loops = World::m_worldLoopCounter;
-                #ifndef WIN32
-                BIH::possibleFreeze = false;
-                #endif
             }
             // possible freeze
             else
@@ -132,16 +122,6 @@ public:
                     sLog.outError("World Thread hangs, kicking out server!");
                     *((uint32 volatile*)NULL) = 0;                       // bang crash
                 }
-                #ifndef WIN32
-                else
-                {
-                    if (WorldTimer::getMSTimeDiff(w_lastchange,curtime) > maxVmapCalcTime && !BIH::possibleFreeze)
-                    {
-                        sLog.outError("Freeze Detector: World Thread hangs, trying prevent VMAP Freeze.");
-                        BIH::possibleFreeze = true;
-                    }
-                }
-                #endif
             }
         }
         sLog.outString("Anti-freeze thread exiting without problems.");
@@ -482,25 +462,28 @@ void Master::_OnSignal(int s)
             if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
             {
                 ACE_thread_t const threadId = ACE_OS::thr_self();
-                sLog.outError("Signal Handler: Signal %.2u received from thread "I64FMT".\r\n",s,threadId);
+                sLog.outCrash("Signal Handler: Signal %.2u received from thread "I64FMT".\r\n",s,threadId);
                 ACE_Stack_Trace StackTrace;
-                sLog.outError("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n",StackTrace.c_str());
+                sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n",StackTrace.c_str());
 
                 if (MapID const* mapPair = sMapMgr.GetMapUpdater()->GetMapPairByThreadId(threadId))
                 {
                     sLog.outError("Signal Handler: crushed thread is update map %u instance %u",mapPair->first, mapPair->second);
+                    sLog.outCrash("Signal Handler: crushed thread is update map %u instance %u",mapPair->first, mapPair->second);
                     if (Map* map = sMapMgr.FindMap(mapPair->first, mapPair->second))
                         map->SetBroken(true);
                     sMapMgr.GetMapUpdater()->MapBrokenEvent(mapPair);
                     if (sMapMgr.GetMapUpdater()->GetMapBrokenData(mapPair)->count > sWorld.getConfig(CONFIG_VMSS_MAXTHREADBREAKS))
                     {
                         sLog.outError("Signal Handler: Limit of map restarting (map %u instance %u) exceeded. Stopping world!",mapPair->first, mapPair->second);
+                        sLog.outCrash("Signal Handler: Limit of map restarting (map %u instance %u) exceeded. Stopping world!",mapPair->first, mapPair->second);
                         signal(s, SIG_DFL);
                         ACE_OS::kill(getpid(), s);
                     }
                     else
                     {
                         sLog.outError("Signal Handler: Restarting virtual map server (map %u instance %u). Count of restarts: %u",mapPair->first, mapPair->second, sMapMgr.GetMapUpdater()->GetMapBrokenData(mapPair)->count);
+                        sLog.outCrash("Signal Handler: Restarting virtual map server (map %u instance %u). Count of restarts: %u",mapPair->first, mapPair->second, sMapMgr.GetMapUpdater()->GetMapBrokenData(mapPair)->count);
                         sMapMgr.GetMapUpdater()->unregister_thread(threadId);
                         sMapMgr.GetMapUpdater()->update_finished();
                         sMapMgr.GetMapUpdater()->SetBroken(true);
@@ -510,6 +493,7 @@ void Master::_OnSignal(int s)
                 else
                 {
                     sLog.outError("Signal Handler: Thread "I64FMT" is not virtual map server. Stopping world.",threadId);
+                    sLog.outCrash("Signal Handler: Thread "I64FMT" is not virtual map server. Stopping world.",threadId);
                     signal(s, SIG_DFL);
                     ACE_OS::kill(getpid(), s);
                 }

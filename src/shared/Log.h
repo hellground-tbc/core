@@ -77,6 +77,7 @@ enum logFiles
     LOG_WARDEN      = 12,
     LOG_AUCTION     = 13,
     LOG_DIFF        = 14,
+    LOG_CRASH       = 15,
 
     LOG_MAX_FILES
 };
@@ -135,6 +136,7 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         void outAuction(const char * str, ...)     ATTR_PRINTF(2,3);
         void outGann(const char * str, ...)        ATTR_PRINTF(2,3);
         void outDiff(const char * str, ...)        ATTR_PRINTF(2,3);
+        void outCrash(const char * err, ...)       ATTR_PRINTF(2,3);
 
         void OutLogToFile(logFiles log, const char * str, ...)    ATTR_PRINTF(3,4);
 

@@ -203,11 +203,6 @@ EAIErrorLevel = 2
 #        amount of seconds. Must be > 0. Recommended > 10 secs if you use this.
 #        Default: 0 (Disabled)
 #
-#    MaxVmapCalcTime
-#        Periodically check if the process got freezed, if this is the case force prevent VMAP freeze after the specified
-#        amount of seconds. Must be > 0.
-#        Default: 30 (seconds)
-#
 #    AddonChannel
 #        Permit/disable the use of the addon channel through the server
 #        (some client side addons can stop work correctly with disabled addon channel)
@@ -253,7 +248,6 @@ DetectPosCollision = 1
 TargetPosRecalculateRange = 1.5
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
-MaxVmapCalcTime = 30
 AddonChannel = 1
 MapUpdate.Threads = 1
 SessionUpdate.Threads = 1
@@ -389,6 +383,11 @@ SessionUpdate.Threads = 1
 #        Default: "diff.log"
 #                 "" - Empty name for disable
 #
+#    CrashLogFile
+#        Log file for crash stacktrace
+#        Default: "crash.log"
+#                 "" - Empty name for disable
+#
 #    IrcParser
 #        Log file for third party parsers (to provide irc/gg/etc server status)
 #        Default: "parser.irc"
@@ -424,6 +423,7 @@ LogColors = ""
 WardenLogFile = "warden.log"
 AuctionLogFile = "auction.log"
 DiffLogFile = "diff.log"
+CrashLogFile = "crash.log"
 
 IrcParser = "parser.irc"
 
