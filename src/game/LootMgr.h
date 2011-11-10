@@ -242,18 +242,19 @@ struct Loot
 
     void clear()
     {
-        items.clear(); gold = 0; PlayersLooting.clear();
         for (QuestItemMap::iterator itr = PlayerQuestItems.begin(); itr != PlayerQuestItems.end(); ++itr)
             delete itr->second;
+        PlayerQuestItems.clear();
+
         for (QuestItemMap::iterator itr = PlayerFFAItems.begin(); itr != PlayerFFAItems.end(); ++itr)
             delete itr->second;
+        PlayerFFAItems.clear();
+
         for (QuestItemMap::iterator itr = PlayerNonQuestNonFFAConditionalItems.begin(); itr != PlayerNonQuestNonFFAConditionalItems.end(); ++itr)
             delete itr->second;
-
-        PlayerQuestItems.clear();
-        PlayerFFAItems.clear();
         PlayerNonQuestNonFFAConditionalItems.clear();
 
+        PlayersLooting.clear();
         items.clear();
         quest_items.clear();
         unique_items.clear();

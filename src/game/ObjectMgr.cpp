@@ -136,23 +136,14 @@ ObjectMgr::ObjectMgr()
 ObjectMgr::~ObjectMgr()
 {
     for (QuestMap::iterator i = mQuestTemplates.begin(); i != mQuestTemplates.end(); ++i)
-    {
         delete i->second;
-    }
     mQuestTemplates.clear();
 
-    for (GossipTextMap::iterator i = mGossipText.begin(); i != mGossipText.end(); ++i)
-    {
-        delete i->second;
-    }
     mGossipText.clear();
-
     mAreaTriggers.clear();
 
     for (PetLevelInfoMap::iterator i = petInfo.begin(); i != petInfo.end(); ++i)
-    {
         delete[] i->second;
-    }
     petInfo.clear();
 
     // free only if loaded
@@ -3577,27 +3568,16 @@ void ObjectMgr::LoadInstanceTemplate()
     sLog.outString();
 }
 
-void ObjectMgr::AddGossipText(GossipText *pGText)
+GossipText const *ObjectMgr::GetGossipText(uint32 Text_ID) const
 {
-    ASSERT(pGText->Text_ID);
-    ASSERT(mGossipText.find(pGText->Text_ID) == mGossipText.end());
-    mGossipText[pGText->Text_ID] = pGText;
-}
-
-GossipText *ObjectMgr::GetGossipText(uint32 Text_ID)
-{
-    GossipTextMap::const_iterator itr;
-    for (itr = mGossipText.begin(); itr != mGossipText.end(); ++itr)
-    {
-        if (itr->second->Text_ID == Text_ID)
-            return itr->second;
-    }
-    return NULL;
-}
+    GossipTextMap::const_iterator itr = mGossipText.find(Text_ID);
+    if(itr != mGossipText.end())
+        return &itr->second;
+     return NULL;
+ }
 
 void ObjectMgr::LoadGossipText()
 {
-    GossipText *pGText;
     QueryResultAutoPtr result = WorldDatabase.Query("SELECT * FROM npc_text");
 
     int count = 0;
@@ -3624,35 +3604,30 @@ void ObjectMgr::LoadGossipText()
 
         bar.step();
 
-        pGText = new GossipText;
-        pGText->Text_ID    = fields[cic++].GetUInt32();
+        uint32 Text_ID      = fields[cic++].GetUInt32();
 
-        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; i++)
+        if (!Text_ID)
         {
-            pGText->Options[i].Text_0           = fields[cic++].GetCppString();
-            pGText->Options[i].Text_1           = fields[cic++].GetCppString();
-
-            pGText->Options[i].Language         = fields[cic++].GetUInt32();
-            pGText->Options[i].Probability      = fields[cic++].GetFloat();
-
-            pGText->Options[i].Emotes[0]._Delay  = fields[cic++].GetUInt32();
-            pGText->Options[i].Emotes[0]._Emote  = fields[cic++].GetUInt32();
-
-            pGText->Options[i].Emotes[1]._Delay  = fields[cic++].GetUInt32();
-            pGText->Options[i].Emotes[1]._Emote  = fields[cic++].GetUInt32();
-
-            pGText->Options[i].Emotes[2]._Delay  = fields[cic++].GetUInt32();
-            pGText->Options[i].Emotes[2]._Emote  = fields[cic++].GetUInt32();
+            sLog.outErrorDb("Table `npc_text` has record with reserved id 0, ignore.");
+            continue;
         }
 
-        if (!pGText->Text_ID)
+        GossipText& gText = mGossipText[Text_ID];
+
+        for (uint8 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
-          delete pGText;
-          continue;
+            gText.Options[i].Text_0           = fields[cic++].GetCppString();
+            gText.Options[i].Text_1           = fields[cic++].GetCppString();
+
+            gText.Options[i].Language         = fields[cic++].GetUInt32();
+            gText.Options[i].Probability      = fields[cic++].GetFloat();
+
+            for(uint8 j = 0; j < 3; ++j)
+            {
+                gText.Options[i].Emotes[j]._Delay  = fields[cic++].GetUInt32();
+                gText.Options[i].Emotes[j]._Emote  = fields[cic++].GetUInt32();
+            }
         }
-
-        AddGossipText(pGText);
-
     }
     while (result->NextRow());
 
@@ -4730,9 +4705,9 @@ void ObjectMgr::LoadGameObjectLocales()
             }
         }
 
-        for (int i = MAX_LOCALE; i < MAX_LOCALE*2-1; ++i)
+        for(int i = 1; i < MAX_LOCALE; ++i)
         {
-            std::string str = fields[i].GetCppString();
+            std::string str = fields[i+(MAX_LOCALE-1)].GetCppString();
             if (!str.empty())
             {
                 int idx = GetOrNewIndexForLocale(LocaleConstant(i));

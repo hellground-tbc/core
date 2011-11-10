@@ -1504,50 +1504,16 @@ void Object::ForceValuesUpdateAtIndex(uint32 i)
 
 namespace Trinity
 {
-    class MessageChatLocaleCacheDo
+    class MonsterChatBuilder
     {
         public:
-            MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist, bool withoutPrename = false)
-                : i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language),
-                i_targetGUID(targetGUID), i_dist(dist), i_withoutPrename(withoutPrename)
+            MonsterChatBuilder(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, bool withoutPrename = false)
+                : i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language), i_targetGUID(targetGUID), i_withoutPrename(withoutPrename) {}
+            void operator()(WorldPacket& data, int32 loc_idx)
             {
-            }
-
-            ~MessageChatLocaleCacheDo()
-            {
-                for (int i = 0; i < i_data_cache.size(); ++i)
-                    delete i_data_cache[i];
-            }
-
-            void operator()(Player* p)
-            {
-                // skip far away players
-                if (p->GetDistance(&i_object) > i_dist)
-                    return;
-
-                uint32 loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
-                uint32 cache_idx = loc_idx+1;
-                WorldPacket* data;
-
-                // create if not cached yet
-                if (i_data_cache.size() < cache_idx+1 || !i_data_cache[cache_idx])
-                {
-                    if (i_data_cache.size() < cache_idx+1)
-                        i_data_cache.resize(cache_idx+1);
-
-                    char const* text = objmgr.GetTrinityString(i_textId,loc_idx);
-
-                    data = new WorldPacket(SMSG_MESSAGECHAT, 200);
-
-                    // TODO: i_object.GetName() also must be localized?
-                    i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx),i_targetGUID, i_withoutPrename);
-
-                    i_data_cache[cache_idx] = data;
-                }
-                else
-                    data = i_data_cache[cache_idx];
-
-                p->SendDirectMessage(data);
+                char const* text = objmgr.GetTrinityString(i_textId, loc_idx);
+                // TODO: i_object.GetName() also must be localized?
+                i_object.BuildMonsterChat(&data, i_msgtype, text, i_language, i_object.GetNameForLocaleIdx(loc_idx), i_targetGUID, i_withoutPrename);
             }
 
         private:
@@ -1556,31 +1522,34 @@ namespace Trinity
             int32 i_textId;
             uint32 i_language;
             uint64 i_targetGUID;
-            float i_dist;
             bool i_withoutPrename;
-            std::vector<WorldPacket*> i_data_cache;             // 0 = default, i => i-1 locale index
     };
 }                                                           // namespace Trinity
 
 void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
 {
-    Trinity::MessageChatLocaleCacheDo say_do(*this, CHAT_MSG_MONSTER_SAY, textId,language,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY));
-    Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
-    TypeContainerVisitor<Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo>, WorldTypeMapContainer > message(say_worker);
+    float range = sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY);
+    Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_SAY, textId, language, TargetGuid);
+    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
+    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, range, say_do);
+    TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
     //cell_lock->Visit(cell_lock, message, *GetMap());
-    Cell::VisitWorldObjects(this, say_worker, sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY));
+    Cell::VisitWorldObjects(this, say_worker, range);
 }
 
 void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
 {
-    Trinity::MessageChatLocaleCacheDo say_do(*this, CHAT_MSG_MONSTER_YELL, textId,language,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL));
-    Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
-    Cell::VisitWorldObjects(this, say_worker, sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL));
+    float range = sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL);
+    Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
+    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
+    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, range, say_do);
+    Cell::VisitWorldObjects(this, say_worker, range);
 }
 
 void WorldObject::MonsterYellToZone(int32 textId, uint32 language, uint64 TargetGuid)
 {
-    Trinity::MessageChatLocaleCacheDo say_do(*this, CHAT_MSG_MONSTER_YELL, textId,language,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL));
+    Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
+    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
 
     uint32 zoneid = GetZoneId();
 
@@ -1589,11 +1558,15 @@ void WorldObject::MonsterYellToZone(int32 textId, uint32 language, uint64 Target
         if (itr->getSource()->GetZoneId()==zoneid)
             say_do(itr->getSource());
 }
+
 void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote, bool withoutPrename)
 {
-    Trinity::MessageChatLocaleCacheDo say_do(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId,LANG_UNIVERSAL,TargetGuid,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),withoutPrename);
-    Trinity::PlayerWorker<Trinity::MessageChatLocaleCacheDo> say_worker(say_do);
-    Cell::VisitWorldObjects(this, say_worker,  sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE));}
+    float range = sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE);
+    Trinity::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid, withoutPrename);
+    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
+    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, range, say_do);
+    Cell::VisitWorldObjects(this, say_worker, range);
+}
 
 void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisper)
 {
@@ -1602,10 +1575,10 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
         return;
 
     uint32 loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
-    char const* text = objmgr.GetTrinityString(textId,loc_idx);
+    char const* text = objmgr.GetTrinityString(textId, loc_idx);
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
-    BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER,text,LANG_UNIVERSAL,GetName(),receiver);
+    BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, text, LANG_UNIVERSAL, GetNameForLocaleIdx(loc_idx), receiver);
 
     player->GetSession()->SendPacket(&data);
 }

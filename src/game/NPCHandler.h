@@ -62,7 +62,6 @@ struct GossipTextOption
 
 struct GossipText
 {
-    uint32 Text_ID;
     GossipTextOption Options[MAX_GOSSIP_TEXT_OPTIONS];
 };
 

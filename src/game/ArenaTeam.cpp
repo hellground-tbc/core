@@ -696,6 +696,8 @@ void ArenaTeam::SaveToDB()
     static SqlStatementID updateH3Rating;
     static SqlStatementID updateH5Rating;
 
+    CharacterDatabase.BeginTransaction();
+
     SqlStatement stmt = CharacterDatabase.CreateStatement(updateATeam, "UPDATE arena_team_stats SET rating = ?, games = ?, played = ?, rank = ?, wins = ?, wins2 = ? WHERE arenateamid = ?");
     stmt.addUInt32(stats.rating);
     stmt.addUInt32(stats.games_week);
@@ -742,6 +744,8 @@ void ArenaTeam::SaveToDB()
         stmt.addUInt32(itr->guid);
         stmt.Execute();
     }
+
+    CharacterDatabase.CommitTransaction();
 }
 
 void ArenaTeam::FinishWeek()

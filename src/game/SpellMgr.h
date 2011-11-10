@@ -1012,7 +1012,7 @@ class TRINITY_DLL_SPEC SpellMgr
 
         bool IsSpellLearnSpell(uint32 spell_id) const
         {
-            return mSpellLearnSpells.count(spell_id)!=0;
+            return mSpellLearnSpells.find(spell_id) != mSpellLearnSpells.end();
         }
 
         SpellLearnSpellMap::const_iterator GetBeginSpellLearnSpell(uint32 spell_id) const

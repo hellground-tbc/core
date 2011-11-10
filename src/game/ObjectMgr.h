@@ -364,11 +364,18 @@ class ObjectMgr
                 return itr->second;
             return 0;
         }
-        bool IsTavernAreaTrigger(uint32 Trigger_ID) const { return mTavernAreaTriggerSet.count(Trigger_ID) != 0; }
-        bool IsGameObjectForQuests(uint32 entry) const { return mGameObjectForQuestSet.count(entry) != 0; }
 
-        void AddGossipText(GossipText *pGText);
-        GossipText *GetGossipText(uint32 Text_ID);
+        bool IsTavernAreaTrigger(uint32 Trigger_ID) const
+        {
+            return mTavernAreaTriggerSet.find(Trigger_ID) != mTavernAreaTriggerSet.end();
+        }
+
+        bool IsGameObjectForQuests(uint32 entry) const
+        {
+            return mGameObjectForQuestSet.find(entry) != mGameObjectForQuestSet.end();
+        }
+
+        GossipText const * GetGossipText(uint32 Text_ID) const;
 
         WorldSafeLocsEntry const *GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team);
         bool AddGraveYardLink(uint32 id, uint32 zone, uint32 team, bool inDB = true);
@@ -755,7 +762,7 @@ class ObjectMgr
 
         QuestMap            mQuestTemplates;
 
-        typedef UNORDERED_MAP<uint32, GossipText*> GossipTextMap;
+        typedef UNORDERED_MAP<uint32, GossipText> GossipTextMap;
         typedef UNORDERED_MAP<uint32, uint32> QuestAreaTriggerMap;
         typedef UNORDERED_MAP<uint32, std::string> ItemTextMap;
         typedef std::set<uint32> TavernAreaTriggerSet;
@@ -764,8 +771,6 @@ class ObjectMgr
         GroupSet            mGroupSet;
         GuildMap            mGuildMap;
         ArenaTeamMap        mArenaTeamMap;
-
-        ItemMap             mItems;
 
         ItemTextMap         mItemTexts;
 

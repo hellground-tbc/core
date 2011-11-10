@@ -237,7 +237,7 @@ CastSpellEvent::CastSpellEvent(Unit& owner, uint64 target, uint32 spellId, int32
         m_values.AddSpellMod(SPELLVALUE_BASE_POINT1, *bp1);
     if(bp2)
         m_values.AddSpellMod(SPELLVALUE_BASE_POINT2, *bp2);
-}    
+}
 
 
 
@@ -288,8 +288,8 @@ Unit::Unit()
 
     m_addDmgOnce = 0;
 
-    for (int i = 0; i < MAX_TOTEM; ++i)
-        m_TotemSlot[i]  = 0;
+    for (uint8 i = 0; i < MAX_TOTEM; ++i)
+        m_TotemSlot[i] = 0;
 
     m_ObjectSlot[0] = m_ObjectSlot[1] = m_ObjectSlot[2] = m_ObjectSlot[3] = 0;
     //m_Aura = NULL;
@@ -307,8 +307,9 @@ Unit::Unit()
     m_ShapeShiftFormSpellId = 0;
     m_canModifyStats = false;
 
-    for (int i = 0; i < MAX_SPELL_IMMUNITY; ++i)
+    for (uint8 i = 0; i < MAX_SPELL_IMMUNITY; ++i)
         m_spellImmune[i].clear();
+
     for (int i = 0; i < UNIT_MOD_END; ++i)
     {
         m_auraModifiersGroup[i][BASE_VALUE] = 0.0f;
@@ -319,12 +320,13 @@ Unit::Unit()
                                                             // implement 50% base damage from offhand
     m_auraModifiersGroup[UNIT_MOD_DAMAGE_OFFHAND][TOTAL_PCT] = 0.5f;
 
-    for (int i = 0; i < 3; i++)
+    for (uint8 i = 0; i < MAX_ATTACK; i++)
     {
         m_weaponDamage[i][MINDAMAGE] = BASE_MINDAMAGE;
         m_weaponDamage[i][MAXDAMAGE] = BASE_MAXDAMAGE;
     }
-    for (int i = 0; i < MAX_STATS; ++i)
+
+    for (uint8 i = 0; i < MAX_STATS; ++i)
         m_createStats[i] = 0.0f;
 
     m_attacking = NULL;
@@ -337,12 +339,12 @@ Unit::Unit()
     m_lastManaUse = 0;
 
     //m_victimThreat = 0.0f;
-    for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
+    for (uint8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
         m_threatModifier[i] = 1.0f;
 
     m_isSorted = true;
 
-    for (int i = 0; i < MAX_MOVE_TYPE; ++i)
+    for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
     {
         m_speed_rate[i] = 1.0f;
         m_max_speed_rate[i] = 1.0f;
@@ -354,7 +356,7 @@ Unit::Unit()
     m_misdirectionTargetGUID = 0;
 
     // remove aurastates allowing special moves
-    for (int i=0; i < MAX_REACTIVE; ++i)
+    for (uint8 i = 0; i < MAX_REACTIVE; ++i)
         m_reactiveTimer[i] = 0;
 
     m_meleeAPAttackerBonus = 0;

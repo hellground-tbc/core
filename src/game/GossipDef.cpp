@@ -190,17 +190,14 @@ void PlayerMenu::SendPointOfInterest(float X, float Y, uint32 Icon, uint32 Flags
 
 void PlayerMenu::SendTalking(uint32 textID)
 {
-    GossipText *pGossip;
-    std::string GossipStr;
-
-    pGossip = objmgr.GetGossipText(textID);
+    GossipText const* pGossip = objmgr.GetGossipText(textID);
 
     WorldPacket data(SMSG_NPC_TEXT_UPDATE, 100);          // guess size
     data << textID;                                         // can be < 0
 
     if (!pGossip)
     {
-        for (uint32 i = 0; i < 8; ++i)
+        for (uint8 i = 0; i < 8; ++i)
         {
             data << float(0);
             data << "Greetings $N";
@@ -217,7 +214,7 @@ void PlayerMenu::SendTalking(uint32 textID)
     else
     {
         std::string Text_0[MAX_GOSSIP_TEXT_OPTIONS],Text_1[MAX_GOSSIP_TEXT_OPTIONS];
-        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
+        for (uint8 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
             Text_0[i]=pGossip->Options[i].Text_0;
             Text_1[i]=pGossip->Options[i].Text_1;
@@ -226,9 +223,7 @@ void PlayerMenu::SendTalking(uint32 textID)
         int loc_idx = pSession->GetSessionDbLocaleIndex();
         sObjectMgr.GetNpcTextLocaleStringsAll(textID, loc_idx, &Text_0, &Text_1);
 
-
-
-        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
+        for (uint8 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
             data << pGossip->Options[i].Probability;
 
@@ -244,14 +239,11 @@ void PlayerMenu::SendTalking(uint32 textID)
 
             data << pGossip->Options[i].Language;
 
-            data << pGossip->Options[i].Emotes[0]._Delay;
-            data << pGossip->Options[i].Emotes[0]._Emote;
-
-            data << pGossip->Options[i].Emotes[1]._Delay;
-            data << pGossip->Options[i].Emotes[1]._Emote;
-
-            data << pGossip->Options[i].Emotes[2]._Delay;
-            data << pGossip->Options[i].Emotes[2]._Emote;
+            for(uint8 j = 0; j < 3; ++j)
+            {
+                data << pGossip->Options[i].Emotes[j]._Delay;
+                data << pGossip->Options[i].Emotes[j]._Emote;
+            }
         }
     }
     pSession->SendPacket(&data);
@@ -669,16 +661,8 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const *pQuest, uint64 npcGUID,
     // We can always call to RequestItems, but this packet only goes out if there are actually
     // items.  Otherwise, we'll skip straight to the OfferReward
 
-    // We may wish a better check, perhaps checking the real quest requirements
-    if (pQuest->GetRequestItemsText().empty())
-    {
-        SendQuestGiverOfferReward(pQuest, npcGUID, true);
-        return;
-    }
-
-    std::string Title,RequestItemsText;
-    Title = pQuest->GetTitle();
-    RequestItemsText = pQuest->GetRequestItemsText();
+    std::string Title = pQuest->GetTitle();
+    std::string RequestItemsText = pQuest->GetRequestItemsText();
 
     int loc_idx = pSession->GetSessionDbLocaleIndex();
     if (loc_idx >= 0)
@@ -691,6 +675,12 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const *pQuest, uint64 npcGUID,
             if (ql->RequestItemsText.size() > loc_idx && !ql->RequestItemsText[loc_idx].empty())
                 RequestItemsText=ql->RequestItemsText[loc_idx];
         }
+    }
+    // We may wish a better check, perhaps checking the real quest requirements
+    if (RequestItemsText.empty())
+    {
+        SendQuestGiverOfferReward(pQuest, npcGUID, true);
+        return;
     }
 
     WorldPacket data(SMSG_QUESTGIVER_REQUEST_ITEMS, 50);  // guess size

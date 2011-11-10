@@ -401,10 +401,10 @@ struct TrainerSpell
     {}
 
     uint32 spell;
-    uint32 spellcost;
-    uint32 reqskill;
-    uint32 reqskillvalue;
-    uint32 reqlevel;
+    uint32 spellCost;
+    uint32 reqSkill;
+    uint32 reqSkillValue;
+    uint32 reqLevel;
 };
 
 typedef UNORDERED_MAP<uint32 /*spellid*/, TrainerSpell> TrainerSpellMap;
