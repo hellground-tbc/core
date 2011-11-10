@@ -409,14 +409,6 @@ inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
     if (!spellInfo)
         return false;
 
-    switch (spellInfo->Id)
-    {
-        case 40214:                                     // Dragonmaw Illusion
-        case 35480: case 35481: case 35482:             // Human Illusion
-        case 35483: case 39824:                         // Human Illusion
-            return true;
-    }
-
     return spellInfo->AttributesEx3 & SPELL_ATTR_EX3_DEATH_PERSISTENT;
 }
 
