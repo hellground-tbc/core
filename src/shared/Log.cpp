@@ -890,17 +890,17 @@ void Log::outCrash(const char * str, ...)
     if (!str)
         return;
 
-    if(logFile[LOG_CHAR])
+    if(logFile[LOG_CRASH])
     {
-        outTimestamp(logFile[LOG_CHAR]);
+        outTimestamp(logFile[LOG_CRASH]);
 
         va_list ap;
         va_start(ap, str);
-        vfprintf(logFile[LOG_CHAR], str, ap);
+        vfprintf(logFile[LOG_CRASH], str, ap);
         va_end(ap);
 
-        fprintf(logFile[LOG_CHAR], "\n" );
-        fflush(logFile[LOG_CHAR]);
+        fprintf(logFile[LOG_CRASH], "\n" );
+        fflush(logFile[LOG_CRASH]);
     }
 }
 

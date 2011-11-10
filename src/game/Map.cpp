@@ -3415,6 +3415,7 @@ inline GridMap *Map::GetGrid(float x, float y)
 void Map::ForcedUnload()
 {
     sLog.outError("Map::ForcedUnload called for map %u instance %u. Map crushed. Cleaning up...", GetId(), GetInstanceId());
+    sLog.outCrash("Map::ForcedUnload called for map %u instance %u. Map crushed. Cleaning up...", GetId(), GetInstanceId());
 
     // Immediately cleanup update sets/queues
     i_objectsToClientUpdate.clear();
