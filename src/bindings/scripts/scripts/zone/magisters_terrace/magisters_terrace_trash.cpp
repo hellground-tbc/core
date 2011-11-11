@@ -1225,18 +1225,12 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        printf("JustDied \n");
         for(uint8 i = 0; i < 6; ++i)
         {
-            printf("szukam \n");
             if(me->GetDBTableGUIDLow() == KaelTrashDBguid[i])
             {
-                printf("racja\n");
                 if(pInstance)
-                {
-                    printf("ustawiam counter \n");
                     pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
-                }
             }
         }
     }

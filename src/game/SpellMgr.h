@@ -1105,6 +1105,7 @@ class TRINITY_DLL_SPEC SpellMgr
         void LoadSkillLineAbilityMap();
         void LoadSpellPetAuras();
         void LoadSpellCustomAttr();
+        void LoadCustomSpellCooldowns(SpellEntry* spellInfo);
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
         void LoadSpellBonusData();

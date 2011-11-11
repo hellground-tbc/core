@@ -2687,6 +2687,8 @@ void SpellMgr::LoadSpellCustomAttr()
         if (spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x10000LL)
             spellInfo->SchoolMask = SPELL_SCHOOL_MASK_SHADOW;
 
+        LoadCustomSpellCooldowns(spellInfo);
+
         switch (i)
         {
         /* ROGUE CUSTOM ATTRIBUTES */
@@ -2882,12 +2884,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40334:
             spellInfo->procFlags = PROC_FLAG_SUCCESSFUL_MELEE_HIT;
             break;
-        case 30015: // Summon Naias cooldown
-            spellInfo->RecoveryTime = 300000;
-            break;
-        case 35413: // Summon Goliathon cooldown
-            spellInfo->RecoveryTime = 300000;
-            break;
         case 13280: // Gnomish Death Ray
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             break;
@@ -2986,6 +2982,77 @@ void SpellMgr::LoadSpellCustomAttr()
         }
     }
     CreatureAI::FillAISpellInfo();
+}
+// TODO: move this to database along with slot position in cast bar
+void SpellMgr::LoadCustomSpellCooldowns(SpellEntry* spellInfo)
+{
+    if (!spellInfo)
+        return;
+
+    switch (spellInfo->Id)
+    {
+        // 2 sec cooldown
+        case 22907:     // Shoot
+        case 35946:     // Shoot
+        case 44533:     // Wretched Stab
+            spellInfo->RecoveryTime = 2000;
+            break;
+        // 6 sec cooldown
+        case 44639:     // Frost Arrow
+            spellInfo->RecoveryTime = 6000;
+            break;
+        // 8 sec cooldown
+        case 44534:     // Wretched Strike
+        case 44640:     // Lash of Pain
+            spellInfo->RecoveryTime = 8000;
+            break;
+        // 10 sec cooldown
+        case 44518:     // Immolate
+        case 46042:     // Immolate
+        case 44479:     // holy Light
+        case 46029:     // Holy Light
+            spellInfo->RecoveryTime = 10000;
+            break;
+        // 12 sec cooldown
+        case 44547:     // Deadly Embrace
+        case 44599:     // Inject Poison
+        case 46046:     // Inject Poison
+            spellInfo->RecoveryTime = 12000;
+            break;
+        // 15 sec cooldown
+        case 44478:     // Glaive Throw
+        case 46028:     // Glaive Throw
+        case 20299:     // Forked Lightning
+        case 46150:     // Forked Lightning
+        case 17741:     // Mana Shield
+        case 46151:     // Mana Shield
+            spellInfo->RecoveryTime = 15000;
+            break;
+        // 20 sec cooldown
+        case 44480:     // Seal of Wrath
+        case 46030:     // Seal of Wrath
+            spellInfo->RecoveryTime = 20000;
+            break;
+        // 24 sec cooldown
+        case 44505:     // Drink Fel Infusion
+            spellInfo->RecoveryTime = 24000;
+            break;
+        // 30 sec cooldown
+        case 44475:
+            spellInfo->RecoveryTime = 30000;
+            break;
+        // 3 min cooldown
+        case 30015: // Summon Naias
+        case 35413: // Summon Goliathon
+            spellInfo->RecoveryTime = 300000;
+            break;
+        // 30 min cooldown
+        case 44520:
+            spellInfo->RecoveryTime = 1800000;
+            break;
+        default:
+            break;
+    }
 }
 
 void SpellMgr::LoadSpellLinked()
