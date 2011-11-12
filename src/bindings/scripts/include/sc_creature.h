@@ -180,7 +180,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //*************
 
     //Called at each attack of m_creature by any victim
-    void AttackStartNoMove(Unit *target);
+    void AttackStartNoMove(Unit *target, bool casterType = false);
     void AttackStart(Unit *);
     void AttackStart(Unit *, bool melee);
 
@@ -233,6 +233,9 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //For fleeing
     bool IsFleeing;
 
+    //Timer for caster type movement check
+    uint32 casterTimer;
+
     //Spell list to cast
     std::list<SpellToCast> spellList;
 
@@ -268,7 +271,10 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void DoStartMovement(Unit* pVictim, float fDistance = 0, float fAngle = 0);
 
     //Start no movement on victim
-    void DoStartNoMovement(Unit* victim);
+    void DoStartNoMovement(Unit* victim, bool casterType = false);
+
+    //Check caster type movement, move towards victim only if necessary
+    void CheckCasterNoMovementInRange(uint32 diff, float maxrange = 30.0f);
 
     //Stop attack of current victim
     void DoStopAttack();

@@ -177,7 +177,6 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
         Frostbolt_Timer = 0;
         Arcane_Nova_Timer = urand (12000, 20000);
         OOCTimer = 5000;
-        me->SetWalk(false);
     }
 
     void EnterEvadeMode()
@@ -222,7 +221,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who);
+        ScriptedAI::AttackStartNoMove(who, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -243,20 +242,6 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 
       if(Frostbolt_Timer < diff)
       {
-          if(!me->IsWithinDistInMap(me->getVictim(), 40) || !me->IsWithinLOSInMap(me->getVictim()))
-          {
-              float x, y, z;
-              float dist = me->GetDistance2d(me->getVictim());
-              float angle = me->GetAngle(me->getVictim());
-              me->GetPosition(x, y, z);
-              x = x + dist * cos(angle);
-              y = y + dist * sin(angle);
-              me->UpdateAllowedPositionZ(x, y, z);
-              me->SetSpeed(MOVE_RUN, 1.5);
-              me->GetMotionMaster()->MovePoint(1, x, y, z);
-          }
-          else
-              me->GetMotionMaster()->MoveIdle();
           AddSpellToCast(me->getVictim(), SPELL_FROSTBOLT);
           Frostbolt_Timer = GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT))-(diff+100);
       }
@@ -272,6 +257,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
       else
           Arcane_Nova_Timer -= diff;
 
+      CheckCasterNoMovementInRange(diff, 35.0);
       CastNextSpellIfAnyAndReady();
       DoMeleeAttackIfReady();
     }
@@ -294,7 +280,6 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
-    uint32 Check_Timer;
     uint32 SummonImp_Timer;
     uint32 FelArmor_Timer;
     uint32 Immolate_Timer;
@@ -303,12 +288,10 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
     void Reset()
     {
-        Check_Timer = 3000;
         SummonImp_Timer = 5000;
         SetAutocast(SPELL_INCINERATE, 1900, true);
         Immolate_Timer = urand(8000, 12000);
         OOCTimer = 5000;
-        me->SetWalk(false);
     }
 
     void EnterEvadeMode()
@@ -358,7 +341,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who);
+        ScriptedAI::AttackStartNoMove(who, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -393,28 +376,6 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
       if(!UpdateVictim())
       return;
 
-      if(Check_Timer < diff)
-      {
-          if(!me->IsWithinDistInMap(me->getVictim(), 30) || !me->IsWithinLOSInMap(me->getVictim()))
-          {
-              float x, y, z;
-              float dist = me->GetDistance2d(me->getVictim());
-              float angle = me->GetAngle(me->getVictim());
-              me->GetPosition(x, y, z);
-              x = x + dist * cos(angle);
-              y = y + dist * sin(angle);
-              me->UpdateAllowedPositionZ(x, y, z);
-              me->SetSpeed(MOVE_RUN, 1.5);
-              me->GetMotionMaster()->MovePoint(1, x, y, z);
-          }
-          else
-              me->GetMotionMaster()->MoveIdle();
-
-          Check_Timer = 3000;
-      }
-      else
-          Check_Timer -= diff;
-
       if(FelArmor_Timer < diff)
       {
           if(!me->HasAura(SPELL_FEL_ARMOR, 0))
@@ -433,6 +394,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
       else
           Immolate_Timer -= diff;
 
+      CheckCasterNoMovementInRange(diff);
       CastNextSpellIfAnyAndReady(diff);
       DoMeleeAttackIfReady();
     }
@@ -444,17 +406,11 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
 {
     mob_sunblade_impAI(Creature *c) : ScriptedAI(c) { }
 
-    uint32 Check_Timer;
-
-    void Reset()
-    {
-        Check_Timer = 2000;
-        me->SetWalk(false);
-    }
+    void Reset() { }
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who);
+        ScriptedAI::AttackStartNoMove(who, true);
         SetAutocast(SPELL_FIREBALL, 1900, true);
     }
 
@@ -463,27 +419,7 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(Check_Timer < diff)
-        {
-            if(!me->IsWithinDistInMap(me->getVictim(), 30) || !me->IsWithinLOSInMap(me->getVictim()))
-          {
-              float x, y, z;
-              float dist = me->GetDistance2d(me->getVictim());
-              float angle = me->GetAngle(me->getVictim());
-              me->GetPosition(x, y, z);
-              x = x + dist * cos(angle);
-              y = y + dist * sin(angle);
-              me->UpdateAllowedPositionZ(x, y, z);
-              me->SetSpeed(MOVE_RUN, 1.5);
-              me->GetMotionMaster()->MovePoint(1, x, y, z);
-          }
-          else
-              me->GetMotionMaster()->MoveIdle();
-
-            Check_Timer = 2000;
-        }
-        else Check_Timer -= diff;
-
+      CheckCasterNoMovementInRange(diff);
       CastNextSpellIfAnyAndReady(diff);
     }
 };
@@ -905,12 +841,11 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
         OOCTimer = 5000;
         Drink_Timer = urand(25000, 35000);
         Wretched_Cast_Timer = 0;
-        me->SetWalk(false);
     }
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who);
+        ScriptedAI::AttackStartNoMove(who, true);
     }
 
     void EnterCombat(Unit* who)
@@ -961,27 +896,13 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
 
        if(Wretched_Cast_Timer < diff)
        {
-           if(!me->IsWithinDistInMap(me->getVictim(), 40) || !me->IsWithinLOSInMap(me->getVictim()))
-          {
-              float x, y, z;
-              float dist = me->GetDistance2d(me->getVictim());
-              float angle = me->GetAngle(me->getVictim());
-              me->GetPosition(x, y, z);
-              x = x + dist * cos(angle);
-              y = y + dist * sin(angle);
-              me->UpdateAllowedPositionZ(x, y, z);
-              me->SetSpeed(MOVE_RUN, 1.5);
-              me->GetMotionMaster()->MovePoint(1, x, y, z);
-          }
-          else
-              me->GetMotionMaster()->MoveIdle();
-
            AddSpellToCast(m_creature->getVictim(), RAND(SPELL_WRETCHED_FIREBALL, SPELL_WRETCHED_FROSTBOLT));
            Wretched_Cast_Timer = me->HasAura(SPELL_DRINK_FEL_INFUSION, 1) ? 1400 : 2900;
        }
        else
            Wretched_Cast_Timer -= diff;
 
+       CheckCasterNoMovementInRange(diff, 35.0);
        CastNextSpellIfAnyAndReady(diff);
        DoMeleeAttackIfReady();
     }
@@ -1091,9 +1012,7 @@ struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
 
       if(LashOfPain_Timer < diff)
       {
-          //int32 damage = 1000;
-          //me->CastCustomSpell(me->getVictim(), SPELL_LASH_OF_PAIN, &damage, NULL, NULL, false);
-          AddSpellToCast(SPELL_LASH_OF_PAIN, CAST_TANK);
+          AddCustomSpellToCast(SPELL_LASH_OF_PAIN, CAST_TANK, 420);
           LashOfPain_Timer = urand(8000,14000);
       }
       else
