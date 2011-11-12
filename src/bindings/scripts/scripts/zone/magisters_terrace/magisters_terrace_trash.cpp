@@ -1316,7 +1316,7 @@ struct TRINITY_DLL_DECL mob_mgt_kalecgosAI : public ScriptedAI
 
     void Reset()
     {
-        Timer = 60000;
+        Timer = 1000;
         step = 0;
         me->setActive(true);
         me->SetLevitate(true);
@@ -1439,21 +1439,30 @@ bool GossipSelect_npc_kalec(Player *player, Creature *_Creature, uint32 sender, 
 
 bool GOUse_go_movie_orb(Player *player, GameObject* _GO)
 {
+    uint32 ScryingOrbCinematicId = 164;
     if (player)
     {
         WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
-        data << (uint32)164;
+        data << ScryingOrbCinematicId;
         player->GetSession()->SendPacket(&data);
-
-        ScriptedInstance* pInstance = _GO->GetInstanceData();
-        if(pInstance && pInstance->GetData(DATA_KALEC) != DONE)
-        {
-            pInstance->SetData(DATA_KALEC, DONE);
-            _GO->SummonCreature(NPC_MGT_KALECGOS, 133.3, -384.3, 13.0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-        }
+        player->setWatchingCinematic(ScryingOrbCinematicId);
 
         if (player->GetQuestStatus(11490) == QUEST_STATUS_INCOMPLETE)
             player->KilledMonster(25042, 0);
+    }
+    return true;
+}
+
+bool CompletedCinematic_scrying_orb_cinematic(Player* player, CinematicSequenceEntry const* cinematic)
+{
+    if (player)
+    {
+        ScriptedInstance* pInstance = player->GetInstanceData();
+        if(pInstance && pInstance->GetData(DATA_KALEC) != DONE)
+        {
+            pInstance->SetData(DATA_KALEC, DONE);
+            player->SummonCreature(NPC_MGT_KALECGOS, 133.3, -384.3, 13.0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+        }
     }
     return true;
 }
@@ -1607,5 +1616,10 @@ void AddSC_magisters_terrace_trash()
     newscript = new Script;
     newscript->Name="go_movie_orb";
     newscript->pGOUse = &GOUse_go_movie_orb;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="scrying_orb_cinematic";
+    newscript->pCompletedCinematic = &CompletedCinematic_scrying_orb_cinematic;
     newscript->RegisterSelf();
 }
