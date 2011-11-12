@@ -19,6 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include "InstanceSaveMgr.h"
 #include "Common.h"
 #include "Database/SQLStorage.h"
 
@@ -173,7 +174,7 @@ void InstanceSave::SaveToDB()
     // save instance data too
     std::string data;
 
-    Map *map = sMapMgr.FindMap(GetMapId(),m_instanceid);
+    Map *map = sMapMgr.FindMap(GetMapId(), m_instanceid);
     if (map)
     {
         assert(map->IsDungeon());

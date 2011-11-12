@@ -7746,12 +7746,12 @@ void Player::SendLootRelease(uint64 guid)
 
 void Player::SendLoot(uint64 guid, LootType loot_type)
 {
-    Loot    *loot = 0;
-    PermissionTypes permission = ALL_PERMISSION;
-
     // release old loot
     if (uint64 lguid = GetLootGUID())
-        GetSession()->DoLootRelease(lguid);
+        m_session->DoLootRelease(lguid);
+
+    Loot    *loot = 0;
+    PermissionTypes permission = ALL_PERMISSION;
 
     sLog.outDebug("Player::SendLoot");
     if (IS_GAMEOBJECT_GUID(guid))
@@ -15717,6 +15717,14 @@ void Player::_LoadBoundInstances(QueryResultAutoPtr result)
             // the resettime for normal instances is only saved when the InstanceSave is unloaded
             // so the value read from the DB may be wrong here but only if the InstanceSave is loaded
             // and in that case it is not used
+
+            MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+            if (!mapEntry || !mapEntry->IsDungeon())
+            {
+                sLog.outError("_LoadBoundInstances: player %s(%d) has bind to not existed or not dungeon map %d", GetName(), GetGUIDLow(), mapId);
+                CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND instance = '%d'", GetGUIDLow(), instanceId);
+                continue;
+            }
 
             if (!perm && group)
             {

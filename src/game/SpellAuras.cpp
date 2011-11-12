@@ -2668,11 +2668,11 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             }
             case 39042:                                     // Rampant Infection
-            case 39032:                                     // Initial Infection    
+            case 39032:                                     // Initial Infection
                 if (m_removeMode == AURA_REMOVE_BY_EXPIRE)
                 {
                     int32 bp = GetModifierValue() * 11 / 10;
-                    m_target->CastCustomSpell(m_target, 39042, &bp, &bp, 0, true, 0, this);           
+                    m_target->CastCustomSpell(m_target, 39042, &bp, &bp, 0, true, 0, this);
                 }
                 return;
         }
@@ -3977,7 +3977,7 @@ void Aura::HandleAuraModDisarm(bool apply, bool Real)
     if (m_target->GetTypeId() == TYPEID_PLAYER)
     {
         // main-hand attack speed already set to special value for feral form already and don't must change and reset at remove.
-        if (((Player *)m_target)->IsInFeralForm())
+        if (m_target->IsInFeralForm())
             return;
 
         if (apply)

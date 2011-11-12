@@ -297,13 +297,19 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
     GameEvent::ActiveEvents const& activeEventsList = gameeventmgr.GetActiveEventList();
     if (*args)
     {
-        int32 id = atoi((char*)args);
+        // number or [name] Shift-click form |color|Hgameobject_entry:go_id|h[name]|h|r
+        char* cId = extractKeyFromLink((char*)args, "Hgameobject_entry");
+        if(!cId)
+            return false;
+
+        uint32 id = atol(cId);
+
         if (id)
             result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, orientation, map, (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ FROM gameobject WHERE map = '%i' AND id = '%u' ORDER BY order_ ASC LIMIT 1",
                 pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(), pl->GetMapId(),id);
         else
         {
-            std::string name = args;
+            std::string name = cId;
             WorldDatabase.escape_string(name);
             result = WorldDatabase.PQuery(
                 "SELECT guid, id, position_x, position_y, position_z, orientation, map, (POW(position_x - %f, 2) + POW(position_y - %f, 2) + POW(position_z - %f, 2)) AS order_ "
@@ -1078,7 +1084,7 @@ bool ChatHandler::HandleDelObjectCommand(const char* args)
 bool ChatHandler::HandleTurnObjectCommand(const char* args)
 {
     // number or [name] Shift-click form |color|Hgameobject:go_id|h[name]|h|r
-    char* cId = extractKeyFromLink((char*)args,"Hgameobject");
+    char* cId = extractKeyFromLink((char*)args, "Hgameobject");
     if (!cId)
         return false;
 
@@ -1112,24 +1118,19 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
         o = chr->GetOrientation();
     }
 
-    float rot2 = sin(o/2);
-    float rot3 = cos(o/2);
-
     Map* map = obj->GetMap();
     map->Remove(obj,false);
 
     obj->Relocate(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), o);
 
-    obj->SetFloatValue(GAMEOBJECT_FACING, o);
-    obj->SetFloatValue(GAMEOBJECT_ROTATION+2, rot2);
-    obj->SetFloatValue(GAMEOBJECT_ROTATION+3, rot3);
+    obj->UpdateRotationFields();
 
     map->Add(obj);
 
     obj->SaveToDB();
     obj->Refresh();
 
-    PSendSysMessage(LANG_COMMAND_TURNOBJMESSAGE, obj->GetGUIDLow(), o);
+    PSendSysMessage(LANG_COMMAND_TURNOBJMESSAGE, obj->GetGUIDLow(), obj->GetGOInfo()->name, obj->GetGUIDLow(), o);
 
     return true;
 }
@@ -1218,7 +1219,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 bool ChatHandler::HandleMoveObjectCommand(const char* args)
 {
     // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-    char* cId = extractKeyFromLink((char*)args,"Hgameobject");
+    char* cId = extractKeyFromLink((char*)args, "Hgameobject");
     if (!cId)
         return false;
 
@@ -1287,7 +1288,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     obj->SaveToDB();
     obj->Refresh();
 
-    PSendSysMessage(LANG_COMMAND_MOVEOBJMESSAGE, obj->GetGUIDLow());
+    PSendSysMessage(LANG_COMMAND_MOVEOBJMESSAGE, obj->GetGUIDLow(), obj->GetGOInfo()->name, obj->GetGUIDLow());
 
     return true;
 }
@@ -3086,11 +3087,12 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     if (!*args)
         return false;
 
-    char* pParam1 = strtok((char*)args, " ");
-    if (!pParam1)
+    // number or [name] Shift-click form |color|Hgameobject_entry:go_id|h[name]|h|r
+    char* cId = extractKeyFromLink((char*)args, "Hgameobject_entry");
+    if (!cId)
         return false;
 
-    uint32 id = atoi((char*)pParam1);
+    uint32 id = atol(cId);
     if (!id)
         return false;
 
@@ -3112,13 +3114,10 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     float o = float(chr->GetOrientation());
     Map *map = chr->GetMap();
 
-    float rot2 = sin(o/2);
-    float rot3 = cos(o/2);
-
     GameObject* pGameObj = new GameObject;
     uint32 db_lowGUID = objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
-    if (!pGameObj->Create(db_lowGUID, goI->id, map, x, y, z, o, 0, 0, rot2, rot3, 0, GO_STATE_READY))
+    if (!pGameObj->Create(db_lowGUID, goI->id, map, x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
     {
         delete pGameObj;
         return false;

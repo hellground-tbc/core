@@ -37,6 +37,8 @@
 #include "SpellAuras.h"
 #include "Language.h"
 #include "Util.h"
+#include "GridNotifiersImpl.h"
+#include "CellImpl.h"
 
 enum ChatDenyMask
 {
@@ -583,20 +585,53 @@ void WorldSession::HandleEmoteOpcode(WorldPacket & recv_data)
     GetPlayer()->HandleEmoteCommand(emote);
 }
 
+namespace Trinity
+{
+    class EmoteChatBuilder
+    {
+        public:
+            EmoteChatBuilder(Player const& pl, uint32 text_emote, uint32 emote_num, Unit const* target)
+                : i_player(pl), i_text_emote(text_emote), i_emote_num(emote_num), i_target(target) {}
+
+            void operator()(WorldPacket& data, int32 loc_idx)
+            {
+                char const* nam = i_target ? i_target->GetNameForLocaleIdx(loc_idx) : NULL;
+                uint32 namlen = (nam ? strlen(nam) : 0) + 1;
+
+                data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
+                data << i_player.GetGUID();
+                data << uint32(i_text_emote);
+                data << i_emote_num;
+                data << uint32(namlen);
+                if( namlen > 1 )
+                    data.append(nam, namlen);
+                else
+                    data << (uint8)0x00;
+            }
+
+        private:
+            Player const& i_player;
+            uint32        i_text_emote;
+            uint32        i_emote_num;
+            Unit const*   i_target;
+    };
+}                                                           // namespace Trinity
+
 void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
 {
-    if (!GetPlayer()->isAlive() || GetPlayer()->isPossessed() || GetPlayer()->isCharmed())
+    Player * player = GetPlayer();
+    if (!player->isAlive() || player->isPossessed() || player->isCharmed())
         return;
 
-    if (!GetPlayer()->CanSpeak())
+    if (!player->CanSpeak())
     {
         std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
-        ChatHandler(_player).PSendSysMessage(LANG_YOUR_CHAT_IS_DISABLED, timeStr.c_str(), m_muteReason.c_str());
+        ChatHandler(player).PSendSysMessage(LANG_YOUR_CHAT_IS_DISABLED, timeStr.c_str(), m_muteReason.c_str());
         return;
     }
 
-    CHECK_PACKET_SIZE(recv_data,4+4+8);
+    CHECK_PACKET_SIZE(recv_data, 4+4+8);
 
     uint32 text_emote, emoteNum;
     uint64 guid;
@@ -605,56 +640,38 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
     recv_data >> emoteNum;
     recv_data >> guid;
 
-    const char *nam = 0;
-    uint32 namlen = 1;
-
-    Unit* unit = _player->GetMap()->GetUnit(guid);
-    Creature *pCreature = dynamic_cast<Creature *>(unit);
-    if (unit)
-    {
-        nam = unit->GetName();
-        namlen = (nam ? strlen(nam) : 0) + 1;
-    }
-
     EmotesTextEntry const *em = sEmotesTextStore.LookupEntry(text_emote);
-    if (em)
+    if (!em)
+        return;
+
+    uint32 emote_anim = em->textid;
+
+    switch (emote_anim)
     {
-        uint32 emote_anim = em->textid;
-
-        WorldPacket data;
-
-        switch (emote_anim)
+        case EMOTE_STATE_SLEEP:
+        case EMOTE_STATE_SIT:
+        case EMOTE_STATE_KNEEL:
+        case EMOTE_ONESHOT_NONE:
+            break;
+        default:
         {
-            case EMOTE_STATE_SLEEP:
-            case EMOTE_STATE_SIT:
-            case EMOTE_STATE_KNEEL:
-            case EMOTE_ONESHOT_NONE:
-                break;
-            default:
-                GetPlayer()->HandleEmoteCommand(emote_anim);
-                break;
+            // in feign death state allowed only text emotes.
+            if (!player->hasUnitState(UNIT_STAT_DIED))
+                player->HandleEmoteCommand(emote_anim);
+            break;
         }
-
-        data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
-        data << GetPlayer()->GetGUID();
-        data << (uint32)text_emote;
-        data << emoteNum;
-        data << (uint32)namlen;
-        if (namlen > 1)
-        {
-            data.append(nam, namlen);
-        }
-        else
-        {
-            data << (uint8)0x00;
-        }
-
-        GetPlayer()->SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
-
-        //Send scripted event call
-        if (pCreature)
-            sScriptMgr.OnReceiveEmote(GetPlayer(),pCreature,text_emote);
     }
+
+    Unit* unit = player->GetMap()->GetUnit(guid);
+
+    Trinity::EmoteChatBuilder emote_builder(*player, text_emote, emoteNum, unit);
+    Trinity::LocalizedPacketDo<Trinity::EmoteChatBuilder > emote_do(emote_builder);
+    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::EmoteChatBuilder > > emote_worker(player, sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), emote_do);
+    Cell::VisitWorldObjects(player, emote_worker,  sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
+
+    //Send scripted event call
+    if (unit && unit->GetTypeId() == TYPEID_UNIT && ((Creature*)unit)->AI())
+        ((Creature*)unit)->AI()->ReceiveEmote(player, text_emote);
 }
 
 void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recv_data)

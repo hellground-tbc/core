@@ -1157,7 +1157,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         void AddArmorProficiency(uint32 newflag) { m_ArmorProficiency |= newflag; }
         uint32 GetWeaponProficiency() const { return m_WeaponProficiency; }
         uint32 GetArmorProficiency() const { return m_ArmorProficiency; }
-        bool IsInFeralForm(bool checkGhostWolf = false) const { return m_form == FORM_CAT || m_form == FORM_BEAR || m_form == FORM_DIREBEAR || (checkGhostWolf && m_form == FORM_GHOSTWOLF); }
         bool IsUseEquipedWeapon(bool mainhand) const
         {
             // disarm applied only to mainhand weapon

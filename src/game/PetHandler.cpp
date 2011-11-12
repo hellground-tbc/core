@@ -212,7 +212,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
             uint64 charmerGuid = pet->isCharmed() ? pet->GetCharmerGUID() : 0;
             Spell *spell = new Spell(pet, spellInfo, false, charmerGuid);
 
-            int16 result = spell->PetCanCast(unit_target);
+            SpellCastResult result = spell->CheckPetCast(unit_target);
 
                                                             //auto turn to target unless possessed
             if (result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->isPossessed())
@@ -223,10 +223,10 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
                 if (Unit* powner = pet->GetCharmerOrOwner())
                     if (powner->GetTypeId() == TYPEID_PLAYER)
                         pet->SendCreateUpdateToPlayer((Player*)powner);
-                result = -1;
+                result = SPELL_CAST_OK;
             }
 
-            if (result == -1)
+            if (result == SPELL_CAST_OK)
             {
                 ((Creature*)pet)->AddCreatureSpellCooldown(spellid);
                 if (((Creature*)pet)->isPet())
@@ -678,8 +678,8 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     Spell *spell = new Spell(caster, spellInfo, spellid == 33395, charmerGuid); // water elemental can cast freeze as triggered
     spell->m_targets = targets;
 
-    int16 result = spell->PetCanCast(NULL);
-    if (result == -1)
+    SpellCastResult result = spell->CheckPetCast(NULL);
+    if(result == SPELL_CAST_OK)
     {
         if (caster->GetTypeId() == TYPEID_UNIT)
         {
