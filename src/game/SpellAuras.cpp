@@ -6802,7 +6802,7 @@ void Aura::PeriodicTick()
                             }
                             else
                             {
-                                if(m_target->GetPositionZ() <= -16.0)
+                                if(!m_target->HasUnitMovementFlag(MOVEFLAG_FLYING))
                                 {
                                     // re-cast knockback but keep same aura duration
                                     m_target->RemoveAurasDueToSpell(GetId());

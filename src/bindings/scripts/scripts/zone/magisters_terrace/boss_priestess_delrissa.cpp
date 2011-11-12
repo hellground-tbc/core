@@ -1687,7 +1687,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
         Goblin_Dragon_Gun_Timer = urand(5000, 20000);
         Rocket_Launch_Timer = 1000;
         Recombobulate_Timer = urand(3000, 6000);
-        High_Explosive_Sheep_Timer = urand(8000, 15000);
+        High_Explosive_Sheep_Timer = (HeroicMode?1000:urand(8000, 15000));
         Fel_Iron_Bomb_Timer = urand(4000, 15000);
 
         boss_priestess_guestAI::Reset();
@@ -1786,6 +1786,7 @@ struct TRINITY_DLL_DECL mob_high_explosive_sheepAI : public ScriptedAI
 
     void Reset()
     {
+        me->SetWalk(true);
         SelfDestro_Timer = 60000;
         Check_Timer = 500;
     }
