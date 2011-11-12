@@ -47,7 +47,7 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
 {
-    boss_vexallusAI(Creature *c) : ScriptedAI(c)
+    boss_vexallusAI(Creature *c) : ScriptedAI(c), summons(c)
     {
         pInstance = (c->GetInstanceData());
     }
@@ -59,12 +59,15 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
     uint32 SpawnAddInterval;
     uint32 AlreadySpawnedAmount;
 
+    SummonList summons;
+
     void Reset()
     {
         ChainLightningTimer = urand(12000, 20000);
         ArcaneShockTimer = urand(14000, 19000);
         SpawnAddInterval = 15;
         AlreadySpawnedAmount = 0;
+        summons.DespawnAll();
 
         if(pInstance)
             pInstance->SetData(DATA_VEXALLUS_EVENT, NOT_STARTED);
@@ -79,6 +82,8 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
     {
         if (pInstance)
             pInstance->SetData(DATA_VEXALLUS_EVENT, DONE);
+        summons.DespawnAll();
+        RemoveEnergyFeedback();
     }
 
     void EnterCombat(Unit *who)
@@ -96,6 +101,18 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
             c->AddThreat(target, 1000);
         }
         c->CastSpell(c, SPELL_ENERGY_PASSIVE, true);
+        summons.Summon(c);
+    }
+
+    void RemoveEnergyFeedback()
+    {
+        Map *map = m_creature->GetMap();
+        Map::PlayerList const &PlayerList = map->GetPlayers();
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            if(Player* player = i->getSource())
+                player->RemoveAurasDueToSpell(SPELL_ENERGY_FEEDBACK);
+        }
     }
 
     void UpdateAI(const uint32 diff)
