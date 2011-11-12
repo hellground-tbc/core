@@ -549,6 +549,9 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
         void BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 TargetGuid, bool withoutPrename = false) const;
         void BuildMonsterChat(WorldPacket *data, uint8 msgtype, int32 iTextEntry, uint32 language, char const* name, uint64 targetGuid, bool withoutPrename = false) const;
 
+        void PlayDistanceSound(uint32 sound_id, Player* target = NULL);
+        void PlayDirectSound(uint32 sound_id, Player* target = NULL);
+
         void SendObjectDeSpawnAnim(uint64 guid);
         void SendGameObjectCustomAnim(uint64 guid);
 

@@ -2209,3 +2209,24 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
 
      ClearUpdateMask(false);
 }
+
+void WorldObject::PlayDistanceSound( uint32 sound_id, Player* target /*= NULL*/ )
+{
+    WorldPacket data(SMSG_PLAY_OBJECT_SOUND,4+8);
+    data << uint32(sound_id);
+    data << GetGUID();
+    if (target)
+        target->SendDirectMessage( &data );
+    else
+        SendMessageToSet( &data, true );
+}
+
+void WorldObject::PlayDirectSound( uint32 sound_id, Player* target /*= NULL*/ )
+{
+    WorldPacket data(SMSG_PLAY_SOUND, 4);
+    data << uint32(sound_id);
+    if (target)
+        target->SendDirectMessage( &data );
+    else
+        SendMessageToSet( &data, true );
+}

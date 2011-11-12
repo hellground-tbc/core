@@ -206,7 +206,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "form",           SEC_ADMINISTRATOR,  false, &ChatHandler::HandleAddFormationCommand,        "", NULL },
 
         { "uws",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleUpdateWorldStateCommand,    "", NULL },
-        { "ps",             SEC_ADMINISTRATOR,  false, &ChatHandler::HandlePlaySound2Command,          "", NULL },
         { "scn",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSendChannelNotifyCommand,   "", NULL },
         { "scm",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleSendChatMsgCommand,         "", NULL },
         { "getitemstate",   SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetItemState,               "", NULL },
