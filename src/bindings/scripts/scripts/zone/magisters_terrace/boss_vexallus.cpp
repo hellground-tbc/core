@@ -163,7 +163,12 @@ CreatureAI* GetAI_boss_vexallus(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
 {
-    mob_pure_energyAI(Creature *c) : ScriptedAI(c) {}
+    mob_pure_energyAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     void Reset()
     {
@@ -179,7 +184,8 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
         me->GetPosition(x, y, z);
         if(Unit* Trigger = me->SummonTrigger(x, y, z, 0, 10000))
             Trigger->CastSpell(killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
-        killer->CastSpell(killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, m_creature->GetGUID());
+        if(pInstance)
+            killer->CastSpell(killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, pInstance->GetData64(DATA_VEXALLUS));
         me->RemoveCorpse();
     }
 

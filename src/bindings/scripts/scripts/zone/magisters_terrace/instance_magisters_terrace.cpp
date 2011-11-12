@@ -68,6 +68,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
 
     uint64 KaelGUID;
     uint64 SelinGUID;
+    uint64 VexallusGUID;
     uint64 DelrissaGUID;
     uint64 VexallusDoorGUID;
     uint64 SelinDoorGUID;
@@ -87,6 +88,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         KaelPhase = 0;
         KaelGUID = 0;
         SelinGUID = 0;
+        VexallusGUID = 0;
         DelrissaGUID = 0;
         VexallusDoorGUID = 0;
         SelinDoorGUID = 0;
@@ -235,6 +237,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         switch(entry)
         {
             case 24723: SelinGUID = creature->GetGUID(); break;
+            case 24744: VexallusGUID = creature->GetGUID(); break;
             case 24560: DelrissaGUID = creature->GetGUID(); break;
             case 24664: KaelGUID = creature->GetGUID();
                 break;
@@ -299,6 +302,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         switch(identifier)
         {
             case DATA_SELIN:                return SelinGUID;
+            case DATA_VEXALLUS:             return VexallusGUID;
             case DATA_KAEL:                 return KaelGUID;
             case DATA_DELRISSA:             return DelrissaGUID;
             case DATA_VEXALLUS_DOOR:        return VexallusDoorGUID;
