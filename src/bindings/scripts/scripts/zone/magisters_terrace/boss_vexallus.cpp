@@ -29,8 +29,7 @@ EndScriptData */
 #define SAY_OVERLOAD                -1585009
 #define SAY_KILL                    -1585010
 #define EMOTE_DISCHARGE_ENERGY      -1585011
-//is this text for real?
-#define SAY_DEATH                   "What...happen...ed."
+#define EMOTE_OVERLOAD              -1585031
 
 //Pure energy spell info
 #define SPELL_ENERGY_BOLT_AURA          46156
@@ -78,7 +77,6 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
 
     void JustDied(Unit *victim)
     {
-        DoYell(SAY_DEATH, LANG_UNIVERSAL, NULL);
         if (pInstance)
             pInstance->SetData(DATA_VEXALLUS_EVENT, DONE);
     }
@@ -145,7 +143,13 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
                 ArcaneShockTimer -= diff;
         }
         else
-            ForceSpellCast(SPELL_OVERLOAD, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
+        {
+            if(!me->HasAura(SPELL_OVERLOAD))
+            {
+                DoScriptText(EMOTE_OVERLOAD, m_creature);
+                ForceSpellCast(SPELL_OVERLOAD, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
+            }
+        }
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
