@@ -1711,7 +1711,7 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
         }
     }
 
-    if (GetTypeId() == TYPEID_PLAYER && IsInFeralForm(true))
+    if (GetTypeId() == TYPEID_PLAYER && !IsInFeralForm(true))
         ((Player *)this)->CastItemCombatSpell(pVictim, damageInfo->attackType, damageInfo->procVictim, damageInfo->procEx);
 
     // Do effect if any damage done to target
@@ -5948,7 +5948,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // Windfury Weapon (Passive) 1-5 Ranks
                 case 33757:
                 {
-                    if (GetTypeId() != TYPEID_PLAYER || ((Player*)this)->IsInFeralForm(true))
+                    if (GetTypeId() != TYPEID_PLAYER || IsInFeralForm(true))
                         return false;
 
                     if (!castItem || !castItem->IsEquipped())
