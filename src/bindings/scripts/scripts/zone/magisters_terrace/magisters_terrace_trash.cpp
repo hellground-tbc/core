@@ -242,6 +242,19 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 
       if(Frostbolt_Timer < diff)
       {
+          if(!me->IsWithinDistInMap(me->getVictim(), 40) || !me->IsWithinLOSInMap(me->getVictim()))
+          {
+              float x, y, z;
+              float dist = me->GetDistance2d(me->getVictim());
+              float angle = me->GetAngle(me->getVictim());
+              me->GetPosition(x, y, z);
+              x = x + dist * cos(angle);
+              y = y + dist * sin(angle);
+              me->UpdateAllowedPositionZ(x, y, z);
+              me->GetMotionMaster()->MovePoint(1, x, y, z);
+          }
+          else
+              me->GetMotionMaster()->MoveIdle();
           AddSpellToCast(me->getVictim(), SPELL_FROSTBOLT);
           Frostbolt_Timer = GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT))-(diff+100);
       }
@@ -279,6 +292,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
 
+    uint32 Check_Timer;
     uint32 SummonImp_Timer;
     uint32 FelArmor_Timer;
     uint32 Immolate_Timer;
@@ -287,6 +301,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
     void Reset()
     {
+        Check_Timer = 3000;
         SummonImp_Timer = 5000;
         SetAutocast(SPELL_INCINERATE, 1900, true);
         Immolate_Timer = urand(8000, 12000);
@@ -375,6 +390,27 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
       if(!UpdateVictim())
       return;
 
+      if(Check_Timer < diff)
+      {
+          if(!me->IsWithinDistInMap(me->getVictim(), 30) || !me->IsWithinLOSInMap(me->getVictim()))
+          {
+              float x, y, z;
+              float dist = me->GetDistance2d(me->getVictim());
+              float angle = me->GetAngle(me->getVictim());
+              me->GetPosition(x, y, z);
+              x = x + dist * cos(angle);
+              y = y + dist * sin(angle);
+              me->UpdateAllowedPositionZ(x, y, z);
+              me->GetMotionMaster()->MovePoint(1, x, y, z);
+          }
+          else
+              me->GetMotionMaster()->MoveIdle();
+
+          Check_Timer = 3000;
+      }
+      else
+          Check_Timer -= diff;
+
       if(FelArmor_Timer < diff)
       {
           if(!me->HasAura(SPELL_FEL_ARMOR, 0))
@@ -404,7 +440,12 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
 {
     mob_sunblade_impAI(Creature *c) : ScriptedAI(c) { }
 
-    void Reset() { }
+    uint32 Check_Timer;
+
+    void Reset()
+    {
+        Check_Timer = 2000;
+    }
 
     void AttackStart(Unit* who)
     {
@@ -416,6 +457,26 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
+
+        if(Check_Timer < diff)
+        {
+            if(!me->IsWithinDistInMap(me->getVictim(), 30) || !me->IsWithinLOSInMap(me->getVictim()))
+          {
+              float x, y, z;
+              float dist = me->GetDistance2d(me->getVictim());
+              float angle = me->GetAngle(me->getVictim());
+              me->GetPosition(x, y, z);
+              x = x + dist * cos(angle);
+              y = y + dist * sin(angle);
+              me->UpdateAllowedPositionZ(x, y, z);
+              me->GetMotionMaster()->MovePoint(1, x, y, z);
+          }
+          else
+              me->GetMotionMaster()->MoveIdle();
+
+            Check_Timer = 2000;
+        }
+        else Check_Timer -= diff;
 
       CastNextSpellIfAnyAndReady(diff);
     }
@@ -893,6 +954,20 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
 
        if(Wretched_Cast_Timer < diff)
        {
+           if(!me->IsWithinDistInMap(me->getVictim(), 40) || !me->IsWithinLOSInMap(me->getVictim()))
+          {
+              float x, y, z;
+              float dist = me->GetDistance2d(me->getVictim());
+              float angle = me->GetAngle(me->getVictim());
+              me->GetPosition(x, y, z);
+              x = x + dist * cos(angle);
+              y = y + dist * sin(angle);
+              me->UpdateAllowedPositionZ(x, y, z);
+              me->GetMotionMaster()->MovePoint(1, x, y, z);
+          }
+          else
+              me->GetMotionMaster()->MoveIdle();
+
            AddSpellToCast(m_creature->getVictim(), RAND(SPELL_WRETCHED_FIREBALL, SPELL_WRETCHED_FROSTBOLT));
            Wretched_Cast_Timer = me->HasAura(SPELL_DRINK_FEL_INFUSION, 1) ? 1400 : 2900;
        }
