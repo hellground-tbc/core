@@ -136,11 +136,12 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         Heal_Timer   = 15000;
         Renew_Timer  = 10000;
         Scream_Cooldown = HeroicMode?15000:30000;
-        Medalion_Cooldown = 30000;
+        Medalion_Cooldown = 60000;
         Shield_Timer = 2000;
         SWPain_Timer = 5000;
         Dispel_Timer = 7500;
         Check_Timer = 2000;
+        me->setActive(true);
 
         CheckAdds();
 
@@ -315,6 +316,8 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 EnterEvadeMode();
                 return;
             }
+            if(!me->IsWithinDistInMap(&wLoc, 100.0))
+                DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
             if(HeroicMode && canUseMedalion)
             {
                 if(me->isCrowdControlled())
@@ -349,7 +352,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
             if(Medalion_Cooldown < diff)
             {
                 canUseMedalion = true;
-                Medalion_Cooldown = 30000;
+                Medalion_Cooldown = 60000;
             }
             else
                 Medalion_Cooldown -= diff;
@@ -459,10 +462,12 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
 {
     boss_priestess_guestAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        pInstance = c->GetInstanceData();
+        c->GetPosition(HomePos);
     }
 
     ScriptedInstance* pInstance;
+    WorldLocation HomePos;
 
     bool resetThreat;
     bool canUseMedalion;
@@ -479,8 +484,9 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         canUseMedalion = true;
         ResetThreatTimer = urand(8000, 20000);             // These guys like to switch targets often, and are not meant to be tanked.
         Check_Timer = 2000;
-        Medalion_Cooldown = 30000;
+        Medalion_Cooldown = 60000;
         targetRange = 100;
+        me->setActive(true);
 
         if(pInstance)
         {
@@ -541,6 +547,8 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
                     canUseMedalion = false;
                 }
             }
+            if(!me->IsWithinDistInMap(&HomePos, 100.0))
+                DoTeleportTo(HomePos.coord_x, HomePos.coord_y, HomePos.coord_z);
             Check_Timer = 2000;
         }
         else
@@ -551,7 +559,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
             if(Medalion_Cooldown < diff)
             {
                 canUseMedalion = true;
-                Medalion_Cooldown = 30000;
+                Medalion_Cooldown = 60000;
             }
             else
                 Medalion_Cooldown -= diff;
