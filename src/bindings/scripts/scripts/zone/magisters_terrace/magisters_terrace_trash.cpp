@@ -32,6 +32,10 @@ EndScriptData */
 * mob_coilskar_witch          - ID 24696
 * mob_ethereum_smuggler       - ID 24698
 *
+* mob_mgt_kalecgos            - ID 24844
+* npc_kalec                   - ID 24848
+* go_movie_orb                - ID 187578
+*
 **********/
 
 // mobs DB GUIDs that should respawn group formation on evade
@@ -1299,6 +1303,161 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
     }
 };
 
+#define SPELL_TRANSFORM_INTO_KALEC       44670
+#define NPC_MGT_KALECGOS                 24844
+#define NPC_MGT_KALEC                    24848
+
+struct TRINITY_DLL_DECL mob_mgt_kalecgosAI : public ScriptedAI
+{
+    mob_mgt_kalecgosAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Timer;
+    uint32 step;
+
+    void Reset()
+    {
+        Timer = 60000;
+        step = 0;
+        me->setActive(true);
+        me->SetLevitate(true);
+        me->SetSpeed(MOVE_FLIGHT, 2.0);
+    }
+
+    void MovementInform(uint32 Type, uint32 Id)
+    {
+        if(Type == POINT_MOTION_TYPE)
+        {
+            switch(Id)
+            {
+                case 1:
+                    me->GetMap()->CreatureRelocation(me, 198.4, -273.3, -8.72, me->GetOrientation());
+                    Timer = 500;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    void DoFlight(uint32 step)
+    {
+        switch(step)
+        {
+            case 0:
+                me->GetMotionMaster()->MovePoint(1, 198.4, -273.3, -8.72);
+                Timer = 6000;
+                break;
+            case 1:
+                DoYell("Be still, mortals, and hearken to my words.", 0, 0);
+                Timer = 60000;
+                break;
+            case 2:
+                me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                Timer = 1000;
+                break;
+            case 3:
+                {
+                float x, y, z;
+                me->GetPosition(x, y, z);
+                me->GetMap()->CreatureRelocation(me, x, y, z, 2*M_PI);
+                Timer = 1500;
+                break;
+                }
+            case 4:
+                DoCast(me, SPELL_TRANSFORM_INTO_KALEC);
+                Timer = 1000;
+                break;
+            case 5:
+                me->SetVisibility(VISIBILITY_OFF);
+                DoSpawnCreature(NPC_MGT_KALEC, 0, 0, 0, me->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0);
+                Timer = 2000;
+                break;
+            case 6:
+                me->Kill(me, false);
+                break;
+            default:
+                break;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(Timer < diff)
+        {
+            DoFlight(step);
+            ++step;
+        }
+        else
+            Timer -= diff;
+    }
+};
+
+#define KALEC_WELCOME1      "Who are you?"
+#define KALEC_WELCOME2      "What brings you to the Sunwell?"
+#define KALEC_CONTINUE1     "What can we do to assist you?"
+#define KALEC_CONTINUE2A    "You're not alone here?"
+#define KALEC_CONTINUE2B    "What would Kil'jaeden want with a mortal woman?"
+
+bool GossipHello_npc_kalec(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu( _Creature->GetGUID() );
+
+    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, KALEC_WELCOME1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, KALEC_WELCOME2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+
+    player->SEND_GOSSIP_MENU(12498, _Creature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_kalec(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, KALEC_CONTINUE1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(12500, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            player->SEND_GOSSIP_MENU(12502, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, KALEC_CONTINUE2A, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, KALEC_CONTINUE2B, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            player->SEND_GOSSIP_MENU(12606, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+4:
+            player->SEND_GOSSIP_MENU(12607, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+5:
+            player->SEND_GOSSIP_MENU(12608, _Creature->GetGUID());
+            break;
+    }
+    return true;
+}
+
+bool GOUse_go_movie_orb(Player *player, GameObject* _GO)
+{
+    if (player)
+    {
+        WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
+        data << (uint32)164;
+        player->GetSession()->SendPacket(&data);
+
+        ScriptedInstance* pInstance = _GO->GetInstanceData();
+        if(pInstance && pInstance->GetData(DATA_KALEC) != DONE)
+        {
+            pInstance->SetData(DATA_KALEC, DONE);
+            _GO->SummonCreature(NPC_MGT_KALECGOS, 133.3, -384.3, 13.0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+        }
+
+        if (player->GetQuestStatus(11490) == QUEST_STATUS_INCOMPLETE)
+            player->KilledMonster(25042, 0);
+    }
+    return true;
+}
+
 CreatureAI* GetAI_mob_sunwell_mage_guard(Creature *_Creature)
 {
     return new mob_sunwell_mage_guardAI (_Creature);
@@ -1354,6 +1513,10 @@ CreatureAI* GetAI_mob_coilskar_witch(Creature *_Creature)
 CreatureAI* GetAI_mob_ethereum_smuggler(Creature *_Creature)
 {
     return new mob_ethereum_smugglerAI (_Creature);
+}
+CreatureAI* GetAI_mob_mgt_kalecgos(Creature *_Creature)
+{
+    return new mob_mgt_kalecgosAI (_Creature);
 }
 
 void AddSC_magisters_terrace_trash()
@@ -1428,5 +1591,21 @@ void AddSC_magisters_terrace_trash()
     newscript = new Script;
     newscript->Name = "mob_ethereum_smuggler";
     newscript->GetAI = &GetAI_mob_ethereum_smuggler;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_mgt_kalecgos";
+    newscript->GetAI = &GetAI_mob_mgt_kalecgos;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_mgt_kalec";
+    newscript->pGossipHello = &GossipHello_npc_kalec;
+    newscript->pGossipSelect = &GossipSelect_npc_kalec;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="go_movie_orb";
+    newscript->pGOUse = &GOUse_go_movie_orb;
     newscript->RegisterSelf();
 }

@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_magisters_terrace.h"
 
-#define ENCOUNTERS      5
+#define ENCOUNTERS      6
 
 // mobs DB GUIDs that should respawn group formation on evade
 uint32 KaelTrashGuid[6]=
@@ -54,6 +54,7 @@ uint32 TrashPackEntry[8] =
 2  - Priestess Delrissa
 3  - Kael'thas Sunstrider
 4  - Kael'thas trash pack event
+5  - Kalecgos event
 */
 
 struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
@@ -130,6 +131,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_DELRISSA_EVENT:       return Encounters[2];
             case DATA_KAELTHAS_EVENT:       return Encounters[3];
             case DATA_KAEL_TRASH_EVENT:     return Encounters[4];
+            case DATA_KALEC:                return Encounters[5];
             case DATA_DELRISSA_DEATH_COUNT: return DelrissaDeathCount;
             case DATA_KAEL_TRASH_COUNTER:   return KaelTrashCounter;
             case DATA_KAEL_PHASE:           return KaelPhase;
@@ -183,6 +185,12 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_KAEL_PHASE:
                 KaelPhase = data;
                 break;
+            case DATA_KALEC:
+                if(Encounters[5] != DONE)
+                    Encounters[5] = data;
+                break;
+            default:
+                break;
         }
 
         if(data == DONE)
@@ -198,7 +206,8 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         stream << Encounters[1] << " ";
         stream << Encounters[2] << " ";
         stream << Encounters[3] << " ";
-        stream << Encounters[4];
+        stream << Encounters[4] << " ";
+        stream << Encounters[5];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -214,7 +223,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         }
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
-        stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4];
+        stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4] >> Encounters[5];
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounters[i] == IN_PROGRESS)
                 Encounters[i] = NOT_STARTED;
@@ -276,6 +285,11 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case 188166:
                 KaelStatue[1] = go->GetGUID();
                 go->SetGoState(GOState(GetData(DATA_KAELTHAS_EVENT) != DONE));
+                break;
+            // Scrying Orb
+            case 187578:
+                if(GetData(DATA_KALEC) == DONE)
+                    go->SummonCreature(24848, 198.4, -273.3, -8.72, 2*M_PI, TEMPSUMMON_CORPSE_DESPAWN, 0);
                 break;
         }
     }

@@ -582,20 +582,6 @@ bool GOUse_go_kael_orb(Player *player, GameObject* _GO)
     return true;
 }
 
-bool GOUse_go_movie_orb(Player *player, GameObject* _GO)
-{
-    if (player)
-    {
-        WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
-        data << (uint32)164;
-        player->GetSession()->SendPacket(&data);
-
-        if (player->GetQuestStatus(11490) == QUEST_STATUS_INCOMPLETE)
-            player->KilledMonster(25042, 0);
-    }
-    return true;
-}
-
 CreatureAI* GetAI_boss_felblood_kaelthas(Creature* c)
 {
     return new boss_felblood_kaelthasAI(c);
@@ -653,11 +639,6 @@ void AddSC_boss_felblood_kaelthas()
     newscript = new Script;
     newscript->Name="go_kael_orb";
     newscript->pGOUse = &GOUse_go_kael_orb;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="go_movie_orb";
-    newscript->pGOUse = &GOUse_go_movie_orb;
     newscript->RegisterSelf();
 }
 
