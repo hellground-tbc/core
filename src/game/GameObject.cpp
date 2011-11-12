@@ -1157,6 +1157,7 @@ void GameObject::Use(Unit* user)
                 WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
                 data << info->camera.cinematicId;
                 player->GetSession()->SendPacket(&data);
+                player->setWatchingCinematic(info->camera.cinematicId);
             }
             return;
         }

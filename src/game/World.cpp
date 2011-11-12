@@ -1358,6 +1358,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading AreaTrigger script names...");
     sScriptMgr.LoadAreaTriggerScripts();
 
+    sLog.outString("Loading CompletedCinematic script names...");
+    sScriptMgr.LoadCompletedCinematicScripts();
+
     sLog.outString("Loading event id script names...");
     sScriptMgr.LoadEventIdScripts();
 

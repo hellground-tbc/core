@@ -23,6 +23,7 @@
 #include "Policies/Singleton.h"
 
 struct AreaTriggerEntry;
+struct CinematicSequenceEntry;
 class Aura;
 class Creature;
 class CreatureAI;
@@ -85,8 +86,10 @@ class ScriptMgr
 
         void LoadScriptNames();
         void LoadAreaTriggerScripts();
+        void LoadCompletedCinematicScripts();
 
         uint32 GetAreaTriggerScriptId(uint32 triggerId) const;
+        uint32 GetCompletedCinematicScriptId(uint32 cinematicId) const;
         uint32 GetEventIdScriptId(uint32 eventId) const;
         uint32 GetSpellIdScriptId(uint32 eventId) const;
 
@@ -114,6 +117,7 @@ class ScriptMgr
         bool OnGameObjectUse(Player* pPlayer, GameObject* pGameObject);
         bool OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
         bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry);
+        bool OnCompletedCinematic(Player* pPlayer, CinematicSequenceEntry const* cinematic);
         bool OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget, bool isStart);
         bool OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, Creature* pTarget);
         bool OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, GameObject* pTarget);
@@ -137,12 +141,14 @@ class ScriptMgr
         }
 
         typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptMap;
+        typedef UNORDERED_MAP<uint32, uint32> CompletedCinematicScriptMap;
         typedef UNORDERED_MAP<uint32, uint32> EventIdScriptMap;
         typedef UNORDERED_MAP<uint32, uint32> SpellIdScriptMap;
 
-        AreaTriggerScriptMap    m_AreaTriggerScripts;
-        EventIdScriptMap        m_EventIdScripts;
-        SpellIdScriptMap        m_SpellIdScripts;
+        AreaTriggerScriptMap            m_AreaTriggerScripts;
+        CompletedCinematicScriptMap     m_CompletedCinematicScripts;
+        EventIdScriptMap                m_EventIdScripts;
+        SpellIdScriptMap                m_SpellIdScripts;
 
         ScriptNameMap           m_scriptNames;
 
@@ -171,6 +177,7 @@ class ScriptMgr
         bool (TRINITY_IMPORT* m_pOnGOUse) (Player*, GameObject*);
         bool (TRINITY_IMPORT* m_pOnItemUse) (Player*, Item*, SpellCastTargets const&);
         bool (TRINITY_IMPORT* m_pOnAreaTrigger) (Player*, AreaTriggerEntry const*);
+        bool (TRINITY_IMPORT* m_pOnCompletedCinematic) (Player*, CinematicSequenceEntry const*);
         bool (TRINITY_IMPORT* m_pOnProcessEvent) (uint32, Object*, Object*, bool);
         bool (TRINITY_IMPORT* m_pOnEffectDummyCreature) (Unit*, uint32, uint32, Creature*);
         bool (TRINITY_IMPORT* m_pOnEffectDummyGO) (Unit*, uint32, uint32, GameObject*);
@@ -187,6 +194,7 @@ class ScriptMgr
 #define sScriptMgr Trinity::Singleton<ScriptMgr>::Instance()
 
 TRINITY_DLL_SPEC uint32 GetAreaTriggerScriptId(uint32 triggerId);
+TRINITY_DLL_SPEC uint32 GetCompletedCinematicScriptId(uint32 triggerId);
 TRINITY_DLL_SPEC uint32 GetScriptId(const char *name);
 TRINITY_DLL_SPEC uint32 GetEventIdScriptId(uint32 eventId);
 TRINITY_DLL_SPEC uint32 GetSpellIdScriptId(uint32 eventId);

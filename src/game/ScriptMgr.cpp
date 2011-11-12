@@ -60,6 +60,7 @@ ScriptMgr::ScriptMgr() :
     m_pOnGOUse(NULL),
     m_pOnItemUse(NULL),
     m_pOnAreaTrigger(NULL),
+    m_pOnCompletedCinematic(NULL),
     m_pOnProcessEvent(NULL),
     m_pOnEffectDummyCreature(NULL),
     m_pOnEffectDummyGO(NULL),
@@ -620,6 +621,8 @@ void ScriptMgr::LoadScriptNames()
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM areatrigger_scripts WHERE ScriptName <> '' "
       "UNION "
+      "SELECT DISTINCT(ScriptName) FROM completed_cinematic_scripts WHERE ScriptName <> '' "
+      "UNION "
       "SELECT DISTINCT(ScriptName) FROM scripted_event_id WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM scripted_spell_id WHERE ScriptName <> '' "
@@ -677,6 +680,49 @@ void ScriptMgr::LoadAreaTriggerScripts()
     sLog.outString();
     sLog.outString(">> Loaded %u areatrigger scripts", count);
 }
+
+void ScriptMgr::LoadCompletedCinematicScripts()
+{
+    m_CompletedCinematicScripts.clear();                            // need for reload case
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, ScriptName FROM completed_cinematic_scripts");
+
+    uint32 count = 0;
+
+    if (!result)
+    {
+        BarGoLink bar(1);
+        bar.step();
+
+        sLog.outString();
+        sLog.outString(">> Loaded %u after completed cinematic scripts", count);
+        return;
+    }
+
+    BarGoLink bar(result->GetRowCount());
+
+    do
+    {
+        ++count;
+        bar.step();
+
+        Field *fields = result->Fetch();
+
+        uint32 Cinematic_ID    = fields[0].GetUInt32();
+        const char *scriptName = fields[1].GetString();
+
+        CinematicSequenceEntry const* cinematic = sCinematicStore.LookupEntry(Cinematic_ID);
+        if (!cinematic)
+        {
+            sLog.outErrorDb("Cinematic sequence (ID:%u) does not exist in `CinematicSequeces.dbc`.",Cinematic_ID);
+            continue;
+        }
+        m_CompletedCinematicScripts[Cinematic_ID] = GetScriptId(scriptName);
+    } while (result->NextRow());
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u after completed cinematic scripts", count);
+}
+
 
 CreatureAI* ScriptMgr::GetCreatureAI(Creature* pCreature)
 {
@@ -776,6 +822,11 @@ bool ScriptMgr::OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry)
     return m_pOnAreaTrigger != NULL && m_pOnAreaTrigger(pPlayer, atEntry);
 }
 
+bool ScriptMgr::OnCompletedCinematic(Player* pPlayer, CinematicSequenceEntry const* cinematic)
+{
+    return m_pOnCompletedCinematic != NULL && m_pOnCompletedCinematic(pPlayer, cinematic);
+}
+
 bool ScriptMgr::OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget, bool isStart)
 {
     return m_pOnProcessEvent != NULL && m_pOnProcessEvent(eventId, pSource, pTarget, isStart);
@@ -852,6 +903,7 @@ bool ScriptMgr::LoadScriptLibrary(const char* libName)
     GetScriptHookPtr(m_pOnGOUse,                    "GOUse");
     GetScriptHookPtr(m_pOnItemUse,                  "ItemUse");
     GetScriptHookPtr(m_pOnAreaTrigger,              "AreaTrigger");
+    GetScriptHookPtr(m_pOnCompletedCinematic,       "CompletedCinematic");
     GetScriptHookPtr(m_pOnProcessEvent,             "ProcessEvent");
     GetScriptHookPtr(m_pOnEffectDummyCreature,      "EffectDummyCreature");
     GetScriptHookPtr(m_pOnEffectDummyGO,            "EffectDummyGameObject");
@@ -908,6 +960,7 @@ void ScriptMgr::UnloadScriptLibrary()
     m_pOnGOUse                  = NULL;
     m_pOnItemUse                = NULL;
     m_pOnAreaTrigger            = NULL;
+    m_pOnCompletedCinematic     = NULL;
     m_pOnProcessEvent           = NULL;
     m_pOnEffectDummyCreature    = NULL;
     m_pOnEffectDummyGO          = NULL;
@@ -952,6 +1005,14 @@ uint32 ScriptMgr::GetAreaTriggerScriptId(uint32 trigger_id) const
     return 0;
 }
 
+uint32 ScriptMgr::GetCompletedCinematicScriptId(uint32 cinematic_id) const
+{
+    CompletedCinematicScriptMap::const_iterator i = m_CompletedCinematicScripts.find(cinematic_id);
+    if (i!= m_CompletedCinematicScripts.end())
+        return i->second;
+    return 0;
+}
+
 uint32 GetEventIdScriptId(uint32 eventId)
 {
     return sScriptMgr.GetEventIdScriptId(eventId);
@@ -966,6 +1027,11 @@ uint32 GetSpellIdScriptId(uint32 eventId)
 uint32 GetAreaTriggerScriptId(uint32 trigger_id)
 {
     return sScriptMgr.GetAreaTriggerScriptId(trigger_id);
+}
+
+uint32 GetCompletedCinematicScriptId(uint32 cinematic_id)
+{
+    return sScriptMgr.GetCompletedCinematicScriptId(cinematic_id);
 }
 
 uint32 GetScriptId(const char *name)

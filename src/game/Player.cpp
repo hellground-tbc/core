@@ -342,6 +342,7 @@ Player::Player (WorldSession *session): Unit()
     ClearTrade();
 
     m_cinematic = 0;
+    m_watchingCinematicId = 0;
 
     PlayerTalkClass = new PlayerMenu(GetSession());
     m_currentBuybackSlot = BUYBACK_SLOT_START;
@@ -14759,6 +14760,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     }
 
     m_cinematic = fields[12].GetUInt32();
+    m_watchingCinematicId = 0;
     m_Played_time[0]= fields[13].GetUInt32();
     m_Played_time[1]= fields[14].GetUInt32();
 

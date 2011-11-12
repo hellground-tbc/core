@@ -483,6 +483,17 @@ bool AreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry)
 }
 
 TRINITY_DLL_EXPORT
+bool CompletedCinematic(Player* pPlayer, CinematicSequenceEntry const* cinematic)
+{
+    Script* pTempScript = m_scripts[GetCompletedCinematicScriptId(cinematic->id)];
+
+    if (!pTempScript || !pTempScript->pCompletedCinematic)
+        return false;
+
+    return pTempScript->pCompletedCinematic(pPlayer, cinematic);
+}
+
+TRINITY_DLL_EXPORT
 bool ProcessEvent(uint32 uiEventId, Object* pSource, Object* pTarget, bool bIsStart)
 {
     Script* pTempScript = m_scripts[GetEventIdScriptId(uiEventId)];

@@ -616,6 +616,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             data.Initialize(SMSG_TRIGGER_CINEMATIC,4);
             data << uint32(rEntry->startmovie);
             SendPacket(&data);
+            pCurrChar->setWatchingCinematic(rEntry->startmovie);
 
             // send new char string if not empty
             if (!sWorld.GetNewCharString().empty())

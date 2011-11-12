@@ -136,6 +136,7 @@ class DBCStorage
 
 extern DBCStorage <AreaTableEntry>               sAreaStore;// recommend access using functions
 extern DBCStorage <AreaTriggerEntry>             sAreaTriggerStore;
+extern DBCStorage <CinematicSequenceEntry>       sCinematicStore;
 extern DBCStorage <AuctionHouseEntry>            sAuctionHouseStore;
 extern DBCStorage <BankBagSlotPricesEntry>       sBankBagSlotPricesStore;
 extern DBCStorage <BattlemasterListEntry>        sBattlemasterListStore;
