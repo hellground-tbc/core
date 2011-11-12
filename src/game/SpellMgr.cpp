@@ -572,7 +572,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
     return SPELL_NORMAL;
 }
 
-bool IsSingleFromSpellSpecificPerCaster(uint32 spellSpec1,uint32 spellSpec2)
+bool IsSingleFromSpellSpecificPerCaster(SpellSpecific spellSpec1,SpellSpecific spellSpec2)
 {
     switch (spellSpec1)
     {
@@ -585,13 +585,13 @@ bool IsSingleFromSpellSpecificPerCaster(uint32 spellSpec1,uint32 spellSpec2)
         case SPELL_POSITIVE_SHOUT:
         case SPELL_JUDGEMENT:
         case SPELL_WARLOCK_CORRUPTION:
-            return spellSpec1==spellSpec2;
+            return spellSpec1 == spellSpec2;
         default:
             return false;
     }
 }
 
-bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1,uint32 spellSpec2)
+bool IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific spellSpec2)
 {
     switch (spellSpec1)
     {
@@ -605,17 +605,30 @@ bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1,uint32 spellSpec2)
         case SPELL_FOOD:
         case SPELL_CHARM:
         case SPELL_WARRIOR_ENRAGE:
-            return spellSpec1==spellSpec2;
+            return spellSpec1 == spellSpec2;
         case SPELL_BATTLE_ELIXIR:
-            return spellSpec2==SPELL_BATTLE_ELIXIR
-                || spellSpec2==SPELL_FLASK_ELIXIR;
+            return spellSpec2 == SPELL_BATTLE_ELIXIR
+                || spellSpec2 == SPELL_FLASK_ELIXIR;
         case SPELL_GUARDIAN_ELIXIR:
-            return spellSpec2==SPELL_GUARDIAN_ELIXIR
-                || spellSpec2==SPELL_FLASK_ELIXIR;
+            return spellSpec2 == SPELL_GUARDIAN_ELIXIR
+                || spellSpec2 == SPELL_FLASK_ELIXIR;
         case SPELL_FLASK_ELIXIR:
-            return spellSpec2==SPELL_BATTLE_ELIXIR
-                || spellSpec2==SPELL_GUARDIAN_ELIXIR
-                || spellSpec2==SPELL_FLASK_ELIXIR;
+            return spellSpec2 == SPELL_BATTLE_ELIXIR
+                || spellSpec2 == SPELL_GUARDIAN_ELIXIR
+                || spellSpec2 == SPELL_FLASK_ELIXIR;
+        default:
+            return false;
+    }
+}
+
+bool IsSingleFromSpellSpecificRanksPerTarget(SpellSpecific spellId_spec, SpellSpecific i_spellId_spec)
+{
+    switch (spellId_spec)
+    {
+        case SPELL_BLESSING:
+        case SPELL_AURA:
+        case SPELL_CURSE:
+            return spellId_spec == i_spellId_spec;
         default:
             return false;
     }
@@ -1757,7 +1770,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     SpellSpecific spellId_spec_2 = GetSpellSpecific(spellId_2);
     if (spellId_spec_1 && spellId_spec_2)
         if (IsSingleFromSpellSpecificPerTarget(spellId_spec_1, spellId_spec_2)
-            ||(IsSingleFromSpellSpecificPerCaster(spellId_spec_1, spellId_spec_2) && sameCaster))
+            ||(IsSingleFromSpellSpecificPerCaster(spellId_spec_1, spellId_spec_2) && sameCaster) ||
+            (IsSingleFromSpellSpecificRanksPerTarget(spellId_spec_1, spellId_spec_2) && IsRankSpellDueToSpell(spellInfo_1, spellId_spec_2)))
             return true;
 
     // spells with different specific always stack

@@ -3975,48 +3975,48 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
             }
         }
 
-        if (!is_triggered_by_spell)
+        if (is_triggered_by_spell)
+            continue;
+
+        bool sameCaster = Aur->GetCasterGUID() == (*i).second->GetCasterGUID();
+        if (spellmgr.IsNoStackSpellDueToSpell(spellId, i_spellId, sameCaster))
         {
-            bool sameCaster = Aur->GetCasterGUID() == (*i).second->GetCasterGUID();
-            if (spellmgr.IsNoStackSpellDueToSpell(spellId, i_spellId, sameCaster))
+            //some spells should be not removed by lower rank of them (totem, paladin aura)
+/*            if (!sameCaster
+                &&(spellProto->Effect[effIndex]==SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
+                &&(spellProto->DurationIndex==21)
+                &&(spellmgr.IsRankSpellDueToSpell(spellProto, i_spellId))
+                &&(CompareAuraRanks(spellId, effIndex, i_spellId, i_effIndex) < 0))
+                return false;*/     // is this needed ? Oo
+
+            // Its a parent aura (create this aura in ApplyModifier)
+            if ((*i).second->IsInUse())
             {
-                //some spells should be not removed by lower rank of them (totem, paladin aura)
-                if (!sameCaster
-                    &&(spellProto->Effect[effIndex]==SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
-                    &&(spellProto->DurationIndex==21)
-                    &&(spellmgr.IsRankSpellDueToSpell(spellProto, i_spellId))
-                    &&(CompareAuraRanks(spellId, effIndex, i_spellId, i_effIndex) < 0))
-                    return false;
-
-                // Its a parent aura (create this aura in ApplyModifier)
-                if ((*i).second->IsInUse())
-                {
-                    sLog.outError("Aura (Spell %u Effect %u) is in process but attempt removed at aura (Spell %u Effect %u) adding, need add stack rule for Unit::RemoveNoStackAurasDueToAura", i->second->GetId(), i->second->GetEffIndex(),Aur->GetId(), Aur->GetEffIndex());
-                    continue;
-                }
-
-                uint64 caster = (*i).second->GetCasterGUID();
-                // Remove all auras by aura caster
-                for (uint8 a=0;a<3;++a)
-                {
-                    spellEffectPair spair = spellEffectPair(i_spellId, a);
-                    for (AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
-                    {
-                        if (iter->second->GetCasterGUID()==caster)
-                        {
-                            RemoveAura(iter, AURA_REMOVE_BY_STACK);
-                            iter = m_Auras.lower_bound(spair);
-                        }
-                        else
-                            ++iter;
-                    }
-                }
-
-                if (m_Auras.empty())
-                    break;
-                else
-                    next =  m_Auras.begin();
+                sLog.outError("Aura (Spell %u Effect %u) is in process but attempt removed at aura (Spell %u Effect %u) adding, need add stack rule for Unit::RemoveNoStackAurasDueToAura", i->second->GetId(), i->second->GetEffIndex(),Aur->GetId(), Aur->GetEffIndex());
+                continue;
             }
+
+            uint64 caster = (*i).second->GetCasterGUID();
+            // Remove all auras by aura caster
+            for (uint8 a=0;a<3;++a)
+            {
+                spellEffectPair spair = spellEffectPair(i_spellId, a);
+                for (AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair);)
+                {
+                    if (iter->second->GetCasterGUID()==caster)
+                    {
+                        RemoveAura(iter, AURA_REMOVE_BY_STACK);
+                        iter = m_Auras.lower_bound(spair);
+                    }
+                    else
+                        ++iter;
+                }
+            }
+
+            if (m_Auras.empty())
+                break;
+            else
+                next =  m_Auras.begin();
         }
     }
     return true;
