@@ -177,6 +177,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
         Frostbolt_Timer = 0;
         Arcane_Nova_Timer = urand (12000, 20000);
         OOCTimer = 5000;
+        me->SetWalk(false);
     }
 
     void EnterEvadeMode()
@@ -251,6 +252,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
               x = x + dist * cos(angle);
               y = y + dist * sin(angle);
               me->UpdateAllowedPositionZ(x, y, z);
+              me->SetSpeed(MOVE_RUN, 1.5);
               me->GetMotionMaster()->MovePoint(1, x, y, z);
           }
           else
@@ -306,6 +308,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
         SetAutocast(SPELL_INCINERATE, 1900, true);
         Immolate_Timer = urand(8000, 12000);
         OOCTimer = 5000;
+        me->SetWalk(false);
     }
 
     void EnterEvadeMode()
@@ -401,6 +404,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
               x = x + dist * cos(angle);
               y = y + dist * sin(angle);
               me->UpdateAllowedPositionZ(x, y, z);
+              me->SetSpeed(MOVE_RUN, 1.5);
               me->GetMotionMaster()->MovePoint(1, x, y, z);
           }
           else
@@ -445,6 +449,7 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
     void Reset()
     {
         Check_Timer = 2000;
+        me->SetWalk(false);
     }
 
     void AttackStart(Unit* who)
@@ -469,6 +474,7 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
               x = x + dist * cos(angle);
               y = y + dist * sin(angle);
               me->UpdateAllowedPositionZ(x, y, z);
+              me->SetSpeed(MOVE_RUN, 1.5);
               me->GetMotionMaster()->MovePoint(1, x, y, z);
           }
           else
@@ -899,6 +905,7 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
         OOCTimer = 5000;
         Drink_Timer = urand(25000, 35000);
         Wretched_Cast_Timer = 0;
+        me->SetWalk(false);
     }
 
     void AttackStart(Unit* who)
@@ -963,6 +970,7 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
               x = x + dist * cos(angle);
               y = y + dist * sin(angle);
               me->UpdateAllowedPositionZ(x, y, z);
+              me->SetSpeed(MOVE_RUN, 1.5);
               me->GetMotionMaster()->MovePoint(1, x, y, z);
           }
           else

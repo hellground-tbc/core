@@ -316,7 +316,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 EnterEvadeMode();
                 return;
             }
-            if(!me->IsWithinDistInMap(&wLoc, 100.0))
+            if(!me->IsWithinDistInMap(&wLoc, 80.0))
                 DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
             if(HeroicMode && canUseMedalion)
             {
@@ -547,7 +547,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
                     canUseMedalion = false;
                 }
             }
-            if(!me->IsWithinDistInMap(&HomePos, 100.0))
+            if(!me->IsWithinDistInMap(&HomePos, 80.0))
                 DoTeleportTo(HomePos.coord_x, HomePos.coord_y, HomePos.coord_z);
             Check_Timer = 2000;
         }
