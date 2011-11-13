@@ -33,6 +33,7 @@ EndScriptData */
 #define EMOTE_CRYSTAL                   -1585006
 
 //Crystal efect spells
+#define SPELL_DUAL_WIELD                29651
 #define SPELL_FEL_CRYSTAL_COSMETIC      44374
 #define SPELL_FEL_CRYSTAL_VISUAL        44355
 #define SPELL_MANA_RAGE                 44320 // This spell triggers 44321
@@ -96,6 +97,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
         CrystalGUID = 0;
 
         m_creature->SetPower(POWER_MANA, 0);
+        DoCast(me, SPELL_DUAL_WIELD, true);
     }
 
     void SelectNearestCrystal()
@@ -244,7 +246,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             if( DrainManaTimer < diff )
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45, true, POWER_MANA))
-                    AddSpellToCast(target, SPELL_DRAIN_MANA);
+                    AddSpellToCast(target, SPELL_DRAIN_MANA, false, true);
                 DrainManaTimer = urand(18000, 25000);
             }
             else
@@ -259,7 +261,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
                 if(DrainLifeTimer < diff)
                 {
                     if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true))
-                        AddSpellToCast(target, SPELL_DRAIN_LIFE);
+                        AddSpellToCast(target, SPELL_DRAIN_LIFE, false, true);
                     DrainLifeTimer = urand(8000, 12000);
                 }
                 else

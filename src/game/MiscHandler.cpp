@@ -993,6 +993,8 @@ void WorldSession::HandleCompleteCinema(WorldPacket & recv_data)
         return;
     }
 
+    GetPlayer()->setWatchingCinematic(NULL);
+
     if (sScriptMgr.OnCompletedCinematic(GetPlayer(), cinematic))
         return;
 }

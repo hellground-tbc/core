@@ -168,7 +168,10 @@ void ScriptedAI::DoStartNoMovement(Unit* pVictim, bool casterType)
         return;
 
     if(casterType)
+    {
+        me->SetWalk(false);
         casterTimer = 2000;
+    }
 
     m_creature->GetMotionMaster()->MoveIdle();
 }
