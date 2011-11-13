@@ -5068,10 +5068,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 InstanceMap *instance = dynamic_cast<InstanceMap*>(m_target->GetMap());
                 if(instance && instance->GetInstanceData() && instance->GetInstanceData()->IsEncounterInProgress())
-                {
-                    if(Unit* target = m_target->GetNextRandomRaidMember(100.0))
-                        m_target->CastSpell(target, 45034, true, 0, this, GetCasterGUID());
-                }
+                    m_target->CastSpell(m_target, 45034, true);
             }
             // Serpentshrine Parasite
             if (m_spellProto->Id == 39053 && !apply)
