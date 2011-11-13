@@ -199,10 +199,15 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
     {
         float x, y, z;
         me->GetPosition(x, y, z);
-        if(Unit* Trigger = me->SummonTrigger(x, y, z, 0, 10000))
-            Trigger->CastSpell(killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
-        if(pInstance)
-            killer->CastSpell(killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, pInstance->GetData64(DATA_VEXALLUS));
+        Player* true_killer = killer->GetCharmerOrOwnerPlayerOrPlayerItself();
+
+        if(true_killer)
+        {
+            if(Unit* Trigger = me->SummonTrigger(x, y, z, 0, 10000))
+                Trigger->CastSpell(true_killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
+            if(pInstance)
+                true_killer->CastSpell(true_killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, pInstance->GetData64(DATA_VEXALLUS));
+        }
         me->RemoveCorpse();
     }
 
