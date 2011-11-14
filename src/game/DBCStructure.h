@@ -21,11 +21,9 @@
 #ifndef DBCSTRUCTURE_H
 #define DBCSTRUCTURE_H
 
-#include "Common.h"
 #include "DBCEnums.h"
-#include "../game/Path.h"
 #include "Platform/Define.h"
-
+#include "Path.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -69,11 +67,11 @@ struct AreaTriggerEntry
 
 struct AuctionHouseEntry
 {
-    uint32 houseId; // 0 index
-    uint32 faction; // 1 id of faction.dbc for player factions associated with city
-    uint32 depositPercent; // 2 1/3 from real
-    uint32 cutPercent; // 3
-    //char* name[16]; // 4-19
+    uint32    houseId;                                      // 0 index
+    uint32    faction;                                      // 1 id of faction.dbc for player factions associated with city
+    uint32    depositPercent;                               // 2 1/3 from real
+    uint32    cutPercent;                                   // 3
+    //char*     name[16];                                   // 4-19
                                                             // 20 string flag, unused
 };
 
@@ -140,7 +138,6 @@ struct ChrClassesEntry
                                                             // 1-2, unused
     uint32      powerType;                                  // 3
                                                             // 4, unused
-    //char*       name[16];                                 // 5-20 unused
     char*       name[16];                                   // 5-20 unused
                                                             // 21 string flag, unused
     //char*       nameFemale[16];                           // 21-36 unused, if different from base (male) case
@@ -163,7 +160,7 @@ struct ChrRacesEntry
                                                             // 6-7 unused
     uint32      TeamID;                                     // 8 (7-Alliance 1-Horde)
                                                             // 9-12 unused
-    uint32      startmovie;                                 // 13 id from CinematicCamera.dbc
+    uint32      CinematicSequence;                          // 13 id from CinematicCamera.dbc
     char*       name[16];                                   // 14-29 used for DBC language detection/selection
                                                             // 30 string flags, unused
     //char*       nameFemale[16];                           // 31-46, if different from base (male) case
@@ -276,9 +273,10 @@ struct FactionTemplateEntry
 
         return (friendlyMask & entry.ourMask) || (ourMask & entry.friendlyMask);
     }
+
     bool IsHostileTo(FactionTemplateEntry const& entry) const
     {
-        if(ID == entry.ID)
+        if (ID == entry.ID)
             return false;
 
         if (entry.faction)
@@ -293,6 +291,7 @@ struct FactionTemplateEntry
 
         return (hostileMask & entry.ourMask) != 0;
     }
+
     bool IsHostileToPlayers() const { return (hostileMask & FACTION_MASK_PLAYER) !=0; }
 
     bool IsNeutralToAll() const
@@ -513,14 +512,15 @@ struct MapEntry
     bool IsMountAllowed() const
     {
         return !IsDungeon() ||
-            MapID==568 || MapID==309 || MapID==209 || MapID==534 ||
-            MapID==560 || MapID==509 || MapID==269;
+            MapID==209 || MapID==269 || MapID==309 ||       // TanarisInstance, CavernsOfTime, Zul'gurub
+            MapID==509 || MapID==534 || MapID==560 ||       // AhnQiraj, HyjalPast, HillsbradPast
+            MapID==568 || MapID==580;                       // ZulAman, Sunwell Plateau
     }
 
     bool IsContinent() const
     {
         return MapID == 0 || MapID == 1 || MapID == 530;
-     }
+    }
 };
 
 struct QuestSortEntry
@@ -658,7 +658,7 @@ struct SpellEntry
     int32     EquippedItemInventoryTypeMask;                // 64 (mask)
     uint32    Effect[3];                                    // 65-67
     int32     EffectDieSides[3];                            // 68-70
-    int32     EffectBaseDice[3];                            // 71-73
+    uint32    EffectBaseDice[3];                            // 71-73
     float     EffectDicePerLevel[3];                        // 74-76
     float     EffectRealPointsPerLevel[3];                  // 77-79
     int32     EffectBasePoints[3];                          // 80-82 (don't must be used in spell/auras explicitly, must be used cached Spell::m_currentBasePoints)
@@ -705,6 +705,9 @@ struct SpellEntry
     uint32    TotemCategory[2];                             // 212-213
     uint32    AreaId;                                       // 214
     uint32    SchoolMask;                                   // 215 school mask
+
+    // helpers
+    int32 CalculateSimpleValue(uint8 eff) const { return EffectBasePoints[eff]+int32(EffectBaseDice[eff]); }
 
     private:
         // prevent creating custom entries (copy data from original in fact)
@@ -972,4 +975,3 @@ typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 #define TaxiMaskSize 16
 typedef uint32 TaxiMask[TaxiMaskSize];
 #endif
-

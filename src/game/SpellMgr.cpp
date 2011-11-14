@@ -420,7 +420,7 @@ int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, ui
     if (spellId_1 == spellId_2) return 0;
 
     int32 diff = spellInfo_1->EffectBasePoints[effIndex_1] - spellInfo_2->EffectBasePoints[effIndex_2];
-    if (spellInfo_1->EffectBasePoints[effIndex_1]+1 < 0 && spellInfo_2->EffectBasePoints[effIndex_2]+1 < 0) return -diff;
+    if (spellInfo_1->CalculateSimpleValue(effIndex_1) < 0 && spellInfo_2->CalculateSimpleValue(effIndex_2) < 0) return -diff;
     else return diff;
 }
 
@@ -740,7 +740,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                 case SPELL_AURA_MOD_STAT:
                 case SPELL_AURA_MOD_DAMAGE_DONE:            // dependent from bas point sign (negative -> negative)
                 case SPELL_AURA_MOD_HEALING_DONE:
-                    if (spellproto->EffectBasePoints[effIndex]+int32(spellproto->EffectBaseDice[effIndex]) < 0)
+                    if (spellproto->CalculateSimpleValue(effIndex) < 0)
                         return false;
                     break;
                 case SPELL_AURA_MOD_SPELL_CRIT_CHANCE:
@@ -841,7 +841,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                     switch (spellproto->EffectMiscValue[effIndex])
                     {
                         case SPELLMOD_COST:                 // dependent from bas point sign (negative -> positive)
-                            if (spellproto->EffectBasePoints[effIndex]+int32(spellproto->EffectBaseDice[effIndex]) > 0)
+                            if (spellproto->CalculateSimpleValue(effIndex) > 0)
                                 return false;
                             break;
                         default:
@@ -849,11 +849,11 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                     }
                 }   break;
                 case SPELL_AURA_MOD_HEALING_PCT:
-                    if (spellproto->EffectBasePoints[effIndex]+int32(spellproto->EffectBaseDice[effIndex]) < 0)
+                    if (spellproto->CalculateSimpleValue(effIndex) < 0)
                         return false;
                     break;
                 case SPELL_AURA_MOD_SKILL:
-                    if (spellproto->EffectBasePoints[effIndex]+int32(spellproto->EffectBaseDice[effIndex]) < 0)
+                    if (spellproto->CalculateSimpleValue(effIndex) < 0)
                         return false;
                     break;
                 case SPELL_AURA_FORCE_REACTION:
@@ -2276,15 +2276,15 @@ void SpellMgr::LoadSpellLearnSkills()
 
         for (int i = 0; i < 3; ++i)
         {
-            if (entry->Effect[i]==SPELL_EFFECT_SKILL)
+            if (entry->Effect[i] == SPELL_EFFECT_SKILL)
             {
                 SpellLearnSkillNode dbc_node;
-                dbc_node.skill    = entry->EffectMiscValue[i];
+                dbc_node.skill = entry->EffectMiscValue[i];
                 if (dbc_node.skill != SKILL_RIDING)
-                    dbc_node.value    = 1;
+                    dbc_node.value = 1;
                 else
-                    dbc_node.value    = (entry->EffectBasePoints[i]+1)*75;
-                dbc_node.maxvalue = (entry->EffectBasePoints[i]+1)*75;
+                    dbc_node.value = entry->CalculateSimpleValue(i)*75;
+                dbc_node.maxvalue = entry->CalculateSimpleValue(i)*75;
 
                 SpellLearnSkillNode const* db_node = GetSpellLearnSkill(spell);
 
@@ -2591,7 +2591,7 @@ void SpellMgr::LoadSpellPetAuras()
                 continue;
             }
 
-            PetAura pa(pet, aura, spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_PET, spellInfo->EffectBasePoints[i] + spellInfo->EffectBaseDice[i]);
+            PetAura pa(pet, aura, spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_PET, spellInfo->CalculateSimpleValue(i));
             mSpellPetAuraMap[spell] = pa;
         }
 

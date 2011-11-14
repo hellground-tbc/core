@@ -1727,7 +1727,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool IsAtGroupRewardDistance(WorldObject const* pRewardSource) const;
         bool RewardPlayerAndGroupAtKill(Unit* pVictim);
-        void RewardPlayerAndGroupAtEvent(uint32 creature_id,WorldObject* pRewardSource);
+        void RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewardSource);
 
         int32 CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest);
         ReputationMgr&       GetReputationMgr()       { return m_reputationMgr; }
@@ -2066,6 +2066,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 GetOldPetSpell() const { return m_oldpetspell; }
         void SetOldPetSpell(uint32 petspell) { m_oldpetspell = petspell; }
 
+        void SendCinematicStart(uint32 CinematicSequenceId);
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/

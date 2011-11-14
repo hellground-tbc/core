@@ -22,6 +22,8 @@
 #define TRINITY_WAYPOINTMANAGER_H
 
 #include <vector>
+#include "Utilities/UnorderedMap.h"
+#include "Policies/Singleton.h"
 
 struct WaypointData
 {

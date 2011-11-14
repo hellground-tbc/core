@@ -88,7 +88,7 @@ bool GOUse_go_gong(Player* pPlayer, GameObject* pGO)
     if (pInstance)
     {
         pInstance->SetData(DATA_GONG_WAVES,pInstance->GetData(DATA_GONG_WAVES)+1);
-        pPlayer->PlaySound(4654, false);   //gong sound
+        pGO->PlayDistanceSound(4654, pPlayer);   //gong sound
         return true;
     }
 

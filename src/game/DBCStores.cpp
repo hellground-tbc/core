@@ -19,10 +19,10 @@
  */
 
 #include "DBCStores.h"
-//#include "DataStore.h"
 #include "Policies/SingletonImp.h"
 #include "Log.h"
 #include "ProgressBar.h"
+#include "SharedDefines.h"
 
 #include "DBCfmt.h"
 
@@ -163,10 +163,10 @@ static bool LoadDBC_assert_print(uint32 fsize,uint32 rsize, const std::string& f
 }
 
 template<class T>
-inline void LoadDBC(uint32& availableDbcLocales,BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, const std::string& dbc_path, const std::string& filename)
+inline void LoadDBC(uint32& availableDbcLocales, BarGoLink& bar, StoreProblemList& errlist, DBCStorage<T>& storage, const std::string& dbc_path, const std::string& filename)
 {
     // compatibility format and C++ structure sizes
-    assert(DBCFile::GetFormatRecordSize(storage.GetFormat()) == sizeof(T) || LoadDBC_assert_print(DBCFile::GetFormatRecordSize(storage.GetFormat()),sizeof(T),filename));
+    assert(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()) == sizeof(T) || LoadDBC_assert_print(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()),sizeof(T),filename));
 
     std::string dbc_filename = dbc_path + filename;
     if(storage.Load(dbc_filename.c_str()))
@@ -384,9 +384,13 @@ void LoadDBCStores(const std::string& dataPath)
             if(!talentTabInfo)
                 continue;
 
+            // prevent memory corruption; otherwise cls will become 12 below
+            if ((talentTabInfo->ClassMask & CLASSMASK_ALL_PLAYABLE) == 0)
+                continue;
+
             // store class talent tab pages
             uint32 cls = 1;
-            for(uint32 m=1;!(m & talentTabInfo->ClassMask) && cls < 12 /*MAX_CLASSES*/;m <<=1, ++cls) {}
+            for (uint32 m = 1; !(m & talentTabInfo->ClassMask) && cls < MAX_CLASSES; m <<=1, ++cls) {}
 
             sTalentTabPages[cls][talentTabInfo->tabpage]=talentTabId;
 

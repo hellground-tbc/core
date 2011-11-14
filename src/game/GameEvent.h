@@ -21,9 +21,10 @@
 #ifndef TRINITY_GAMEEVENT_H
 #define TRINITY_GAMEEVENT_H
 
+#include "Common.h"
+#include "SharedDefines.h"
 #include "Platform/Define.h"
-#include "Creature.h"
-#include "GameObject.h"
+#include "Policies/Singleton.h"
 
 #define max_ge_check_delay 86400                            // 1 day in seconds
 
@@ -85,6 +86,8 @@ struct NPCVendorEntry
 };
 
 class Player;
+class Creature;
+
 class GameEvent
 {
     public:

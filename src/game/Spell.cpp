@@ -1066,12 +1066,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     }
 
     // Call scripted function for AI if this spell is casted upon a creature (except pets)
-    if (IS_CREATURE_GUID(target->targetGUID))
+    if (unit->GetTypeId() == TYPEID_UNIT)
     {
         // cast at creature (or GO) quest objectives update at successful cast finished (+channel finished)
-        // ignore autorepeat/melee casts for speed (not exist quest for spells (hm...)
-        if (m_caster->GetTypeId() == TYPEID_PLAYER && !IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive())
-            ((Player*)m_caster)->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
+        // ignore pets or autorepeat/melee casts for speed (not exist quest for spells (hm... )
+        if (!((Creature*)unit)->isPet() && m_caster->GetTypeId() == TYPEID_PLAYER && !IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive())
+            ((Player*)m_caster)->CastedCreatureOrGO(unit->GetEntry(), unit->GetGUID(), m_spellInfo->Id);
     }
 
     if (!m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id))
@@ -4797,8 +4797,8 @@ SpellCastResult Spell::CheckItems()
         focusObject = ok;                                   // game object found in range
     }
 
-    // check reagents
-    if (!p_caster->CanNoReagentCast(m_spellInfo))
+    // check reagents (ignore triggered spells with reagents processed by original spell) and special reagent ignore case.
+    if (!m_IsTriggeredSpell && !p_caster->CanNoReagentCast(m_spellInfo))
     {
         for (uint32 i=0;i<8;i++)
         {

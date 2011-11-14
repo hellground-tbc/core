@@ -1323,6 +1323,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
             return (Unit*)this;
         }
         Player* GetCharmerOrOwnerPlayerOrPlayerItself() const;
+        float GetCombatDistance(const Unit* target) const;
 
         void SetPet(Pet* pet);
         void SetCharm(Unit* pet);
