@@ -185,7 +185,7 @@ bool GossipHello_npc_shattrathflaskvendors(Player *player, Creature *_Creature)
     if(_Creature->GetEntry() == 23484)
     {
         // Aldor vendor
-        if( _Creature->isVendor() && (player->GetReputationRank(932) == REP_EXALTED) && (player->GetReputationRank(935) == REP_EXALTED) && (player->GetReputationRank(942) == REP_EXALTED) )
+        if( _Creature->isVendor() && (player->GetReputationMgr().GetRank(932) == REP_EXALTED) && (player->GetReputationMgr().GetRank(935) == REP_EXALTED) && (player->GetReputationMgr().GetRank(942) == REP_EXALTED) )
         {
             player->ADD_GOSSIP_ITEM(1, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
             player->SEND_GOSSIP_MENU(11085, _Creature->GetGUID());
@@ -199,7 +199,7 @@ bool GossipHello_npc_shattrathflaskvendors(Player *player, Creature *_Creature)
     if(_Creature->GetEntry() == 23483)
     {
         // Scryers vendor
-        if( _Creature->isVendor() && (player->GetReputationRank(934) == REP_EXALTED) && (player->GetReputationRank(935) == REP_EXALTED) && (player->GetReputationRank(942) == REP_EXALTED) )
+        if( _Creature->isVendor() && (player->GetReputationMgr().GetRank(934) == REP_EXALTED) && (player->GetReputationMgr().GetRank(935) == REP_EXALTED) && (player->GetReputationMgr().GetRank(942) == REP_EXALTED) )
         {
             player->ADD_GOSSIP_ITEM(1, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
             player->SEND_GOSSIP_MENU(11085, _Creature->GetGUID());
@@ -229,7 +229,7 @@ bool GossipSelect_npc_shattrathflaskvendors(Player *player, Creature *_Creature,
 
 bool GossipHello_npc_zephyr(Player *player, Creature *_Creature)
 {
-    if( player->GetReputationRank(989) >= REP_REVERED )
+    if( player->GetReputationMgr().GetRank(989) >= REP_REVERED )
         player->ADD_GOSSIP_ITEM(0, GOSSIP_HZ, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
@@ -407,7 +407,7 @@ CreatureAI* GetAI_npc_kservantAI(Creature *_Creature)
 
 struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
 {
-    npc_dirty_larryAI(Creature* c) : ScriptedAI(c) 
+    npc_dirty_larryAI(Creature* c) : ScriptedAI(c)
     {
     m_creature->GetPosition(wLoc);
     }
@@ -421,7 +421,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
     uint32 SayTimer;
     uint32 EvadeTimer;
     uint32 Step;
-    
+
     WorldLocation wLoc;
 
     void Reset()
@@ -442,7 +442,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
         {
             ((Creature*)Creepjack)->AI()->EnterEvadeMode();
             Creepjack->setFaction(1194);
-            Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);    
+            Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
         Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
         if(Malone)
@@ -456,7 +456,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
     uint32 NextStep(uint32 Step)
     {
         Player *player = Unit::GetPlayer(PlayerGUID);
-        
+
         switch(Step)
         {
         case 0:
@@ -467,7 +467,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
                 Creepjack->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
             Unit* Malone = FindCreature(NPC_MALONE, 20, m_creature);
             if(Malone)
-                Malone->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);    
+                Malone->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
             m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }return 2000;
         case 1: DoScriptText(SAY_1, m_creature, player); return 3000;
@@ -563,7 +563,7 @@ struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
                 EvadeTimer = 3000;
                 return;
         }
-        else EvadeTimer -= diff; 
+        else EvadeTimer -= diff;
         DoMeleeAttackIfReady();
     }
 };
@@ -753,7 +753,7 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         if(!Init)
-        {     
+        {
             std::list<Unit*> PlayerList;
             uint32 shattrathRadius = 1000;
             Trinity::AnyUnitInObjectRangeCheck  check(me, shattrathRadius);
@@ -780,8 +780,8 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
         {
             NextStep_Timer = 13000;
             Creature* adal = NULL;
-            
-            if(Step < 4) 
+
+            if(Step < 4)
             {
                 if(Unit *u = FindCreature(CREATURE_ADAL, 100, me))
                     if(u->GetTypeId() == TYPEID_UNIT)
@@ -791,10 +791,10 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
                     return;
             }
 
-            std::string s;            
+            std::string s;
             switch(Step)
             {
-                
+
                 case 0:
                     for(std::list<uint64>::iterator i = PlayersInCity.begin(); i != PlayersInCity.end(); i++)
                         if(Unit *u = me->GetUnit(*me, (*i)))
@@ -863,7 +863,7 @@ bool ChooseReward_npc_Adal(Player *player, Creature *_Creature, const Quest *_Qu
     {
         GameObject *fire = _Creature->SummonGameObject(185170, -1831.9, 5429.7, -1.5, 0, 0, 0, 0, 0, 0);
         Creature* kael = _Creature->SummonCreature( CREATURE_KAEL, -1839.6, 5429.8, -1.5, 3.1214, TEMPSUMMON_TIMED_DESPAWN, 100000);
-        
+
         ((npc_kaelthas_imageAI*)kael->AI())->Defeater_Name = player->GetName();
         ((npc_kaelthas_imageAI*)kael->AI())->Defeater_Gender = player->getGender() == GENDER_MALE ? "his" : "her";
         if(fire)
@@ -929,7 +929,7 @@ void AddSC_shattrath_city()
     newscript->Name="npc_kaelthas_image";
     newscript->GetAI = &GetAI_npc_kaelthas_imageAI;
     newscript->RegisterSelf();
- 
+
     newscript = new Script;
     newscript->Name="npc_adal";
     newscript->pQuestRewardedNPC = &ChooseReward_npc_Adal;

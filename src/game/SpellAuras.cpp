@@ -2472,7 +2472,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             case 44867:     // Spectral Exhaustion
                 if(m_target->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)m_target)->m_forcedReactions[960] = REP_FRIENDLY;
+                    ((Player*)m_target)->GetReputationMgr().ApplyForceReaction(960, REP_FRIENDLY, true);
                 return;
             case 43052:
             {
@@ -3601,8 +3601,8 @@ void Aura::HandleForceReaction(bool apply, bool Real)
     uint32 faction_id = m_modifier.m_miscvalue;
     uint32 faction_rank = m_modifier.m_amount;
 
-    player->ApplyForceReaction(faction_id,ReputationRank(faction_rank),apply);
-    player->SendForceReactions();
+    player->GetReputationMgr().ApplyForceReaction(faction_id,ReputationRank(faction_rank),apply);
+    player->GetReputationMgr().SendForceReactions();
 }
 
 void Aura::HandleAuraModSkill(bool apply, bool Real)

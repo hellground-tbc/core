@@ -2948,8 +2948,8 @@ void ObjectMgr::LoadQuests()
         if (qinfo->RequiredMaxRepFaction && !sFactionStore.LookupEntry(qinfo->RequiredMaxRepFaction))
             sLog.outErrorDb("Quest %u has `RequiredMaxRepFaction` = %u but faction template %u does not exist, quest can't be done.", qinfo->GetQuestId(),qinfo->RequiredMaxRepFaction,qinfo->RequiredMaxRepFaction);
 
-        if (qinfo->RequiredMinRepValue && qinfo->RequiredMinRepValue > Player::Reputation_Cap)
-            sLog.outErrorDb("Quest %u has `RequiredMinRepValue` = %d but max reputation is %u, quest can't be done.", qinfo->GetQuestId(),qinfo->RequiredMinRepValue,Player::Reputation_Cap);
+        if (qinfo->RequiredMinRepValue && qinfo->RequiredMinRepValue > ReputationMgr::Reputation_Cap)
+            sLog.outErrorDb("Quest %u has `RequiredMinRepValue` = %d but max reputation is %u, quest can't be done.", qinfo->GetQuestId(),qinfo->RequiredMinRepValue, ReputationMgr::Reputation_Cap);
 
         if (qinfo->RequiredMinRepValue && qinfo->RequiredMaxRepValue && qinfo->RequiredMaxRepValue <= qinfo->RequiredMinRepValue)
             sLog.outErrorDb("Quest %u has `RequiredMaxRepValue` = %d and `RequiredMinRepValue` = %d, quest can't be done.", qinfo->GetQuestId(),qinfo->RequiredMaxRepValue,qinfo->RequiredMinRepValue);
@@ -6010,7 +6010,7 @@ bool PlayerCondition::Meets(Player const * player) const
         case CONDITION_REPUTATION_RANK:
         {
             FactionEntry const* faction = sFactionStore.LookupEntry(value1);
-            return faction && player->GetReputationRank(faction) >= value2;
+            return faction && player->GetReputationMgr().GetRank(faction) >= value2;
         }
         case CONDITION_TEAM:
             return player->GetTeam() == value1;

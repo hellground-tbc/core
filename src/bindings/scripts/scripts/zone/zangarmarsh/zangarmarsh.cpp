@@ -43,7 +43,7 @@ EndContentData */
 
 bool GossipHello_npcs_ashyen_and_keleth(Player *player, Creature *_Creature )
 {
-    if (player->GetReputationRank(942) > REP_NEUTRAL)
+    if (player->GetReputationMgr().GetRank(942) > REP_NEUTRAL)
     {
         if ( _Creature->GetEntry() == 17900)
             player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_BLESS_ASH, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -65,7 +65,7 @@ bool GossipSelect_npcs_ashyen_and_keleth(Player *player, Creature *_Creature, ui
 
         if ( _Creature->GetEntry() == 17900)                //check which creature we are dealing with
         {
-            switch (player->GetReputationRank(942))
+            switch (player->GetReputationMgr().GetRank(942))
             {                                               //mark of lore
                 case REP_FRIENDLY:
                     _Creature->CastSpell(player, 31808, true);
@@ -88,7 +88,7 @@ bool GossipSelect_npcs_ashyen_and_keleth(Player *player, Creature *_Creature, ui
 
         if ( _Creature->GetEntry() == 17901)
         {
-            switch (player->GetReputationRank(942))         //mark of war
+            switch (player->GetReputationMgr().GetRank(942))         //mark of war
             {
                 case REP_FRIENDLY:
                     _Creature->CastSpell(player, 31807, true);
@@ -234,7 +234,7 @@ bool GossipSelect_npc_elder_kuruti(Player *player, Creature *_Creature, uint32 s
 
 bool GossipHello_npc_mortog_steamhead(Player *player, Creature *_Creature)
 {
-    if (_Creature->isVendor() && player->GetReputationRank(942) == REP_EXALTED)
+    if (_Creature->isVendor() && player->GetReputationMgr().GetRank(942) == REP_EXALTED)
         player->ADD_GOSSIP_ITEM(1, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());

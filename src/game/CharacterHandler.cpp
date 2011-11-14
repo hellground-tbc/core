@@ -774,7 +774,7 @@ void WorldSession::HandleSetFactionAtWar(WorldPacket & recv_data)
     recv_data >> repListID;
     recv_data >> flag;
 
-    GetPlayer()->SetFactionAtWar(repListID,flag);
+    GetPlayer()->GetReputationMgr().SetAtWar(repListID,flag);
 }
 
 //I think this function is never used :/ I dunno, but i guess this opcode not exists
@@ -802,7 +802,7 @@ void WorldSession::HandleSetFactionCheat(WorldPacket & /*recv_data*/)
             }
         }
     */
-    GetPlayer()->SendFactionStates();
+    GetPlayer()->GetReputationMgr().SendStates();
 }
 
 void WorldSession::HandleMeetingStoneInfo(WorldPacket & /*recv_data*/)
@@ -867,7 +867,7 @@ void WorldSession::HandleSetWatchedFactionInactiveOpcode(WorldPacket & recv_data
     uint8 inactive;
     recv_data >> replistid >> inactive;
 
-    _player->SetFactionInactive(replistid, inactive);
+    _player->GetReputationMgr().SetInactive(replistid, inactive);
 }
 
 void WorldSession::HandleToggleHelmOpcode(WorldPacket & /*recv_data*/)

@@ -305,7 +305,7 @@ bool ChatHandler::HandleUpdateWorldStateCommand(const char* args)
 }
 
 //Play sound
-bool ChatHandler::HandleDebugPlaySoundCommand(const char* args)
+bool ChatHandler::HandlePlaySoundCommand(const char* args)
 {
     // USAGE: .debug playsound #soundid
     // #soundid - ID decimal number from SoundEntries.dbc (1st column)

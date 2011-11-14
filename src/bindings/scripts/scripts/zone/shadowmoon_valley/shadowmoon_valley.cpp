@@ -491,7 +491,7 @@ CreatureAI* GetAI_mob_dragonmaw_peon(Creature* _Creature)
 
 bool GossipHello_npc_drake_dealer_hurlunk(Player *player, Creature *_Creature)
 {
-    if (_Creature->isVendor() && player->GetReputationRank(1015) == REP_EXALTED)
+    if (_Creature->isVendor() && player->GetReputationMgr().GetRank(1015) == REP_EXALTED)
         player->ADD_GOSSIP_ITEM(1, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());

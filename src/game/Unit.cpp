@@ -5146,14 +5146,14 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
 
                     // Get Aldor reputation rank
-                    if (((Player *)this)->GetReputationRank(932) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(932) == REP_EXALTED)
                     {
                         target = this;
                         triggered_spell_id = ???
                         break;
                     }
                     // Get Scryers reputation rank
-                    if (((Player *)this)->GetReputationRank(934) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(934) == REP_EXALTED)
                     {
                         triggered_spell_id = ???
                         break;
@@ -5169,14 +5169,14 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
 
                     // Get Aldor reputation rank
-                    if (((Player *)this)->GetReputationRank(932) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(932) == REP_EXALTED)
                     {
                         target = this;
                         triggered_spell_id = 45479;
                         break;
                     }
                     // Get Scryers reputation rank
-                    if (((Player *)this)->GetReputationRank(934) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(934) == REP_EXALTED)
                     {
                         if (this->IsFriendlyTo(target))
                             return false;
@@ -5195,14 +5195,14 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
 
                     // Get Aldor reputation rank
-                    if (((Player *)this)->GetReputationRank(932) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(932) == REP_EXALTED)
                     {
                         target = this;
                         triggered_spell_id = 45480;
                         break;
                     }
                     // Get Scryers reputation rank
-                    if (((Player *)this)->GetReputationRank(934) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(934) == REP_EXALTED)
                     {
                         triggered_spell_id = 45428;
                         break;
@@ -5218,14 +5218,14 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
 
                     // Get Aldor reputation rank
-                    if (((Player *)this)->GetReputationRank(932) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(932) == REP_EXALTED)
                     {
                         target = this;
                         triggered_spell_id = 45432;
                         break;
                     }
                     // Get Scryers reputation rank
-                    if (((Player *)this)->GetReputationRank(934) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(934) == REP_EXALTED)
                     {
                         target = this;
                         triggered_spell_id = 45431;
@@ -5242,14 +5242,14 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
 
                     // Get Aldor reputation rank
-                    if (((Player *)this)->GetReputationRank(932) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(932) == REP_EXALTED)
                     {
                         target = this;
                         triggered_spell_id = 45478;
                         break;
                     }
                     // Get Scryers reputation rank
-                    if (((Player *)this)->GetReputationRank(934) == REP_EXALTED)
+                    if (((Player *)this)->GetReputationMgr().GetRank(934) == REP_EXALTED)
                     {
                         triggered_spell_id = 45430;
                         break;
@@ -7139,14 +7139,13 @@ bool Unit::IsHostileTo(Unit const* unit) const
     {
         if(target_faction->faction)
         {
-            if(ReputationRank const* force =((Player*)tester)->GetForcedRankIfAny(target_faction))
+            if(ReputationRank const* force =((Player*)tester)->GetReputationMgr().GetForcedRankIfAny(target_faction))
                 return *force <= REP_HOSTILE;
 
             // if faction have reputation then hostile state for tester at 100% dependent from at_war state
             if(FactionEntry const* raw_target_faction = sFactionStore.LookupEntry(target_faction->faction))
-                if(raw_target_faction->reputationListID >=0)
-                    if(FactionState const* factionState = ((Player*)tester)->GetFactionState(raw_target_faction))
-                        return (factionState->Flags & FACTION_FLAG_AT_WAR);
+                if(FactionState const* factionState = ((Player*)tester)->GetReputationMgr().GetState(raw_target_faction))
+                    return (factionState->Flags & FACTION_FLAG_AT_WAR);
         }
     }
     // CvP forced reaction and reputation case
@@ -7155,13 +7154,13 @@ bool Unit::IsHostileTo(Unit const* unit) const
         if(target_faction->faction)
         {
             // forced reaction
-            if(ReputationRank const* force = ((Player*)target)->GetForcedRankIfAny(tester_faction))
+            if(ReputationRank const* force = ((Player*)target)->GetReputationMgr().GetForcedRankIfAny(tester_faction))
                 return *force <= REP_HOSTILE;
 
             // apply reputation state
             FactionEntry const* raw_tester_faction = sFactionStore.LookupEntry(tester_faction->faction);
             if (raw_tester_faction && raw_tester_faction->reputationListID >=0)
-                return ((Player const*)target)->GetReputationRank(raw_tester_faction) <= REP_HOSTILE;
+                return ((Player const*)target)->GetReputationMgr().GetRank(raw_tester_faction) <= REP_HOSTILE;
         }
     }
 
@@ -7252,14 +7251,13 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
         if (tester_faction->faction)
         {
             // forced reaction
-            if(ReputationRank const* force =((Player*)tester)->GetForcedRankIfAny(target_faction))
+            if(ReputationRank const* force =((Player*)tester)->GetReputationMgr().GetForcedRankIfAny(target_faction))
                 return *force >= REP_FRIENDLY;
 
             // if faction have reputation then friendly state for tester at 100% dependent from at_war state
             if (FactionEntry const* raw_target_faction = sFactionStore.LookupEntry(target_faction->faction))
-                if (raw_target_faction->reputationListID >=0)
-                    if (FactionState const* FactionState = ((Player*)tester)->GetFactionState(raw_target_faction))
-                        return !(FactionState->Flags & FACTION_FLAG_AT_WAR);
+                if (FactionState const* FactionState = ((Player*)tester)->GetReputationMgr().GetState(raw_target_faction))
+                    return !(FactionState->Flags & FACTION_FLAG_AT_WAR);
         }
     }
     // CvP forced reaction and reputation case
@@ -7268,13 +7266,13 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
         if (tester_faction->faction)
         {
             // forced reaction
-            if(ReputationRank const* force =((Player*)target)->GetForcedRankIfAny(tester_faction))
+            if(ReputationRank const* force =((Player*)target)->GetReputationMgr().GetForcedRankIfAny(tester_faction))
                 return *force >= REP_FRIENDLY;
 
             // apply reputation state
             if (FactionEntry const* raw_tester_faction = sFactionStore.LookupEntry(tester_faction->faction))
                 if (raw_tester_faction->reputationListID >=0)
-                    return ((Player const*)target)->GetReputationRank(raw_tester_faction) >= REP_FRIENDLY;
+                    return ((Player const*)target)->GetReputationMgr().GetRank(raw_tester_faction) >= REP_FRIENDLY;
         }
     }
 

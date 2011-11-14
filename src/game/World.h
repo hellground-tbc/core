@@ -396,7 +396,7 @@ enum SpecialQuest
 #define SCRIPT_COMMAND_CAST_SPELL           15              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
 #define SCRIPT_COMMAND_LOAD_PATH            16              // source = unit, path = datalong, repeatable datalong2
 #define SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT   17              // datalong scriptid, lowguid datalong2, dataint table
-#define SCRIPT_COMMAND_PLAYSOUND            18              // source = any object, target=any/player, datalong (sound_id), datalong2 (bitmask: 0/1=anyone/target, 0/2=with distance dependent, so 1|2 = 3 is target with distance dependent)
+#define SCRIPT_COMMAND_PLAY_SOUND           18              // source = any object, target=any/player, datalong (sound_id), datalong2 (bitmask: 0/1=anyone/target, 0/2=with distance dependent, so 1|2 = 3 is target with distance dependent)
 #define SCRIPT_COMMAND_KILL                 19              // datalong removecorpse
 
 

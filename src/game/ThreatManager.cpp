@@ -303,18 +303,19 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (target->hasUnitState(UNIT_STAT_CONFUSED))
         return true;
 
-    if (target->isCharmed() && pAttacker->IsFriendlyTo(target))
+        // is this needed ? Oo if not then next check if also useless ;)
+    if (/*target->isCharmed() && */pAttacker->IsFriendlyTo(target))
         return true;
 
+    /* useless if isCharmed() check isn't needed
     // check if target is friendly because of faction or forced reactions
     FactionTemplateEntry const* faction = pAttacker->getFactionTemplateEntry();
     if (faction && target->GetTypeId() == TYPEID_PLAYER)
     {
-        ForcedReactions::const_iterator forceItr = ((Player const*)target)->m_forcedReactions.find(faction->faction);
-        if (forceItr!=((Player const*)target)->m_forcedReactions.end() && forceItr->second >= REP_FRIENDLY)
+        ReputationRank const * rank = ((Player const*)target)->GetReputationMgr().GetForcedRankIfAny(faction);
+        if (rank && (*rank) >= REP_FRIENDLY)
             return true;
-    }
-
+    }*/
 
     //target has Spirit of Redemption aura (shapeshift effect)
     if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || target->HasAuraType(SPELL_AURA_IGNORED))
