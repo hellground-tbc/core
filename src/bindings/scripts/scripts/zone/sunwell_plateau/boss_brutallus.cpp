@@ -118,6 +118,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
 
         ForceSpellCast(me, SPELL_DUAL_WIELD, INTERRUPT_AND_CAST_INSTANTLY);
         pInstance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
+        me->CombatStop();
     }
 
     void EnterCombat(Unit* /*pWho*/)
