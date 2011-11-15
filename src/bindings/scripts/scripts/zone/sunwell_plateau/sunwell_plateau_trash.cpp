@@ -169,6 +169,11 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
         SummonImp = urand(1000, 8000);
     }
 
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who, true);
+    }
+
     void EnterEvadeMode()
     {
         if (CreatureGroup *formation = me->GetFormation())
@@ -190,8 +195,8 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
 
         if(IgniteMana < diff)
         {
-            if(me->getVictim()->GetPower(POWER_MANA))
-                AddSpellToCast(me->getVictim(), SPELL_IGNITE_MANA);
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true, POWER_MANA))
+                AddSpellToCast(target, SPELL_IGNITE_MANA, false, true);
             IgniteMana = urand(8000, 16000);
         }
         else
@@ -199,7 +204,7 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
 
         if(ShadowBolt < diff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_SHADOW_BOLT);
+            AddSpellToCast(SPELL_SHADOW_BOLT, CAST_TANK);
             ShadowBolt = urand(2100, 2500);
         }
         else
@@ -213,6 +218,7 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
         else
             SummonImp -= diff;
 
+        CheckCasterNoMovementInRange(diff, 48.0);
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
@@ -281,7 +287,7 @@ struct TRINITY_DLL_DECL mob_sunblade_dawn_priestAI : public ScriptedAI
             SelfRenew = 15000;
         }
 
-        if(Unit* healTarget = SelectLowestHpFriendly(100, 85))
+        if(Unit* healTarget = SelectLowestHpFriendly(100, 2000))
         {
             if(canRenew)
             {
@@ -391,7 +397,7 @@ struct TRINITY_DLL_DECL mob_sunblade_dusk_priestAI : public ScriptedAI
         if(MindFlay < diff)
         {
             AddSpellToCast(SPELL_MIND_FLAY, CAST_TANK);
-            MindFlay = urand(9000, 25000);
+            MindFlay = urand(9000, 18000);
         }
         else
             MindFlay -= diff;
@@ -444,7 +450,7 @@ struct TRINITY_DLL_DECL mob_sunblade_protectorAI : public ScriptedAI
         ClearCastQueue();
         DoCast(me, SPELL_SUNWELL_RADIANCE, true);
 
-        FelLightning = urand(3000, 10000);
+        FelLightning = urand(3000, 6000);
     }
 
     void EnterEvadeMode()
@@ -465,7 +471,7 @@ struct TRINITY_DLL_DECL mob_sunblade_protectorAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))
                 AddSpellToCast(target, SPELL_FEL_LIGHTNING);
-            FelLightning = urand(3000, 15000);
+            FelLightning = 6000;
         }
         else
             FelLightning -= diff;
@@ -636,8 +642,7 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
 
         if(ScatterShot < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 15, true))
-                AddSpellToCast(target, SPELL_SCATTER_SHOT);
+            AddSpellToCast(SPELL_SCATTER_SHOT, CAST_TANK);
             ScatterShot = urand(6000, 12000);
         }
         else
@@ -645,8 +650,7 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
 
         if(Shoot < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true, 0, 6))
-                AddSpellToCast(target, SPELL_SHOOT);
+            AddSpellToCast(SPELL_SHOOT, CAST_TANK);
             Shoot = urand(3000, 6000);
         }
         else
@@ -654,8 +658,7 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
 
         if(SlayingShot < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true, 0, 8))
-                AddSpellToCast(target, SPELL_SLAYING_SHOT);
+            AddSpellToCast(SPELL_SLAYING_SHOT, CAST_TANK);
             SlayingShot = urand(8000, 15000);
         }
         else
@@ -719,7 +722,7 @@ struct TRINITY_DLL_DECL mob_sunblade_vindicatorAI : public ScriptedAI
 
         if(BrutalStrike < diff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_BRUTAL_STRIKE);
+            AddSpellToCast(SPELL_BRUTAL_STRIKE, CAST_TANK);
             BrutalStrike = urand(5000,11000);
         }
         else
@@ -727,7 +730,7 @@ struct TRINITY_DLL_DECL mob_sunblade_vindicatorAI : public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_CLEAVE);
+            AddSpellToCast(SPELL_CLEAVE, CAST_TANK);
             Cleave = urand(4000, 9000);
         }
         else
@@ -735,7 +738,7 @@ struct TRINITY_DLL_DECL mob_sunblade_vindicatorAI : public ScriptedAI
 
         if(MortalStrike < diff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_MORTAL_STRIKE);
+            AddSpellToCast(SPELL_MORTAL_STRIKE, CAST_TANK);
             MortalStrike = urand(8000, 15000);
         }
         else
