@@ -1118,7 +1118,7 @@ namespace Trinity
             UnitPowerTypeCheck(Powers power, bool present = true) : _present(present), _power(power) {}
             bool operator()(Unit* unit)
             {
-                return unit->getPowerType() == _power && _present;
+                return ((_present && unit->getPowerType() == _power) || (!_present && unit->getPowerType() != _power));
             }
 
         private:
