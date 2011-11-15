@@ -183,7 +183,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
     return false;
 }
 
-bool ChatHandler::HandleNameCommand(const char* args)
+bool ChatHandler::HandleNameAnnounceCommand(const char* args)
 {
     WorldPacket data;
     if (!*args)
