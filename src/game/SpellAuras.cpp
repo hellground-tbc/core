@@ -4021,9 +4021,7 @@ void Aura::HandleModStealth(bool apply, bool Real)
 
             // apply only if not in GM invisibility (and overwrite invisibility state)
             if (pTarget->GetVisibility()!=VISIBILITY_OFF)
-            {
-                pTarget->SetVisibility(VISIBILITY_OFF);
-            }
+                pTarget->SetVisibility(VISIBILITY_GROUP_STEALTH);
 
             // for RACE_NIGHTELF stealth
             if (pTarget->GetTypeId() == TYPEID_PLAYER && spell_id == 20580)
@@ -4066,7 +4064,7 @@ void Aura::HandleModStealth(bool apply, bool Real)
                 // restore invisibility if any
                 if (pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
                 {
-                    pTarget->SetVisibility(VISIBILITY_OFF);
+                    pTarget->SetVisibility(VISIBILITY_OFF); // or maybe VISIBILITY_GROUP_STEALTH ?
                 }
                 else
                 pTarget->SetVisibility(VISIBILITY_ON);
