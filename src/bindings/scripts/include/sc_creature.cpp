@@ -104,7 +104,7 @@ CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovemen
     HeroicMode = m_creature->GetMap()->IsHeroic();
 }
 
-void ScriptedAI::AttackStartNoMove(Unit* pWho, bool casterType)
+void ScriptedAI::AttackStartNoMove(Unit* pWho, movementCheckType type)
 {
     if (!pWho)
         return;
@@ -113,7 +113,7 @@ void ScriptedAI::AttackStartNoMove(Unit* pWho, bool casterType)
         return;
 
     if(m_creature->Attack(pWho, false))
-        DoStartNoMovement(pWho, casterType);
+        DoStartNoMovement(pWho, type);
 }
 
 void ScriptedAI::AttackStart(Unit* pWho)
@@ -162,15 +162,23 @@ void ScriptedAI::DoStartMovement(Unit* pVictim, float fDistance, float fAngle)
         m_creature->GetMotionMaster()->MoveChase(pVictim, fDistance, fAngle);
 }
 
-void ScriptedAI::DoStartNoMovement(Unit* pVictim, bool casterType)
+void ScriptedAI::DoStartNoMovement(Unit* pVictim, movementCheckType type)
 {
     if (!pVictim)
         return;
 
-    if(casterType)
+    switch(type)
     {
-        me->SetWalk(false);
-        casterTimer = 2000;
+        case 1:
+            me->SetWalk(false);
+            casterTimer = 2000;
+            break;
+        case 2:
+            me->SetWalk(false);
+            casterTimer = 3000;
+            break;
+        default:
+            break;
     }
 
     m_creature->GetMotionMaster()->MoveIdle();
@@ -189,6 +197,7 @@ void ScriptedAI::CheckCasterNoMovementInRange(uint32 diff, float maxrange)
 
     if(casterTimer < diff)
     {
+        // go to victim
         if(!me->IsWithinDistInMap(me->getVictim(), maxrange) || !me->IsWithinLOSInMap(me->getVictim()))
         {
             float x, y, z;
@@ -205,6 +214,55 @@ void ScriptedAI::CheckCasterNoMovementInRange(uint32 diff, float maxrange)
             me->GetMotionMaster()->MoveIdle();
 
         casterTimer = 2000;
+    }
+    else
+        casterTimer -= diff;
+}
+
+void ScriptedAI::CheckShooterNoMovementInRange(uint32 diff, float maxrange)
+{
+    if(!UpdateVictim())
+        return;
+
+    if(!me->IsInMap(me->getVictim()))
+        return;
+
+    if(casterTimer > 3000)  // just in case
+        casterTimer = 3000;
+
+    if(casterTimer < diff)
+    {
+        // if victim in melee range, than chase it
+        if(me->IsWithinDistInMap(me->getVictim(), 5.0))
+        {
+            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE)
+                DoStartMovement(me->getVictim());
+            else
+            {
+                casterTimer = 3000;
+                return;
+            }
+        }
+        else if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+            me->GetMotionMaster()->MoveIdle();
+
+        // when victim is in distance, stop and shoot
+        if(!me->IsWithinDistInMap(me->getVictim(), maxrange) || !me->IsWithinLOSInMap(me->getVictim()))
+        {
+            float x, y, z;
+            float dist = me->GetDistance2d(me->getVictim());
+            float angle = me->GetAngle(me->getVictim());
+            me->GetPosition(x, y, z);
+            x = x + dist/2 * cos(angle);
+            y = y + dist/2 * sin(angle);
+            me->UpdateAllowedPositionZ(x, y, z);
+            me->SetSpeed(MOVE_RUN, 1.5);
+            me->GetMotionMaster()->MovePoint(41, x, y, z);  //to not possibly collide with any Movement Inform check
+        }
+        else
+            me->GetMotionMaster()->MoveIdle();
+
+        casterTimer = 3000;
     }
     else
         casterTimer -= diff;

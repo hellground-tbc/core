@@ -72,6 +72,13 @@ enum castTargetMode
     CAST_SELF                   = 4     //target is m_creature
 };
 
+enum movementCheckType
+{
+    CHECK_TYPE_NONE             = 0,
+    CHECK_TYPE_CASTER           = 1,    // move only when outranged or not in LoS
+    CHECK_TYPE_SHOOTER          = 2     // chase when in 5yd distance, move when outranged or not in LoS
+};
+
 class SpellToCast
 {
 public:
@@ -180,7 +187,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     //*************
 
     //Called at each attack of m_creature by any victim
-    void AttackStartNoMove(Unit *target, bool casterType = false);
+    void AttackStartNoMove(Unit *target, movementCheckType type = CHECK_TYPE_NONE);
     void AttackStart(Unit *);
     void AttackStart(Unit *, bool melee);
 
@@ -271,10 +278,11 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void DoStartMovement(Unit* pVictim, float fDistance = 0, float fAngle = 0);
 
     //Start no movement on victim
-    void DoStartNoMovement(Unit* victim, bool casterType = false);
+    void DoStartNoMovement(Unit* victim, movementCheckType type = CHECK_TYPE_NONE);
 
-    //Check caster type movement, move towards victim only if necessary
+    //Check caster or shooter type movement, move towards victim only if necessary
     void CheckCasterNoMovementInRange(uint32 diff, float maxrange = 30.0f);
+    void CheckShooterNoMovementInRange(uint32 diff, float maxrange = 30.0f);
 
     //Stop attack of current victim
     void DoStopAttack();

@@ -221,7 +221,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who, true);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void UpdateAI(const uint32 diff)
@@ -341,7 +341,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who, true);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void UpdateAI(const uint32 diff)
@@ -410,7 +410,7 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who, true);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
         SetAutocast(SPELL_FIREBALL, 1900, true);
     }
 
@@ -845,7 +845,7 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who, true);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void EnterCombat(Unit* who)
@@ -1124,7 +1124,7 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_SHOOTER);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1157,9 +1157,7 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
 
       if(Shoot_Timer < diff)
       {
-          Unit* meleeTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 5.0f, true);
-
-          if(!meleeTarget)
+          if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
           {
               if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true, 5.0f))
                   AddSpellToCast(target, SPELL_SHOOT);
@@ -1186,6 +1184,7 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
       else
           ForkedLightning_Timer -= diff;
 
+      CheckShooterNoMovementInRange(diff);
       CastNextSpellIfAnyAndReady();
       DoMeleeAttackIfReady();
     }

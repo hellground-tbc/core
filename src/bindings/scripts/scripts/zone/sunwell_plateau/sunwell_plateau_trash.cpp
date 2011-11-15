@@ -171,7 +171,7 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who, true);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void EnterEvadeMode()
@@ -635,6 +635,11 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_SHOOTER);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -664,6 +669,7 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
         else
             SlayingShot -= diff;
 
+        CheckShooterNoMovementInRange(diff, 40.0);
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
