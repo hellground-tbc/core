@@ -777,7 +777,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void JustDied(Unit* killer)
@@ -825,16 +825,6 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
         if(Check_Timer < diff)
         {
-            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
-            {
-                if(!me->IsWithinLOSInMap(me->getVictim()) || !me->IsWithinDistInMap(me->getVictim(), 29))
-                    me->GetMotionMaster()->MoveChase(me->getVictim());
-            }
-            else
-            {
-                if(me->IsWithinDistInMap(me->getVictim(), 30) || me->IsWithinLOSInMap(me->getVictim()))
-                    me->GetMotionMaster()->MoveIdle();
-            }
             RegenMana();
             Check_Timer = 2000;
         }
@@ -875,6 +865,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
         else
             Fear_Timer -= diff;
 
+        CheckCasterNoMovementInRange(diff);
         CastNextSpellIfAnyAndReady(diff);
     }
 };
@@ -894,7 +885,7 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
 
     void AttackStart(Unit* who)
     {
-        ScriptedAI::AttackStartNoMove(who);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void UpdateAI(const uint32 diff)
@@ -905,23 +896,6 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
         if(me->getVictim()->isCrowdControlled())
             DoModifyThreatPercent(me->getVictim(), -100);
 
-        if(Check_Timer < diff)
-        {
-            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
-            {
-                if(!me->IsWithinLOSInMap(me->getVictim()) || !me->IsWithinDistInMap(me->getVictim(), 29))
-                    me->GetMotionMaster()->MoveChase(me->getVictim());
-            }
-            else
-            {
-                if(me->IsWithinDistInMap(me->getVictim(), 30) || me->IsWithinLOSInMap(me->getVictim()))
-                    me->GetMotionMaster()->MoveIdle();
-            }
-            Check_Timer = 2000;
-        }
-        else
-            Check_Timer -= diff;
-
         if(Autocast_Timer < diff)
         {
             AddCustomSpellToCast(SPELL_IMP_FIREBALL, CAST_TANK, 118);
@@ -930,6 +904,7 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
         else
             Autocast_Timer -= diff;
 
+        CheckCasterNoMovementInRange(diff);
         CastNextSpellIfAnyAndReady();
     }
 };
@@ -970,8 +945,8 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        //if(me->getVictim()->isCrowdControlled())
-            //DoModifyThreatPercent(me->getVictim(), -100);
+        if(me->getVictim()->isCrowdControlled())
+            DoResetThreat();
 
         if(Knockdown_Timer < diff)
         {
@@ -1060,29 +1035,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
     void AttackStart(Unit* who)
     {
-        if(who->IsWithinDistInMap(me, 40.0))
-            ScriptedAI::AttackStartNoMove(who);
-        else
-        {
-            float x, y, z;
-            me->GetClosePoint(x, y, z, 0, me->GetDistance2d(who)/2, me->GetAngle(who));
-            me->GetMotionMaster()->MovePoint(1, x, y, z);
-        }
-    }
-
-    void MovementInform(uint32 Type, uint32 Id)
-    {
-        if(Type == POINT_MOTION_TYPE)
-        {
-            switch(Id)
-            {
-                case 1:
-                    me->GetMotionMaster()->MoveIdle();
-                    break;
-                default:
-                    break;
-            }
-        }
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void RegenMana()
@@ -1104,16 +1057,6 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         if(Check_Timer < diff)
         {
-            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
-            {
-                if(!me->IsWithinLOSInMap(me->getVictim()) || !me->IsWithinDistInMap(me->getVictim(), 29))
-                    me->GetMotionMaster()->MoveChase(me->getVictim());
-            }
-            else
-            {
-                if(me->IsWithinDistInMap(me->getVictim(), 30) || me->IsWithinLOSInMap(me->getVictim()))
-                    me->GetMotionMaster()->MoveIdle();
-            }
             RegenMana();
             Check_Timer = 2000;
         }
@@ -1168,21 +1111,22 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
                 if(canFroze)
                 {
                     AddCustomSpellToCast(SPELL_FROST_NOVA, CAST_SELF, 600, 0, 0, true);
+                    if(!canBlink)
+                    {
+                        float x, y, z;
+                        me->GetClosePoint(x, y, z, 0, 7.0, frand(0, 2*M_PI));
+                        me->UpdateAllowedPositionZ(x, y, z);
+                        me->GetMotionMaster()->MovePoint(1, x, y, z);
+                    }
                     SetAutocast(SPELL_ICE_LANCE, 1400, true);
                     canFroze = false;
                 }
                 if(canBlink)
                 {
                     ForceSpellCast(SPELL_BLINK, CAST_SELF);
-                    MeleeCheck_Timer = urand(5000, 10000);
+                    MeleeCheck_Timer = 3000;
                     canBlink = false;
                     return;
-                }
-                else
-                {
-                    float x, y, z;
-                    me->GetClosePoint(x, y, z, 0, 7.0, me->GetAngle(me->getVictim()));
-                    me->GetMotionMaster()->MovePoint(1, x, y, z);
                 }
                 MeleeCheck_Timer = 2000;
             }
@@ -1215,7 +1159,8 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         if(HealthBelowPct(35) && !hasIceBlocked)
         {
-            ForceSpellCast(SPELL_ICE_BLOCK, CAST_SELF);
+            ForceSpellCast(SPELL_ICE_BLOCK, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
+            canBlink = true;
             hasIceBlocked = true;
         }
 
@@ -1227,6 +1172,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
         else
             Blizzard_Timer -= diff;
 
+        CheckCasterNoMovementInRange(diff, 30);
         CastNextSpellIfAnyAndReady(diff);
     }
 };
@@ -1369,8 +1315,10 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
     uint32 Shoot_Timer;
     uint32 Concussive_Shot_Timer;
     uint32 Multi_Shot_Timer;
-    uint32 Wing_Clip_Timer;
-    uint32 Freezing_Trap_Timer;
+    uint32 Wing_Clip_Cooldown;
+    bool canWingClip;
+    uint32 Freezing_Trap_Cooldown;
+    bool canSetTrap;
 
     void Reset()
     {
@@ -1379,39 +1327,17 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         Shoot_Timer = 2500;
         Concussive_Shot_Timer = urand(6000, 8000);
         Multi_Shot_Timer = urand(16000, 20000);
-        Wing_Clip_Timer = 4000;
-        Freezing_Trap_Timer = 15000;
+        Wing_Clip_Cooldown = 10000;
+        canWingClip = true;
+        Freezing_Trap_Cooldown = 30000;
+        canSetTrap = true;
 
         boss_priestess_guestAI::Reset();
     }
 
     void AttackStart(Unit* who)
     {
-        if(who->IsWithinDistInMap(me, 30.0))
-            ScriptedAI::AttackStartNoMove(who);
-        else if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, 0, 5.0))
-            ScriptedAI::AttackStartNoMove(target);
-        else
-        {
-            float x, y, z;
-            me->GetClosePoint(x, y, z, 0, me->GetDistance2d(who)/2, me->GetAngle(who));
-            me->GetMotionMaster()->MovePoint(1, x, y, z);
-        }
-    }
-
-    void MovementInform(uint32 Type, uint32 Id)
-    {
-        if(Type == POINT_MOTION_TYPE)
-        {
-            switch(Id)
-            {
-                case 1:
-                    me->GetMotionMaster()->MoveIdle();
-                    break;
-                default:
-                    break;
-            }
-        }
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_SHOOTER);
     }
 
     void JustDied(Unit* killer)
@@ -1456,71 +1382,86 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         if(me->getVictim()->isCrowdControlled())
             DoModifyThreatPercent(me->getVictim(), -100);
 
-        if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5))
+        if(!canSetTrap)
         {
-            if(Wing_Clip_Timer < diff)
+            if(Freezing_Trap_Cooldown < diff)
             {
-                AddSpellToCast(SPELL_WING_CLIP, CAST_TANK);
-                float x, y, z;
-                me->GetClosePoint(x, y, z, 0, 8.0);
-                me->UpdateAllowedPositionZ(x, y, z);
-                me->GetMotionMaster()->MovePoint(1, x, y, z);
-                Wing_Clip_Timer = urand(4000, 8000);
+                canSetTrap = true;
+                Freezing_Trap_Cooldown = 30000;
             }
             else
-                Wing_Clip_Timer -= diff;
+                Freezing_Trap_Cooldown -= diff;
+        }
+
+        if(me->IsWithinDistInMap(me->getVictim(), 3.0) && canSetTrap)
+        {
+            ForceSpellCast(SPELL_FREEZING_TRAP, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
+            float x, y, z;
+            float dist = me->GetDistance2d(me->getVictim());
+            float angle = me->GetAngle(me->getVictim());
+            me->GetPosition(x, y, z);
+            x = x - 5.5 * cos(angle);
+            y = y - 5.5 * sin(angle);
+            me->UpdateAllowedPositionZ(x, y, z);
+            me->GetMotionMaster()->MovePoint(1, x, y, z);
+            canSetTrap = false;
+        }
+
+        if(!canWingClip)
+        {
+            if(Wing_Clip_Cooldown < diff)
+            {
+                Wing_Clip_Cooldown = 10000;
+                canWingClip = true;
+            }
+            else
+                Wing_Clip_Cooldown -= diff;
+        }
+
+        if(me->IsWithinDistInMap(me->getVictim(), 6.0) && canWingClip)
+        {
+            ForceSpellCast(SPELL_WING_CLIP, CAST_TANK, INTERRUPT_AND_CAST);
+            float x, y, z;
+            me->GetClosePoint(x, y, z, 0, 9.0, frand(0, 2*M_PI));
+            me->UpdateAllowedPositionZ(x, y, z);
+            me->GetMotionMaster()->MovePoint(2, x, y, z);
+            canWingClip = false;
+        }
+
+        if(Concussive_Shot_Timer < diff)
+        {
+            AddSpellToCast(SPELL_CONCUSSIVE_SHOT, CAST_RANDOM);
+            Concussive_Shot_Timer = urand(8000, 12000);
         }
         else
+            Concussive_Shot_Timer -= diff;
+
+        if(Multi_Shot_Timer < diff)
         {
-            if(Concussive_Shot_Timer < diff)
-            {
-                AddSpellToCast(SPELL_CONCUSSIVE_SHOT, CAST_RANDOM);
-                Concussive_Shot_Timer = urand(8000, 12000);
-            }
-            else
-                Concussive_Shot_Timer -= diff;
-
-            if(Multi_Shot_Timer < diff)
-            {
-                AddSpellToCast(SPELL_MULTI_SHOT, CAST_TANK);
-                Multi_Shot_Timer = urand(10000, 15000);
-            }
-            else
-                Multi_Shot_Timer -= diff;
-
-            if(Aimed_Shot_Timer < diff)
-            {
-                AddSpellToCast(SPELL_AIMED_SHOT, CAST_TANK);
-                Aimed_Shot_Timer = urand(12000, 18000);
-            }
-            else
-                Aimed_Shot_Timer -= diff;
-
-            if(Shoot_Timer < diff)
-            {
-                if(me->IsWithinDistInMap(me->getVictim(), 30))
-                    AddCustomSpellToCast(me->getVictim(), SPELL_SHOOT, (HeroicMode?774:260));
-                else
-                    ResetThreatTimer = 0;
-                Shoot_Timer = urand(2500, 4000);
-            }
-            else
-                Shoot_Timer -= diff;
-
-            if(Freezing_Trap_Timer < diff)
-            {
-                AddSpellToCast(SPELL_FREEZING_TRAP, CAST_SELF);
-                DoModifyThreatPercent(m_creature->getVictim(),-100);
-                float x, y, z;
-                me->GetClosePoint(x, y, z, 0, 7.0);
-                me->UpdateAllowedPositionZ(x, y, z);
-                me->GetMotionMaster()->MovePoint(1, x, y, z);
-                Freezing_Trap_Timer = urand(20000, 40000);
-            }
-            else
-                Freezing_Trap_Timer -= diff;
+            AddSpellToCast(SPELL_MULTI_SHOT, CAST_RANDOM);
+            Multi_Shot_Timer = urand(8000, 12000);
         }
+        else
+            Multi_Shot_Timer -= diff;
 
+        if(Aimed_Shot_Timer < diff)
+        {
+            AddSpellToCast(SPELL_AIMED_SHOT, CAST_TANK);
+            Aimed_Shot_Timer = urand(12000, 18000);
+        }
+        else
+            Aimed_Shot_Timer -= diff;
+
+        if(Shoot_Timer < diff)
+        {
+            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+                AddCustomSpellToCast(me->getVictim(), SPELL_SHOOT, (HeroicMode?774:260));
+            Shoot_Timer = urand(2500, 4000);
+        }
+        else
+            Shoot_Timer -= diff;
+
+        CheckShooterNoMovementInRange(diff, 30.0);
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
@@ -1604,9 +1545,6 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
             return;
 
         boss_priestess_guestAI::UpdateAI(diff);
-
-        //if(me->getVictim()->isCrowdControlled())
-           // DoModifyThreatPercent(me->getVictim(), -100);
 
         if(canHeal)
         {
