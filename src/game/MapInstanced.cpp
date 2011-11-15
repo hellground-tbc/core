@@ -112,7 +112,7 @@ void MapInstanced::UnloadAll()
 */
 Map* MapInstanced::GetInstance(const WorldObject* obj)
 {
-    if (obj->GetTypeId() == TYPEID_UNIT)
+    if (obj->GetTypeId() != TYPEID_PLAYER)
         return _FindMap(obj->GetInstanceId());
 
     Player* player = (Player*)obj;
@@ -153,7 +153,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
     {
         if (!instanceId)
             instanceId = sMapMgr.GenerateInstanceId();
-        
+
         return CreateInstance(instanceId, NULL, player->GetDifficulty());
     }
 
