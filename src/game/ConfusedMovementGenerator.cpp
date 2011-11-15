@@ -34,7 +34,9 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
 
     unit.CastStop();
     unit.StopMoving();
+
     unit.RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
+
     unit.addUnitState(UNIT_STAT_CONFUSED);
     unit.SetUInt64Value(UNIT_FIELD_TARGET, 0);
     unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
@@ -44,50 +46,16 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
 template<class T>
 void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
 {
-    bool is_water_ok, is_land_ok;
-    _InitSpecific(unit, is_water_ok, is_land_ok);
-
-    for (uint8 idx = 0; idx < MAX_CONF_WAYPOINTS+1; ++idx)
+    for (uint8 idx = 0; idx <= MAX_RANDOM_POINTS; ++idx)
     {
-        unit.GetNearPoint(&unit, i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], unit.GetObjectSize(), WANDER_DISTANCE, frand(0, M_PI));
+        unit.GetRandomPoint(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ(), WANDER_DISTANCE, randomPosition[idx].x, randomPosition[idx].y, randomPosition[idx].z);
 
-        if (!is_land_ok || !is_water_ok)
-        {
-            bool inWater = unit.GetMap()->IsInWater(i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2]);
-            if (!is_water_ok && inWater || !is_land_ok && !inWater)
-            {
-                i_waypoints[idx][0] = unit.GetPositionX();
-                i_waypoints[idx][1] = unit.GetPositionY();
-                i_waypoints[idx][2] = unit.GetPositionZ();
-                continue;
-            }
-        }
-
-        VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(unit.GetMapId(), unit.GetPositionX(), unit.GetPositionY(),  unit.GetPositionZ(), i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2],  i_waypoints[idx][0], i_waypoints[idx][1], i_waypoints[idx][2], 0.0f);
-
-        if (unit.IsWithinLOS(i_waypoints[idx][0] ,i_waypoints[idx][1], i_waypoints[idx][2] -1.5f))
+        // this will be changed soon :]
+        if (unit.IsWithinLOS(randomPosition[idx].x, randomPosition[idx].y, randomPosition[idx].z))
             continue;
         else
-        {
-            i_waypoints[idx][0] = unit.GetPositionX();
-            i_waypoints[idx][1] = unit.GetPositionY();
-            i_waypoints[idx][2] = unit.GetPositionZ();
-        }
+            unit.GetPosition(randomPosition[idx]);
     }
-}
-
-template<>
-void ConfusedMovementGenerator<Creature>::_InitSpecific(Creature &creature, bool &is_water_ok, bool &is_land_ok)
-{
-    is_water_ok = creature.CanSwim();
-    is_land_ok  = creature.CanWalk();
-}
-
-template<>
-void ConfusedMovementGenerator<Player>::_InitSpecific(Player &, bool &is_water_ok, bool &is_land_ok)
-{
-    is_water_ok = true;
-    is_land_ok  = true;
 }
 
 template<class T>
@@ -101,24 +69,18 @@ void ConfusedMovementGenerator<T>::Reset(T &unit)
 template<class T>
 bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 {
-    if (!&unit)
-        return true;
-
     if (unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
         return true;
 
     Traveller<T> traveller(unit);
-
     if (i_destinationHolder.UpdateTraveller(traveller, diff))
     {
         if (i_destinationHolder.HasArrived())
         {
-            assert(i_nextMove <= MAX_CONF_WAYPOINTS);
-            const float x = i_waypoints[i_nextMove][0];
-            const float y = i_waypoints[i_nextMove][1];
-            const float z = i_waypoints[i_nextMove][2];
-            i_destinationHolder.SetDestination(traveller, x, y, z);
-            i_nextMove = urand(1, MAX_CONF_WAYPOINTS);
+            assert(i_nextMove <= MAX_RANDOM_POINTS);
+
+            i_destinationHolder.SetDestination(traveller, randomPosition[i_nextMove].x, randomPosition[i_nextMove].y, randomPosition[i_nextMove].z);
+            i_nextMove = urand(0, MAX_RANDOM_POINTS);
         }
     }
     return true;
