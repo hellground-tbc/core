@@ -1356,7 +1356,7 @@ void WorldObject::GetRandomPoint(float x, float y, float z, float distance, floa
     // angle to face `obj` to `this`
     float angle = frand(0.0f, 2*M_PI);
 
-	// random dist in range 0 - distance;
+    // random dist in range 0 - distance;
     float new_dist = frand(0.0f, distance);
 
     rand_x = x + new_dist * cos(angle);
@@ -1366,6 +1366,53 @@ void WorldObject::GetRandomPoint(float x, float y, float z, float distance, floa
     Trinity::NormalizeMapCoord(rand_x);
     Trinity::NormalizeMapCoord(rand_y);
     UpdateGroundPositionZ(rand_x,rand_y,rand_z);            // update to LOS height if available
+}
+
+// this will find point in LOS before collision occur
+void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle)
+{
+    Position dest;
+    dest.x = pos.x + dist * cos(angle);
+    dest.y = pos.y + dist * sin(angle);
+
+    float ground = GetMap()->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+    float floor = GetMap()->GetHeight(dest.x, dest.y, pos.z, true);
+
+    dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
+
+    // collision occured
+    if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(),pos.x, pos.y, pos.z+0.5f, dest.x, dest.y, dest.z+0.5f, dest.x, dest.y, dest.z, -0.5f))
+    {
+        // move back a bit
+        dest.x -= CONTACT_DISTANCE * cos(angle);
+        dest.y -= CONTACT_DISTANCE * sin(angle);
+        dist = sqrt((pos.x - dest.x)*(pos.x - dest.x) + (pos.y - dest.y)*(pos.y - dest.y));
+    }
+
+    float step = dist / 10.0f;
+
+    for (int j = 0; j < 10; j++)
+    {
+        // do not allow too big z changes
+        if (fabs(pos.z - dest.z) > 6)
+        {
+            dest.x -= step * cos(angle);
+            dest.y -= step * sin(angle);
+            ground = GetMap()->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+            floor = GetMap()->GetHeight(dest.x, dest.y, pos.z, true);
+            dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
+        }
+        // we have correct destz now
+        else
+        {
+            pos = dest;
+            break;
+        }
+    }
+
+    Trinity::NormalizeMapCoord(pos.x);
+    Trinity::NormalizeMapCoord(pos.y);
+    UpdateGroundPositionZ(pos.x, pos.y, pos.z);
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
