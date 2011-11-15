@@ -209,6 +209,7 @@ void ScriptedAI::CheckCasterNoMovementInRange(uint32 diff, float maxrange)
             me->UpdateAllowedPositionZ(x, y, z);
             me->SetSpeed(MOVE_RUN, 1.5);
             me->GetMotionMaster()->MovePoint(40, x, y, z);  //to not possibly collide with any Movement Inform check
+            casterTimer = 200;
         }
         else
             me->GetMotionMaster()->MoveIdle();
@@ -258,6 +259,7 @@ void ScriptedAI::CheckShooterNoMovementInRange(uint32 diff, float maxrange)
             me->UpdateAllowedPositionZ(x, y, z);
             me->SetSpeed(MOVE_RUN, 1.5);
             me->GetMotionMaster()->MovePoint(41, x, y, z);  //to not possibly collide with any Movement Inform check
+            casterTimer = 200;
         }
         else
             me->GetMotionMaster()->MoveIdle();

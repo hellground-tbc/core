@@ -237,7 +237,8 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if(victim->GetTypeId() != TYPEID_PLAYER)
             return;
 
-        DoScriptText(PlayerDeath[PlayersKilled].id, m_creature);
+        if(m_creature->isAlive())
+            DoScriptText(PlayerDeath[PlayersKilled].id, m_creature);
         if( PlayersKilled < 4 )
             ++PlayersKilled;
     }
@@ -867,6 +868,8 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
         CheckCasterNoMovementInRange(diff);
         CastNextSpellIfAnyAndReady(diff);
+        if(me->GetPower(POWER_MANA)*100/me->GetMaxPower(POWER_MANA) <= 5)
+            DoMeleeAttackIfReady();
     }
 };
 
@@ -906,6 +909,8 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
 
         CheckCasterNoMovementInRange(diff);
         CastNextSpellIfAnyAndReady();
+        if(me->GetPower(POWER_MANA)*100/me->GetMaxPower(POWER_MANA) <= 5)
+            DoMeleeAttackIfReady();
     }
 };
 
@@ -1174,6 +1179,8 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         CheckCasterNoMovementInRange(diff, 30);
         CastNextSpellIfAnyAndReady(diff);
+        if(me->GetPower(POWER_MANA)*100/me->GetMaxPower(POWER_MANA) <= 5)
+            DoMeleeAttackIfReady();
     }
 };
 
