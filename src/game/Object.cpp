@@ -1358,8 +1358,10 @@ void WorldObject::GetRandomPoint(float x, float y, float z, float distance, floa
     }
 
     // angle to face `obj` to `this`
-    float angle = GetMap()->rand_norm()*2*M_PI;
-    float new_dist = GetMap()->rand_norm()*distance;
+    float angle = frand(0.0f, 2*M_PI);
+
+	// random dist in range 0 - distance;
+    float new_dist = frand(0.0f, distance);
 
     rand_x = x + new_dist * cos(angle);
     rand_y = y + new_dist * sin(angle);
@@ -1374,7 +1376,7 @@ void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
     float new_z = GetBaseMap()->GetHeight(x,y,z,true);
     if (new_z > INVALID_HEIGHT)
-        z = new_z+ 0.25f;                                   // just to be sure that we are not a few pixel under the surface
+        z = new_z+ 0.05f;                                   // just to be sure that we are not a few pixel under the surface
 }
 
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
