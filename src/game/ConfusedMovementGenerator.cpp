@@ -48,13 +48,8 @@ void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
 {
     for (uint8 idx = 0; idx <= MAX_RANDOM_POINTS; ++idx)
     {
-        unit.GetRandomPoint(owner.GetPositionX(), owner.GetPositionY(), owner.GetPositionZ(), WANDER_DISTANCE, randomPosition[idx].x, randomPosition[idx].y, randomPosition[idx].z);
-
-        // this will be changed soon :]
-        if (unit.IsWithinLOS(randomPosition[idx].x, randomPosition[idx].y, randomPosition[idx].z))
-            continue;
-        else
-            unit.GetPosition(randomPosition[idx]);
+        unit.GetPosition(randomPosition[idx]);
+        unit.GetValidPointInAngle(randomPosition[idx], WANDER_DISTANCE, frand(0, 2*M_PI));
     }
 }
 
