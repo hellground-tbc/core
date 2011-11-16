@@ -2409,6 +2409,46 @@ CreatureAI* GetAI_trigger_barker(Creature* pCreature)
     return new trigger_barkerAI(pCreature);
 }
 
+#include <cstring>
+#include "ObjectMgr.h"
+#include "BattleGround.h"
+
+//This function is called when the player opens the gossip menubool
+bool GossipHello_npc_arena_spectator(Player *player, Creature *_Creature)
+{
+    player->ADD_GOSSIP_ITEM_EXTENDED(0, "Whose arena do ypu wanna to watch?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1, "", 0, true);
+    player->ADD_GOSSIP_ITEM(0, "I'm not interested", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+
+    player->PlayerTalkClass->SendGossipMenu(907,_Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creature, uint32 sender, uint32 action, const char* sCode)
+{
+    if(sender == GOSSIP_SENDER_MAIN)
+    {
+        if(action == GOSSIP_ACTION_INFO_DEF+1)
+        {
+            uint64 guid = sObjectMgr.GetPlayerGUIDByName(std::string(sCode));
+            if (Player *pPlayer = ObjectAccessor::FindPlayer(guid))
+            {
+                if (BattleGround *pBG = pPlayer->GetBattleGround())
+                {
+                    if (!pBG->isArena())
+                        return false;
+
+                    if (Creature *pSpectator = pBG->GetBGCreature(ARENA_NPC_SPECTATOR))
+                    {
+                    }
+                }
+            }
+            player->CLOSE_GOSSIP_MENU();
+            return true;
+        }
+    }
+    return false;
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2564,5 +2604,11 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="trigger_barker";
     newscript->GetAI = GetAI_trigger_barker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_arena_spectator";
+    newscript->pGossipHello =           &GossipHello_npc_arena_spectator;
+    newscript->pGossipSelectWithCode =  &GossipSelectWithCode_npc_arena_spectator;
     newscript->RegisterSelf();
 }

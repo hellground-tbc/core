@@ -241,7 +241,7 @@ struct TRINITY_DLL_SPEC LanguageDesc
 extern LanguageDesc lang_description[LANGUAGES_COUNT];
 TRINITY_DLL_SPEC LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
-class ObjectMgr
+class TRINITY_DLL_DECL ObjectMgr
 {
     public:
         ObjectMgr();

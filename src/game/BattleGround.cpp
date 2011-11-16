@@ -1553,6 +1553,13 @@ bool BattleGround::AddSpiritGuide(uint32 type, float x, float y, float z, float 
     return true;
 }
 
+void BattleGround::AddSpectatorNPC(float x, float y, float z, float o)
+{
+    Creature* pCreature = AddCreature(WORLD_TRIGGER, ARENA_NPC_SPECTATOR, 0, x,y,z,o);
+    if (!pCreature)
+        sLog.outError("Can't create Arena Spectator!");
+}
+
 void BattleGround::SendMessageToAll(char const* text)
 {
     WorldPacket data;
