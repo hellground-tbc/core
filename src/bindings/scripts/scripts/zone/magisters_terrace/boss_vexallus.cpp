@@ -199,14 +199,22 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
     {
         float x, y, z;
         me->GetPosition(x, y, z);
-        Player* true_killer = killer->GetCharmerOrOwnerPlayerOrPlayerItself();
 
-        if(true_killer)
+        Player* pl_killer = NULL;
+
+        if(killer->GetTypeId() == TYPEID_PLAYER)
+            pl_killer = ((Player*)killer);
+        else if(killer->GetTypeId() == TYPEID_UNIT)
+        {
+            if(((Creature*)killer)->isTotem())
+                pl_killer = killer->GetCharmerOrOwnerPlayerOrPlayerItself();
+        }
+        if(pl_killer)
         {
             if(Unit* Trigger = me->SummonTrigger(x, y, z, 0, 10000))
-                Trigger->CastSpell(true_killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
+                Trigger->CastSpell(pl_killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
             if(pInstance)
-                true_killer->CastSpell(true_killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, pInstance->GetData64(DATA_VEXALLUS));
+                pl_killer->CastSpell(pl_killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, pInstance->GetData64(DATA_VEXALLUS));
         }
         me->RemoveCorpse();
     }
