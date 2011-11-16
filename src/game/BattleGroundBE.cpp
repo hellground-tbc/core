@@ -31,6 +31,7 @@
 BattleGroundBE::BattleGroundBE()
 {
     m_BgObjects.resize(BG_BE_OBJECT_MAX);
+    m_BgCreatures.resize(BG_BE_CREATURE_MAX);
 }
 
 BattleGroundBE::~BattleGroundBE()
