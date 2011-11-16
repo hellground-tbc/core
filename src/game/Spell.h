@@ -747,14 +747,14 @@ namespace Trinity
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ALLY:
-                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo(itr->getSource()))
+                        if (!itr->getSource()->isTargetableForAttack() || !i_caster->IsFriendlyTo(itr->getSource()))
                             continue;
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
                         if (itr->getSource()->GetTypeId()==TYPEID_UNIT && ((Creature*)itr->getSource())->isTotem())
                             continue;
-                        if (!itr->getSource()->isAttackableByAOE())
+                        if (!itr->getSource()->isTargetableForAttack())
                             continue;
 
                         Unit* check = i_caster->GetCharmerOrOwnerOrSelf();
@@ -858,14 +858,14 @@ namespace Trinity
                 switch (i_TargetType)
                 {
                     case SPELL_TARGETS_ALLY:
-                        if (!itr->getSource()->isAttackableByAOE() || !i_caster->IsFriendlyTo(itr->getSource()))
+                        if (!itr->getSource()->isTargetableForAttack() || !i_caster->IsFriendlyTo(itr->getSource()))
                             continue;
                         break;
                     case SPELL_TARGETS_ENEMY:
                     {
                         if (((Creature*)itr->getSource())->isTotem())
                             continue;
-                        if (!itr->getSource()->isAttackableByAOE())
+                        if (!itr->getSource()->isTargetableForAttack())
                             continue;
 
                         Unit* check = i_caster->GetCharmerOrOwnerOrSelf();

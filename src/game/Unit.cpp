@@ -827,6 +827,10 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
             return 0;
     }
 
+    // Do not deal damage from AoE spells when target is immune to it
+    if(!isAttackableByAOE() && IsAreaOfEffectSpell(spellProto))
+        return 0;
+
     if (pVictim->GetTypeId() == TYPEID_PLAYER)
     {
         // hacky way -.-
@@ -9165,10 +9169,19 @@ void Unit::ClearInCombat()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
 
-//TODO: remove this function
 bool Unit::isTargetableForAttack() const
 {
-    return isAttackableByAOE() && !hasUnitState(UNIT_STAT_DIED);
+    if (!isAlive())
+        return false;
+
+    if (HasFlag(UNIT_FIELD_FLAGS,
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NOT_ATTACKABLE_2))
+        return false;
+
+    if (GetTypeId()==TYPEID_PLAYER && ((Player *)this)->isGameMaster())
+        return false;
+
+    return !IsTaxiFlying();
 }
 
 bool Unit::canAttack(Unit const* target, bool force) const
@@ -9183,7 +9196,7 @@ bool Unit::canAttack(Unit const* target, bool force) const
     else if (!IsHostileTo(target))
         return false;
 
-    if (!target->isAttackableByAOE())
+    if (!target->isTargetableForAttack())
         return false;
 
     // feign dead case
@@ -9208,17 +9221,19 @@ bool Unit::canAttack(Unit const* target, bool force) const
 
 bool Unit::isAttackableByAOE() const
 {
-    if (!isAlive())
-        return false;
-
-    if (HasFlag(UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NOT_ATTACKABLE_2))
-        return false;
-
-    if (GetTypeId()==TYPEID_PLAYER && ((Player *)this)->isGameMaster())
-        return false;
-
-    return !IsTaxiFlying();
+    // creatures that should not be damaged by AoE spells
+    if(GetTypeId() == TYPEID_UNIT)
+    {
+        switch(GetEntry())
+        {
+            case 24745: //Pure Energy
+                return false;
+            default:
+                return true;
+        }
+    }
+    // we may place here also conditions (if exist?) when Player should not be damaged by AoE spells
+    return true;
 }
 
 int32 Unit::ModifyHealth(int32 dVal)
