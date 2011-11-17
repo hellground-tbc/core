@@ -760,13 +760,7 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
         if (*i && (!spell || (*i)->GetId() != spell))
         {
             if(GetDiminishingReturnsGroupForSpell((*i)->GetSpellProto(), false) == DIMINISHING_ENSLAVE)
-                if(Unit *caster = (*i)->GetCaster())
-                {
-                    if(caster->MagicSpellHitResult(this, (*i)->GetSpellProto()) == SPELL_MISS_RESIST)
-                        aurasToRemove.push_back(auraPair);
-                    else
-                        continue;
-                }
+                continue;
 
             roll = roll_chance_f(chance);
             if (roll)
