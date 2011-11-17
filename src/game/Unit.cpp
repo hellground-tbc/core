@@ -828,7 +828,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
     }
 
     // Do not deal damage from AoE spells when target is immune to it
-    if(!isAttackableByAOE() && IsAreaOfEffectSpell(spellProto))
+    if (!pVictim->isAttackableByAOE() && spellProto && IsAreaOfEffectSpell(spellProto))
         return 0;
 
     if (pVictim->GetTypeId() == TYPEID_PLAYER)
