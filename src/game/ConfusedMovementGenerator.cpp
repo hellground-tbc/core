@@ -49,7 +49,7 @@ void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
     for (uint8 idx = 0; idx <= MAX_RANDOM_POINTS; ++idx)
     {
         unit.GetPosition(randomPosition[idx]);
-        unit.GetValidPointInAngle(randomPosition[idx], WANDER_DISTANCE, frand(0, 2*M_PI);
+        unit.GetValidPointInAngle(randomPosition[idx], WANDER_DISTANCE, frand(0, 2*M_PI));
     }
 }
 
