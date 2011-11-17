@@ -514,6 +514,15 @@
     <ClCompile Include="..\..\src\game\DBCStores.cpp">
       <Filter>Storages</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\ReputationMgr.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\vmap\VMapCluster.cpp">
+      <Filter>vmaps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\vmap\PipeWrapper.cpp">
+      <Filter>vmaps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -975,6 +984,18 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\DBCStructure.h">
       <Filter>Storages</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\ReputationMgr.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\vmap\VMapCluster.h">
+      <Filter>vmaps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\vmap\PipeWrapper.h">
+      <Filter>vmaps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\vmap\PipeWrapperImpl.h">
+      <Filter>vmaps</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -48,9 +48,6 @@
     <ClCompile Include="..\..\src\shared\Database\SQLStorage.cpp">
       <Filter>Database</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\shared\Database\dbcfile.cpp">
-      <Filter>Database\DataStores</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\shared\Log.cpp">
       <Filter>Log</Filter>
     </ClCompile>
@@ -91,6 +88,9 @@
     <ClCompile Include="..\..\src\shared\Auth\SARC4.cpp">
       <Filter>Auth</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\shared\Database\DBCFileLoader.cpp">
+      <Filter>Database\DataStores</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\shared\Database\Database.h">
@@ -128,9 +128,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\shared\Database\SQLStorageImpl.h">
       <Filter>Database</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\Database\dbcfile.h">
-      <Filter>Database\DataStores</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\shared\Log.h">
       <Filter>Log</Filter>
@@ -187,6 +184,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\shared\Auth\WardenKeyGeneration.h">
       <Filter>Auth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\shared\Database\DBCStore.h">
+      <Filter>Database\DataStores</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\shared\Database\DBCFileLoader.h">
+      <Filter>Database\DataStores</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

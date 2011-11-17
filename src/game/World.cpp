@@ -1150,6 +1150,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_CHAT_MINIMUM_LVL] = sConfig.GetIntDefault("Chat.MinimumLevel", 5);
 
     m_configs[CONFIG_ENABLE_HIDDEN_RATING] = sConfig.GetBoolDefault("Arena.EnableMMR", false);
+    m_configs[CONFIG_ENABLE_FAKE_WHO_ON_ARENA] = sConfig.GetBoolDefault("Arena.EnableFakeWho", false);
 
     sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 1);
 

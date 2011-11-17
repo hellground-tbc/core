@@ -225,7 +225,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
     bool allowTwoSideWhoList = sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_WHO_LIST);
     bool gmInWhoList         = sWorld.getConfig(CONFIG_GM_IN_WHO_LIST);
 
-    WorldPacket data(SMSG_WHO, 50);                       // guess size
+    WorldPacket data(SMSG_WHO, 50);                         // guess size
     data << clientcount;                                    // clientcount place holder
     data << clientcount;                                    // clientcount place holder
 
@@ -264,6 +264,14 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
             continue;
 
         uint32 pzoneid = itr->second->GetZoneId();
+        if (sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA))
+        {
+            if (itr->second->InArena())
+            {
+                Player *pPlayer = itr->second;
+                pzoneid = sMapMgr.GetZoneId(pPlayer->GetBattleGroundEntryPointMap(), pPlayer->GetBattleGroundEntryPointX(), pPlayer->GetBattleGroundEntryPointY(), pPlayer->GetBattleGroundEntryPointZ());
+            }
+        }
         uint8 gender = itr->second->getGender();
 
         bool z_show = true;
@@ -322,7 +330,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 
         data << pname;                                    // player name
         data << gname;                                    // guild name
-        data << uint32(lvl);                             // player level
+        data << uint32(lvl);                              // player level
         data << uint32(class_);                           // player class
         data << uint32(race);                             // player race
         data << uint8(gender);                            // player gender
