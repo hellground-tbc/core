@@ -255,6 +255,7 @@
     <ClCompile Include="..\scripts\zone\arathi_highlands\arathi_highlands.cpp" />
     <ClCompile Include="..\scripts\zone\blackrock_depths\boss_coren_direbrew.cpp" />
     <ClCompile Include="..\scripts\zone\blackrock_depths\boss_theldren.cpp" />
+    <ClCompile Include="..\scripts\zone\coilfang_resevoir\serpent_shrine\serpent_shrine_trash.cpp" />
     <ClCompile Include="..\scripts\zone\deadmines\deadmines.cpp" />
     <ClCompile Include="..\scripts\zone\desolace\desolace.cpp" />
     <ClCompile Include="..\scripts\zone\dun_morogh\dun_morogh.cpp" />

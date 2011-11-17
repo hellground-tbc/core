@@ -1630,6 +1630,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         Unit* GetUnit(uint64 guid);
         Creature* GetCreature(uint64 guid);
+        Player* GetPlayerByName(const char *name);
 
         MotionMaster* GetMotionMaster() { return &i_motionMaster; }
 

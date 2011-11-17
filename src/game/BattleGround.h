@@ -211,7 +211,7 @@ enum BattleGroundJoinError
     BG_JOIN_ERR_GROUP_NOT_ENOUGH = 9
 };
 
-enum ArenaNPC
+enum ArenaSharedNPC
 {
     ARENA_NPC_SPECTATOR = 0
 };
@@ -246,7 +246,7 @@ This class is used to:
 3. some certain cases, same for all battlegrounds
 4. It has properties same for all battlegrounds
 */
-class BattleGround
+class TRINITY_DLL_SPEC BattleGround
 {
     friend class BattleGroundMgr;
 
