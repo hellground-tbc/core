@@ -504,7 +504,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
 
         bool AIM_Initialize(CreatureAI* ai = NULL);
 
-        void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type);
+        void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, SplineType type);
         CreatureAI* AI() { return (CreatureAI*)i_AI; }
 
         uint32 GetShieldBlockValue() const                  //dunno mob block value

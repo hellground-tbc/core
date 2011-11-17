@@ -335,6 +335,12 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
     mSemaphoreTeleport_Near = false;
     mSemaphoreTeleport_Far = false;
 
+    m_DelayedOperations = 0;
+    m_bCanDelayTeleport = false;
+    m_bHasDelayedTeleport = false;
+    m_bHasBeenAliveAtDelayedTeleport = true; // overwrite always at setup teleport data, so not used infact
+    m_teleport_options = 0;
+
     pTrader = 0;
 
     ClearTrade();
@@ -1176,7 +1182,10 @@ void Player::Update(uint32 update_diff, uint32 p_time)
         m_nextMailDelivereTime = 0;
     }
 
+    //used to implement delayed far teleports
+    SetCanDelayTeleport(true);
     Unit::Update(update_diff, p_time);
+    SetCanDelayTeleport(false);
 
     time_t now = time(NULL);
 
@@ -1424,6 +1433,9 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     Pet* pet = GetPet();
     if (pet && !IsWithinDistInMap(pet, GetMap()->GetVisibilityDistance()) && !pet->isPossessed())
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
+
+    if (IsHasDelayedTeleport())
+        TeleportTo(m_teleport_dest, m_teleport_options);
 
     updateMutex.release();
 }
@@ -1719,22 +1731,58 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // We have to perform this check before the teleport, otherwise the
     // ObjectAccessor won't find the flag.
     if (duel && GetMapId() != mapid)
-    {
-        GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER));
-        if (obj)
+        if (GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER)))
             DuelComplete(DUEL_FLED);
-    }
 
     // reset movement flags at teleport, because player will continue move with these flags after teleport
     SetUnitMovementFlags(0);
+//    m_movementInfo.SetMovementFlags(MOVEFLAG_NONE);
+//    DisableSpline();
 
     if ((GetMapId() == mapid) && (!m_transport))
     {
-        // prepare zone change detect
-        uint32 old_zone = GetZoneId();
+//        // prepare zone change detect
+//        uint32 old_zone = GetZoneId();
 
         SetSemaphoreTeleportFar(false);
 
+        //setup delayed teleport flag
+        //if teleport spell is casted in Unit::Update() func
+        //then we need to delay it until update process will be finished
+        if (SetDelayedTeleportFlagIfCan())
+        {
+            SetSemaphoreTeleportNear(true);
+            //lets save teleport destination for player
+            m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+            m_teleport_options = options;
+            return true;
+        }
+
+        if (!(options & TELE_TO_NOT_UNSUMMON_PET))
+        {
+            //same map, only remove pet if out of range for new position
+            if(pet && !pet->IsWithinDist3d(x, y, z, GetMap()->GetVisibilityDistance()))
+                UnsummonPetTemporaryIfAny();
+        }
+
+        if (!(options & TELE_TO_NOT_LEAVE_COMBAT))
+            CombatStop();
+
+        // this will be used instead of the current location in SaveToDB
+        m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+        SetFallInformation(0, z);
+
+        // code for finish transfer called in WorldSession::HandleMovementOpcodes()
+        // at client packet MSG_MOVE_TELEPORT_ACK
+        SetSemaphoreTeleportNear(true);
+        // near teleport, triggering send MSG_MOVE_TELEPORT_ACK from client at landing
+        if(!GetSession()->PlayerLogout())
+        {
+            WorldPacket data;
+            BuildTeleportAckMsg(data, x, y, z, orientation);
+            GetSession()->SendPacket(&data);
+        }
+/*
         // near teleport
         if (!GetSession()->PlayerLogout())
         {
@@ -1782,7 +1830,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if (pvpInfo.inHostileArea)
                 CastSpell(this, 2479, true);
         }
-
+*/
         if (getFollowingGM())
         {
             setGMFollow(0);
@@ -1825,6 +1873,18 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if (!map || map->CanEnter(this))
         {
             SetSemaphoreTeleportNear(false);
+            //setup delayed teleport flag
+            //if teleport spell is casted in Unit::Update() func
+            //then we need to delay it until update process will be finished
+            if (SetDelayedTeleportFlagIfCan())
+            {
+                SetSemaphoreTeleportFar(true);
+                //lets save teleport destination for player
+                m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+                m_teleport_options = options;
+                return true;
+            }
+
             SetSelection(0);
             CombatStop();
             ResetContestedPvP();
@@ -1857,7 +1917,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             if (!GetSession()->PlayerLogout())
             {
-                // send transfer packets
+                // send transfer packet to display load screen
                 WorldPacket data(SMSG_TRANSFER_PENDING, (4+4+4));
                 data << uint32(mapid);
                 if (m_transport)
@@ -1866,42 +1926,11 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data << uint32(GetMapId());
                 }
                 GetSession()->SendPacket(&data);
-
-                data.Initialize(SMSG_NEW_WORLD, (20));
-                if (m_transport)
-                {
-                    data << uint32(mapid);
-                    data << float(m_movementInfo.GetTransportPos()->x);
-                    data << float(m_movementInfo.GetTransportPos()->y);
-                    data << float(m_movementInfo.GetTransportPos()->z);
-                    data << float(m_movementInfo.GetTransportPos()->o);
-                }
-                else
-                {
-                    data << uint32(mapid);
-                    data << float(x);
-                    data << float(y);
-                    data << float(z);
-                    data << float(orientation);
-                }
-
-                GetSession()->SendPacket(&data);
-                SendSavedInstances();
-
-                if (getFollowingGM())
-                {
-                    setGMFollow(0);
-                }
-                else if (getFollowTarget())
-                {
-                    setFollowTarget(0);
-                    GetMotionMaster()->Clear(true);
-                }
-
-                // remove from old map now
-                if(oldmap)
-                    oldmap->Remove(this, false);
             }
+
+            // remove from old map now
+            if (oldmap)
+                oldmap->Remove(this, false);
 
             // new final coordinates
             float final_x = x;
@@ -1918,14 +1947,47 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             }
 
             m_teleport_dest = WorldLocation(mapid, final_x, final_y, final_z, final_o);
-
             SetFallInformation(0, final_z);
-            // if the player is saved before worldportack (at logout for example)
+            // if the player is saved before worldport ack (at logout for example)
             // this will be used instead of the current location in SaveToDB
 
             // move packet sent by client always after far teleport
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
             SetSemaphoreTeleportFar(true);
+
+            if (!GetSession()->PlayerLogout())
+            {
+                // transfer finished, inform client to start load
+                WorldPacket data(SMSG_NEW_WORLD, (20));
+                data << uint32(mapid);
+                if (m_transport)
+                {
+                    data << float(m_movementInfo.GetTransportPos()->x);
+                    data << float(m_movementInfo.GetTransportPos()->y);
+                    data << float(m_movementInfo.GetTransportPos()->z);
+                    data << float(m_movementInfo.GetTransportPos()->o);
+                }
+                else
+                {
+                    data << float(final_x);
+                    data << float(final_y);
+                    data << float(final_z);
+                    data << float(final_o);
+                }
+
+                GetSession()->SendPacket( &data );
+                SendSavedInstances();
+
+                if (getFollowingGM())
+                {
+                    setGMFollow(0);
+                }
+                else if (getFollowTarget())
+                {
+                    setFollowTarget(0);
+                    GetMotionMaster()->Clear(true);
+                }
+            }
         }
         else
             return false;
@@ -1936,6 +1998,45 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 void Player::SetDontMove(bool dontMove)
 {
     m_dontMove = dontMove;
+}
+
+void Player::ProcessDelayedOperations()
+{
+    if (m_DelayedOperations == 0)
+        return;
+
+    if (m_DelayedOperations & DELAYED_RESURRECT_PLAYER)
+    {
+        ResurrectPlayer(0.0f, false);
+
+        if (GetMaxHealth() > m_resurrectHealth)
+            SetHealth( m_resurrectHealth );
+        else
+            SetHealth( GetMaxHealth() );
+
+        if (GetMaxPower(POWER_MANA) > m_resurrectMana)
+            SetPower(POWER_MANA, m_resurrectMana );
+        else
+            SetPower(POWER_MANA, GetMaxPower(POWER_MANA) );
+
+        SetPower(POWER_RAGE, 0 );
+        SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY) );
+
+        SpawnCorpseBones();
+    }
+
+    if (m_DelayedOperations & DELAYED_SAVE_PLAYER)
+    {
+        SaveToDB();
+    }
+
+    if (m_DelayedOperations & DELAYED_SPELL_CAST_DESERTER)
+    {
+        CastSpell(this, 26013, true); // Deserter
+    }
+
+    //we have executed ALL delayed ops, so clear the flag
+    m_DelayedOperations = 0;
 }
 
 void Player::AddToWorld()
@@ -12369,7 +12470,11 @@ Quest const * Player::GetNextQuest(uint64 guid, Quest const *pQuest)
     }
     else
     {
-        GameObject *pGameObject = GetMap()->GetGameObject(guid);
+        //we should obtain map pointer from GetMap() in 99% of cases. Special case
+        //only for quests which cast teleport spells on player
+        Map * _map = IsInWorld() ? GetMap() : MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+        ASSERT(_map);
+        GameObject *pGameObject = _map->GetGameObject(guid);
         if (pGameObject)
         {
             pObject = (Object*)pGameObject;
@@ -15597,6 +15702,14 @@ void Player::SaveToDB()
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
 
+    //lets allow only players in world to be saved
+    if (IsBeingTeleportedFar())
+    {
+        ScheduleDelayedOperation(DELAYED_SAVE_PLAYER);
+        saving = false;
+        return;
+    }
+
     // first save/honor gain after midnight will also update the player's honor fields
     UpdateHonorFields();
 
@@ -17876,8 +17989,19 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
         bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 
         if (bg->isBattleGround() && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER))
+        {
             if (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN)
+            {
+                //lets check if player was teleported from BG and schedule delayed Deserter spell cast
+                if (IsBeingTeleportedFar())
+                {
+                    ScheduleDelayedOperation(DELAYED_SPELL_CAST_DESERTER);
+                    return;
+                }
+
                 CastSpell(this, 26013, true);               // Deserter
+            }
+        }
     }
 }
 
@@ -19213,8 +19337,17 @@ uint32 Player::GetBaseWeaponSkillValue (WeaponAttackType attType) const
 void Player::ResurectUsingRequestData()
 {
     SpawnCorpseBones();
+    /// Teleport before resurrecting by player, otherwise the player might get attacked from creatures near his corpse
+    if (IS_PLAYER_GUID(m_resurrectGUID))
+        TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
 
-    TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
+    //we cannot resurrect player when we triggered far teleport
+    //player will be resurrected upon teleportation
+    if (IsBeingTeleportedFar())
+    {
+        ScheduleDelayedOperation(DELAYED_RESURRECT_PLAYER);
+        return;
+    }
 
     ResurrectPlayer(0.0f,false);
 

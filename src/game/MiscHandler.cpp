@@ -244,6 +244,10 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
                 continue;
         }
 
+        //do not process players which are not in world
+        if (!(itr->second->IsInWorld()))
+            continue;
+
         // check if target is globally visible for player
         if (!(itr->second->IsVisibleGloballyfor (_player)))
             continue;
@@ -1244,14 +1248,6 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recv_data)
     // Received opcode CMSG_WORLD_TELEPORT
     // Time is ***, map=469, x=452.000000, y=6454.000000, z=2536.000000, orient=3.141593
 
-    //sLog.outDebug("Received opcode CMSG_WORLD_TELEPORT");
-
-    if (GetPlayer()->IsTaxiFlying())
-    {
-        sLog.outDebug("Player '%s' (GUID: %u) in flight, ignore worldport command.",GetPlayer()->GetName(),GetPlayer()->GetGUIDLow());
-        return;
-    }
-
     uint32 time;
     uint32 mapid;
     float PositionX;
@@ -1265,6 +1261,15 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recv_data)
     recv_data >> PositionY;
     recv_data >> PositionZ;
     recv_data >> Orientation;                               // o (3.141593 = 180 degrees)
+
+    //sLog.outDebug("Received opcode CMSG_WORLD_TELEPORT");
+
+    if (GetPlayer()->IsTaxiFlying())
+    {
+        sLog.outDebug("Player '%s' (GUID: %u) in flight, ignore worldport command.",GetPlayer()->GetName(),GetPlayer()->GetGUIDLow());
+        return;
+    }
+
     DEBUG_LOG("Time %u sec, map=%u, x=%f, y=%f, z=%f, orient=%f", time/1000, mapid, PositionX, PositionY, PositionZ, Orientation);
 
     if (GetSecurity() >= SEC_ADMINISTRATOR)

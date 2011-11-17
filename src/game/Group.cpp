@@ -1071,7 +1071,7 @@ void Group::Update(uint32 diff)
 
 void Group::UpdatePlayerOutOfRange(Player* pPlayer)
 {
-    if(!pPlayer || (!pPlayer->IsInWorld() && !pPlayer->IsBeingTeleported()))
+    if (!pPlayer || !pPlayer->IsInWorld())// && !pPlayer->IsBeingTeleported())) // is this needed ?
         return;
 
     Player *player;
