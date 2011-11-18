@@ -1999,7 +1999,7 @@ class TRINITY_DLL_SPEC Player : public Unit
             m_lastFallZ = z;
         }
 
-        void BuildTeleportAckMsg( WorldPacket *data, float x, float y, float z, float ang) const;
+        void BuildTeleportAckMsg(WorldPacket &data, float x, float y, float z, float ang) const;
 
         bool isMoving() const { return HasUnitMovementFlag(MOVEFLAG_MOVING); }
         bool isTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING); }

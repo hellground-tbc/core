@@ -1275,10 +1275,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
             if (tmpMap)
             {
                 if (Creature * pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT)))
-                {
-                    pCreature->CleanupsBeforeDelete();
                     pCreature->AddObjectToRemoveList();
-                }
             }
         }
     }

@@ -305,7 +305,7 @@ struct TRINITY_DLL_DECL mob_rizzle_sprysprocketAI : public ScriptedAI
                 if(map)
                 {
                     map->CreatureRelocation(m_creature, 3706.39, -3969.15, 35.9118, 0);
-                    m_creature->AI_SendMoveToPacket(3706.39, -3969.15, 35.9118, 0, 0, 0);
+                    m_creature->AI_SendMoveToPacket(3706.39, -3969.15, 35.9118, 0, 0, SPLINETYPE_NORMAL);
                 }
                 //begin swimming and summon depth charges
                 Player* player = Unit::GetPlayer(PlayerGUID);

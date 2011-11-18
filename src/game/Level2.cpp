@@ -1019,7 +1019,6 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
     // Delete the creature
     unit->CombatStop();
     unit->DeleteFromDB();
-    unit->CleanupsBeforeDelete();
     unit->AddObjectToRemoveList();
 
     SendSysMessage(LANG_COMMAND_DELCREATMESSAGE);
