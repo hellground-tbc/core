@@ -607,7 +607,7 @@ void Aura::Update(uint32 diff)
         m_heartbeatTimer *= 2;
         if (Unit *caster = GetCaster())
         {            
-            if(!caster->SpellHitResult(m_target, m_spellProto))
+            if(caster->SpellHitResult(m_target, m_spellProto) != SPELL_MISS_NONE)
                 m_target->RemoveAurasByCasterSpell(m_spellProto->Id, caster->GetGUID());
         } 
     }
