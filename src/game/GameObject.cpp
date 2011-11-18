@@ -1419,7 +1419,10 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
 
     if(spell == 7353) // cozy fire, TODO: find general rule?
     {
-        trigger->setFaction(14);
+        if (Unit *owner = GetOwner())
+            trigger->setFaction(owner->getFaction());
+        else
+            trigger->setFaction(14);
         trigger->CastSpell(target, spell, true); // no orginal caster should prevent 'on spell cast' triggering
         return;
     }

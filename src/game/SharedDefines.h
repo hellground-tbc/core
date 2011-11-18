@@ -895,37 +895,37 @@ enum AuraState
 // Spell mechanics
 enum Mechanics
 {
-    MECHANIC_NONE             = 0,
-    MECHANIC_CHARM            = 1,
-    MECHANIC_CONFUSED         = 2,
-    MECHANIC_DISARM           = 3,
-    MECHANIC_DISTRACT         = 4,
-    MECHANIC_FEAR             = 5,
-    MECHANIC_FUMBLE           = 6,
-    MECHANIC_ROOT             = 7,
-    MECHANIC_PACIFY           = 8,                          //0 spells use this mechanic
-    MECHANIC_SILENCE          = 9,
-    MECHANIC_SLEEP            = 10,
-    MECHANIC_SNARE            = 11,
-    MECHANIC_STUN             = 12,
-    MECHANIC_FREEZE           = 13,
-    MECHANIC_KNOCKOUT         = 14,
-    MECHANIC_BLEED            = 15,
-    MECHANIC_BANDAGE          = 16,
-    MECHANIC_POLYMORPH        = 17,
-    MECHANIC_BANISH           = 18,
-    MECHANIC_SHIELD           = 19,
-    MECHANIC_SHACKLE          = 20,
-    MECHANIC_MOUNT            = 21,
-    MECHANIC_PERSUADE         = 22,                         //0 spells use this mechanic
-    MECHANIC_TURN             = 23,
-    MECHANIC_HORROR           = 24,
-    MECHANIC_INVULNERABILITY  = 25,
-    MECHANIC_INTERRUPT        = 26,
-    MECHANIC_DAZE             = 27,
-    MECHANIC_DISCOVERY        = 28,
-    MECHANIC_IMMUNE_SHIELD    = 29,                         // Divine (Blessing) Shield/Protection and Ice Block
-    MECHANIC_SAPPED           = 30
+    MECHANIC_NONE             = 0,      // mask
+    MECHANIC_CHARM            = 1,      // 0x00000001
+    MECHANIC_CONFUSED         = 2,      // 0x00000002
+    MECHANIC_DISARM           = 3,      // 0x00000004
+    MECHANIC_DISTRACT         = 4,      // 0x00000008
+    MECHANIC_FEAR             = 5,      // 0x00000010
+    MECHANIC_FUMBLE           = 6,      // 0x00000020
+    MECHANIC_ROOT             = 7,      // 0x00000040
+    MECHANIC_PACIFY           = 8,      // 0x00000080                    0 spells use this mechanic
+    MECHANIC_SILENCE          = 9,      // 0x00000100
+    MECHANIC_SLEEP            = 10,     // 0x00000200
+    MECHANIC_SNARE            = 11,     // 0x00000400
+    MECHANIC_STUN             = 12,     // 0x00000800
+    MECHANIC_FREEZE           = 13,     // 0x00001000
+    MECHANIC_KNOCKOUT         = 14,     // 0x00002000
+    MECHANIC_BLEED            = 15,     // 0x00004000
+    MECHANIC_BANDAGE          = 16,     // 0x00008000
+    MECHANIC_POLYMORPH        = 17,     // 0x00010000
+    MECHANIC_BANISH           = 18,     // 0x00020000
+    MECHANIC_SHIELD           = 19,     // 0x00040000
+    MECHANIC_SHACKLE          = 20,     // 0x00080000
+    MECHANIC_MOUNT            = 21,     // 0x00100000
+    MECHANIC_PERSUADE         = 22,     // 0x00200000                    0 spells use this mechanic
+    MECHANIC_TURN             = 23,     // 0x00400000
+    MECHANIC_HORROR           = 24,     // 0x00800000
+    MECHANIC_INVULNERABILITY  = 25,     // 0x01000000
+    MECHANIC_INTERRUPT        = 26,     // 0x02000000
+    MECHANIC_DAZE             = 27,     // 0x04000000
+    MECHANIC_DISCOVERY        = 28,     // 0x08000000
+    MECHANIC_IMMUNE_SHIELD    = 29,     // 0x10000000                    Divine (Blessing) Shield/Protection and Ice Block
+    MECHANIC_SAPPED           = 30      // 0x20000000
 };
 
 // Used for spell 42292 Immune Movement Impairment and Loss of Control (0x49967da6)

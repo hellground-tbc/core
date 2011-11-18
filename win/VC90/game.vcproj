@@ -1484,19 +1484,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\game\ScriptMgr.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\ScriptMgr.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\game\ReputationMgr.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\game\ReputationMgr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\ScriptMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\ScriptMgr.h"
 				>
 			</File>
 			<File
@@ -1653,6 +1653,14 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\..\src\game\DBCEnums.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\DBCfmt.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\game\DBCStores.cpp"
 			>
 		</File>
@@ -1670,6 +1678,10 @@
 		</File>
 		<File
 			RelativePath="..\..\src\game\MapUpdater.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\MovementGeneratorImpl.h"
 			>
 		</File>
 	</Files>
