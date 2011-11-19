@@ -22,6 +22,7 @@ SDCategory: Isle Of Quel'Danas
 EndScriptData */
 
 /* ContentData
+npc_archmage_nethul
 npc_ayren_cloudbreaker
 npc_converted_sentry
 npc_unrestrained_dragonhawk
@@ -29,6 +30,48 @@ npc_greengill_slave
 EndContentData */
 
 #include "precompiled.h"
+#include "GameEvent.h"
+
+/*######
+## npc_archmage_nethul
+######*/
+
+#define GOSSIP_SWP_STATE "What is the current progress on Sunwell's offensive?"
+
+bool GossipHello_npc_archmage_nethul(Player *player, Creature *_Creature)
+{
+    for(uint32 i = 50; i < 54; ++i)
+    {
+        if(isGameEventActive(i))
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SWP_STATE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+i);
+            break;
+        }
+    }
+    player->SEND_GOSSIP_MENU(12309,_Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_archmage_nethul(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+50:
+            gameeventmgr.HandleWorldEventGossip(player, _Creature);
+            player->SEND_GOSSIP_MENU(12400, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+51:
+            player->SEND_GOSSIP_MENU(12401, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+52:
+            player->SEND_GOSSIP_MENU(12402, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+54:
+            player->SEND_GOSSIP_MENU(12403, _Creature->GetGUID());
+            break;
+    }
+    return true;
+}
 
 /*######
 ## npc_ayren_cloudbreaker
@@ -236,6 +279,12 @@ CreatureAI* GetAI_npc_greengill_slaveAI(Creature* _Creature)
 void AddSC_isle_of_queldanas()
 {
     Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="npc_archmage_nethul";
+    newscript->pGossipHello = &GossipHello_npc_archmage_nethul;
+    newscript->pGossipSelect = &GossipSelect_npc_archmage_nethul;
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="npc_ayren_cloudbreaker";
