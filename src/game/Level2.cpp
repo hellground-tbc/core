@@ -1055,7 +1055,7 @@ bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
     if (owner_guid)
     {
         Unit* owner = m_session->GetPlayer()->GetMap()->GetUnit(owner_guid);
-        if (!owner && !IS_PLAYER_GUID(owner_guid))
+        if (!owner || !IS_PLAYER_GUID(owner_guid))
         {
             PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, GUID_LOPART(owner_guid), obj->GetGUIDLow());
             SetSentErrorMessage(true);
@@ -1143,7 +1143,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
         if (!cId)
             return false;
 
-        uint32 lowguid = atoi(cId);
+        lowguid = atoi(cId);
 
         /* FIXME: impossibel without entry
         if (lowguid)

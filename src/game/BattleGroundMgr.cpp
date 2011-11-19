@@ -525,10 +525,10 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, uint32 queue_id, uin
             BattleGround* bg = *itr; //we have to store battleground pointer here, because when battleground is full, it is removed from free queue (not yet implemented!!)
             // and iterator is invalid
 
-            for (QueuedGroupsList::iterator itr = m_QueuedGroups[queue_id].begin(); itr != m_QueuedGroups[queue_id].end();)
+            for (QueuedGroupsList::iterator itr2 = m_QueuedGroups[queue_id].begin(); itr2 != m_QueuedGroups[queue_id].end();)
             {
-                QueuedGroupsList::iterator tmpItr = itr;
-                ++itr;
+                QueuedGroupsList::iterator tmpItr = itr2;
+                ++itr2;
                 if (!(*tmpItr))
                 {
                     m_QueuedGroups[queue_id].erase(tmpItr);
@@ -1734,10 +1734,12 @@ void BattleGroundMgr::DistributeArenaPoints()
 
 void BattleGroundMgr::BuildBattleGroundListPacket(WorldPacket *data, const uint64& guid, Player* plr, BattleGroundTypeId bgTypeId)
 {
+    if (!plr)
+        return;
+
     uint32 PlayerLevel = 10;
 
-    if (plr)
-        PlayerLevel = plr->getLevel();
+    PlayerLevel = plr->getLevel();
 
     data->Initialize(SMSG_BATTLEFIELD_LIST);
     *data << uint64(guid);                                  // battlemaster guid

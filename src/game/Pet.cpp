@@ -215,7 +215,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         m_charmInfo->SetPetNumber(pet_number, true);
     else
         m_charmInfo->SetPetNumber(pet_number, false);
-    SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
+    SetOwnerGUID(owner->GetGUID());
     SetDisplayId(fields[3].GetUInt32());
     SetNativeDisplayId(fields[3].GetUInt32());
     uint32 petlevel=fields[4].GetUInt32();
@@ -256,7 +256,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     InitStatsForLevel(petlevel);
     SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
     SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, fields[5].GetUInt32());
-    SetUInt64Value(UNIT_FIELD_CREATEDBY, owner->GetGUID());
+    SetCreatorGUID(owner->GetGUID());
 
     SetReactState(ReactStates(fields[6].GetUInt8()));
     m_loyaltyPoints = fields[7].GetInt32();
@@ -376,10 +376,10 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
                 delete m_declinedname;
 
             m_declinedname = new DeclinedName;
-            Field *fields = result->Fetch();
+            Field *fields2 = result->Fetch();
             for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
             {
-                m_declinedname->name[i] = fields[i].GetCppString();
+                m_declinedname->name[i] = fields2[i].GetCppString();
             }
         }
     }
@@ -1816,8 +1816,13 @@ void Pet::ToggleAutocast(uint32 spellid, bool apply)
         if (i == m_autospells.size())
         {
             m_autospells.push_back(spellid);
-            itr->second->active = ACT_ENABLED;
-            itr->second->state = PETSPELL_CHANGED;
+
+            if (itr->second->active != ACT_ENABLED)
+            {
+                itr->second->active = ACT_ENABLED;
+                if (itr->second->state != PETSPELL_NEW)
+                    itr->second->state = PETSPELL_CHANGED;
+            }
         }
     }
     else
@@ -1827,8 +1832,12 @@ void Pet::ToggleAutocast(uint32 spellid, bool apply)
         if (i < m_autospells.size())
         {
             m_autospells.erase(itr2);
-            itr->second->active = ACT_DISABLED;
-            itr->second->state = PETSPELL_CHANGED;
+            if (itr->second->active != ACT_DISABLED)
+            {
+                itr->second->active = ACT_DISABLED;
+                if (itr->second->state != PETSPELL_NEW)
+                    itr->second->state = PETSPELL_CHANGED;
+            }
         }
     }
 }
