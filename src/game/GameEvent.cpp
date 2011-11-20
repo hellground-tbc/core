@@ -1616,8 +1616,9 @@ void GameEvent::SendWorldStateUpdate(Player * plr, uint16 event_id)
     std::map<uint32,GameEventFinishCondition>::iterator itr;
     for (itr = mGameEvent[event_id].conditions.begin(); itr !=mGameEvent[event_id].conditions.end(); ++itr)
     {
+        // if required limit exists, than show done values in percents
         if (itr->second.done_world_state)
-            plr->SendUpdateWorldState(itr->second.done_world_state, (uint32)(itr->second.done));
+            plr->SendUpdateWorldState(itr->second.done_world_state, itr->second.reqNum?(uint32)(itr->second.done/itr->second.reqNum*100):(uint32)(itr->second.done));
         if (itr->second.max_world_state)
             plr->SendUpdateWorldState(itr->second.max_world_state, (uint32)(itr->second.reqNum));
     }

@@ -1402,7 +1402,7 @@ struct TRINITY_DLL_DECL mob_mgt_kalecgosAI : public ScriptedAI
 bool GossipHello_npc_kalec(Player *player, Creature *_Creature)
 {
     if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+        player->PrepareQuestMenu(_Creature->GetGUID());
 
     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, KALEC_WELCOME1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, KALEC_WELCOME2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
