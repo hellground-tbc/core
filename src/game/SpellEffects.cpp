@@ -1506,10 +1506,10 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 34665:                                 //Administer Antidote
                 {
-                    if (!unitTarget || !unitTarget->GetTypeId() == TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    Creature* pCreature = (Creature*)unitTarget);
+                    Creature* pCreature = ((Creature*)unitTarget);
 
                     pCreature->UpdateEntry(16992);  // change into dreadtusk
                     pCreature->AIM_Initialize();
