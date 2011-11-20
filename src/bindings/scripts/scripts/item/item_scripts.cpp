@@ -387,6 +387,8 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
         case 34257: cEntry[0] = 24918; targetState = T_ALIVE; break; // Fel Siphon
         case 28547: cEntry[0] = 17157; cEntry[1] = 18865; break;
         case 12284: cEntry[0] = 7047; cEntry[1] = 7048; cEntry[2] = 7049; break; //Draco-Incarcinatrix 900
+        case 23337: cEntry[0] = 16880; targetState = T_ALIVE; break;    // Cenarion Antidote
+        case 29818: cEntry[0] = 20774; targetState = T_ALIVE; break;    // Energy Field Modulator
     }
 
     if(uTarget && uTarget->GetTypeId() == TYPEID_UNIT)
