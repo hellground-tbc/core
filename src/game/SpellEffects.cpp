@@ -1506,32 +1506,25 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 34665:                                 //Administer Antidote
                 {
-                    if (!unitTarget || m_caster->GetTypeId() != TYPEID_PLAYER)
+                    if (!unitTarget || !unitTarget->GetTypeId() == TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    if (!unitTarget)
+                    if(unitTarget->GetEntry() != 16880)
+                    {
+                        WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+                        data << uint32(23337);                                  // itemId
+                        data << uint8(SPELL_FAILED_BAD_TARGETS);                // reason
+                        m_caster->GetSession()->SendPacket(&data);              // send message: Bad target
+                        m_caster->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);    // break spell
                         return;
+                    }
 
-                    TemporarySummon* tempSummon = dynamic_cast<TemporarySummon*>(unitTarget);
-                    if (!tempSummon)
-                        return;
+                    Creature* pCreature = (Creature*)unitTarget);
 
-                    uint32 health = tempSummon->GetHealth();
+                    pCreature->UpdateEntry(16992);  // change into dreadtusk
+                    pCreature->AIM_Initialize();
 
-                    float x = tempSummon->GetPositionX();
-                    float y = tempSummon->GetPositionY();
-                    float z = tempSummon->GetPositionZ();
-                    float o = tempSummon->GetOrientation();
-                    tempSummon->UnSummon();
-
-                    Creature* pCreature = m_caster->SummonCreature(16992, x, y, z, o,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,180000);
-                    if (!pCreature)
-                        return;
-
-                    pCreature->SetHealth(health);
-                    ((Player*)m_caster)->RewardPlayerAndGroupAtEvent(16992,pCreature);
-
-                    if (pCreature->IsAIEnabled)
+                    if(pCreature->IsAIEnabled)
                         pCreature->AI()->AttackStart(m_caster);
 
                     return;
