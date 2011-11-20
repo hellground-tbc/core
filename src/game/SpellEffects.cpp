@@ -1529,16 +1529,6 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget || !unitTarget->GetTypeId() == TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    if(unitTarget->GetEntry() != 16880)
-                    {
-                        WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
-                        data << uint32(23337);                                  // itemId
-                        data << uint8(SPELL_FAILED_BAD_TARGETS);                // reason
-                        m_caster->GetSession()->SendPacket(&data);              // send message: Bad target
-                        m_caster->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);    // break spell
-                        return;
-                    }
-
                     Creature* pCreature = (Creature*)unitTarget);
 
                     pCreature->UpdateEntry(16992);  // change into dreadtusk
