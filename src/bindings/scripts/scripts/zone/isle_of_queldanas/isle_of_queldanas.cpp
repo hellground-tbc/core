@@ -40,6 +40,9 @@ EndContentData */
 
 bool GossipHello_npc_archmage_nethul(Player *player, Creature *_Creature)
 {
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu(_Creature->GetGUID());
+
     for(uint32 i = 50; i < 54; ++i)
     {
         if(isGameEventActive(i))
