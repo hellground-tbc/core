@@ -66,7 +66,7 @@ struct Script
     bool (*pGOUse                   )(Player*, GameObject*);
     bool (*pItemUse                 )(Player*, Item*, SpellCastTargets const&);
     bool (*pAreaTrigger             )(Player*, AreaTriggerEntry const*);
-    bool (*pCompletedCinematic      )(Player*, CinematicSequenceEntry const*);
+    bool (*pCompletedCinematic      )(Player*, CinematicSequencesEntry const*);
     bool (*pProcessEventId          )(uint32, Object*, Object*, bool);
     bool (*pEffectDummyNPC          )(Unit*, uint32, uint32, Creature*);
     bool (*pEffectDummyGO           )(Unit*, uint32, uint32, GameObject*);

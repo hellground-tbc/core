@@ -1451,7 +1451,7 @@ bool GOUse_go_movie_orb(Player *player, GameObject* _GO)
     return true;
 }
 
-bool CompletedCinematic_scrying_orb_cinematic(Player* player, CinematicSequenceEntry const* cinematic)
+bool CompletedCinematic_scrying_orb_cinematic(Player* player, CinematicSequencesEntry const* cinematic)
 {
     if (player)
     {

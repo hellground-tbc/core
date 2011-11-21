@@ -23,7 +23,7 @@
 #include "Policies/Singleton.h"
 
 struct AreaTriggerEntry;
-struct CinematicSequenceEntry;
+struct CinematicSequencesEntry;
 class Aura;
 class Creature;
 class CreatureAI;
@@ -117,7 +117,7 @@ class ScriptMgr
         bool OnGameObjectUse(Player* pPlayer, GameObject* pGameObject);
         bool OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
         bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry);
-        bool OnCompletedCinematic(Player* pPlayer, CinematicSequenceEntry const* cinematic);
+        bool OnCompletedCinematic(Player* pPlayer, CinematicSequencesEntry const* cinematic);
         bool OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget, bool isStart);
         bool OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, Creature* pTarget);
         bool OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, GameObject* pTarget);
@@ -177,7 +177,7 @@ class ScriptMgr
         bool (TRINITY_IMPORT* m_pOnGOUse) (Player*, GameObject*);
         bool (TRINITY_IMPORT* m_pOnItemUse) (Player*, Item*, SpellCastTargets const&);
         bool (TRINITY_IMPORT* m_pOnAreaTrigger) (Player*, AreaTriggerEntry const*);
-        bool (TRINITY_IMPORT* m_pOnCompletedCinematic) (Player*, CinematicSequenceEntry const*);
+        bool (TRINITY_IMPORT* m_pOnCompletedCinematic) (Player*, CinematicSequencesEntry const*);
         bool (TRINITY_IMPORT* m_pOnProcessEvent) (uint32, Object*, Object*, bool);
         bool (TRINITY_IMPORT* m_pOnEffectDummyCreature) (Unit*, uint32, uint32, Creature*);
         bool (TRINITY_IMPORT* m_pOnEffectDummyGO) (Unit*, uint32, uint32, GameObject*);
