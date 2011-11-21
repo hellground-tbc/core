@@ -999,7 +999,7 @@ void WorldSession::HandleCompleteCinema(WorldPacket & recv_data)
 
     uint32 Cinematic_ID = GetPlayer()->getWatchingCinematic();
 
-    CinematicSequenceEntry const* cinematic = sCinematicStore.LookupEntry(Cinematic_ID);
+    CinematicSequencesEntry const* cinematic = sCinematicSequencesStore.LookupEntry(Cinematic_ID);
 
     if (!cinematic)
     {

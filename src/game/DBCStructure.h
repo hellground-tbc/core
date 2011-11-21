@@ -65,14 +65,6 @@ struct AreaTriggerEntry
     float     box_orientation;                              // 9 extent rotation by about z axis
 };
 
-struct CinematicSequenceEntry
-{
-    uint32    id;                                           // 0
-    uint32    sound;                                        // 1
-    uint32    camera[8];                                    // 2-9
-};
-
-
 struct AuctionHouseEntry
 {
     uint32    houseId;                                      // 0 index

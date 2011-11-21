@@ -710,7 +710,7 @@ void ScriptMgr::LoadCompletedCinematicScripts()
         uint32 Cinematic_ID    = fields[0].GetUInt32();
         const char *scriptName = fields[1].GetString();
 
-        CinematicSequenceEntry const* cinematic = sCinematicStore.LookupEntry(Cinematic_ID);
+        CinematicSequencesEntry const* cinematic = sCinematicSequencesStore.LookupEntry(Cinematic_ID);
         if (!cinematic)
         {
             sLog.outErrorDb("Cinematic sequence (ID:%u) does not exist in `CinematicSequeces.dbc`.",Cinematic_ID);
