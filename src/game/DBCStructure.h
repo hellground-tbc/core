@@ -195,9 +195,17 @@ struct CinematicSequencesEntry
 struct CreatureDisplayInfoEntry
 {
     uint32      Displayid;                                  // 0
-                                                            // 1-3,unused
+    int32       ModelId;                                    // 1
+                                                            // 2-3,unused
     float       scale;                                      // 4
                                                             // 5-13,unused
+};
+
+struct CreatureModelDataEntry
+{
+    uint32 ModelID;                                         // 0
+
+    float collision;                                        // 15
 };
 
 struct CreatureFamilyEntry

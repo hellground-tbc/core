@@ -142,7 +142,6 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
         else
             SummonTimer -= diff;
 
-        // RE-WRITE IT TO use GetValidPointInAngle
         if (ChangeTargetTimer < diff)    //only random linear movement, no player chasing!!
         {
             me->SetSpeed(MOVE_RUN, 1);
@@ -181,7 +180,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
                 (diffX > 0) ? dest.x += (40.0f * cos(angle)) : dest.x -= (40.0f * cos(angle));
                 (diffY > 0) ? dest.y += (40.0f * cos(angle)) : dest.y -= (40.0f * cos(angle));
 
-                me->GetValidPointInAngle(dest, 5.0f, angle);  //find point on the ground 5 yd from first destination location
+                me->GetValidPointInAngle(dest, 5.0f, angle, false);  //find point on the ground 5 yd from first destination location
                 me->GetMotionMaster()->MovePoint(0, dest.x, dest.y, dest.z);
                 ChangeTargetTimer = 7000;
             }
@@ -331,8 +330,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
     void SummonDoomfire()
     {
         Position dest;
-        me->GetPosition(dest);
-        me->GetValidPointInAngle(dest, 10.0f, frand(0.0f, 2*M_PI));
+        me->GetValidPointInAngle(dest, 10.0f, frand(0.0f, 2*M_PI), true);
 
         if (Creature* pDoomfire = me->SummonCreature(CREATURE_DOOMFIRE_TARGETING, dest.x, dest.y, dest.z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000))
         {
