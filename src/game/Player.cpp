@@ -18425,10 +18425,10 @@ void Player::AddComboPoints(Unit* target, int8 count)
             if (Unit* target2 = GetMap()->GetUnit(m_comboTarget))
                 target2->RemoveComboPointHolder(GetGUIDLow());
 
-        m_comboTarget = target2->GetGUID();
+        m_comboTargetGuid = target->GetObjectGuid();
         m_comboPoints = count;
 
-        target2->AddComboPointHolder(GetGUIDLow());
+        target->AddComboPointHolder(GetGUIDLow());
     }
 
     if (m_comboPoints > 5) m_comboPoints = 5;
