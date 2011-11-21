@@ -1,0 +1,1 @@
+UPDATE creature_template SET ScriptName = "brutallus_intro_trigger", modelid_A = 18783, modelid_H = 15435, flags_extra = 2 WHERE entry = 19871;

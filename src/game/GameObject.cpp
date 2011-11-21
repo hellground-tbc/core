@@ -287,6 +287,18 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                             m_lootState = GO_JUST_DEACTIVATED;
                             return;
                         }
+                        case GAMEOBJECT_TYPE_GOOBER:
+                            if(!GetGOInfo()->goober.consumable) // delete not consumable GO when timer expired
+                            {
+                                if (GetOwnerGUID())
+                                {
+                                    if (Unit* owner = GetOwner())
+                                        owner->RemoveGameObject(this, false);
+                                    Delete();
+                                    return;
+                                }
+                            }
+                            return;
                         case GAMEOBJECT_TYPE_DOOR:
                         case GAMEOBJECT_TYPE_BUTTON:
                             //we need to open doors if they are closed (add there another condition if this code breaks some usage, but it need to be here for battlegrounds)
@@ -477,7 +489,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 {
                     loot.clear();
                     SetLootState(GO_READY);
-                    m_respawnTime = 0;
+                    //m_respawnTime = 0;
                     return;
                 }
             }
@@ -1140,8 +1152,10 @@ void GameObject::Use(Unit* user)
             Player* player = (Player*)user;
 
             if (info->camera.cinematicId)
+            {
                 player->SendCinematicStart(info->camera.cinematicId);
-
+                player->setWatchingCinematic(info->camera.cinematicId);
+            }
             return;
         }
         //fishing bobber

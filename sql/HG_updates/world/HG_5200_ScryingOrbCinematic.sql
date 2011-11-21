@@ -1,0 +1,1 @@
+REPLACE INTO completed_cinematic_scripts VALUES (164, "scrying_orb_cinematic");
