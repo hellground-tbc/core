@@ -1152,10 +1152,7 @@ void GameObject::Use(Unit* user)
             Player* player = (Player*)user;
 
             if (info->camera.cinematicId)
-            {
                 player->SendCinematicStart(info->camera.cinematicId);
-                player->setWatchingCinematic(info->camera.cinematicId);
-            }
             return;
         }
         //fishing bobber
