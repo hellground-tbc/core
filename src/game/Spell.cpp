@@ -3857,7 +3857,9 @@ SpellCastResult Spell::CheckCast(bool strict)
     // do not allow spells to be cast in arenas
     // - with greater than 15 min CD without SPELL_ATTR_EX4_USABLE_IN_ARENA flag
     // - with SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA flag
+    // - flying mounts/spells
     if ((m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA) ||
+        m_spellInfo->HasApplyAura(SPELL_AURA_FLY) || m_spellInfo->HasApplyAura(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || m_spellInfo->HasApplyAura(SPELL_AURA_MOD_SPEED_FLIGHT) ||
         GetSpellRecoveryTime(m_spellInfo) > 15 * MINUTE * 1000 && !(m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_USABLE_IN_ARENA))
         if (MapEntry const* mapEntry = sMapStore.LookupEntry(m_caster->GetMapId()))
             if (mapEntry->IsBattleArena())
