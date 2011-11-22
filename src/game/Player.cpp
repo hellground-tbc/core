@@ -1782,55 +1782,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             BuildTeleportAckMsg(data, x, y, z, orientation);
             GetSession()->SendPacket(&data);
         }
-/*
-        // near teleport
-        if (!GetSession()->PlayerLogout())
-        {
-            WorldPacket data;
-            BuildTeleportAckMsg(&data, x, y, z, orientation);
-            GetSession()->SendPacket(&data);
-            SetPosition(x, y, z, orientation, true);
-        }
-        else
-            // this will be used instead of the current location in SaveToDB
-            m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
 
-        SetFallInformation(0, z);
-
-        if (!(options & TELE_TO_NOT_UNSUMMON_PET))
-        {
-            //same map, only remove pet if out of range for new position
-            if (pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE))
-                UnsummonPetTemporaryIfAny();
-        }
-
-        if (!(options & TELE_TO_NOT_LEAVE_COMBAT))
-            CombatStop();
-
-        if (!(options & TELE_TO_NOT_UNSUMMON_PET))
-        {
-            // resummon pet
-            if (pet)
-                ResummonPetTemporaryUnSummonedIfAny();
-        }
-
-        SetSemaphoreTeleportNear(true);
-
-        // near teleport, triggering send MSG_MOVE_TELEPORT_ACK from client at landing
-        if (!GetSession()->PlayerLogout())
-        {
-            // don't reset teleport semaphore while logging out, otherwise m_teleport_dest won't be used in Player::SaveToDB
-            UpdateZone(GetZoneId());
-        }
-
-        // new zone
-        if (old_zone != GetZoneId())
-        {
-            // honorless target
-            if (pvpInfo.inHostileArea)
-                CastSpell(this, 2479, true);
-        }
-*/
         if (getFollowingGM())
         {
             setGMFollow(0);
@@ -1850,28 +1802,15 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // Check enter rights before map getting to avoid creating instance copy for player
         // this check not dependent from map instance copy and same for all instance copies of selected map
         if (!sMapMgr.CanPlayerEnter(mapid, this))
-        {
-            SetSemaphoreTeleportFar(false);
             return false;
-        }
-
-        if (InstanceGroupBind *igb = GetGroup() ? GetGroup()->GetBoundInstance(mapid, GetDifficulty()) : NULL)
-        {
-            if (Map *iMap = sMapMgr.FindMap(mapid,igb->save->GetInstanceId()))
-            {
-                if (iMap->EncounterInProgress(this))
-                {
-                    SetSemaphoreTeleportFar(false);
-                    return false;
-                }
-            }
-        }
 
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
-        Map *map = sMapMgr.FindMap(mapid);
+        InstanceGroupBind *igb = GetGroup() ? GetGroup()->GetBoundInstance(mapid, GetDifficulty()) : NULL;
+        Map *map = sMapMgr.FindMap(mapid, igb ? igb->save->GetInstanceId() : 0);
         if (!map || map->CanEnter(this))
         {
+            //lets reset near teleport flag if it wasn't reset during chained teleports
             SetSemaphoreTeleportNear(false);
             //setup delayed teleport flag
             //if teleport spell is casted in Unit::Update() func
@@ -15766,16 +15705,7 @@ void Player::SaveToDB()
         << m_race << ", "
         << m_class << ", ";
 
-    bool save_to_dest = false;
-    if (IsBeingTeleported())
-    {
-        // don't save to battlegrounds or arenas
-        //const MapEntry *entry = sMapStore.LookupEntry(GetTeleportDest().mapid);
-        //if(entry && entry->map_type != MAP_BATTLEGROUND && entry->map_type != MAP_ARENA)
-            save_to_dest = true;
-    }
-
-    if (!save_to_dest)
+    if (!IsBeingTeleported())
     {
         ss << GetMapId() << ", "
         << (uint32)GetInstanceId() << ", "
