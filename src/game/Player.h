@@ -1504,6 +1504,14 @@ class TRINITY_DLL_SPEC Player : public Unit
         {
             m_cinematic = cine;
         }
+        uint32 getWatchingCinematic()
+        {
+            return m_watchingCinematicId;
+        }
+        void setWatchingCinematic(uint32 cinematicId)
+        {
+            m_watchingCinematicId = cinematicId;
+        }
 
         void addActionButton(uint8 button, uint16 action, uint8 type, uint8 misc);
         void removeActionButton(uint8 button);
@@ -2308,6 +2316,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool m_dontMove;
 
         int m_cinematic;
+        uint32 m_watchingCinematicId;
 
         Player *pTrader;
         bool acceptTrade;

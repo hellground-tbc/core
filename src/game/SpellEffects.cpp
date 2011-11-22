@@ -452,6 +452,13 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                     }
                 }
+                // Incinerate, Sunwell Warlock in MgT
+                if (m_spellInfo->Id == 44519 || m_spellInfo->Id == 46043)
+                {
+                    // Incinerate does more dmg (dmg*0.25) if the target is Immolated.
+                    if (unitTarget->HasAura(44518, 0) || unitTarget->HasAura(46042, 0))
+                        damage += int32(damage*0.25);
+                }
                 // Shadow bolt
                 if (m_spellInfo->SpellFamilyFlags & 1)
                 {
@@ -750,6 +757,18 @@ void Spell::EffectDummy(uint32 i)
                     const uint32 spell_list[6] = {17863, 17939, 17943, 17944, 17946, 17948};
 
                     m_caster->CastSpell(unitTarget, spell_list[urand(0, 5)], true);
+                    return;
+                }
+                case 46476:
+                {
+                    if(!m_originalCaster)
+                        return;
+
+                    if(unitTarget->GetTypeId() == TYPEID_UNIT && m_originalCaster->getVictim())
+                    {
+                        ((Creature*)unitTarget)->AI()->AttackStart(m_originalCaster->getVictim());
+                        m_originalCaster->GetMotionMaster()->MoveChase(m_originalCaster->getVictim(), 0, 0);
+                    }
                     return;
                 }
                 case 38782:
@@ -1560,6 +1579,74 @@ void Spell::EffectDummy(uint32 i)
                     // Emissary of Hate Credit
                     m_caster->CastSpell(m_caster, 45088, true);
                     return;
+                }
+                case 46573:                                 // Blink (Sunblade Arch Mage)
+                {
+                    if(m_caster->GetTypeId() == TYPEID_UNIT)
+                    {
+                        //firts AoE stun
+                        unitTarget->CastSpell(unitTarget, 41421, true);
+                        // than Blink
+                        uint32 mapid = m_caster->GetMapId();
+
+                        // Start Info //
+                        float cx,cy,cz;
+                        float dx,dy,dz;
+                        float angle = m_caster->GetOrientation();
+                        m_caster->GetPosition(cx,cy,cz);
+
+                        //Check use of vamps//
+                        bool useVmap = false;
+                        bool swapZone = true;
+
+                        if (VMAP::VMapFactory::createOrGetVMapManager()->isHeightCalcEnabled(mapid))
+                            useVmap = true;
+
+                        //Going foward 0.5f until max distance
+                        for (float i=0.5f; i<45; i+=0.5f)
+                        {
+                            m_caster->GetNearPoint2D(dx,dy,i,angle);
+                            dz = m_caster->GetMap()->GetHeight(dx, dy, cz, useVmap);
+
+                            //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
+                            if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (m_caster->IsWithinLOS(dx, dy, dz)))
+                            {
+                                //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
+                                cx = dx;
+                                cy = dy;
+                                cz = dz;
+                            }
+                            else
+                            {
+                                //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
+                                if (swapZone)
+                                {
+                                    //so... change use of vamp and go back 1 step backward and recheck again.
+                                    swapZone = false;
+                                    useVmap = !useVmap;
+                                    i-=0.5f;
+                                }
+                                else
+                                {
+                                    //bad recheck result... so break this and use last good coord for teleport player...
+                                    dz += 0.5f;
+                                    break;
+                                }
+                            }
+                        }
+
+                        //Prevent Falling during swap building/outerspace
+                        m_caster->SetVisibility(VISIBILITY_OFF);
+                        m_caster->Relocate(cx, cy, cz, m_caster->GetOrientation());
+                        m_caster->SendMonsterMove(cx, cy, cz, 0);
+                        WorldPacket data;
+                        m_caster->BuildHeartBeatMsg(&data);
+                        m_caster->SendMessageToSet(&data,false);
+                        m_caster->GetMotionMaster()->Clear();
+                        if(m_caster->getVictim())
+                            m_caster->GetMotionMaster()->MoveChase(m_caster->getVictim());
+                        m_caster->SetVisibility(VISIBILITY_ON);
+                    }
                 }
                 case 50243:                                 // Teach Language
                 {
@@ -2527,6 +2614,10 @@ void Spell::EffectTriggerSpell(uint32 i)
             m_caster->CastCustomSpell((Unit*)NULL, triggered_spell_id, &damage, NULL, NULL, true, m_CastItem, NULL, m_originalCasterGUID);
             return;
         }
+        // Activate Crystal Ward
+        case 44969:
+            unitTarget = m_caster;
+            break;
     }
 
     // normal case
@@ -2773,6 +2864,15 @@ void Spell::EffectTeleportUnits(uint32 i)
                     }
                 }
             }
+            return;
+        }
+        // Teleport: Spectral Realm - also teleport pets
+        case 46019:
+        {
+            if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+            if(Pet* targets_pet = unitTarget->GetPet())
+                targets_pet->CastSpell(targets_pet, 46019, true);
             return;
         }
     }
@@ -3244,6 +3344,7 @@ void Spell::EffectHealthLeech(uint32 i)
     sLog.outDebug("HealthLeech :%i", damage);
 
     float multiplier = m_spellInfo->EffectMultipleValue[i];
+    multiplier = multiplier ? multiplier : 1.0;
 
     if (Player *modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_MULTIPLE_VALUE, multiplier);
@@ -4415,15 +4516,24 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
         return;
 
     uint32 mapid = m_caster->GetMapId();
-    float dis = GetSpellRadius(m_spellInfo,i,false);
 
-    float fx,fy,fz;
-    m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
+    if(!m_targets.HasDst())
+    {
+        float dis = GetSpellRadius(m_spellInfo,i,false);
 
-    if (mapid == unitTarget->GetMapId())
-        unitTarget->NearTeleportTo(fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster);
-    else if (unitTarget->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)unitTarget)->TeleportTo(mapid, fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster ? TELE_TO_SPELL : 0);
+        float fx,fy,fz;
+        m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
+
+        if (mapid == unitTarget->GetMapId())
+            unitTarget->NearTeleportTo(fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster);
+        else if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)unitTarget)->TeleportTo(mapid, fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster ? TELE_TO_SPELL : 0);
+    }
+    else
+    {
+        if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            ((Player*)unitTarget)->TeleportTo(mapid, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, unitTarget->GetOrientation());
+    }
 
 }
 
@@ -5398,6 +5508,45 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             unitTarget->CastCustomSpell(unitTarget, 41067, &damage, NULL, NULL, true, 0, 0, m_caster->GetGUID());
             break;
         }
+        // Gravity Lapse teleports for Kael'thas in MgT
+        case 44224:
+        {
+            if(!m_caster->CanHaveThreatList())
+                return;
+
+            uint32 GravityLapseSpellId = 44219; // Id for first teleport spell
+            uint32 GravityLapseDOT = (m_caster->GetMap()->IsHeroic()?44226:49887); // knocback + damage
+            uint32 GravityLapseChannel = 44251; // visual self-casted, triggers AoE beams
+            uint8 counter = 0;
+
+            std::list<HostilReference*> PlayerList = m_caster->getThreatManager().getThreatList();
+
+            if(PlayerList.empty() && m_caster->isInCombat())
+                ((Creature*)m_caster)->AI()->EnterEvadeMode();
+
+            for(std::list<HostilReference*>::iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                Unit* pUnit = m_caster->GetMap()->GetUnit((*i)->getUnitGuid());
+                if(!pUnit)
+                    continue;
+                if(pUnit->GetTypeId() != TYPEID_PLAYER)
+                    continue;
+                if(((Player*)pUnit)->isGameMaster())
+                    continue;
+                if(pUnit->IsInWorld() && pUnit->IsInMap(m_caster))
+                {
+                    if(counter < 5) // safety counter for not to pass 5 teleporting spells
+                        counter++;
+                    else
+                        break;
+                    m_caster->CastSpell(pUnit, GravityLapseSpellId, true);
+                    pUnit->CastSpell(pUnit, GravityLapseDOT, true, 0, 0, m_caster->GetGUID());
+                    GravityLapseSpellId++;
+                }
+            }
+            m_caster->CastSpell(m_caster, GravityLapseChannel, true);
+            break;
+        }
         // Void Reaver: Knock Back
         case 25778:
         {
@@ -6232,6 +6381,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             m_caster->SummonCreature(22250, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), unitTarget->GetOrientation(),
                     TEMPSUMMON_DEAD_DESPAWN, 0);
             break;
+        case 45235: // Eredar Twins: Blaze
+            unitTarget->CastSpell(unitTarget, 45236, true, NULL, NULL, m_caster->GetGUID());
+            break;
     }
 
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
@@ -6905,6 +7057,8 @@ void Spell::EffectLeapForward(uint32 i)
         unitTarget->UpdateGroundPositionZ(cx, cy, cz);
 
         unitTarget->NearTeleportTo(cx, cy, cz +0.5f, unitTarget->GetOrientation(), unitTarget == m_caster);
+        if(unitTarget->GetTypeId() == TYPEID_UNIT)
+            unitTarget->SendMonsterMove(cx, cy, cz + 0.5f, 0);
     }
 }
 void Spell::EffectLeapBack(uint32 i)

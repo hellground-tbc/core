@@ -537,7 +537,7 @@ inline bool CreatureAI::UpdateVictim()
     if (!me->isInCombat())
         return false;
 
-    if (me->getVictim())
+    /*if (me->getVictim())
     {
         if (me->IsNonMeleeSpellCasted(false))
             return true;
@@ -546,7 +546,7 @@ inline bool CreatureAI::UpdateVictim()
             if (!me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID())
                 me->SetSelection(me->getVictimGUID());
         }
-    }
+    }*/
 
     if (!me->HasReactState(REACT_PASSIVE))
     {

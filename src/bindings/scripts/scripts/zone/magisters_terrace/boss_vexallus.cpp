@@ -29,50 +29,45 @@ EndScriptData */
 #define SAY_OVERLOAD                -1585009
 #define SAY_KILL                    -1585010
 #define EMOTE_DISCHARGE_ENERGY      -1585011
-//is this text for real?
-#define SAY_DEATH                   "What...happen...ed."
+#define EMOTE_OVERLOAD              -1585031
 
 //Pure energy spell info
-#define SPELL_ENERGY_BOLT           44342
-#define SPELL_ENERGY_FEEDBACK       44335
-#define SPELL_ENERGY_PASSIVE        44326
+#define SPELL_ENERGY_BOLT_AURA          46156
+#define SPELL_ENERGY_FEEDBACK           44335
+#define SPELL_ENERGY_FEEDBACK_CHANNEL   44328
+#define SPELL_ENERGY_PASSIVE            44326
 
 //Vexallus spell info
-#define SPELL_CHAIN_LIGHTNING       44318
-#define SPELL_SUMMON_PURE_ENERGY    44322
-#define SPELL_H_SUMMON_PURE_ENERGY1 46159
-#define SPELL_H_SUMMON_PURE_ENERGY2 46154
-#define SPELL_OVERLOAD              44353
-#define SPELL_ARCANE_SHOCK          44319
-
+#define SPELL_CHAIN_LIGHTNING           (HeroicMode?46380:44318)
+#define SPELL_ARCANE_SHOCK              (HeroicMode?46381:44319)
+#define SPELL_SUMMON_PURE_ENERGY        44322
+#define SPELL_H_SUMMON_PURE_ENERGY1     46159
+#define SPELL_H_SUMMON_PURE_ENERGY2     46154
+#define SPELL_OVERLOAD                  44352
 
 struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
 {
-    boss_vexallusAI(Creature *c) : ScriptedAI(c)
+    boss_vexallusAI(Creature *c) : ScriptedAI(c), summons(c)
     {
-        pInstance = (c->GetInstanceData());         
-        Heroic = c->GetMap()->IsHeroic();
+        pInstance = (c->GetInstanceData());
     }
 
     ScriptedInstance* pInstance;
 
     uint32 ChainLightningTimer;
     uint32 ArcaneShockTimer;
-    uint32 OverloadTimer;
     uint32 SpawnAddInterval;
     uint32 AlreadySpawnedAmount;
-    bool Enraged;
-    bool Heroic;
+
+    SummonList summons;
 
     void Reset()
     {
-        ChainLightningTimer = 10000;
-        ArcaneShockTimer = 8000;
-        OverloadTimer = 2200;
+        ChainLightningTimer = urand(12000, 20000);
+        ArcaneShockTimer = urand(14000, 19000);
         SpawnAddInterval = 15;
         AlreadySpawnedAmount = 0;
-
-        Enraged = false;
+        summons.DespawnAll();
 
         if(pInstance)
             pInstance->SetData(DATA_VEXALLUS_EVENT, NOT_STARTED);
@@ -85,9 +80,10 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
 
     void JustDied(Unit *victim)
     {
-        DoYell(SAY_DEATH, LANG_UNIVERSAL, NULL);
         if (pInstance)
             pInstance->SetData(DATA_VEXALLUS_EVENT, DONE);
+        summons.DespawnAll();
+        RemoveEnergyFeedback();
     }
 
     void EnterCombat(Unit *who)
@@ -100,8 +96,23 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
     void JustSummoned(Creature *c)
     {
         if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+        {
             c->AI()->AttackStart(target);
+            c->AddThreat(target, 1000);
+        }
         c->CastSpell(c, SPELL_ENERGY_PASSIVE, true);
+        summons.Summon(c);
+    }
+
+    void RemoveEnergyFeedback()
+    {
+        Map *map = m_creature->GetMap();
+        Map::PlayerList const &PlayerList = map->GetPlayers();
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            if(Player* player = i->getSource())
+                player->RemoveAurasDueToSpell(SPELL_ENERGY_FEEDBACK);
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -109,52 +120,54 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(HealthBelowPct(11))
-            Enraged = true;
-
-        if(!Enraged)
+        if(!HealthBelowPct(11))
         {
             //used for check, when Vexallus cast adds 85%, 70%, 55%, 40%, 25%
-            if (HealthBelowPct(100-(SpawnAddInterval*(AlreadySpawnedAmount+1))))
+            if(HealthBelowPct(100-(15*(AlreadySpawnedAmount+1))))
             {
                 DoScriptText(SAY_ENERGY, m_creature);
                 DoScriptText(EMOTE_DISCHARGE_ENERGY, m_creature);
-                if(Heroic)
+                if(HeroicMode)
                 {
-                    AddSpellToCast(m_creature, SPELL_H_SUMMON_PURE_ENERGY1);
-                    AddSpellToCast(m_creature, SPELL_H_SUMMON_PURE_ENERGY2);
+                    AddSpellToCast(SPELL_H_SUMMON_PURE_ENERGY1, CAST_SELF);
+                    AddSpellToCast(SPELL_H_SUMMON_PURE_ENERGY2, CAST_SELF);
                 }
                 else
-                    AddSpellToCast(m_creature, SPELL_SUMMON_PURE_ENERGY);
+                    AddSpellToCast(SPELL_SUMMON_PURE_ENERGY, CAST_SELF);
 
+                // refresh timers each pure energy spawn
+                ChainLightningTimer = urand(12000, 20000);
+                ArcaneShockTimer = urand(14000, 19000);
                 ++AlreadySpawnedAmount;
             };
 
             if(ChainLightningTimer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     AddSpellToCast(target, SPELL_CHAIN_LIGHTNING);
-                ChainLightningTimer = 10000;
-            }else 
+                ChainLightningTimer = urand(12000, 20000);
+            }
+            else
                 ChainLightningTimer -= diff;
 
             if(ArcaneShockTimer < diff)
             {
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     AddSpellToCast(target, SPELL_ARCANE_SHOCK);
-                ArcaneShockTimer = 8000;
-            }else 
+                ArcaneShockTimer = urand(14000, 19000);
+            }
+            else
                 ArcaneShockTimer -= diff;
         }
         else
         {
-            if(OverloadTimer < diff)
-            {   
-                AddSpellToCast(m_creature, SPELL_OVERLOAD);
-                OverloadTimer = 2200;
-            }else 
-                OverloadTimer -= diff;
+            if(!me->HasAura(SPELL_OVERLOAD))
+            {
+                DoScriptText(EMOTE_OVERLOAD, m_creature);
+                ForceSpellCast(SPELL_OVERLOAD, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
+            }
         }
+
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
@@ -167,45 +180,51 @@ CreatureAI* GetAI_boss_vexallus(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
 {
-    mob_pure_energyAI(Creature *c) : ScriptedAI(c) {}
+    mob_pure_energyAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
 
-    uint32 EnergyBoltTimer;
-    uint32 VisualTimer;
+    ScriptedInstance* pInstance;
 
     void Reset()
     {
-        EnergyBoltTimer = 1700;
-        VisualTimer = 1000;
-        m_creature->SetSpeed(MOVE_RUN, 0.5f);
-        m_creature->SetSpeed(MOVE_WALK, 0.5f);
+        me->SetLevitate(true);
+        me->SetSpeed(MOVE_FLIGHT, 0.5);   //to be tested
+        DoCast(me, SPELL_ENERGY_BOLT_AURA);
+        DoCast(me, SPELL_ENERGY_PASSIVE);
     }
 
-    void JustDied(Unit* slayer)
+    void JustDied(Unit* killer)
     {
-        slayer->CastSpell(slayer, SPELL_ENERGY_FEEDBACK, true, 0, 0, m_creature->GetGUID());
+        float x, y, z;
+        me->GetPosition(x, y, z);
+
+        Player* pl_killer = NULL;
+
+        if(killer->GetTypeId() == TYPEID_PLAYER)
+            pl_killer = ((Player*)killer);
+        else if(killer->GetTypeId() == TYPEID_UNIT)
+        {
+            if(((Creature*)killer)->isTotem())
+                pl_killer = killer->GetCharmerOrOwnerPlayerOrPlayerItself();
+        }
+        if(pl_killer)
+        {
+            if(Unit* Trigger = me->SummonTrigger(x, y, z, 0, 10000))
+                Trigger->CastSpell(pl_killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
+            if(pInstance)
+                pl_killer->CastSpell(pl_killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, pInstance->GetData64(DATA_VEXALLUS));
+        }
+        me->RemoveCorpse();
     }
 
     void EnterCombat(Unit *who){}
 
     void UpdateAI(const uint32 diff)
     {
-        //if(!UpdateVictim())
-        //    return;
-
-        if(EnergyBoltTimer < diff)
-        {
-            DoCast(m_creature->getVictim(), SPELL_ENERGY_BOLT);
-            EnergyBoltTimer = 1700;
-        }else   
-            EnergyBoltTimer -= diff;
-/*
-        if(VisualTimer < diff)
-        {
-            DoCast(m_creature->getVictim(), ASTRAL_FLARE_VISUAL, true);
-            VisualTimer = 1000;
-        }else   
-            VisualTimer -= diff;
-            */
+        if(!UpdateVictim())
+            me->Kill(me, false);
     }
 };
 
