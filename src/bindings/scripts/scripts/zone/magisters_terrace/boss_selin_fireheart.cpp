@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Selin_Fireheart
-SD%Complete: 90
-SDComment: Heroic and Normal Support. Needs further testing.
+SD%Complete: 99.9
+SDComment: Final debugging;
 SDCategory: Magister's Terrace
 EndScriptData */
 
@@ -29,20 +29,21 @@ EndScriptData */
 #define SAY_EMPOWERED                   -1585002
 #define SAY_KILL_1                      -1585003
 #define SAY_KILL_2                      -1585004
-#define SAY_DEATH                       -1585005
+#define SAY_DRAINING                    -1585005
 #define EMOTE_CRYSTAL                   -1585006
 
 //Crystal efect spells
+#define SPELL_DUAL_WIELD                29651
 #define SPELL_FEL_CRYSTAL_COSMETIC      44374
-#define SPELL_FEL_CRYSTAL_DUMMY         44329
 #define SPELL_FEL_CRYSTAL_VISUAL        44355
-#define SPELL_MANA_RAGE                 44320               // This spell triggers 44321, which changes scale and regens mana Requires an entry in spell_script_target
+#define SPELL_MANA_RAGE                 44320 // This spell triggers 44321
+#define SPELL_MANA_RAGE_TRIGGER         44321 // Changes scale and regens mana, requires an entry in spell_script_target
 
 //Selin's spells
-#define SPELL_DRAIN_LIFE                (Heroic?46155:44294)
+#define SPELL_DRAIN_LIFE                (HeroicMode?46155:44294)
 #define SPELL_FEL_EXPLOSION             44314
 
-#define SPELL_DRAIN_MANA                46153               // Heroic only
+#define SPELL_DRAIN_MANA                46153 // Heroic only
 
 #define CRYSTALS_NUMBER                 5
 #define DATA_CRYSTALS                   6
@@ -54,10 +55,12 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
     boss_selin_fireheartAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        Heroic = c->GetMap()->IsHeroic();
+        me->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
+
+    WorldLocation wLoc;
 
     uint32 DrainLifeTimer;
     uint32 DrainManaTimer;
@@ -67,9 +70,8 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
     bool IsDraining;
     bool DrainingCrystal;
-    bool Heroic;
     bool DrainingJustFinished;
-    uint64 CrystalGUID;                                     // This will help us create a pointer to the crystal we are draining. We store GUIDs, never units in case unit is deleted/offline (offline if player of course).
+    uint64 CrystalGUID;  // This will help us create a pointer to the crystal we are draining. We store GUIDs, never units in case unit is deleted/offline (offline if player of course).
 
     void Reset()
     {
@@ -78,17 +80,15 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
         {
             (*it)->Respawn();
             (*it)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            (*it)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
         if(pInstance)
             pInstance->SetData(DATA_SELIN_EVENT, NOT_STARTED);
 
-        DrainLifeTimer = 3000 + rand()%4000;
+        DrainLifeTimer = urand(3000, 7000);
         DrainManaTimer = DrainLifeTimer + 5000;
         FelExplosionTimer = 2100;
-        DrainCrystalTimer = 10000 + rand()%5000;
-        DrainCrystalTimer = 20000 + rand()%5000;
+        DrainCrystalTimer = HeroicMode? 15000 : 20000;
         CheckTimer = 1000;
 
         IsDraining = false;
@@ -97,6 +97,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
         CrystalGUID = 0;
 
         m_creature->SetPower(POWER_MANA, 0);
+        DoCast(me, SPELL_DUAL_WIELD, true);
     }
 
     void SelectNearestCrystal()
@@ -116,7 +117,22 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             DoScriptText(EMOTE_CRYSTAL, m_creature);
 
             float x, y, z;                                  // coords that we move to, close to the crystal.
-            CrystalChosen->GetClosePoint(x, y, z, m_creature->GetObjectSize(), CONTACT_DISTANCE);
+            switch(CrystalChosen->GetGUIDLow())
+            {
+                // for two crystals close point is not good enough, because selin ends up out of los
+                case 96870:
+                    x = 250;
+                    y = 13;
+                    z = 4;
+                    break;
+                case 96873:
+                    x = 250;
+                    y = -13;
+                    z = 4;
+                    break;
+                default:
+                    CrystalChosen->GetClosePoint(x, y, z, m_creature->GetObjectSize(), CONTACT_DISTANCE);
+            }
 
             m_creature->SetWalk(false);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
@@ -143,7 +159,6 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
         {
             (*it)->Respawn();
             (*it)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            (*it)->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
         if( pInstance )
@@ -163,9 +178,12 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             Unit* CrystalChosen = me->GetUnit(CrystalGUID);
             if(CrystalChosen && CrystalChosen->isAlive())
             {
-                CrystalChosen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+                if(roll_chance_f(20.0f))
+                    DoScriptText(SAY_DRAINING, m_creature);
+                CrystalChosen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 CrystalChosen->CastSpell(m_creature, SPELL_MANA_RAGE, false);
                 me->CastSpell(CrystalChosen, SPELL_FEL_CRYSTAL_COSMETIC, false);
+                me->SetInFront(CrystalChosen);
                 IsDraining = true;
             }
             else
@@ -179,7 +197,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        ShatterRemainingCrystals();
 
         if(pInstance)
             pInstance->SetData(DATA_SELIN_EVENT, DONE);         // Encounter complete!
@@ -187,13 +205,10 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
     void OnAuraRemove(Aura *aur, bool stack)
     {
-        if(aur->GetSpellProto()->Id == SPELL_MANA_RAGE)
+        if(aur->GetSpellProto()->Id == SPELL_MANA_RAGE && aur->GetEffIndex() == 0)
         {
             IsDraining = false;
             DrainingCrystal = false;
-
-            DoScriptText(SAY_EMPOWERED, m_creature);
-
             DrainingJustFinished = true; // killing crystal here causes crash, we kill it on next update
 
             m_creature->GetMotionMaster()->Clear();
@@ -205,6 +220,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
     {
         if(DrainingJustFinished)
         {
+            DoScriptText(SAY_EMPOWERED, m_creature);
             Unit* CrystalChosen = m_creature->GetUnit(CrystalGUID);
             if( CrystalChosen && CrystalChosen->isAlive() )
                 CrystalChosen->DealDamage(CrystalChosen, CrystalChosen->GetHealth());
@@ -212,51 +228,64 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             DrainingJustFinished = false;
         }
 
+        if(!UpdateVictim())
+            return;
+
+        if(CheckTimer < diff)
+        {
+            if(!me->IsWithinDistInMap(&wLoc, 30.0))
+                EnterEvadeMode();
+            CheckTimer = 1000;
+        }
+        else
+            CheckTimer -= diff;
+
+        // Heroic only
+        if(HeroicMode)
+        {
+            if( DrainManaTimer < diff )
+            {
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45, true, POWER_MANA))
+                    AddSpellToCast(target, SPELL_DRAIN_MANA, false, true);
+                DrainManaTimer = urand(18000, 25000);
+            }
+            else
+                DrainManaTimer -= diff;
+        }
+
         if(!DrainingCrystal)
         {
-            if(!UpdateVictim())
-                return;
-
             uint32 maxPowerMana = m_creature->GetMaxPower(POWER_MANA);
             if( maxPowerMana && ((m_creature->GetPower(POWER_MANA)*100 / maxPowerMana) < 10) )
             {
-                if( DrainLifeTimer < diff )
+                if(DrainLifeTimer < diff)
                 {
                     if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true))
-                        AddSpellToCast(target, SPELL_DRAIN_LIFE);
-                    DrainLifeTimer = 8000+rand()%4000;
-                }else
-                    DrainLifeTimer -= diff;
-
-                // Heroic only
-                if( Heroic )
-                {
-                    if( DrainManaTimer < diff )
-                    {
-                        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 45, true, POWER_MANA))
-                            AddSpellToCast(target, SPELL_DRAIN_MANA);
-                        DrainManaTimer = 8000+rand()%4000;
-                    }else
-                        DrainManaTimer -= diff;
+                        AddSpellToCast(target, SPELL_DRAIN_LIFE, false, true);
+                    DrainLifeTimer = urand(8000, 12000);
                 }
+                else
+                    DrainLifeTimer -= diff;
 
                 if(DrainCrystalTimer < diff)
                 {
+                    if(me->IsNonMeleeSpellCasted(false))
+                        return;
                     SelectNearestCrystal();
-                    if(Heroic)
-                        DrainCrystalTimer = 10000 + rand()%5000;
-                    else
-                        DrainCrystalTimer = 20000 + rand()%5000;
-                }else
+                    DrainCrystalTimer = HeroicMode? 13000 : 18000;
+                }
+                else
                     DrainCrystalTimer -= diff;
             }
             else
             {
-                if( FelExplosionTimer < diff )
+                if(FelExplosionTimer < diff)
                 {
                     AddSpellToCast(m_creature, SPELL_FEL_EXPLOSION);
-                    FelExplosionTimer = 1500;
-                } else
+                    me->RemoveSingleAuraFromStack(SPELL_MANA_RAGE_TRIGGER, 1);
+                    FelExplosionTimer = 2300;
+                }
+                else
                     FelExplosionTimer -= diff;
             }
 
@@ -300,12 +329,9 @@ struct TRINITY_DLL_DECL mob_fel_crystalAI : public ScriptedAI
                     me->CastSpell((Unit*)NULL, SPELL_FEL_CRYSTAL_VISUAL, false);
             }
             Check_Timer = 2000;
-        } else
+        }
+        else
             Check_Timer -= diff;
-    }
-
-    void JustDied(Unit* killer)
-    {
     }
 };
 

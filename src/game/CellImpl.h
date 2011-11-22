@@ -73,6 +73,7 @@ Cell::Visit(const CellPair &standing_cell, TypeContainerVisitor<T, CONTAINER> &v
         m.Visit(*this, visitor);
         return;
     }
+
     //lets limit the upper value for search radius
     if (radius > MAX_VISIBILITY_DISTANCE)
         radius = MAX_VISIBILITY_DISTANCE;
