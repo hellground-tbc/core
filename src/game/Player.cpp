@@ -4232,9 +4232,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         CastSpell(this, 17619, true, item);
 
     //HACK restore Netherwing aura
-    if (m_reputationMgr.GetRank(1015) >= REP_NEUTRAL)
-        if (GetQuestRewardStatus(10870) && HasAura(40214))
-            CastSpell(this, 40214, true);
+    if (!HasAura(40214) && m_reputationMgr.GetRank(1015) >= REP_NEUTRAL && GetQuestRewardStatus(10870))
+        CastSpell(this, 40214, true);
 
     // trigger update zone for alive state zone updates
     UpdateZone(GetZoneId());
