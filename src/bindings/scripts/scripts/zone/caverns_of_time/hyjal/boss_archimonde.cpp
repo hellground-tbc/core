@@ -157,8 +157,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
                 float ArchiX = pArchimonde->GetPositionX();
                 float ArchiY = pArchimonde->GetPositionY();
 
-                dest.x = me->GetPositionX();
-                dest.y = me->GetPositionY();
+                me->GetPosition(dest);
 
                 float diffX = dest.x - ArchiX;
                 float diffY = -dest.y + ArchiY; // position Y is here below 0
@@ -180,8 +179,6 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
 
                 (diffX > 0) ? dest.x += (40.0f * cos(angle)) : dest.x -= (40.0f * cos(angle));
                 (diffY > 0) ? dest.y += (40.0f * cos(angle)) : dest.y -= (40.0f * cos(angle));
-
-                dest.z = me->GetMap()->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
 
                 me->GetValidPointInAngle(dest, 5.0f, angle); //find point on the ground 5 yd from first destination location
                 me->GetMotionMaster()->MovePoint(0, dest.x, dest.y, dest.z);
