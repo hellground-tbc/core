@@ -325,7 +325,7 @@ m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_spellmod(NULL), m_effI
 m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_AURAS),
 m_positive(false), m_permanent(false), m_isPeriodic(false), m_isAreaAura(false),
 m_isPersistent(false), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_isRemovedOnShapeLost(true), m_in_use(false),
-m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
+m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE), m_heartbeatTimer(0)
 ,m_tickNumber(0)
 {
     assert(target);
@@ -396,6 +396,9 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
 
     if (m_maxduration == -1 || m_isPassive && m_spellProto->DurationIndex == 0)
         m_permanent = true;
+
+    if (!m_permanent && m_maxduration > 12000 && m_spellProto->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE && GetEffIndex() == 0)
+        m_heartbeatTimer = m_maxduration / 8;
 
     Player* modOwner = caster ? caster->GetSpellModOwner() : NULL;
 
@@ -597,6 +600,14 @@ void Aura::Update(uint32 diff)
                 }
             }
         }
+    }
+
+    if (m_heartbeatTimer && m_heartbeatTimer > m_duration)
+    {
+        m_heartbeatTimer *= 2;
+        if (Unit *caster = GetCaster())
+            if (caster->SpellHitResult(m_target, m_spellProto) != SPELL_MISS_NONE)
+                m_target->RemoveAurasByCasterSpell(m_spellProto->Id, caster->GetGUID());
     }
 
     if (m_isPeriodic && (m_duration >= 0 || m_isPassive || m_permanent))

@@ -749,35 +749,28 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 
     std::list<std::pair<uint32, uint64> > aurasToRemove;
     std::set<std::pair<uint32, uint64> > aurasDone;
-    for (AuraList::iterator i = m_ccAuras.begin(); i != m_ccAuras.end(); i++)
+    for (AuraList::iterator i = m_ccAuras.begin(); i != m_ccAuras.end(); ++i)
     {
         std::pair<uint32, uint64> auraPair((*i)->GetId(), (*i)->GetCasterGUID());
         // prevent rolling twice for two effects of the same spell
         if(aurasDone.find(auraPair) != aurasDone.end())
             continue;
+
         aurasDone.insert(auraPair);
 
         if (*i && (!spell || (*i)->GetId() != spell))
         {
-            if(GetDiminishingReturnsGroupForSpell((*i)->GetSpellProto(), false) == DIMINISHING_ENSLAVE)
-                if(Unit *caster = (*i)->GetCaster())
-                {
-                    if(caster->MagicSpellHitResult(this, (*i)->GetSpellProto()) == SPELL_MISS_RESIST)
-                        aurasToRemove.push_back(auraPair);
-                    else
-                        continue;
-                }
+            if (GetDiminishingReturnsGroupForSpell((*i)->GetSpellProto(), false) == DIMINISHING_ENSLAVE)
+                continue;
 
             roll = roll_chance_f(chance);
             if (roll)
                 aurasToRemove.push_back(auraPair);
-
         }
     }
-    for (std::list<std::pair<uint32, uint64> >::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); i++)
-    {
+
+    for (std::list<std::pair<uint32, uint64> >::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); ++i)
         RemoveAurasByCasterSpell(i->first, i->second);
-    }
 }
 
 void Unit::SendDamageLog(DamageLog *damageInfo)
