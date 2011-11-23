@@ -4138,13 +4138,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         SetPower(POWER_ENERGY, uint32(GetMaxPower(POWER_ENERGY)*restore_percent));
     }
 
-    // trigger update zone for alive state zone updates
-    UpdateZone(GetZoneId());
-
-    // update visibility
-    UpdateObjectVisibility();
-
-    // restore Alchemist stone aura
+    //HACK restore Alchemist stone aura
     Item * item = NULL;
     if (!HasAura(17619, 0) && (
         (item = HasEquiped(13503)) ||
@@ -4153,6 +4147,15 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         (item = HasEquiped(35750)) ||
         (item = HasEquiped(35749))))
         CastSpell(this, 17619, true, item);
+
+    //HACK restore Netherwing aura
+    if (!HasAura(40214) && m_reputationMgr.GetRank(1015) >= REP_NEUTRAL && GetQuestRewardStatus(10870))
+        CastSpell(this, 40214, true);
+
+    UpdateZone(GetZoneId());
+
+    // update visibility
+    UpdateObjectVisibility();
 
     if (!applySickness)
         return;
