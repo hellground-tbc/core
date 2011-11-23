@@ -29,6 +29,8 @@
 #include "World.h"
 #include "Util.h"
 
+#include "MapManager.h"
+
 INSTANTIATE_SINGLETON_1(SocialMgr);
 
 PlayerSocial::PlayerSocial()
@@ -220,11 +222,19 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
         (pFriend->GetSession()->GetSecurity() == SEC_PLAYER || gmInWhoList && pFriend->IsVisibleGloballyfor (player))))
     {
         friendInfo.Status = FRIEND_STATUS_ONLINE;
+
         if (pFriend->isAFK())
             friendInfo.Status = FRIEND_STATUS_AFK;
+
         if (pFriend->isDND())
             friendInfo.Status = FRIEND_STATUS_DND;
+
         friendInfo.Area = pFriend->GetZoneId();
+
+        if (sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA))
+            if (pFriend->InArena())
+                friendInfo.Area = sMapMgr.GetZoneId(pFriend->GetBattleGroundEntryPointMap(), pFriend->GetBattleGroundEntryPointX(), pFriend->GetBattleGroundEntryPointY(), pFriend->GetBattleGroundEntryPointZ());
+
         friendInfo.Level = pFriend->getLevel();
         friendInfo.Class = pFriend->getClass();
     }
