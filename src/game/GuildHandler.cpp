@@ -310,7 +310,7 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if (slot->RankId < 2 || (slot->RankId-1) < GetPlayer()->GetRank())
+    if (slot->RankId < 2 || ((slot->RankId-1) <= GetPlayer()->GetRank()))
         return;
 
     uint32 newRankId = slot->RankId < guild->GetNrRanks() ? slot->RankId-1 : guild->GetNrRanks()-1;
