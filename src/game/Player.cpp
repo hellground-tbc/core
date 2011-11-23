@@ -18779,6 +18779,14 @@ uint32 Player::GetBattleGroundQueueIdFromLevel() const
     return (getLevel() - bg->GetMinLevel()) / 10;*/
 }
 
+Creature* Player::GetBGCreature(uint32 type)
+{
+    if (BattleGround* pBG = GetBattleGround())
+        return pBG->GetBGCreature(type);
+
+    return NULL;
+}
+
 float Player::GetReputationPriceDiscount(Creature const* pCreature) const
 {
     FactionTemplateEntry const* vendor_faction = pCreature->getFactionTemplateEntry();

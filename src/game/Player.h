@@ -1928,6 +1928,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SetBGTeam(uint32 team) { m_bgTeam = team; }
         uint32 GetBGTeam() const { return m_bgTeam ? m_bgTeam : GetTeam(); }
 
+        Creature* GetBGCreature(uint32 type);
+
         void LeaveBattleground(bool teleportToEntryPoint = true);
         bool CanJoinToBattleground() const;
         bool CanReportAfkDueToLimit();
