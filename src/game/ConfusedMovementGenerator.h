@@ -26,11 +26,10 @@
 #include "Traveller.h"
 
 #define WANDER_DISTANCE    2.5f
-#define MAX_CONF_WAYPOINTS 6
+#define MAX_RANDOM_POINTS 6
 
 template<class T>
-class TRINITY_DLL_SPEC ConfusedMovementGenerator
-: public MovementGeneratorMedium< T, ConfusedMovementGenerator<T> >
+class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMovementGenerator<T> >
 {
     public:
         explicit ConfusedMovementGenerator() {}
@@ -52,11 +51,12 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator
         void GenerateMovement(T &unit);
 
         MovementGeneratorType GetMovementGeneratorType() { return CONFUSED_MOTION_TYPE; }
+
     private:
-        void _InitSpecific(T &, bool &, bool &);
-        float i_waypoints[MAX_CONF_WAYPOINTS+1][3];
+
+        Position randomPosition[MAX_RANDOM_POINTS+1];
         DestinationHolder< Traveller<T> > i_destinationHolder;
         uint32 i_nextMove;
 };
-#endif
 
+#endif
