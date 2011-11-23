@@ -219,7 +219,8 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
         {
             Field *fields = result->Fetch();
             ssInvalidPetitionGUIDs << "'" << fields[0].GetUInt32() << "' , ";
-        } while (result->NextRow());
+        }
+        while (result->NextRow());
     }
 
     // delete petitions with the same guid as this one
@@ -279,8 +280,8 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recv_data)
 
     for (uint8 i = 1; i <= signs; i++)
     {
-        Field *fields = result->Fetch();
-        uint64 plguid = fields[0].GetUInt64();
+        Field *fields2 = result->Fetch();
+        uint64 plguid = fields2[0].GetUInt64();
 
         data << plguid;                                     // Player GUID
         data << (uint32)0;                                  // there 0 ...
@@ -682,8 +683,8 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recv_data)
 
     for (uint8 i = 1; i <= signs; i++)
     {
-        Field *fields = result->Fetch();
-        uint64 plguid = fields[0].GetUInt64();
+        Field *fields2 = result->Fetch();
+        uint64 plguid = fields2[0].GetUInt64();
 
         data << plguid;                                     // Player GUID
         data << (uint32)0;                                  // there 0 ...

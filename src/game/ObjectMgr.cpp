@@ -2679,15 +2679,15 @@ void ObjectMgr::LoadGroups()
     result = CharacterDatabase.Query("SELECT memberGuid, assistant, subgroup, leaderGuid FROM group_member ORDER BY leaderGuid");
     if (!result)
     {
-        BarGoLink bar(1);
-        bar.step();
+        BarGoLink bar2(1);
+        bar2.step();
     }
     else
     {
-        BarGoLink bar(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
-            bar.step();
+            bar2.step();
             Field *fields = result->Fetch();
             count++;
             leaderGuid = MAKE_NEW_GUID(fields[3].GetUInt32(), 0, HIGHGUID_PLAYER);
@@ -2707,7 +2707,8 @@ void ObjectMgr::LoadGroups()
                 sLog.outErrorDb("Incorrect entry in group_member table : member %d cannot be added to player %d's group!", fields[0].GetUInt32(), fields[3].GetUInt32());
                 CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
             }
-        }while (result->NextRow());
+        }
+        while (result->NextRow());
     }
 
     // clean groups
@@ -2739,15 +2740,15 @@ void ObjectMgr::LoadGroups()
 
     if (!result)
     {
-        BarGoLink bar(1);
-        bar.step();
+        BarGoLink bar2(1);
+        bar2.step();
     }
     else
     {
-        BarGoLink bar(result->GetRowCount());
+        BarGoLink bar2(result->GetRowCount());
         do
         {
-            bar.step();
+            bar2.step();
             Field *fields = result->Fetch();
             count++;
             leaderGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
@@ -3017,7 +3018,8 @@ void ObjectMgr::LoadQuests()
                 {
                     sLog.outErrorDb("Quest %u has `ReqItemId%d` = %u but `ReqItemCount%d` = 0, quest can't be done.",
                         qinfo->GetQuestId(),j+1,id,j+1);
-                    // no changes, quest can't be done for this requirement
+
+                    continue;
                 }
 
                 qinfo->SetFlag(QUEST_TRINITY_FLAGS_DELIVER);
