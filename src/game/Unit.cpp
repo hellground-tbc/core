@@ -10128,6 +10128,11 @@ Creature* Unit::GetCreature(uint64 guid)
     return GetMap()->GetCreature(guid);
 }
 
+Player* Unit::GetPlayerByName(const char *name)
+{
+    return sObjectMgr.GetPlayer(name);
+}
+
 bool Unit::isVisibleForInState(Player const* u, bool inVisibleList) const
 {
     return isVisibleForOrDetect(u, false, inVisibleList, false);

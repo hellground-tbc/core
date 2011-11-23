@@ -46,6 +46,10 @@ EndContentData */
 #include "PetAI.h"
 #include <list>
 
+#include <cstring>
+
+//#include "BattleGround.h"
+
 /*########
 # npc_chicken_cluck
 #########*/
@@ -2409,10 +2413,6 @@ CreatureAI* GetAI_trigger_barker(Creature* pCreature)
     return new trigger_barkerAI(pCreature);
 }
 
-#include <cstring>
-#include "ObjectMgr.h"
-#include "BattleGround.h"
-
 //This function is called when the player opens the gossip menubool
 bool GossipHello_npc_arena_spectator(Player *player, Creature *_Creature)
 {
@@ -2429,10 +2429,9 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
     {
         if (action == GOSSIP_ACTION_INFO_DEF+1)
         {
-            uint64 guid = sObjectMgr.GetPlayerGUIDByName(std::string(sCode));
             if (Player *pPlayer = ObjectAccessor::FindPlayer(guid))
             {
-                if (BattleGround *pBG = pPlayer->GetBattleGround())
+                /*if (BattleGround *pBG = pPlayer->GetBattleGround())
                 {
                     if (!pBG->isArena())
                         return false;
@@ -2440,7 +2439,7 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
                     // temp, for now I have no idea if cross map bindsight is allowed :p
                     if (Creature *pSpectator = pBG->GetBGCreature(ARENA_NPC_SPECTATOR))
                         pPlayer->SetFarsightTarget(pSpectator);
-                }
+                }*/
             }
             player->CLOSE_GOSSIP_MENU();
             return true;
