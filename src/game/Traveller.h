@@ -109,7 +109,7 @@ inline float Traveller<Creature>::GetMoveDestinationTo(float x, float y, float z
 template<>
 inline void Traveller<Creature>::MoveTo(float x, float y, float z, uint32 t)
 {
-    i_traveller.AI_SendMoveToPacket(x, y, z, t, i_traveller.GetUnitMovementFlags(), 0);
+    i_traveller.AI_SendMoveToPacket(x, y, z, t, i_traveller.GetUnitMovementFlags(), SPLINETYPE_NORMAL);
 }
 
 // specialization for players

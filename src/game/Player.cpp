@@ -1737,6 +1737,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // near teleport
         if (!GetSession()->PlayerLogout())
         {
+            // send transfer packet to display load screen
             WorldPacket data;
             BuildTeleportAckMsg(&data, x, y, z, orientation);
             GetSession()->SendPacket(&data);
@@ -12388,7 +12389,11 @@ Quest const * Player::GetNextQuest(uint64 guid, Quest const *pQuest)
     }
     else
     {
-        GameObject *pGameObject = GetMap()->GetGameObject(guid);
+        //we should obtain map pointer from GetMap() in 99% of cases. Special case
+        //only for quests which cast teleport spells on player
+        Map * _map = IsInWorld() ? GetMap() : sMapMgr.FindMap(GetMapId(), GetInstanceId());
+        ASSERT(_map);
+        GameObject *pGameObject = _map->GetGameObject(guid);
         if (pGameObject)
         {
             pObject = (Object*)pGameObject;
@@ -19223,7 +19228,9 @@ void Player::ResurectUsingRequestData()
 {
     SpawnCorpseBones();
 
-    TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
+    /// Teleport before resurrecting by player, otherwise the player might get attacked from creatures near his corpse
+    if (IS_PLAYER_GUID(m_resurrectGUID))
+        TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
 
     ResurrectPlayer(0.0f,false);
 

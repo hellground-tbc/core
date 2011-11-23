@@ -1150,7 +1150,7 @@ void Creature::LoadGossipOptions()
     m_gossipOptionLoaded = true;
 }
 
-void Creature::AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type)
+void Creature::AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, SplineType type)
 {
     /*    uint32 timeElap = WorldTimer::getMSTime();
         if ((timeElap - m_startMove) < m_moveTime)
