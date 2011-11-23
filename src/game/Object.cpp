@@ -1394,7 +1394,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle)
 
     float step = dist / 10.0f;
 
-    for (int j = 0; j < 10; j++)
+    for (int j = 0; j < 10; ++j)
     {
         // do not allow too big z changes
         if (fabs(pos.z - dest.z) > 6)
