@@ -920,7 +920,6 @@ void Map::MoveAllCreaturesInMoveList()
                 if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
                     sLog.outDebug("Creature (GUID: %u Entry: %u) can't be move to unloaded respawn grid.",c->GetGUIDLow(),c->GetEntry());
                 #endif
-                c->CleanupsBeforeDelete();
                 AddObjectToRemoveList(c);
             }
         }
@@ -1595,6 +1594,8 @@ void Map::AddObjectToRemoveList(WorldObject *obj)
 {
     assert(obj->GetMapId()==GetId() && obj->GetInstanceId()==GetInstanceId());
 
+    obj->CleanupsBeforeDelete();                    // remove or simplify at least cross referenced links
+
     i_objectsToRemove.insert(obj);
     //sLog.outDebug("Object (GUID: %u TypeId: %u) added to removing list.",obj->GetGUIDLow(),obj->GetTypeId());
 }
@@ -1656,7 +1657,6 @@ void Map::RemoveAllObjectsInRemoveList()
         case TYPEID_UNIT:
             // in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
             // make sure that like sources auras/etc removed before destructor start
-            ((Creature*)obj)->CleanupsBeforeDelete ();
             Remove((Creature*)obj,true);
             break;
         default:

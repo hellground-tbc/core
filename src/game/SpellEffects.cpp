@@ -4152,7 +4152,7 @@ void Spell::EffectDistract(uint32 /*i*/)
     {
         // For players just turn them
         WorldPacket data;
-        ((Player*)unitTarget)->BuildTeleportAckMsg(&data, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), angle);
+        ((Player*)unitTarget)->BuildTeleportAckMsg(data, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), angle);
         ((Player*)unitTarget)->GetSession()->SendPacket(&data);
         ((Player*)unitTarget)->SetPosition(unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), angle, false);
     }

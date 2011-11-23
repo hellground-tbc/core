@@ -1266,20 +1266,15 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         // check if it's needed by another event, if so, don't remove
         if (event_id > 0 && hasCreatureActiveEventExcept(*itr,event_id))
             continue;
+
         // Remove the creature from grid
         if (CreatureData const* data = objmgr.GetCreatureData(*itr))
         {
             objmgr.RemoveCreatureFromGrid(*itr, data);
 
-            Map * tmpMap = sMapMgr.FindMap(data->mapid);
-            if (tmpMap)
-            {
+            if (Map * tmpMap = sMapMgr.FindMap(data->mapid))
                 if (Creature * pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT)))
-                {
-                    pCreature->CleanupsBeforeDelete();
                     pCreature->AddObjectToRemoveList();
-                }
-            }
         }
     }
 

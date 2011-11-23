@@ -16557,7 +16557,6 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 
     pet->SavePetToDB(mode);
 
-    pet->CleanupsBeforeDelete();
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
 
@@ -20154,19 +20153,14 @@ bool Player::isTotalImmunity()
     return false;
 }
 
-void Player::BuildTeleportAckMsg(WorldPacket *data, float x, float y, float z, float ang) const
+void Player::BuildTeleportAckMsg(WorldPacket& data, float x, float y, float z, float ang) const
 {
-    data->Initialize(MSG_MOVE_TELEPORT_ACK, 41);
-    *data << GetPackGUID();
-    *data << uint32(0);                                     // this value increments every time
-    *data << uint32(GetUnitMovementFlags());                // movement flags
-    *data << uint8(0);                                      // 2.3.0
-    *data << uint32(WorldTimer::getMSTime());                           // time
-    *data << x;
-    *data << y;
-    *data << z;
-    *data << ang;
-    *data << uint32(0);
+    MovementInfo mi = m_movementInfo;
+    mi.ChangePosition(x, y, z, ang);
+    data.Initialize(MSG_MOVE_TELEPORT_ACK, 41);
+    data << GetPackGUID();
+    data << uint32(0); // this value increments every time
+    data << mi;
 }
 
 void Player::ResetTimeSync()

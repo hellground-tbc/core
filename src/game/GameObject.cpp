@@ -68,11 +68,15 @@ GameObject::GameObject() : WorldObject()
 
 GameObject::~GameObject()
 {
+    CleanupsBeforeDelete();
+}
+
+void GameObject::CleanupsBeforeDelete()
+{
     if (m_uint32Values)                                      // field array can be not exist if GameOBject not loaded
     {
         // crash possible at access to deleted GO in Unit::m_gameobj
-        uint64 owner_guid = GetOwnerGUID();
-        if (owner_guid)
+        if (uint64 owner_guid = GetOwnerGUID())
         {
             Unit* owner = NULL;
             if (IS_PLAYER_GUID(owner_guid))

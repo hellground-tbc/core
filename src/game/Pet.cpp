@@ -882,7 +882,6 @@ void Pet::Remove(PetSaveMode mode, bool returnreagent)
             owner->SetPet(0);
     }
 
-    CleanupsBeforeDelete();
     AddObjectToRemoveList();
     m_removed = true;
 }

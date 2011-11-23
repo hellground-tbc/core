@@ -1087,6 +1087,11 @@ void WorldObject::setActive(bool on)
     }
 }
 
+void WorldObject::CleanupsBeforeDelete()
+{
+
+}
+
 void WorldObject::_Create(uint32 guidlow, HighGuid guidhigh, uint32 mapid)
 {
     Object::_Create(guidlow, 0, guidhigh);
@@ -1712,14 +1717,7 @@ void WorldObject::AddObjectToRemoveList()
 {
     assert(m_uint32Values);
 
-    Map* map = FindMap();
-    if (!map)
-    {
-        sLog.outError("Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).",GetTypeId(),GetEntry(),GetGUIDLow(),GetMapId());
-        return;
-    }
-
-    map->AddObjectToRemoveList(this);
+    GetMap()->AddObjectToRemoveList(this);
 }
 
 Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime)

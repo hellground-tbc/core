@@ -664,7 +664,6 @@ struct TRINITY_DLL_DECL mob_terokkAI : public ScriptedAI
     void Despawn(Unit *unit)
     {
         unit->CombatStop();
-        unit->CleanupsBeforeDelete();
         unit->AddObjectToRemoveList();
     }
 
@@ -852,7 +851,6 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
         else if(id == SKYGUARD_WP_DESPAWN)
         {
             me->CombatStop();
-            me->CleanupsBeforeDelete();
             me->AddObjectToRemoveList();
         }
         else if(id == SKYGUARD_WP_MIDDLE)
@@ -889,7 +887,6 @@ struct TRINITY_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
                 if(Unit* unit = me->GetMap()->GetCreature(TargetGUID))
                 {
                     unit->CombatStop();
-                    unit->CleanupsBeforeDelete();
                     unit->AddObjectToRemoveList();
                 }
                 TargetGUID = 0;

@@ -152,7 +152,6 @@ void Totem::UnSummon()
             ((Creature*)owner)->AI()->SummonedCreatureDespawn(this);
     }
 
-    CleanupsBeforeDelete();
     AddObjectToRemoveList();
 }
 

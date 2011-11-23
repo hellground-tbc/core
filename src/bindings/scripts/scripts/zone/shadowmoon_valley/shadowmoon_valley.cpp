@@ -3344,7 +3344,6 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
             if(Unit* unit = me->GetUnit(*me, ImageOfWarbringerGUID))
             {
                 unit->CombatStop();
-                unit->CleanupsBeforeDelete();
                 unit->AddObjectToRemoveList();
             }
             ImageOfWarbringerGUID = 0;
@@ -3379,11 +3378,9 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                 if(Creature* warbringer = (Creature*)me->GetUnit(*me, ImageOfWarbringerGUID))
                 {
                     warbringer->CombatStop();
-                    warbringer->CleanupsBeforeDelete();
                     warbringer->AddObjectToRemoveList();
                 }
                 me->CombatStop();
-                me->CleanupsBeforeDelete();
                 me->AddObjectToRemoveList();
                 break;
             }
