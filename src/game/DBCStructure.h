@@ -717,6 +717,15 @@ struct SpellEntry
     // helpers
     int32 CalculateSimpleValue(uint8 eff) const { return EffectBasePoints[eff]+int32(EffectBaseDice[eff]); }
 
+    bool HasApplyAura(uint32 aur) const
+    {
+        for (uint8 i = 0; i < 3; ++i)
+            if (Effect[i] == SPELL_EFFECT_APPLY_AURA && EffectApplyAuraName[i] == aur)
+                return true;
+
+        return false;
+    }
+
     private:
         // prevent creating custom entries (copy data from original in fact)
         SpellEntry(SpellEntry const&);                      // DON'T must have implementation

@@ -2979,7 +2979,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 16007: // DRACO_INCARCINATRIX_900
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             break;
-        case 39331: // Spell In Session
+        case 39331: // In Session
             spellInfo->DurationIndex = 21;  // infinity
             spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
             spellInfo->EffectRadiusIndex[0] = 27;   // effect radius from 65 to 50 yd
