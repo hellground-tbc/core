@@ -39,6 +39,12 @@ enum BattleGroundRLObjects
     BG_RL_OBJECT_TYPE_BUFF_2    = 184664
 };
 
+enum BattleGroundRLCreatures
+{
+    BG_RL_ARENA_SPECTATOR   = 0,
+    BG_RL_CREATURE_MAX      = 1
+};
+
 class BattleGroundRLScore : public BattleGroundScore
 {
     public:

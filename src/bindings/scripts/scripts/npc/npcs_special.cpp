@@ -2425,9 +2425,9 @@ bool GossipHello_npc_arena_spectator(Player *player, Creature *_Creature)
 
 bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creature, uint32 sender, uint32 action, const char* sCode)
 {
-    if(sender == GOSSIP_SENDER_MAIN)
+    if (sender == GOSSIP_SENDER_MAIN)
     {
-        if(action == GOSSIP_ACTION_INFO_DEF+1)
+        if (action == GOSSIP_ACTION_INFO_DEF+1)
         {
             uint64 guid = sObjectMgr.GetPlayerGUIDByName(std::string(sCode));
             if (Player *pPlayer = ObjectAccessor::FindPlayer(guid))
@@ -2437,9 +2437,9 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
                     if (!pBG->isArena())
                         return false;
 
+                    // temp, for now I have no idea if cross map bindsight is allowed :p
                     if (Creature *pSpectator = pBG->GetBGCreature(ARENA_NPC_SPECTATOR))
-                    {
-                    }
+                        pPlayer->SetFarsightTarget(pSpectator);
                 }
             }
             player->CLOSE_GOSSIP_MENU();
