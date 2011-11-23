@@ -518,9 +518,12 @@ void Master::_HookSignals()
     #ifdef _WIN32
     signal(SIGBREAK, _OnSignal);
     #endif
-    signal(SIGSEGV,  _OnSignal);
-    signal(SIGABRT,  _OnSignal);
-    signal(SIGFPE ,  _OnSignal);
+    if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
+    {
+        signal(SIGSEGV,  _OnSignal);
+        signal(SIGABRT,  _OnSignal);
+        signal(SIGFPE ,  _OnSignal);
+    }
 }
 
 /// Unhook the signals before leaving
@@ -535,4 +538,3 @@ void Master::_UnhookSignals()
     signal(SIGABRT,  SIG_DFL);
     signal(SIGFPE ,  SIG_DFL);
 }
-

@@ -50,4 +50,3 @@ class Master
 #define sMaster Trinity::Singleton<Master>::Instance()
 #endif
 /// @}
-
