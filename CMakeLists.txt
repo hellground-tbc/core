@@ -59,6 +59,7 @@ message(
     ACE_USE_EXTERNAL: Use external ACE library instead of built in (default)
     USE_STD_MALLOC  : Use standard malloc instead of TBB
     LARGE_CELL      : Use large cell size
+    ADD_COMPILE_F : Add additional compile flags (default)
 
   To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.
   For example: cmake .. -DDEBUG=1 -DPREFIX=/opt/mangos\n"
@@ -87,6 +88,7 @@ option(TBB_USE_EXTERNAL "Use external TBB" 1)
 option(USE_STD_MALLOC "Use standard malloc instead of TBB" 0)
 option(ACE_USE_EXTERNAL "Use external ACE" 1)
 option(LARGE_CELL "Use large cell size" 0)
+option(ADD_COMPILE_F "Add additional compile flags" 1)
 
 # Set up the install-prefix
 if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
@@ -248,22 +250,7 @@ endif(LARGE_CELL)
 
 message("")
 
-#add_definitions("-O3
-#-ggdb
-#-ffast-math
-#-msse3
-#-fomit-frame-pointer
-#-fno-delete-null-pointer-checks
-#-ftracer
-#-fno-strict-aliasing
-#-fno-math-errno
-#-funsafe-math-optimizations
-#-funroll-loops
-#-m64
-#-pipe
-#-DFD_SETSIZE=4096
-#-frename-registers
-#")
+set(ADDITIONAL_COMPILE_FLAGS "-O3 -ffast-math -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -fno-math-errno -funsafe-math-optimizations -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
 
 # Handle debugmode compiles (this will require further work for proper WIN32-setups)
 if(UNIX)
@@ -286,23 +273,6 @@ elseif(WIN32)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /MP")
   endif()
 endif()
-
-message("C flags              : ${CMAKE_C_FLAGS}")
-message("CXX flags            : ${CMAKE_CXX_FLAGS}")
-message("Debug C flags        : ${CMAKE_C_FLAGS_DEBUG}")
-message("Debug CXX flags      : ${CMAKE_CXX_FLAGS_DEBUG}")
-message("Release C flags      : ${CMAKE_C_FLAGS_RELEASE}")
-message("Release CXX flags    : ${CMAKE_CXX_FLAGS_RELEASE}")
-
-message("")
-
-if(DEBUG)
-  message("DEBUG option is enabled")
-else()
-  message("DEBUG option is disabled")
-endif()
-
-message("")
 
 # Some small tweaks for Visual Studio 7 and above.
 if(MSVC)
@@ -384,6 +354,12 @@ endif()
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ARCH_FLAGS}")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ARCH_FLAGS}")
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ARCH_FLAGS}")
+
+if(ADD_COMPILE_F)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ADDITIONAL_COMPILE_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILE_FLAGS}")
+endif()
+
 if(XCODE)
   if(PLATFORM MATCHES X86)
     set(CMAKE_OSX_ARCHITECTURES i386)
@@ -417,6 +393,29 @@ endif()
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "${DEFINITIONS}")
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE "${DEFINITIONS_RELEASE}")
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "${DEFINITIONS_DEBUG}")
+
+message("C flags                        : ${CMAKE_C_FLAGS}")
+message("CXX flags                      : ${CMAKE_CXX_FLAGS}")
+message("C Debug flags                  : ${CMAKE_C_FLAGS_DEBUG}")
+message("CXX Debug flags                : ${CMAKE_CXX_FLAGS_DEBUG}")
+message("C Release flags                : ${CMAKE_C_FLAGS_RELEASE}")
+message("CXX Release flags              : ${CMAKE_CXX_FLAGS_RELEASE}")
+
+message("")
+
+message("Compile definitions            : ${DEFINITIONS}")
+message("Compile debug definitions      : ${DEFINITIONS_DEBUG}")
+message("Compile release definitions    : ${DEFINITIONS_RELEASE}")
+
+message("")
+
+if(DEBUG)
+    message("DEBUG option is enabled")
+else()
+    message("DEBUG option is disabled")
+endif()
+
+message("")
 
 add_subdirectory(src)
 # if(SQL)

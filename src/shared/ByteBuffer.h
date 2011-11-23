@@ -286,8 +286,9 @@ class ByteBuffer
 
         template <typename T> T read(size_t pos) const
         {
-            if(pos + sizeof(T) > size())
-                throw ByteBufferException(false, pos, sizeof(T), size());
+            if (pos + sizeof(T) > size())
+                return T(0);
+//                throw ByteBufferException(false, pos, sizeof(T), size());
             T val = *((T const*)&_storage[pos]);
             EndianConvert(val);
             return val;
@@ -295,7 +296,7 @@ class ByteBuffer
 
         void read(uint8 *dest, size_t len)
         {
-            if(_rpos  + len > size())
+            if (_rpos  + len > size())
                 throw ByteBufferException(false, _rpos, len, size());
             memcpy(dest, &_storage[_rpos], len);
             _rpos += len;
@@ -309,7 +310,7 @@ class ByteBuffer
 
             for(int i = 0; i < 8; ++i)
             {
-                if(guidmark & (uint8(1) << i))
+                if (guidmark & (uint8(1) << i))
                 {
                     uint8 bit;
                     (*this) >> bit;
