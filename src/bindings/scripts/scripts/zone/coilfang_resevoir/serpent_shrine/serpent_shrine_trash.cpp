@@ -241,9 +241,12 @@ struct TRINITY_DLL_DECL mob_underbog_colossusAI : public ScriptedAI
 
         for(uint8 i = 0; i < count; i++)
         {
-            Position dest;
-            me->GetValidPointInAngle(dest, 10.0f, frand(0, 2*M_PI), true);
-            me->SummonCreature(entry, dest.x, dest.y, dest.z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
+            float x, y, z;
+            me->GetPosition(x, y, z);
+            // FIXME: ponizsze nie dziala, chociaz mialoby lepszy efekt
+//            me->GetRandomPoint(x, y, z, frand(5, 10), x, y, z);
+//            me->GetValidPointInAngle(dest, 10.0f, frand(0, 2*M_PI), true);
+            me->SummonCreature(entry, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
         }
     }
 
