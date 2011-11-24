@@ -65,35 +65,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     // get the destination map entry, not the current one, this will fix homebind and reset greeting
     MapEntry const* mEntry = sMapStore.LookupEntry(loc.mapid);
-
-    Map* map = NULL;
-
-    // prevent crash at attempt landing to not existed battleground instance
-    if (mEntry->IsBattleGroundOrArena())
-    {
-        if (GetPlayer()->GetBattleGroundId())
-            map = sMapMgr.FindMap(loc.mapid, GetPlayer()->GetBattleGroundId());
-
-        if (!map)
-        {
-            sLog.outDetail("WorldSession::HandleMoveWorldportAckOpcode: %u was teleported far to nonexisten battleground instance "
-                           " (map:%u, x:%f, y:%f, z:%f) Trying to port him to his previous place..",
-                           GetPlayer()->GetGUIDLow(), loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z);
-
-            GetPlayer()->SetSemaphoreTeleport(false);
-
-            // Teleport to previous place, if cannot be ported back TP to homebind place
-            if (!GetPlayer()->TeleportTo(old_loc))
-            {
-                sLog.outDetail("WorldSession::HandleMoveWorldportAckOpcode: %u cannot be ported to his previous place, teleporting him to his homebind place...",
-                               GetPlayer()->GetGUIDLow());
-
-                GetPlayer()->TeleportToHomebind();
-            }
-            return;
-        }
-    }
-
     InstanceTemplate const* mInstance = ObjectMgr::GetInstanceTemplate(loc.mapid);
 
     // reset instance validity, except if going to an instance inside an instance
@@ -101,10 +72,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         GetPlayer()->m_InstanceValid = true;
 
     GetPlayer()->SetSemaphoreTeleport(false);
-
-    // relocate the player to the teleport destination
-    if (!map)
-        map = sMapMgr.GetMap(loc.mapid, GetPlayer());
 
     GetPlayer()->SetMapId(loc.mapid);
     GetPlayer()->Relocate(loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation);
