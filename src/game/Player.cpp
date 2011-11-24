@@ -10576,6 +10576,7 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
         ApplyEquipCooldown(pItem2);
 
         return pItem2;
+    }
 }
 
 void Player::QuickEquipItem(uint16 pos, Item *pItem)

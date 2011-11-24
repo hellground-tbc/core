@@ -147,7 +147,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
             me->SetSpeed(MOVE_WALK, 2);
 
             Unit* pArchimonde = pInstance->GetCreature(pInstance->GetData64(DATA_ARCHIMONDE));
-            if (Archimonde && Archimonde->isAlive())
+            if (pArchimonde && pArchimonde->isAlive())
             {
                 Position dest;
 
@@ -441,7 +441,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                 CheckDistanceTimer -= diff;
         }
 
-        if (HealthBelowPct(10.0f)
+        if (HealthBelowPct(10.0f))
         {
             if (!HasProtected)
             {
