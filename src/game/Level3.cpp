@@ -3306,7 +3306,7 @@ bool ChatHandler::HandleGetDistanceCommand(const char* /*args*/)
     }
 
     PSendSysMessage(LANG_DISTANCE, m_session->GetPlayer()->GetDistance(pUnit),m_session->GetPlayer()->GetDistance2d(pUnit));
-
+    PSendSysMessage("Exact distance: %F", m_session->GetPlayer()->GetExactDistance2d(pUnit->GetPositionX(), pUnit->GetPositionY()));
     return true;
 }
 
@@ -3815,6 +3815,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     if (!modelInfo)
         return true;
 
+    PSendSysMessage("Combat reach: %f, BoundingRadius: %f", target->GetFloatValue(UNIT_FIELD_COMBATREACH), target->GetFloatValue(UNIT_FIELD_BOUNDINGRADIUS));
     PSendSysMessage("Determinative Size: %f, CollisionWidth: %f, Scale DB: %f, Scale DBC: %f", target->GetDeterminativeSize(), modelInfo->CollisionWidth, cInfo->scale, displayInfo->scale);
     return true;
 }
