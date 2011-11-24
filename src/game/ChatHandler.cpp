@@ -675,7 +675,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
         if (((Creature*)unit)->AI())
             ((Creature*)unit)->AI()->ReceiveEmote(player, text_emote);
 
-        sScriptMgr.OnReceiveEmote(GetPlayer(), pCreature, text_emote);
+        sScriptMgr.OnReceiveEmote(GetPlayer(), (Creature*)unit, text_emote);
     }
 }
 
