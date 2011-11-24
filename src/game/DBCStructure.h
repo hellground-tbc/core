@@ -175,7 +175,7 @@ struct ChrRacesEntry
 struct CreatureDisplayInfoEntry
 {
     uint32      Displayid;                                  // 0
-    int32 ModelId;                                          // 1
+    uint32 ModelId;                                         // 1
                                                             // 2-3,unused
     float       scale;                                      // 4
                                                             // 5-13,unused
@@ -185,7 +185,15 @@ struct CreatureModelDataEntry
 {
     uint32 ModelID;                                         // 0
 
-    float collision;                                        // 15
+    float CollisionWidth;                                   // 15
+    float CollisionHeight;                                  // 16
+    //float mountHeight                                     // 17
+    float minX;                                             // 18 m_geoBoxMinX
+    float minY;                                             // 19 m_geoBoxMinY
+    float minZ;                                             // 20 m_geoBoxMinZ
+    float maxX;                                             // 21 m_geoBoxMaxX
+    float maxY;                                             // 22 m_geoBoxMaxY
+    float maxZ;                                             // 23 m_geoBoxMaxZ
 };
 
 struct CreatureFamilyEntry
