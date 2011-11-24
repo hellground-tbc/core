@@ -328,7 +328,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recv_data)
             GetPlayerName(), GetAccountId(), it->GetProto()->Name1, it->GetEntry(), it->GetCount());
     }
 
-    if (_player->GetSession()->SpecialLog())
+    if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
     {
         sLog.outSpecial("Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
             GetPlayerName(), GetAccountId(), it->GetProto()->Name1, it->GetEntry(), it->GetCount());

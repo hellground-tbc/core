@@ -246,6 +246,7 @@
     <ClCompile Include="..\..\src\shared\Auth\SARC4.cpp" />
     <ClCompile Include="..\..\src\shared\Database\Database.cpp" />
     <ClCompile Include="..\..\src\shared\Database\DatabaseMysql.cpp" />
+    <ClCompile Include="..\..\src\shared\Database\DBCFileLoader.cpp" />
     <ClCompile Include="..\..\src\shared\Database\Field.cpp" />
     <ClCompile Include="..\..\src\shared\Database\QueryResult.cpp" />
     <ClCompile Include="..\..\src\shared\Database\QueryResultMysql.cpp" />
@@ -253,7 +254,6 @@
     <ClCompile Include="..\..\src\shared\Database\SqlOperations.cpp" />
     <ClCompile Include="..\..\src\shared\Database\SqlPreparedStatement.cpp" />
     <ClCompile Include="..\..\src\shared\Database\SQLStorage.cpp" />
-    <ClCompile Include="..\..\src\shared\Database\dbcfile.cpp" />
     <ClCompile Include="..\..\src\shared\Log.cpp" />
     <ClCompile Include="..\..\src\shared\Base.cpp" />
     <ClCompile Include="..\..\src\shared\Mthread.cpp" />
@@ -276,6 +276,8 @@
     <ClInclude Include="..\..\src\shared\Database\DatabaseEnv.h" />
     <ClInclude Include="..\..\src\shared\Database\DatabaseImpl.h" />
     <ClInclude Include="..\..\src\shared\Database\DatabaseMysql.h" />
+    <ClInclude Include="..\..\src\shared\Database\DBCFileLoader.h" />
+    <ClInclude Include="..\..\src\shared\Database\DBCStore.h" />
     <ClInclude Include="..\..\src\shared\Database\Field.h" />
     <ClInclude Include="..\..\src\shared\Database\MySQLDelayThread.h" />
     <ClInclude Include="..\..\src\shared\Database\QueryResult.h" />
@@ -285,7 +287,6 @@
     <ClInclude Include="..\..\src\shared\Database\SqlPreparedStatement.h" />
     <ClInclude Include="..\..\src\shared\Database\SQLStorage.h" />
     <ClInclude Include="..\..\src\shared\Database\SQLStorageImpl.h" />
-    <ClInclude Include="..\..\src\shared\Database\dbcfile.h" />
     <ClInclude Include="..\..\src\shared\Log.h" />
     <ClInclude Include="..\..\src\shared\Base.h" />
     <ClInclude Include="..\..\src\shared\ByteBuffer.h" />

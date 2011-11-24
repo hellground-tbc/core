@@ -981,7 +981,7 @@ void WorldSession::HandleGuildBankDeposit(WorldPacket & recv_data)
 
     CharacterDatabase.CommitTransaction();
 
-    if (_player->GetSession()->SpecialLog())
+    if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
     {
         sLog.outSpecial("Player %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
             _player->GetName(),_player->GetSession()->GetAccountId(),money,GuildId);
@@ -1394,7 +1394,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                             GuildId);
                     }
 
-                    if (_player->GetSession()->SpecialLog())
+                    if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                     {
                         sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
                             _player->GetName(),_player->GetSession()->GetAccountId(),
@@ -1470,7 +1470,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                 pItemChar->GetProto()->Name1,pItemChar->GetEntry(),SplitedAmount,GuildId);
         }
 
-        if (_player->GetSession()->SpecialLog())
+        if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
         {
             sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
                 _player->GetName(),_player->GetSession()->GetAccountId(),
@@ -1504,7 +1504,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                     GuildId);
             }
 
-            if (_player->GetSession()->SpecialLog())
+            if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
             {
                 sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
                     _player->GetName(),_player->GetSession()->GetAccountId(),
@@ -1562,7 +1562,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                     GuildId);
             }
 
-            if (_player->GetSession()->SpecialLog())
+            if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
             {
                 sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
                     _player->GetName(),_player->GetSession()->GetAccountId(),

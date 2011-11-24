@@ -22,6 +22,8 @@
 #define _PLAYER_H
 
 #include "Common.h"
+
+#include "World.h"
 #include "ItemPrototype.h"
 #include "Unit.h"
 #include "Item.h"
@@ -2070,12 +2072,12 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         void SendCinematicStart(uint32 CinematicSequenceId);
 
-        void GetXPRate(uint32 rate)
+        float GetXPRate(uint32 rate)
         {
-            if (sWorld.getConfig(CONFIG_ENABLE_CUSTOM_XP_RATES) && m_session->IsCustomRateEnabled())
-                return 1.0;
+            if (sWorld.getConfig(CONFIG_ENABLE_CUSTOM_XP_RATES) && GetSession()->IsAccountFlagged(ACC_BLIZZLIKE_RATES))
+                return 1.0f;
             else
-                sWorld.getRate(rate);
+                return sWorld.getRate(Rates(rate));
         }
 
         /*********************************************************/

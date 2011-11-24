@@ -717,11 +717,10 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                                 "s, "               //7
                                 "expansion, "       //8
                                 "locale, "          //9
-                                "speciallogs, "     //10
+                                "account_flags, "   //10
                                 "opcodesDisabled, " //11
                                 "operatingSystem, " //12
-                                "last_local_ip, "   //13
-                                "customRates "      //14
+                                "last_local_ip "    //13
                                 "FROM account "
                                 "WHERE username = '%s'",
                                 safe_account.c_str ());
@@ -743,7 +742,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     std::string lastLocalIp = fields[13].GetString();
     uint8 operatingSystem = fields[12].GetUInt8();
     uint8 expansion = fields[8].GetUInt8();
-    bool customRates = fields[14].GetBool();
+
     uint32 world_expansion = sWorld.getConfig(CONFIG_EXPANSION);
     if (expansion > world_expansion)
         expansion = world_expansion;
@@ -822,7 +821,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     if (locale >= MAX_LOCALE)
         locale = LOCALE_enUS;
 
-    uint64 speciallogs = fields[10].GetUInt64();
+    uint64 accFlags = fields[10].GetUInt64();
     uint16 opcDis = fields[11].GetUInt16();
 
     // Re-check account ban (same check as in realmd)
@@ -928,7 +927,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     }
 
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN(m_Session, WorldSession(id, this, security, expansion, locale, mutetime, mutereason, speciallogs, opcDis, customRates), -1);
+    ACE_NEW_RETURN(m_Session, WorldSession(id, this, security, expansion, locale, mutetime, mutereason, accFlags, opcDis), -1);
 
     m_Crypt.SetKey(&K);
     m_Crypt.Init();

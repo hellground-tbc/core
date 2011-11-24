@@ -204,7 +204,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
                 }
 
-                if (_player->GetSession()->SpecialLog())
+                if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
                     sLog.outSpecial("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                         _player->GetName(),_player->GetSession()->GetAccountId(),
@@ -227,7 +227,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->GetName(),_player->GetSession()->GetAccountId());
                 }
 
-                if (_player->pTrader->GetSession()->SpecialLog())
+                if (_player->pTrader->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
                     sLog.outSpecial("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                         _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),

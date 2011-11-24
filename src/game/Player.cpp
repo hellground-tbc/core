@@ -14937,7 +14937,7 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
             {
                 sLog.outError("Player::_LoadInventory: Player %s has item (GUID: %u Entry: %u) can't be loaded to inventory (Bag GUID: %u Slot: %u) by some reason, will send by mail.", GetName(),item_guid, item_id, bag_guid, slot);
                 CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
-                if (!GetSession()->SpecialLog())
+                if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                     problematicItems.push_back(item);
             }
         } while (result->NextRow());
@@ -15972,7 +15972,7 @@ void Player::_SaveInventory()
 
                 //zostawiam special log dla pewnosci, autobana sie przywroci jesli bedzie potrzeba
                 LoginDatabase.BeginTransaction();
-                if (!GetSession()->SpecialLog())
+                if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
                     LoginDatabase.PExecute("UPDATE account SET speciallog = '1' WHERE id = '%u'", GetSession()->GetAccountId());
                     GetSession()->SetSpecialLog(true);
@@ -15992,7 +15992,7 @@ void Player::_SaveInventory()
 
                 //zostawiam special log dla pewnosci, autobana sie przywroci jesli bedzie potrzeba
                 LoginDatabase.BeginTransaction();
-                if (!GetSession()->SpecialLog())
+                if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
                     LoginDatabase.PExecute("UPDATE account SET speciallog = '1' WHERE id = '%u'", GetSession()->GetAccountId());
                     GetSession()->SetSpecialLog(true);
@@ -16678,13 +16678,13 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
         WorldPacket data(SMSG_MESSAGECHAT, 200);
         BuildPlayerChat(&data, CHAT_MSG_WHISPER, text, language);
         rPlayer->GetSession()->SendPacket(&data);
-        if (rPlayer->GetSession()->WhispLog())
+        if (rPlayer->GetSession()->IsAccountFlagged(ACC_WHISPER_LOG))
             sLog.outWhisp(rPlayer->GetSession()->GetAccountId(), "[%s | %u] FROM: %u (%s) : %s ", rPlayer->GetName(), rPlayer->GetGUID(), GetGUID(), GetName(), text.c_str());
 
         data.Initialize(SMSG_MESSAGECHAT, 200);
         rPlayer->BuildPlayerChat(&data, CHAT_MSG_REPLY, text, language);
         GetSession()->SendPacket(&data);
-        if (GetSession()->WhispLog())
+        if (GetSession()->IsAccountFlagged(ACC_WHISPER_LOG))
             sLog.outWhisp(GetSession()->GetAccountId(), "[%s | %u] TO: %u (%s), %s", GetName(), GetGUID(), rPlayer->GetGUID(), rPlayer->GetName(), text.c_str());
     }
     else

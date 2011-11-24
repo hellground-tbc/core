@@ -315,7 +315,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                         GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
                 }
 
-                if (_player->GetSession()->SpecialLog())
+                if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
                     sLog.outSpecial("Player %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
                         GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
@@ -344,7 +344,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                     GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
             }
 
-            if (_player->GetSession()->SpecialLog())
+            if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
             {
                 sLog.outSpecial("Player %s (Account: %u) mail money: %u to player: %s (Account: %u)",
                     GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
@@ -565,7 +565,7 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
 
             uint32 sender_accId = 0;
 
-            if (SpecialLog() || (GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE)))
+            if (IsAccountFlagged(ACC_SPECIAL_LOG) || (GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE)))
             {
                 std::string sender_name;
                 if (sender)
@@ -582,7 +582,7 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
                         sender_name = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
                 }
 
-                if (SpecialLog())
+                if (IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
                     sLog.outSpecial("Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
                         GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);

@@ -60,6 +60,14 @@ enum OpcodeDisabled
     OPC_DISABLE_WEATHER  = 0x01
 };
 
+enum AccountFlags
+{
+    ACC_SPECIAL_LOG       = 0x0001, // all incoming/outgoing trade/mails/auctions etc. are logged to file
+    ACC_WHISPER_LOG       = 0x0002, // all incoming and outgoing whispers are logged o file
+    ACC_DISABLED_GANN     = 0x0004, // account flagged with this won't display messages related to guild announces system
+    ACC_BLIZZLIKE_RATES   = 0x0008  // enables fully blizzlike rates for account. ex: XP, QXP etc
+};
+
 enum PartyOperation
 {
     PARTY_OP_INVITE = 0,
@@ -123,7 +131,7 @@ class TRINITY_DLL_SPEC WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time = 0, std::string mute_reason = "", uint64 speciallog = 0, uint16 opcDisabled = 0, bool customrates = false);
+        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time = 0, std::string mute_reason = "", uint64 accFlags = 0, uint16 opcDisabled = 0);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -155,13 +163,10 @@ class TRINITY_DLL_SPEC WorldSession
         std::string const& GetRemoteAddress() { return m_Address; }
         void SetPlayer(Player *plr) { _player = plr; }
         uint8 Expansion() const { return m_expansion; }
-        bool SpecialLog() const { return m_speciallogs & SPECIAL_LOG; }
-        void SetSpecialLog(bool log){ log ? m_speciallogs |= SPECIAL_LOG : m_speciallogs &= ~SPECIAL_LOG; }
-        bool WhispLog() const { return m_speciallogs & WHISP_LOG; }
-        void SetWhispLog(bool log) { log ? m_speciallogs |= WHISP_LOG : m_speciallogs &= ~WHISP_LOG; }
 
-        void DisableGuildAnn(bool ok) { ok ? m_speciallogs |= DIS_GUILD_ANN : m_speciallogs &= ~DIS_GUILD_ANN; }
-        bool DisplayGuildAnn() { return !(m_speciallogs & DIS_GUILD_ANN); }
+        bool IsAccountFlagged(AccountFlags flag) const { return m_accFlags & flag; }
+        void AddAccountFlag(AccountFlags flag) { m_accFlags |= flag; }
+        void RemoveAccountFlag(AccountFlags flag) { m_accFlags &= ~flag; }
 
         void SetOpcodeDisableFlag(uint16 flag);
         void RemoveOpcodeDisableFlag(uint16 flag);
@@ -281,11 +286,6 @@ class TRINITY_DLL_SPEC WorldSession
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
         uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
-
-        bool IsCustomRateEnabled()
-        {
-            return m_customRates;
-        }
 
     public:                                                 // opcodes handlers
 
@@ -733,8 +733,9 @@ class TRINITY_DLL_SPEC WorldSession
         bool m_playerSave;
         bool m_playerLogout;                                // code processed in LogoutPlayer
         bool m_playerRecentlyLogout;
-        uint64 m_speciallogs;
-        bool m_whisplog;
+
+        uint64 m_accFlags;
+
         LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;
         uint32 m_latency;

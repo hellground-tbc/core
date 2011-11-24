@@ -1961,7 +1961,7 @@ void World::SendGuildAnnounce(uint32 team, ...)
 
     for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
     {
-        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() || itr->second->GetPlayer()->GetTeam() != team || !itr->second->DisplayGuildAnn())
+        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() || itr->second->GetPlayer()->GetTeam() != team || itr->second->IsAccountFlagged(ACC_DISABLED_GANN))
             continue;
 
         uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();
