@@ -3807,11 +3807,11 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("AIName: %s, ScriptName: %s", target->GetAIName().c_str(), target->GetScriptName().c_str());
     PSendSysMessage("DeadByDefault: %i", (int)target->GetIsDeadByDefault());
 
-    CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.LookupEntry(target->GetEntry());
+    CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.LookupEntry(displayid);
     if (!displayInfo)
         return true;
 
-    CreatureModelDataEntry const* modelInfo = sCreatureModelDataStore.LookupEntry(displayid);
+    CreatureModelDataEntry const* modelInfo = sCreatureModelDataStore.LookupEntry(displayInfo->ModelId);
     if (!modelInfo)
         return true;
 
