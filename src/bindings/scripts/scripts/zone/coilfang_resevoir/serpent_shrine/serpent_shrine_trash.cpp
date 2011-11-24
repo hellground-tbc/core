@@ -46,7 +46,7 @@ struct TRINITY_DLL_DECL mob_vashjir_honor_guardAI : public ScriptedAI
         {
             AddSpellToCast(SPELL_FRIGHTENING_SHOUT, CAST_TANK);
             Shout_Timer = urand(30000, 40000);
-        } 
+        }
         else
             Shout_Timer -= diff;
 
@@ -89,7 +89,7 @@ struct TRINITY_DLL_DECL mob_vashjir_honor_guardAI : public ScriptedAI
 
     void UpdateAIOOC(const uint32 diff)
     {
-        // need some tweaking 
+        // need some tweaking
         if(!Talking)
         {
             if(Talk_Timer < diff)
@@ -99,8 +99,8 @@ struct TRINITY_DLL_DECL mob_vashjir_honor_guardAI : public ScriptedAI
                     std::list<Creature*> friends = FindAllFriendlyInGrid(3);
                     if(!friends.empty())
                     {
-                        
-                        Creature *c = friends.front();                        
+
+                        Creature *c = friends.front();
                         c->GetMotionMaster()->MoveIdle();
                         c->SetInFront(me);
                         me->GetMotionMaster()->MoveIdle();
@@ -115,10 +115,10 @@ struct TRINITY_DLL_DECL mob_vashjir_honor_guardAI : public ScriptedAI
                         //c->Say("Check1", 0, 0);
                         //me->Say("Check0", 0, 0);
                     }
-                } 
+                }
                 else
                     Check_Timer -= diff;
-            } 
+            }
             else
                 Talk_Timer -= diff;
         }
@@ -137,7 +137,7 @@ struct TRINITY_DLL_DECL mob_vashjir_honor_guardAI : public ScriptedAI
                         me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_TALK);
                     }
                     Check_Timer = 0;
-                } 
+                }
                 else
                     Check_Timer -= diff;
             }
@@ -149,13 +149,13 @@ struct TRINITY_DLL_DECL mob_vashjir_honor_guardAI : public ScriptedAI
                 Talk_Timer = urand(4000, 8000);
                 me->GetMotionMaster()->MovementExpired();
                 me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
-                
+
                 if(Creature *c = me->GetCreature(Talk_Creature))
                 {
                     c->GetMotionMaster()->MovementExpired();
                     c->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
                 }
-            } 
+            }
             else
                 Talk_Timer -= diff;
         }
@@ -185,12 +185,12 @@ CreatureAI* GetAI_mob_vashjir_honor_guard(Creature *_Creature)
 
 struct TRINITY_DLL_DECL mob_underbog_colossusAI : public ScriptedAI
 {
-    mob_underbog_colossusAI(Creature *c) : ScriptedAI(c) 
+    mob_underbog_colossusAI(Creature *c) : ScriptedAI(c)
     {
         type = urand(0, 2);
         Vulnerability = RAND(SPELL_FIRE_VULNERABILITY, SPELL_FROST_VULNERABILITY, SPELL_NATURE_VULNERABILITY);
     }
-        
+
     uint8 type;
     uint32 Vulnerability;
 
@@ -241,9 +241,9 @@ struct TRINITY_DLL_DECL mob_underbog_colossusAI : public ScriptedAI
 
         for(uint8 i = 0; i < count; i++)
         {
-            float x, y, z;
-            me->GetGroundPoint(x, y, z, 10, frand(0, 2*M_PI));
-            me->SummonCreature(entry, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
+            Position dest;
+            me->GetValidPointInAngle(dest, 10.0f, frand(0, 2*M_PI), true);
+            me->SummonCreature(entry, dest.x, dest.y, dest.z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
         }
     }
 
@@ -259,7 +259,7 @@ struct TRINITY_DLL_DECL mob_underbog_colossusAI : public ScriptedAI
             {
                 AddSpellToCast(SPELL_INITIAL_INFECTION, CAST_RANDOM);
                 Infection_Timer = urand(25000, 35000);
-            } 
+            }
             else
                 Infection_Timer -= diff;
 
@@ -352,7 +352,7 @@ struct TRINITY_DLL_DECL mob_serpentshrine_parasiteAI : public ScriptedAI
 
             Check_Timer = 1000;
         }
-        else 
+        else
             Check_Timer -= diff;
 
         if(!TargetGUID)

@@ -12928,3 +12928,24 @@ Unit* Unit::GetNextRandomRaidMember(float radius)
     uint32 randTarget = GetMap()->urand(0,nearMembers.size()-1);
     return nearMembers[randTarget];
 }
+
+float Unit::GetDeterminativeSize() const
+{
+    if (!IsInWorld() || GetTypeId() != TYPEID_UNIT)
+        return 0.0f;
+
+    CreatureDisplayInfoEntry const *info = sCreatureDisplayInfoStore.LookupEntry(((Creature*)this)->GetDisplayId());
+    if (!info)
+        return 0.0f;
+
+    CreatureModelDataEntry const *model = sCreatureModelDataStore.LookupEntry(info->ModelId);
+    if (!model)
+        return 0.0f;
+
+    float dx = model->maxX - model->minX;
+    float dy = model->maxY - model->minY;
+    float dz = model->maxZ - model->minZ;
+    float _size = sqrt(dx*dx + dy*dy +dz*dz) * info->scale;
+
+    return _size;
+}

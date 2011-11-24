@@ -3807,6 +3807,15 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("AIName: %s, ScriptName: %s", target->GetAIName().c_str(), target->GetScriptName().c_str());
     PSendSysMessage("DeadByDefault: %i", (int)target->GetIsDeadByDefault());
 
+    CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.LookupEntry(target->GetEntry());
+    if (!displayInfo)
+        return true;
+
+    CreatureModelDataEntry const* modelInfo = sCreatureModelDataStore.LookupEntry(displayid);
+    if (!modelInfo)
+        return true;
+
+    PSendSysMessage("Determinative Size: %f, CollisionWidth: %f, Scale DB: %f, Scale DBC: %f", target->GetDeterminativeSize(), modelInfo->CollisionWidth, cInfo->scale, displayInfo->scale);
     return true;
 }
 

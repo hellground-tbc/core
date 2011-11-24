@@ -1699,6 +1699,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         bool preventApplyPersistentAA(SpellEntry const *spellInfo, uint8 eff_index);
 
         bool IsAIEnabled, NeedChangeAI;
+
+        float GetDeterminativeSize() const;
+
     protected:
         explicit Unit ();
 
