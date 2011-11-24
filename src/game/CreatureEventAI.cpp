@@ -1214,9 +1214,20 @@ void CreatureEventAI::UpdateAI(const uint32 diff)
                         break;
                     case EVENT_T_RANGE:
                         if (me->getVictim())
+                        {
                             if (m_creature->IsInMap(m_creature->getVictim()))
+                            {
                                 if (m_creature->IsInRange(m_creature->getVictim(),(float)(*i).Event.range.minDist,(float)(*i).Event.range.maxDist))
+                                {
+                                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE)
+                                        m_creature->GetMotionMaster()->MoveIdle();
+
                                     ProcessEvent(*i);
+                                }
+                                else if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+                                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+                            }
+                        }
                         break;
                 }
             }

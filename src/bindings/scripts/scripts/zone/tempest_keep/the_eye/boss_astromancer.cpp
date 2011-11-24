@@ -432,7 +432,7 @@ struct TRINITY_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             DoScriptText(SAY_VOIDB, m_creature);
             m_creature->SetArmor(WV_ARMOR);
             m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, MODEL_VOIDWALKER);
-            m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, defaultsize*2.5f);
+            //m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, defaultsize*2.5f);
         }
 
         DoMeleeAttackIfReady();

@@ -368,6 +368,7 @@ bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
                 LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("Guild announces have been disabled for this account.");
             }
+        }
     }
     else
     {
