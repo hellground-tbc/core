@@ -24,6 +24,7 @@
 #include "DBCEnums.h"
 #include "Platform/Define.h"
 #include "Path.h"
+#include "SharedDefines.h"
 #include <map>
 #include <set>
 #include <vector>
