@@ -1101,11 +1101,23 @@ void WorldObject::_Create(uint32 guidlow, HighGuid guidhigh, uint32 mapid)
 
 uint32 WorldObject::GetZoneId() const
 {
+    if (!Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ))
+    {
+        sLog.outDebug("Unit::GetZoneId()(%f, %f, %f) .. bad coordinates!",m_positionX, m_positionY, m_positionZ);
+        return 0;
+    }
+
     return GetBaseMap()->GetZoneId(m_positionX, m_positionY, m_positionZ);
 }
 
 uint32 WorldObject::GetAreaId() const
 {
+    if (!Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ))
+    {
+        sLog.outDebug("Unit::GetAreaId()(%f, %f, %f) .. bad coordinates!",m_positionX, m_positionY, m_positionZ);
+        return 0;
+    }
+
     return GetBaseMap()->GetAreaId(m_positionX, m_positionY, m_positionZ);
 }
 
