@@ -15974,8 +15974,8 @@ void Player::_SaveInventory()
                 LoginDatabase.BeginTransaction();
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
-                    LoginDatabase.PExecute("UPDATE account SET speciallog = '1' WHERE id = '%u'", GetSession()->GetAccountId());
-                    GetSession()->SetSpecialLog(true);
+                    GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
+                    LoginDatabase.PExecute("UPDATE account SET accounts_flag = accounts_flag | '%u' WHERE id = '%u'", ACC_SPECIAL_LOG, GetSession()->GetAccountId());
                 }
 
                 LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
@@ -15994,8 +15994,8 @@ void Player::_SaveInventory()
                 LoginDatabase.BeginTransaction();
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
-                    LoginDatabase.PExecute("UPDATE account SET speciallog = '1' WHERE id = '%u'", GetSession()->GetAccountId());
-                    GetSession()->SetSpecialLog(true);
+                    GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
+                    LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_SPECIAL_LOG, GetSession()->GetAccountId());
                 }
 
                 LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
