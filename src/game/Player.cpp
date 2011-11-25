@@ -20179,7 +20179,7 @@ void Player::SendTimeSync()
     m_timeSyncServer = WorldTimer::getMSTime();
 }
 
-float Player::GetXPRate(uint32 rate)
+float Player::GetXPRate(Rates rate)
 {
     if (sWorld.getConfig(CONFIG_ENABLE_CUSTOM_XP_RATES) && GetSession()->IsAccountFlagged(ACC_BLIZZLIKE_RATES))
         return 1.0f;

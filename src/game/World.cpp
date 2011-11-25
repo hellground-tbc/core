@@ -1564,7 +1564,7 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
     sLog.outString("Loading Warden Data..." );
-    WardenDataStorage.Init();
+    sWardenDataStorage.Init();
 
     sLog.outString("Cleanup deleted characters");
     CleanupDeletedChars();

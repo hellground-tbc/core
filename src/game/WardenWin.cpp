@@ -35,8 +35,6 @@
 #include "WardenModuleWin.h"
 #include "WardenDataStorage.h"
 
-CWardenDataStorage WardenDataStorage;
-
 WardenWin::WardenWin()
 {
 }
@@ -200,15 +198,15 @@ void WardenWin::RequestData()
 //    sLog.outWarden("Request data");
 
     if (MemCheck.empty())
-        MemCheck.assign(WardenDataStorage.MemCheckIds.begin(), WardenDataStorage.MemCheckIds.end());
+        MemCheck.assign(sWardenDataStorage.GetMemCheckIds().begin(), sWardenDataStorage.GetMemCheckIds().end());
 
     ServerTicks = WorldTimer::getMSTime();
 
-    uint32 maxid = WardenDataStorage.InternalDataID;
+    uint32 maxid = sWardenDataStorage.GetInternalDataId();
 
     uint32 id;
     uint8 type;
-    WardenData *wd;
+    WardenData * wd;
 
     SendDataId.clear();
 
@@ -229,7 +227,7 @@ void WardenWin::RequestData()
     for (int i = 0; i < count; ++i)                             // for now include 5 random checks
     {
         id = irand(1, maxid - 1);
-        wd = WardenDataStorage.GetWardenDataById(id);
+        wd = sWardenDataStorage.GetWardenDataById(id);
 
         if (!wd)
             break;
@@ -257,7 +255,7 @@ void WardenWin::RequestData()
 
     for (std::vector<uint32>::iterator itr = SendDataId.begin(); itr != SendDataId.end(); ++itr)
     {
-        wd = WardenDataStorage.GetWardenDataById(*itr);
+        wd = sWardenDataStorage.GetWardenDataById(*itr);
 
         type = wd->Type;
         buff << uint8(type ^ xorByte);
@@ -365,7 +363,10 @@ void WardenWin::HandleData(ByteBuffer &buff)
         if (result == 0x00)
         {
             sLog.outWarden("TIMING CHECK FAIL result 0x00, account %u", Client->GetAccountId());
-            //found = true;
+            if (found && sWorld.getConfig(CONFIG_WARDEN_KICK))
+               Client->KickPlayer();
+
+            return;
         }
 
         uint32 newClientTicks;
@@ -380,14 +381,14 @@ void WardenWin::HandleData(ByteBuffer &buff)
 //        sLog.outWarden("Ticks diff %u", ourTicks - newClientTicks);
     }
 
-    WardenDataResult *rs;
-    WardenData *rd;
+    WardenDataResult * rs;
+    const WardenData * rd;
     uint8 type;
 
     for (std::vector<uint32>::iterator itr = SendDataId.begin(); itr != SendDataId.end(); ++itr)
     {
-        rd = WardenDataStorage.GetWardenDataById(*itr);
-        rs = WardenDataStorage.GetWardenResultById(*itr);
+        rd = sWardenDataStorage.GetWardenDataById(*itr);
+        rs = sWardenDataStorage.GetWardenResultById(*itr);
 
         type = rd->Type;
         switch (type)
@@ -429,49 +430,14 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         tmpStrByteArray += tmp;
                     }
 
-                    /*WardenDataResult *wr = new WardenDataResult();
-                    wr->res.SetHexStr(tmpStrContents.c_str());
-
-                    int len = tmpStrContents.size()/2;
-                    if (wr->res.GetNumBytes() < len)
-                        std::reverse(tmpContentsRev, tmpContentsRev + rd->Length);
-
-                    delete wr;
-
-                    for (int i = 0; i < rd->Length; ++i)
-                    {
-                        char * tmp = new char[2];
-                        sprintf(tmp, "%02X", tmpContentsRev[i]);
-                        tmpStrContentsRev += tmp;
-                    }*/
-
                     sLog.outWarden("RESULT MEM_CHECK fail CheckId %u account Id %u got: %s  should be: %s;", *itr, Client->GetAccountId(), tmpStrContents.c_str(), tmpStrByteArray.c_str());
-                    //sLog.outWarden("UPDATE warden_data_result SET result = '%s' WHERE id = %u;", tmpStrContentsRev.c_str(), *itr);
 
                     found = true;
                     buff.rpos(buff.rpos() + rd->Length);
                     continue;
                 }
-/*
-                string tmpstr;
 
-                uint8 * tmpuint = new uint8[rd->Length];
-
-                for (int i = 0; i < rd->Length; ++i)
-                    tmpuint[i] = buff.contents() [buff.rpos() + i];
-
-                std::reverse(tmpuint, tmpuint + rd->Length);
-
-                for (int i = 0; i < rd->Length; ++i)
-                {
-                    char * tmp = new char[2];
-                    sprintf(tmp, "%02X", tmpuint[i]);
-                    tmpstr += tmp;
-                }
-*/
                 buff.rpos(buff.rpos() + rd->Length);
-                //sLog.outWarden("RESULT MEM_CHECK passed CheckId %u account Id %u", *itr, Client->GetAccountId());
-                //sLog.outWarden("UPDATE warden_data_result SET result = '%s' WHERE id = %u;", tmpstr.c_str(), *itr);
                 break;
             }
             case PAGE_CHECK_A:
@@ -558,18 +524,13 @@ void WardenWin::HandleData(ByteBuffer &buff)
         }
     }
 
-    if (found && sWorld.getConfig(CONFIG_WARDEN_KICK) && !sWorld.getConfig(CONFIG_WARDEN_BAN))
-    {
+    if (found && sWorld.getConfig(CONFIG_WARDEN_KICK))
        Client->KickPlayer();
-    }
 
     if (found && sWorld.getConfig(CONFIG_WARDEN_BAN))
     {
-                std::string accountname;
-                if (accmgr.GetName(Client->GetAccountId(), accountname))
-                {
-                    sWorld.BanAccount(BAN_ACCOUNT, accountname.c_str(), "-1", "Cheat", "CONSOLE");
-                }
-                return;
+        std::string accountname;
+        if (accmgr.GetName(Client->GetAccountId(), accountname))
+            sWorld.BanAccount(BAN_ACCOUNT, accountname.c_str(), "-1", "Cheat", "CONSOLE");
     }
 }

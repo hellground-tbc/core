@@ -38,7 +38,7 @@
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
 #include "ReputationMgr.h"
-
+#include "World.h"
 #include "SpellMgr.h"       // for GetSpellBaseCastTime
 
 #include<string>
@@ -2071,7 +2071,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         void SendCinematicStart(uint32 CinematicSequenceId);
 
-        float GetXPRate(uint32 rate);
+        float GetXPRate(Rates rate);
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/

@@ -26,29 +26,42 @@
 #include "WardenDataStorage.h"
 #include "WardenWin.h"
 
-CWardenDataStorage::CWardenDataStorage()
+WardenDataStorage::WardenDataStorage()
 {
-    InternalDataID = 1;
+    internalDataID = 1;
 }
 
-CWardenDataStorage::~CWardenDataStorage()
+WardenDataStorage::~WardenDataStorage()
 {
-    std::map<uint32, WardenData*>::iterator itr1 = _data_map.begin();
-    for (; itr1 != _data_map.end(); ++itr1)
+    Cleanup();
+}
+
+void WardenDataStorage::Init()
+{
+    LoadWardenDataResult(false);
+}
+
+void WardenDataStorage::Cleanup()
+{
+    std::map<uint32, WardenData*>::iterator itr1 = data_map.begin();
+    for (; itr1 != data_map.end(); ++itr1)
         delete itr1->second;
 
-    std::map<uint32, WardenDataResult*>::iterator itr2 = _result_map.begin();
-    for (; itr2 != _result_map.end(); ++itr2)
+    std::map<uint32, WardenDataResult*>::iterator itr2 = result_map.begin();
+    for (; itr2 != result_map.end(); ++itr2)
         delete itr2->second;
+
+    data_map.clear();
+    result_map.clear();
+    memCheckIds.clear();
+    internalDataID = 1;
 }
 
-void CWardenDataStorage::Init()
+void WardenDataStorage::LoadWardenDataResult(bool reload)
 {
-    LoadWardenDataResult();
-}
+    if (reload)
+        Cleanup();
 
-void CWardenDataStorage::LoadWardenDataResult()
-{
     QueryResultAutoPtr result = WorldDatabase.Query("SELECT `check`, `data`, `result`, `address`, `length`, `str` FROM warden_data_result");
 
     uint32 count = 0;
@@ -94,7 +107,7 @@ void CWardenDataStorage::LoadWardenDataResult()
         }
 
         if (type == MEM_CHECK || type == MODULE_CHECK)
-            MemCheckIds.push_back(id);
+            memCheckIds.push_back(id);
 
         if (type == MEM_CHECK || type == PAGE_CHECK_A || type == PAGE_CHECK_B || type == PROC_CHECK)
         {
@@ -106,7 +119,7 @@ void CWardenDataStorage::LoadWardenDataResult()
         if (type == MEM_CHECK || type == MPQ_CHECK || type == LUA_STR_CHECK || type == DRIVER_CHECK || type == MODULE_CHECK)
             wd->str = fields[5].GetCppString();
 
-        _data_map[id] = wd;
+        data_map[id] = wd;
 
         if (type == MPQ_CHECK || type == MEM_CHECK)
         {
@@ -123,26 +136,27 @@ void CWardenDataStorage::LoadWardenDataResult()
                 wr->res.SetBinary((uint8*)temp, len);
                 delete [] temp;
             }
-            _result_map[id] = wr;
+            result_map[id] = wr;
         }
-    } while (result->NextRow());
+    }
+    while (result->NextRow());
 
     sLog.outString();
     sLog.outString(">> Loaded %u warden data and results", count);
 }
 
-WardenData *CWardenDataStorage::GetWardenDataById(uint32 Id)
+WardenData *WardenDataStorage::GetWardenDataById(uint32 Id) const
 {
-    std::map<uint32, WardenData*>::const_iterator itr = _data_map.find(Id);
-    if (itr != _data_map.end())
+    std::map<uint32, WardenData*>::const_iterator itr = data_map.find(Id);
+    if (itr != data_map.end())
         return itr->second;
     return NULL;
 }
 
-WardenDataResult *CWardenDataStorage::GetWardenResultById(uint32 Id)
+WardenDataResult *WardenDataStorage::GetWardenResultById(uint32 Id) const
 {
-    std::map<uint32, WardenDataResult*>::const_iterator itr = _result_map.find(Id);
-    if (itr != _result_map.end())
+    std::map<uint32, WardenDataResult*>::const_iterator itr = result_map.find(Id);
+    if (itr != result_map.end())
         return itr->second;
     return NULL;
 }
