@@ -96,21 +96,23 @@ void MapInstanced::UnloadAll()
 Map* MapInstanced::GetInstance(const WorldObject* obj)
 {
     if (obj->GetTypeId() != TYPEID_PLAYER)
-        return _FindMap(obj->GetInstanceId());
+        return FindInstancedMap(obj->GetInstanceId());
 
     Player* player = (Player*)obj;
     uint32 instanceId = player->GetInstanceId();
 
     if (instanceId)
-        if (Map *map = _FindMap(instanceId))
+    {
+        if (Map *map = FindInstancedMap(instanceId))
              return map;
+    }
 
     if (IsBattleGroundOrArena())
     {
         instanceId = player->GetBattleGroundId();
         if (instanceId)
         {
-             if (Map *map = _FindMap(instanceId))
+             if (Map *map = FindInstancedMap(instanceId))
                  return map;
              else
                  return CreateBattleGround(instanceId, player->GetBattleGround());
@@ -124,7 +126,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
         if (!instanceId)
         {
             instanceId = pSave->GetInstanceId(); // go from outside to instance
-            if (Map *map = _FindMap(instanceId))
+            if (Map *map = FindInstancedMap(instanceId))
                  return map;
         }
         else if (instanceId != pSave->GetInstanceId()) // cannot go from one instance to another
@@ -223,4 +225,3 @@ bool MapInstanced::CanEnter(Player *player)
 
     return false;
 }
-
