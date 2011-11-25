@@ -618,7 +618,7 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
         default:
             sLog.outWarden("Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
             if (sWorld.getConfig(CONFIG_WARDEN_KICK))
-                Client->KickPlayer();
+                KickPlayer();
             return;
     }
 

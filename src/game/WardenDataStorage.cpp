@@ -26,6 +26,10 @@
 #include "WardenDataStorage.h"
 #include "WardenWin.h"
 
+#include "Policies/SingletonImp.h"
+
+INSTANTIATE_SINGLETON_1(WardenDataStorage);
+
 WardenDataStorage::WardenDataStorage()
 {
     internalDataID = 1;
