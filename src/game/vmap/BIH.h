@@ -147,8 +147,8 @@ class BIH
                     float t1 = (bounds.low()[i]  - org[i]) * invDir[i];
                     float t2 = (bounds.high()[i] - org[i]) * invDir[i];
 
-                    limitDigits(t1, 6);
-                    limitDigits(t2, 6);
+                    //limitDigits(t1, 6);
+                    //limitDigits(t2, 6);
 
                     if (t1 > t2)
                         std::swap(t1, t2);
@@ -213,8 +213,8 @@ class BIH
                             float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
                             float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
 
-                            limitDigits(tf, 6);
-                            limitDigits(tb, 6);
+                            //limitDigits(tf, 6);
+                            //limitDigits(tb, 6);
 
                             // ray passes between clip zones
                             if (tf < intervalMin && tb > intervalMax)
@@ -282,8 +282,8 @@ class BIH
                         float tf = (intBitsToFloat(tree[tmpFront]) - org[axis]) * invDir[axis];
                         float tb = (intBitsToFloat(tree[tmpBack]) - org[axis]) * invDir[axis];
 
-                        limitDigits(tf, 6);
-                        limitDigits(tb, 6);
+                        //limitDigits(tf, 6);
+                        //limitDigits(tb, 6);
 
                         node = offset;
                         intervalMin = (tf >= intervalMin) ? tf : intervalMin;
@@ -304,14 +304,14 @@ class BIH
                     // move back up the stack
                     stackPos--;
                     intervalMin = stack[stackPos].tnear;
-                    limitDigits(intervalMin, 6);
+                    //limitDigits(intervalMin, 6);
 
                     if (maxDist < intervalMin)
                         continue;
 
                     node = stack[stackPos].node;
                     intervalMax = stack[stackPos].tfar;
-                    limitDigits(intervalMax, 6);
+                    //limitDigits(intervalMax, 6);
                     break;
                 }
                 while (true);
