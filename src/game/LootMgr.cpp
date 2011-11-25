@@ -25,6 +25,7 @@
 #include "World.h"
 #include "Util.h"
 #include "SharedDefines.h"
+#include "Group.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] = {
     RATE_DROP_ITEM_POOR,                                    // ITEM_QUALITY_POOR
@@ -397,7 +398,10 @@ void Loot::setCreatureGUID(Creature *pCreature)
 
     pCreature->FillPlayersAllowedToLoot(&players_allowed_to_loot);
 
-    if (!pCreature->isWorldBoss() && pCreature->GetMap()->IsDungeon())
+    if (!pCreature->isWorldBoss())
+        return;
+
+    if (!pCreature->GetMap()->IsDungeon())
         return;
 
     m_creatureGUID = pCreature->GetGUID();
@@ -432,15 +436,37 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
         }
         while (result->NextRow());
 
+        if (unlootedCount == 0)
+            return;
+
         ss << " players in instance: ";
         Map *pMap = pCreature->GetMap();
         if (pMap && pMap->IsDungeon())
         {
+            typedef std::list<GroupMemberSlot> MemberSlotList;
+            typedef MemberSlotList::const_iterator member_citerator;
+
             Map::PlayerList const &PlayerList = pMap->GetPlayers();
             for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
                 if (Player* i_pl = i->getSource())
-                    ss << i_pl->GetName() << " (" << i_pl->GetGUIDLow() << ")  ";
+                {
+                    if (Group *pGroup = i_pl->GetGroup())
+                    {
+                        MemberSlotList gList = pGroup->GetMemberSlots();
+                        for (member_citerator citr = gList.begin(); citr != gList.end(); ++citr)
+                            ss << citr->name << " (" << citr->guid << ")  ";
+
+                        break;
+                    }
+                    else
+                        ss << i_pl->GetName() << " (" << i_pl->GetGUIDLow() << ")  ";
+                }
+            }
         }
+        else
+            return;
+
         sLog.outBoss(ss.str().c_str());
 
         // make body visible to loot
