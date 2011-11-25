@@ -77,6 +77,19 @@ struct AABound
     Copyright (c) 2003-2007 Christopher Kulla
 */
 
+// lame digit limiter after coma :p
+static inline void limitDigits(float &value, int digits)
+{
+    if (digits < 1)
+        return;
+
+    int mod = 10;
+    for (uint8 i = 1; i < digits; i++)
+        mod = mod*10;
+
+    value = float(int(value*mod))/mod;
+}
+
 class BIH
 {
     public:
@@ -118,8 +131,8 @@ class BIH
         template<typename RayCallback>
         void intersectRay(const Ray &r, RayCallback& intersectCallback, float &maxDist, bool stopAtFirst=false) const
         {
-            float intervalMin = -1.f;
-            float intervalMax = -1.f;
+            float intervalMin = -1.0f;
+            float intervalMax = -1.0f;
 
             Vector3 org = r.origin();
             Vector3 dir = r.direction();
@@ -128,7 +141,7 @@ class BIH
 
             for (int i=0; i<3; ++i)
             {
-                invDir[i] = 1.f / dir[i];
+                invDir[i] = 1.0f / dir[i];
                 if (G3D::fuzzyNe(dir[i], 0.0f))
                 {
                     float t1 = (bounds.low()[i]  - org[i]) * invDir[i];
@@ -201,6 +214,7 @@ class BIH
                             if (tf < intervalMin)
                             {
                                 intervalMin = (tb >= intervalMin) ? tb : intervalMin;
+                                limitDigits(intervalMin, 5);
                                 continue;
                             }
                             node = offset + offsetFront3[axis]; // front
@@ -208,6 +222,7 @@ class BIH
                             if (tb > intervalMax)
                             {
                                 intervalMax = (tf <= intervalMax) ? tf : intervalMax;
+                                limitDigits(intervalMax, 5);
                                 continue;
                             }
                             // ray passes through both nodes
@@ -216,8 +231,10 @@ class BIH
                             stack[stackPos].tnear = (tb >= intervalMin) ? tb : intervalMin;
                             stack[stackPos].tfar = intervalMax;
                             stackPos++;
+
                             // update ray interval for front node
                             intervalMax = (tf <= intervalMax) ? tf : intervalMax;
+                            limitDigits(intervalMax, 5);
                             continue;
                         }
                         else
@@ -250,6 +267,10 @@ class BIH
                         node = offset;
                         intervalMin = (tf >= intervalMin) ? tf : intervalMin;
                         intervalMax = (tb <= intervalMax) ? tb : intervalMax;
+
+                        limitDigits(intervalMin, 5);
+                        limitDigits(intervalMax, 5);
+
                         if (intervalMin > intervalMax)
                             break;
                         continue;
@@ -267,6 +288,7 @@ class BIH
                         continue;
                     node = stack[stackPos].node;
                     intervalMax = stack[stackPos].tfar;
+                    limitDigits(intervalMax, 5);
                     break;
                 } while (true);
             }
