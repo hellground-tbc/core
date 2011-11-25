@@ -198,7 +198,10 @@ void WardenWin::RequestData()
 //    sLog.outWarden("Request data");
 
     if (MemCheck.empty())
-        MemCheck.assign(sWardenDataStorage.GetMemCheckIds().begin(), sWardenDataStorage.GetMemCheckIds().end());
+    {
+        std::vector<uint32> tmpchecks = sWardenDataStorage.GetMemCheckIds();
+        MemCheck.assign(tmpchecks.begin(), tmpchecks.end());
+    }
 
     ServerTicks = WorldTimer::getMSTime();
 
