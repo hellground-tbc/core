@@ -1574,6 +1574,10 @@ void BattleGround::AddSpectatorNPC(float x, float y, float z, float o)
     Creature* pCreature = AddCreature(WORLD_TRIGGER, ARENA_NPC_SPECTATOR, 0, x, y, z, o);
     if (!pCreature)
         sLog.outError("Can't create Arena Spectator!");
+
+    pCreature->SetLevitate(true);
+    pCreature->SetReactState(REACT_PASSIVE);
+    pCreature->SetVisibility(VISIBILITY_OFF);
 }
 
 void BattleGround::SendMessageToAll(char const* text)

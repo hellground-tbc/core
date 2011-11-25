@@ -60,6 +60,8 @@ void BattleGroundNA::Update(uint32 diff)
             for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_4; i++)
                 SpawnBGObject(i, RESPAWN_IMMEDIATELY);
 
+            AddSpectatorNPC(4055.74f, 2921.20f, 39.54f, 0.0f);
+
             SetStartDelayTime(START_DELAY1);
             SendMessageToAll(LANG_ARENA_ONE_MINUTE);
         }
