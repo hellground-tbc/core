@@ -57,8 +57,7 @@ MapManager::~MapManager()
     Map::DeleteStateMachine();
 }
 
-void
-MapManager::Initialize()
+void MapManager::Initialize()
 {
     Map::InitStateMachine();
 
@@ -75,8 +74,11 @@ MapManager::Initialize()
 
     int num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
     // Start mtmaps if needed.
-    if (num_threads > 0 && m_updater.activate(num_threads) == -1)
+    if (m_updater.activate(num_threads) == -1)
+    {
+        sLog.outError("MapUpdater cannot be activated !!!!!");
         abort();
+    }
 }
 
 void MapManager::InitializeVisibilityDistanceInfo()
@@ -253,8 +255,7 @@ void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
     }
 }
 
-void
-MapManager::Update(uint32 diff)
+void MapManager::Update(uint32 diff)
 {
     i_timer.Update(diff);
     if (!i_timer.Passed())
@@ -263,14 +264,23 @@ MapManager::Update(uint32 diff)
     sWorld.RecordTimeDiff(NULL);
     for (MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
     {
-        if (m_updater.activated())
-            m_updater.schedule_update(*iter->second, i_timer.GetCurrent());
-        else
-            iter->second->Update(i_timer.GetCurrent());
+        m_updater.schedule_update(*iter->second, i_timer.GetCurrent());
+
+        // update the instanced maps
+        MapInstanced::InstancedMaps & m_InstancedMaps = ((MapInstanced*)iter->second)->GetInstancedMaps();
+        for (MapInstanced::InstancedMaps::iterator iter2 = m_InstancedMaps.begin(); iter2 != m_InstancedMaps.end();)
+        {
+            if (iter2->second->CanUnload(i_timer.GetCurrent()))
+                ((MapInstanced*)iter->second)->DestroyInstance(iter2);
+            else
+            {
+                m_updater.schedule_update(*iter2->second, uint32(i_timer.GetCurrent()));
+                ++iter2;
+            }
+        }
     }
 
-    if (m_updater.activated())
-        m_updater.wait();
+    m_updater.wait();
 
     sWorld.RecordTimeDiff("UpdateMaps, hash_map size: %u", i_maps.size());
 
@@ -332,8 +342,7 @@ void MapManager::UnloadAll()
         delete temp;
     }
 
-    if (m_updater.activated())
-        m_updater.deactivate();
+    m_updater.deactivate();
 }
 
 void MapManager::InitMaxInstanceId()
@@ -375,4 +384,3 @@ uint32 MapManager::GetNumPlayersInInstances()
     }
     return ret;
 }
-

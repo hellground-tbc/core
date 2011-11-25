@@ -1123,6 +1123,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MIN_LOG_UPDATE] = sConfig.GetIntDefault("MinRecordUpdateTimeDiff", 10);
     m_configs[CONFIG_NUMTHREADS] = sConfig.GetIntDefault("MapUpdate.Threads",1);
 
+    if (m_configs[CONFIG_NUMTHREADS] < 1)
+        m_configs[CONFIG_NUMTHREADS] = 1;
+
     std::string forbiddenmaps = sConfig.GetStringDefault("ForbiddenMaps", "");
     char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
     forbiddenMaps[forbiddenmaps.length()] = 0;

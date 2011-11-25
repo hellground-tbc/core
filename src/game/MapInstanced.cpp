@@ -50,23 +50,6 @@ void MapInstanced::Update(const uint32& t)
 {
     // take care of loaded GridMaps (when unused, unload it!)
     Map::Update(t);
-
-    // update the instanced maps
-    InstancedMaps::iterator i = m_InstancedMaps.begin();
-
-    while (i != m_InstancedMaps.end())
-    {
-        if (i->second->CanUnload(t))
-        {
-            DestroyInstance(i);                             // iterator incremented
-        }
-        else
-        {
-            // update only here, because it may schedule some bad things before delete
-            i->second->Update(t);
-            ++i;
-        }
-    }
 }
 
 void MapInstanced::DelayedUpdate(const uint32 diff)
