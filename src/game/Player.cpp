@@ -515,6 +515,9 @@ void Player::CleanupsBeforeDelete()
             }
             setGMFollow(0);
         }
+
+        // just to be sure that we are removed from all outdoorpvp before we are deleted
+        sOutdoorPvPMgr.HandlePlayerLeave(this);
     }
 
     ClearLFG();
@@ -1983,9 +1986,9 @@ void Player::RemoveFromWorld()
         UnsummonAllTotems();
         RemoveMiniPet();
         RemoveGuardians();
-
-        sOutdoorPvPMgr.HandlePlayerLeaveZone(this, m_zoneUpdateId);
     }
+
+    sOutdoorPvPMgr.HandlePlayerLeave(this);
 
     for (int i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; i++)
     {
