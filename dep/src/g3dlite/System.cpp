@@ -27,7 +27,6 @@
 #include "G3D/Table.h"
 #include "G3D/GMutex.h"
 #include "G3D/units.h"
-#include "G3D/FileSystem.h"
 #include <time.h>
 
 #include <cstring>
@@ -81,8 +80,9 @@
 #endif
 
 // SIMM include
+#ifdef __SSE__
 #include <xmmintrin.h>
-
+#endif
 
 namespace G3D {
 
@@ -340,6 +340,40 @@ void getG3DVersion(std::string& s) {
     s = cstr;
 }
 
+#if 0 // TODO: delete
+struct Directory {
+    std::string          path;
+    Array<std::string>   contents;
+};
+
+static bool maybeAddDirectory(const std::string& newPath, Array<Directory>& directoryArray, bool recurse = true) {
+    if (fileExists(newPath)) {
+        Directory& d = directoryArray.next();
+        d.path = newPath;
+        getFiles(pathConcat(newPath, "*"), d.contents);
+        Array<std::string> dirs;
+        getDirs(pathConcat(newPath, "*"), dirs);
+        d.contents.append(dirs);
+
+        if (recurse) {
+            // Look for subdirectories
+            static const std::string subdirs[] = 
+            {"font", "gui", "SuperShader", "cubemap", "icon", "material", "image", "md2", "md3", "ifs", "3ds", "sky", ""};
+
+            for (int j = 0; j < dirs.size(); ++j) {
+                for (int i = 0; ! subdirs[i].empty(); ++i) {
+                    if (dirs[j] == subdirs[i]) {
+                        maybeAddDirectory(pathConcat(newPath, dirs[j]), directoryArray, false);
+                    }
+                }
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+#endif
 
 std::string System::findDataFile
 (const std::string&  full,
@@ -351,14 +385,14 @@ std::string System::findDataFile
 
     // First check if the file exists as requested.  This will go
     // through the FileSystemCache, so most calls do not touch disk.
-    if (FileSystem::exists(full)) {
+    if (fileExists(full)) {
         return full;
     }
 
     // Now check where we previously found this file.
     std::string* last = lastFound.getPointer(full);
     if (last != NULL) {
-        if (FileSystem::exists(*last)) {
+        if (fileExists(*last)) {
             // Even if cwd has changed the file is still present.
             // We won't notice if it has been deleted, however.
             return *last;
@@ -371,33 +405,20 @@ std::string System::findDataFile
     // Places to look
     static Array<std::string> directoryArray;
 
-    std::string initialAppDataDir(instance().m_appDataDir);
-    const char* g3dPath = getenv("G3DDATA");
-
     if (directoryArray.size() == 0) {
         // Initialize the directory array
         RealTime t0 = System::time();
 
         Array<std::string> baseDirArray;
+
+        std::string initialAppDataDir(instance().m_appDataDir);
         
         baseDirArray.append("");
         if (! initialAppDataDir.empty()) {
             baseDirArray.append(initialAppDataDir);
         }
 
-#       ifdef G3D_WIN32
-        if (g3dPath == NULL) {
-            // If running the demos under visual studio from the G3D.sln file,
-            // this will locate the data directory.
-            const char* paths[] = {"../data-files/", "../../data-files/", "../../../data-files/", NULL};
-            for (int i = 0; paths[i]; ++i) {
-                if (FileSystem::exists(pathConcat(paths[i], "G3D-DATA-README.TXT"))) {
-                    g3dPath = paths[i];
-                    break;
-                }
-            }
-        }
-#       endif
+        const char* g3dPath = getenv("G3DDATA");
 
         if (g3dPath && (initialAppDataDir != g3dPath)) {
             baseDirArray.append(g3dPath);
@@ -407,11 +428,11 @@ std::string System::findDataFile
             {"font", "gui", "SuperShader", "cubemap", "icon", "material", "image", "md2", "md3", "ifs", "3ds", "sky", ""};
         for (int j = 0; j < baseDirArray.size(); ++j) {
             std::string d = baseDirArray[j];
-            if ((d == "") || FileSystem::exists(d)) {
+            if (fileExists(d)) {
                 directoryArray.append(d);
                 for (int i = 0; ! subdirs[i].empty(); ++i) {
                     const std::string& p = pathConcat(d, subdirs[i]);
-                    if (FileSystem::exists(p)) {
+                    if (fileExists(p)) {
                         directoryArray.append(p);
                     }
                 }
@@ -423,7 +444,7 @@ std::string System::findDataFile
 
     for (int i = 0; i < directoryArray.size(); ++i) {
         const std::string& p = pathConcat(directoryArray[i], full);
-        if (FileSystem::exists(p)) {
+        if (fileExists(p)) {
             lastFound.set(full, p);
             return p;
         }
@@ -433,29 +454,9 @@ std::string System::findDataFile
         // Generate an error message
         std::string locations;
         for (int i = 0; i < directoryArray.size(); ++i) {
-            locations += "\'" + pathConcat(directoryArray[i], full) + "'\n";
+            locations += pathConcat(directoryArray[i], full) + "\n";
         }
-
-        std::string msg = "Could not find '" + full + "'.\n\n";
-        msg += "cwd = \'" + FileSystem::currentDirectory() + "\'\n";
-        if (g3dPath) {
-            msg += "G3DDATA = ";
-            if (! FileSystem::exists(g3dPath)) {
-                msg += "(illegal path!) ";
-            }
-            msg += std::string(g3dPath) + "\'\n";
-        } else {
-            msg += "(G3DDATA environment variable is undefined)\n";
-        }
-        msg += "GApp::Settings.dataDir = ";
-        if (! FileSystem::exists(initialAppDataDir)) {
-            msg += "(illegal path!) ";
-        }
-        msg += std::string(initialAppDataDir) + "\'\n";
-
-        msg += "\nLocations searched:\n" + locations;
-
-        alwaysAssertM(false, msg);
+        alwaysAssertM(false, "Could not find '" + full + "' in:\n" + locations);
     }
 
     // Not found
@@ -473,23 +474,19 @@ std::string demoFindData(bool errorIfNotFound) {
     if (g3dPath) {
         return g3dPath;
 #   ifdef G3D_WIN32
-    } else if (FileSystem::exists("../data")) {
+    } else if (fileExists("../data")) {
         // G3D install on Windows
         return "../data";
-    } else if (FileSystem::exists("../data-files")) {
+    } else if (fileExists("../data-files")) {
         // G3D source on Windows
         return "../data-files";
-    } else if (FileSystem::exists("c:/libraries/G3D/data")) {
-        return "c:/libraries/G3D/data";
 #   else
-    } else if (FileSystem::exists("../../../../data")) {
+    } else if (fileExists("../../../../data")) {
         // G3D install on Unix
         return "../../../../data";
-    } else if (FileSystem::exists("../../../../data-files")) {
+    } else if (fileExists("../../../../data-files")) {
         // G3D source on Unix
         return "../../../../data-files";
-    } else if (FileSystem::exists("/usr/local/G3D/data")) {
-        return "/usr/local/G3D/data";
 #   endif
     } else {
         return "";
@@ -563,7 +560,7 @@ void System::getStandardProcessorExtensions() {
 #endif
 }
 
-#if defined(G3D_WIN32)
+#if defined(G3D_WIN32) && !defined(G3D_64BIT)
     #pragma message("Port System::memcpy SIMD to all platforms")
 /** Michael Herf's fast memcpy */
 void memcpyMMX(void* dst, const void* src, int nbytes) {
@@ -614,7 +611,7 @@ void memcpyMMX(void* dst, const void* src, int nbytes) {
 #endif
 
 void System::memcpy(void* dst, const void* src, size_t numBytes) {
-#if defined(G3D_WIN32)
+#if defined(G3D_WIN32) && !defined(G3D_64BIT)
     memcpyMMX(dst, src, numBytes);
 #else
     ::memcpy(dst, src, numBytes);
@@ -624,7 +621,7 @@ void System::memcpy(void* dst, const void* src, size_t numBytes) {
 
 /** Michael Herf's fastest memset. n32 must be filled with the same
     character repeated. */
-#if defined(G3D_WIN32)
+#if defined(G3D_WIN32) && !defined(G3D_64BIT)
     #pragma message("Port System::memfill SIMD to all platforms")
 
 // On x86 processors, use MMX
@@ -663,7 +660,7 @@ void memfill(void *dst, int n32, unsigned long i) {
 
 
 void System::memset(void* dst, uint8 value, size_t numBytes) {
-#if defined(G3D_WIN32)
+#if defined(G3D_WIN32) && !defined(G3D_64BIT)
     uint32 v = value;
     v = v + (v << 8) + (v << 16) + (v << 24); 
     G3D::memfill(dst, v, numBytes);
@@ -919,12 +916,9 @@ RealTime System::time() {
 
 ////////////////////////////////////////////////////////////////
 
-
-#define REALPTR_TO_USERPTR(x)   ((uint8*)(x) + sizeof(uint32))
-#define USERPTR_TO_REALPTR(x)   ((uint8*)(x) - sizeof(uint32))
-#define USERSIZE_TO_REALSIZE(x)       ((x) + sizeof(uint32))
-#define REALSIZE_FROM_USERPTR(u) (*(uint32*)USERPTR_TO_REALPTR(ptr) + sizeof(uint32))
-#define USERSIZE_FROM_USERPTR(u) (*(uint32*)USERPTR_TO_REALPTR(ptr))
+#define REALPTR_TO_USERPTR(x)   ((uint8*)(x) + sizeof (void *))
+#define USERPTR_TO_REALPTR(x)   ((uint8*)(x) - sizeof (void *))
+#define REALBLOCK_SIZE(x)       ((x) + sizeof (void *))
 
 class BufferPool {
 public:
@@ -949,19 +943,13 @@ public:
 
 private:
 
-    /** Pointer given to the program.  Unless in the tiny heap, the user size of the block is stored right in front of the pointer as a uint32.*/
-    typedef void* UserPtr;
-
-    /** Actual block allocated on the heap */
-    typedef void* RealPtr;
-
     class MemBlock {
     public:
-        UserPtr     ptr;
-        size_t      bytes;
+        void*           ptr;
+        size_t          bytes;
 
         inline MemBlock() : ptr(NULL), bytes(0) {}
-        inline MemBlock(UserPtr p, size_t b) : ptr(p), bytes(b) {}
+        inline MemBlock(void* p, size_t b) : ptr(p), bytes(b) {}
     };
 
     MemBlock smallPool[maxSmallBuffers];
@@ -1018,13 +1006,13 @@ private:
     /** 
      Malloc out of the tiny heap. Returns NULL if allocation failed.
      */
-    inline UserPtr tinyMalloc(size_t bytes) {
+    inline void* tinyMalloc(size_t bytes) {
         // Note that we ignore the actual byte size
         // and create a constant size block.
         (void)bytes;
         assert(tinyBufferSize >= bytes);
 
-        UserPtr ptr = NULL;
+        void* ptr = NULL;
 
         if (tinyPoolSize > 0) {
             --tinyPoolSize;
@@ -1048,20 +1036,20 @@ private:
     }
 
     /** Returns true if this is a pointer into the tiny heap. */
-    bool inTinyHeap(UserPtr ptr) {
+    bool inTinyHeap(void* ptr) {
         return 
             (ptr >= tinyHeap) && 
             (ptr < (uint8*)tinyHeap + maxTinyBuffers * tinyBufferSize);
     }
 
-    void tinyFree(UserPtr ptr) {
+    void tinyFree(void* ptr) {
         assert(ptr);
         assert(tinyPoolSize < maxTinyBuffers);
  //           "Tried to free a tiny pool buffer when the tiny pool freelist is full.");
 
 #       ifdef G3D_DEBUG
             if (tinyPoolSize > 0) {
-                UserPtr prevOnHeap = tinyPool[tinyPoolSize - 1];
+                void* prevOnHeap = tinyPool[tinyPoolSize - 1];
                 assert(prevOnHeap != ptr); 
 //                    "System::malloc heap corruption detected: "
 //                    "the last two pointers on the freelist are identical (during tinyFree).");
@@ -1078,8 +1066,7 @@ private:
 
     void flushPool(MemBlock* pool, int& poolSize) {
         for (int i = 0; i < poolSize; ++i) {
-            bytesAllocated -= USERSIZE_TO_REALSIZE(pool[i].bytes);
-            ::free(USERPTR_TO_REALPTR(pool[i].ptr));
+            ::free(pool[i].ptr);
             pool[i].ptr = NULL;
             pool[i].bytes = 0;
         }
@@ -1087,23 +1074,24 @@ private:
     }
 
 
-    /** Allocate out of a specific pool.  Return NULL if no suitable 
-        memory was found. */
-    UserPtr malloc(MemBlock* pool, int& poolSize, size_t bytes) {
+    /**  Allocate out of a specific pool->  Return NULL if no suitable 
+         memory was found. 
+    
+         */
+    void* malloc(MemBlock* pool, int& poolSize, size_t bytes) {
 
         // OPT: find the smallest block that satisfies the request.
 
-        // See if there's something we can use in the buffer pool.
+        // See if there's something we can use in the buffer pool->
         // Search backwards since usually we'll re-use the last one.
         for (int i = (int)poolSize - 1; i >= 0; --i) {
             if (pool[i].bytes >= bytes) {
-                // We found a suitable entry in the pool.
+                // We found a suitable entry in the pool->
 
                 // No need to offset the pointer; it is already offset
-                UserPtr ptr = pool[i].ptr;
+                void* ptr = pool[i].ptr;
 
-                // Remove this element from the pool, replacing it with
-                // the one from the end (same as Array::fastRemove)
+                // Remove this element from the pool
                 --poolSize;
                 pool[i] = pool[poolSize];
 
@@ -1167,8 +1155,6 @@ public:
 
     ~BufferPool() {
         ::free(tinyHeap);
-        flushPool(smallPool, smallPoolSize);
-        flushPool(medPool, medPoolSize);
 #if 0 //-------------------------------- old mutex
 #       ifdef G3D_WIN32
             DeleteCriticalSection(&mutex);
@@ -1179,7 +1165,7 @@ public:
     }
 
     
-    UserPtr realloc(UserPtr ptr, size_t bytes) {
+    void* realloc(void* ptr, size_t bytes) {
         if (ptr == NULL) {
             return malloc(bytes);
         }
@@ -1191,7 +1177,7 @@ public:
             } else {
                 // Free the old pointer and malloc
                 
-                UserPtr newPtr = malloc(bytes);
+                void* newPtr = malloc(bytes);
                 System::memcpy(newPtr, ptr, tinyBufferSize);
                 tinyFree(ptr);
                 return newPtr;
@@ -1201,28 +1187,28 @@ public:
             // In one of our heaps.
 
             // See how big the block really was
-            size_t userSize = USERSIZE_FROM_USERPTR(ptr);
-            if (bytes <= userSize) {
+            size_t realSize = *(uint32*)USERPTR_TO_REALPTR(ptr);
+            if (bytes <= realSize) {
                 // The old block was big enough.
                 return ptr;
             }
 
-            // Need to reallocate and move
-            UserPtr newPtr = malloc(bytes);
-            System::memcpy(newPtr, ptr, userSize);
+            // Need to reallocate
+            void* newPtr = malloc(bytes);
+            System::memcpy(newPtr, ptr, realSize);
             free(ptr);
             return newPtr;
         }
     }
 
 
-    UserPtr malloc(size_t bytes) {
+    void* malloc(size_t bytes) {
         lock();
         ++totalMallocs;
 
         if (bytes <= tinyBufferSize) {
 
-            UserPtr ptr = tinyMalloc(bytes);
+            void* ptr = tinyMalloc(bytes);
 
             if (ptr) {
                 ++mallocsFromTinyPool;
@@ -1236,7 +1222,7 @@ public:
         // through to a small buffer
         if (bytes <= smallBufferSize) {
             
-            UserPtr ptr = malloc(smallPool, smallPoolSize, bytes);
+            void* ptr = malloc(smallPool, smallPoolSize, bytes);
 
             if (ptr) {
                 ++mallocsFromSmallPool;
@@ -1249,7 +1235,7 @@ public:
             // through into a medium allocation because that would
             // waste the medium buffer's resources.
 
-            UserPtr ptr = malloc(medPool, medPoolSize, bytes);
+            void* ptr = malloc(medPool, medPoolSize, bytes);
 
             if (ptr) {
                 ++mallocsFromMedPool;
@@ -1259,37 +1245,37 @@ public:
             }
         }
 
-        bytesAllocated += USERSIZE_TO_REALSIZE(bytes);
+        bytesAllocated += REALBLOCK_SIZE(bytes);
         unlock();
 
         // Heap allocate
 
         // Allocate 4 extra bytes for our size header (unfortunate,
         // since malloc already added its own header).
-        RealPtr ptr = ::malloc(USERSIZE_TO_REALSIZE(bytes));
+        void* ptr = ::malloc(REALBLOCK_SIZE(bytes));
 
         if (ptr == NULL) {
             // Flush memory pools to try and recover space
             flushPool(smallPool, smallPoolSize);
             flushPool(medPool, medPoolSize);
-            ptr = ::malloc(USERSIZE_TO_REALSIZE(bytes));
+            ptr = ::malloc(REALBLOCK_SIZE(bytes));
         }
 
         if (ptr == NULL) {
             if ((System::outOfMemoryCallback() != NULL) &&
-                (System::outOfMemoryCallback()(USERSIZE_TO_REALSIZE(bytes), true) == true)) {
+                (System::outOfMemoryCallback()(REALBLOCK_SIZE(bytes), true) == true)) {
                 // Re-attempt the malloc
-                ptr = ::malloc(USERSIZE_TO_REALSIZE(bytes));
+                ptr = ::malloc(REALBLOCK_SIZE(bytes));
             }
         }
 
         if (ptr == NULL) {
             if (System::outOfMemoryCallback() != NULL) {
                 // Notify the application
-                System::outOfMemoryCallback()(USERSIZE_TO_REALSIZE(bytes), false);
+                System::outOfMemoryCallback()(REALBLOCK_SIZE(bytes), false);
             }
 #           ifdef G3D_DEBUG
-            debugPrintf("::malloc(%d) returned NULL\n", (int)USERSIZE_TO_REALSIZE(bytes));
+            debugPrintf("::malloc(%d) returned NULL\n", (int)REALBLOCK_SIZE(bytes));
 #           endif
             debugAssertM(ptr != NULL, 
                          "::malloc returned NULL. Either the "
@@ -1304,7 +1290,7 @@ public:
     }
 
 
-    void free(UserPtr ptr) {
+    void free(void* ptr) {
         if (ptr == NULL) {
             // Free does nothing on null pointers
             return;
@@ -1319,7 +1305,7 @@ public:
             return;
         }
 
-        uint32 bytes = USERSIZE_FROM_USERPTR(ptr);
+        uint32 bytes = *(uint32*)USERPTR_TO_REALPTR(ptr);
 
         lock();
         if (bytes <= smallBufferSize) {
@@ -1337,7 +1323,7 @@ public:
                 return;
             }
         }
-        bytesAllocated -= USERSIZE_TO_REALSIZE(bytes);
+        bytesAllocated -= REALBLOCK_SIZE(bytes);
         unlock();
 
         // Free; the buffer pools are full or this is too big to store.
@@ -1691,6 +1677,7 @@ std::string System::currentDateString() {
 
 // VC on Intel
 void System::cpuid(CPUIDFunction func, uint32& areg, uint32& breg, uint32& creg, uint32& dreg) {
+#if !defined(G3D_64BIT)
     // Can't copy from assembler direct to a function argument (which is on the stack) in VC.
     uint32 a,b,c,d;
 
@@ -1708,6 +1695,14 @@ void System::cpuid(CPUIDFunction func, uint32& areg, uint32& breg, uint32& creg,
     breg = b; 
     creg = c;
     dreg = d;
+#else
+    int CPUInfo[4];
+    __cpuid(CPUInfo, func);
+    memcpy(&areg, &CPUInfo[0], 4);
+    memcpy(&breg, &CPUInfo[1], 4);
+    memcpy(&creg, &CPUInfo[2], 4);
+    memcpy(&dreg, &CPUInfo[3], 4);
+#endif
 }
 
 #elif defined(G3D_OSX) && ! defined(G3D_OSX_INTEL)

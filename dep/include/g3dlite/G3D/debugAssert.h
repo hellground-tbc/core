@@ -40,6 +40,7 @@
 #if SOMEONE_MADE_THIS_USEFUL
     // Needed so we can define a global display
     // pointer for debugAssert.
+#if SOMEONE_MADE_THIS_USEFUL
     #include <X11/Xlib.h>
     #include <X11/Xutil.h>
     #include <X11/Xatom.h>
