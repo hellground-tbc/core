@@ -616,6 +616,9 @@ void Creature::RegenerateHealth()
     if (curValue >= maxValue)
         return;
 
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NOT_REGEN_HEALTH)
+        return;
+
     uint32 addvalue = 0;
 
     // Not only pet, but any controlled creature
