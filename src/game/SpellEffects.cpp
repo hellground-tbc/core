@@ -333,6 +333,19 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     }
                 }
 
+                // Self-damage
+                if (m_spellInfo->Id == 44998)
+                {
+                    if (100*unitTarget->GetHealth()/unitTarget->GetMaxHealth() <= 50)
+                    {
+                        damage = 0;
+                        unitTarget->RemoveAurasDueToSpell(44986);   //triggering self damage
+                        unitTarget->CastSpell(unitTarget, 44994, true);   // cast self-repair
+                    }
+                    else
+                        damage = 350;
+                }
+
                 // Meteor like spells (divided damage to targets)
                 if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_SHARE_DAMAGE)
                 {
@@ -2617,6 +2630,11 @@ void Spell::EffectTriggerSpell(uint32 i)
         // Activate Crystal Ward
         case 44969:
             unitTarget = m_caster;
+            break;
+        // Self Repair
+        case 44994:
+            if(100*unitTarget->GetHealth()/unitTarget->GetMaxHealth() > 70)
+                return;
             break;
     }
 
@@ -5451,6 +5469,41 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (unitTarget->GetTypeId() == TYPEID_UNIT)
                 ((Creature*)unitTarget)->AI()->DoAction();
 
+            break;
+        }
+        // Capacitor Overload visual
+        case 45014:
+        {
+            for(uint8 i = 0; i < 8; ++i)
+            {
+                m_caster->CastSpell(m_caster, damage, true);
+            }
+            break;
+        }
+        // Electrical Overload & visual
+        case 45336:
+        {
+            uint8 effect = urand(0, 1);
+            // visual
+            for(uint8 i = 0; i < 8; ++i)
+            {
+                m_caster->CastSpell(m_caster, 44993, true);
+            }
+            // effect
+            switch(effect)
+            {
+                // self stun
+                case 0:
+                    m_caster->CastSpell(m_caster, 35856, true);
+                    break;
+                // cast Broken Capacitor
+                case 1:
+                {
+                    int32 selfdamage = 350;
+                    m_caster->CastCustomSpell(m_caster, 44986, 0, &selfdamage, 0, true);
+                    break;
+                }
+            }
             break;
         }
         // Fog of Corruption (Felmyst)

@@ -2341,6 +2341,17 @@ void Aura::TriggerSpell()
                 target->SendMessageToSet(&data,false);
                 break;
             }
+            // Self Repair
+            case 44994:
+                if(caster->GetTypeId() != TYPEID_UNIT)
+                    return;
+
+                if(100*caster->GetHealth()/caster->GetMaxHealth() >= 92)
+                {
+                    caster->SetHealth(0.95*caster->GetMaxHealth());
+                    caster->RemoveAurasDueToSpell(44994);
+                }
+                break;
         }
     }
     if (!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
