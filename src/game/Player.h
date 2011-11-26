@@ -2151,6 +2151,9 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         PlayerAI *AI() const{ return (PlayerAI*)i_AI; }
 
+        uint32 GetCachedZone() const { return m_cachedZoneId; }
+        uint32 GetCachedArea() const { return m_cachedAreaId; }
+
     protected:
 
         /*********************************************************/
