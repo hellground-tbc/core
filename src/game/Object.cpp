@@ -1727,7 +1727,7 @@ Map* WorldObject::_findMap()
 
 Map const* WorldObject::GetBaseMap() const
 {
-    return sMapMgr.CreateBaseMap(GetMapId());
+    return GetMap()->GetParent();
 }
 
 void WorldObject::AddObjectToRemoveList()

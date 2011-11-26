@@ -169,7 +169,8 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 
     sLog.outDebug("MapInstanced::CreateInstance: %smap instance %d for %d created with difficulty %s", save?"":"new ", InstanceId, GetId(), difficulty?"heroic":"normal");
 
-    InstanceMap *map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty);
+    Map* parentMap = sMapMgr.CreateBaseMap(GetId());
+    InstanceMap *map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, parentMap);
     assert(map->IsDungeon());
 
     bool load_data = save != NULL;
@@ -186,7 +187,9 @@ BattleGroundMap* MapInstanced::CreateBattleGround(uint32 InstanceId, BattleGroun
 
     sLog.outDebug("MapInstanced::CreateBattleGround: map bg %d for %d created.", InstanceId, GetId());
 
-    BattleGroundMap *map = new BattleGroundMap(GetId(), GetGridExpiry(), InstanceId, bg);
+    Map* parentMap = sMapMgr.CreateBaseMap(GetId());
+
+    BattleGroundMap *map = new BattleGroundMap(GetId(), GetGridExpiry(), InstanceId, bg, parentMap);
     assert(map->IsBattleGroundOrArena());
 
     m_InstancedMaps[InstanceId] = map;
