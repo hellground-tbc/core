@@ -4216,17 +4216,33 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
         switch (GetId())
         {
             case 28730:                                 // Arcane Torrent (Mana)
+            case 33390:                                 // Arcane Torrent (mana Wretched Devourer)
             {
                 Unit *caster = GetCaster();
                 if (!caster)
                     return;
 
-                Aura * dummy = caster->GetDummyAura(28734);
+                uint32 ManaTapId = 0;
+
+                switch(GetId())
+                {
+                    case 28730:
+                        ManaTapId = 28734;
+                        break;
+                    case 33390:
+                        ManaTapId = 33483;
+                        break;
+                    default:
+                        break;
+                }
+
+                Aura * dummy = NULL;
+                dummy = caster->GetDummyAura(ManaTapId);
                 if (dummy)
                 {
                     int32 bp = (5 + caster->getLevel()) * dummy->GetStackAmount();
                     caster->CastCustomSpell(caster, 28733, &bp, NULL, NULL, true);
-                    caster->RemoveAurasDueToSpell(28734);
+                    caster->RemoveAurasDueToSpell(ManaTapId);
                 }
                 return;
             }
