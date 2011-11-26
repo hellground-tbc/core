@@ -576,6 +576,9 @@ void Creature::RegenerateMana()
     if (curValue >= maxValue)
         return;
 
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NOT_REGEN_MANA)
+        return;
+
     uint32 addvalue = 0;
 
     // Combat and any controlled creature
@@ -604,6 +607,9 @@ void Creature::RegenerateHealth()
     uint32 maxValue = GetMaxHealth();
 
     if (curValue >= maxValue)
+        return;
+
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NOT_REGEN_HEALTH)
         return;
 
     uint32 addvalue = 0;

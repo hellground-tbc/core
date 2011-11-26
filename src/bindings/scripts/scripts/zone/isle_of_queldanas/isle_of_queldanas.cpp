@@ -110,6 +110,251 @@ bool GossipSelect_npc_ayren_cloudbreaker(Player *player, Creature *_Creature, ui
     return true;
 }
 
+const char* WretchedQuotes[3] =
+{
+    "It's not meant for you! Get away from here!",
+    "Mine! You shall not take this place!",
+    "The rift's power is ours!"
+};
+
+/*######
+## npc_wretched_devourer
+######*/
+
+#define SPELL_ARCANE_TORRENT        33390
+#define SPELL_MANA_TAP              33483
+#define SPELL_NETHER_SHOCK          35334
+// do not regenerates mana OOC - creature extra flag (dec value 16777216)
+
+struct TRINITY_DLL_DECL npc_wretched_devourerAI : public ScriptedAI
+{
+    npc_wretched_devourerAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 ArcaneTorrent;
+    uint32 ManaTap;
+    uint32 NetherShock;
+
+    void Reset()
+    {
+        me->SetPower(POWER_MANA, 0);
+        ArcaneTorrent = RAND(urand(1500, 4500),urand(5000, 10000));
+        ManaTap = urand(3000, 6000);
+        NetherShock = urand(4000, 8000);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(roll_chance_f(20))
+            DoYell(WretchedQuotes[urand(0,2)], LANG_THALASSIAN, who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        if(ArcaneTorrent < diff)
+        {
+            AddSpellToCast(SPELL_ARCANE_TORRENT, CAST_SELF);
+            ArcaneTorrent = RAND(urand(1500, 4500),urand(6000, 11000));
+        }
+        else
+            ArcaneTorrent -= diff;
+        if(ManaTap < diff)
+        {
+            AddSpellToCast(SPELL_MANA_TAP, CAST_TANK);
+            ManaTap = urand(15000, 24000);
+        }
+        else
+            ManaTap -= diff;
+        if(NetherShock < diff)
+        {
+            AddSpellToCast(SPELL_NETHER_SHOCK, CAST_TANK);
+            NetherShock = urand(4000, 8000);
+        }
+        else
+            NetherShock -= diff;
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_wretched_devourer(Creature* _Creature)
+{
+    return new npc_wretched_devourerAI(_Creature);
+}
+
+/*######
+## npc_wretched_fiend
+######*/
+
+#define SPELL_SUNDER_ARMOR          11971
+#define SPELL_BITTER_WITHDRAWAL     29098
+
+#define SPELL_SLEEPING_SLEEP        42648
+// do not regenerates mana OOC - creature extra flag (dec value 16777216)
+
+struct TRINITY_DLL_DECL npc_wretched_fiendAI : public ScriptedAI
+{
+    npc_wretched_fiendAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 SunderArmor;
+    uint32 BitterWithdrawal;
+
+    void Reset()
+    {
+        me->SetPower(POWER_MANA, 0);
+        SunderArmor = urand(6000, 10000);
+        BitterWithdrawal = 1000;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(roll_chance_f(20))
+            DoYell(WretchedQuotes[urand(0,2)], LANG_THALASSIAN, who);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        if(SunderArmor < diff)
+        {
+            AddSpellToCast(SPELL_SUNDER_ARMOR, CAST_TANK);
+            SunderArmor = urand(12000, 16000);
+        }
+        else
+            SunderArmor -= diff;
+        if(HealthBelowPct(85))
+        {
+            if(BitterWithdrawal < diff)
+            {
+                AddSpellToCast(SPELL_BITTER_WITHDRAWAL, CAST_TANK);
+                BitterWithdrawal = urand(10000, 15000);
+            }
+            else
+                BitterWithdrawal -= diff;
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_wretched_fiend(Creature* _Creature)
+{
+    return new npc_wretched_fiendAI(_Creature);
+}
+
+/*######
+## npc_erratic_sentry
+######*/
+#define YELL_CORE_OVERLOAD    "Core overload detected. System malfunction detected..."
+
+#define CAPACITATOR_OVERLOAD        45014
+#define SPELL_SUPPRESSION           35892
+#define SPELL_ELECTRICAL_OVERLOAD   45336
+#define SPELL_CRYSTAL_STRIKE        33688
+// do not regenerates health OOC, but self repairs when at or below 50%- creature extra flag (dec value 33554432)
+
+struct TRINITY_DLL_DECL npc_erratic_sentryAI : public ScriptedAI
+{
+    npc_erratic_sentryAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 CapacitatorOverload;
+    uint32 Suppression;
+    uint32 ElectricalOverload;
+    uint32 CrystalStrike;
+
+    void Reset()
+    {
+        CapacitatorOverload = 5000;
+        Suppression = urand(3000, 10000);
+        ElectricalOverload = 1000;
+        CrystalStrike = urand(2000, 14000);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!me->isInCombat())
+        {
+            if(HealthBelowPct(90))
+            {
+                if(!me->HasAura(44994))
+                {
+                    if(CapacitatorOverload < diff)
+                    {
+                        int32 dmg = 1000;
+                        me->CastCustomSpell(me, CAPACITATOR_OVERLOAD, 0, &dmg, 0, true);
+                        CapacitatorOverload = 500;
+                    }
+                    else
+                        CapacitatorOverload -= diff;
+                }
+            }
+            else
+            {
+                if(CapacitatorOverload < diff)
+                {
+                    if(roll_chance_i(2))
+                    {
+                        int32 dmg = 1714;
+                        me->CastCustomSpell(me, CAPACITATOR_OVERLOAD, 0, 0, 0, true);
+                    }
+                    CapacitatorOverload = HealthBelowPct(98)?0:5000;
+                }
+                else
+                    CapacitatorOverload -= diff;
+            }
+        }
+
+        if(!UpdateVictim())
+            return;
+
+        if(Suppression < diff)
+        {
+            AddSpellToCast(SPELL_SUPPRESSION, CAST_NULL);
+            Suppression = urand(15000, 25000);
+        }
+        else
+            Suppression -= diff;
+
+        if(CrystalStrike < diff)
+        {
+            AddSpellToCast(SPELL_CRYSTAL_STRIKE, CAST_TANK);
+            CrystalStrike = 14000;
+        }
+        else
+            CrystalStrike -= diff;
+
+        if(HealthBelowPct(80) && !HealthBelowPct(50))
+        {
+            if(ElectricalOverload < diff)
+            {
+                DoYell(YELL_CORE_OVERLOAD, 0, me->getVictim());
+                AddCustomSpellToCast(SPELL_ELECTRICAL_OVERLOAD, CAST_SELF, 176);
+                ElectricalOverload = 10000;
+            }
+            else
+                ElectricalOverload -= diff;
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_erratic_sentry(Creature* _Creature)
+{
+    return new npc_erratic_sentryAI(_Creature);
+}
+
+// yells for Converted Sentry to be used in future
+/*
+"Commence location defense."
+"Deployment successful. Trespassers will be neutralized."
+"Objective acquired. Initiating security routines."
+*/
+
 /*######
 ## npc_shattered_sun_bombardier
 ######*/
@@ -293,6 +538,21 @@ void AddSC_isle_of_queldanas()
     newscript->Name="npc_ayren_cloudbreaker";
     newscript->pGossipHello = &GossipHello_npc_ayren_cloudbreaker;
     newscript->pGossipSelect = &GossipSelect_npc_ayren_cloudbreaker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_wretched_devourer";
+    newscript->GetAI = &GetAI_npc_wretched_devourer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_wretched_fiend";
+    newscript->GetAI = &GetAI_npc_wretched_fiend;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_erratic_sentry";
+    newscript->GetAI = &GetAI_npc_erratic_sentry;
     newscript->RegisterSelf();
 
     newscript = new Script;
