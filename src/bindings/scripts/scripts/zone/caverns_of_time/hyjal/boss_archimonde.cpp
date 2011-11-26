@@ -92,7 +92,7 @@ struct mob_ancient_wispAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (CheckTimer < diff)
+        if(CheckTimer < diff)
         {
             if (Unit* pArchimonde = Unit::GetUnit((*me), pInstance->GetData64(DATA_ARCHIMONDE)))
             {
@@ -116,11 +116,10 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
         pInstance = c->GetInstanceData();
     }
 
-    InstanceData* pInstance;
+    InstanceData * pInstance;
 
     uint32 ChangeTargetTimer;
     uint32 SummonTimer;                                     // This timer will serve to check on Archionde
-
 
     void Reset()
     {
@@ -152,7 +151,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
             {
                 Position dest;
 
-                float angle = frand(0.0f, 3.0f);    //randomise angle, a bit less than M_PI
+                float angle = frand(0.0f, 3.0f); //randomise angle, a bit less than M_PI
 
                 float ArchiX = pArchimonde->GetPositionX();
                 float ArchiY = pArchimonde->GetPositionY();
@@ -160,9 +159,9 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
                 me->GetPosition(dest);
 
                 float diffX = dest.x - ArchiX;
-                float diffY = -dest.y + ArchiY;  // position Y is here below 0
+                float diffY = -dest.y + ArchiY; // position Y is here below 0
 
-                if (diffX > 0)   // make doomfire move away from actual boss position
+                if (diffX > 0) // make doomfire move away from actual boss position
                 {
                     if (diffY > 0)
                         angle = (angle > 3*M_PI/4) ? (2*M_PI - angle) : angle;
@@ -180,8 +179,9 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
                 (diffX > 0) ? dest.x += (40.0f * cos(angle)) : dest.x -= (40.0f * cos(angle));
                 (diffY > 0) ? dest.y += (40.0f * cos(angle)) : dest.y -= (40.0f * cos(angle));
 
-                me->GetValidPointInAngle(dest, 5.0f, angle, false);  //find point on the ground 5 yd from first destination location
+                me->GetValidPointInAngle(dest, 5.0f, angle, false);     //find point on the ground 5 yd from first destination location
                 me->GetMotionMaster()->MovePoint(0, dest.x, dest.y, dest.z);
+
                 ChangeTargetTimer = 7000;
             }
         }
@@ -287,7 +287,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!me->isInCombat() && me->IsWithinDistInMap(who, 50.0f) && me->IsHostileTo(who))
+        if (!me->isInCombat() && me->IsWithinDistInMap(who, 50) && me->IsHostileTo(who))
             me->AI()->AttackStart(who);
     }
 
@@ -321,7 +321,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         float BossDiffZ = (me->GetPositionZ() - me->GetMap()->GetHeight(me->GetPositionX(), me->GetPositionY(), MAX_HEIGHT, true));
 
-        if(BossDiffZ > 4 || BossDiffZ < -4) // do not use finger of death when walking above ground level
+        if (BossDiffZ > 4 || BossDiffZ < -4) // do not use finger of death when walking above ground level
             return false;
 
         return true;
@@ -339,10 +339,11 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             pDoomfire->setFaction(me->getFaction());
             pDoomfire->CastSpell(pDoomfire, SPELL_DOOMFIRE_SPAWN, true);
 
-            if (roll_chance_f(20.0f))  //10% chance on yell
+            if (roll_chance_f(20.0f)) //10% chance on yell
                 DoScriptText(RAND(SAY_DOOMFIRE1, SAY_DOOMFIRE2), me);
         }
     }
+
 
     void UpdateAI(const uint32 diff)
     {
@@ -424,14 +425,14 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             else
                 EnrageTimer -= diff;
 
-            if (CheckDistanceTimer < diff)
+            if(CheckDistanceTimer < diff)
             {
-                if (me->GetDistance2d(wLoc.coord_x, wLoc.coord_y) > 80.0)
+                if(me->GetDistance2d(wLoc.coord_x, wLoc.coord_y) > 80.0)
                 {
                     me->GetMotionMaster()->Clear(false);
                     me->GetMotionMaster()->MoveIdle();
                     Enraged = true;
-                    if (me->GetPositionX() < 5580.0f)    // if near to the tree, do say enrage yell
+                    if(me->GetPositionX() < 5580.0f)    // if near to the tree, do say enrage yell
                         DoScriptText(SAY_ENRAGE, me);
                 }
                 CheckDistanceTimer = 5000;
@@ -446,7 +447,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             {
                 me->GetMotionMaster()->Clear(false);
                 me->GetMotionMaster()->MoveIdle();
-
                 //all members of raid must get this buff
                 ForceSpellCast(me->getVictim(), SPELL_PROTECTION_OF_ELUNE, INTERRUPT_AND_CAST_INSTANTLY);
                 HasProtected = true;
@@ -490,7 +490,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         {
             if (!SoulChargeUnleash)
             {
-                if(me->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0))
+                if (me->HasAura(SPELL_SOUL_CHARGE_YELLOW, 0))
                 {
                     SoulChargeUnleash = true;
                     chargeSpell = SPELL_SOUL_CHARGE_YELLOW;
@@ -504,7 +504,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     unleashSpell = SPELL_UNLEASH_SOUL_RED;
                     SoulChargeUnleashTimer = rand()%5000+5000;
                 }
-                else if (me->HasAura(SPELL_SOUL_CHARGE_GREEN, 0))
+                else if(me->HasAura(SPELL_SOUL_CHARGE_GREEN, 0))
                 {
                     SoulChargeUnleash = true;
                     chargeSpell = SPELL_SOUL_CHARGE_GREEN;
@@ -581,7 +581,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         else
             FearTimer -= diff;
 
-        if(DoomfireTimer < diff)
+        if (DoomfireTimer < diff)
         {
             SummonDoomfire();
             DoomfireTimer = 9000+rand()%3000;

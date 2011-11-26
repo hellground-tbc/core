@@ -121,7 +121,7 @@ namespace Trinity
             if (u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isElite())
                 xp_gain *= 2;
 
-            return (uint32)(xp_gain*sWorld.getRate(RATE_XP_KILL));
+            return (uint32)(xp_gain*pl->GetXPRate(RATE_XP_KILL));
         }
 
         inline uint32 xp_Diff(uint32 lvl)

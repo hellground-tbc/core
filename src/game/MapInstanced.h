@@ -41,7 +41,13 @@ class TRINITY_DLL_DECL MapInstanced : public Map
         bool CanEnter(Player* player);
 
         Map* GetInstance(const WorldObject* obj);
-        Map* FindMap(uint32 InstanceId) { return _FindMap(InstanceId); }
+
+        // this will find instantiaded version of basemap !!
+        Map* FindInstancedMap(uint32 InstanceId)
+        {
+            InstancedMaps::iterator i = m_InstancedMaps.find(InstanceId);
+            return (i == m_InstancedMaps.end() ? NULL : i->second);
+        }
         void DestroyInstance(uint32 InstanceId);
         void DestroyInstance(InstancedMaps::iterator &itr);
 
@@ -68,14 +74,7 @@ class TRINITY_DLL_DECL MapInstanced : public Map
 
         InstancedMaps m_InstancedMaps;
 
-        Map* _FindMap(uint32 InstanceId)
-        {
-            InstancedMaps::iterator i = m_InstancedMaps.find(InstanceId);
-
-            return(i == m_InstancedMaps.end() ? NULL : i->second);
-        }
-
         uint16 GridMapReference[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
 };
-#endif
 
+#endif

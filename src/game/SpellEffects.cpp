@@ -1541,12 +1541,12 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    Creature* pCreature = ((Creature*)unitTarget);
+                    Creature* pCreature = (Creature*)unitTarget;
 
-                    pCreature->UpdateEntry(16992);  // change into dreadtusk
+                    pCreature->UpdateEntry(16992); // change into dreadtusk
                     pCreature->AIM_Initialize();
 
-                    if(pCreature->IsAIEnabled)
+                    if (pCreature->IsAIEnabled)
                         pCreature->AI()->AttackStart(m_caster);
 
                     return;
@@ -5102,7 +5102,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                     // Stormstrike AP Buff
                     if ((*citr)->GetModifier()->m_miscvalue == 5634)
                     {
-                        m_caster->CastSpell(m_caster, 38430, true, NULL, *citr);
+                        m_caster->CastSpell(m_caster,38430, true, NULL, *citr);
                         break;
                     }
                 }
@@ -7226,7 +7226,7 @@ void Spell::EffectCharge(uint32 /*i*/)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         ((Player *)m_caster)->m_AC_timer = 3000;
 
-    m_caster->GetMotionMaster()->MoveCharge(x, y, z +0.1f);
+    m_caster->GetMotionMaster()->MoveCharge(x, y, z + 0.1f);
 
     // not all charge effects used in negative spells
     if (!IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -7324,7 +7324,7 @@ void Spell::EffectSummonCritter(uint32 i)
     critter->InitPetCreateSpells();                         // e.g. disgusting oozeling has a create spell as critter...
     critter->SetMaxHealth(1);
     critter->SetHealth(1);
-    critter->SelectLevel(critter->GetCreatureInfo()); // some summoned creaters have different from 1 DB data for level/hp
+    critter->SelectLevel(critter->GetCreatureInfo());       // some summoned creaters have different from 1 DB data for level/hp
     critter->SetUInt32Value(UNIT_NPC_FLAGS, critter->GetCreatureInfo()->npcflag); // some mini-pets have quests
 
     // set timer for unsummon

@@ -1033,13 +1033,17 @@ bool Object::PrintIndexError(uint32 index, bool set) const
 
 WorldObject::WorldObject()
     : m_mapId(0), m_InstanceId(0),
-    m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f)
+    m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f),
+    mSemaphoreTeleport(false)
     , m_map(NULL), m_zoneScript(NULL)
     , m_isActive(false), IsTempWorldObject(false)
     , m_notifyflags(0), m_executed_notifies(0)
 {
+
     m_groupLootTimer    = 0;
     lootingGroupLeaderGUID = 0;
+
+    mSemaphoreTeleport  = false;
 }
 
 void WorldObject::SetWorldObject(bool on)
@@ -1097,11 +1101,23 @@ void WorldObject::_Create(uint32 guidlow, HighGuid guidhigh, uint32 mapid)
 
 uint32 WorldObject::GetZoneId() const
 {
+    if (!Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ))
+    {
+        sLog.outDebug("Unit::GetZoneId()(%f, %f, %f) .. bad coordinates!",m_positionX, m_positionY, m_positionZ);
+        return 0;
+    }
+
     return GetBaseMap()->GetZoneId(m_positionX, m_positionY, m_positionZ);
 }
 
 uint32 WorldObject::GetAreaId() const
 {
+    if (!Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ))
+    {
+        sLog.outDebug("Unit::GetAreaId()(%f, %f, %f) .. bad coordinates!",m_positionX, m_positionY, m_positionZ);
+        return 0;
+    }
+
     return GetBaseMap()->GetAreaId(m_positionX, m_positionY, m_positionZ);
 }
 
@@ -1360,7 +1376,6 @@ void WorldObject::GetRandomPoint(float x, float y, float z, float distance, floa
 
     // angle to face `obj` to `this`
     float angle = frand(0.0f, 2*M_PI);
-
     // random dist in range 0 - distance;
     float new_dist = frand(0.0f, distance);
 
@@ -1370,7 +1385,7 @@ void WorldObject::GetRandomPoint(float x, float y, float z, float distance, floa
 
     Trinity::NormalizeMapCoord(rand_x);
     Trinity::NormalizeMapCoord(rand_y);
-    UpdateGroundPositionZ(rand_x,rand_y,rand_z);            // update to LOS height if available
+    UpdateGroundPositionZ(rand_x, rand_y, rand_z);          // update to LOS height if available
 }
 
 // this will find point in LOS before collision occur
@@ -1401,7 +1416,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
 
     float step = dist / 10.0f;
 
-    for (int j = 0; j < 10; j++)
+    for (int j = 0; j < 10; ++j)
     {
         // do not allow too big z changes
         if (fabs(pos.z - dest.z) > 6)
@@ -1429,7 +1444,7 @@ void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
     float new_z = GetBaseMap()->GetHeight(x,y,z,true);
     if (new_z > INVALID_HEIGHT)
-        z = new_z+ 0.05f;                                   // just to be sure that we are not a few pixel under the surface
+        z = new_z + 0.05f;                                  // just to be sure that we are not a few pixel under the surface
 }
 
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
@@ -1712,7 +1727,7 @@ Map* WorldObject::_findMap()
 
 Map const* WorldObject::GetBaseMap() const
 {
-    return sMapMgr.CreateBaseMap(GetMapId());
+    return GetMap()->GetParent();
 }
 
 void WorldObject::AddObjectToRemoveList()

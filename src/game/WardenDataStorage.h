@@ -21,6 +21,7 @@
 
 #include <map>
 #include "Auth/BigNumber.h"
+#include "Policies/Singleton.h"
 
 struct WardenData
 {
@@ -36,27 +37,31 @@ struct WardenDataResult
     BigNumber res;                                          // MEM_CHECK
 };
 
-class CWardenDataStorage
+class WardenDataStorage
 {
-    public:
-        CWardenDataStorage();
-        ~CWardenDataStorage();
-        uint32 InternalDataID;
-        std::vector<uint32> MemCheckIds;
+public:
+    WardenDataStorage();
+    ~WardenDataStorage();
 
-    private:
-        std::map<uint32, WardenData*> _data_map;
-        std::map<uint32, WardenDataResult*> _result_map;
+private:
+    std::map<uint32, WardenData*> data_map;
+    std::map<uint32, WardenDataResult*> result_map;
+    uint32 internalDataID;
+    std::vector<uint32> memCheckIds;
 
-    public:
-        inline uint32 GenerateInternalDataID() { return InternalDataID++; }
-        WardenData *GetWardenDataById(uint32 Id);
-        WardenDataResult *GetWardenResultById(uint32 Id);
-        void Init();
+public:
+    WardenData * GetWardenDataById(uint32 Id) const;
+    WardenDataResult * GetWardenResultById(uint32 Id) const;
+    uint32 GetInternalDataId() { return internalDataID; }
+    std::vector<uint32> GetMemCheckIds() { return memCheckIds; }
+    void Init();
+    void LoadWardenDataResult(bool reload = false);
 
-    protected:
-        void LoadWardenDataResult();
+private:
+    uint32 GenerateInternalDataID() { return internalDataID++; }
+    void Cleanup();
 };
 
-extern CWardenDataStorage WardenDataStorage;
+#define sWardenDataStorage Trinity::Singleton<WardenDataStorage>::Instance()
+
 #endif

@@ -77,6 +77,19 @@ struct AABound
     Copyright (c) 2003-2007 Christopher Kulla
 */
 
+// lame digit limiter after coma :p
+static inline void limitDigits(float &value, int digits)
+{
+    if (digits < 1)
+        return;
+
+    int mod = 10;
+    for (uint8 i = 1; i < digits; i++)
+        mod = mod*10;
+
+    value = float(int(value*mod))/mod;
+}
+
 class BIH
 {
     public:
@@ -118,8 +131,8 @@ class BIH
         template<typename RayCallback>
         void intersectRay(const Ray &r, RayCallback& intersectCallback, float &maxDist, bool stopAtFirst=false) const
         {
-            float intervalMin = -1.f;
-            float intervalMax = -1.f;
+            float intervalMin = -1.0f;
+            float intervalMax = -1.0f;
 
             Vector3 org = r.origin();
             Vector3 dir = r.direction();
@@ -128,17 +141,24 @@ class BIH
 
             for (int i=0; i<3; ++i)
             {
-                invDir[i] = 1.f / dir[i];
+                invDir[i] = 1.0f / dir[i];
                 if (G3D::fuzzyNe(dir[i], 0.0f))
                 {
                     float t1 = (bounds.low()[i]  - org[i]) * invDir[i];
                     float t2 = (bounds.high()[i] - org[i]) * invDir[i];
+
+                    //limitDigits(t1, 6);
+                    //limitDigits(t2, 6);
+
                     if (t1 > t2)
                         std::swap(t1, t2);
+
                     if (t1 > intervalMin)
                         intervalMin = t1;
+
                     if (t2 < intervalMax || intervalMax < 0.f)
                         intervalMax = t2;
+
                     // intervalMax can only become smaller for other axis,
                     //  and intervalMin only larger respectively, so stop early
                     if (intervalMax <= 0 || intervalMin >= maxDist)
@@ -192,30 +212,40 @@ class BIH
                             // "normal" interior node
                             float tf = (intBitsToFloat(tree[node + offsetFront[axis]]) - org[axis]) * invDir[axis];
                             float tb = (intBitsToFloat(tree[node + offsetBack[axis]]) - org[axis]) * invDir[axis];
+
+                            //limitDigits(tf, 6);
+                            //limitDigits(tb, 6);
+
                             // ray passes between clip zones
                             if (tf < intervalMin && tb > intervalMax)
                                 break;
+
                             int back = offset + offsetBack3[axis];
                             node = back;
+
                             // ray passes through far node only
                             if (tf < intervalMin)
                             {
                                 intervalMin = (tb >= intervalMin) ? tb : intervalMin;
                                 continue;
                             }
+
                             node = offset + offsetFront3[axis]; // front
+
                             // ray passes through near node only
                             if (tb > intervalMax)
                             {
                                 intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                                 continue;
                             }
+
                             // ray passes through both nodes
                             // push back node
                             stack[stackPos].node = back;
                             stack[stackPos].tnear = (tb >= intervalMin) ? tb : intervalMin;
                             stack[stackPos].tfar = intervalMax;
                             stackPos++;
+
                             // update ray interval for front node
                             intervalMax = (tf <= intervalMax) ? tf : intervalMax;
                             continue;
@@ -239,19 +269,29 @@ class BIH
                     {
                         if (axis>2)
                             return; // should not happen
+
                         uint32 tmpFront = node + offsetFront[axis];
                         uint32 tmpBack = node + offsetBack[axis];
+
                         if (tmpFront >= tree.size())
                             break;
+
                         if (tmpBack >= tree.size())
                             break;
+
                         float tf = (intBitsToFloat(tree[tmpFront]) - org[axis]) * invDir[axis];
                         float tb = (intBitsToFloat(tree[tmpBack]) - org[axis]) * invDir[axis];
+
+                        //limitDigits(tf, 6);
+                        //limitDigits(tb, 6);
+
                         node = offset;
                         intervalMin = (tf >= intervalMin) ? tf : intervalMin;
                         intervalMax = (tb <= intervalMax) ? tb : intervalMax;
+
                         if (intervalMin > intervalMax)
                             break;
+
                         continue;
                     }
                 } // traversal loop
@@ -260,15 +300,21 @@ class BIH
                     // stack is empty?
                     if (stackPos == 0)
                         return;
+
                     // move back up the stack
                     stackPos--;
                     intervalMin = stack[stackPos].tnear;
+                    //limitDigits(intervalMin, 6);
+
                     if (maxDist < intervalMin)
                         continue;
+
                     node = stack[stackPos].node;
                     intervalMax = stack[stackPos].tfar;
+                    //limitDigits(intervalMax, 6);
                     break;
-                } while (true);
+                }
+                while (true);
             }
         }
 

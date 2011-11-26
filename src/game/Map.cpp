@@ -155,7 +155,7 @@ void Map::DeleteStateMachine()
     delete si_GridStates[GRID_STATE_REMOVAL];
 }
 
-Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
+Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _parent)
    : i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
      i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), i_gridExpiry(expiry),
      m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE), m_activeNonPlayersIter(m_activeNonPlayers.end()), i_scriptLock(true),
@@ -170,6 +170,8 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
             setNGrid(NULL, idx, j);
         }
     }
+
+    m_parent = _parent ? _parent : this;
 
     m_VisibilityNotifyPeriod = World::GetVisibilityNotifyPeriodOnContinents();
 
@@ -1657,7 +1659,6 @@ void Map::RemoveAllObjectsInRemoveList()
         case TYPEID_UNIT:
             // in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
             // make sure that like sources auras/etc removed before destructor start
-            ((Creature*)obj)->CleanupsBeforeDelete ();
             Remove((Creature*)obj,true);
             break;
         default:
@@ -2589,8 +2590,8 @@ template void Map::Remove(DynamicObject *, bool);
 
 /* ******* Dungeon Instance Maps ******* */
 
-InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
-  : Map(id, expiry, InstanceId, SpawnMode), i_data(NULL),
+InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _parent)
+  : Map(id, expiry, InstanceId, SpawnMode, _parent), i_data(NULL),
     m_resetAfterUnload(false), m_unloadWhenEmpty(false), m_unlootedCreaturesSummoned(false)
 {
 
@@ -2999,7 +3000,8 @@ uint32 InstanceMap::GetMaxPlayers() const
 
 /* ******* Battleground Instance Maps ******* */
 
-BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId, BattleGround *bg): Map(id, expiry, InstanceId, DIFFICULTY_NORMAL)
+BattleGroundMap::BattleGroundMap(uint32 id, time_t expiry, uint32 InstanceId, BattleGround *bg, Map* _parent)
+    : Map(id, expiry, InstanceId, DIFFICULTY_NORMAL, _parent)
 {
     m_bg = bg;
     BattleGroundMap::InitVisibilityDistance();
@@ -3533,8 +3535,13 @@ void Map::ForcedUnload()
 
 float Map::GetVisibilityDistance(WorldObject* obj) const
 {
-    if (obj && obj->GetObjectGuid().IsGameObject())
-        return (m_VisibleDistance + ((GameObject*)obj)->GetDeterminativeSize());    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
-    else
-        return m_VisibleDistance;
+    if (obj)
+    {
+        if (obj->GetObjectGuid().IsGameObject())
+            return (m_VisibleDistance + ((GameObject*)obj)->GetDeterminativeSize());    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
+        else if(obj->GetObjectGuid().IsCreature())
+            return (m_VisibleDistance + ((Creature*)obj)->GetDeterminativeSize());
+    }
+
+    return m_VisibleDistance;
 }

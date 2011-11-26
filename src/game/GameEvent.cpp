@@ -1266,17 +1266,15 @@ void GameEvent::GameEventUnspawn(int16 event_id)
         // check if it's needed by another event, if so, don't remove
         if (event_id > 0 && hasCreatureActiveEventExcept(*itr,event_id))
             continue;
+
         // Remove the creature from grid
         if (CreatureData const* data = objmgr.GetCreatureData(*itr))
         {
             objmgr.RemoveCreatureFromGrid(*itr, data);
 
-            Map * tmpMap = sMapMgr.FindMap(data->mapid);
-            if (tmpMap)
-            {
+            if (Map * tmpMap = sMapMgr.FindMap(data->mapid))
                 if (Creature * pCreature = tmpMap->GetCreature(MAKE_NEW_GUID(*itr, data->id, HIGHGUID_UNIT)))
                     pCreature->AddObjectToRemoveList();
-            }
         }
     }
 
@@ -1369,7 +1367,7 @@ void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)
             if (data2 && activate)
             {
                 CreatureInfo const *cinfo = ObjectMgr::GetCreatureTemplate(data2->id);
-                uint32 display_id = objmgr.ChooseDisplayId(0,cinfo,data2);
+                uint32 display_id = objmgr.ChooseDisplayId(0, cinfo, data2);
                 CreatureModelInfo const *minfo = objmgr.GetCreatureModelRandomGender(display_id);
                 if (minfo)
                     display_id = minfo->modelid;

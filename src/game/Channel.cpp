@@ -302,7 +302,6 @@ void Channel::Password(uint64 p, const char *pass)
 void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
 {
     Player *plr = objmgr.GetPlayer(p);
-
     if (!plr)
         return;
 
@@ -372,6 +371,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
 void Channel::SetOwner(uint64 p, const char *newname)
 {
     Player *plr = objmgr.GetPlayer(p);
+
     if (!plr)
         return;
 

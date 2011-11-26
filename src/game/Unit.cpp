@@ -750,29 +750,28 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 
     std::list<std::pair<uint32, uint64> > aurasToRemove;
     std::set<std::pair<uint32, uint64> > aurasDone;
-    for (AuraList::iterator i = m_ccAuras.begin(); i != m_ccAuras.end(); i++)
+    for (AuraList::iterator i = m_ccAuras.begin(); i != m_ccAuras.end(); ++i)
     {
         std::pair<uint32, uint64> auraPair((*i)->GetId(), (*i)->GetCasterGUID());
         // prevent rolling twice for two effects of the same spell
         if(aurasDone.find(auraPair) != aurasDone.end())
             continue;
+
         aurasDone.insert(auraPair);
 
         if (*i && (!spell || (*i)->GetId() != spell))
         {
-            if(GetDiminishingReturnsGroupForSpell((*i)->GetSpellProto(), false) == DIMINISHING_ENSLAVE)
+            if (GetDiminishingReturnsGroupForSpell((*i)->GetSpellProto(), false) == DIMINISHING_ENSLAVE)
                 continue;
 
             roll = roll_chance_f(chance);
             if (roll)
                 aurasToRemove.push_back(auraPair);
-
         }
     }
-    for (std::list<std::pair<uint32, uint64> >::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); i++)
-    {
+
+    for (std::list<std::pair<uint32, uint64> >::iterator i = aurasToRemove.begin(); i != aurasToRemove.end(); ++i)
         RemoveAurasByCasterSpell(i->first, i->second);
-    }
 }
 
 void Unit::SendDamageLog(DamageLog *damageInfo)
@@ -3181,7 +3180,7 @@ void Unit::_UpdateSpells(uint32 time)
 
     if (!m_gameObj.empty())
     {
-        GameObjectList::iterator itr;
+        std::list<GameObject*>::iterator itr;
         for (itr = m_gameObj.begin(); itr != m_gameObj.end();)
         {
             if (!(*itr)->isSpawned())
@@ -3331,12 +3330,8 @@ void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
 
-        // cancel can interrupt spell already (caster cancel ->target aura remove -> caster iterrupt)
-        if (m_currentSpells[spellType])
-        {
-            m_currentSpells[spellType]->SetReferencedFromCurrent(false);
-            m_currentSpells[spellType] = NULL;
-        }
+        m_currentSpells[spellType] = NULL;
+        spell->SetReferencedFromCurrent(false);
     }
 }
 
@@ -3679,6 +3674,15 @@ bool Unit::AddAura(Aura *Aur)
     if (!isAlive() && !IsDeathPersistentSpell(Aur->GetSpellProto()) &&
         (GetTypeId()!=TYPEID_PLAYER || !((Player*)this)->GetSession()->PlayerLoading()))
     {
+        delete Aur;
+        return false;
+    }
+
+    if (Aur->GetTarget() != this)
+    {
+        sLog.outError("Aura (spell %u eff %u) add to aura list of %s (lowguid: %u) but Aura target is %s (lowguid: %u)",
+            Aur->GetId(),Aur->GetEffIndex(),(GetTypeId()==TYPEID_PLAYER?"player":"creature"),GetGUIDLow(),
+            (Aur->GetTarget()->GetTypeId()==TYPEID_PLAYER?"player":"creature"),Aur->GetTarget()->GetGUIDLow());
         delete Aur;
         return false;
     }
@@ -4637,15 +4641,6 @@ DynamicObject * Unit::GetDynObject(uint32 spellId)
     return NULL;
 }
 
-GameObject* Unit::GetGameObject(uint32 spellId) const
-{
-    for (GameObjectList::const_iterator i = m_gameObj.begin(); i != m_gameObj.end();)
-        if ((*i)->GetSpellId() == spellId)
-            return *i;
-
-    return NULL;
-}
-
 void Unit::AddGameObject(GameObject* gameObj)
 {
     assert(gameObj && gameObj->GetOwnerGUID()==0);
@@ -4686,7 +4681,7 @@ void Unit::RemoveGameObject(uint32 spellid, bool del)
 {
     if (m_gameObj.empty())
         return;
-    GameObjectList::iterator i, next;
+    std::list<GameObject*>::iterator i, next;
     for (i = m_gameObj.begin(); i != m_gameObj.end(); i = next)
     {
         next = i;
@@ -4709,7 +4704,7 @@ void Unit::RemoveGameObject(uint32 spellid, bool del)
 void Unit::RemoveAllGameObjects()
 {
     // remove references to unit
-    for (GameObjectList::iterator i = m_gameObj.begin(); i != m_gameObj.end();)
+    for (std::list<GameObject*>::iterator i = m_gameObj.begin(); i != m_gameObj.end();)
     {
         (*i)->SetOwnerGUID(0);
         (*i)->SetRespawnTime(0);
@@ -9003,7 +8998,27 @@ void Unit::Mount(uint32 mount)
 
     // unsummon pet
     if (GetTypeId() == TYPEID_PLAYER)
-        ((Player*)this)->UnsummonPetTemporaryIfAny();
+    {
+        Pet* pet = GetPet();
+        if (pet)
+        {
+            BattleGround *bg = ((Player *)this)->GetBattleGround();
+            // don't unsummon pet in arena but SetFlag UNIT_FLAG_DISABLE_ROTATE to disable pet's interface
+            if (bg && bg->isArena())
+                pet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+            else
+            {
+                if (pet->isControlled())
+                {
+                    ((Player*)this)->SetTemporaryUnsummonedPetNumber(pet->GetCharmInfo()->GetPetNumber());
+                    ((Player*)this)->SetOldPetSpell(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
+                }
+                ((Player*)this)->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT);
+                return;
+            }
+        }
+        ((Player*)this)->SetTemporaryUnsummonedPetNumber(0);
+    }
 }
 
 void Unit::Unmount()
@@ -9022,8 +9037,20 @@ void Unit::Unmount()
     // only resummon old pet if the player is already added to a map
     // this prevents adding a pet to a not created map which would otherwise cause a crash
     // (it could probably happen when logging in after a previous crash)
-    if (GetTypeId() == TYPEID_PLAYER)
-        ((Player*)this)->ResummonPetTemporaryUnSummonedIfAny();
+    if (GetTypeId() == TYPEID_PLAYER && IsInWorld() && isAlive())
+    {
+        if (((Player*)this)->GetTemporaryUnsummonedPetNumber())
+        {
+            Pet* NewPet = new Pet;
+            if (!NewPet->LoadPetFromDB(this, 0, ((Player*)this)->GetTemporaryUnsummonedPetNumber(), true))
+                delete NewPet;
+            ((Player*)this)->SetTemporaryUnsummonedPetNumber(0);
+        }
+        else
+           if (Pet *pPet = GetPet())
+               if (pPet->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE) && !pPet->hasUnitState(UNIT_STAT_STUNNED))
+                   pPet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
+    }
 }
 
 void Unit::SetInCombatWith(Unit* enemy)
@@ -13010,4 +13037,25 @@ Unit* Unit::GetNextRandomRaidMember(float radius)
 
     uint32 randTarget = GetMap()->urand(0,nearMembers.size()-1);
     return nearMembers[randTarget];
+}
+
+float Unit::GetDeterminativeSize() const
+{
+    if (!IsInWorld() || GetTypeId() != TYPEID_UNIT)
+        return 0.0f;
+
+    CreatureDisplayInfoEntry const *info = sCreatureDisplayInfoStore.LookupEntry(((Creature*)this)->GetDisplayId());
+    if (!info)
+        return 0.0f;
+
+    CreatureModelDataEntry const *model = sCreatureModelDataStore.LookupEntry(info->ModelId);
+    if (!model)
+        return 0.0f;
+
+    float dx = model->maxX - model->minX;
+    float dy = model->maxY - model->minY;
+    float dz = model->maxZ - model->minZ;
+    float _size = sqrt(dx*dx + dy*dy +dz*dz) * info->scale;
+
+    return _size;
 }

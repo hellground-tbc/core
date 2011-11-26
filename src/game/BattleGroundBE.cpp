@@ -63,6 +63,8 @@ void BattleGroundBE::Update(uint32 diff)
             for (uint32 i = BG_BE_OBJECT_BUFF_1; i <= BG_BE_OBJECT_BUFF_2; i++)
                 SpawnBGObject(i, RESPAWN_ONE_DAY);
 
+            AddSpectatorNPC(6237.25f, 262.04f, 32.65f, 0.0f);
+
             SetStartDelayTime(START_DELAY1);
             SendMessageToAll(LANG_ARENA_ONE_MINUTE);
         }

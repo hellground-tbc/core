@@ -1338,7 +1338,9 @@ Death.Bones.BattlegroundOrArena = 1
 # EnableMMR: MMR (Matchmaking rating) should be enabled ?
 #             Default: 0 (disabled)
 #
-#
+# EnableFakeWho: Enables/Disables fake who list to fake real position of players in arena
+#             Default: 0 (disabled)
+# 
 ###################################################################################################################
 
 Arena.MaxRatingDifference = 0

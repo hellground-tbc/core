@@ -57,8 +57,7 @@ MapManager::~MapManager()
     Map::DeleteStateMachine();
 }
 
-void
-MapManager::Initialize()
+void MapManager::Initialize()
 {
     Map::InitStateMachine();
 
@@ -75,8 +74,11 @@ MapManager::Initialize()
 
     int num_threads(sWorld.getConfig(CONFIG_NUMTHREADS));
     // Start mtmaps if needed.
-    if (num_threads > 0 && m_updater.activate(num_threads) == -1)
+    if (m_updater.activate(num_threads) == -1)
+    {
+        sLog.outError("MapUpdater cannot be activated !!!!!");
         abort();
+    }
 }
 
 void MapManager::InitializeVisibilityDistanceInfo()
@@ -112,9 +114,10 @@ void MapManager::checkAndCorrectGridStatesArray()
         assert(false);                                      // force a crash. Too many errors
 }
 
-Map* MapManager::_createBaseMap(uint32 id)
+// this will return existing basemap or create new one if base doesn't exist !
+Map* MapManager::CreateBaseMap(uint32 id)
 {
-    Map *m = _findMap(id);
+    Map *m = FindBaseMap(id);
 
     if (m == NULL)
     {
@@ -138,23 +141,24 @@ Map* MapManager::_createBaseMap(uint32 id)
 
 Map* MapManager::GetMap(uint32 id, const WorldObject* obj)
 {
-    Map *m = _createBaseMap(id);
+    Map *m = CreateBaseMap(id);
 
-    if (m && obj && m->Instanceable()) m = ((MapInstanced*)m)->GetInstance(obj);
+    if (m && obj && m->Instanceable())
+        m = ((MapInstanced*)m)->GetInstance(obj);
 
     return m;
 }
 
 Map* MapManager::FindMap(uint32 mapid, uint32 instanceId) const
 {
-    Map *map = _findMap(mapid);
+    Map *map = FindBaseMap(mapid);
     if (!map)
         return NULL;
 
     if (!map->Instanceable())
         return instanceId == 0 ? map : NULL;
 
-    return ((MapInstanced*)map)->FindMap(instanceId);
+    return ((MapInstanced*)map)->FindInstancedMap(instanceId);
 }
 
 /*
@@ -239,14 +243,14 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
 void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
 {
     Guard guard(*this);
-    Map *m = _createBaseMap(mapid);
+    Map *m = CreateBaseMap(mapid);
     if (m && m->Instanceable())
         ((MapInstanced*)m)->DestroyInstance(instanceId);
 }
 
 void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
 {
-    bool remove_result = _createBaseMap(mapid)->RemoveBones(guid, x, y);
+    bool remove_result = CreateBaseMap(mapid)->RemoveBones(guid, x, y);
 
     if (!remove_result)
     {
@@ -254,8 +258,7 @@ void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
     }
 }
 
-void
-MapManager::Update(uint32 diff)
+void MapManager::Update(uint32 diff)
 {
     i_timer.Update(diff);
     if (!i_timer.Passed())
@@ -264,16 +267,28 @@ MapManager::Update(uint32 diff)
     sWorld.RecordTimeDiff(NULL);
     for (MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
     {
-        if (m_updater.activated())
-            m_updater.schedule_update(*iter->second, i_timer.GetCurrent());
-        else
-            iter->second->Update(i_timer.GetCurrent());
+        m_updater.schedule_update(*iter->second, i_timer.GetCurrent());
+
+        if (!iter->second->Instanceable())
+            continue;
+
+        // update the instanced maps
+        MapInstanced::InstancedMaps & m_InstancedMaps = ((MapInstanced*)iter->second)->GetInstancedMaps();
+        for (MapInstanced::InstancedMaps::iterator iter2 = m_InstancedMaps.begin(); iter2 != m_InstancedMaps.end();)
+        {
+            if (iter2->second->CanUnload(i_timer.GetCurrent()))
+                ((MapInstanced*)iter->second)->DestroyInstance(iter2);
+            else
+            {
+                m_updater.schedule_update(*iter2->second, uint32(i_timer.GetCurrent()));
+                ++iter2;
+            }
+        }
     }
 
-    if (m_updater.activated())
-        m_updater.wait();
+    m_updater.wait();
 
-    sWorld.RecordTimeDiff("UpdateMaps, hash_map size: %u", i_maps.size());
+    sWorld.RecordTimeDiff("UpdateMaps");
 
     checkAndCorrectGridStatesArray();
     for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
@@ -314,13 +329,6 @@ bool MapManager::IsValidMAP(uint32 mapid)
     return mEntry && (!mEntry->Instanceable() || ObjectMgr::GetInstanceTemplate(mapid));
 }
 
-/*void MapManager::LoadGrid(int mapid, float x, float y, const WorldObject* obj, bool no_unload)
-{
-    CellPair p = Trinity::ComputeCellPair(x,y);
-    Cell cell(p);
-    GetMap(mapid, obj)->LoadGrid(cell,no_unload);
-}*/
-
 void MapManager::UnloadAll()
 {
     for (MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
@@ -333,8 +341,7 @@ void MapManager::UnloadAll()
         delete temp;
     }
 
-    if (m_updater.activated())
-        m_updater.deactivate();
+    m_updater.deactivate();
 }
 
 void MapManager::InitMaxInstanceId()
@@ -353,10 +360,13 @@ uint32 MapManager::GetNumInstances()
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
         Map *map = itr->second;
-        if (!map->Instanceable()) continue;
+        if (!map->Instanceable())
+            continue;
+
         MapInstanced::InstancedMaps &maps = ((MapInstanced *)map)->GetInstancedMaps();
         for (MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
-            if (mitr->second->IsDungeon()) ret++;
+            if (mitr->second->IsDungeon())
+                ret++;
     }
     return ret;
 }
@@ -368,7 +378,9 @@ uint32 MapManager::GetNumPlayersInInstances()
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
         Map *map = itr->second;
-        if (!map->Instanceable()) continue;
+        if (!map->Instanceable())
+            continue;
+
         MapInstanced::InstancedMaps &maps = ((MapInstanced *)map)->GetInstancedMaps();
         for (MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
             if (mitr->second->IsDungeon())
@@ -376,4 +388,3 @@ uint32 MapManager::GetNumPlayersInInstances()
     }
     return ret;
 }
-

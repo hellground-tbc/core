@@ -175,7 +175,7 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
             uint8 lfgType = plr->IsLFM(type, entry);
             data << plr->GetPackGUID();                         // packed guid
             data << plr->getLevel();                            // level
-            data << plr->GetZoneId();                           // current zone
+            data << plr->GetCachedZone();                       // current zone
             data << lfgType;                                    // 0x00 - LFG, 0x01 - LFM
 
             switch (lfgType)

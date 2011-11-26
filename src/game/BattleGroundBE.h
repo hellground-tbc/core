@@ -45,8 +45,8 @@ enum BattleGroundBEObjects
 
 enum BattleGroundBECreatures
 {
-    BG_BE_ARENA_SPECTATOR = 0,
-    BG_BE_CREATURE_MAX    = 1
+    BG_BE_ARENA_SPECTATOR   = 0,
+    BG_BE_CREATURE_MAX      = 1
 };
 
 class BattleGroundBEScore : public BattleGroundScore

@@ -21,7 +21,7 @@ CREATE TABLE `account` (
   `mutetime` bigint(40) unsigned NOT NULL DEFAULT '0',
   `locale` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `opcodesDisabled` int(11) NOT NULL DEFAULT '0',
-  `speciallogs` double DEFAULT '0',
+  `account_flags` double DEFAULT '0',
   `operatingSystem` tinyint unsigned DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_username` (`username`),

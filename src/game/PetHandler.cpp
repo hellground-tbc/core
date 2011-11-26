@@ -229,6 +229,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
                     if (unit_target2->GetTypeId() == TYPEID_PLAYER)
                         pet->SendCreateUpdateToPlayer((Player*)unit_target2);
                 }
+
                 if (Unit* powner = pet->GetCharmerOrOwner())
                     if (powner->GetTypeId() == TYPEID_PLAYER)
                         pet->SendCreateUpdateToPlayer((Player*)powner);

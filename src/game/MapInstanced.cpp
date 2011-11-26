@@ -50,23 +50,6 @@ void MapInstanced::Update(const uint32& t)
 {
     // take care of loaded GridMaps (when unused, unload it!)
     Map::Update(t);
-
-    // update the instanced maps
-    InstancedMaps::iterator i = m_InstancedMaps.begin();
-
-    while (i != m_InstancedMaps.end())
-    {
-        if (i->second->CanUnload(t))
-        {
-            DestroyInstance(i);                             // iterator incremented
-        }
-        else
-        {
-            // update only here, because it may schedule some bad things before delete
-            i->second->Update(t);
-            ++i;
-        }
-    }
 }
 
 void MapInstanced::DelayedUpdate(const uint32 diff)
@@ -113,21 +96,23 @@ void MapInstanced::UnloadAll()
 Map* MapInstanced::GetInstance(const WorldObject* obj)
 {
     if (obj->GetTypeId() != TYPEID_PLAYER)
-        return _FindMap(obj->GetInstanceId());
+        return FindInstancedMap(obj->GetInstanceId());
 
     Player* player = (Player*)obj;
     uint32 instanceId = player->GetInstanceId();
 
     if (instanceId)
-        if (Map *map = _FindMap(instanceId))
+    {
+        if (Map *map = FindInstancedMap(instanceId))
              return map;
+    }
 
     if (IsBattleGroundOrArena())
     {
         instanceId = player->GetBattleGroundId();
         if (instanceId)
         {
-             if (Map *map = _FindMap(instanceId))
+             if (Map *map = FindInstancedMap(instanceId))
                  return map;
              else
                  return CreateBattleGround(instanceId, player->GetBattleGround());
@@ -141,7 +126,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
         if (!instanceId)
         {
             instanceId = pSave->GetInstanceId(); // go from outside to instance
-            if (Map *map = _FindMap(instanceId))
+            if (Map *map = FindInstancedMap(instanceId))
                  return map;
         }
         else if (instanceId != pSave->GetInstanceId()) // cannot go from one instance to another
@@ -184,7 +169,8 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 
     sLog.outDebug("MapInstanced::CreateInstance: %smap instance %d for %d created with difficulty %s", save?"":"new ", InstanceId, GetId(), difficulty?"heroic":"normal");
 
-    InstanceMap *map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty);
+    Map* parentMap = sMapMgr.CreateBaseMap(GetId());
+    InstanceMap *map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, parentMap);
     assert(map->IsDungeon());
 
     bool load_data = save != NULL;
@@ -201,7 +187,9 @@ BattleGroundMap* MapInstanced::CreateBattleGround(uint32 InstanceId, BattleGroun
 
     sLog.outDebug("MapInstanced::CreateBattleGround: map bg %d for %d created.", InstanceId, GetId());
 
-    BattleGroundMap *map = new BattleGroundMap(GetId(), GetGridExpiry(), InstanceId, bg);
+    Map* parentMap = sMapMgr.CreateBaseMap(GetId());
+
+    BattleGroundMap *map = new BattleGroundMap(GetId(), GetGridExpiry(), InstanceId, bg, parentMap);
     assert(map->IsBattleGroundOrArena());
 
     m_InstancedMaps[InstanceId] = map;

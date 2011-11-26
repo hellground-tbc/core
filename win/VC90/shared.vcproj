@@ -381,6 +381,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\shared\Database\DBCFileLoader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Database\DBCFileLoader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Database\DBCStore.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\shared\Database\Field.cpp"
 				>
 			</File>

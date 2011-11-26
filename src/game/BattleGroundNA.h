@@ -45,8 +45,8 @@ enum BattleGroundNAObjects
 
 enum BattleGroundNACreatures
 {
-    BG_NA_ARENA_SPECTATOR = 0,
-    BG_NA_CREATURE_MAX    = 1
+    BG_NA_ARENA_SPECTATOR   = 0,
+    BG_NA_CREATURE_MAX      = 1
 };
 
 class BattleGroundNAScore : public BattleGroundScore

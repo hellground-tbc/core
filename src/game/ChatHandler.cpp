@@ -670,8 +670,13 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
     Cell::VisitWorldObjects(player, emote_worker,  sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
 
     //Send scripted event call
-    if (unit && unit->GetTypeId() == TYPEID_UNIT && ((Creature*)unit)->AI())
-        ((Creature*)unit)->AI()->ReceiveEmote(player, text_emote);
+    if (unit && unit->GetTypeId() == TYPEID_UNIT)
+    {
+        if (((Creature*)unit)->AI())
+            ((Creature*)unit)->AI()->ReceiveEmote(player, text_emote);
+
+        sScriptMgr.OnReceiveEmote(GetPlayer(), (Creature*)unit, text_emote);
+    }
 }
 
 void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recv_data)

@@ -70,6 +70,7 @@ GameObject::~GameObject()
 {
     CleanupsBeforeDelete();
 }
+
 void GameObject::CleanupsBeforeDelete()
 {
     if (m_uint32Values)                                      // field array can be not exist if GameOBject not loaded
@@ -1153,6 +1154,7 @@ void GameObject::Use(Unit* user)
 
             if (info->camera.cinematicId)
                 player->SendCinematicStart(info->camera.cinematicId);
+
             return;
         }
         //fishing bobber
@@ -1437,6 +1439,7 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
             trigger->setFaction(owner->getFaction());
         else
             trigger->setFaction(14);
+
         trigger->CastSpell(target, spell, true); // no orginal caster should prevent 'on spell cast' triggering
         return;
     }

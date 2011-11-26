@@ -264,7 +264,6 @@ if(UNIX)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} --no-warnings")
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -Wfatal-errors -Wextra")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wfatal-errors -Wextra")
-
 elseif(WIN32)
   # Disable warnings in Visual Studio 8 and above and add /MP
   if(MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio 7")
@@ -411,9 +410,9 @@ message("Compile release definitions    : ${DEFINITIONS_RELEASE}")
 message("")
 
 if(DEBUG)
-  message("DEBUG option is enabled")
+    message("DEBUG option is enabled")
 else()
-  message("DEBUG option is disabled")
+    message("DEBUG option is disabled")
 endif()
 
 message("")

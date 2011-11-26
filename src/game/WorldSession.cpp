@@ -84,12 +84,12 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, uint64 speciallogs, uint16 opcDisabled) :
+WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, uint64 accFlags, uint16 opcDisabled) :
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time), m_muteReason(mute_reason),
 _player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
-m_kickTimer(MINUTE * 15 * 1000), m_speciallogs(speciallogs), m_Warden(NULL)
+m_kickTimer(MINUTE * 15 * 1000), m_accFlags(accFlags), m_Warden(NULL)
 {
     if (sock)
     {
@@ -400,7 +400,7 @@ void WorldSession::LogoutPlayer(bool Save)
         if (BattleGround *bg = _player->GetBattleGround())
             bg->EventPlayerLoggedOut(_player);
 
-        sOutdoorPvPMgr.HandlePlayerLeaveZone(_player,_player->GetZoneId());
+        sOutdoorPvPMgr.HandlePlayerLeave(_player);
 
         ///- Teleport to home if the player is in an invalid instance
         if (!_player->m_InstanceValid && !_player->isGameMaster())
@@ -631,7 +631,9 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
             break;
         default:
             sLog.outWarden("Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
-        break;
+            if (sWorld.getConfig(CONFIG_WARDEN_KICK))
+                KickPlayer();
+            return;
     }
 
     if (m_Warden)

@@ -1737,9 +1737,7 @@ void BattleGroundMgr::BuildBattleGroundListPacket(WorldPacket *data, const uint6
     if (!plr)
         return;
 
-    uint32 PlayerLevel = 10;
-
-    PlayerLevel = plr->getLevel();
+    uint32 PlayerLevel = plr->getLevel();
 
     data->Initialize(SMSG_BATTLEFIELD_LIST);
     *data << uint64(guid);                                  // battlemaster guid

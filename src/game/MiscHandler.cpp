@@ -267,7 +267,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
         if (!(racemask & (1 << race)))
             continue;
 
-        uint32 pzoneid = itr->second->GetZoneId();
+        uint32 pzoneid = itr->second->GetCachedZone();
         if (sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA))
         {
             if (itr->second->InArena())
@@ -276,6 +276,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
                 pzoneid = sMapMgr.GetZoneId(pPlayer->GetBattleGroundEntryPointMap(), pPlayer->GetBattleGroundEntryPointX(), pPlayer->GetBattleGroundEntryPointY(), pPlayer->GetBattleGroundEntryPointZ());
             }
         }
+
         uint8 gender = itr->second->getGender();
 
         bool z_show = true;
@@ -332,13 +333,13 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
         if (!s_show)
             continue;
 
-        data << pname;                                    // player name
-        data << gname;                                    // guild name
-        data << uint32(lvl);                              // player level
-        data << uint32(class_);                           // player class
-        data << uint32(race);                             // player race
-        data << uint8(gender);                            // player gender
-        data << uint32(pzoneid);                          // player zone id
+        data << pname;                                  // player name
+        data << gname;                                  // guild name
+        data << uint32(lvl);                            // player level
+        data << uint32(class_);                         // player class
+        data << uint32(race);                           // player race
+        data << uint8(gender);                          // player gender
+        data << uint32(pzoneid);                        // player zone id
 
         // 49 is maximum player count sent to client - can be overridden
         // through config, but is unstable
@@ -1263,6 +1264,14 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recv_data)
     // Received opcode CMSG_WORLD_TELEPORT
     // Time is ***, map=469, x=452.000000, y=6454.000000, z=2536.000000, orient=3.141593
 
+    //sLog.outDebug("Received opcode CMSG_WORLD_TELEPORT");
+
+    if (GetPlayer()->IsTaxiFlying())
+    {
+        sLog.outDebug("Player '%s' (GUID: %u) in flight, ignore worldport command.",GetPlayer()->GetName(),GetPlayer()->GetGUIDLow());
+        return;
+    }
+
     uint32 time;
     uint32 mapid;
     float PositionX;
@@ -1276,15 +1285,6 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recv_data)
     recv_data >> PositionY;
     recv_data >> PositionZ;
     recv_data >> Orientation;                               // o (3.141593 = 180 degrees)
-
-    //sLog.outDebug("Received opcode CMSG_WORLD_TELEPORT");
-
-    if (GetPlayer()->IsTaxiFlying())
-    {
-        sLog.outDebug("Player '%s' (GUID: %u) in flight, ignore worldport command.",GetPlayer()->GetName(),GetPlayer()->GetGUIDLow());
-        return;
-    }
-
     DEBUG_LOG("Time %u sec, map=%u, x=%f, y=%f, z=%f, orient=%f", time/1000, mapid, PositionX, PositionY, PositionZ, Orientation);
 
     if (GetSecurity() >= SEC_ADMINISTRATOR)

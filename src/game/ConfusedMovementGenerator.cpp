@@ -73,7 +73,6 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
         if (i_destinationHolder.HasArrived())
         {
             assert(i_nextMove <= MAX_RANDOM_POINTS);
-
             i_destinationHolder.SetDestination(traveller, randomPosition[i_nextMove].x, randomPosition[i_nextMove].y, randomPosition[i_nextMove].z);
             i_nextMove = urand(0, MAX_RANDOM_POINTS);
         }

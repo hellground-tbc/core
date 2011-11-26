@@ -22,6 +22,7 @@
 #define _PLAYER_H
 
 #include "Common.h"
+
 #include "ItemPrototype.h"
 #include "Unit.h"
 #include "Item.h"
@@ -718,13 +719,14 @@ enum TradeSlots
 
 enum TransferAbortReason
 {
-    TRANSFER_ABORT_ERROR                    = 0x00,
-    TRANSFER_ABORT_MAX_PLAYERS              = 0x01,         // Transfer Aborted: instance is full
-    TRANSFER_ABORT_NOT_FOUND                = 0x02,         // Transfer Aborted: instance not found
-    TRANSFER_ABORT_TOO_MANY_INSTANCES       = 0x03,         // You have entered too many instances recently.
-    TRANSFER_ABORT_ZONE_IN_COMBAT           = 0x05,         // Unable to zone in while an encounter is in progress.
-    TRANSFER_ABORT_INSUF_EXPAN_LVL          = 0x06,         // You must have TBC expansion installed to access this area.
-    TRANSFER_ABORT_DIFFICULTY               = 0x07,         // <Normal,Heroic,Epic> difficulty mode is not available for %s.
+    TRANSFER_ABORT_MAX_PLAYERS          = 0x0001,           // Transfer Aborted: instance is full
+    TRANSFER_ABORT_NOT_FOUND            = 0x0002,           // Transfer Aborted: instance not found
+    TRANSFER_ABORT_TOO_MANY_INSTANCES   = 0x0003,           // You have entered too many instances recently.
+    TRANSFER_ABORT_ZONE_IN_COMBAT       = 0x0005,           // Unable to zone in while an encounter is in progress.
+    TRANSFER_ABORT_INSUF_EXPAN_LVL1     = 0x0106,           // You must have TBC expansion installed to access this area.
+    TRANSFER_ABORT_DIFFICULTY1          = 0x0007,           // Normal difficulty mode is not available for %s.
+    TRANSFER_ABORT_DIFFICULTY2          = 0x0107,           // Heroic difficulty mode is not available for %s.
+    TRANSFER_ABORT_DIFFICULTY3          = 0x0207            // Epic difficulty mode is not available for %s.
 };
 
 enum InstanceResetWarningType
@@ -797,14 +799,6 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADMAILEDITEMS          = 19,
 
     MAX_PLAYER_LOGIN_QUERY
-};
-
-enum PlayerDelayedOperations
-{
-    DELAYED_SAVE_PLAYER = 1,
-    DELAYED_RESURRECT_PLAYER = 2,
-    DELAYED_SPELL_CAST_DESERTER = 4,
-    DELAYED_END
 };
 
 // Player summoning auto-decline time (in secs)
@@ -948,7 +942,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         void SendInitialPacketsBeforeAddToMap();
         void SendInitialPacketsAfterAddToMap();
-        void SendTransferAborted(uint32 mapid, uint8 reason, uint8 arg = 0);
+        void SendTransferAborted(uint32 mapid, uint16 reason);
         void SendInstanceResetWarning(uint32 mapid, uint32 time);
 
         GameObject* GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type = GAMEOBJECT_TYPE_GUILD_BANK) const;
@@ -1732,14 +1726,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         void SetDontMove(bool dontMove);
         bool GetDontMove() const { return m_dontMove; }
 
-        WorldLocation& GetTeleportDest() { return m_teleport_dest; }
-        bool IsBeingTeleported() const { return mSemaphoreTeleport_Near || mSemaphoreTeleport_Far; }
-        bool IsBeingTeleportedNear() const { return mSemaphoreTeleport_Near; }
-        bool IsBeingTeleportedFar() const { return mSemaphoreTeleport_Far; }
-        void SetSemaphoreTeleportNear(bool semphsetting) { mSemaphoreTeleport_Near = semphsetting; }
-        void SetSemaphoreTeleportFar(bool semphsetting) { mSemaphoreTeleport_Far = semphsetting; }
-        void ProcessDelayedOperations();
-
         void CheckAreaExploreAndOutdoor(void);
 
         static uint32 TeamForRace(uint8 race);
@@ -2007,7 +1993,7 @@ class TRINITY_DLL_SPEC Player : public Unit
             m_lastFallZ = z;
         }
 
-        void BuildTeleportAckMsg(WorldPacket &data, float x, float y, float z, float ang) const;
+        void BuildTeleportAckMsg(WorldPacket & data, float x, float y, float z, float ang) const;
 
         bool isMoving() const { return HasUnitMovementFlag(MOVEFLAG_MOVING); }
         bool isTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING); }
@@ -2088,11 +2074,12 @@ class TRINITY_DLL_SPEC Player : public Unit
         // Temporarily removed pet cache
         uint32 GetTemporaryUnsummonedPetNumber() const { return m_temporaryUnsummonedPetNumber; }
         void SetTemporaryUnsummonedPetNumber(uint32 petnumber) { m_temporaryUnsummonedPetNumber = petnumber; }
-        void UnsummonPetTemporaryIfAny();
-        void ResummonPetTemporaryUnSummonedIfAny();
-        bool IsPetNeedBeTemporaryUnsummoned() const { return !IsInWorld() || !isAlive() || IsMounted() /*+in flight*/; }
+        uint32 GetOldPetSpell() const { return m_oldpetspell; }
+        void SetOldPetSpell(uint32 petspell) { m_oldpetspell = petspell; }
 
         void SendCinematicStart(uint32 CinematicSequenceId);
+
+        float GetXPRate(Rates rate);
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
@@ -2154,6 +2141,8 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool isAllowedToLoot(Creature* creature);
 
+        WorldLocation& GetTeleportDest() { return m_teleport_dest; }
+
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
         bool HasTitle(uint32 bitIndex);
         bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
@@ -2169,6 +2158,9 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint64 getFollowingGM() {return m_GMfollow_GUID;}
 
         PlayerAI *AI() const{ return (PlayerAI*)i_AI; }
+
+        uint32 GetCachedZone() const { return m_zoneUpdateId; }
+        uint32 GetCachedArea() const { return m_areaUpdateId; }
 
     protected:
 
@@ -2407,27 +2399,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         void UpdateKnownCurrencies(uint32 itemId, bool apply);
         void AdjustQuestReqItemCount(Quest const* pQuest, QuestStatusData& questStatusData);
 
-        void SetCanDelayTeleport(bool setting) { m_bCanDelayTeleport = setting; }
-        bool IsHasDelayedTeleport() const
-        {
-            // we should not execute delayed teleports for now dead players but has been alive at teleport
-            // because we don't want player's ghost teleported from graveyard
-            return m_bHasDelayedTeleport && (isAlive() || !m_bHasBeenAliveAtDelayedTeleport);
-        }
-
-        bool SetDelayedTeleportFlagIfCan()
-        {
-            m_bHasDelayedTeleport = m_bCanDelayTeleport;
-            m_bHasBeenAliveAtDelayedTeleport = isAlive();
-            return m_bHasDelayedTeleport;
-        }
-
-        void ScheduleDelayedOperation(uint32 operation)
-        {
-            if (operation < DELAYED_END)
-                m_DelayedOperations |= operation;
-        }
-
         int32 m_MirrorTimer[MAX_TIMERS];
         uint8 m_MirrorTimerFlags;
         uint8 m_MirrorTimerFlagsLast;
@@ -2444,22 +2415,14 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
 
-        GlobalCooldownMgr m_GlobalCooldownMgr;
-
         // Current teleport data
         WorldLocation m_teleport_dest;
-        uint32 m_teleport_options;
-        bool mSemaphoreTeleport_Near;
-        bool mSemaphoreTeleport_Far;
-
-        uint32 m_DelayedOperations;
-        bool m_bCanDelayTeleport;
-        bool m_bHasDelayedTeleport;
-        bool m_bHasBeenAliveAtDelayedTeleport;
 
         // Temporary removed pet cache
         uint32 m_temporaryUnsummonedPetNumber;
         uint32 m_oldpetspell;
+
+        GlobalCooldownMgr m_GlobalCooldownMgr;
 
         ReputationMgr  m_reputationMgr;
 };

@@ -41,7 +41,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
     public:
 
         Map* GetMap(uint32, const WorldObject* obj);
-        Map const* CreateBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->_createBaseMap(id); }
+        Map* CreateBaseMap(uint32 id);
         Map* FindMap(uint32 mapid, uint32 instanceId = 0) const;
 
         // only const version for outer users
@@ -49,7 +49,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
 
         uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
         {
-            Map const* m = CreateBaseMap(mapid);
+            Map* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
             return m->GetAreaFlag(x, y, z);
         }
         uint32 GetAreaId(uint32 mapid, float x, float y, float z) { return Map::GetAreaId(GetAreaFlag(mapid, x, y, z),mapid); }
@@ -150,8 +150,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
 
-        Map* _createBaseMap(uint32 id);
-        Map* _findMap(uint32 id) const
+        Map* FindBaseMap(uint32 id) const
         {
             MapMapType::const_iterator iter = i_maps.find(id);
             return (iter == i_maps.end() ? NULL : iter->second);

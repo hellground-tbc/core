@@ -231,7 +231,7 @@ struct Loot
     uint32 gold;
     uint8 unlootedCount;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false), m_creatureGUID(0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener

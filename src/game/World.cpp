@@ -168,7 +168,7 @@ Player* World::FindPlayerInZone(uint32 zone)
         Player *player = itr->second->GetPlayer();
         if (!player)
             continue;
-        if (player->IsInWorld() && player->GetZoneId() == zone)
+        if (player->IsInWorld() && player->GetCachedZone() == zone)
         {
             // Used by the weather system. We return the player to broadcast the change weather message to him and all players in the zone.
             return player;
@@ -1123,6 +1123,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MIN_LOG_UPDATE] = sConfig.GetIntDefault("MinRecordUpdateTimeDiff", 10);
     m_configs[CONFIG_NUMTHREADS] = sConfig.GetIntDefault("MapUpdate.Threads",1);
 
+    if (m_configs[CONFIG_NUMTHREADS] < 1)
+        m_configs[CONFIG_NUMTHREADS] = 1;
+
     std::string forbiddenmaps = sConfig.GetStringDefault("ForbiddenMaps", "");
     char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
     forbiddenMaps[forbiddenmaps.length()] = 0;
@@ -1161,6 +1164,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_VMSS_MAPFREEMETHOD] = sConfig.GetIntDefault("VMSS.MapFreeMethod", 0);
     m_configs[CONFIG_VMSS_FREEZECHECKPERIOD] = sConfig.GetIntDefault("VMSS.FreezeCheckPeriod", 1000);
     m_configs[CONFIG_VMSS_FREEZEDETECTTIME] = sConfig.GetIntDefault("VMSS.MapFreezeDetectTime", 1000);
+
+    m_configs[CONFIG_ENABLE_CUSTOM_XP_RATES] = sConfig.GetBoolDefault("EnableCustomXPRates", true);
 }
 
 /// Initialize the World
@@ -1565,7 +1570,7 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
     sLog.outString("Loading Warden Data..." );
-    WardenDataStorage.Init();
+    sWardenDataStorage.Init();
 
     sLog.outString("Cleanup deleted characters");
     CleanupDeletedChars();
@@ -1962,7 +1967,7 @@ void World::SendGuildAnnounce(uint32 team, ...)
 
     for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
     {
-        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() || itr->second->GetPlayer()->GetTeam() != team || !itr->second->DisplayGuildAnn())
+        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() || itr->second->GetPlayer()->GetTeam() != team || itr->second->IsAccountFlagged(ACC_DISABLED_GANN))
             continue;
 
         uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();
@@ -2218,7 +2223,7 @@ void World::SendZoneMessage(uint32 zone, WorldPacket *packet, WorldSession *self
         if (itr->second &&
             itr->second->GetPlayer() &&
             itr->second->GetPlayer()->IsInWorld() &&
-            itr->second->GetPlayer()->GetZoneId() == zone &&
+            itr->second->GetPlayer()->GetCachedZone() == zone &&
             itr->second != self &&
             (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
         {

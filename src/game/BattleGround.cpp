@@ -851,9 +851,15 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 plr->RemoveArenaAuras(true);    // removes debuffs / dots etc., we don't want the player to die after porting out
                 bgTypeId=BATTLEGROUND_AA;       // set the bg type to all arenas (it will be used for queue refreshing)
 
-                // unsummon current and summon old pet if there was one and there isn't a current pet
-                plr->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT);
-                plr->ResummonPetTemporaryUnSummonedIfAny();
+                // summon old pet if there was one and there isn't a current pet
+                if (!plr->GetPet() && plr->GetTemporaryUnsummonedPetNumber())
+                {
+                    Pet* NewPet = new Pet;
+                    if (!NewPet->LoadPetFromDB(plr, 0, (plr)->GetTemporaryUnsummonedPetNumber(), true))
+                        delete NewPet;
+
+                    (plr)->SetTemporaryUnsummonedPetNumber(0);
+                }
 
                 if (isRated() && GetStatus() == STATUS_IN_PROGRESS)
                 {
@@ -1049,7 +1055,18 @@ void BattleGround::AddPlayer(Player *plr)
 
         plr->DestroyConjuredItems(true);
 
-        plr->UnsummonPetTemporaryIfAny();
+        Pet* pet = plr->GetPet();
+        if (pet)
+        {
+            if (pet->getPetType() == SUMMON_PET || pet->getPetType() == HUNTER_PET)
+            {
+                (plr)->SetTemporaryUnsummonedPetNumber(pet->GetCharmInfo()->GetPetNumber());
+                (plr)->SetOldPetSpell(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
+            }
+            plr->RemovePet(NULL,PET_SAVE_NOT_IN_SLOT);
+        }
+        else
+            plr->SetTemporaryUnsummonedPetNumber(0);
 
         if (GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
         {
@@ -1554,9 +1571,13 @@ bool BattleGround::AddSpiritGuide(uint32 type, float x, float y, float z, float 
 
 void BattleGround::AddSpectatorNPC(float x, float y, float z, float o)
 {
-    Creature* pCreature = AddCreature(WORLD_TRIGGER, ARENA_NPC_SPECTATOR, 0, x,y,z,o);
+    Creature* pCreature = AddCreature(WORLD_TRIGGER, ARENA_NPC_SPECTATOR, 0, x, y, z, o);
     if (!pCreature)
         sLog.outError("Can't create Arena Spectator!");
+
+    pCreature->SetLevitate(true);
+    pCreature->SetReactState(REACT_PASSIVE);
+    pCreature->SetVisibility(VISIBILITY_OFF);
 }
 
 void BattleGround::SendMessageToAll(char const* text)

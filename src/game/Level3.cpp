@@ -3306,7 +3306,7 @@ bool ChatHandler::HandleGetDistanceCommand(const char* /*args*/)
     }
 
     PSendSysMessage(LANG_DISTANCE, m_session->GetPlayer()->GetDistance(pUnit),m_session->GetPlayer()->GetDistance2d(pUnit));
-
+    PSendSysMessage("Exact distance: %F", m_session->GetPlayer()->GetExactDistance2d(pUnit->GetPositionX(), pUnit->GetPositionY()));
     return true;
 }
 
@@ -3666,7 +3666,7 @@ bool ChatHandler::HandleLinkGraveCommand(const char* args)
 
     Player* player = m_session->GetPlayer();
 
-    uint32 zoneId = player->GetZoneId();
+    uint32 zoneId = player->GetCachedZone();
 
     AreaTableEntry const *areaEntry = GetAreaEntryByAreaID(zoneId);
     if (!areaEntry || areaEntry->zone !=0)
@@ -3676,7 +3676,7 @@ bool ChatHandler::HandleLinkGraveCommand(const char* args)
         return false;
     }
 
-    if (objmgr.AddGraveYardLink(g_id,player->GetZoneId(),g_team))
+    if (objmgr.AddGraveYardLink(g_id,zoneId,g_team))
         PSendSysMessage(LANG_COMMAND_GRAVEYARDLINKED, g_id,zoneId);
     else
         PSendSysMessage(LANG_COMMAND_GRAVEYARDALRLINKED, g_id,zoneId);
@@ -3708,7 +3708,7 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
     {
         uint32 g_id = graveyard->ID;
 
-        GraveYardData const* data = objmgr.FindGraveYardData(g_id,player->GetZoneId());
+        GraveYardData const* data = objmgr.FindGraveYardData(g_id,player->GetCachedZone());
         if (!data)
         {
             PSendSysMessage(LANG_COMMAND_GRAVEYARDERROR,g_id);
@@ -3727,7 +3727,7 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
         else if (g_team == ALLIANCE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
 
-        PSendSysMessage(LANG_COMMAND_GRAVEYARDNEAREST, g_id,team_name.c_str(),player->GetZoneId());
+        PSendSysMessage(LANG_COMMAND_GRAVEYARDNEAREST, g_id,team_name.c_str(),player->GetCachedZone());
     }
     else
     {
@@ -3741,9 +3741,9 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
 
         if (g_team == ~uint32(0))
-            PSendSysMessage(LANG_COMMAND_ZONENOGRAVEYARDS, player->GetZoneId());
+            PSendSysMessage(LANG_COMMAND_ZONENOGRAVEYARDS, player->GetCachedZone());
         else
-            PSendSysMessage(LANG_COMMAND_ZONENOGRAFACTION, player->GetZoneId(),team_name.c_str());
+            PSendSysMessage(LANG_COMMAND_ZONENOGRAFACTION, player->GetCachedZone(),team_name.c_str());
     }
 
     return true;
@@ -3813,6 +3813,16 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("AIName: %s, ScriptName: %s", target->GetAIName().c_str(), target->GetScriptName().c_str());
     PSendSysMessage("DeadByDefault: %i", (int)target->GetIsDeadByDefault());
 
+    CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.LookupEntry(displayid);
+    if (!displayInfo)
+        return true;
+
+    CreatureModelDataEntry const* modelInfo = sCreatureModelDataStore.LookupEntry(displayInfo->ModelId);
+    if (!modelInfo)
+        return true;
+
+    PSendSysMessage("Combat reach: %f, BoundingRadius: %f", target->GetFloatValue(UNIT_FIELD_COMBATREACH), target->GetFloatValue(UNIT_FIELD_BOUNDINGRADIUS));
+    PSendSysMessage("Determinative Size: %f, CollisionWidth: %f, Scale DB: %f, Scale DBC: %f", target->GetDeterminativeSize(), modelInfo->CollisionWidth, cInfo->scale, displayInfo->scale);
     return true;
 }
 
@@ -4158,7 +4168,7 @@ bool ChatHandler::HandleChangeWeather(const char* args)
     float grade = (float)atof(py);                          //0 to 1, sending -1 is instand good weather
 
     Player *player = m_session->GetPlayer();
-    uint32 zoneid = player->GetZoneId();
+    uint32 zoneid = player->GetCachedZone();
 
     Weather* wth = sWorld.FindWeather(zoneid);
 

@@ -24,6 +24,7 @@
 #include "DBCEnums.h"
 #include "Platform/Define.h"
 #include "Path.h"
+#include "SharedDefines.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -195,7 +196,7 @@ struct CinematicSequencesEntry
 struct CreatureDisplayInfoEntry
 {
     uint32      Displayid;                                  // 0
-    int32       ModelId;                                    // 1
+    uint32 ModelId;                                         // 1
                                                             // 2-3,unused
     float       scale;                                      // 4
                                                             // 5-13,unused
@@ -205,7 +206,15 @@ struct CreatureModelDataEntry
 {
     uint32 ModelID;                                         // 0
 
-    float collision;                                        // 15
+    float CollisionWidth;                                   // 15
+    float CollisionHeight;                                  // 16
+    //float mountHeight                                     // 17
+    float minX;                                             // 18 m_geoBoxMinX
+    float minY;                                             // 19 m_geoBoxMinY
+    float minZ;                                             // 20 m_geoBoxMinZ
+    float maxX;                                             // 21 m_geoBoxMaxX
+    float maxY;                                             // 22 m_geoBoxMaxY
+    float maxZ;                                             // 23 m_geoBoxMaxZ
 };
 
 struct CreatureFamilyEntry
@@ -595,7 +604,7 @@ struct RandomPropertiesPointsEntry
 struct SkillLineEntry
 {
     uint32    id;                                           // 0
-    int32    categoryId;                                    // 1 (index from SkillLineCategory.dbc)
+    uint32    categoryId;                                   // 1 (index from SkillLineCategory.dbc)
     //uint32    skillCostID;                                // 2 not used
     char*     name[16];                                     // 3-18
                                                             // 19 string flags, not used
@@ -738,7 +747,7 @@ struct SpellEntry
     // helpers
     int32 CalculateSimpleValue(uint8 eff) const { return EffectBasePoints[eff]+int32(EffectBaseDice[eff]); }
 
-    bool HasEffect(uint32 eff)
+    bool HasEffect(uint32 eff) const
     {
         for (uint8 i = 0; i < 3; ++i)
             if (Effect[i] == eff)
@@ -747,7 +756,7 @@ struct SpellEntry
         return false;
     }
 
-    bool HasApplyAura(uint32 aur)
+    bool HasApplyAura(uint32 aur) const
     {
         for (uint8 i = 0; i < 3; ++i)
             if (Effect[i] == SPELL_EFFECT_APPLY_AURA && EffectApplyAuraName[i] == aur)

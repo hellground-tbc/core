@@ -311,26 +311,31 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
 
     if(uint32 account_id = accmgr.GetId(args))
     {
-        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT speciallogs FROM account WHERE id = '%u'", account_id);
+        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
         if (!result)
             return false;
 
         Field * fields = result->Fetch();
 
-        uint64 speciallogs = fields[0].GetUInt64();
+        uint64 accFlags = fields[0].GetUInt64();
 
         if (WorldSession *s = sWorld.FindSession(account_id))
-            s->SetSpecialLog(!(s->SpecialLog()));
-
-        if (speciallogs & SPECIAL_LOG)
         {
-            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs &~ 0x01 WHERE id = '%u'", account_id);
-            PSendSysMessage("SpecialLog disabled.");
+            if (s->IsAccountFlagged(ACC_SPECIAL_LOG))
+                s->RemoveAccountFlag(ACC_SPECIAL_LOG);
+            else
+                s->AddAccountFlag(ACC_SPECIAL_LOG);
+        }
+
+        if (accFlags & ACC_SPECIAL_LOG)
+        {
+            LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_SPECIAL_LOG, account_id);
+            PSendSysMessage("SpecialLog have been disabled for account: %u.", account_id);
         }
         else
         {
-            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs | 0x01 WHERE id = '%u'", account_id);
-            PSendSysMessage("SpecialLog enabled.");
+            LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_SPECIAL_LOG, account_id);
+            PSendSysMessage("SpecialLog have been enabled for account: %u.", account_id);
         }
     }
     else
@@ -345,29 +350,24 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
 
 bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
 {
-
     if (uint32 account_id = m_session->GetAccountId())
     {
-        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT speciallogs FROM account WHERE id = '%u'", account_id);
-        if (!result)
-            return false;
-
-        Field * fields = result->Fetch();
-
-        uint64 speciallogs = fields[0].GetUInt64();
-
         if (WorldSession *s = sWorld.FindSession(account_id))
-            s->DisableGuildAnn(s->DisplayGuildAnn());
+        {
+            if (s->IsAccountFlagged(ACC_DISABLED_GANN))
+            {
+                s->RemoveAccountFlag(ACC_DISABLED_GANN);
 
-        if (speciallogs & DIS_GUILD_ANN)
-        {
-            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs & ~0x04 WHERE id = '%u'", account_id);
-            PSendSysMessage("Guild announces enabled.");
-        }
-        else
-        {
-            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs | 0x04 WHERE id = '%u'", account_id);
-            PSendSysMessage("Guild announces disabled.");
+                LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_DISABLED_GANN, account_id);
+                PSendSysMessage("Guild announces have been enabled for this account.");
+            }
+            else
+            {
+                s->AddAccountFlag(ACC_DISABLED_GANN);
+
+                LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
+                PSendSysMessage("Guild announces have been disabled for this account.");
+            }
         }
     }
     else
@@ -385,28 +385,33 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
     if(!*args)
         return false;
 
-    if(uint32 account_id = accmgr.GetId(args))
+    if (uint32 account_id = accmgr.GetId(args))
     {
-        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT speciallogs FROM account WHERE id = '%u'", account_id);
+        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
         if (!result)
             return false;
 
         Field * fields = result->Fetch();
 
-        uint64 speciallogs = fields[0].GetUInt64();
+        uint64 accFlags = fields[0].GetUInt64();
 
-        if(WorldSession *s = sWorld.FindSession(account_id))
-            s->SetWhispLog(!(s->WhispLog()));
-
-        if (speciallogs & WHISP_LOG)
+        if (WorldSession *s = sWorld.FindSession(account_id))
         {
-            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs &~ 0x02 WHERE id = '%u'", account_id);
-            PSendSysMessage("WhispLog disabled.");
+            if (s->IsAccountFlagged(ACC_SPECIAL_LOG))
+                s->RemoveAccountFlag(ACC_SPECIAL_LOG);
+            else
+                s->AddAccountFlag(ACC_SPECIAL_LOG);
+        }
+
+        if (accFlags & ACC_WHISPER_LOG)
+        {
+            LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_WHISPER_LOG, account_id);
+            PSendSysMessage("WhispLog have been disabled for account: %u.", account_id);
         }
         else
         {
-            LoginDatabase.PExecute("UPDATE account SET speciallogs = speciallogs | 0x02 WHERE id = '%u'", account_id);
-            PSendSysMessage("WhispLog enabled.");
+            LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_WHISPER_LOG, account_id);
+            PSendSysMessage("WhispLog have been enabled for account: %u.", account_id);
         }
     }
     else

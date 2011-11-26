@@ -124,7 +124,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 {
     friend class MapReference;
     public:
-        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
+        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent = NULL);
         virtual ~Map();
 
         // currently unused for normal maps
@@ -174,6 +174,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
             GridPair p = Trinity::ComputeGridPair(x, y);
             return loaded(p);
         }
+
+        Map* GetParent() const { return m_parent; }
 
         bool GetUnloadLock(const GridPair &p) const { return getNGrid(p.x_coord, p.y_coord)->getUnloadLock(); }
         void SetUnloadLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadExplicitLock(on); }
@@ -423,6 +425,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         uint32 m_unloadTimer;
         float m_VisibleDistance;
 
+        Map* m_parent;
+
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
 
@@ -496,7 +500,7 @@ enum InstanceResetMethod
 class TRINITY_DLL_SPEC InstanceMap : public Map
 {
     public:
-        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
+        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent);
         ~InstanceMap();
         bool Add(Player *);
         void Remove(Player *, bool);
@@ -526,7 +530,7 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
 class TRINITY_DLL_SPEC BattleGroundMap : public Map
 {
     public:
-        BattleGroundMap(uint32 id, time_t, uint32 InstanceId, BattleGround *bg);
+        BattleGroundMap(uint32 id, time_t, uint32 InstanceId, BattleGround *bg, Map* _parent);
         ~BattleGroundMap();
 
         bool Add(Player *);

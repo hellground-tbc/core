@@ -66,17 +66,14 @@ void InstanceSaveManager::UnbindBeforeDelete()
     for (InstanceSaveHashMap::iterator itr = m_instanceSaveById.begin(); itr != m_instanceSaveById.end(); ++itr)
     {
         InstanceSave *save = itr->second;
-        for (InstanceSave::PlayerListType::iterator itr2 = save->m_playerList.begin(), next = itr2; itr2 != save->m_playerList.end(); itr2 = next)
-        {
-            ++next;
+        for (InstanceSave::PlayerListType::iterator itr2 = save->m_playerList.begin(); itr2 != save->m_playerList.end(); ++itr2)
             (*itr2)->UnbindInstance(save->GetMapId(), save->GetDifficulty(), true);
-        }
+
         save->m_playerList.clear();
-        for (InstanceSave::GroupListType::iterator itr2 = save->m_groupList.begin(), next = itr2; itr2 != save->m_groupList.end(); itr2 = next)
-        {
-            ++next;
+
+        for (InstanceSave::GroupListType::iterator itr2 = save->m_groupList.begin(); itr2 != save->m_groupList.end(); ++itr2)
             (*itr2)->UnbindInstance(save->GetMapId(), save->GetDifficulty(), true);
-        }
+
         save->m_groupList.clear();
         delete save;
     }
@@ -598,7 +595,7 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 
     DeleteInstanceFromDB(instanceId);                       // even if save not loaded
 
-    Map* iMap = ((MapInstanced*)map)->FindMap(instanceId);
+    Map* iMap = ((MapInstanced*)map)->FindInstancedMap(instanceId);
     if (iMap && iMap->IsDungeon())
         ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
     else

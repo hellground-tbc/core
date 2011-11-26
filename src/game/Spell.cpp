@@ -1211,6 +1211,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->IsAIEnabled)
         ((Creature*)m_caster)->AI()->SpellHitTarget(unit, m_spellInfo);
 
+
     // trigger only for first effect targets
     if (m_ChanceTriggerSpells.size() && (effectMask & 0x1))
     {
@@ -2896,10 +2897,10 @@ void Spell::update(uint32 difftime)
                                 continue;
 
                             Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : m_caster->GetMap()->GetUnit(target->targetGUID);
-                            if (unit==NULL)
+                            if (!unit)
                                 continue;
 
-                            p->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
+                            p->CastedCreatureOrGO(unit->GetEntry(), unit->GetGUID(), m_spellInfo->Id);
                         }
 
                         for (std::list<GOTargetInfo>::iterator ihit= m_UniqueGOTargetInfo.begin();ihit != m_UniqueGOTargetInfo.end();++ihit)
@@ -2913,7 +2914,7 @@ void Spell::update(uint32 difftime)
                             if (!go)
                                 continue;
 
-                            p->CastedCreatureOrGO(go->GetEntry(),go->GetGUID(),m_spellInfo->Id);
+                            p->CastedCreatureOrGO(go->GetEntry(), go->GetGUID(), m_spellInfo->Id);
                         }
                     }
                 }

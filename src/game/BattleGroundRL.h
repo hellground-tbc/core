@@ -41,8 +41,8 @@ enum BattleGroundRLObjects
 
 enum BattleGroundRLCreatures
 {
-    BG_RL_ARENA_SPECTATOR = 0,
-    BG_RL_CREATURE_MAX    = 1
+    BG_RL_ARENA_SPECTATOR   = 0,
+    BG_RL_CREATURE_MAX      = 1
 };
 
 class BattleGroundRLScore : public BattleGroundScore

@@ -219,7 +219,8 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
         {
             Field *fields = result->Fetch();
             ssInvalidPetitionGUIDs << "'" << fields[0].GetUInt32() << "' , ";
-        } while (result->NextRow());
+        }
+        while (result->NextRow());
     }
 
     // delete petitions with the same guid as this one

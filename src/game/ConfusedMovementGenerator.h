@@ -60,3 +60,4 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMediu
 };
 
 #endif
+

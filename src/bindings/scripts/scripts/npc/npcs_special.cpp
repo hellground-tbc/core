@@ -42,14 +42,12 @@ npc_lurky                   100%    AI for Lurky, Blue Murloc and Pink Murloc
 EndContentData */
 
 #include "precompiled.h"
-//#include "Battleground.h"
+//#include "BattleGround.h"
 #include "Totem.h"
 #include "PetAI.h"
 #include <list>
 
 #include <cstring>
-
-//#include "BattleGround.h"
 
 /*########
 # npc_chicken_cluck

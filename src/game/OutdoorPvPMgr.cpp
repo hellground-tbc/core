@@ -183,6 +183,21 @@ void OutdoorPvPMgr::HandlePlayerLeaveZone(Player *plr, uint32 zoneid)
     sLog.outDebug("Player %u left outdoorpvp id %u",plr->GetGUIDLow(), itr->second->GetTypeId());
 }
 
+void OutdoorPvPMgr::HandlePlayerLeave(Player *plr)
+{
+    for (OutdoorPvPMap::iterator itr = m_OutdoorPvPMap.begin(); itr != m_OutdoorPvPMap.end(); ++itr)
+    {
+        // teleport: remove once in removefromworld, once in updatezone
+        if (!itr->second->HasPlayer(plr))
+            continue;
+        else
+        {
+            itr->second->HandlePlayerLeaveZone(plr, itr->first);
+            sLog.outDebug("Player %u left outdoorpvp id %u",plr->GetGUIDLow(), itr->second->GetTypeId());
+        }
+    }
+}
+
 OutdoorPvP * OutdoorPvPMgr::GetOutdoorPvPToZoneId(uint32 zoneid)
 {
     OutdoorPvPMap::iterator itr = m_OutdoorPvPMap.find(zoneid);
