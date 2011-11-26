@@ -168,7 +168,7 @@ Player* World::FindPlayerInZone(uint32 zone)
         Player *player = itr->second->GetPlayer();
         if (!player)
             continue;
-        if (player->IsInWorld() && player->GetZoneId() == zone)
+        if (player->IsInWorld() && player->GetCachedZone() == zone)
         {
             // Used by the weather system. We return the player to broadcast the change weather message to him and all players in the zone.
             return player;
@@ -2220,7 +2220,7 @@ void World::SendZoneMessage(uint32 zone, WorldPacket *packet, WorldSession *self
         if (itr->second &&
             itr->second->GetPlayer() &&
             itr->second->GetPlayer()->IsInWorld() &&
-            itr->second->GetPlayer()->GetZoneId() == zone &&
+            itr->second->GetPlayer()->GetCachedZone() == zone &&
             itr->second != self &&
             (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
         {

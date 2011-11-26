@@ -716,7 +716,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player *player, WorldPacke
         *data << (uint16) player->getLevel();
 
     if (mask & GROUP_UPDATE_FLAG_ZONE)
-        *data << (uint16) player->GetZoneId();
+        *data << (uint16) player->GetCachedZone();
 
     if (mask & GROUP_UPDATE_FLAG_POSITION)
         *data << (uint16) player->GetPositionX() << (uint16) player->GetPositionY();
@@ -860,7 +860,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recv_data)
     data << (uint16) player->GetPower(powerType);           // GROUP_UPDATE_FLAG_CUR_POWER
     data << (uint16) player->GetMaxPower(powerType);        // GROUP_UPDATE_FLAG_MAX_POWER
     data << (uint16) player->getLevel();                    // GROUP_UPDATE_FLAG_LEVEL
-    data << (uint16) player->GetZoneId();                   // GROUP_UPDATE_FLAG_ZONE
+    data << (uint16) player->GetCachedZone();               // GROUP_UPDATE_FLAG_ZONE
     data << (uint16) player->GetPositionX();                // GROUP_UPDATE_FLAG_POSITION
     data << (uint16) player->GetPositionY();                // GROUP_UPDATE_FLAG_POSITION
 

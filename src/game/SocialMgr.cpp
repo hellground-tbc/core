@@ -229,7 +229,7 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
         if (pFriend->isDND())
             friendInfo.Status = FRIEND_STATUS_DND;
 
-        friendInfo.Area = pFriend->GetZoneId();
+        friendInfo.Area = pFriend->GetCachedZone();
 
         if (sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA))
             if (pFriend->InArena())

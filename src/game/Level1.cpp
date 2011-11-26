@@ -859,8 +859,17 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     CellPair cell_val = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
     Cell cell(cell_val);
 
-    uint32 zone_id = obj->GetZoneId();
-    uint32 area_id = obj->GetAreaId();
+    uint32 zone_id, area_id;
+    if (obj->GetTypeId() == TYPEID_PLAYER)
+    {
+        zone_id = ((Player*)obj)->GetCachedZone();
+        area_id = ((Player*)obj)->GetCachedArea();
+    }
+    else
+    {
+        zone_id = obj->GetZoneId();
+        area_id = obj->GetAreaId();
+    }
 
     MapEntry const* mapEntry = sMapStore.LookupEntry(obj->GetMapId());
     AreaTableEntry const* zoneEntry = GetAreaEntryByAreaID(zone_id);
@@ -1014,7 +1023,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             m_session->GetPlayer()->GetPositionY(),
             m_session->GetPlayer()->GetPositionZ(),
             m_session->GetPlayer()->GetOrientation(),
-            m_session->GetPlayer()->GetZoneId(),
+            m_session->GetPlayer()->GetCachedZone(),
             guid);
     }
     else
@@ -2864,7 +2873,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     if (x==0.0f && *px!='0' || y==0.0f && *py!='0')
         return false;
 
-    uint32 areaid = cAreaId ? (uint32)atoi(cAreaId) : _player->GetZoneId();
+    uint32 areaid = cAreaId ? (uint32)atoi(cAreaId) : _player->GetCachedZone();
 
     AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(areaid);
 
