@@ -719,7 +719,7 @@ void Guild::Roster(WorldSession *session)
             data << (uint8)pl->getLevel();
             data << (uint8)pl->getClass();
             data << (uint8)0;                               // new 2.4.0
-            data << (uint32)pl->GetZoneId();
+            data << (uint32)pl->GetCachedZone();
             data << itr->second.Pnote;
             data << itr->second.OFFnote;
         }
