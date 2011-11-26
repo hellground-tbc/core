@@ -141,7 +141,8 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_ALWAYS_WALK         = 0x00100000,       // 1048576
     CREATURE_FLAG_EXTRA_NO_TARGET           = 0x00200000,       // 2097152 creature won't set UNIT_FIELD_TARGET by self (return in Attack function !)
     CREATURE_FLAG_EXTRA_HASTE_IMMUNE        = 0x00400000,       // 4194304
-    CREATURE_FLAG_EXTRA_CANT_MISS           = 0x00800000        // 8388608 creature melee attacks cant miss
+    CREATURE_FLAG_EXTRA_CANT_MISS           = 0x00800000,       // 8388608 creature melee attacks cant miss
+    CREATURE_FLAG_EXTRA_NOT_REGEN_MANA      = 0x01000000        // 16777216 creature has mana pool, but do not regenerates it when OOC
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
