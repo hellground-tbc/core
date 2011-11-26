@@ -38,11 +38,12 @@
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
 #include "ReputationMgr.h"
+#include "World.h"
 
 #include "SpellMgr.h"       // for GetSpellBaseCastTime
 
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 
 struct Mail;
 class Channel;
