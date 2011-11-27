@@ -15758,7 +15758,7 @@ void Player::SaveToDB()
     ss << uint32(m_atLoginFlags);
 
     ss << ", ";
-    ss << GetZoneId();
+    ss << GetCachedZone();
 
     ss << ", ";
     ss << (uint64)m_deathExpireTime;
