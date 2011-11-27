@@ -33,7 +33,10 @@ WaypointMovementGenerator<T>::Initialize(T &u){}
 
 template<>
 void
-WaypointMovementGenerator<Creature>::Finalize(Creature &u){}
+WaypointMovementGenerator<Creature>::Finalize(Creature &u)
+{
+    u.setActive(WasActive);
+}
 
 template<>
 void
@@ -99,6 +102,8 @@ void
 WaypointMovementGenerator<Creature>::Initialize(Creature &u)
 {
     u.StopMoving();
+    WasActive = u.isActiveObject();
+    u.setActive(true);
     //i_currentNode = -1; // uint32, become 0 in the first update
     //i_nextMoveTime.Reset(0);
     StopedByPlayer = false;
@@ -181,6 +186,22 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
                 return true;
             }
 
+            if (FormationMove)
+            {
+                if (unit.IsFormationLeader())
+                {
+                    if (unit.GetFormation()->AllUnitsReachedWaypoint())
+                        FormationMove = false;
+                    else
+                    {   
+                        i_nextMoveTime.Reset(500);
+                        return true;
+                    }
+                } 
+                else
+                    FormationMove = false;
+            }
+
             if (i_currentNode == waypoints->size() - 1) //If that's our last waypoint
             {
                 if (repeating) //If the movement is repeating
@@ -196,29 +217,67 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
                 i_currentNode++;
 
             node = waypoints->at(i_currentNode);
+            if (unit.IsFormationLeader())
+            {
+                if (MicroMove)
+                {
+                    MicroMove = false;
+                }
+                else
+                {
+                    float x, y, z = node->z;
+                    if(unit.GetDistanceSq(node->x, node->y, node->z) > 5*5)
+                    {
+                        unit.GetNearPoint2D(x, y, 2, unit.GetAngle(node->x, node->y));
+                        unit.UpdateGroundPositionZ(x,y,z);
+                        InitTraveller(unit, *node);
+                        i_destinationHolder.SetDestination(traveller, x, y, z);
+                        i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
+                        unit.GetFormation()->LeaderMoveTo(x, y, z);
+                        FormationMove = true;
+                        MicroMove = true;
+                        i_currentNode--;
+                        return true;
+                    }
+                }
+            }
+            
             InitTraveller(unit, *node);
             i_destinationHolder.SetDestination(traveller, node->x, node->y, node->z);
             i_nextMoveTime.Reset(i_destinationHolder.GetTotalTravelTime());
 
-            if (unit.GetFormation() && unit.GetFormation()->getLeader())
-                if (unit.GetFormation()->getLeader()->GetGUID() == unit.GetGUID())
-                    unit.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
+            if (unit.IsFormationLeader())
+            {
+                FormationMove = true;
+                unit.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
+            }
         }
         else
         {
-            //Determine waittime
-            if (node->delay)
-                i_nextMoveTime.Reset(node->delay);
+            if (!MicroMove)
+            {
+                //Determine waittime
+                if (node->delay)
+                    i_nextMoveTime.Reset(node->delay);
 
-            //note: disable "start" for mtmap
-            if (node->event_id && rand()%100 < node->event_chance)
-                unit.GetMap()->ScriptsStart(sWaypointScripts, node->event_id, &unit, NULL/*, false*/);
+                //note: disable "start" for mtmap
+                if (node->event_id && rand()%100 < node->event_chance)
+                    unit.GetMap()->ScriptsStart(sWaypointScripts, node->event_id, &unit, NULL/*, false*/);
+
+                unit.Relocate(node->x, node->y, node->z);
+                MovementInform(unit);
+                unit.UpdateWaypointID(i_currentNode);
+            }
+            else
+            {
+                float x, y, z;
+                i_nextMoveTime.Reset(0);
+                i_destinationHolder.GetDestination(x, y, z);
+                unit.Relocate(x, y, z);
+            }
 
             i_destinationHolder.ResetTravelTime();
-            MovementInform(unit);
-            unit.UpdateWaypointID(i_currentNode);
             unit.clearUnitState(UNIT_STAT_ROAMING);
-            unit.Relocate(node->x, node->y, node->z);
         }
     }
     else

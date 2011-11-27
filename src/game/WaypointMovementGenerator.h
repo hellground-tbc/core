@@ -70,7 +70,7 @@ class TRINITY_DLL_SPEC WaypointMovementGenerator
 {
     public:
         WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true) :
-          i_nextMoveTime(0), path_id(_path_id), repeating(_repeating), StopedByPlayer(false), node(NULL) {}
+          i_nextMoveTime(0), path_id(_path_id), repeating(_repeating), StopedByPlayer(false), node(NULL), FormationMove(false), MicroMove(false) {}
 
         void Initialize(T &);
         void Finalize(T &);
@@ -87,7 +87,7 @@ class TRINITY_DLL_SPEC WaypointMovementGenerator
         uint32 path_id;
         TimeTrackerSmall i_nextMoveTime;
         WaypointPath *waypoints;
-        bool repeating, StopedByPlayer;
+        bool repeating, StopedByPlayer, WasActive, FormationMove, MicroMove;
 };
 
 /** FlightPathMovementGenerator generates movement of the player for the paths
