@@ -45,7 +45,6 @@
 #ifdef WIN32
 #include "ServiceWin32.h"
 #else
-#include "vmap/BIH.h"
 #include "PosixDaemon.h"
 #endif
 

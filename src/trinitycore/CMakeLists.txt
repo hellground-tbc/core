@@ -36,7 +36,7 @@ target_link_libraries(${EXECUTABLE_NAME}
   game
   shared
   framework
-  g3dlite
+  g3dlib
   ${ACE_LIBRARIES}
   ${READLINE_LIBRARY}
 )

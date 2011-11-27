@@ -53,7 +53,7 @@ add_library(game STATIC
 
 target_link_libraries(game
   shared
-  g3dlite
+  g3dlib
 )
 
 if(UNIX)
