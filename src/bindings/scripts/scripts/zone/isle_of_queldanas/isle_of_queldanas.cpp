@@ -295,12 +295,16 @@ struct TRINITY_DLL_DECL npc_erratic_sentryAI : public ScriptedAI
             {
                 if(CapacitatorOverload < diff)
                 {
-                    if(roll_chance_i(2))
+                    if(roll_chance_i(5))
                     {
                         int32 dmg = 1714;
                         me->CastCustomSpell(me, CAPACITATOR_OVERLOAD, 0, 0, 0, true);
+                        CapacitatorOverload = 500;
+                        return;
                     }
-                    CapacitatorOverload = HealthBelowPct(98)?0:5000;
+                    if(HealthBelowPct(100) && roll_chance_i(15))
+                        me->SetHealth(me->GetMaxHealth());
+                    CapacitatorOverload = 5000;
                 }
                 else
                     CapacitatorOverload -= diff;
@@ -330,7 +334,8 @@ struct TRINITY_DLL_DECL npc_erratic_sentryAI : public ScriptedAI
         {
             if(ElectricalOverload < diff)
             {
-                DoYell(YELL_CORE_OVERLOAD, 0, me->getVictim());
+                if(roll_chance_i(20))
+                    DoYell(YELL_CORE_OVERLOAD, 0, me->getVictim());
                 AddCustomSpellToCast(SPELL_ELECTRICAL_OVERLOAD, CAST_SELF, 176);
                 ElectricalOverload = 10000;
             }
