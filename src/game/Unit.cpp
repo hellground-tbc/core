@@ -5495,6 +5495,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 if (triggeredByAura->GetCasterGUID() != pVictim->GetGUID())
                     return false;
 
+                if (!pVictim->IsInMap(triggeredByAura->GetCaster()))
+                    return false;
+
                 // energize amount
                 basepoints0 = triggeredByAura->GetModifier()->m_amount*damage/100;
                 pVictim->CastCustomSpell(pVictim,34919,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);

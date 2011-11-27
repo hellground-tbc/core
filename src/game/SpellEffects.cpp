@@ -3401,8 +3401,15 @@ void Spell::EffectPersistentAA(uint32 i)
 
 void Spell::EffectEnergize(uint32 i)
 {
-    if (!unitTarget)
+    if (!unitTarget || !m_caster)
         return;
+
+    if (!unitTarget->IsInWorld() || !m_caster->IsInWorld())
+        return;
+
+    if (!m_caster->IsInMap(unitTarget))
+        return;
+
     if (!unitTarget->isAlive())
         return;
 
