@@ -195,7 +195,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
         if (!entry->SupportsHeroicMode() && player->GetDifficulty() == DIFFICULTY_HEROIC)
         {
             //Send aborted message
-            player->SendTransferAborted(mapid, TRANSFER_ABORT_DIFFICULTY, DIFFICULTY_HEROIC);
+            player->SendTransferAborted(mapid, TRANSFER_ABORT_DIFFICULTY2);
             return false;
         }
 

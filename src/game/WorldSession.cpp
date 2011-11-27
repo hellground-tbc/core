@@ -247,7 +247,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                             logUnexpectedOpcode(packet, "the player has not logged in yet");
                     }
                     else if (_player->IsInWorld())
-                        ExecuteOpcode(opHandle, packet);
+                        (this->*opHandle.handler)(*packet);
 
                     // lag can cause STATUS_LOGGEDIN opcodes to arrive after the player started a transfer
                     break;
@@ -257,7 +257,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     else if (_player->IsInWorld())
                         logUnexpectedOpcode(packet, "the player is still in world");
                     else
-                        ExecuteOpcode(opHandle, packet);
+                        (this->*opHandle.handler)(*packet);
 
                     break;
                 case STATUS_AUTHED:
@@ -270,7 +270,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
                     m_playerRecentlyLogout = false;
 
-                    ExecuteOpcode(opHandle, packet);
+                    (this->*opHandle.handler)(*packet);
 
                     break;
                 case STATUS_NEVER:
@@ -317,7 +317,7 @@ void WorldSession::LogoutPlayer(bool Save)
         return;
 
     // finish pending transfers before starting the logout
-    while (_player && _player->IsBeingTeleportedFar())
+    while (_player && _player->IsBeingTeleported())
         HandleMoveWorldportAckOpcode();
 
     m_playerLogout = true;
@@ -412,7 +412,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         // FG: finish pending transfers after starting the logout
         // this should fix players beeing able to logout and login back with full hp at death position
-        while (_player->IsBeingTeleportedFar())
+        while (_player->IsBeingTeleported())
             HandleMoveWorldportAckOpcode();
 
         for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
@@ -638,28 +638,4 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
 
     if (m_Warden)
         m_Warden->Init(this, K);
-}
-
-void WorldSession::ExecuteOpcode(OpcodeHandler& opHandle, WorldPacket* packet)
-{
-    // need prevent do internal far teleports in handlers because some handlers do lot steps
-    // or call code that can do far teleports in some conditions unexpectedly for generic way work code
-    if (_player)
-        _player->SetCanDelayTeleport(true);
-
-    (this->*opHandle.handler)(*packet);
-
-    if (_player)
-    {
-        // can be not set in fact for login opcode, but this not create porblems.
-        _player->SetCanDelayTeleport(false);
-
-        //we should execute delayed teleports only for alive(!) players
-        //because we don't want player's ghost teleported from graveyard
-        if (_player->IsHasDelayedTeleport())
-            _player->TeleportTo(_player->m_teleport_dest, _player->m_teleport_options);
-    }
-
-//    if (packet->rpos() < packet->wpos() && sLog.HasLogLevelOrHigher(LOG_LVL_DEBUG))
-//        LogUnprocessedTail(packet);
 }

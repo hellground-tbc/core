@@ -3488,8 +3488,7 @@ void Map::ForcedUnload()
                     player->GetGUIDLow());
                 player->TeleportToHomebind();
             }
-            player->SetSemaphoreTeleportFar(false);
-            player->SetSemaphoreTeleportNear(false);
+            player->SetSemaphoreTeleport(false);
         }
 
         switch (sWorld.getConfig(CONFIG_VMSS_MAPFREEMETHOD))
