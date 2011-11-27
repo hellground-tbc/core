@@ -12,7 +12,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_SOURCE_DIR}/src/shared/Database
   ${CMAKE_SOURCE_DIR}/dep/include
-  ${CMAKE_SOURCE_DIR}/dep/include/g3dlite
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/game
   ${CMAKE_BINARY_DIR}
@@ -36,7 +35,7 @@ target_link_libraries(${EXECUTABLE_NAME}
   game
   shared
   framework
-  g3dlite
+  g3dlib
   ${ACE_LIBRARIES}
   ${READLINE_LIBRARY}
 )
