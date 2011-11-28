@@ -1196,6 +1196,14 @@ Visibility.Notify.Period.InBGArenas   = 1000
 #         Reputation Gain rate
 #         Default: 1
 #
+#    Rate.Reputation.LowLevel.Kill
+#         Reputation Gain form low level kill (grey creture)
+#         Default: 0.2
+#
+#    Rate.Reputation.LowLevel.Quest
+#         Reputation Gain rate
+#         Default: 1
+#
 #    Rate.InstanceResetTime
 #        Multiplier for the number of days in between global raid/heroic instance resets.
 #        Default: 1
@@ -1288,6 +1296,8 @@ Rate.Mining.Amount = 1
 Rate.Mining.Next   = 1
 Rate.Talent = 1
 Rate.Reputation.Gain = 1
+Rate.Reputation.LowLevel.Kill = 0.2
+Rate.Reputation.LowLevel.Quest = 1
 Rate.InstanceResetTime = 1
 SkillGain.Crafting = 1
 SkillGain.Defense = 1
@@ -1335,7 +1345,7 @@ Death.Bones.BattlegroundOrArena = 1
 #
 # EnableFakeWho: Enables/Disables fake who list to fake real position of players in arena
 #             Default: 0 (disabled)
-# 
+#
 ###################################################################################################################
 
 Arena.MaxRatingDifference = 0

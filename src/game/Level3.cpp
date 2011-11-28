@@ -428,6 +428,14 @@ bool ChatHandler::HandleReloadReservedNameCommand(const char*)
     return true;
 }
 
+bool ChatHandler::HandleReloadReputationRewardRateCommand(const char*)
+{
+    sLog.outString("Re-Loading `reputation_reward_rate` Table!");
+    sObjectMgr.LoadReputationRewardRate();
+    SendGlobalSysMessage("DB table `reputation_reward_rate` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadReputationSpilloverTemplateCommand(const char*)
 {
     sLog.outString("Re-Loading `reputation_spillover_template` Table!");

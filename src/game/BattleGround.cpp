@@ -459,7 +459,7 @@ void BattleGround::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
 
         if (team == TeamID)
         {
-            int32 rep = plr->CalculateReputationGain(70, Reputation, faction_id, false);
+            int32 rep = plr->CalculateReputationGain(REPUTATION_SOURCE_BG, Reputation, faction_id);
             plr->GetReputationMgr().ModifyReputation(factionEntry, Reputation);
             plr->UpdateBgTitle();
         }

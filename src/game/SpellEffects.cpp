@@ -6943,6 +6943,8 @@ void Spell::EffectReputation(uint32 i)
     if (!factionEntry)
         return;
 
+    rep_change = _player->CalculateReputationGain(REPUTATION_SOURCE_SPELL, rep_change, faction_id);
+
     _player->GetReputationMgr().ModifyReputation(factionEntry,rep_change);
 }
 

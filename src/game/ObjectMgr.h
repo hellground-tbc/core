@@ -132,6 +132,14 @@ struct PetLevelInfo
     uint16 armor;
 };
 
+// We assume the rate is in general the same for all three types below, but chose to keep three for scalability and customization
+struct RepRewardRate
+{
+    float quest_rate;           // We allow rate = 0.0 in database. For this case,
+    float creature_rate;        // it means that no reputation are given at all
+    float spell_rate;           // for this faction/rate type.
+};
+
 struct ReputationOnKillEntry
 {
     uint32 repfaction1;
@@ -263,8 +271,11 @@ class TRINITY_DLL_DECL ObjectMgr
         typedef UNORDERED_MAP<uint32, Quest*> QuestMap;
         typedef UNORDERED_MAP<uint32, AreaTrigger> AreaTriggerMap;
         typedef UNORDERED_MAP<uint32, AccessRequirement> AccessRequirementMap;
+
+        typedef UNORDERED_MAP<uint32, RepRewardRate > RepRewardRateMap;
         typedef UNORDERED_MAP<uint32, ReputationOnKillEntry> RepOnKillMap;
         typedef UNORDERED_MAP<uint32, RepSpilloverTemplate> RepSpilloverTemplateMap;
+
         typedef UNORDERED_MAP<uint32, WeatherZoneChances> WeatherZoneMap;
         typedef UNORDERED_MAP<uint32, PetCreateSpellEntry> PetCreateSpellMap;
 
@@ -403,11 +414,21 @@ class TRINITY_DLL_DECL ObjectMgr
         AreaTrigger const* GetGoBackTrigger(uint32 Map) const;
         AreaTrigger const* GetMapEntranceTrigger(uint32 Map) const;
 
-        ReputationOnKillEntry const* GetReputationOnKilEntry(uint32 id) const
+        RepRewardRate const* GetRepRewardRate(uint32 factionId) const
+        {
+            RepRewardRateMap::const_iterator itr = m_RepRewardRateMap.find(factionId);
+            if (itr != m_RepRewardRateMap.end())
+                return &itr->second;
+
+            return NULL;
+        }
+
+        ReputationOnKillEntry const* GetReputationOnKillEntry(uint32 id) const
         {
             RepOnKillMap::const_iterator itr = mRepOnKill.find(id);
             if (itr != mRepOnKill.end())
                 return &itr->second;
+
             return NULL;
         }
 
@@ -416,6 +437,7 @@ class TRINITY_DLL_DECL ObjectMgr
             RepSpilloverTemplateMap::const_iterator itr = m_RepSpilloverTemplateMap.find(factionId);
             if (itr != m_RepSpilloverTemplateMap.end())
                 return &itr->second;
+
             return NULL;
         }
 
@@ -424,6 +446,7 @@ class TRINITY_DLL_DECL ObjectMgr
             PetCreateSpellMap::const_iterator itr = mPetCreateSpell.find(id);
             if (itr != mPetCreateSpell.end())
                 return &itr->second;
+
             return NULL;
         }
 
@@ -497,6 +520,7 @@ class TRINITY_DLL_DECL ObjectMgr
         void LoadCorpses();
         void LoadFishingBaseSkillLevel();
 
+        void LoadReputationRewardRate();
         void LoadReputationOnKill();
         void LoadReputationSpilloverTemplate();
 
@@ -791,6 +815,7 @@ class TRINITY_DLL_DECL ObjectMgr
         AreaTriggerMap      mAreaTriggers;
         AccessRequirementMap  mAccessRequirements;
 
+        RepRewardRateMap    m_RepRewardRateMap;
         RepOnKillMap        mRepOnKill;
         RepSpilloverTemplateMap m_RepSpilloverTemplateMap;
 

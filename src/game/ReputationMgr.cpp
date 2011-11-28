@@ -126,34 +126,33 @@ void ReputationMgr::SendForceReactions()
 
 void ReputationMgr::SendState(FactionState const* faction)
 {
-    if (faction->Flags & FACTION_FLAG_VISIBLE)               //If faction is visible then update it
+    uint32 count = 1;
+
+    WorldPacket data(SMSG_SET_FACTION_STANDING, (16)); // last check 2.4.0
+    data << (float) 0; // unk 2.4.0
+
+    size_t p_count = data.wpos();
+    data << (uint32) count; // placeholder
+
+    data << (uint32) faction->ReputationListID;
+    data << (uint32) faction->Standing;
+
+    for (FactionStateList::iterator itr = m_factions.begin(); itr != m_factions.end(); ++itr)
     {
-        uint32 count = 1;
-        WorldPacket data(SMSG_SET_FACTION_STANDING, (16));  // last check 2.4.0
-        data << (float) 0;                                  // unk 2.4.0
-        size_t p_count = data.wpos();
-        data << (uint32) count;                             // placeholder
-
-        data << (uint32) faction->ReputationListID;
-        data << (uint32) faction->Standing;
-
-        for (FactionStateList::iterator itr = m_factions.begin(); itr != m_factions.end(); ++itr)
+        if (itr->second.needSend)
         {
-            if (itr->second.needSend)
+            itr->second.needSend = false;
+            if (itr->second.ReputationListID != faction->ReputationListID)
             {
-                itr->second.needSend = false;
-                if (itr->second.ReputationListID != faction->ReputationListID)
-                {
-                    data << (uint32) itr->second.ReputationListID;
-                    data << (uint32) itr->second.Standing;
-                    ++count;
-                }
+                data << (uint32) itr->second.ReputationListID;
+                data << (uint32) itr->second.Standing;
+                ++count;
             }
         }
-
-        data.put<uint32>(p_count, count);
-        m_player->SendDirectMessage(&data);
     }
+
+    data.put<uint32>(p_count, count);
+    m_player->SendDirectMessage(&data);
 }
 
 void ReputationMgr::SendInitialReputations()
