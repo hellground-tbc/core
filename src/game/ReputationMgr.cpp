@@ -259,7 +259,7 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
                 {
                     if (repTemplate->faction[i])
                     {
-                        if (m_player->GetReputationRank(repTemplate->faction[i]) <= ReputationRank(repTemplate->faction_rank[i]))
+                        if (GetRank(repTemplate->faction[i]) <= ReputationRank(repTemplate->faction_rank[i]))
                         {
                             // bonuses are already given, so just modify standing by rate
                             int32 spilloverRep = standing * repTemplate->faction_rate[i];
