@@ -1919,7 +1919,26 @@ void World::UpdateSessions(const uint32 & diff)
     if (sessionThreads)
         tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size(), m_sessions.size()/sessionThreads), SessionsUpdater(&m_sessions, diff));
     else
-        tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size()), SessionsUpdater(&m_sessions, diff), tbb::auto_partitioner());
+    {
+        ///- Then send an update signal to remaining ones
+        for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)
+        {
+            next = itr;
+            ++next;
+
+            if (!itr->second)
+                continue;
+
+            ///- and remove not active sessions from the list
+            WorldSession * pSession = itr->second;
+            WorldSessionFilter updater(pSession);
+            if (!pSession->Update(diff, updater))    // As interval = 0
+            {
+                RemoveQueuedPlayer(pSession);
+                AddSessionToRemove(itr);
+            }
+        }
+    }
 
     for (std::list<SessionMap::iterator>::iterator itr = removedSessions.begin(); itr != removedSessions.end(); ++itr)
     {

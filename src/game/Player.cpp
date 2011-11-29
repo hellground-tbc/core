@@ -1505,6 +1505,8 @@ void Player::BuildEnumData(QueryResultAutoPtr result, WorldPacket * p_data)
     *p_data << uint8(bytes);
 
     *p_data << uint8(getLevel());                           // player level
+
+    std::string name = GetName();
     // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
     uint32 zoneId = sMapMgr.GetZoneId(GetMapId(), GetPositionX(),GetPositionY(),GetPositionZ());
     sLog.outDebug("Player::BuildEnumData: m:%u, x:%f, y:%f, z:%f zone:%u", GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), zoneId);
