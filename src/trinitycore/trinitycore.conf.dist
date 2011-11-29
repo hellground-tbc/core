@@ -214,8 +214,21 @@ EAIErrorLevel = 2
 #         Default: 1
 #
 #    SessionUpdate.Threads
-#         Number of threads to update sessions (0 - auto).
+#         Number of threads to update sessions (0 - disable).
 #         Default: 1
+#
+#    SessionUpdate.MaxTime
+#         Max time to update sessions. If session update time will be greater then method from SessionUpdate.Method
+#         will be called. Time in ms.
+#         Default: 1000
+#
+#    SessionUpdate.Method
+#         Method to call when single session update time will be greater than SessionUpdate.MaxTime.
+#         0 - Do nothing
+#         1 - Log
+#         2 - Kick player + log
+#         3 - Ban account + log (Default)
+#         4 - Ban ip and account + log
 #
 ###################################################################################################################
 

@@ -89,6 +89,15 @@ enum PartyResult
     PARTY_RESULT_INVITE_RESTRICTED    = 13
 };
 
+enum OvertimeMethod
+{
+    OVERTIME_NONE   = 0,
+    OVERTIME_LOG    = 1,
+    OVERTIME_KICK   = 2,
+    OVERTIME_ACCBAN = 3,
+    OVERTIME_IPBAN  = 4
+};
+
 //class to deal with packet processing
 //allows to determine if next packet is safe to be processed
 class PacketFilter

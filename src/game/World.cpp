@@ -1168,6 +1168,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_VMSS_FREEZEDETECTTIME] = sConfig.GetIntDefault("VMSS.MapFreezeDetectTime", 1000);
 
     m_configs[CONFIG_ENABLE_CUSTOM_XP_RATES] = sConfig.GetBoolDefault("EnableCustomXPRates", true);
+
+    m_configs[CONFIG_SESSION_UPDATE_MAX_TIME] = sConfig.GetIntDefault("SessionUpdate.MaxTime", 1000);
+    m_configs[CONFIG_SESSION_UPDATE_OVERTIME_METHOD] = sConfig.GetIntDefault("SessionUpdate.Method", 3);
 }
 
 /// Initialize the World
@@ -1630,7 +1633,7 @@ void World::DetectDBCLang()
     sLog.outString("Using %s DBC Locale as default. All available DBC locales: %s",localeNames[m_defaultDbcLocale],availableLocalsStr.empty() ? "<none>" : availableLocalsStr.c_str());
 }
 
-void World::RecordTimeDiff(const char *text, ...)
+uint32 World::RecordTimeDiff(const char *text, ...)
 {
     if (m_updateTimeCount != 1)
         return;
@@ -1654,6 +1657,8 @@ void World::RecordTimeDiff(const char *text, ...)
     }
 
     m_currentTime = thisTime;
+
+    return diff;
 }
 
 void World::LoadAutobroadcasts()
