@@ -769,6 +769,10 @@ enum TrinityStrings
     LANG_YOU_CHANGE_GENDER              = 1120,
     LANG_YOUR_GENDER_CHANGED            = 1121,
 
+    // Debug commands
+    LANG_CINEMATIC_NOT_EXIST            = 1200,
+    // Room for more debug                1201-1299 not used
+
     // Ticket Strings 2000-2029
     LANG_COMMAND_TICKETNEW              = 2000,
     LANG_COMMAND_TICKETUPDATED          = 2001,

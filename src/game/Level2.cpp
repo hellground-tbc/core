@@ -290,7 +290,7 @@ bool ChatHandler::HandleMuteInfoCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleTargetObjectCommand(const char* args)
+bool ChatHandler::HandleGameObjectTargetCommand(const char* args)
 {
     Player* pl = m_session->GetPlayer();
     QueryResultAutoPtr result;
@@ -1027,7 +1027,7 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
 }
 
 //delete object by selection or guid
-bool ChatHandler::HandleDelObjectCommand(const char* args)
+bool ChatHandler::HandleGameObjectDeleteCommand(const char* args)
 {
     // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameobject");
@@ -1075,7 +1075,7 @@ bool ChatHandler::HandleDelObjectCommand(const char* args)
 }
 
 //turn selected object
-bool ChatHandler::HandleTurnObjectCommand(const char* args)
+bool ChatHandler::HandleGameObjectTurnCommand(const char* args)
 {
     // number or [name] Shift-click form |color|Hgameobject:go_id|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args, "Hgameobject");
@@ -1210,7 +1210,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 }
 
 //move selected object
-bool ChatHandler::HandleMoveObjectCommand(const char* args)
+bool ChatHandler::HandleGameObjectMoveCommand(const char* args)
 {
     // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args, "Hgameobject");
@@ -1673,7 +1673,7 @@ bool ChatHandler::HandleNpcSetModelCommand(const char* args)
 }
 
 //morph creature or player
-bool ChatHandler::HandleMorphCommand(const char* args)
+bool ChatHandler::HandleModifyMorphCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -2111,7 +2111,6 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     uint32 point = 0;
     Creature* target = getSelectedCreature();
 
-
     if (target)
         pathid = target->GetWaypointPath();
     else if(*args)
@@ -2127,8 +2126,6 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
         sLog.outDebug("DEBUG: HandleWpAddCommand - New path started.");
         PSendSysMessage("%s%s|r", "|cff00ff00", "New path started.");
     }
-
-
 
     // path_id -> ID of the Path
     // point   -> number of the waypoint (if not 0)
@@ -2224,19 +2221,20 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
 }
 
 
-bool ChatHandler::HandleReloadAllPaths(const char* args)
+bool ChatHandler::HandleWpReloadPath(const char* args)
 {
-if(!*args)
-    return false;
+    if (!*args)
+        return false;
 
-uint32 id = atoi(args);
+    uint32 id = atoi(args);
 
-if(!id)
-    return false;
+    if (!id)
+        return false;
 
     PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", id);
     WaypointMgr.UpdatePath(id);
-        return true;
+
+    return true;
 }
 
 bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
@@ -3078,7 +3076,7 @@ bool ChatHandler::HandleRenameCommand(const char* args)
 }
 
 //spawn go
-bool ChatHandler::HandleGameObjectCommand(const char* args)
+bool ChatHandler::HandleGameObjectAddCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -3147,27 +3145,8 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     return true;
 }
 
-//show animation
-bool ChatHandler::HandleAnimCommand(const char* args)
-{
-    if (!*args)
-        return false;
-
-    Unit *pTarget = NULL;
-
-    if (m_session->GetPlayer()->GetSelection())
-        pTarget = Unit::GetUnit(*(m_session->GetPlayer()), m_session->GetPlayer()->GetSelection());
-
-    if (!pTarget)
-        pTarget = m_session->GetPlayer();
-
-    uint32 anim_id = atoi((char*)args);
-    pTarget->HandleEmoteCommand(anim_id);
-    return true;
-}
-
 //change standstate
-bool ChatHandler::HandleStandStateCommand(const char* args)
+bool ChatHandler::HandleModifyStandStateCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -3178,7 +3157,7 @@ bool ChatHandler::HandleStandStateCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleAddHonorCommand(const char* args)
+bool ChatHandler::HandleHonorAddCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -3210,7 +3189,7 @@ bool ChatHandler::HandleHonorAddKillCommand(const char* /*args*/)
     return true;
 }
 
-bool ChatHandler::HandleUpdateHonorFieldsCommand(const char* /*args*/)
+bool ChatHandler::HandleHonorUpdateCommand(const char* /*args*/)
 {
     Player *target = getSelectedPlayer();
     if (!target)
@@ -3937,7 +3916,7 @@ bool ChatHandler::HandlePetTpCommand(const char *args)
     return true;
 }
 
-bool ChatHandler::HandleActivateObjectCommand(const char *args)
+bool ChatHandler::HandleGameObjectActivateCommand(const char *args)
 {
     if (!*args)
         return false;
@@ -3996,7 +3975,7 @@ bool ChatHandler::HandleTempAddSpwCommand(const char* args)
 }
 
 // add go, temp only
-bool ChatHandler::HandleTempGameObjectCommand(const char* args)
+bool ChatHandler::HandleGameObjectAddTempCommand(const char* args)
 {
     if (!*args)
         return false;

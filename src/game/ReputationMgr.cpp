@@ -128,11 +128,11 @@ void ReputationMgr::SendState(FactionState const* faction)
 {
     uint32 count = 1;
 
-    WorldPacket data(SMSG_SET_FACTION_STANDING, (16)); // last check 2.4.0
-    data << (float) 0; // unk 2.4.0
+    WorldPacket data(SMSG_SET_FACTION_STANDING, (16));  // last check 2.4.0
+    data << (float) 0;                                  // unk 2.4.0
 
     size_t p_count = data.wpos();
-    data << (uint32) count; // placeholder
+    data << (uint32) count;                             // placeholder
 
     data << (uint32) faction->ReputationListID;
     data << (uint32) faction->Standing;
@@ -226,9 +226,10 @@ void ReputationMgr::Initialize()
 
 bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental)
 {
+    bool res = false;
+
     if (SimpleFactionsList const* flist = GetFactionTeamList(factionEntry->ID))
     {
-        bool res = false;
         for (SimpleFactionsList::const_iterator itr = flist->begin();itr != flist->end();++itr)
         {
             if (FactionEntry const *factionEntryCalc = sFactionStore.LookupEntry(*itr))
@@ -243,12 +244,11 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
                 }
             }
         }
-        return res;
     }
     else
     {
         // update for the actual faction first
-        bool res = SetOneFactionReputation(factionEntry, standing, incremental);
+        res = SetOneFactionReputation(factionEntry, standing, incremental);
 
         if (res)
         {
@@ -259,7 +259,7 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
                 {
                     if (repTemplate->faction[i])
                     {
-                        if (m_player->GetReputationRank(repTemplate->faction[i]) <= ReputationRank(repTemplate->faction_rank[i]))
+                        if (GetRank(repTemplate->faction[i]) <= ReputationRank(repTemplate->faction_rank[i]))
                         {
                             // bonuses are already given, so just modify standing by rate
                             int32 spilloverRep = standing * repTemplate->faction_rate[i];
@@ -274,9 +274,9 @@ bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standi
             if (itr != m_factions.end())
                 SendState(&itr->second);
         }
-
-        return res;
     }
+
+    return res;
 }
 
 bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing, bool incremental)
