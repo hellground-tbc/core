@@ -242,6 +242,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "threatlist",     SEC_GAMEMASTER,     false, &ChatHandler::HandleDebugThreatList,                 "", NULL },
         { "uws",            SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugUpdateWorldStateCommand,    "", NULL },
         { "update",         SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugUpdate,                     "", NULL },
+        { "poolstats",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleGetPoolObjectStatsCommand,  "", NULL },
         { NULL,             0,                  false, NULL,                                                "", NULL }
     };
 

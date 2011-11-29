@@ -36,6 +36,9 @@
 #include <fstream>
 #include "ObjectMgr.h"
 #include "InstanceData.h"
+#include "GridNotifiers.h"
+#include "PoolHandler.h"
+#include "CellImpl.h"
 
 #define COMMAND_COOLDOWN 2
 
@@ -825,45 +828,3 @@ bool ChatHandler::HandleDebugGetInstanceData64Command(const char *args)
     return true;
 }
 
-bool ChatHandler::HandleDebugSetItemFlagCommand(const char* args)
-{
-    if (!args)
-        return false;
-
-    char* e = strtok((char*)args, " ");
-    char* f = strtok(NULL, " ");
-
-    if (!e || !f)
-        return false;
-
-    uint32 guid = (uint32)atoi(e);
-    uint32 flag = (uint32)atoi(f);
-
-    Item *i = m_session->GetPlayer()->GetItemByGuid(MAKE_NEW_GUID(guid, 0, HIGHGUID_ITEM));
-
-    if (!i)
-        return false;
-
-    i->SetUInt32Value(ITEM_FIELD_FLAGS, flag);
-
-    return true;
-}
-
-//show animation
-bool ChatHandler::HandleDebugAnimCommand(const char* args)
-{
-    if (!*args)
-        return false;
-
-    Unit *pTarget = NULL;
-
-    if (m_session->GetPlayer()->GetSelection())
-        pTarget = m_session->GetPlayer()->GetMap()->GetUnit(m_session->GetPlayer()->GetSelection());
-
-    if (!pTarget)
-        pTarget = m_session->GetPlayer();
-
-    uint32 anim_id = atoi((char*)args);
-    pTarget->HandleEmoteCommand(anim_id);
-    return true;
-}
