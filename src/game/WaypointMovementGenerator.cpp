@@ -225,7 +225,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
                 }
                 else
                 {
-                    float x, y, z = node->z;
+                    float x, y, z = unit.GetPositionZ();
                     if(unit.GetDistanceSq(node->x, node->y, node->z) > 5*5)
                     {
                         unit.GetNearPoint2D(x, y, 2, unit.GetAngle(node->x, node->y));
