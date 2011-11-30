@@ -507,11 +507,12 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
     mob_sunblade_scoutAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 SinisterStrike;
-    uint32 Timer;
+    uint32 Unstack_Timer;
 
     void Reset()
     {
         ClearCastQueue();
+        Unstack_Timer = 7000;
         DoCast(me, SPELL_SUNWELL_RADIANCE, true);
         DoCast(me, SPELL_STEALTH_DETECT, true);
 
@@ -525,20 +526,21 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
         ScriptedAI::EnterEvadeMode();
     }
 
-    bool ActivateProtector()
+    bool ActivateProtector(Unit* who)
     {
         if(Unit* Protector = GetClosestCreatureWithEntry(me, 25507, 65))
         {
             if(Protector->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
             {
-                DoYell(SCOUT_YELL, 0, me);
+                DoYell(SCOUT_YELL, 0, who);
                 float x, y, z;
                 me->GetMotionMaster()->Clear();
-                me->GetMap()->CreatureRelocation(me, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
                 Protector->GetNearPoint(Protector, x, y, z, 0, urand(15, 25), Protector->GetAngle(me));
-                me->RemoveUnitMovementFlag(SPLINEFLAG_WALKMODE);
+                Protector->UpdateAllowedPositionZ(x, y, z);
+                me->SetWalk(false);
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
                 me->SetSelection(Protector->GetGUID());
+                me->SetInFront(Protector);
                 return true;
             }
         }
@@ -557,24 +559,29 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
-
-    void AttackStart(Unit* pWho)
+    void EnterCombat(Unit* who)
     {
-        if (!pWho)
-            return;
+        DoZoneInCombat(80.0f);
 
-        if (m_creature->Attack(pWho, true))
-        {
-            if(!ActivateProtector())
-                DoStartMovement(pWho);
-        }
+        if(!ActivateProtector(who))
+            DoStartMovement(who);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
+
+        if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+        {
+            if(Unstack_Timer < diff)
+            {
+                AttackStart(me->getVictim());
+                Unstack_Timer = 7000;   // just in any case
+            }
+            else
+                Unstack_Timer -= diff;
+        }
 
         if(SinisterStrike < diff)
         {
