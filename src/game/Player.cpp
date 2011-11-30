@@ -10543,9 +10543,6 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
     uint8 bag = pos >> 8;
     uint8 slot = pos & 255;
 
-    if (slot >= EQUIPMENT_SLOT_END)
-        return NULL;
-
     Item *pItem2 = GetItemByPos(bag, slot);
 
     if (!pItem2)
