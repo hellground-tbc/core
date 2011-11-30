@@ -568,7 +568,7 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
 
         if (m_creature->Attack(pWho, true))
         {
-            if(!ActivateProtector())
+            if(!ActivateProtector(pWho))
                 DoStartMovement(pWho);
         }
     }
