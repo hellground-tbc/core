@@ -559,12 +559,18 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* who)
-    {
-        DoZoneInCombat(80.0f);
+    void EnterCombat(Unit* who) { DoZoneInCombat(80.0f); }
 
-        if(!ActivateProtector(who))
-            DoStartMovement(who);
+    void AttackStart(Unit* pWho)
+    {
+        if (!pWho)
+            return;
+
+        if (m_creature->Attack(pWho, true))
+        {
+            if(!ActivateProtector())
+                DoStartMovement(pWho);
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -576,7 +582,7 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
         {
             if(Unstack_Timer < diff)
             {
-                AttackStart(me->getVictim());
+                DoStartMovement(me->getVictim());
                 Unstack_Timer = 7000;   // just in any case
             }
             else
