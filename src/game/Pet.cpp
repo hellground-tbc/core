@@ -1945,7 +1945,7 @@ void Pet::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
         {
             data << unSpellId;
             data << unTimeMs;                               // in m.secs
-            //owner->AddSpellCooldown(unSpellId, 0, curTime + unTimeMs/1000);
+            owner->AddSpellCooldown(unSpellId, 0, curTime + unTimeMs/1000);
         }
     }
     owner->GetSession()->SendPacket(&data);
