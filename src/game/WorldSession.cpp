@@ -297,7 +297,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     if (overtime)
     {
-        switch (sWorld.getConfig())
+        switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
         {
             case OVERTIME_IPBAN:
                 LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', NOW(), NOW(), 'CONSOLE', 'bye bye')", GetRemoteAddress().c_str());

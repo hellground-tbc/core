@@ -1636,11 +1636,11 @@ void World::DetectDBCLang()
 uint32 World::RecordTimeDiff(const char *text, ...)
 {
     if (m_updateTimeCount != 1)
-        return;
+        return 0;
     if (!text)
     {
         m_currentTime = WorldTimer::getMSTime();
-        return;
+        return 0;
     }
 
     uint32 thisTime = WorldTimer::getMSTime();
