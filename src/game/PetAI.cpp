@@ -436,12 +436,7 @@ void FelhunterAI::PrepareSpellForAutocast(uint32 spellID)
             Aura *aur = (*itr).second;
             if (aur && aur->GetSpellProto()->Dispel == DISPEL_MAGIC)
             {
-                bool positive = true;
-                if (!aur->IsPositive())
-                    positive = false;
-                else
-                    positive = (aur->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE)==0;
-                if (positive)
+                if (aur->IsPositive())
                 {
                     AddSpellForAutocast(spellID, target);
                     return;

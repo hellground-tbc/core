@@ -702,6 +702,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 30529:                                         // Chess event: Recently In Game
         case 37469:
         case 37465:
+        case 37128:                                         // Doomwalker - Mark of Death
+        case 30421:                                         // Neterspite - Player buffs(3)
+        case 30422:
+        case 30423:
             return false;
     }
 
@@ -871,10 +875,6 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
 
     // non-positive targets
     if (!IsPositiveTarget(spellproto->EffectImplicitTargetA[effIndex],spellproto->EffectImplicitTargetB[effIndex]))
-        return false;
-
-    // AttributesEx check
-    if (spellproto->AttributesEx & SPELL_ATTR_EX_NEGATIVE)
         return false;
 
     // ok, positive

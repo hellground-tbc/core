@@ -3987,15 +3987,9 @@ void Spell::EffectDispel(uint32 i)
         {
             if (aur->GetSpellProto()->Dispel == DISPEL_MAGIC)
             {
-                bool positive = true;
-                if (!aur->IsPositive())
-                    positive = false;
-                else
-                    positive = (aur->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE)==0;
-
                 // do not remove positive auras if friendly target
                 //               negative auras if non-friendly target
-                if (positive == unitTarget->IsFriendlyTo(m_caster))
+                if (aur->IsPositive() == unitTarget->IsFriendlyTo(m_caster))
                     continue;
             }
             // Add every aura stack to dispel list

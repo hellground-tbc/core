@@ -45,9 +45,6 @@ struct TRINITY_DLL_DECL boss_doomwalkerAI : public ScriptedAI
     boss_doomwalkerAI(Creature *c) : ScriptedAI(c)
     {
         m_creature->GetPosition(wLoc);
-
-        if(SpellEntry *spell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_MARK_DEATH))
-            spell->AttributesEx |= SPELL_ATTR_EX_NEGATIVE;
     }
 
     uint32 Chain_Timer;
