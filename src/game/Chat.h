@@ -439,9 +439,9 @@ class ChatHandler
         bool HandleSubNameCommand(const char* args);
         bool HandleItemMoveCommand(const char* args);
         bool HandleDeMorphCommand(const char* args);
-        bool HandleAddVendorItemCommand(const char* args);
-        bool HandleDelVendorItemCommand(const char* args);
-        bool HandleChangeLevelCommand(const char* args);
+        bool HandleNpcAddItemCommand(const char* args);
+        bool HandleNpcDelItemCommand(const char* args);
+        bool HandleNpcChangeLevelCommand(const char* args);
         bool HandleGoCreatureCommand(const char* args);
         bool HandleGoObjectCommand(const char* args);
         bool HandleGoTicketCommand(const char* args);
@@ -529,7 +529,7 @@ class ChatHandler
         bool HandlePlayAllCommand(const char* args);
         bool HandleRepairitemsCommand(const char* args);
 
-        bool HandleTempAddSpwCommand(const char* args);
+        bool HandleNpcAddTempCommand(const char* args);
 
         //! Development Commands
         bool HandleSet32Bit(const char* args);
