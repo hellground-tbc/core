@@ -5704,7 +5704,7 @@ void Player::CheckAreaExploreAndOutdoor()
     if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
     {
         if (!isOutdoor)
-            RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY);
+            RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY, true);
 //        else
 //            RemoveAurasWithAttribute(SPELL_ATTR_INDOORS_ONLY);
     }
