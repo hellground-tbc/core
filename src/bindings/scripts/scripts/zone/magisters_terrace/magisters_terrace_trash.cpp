@@ -1012,7 +1012,7 @@ struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
 
       if(LashOfPain_Timer < diff)
       {
-          AddCustomSpellToCast(SPELL_LASH_OF_PAIN, CAST_TANK, 420);
+          AddSpellToCast(SPELL_LASH_OF_PAIN, CAST_TANK);
           LashOfPain_Timer = urand(8000,14000);
       }
       else

@@ -363,7 +363,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         {
             if(Unit* target = SelectLowestHpFriendly(40, 200))
             {
-                AddCustomSpellToCast(target, SPELL_FLASH_HEAL, 620, 0, 0, false, true);
+                AddSpellToCast(target, SPELL_FLASH_HEAL, false, true);
                 if(target->GetHealth() * 100 / target->GetMaxHealth() < 50)
                     Heal_Timer = 3000;
                 else
@@ -834,7 +834,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
         if(Autocast_Timer < diff)
         {
-            AddCustomSpellToCast(SPELL_SHADOW_BOLT, CAST_TANK, (HeroicMode?690:345));
+            AddSpellToCast(SPELL_SHADOW_BOLT, CAST_TANK);
             if(roll_chance_f(20.0))
                 AddSpellToCast(SPELL_IMMOLATE, CAST_TANK);
             Autocast_Timer = 3000;
@@ -852,7 +852,7 @@ struct TRINITY_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
 
         if(Curse_of_Agony_Timer < diff)
         {
-            AddCustomSpellToCast(SPELL_CURSE_OF_AGONY, CAST_TANK, (HeroicMode?180:120));
+            AddSpellToCast(SPELL_CURSE_OF_AGONY, CAST_TANK);
             Curse_of_Agony_Timer = urand(12000, 15000);
         }
         else
@@ -901,7 +901,7 @@ struct TRINITY_DLL_DECL mob_fizzleAI : public ScriptedAI
 
         if(Autocast_Timer < diff)
         {
-            AddCustomSpellToCast(SPELL_IMP_FIREBALL, CAST_TANK, 118);
+            AddSpellToCast(SPELL_IMP_FIREBALL, CAST_TANK);
             Autocast_Timer = 1900;
         }
         else
@@ -1070,7 +1070,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         if(Autocast_Timer < diff)
         {
-            AddCustomSpellToCast(SPELL_FROSTBOLT, CAST_TANK, (HeroicMode?600:350));
+            AddSpellToCast(SPELL_FROSTBOLT, CAST_TANK);
             Autocast_Timer = 3000;
         }
         else
@@ -1115,7 +1115,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             {
                 if(canFroze)
                 {
-                    AddCustomSpellToCast(SPELL_FROST_NOVA, CAST_SELF, 600, 0, 0, true);
+                    AddSpellToCast(SPELL_FROST_NOVA, CAST_SELF, true);
                     if(!canBlink)
                     {
                         float x, y, z;
@@ -1140,7 +1140,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
             {
                 if(canCoC)
                 {
-                    AddCustomSpellToCast(SPELL_CONE_OF_COLD, CAST_TANK, 0, (HeroicMode?950:350), 0);
+                    AddSpellToCast(SPELL_CONE_OF_COLD, CAST_TANK);
                     canCoC = false;
                 }
             }
@@ -1462,7 +1462,7 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         if(Shoot_Timer < diff)
         {
             if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
-                AddCustomSpellToCast(me->getVictim(), SPELL_SHOOT, (HeroicMode?774:260));
+                AddSpellToCast(me->getVictim(), SPELL_SHOOT);
             Shoot_Timer = urand(2500, 4000);
         }
         else
@@ -1604,7 +1604,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
         if(Frost_Shock_Timer < diff)
         {
-            AddCustomSpellToCast(SPELL_FROST_SHOCK, CAST_TANK, 0, 270);
+            AddSpellToCast(SPELL_FROST_SHOCK, CAST_TANK);
             Frost_Shock_Timer = urand(4000, 8000);
         }
         else
