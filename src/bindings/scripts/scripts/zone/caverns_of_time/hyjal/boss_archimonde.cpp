@@ -319,7 +319,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             return false;
         }
 
-        float BossDiffZ = (me->GetPositionZ() - me->GetMap()->GetHeight(me->GetPositionX(), me->GetPositionY(), MAX_HEIGHT, true));
+        float BossDiffZ = (me->GetPositionZ() - me->GetBaseMap()->GetHeight(me->GetPositionX(), me->GetPositionY(), MAX_HEIGHT, true));
 
         if (BossDiffZ > 4 || BossDiffZ < -4) // do not use finger of death when walking above ground level
             return false;

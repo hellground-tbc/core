@@ -1400,8 +1400,9 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     dest.x = pos.x + dist * cos(angle);
     dest.y = pos.y + dist * sin(angle);
 
-    float ground = GetMap()->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-    float floor = GetMap()->GetHeight(dest.x, dest.y, pos.z, true);
+    Map const* _map = GetBaseMap();
+    float ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+    float floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
 
     dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
 
@@ -1423,8 +1424,8 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
         {
             dest.x -= step * cos(angle);
             dest.y -= step * sin(angle);
-            ground = GetMap()->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-            floor = GetMap()->GetHeight(dest.x, dest.y, pos.z, true);
+            ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+            floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
             dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
         }
         // we have correct destz now

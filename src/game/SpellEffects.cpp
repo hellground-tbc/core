@@ -6878,7 +6878,7 @@ void Spell::EffectLeapForward(uint32 i)
         for (float i=0.5f; i<dis; i+=0.5f)
         {
             unitTarget->GetNearPoint2D(dx,dy,i,angle);
-            dz = unitTarget->GetMap()->GetHeight(dx, dy, cz, useVmap);
+            dz = unitTarget->GetBaseMap()->GetHeight(dx, dy, cz, useVmap);
 
             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
             if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
