@@ -292,9 +292,10 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
                 KaelStatue[1] = go->GetGUID();
                 go->SetGoState(GOState(GetData(DATA_KAELTHAS_EVENT) != DONE));
                 break;
+            // Asylum Door
             case 188064:
                 KaelDoorGUID = go->GetGUID();
-                go->SetGoState(GOState(GetData(DATA_SELIN_EVENT) != DONE && GetData(DATA_VEXALLUS_EVENT) != DONE && GetData(DATA_DELRISSA_EVENT) != DONE));
+                go->SetGoState(GOState(GetData(DATA_SELIN_EVENT) != DONE || GetData(DATA_VEXALLUS_EVENT) != DONE || GetData(DATA_DELRISSA_EVENT) != DONE));
             // Scrying Orb
             case 187578:
                 if(GetData(DATA_KALEC) == DONE)

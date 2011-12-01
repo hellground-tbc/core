@@ -15,7 +15,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_sunwell_plateau.h"
 
-#define AGGRO_RANGE             35.0
+#define AGGRO_RANGE             45.0
 
 /* ============================
 *
