@@ -75,6 +75,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
     uint64 SelinEncounterDoorGUID;
     uint64 DelrissaDoorGUID;
     uint64 KaelStatue[2];
+    uint64 KaelDoorGUID;
     std::list<uint32> TrashEntry;
 
     void Initialize()
@@ -96,6 +97,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
         DelrissaDoorGUID = 0;
         KaelStatue[0] = 0;
         KaelStatue[1] = 0;
+        KaelDoorGUID = 0;
         TrashEntry.clear();
         BuildKaelTrashEntries();
     }
@@ -167,6 +169,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_KAELTHAS_EVENT:
                 if(Encounters[3] != DONE)
                     Encounters[3] = data;
+                HandleGameObject(KaelDoorGUID, data != IN_PROGRESS);
                 break;
             case DATA_DELRISSA_DEATH_COUNT:
                 if(data)
@@ -289,6 +292,9 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
                 KaelStatue[1] = go->GetGUID();
                 go->SetGoState(GOState(GetData(DATA_KAELTHAS_EVENT) != DONE));
                 break;
+            case 188064:
+                KaelDoorGUID = go->GetGUID();
+                go->SetGoState(GOState(GetData(DATA_SELIN_EVENT) != DONE && GetData(DATA_VEXALLUS_EVENT) != DONE && GetData(DATA_DELRISSA_EVENT) != DONE));
             // Scrying Orb
             case 187578:
                 if(GetData(DATA_KALEC) == DONE)
@@ -311,6 +317,7 @@ struct TRINITY_DLL_DECL instance_magisters_terrace : public ScriptedInstance
             case DATA_DELRISSA_DOOR:        return DelrissaDoorGUID;
             case DATA_KAEL_STATUE_LEFT:     return KaelStatue[0];
             case DATA_KAEL_STATUE_RIGHT:    return KaelStatue[1];
+            case DATA_KAEL_DOOR:            return KaelDoorGUID;
         }
         return 0;
     }
