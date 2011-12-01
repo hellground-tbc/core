@@ -37,6 +37,7 @@
 #include "ObjectMgr.h"
 #include "InstanceData.h"
 #include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "PoolHandler.h"
 #include "CellImpl.h"
 
@@ -856,8 +857,6 @@ bool ChatHandler::HandleGetPoolObjectStatsCommand(const char *args)
     UNORDERED_MAP<uint16, uint32> map_poolspawned;
     UNORDERED_MAP<uint16, uint32> map_worldspawned;
 
-    
-
     for(std::list<GameObject*>::iterator it = pList.begin(); it != pList.end(); it++)
     {
         GameObject *pGO = *it;
@@ -890,11 +889,11 @@ bool ChatHandler::HandleGetPoolObjectStatsCommand(const char *args)
 
     if(map_unspawned.empty())
         PSendSysMessage("No objects found");
-    else 
+    else
         PSendSysMessage("Poolid | spawned in world | spawned in pool | not spawned");
 
     for(UNORDERED_MAP<uint16, uint32>::iterator it = map_unspawned.begin(); it != map_unspawned.end(); it++)
-    {    
+    {
         PSendSysMessage("%u | %u | %u | %u", (uint32)(it->first), map_worldspawned.find(it->first)->second, map_poolspawned.find(it->first)->second, it->second);
     }
     return true;

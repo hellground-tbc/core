@@ -12255,7 +12255,7 @@ void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, 
     data << uint32(received);                               // 0=looted, 1=from npc
     data << uint32(created);                                // 0=received, 1=created
     data << uint32(1);                                      // always 0x01 (probably meant to be count of listed items)
-    data << (uint8)item->GetBagSlot();                      // bagslot
+    data << item->GetBagSlot();                             // bagslot
                                                             // item slot, but when added to stack: 0xFFFFFFFF
     data << (uint32) ((item->GetCount()==count) ? item->GetSlot() : -1);
     data << uint32(item->GetEntry());                       // item id

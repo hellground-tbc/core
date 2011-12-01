@@ -53,6 +53,7 @@ add_library(game STATIC
 
 target_link_libraries(game
   shared
+  framework
   g3dlib
 )
 

@@ -1300,7 +1300,7 @@ bool ChatHandler::HandleDeMorphCommand(const char* /*args*/)
 }
 
 //add item in vendorlist
-bool ChatHandler::HandleAddVendorItemCommand(const char* args)
+bool ChatHandler::HandleNpcAddItemCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -1347,7 +1347,7 @@ bool ChatHandler::HandleAddVendorItemCommand(const char* args)
 }
 
 //del item from vendor list
-bool ChatHandler::HandleDelVendorItemCommand(const char* args)
+bool ChatHandler::HandleNpcDelItemCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -1585,7 +1585,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 }                                                           // HandleNpcSetMoveTypeCommand
 
 //change level of creature or pet
-bool ChatHandler::HandleChangeLevelCommand(const char* args)
+bool ChatHandler::HandleNpcChangeLevelCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -3952,7 +3952,7 @@ bool ChatHandler::HandleGameObjectActivateCommand(const char *args)
 }
 
 // add creature, temp only
-bool ChatHandler::HandleTempAddSpwCommand(const char* args)
+bool ChatHandler::HandleNpcAddTempCommand(const char* args)
 {
     if (!*args)
         return false;
