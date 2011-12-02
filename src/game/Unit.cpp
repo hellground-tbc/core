@@ -12082,6 +12082,7 @@ bool Unit::preventApplyPersistentAA(SpellEntry const *spellInfo, uint8 eff_index
         case 38575: //Toxic Spores
         case 40253: //Molten Flame
         case 31943: //Doomfire
+        case 33802: //Flame Wave
             unique = true;
             break;
     }

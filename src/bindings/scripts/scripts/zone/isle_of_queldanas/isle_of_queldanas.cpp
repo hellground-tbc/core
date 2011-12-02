@@ -283,8 +283,7 @@ struct TRINITY_DLL_DECL npc_erratic_sentryAI : public ScriptedAI
                 {
                     if(CapacitatorOverload < diff)
                     {
-                        int32 dmg = 1000;
-                        me->CastCustomSpell(me, CAPACITATOR_OVERLOAD, 0, &dmg, 0, true);
+                        DoCast(me, CAPACITATOR_OVERLOAD, true);
                         CapacitatorOverload = 500;
                     }
                     else
@@ -336,7 +335,7 @@ struct TRINITY_DLL_DECL npc_erratic_sentryAI : public ScriptedAI
             {
                 if(roll_chance_i(20))
                     DoYell(YELL_CORE_OVERLOAD, 0, me->getVictim());
-                AddCustomSpellToCast(SPELL_ELECTRICAL_OVERLOAD, CAST_SELF, 176);
+                AddSpellToCast(SPELL_ELECTRICAL_OVERLOAD, CAST_SELF);
                 ElectricalOverload = 10000;
             }
             else
@@ -353,12 +352,81 @@ CreatureAI* GetAI_npc_erratic_sentry(Creature* _Creature)
     return new npc_erratic_sentryAI(_Creature);
 }
 
-// yells for Converted Sentry to be used in future
-/*
-"Commence location defense."
-"Deployment successful. Trespassers will be neutralized."
-"Objective acquired. Initiating security routines."
-*/
+/*######
+## npc_sunblade_lookout
+######*/
+
+#define SPELL_LOOKOUT_SHOOT     45172
+
+const char* LookoutYell[3] = 
+{
+    "Shattered Sun scum! Fire at will!",
+    "Don't let that dragonhawk through! Open fire!",
+    "Dragonhawk incoming from the west! Shoot that $c down!"
+};
+
+struct TRINITY_DLL_DECL npc_sunblade_lookoutAI : public Scripted_NoMovementAI
+{
+    npc_sunblade_lookoutAI(Creature* c) : Scripted_NoMovementAI(c) {}
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(who->GetTypeId() == TYPEID_PLAYER && who->IsTaxiFlying())
+        {
+            if(me->IsWithinDistInMap(who, 80))
+            {
+                if(roll_chance_i(8))
+                    DoCast(who, SPELL_LOOKOUT_SHOOT);
+                if(roll_chance_f(0.3))
+                  me->Yell(LookoutYell[urand(0,2)], 0, who->GetGUID());
+            }
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_sunblade_lookout(Creature* _Creature)
+{
+    return new npc_sunblade_lookoutAI(_Creature);
+}
+
+/*######
+## npc_flame_wave
+######*/
+
+#define SPELL_BURN          33802
+
+struct TRINITY_DLL_DECL npc_flame_waveAI : public ScriptedAI
+{
+    npc_flame_waveAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 Burn;
+
+    void IsSummonedBy(Unit *summoner)
+    {
+        Burn = 0;
+        me->SetReactState(REACT_PASSIVE);
+        float x, y, z;
+        me->SetWalk(true);
+        me->SetSpeed(MOVE_WALK, 1.7);
+        me->GetNearPoint(me, x, y, z, 0, 20, summoner->GetAngle(me));
+        me->UpdateAllowedPositionZ(x, y, z);
+        me->GetMotionMaster()->MovePoint(1, x, y, z);
+    }
+    void UpdateAI(const uint32 diff)
+    {
+        if(Burn < diff)
+        {
+            DoCast(me, SPELL_BURN, true);
+            Burn = 500;
+        }
+        else
+            Burn -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_flame_wave(Creature* _Creature)
+{
+    return new npc_flame_waveAI(_Creature);
+}
 
 /*######
 ## npc_shattered_sun_bombardier
@@ -482,24 +550,31 @@ bool GossipSelect_npc_unrestrained_dragonhawk(Player *player, Creature *_Creatur
 #define ORB     45109
 #define QUESTG  11541
 #define DM      25060
+#define SIREN   25073
 
 struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
 {
     npc_greengill_slaveAI(Creature* c) : ScriptedAI(c) {}
 
     uint64 PlayerGUID;
+    uint32 enrageTimer;
 
     void Reset()
     {
         PlayerGUID = 0;
+        enrageTimer = 30000;
     }
-
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if(type == POINT_MOTION_TYPE && id == 1)
+            me->ForcedDespawn();
+    }
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
         if(!caster)
             return;
 
-        if(caster->GetTypeId() == TYPEID_PLAYER && spell->Id == ORB && !m_creature->HasAura(ENRAGE, 0))
+        if(caster->GetTypeId() == TYPEID_PLAYER && spell->Id == ORB && !m_creature->HasAura(ENRAGE))
         {
             PlayerGUID = caster->GetGUID();
             if(PlayerGUID)
@@ -509,17 +584,45 @@ struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
                     plr->KilledMonster(25086, m_creature->GetGUID());
             }
             DoCast(m_creature, ENRAGE);
-            Unit* Myrmidon = FindCreature(DM, 70, m_creature);
-            if(Myrmidon)
+            me->SetWalk(false);
+            me->SetSpeed(MOVE_RUN, 1.5);
+            Unit* Myrmidon = GetClosestCreatureWithEntry(me, DM, 100);
+            Unit* Siren = GetClosestCreatureWithEntry(me, SIREN, 100);
+            Unit* target = NULL;
+            if(Myrmidon && Siren)
+                target = me->GetDistance(Myrmidon)>me->GetDistance(Siren)?Siren:Myrmidon;
+            else
+                target = Myrmidon?Myrmidon:(Siren?Siren:NULL);
+            if(target)
             {
-                m_creature->AddThreat(Myrmidon, 100000.0f);
-                AttackStart(Myrmidon);
+                me->AddThreat(target, 100000.0f);
+                AttackStart(target);
+            }
+            else
+            {
+                float x, y, z;
+                me->GetNearPoint(me, x, y, z, 0, 50, frand(0,2*M_PI));
+                me->UpdateAllowedPositionZ(x, y, z);
+                me->GetMotionMaster()->MovePoint(1, x, y, z);
             }
         }
     }
-
     void UpdateAI(const uint32 diff)
     {
+        if(me->HasAura(ENRAGE))
+        {
+            if(enrageTimer < diff)
+            {
+                me->CombatStop();
+                float x, y, z;
+                me->GetNearPoint(me, x, y, z, 0, 15, frand(0,2*M_PI));
+                me->UpdateAllowedPositionZ(x, y, z);
+                me->GetMotionMaster()->MovePoint(1, x, y, z);
+                enrageTimer = 60000;
+            }
+            else
+                enrageTimer -= diff;
+        }
         DoMeleeAttackIfReady();
     }
 };
@@ -558,6 +661,16 @@ void AddSC_isle_of_queldanas()
     newscript = new Script;
     newscript->Name="npc_erratic_sentry";
     newscript->GetAI = &GetAI_npc_erratic_sentry;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_sunblade_lookout";
+    newscript->GetAI = &GetAI_npc_sunblade_lookout;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_flame_wave";
+    newscript->GetAI = &GetAI_npc_flame_wave;
     newscript->RegisterSelf();
 
     newscript = new Script;
