@@ -666,6 +666,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     if (IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
         return true;
 
+    // should this work fine?
+    if (spellproto->Attributes & SPELL_ATTR_NEGATIVE_1)
+        return false;
+
     switch (spellId)
     {
         case 23333:                                         // BG spell
@@ -707,6 +711,38 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 30422:
         case 30423:
             return false;
+    }
+
+    switch (spellproto->SpellFamilyName)
+    {
+        case SPELLFAMILY_MAGE:
+            // Amplify Magic, Dampen Magic
+            if (spellproto->SpellFamilyFlags == 0x20000000000)
+                return true;
+            // Ignite
+            if (spellproto->SpellIconID == 45)
+                return true;
+            break;
+        case SPELLFAMILY_HUNTER:
+            // Aspect of the Viper
+            if (spellproto->Id == 34074)
+                return true;
+            break;
+        case SPELLFAMILY_SHAMAN:
+            // Totem of Wrath
+            if (spellproto->Id == 30708)
+                return false;
+            break;
+        default:
+            break;
+    }
+
+    switch (spellproto->Mechanic)
+    {
+        case MECHANIC_IMMUNE_SHIELD:
+            return true;
+        default:
+            break;
     }
 
     switch (spellproto->Effect[effIndex])
