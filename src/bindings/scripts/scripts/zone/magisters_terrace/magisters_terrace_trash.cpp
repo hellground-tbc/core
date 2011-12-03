@@ -690,7 +690,7 @@ struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
         me->SetStandState(PLAYER_STATE_SIT);
         DoCast(me, SPELL_DUAL_WIELD);
         OOCTimer = 10000;
-        Drink_Timer = urand(25000, 35000);
+        Drink_Timer = HeroicMode?urand(5000, 18000):urand(10000, 25000);
         Wretched_Stab_Timer = urand(4000, 7000);
     }
 
@@ -732,7 +732,7 @@ struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
         if(Drink_Timer < diff)
         {
             AddSpellToCast(SPELL_DRINK_FEL_INFUSION, CAST_SELF);
-            Drink_Timer = urand(25000, 35000);
+            Drink_Timer = HeroicMode?urand(10000, 18000):urand(15000, 25000);
         }
         else
             Drink_Timer -= diff;
@@ -764,7 +764,7 @@ struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
     {
         me->SetStandState(PLAYER_STATE_SIT);
         OOCTimer = 10000;
-        Drink_Timer = urand(25000, 35000);
+        Drink_Timer = HeroicMode?urand(5000, 18000):urand(10000, 25000);
         Wretched_Strike_Timer = urand(6000, 10000);
     }
 
@@ -806,7 +806,7 @@ struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
         if(Drink_Timer < diff)
         {
             AddSpellToCast(SPELL_DRINK_FEL_INFUSION, CAST_SELF);
-            Drink_Timer = urand(25000, 35000);
+            Drink_Timer = HeroicMode?urand(10000, 18000):urand(15000, 25000);
         }
         else
             Drink_Timer -= diff;
@@ -839,7 +839,7 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
     {
         me->SetStandState(PLAYER_STATE_SIT);
         OOCTimer = 5000;
-        Drink_Timer = urand(25000, 35000);
+        Drink_Timer = HeroicMode?urand(5000, 18000):urand(15000, 25000);
         Wretched_Cast_Timer = 0;
     }
 
@@ -889,7 +889,7 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
         {
             ClearCastQueue();
             AddSpellToCast(SPELL_DRINK_FEL_INFUSION, CAST_SELF);
-            Drink_Timer = urand(25000, 35000);
+            Drink_Timer = HeroicMode?urand(10000, 18000):urand(15000, 25000);
         }
         else
             Drink_Timer -= diff;
