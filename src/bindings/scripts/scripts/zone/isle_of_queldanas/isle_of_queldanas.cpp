@@ -407,7 +407,7 @@ struct TRINITY_DLL_DECL npc_wrath_enforcerAI : public ScriptedAI
     {
         me->setActive(true);
         DoCast(me, 29651, true);
-        FlameWave = urand(5000, 15000);
+        FlameWave = urand(5000, 35000);
     }
 
     void UpdateAI(const uint32 diff)
@@ -435,7 +435,7 @@ struct TRINITY_DLL_DECL npc_wrath_enforcerAI : public ScriptedAI
         if(FlameWave < diff)
         {
             AddSpellToCast(SPELL_FLAME_WAVE, CAST_SELF);
-            FlameWave = urand(10000, 15000);
+            FlameWave = urand(20000, 30000);
         }
         else
             FlameWave -= diff;
@@ -539,7 +539,7 @@ struct TRINITY_DLL_DECL npc_pit_overlordAI : public ScriptedAI
         if(Cleave < diff)
         {
             AddSpellToCast(SPELL_CLEAVE);
-            Cleave = urand(5000, 15000);
+            Cleave = urand(10000, 20000);
         }
         else
             Cleave -= diff;
