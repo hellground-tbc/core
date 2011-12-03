@@ -899,6 +899,7 @@ struct TRINITY_DLL_DECL npc_ioqd_madrigosaAI : public ScriptedAI
     void Reset()
     {
         me->SetLevitate(true);
+        me->SetSpeed(MOVE_FLIGHT, 1.5);
         me->GetMotionMaster()->MovePath(MADRIGOSA_PATH, true);
         RandYell_timer = urand(15000, 25000);
     }
