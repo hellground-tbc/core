@@ -389,6 +389,68 @@ CreatureAI* GetAI_npc_sunblade_lookout(Creature* _Creature)
 }
 
 /*######
+## npc_wrath_enforcer
+######*/
+
+#define SPELL_DUAL_WIELD            29651
+#define SPELL_FLAME_WAVE            33803
+#define MOB_RAVAGER                 25028
+#define MOB_GHOUL                   25027
+
+struct TRINITY_DLL_DECL npc_wrath_enforcerAI : public ScriptedAI
+{
+    npc_wrath_enforcerAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 FlameWave;
+
+    void Reset()
+    {
+        me->setActive(true);
+        DoCast(me, 29651, true);
+        FlameWave = urand(5000, 15000);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!me->isInCombat())
+        {
+            Unit* Ravager = GetClosestCreatureWithEntry(me, MOB_RAVAGER, 50);
+            Unit* Ghoul = GetClosestCreatureWithEntry(me, MOB_GHOUL, 50);
+            Unit* target = NULL;
+
+            if(Ravager && Ghoul)
+                target = me->GetDistance(Ravager)>me->GetDistance(Ghoul)?Ghoul:Ravager;
+            else
+                target = Ravager?Ravager:(Ghoul?Ghoul:NULL);
+            if(target)
+            {
+                me->AddThreat(target, 10.0f);
+                AttackStart(target);
+            }
+        }
+
+        if(!UpdateVictim())
+            return;
+
+        if(FlameWave < diff)
+        {
+            AddSpellToCast(SPELL_FLAME_WAVE, CAST_SELF);
+            FlameWave = urand(10000, 15000);
+        }
+        else
+            FlameWave -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_wrath_enforcer(Creature* _Creature)
+{
+    return new npc_wrath_enforcerAI(_Creature);
+}
+
+/*######
 ## npc_flame_wave
 ######*/
 
@@ -426,6 +488,132 @@ struct TRINITY_DLL_DECL npc_flame_waveAI : public ScriptedAI
 CreatureAI* GetAI_npc_flame_wave(Creature* _Creature)
 {
     return new npc_flame_waveAI(_Creature);
+}
+
+/*######
+## npc_pit_overlord
+######*/
+
+#define SPELL_CLEAVE                15284
+#define SPELL_CONE_OF_FIRE          19630
+#define SPELL_DEATH_COIL            32709
+
+struct TRINITY_DLL_DECL npc_pit_overlordAI : public ScriptedAI
+{
+    npc_pit_overlordAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 Cleave;
+    uint32 ConeOfFire;
+    uint32 DeathCoil;
+
+    void Reset()
+    {
+        me->setActive(true);
+        Cleave = urand(5000, 15000);
+        ConeOfFire = urand(1000, 5000);
+        DeathCoil = urand(3000, 8000);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!me->isInCombat())
+        {
+            Unit* Ravager = GetClosestCreatureWithEntry(me, MOB_RAVAGER, 50);
+            Unit* Ghoul = GetClosestCreatureWithEntry(me, MOB_GHOUL, 50);
+            Unit* target = NULL;
+
+            if(Ravager && Ghoul)
+                target = me->GetDistance(Ravager)>me->GetDistance(Ghoul)?Ghoul:Ravager;
+            else
+                target = Ravager?Ravager:(Ghoul?Ghoul:NULL);
+            if(target)
+            {
+                me->AddThreat(target, 10.0f);
+                AttackStart(target);
+            }
+        }
+
+        if(!UpdateVictim())
+            return;
+
+        if(Cleave < diff)
+        {
+            AddSpellToCast(SPELL_CLEAVE);
+            Cleave = urand(5000, 15000);
+        }
+        else
+            Cleave -= diff;
+
+        if(ConeOfFire < diff)
+        {
+            AddSpellToCast(SPELL_CONE_OF_FIRE, CAST_NULL);
+            ConeOfFire = urand(8000, 16000);
+        }
+        else
+            ConeOfFire -= diff;
+
+        if(DeathCoil < diff)
+        {
+            AddSpellToCast(SPELL_DEATH_COIL);
+            DeathCoil = urand(8000, 12000);
+        }
+        else
+            DeathCoil -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_pit_overlord(Creature* _Creature)
+{
+    return new npc_pit_overlordAI(_Creature);
+}
+
+/*######
+## npc_eredar_sorcerer
+######*/
+
+#define SPELL_FLAMES_OF_DOOM        45046
+
+struct TRINITY_DLL_DECL npc_eredar_sorcererAI : public Scripted_NoMovementAI
+{
+    npc_eredar_sorcererAI(Creature* c) : Scripted_NoMovementAI(c) {}
+
+    void Reset()
+    {
+        me->setActive(true);
+        SetAutocast(SPELL_FLAMES_OF_DOOM, 10000, true);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!me->isInCombat())
+        {
+            Unit* Ravager = GetClosestCreatureWithEntry(me, MOB_RAVAGER, 100);
+            Unit* Ghoul = GetClosestCreatureWithEntry(me, MOB_GHOUL, 100);
+            Unit* target = NULL;
+
+            if(Ravager && Ghoul)
+                target = me->GetDistance(Ravager)>me->GetDistance(Ghoul)?Ghoul:Ravager;
+            else
+                target = Ravager?Ravager:(Ghoul?Ghoul:NULL);
+            if(target)
+            {
+                me->AddThreat(target, 10.0f);
+                AttackStart(target);
+            }
+        }
+        if(!UpdateVictim())
+            return;
+        CastNextSpellIfAnyAndReady(diff);
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_eredar_sorcerer(Creature* _Creature)
+{
+    return new npc_eredar_sorcererAI(_Creature);
 }
 
 /*######
@@ -669,8 +857,23 @@ void AddSC_isle_of_queldanas()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name="npc_wrath_enforcer";
+    newscript->GetAI = &GetAI_npc_wrath_enforcer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name="npc_flame_wave";
     newscript->GetAI = &GetAI_npc_flame_wave;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_pit_overlord";
+    newscript->GetAI = &GetAI_npc_pit_overlord;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_eredar_sorcerer";
+    newscript->GetAI = &GetAI_npc_eredar_sorcerer;
     newscript->RegisterSelf();
 
     newscript = new Script;
