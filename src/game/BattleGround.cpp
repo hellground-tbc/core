@@ -594,6 +594,15 @@ void BattleGround::EndBattleGround(uint32 winner)
         if (plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
 
+        if (isArena() && !plr->isGameMaster())
+        {
+            plr->SetVisibility(VISIBILITY_ON);
+            plr->SetFlying(false);
+
+            if (Creature *pSpectator = plr->GetBGCreature(ARENA_NPC_SPECTATOR))
+                pSpectator->RemovePlayerFromVision(plr);
+        }
+
         if (!plr->isAlive())
         {
             plr->ResurrectPlayer(1.0f);

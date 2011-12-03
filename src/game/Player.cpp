@@ -17941,6 +17941,15 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
         if (InArena() && isInCombat() && bg->GetStatus() == STATUS_IN_PROGRESS)
             return;
 
+        if (bg->isArena() && !isGameMaster())
+        {
+            SetVisibility(VISIBILITY_ON);
+            SetFlying(false);
+
+            if (Creature *pSpectator = GetBGCreature(ARENA_NPC_SPECTATOR))
+                pSpectator->RemovePlayerFromVision(this);
+        }
+
         bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 
         if (bg->isBattleGround() && sWorld.getConfig(CONFIG_BATTLEGROUND_CAST_DESERTER))
