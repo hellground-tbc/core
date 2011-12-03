@@ -7007,7 +7007,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
     return true;
 }
 
-bool ChatHandler::HandleListFreezeCommand(const char* args)
+bool ChatHandler::HandleListFreezeCommand(const char* /*args*/)
 {
     //Get names from DB
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT characters.name FROM `characters` LEFT JOIN `character_aura` ON (characters.guid = character_aura.guid) WHERE character_aura.spell = 9454");
@@ -7072,7 +7072,7 @@ bool ChatHandler::HandleGroupRemoveCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandlePossessCommand(const char* args)
+bool ChatHandler::HandlePossessCommand(const char* /*args*/)
 {
     Unit* pUnit = getSelectedUnit();
     if (!pUnit)
@@ -7082,7 +7082,7 @@ bool ChatHandler::HandlePossessCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleUnPossessCommand(const char* args)
+bool ChatHandler::HandleUnPossessCommand(const char* /*args*/)
 {
     Unit* pUnit = getSelectedUnit();
     if (!pUnit) pUnit = m_session->GetPlayer();
@@ -7095,7 +7095,7 @@ bool ChatHandler::HandleUnPossessCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleBindFollowCommand(const char* args)
+bool ChatHandler::HandleBindFollowCommand(const char* /*args*/)
 {
     Unit* pUnit = getSelectedUnit();
     if (!pUnit)
@@ -7112,7 +7112,7 @@ bool ChatHandler::HandleBindFollowCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleUnbindFollowCommand(const char* args)
+bool ChatHandler::HandleUnbindFollowCommand(const char* /*args*/)
 {
     Player *gamemaster = m_session->GetPlayer();
     if (gamemaster->getFollowTarget() == 0)
@@ -7127,7 +7127,7 @@ bool ChatHandler::HandleUnbindFollowCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleBindSightCommand(const char* args)
+bool ChatHandler::HandleBindSightCommand(const char* /*args*/)
 {
     Unit* pUnit = getSelectedUnit();
     if (!pUnit)
@@ -7137,14 +7137,14 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleUnbindSightCommand(const char* args)
+bool ChatHandler::HandleUnbindSightCommand(const char* /*args*/)
 {
     m_session->GetPlayer()->ClearFarsight();
     //pUnit->RemovePlayerFromVision(m_session->GetPlayer());
     return true;
 }
 
-bool ChatHandler::HandleGameObjectGridCommand(const char* args)
+bool ChatHandler::HandleGameObjectGridCommand(const char* /*args*/)
 {
     std::list<GameObject*> tmpL;
     Trinity::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);

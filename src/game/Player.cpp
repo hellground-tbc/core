@@ -10625,6 +10625,8 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
 
         return pItem2;
     }
+
+    return pItem;
 }
 
 void Player::QuickEquipItem(uint16 pos, Item *pItem)

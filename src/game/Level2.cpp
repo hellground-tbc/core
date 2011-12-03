@@ -2237,7 +2237,7 @@ bool ChatHandler::HandleWpReloadPath(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
+bool ChatHandler::HandleWpUnLoadPathCommand(const char* /*args*/)
 {
     uint32 guidlow = 0;
     Creature* target = getSelectedCreature();

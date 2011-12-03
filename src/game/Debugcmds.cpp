@@ -66,7 +66,7 @@ bool ChatHandler::HandleWPToFileCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleAddFormationCommand(const char* args)
+bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 {
     if (!args)
         return false;
@@ -395,7 +395,7 @@ bool ChatHandler::HandleDebugSendChatMsgCommand(const char* args)
     const char *msg = "testtest";
     uint8 type = atoi(args);
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, m_session, type, 0, "chan", m_session->GetPlayer()->GetGUID(), msg, m_session->GetPlayer());
+    ChatHandler::FillMessageData(&data, m_session, type, 0, "test", m_session->GetPlayer()->GetGUID(), msg, m_session->GetPlayer());
     m_session->SendPacket(&data);
     return true;
 }
@@ -730,11 +730,10 @@ bool ChatHandler::HandleDebugSetInstanceDataCommand(const char *args)
 
     InstanceData *pInstance = m_session->GetPlayer()->GetInstanceData();
     if (!pInstance)
-    if (!pInstance)
     {
-    PSendSysMessage("You are not in scripted instance.");
+        PSendSysMessage("You are not in scripted instance.");
         SetSentErrorMessage(true);
-      return false;
+        return false;
     }
 
     char *id = strtok((char*)args, " ");
