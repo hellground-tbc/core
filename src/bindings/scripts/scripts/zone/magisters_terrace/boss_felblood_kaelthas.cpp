@@ -192,6 +192,8 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
         {
             if(Player* player = i->getSource())
             {
+                if(player->isGameMaster())
+                    continue;
                 player->RemoveAurasDueToSpell(SPELL_GRAVITY_LAPSE_FLY);
                 player->RemoveAurasDueToSpell(SPELL_GRAVITY_LAPSE_DOT);
             }

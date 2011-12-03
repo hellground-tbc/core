@@ -529,6 +529,21 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         }
     }
 
+    void TeleportPlayers()
+    {
+        Map *map = m_creature->GetMap();
+        Map::PlayerList const &PlayerList = map->GetPlayers();
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            if(Player* player = i->getSource())
+            {
+                if(player->isGameMaster())
+                    continue;
+                player->TeleportTo(map->GetId(), 127, 0, -20.5, player->GetOrientation());
+            }
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(HealthBelowPct(25) && !usedPotion)
@@ -549,7 +564,12 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
                 }
             }
             if(!me->IsWithinDistInMap(&HomePos, 80.0))
+            {
                 DoTeleportTo(HomePos.coord_x, HomePos.coord_y, HomePos.coord_z);
+                TeleportPlayers();
+            }
+            if(me->GetPositionZ() < -22.5)
+                DoTeleportTo(me->GetPositionX(), me->GetPositionY(), -19.5);
             Check_Timer = 2000;
         }
         else
