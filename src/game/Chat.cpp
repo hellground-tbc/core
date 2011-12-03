@@ -223,6 +223,7 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand debugCommandTable[] =
     {
+        { "addformation",   SEC_GAMEMASTER,     false,  &ChatHandler::HandleDebugAddFormationToFileCommand, "", NULL },
         { "anim",           SEC_GAMEMASTER,     false,  &ChatHandler::HandleDebugAnimCommand,               "", NULL },
         { "arena",          SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugArenaCommand,              "", NULL },
 //        { "bg",             SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugBattlegroundCommand,        "", NULL },

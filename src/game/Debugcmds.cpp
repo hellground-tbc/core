@@ -66,7 +66,7 @@ bool ChatHandler::HandleWPToFileCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
+bool ChatHandler::HandleDebugAddFormationToFileCommand(const char* args)
 {
     if (!args)
         return false;
