@@ -27,6 +27,8 @@ npc_ayren_cloudbreaker
 npc_converted_sentry
 npc_unrestrained_dragonhawk
 npc_greengill_slave
+npc_madrigosa
+npc_brutallus
 EndContentData */
 
 #include "precompiled.h"
@@ -820,6 +822,98 @@ CreatureAI* GetAI_npc_greengill_slaveAI(Creature* _Creature)
     return new npc_greengill_slaveAI(_Creature);
 }
 
+
+const char* BrutalYell[10] =
+{
+    //when hitted by q item spell
+    "What is this pathetic magic? How about you come back with twenty-four of your best friends and try again, $c",
+    //random yells
+    "No horror here can compare with what you'll face whe I'm through with you!",
+    "Beat or be beaten! This is the way of the Legion!",
+    "Burn their bodies, shred their skins, crush their creaking carapaces!",
+    "Crush these stinking husks!",
+    "Smash them! Grind the bones into the dirt!",
+    "Harder, maggots! We must keep the sunwell clear for the master's return!",
+    //Brutallus to Magrigosa
+    "Grraaarrr! You think to make an icicle out of me? Come down, then I will add real fire to your life."
+    "Come down! I tear your wings from your shoulders and feed you to the dirt. Then YOU be the maggot, dragon!"
+    "Big talk from a blue birdie! How about you come down and see if you can pluck this maggot from the dirt!"
+};
+
+/*######
+## npc_ioqd_brutallus
+######*/
+
+struct TRINITY_DLL_DECL npc_ioqd_brutallusAI : public ScriptedAI
+{
+    npc_ioqd_brutallusAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 RandYell_timer;
+
+    void Reset()
+    {
+        RandYell_timer = urand(15000, 25000);
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if(spell->Id == 45072 && caster->GetTypeId() == TYPEID_PLAYER && caster->IsInWorld())
+        {
+            if(roll_chance_i(40))
+                DoYell(BrutalYell[0], 0, caster);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(RandYell_timer < diff)
+        {
+            DoYell(BrutalYell[urand(1, 6)], 0, 0);
+            RandYell_timer = urand(15000, 25000);
+        }
+        else
+            RandYell_timer -= diff;
+
+        // TODO-> answers to taunting
+    }
+};
+
+CreatureAI* GetAI_npc_ioqd_brutallus(Creature* _Creature)
+{
+    return new npc_ioqd_brutallusAI(_Creature);
+}
+
+#define SPELL_FROST_BLAST       45201
+#define MADRIGOSA_PATH          2499
+
+/*######
+## npc_ioqd_madrigosa
+######*/
+
+struct TRINITY_DLL_DECL npc_ioqd_madrigosaAI : public ScriptedAI
+{
+    npc_ioqd_madrigosaAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 RandYell_timer;
+
+    void Reset()
+    {
+        me->SetLevitate(true);
+        me->GetMotionMaster()->MovePath(MADRIGOSA_PATH, true);
+        RandYell_timer = urand(15000, 25000);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        // taunting and casting TODO
+    }
+};
+
+CreatureAI* GetAI_npc_ioqd_madrigosa(Creature* _Creature)
+{
+    return new npc_ioqd_madrigosaAI(_Creature);
+}
+
 void AddSC_isle_of_queldanas()
 {
     Script *newscript;
@@ -891,5 +985,14 @@ void AddSC_isle_of_queldanas()
     newscript->Name="npc_greengill_slave";
     newscript->GetAI = &GetAI_npc_greengill_slaveAI;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name="npc_ioqd_brutallus";
+    newscript->GetAI = &GetAI_npc_ioqd_brutallus;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_ioqd_madrigosa";
+    newscript->GetAI = &GetAI_npc_ioqd_madrigosa;
+    newscript->RegisterSelf();
+}
