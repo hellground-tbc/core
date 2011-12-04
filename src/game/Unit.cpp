@@ -8143,6 +8143,9 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             break;
     }
 
+    //if (spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS
+    //    DoneTotalMod = 1.0f; or return pdamage;
+
     float LvlPenalty = CalculateLevelPenalty(spellProto);
 
     // Spellmod SpellDamage
