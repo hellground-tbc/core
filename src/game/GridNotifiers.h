@@ -1182,6 +1182,20 @@ namespace Trinity
             bool _greater;
     };
 
+    class IsWithinLOSCheck
+    {
+        public:
+            IsWithinLOSCheck(WorldObject* source, bool within) : _source(source), _within(within) {}
+            bool operator()(WorldObject* object)
+            {
+                return (_source->IsWithinLOSInMap(object) == _within);
+            }
+
+        private:
+            WorldObject *_source;
+            bool _within;
+    };
+
     // sorter
     struct ObjectDistanceOrder : public std::binary_function<const Unit *, const Unit *, bool>
     {
