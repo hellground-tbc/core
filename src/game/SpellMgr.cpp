@@ -719,19 +719,11 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
             // Amplify Magic, Dampen Magic
             if (spellproto->SpellFamilyFlags == 0x20000000000)
                 return true;
-            // Ignite
-            if (spellproto->SpellIconID == 45)
-                return true;
             break;
         case SPELLFAMILY_HUNTER:
             // Aspect of the Viper
             if (spellproto->Id == 34074)
                 return true;
-            break;
-        case SPELLFAMILY_SHAMAN:
-            // Totem of Wrath
-            if (spellproto->Id == 30708)
-                return false;
             break;
         default:
             break;
