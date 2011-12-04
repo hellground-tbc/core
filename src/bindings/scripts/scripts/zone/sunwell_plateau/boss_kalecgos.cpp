@@ -574,17 +574,13 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             return;
 
         // be sure to attack only players in spectral realm
-        if (me->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION, 0))
+        if (me->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION) || !me->getVictim()->HasAura(AURA_SPECTRAL_REALM))
         {
+            me->getVictim()->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
             me->RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT);
             if(!UpdateVictim())
                 return;
         }
-
-        // if still having victim w/o aura, drop some threat
-        if( !me->getVictim()->HasAura(AURA_SPECTRAL_REALM, 0))
-
-            me->getVictim()->getThreatManager().modifyThreatPercent(me->getVictim(), -35);
 
         // interaction with kalecgos
         if(CheckTimer < diff)
