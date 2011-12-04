@@ -186,6 +186,8 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
     void JustSummoned(Creature* summon)
     {
         summons.Summon(summon);
+        if(me->getVictim())
+            summon->AI()->AttackStart(me->getVictim());
     }
 
     void UpdateAI(const uint32 diff)
