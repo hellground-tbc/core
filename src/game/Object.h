@@ -619,8 +619,8 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
         Corpse* ToCorpse(){ if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse*>(this); else return NULL; }
         const Corpse* ToCorpse() const {if (GetTypeId() == TYPEID_CORPSE) return (const Corpse*)((Corpse*)this); else return NULL; }
 
-        Totem* ToTotem(){ if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; }
-        const Totem* ToTotem() const {if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->isTotem()) return (const Totem*)((Totem*)this); else return NULL; }
+        Totem* ToTotem();
+        const Totem* ToTotem() const;
 
     protected:
         explicit WorldObject();
