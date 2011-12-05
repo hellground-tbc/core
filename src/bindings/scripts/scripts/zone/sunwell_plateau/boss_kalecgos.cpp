@@ -501,7 +501,11 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        Creature *Kalec = m_creature->SummonCreature(MOB_KALEC, m_creature->GetPositionX() + 10, m_creature->GetPositionY() + 5, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
+        float x, y, z, ori;
+        me->GetClosePoint(x, y, z, 0, 10, me->GetAngle(me));
+        me->UpdateAllowedPositionZ(x, y, z);
+        ori = me->GetAngle(x, y);
+        Creature* Kalec = me->SummonCreature(MOB_KALEC, x, y, z, ori, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
         if(Kalec)
         {
             KalecGUID = Kalec->GetGUID();
@@ -573,10 +577,12 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        // be sure to attack only players in spectral realm
-        if (me->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION) || !me->getVictim()->HasAura(AURA_SPECTRAL_REALM))
-        {
+        if(!me->getVictim()->HasAura(AURA_SPECTRAL_REALM) || me->getVictim()->GetPositionZ() > -50)
             me->getVictim()->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
+
+        // be sure to attack only players in spectral realm
+        if (me->getVictim()->HasAura(AURA_SPECTRAL_EXHAUSTION))
+        {
             me->RemoveSpellsCausingAura(SPELL_AURA_MOD_TAUNT);
             if(!UpdateVictim())
                 return;
