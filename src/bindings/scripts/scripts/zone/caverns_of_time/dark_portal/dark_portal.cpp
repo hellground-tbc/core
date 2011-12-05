@@ -505,7 +505,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
                 if(Type)    //frost
                 {
                     Spell_Timer1 = 0;    //frostbolt
-                    Spell_Timer2 = HeroicMode ? urand(3600+rand()%4700) : urand(3700+rand()%9200);    //frost nova
+                    Spell_Timer2 = HeroicMode ? urand(3600, 12200) : urand(3700, 12900);    //frost nova
                 }
                 else        //arcane
                 {
@@ -516,7 +516,7 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
             }
             case C_EXECU:
                 Spell_Timer1 = HeroicMode ? urand(2000, 11700) : urand(7300, 14000);    //cleave
-                Spell_Timer2 = HeroicMode ? urand(2000, 3900) : urand(1, 7200);         //strike
+                Spell_Timer2 = HeroicMode ? urand(2000, 3900) : 7200;                   //strike
                 Spell_Timer3 = HeroicMode ? urand(600, 10200) : 0;                      //harmstring
                 break;
             case C_VANQU:
