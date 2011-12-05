@@ -677,13 +677,13 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
             caster->SendPetCastFail(spellid, SPELL_FAILED_NOT_READY);
             return;
         }
-        
+/*
     if(_player->HasSpellCooldown(spellid))
     {
         caster->SendPetCastFail(spellid, SPELL_FAILED_NOT_READY);
         return;
     }
-
+*/
     SpellCastTargets targets;
 
     recvPacket >> targets.ReadForCaster(caster);
