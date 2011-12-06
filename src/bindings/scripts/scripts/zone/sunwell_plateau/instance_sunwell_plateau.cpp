@@ -58,7 +58,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
     uint64 Collision_2;                                     // Kalecgos Encounter
     uint64 FireBarrier;                                     // Brutallus Encounter
     uint64 IceBarrier;                                      // Brutallus Encounter
-    uint64 Gate[5];                                         // Rename this to be more specific after door placement is verified.
+    uint64 Gate[3];
 
     /*** Misc ***/
     uint32 KalecgosPhase;
@@ -89,11 +89,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         Collision_2 = 0;
         FireBarrier = 0;
         IceBarrier = 0;
-        Gate[0]     = 0;                                    // TODO: Rename Gate[n] with gate_<boss name> for better specificity
-        Gate[1]     = 0;
-        Gate[2]     = 0;
-        Gate[3]     = 0;
-        Gate[4]     = 0;
+        for (uint8 i = 0; i < 3; ++i)
+            Gate[i]  = 0;
 
         EredarTwinsAliveInfo[0] = 0;
         EredarTwinsAliveInfo[1] = 0;
@@ -122,7 +119,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             {
                 Player* plr = itr->getSource();
                 if (plr && !plr->HasAura(45839,0))
-                        return plr;
+                    return plr;
             }
         }
 
@@ -185,40 +182,30 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 25608: KilJaedenController = creature->GetGUID(); break;
             case 26046: Anveena             = creature->GetGUID(); break;
             case 25319: KalecgosKJ          = creature->GetGUID(); break;
-            // if Felmyst GUID exists, do not summom on Madrigosa create
             case 25038: Felmyst             = creature->GetGUID(); break;
             case 24895:
-                //TODO: Proper reseting when Felmyst not summoned, Brutallus not killed, etc.
                 Madrigosa = creature->GetGUID();
                 if(GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
                 {
+                    creature->GetMap()->CreatureRelocation(creature, 1476.3, 649, 21.5, creature->GetOrientation());
+                    // spawn Felmyst when needed
+                    if(GetData(DATA_BRUTALLUS_EVENT) == DONE && GetData(DATA_FELMYST_EVENT) != DONE)
+                    {
+                        // summon Felmyst
+                        if(!Felmyst)
+                        {
+                            creature->CastSpell(creature, 45069, true);
+                            if(Unit* Fel = FindCreature(45069, 20, creature))
+                                Felmyst = Fel->GetGUID();
+                        }
+                    }
+                    creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    creature->SetReactState(REACT_PASSIVE);
                     creature->setFaction(35);
                     creature->SetVisibility(VISIBILITY_OFF);
                 }
                 break;
-                if(GetData(DATA_BRUTALLUS_EVENT) == DONE || GetData(DATA_FELMYST_EVENT) != DONE)
-                {
-                    // summon Felmyst
-                    if(!Felmyst)
-                    {
-                        creature->CastSpell(creature, 45069, true);/*
-                        float x, y, z;
-                        creature->GetPosition(x, y, z);
-                        creature->UpdateAllowedPositionZ(x, y, z);
-                        if(Creature* trigger = creature->SummonTrigger(x, y, z, 0, 10000))
-                            trigger->CastSpell(trigger, 45069, true);*/
-                    }
-                }
             case 19871: BrutallusTrigger    = creature->GetGUID(); break;
-            /*case 25038:
-                // rewrite this, Felmyst summoned by spell
-                Felmyst = creature->GetGUID();
-                if(GetData(DATA_BRUTALLUS_EVENT) != DONE)
-                {
-                    creature->setFaction(35);
-                    creature->SetVisibility(VISIBILITY_OFF);
-                }
-                break;*/
         }
 
         const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
@@ -238,11 +225,15 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 188524: Collision_2    = gobj->GetGUID(); break;
             case 188075: FireBarrier    = gobj->GetGUID(); break;
             case 188119: IceBarrier     = gobj->GetGUID(); break;
-            case 187979: Gate[0]        = gobj->GetGUID(); break;
-            case 187770: Gate[1]        = gobj->GetGUID(); break;
-            case 187896: Gate[2]        = gobj->GetGUID(); break;
-            case 187990: Gate[3]        = gobj->GetGUID(); break;
-            case 188118: Gate[4]        = gobj->GetGUID(); break;
+            // TODO: make door handling at bosses fights and on reset
+            // Eredar Twins Up - door 4
+            case 187770: Gate[0]        = gobj->GetGUID(); break;
+            case 187990: // door 7
+                if(gobj->GetGUIDLow() == 50110) // M'uru
+                    Gate[1] = gobj->GetGUID();
+                else    // Eredar Twins Down
+                    Gate[2]  = gobj->GetGUID();
+                break;
         }
     }
 
