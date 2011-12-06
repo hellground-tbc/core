@@ -1300,7 +1300,7 @@ bool ChatHandler::HandleDeMorphCommand(const char* /*args*/)
 }
 
 //add item in vendorlist
-bool ChatHandler::HandleAddVendorItemCommand(const char* args)
+bool ChatHandler::HandleNpcAddItemCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -1347,7 +1347,7 @@ bool ChatHandler::HandleAddVendorItemCommand(const char* args)
 }
 
 //del item from vendor list
-bool ChatHandler::HandleDelVendorItemCommand(const char* args)
+bool ChatHandler::HandleNpcDelItemCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -1585,7 +1585,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 }                                                           // HandleNpcSetMoveTypeCommand
 
 //change level of creature or pet
-bool ChatHandler::HandleChangeLevelCommand(const char* args)
+bool ChatHandler::HandleNpcChangeLevelCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -1673,7 +1673,7 @@ bool ChatHandler::HandleNpcSetModelCommand(const char* args)
 }
 
 //morph creature or player
-bool ChatHandler::HandleMorphCommand(const char* args)
+bool ChatHandler::HandleModifyMorphCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -2111,7 +2111,6 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     uint32 point = 0;
     Creature* target = getSelectedCreature();
 
-
     if (target)
         pathid = target->GetWaypointPath();
     else if(*args)
@@ -2127,8 +2126,6 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
         sLog.outDebug("DEBUG: HandleWpAddCommand - New path started.");
         PSendSysMessage("%s%s|r", "|cff00ff00", "New path started.");
     }
-
-
 
     // path_id -> ID of the Path
     // point   -> number of the waypoint (if not 0)
@@ -2224,22 +2221,23 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
 }
 
 
-bool ChatHandler::HandleReloadAllPaths(const char* args)
+bool ChatHandler::HandleWpReloadPath(const char* args)
 {
-if(!*args)
-    return false;
+    if (!*args)
+        return false;
 
-uint32 id = atoi(args);
+    uint32 id = atoi(args);
 
-if(!id)
-    return false;
+    if (!id)
+        return false;
 
     PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", id);
     WaypointMgr.UpdatePath(id);
-        return true;
+
+    return true;
 }
 
-bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
+bool ChatHandler::HandleWpUnLoadPathCommand(const char* /*args*/)
 {
     uint32 guidlow = 0;
     Creature* target = getSelectedCreature();
@@ -3148,7 +3146,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
 }
 
 //change standstate
-bool ChatHandler::HandleStandStateCommand(const char* args)
+bool ChatHandler::HandleModifyStandStateCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -3159,7 +3157,7 @@ bool ChatHandler::HandleStandStateCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleAddHonorCommand(const char* args)
+bool ChatHandler::HandleHonorAddCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -3191,7 +3189,7 @@ bool ChatHandler::HandleHonorAddKillCommand(const char* /*args*/)
     return true;
 }
 
-bool ChatHandler::HandleUpdateHonorFieldsCommand(const char* /*args*/)
+bool ChatHandler::HandleHonorUpdateCommand(const char* /*args*/)
 {
     Player *target = getSelectedPlayer();
     if (!target)
@@ -3954,7 +3952,7 @@ bool ChatHandler::HandleGameObjectActivateCommand(const char *args)
 }
 
 // add creature, temp only
-bool ChatHandler::HandleTempAddSpwCommand(const char* args)
+bool ChatHandler::HandleNpcAddTempCommand(const char* args)
 {
     if (!*args)
         return false;

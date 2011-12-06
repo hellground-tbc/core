@@ -352,7 +352,7 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
         plName  = pl->GetName();
         plLevel = pl->getLevel();
         plClass = pl->getClass();
-        plZone  = pl->GetZoneId();
+        plZone  = pl->GetCachedZone();
     }
     else
     {

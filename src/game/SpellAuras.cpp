@@ -2055,6 +2055,7 @@ void Aura::TriggerSpell()
                     // trigger_spell_id not set and unknown effect triggered in this case, ignoring for while
                     case 768:
                     {
+                        /*
                         if (m_target->GetTypeId() == TYPEID_PLAYER)
                         {
                             const PlayerSpellMap& sp_list = ((Player *)m_target)->GetSpellMap();
@@ -2087,6 +2088,7 @@ void Aura::TriggerSpell()
                                 }
                             }
                         }
+                        */
                         return;
                     }
                     // Frenzied Regeneration

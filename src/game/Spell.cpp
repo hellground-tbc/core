@@ -357,25 +357,9 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
     m_needAliveTargetMask = 0;
 
     // determine reflection
-    m_canReflect = false;
-    if (!(m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL) && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_REFLECTED) && !IsAreaOfEffectSpell(m_spellInfo))
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            if (m_spellInfo->Effect[j]==0)
-                continue;
-
-            if (!IsPositiveTarget(m_spellInfo->EffectImplicitTargetA[j],m_spellInfo->EffectImplicitTargetB[j]))
-                m_canReflect = true;
-            else
-                m_canReflect = (m_spellInfo->AttributesEx & SPELL_ATTR_EX_NEGATIVE) ? true : false;
-
-            if (m_canReflect)
-                continue;
-            else
-                break;
-        }
-    }
+    m_canReflect = m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !(m_spellInfo->Attributes & SPELL_ATTR_ABILITY) 
+   	        && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_BE_REFLECTED) && !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
+   	        && !IsPassiveSpell(m_spellInfo) && !IsPositiveSpell(m_spellInfo->Id);
 
     CleanupTargetList();
 }
@@ -3885,7 +3869,19 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_NOT_IN_ARENA;
 
     // zone check
-    if (!IsSpellAllowedInLocation(m_spellInfo, m_caster->GetMapId(), m_caster->GetZoneId(), m_caster->GetAreaId()))
+    uint32 zoneid, areaid;
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        zoneid = ((Player*)m_caster)->GetCachedZone();
+        areaid = ((Player*)m_caster)->GetCachedArea();
+    }
+    else
+    {
+        zoneid =  m_caster->GetZoneId();
+        areaid =  m_caster->GetAreaId();
+    }
+
+    if (!IsSpellAllowedInLocation(m_spellInfo, m_caster->GetMapId(), zoneid, areaid))
         return SPELL_FAILED_REQUIRES_AREA;
 
     // not let players cast spells at mount (and let do it to creatures)
@@ -4365,7 +4361,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_caster->GetTypeId()==TYPEID_PLAYER && !sMapStore.LookupEntry(m_caster->GetMapId())->IsMountAllowed() && !m_IsTriggeredSpell && !m_spellInfo->AreaId)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
-                if (m_caster->GetAreaId()==35)
+                uint32 areaid = m_caster->GetTypeId() == TYPEID_PLAYER ? ((Player*)m_caster)->GetCachedArea() : m_caster->GetAreaId();
+                if (areaid == 35)
                     return SPELL_FAILED_NO_MOUNTS_ALLOWED;
 
                 ShapeshiftForm form = m_caster->m_form;
@@ -5274,7 +5271,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     }
 
     //Do not check LOS for triggered spells
-    if (m_IsTriggeredSpell)
+    if (m_IsTriggeredSpell && !m_caster->ToTotem())
         return true;
 
     //Check targets for LOS visibility (except spells without range limitations)
@@ -5325,7 +5322,7 @@ Unit* Spell::SelectMagnetTarget()
 
     if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IgnoreMagnetTargetAura(m_spellInfo))
     {
-        if (m_spellInfo->Attributes & SPELL_ATTR_ABILITY)
+        if (m_spellInfo->Attributes & (SPELL_ATTR_ABILITY | SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) || m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_BE_REDIRECTED)
             return target;
 
         if (target->HasAuraType(SPELL_AURA_SPELL_MAGNET))

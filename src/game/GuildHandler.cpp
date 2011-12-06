@@ -516,7 +516,7 @@ void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
         return;
     }
-    if (!guild->HasRankRight(GetPlayer()->GetRank(), GR_RIGHT_SETMOTD))
+    if (!guild->HasRankRight(GetPlayer()->GetRank(), GR_RIGHT_SETMOTD) || !GetPlayer()->CanSpeak())
     {
         SendGuildCommandResult(GUILD_INVITE_S, "", GUILD_PERMISSIONS);
         return;

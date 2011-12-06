@@ -2437,7 +2437,19 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
 
                 // temp, for now I have no idea if cross map bindsight is allowed :p
                 if (Creature *pSpectator = pPlayer->GetBGCreature(ARENA_NPC_SPECTATOR))
-                    player->SetFarsightTarget(pSpectator);
+                {
+                    player->SetVisibility(VISIBILITY_OFF);
+
+                    player->SetBattleGroundId(pPlayer->GetBattleGroundId());
+                    player->SetBattleGroundEntryPoint(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
+
+                    player->TeleportTo(pSpectator->GetMapId(), pSpectator->GetPositionX(), pSpectator->GetPositionY(), pSpectator->GetPositionZ(), pSpectator->GetOrientation());
+
+                    player->SetClientControl(player, false);
+                    player->SetFlying(true);
+
+                    pSpectator->AddPlayerToVision(player);
+                }
             }
             player->CLOSE_GOSSIP_MENU();
             return true;

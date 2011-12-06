@@ -35,7 +35,7 @@ class ACRequest : public ACE_Method_Request
             // teleport to plane cheat
             if (m_newPacket.pos.z == 0.0f)
             {
-                float tmpZ = pPlayer->GetMap()->GetHeight(m_newPacket.pos.x, m_newPacket.pos.y, MAX_HEIGHT, false);
+                float tmpZ = pPlayer->GetBaseMap()->GetHeight(m_newPacket.pos.x, m_newPacket.pos.y, MAX_HEIGHT, false);
                 if ((tmpZ > 2.0f || tmpZ < -2.0f) && tmpZ > -100000.0f)
                 {
                     sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - teleport to plane cheat. MapId: %u, MapHeight: %f, coords: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",

@@ -225,14 +225,11 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        if (!pInstance)
-            return;
-
-        switch( i )
+        switch (i)
         {
             case 8:
                 SetRun(false);
-                m_creature->SummonCreature(18764,2181.87,112.46,89.45,0.26,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
+                m_creature->SummonCreature(18764, 2181.87, 112.46, 89.45, 0.26, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                 break;
             case 9:
                 DoScriptText(SAY_TH_ARMORY, m_creature);
@@ -338,10 +335,8 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
                 break;
             case 94:
                 if (uint64 TarethaGUID = pInstance->GetData64(DATA_TARETHA))
-                {
                     if (Unit* Taretha = Unit::GetUnit((*m_creature), TarethaGUID))
                         DoScriptText(SAY_TA_ESCAPED, Taretha, m_creature);
-                }
                 break;
             case 95:
                 DoScriptText(SAY_TH_MEET_TARETHA, m_creature);
@@ -395,12 +390,11 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
         }
     }
 
-
     void Reset()
     {
         LowHp = false;
 
-        if( HadMount )
+        if (HadMount)
             DoMount();
 
         if (!HasEscortState(STATE_ESCORT_ESCORTING))
@@ -415,53 +409,55 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
             m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+3, 0);
             m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, THRALL_MODEL_UNEQUIPPED);
         }
-
-        if (HasEscortState(STATE_ESCORT_ESCORTING))
-        {
+        else
             DoScriptText(RAND(SAY_TH_LEAVE_COMBAT1, SAY_TH_LEAVE_COMBAT2, SAY_TH_LEAVE_COMBAT3), m_creature);
-        }
     }
+
     void StartWP()
     {
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         SetEscortPaused(false);
     }
+
     void DoMount()
     {
         m_creature->Mount(SKARLOC_MOUNT_MODEL);
         m_creature->SetSpeed(MOVE_RUN,SPEED_MOUNT);
     }
+
     void DoUnmount()
     {
         m_creature->Unmount();
         m_creature->SetSpeed(MOVE_RUN,SPEED_RUN);
     }
+
     void EnterCombat(Unit* who)
     {
         DoScriptText(RAND(SAY_TH_RANDOM_AGGRO1, SAY_TH_RANDOM_AGGRO2, SAY_TH_RANDOM_AGGRO3, SAY_TH_RANDOM_AGGRO4), m_creature);
 
-        if( m_creature->IsMounted() )
+        if (m_creature->IsMounted())
         {
             DoUnmount();
             HadMount = true;
         }
+
         WaitTimer = 4000;
     }
 
     void JustSummoned(Creature* summoned)
     {
-         switch(summoned->GetEntry())
+         switch (summoned->GetEntry())
          {
-        //TODO: make Scarloc start into event instead, and not start attack directly
-         case MOB_ENTRY_BARN_GUARDSMAN:
-         case MOB_ENTRY_BARN_PROTECTOR:
-         case MOB_ENTRY_BARN_LOOKOUT:
-         case SKARLOC_MOUNT:
-         case EROZION_ENTRY:
-             break;
-         default:
-             summoned->AI()->AttackStart(m_creature);
-             break;
+            //TODO: make Scarloc start into event instead, and not start attack directly
+            case MOB_ENTRY_BARN_GUARDSMAN:
+            case MOB_ENTRY_BARN_PROTECTOR:
+            case MOB_ENTRY_BARN_LOOKOUT:
+            case SKARLOC_MOUNT:
+            case EROZION_ENTRY:
+                break;
+            default:
+                summoned->AI()->AttackStart(m_creature);
+                break;
          }
     }
 
@@ -469,13 +465,14 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
     {
         DoScriptText(RAND(SAY_TH_RANDOM_KILL1, SAY_TH_RANDOM_KILL2, SAY_TH_RANDOM_KILL3), m_creature);
     }
+
     void JustDied(Unit *slayer)
     {
         if (pInstance)
             pInstance->SetData(TYPE_THRALL_EVENT,FAIL);
 
         // Don't do a yell if he kills self (if player goes too far or at the end).
-        if(slayer == m_creature)
+        if (slayer == m_creature)
             return;
 
         DoScriptText(RAND(SAY_TH_RANDOM_DIE1, SAY_TH_RANDOM_DIE2), m_creature);
@@ -483,9 +480,9 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!m_creature->isInCombat())
+        if (!me->isInCombat())
         {
-            if(WaitTimer > diff)
+            if (WaitTimer > diff)
             {
                 WaitTimer -= diff;
                 return;
@@ -499,12 +496,12 @@ struct TRINITY_DLL_DECL npc_thrall_old_hillsbradAI : public npc_escortAI
         if (!UpdateVictim())
             return;
 
-             //TODO: add his abilities'n-crap here
-            if( !LowHp && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20) )
-            {
-                DoScriptText(RAND(SAY_TH_RANDOM_LOW_HP1, SAY_TH_RANDOM_LOW_HP2), m_creature);
-                LowHp = true;
-            }
+         //TODO: add his abilities'n-crap here
+        if (!LowHp && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20))
+        {
+            DoScriptText(RAND(SAY_TH_RANDOM_LOW_HP1, SAY_TH_RANDOM_LOW_HP2), m_creature);
+            LowHp = true;
+        }
     }
 };
 
@@ -666,14 +663,14 @@ CreatureAI* GetAI_npc_thrall_old_hillsbrad(Creature *_Creature)
 
 bool GossipHello_npc_thrall_old_hillsbrad(Player *player, Creature *_Creature)
 {
-    if( _Creature->isQuestGiver() )
+    if (_Creature->isQuestGiver())
     {
         player->PrepareQuestMenu( _Creature->GetGUID() );
         player->SendPreparedQuest(_Creature->GetGUID());
     }
 
     ScriptedInstance* pInstance = (_Creature->GetInstanceData());
-    if( pInstance )
+    if (pInstance)
     {
         if (pInstance->GetData(TYPE_BARREL_DIVERSION) == DONE && !pInstance->GetData(TYPE_THRALL_EVENT))
         {
@@ -681,39 +678,40 @@ bool GossipHello_npc_thrall_old_hillsbrad(Player *player, Creature *_Creature)
             player->SEND_GOSSIP_MENU(GOSSIP_ID_START, _Creature->GetGUID());
         }
 
-        if( pInstance->GetData(TYPE_THRALL_PART1) == DONE && !pInstance->GetData(TYPE_THRALL_PART2) )
+        if (pInstance->GetData(TYPE_THRALL_PART1) == DONE && !pInstance->GetData(TYPE_THRALL_PART2))
         {
             player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_SKARLOC1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
             player->SEND_GOSSIP_MENU(GOSSIP_ID_SKARLOC1, _Creature->GetGUID());
         }
 
-        if( pInstance->GetData(TYPE_THRALL_PART2) == DONE && !pInstance->GetData(TYPE_THRALL_PART3) )
+        if (pInstance->GetData(TYPE_THRALL_PART2) == DONE && !pInstance->GetData(TYPE_THRALL_PART3))
         {
             player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_TARREN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
             player->SEND_GOSSIP_MENU(GOSSIP_ID_TARREN, _Creature->GetGUID());
         }
     }
+
     return true;
 }
 
 bool GossipSelect_npc_thrall_old_hillsbrad(Player *player, Creature *_Creature, uint32 sender, uint32 action)
 {
     ScriptedInstance* pInstance = (_Creature->GetInstanceData());
-    switch( action )
+    switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
             player->CLOSE_GOSSIP_MENU();
-            if(pInstance)
+            if (pInstance)
             {
-                pInstance->SetData(TYPE_THRALL_EVENT,IN_PROGRESS);
-                pInstance->SetData(TYPE_THRALL_PART1,IN_PROGRESS);
+                pInstance->SetData(TYPE_THRALL_EVENT, IN_PROGRESS);
+                pInstance->SetData(TYPE_THRALL_PART1, IN_PROGRESS);
             }
 
-            DoScriptText(SAY_TH_START_EVENT_PART1, _Creature);
-            CAST_AI(npc_escortAI, (_Creature->AI()))->Start(true, true, player->GetGUID());
             ((npc_escortAI*)(_Creature->AI()))->SetMaxPlayerDistance(100.0f);//not really needed, because it will not despawn if player is too far
             ((npc_escortAI*)(_Creature->AI()))->SetDespawnAtEnd(false);
             ((npc_escortAI*)(_Creature->AI()))->SetDespawnAtFar(false);
+            DoScriptText(SAY_TH_START_EVENT_PART1, _Creature);
+            ((npc_escortAI*)(_Creature->AI()))->Start(true, true, player->GetGUID());
             break;
 
         case GOSSIP_ACTION_INFO_DEF+2:
@@ -724,7 +722,7 @@ bool GossipSelect_npc_thrall_old_hillsbrad(Player *player, Creature *_Creature, 
         case GOSSIP_ACTION_INFO_DEF+20:
             player->SEND_GOSSIP_MENU(GOSSIP_ID_SKARLOC3, _Creature->GetGUID());
             _Creature->SummonCreature(SKARLOC_MOUNT,2038.81,270.26,63.20,5.41,TEMPSUMMON_TIMED_DESPAWN,12000);
-            if(pInstance)
+            if (pInstance)
                 pInstance->SetData(TYPE_THRALL_PART2,IN_PROGRESS);
 
             DoScriptText(SAY_TH_START_EVENT_PART2, _Creature);
@@ -734,7 +732,7 @@ bool GossipSelect_npc_thrall_old_hillsbrad(Player *player, Creature *_Creature, 
 
         case GOSSIP_ACTION_INFO_DEF+3:
             player->CLOSE_GOSSIP_MENU();
-            if(pInstance)
+            if (pInstance)
                 pInstance->SetData(TYPE_THRALL_PART3,IN_PROGRESS);
             ((npc_thrall_old_hillsbradAI*)_Creature->AI())->StartWP();
             break;
@@ -762,7 +760,7 @@ struct TRINITY_DLL_DECL npc_tarethaAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        switch( i )
+        switch (i)
         {
             case 6:
                 DoScriptText(SAY_TA_FREE, m_creature);
@@ -772,6 +770,7 @@ struct TRINITY_DLL_DECL npc_tarethaAI : public npc_escortAI
                 break;
         }
     }
+
     void Reset() {}
     void EnterCombat(Unit* who) {}
 
@@ -799,31 +798,33 @@ CreatureAI* GetAI_npc_taretha(Creature *_Creature)
 bool GossipHello_npc_taretha(Player *player, Creature *_Creature)
 {
     ScriptedInstance* pInstance = (_Creature->GetInstanceData());
-    if( pInstance && pInstance->GetData(TYPE_THRALL_PART3) == DONE && pInstance->GetData(TYPE_THRALL_PART4) == NOT_STARTED)
+    if (pInstance && pInstance->GetData(TYPE_THRALL_PART3) == DONE && pInstance->GetData(TYPE_THRALL_PART4) == NOT_STARTED)
     {
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_EPOCH1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         player->SEND_GOSSIP_MENU(GOSSIP_ID_EPOCH1, _Creature->GetGUID());
     }
+
     return true;
 }
 
 bool GossipSelect_npc_taretha(Player *player, Creature *_Creature, uint32 sender, uint32 action)
 {
     ScriptedInstance* pInstance = (_Creature->GetInstanceData());
-    if( action == GOSSIP_ACTION_INFO_DEF+1 )
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
         player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_EPOCH2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
         player->SEND_GOSSIP_MENU(GOSSIP_ID_EPOCH2, _Creature->GetGUID());
     }
-    if( action == GOSSIP_ACTION_INFO_DEF+2 )
+
+    if (action == GOSSIP_ACTION_INFO_DEF+2)
     {
         player->CLOSE_GOSSIP_MENU();
 
-        if( pInstance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS )
+        if (pInstance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS)
         {
-            if(pInstance)
+            if (pInstance)
                 pInstance->SetData(TYPE_THRALL_PART4,IN_PROGRESS);
-            if(pInstance->GetData64(DATA_EPOCH) == 0)
+            if (pInstance->GetData64(DATA_EPOCH) == 0)
                  _Creature->SummonCreature(ENTRY_EPOCH,2639.13,698.55,65.43,4.59,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,120000);
 
              if (uint64 ThrallGUID = pInstance->GetData64(DATA_THRALL))
@@ -834,6 +835,7 @@ bool GossipSelect_npc_taretha(Player *player, Creature *_Creature, uint32 sender
              }
         }
     }
+
     return true;
 }
 
@@ -871,4 +873,3 @@ void AddSC_old_hillsbrad()
     newscript->GetAI = &GetAI_npc_taretha;
     newscript->RegisterSelf();
 }
-

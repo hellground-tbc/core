@@ -250,6 +250,7 @@ void CreatureGroup::RespawnFormation(Creature *member)
 
 void CreatureGroup::LeaderMoveTo(float x, float y, float z)
 {
+    m_movingUnits = 0;
     if (!m_leader)
         return;
 
@@ -290,6 +291,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
 
         member->GetMotionMaster()->MovePoint(0, dx, dy, dz);
         member->SetHomePosition(dx, dy, dz, pathangle);
+        m_movingUnits++;
     }
 }
 

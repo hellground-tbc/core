@@ -1506,6 +1506,8 @@ void Player::BuildEnumData(QueryResultAutoPtr result, WorldPacket * p_data)
     *p_data << uint8(bytes);
 
     *p_data << uint8(getLevel());                           // player level
+
+    std::string name = GetName();
     // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
     uint32 zoneId = sMapMgr.GetZoneId(GetMapId(), GetPositionX(),GetPositionY(),GetPositionZ());
     sLog.outDebug("Player::BuildEnumData: m:%u, x:%f, y:%f, z:%f zone:%u", GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), zoneId);
@@ -4521,7 +4523,7 @@ void Player::RepopAtGraveyard()
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 
-    AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
+    AreaTableEntry const *zone = GetAreaEntryByAreaID(GetCachedArea());
 
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
     if (!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport() || GetPositionZ() < -500.0f)
@@ -5705,7 +5707,7 @@ void Player::CheckAreaExploreAndOutdoor()
     if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
     {
         if (!isOutdoor)
-            RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY);
+            RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY, true);
 //        else
 //            RemoveAurasWithAttribute(SPELL_ATTR_INDOORS_ONLY);
     }
@@ -5809,22 +5811,63 @@ void Player::setFactionForRace(uint8 race)
 }
 
 //Calculate total reputation percent player gain with quest/creature level
-int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest)
+int32 Player::CalculateReputationGain(ReputationSource source, int32 rep, int32 faction, uint32 creatureOrQuestLevel, bool noAuraBonus)
 {
-    // for grey creature kill received 20%, in other case 100.
-    float percent = (!for_quest && (creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))) ? 20.0f : 100.0f;
+    float percent = 100.0f;
 
-    float repMod = GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
+    float repMod = noAuraBonus ? 0.0f : (float)GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
 
-    if (!for_quest)
+    // faction specific auras only seem to apply to kills
+    if (source == REPUTATION_SOURCE_KILL)
         repMod += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_FACTION_REPUTATION_GAIN, faction);
 
     percent += rep > 0 ? repMod : -repMod;
 
-    if (percent <=0)
+    float rate = 1.0f;
+    switch (source)
+    {
+        case REPUTATION_SOURCE_KILL:
+            rate = sWorld.getRate(RATE_REPUTATION_LOWLEVEL_KILL);
+            break;
+        case REPUTATION_SOURCE_QUEST:
+            rate = sWorld.getRate(RATE_REPUTATION_LOWLEVEL_QUEST);
+            break;
+    }
+
+    if (rate != 1.0f && creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))
+        percent *= rate;
+
+    if (percent <= 0.0f)
         return 0;
 
-    return int32(sWorld.getRate(RATE_REPUTATION_GAIN) *rep *percent/100.0f);
+    // Multiply result with the faction specific rate
+    if (const RepRewardRate *repData = sObjectMgr.GetRepRewardRate(faction))
+    {
+        float repRate = 0.0f;
+        switch (source)
+        {
+            case REPUTATION_SOURCE_KILL:
+                repRate = repData->creature_rate;
+                break;
+            case REPUTATION_SOURCE_QUEST:
+                repRate = repData->quest_rate;
+                break;
+            case REPUTATION_SOURCE_SPELL:
+                repRate = repData->spell_rate;
+                break;
+            default:
+                repRate = 1.0;
+                break;
+        }
+
+        // for custom, a rate of 0.0 will totally disable reputation gain for this faction/type
+        if (repRate <= 0.0f)
+            return 0;
+
+        percent *= repRate;
+    }
+
+    return int32(sWorld.getRate(RATE_REPUTATION_GAIN)*rep*percent/100.0f);
 }
 
 //Calculates how many reputation points player gains in victim's enemy factions
@@ -5836,14 +5879,14 @@ void Player::RewardReputation(Unit *pVictim, float rate)
     if (((Creature*)pVictim)->IsReputationGainDisabled())
         return;
 
-    ReputationOnKillEntry const* Rep = objmgr.GetReputationOnKilEntry(((Creature*)pVictim)->GetCreatureInfo()->Entry);
+    ReputationOnKillEntry const* Rep = objmgr.GetReputationOnKillEntry(((Creature*)pVictim)->GetCreatureInfo()->Entry);
 
     if (!Rep)
         return;
 
     if (Rep->repfaction1 && (!Rep->team_dependent || GetTeam()==ALLIANCE))
     {
-        int32 donerep1 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue1, Rep->repfaction1, false);
+        int32 donerep1 = CalculateReputationGain(REPUTATION_SOURCE_KILL, Rep->repvalue1, Rep->repfaction1, pVictim->getLevel());
         donerep1 = int32(donerep1*rate);
         FactionEntry const *factionEntry1 = sFactionStore.LookupEntry(Rep->repfaction1);
         uint32 current_reputation_rank1 = GetReputationMgr().GetRank(factionEntry1);
@@ -5861,7 +5904,7 @@ void Player::RewardReputation(Unit *pVictim, float rate)
 
     if (Rep->repfaction2 && (!Rep->team_dependent || GetTeam() == HORDE))
     {
-        int32 donerep2 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue2, Rep->repfaction2, false);
+        int32 donerep2 = CalculateReputationGain(REPUTATION_SOURCE_KILL, Rep->repvalue2, Rep->repfaction2, pVictim->getLevel());
         donerep2 = int32(donerep2*rate);
         FactionEntry const *factionEntry2 = sFactionStore.LookupEntry(Rep->repfaction2);
         uint32 current_reputation_rank2 = GetReputationMgr().GetRank(factionEntry2);
@@ -5884,11 +5927,13 @@ void Player::RewardReputation(Quest const *pQuest)
     // quest reputation reward/loss
     for (int i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
     {
-        if (pQuest->RewRepFaction[i] && pQuest->RewRepValue[i])
+        if (!pQuest->RewRepFaction[i])
+            continue;
+
+        if (pQuest->RewRepValue[i])
         {
-            int32 rep = CalculateReputationGain(GetQuestOrPlayerLevel(pQuest), pQuest->RewRepValue[i], pQuest->RewRepFaction[i], true);
-            FactionEntry const* factionEntry = sFactionStore.LookupEntry(pQuest->RewRepFaction[i]);
-            if (factionEntry)
+            int32 rep = CalculateReputationGain(REPUTATION_SOURCE_QUEST, pQuest->RewRepValue[i], pQuest->RewRepFaction[i], GetQuestOrPlayerLevel(pQuest));
+            if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(pQuest->RewRepFaction[i]))
                 GetReputationMgr().ModifyReputation(factionEntry, rep);
         }
     }
@@ -7673,7 +7718,7 @@ void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
     else
         zoneid = GetZoneId();
     OutdoorPvP * pvp = sOutdoorPvPMgr.GetOutdoorPvPToZoneId(zoneid);
-    uint32 areaid = GetAreaId();
+    uint32 areaid = GetCachedArea();
     sLog.outDebug("Sending SMSG_INIT_WORLD_STATES to Map:%u, Zone: %u", mapid, zoneid);
     // may be exist better way to do this...
     switch (zoneid)
@@ -10583,6 +10628,8 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
 
         return pItem2;
     }
+
+    return pItem;
 }
 
 void Player::QuickEquipItem(uint16 pos, Item *pItem)
@@ -12213,7 +12260,7 @@ void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, 
     data << uint32(received);                               // 0=looted, 1=from npc
     data << uint32(created);                                // 0=received, 1=created
     data << uint32(1);                                      // always 0x01 (probably meant to be count of listed items)
-    data << (uint8)item->GetBagSlot();                      // bagslot
+    data << item->GetBagSlot();                             // bagslot
                                                             // item slot, but when added to stack: 0xFFFFFFFF
     data << (uint32) ((item->GetCount()==count) ? item->GetSlot() : -1);
     data << uint32(item->GetEntry());                       // item id
@@ -15762,7 +15809,7 @@ void Player::SaveToDB()
     ss << uint32(m_atLoginFlags);
 
     ss << ", ";
-    ss << GetZoneId();
+    ss << GetCachedZone();
 
     ss << ", ";
     ss << (uint64)m_deathExpireTime;
@@ -17593,9 +17640,9 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
 
             WorldPacket data(SMSG_BUY_ITEM, (8+4+4+4));
             data << pCreature->GetGUID();
-            data << (uint32)(vendor_slot+1);                // numbered from 1 at client
-            data << (uint32)(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
-            data << (uint32)count;
+            data << uint32(vendor_slot+1);                // numbered from 1 at client
+            data << uint32(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
+            data << uint32(count);
             GetSession()->SendPacket(&data);
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
@@ -17899,6 +17946,15 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
     {
         if (InArena() && isInCombat() && bg->GetStatus() == STATUS_IN_PROGRESS)
             return;
+
+        if (bg->isArena() && !isGameMaster())
+        {
+            SetVisibility(VISIBILITY_ON);
+            SetFlying(false);
+
+            if (Creature *pSpectator = GetBGCreature(ARENA_NPC_SPECTATOR))
+                pSpectator->RemovePlayerFromVision(this);
+        }
 
         bg->RemovePlayerAtLeave(GetGUID(), teleportToEntryPoint, true);
 

@@ -326,11 +326,12 @@ void WardenWin::RequestData()
 
     m_WardenDataSent = true;
 
+/*
     std::stringstream stream;
     stream << "Sent check id's: ";
     for (std::vector<uint32>::iterator itr = SendDataId.begin(); itr != SendDataId.end(); ++itr)
         stream << *itr << " ";
-//    sLog.outWarden(stream.str().c_str());
+    sLog.outWarden(stream.str().c_str());*/
 }
 
 #include <string>

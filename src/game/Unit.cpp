@@ -60,9 +60,9 @@ float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
     2.5f,                                                   // MOVE_WALK
     7.0f,                                                   // MOVE_RUN
-    1.25f,                                                  // MOVE_RUN_BACK
+    4.5f,                                                   // MOVE_RUN_BACK
     4.722222f,                                              // MOVE_SWIM
-    4.5f,                                                   // MOVE_SWIM_BACK
+    2.5f,                                                   // MOVE_SWIM_BACK
     3.141594f,                                              // MOVE_TURN_RATE
     7.0f,                                                   // MOVE_FLIGHT
     4.5f,                                                   // MOVE_FLIGHT_BACK
@@ -1499,7 +1499,7 @@ void Unit::DealSpellDamage(SpellDamageLog *damageInfo, bool durabilityLoss)
     //You still see it in the combat log though
     if (pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
     {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(pVictim->GetAreaId());
+        const AreaTableEntry *area = GetAreaEntryByAreaID(((Player*)pVictim)->GetCachedArea());
         if (area && area->flags & 0x800)                     //sanctuary
             return;
     }
@@ -1615,7 +1615,7 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
     //You still see it in the combat log though
     if (pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
     {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(pVictim->GetAreaId());
+        const AreaTableEntry *area = GetAreaEntryByAreaID(((Player*)pVictim)->GetCachedArea());
         if (area && area->flags & 0x800)                     //sanctuary
             return;
     }
@@ -3500,9 +3500,14 @@ int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 {
     int32 modifier = 0;
 
+    bool outdoors = true;
+    if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
+        outdoors = GetBaseMap()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
+
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
     for (AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
-        modifier += (*i)->GetModifierValue();
+        if(outdoors || !((*i)->GetSpellProto()->Attributes & SPELL_ATTR_OUTDOORS_ONLY))
+            modifier += (*i)->GetModifierValue();
 
     return modifier;
 }
@@ -3511,9 +3516,14 @@ float Unit::GetTotalAuraMultiplier(AuraType auratype) const
 {
     float multiplier = 1.0f;
 
+    bool outdoors = true;
+    if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
+        outdoors = GetBaseMap()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
+
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
     for (AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
-        multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
+        if(outdoors || !((*i)->GetSpellProto()->Attributes & SPELL_ATTR_OUTDOORS_ONLY))
+            multiplier *= (100.0f + (*i)->GetModifierValue())/100.0f;
 
     return multiplier;
 }
@@ -3522,12 +3532,19 @@ int32 Unit::GetMaxPositiveAuraModifier(AuraType auratype) const
 {
     int32 modifier = 0;
 
+    bool outdoors = true;
+    if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
+        outdoors = GetBaseMap()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
+
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
     for (AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        int32 amount = (*i)->GetModifierValue();
-        if (amount > modifier)
-            modifier = amount;
+        if(outdoors || !((*i)->GetSpellProto()->Attributes & SPELL_ATTR_OUTDOORS_ONLY))
+        {
+            int32 amount = (*i)->GetModifierValue();
+            if (amount > modifier)
+                modifier = amount;
+        }
     }
 
     return modifier;
@@ -4165,12 +4182,12 @@ void Unit::RemoveAurasDueToSpellByCancel(uint32 spellId)
     }
 }
 
-void Unit::RemoveAurasWithAttribute(uint32 flags)
+void Unit::RemoveAurasWithAttribute(uint32 flags, bool notPassiveOnly)
 {
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
         SpellEntry const *spell = iter->second->GetSpellProto();
-        if (spell->Attributes & flags)
+        if (spell->Attributes & flags && (!notPassiveOnly || !iter->second->IsPassive()))
             RemoveAura(iter);
         else
             ++iter;
@@ -5501,6 +5518,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
                 // pVictim is caster of aura
                 if (triggeredByAura->GetCasterGUID() != pVictim->GetGUID())
+                    return false;
+
+                if (!pVictim->IsInMap(triggeredByAura->GetCaster()))
                     return false;
 
                 // energize amount
@@ -8138,6 +8158,9 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         default:
             break;
     }
+
+    //if (spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS
+    //    DoneTotalMod = 1.0f; or return pdamage;
 
     float LvlPenalty = CalculateLevelPenalty(spellProto);
 

@@ -67,7 +67,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 {
     npc_medivh_bmAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        pInstance = c->GetInstanceData();
         HeroicMode = c->GetMap()->IsHeroic();
         c->setActive(true);
     }
@@ -100,20 +100,14 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
         Intro = false;
         Delay = false;
 
-        if (!pInstance)
-            return;
-
         if (pInstance->GetData(TYPE_MEDIVH) == IN_PROGRESS)
-            m_creature->CastSpell(m_creature,SPELL_CHANNEL,true);
+            m_creature->CastSpell(m_creature,SPELL_CHANNEL, true);
         else if (m_creature->HasAura(SPELL_CHANNEL,0))
             m_creature->RemoveAura(SPELL_CHANNEL,0);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!pInstance)
-            return;
-
         //say enter phrase when in 50yd distance
         if (!Intro && pInstance->GetData(TYPE_MEDIVH) != DONE && who->GetTypeId() == TYPEID_PLAYER  && m_creature->IsWithinDistInMap(who, 50.0f))
         {
@@ -172,46 +166,44 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(done_by != m_creature)
+        if (done_by != m_creature)
             damage = 0;
 
         if (DamageMelee_Timer > 0)
             return;
 
-        if(done_by->GetEntry() == C_RLORD || done_by->GetEntry() == C_RKEEP)
+        if (done_by->GetEntry() == C_RLORD || done_by->GetEntry() == C_RKEEP)
             DamageMelee_Timer = 5000;
         else
             DamageMelee_Timer = 1000;
     }
 
-
     void JustDied(Unit* Killer)
     {
-        if(pInstance)
-            pInstance->SetData(TYPE_MEDIVH, FAIL);
+        pInstance->SetData(TYPE_MEDIVH, FAIL);
 
         DoScriptText(SAY_DEATH, m_creature);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!pInstance)
-            return;
-
-        if(Delay_Timer && Delay_Timer < diff)
+        if (Delay_Timer)
         {
-            if(Delay)
-                DoScriptText(SAY_INTRO, m_creature);
-            Delay_Timer = 0;
+            if (Delay_Timer <= diff)
+            {
+                if (Delay)
+                    DoScriptText(SAY_INTRO, m_creature);
+                Delay_Timer = 0;
+            }
+            else
+                Delay_Timer -= diff;
         }
-        else if (Delay_Timer)
-            Delay_Timer -= diff;
 
         if (SpellCorrupt_Timer)
         {
-            if (SpellCorrupt_Timer < diff)
+            if (SpellCorrupt_Timer <= diff)
             {
-                    pInstance->SetData(TYPE_MEDIVH,SPECIAL);
+                pInstance->SetData(TYPE_MEDIVH,SPECIAL);
 
                 if (m_creature->HasAura(SPELL_CORRUPT_AEONUS,0))
                     SpellCorrupt_Timer = 1000;
@@ -226,7 +218,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 
         if (DamageMelee_Timer)
         {
-            if (DamageMelee_Timer < diff)
+            if (DamageMelee_Timer <= diff)
             {
                 pInstance->SetData(TYPE_MEDIVH,SPECIAL);
                 DamageMelee_Timer = 0;
@@ -237,7 +229,7 @@ struct TRINITY_DLL_DECL npc_medivh_bmAI : public ScriptedAI
 
         if (Check_Timer)
         {
-            if (Check_Timer < diff)
+            if (Check_Timer <= diff)
             {
                 uint32 pct = pInstance->GetData(DATA_SHIELD);
 
@@ -316,18 +308,16 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
         TimeRiftWave_Timer = 15000;
         mRiftWaveCount = 0;
 
-        if (!pInstance)
-            return;
-
         mPortalCount = pInstance->GetData(DATA_PORTAL_COUNT);
 
         if (mPortalCount < 6)
             mWaveId = 0;
         else if (mPortalCount > 12)
             mWaveId = 2;
-        else mWaveId = 1;
-
+        else
+            mWaveId = 1;
     }
+
     void EnterCombat(Unit *who) {}
 
     void JustDied(Unit* who)
@@ -377,9 +367,9 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
 
         ++mRiftWaveCount;
 
-        if(entry == C_WHELP)
+        if (entry == C_WHELP)
         {
-            for(uint8 i = 0; i < 3; i++)
+            for (uint8 i = 0; i < 3; i++)
                 DoSummonAtRift(entry);
         }
         else
@@ -388,23 +378,24 @@ struct TRINITY_DLL_DECL npc_time_riftAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!pInstance)
-            return;
-
         mPortalCount = pInstance->GetData(DATA_PORTAL_COUNT);
 
-        if (TimeRiftWave_Timer && TimeRiftWave_Timer < diff)
+        if (TimeRiftWave_Timer)
         {
-            DoSelectSummon();
+            if (TimeRiftWave_Timer <= diff)
+            {
+                DoSelectSummon();
 
-            if(mPortalCount > 0 && mPortalCount < 13)
-                TimeRiftWave_Timer = 12000+rand()%5000;
-            else if(mPortalCount > 12 && mPortalCount < 18)
-                TimeRiftWave_Timer = 7000+rand()%5000;
-            else
-                TimeRiftWave_Timer = 0;
+                if (mPortalCount > 0 && mPortalCount < 13)
+                    TimeRiftWave_Timer = urand(12000, 17000);
+                else if (mPortalCount > 12 && mPortalCount < 18)
+                    TimeRiftWave_Timer = urand(7000, 12000);
+                else
+                    TimeRiftWave_Timer = 0;
 
-        }else TimeRiftWave_Timer -= diff;
+            }
+            else TimeRiftWave_Timer -= diff;
+        }
 
         if (m_creature->IsNonMeleeSpellCasted(false))
             return;
@@ -448,97 +439,106 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
     {
         Unit* medivh = Unit::GetUnit(*m_creature ,pInstance->GetData64(DATA_MEDIVH));
 
-        if (!pInstance)
-            return;
         m_creature->setActive(true);
         m_creature->SetNoCallAssistance(true);
 
-        if(medivh && m_creature->GetEntry() != C_RKEEP && m_creature->GetEntry() != C_RLORD)
+        if (medivh && m_creature->GetEntry() != C_RKEEP && m_creature->GetEntry() != C_RLORD)
             AttackStart(medivh);
 
         Type = urand(0,1);
 
-        switch(m_creature->GetEntry())
+        switch (m_creature->GetEntry())
         {
-        case C_RKEEP:
+            case C_RKEEP:
+            {
                 if(Type)    //mage
                 {
-                    Spell_Timer1 = 1000;                                   //Frostbolt
-                    Spell_Timer2 = HeroicMode ? 18500 : 12500;             //Pyroblast
-                    Spell_Timer3 = HeroicMode ? 12000+rand()%15000: 8000;  //Blast Wave
-                    Spell_Timer4 = HeroicMode ? 15000 : 0;                 //Polymorph
+                    Spell_Timer1 = 1000;                                    //Frostbolt
+                    Spell_Timer2 = HeroicMode ? 18500 : 12500;              //Pyroblast
+                    Spell_Timer3 = HeroicMode ? urand(12000, 27000) : 8000; //Blast Wave
+                    Spell_Timer4 = HeroicMode ? 15000 : 0;                  //Polymorph
                 }
                 else      //warlock
                 {
-                    Spell_Timer1 = 7000;                         //Shadow Bolt Volley
-                    Spell_Timer2 = HeroicMode ? 6000 : 10000;    //Curse of Vulnerability
-                    Spell_Timer3 = 3000+rand()%20000;    //Fear
+                    Spell_Timer1 = 7000;                            //Shadow Bolt Volley
+                    Spell_Timer2 = HeroicMode ? 6000 : 10000;       //Curse of Vulnerability
+                    Spell_Timer3 = urand(3000, 23000);              //Fear
                 }
                 frenzy = false;
-            break;
-        case C_RLORD:
+                break;
+            }
+            case C_RLORD:
+            {
                 if(Type)    //protection type
                 {
-                    Spell_Timer1 = 6000+rand()%6000;    //sunder armor
-                    Spell_Timer2 = HeroicMode ? 5000+rand()%15000 : 5000+rand()%20000;    //thunderclap
+                    Spell_Timer1 = urand(6000, 12000);      //sunder armor
+                    Spell_Timer2 = urand(5000, HeroicMode ? 20000 : 25000);     //thunderclap
                 }
                 else        //fury-arms
                 {
-                    Spell_Timer1 = HeroicMode ? 6200+rand()%12600 : 4800+rand()%14000;    //knockdown
-                    Spell_Timer2 = HeroicMode ? 4900+rand()%12800 : 6100+rand()%11900;    //mortal strike
-                    Spell_Timer3 = HeroicMode ? 4600+rand()%11100 : 7200+rand()%4600;     //harmstring
+                    Spell_Timer1 = HeroicMode ? urand(6200, 18800) : urand(4800, 18800);    //knockdown
+                    Spell_Timer2 = HeroicMode ? urand(4900, 17700) : urand(6100, 18000);    //mortal strike
+                    Spell_Timer3 = HeroicMode ? urand(4600, 15700) : urand(7200, 11800);    //harmstring
                 }
-            break;
-        case C_ASSAS:
+                break;
+            }
+            case C_ASSAS:
+            {
                 if(Type)    //combat
                 {
-                    Spell_Timer1 = HeroicMode ? 500+rand()%6800 : 1200+rand()%9900;    //sinister strike
-                    Spell_Timer2 = HeroicMode ? 1000+rand()%14800 : 1900+rand()%8200;  //rupture
-                    Spell_Timer3 = HeroicMode ? 800+rand()%7000 : 0;                   //crippling poison
+                    Spell_Timer1 = HeroicMode ? urand(500, 7300) : urand(1200, 11100);      //sinister strike
+                    Spell_Timer2 = HeroicMode ? urand(1000, 15800) : urand(1900, 10100);    //rupture
+                    Spell_Timer3 = HeroicMode ? urand(800, 7800) : 0;                       //crippling poison
                 }
                 else        //assasin
                 {
-                    Spell_Timer1 = 1200+rand()%11200;                    //kidney shot
-                    Spell_Timer2 = HeroicMode ? 1000+rand()%5500 : 0;    //deadly poison
-                    Spell_Timer3 = 0;                                    //backstab
+                    Spell_Timer1 = urand(1200, 12400);                      //kidney shot
+                    Spell_Timer2 = HeroicMode ? urand(1000, 6500) : 0;      //deadly poison
+                    Spell_Timer3 = 0;                                       //backstab
                 }
-            break;
-        case C_WHELP:
-            break;
-        case C_CHRON:
+                break;
+            }
+            case C_WHELP:
+                break;
+            case C_CHRON:
+            {
                 if(Type)    //frost
                 {
                     Spell_Timer1 = 0;    //frostbolt
-                    Spell_Timer2 = HeroicMode ? 3600+rand()%4700 : 3700+rand()%9200;    //frost nova
+                    Spell_Timer2 = HeroicMode ? urand(3600, 12200) : urand(3700, 12900);    //frost nova
                 }
                 else        //arcane
                 {
-                    Spell_Timer1 = 0;    //arcane bolt
-                    Spell_Timer2 = 8600+rand()%9600;    //arcane explosion
+                    Spell_Timer1 = 0;                       //arcane bolt
+                    Spell_Timer2 = urand(8600, 18500);      //arcane explosion
                 }
-            break;
-        case C_EXECU:
-                Spell_Timer1 = HeroicMode ? 2000+rand()%9700 : 7300+rand()%6700;    //cleave
-                Spell_Timer2 = HeroicMode ? 2000+rand()%1900 : 7200;    //strike
-                Spell_Timer3 = HeroicMode ? 600+rand()%9600 : 0;    //harmstring
-            break;
-        case C_VANQU:
-                Spell_Timer1 = 1000;    //scorch + shadow bolt
-                Spell_Timer2 = 5900+rand()%100;    //fire blast
-            break;
+                break;
+            }
+            case C_EXECU:
+                Spell_Timer1 = HeroicMode ? urand(2000, 11700) : urand(7300, 14000);    //cleave
+                Spell_Timer2 = HeroicMode ? urand(2000, 3900) : 7200;                   //strike
+                Spell_Timer3 = HeroicMode ? urand(600, 10200) : 0;                      //harmstring
+                break;
+            case C_VANQU:
+                Spell_Timer1 = 1000;                //scorch + shadow bolt
+                Spell_Timer2 = urand(5900, 6000);   //fire blast
+                break;
+            default:
+                break;
         }
 
     }
+
     void EnterCombat(Unit *who)
     {
-        if(who->GetTypeId() == TYPEID_UNIT)
+        if (who->GetTypeId() == TYPEID_UNIT)
             aggro = false;
 
-        if(who->GetTypeId() == TYPEID_UNIT  && m_creature->GetEntry() != C_WHELP)
+        if (who->GetTypeId() == TYPEID_UNIT  && m_creature->GetEntry() != C_WHELP)
         {
-            if(rand()%10 == 0)   //10% chance on yell
+            if (rand()%10 == 0)   //10% chance on yell
             {
-                switch(rand()%9)
+                switch (rand()%9)
                 {
                   case 0: m_creature->MonsterYell("The wizard will fall!", 0, m_creature->GetGUID()); break;
                   case 1: m_creature->MonsterYell("We will not be stopped!", 0, m_creature->GetGUID()); break;
@@ -556,325 +556,327 @@ struct TRINITY_DLL_DECL rift_summonAI : public ScriptedAI
 
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
-        if(!aggro && done_by->GetTypeId() == TYPEID_PLAYER)
+        if (!aggro && done_by->GetTypeId() == TYPEID_PLAYER)
         {
             AttackStart(done_by);
             aggro = true;
         }
     }
 
-    void JustDied(Unit* who)
-    {
-    }
+    void JustDied(Unit* who) {}
 
     void UpdateAI(const uint32 diff)
     {
-        if (!pInstance)
-            return;
-
-      if(m_creature->getVictim() && m_creature->getVictim()->GetTypeId() == TYPEID_PLAYER)
-      {
-        switch(m_creature->GetEntry())
+        if (m_creature->getVictim() && m_creature->getVictim()->GetTypeId() == TYPEID_PLAYER)
         {
-            case C_RKEEP:
-                if(Type)    //mage
+            switch (m_creature->GetEntry())
+            {
+                case C_RKEEP:
                 {
-                    if(Spell_Timer1 < diff)   //frostbolt
+                    if (Type)    //mage
                     {
-                        DoCast(m_creature->getVictim(), HeroicMode?38534:36279);
-                        Spell_Timer1 = HeroicMode ? 3000+rand()%2000 : 8000+rand()%8000;
-                    }
-                    else
-                        Spell_Timer1 -= diff;
-
-                    if(Spell_Timer2 < diff)    //pyroblast
-                    {
-                        Spell_Timer1 = 8000;
-
-                        if(m_creature->IsNonMeleeSpellCasted(false))
-                            Spell_Timer2 = 3000;
+                        if (Spell_Timer1 < diff)   //frostbolt
+                        {
+                            AddSpellToCast(m_creature->getVictim(), HeroicMode?38534:36279);
+                            Spell_Timer1 = urand(8000, HeroicMode ? 10000 : 16000);
+                        }
                         else
+                            Spell_Timer1 -= diff;
+
+                        if (Spell_Timer2 < diff)    //pyroblast
+                        {
+                            Spell_Timer1 = 8000;
+
+                            Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 70, true, m_creature->getVictimGUID());
+                            if (!target)
+                                target = m_creature->getVictim();
+
+                            if (target)
+                                AddSpellToCast(target, HeroicMode?38535:36277);
+
+                            Spell_Timer2 = HeroicMode ? urand(14000, 24000) : urand(12000, 17000);
+                        }
+                        else
+                            Spell_Timer2 -= diff;
+
+                        if (Spell_Timer3 < diff)    //blast wave
+                        {
+                            ForceSpellCast(m_creature, HeroicMode?38536:36278, DONT_INTERRUPT, true);
+                            Spell_Timer3 = HeroicMode ? urand(15000, 25000) : 13000;
+                        }
+                        else
+                            Spell_Timer3 -= diff;
+
+                        if (HeroicMode && Spell_Timer4 < diff)    //polymorph
                         {
                             Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 70, true, m_creature->getVictimGUID());
-                            if(target)
-                                DoCast(target, HeroicMode?38535:36277);
-                            else if(target = m_creature->getVictim())
-                                DoCast(target, HeroicMode?38535:36277);
-                            Spell_Timer2 = HeroicMode ? 14000+rand()%10000 : 12000+rand()%5000;
+                            if (target)
+                                AddSpellToCast(target, 13323);
+                            Spell_Timer4 = 30000;
                         }
-                    }
-                    else
-                        Spell_Timer2 -= diff;
-
-                    if(Spell_Timer3 < diff)    //blast wave
-                    {
-                        DoCast(m_creature, HeroicMode?38536:36278, true);
-                        Spell_Timer3 = HeroicMode ? 15000+rand()%10000 : 13000;
-                    }
-                    else
-                        Spell_Timer3 -= diff;
-
-                    if(HeroicMode && Spell_Timer4 < diff)    //polymorph
-                    {
-                        Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 70, true, m_creature->getVictimGUID());
-                        if(target)
-                            DoCast(target, 13323);
-                        Spell_Timer4 = 30000;
-                    }
-                    else
-                        Spell_Timer4 -= diff;
-                }
-                else       //warlock
-                {
-                    if(Spell_Timer1 < diff)   //shadow bolt volley
-                    {
-                        DoCast(m_creature->getVictim(), HeroicMode?38533:36275);
-                        Spell_Timer1 = HeroicMode ? Spell_Timer2+1500 : 10000+rand()%15000;
-                    }
-                    else
-                        Spell_Timer1 -= diff;
-
-                    if(Spell_Timer2 < diff)    //curse of vulnerability
-                    {
-                        Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,70,true);
-                        if(target)
-                            DoCast(target, 36276, true);
-                        Spell_Timer2 = HeroicMode ? 9000+rand()%5000 : Spell_Timer1+2000;
-                    }
-                    else
-                        Spell_Timer2 -= diff;
-
-                    if(Spell_Timer3 < diff)    //fear
-                    {
-                        if(m_creature->IsNonMeleeSpellCasted(false))
-                            Spell_Timer3 = 4000;
                         else
+                            Spell_Timer4 -= diff;
+                    }
+                    else       //warlock
+                    {
+                        if (Spell_Timer1 < diff)   //shadow bolt volley
+                        {
+                            AddSpellToCast(m_creature->getVictim(), HeroicMode?38533:36275);
+                            Spell_Timer1 = HeroicMode ? Spell_Timer2+1500 : urand(10000, 25000);
+                        }
+                        else
+                            Spell_Timer1 -= diff;
+
+                        if (Spell_Timer2 < diff)    //curse of vulnerability
                         {
                             Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,70,true);
-                            if(target)
-                                DoCast(target, 12542);
-                            Spell_Timer3 = 15000+rand()%10000;
+                            if (target)
+                                AddSpellToCast(target, 36276, true);
+                            Spell_Timer2 = HeroicMode ? urand(9000, 14000) : Spell_Timer1+2000;
+                        }
+                        else
+                            Spell_Timer2 -= diff;
+
+                        if (Spell_Timer3 < diff)    //fear
+                        {
+                            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 70, true);
+                            if (target)
+                                AddSpellToCast(target, 12542);
+                            Spell_Timer3 = urand(15000, 25000);
+                        }
+                        else
+                            Spell_Timer3 -= diff;
+
+                        if (!frenzy && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+                        {
+                            AddSpellToCast(m_creature, 8269, true);
+                            frenzy = true;
                         }
                     }
-                    else
-                        Spell_Timer3 -= diff;
-
-                    if(!frenzy && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+                    break;
+                }
+                case C_RLORD:
+                {
+                    if(Type)    //protection type
                     {
-                        DoCast(m_creature, 8269, true);
+                        if (Spell_Timer1 < diff)   //sunder armor
+                        {
+                            AddSpellToCast(m_creature->getVictim(), 16145, true);
+                            Spell_Timer1 = urand(6000, 9000);
+                        }
+                        else
+                            Spell_Timer1 -= diff;
+
+                        if (Spell_Timer2 < diff)    //thunderclap
+                        {
+                            AddSpellToCast(m_creature, HeroicMode?38537:36214, true);
+                            Spell_Timer2 = HeroicMode ? urand(12000, 17000) : urand(10000, 25000);
+                        }
+                        else
+                            Spell_Timer2 -= diff;
+                    }
+                    else    //fury-arms
+                    {
+                        if (Spell_Timer1 < diff)   //knockback
+                        {
+                            AddSpellToCast(m_creature->getVictim(), 11428, true);
+                            Spell_Timer1 = HeroicMode ? urand(13300, 19100) : urand(18100, 38500);
+                        }
+                        else
+                            Spell_Timer1 -= diff;
+
+                        if (Spell_Timer2 < diff)    //mortal strike
+                        {
+                            AddSpellToCast(m_creature->getVictim(), HeroicMode?35054:15708, true);
+                            Spell_Timer2 = HeroicMode ? urand(10300, 14500) : urand(10800, 15800);
+                        }
+                        else
+                            Spell_Timer2 -= diff;
+
+                        if (Spell_Timer3 < diff)    //harmstring
+                        {
+                            AddSpellToCast(m_creature->getVictim(), 9080, true);
+                            Spell_Timer3 = HeroicMode ? urand(11600, 18100) : urand(15500, 26500);
+                        }
+                        else
+                            Spell_Timer3 -= diff;
+                    }
+
+                    if (!frenzy && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+                    {
+                        AddSpellToCast(m_creature, 8269, true);
                         frenzy = true;
                     }
+                    break;
                 }
-            break;
-            case C_RLORD:
-                if(Type)    //protection type
+                case C_ASSAS:
                 {
-                    if(Spell_Timer1 < diff)   //sunder armor
+                    if (Type)    //combat
                     {
-                        DoCast(m_creature->getVictim(), 16145, true);
-                        Spell_Timer1 = 6000+rand()%3000;
-                    }
-                    else
-                        Spell_Timer1 -= diff;
-
-                    if(Spell_Timer2 < diff)    //thunderclap
-                    {
-                        DoCast(m_creature, HeroicMode?38537:36214, true);
-                        Spell_Timer2 = HeroicMode ? 12000+rand()%5000 : 10000+rand()%15000;
-                    }
-                    else
-                        Spell_Timer2 -= diff;
-                }
-                else    //fury-arms
-                {
-                    if(Spell_Timer1 < diff)   //knockback
-                    {
-                        DoCast(m_creature->getVictim(), 11428, true);
-                        Spell_Timer1 = HeroicMode ? 13300+rand()%5800 : 18100+rand()%20400;
-                    }
-                    else
-                        Spell_Timer1 -= diff;
-
-                    if(Spell_Timer2 < diff)    //mortal strike
-                    {
-                        DoCast(m_creature->getVictim(), HeroicMode?35054:15708, true);
-                        Spell_Timer2 = HeroicMode ? 10300+rand()%4200 : 10800+rand()%5000;
-                    }
-                    else
-                        Spell_Timer2 -= diff;
-
-                    if(Spell_Timer3 < diff)    //harmstring
-                    {
-                        DoCast(m_creature->getVictim(), 9080, true);
-                        Spell_Timer3 = HeroicMode ? 11600+rand()%6500 : 15500+rand()%11000;
-                    }
-                    else
-                        Spell_Timer3 -= diff;
-                }
-
-                if(!frenzy && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
-                {
-                    DoCast(m_creature, 8269, true);
-                    frenzy = true;
-                }
-            break;
-            case C_ASSAS:
-                if(Type)    //combat
-                {
-                    if(Spell_Timer1 < diff)   //sinister strike
-                    {
-                        DoCast(m_creature->getVictim(), HeroicMode?15667:14873, true);
-                        Spell_Timer1 = HeroicMode ? 3500+rand()%11000 : 4500+rand()%10800;
-                    }
-                    else
-                        Spell_Timer1 -= diff;
-
-                    if(Spell_Timer2 < diff)    //rupture
-                    {
-                        DoCast(m_creature->getVictim(), HeroicMode?15583:14874, true);
-                        Spell_Timer2 = HeroicMode ? 10100+rand()%10400 : 10400+rand()%11200;
-                    }
-                    else
-                        Spell_Timer2 -= diff;
-
-                    if(Spell_Timer3 && Spell_Timer3 < diff)    //crippling poison
-                    {
-                        DoCast(m_creature->getVictim(), 9080, true);
-                        Spell_Timer3 = HeroicMode ? 12200+rand()%50600 : 0;
-                    }
-                    else
-                        Spell_Timer3 -= diff;
-                }
-                else        //assasin
-                {
-                    if(Spell_Timer1 < diff)   //kidney shot
-                    {
-                        DoCast(m_creature->getVictim(), 30832, true);
-                        Spell_Timer1 = 20100+rand()%4800;
-                    }
-                    else
-                        Spell_Timer1 -= diff;
-
-                    if(Spell_Timer2 && Spell_Timer2 < diff)    //deadly poison
-                    {
-                        DoCast(m_creature->getVictim(), 38520, true);
-                        Spell_Timer2 = HeroicMode ? 12300+rand()%11900 : 0;
-                    }
-                    else
-                        Spell_Timer2 -= diff;
-
-                    if(Spell_Timer3 < diff)    //backstab
-                    {
-                        DoCast(m_creature->getVictim(), HeroicMode?15657:7159, true);
-                        Spell_Timer3 = 4800+rand()%2400;
-                    }
-                    else
-                        Spell_Timer3 -= diff;
-                }
-             break;
-            break;
-            case C_WHELP:
-            break;
-            case C_CHRON:
-                if(m_creature->GetPower(POWER_MANA)*100/m_creature->GetMaxPower(POWER_MANA) > 15)
-                {
-                    if(Type)    //frost
-                    {
-                        if(Spell_Timer1 < diff)   //frostbolt
+                        if (Spell_Timer1 < diff)   //sinister strike
                         {
-                            DoCast(m_creature->getVictim(), HeroicMode?12675:15497);
-                            Spell_Timer1 = 2900+rand()%2500;
+                            AddSpellToCast(m_creature->getVictim(), HeroicMode?15667:14873, true);
+                            Spell_Timer1 = HeroicMode ? urand(3500, 14500) : urand(4500, 15300);
                         }
                         else
                             Spell_Timer1 -= diff;
 
-                        if(Spell_Timer2 < diff && m_creature->IsWithinCombatRange(m_creature->getVictim(), 10))    //frost nova
+                        if (Spell_Timer2 < diff)    //rupture
                         {
-                            DoCast(m_creature, HeroicMode?15531:15063, true);
-                            Spell_Timer2 = HeroicMode ? 22200+rand()%3500 : 33800+rand()%6000;
+                            AddSpellToCast(m_creature->getVictim(), HeroicMode?15583:14874, true);
+                            Spell_Timer2 = HeroicMode ? urand(10100, 20500) : urand(10400, 21600);
                         }
                         else
                             Spell_Timer2 -= diff;
-                    }
-                    else    //arcane
-                    {
-                        if(Spell_Timer1 < diff)   //arcane bolt
+
+                        if (Spell_Timer3 && Spell_Timer3 <= diff)    //crippling poison
                         {
-                            DoCast(m_creature->getVictim(), HeroicMode?15230:15124);
-                            Spell_Timer1 = HeroicMode ? 1200+rand()%2200 : 2900+rand()%2500;
+                            AddSpellToCast(m_creature->getVictim(), 9080, true);
+                            Spell_Timer3 = HeroicMode ? urand(12200, 62800) : 0;
+                        }
+                        else
+                            Spell_Timer3 -= diff;
+                    }
+                    else        //assasin
+                    {
+                        if (Spell_Timer1 < diff)   //kidney shot
+                        {
+                            AddSpellToCast(m_creature->getVictim(), 30832, true);
+                            Spell_Timer1 = urand(20100, 24900);
                         }
                         else
                             Spell_Timer1 -= diff;
 
-                        if(Spell_Timer2 < diff && m_creature->IsWithinCombatRange(m_creature->getVictim(), 10))    //arcane explosion
+                        if (Spell_Timer2 && Spell_Timer2 <= diff)    //deadly poison
                         {
-                            DoCast(m_creature, HeroicMode?33623:33860, true);
-                            Spell_Timer2 = HeroicMode ? 8000+rand()%2100 : 9500+rand()%600;
+                            AddSpellToCast(m_creature->getVictim(), 38520, true);
+                            Spell_Timer2 = HeroicMode ? urand(12300, 24200) : 0;
                         }
                         else
                             Spell_Timer2 -= diff;
-                    }
-                }
-            break;
-            case C_EXECU:
-                if(Spell_Timer1 < diff)   //cleave
-                {
-                    DoCast(m_creature->getVictim(), 15496, true);
-                    Spell_Timer1 = HeroicMode ? 6000+rand()%5700 : 7300+rand()%6700;
-                }
-                else
-                    Spell_Timer1 -= diff;
 
-                if(Spell_Timer2 < diff)    //strike
-                {
-                    DoCast(m_creature->getVictim(), HeroicMode?34920:15580, true);
-                    Spell_Timer2 = HeroicMode ? 3900+rand()%5800 : 9700+rand()%10600;
-                }
-                else
-                    Spell_Timer2 -= diff;
-
-                if(Spell_Timer3 && Spell_Timer3 < diff)    //harmstring
-                {
-                    DoCast(m_creature->getVictim(), 9080, true);
-                    Spell_Timer3 = HeroicMode ? 10800+rand()%5000 : 0;
-                }
-                else
-                    Spell_Timer3 -= diff;
-            break;
-            case C_VANQU:
-                if(m_creature->GetPower(POWER_MANA)*100/m_creature->GetMaxPower(POWER_MANA) > 15)
-                {
-                    if(Spell_Timer1 < diff)   //scorch + shadow bolt
-                    {
-                        bool fire = urand(0,1);
-                        if(fire)
-                            DoCast(m_creature->getVictim(), HeroicMode?36807:15241);
+                        if (Spell_Timer3 < diff)    //backstab
+                        {
+                            AddSpellToCast(m_creature->getVictim(), HeroicMode?15657:7159, true);
+                            Spell_Timer3 = urand(4800, 7200);
+                        }
                         else
-                            DoCast(m_creature->getVictim(), HeroicMode?15472:12739);
-                        Spell_Timer1 = 3500+rand()%1000;
+                            Spell_Timer3 -= diff;
+                    }
+                    break;
+                }
+                case C_WHELP:
+                    break;
+                case C_CHRON:
+                {
+                    if (m_creature->GetPower(POWER_MANA)*100/m_creature->GetMaxPower(POWER_MANA) > 15)
+                    {
+                        if (Type)    //frost
+                        {
+                            if (Spell_Timer1 < diff)   //frostbolt
+                            {
+                                AddSpellToCast(m_creature->getVictim(), HeroicMode?12675:15497);
+                                Spell_Timer1 = urand(2900, 5400);
+                            }
+                            else
+                                Spell_Timer1 -= diff;
+
+                            if (Spell_Timer2 < diff && m_creature->IsWithinCombatRange(m_creature->getVictim(), 10))    //frost nova
+                            {
+                                AddSpellToCast(m_creature, HeroicMode?15531:15063, true);
+                                Spell_Timer2 = HeroicMode ? urand(22200, 25700) : urand(33800, 39800);
+                            }
+                            else
+                                Spell_Timer2 -= diff;
+                        }
+                        else    //arcane
+                        {
+                            if (Spell_Timer1 < diff)   //arcane bolt
+                            {
+                                AddSpellToCast(m_creature->getVictim(), HeroicMode?15230:15124);
+                                Spell_Timer1 = HeroicMode ? urand(1200, 3400) : urand(2900, 5400);
+                            }
+                            else
+                                Spell_Timer1 -= diff;
+
+                            if (Spell_Timer2 < diff && m_creature->IsWithinCombatRange(m_creature->getVictim(), 10))    //arcane explosion
+                            {
+                                AddSpellToCast(m_creature, HeroicMode?33623:33860, true);
+                                Spell_Timer2 = HeroicMode ? urand(8000, 10100) : urand(9500, 10100);
+                            }
+                            else
+                                Spell_Timer2 -= diff;
+                        }
+                    }
+                    break;
+                }
+                case C_EXECU:
+                {
+                    if (Spell_Timer1 < diff)   //cleave
+                    {
+                        AddSpellToCast(m_creature->getVictim(), 15496, true);
+                        Spell_Timer1 = HeroicMode ? urand(6000, 11700) : urand(7300, 14000);
                     }
                     else
                         Spell_Timer1 -= diff;
 
-                    if(Spell_Timer2 < diff)    //fire blast
+                    if (Spell_Timer2 < diff)    //strike
                     {
-                        DoCast(m_creature->getVictim(), HeroicMode?38526:13341, true);
-                        Spell_Timer2 = 5900+rand()%100;
+                        AddSpellToCast(m_creature->getVictim(), HeroicMode?34920:15580, true);
+                        Spell_Timer2 = HeroicMode ? urand(3900, 9700) : urand(9700, 20300);
                     }
                     else
                         Spell_Timer2 -= diff;
+
+                    if (Spell_Timer3 && Spell_Timer3 < diff)    //harmstring
+                    {
+                        AddSpellToCast(m_creature->getVictim(), 9080, true);
+                        Spell_Timer3 = HeroicMode ? urand(10800, 15800) : 0;
+                    }
+                    else
+                        Spell_Timer3 -= diff;
+
+                    break;
                 }
-            break;
+                case C_VANQU:
+                {
+                    if (m_creature->GetPower(POWER_MANA)*100/m_creature->GetMaxPower(POWER_MANA) > 15)
+                    {
+                        if (Spell_Timer1 < diff)   //scorch + shadow bolt
+                        {
+                            bool fire = urand(0,1);
+                            if (fire)
+                                AddSpellToCast(m_creature->getVictim(), HeroicMode?36807:15241);
+                            else
+                                AddSpellToCast(m_creature->getVictim(), HeroicMode?15472:12739);
+                            Spell_Timer1 = urand(3500, 4500);
+                        }
+                        else
+                            Spell_Timer1 -= diff;
+
+                        if (Spell_Timer2 < diff)    //fire blast
+                        {
+                            AddSpellToCast(m_creature->getVictim(), HeroicMode?38526:13341, true);
+                            Spell_Timer2 = urand(5900, 6000);
+                        }
+                        else
+                            Spell_Timer2 -= diff;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+
+            CastNextSpellIfAnyAndReady();
+            DoMeleeAttackIfReady();
         }
-       DoMeleeAttackIfReady();
-      }
 
-        if(pInstance->GetData(TYPE_MEDIVH) == FAIL)
+        if (pInstance->GetData(TYPE_MEDIVH) == FAIL)
         {
             m_creature->Kill(m_creature, false);
             m_creature->RemoveCorpse();
         }
-
     }
 };
 
@@ -946,4 +948,3 @@ void AddSC_dark_portal()
     newscript->pGossipSelect = &GossipSelect_npc_saat;
     newscript->RegisterSelf();
 }
-

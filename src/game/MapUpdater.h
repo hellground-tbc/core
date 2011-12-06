@@ -96,7 +96,7 @@ private:
     DelayExecutor m_executor;
     ACE_Condition_Thread_Mutex m_condition;
     ACE_Thread_Mutex m_mutex;
-    size_t pedning_requests;
+    size_t pending_requests;
 };
 
 #endif //_MAP_UPDATER_H_INCLUDED

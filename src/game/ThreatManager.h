@@ -114,11 +114,13 @@ class TRINITY_DLL_SPEC HostilReference : public Reference<Unit, ThreatManager>
 
         // Tell our refFrom (source) object, that the link is cut (Target destroyed)
         void sourceObjectDestroyLink();
+
     private:
         // Inform the source, that the status of that reference was changed
         void fireStatusChanged(ThreatRefStatusChangeEvent& pThreatRefStatusChangeEvent);
 
         Unit* getSourceUnit();
+
     private:
         float iThreat;
         float iTempThreatModifyer;                          // used for taunt
@@ -171,6 +173,8 @@ class TRINITY_DLL_SPEC ThreatContainer
 class TRINITY_DLL_SPEC ThreatManager
 {
     public:
+        friend class HostilReference;
+
         explicit ThreatManager(Unit *pOwner);
 
         ~ThreatManager() { clearReferences(); }
@@ -217,4 +221,3 @@ class TRINITY_DLL_SPEC ThreatManager
 
 //=================================================
 #endif
-

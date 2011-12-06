@@ -49,13 +49,6 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
     boss_netherspiteAI(Creature* c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-
-        // need core fix
-        for(int i=0; i<3; ++i)
-        {
-            if(SpellEntry *spell = (SpellEntry*)GetSpellStore()->LookupEntry(PlayerBuff[i]))
-                spell->AttributesEx |= SPELL_ATTR_EX_NEGATIVE;
-        }
     }
 
     ScriptedInstance* pInstance;

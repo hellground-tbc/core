@@ -66,7 +66,7 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         SayIntro();
     }
 
-        void SayIntro()
+    void SayIntro()
     {
         DoScriptText(SAY_ENTER, m_creature);
     }
@@ -83,14 +83,11 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
 
     void JustDied(Unit *victim)
     {
-        if(pInstance)
-        {
-            if(pInstance->GetData(TYPE_MEDIVH) != FAIL)
-                DoScriptText(SAY_DEATH, m_creature);
+        if (pInstance->GetData(TYPE_MEDIVH) != FAIL)
+            DoScriptText(SAY_DEATH, m_creature);
 
-            pInstance->SetData(TYPE_RIFT,SPECIAL);
-            pInstance->SetData(TYPE_TEMPORUS,DONE);
-        }
+        pInstance->SetData(TYPE_RIFT,SPECIAL);
+        pInstance->SetData(TYPE_TEMPORUS,DONE);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -111,8 +108,8 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
 
     void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
     {
-        if(canApplyWound)
-            DoCast(target, SPELL_MORTAL_WOUND);
+        if (canApplyWound)
+            me->CastSpell(target, SPELL_MORTAL_WOUND, true);
 
         canApplyWound = false;
     }
@@ -126,18 +123,17 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         //Attack Haste
         if (Haste_Timer < diff)
         {
-            DoCast(m_creature, SPELL_HASTE);
-            Haste_Timer = 20000+rand()%5000;
-        }else Haste_Timer -= diff;
+            AddSpellToCast(SPELL_HASTE, CAST_SELF);
+            Haste_Timer = urand(20000, 25000);
+        }
+        else
+            Haste_Timer -= diff;
 
         //Wing Buffet
         if (WingBuffet_Timer < diff)
         {
-            if(HeroicMode)
-                DoCast(m_creature, H_SPELL_WING_BUFFET);
-            else
-                DoCast(m_creature, SPELL_WING_BUFFET);
-            WingBuffet_Timer = 15000+rand()%10000;
+            AddSpellToCast(m_creature, HeroicMode ? H_SPELL_WING_BUFFET : SPELL_WING_BUFFET);
+            WingBuffet_Timer = urand(15000, 25000);
         }
         else
             WingBuffet_Timer -= diff;
@@ -147,10 +143,10 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         {
             canApplyWound = true;
 
-            if(m_creature->HasAura(SPELL_HASTE, 0))
-                MortalWound_Timer = 2000+rand()%1000;
+            if (m_creature->HasAura(SPELL_HASTE, 0))
+                MortalWound_Timer = urand(2000, 3000);
             else
-                MortalWound_Timer = 6000+rand()%3000;
+                MortalWound_Timer = urand(6000, 9000);
         }
         else
             MortalWound_Timer -= diff;
@@ -158,17 +154,20 @@ struct TRINITY_DLL_DECL boss_temporusAI : public ScriptedAI
         //Spell Reflection
         if (HeroicMode && SpellReflection_Timer < diff)
         {
-            DoCast(m_creature, SPELL_REFLECT);
-            SpellReflection_Timer = 40000+rand()%10000;
-        }else SpellReflection_Timer -= diff;
+            AddSpellToCast(m_creature, SPELL_REFLECT);
+            SpellReflection_Timer = urand(40000, 50000);
+        }
+        else
+            SpellReflection_Timer -= diff;
 
         //if event failed, remove boss from instance
-        if(pInstance && pInstance->GetData(TYPE_MEDIVH) == FAIL)
+        if (pInstance->GetData(TYPE_MEDIVH) == FAIL)
         {
             m_creature->Kill(m_creature, false);
             m_creature->RemoveCorpse();
         }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -186,4 +185,3 @@ void AddSC_boss_temporus()
     newscript->GetAI = &GetAI_boss_temporus;
     newscript->RegisterSelf();
 }
-

@@ -61,15 +61,15 @@ bool ItemUse_item_only_for_flight(Player *player, Item* _Item, SpellCastTargets 
     switch(itemId)
     {
        case 24538:
-           if(player->GetAreaId() != 3628)
+           if(player->GetCachedArea() != 3628)
                disabled = true;
                break;
        case 28132:
-           if(player->GetAreaId() != 3803)
+           if(player->GetCachedArea() != 3803)
                disabled = true;
                break;
        case 34489:
-           if(player->GetZoneId() != 4080)
+           if(player->GetCachedZone() != 4080)
                disabled = true;
                break;
     }

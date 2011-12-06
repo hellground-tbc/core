@@ -271,6 +271,9 @@ enum WorldConfigs
 
     CONFIG_ENABLE_CUSTOM_XP_RATES,
 
+    CONFIG_SESSION_UPDATE_MAX_TIME,
+    CONFIG_SESSION_UPDATE_OVERTIME_METHOD,
+
     CONFIG_VALUE_COUNT
 };
 
@@ -297,6 +300,8 @@ enum Rates
     RATE_XP_EXPLORE,
     RATE_XP_PAST_70,
     RATE_REPUTATION_GAIN,
+    RATE_REPUTATION_LOWLEVEL_KILL,
+    RATE_REPUTATION_LOWLEVEL_QUEST,
     RATE_CREATURE_NORMAL_HP,
     RATE_CREATURE_ELITE_ELITE_HP,
     RATE_CREATURE_ELITE_RAREELITE_HP,
@@ -628,7 +633,7 @@ class World
         void SetScriptsVersion(char const* version) { m_ScriptsVersion = version ? version : "unknown scripting library"; }
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
-        void RecordTimeDiff(const char * text, ...);
+        uint32 RecordTimeDiff(const char * text, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
 
         void CleanupDeletedChars();

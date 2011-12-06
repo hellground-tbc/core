@@ -53,9 +53,9 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
         mThrallEventCount   = 0;
         ThrallGUID          = 0;
         TarethaGUID         = 0;
-    EpochGUID        = 0;
+        EpochGUID           = 0;
 
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounter[i] = NOT_STARTED;
     }
 
@@ -65,7 +65,7 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
 
         if (!players.isEmpty())
         {
-            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
                 if (Player* plr = itr->getSource())
                     return plr;
@@ -82,7 +82,7 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
 
         if (!players.isEmpty())
         {
-            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
                 if (Player* player = itr->getSource())
                 {
@@ -92,13 +92,14 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
                         player->KilledMonster(LODGE_QUEST_TRIGGER,0);
                 }
             }
-        }else
+        }
+        else
             debug_log("TSCR: Instance Old Hillsbrad: UpdateOHWorldState, but PlayerList is empty!");
     }
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
-        switch(creature_entry)
+        switch (creature_entry)
         {
             case THRALL_ENTRY:
                 ThrallGUID = creature->GetGUID();
@@ -106,9 +107,9 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
             case TARETHA_ENTRY:
                 TarethaGUID = creature->GetGUID();
                 break;
-        case EPOCH_ENTRY:
-        EpochGUID = creature->GetGUID();
-        break;
+            case EPOCH_ENTRY:
+                EpochGUID = creature->GetGUID();
+                break;
         }
     }
 
@@ -140,17 +141,17 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
 
                     if (mBarrelCount == 5)
                     {
-                    player->SummonCreature(DRAKE_ENTRY,2128.43,71.01,64.42,1.74,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,1800000);
-                    Encounter[0] = DONE;
+                        player->SummonCreature(DRAKE_ENTRY,2128.43,71.01,64.42,1.74,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,1800000);
+                        Encounter[0] = DONE;
                     }
                 }
                 break;
             }
             case TYPE_THRALL_EVENT:
             {
-                if( data == FAIL )
+                if (data == FAIL)
                 {
-                    if( mThrallEventCount <= 20 )
+                    if (mThrallEventCount <= 20)
                     {
                         mThrallEventCount++;
                         Encounter[1] = NOT_STARTED;
@@ -160,7 +161,7 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
                         Encounter[4] = NOT_STARTED;
                         Encounter[5] = NOT_STARTED;
                     }
-                    else if( mThrallEventCount > 20 )
+                    else if (mThrallEventCount > 20)
                     {
                         Encounter[1] = data;
                         Encounter[2] = data;
@@ -196,7 +197,7 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
 
     uint32 GetData(uint32 data)
     {
-        switch(data)
+        switch (data)
         {
             case TYPE_BARREL_DIVERSION:
                 return Encounter[0];
@@ -216,14 +217,14 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
 
     uint64 GetData64(uint32 data)
     {
-        switch(data)
+        switch (data)
         {
             case DATA_THRALL:
                 return ThrallGUID;
             case DATA_TARETHA:
                 return TarethaGUID;
-        case DATA_EPOCH:
-        return EpochGUID;
+            case DATA_EPOCH:
+                return EpochGUID;
         }
         return 0;
     }
@@ -241,4 +242,3 @@ void AddSC_instance_old_hillsbrad()
     newscript->GetInstanceData = &GetInstanceData_instance_old_hillsbrad;
     newscript->RegisterSelf();
 }
-

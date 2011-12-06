@@ -459,7 +459,7 @@ void BattleGround::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
 
         if (team == TeamID)
         {
-            int32 rep = plr->CalculateReputationGain(70, Reputation, faction_id, false);
+            int32 rep = plr->CalculateReputationGain(REPUTATION_SOURCE_BG, Reputation, faction_id);
             plr->GetReputationMgr().ModifyReputation(factionEntry, Reputation);
             plr->UpdateBgTitle();
         }
@@ -593,6 +593,15 @@ void BattleGround::EndBattleGround(uint32 winner)
         // should remove spirit of redemption
         if (plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
+
+        if (isArena() && !plr->isGameMaster())
+        {
+            plr->SetVisibility(VISIBILITY_ON);
+            plr->SetFlying(false);
+
+            if (Creature *pSpectator = plr->GetBGCreature(ARENA_NPC_SPECTATOR))
+                pSpectator->RemovePlayerFromVision(plr);
+        }
 
         if (!plr->isAlive())
         {

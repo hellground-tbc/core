@@ -60,6 +60,7 @@ message(
     USE_STD_MALLOC  : Use standard malloc instead of TBB
     LARGE_CELL      : Use large cell size
     ADD_COMPILE_F   : Add additional compile flags (default)
+    ADD_MATH_F      : Add additional compile math flags
 
   To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.
   For example: cmake .. -DDEBUG=1 -DPREFIX=/opt/mangos\n"
@@ -89,6 +90,7 @@ option(USE_STD_MALLOC "Use standard malloc instead of TBB" 0)
 option(ACE_USE_EXTERNAL "Use external ACE" 1)
 option(LARGE_CELL "Use large cell size" 0)
 option(ADD_COMPILE_F "Add additional compile flags" 1)
+option(ADD_MATH_F "Add additional compile math flags" 0)
 
 # Set up the install-prefix
 if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
@@ -250,7 +252,8 @@ endif(LARGE_CELL)
 
 message("")
 
-set(ADDITIONAL_COMPILE_FLAGS "-O3 -ffast-math -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -fno-math-errno -funsafe-math-optimizations -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
+set(ADDITIONAL_COMPILE_FLAGS "-O3 -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
+set(ADDITIONAL_MATH_FLAGS " -ffast-math -fno-math-errno -funsafe-math-optimizations ")
 
 # Handle debugmode compiles (this will require further work for proper WIN32-setups)
 if(UNIX)
@@ -358,6 +361,11 @@ endif()
 if(ADD_COMPILE_F)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ADDITIONAL_COMPILE_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILE_FLAGS}")
+endif()
+
+if(ADD_MATH_F)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ADDITIONAL_MATH_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_MATH_FLAGS}")
 endif()
 
 if(XCODE)

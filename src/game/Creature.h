@@ -682,6 +682,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         void SearchFormation();
         CreatureGroup *GetFormation(){return m_formation;}
         void SetFormation(CreatureGroup *formation) {m_formation = formation;}
+        bool IsFormationLeader() { return GetFormation() && GetFormation()->getLeader() && GetFormation()->getLeader()->GetGUID() == GetGUID(); }
 
         Unit *SelectVictim();
 

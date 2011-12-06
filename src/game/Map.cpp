@@ -1265,6 +1265,12 @@ bool Map::IsOutdoors(float x, float y, float z) const
 
 bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const
 {
+    if (!Trinity::IsValidMapCoord(x, y, z))
+    {
+        sLog.outDebug("Unit::GetAreaId()(%f, %f, %f) .. bad coordinates!",x, y, z);
+        return false;
+    }
+
     float vmap_z = z;
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
     if (vmgr->getAreaInfo(GetId(), x, y, vmap_z, flags, adtId, rootId, groupId))
@@ -1284,6 +1290,12 @@ bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, in
 
 uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
 {
+    if (!Trinity::IsValidMapCoord(x, y, z))
+    {
+        sLog.outDebug("Unit::GetAreaId()(%f, %f, %f) .. bad coordinates!",x, y, z);
+        return 0;
+    }
+
     uint32 mogpFlags;
     int32 adtId, rootId, groupId;
     WMOAreaTableEntry const* wmoEntry = 0;
@@ -1528,7 +1540,7 @@ void Map::SendInitTransports(Player * player)
     for (MapManager::TransportSet::iterator i = tset.begin(); i != tset.end(); ++i)
     {
         // send data for current transport in other place
-        if ((*i) != player->GetTransport()  && (*i)->GetMapId()==GetId())
+        if ((*i) != player->GetTransport()  && (*i)->GetMapId() == GetId())
         {
             hasTransport = true;
             (*i)->BuildCreateUpdateBlockForPlayer(&transData, player);
@@ -1555,7 +1567,7 @@ void Map::SendRemoveTransports(Player * player)
 
     // except used transport
     for (MapManager::TransportSet::iterator i = tset.begin(); i != tset.end(); ++i)
-        if ((*i) != player->GetTransport() && (*i)->GetMapId()!=GetId())
+        if ((*i) != player->GetTransport() && (*i)->GetMapId() != GetId())
             (*i)->BuildOutOfRangeUpdateBlock(&transData);
 
     WorldPacket packet;

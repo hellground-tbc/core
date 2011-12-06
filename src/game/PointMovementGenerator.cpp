@@ -98,6 +98,12 @@ void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
         //unit.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
     }
     unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
+
+    if(unit.GetFormation() && unit.GetFormation()->getLeader() && unit.GetFormation()->getLeader()->GetGUID() != unit.GetGUID())
+    {
+        unit.GetFormation()->ReachedWaypoint();
+        unit.SetOrientation(unit.GetFormation()->getLeader()->GetOrientation());
+    }
 }
 
 template void PointMovementGenerator<Player>::Initialize(Player&);

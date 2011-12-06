@@ -58,7 +58,7 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
 
     void Reset()
     {
-        if(HeroicMode)
+        if (HeroicMode)
         {
             GetSpellRangeStore();
             ArcaneBlast_Timer = 2000;
@@ -66,6 +66,7 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
         }
         else
             ArcaneBlast_Timer = 20000;
+
         ArcaneDischarge_Timer = 10000;
         TimeLapse_Timer = 15000;
         arcane = false;
@@ -106,14 +107,11 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
 
     void JustDied(Unit *victim)
     {
-        if (pInstance)
-        {
-            if(pInstance->GetData(TYPE_MEDIVH) != FAIL)
-                DoScriptText(SAY_DEATH, m_creature);
+        if (pInstance->GetData(TYPE_MEDIVH) != FAIL)
+            DoScriptText(SAY_DEATH, m_creature);
 
-            pInstance->SetData(TYPE_RIFT,SPECIAL);
-            pInstance->SetData(TYPE_C_DEJA,DONE);
-        }
+        pInstance->SetData(TYPE_RIFT,SPECIAL);
+        pInstance->SetData(TYPE_C_DEJA,DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -123,33 +121,33 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
             return;
 
         //Arcane Blast && Attraction on heroic mode
-        if(!HeroicMode)
+        if (!HeroicMode)
         {
-            if(ArcaneBlast_Timer < diff)
+            if (ArcaneBlast_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_ARCANE_BLAST, true);
-                ArcaneBlast_Timer = 20000+rand()%5000;
+                AddSpellToCast(m_creature->getVictim(), SPELL_ARCANE_BLAST, true);
+                ArcaneBlast_Timer = urand(20000, 25000);
             }
             else
                 ArcaneBlast_Timer -= diff;
         }
         else
         {
-            if(Attraction_Timer < diff)
+            if (Attraction_Timer < diff)
             {
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_ATTRACTION), true))
-                    if(!arcane)
+                if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_ATTRACTION), true))
+                    if (!arcane)
                     {
-                        DoCast(target, SPELL_ATTRACTION, true);
+                        AddSpellToCast(target, SPELL_ATTRACTION, true);
                         arcane = true;
                     }
 
-                if(ArcaneBlast_Timer < diff)
+                if (ArcaneBlast_Timer < diff)
                 {
-                    DoCast(m_creature->getVictim(), H_SPELL_ARCANE_BLAST, true);
+                    AddSpellToCast(m_creature->getVictim(), H_SPELL_ARCANE_BLAST, true);
 
                     arcane = false;
-                    Attraction_Timer = 18000+rand()%5000;;
+                    Attraction_Timer = urand(18000, 23000);
                     ArcaneBlast_Timer = 2000;
                 }
                 else
@@ -160,13 +158,10 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
         }
 
         //Arcane Discharge
-        if(ArcaneDischarge_Timer < diff)
+        if (ArcaneDischarge_Timer < diff)
         {
-            if(HeroicMode)
-                DoCast(m_creature, H_SPELL_ARCANE_DISCHARGE, false);
-            else
-                DoCast(m_creature, SPELL_ARCANE_DISCHARGE, false);
-            ArcaneDischarge_Timer = 15000+rand()%10000;
+            AddSpellToCast(m_creature, HeroicMode ? H_SPELL_ARCANE_DISCHARGE : SPELL_ARCANE_DISCHARGE);
+            ArcaneDischarge_Timer = urand(15000, 25000);
         }
         else
             ArcaneDischarge_Timer -= diff;
@@ -174,15 +169,14 @@ struct TRINITY_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
         //Time Lapse
         if (TimeLapse_Timer < diff)
         {
-            DoScriptText(SAY_BANISH, m_creature);
-            DoCast(m_creature, SPELL_TIME_LAPSE);
-            TimeLapse_Timer = 15000+rand()%10000;
+            AddSpellToCastWithScriptText(m_creature, SPELL_TIME_LAPSE, SAY_BANISH);
+            TimeLapse_Timer = urand(15000, 25000);
         }
         else
             TimeLapse_Timer -= diff;
 
         //if event failed, remove boss from instance
-        if(pInstance && pInstance->GetData(TYPE_MEDIVH) == FAIL)
+        if (pInstance->GetData(TYPE_MEDIVH) == FAIL)
         {
             m_creature->Kill(m_creature, false);
             m_creature->RemoveCorpse();
@@ -205,4 +199,3 @@ void AddSC_boss_chrono_lord_deja()
     newscript->GetAI = &GetAI_boss_chrono_lord_deja;
     newscript->RegisterSelf();
 }
-

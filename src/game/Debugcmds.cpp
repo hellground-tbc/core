@@ -36,10 +36,14 @@
 #include <fstream>
 #include "ObjectMgr.h"
 #include "InstanceData.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "PoolHandler.h"
+#include "CellImpl.h"
 
 #define COMMAND_COOLDOWN 2
 
-bool ChatHandler::HandleAddWPCommand(const char* args)
+bool ChatHandler::HandleWPToFileCommand(const char* args)
 {
     std::fstream file;
     file.open("waypoints.txt", std::ios_base::app);
@@ -55,14 +59,14 @@ bool ChatHandler::HandleAddWPCommand(const char* args)
         int dist = atoi((char*)args);
         float x = m_session->GetPlayer()->GetPositionX() + dist*cos(m_session->GetPlayer()->GetOrientation());
         float y = m_session->GetPlayer()->GetPositionY() + dist*sin(m_session->GetPlayer()->GetOrientation());
-        float z = m_session->GetPlayer()->GetMap()->GetHeight(x, y, m_session->GetPlayer()->GetPositionZ(), false);
+        float z = m_session->GetPlayer()->GetBaseMap()->GetHeight(x, y, m_session->GetPlayer()->GetPositionZ(), false);
         file << "'" << x << "', '" << y << "', '" << z << "'" << std::endl;
     }
     file.close();
     return true;
 }
 
-bool ChatHandler::HandleAddFormationCommand(const char* args)
+bool ChatHandler::HandleDebugAddFormationToFileCommand(const char* args)
 {
     if (!args)
         return false;
@@ -113,9 +117,23 @@ bool ChatHandler::HandleDebugSendSpellFailCommand(const char* args)
 
     uint8 failnum = (uint8)atoi(px);
 
+    if (!failnum && *px!='0')
+        return false;
+
+    char* p1 = strtok(NULL, " ");
+    uint8 failarg1 = p1 ? (uint8)atoi(p1) : 0;
+
+    char* p2 = strtok(NULL, " ");
+    uint8 failarg2 = p2 ? (uint8)atoi(p2) : 0;
+
     WorldPacket data(SMSG_CAST_FAILED, 5);
     data << uint32(133);
     data << uint8(failnum);
+    if (p1 || p2)
+        data << uint32(failarg1);
+    if (p2)
+        data << uint32(failarg2);
+
     m_session->SendPacket(&data);
 
     return true;
@@ -377,7 +395,7 @@ bool ChatHandler::HandleDebugSendChatMsgCommand(const char* args)
     const char *msg = "testtest";
     uint8 type = atoi(args);
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, m_session, type, 0, "chan", m_session->GetPlayer()->GetGUID(), msg, m_session->GetPlayer());
+    ChatHandler::FillMessageData(&data, m_session, type, 0, "test", m_session->GetPlayer()->GetGUID(), msg, m_session->GetPlayer());
     m_session->SendPacket(&data);
     return true;
 }
@@ -712,11 +730,10 @@ bool ChatHandler::HandleDebugSetInstanceDataCommand(const char *args)
 
     InstanceData *pInstance = m_session->GetPlayer()->GetInstanceData();
     if (!pInstance)
-    if (!pInstance)
     {
-    PSendSysMessage("You are not in scripted instance.");
+        PSendSysMessage("You are not in scripted instance.");
         SetSentErrorMessage(true);
-      return false;
+        return false;
     }
 
     char *id = strtok((char*)args, " ");
@@ -811,6 +828,76 @@ bool ChatHandler::HandleDebugGetInstanceData64Command(const char *args)
     return true;
 }
 
+bool ChatHandler::HandleGetPoolObjectStatsCommand(const char *args)
+{
+    if(!m_session->GetPlayer())
+        return false;
+
+    if(!args)
+        return false;
+
+    char *sEntry = strtok((char*)args, " ");
+    char *sRange = strtok(NULL, " ");
+
+    if(!sEntry || !sRange)
+        return false;
+
+    uint32 entry = atoi(sEntry);
+    uint32 range = atoi(sRange);
+
+    Map *map = m_session->GetPlayer()->GetMap();
+
+    std::list<GameObject*> pList;
+    Trinity::AllGameObjectsWithEntryInGrid u_check(entry);
+    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(pList, u_check);
+    Cell::VisitAllObjects(m_session->GetPlayer(), searcher, range, false);
+
+    UNORDERED_MAP<uint16, uint32> map_unspawned;
+    UNORDERED_MAP<uint16, uint32> map_poolspawned;
+    UNORDERED_MAP<uint16, uint32> map_worldspawned;
+
+    for(std::list<GameObject*>::iterator it = pList.begin(); it != pList.end(); it++)
+    {
+        GameObject *pGO = *it;
+        uint16 poolid = poolhandler.IsPartOfAPool(pGO->GetGUIDLow(), TYPEID_GAMEOBJECT);
+        bool poolspawned = poolhandler.IsSpawnedObject(poolid, pGO->GetGUIDLow(), TYPEID_GAMEOBJECT);
+        bool gospawned = pGO->isSpawned();
+
+        if(poolid && gospawned && !poolspawned)
+        {
+            PSendSysMessage("Gameobject %u is part of pool %u and is spawned in world but not spawned in pool", pGO->GetGUIDLow(), poolid);
+        }
+        else
+        {
+            if(map_unspawned.find(poolid) == map_unspawned.end())
+            {
+                map_unspawned[poolid] = 0; // .insert(UNORDERED_MAP<unit16, uint32>::mapped_type(poolid, 0));
+                map_poolspawned[poolid] = 0; //.insert(UNORDERED_MAP<unit16, uint32>::mapped_type(poolid, 0));
+                map_worldspawned[poolid] = 0; //.insert(UNORDERED_MAP<unit16, uint32>::mapped_type(poolid, 0));
+            }
+            UNORDERED_MAP<uint16, uint32> *mapToAdd = NULL;
+            if(gospawned)
+                mapToAdd = &map_worldspawned;
+            else if(poolspawned)
+                mapToAdd = &map_poolspawned;
+            else
+                mapToAdd = &map_unspawned;
+            (*mapToAdd)[poolid]++;
+        }
+    }
+
+    if(map_unspawned.empty())
+        PSendSysMessage("No objects found");
+    else
+        PSendSysMessage("Poolid | spawned in world | spawned in pool | not spawned");
+
+    for(UNORDERED_MAP<uint16, uint32>::iterator it = map_unspawned.begin(); it != map_unspawned.end(); it++)
+    {
+        PSendSysMessage("%u | %u | %u | %u", (uint32)(it->first), map_worldspawned.find(it->first)->second, map_poolspawned.find(it->first)->second, it->second);
+    }
+    return true;
+}
+
 bool ChatHandler::HandleDebugSetItemFlagCommand(const char* args)
 {
     if (!args)
@@ -844,7 +931,7 @@ bool ChatHandler::HandleDebugAnimCommand(const char* args)
     Unit *pTarget = NULL;
 
     if (m_session->GetPlayer()->GetSelection())
-        pTarget = Unit::GetUnit(*(m_session->GetPlayer()), m_session->GetPlayer()->GetSelection());
+        pTarget = m_session->GetPlayer()->GetMap()->GetUnit(m_session->GetPlayer()->GetSelection());
 
     if (!pTarget)
         pTarget = m_session->GetPlayer();

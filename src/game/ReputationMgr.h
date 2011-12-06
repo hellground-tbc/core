@@ -43,7 +43,8 @@ struct FactionState
     RepListID ReputationListID;
     uint32 Flags;
     int32  Standing;
-    bool Changed;
+    bool needSend;
+    bool needSave;
 };
 
 typedef std::map<RepListID,FactionState> FactionStateList;
@@ -118,11 +119,10 @@ class TRINITY_DLL_SPEC ReputationMgr
     public:                                                 // senders
         void SendInitialReputations();
         void SendForceReactions();
-        void SendState(FactionState const* faction) const;
-        void SendStates() const;
+        void SendState(FactionState const* faction);
 
     private:                                                // internal helper functions
-        void Initilize();
+        void Initialize();
         uint32 GetDefaultStateFlags(const FactionEntry *factionEntry) const;
         bool SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental);
         bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing, bool incremental);
@@ -130,7 +130,6 @@ class TRINITY_DLL_SPEC ReputationMgr
         void SetAtWar(FactionState* faction, bool atWar);
         void SetInactive(FactionState* faction, bool inactive);
         void SendVisible(FactionState const* faction) const;
-        void UpdateRankCounters(ReputationRank old_rank, ReputationRank new_rank);
     private:
         Player* m_player;
         FactionStateList m_factions;

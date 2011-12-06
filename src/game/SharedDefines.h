@@ -109,6 +109,8 @@ enum ReputationRank
 #define MIN_REPUTATION_RANK (REP_HATED)
 #define MAX_REPUTATION_RANK 8
 
+#define MAX_SPILLOVER_FACTIONS 4
+
 enum MoneyConstants
 {
     COPPER = 1,
@@ -240,8 +242,7 @@ enum SpellCategory
 #define SPELL_ATTR_CASTABLE_WHILE_DEAD            0x00800000            // 23 ??castable while dead?
 #define SPELL_ATTR_CASTABLE_WHILE_MOUNTED         0x01000000            // 24 castable while mounted
 #define SPELL_ATTR_DISABLED_WHILE_ACTIVE          0x02000000            // 25 Activate and start cooldown after aura fade or remove summoned creature or go
-#define SPELL_ATTR_UNK26                          0x04000000            // 26 Aura ignore immune?
-//in TC2: #define SPELL_ATTR_NEGATIVE_1                     0x04000000            // 26 Many negative spells have this attr
+#define SPELL_ATTR_NEGATIVE_1                     0x04000000            // 26 Many negative spells have this attr
 #define SPELL_ATTR_CASTABLE_WHILE_SITTING         0x08000000            // 27 castable while sitting
 #define SPELL_ATTR_CANT_USED_IN_COMBAT            0x10000000            // 28 Cannot be used in combat
 #define SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY  0x20000000            // 29 unaffected by invulnerability (hmm possible not...)
@@ -251,11 +252,11 @@ enum SpellCategory
 #define SPELL_ATTR_EX_SUMMON_PET                  0x00000001            // 0 many summon/control pet spells have this attr (like enslave, min control, call pet, summon warlock minion)
 #define SPELL_ATTR_EX_DRAIN_ALL_POWER             0x00000002            // 1 use all power (Only paladin Lay of Hands and Bunyanize)
 #define SPELL_ATTR_EX_CHANNELED_1                 0x00000004            // 2 channeled 1
-#define SPELL_ATTR_EX_CANT_REFLECTED              0x00000008            // 3 spells that can not be reflected
+#define SPELL_ATTR_EX_CANT_BE_REDIRECTED          0x00000008            // 3 spells that can not be reflected
 #define SPELL_ATTR_EX_UNK4                        0x00000010            // 4
 #define SPELL_ATTR_EX_NOT_BREAK_STEALTH           0x00000020            // 5 Not break stealth
 #define SPELL_ATTR_EX_CHANNELED_2                 0x00000040            // 6 channeled self
-#define SPELL_ATTR_EX_NEGATIVE                    0x00000080            // 7
+#define SPELL_ATTR_EX_CANT_BE_REFLECTED           0x00000080            // 7
 #define SPELL_ATTR_EX_NOT_IN_COMBAT_TARGET        0x00000100            // 8 Spell req target not to be in combat state
 #define SPELL_ATTR_EX_UNK9                        0x00000200            // 9 melee spells
 #define SPELL_ATTR_EX_NO_THREAT                   0x00000400            // 10 no generates threat on cast 100% (old NO_INITIAL_AGGRO)
@@ -344,7 +345,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX3_CAN_PROC_TRIGGERED         0x04000000            // 26
 #define SPELL_ATTR_EX3_UNK27                      0x08000000            // 27
 #define SPELL_ATTR_EX3_UNK28                      0x10000000            // 28
-#define SPELL_ATTR_EX3_UNK29                      0x20000000            // 29
+#define SPELL_ATTR_EX3_NO_DONE_BONUS              0x20000000            // 29
 #define SPELL_ATTR_EX3_DONT_DISPLAY_RANGE         0x40000000            // 30 client doesn't display range in tooltip for those spells
 #define SPELL_ATTR_EX3_UNK31                      0x80000000            // 31
 

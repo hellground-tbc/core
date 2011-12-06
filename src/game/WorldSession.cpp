@@ -223,6 +223,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     else
         m_kickTimer = MINUTE * 15 * 1000;
 
+    sWorld.RecordTimeDiff(NULL);
+
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not proccess packets if socket already closed
     WorldPacket* packet;
@@ -284,8 +286,32 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         delete packet;
     }
 
+    bool overtime = false;
+    if (sWorld.RecordTimeDiff("WorldSession:Update: packets. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+        overtime = true;
+
     if (m_Socket && m_Warden)
         m_Warden->Update();
+
+    if (sWorld.RecordTimeDiff("WorldSession:Update: warden. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+        overtime = true;
+
+    if (overtime)
+    {
+        switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
+        {
+            case OVERTIME_IPBAN:
+                LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', NOW(), NOW(), 'CONSOLE', 'bye bye')", GetRemoteAddress().c_str());
+            case OVERTIME_ACCBAN:
+                LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', NOW(), NOW(), 'CONSOLE', 'bye bye', 1)", GetAccountId());
+            case OVERTIME_KICK:
+                KickPlayer();
+            case OVERTIME_LOG:
+                sLog.outError("WorldSession::Update: session for account %u was too long", GetAccountId());
+            default:
+                break;
+        }
+    }
 
     //check if we are safe to proceed with logout
     //logout procedure should happen only in World::UpdateSessions() method!!!

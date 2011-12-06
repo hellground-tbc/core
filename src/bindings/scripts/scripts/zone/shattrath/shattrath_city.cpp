@@ -762,7 +762,7 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
 
             for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)
             {
-                if((*i)->GetTypeId() != TYPEID_PLAYER || (*i)->GetZoneId() != 3703)
+                if((*i)->GetTypeId() != TYPEID_PLAYER || ((Player*)(*i))->GetCachedZone() != 3703)
                     continue;
                 PlayersInCity.push_back((*i)->GetGUID());
             }

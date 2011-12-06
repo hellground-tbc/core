@@ -428,6 +428,22 @@ bool ChatHandler::HandleReloadReservedNameCommand(const char*)
     return true;
 }
 
+bool ChatHandler::HandleReloadReputationRewardRateCommand(const char*)
+{
+    sLog.outString("Re-Loading `reputation_reward_rate` Table!");
+    sObjectMgr.LoadReputationRewardRate();
+    SendGlobalSysMessage("DB table `reputation_reward_rate` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadReputationSpilloverTemplateCommand(const char*)
+{
+    sLog.outString("Re-Loading `reputation_spillover_template` Table!");
+    sObjectMgr.LoadReputationSpilloverTemplate();
+    SendGlobalSysMessage("DB table `reputation_spillover_template` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadSkillDiscoveryTemplateCommand(const char* /*args*/)
 {
     sLog.outString("Re-Loading Skill Discovery Table...");
@@ -2478,7 +2494,7 @@ bool ChatHandler::HandleGameObjectNearCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleGameObjectPhaseCommand(const char* args)
+bool ChatHandler::HandleGameObjectStateCommand(const char* args)
 {
     // number or [name] Shift-click form |color|Hgameobject:go_id|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args, "Hgameobject");
@@ -2510,8 +2526,6 @@ bool ChatHandler::HandleGameObjectPhaseCommand(const char* args)
         gobj->SendObjectDeSpawnAnim(gobj->GetGUID());
     else
         gobj->SetGoState((GOState)state);
-
-    return true;
 
     return true;
 }
@@ -3394,12 +3408,6 @@ bool ChatHandler::HandleDieCommand(const char* /*args*/)
 
     if (target->isAlive())
     {
-        // for PTR only ;)
-        if(target->GetTypeId() == TYPEID_PLAYER)
-        {
-            m_session->GetPlayer()->Kill(m_session->GetPlayer(), true);
-            return true;
-        }
         //m_session->GetPlayer()->DealDamage(target, target->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         m_session->GetPlayer()->Kill(target);
     }
@@ -5724,7 +5732,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
     return true;
 }
 
-bool ChatHandler::HandleGMFlyModeCommand(const char* args)
+bool ChatHandler::HandleGMFlyCommand(const char* args)
 {
     if (!args)
         return false;
@@ -6999,7 +7007,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
     return true;
 }
 
-bool ChatHandler::HandleListFreezeCommand(const char* args)
+bool ChatHandler::HandleListFreezeCommand(const char* /*args*/)
 {
     //Get names from DB
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT characters.name FROM `characters` LEFT JOIN `character_aura` ON (characters.guid = character_aura.guid) WHERE character_aura.spell = 9454");
@@ -7064,7 +7072,7 @@ bool ChatHandler::HandleGroupRemoveCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandlePossessCommand(const char* args)
+bool ChatHandler::HandlePossessCommand(const char* /*args*/)
 {
     Unit* pUnit = getSelectedUnit();
     if (!pUnit)
@@ -7074,7 +7082,7 @@ bool ChatHandler::HandlePossessCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleUnPossessCommand(const char* args)
+bool ChatHandler::HandleUnPossessCommand(const char* /*args*/)
 {
     Unit* pUnit = getSelectedUnit();
     if (!pUnit) pUnit = m_session->GetPlayer();
@@ -7087,7 +7095,7 @@ bool ChatHandler::HandleUnPossessCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleBindFollowCommand(const char* args)
+bool ChatHandler::HandleBindFollowCommand(const char* /*args*/)
 {
     Unit* pUnit = getSelectedUnit();
     if (!pUnit)
@@ -7104,7 +7112,7 @@ bool ChatHandler::HandleBindFollowCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleUnbindFollowCommand(const char* args)
+bool ChatHandler::HandleUnbindFollowCommand(const char* /*args*/)
 {
     Player *gamemaster = m_session->GetPlayer();
     if (gamemaster->getFollowTarget() == 0)
@@ -7119,7 +7127,7 @@ bool ChatHandler::HandleUnbindFollowCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleBindSightCommand(const char* args)
+bool ChatHandler::HandleBindSightCommand(const char* /*args*/)
 {
     Unit* pUnit = getSelectedUnit();
     if (!pUnit)
@@ -7129,14 +7137,14 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleUnbindSightCommand(const char* args)
+bool ChatHandler::HandleUnbindSightCommand(const char* /*args*/)
 {
     m_session->GetPlayer()->ClearFarsight();
     //pUnit->RemovePlayerFromVision(m_session->GetPlayer());
     return true;
 }
 
-bool ChatHandler::HandleGameObjectNearGridCommand(const char* args)
+bool ChatHandler::HandleGameObjectGridCommand(const char* /*args*/)
 {
     std::list<GameObject*> tmpL;
     Trinity::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
@@ -7168,7 +7176,7 @@ bool ChatHandler::HandleGameObjectNearGridCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleEventAIReloadCommand(const char* args)
+bool ChatHandler::HandleReloadEventAICommand(const char* args)
 {
     char * cId = strtok((char*)args, " ");
 

@@ -666,6 +666,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     if (IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
         return true;
 
+    // should this work fine?
+    if (spellproto->Attributes & SPELL_ATTR_NEGATIVE_1)
+        return false;
+
     switch (spellId)
     {
         case 23333:                                         // BG spell
@@ -702,7 +706,35 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 30529:                                         // Chess event: Recently In Game
         case 37469:
         case 37465:
+        case 37128:                                         // Doomwalker - Mark of Death
+        case 30421:                                         // Neterspite - Player buffs(3)
+        case 30422:
+        case 30423:
             return false;
+    }
+
+    switch (spellproto->SpellFamilyName)
+    {
+        case SPELLFAMILY_MAGE:
+            // Amplify Magic, Dampen Magic
+            if (spellproto->SpellFamilyFlags == 0x20000000000)
+                return true;
+            break;
+        case SPELLFAMILY_HUNTER:
+            // Aspect of the Viper
+            if (spellproto->Id == 34074)
+                return true;
+            break;
+        default:
+            break;
+    }
+
+    switch (spellproto->Mechanic)
+    {
+        case MECHANIC_IMMUNE_SHIELD:
+            return true;
+        default:
+            break;
     }
 
     switch (spellproto->Effect[effIndex])
@@ -871,10 +903,6 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
 
     // non-positive targets
     if (!IsPositiveTarget(spellproto->EffectImplicitTargetA[effIndex],spellproto->EffectImplicitTargetB[effIndex]))
-        return false;
-
-    // AttributesEx check
-    if (spellproto->AttributesEx & SPELL_ATTR_EX_NEGATIVE)
         return false;
 
     // ok, positive
@@ -2992,6 +3020,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 42992: //ram - neutral
         case 43310: //ram - trot
             spellInfo->EffectImplicitTargetA[1] = 1;
+            break;
+        case 37370: // Kelidan the breaker - vortex
+            spellInfo->EffectMiscValue[0] /= 10;
             break;
         default:
             break;

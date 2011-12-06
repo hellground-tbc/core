@@ -111,6 +111,7 @@ void HostilReference::addThreat(float pMod)
         ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, pMod);
         fireStatusChanged(event);
     }
+
     if (isValid() && pMod >= 0)
     {
         Unit* victim_owner = getTarget()->GetCharmerOrOwner();
@@ -181,6 +182,7 @@ void HostilReference::setAccessibleState(bool pIsAccessible)
     if (iAccessible != pIsAccessible)
     {
         iAccessible = pIsAccessible;
+
         ThreatRefStatusChangeEvent event(UEV_THREAT_REF_ASSECCIBLE_STATUS, this);
         fireStatusChanged(event);
     }
@@ -193,6 +195,7 @@ void HostilReference::setAccessibleState(bool pIsAccessible)
 void HostilReference::removeReference()
 {
     invalidate();
+
     ThreatRefStatusChangeEvent event(UEV_THREAT_REF_REMOVE_FROM_LIST, this);
     fireStatusChanged(event);
 }
@@ -446,6 +449,7 @@ void ThreatManager::addThreat(Unit* pVictim, float pThreat, SpellSchoolMask scho
     if (!pVictim || (pVictim->GetTypeId() == TYPEID_PLAYER && ((Player*)pVictim)->isGameMaster()))
         return;
 
+
     // not to dead and not for dead
     if (!pVictim->isAlive() || !getOwner()->isAlive())
         return;
@@ -553,7 +557,7 @@ void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStat
 
     HostilReference* hostilReference = threatRefStatusChangeEvent->getReference();
 
-    switch (threatRefStatusChangeEvent->getType())
+    switch(threatRefStatusChangeEvent->getType())
     {
         case UEV_THREAT_REF_THREAT_CHANGE:
             if ((getCurrentVictim() == hostilReference && threatRefStatusChangeEvent->getFValue()<0.0f) ||

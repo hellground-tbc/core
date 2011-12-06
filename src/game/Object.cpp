@@ -383,9 +383,9 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
         // Unit speeds
         *data << ((Unit*)this)->GetSpeed(MOVE_WALK);
         *data << ((Unit*)this)->GetSpeed(MOVE_RUN);
-        *data << ((Unit*)this)->GetSpeed(MOVE_SWIM_BACK);
-        *data << ((Unit*)this)->GetSpeed(MOVE_SWIM);
         *data << ((Unit*)this)->GetSpeed(MOVE_RUN_BACK);
+        *data << ((Unit*)this)->GetSpeed(MOVE_SWIM);
+        *data << ((Unit*)this)->GetSpeed(MOVE_SWIM_BACK);
         *data << ((Unit*)this)->GetSpeed(MOVE_FLIGHT);
         *data << ((Unit*)this)->GetSpeed(MOVE_FLIGHT_BACK);
         *data << ((Unit*)this)->GetSpeed(MOVE_TURN_RATE);
@@ -1400,8 +1400,9 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     dest.x = pos.x + dist * cos(angle);
     dest.y = pos.y + dist * sin(angle);
 
-    float ground = GetMap()->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-    float floor = GetMap()->GetHeight(dest.x, dest.y, pos.z, true);
+    Map const* _map = GetBaseMap();
+    float ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+    float floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
 
     dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
 
@@ -1423,8 +1424,8 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
         {
             dest.x -= step * cos(angle);
             dest.y -= step * sin(angle);
-            ground = GetMap()->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-            floor = GetMap()->GetHeight(dest.x, dest.y, pos.z, true);
+            ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+            floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
             dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
         }
         // we have correct destz now
@@ -1625,7 +1626,7 @@ void WorldObject::MonsterYellToZone(int32 textId, uint32 language, uint64 Target
 
     Map::PlayerList const& pList = GetMap()->GetPlayers();
     for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-        if (itr->getSource()->GetZoneId()==zoneid)
+        if (itr->getSource()->GetCachedZone()==zoneid)
             say_do(itr->getSource());
 }
 
@@ -2292,4 +2293,19 @@ void WorldObject::PlayDirectSound( uint32 sound_id, Player* target /*= NULL*/ )
         target->SendDirectMessage( &data );
     else
         SendMessageToSet( &data, true );
+}
+
+Totem* WorldObject::ToTotem()
+{
+    if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->isTotem())
+        return reinterpret_cast<Totem*>(this);
+
+    return NULL;
+}
+const Totem* WorldObject::ToTotem() const
+{
+    if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->isTotem())
+        return (const Totem*)((Totem*)this);
+
+    return NULL;
 }

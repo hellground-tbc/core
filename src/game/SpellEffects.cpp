@@ -1455,7 +1455,9 @@ void Spell::EffectDummy(uint32 i)
                 case 35745:                                 // Socrethar's Stone
                 {
                     uint32 spell_id;
-                    switch (m_caster->GetAreaId())
+                    uint32 areaid = m_caster->GetTypeId() == TYPEID_PLAYER ? ((Player*)m_caster)->GetCachedArea() : m_caster->GetAreaId();
+
+                    switch (areaid)
                     {
                         case 3900: spell_id = 35743; break;
                         case 3742: spell_id = 35744; break;
@@ -1842,7 +1844,7 @@ void Spell::EffectDummy(uint32 i)
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    if (m_caster->GetZoneId() != 493)   // Moonglade
+                    if (((Player*)m_caster)->GetCachedZone() != 493)   // Moonglade
                         m_caster->CastSpell(m_caster, 26451, false);
                     else
                     {
@@ -3520,8 +3522,15 @@ void Spell::EffectPersistentAA(uint32 i)
 
 void Spell::EffectEnergize(uint32 i)
 {
-    if (!unitTarget)
+    if (!unitTarget || !m_caster)
         return;
+
+    if (!unitTarget->IsInWorld() || !m_caster->IsInWorld())
+        return;
+
+    if (!m_caster->IsInMap(unitTarget))
+        return;
+
     if (!unitTarget->isAlive())
         return;
 
@@ -4097,15 +4106,9 @@ void Spell::EffectDispel(uint32 i)
         {
             if (aur->GetSpellProto()->Dispel == DISPEL_MAGIC)
             {
-                bool positive = true;
-                if (!aur->IsPositive())
-                    positive = false;
-                else
-                    positive = (aur->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE)==0;
-
                 // do not remove positive auras if friendly target
                 //               negative auras if non-friendly target
-                if (positive == unitTarget->IsFriendlyTo(m_caster))
+                if (aur->IsPositive() == unitTarget->IsFriendlyTo(m_caster))
                     continue;
             }
             // Add every aura stack to dispel list
@@ -5905,7 +5908,8 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
 
             // Two separate mounts depending on area id (allows use both in and out of specific instance)
-            if (unitTarget->GetAreaId() == 3428)
+            uint32 areaid = unitTarget->GetTypeId() == TYPEID_PLAYER ? ((Player*)unitTarget)->GetCachedArea() : unitTarget->GetAreaId();
+            if (areaid == 3428)
                 unitTarget->CastSpell(unitTarget, 25863, false);
             else
                 unitTarget->CastSpell(unitTarget, 26655, false);
@@ -6073,7 +6077,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 //if (unitTarget->GetMap()-> IsDungeon() || unitTarget->GetMap()->IsRaid())
                 //    return;
 
-                if (GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
+                if (GetVirtualMapForMapAndZone(unitTarget->GetMapId(),((Player*)unitTarget)->GetCachedZone()) != 530)
                 {
                     switch (((Player*)unitTarget)->GetBaseSkillValue(762))
                     {
@@ -6099,7 +6103,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            if (GetVirtualMapForMapAndZone(unitTarget->GetMapId(),unitTarget->GetZoneId()) != 530)
+            if (GetVirtualMapForMapAndZone(unitTarget->GetMapId(),((Player*)unitTarget)->GetCachedZone()) != 530)
             {
                 switch (((Player*)unitTarget)->GetBaseSkillValue(762))
                 {
@@ -6566,14 +6570,14 @@ void Spell::EffectDuel(uint32 i)
         return;
 
     // Players can only fight a duel in zones with this flag
-    AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetAreaId());
+    AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetCachedArea());
     if (casterAreaEntry && !(casterAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
     }
 
-    AreaTableEntry const* targetAreaEntry = GetAreaEntryByAreaID(target->GetAreaId());
+    AreaTableEntry const* targetAreaEntry = GetAreaEntryByAreaID(target->GetCachedArea());
     if (targetAreaEntry && !(targetAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
@@ -6673,9 +6677,11 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
 
     ((Player*)unitTarget)->SetSummonPoint(m_caster->GetMapId(),x,y,z);
 
+    uint32 zoneid = m_caster->GetTypeId() == TYPEID_PLAYER ? ((Player*)m_caster)->GetCachedZone() : m_caster->GetZoneId();
+
     WorldPacket data(SMSG_SUMMON_REQUEST, 8+4+4);
     data << uint64(m_caster->GetGUID());                    // summoner guid
-    data << uint32(m_caster->GetZoneId());                  // summoner zone
+    data << uint32(zoneid);                                 // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
     ((Player*)unitTarget)->GetSession()->SendPacket(&data);
 }
@@ -7077,7 +7083,7 @@ void Spell::EffectLeapForward(uint32 i)
         for (float i=0.5f; i<dis; i+=0.5f)
         {
             unitTarget->GetNearPoint2D(dx,dy,i,angle);
-            dz = unitTarget->GetMap()->GetHeight(dx, dy, cz, useVmap);
+            dz = unitTarget->GetBaseMap()->GetHeight(dx, dy, cz, useVmap);
 
             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
             if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
@@ -7137,6 +7143,8 @@ void Spell::EffectReputation(uint32 i)
 
     if (!factionEntry)
         return;
+
+    rep_change = _player->CalculateReputationGain(REPUTATION_SOURCE_SPELL, rep_change, faction_id);
 
     _player->GetReputationMgr().ModifyReputation(factionEntry,rep_change);
 }

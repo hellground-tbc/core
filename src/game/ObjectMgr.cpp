@@ -4784,6 +4784,61 @@ struct SQLGameObjectLoader : public SQLStorageLoaderBase<SQLGameObjectLoader>
     }
 };
 
+inline void CheckGOLockId(GameObjectInfo const* goInfo, uint32 dataN, uint32 N)
+{
+    if (sLockStore.LookupEntry(dataN))
+        return;
+
+    sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data%d=%u but lock (Id: %u) not found.",
+        goInfo->id, goInfo->type, N, goInfo->door.lockId, goInfo->door.lockId);
+}
+
+inline void CheckGOLinkedTrapId(GameObjectInfo const* goInfo, uint32 dataN, uint32 N)
+{
+    if (GameObjectInfo const* trapInfo = sGOStorage.LookupEntry<GameObjectInfo>(dataN))
+    {
+        if (trapInfo->type != GAMEOBJECT_TYPE_TRAP)
+            sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data%d=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
+            goInfo->id, goInfo->type, N, dataN, dataN, GAMEOBJECT_TYPE_TRAP);
+    }
+    /* disable check for while (too many error reports baout not existed in trap templates
+    else
+        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data%d=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
+            goInfo->id,goInfo->type,N,dataN,dataN);
+    */
+}
+
+inline void CheckGOSpellId(GameObjectInfo const* goInfo, uint32 dataN, uint32 N)
+{
+    if (sSpellStore.LookupEntry(dataN))
+        return;
+
+    sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data%d=%u but Spell (Entry %u) not exist.",
+        goInfo->id, goInfo->type, N, dataN, dataN);
+}
+
+inline void CheckAndFixGOChairHeightId(GameObjectInfo const* goInfo, uint32 const& dataN, uint32 N)
+{
+    if (dataN <= (PLAYER_STATE_SIT_HIGH_CHAIR-PLAYER_STATE_SIT_LOW_CHAIR) )
+        return;
+
+    sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data%d=%u but correct chair height in range 0..%i.",
+        goInfo->id, goInfo->type, N, dataN, PLAYER_STATE_SIT_HIGH_CHAIR-PLAYER_STATE_SIT_LOW_CHAIR);
+
+    // prevent client and server unexpected work
+    const_cast<uint32&>(dataN) = 0;
+}
+
+inline void CheckGONoDamageImmuneId(GameObjectInfo const* goInfo, uint32 dataN, uint32 N)
+{
+    // 0/1 correct values
+    if (dataN <= 1)
+        return;
+
+    sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data%d=%u but expected boolean (0/1) noDamageImmune field value.",
+        goInfo->id, goInfo->type, N, dataN);
+}
+
 void ObjectMgr::LoadGameobjectInfo()
 {
     SQLGameObjectLoader loader;
@@ -4801,68 +4856,46 @@ void ObjectMgr::LoadGameobjectInfo()
             case GAMEOBJECT_TYPE_DOOR:                      //0
             {
                 if (goInfo->door.lockId)
-                {
-                    if (!sLockStore.LookupEntry(goInfo->door.lockId))
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data1=%u but lock (Id: %u) not found.",
-                            id,goInfo->type,goInfo->door.lockId,goInfo->door.lockId);
-                }
+                    CheckGOLockId(goInfo, goInfo->door.lockId, 1);
+                CheckGONoDamageImmuneId(goInfo, goInfo->door.noDamageImmune, 3);
                 break;
             }
             case GAMEOBJECT_TYPE_BUTTON:                    //1
             {
                 if (goInfo->button.lockId)
-                {
-                    if (!sLockStore.LookupEntry(goInfo->button.lockId))
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data1=%u but lock (Id: %u) not found.",
-                            id,goInfo->type,goInfo->button.lockId,goInfo->button.lockId);
-                }
+                    CheckGOLockId(goInfo, goInfo->button.lockId, 1);
+                CheckGONoDamageImmuneId(goInfo, goInfo->button.noDamageImmune, 4);
+                break;
+            }
+            case GAMEOBJECT_TYPE_QUESTGIVER:                //2
+            {
+                if (goInfo->questgiver.lockId)
+                    CheckGOLockId(goInfo, goInfo->questgiver.lockId, 0);
+                CheckGONoDamageImmuneId(goInfo, goInfo->questgiver.noDamageImmune, 5);
                 break;
             }
             case GAMEOBJECT_TYPE_CHEST:                     //3
             {
                 if (goInfo->chest.lockId)
-                {
-                    if (!sLockStore.LookupEntry(goInfo->chest.lockId))
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data0=%u but lock (Id: %u) not found.",
-                            id,goInfo->type,goInfo->chest.lockId,goInfo->chest.lockId);
-                }
+                    CheckGOLockId(goInfo, goInfo->chest.lockId, 0);
+
                 if (goInfo->chest.linkedTrapId)              // linked trap
-                {
-                    if (GameObjectInfo const* trapInfo = sGOStorage.LookupEntry<GameObjectInfo>(goInfo->chest.linkedTrapId))
-                    {
-                        if (trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
-                            sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data7=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
-                                id,goInfo->type,goInfo->chest.linkedTrapId,goInfo->chest.linkedTrapId,GAMEOBJECT_TYPE_TRAP);
-                    }
-                    /* disable check for while
-                    else
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data2=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
-                            id,goInfo->type,goInfo->chest.linkedTrapId,goInfo->chest.linkedTrapId);
-                    */
-                }
+                    CheckGOLinkedTrapId(goInfo, goInfo->chest.linkedTrapId, 7);
                 break;
             }
             case GAMEOBJECT_TYPE_TRAP:                      //6
             {
-                /* disable check for while
-                if (goInfo->trap.spellId)                    // spell
-                {
-                    if (!sSpellStore.LookupEntry(goInfo->trap.spellId))
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data3=%u but Spell (Entry %u) not exist.",
-                            id,goInfo->type,goInfo->trap.spellId,goInfo->trap.spellId);
-                }
+                if(goInfo->trap.lockId)
+                    CheckGOLockId(goInfo, goInfo->trap.lockId, 0);
+
+                /* disable check for while, too many not existed spells
+                if (goInfo->trap.spellId)                   // spell
+                    CheckGOSpellId(goInfo, goInfo->trap.spellId, 3);
                 */
                 break;
             }
             case GAMEOBJECT_TYPE_CHAIR:                     //7
-                if (goInfo->chair.height > 2)
-                {
-                    sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data1=%u but correct chair height in range 0..2.",
-                        id,goInfo->type,goInfo->chair.height);
-
-                    // prevent client and server unexpected work
-                    const_cast<GameObjectInfo*>(goInfo)->chair.height = 0;
-                }
+                CheckAndFixGOChairHeightId(goInfo, goInfo->chair.height, 1);
                 break;
             case GAMEOBJECT_TYPE_SPELL_FOCUS:               //8
             {
@@ -4874,51 +4907,39 @@ void ObjectMgr::LoadGameobjectInfo()
                 }
 
                 if (goInfo->spellFocus.linkedTrapId)         // linked trap
-                {
-                    if (GameObjectInfo const* trapInfo = sGOStorage.LookupEntry<GameObjectInfo>(goInfo->spellFocus.linkedTrapId))
-                    {
-                        if (trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
-                            sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data2=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
-                                id,goInfo->type,goInfo->spellFocus.linkedTrapId,goInfo->spellFocus.linkedTrapId,GAMEOBJECT_TYPE_TRAP);
-                    }
-                    /* disable check for while
-                    else
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data2=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
-                            id,goInfo->type,goInfo->spellFocus.linkedTrapId,goInfo->spellFocus.linkedTrapId);
-                    */
-                }
+                    CheckGOLinkedTrapId(goInfo, goInfo->spellFocus.linkedTrapId, 2);
                 break;
             }
             case GAMEOBJECT_TYPE_GOOBER:                    //10
             {
+                if(goInfo->goober.lockId)
+                    CheckGOLockId(goInfo, goInfo->goober.lockId, 0);
+
                 if (goInfo->goober.pageId)                   // pageId
                 {
                     if (!sPageTextStore.LookupEntry<PageText>(goInfo->goober.pageId))
                         sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data7=%u but PageText (Entry %u) not exist.",
                             id,goInfo->type,goInfo->goober.pageId,goInfo->goober.pageId);
                 }
-                /* disable check for while
-                if (goInfo->goober.spellId)                  // spell
-                {
-                    if (!sSpellStore.LookupEntry(goInfo->goober.spellId))
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data2=%u but Spell (Entry %u) not exist.",
-                            id,goInfo->type,goInfo->goober.spellId,goInfo->goober.spellId);
-                }
+                /* disable check for while, too many not existed spells
+                if (goInfo->goober.spellId)                 // spell
+                    CheckGOSpellId(goInfo, goInfo->goober.spellId, 10);
                 */
+                CheckGONoDamageImmuneId(goInfo, goInfo->goober.noDamageImmune, 11);
                 if (goInfo->goober.linkedTrapId)             // linked trap
-                {
-                    if (GameObjectInfo const* trapInfo = sGOStorage.LookupEntry<GameObjectInfo>(goInfo->goober.linkedTrapId))
-                    {
-                        if (trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
-                            sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data12=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
-                                id,goInfo->type,goInfo->goober.linkedTrapId,goInfo->goober.linkedTrapId,GAMEOBJECT_TYPE_TRAP);
-                    }
-                    /* disable check for while
-                    else
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data12=%u but trap GO (Entry %u) not exist in `gameobject_template`.",
-                            id,goInfo->type,goInfo->goober.linkedTrapId,goInfo->goober.linkedTrapId);
-                    */
-                }
+                    CheckGOLinkedTrapId(goInfo, goInfo->goober.linkedTrapId, 12);
+                break;
+            }
+            case GAMEOBJECT_TYPE_AREADAMAGE:                //12
+            {
+                if (goInfo->areadamage.lockId)
+                    CheckGOLockId(goInfo, goInfo->areadamage.lockId, 0);
+                break;
+            }
+            case GAMEOBJECT_TYPE_CAMERA:                    //13
+            {
+                if (goInfo->camera.lockId)
+                    CheckGOLockId(goInfo, goInfo->camera.lockId, 0);
                 break;
             }
             case GAMEOBJECT_TYPE_MO_TRANSPORT:              //15
@@ -4933,24 +4954,36 @@ void ObjectMgr::LoadGameobjectInfo()
             }
             case GAMEOBJECT_TYPE_SUMMONING_RITUAL:          //18
             {
-                /* disabled
-                if (goInfo->summoningRitual.spellId)
-                {
-                    if (!sSpellStore.LookupEntry(goInfo->summoningRitual.spellId))
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data1=%u but Spell (Entry %u) not exist.",
-                            id,goInfo->type,goInfo->summoningRitual.spellId,goInfo->summoningRitual.spellId);
-                }
+                /* disable check for while, too many not existed spells
+                // always must have spell
+                CheckGOSpellId(goInfo, goInfo->summoningRitual.spellId, 1);
                 */
                 break;
             }
             case GAMEOBJECT_TYPE_SPELLCASTER:               //22
             {
-                if (goInfo->spellcaster.spellId)             // spell
-                {
-                    if (!sSpellStore.LookupEntry(goInfo->spellcaster.spellId))
-                        sLog.outErrorDb("Gameobject (Entry: %u GoType: %u) have data3=%u but Spell (Entry %u) not exist.",
-                            id,goInfo->type,goInfo->spellcaster.spellId,goInfo->spellcaster.spellId);
-                }
+                // always must have spell
+                CheckGOSpellId(goInfo, goInfo->spellcaster.spellId, 0);
+                break;
+            }
+            case GAMEOBJECT_TYPE_FLAGSTAND:                 //24
+            {
+                if (goInfo->flagstand.lockId)
+                    CheckGOLockId(goInfo, goInfo->flagstand.lockId, 0);
+                CheckGONoDamageImmuneId(goInfo, goInfo->flagstand.noDamageImmune, 5);
+                break;
+            }
+            case GAMEOBJECT_TYPE_FISHINGHOLE:               //25
+            {
+                if (goInfo->fishinghole.lockId)
+                    CheckGOLockId(goInfo, goInfo->fishinghole.lockId, 4);
+                break;
+            }
+            case GAMEOBJECT_TYPE_FLAGDROP:                  //26
+            {
+                if (goInfo->flagdrop.lockId)
+                    CheckGOLockId(goInfo, goInfo->flagdrop.lockId, 0);
+                CheckGONoDamageImmuneId(goInfo, goInfo->flagdrop.noDamageImmune, 3);
                 break;
             }
         }
@@ -5119,6 +5152,75 @@ void ObjectMgr::LoadCorpses()
     sLog.outString(">> Loaded %u corpses", count);
 }
 
+void ObjectMgr::LoadReputationRewardRate()
+{
+    m_RepRewardRateMap.clear();         // for reload case
+
+    uint32 count = 0;
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT faction, quest_rate, creature_rate, spell_rate FROM reputation_reward_rate");
+
+    if (!result)
+    {
+        BarGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString();
+        sLog.outErrorDb(">> Loaded `reputation_reward_rate`, table is empty!");
+        return;
+    }
+
+    BarGoLink bar((int)result->GetRowCount());
+
+    do
+    {
+        bar.step();
+
+        Field *fields = result->Fetch();
+
+        uint32 factionId        = fields[0].GetUInt32();
+
+        RepRewardRate repRate;
+
+        repRate.quest_rate      = fields[1].GetFloat();
+        repRate.creature_rate   = fields[2].GetFloat();
+        repRate.spell_rate      = fields[3].GetFloat();
+
+        FactionEntry const *factionEntry = sFactionStore.LookupEntry(factionId);
+        if (!factionEntry)
+        {
+            sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `reputation_reward_rate`", factionId);
+            continue;
+        }
+
+        if (repRate.quest_rate < 0.0f)
+        {
+            sLog.outErrorDb("Table reputation_reward_rate has quest_rate with invalid rate %f, skipping data for faction %u", repRate.quest_rate, factionId);
+            continue;
+        }
+
+        if (repRate.creature_rate < 0.0f)
+        {
+            sLog.outErrorDb("Table reputation_reward_rate has creature_rate with invalid rate %f, skipping data for faction %u", repRate.creature_rate, factionId);
+            continue;
+        }
+
+        if (repRate.spell_rate < 0.0f)
+        {
+            sLog.outErrorDb("Table reputation_reward_rate has spell_rate with invalid rate %f, skipping data for faction %u", repRate.spell_rate, factionId);
+            continue;
+        }
+
+        m_RepRewardRateMap[factionId] = repRate;
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u reputation_reward_rate", count);
+}
+
 void ObjectMgr::LoadReputationOnKill()
 {
     uint32 count = 0;
@@ -5193,6 +5295,126 @@ void ObjectMgr::LoadReputationOnKill()
 
     sLog.outString();
     sLog.outString(">> Loaded %u creature award reputation definitions", count);
+}
+
+void ObjectMgr::LoadReputationSpilloverTemplate()
+{
+    m_RepSpilloverTemplateMap.clear(); // for reload case
+
+    uint32 count = 0;
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT faction, faction1, rate_1, rank_1, faction2, rate_2, rank_2, faction3, rate_3, rank_3, faction4, rate_4, rank_4 FROM reputation_spillover_template");
+
+    if (!result)
+    {
+        BarGoLink bar(1);
+        bar.step();
+
+        sLog.outString();
+        sLog.outString(">> Loaded `reputation_spillover_template`, table is empty!");
+        return;
+    }
+
+    BarGoLink bar((int)result->GetRowCount());
+
+    do
+    {
+        bar.step();
+
+        Field *fields = result->Fetch();
+
+        uint32 factionId                = fields[0].GetUInt32();
+
+        RepSpilloverTemplate repTemplate;
+
+        repTemplate.faction[0]          = fields[1].GetUInt32();
+        repTemplate.faction_rate[0]     = fields[2].GetFloat();
+        repTemplate.faction_rank[0]     = fields[3].GetUInt32();
+        repTemplate.faction[1]          = fields[4].GetUInt32();
+        repTemplate.faction_rate[1]     = fields[5].GetFloat();
+        repTemplate.faction_rank[1]     = fields[6].GetUInt32();
+        repTemplate.faction[2]          = fields[7].GetUInt32();
+        repTemplate.faction_rate[2]     = fields[8].GetFloat();
+        repTemplate.faction_rank[2]     = fields[9].GetUInt32();
+        repTemplate.faction[3]          = fields[10].GetUInt32();
+        repTemplate.faction_rate[3]     = fields[11].GetFloat();
+        repTemplate.faction_rank[3]     = fields[12].GetUInt32();
+
+        FactionEntry const *factionEntry = sFactionStore.LookupEntry(factionId);
+
+        if (!factionEntry)
+        {
+            sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `reputation_spillover_template`", factionId);
+            continue;
+        }
+
+        if (factionEntry->team == 0)
+        {
+            sLog.outErrorDb("Faction (faction.dbc) %u in `reputation_spillover_template` does not belong to any team, skipping", factionId);
+            continue;
+        }
+
+        for (uint32 i = 0; i < MAX_SPILLOVER_FACTIONS; ++i)
+        {
+            if (repTemplate.faction[i])
+            {
+                FactionEntry const *factionSpillover = sFactionStore.LookupEntry(repTemplate.faction[i]);
+
+                if (!factionSpillover)
+                {
+                    sLog.outErrorDb("Spillover faction (faction.dbc) %u does not exist but is used in `reputation_spillover_template` for faction %u, skipping", repTemplate.faction[i], factionId);
+                    continue;
+                }
+
+                if (factionSpillover->reputationListID < 0)
+                {
+                    sLog.outErrorDb("Spillover faction (faction.dbc) %u for faction %u in `reputation_spillover_template` can not be listed for client, and then useless, skipping", repTemplate.faction[i], factionId);
+                    continue;
+                }
+
+                if (repTemplate.faction_rank[i] >= MAX_REPUTATION_RANK)
+                {
+                    sLog.outErrorDb("Rank %u used in `reputation_spillover_template` for spillover faction %u is not valid, skipping", repTemplate.faction_rank[i], repTemplate.faction[i]);
+                    continue;
+                }
+            }
+        }
+
+        FactionEntry const *factionEntry0 = sFactionStore.LookupEntry(repTemplate.faction[0]);
+        if (repTemplate.faction[0] && !factionEntry0)
+        {
+            sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `reputation_spillover_template`", repTemplate.faction[0]);
+            continue;
+        }
+
+        FactionEntry const *factionEntry1 = sFactionStore.LookupEntry(repTemplate.faction[1]);
+        if (repTemplate.faction[1] && !factionEntry1)
+        {
+            sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `reputation_spillover_template`", repTemplate.faction[1]);
+            continue;
+        }
+
+        FactionEntry const *factionEntry2 = sFactionStore.LookupEntry(repTemplate.faction[2]);
+        if (repTemplate.faction[2] && !factionEntry2)
+        {
+            sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `reputation_spillover_template`", repTemplate.faction[2]);
+            continue;
+        }
+
+        FactionEntry const *factionEntry3 = sFactionStore.LookupEntry(repTemplate.faction[3]);
+        if (repTemplate.faction[3] && !factionEntry3)
+        {
+            sLog.outErrorDb("Faction (faction.dbc) %u does not exist but is used in `reputation_spillover_template`", repTemplate.faction[3]);
+            continue;
+        }
+
+        m_RepSpilloverTemplateMap[factionId] = repTemplate;
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u reputation_spillover_template", count);
 }
 
 void ObjectMgr::LoadWeatherZoneChances()
@@ -6008,7 +6230,7 @@ bool PlayerCondition::Meets(Player const * player) const
         case CONDITION_ITEM_EQUIPPED:
             return player->GetItemOrItemWithGemEquipped(value1) != NULL;
         case CONDITION_ZONEID:
-            return player->GetZoneId() == value1;
+            return player->GetCachedZone() == value1;
         case CONDITION_REPUTATION_RANK:
         {
             FactionEntry const* faction = sFactionStore.LookupEntry(value1);

@@ -129,7 +129,11 @@ void PetAI::PrepareSpellForAutocast(uint32 spellID)
         if (IsNonCombatSpell(spellInfo))
             return;
     }
-
+/*
+    if (m_owner && m_owner->GetTypeId() == TYPEID_PLAYER)
+        if(((Player*)m_owner)->HasSpellCooldown(spellID))
+            return;
+*/
     Spell *spell = new Spell(m_creature, spellInfo, false, 0);
 
     if (inCombat && !m_creature->hasUnitState(UNIT_STAT_FOLLOW) && spell->CanAutoCast(m_creature->getVictim()))
@@ -165,7 +169,11 @@ void PetAI::AddSpellForAutocast(uint32 spellID, Unit* target)
 {
     if (!spellID)
         return;
-
+/*
+    if (m_owner && m_owner->GetTypeId() == TYPEID_PLAYER)
+        if(((Player*)m_owner)->HasSpellCooldown(spellID))
+            return;
+*/
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellID);
     if (!spellInfo)
         return;
@@ -428,12 +436,7 @@ void FelhunterAI::PrepareSpellForAutocast(uint32 spellID)
             Aura *aur = (*itr).second;
             if (aur && aur->GetSpellProto()->Dispel == DISPEL_MAGIC)
             {
-                bool positive = true;
-                if (!aur->IsPositive())
-                    positive = false;
-                else
-                    positive = (aur->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE)==0;
-                if (positive)
+                if (aur->IsPositive())
                 {
                     AddSpellForAutocast(spellID, target);
                     return;

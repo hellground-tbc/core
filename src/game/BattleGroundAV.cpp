@@ -291,6 +291,13 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
         //just copied this code from a gm-command
     }
 
+    uint32 linkedTo = 0;
+    if (cinfoid >= AV_NPC_A_MARSHAL_SOUTH && cinfoid <= AV_NPC_A_MARSHAL_STONE)
+        linkedTo = 0;
+    else if (cinfoid >= AV_NPC_H_MARSHAL_ICE && cinfoid <= AV_NPC_H_MARSHAL_WTOWER)
+        linkedTo = 0;
+
+
     if (level != 0)
         level += m_MaxLevel-60; //maybe we can do this more generic for custom level-range.. actually it's blizzlike
     creature->SetLevel(level);
@@ -1060,8 +1067,8 @@ void BattleGroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
                         continue;
                     if (!ClosestGrave)
                         ClosestGrave = GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), team);
-                    else
-                        plr->TeleportTo(GetMapId(), ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, plr->GetOrientation());
+                    
+                    plr->TeleportTo(GetMapId(), ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, plr->GetOrientation());
                 }
                 m_ReviveQueue[m_BgCreatures[node]].clear();
             }

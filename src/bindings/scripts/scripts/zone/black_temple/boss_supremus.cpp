@@ -68,7 +68,7 @@ struct TRINITY_DLL_DECL molten_flameAI : public NullCreatureAI
                 float angle = FloatRandRange(0, 2*M_PI);    //randomise angle of Punch, geting angle from player not working like should
                 float x = m_creature->GetPositionX() + 100.0f * cos(angle);
                 float y = m_creature->GetPositionY() + 100.0f * sin(angle);
-                float z = m_creature->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+                float z = m_creature->GetBaseMap()->GetHeight(x, y, MAX_HEIGHT, true);
                 m_creature->GetMotionMaster()->MovePoint(0, x, y, z + 0.05f);
             }
         }

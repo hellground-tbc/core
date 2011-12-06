@@ -211,7 +211,8 @@ void World::AddSession(WorldSession* s)
 
 void World::AddSession_ (WorldSession* s)
 {
-    ASSERT (s);
+    if (!s)
+        return;
 
     //NOTE - Still there is race condition in WorldSession* being used in the Sockets
 
@@ -499,6 +500,8 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_XP_EXPLORE]  = sConfig.GetFloatDefault("Rate.XP.Explore", 1.0f);
     rate_values[RATE_XP_PAST_70]  = sConfig.GetFloatDefault("Rate.XP.PastLevel70", 1.0f);
     rate_values[RATE_REPUTATION_GAIN]  = sConfig.GetFloatDefault("Rate.Reputation.Gain", 1.0f);
+    rate_values[RATE_REPUTATION_LOWLEVEL_KILL]  = sConfig.GetFloatDefault("Rate.Reputation.LowLevel.Kill", 0.2f);
+    rate_values[RATE_REPUTATION_LOWLEVEL_QUEST]  = sConfig.GetFloatDefault("Rate.Reputation.LowLevel.Quest", 1.0f);
     rate_values[RATE_CREATURE_NORMAL_DAMAGE]          = sConfig.GetFloatDefault("Rate.Creature.Normal.Damage", 1.0f);
     rate_values[RATE_CREATURE_ELITE_ELITE_DAMAGE]     = sConfig.GetFloatDefault("Rate.Creature.Elite.Elite.Damage", 1.0f);
     rate_values[RATE_CREATURE_ELITE_RAREELITE_DAMAGE] = sConfig.GetFloatDefault("Rate.Creature.Elite.RAREELITE.Damage", 1.0f);
@@ -1166,6 +1169,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_VMSS_FREEZEDETECTTIME] = sConfig.GetIntDefault("VMSS.MapFreezeDetectTime", 1000);
 
     m_configs[CONFIG_ENABLE_CUSTOM_XP_RATES] = sConfig.GetBoolDefault("EnableCustomXPRates", true);
+
+    m_configs[CONFIG_SESSION_UPDATE_MAX_TIME] = sConfig.GetIntDefault("SessionUpdate.MaxTime", 1000);
+    m_configs[CONFIG_SESSION_UPDATE_OVERTIME_METHOD] = sConfig.GetIntDefault("SessionUpdate.Method", 3);
 }
 
 /// Initialize the World
@@ -1300,8 +1306,14 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading SpellsScriptTarget...");
     spellmgr.LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameobjectInfo
 
+    sLog.outString( "Loading Reputation Reward Rates...");
+    sObjectMgr.LoadReputationRewardRate();
+
     sLog.outString("Loading Creature Reputation OnKill Data...");
     objmgr.LoadReputationOnKill();
+
+    sLog.outString( "Loading Reputation Spillover Data..." );
+    sObjectMgr.LoadReputationSpilloverTemplate();
 
     sLog.outString("Loading Pet Create Spells...");
     objmgr.LoadPetCreateSpells();
@@ -1625,14 +1637,14 @@ void World::DetectDBCLang()
     sLog.outString("Using %s DBC Locale as default. All available DBC locales: %s",localeNames[m_defaultDbcLocale],availableLocalsStr.empty() ? "<none>" : availableLocalsStr.c_str());
 }
 
-void World::RecordTimeDiff(const char *text, ...)
+uint32 World::RecordTimeDiff(const char *text, ...)
 {
     if (m_updateTimeCount != 1)
-        return;
+        return 0;
     if (!text)
     {
         m_currentTime = WorldTimer::getMSTime();
-        return;
+        return 0;
     }
 
     uint32 thisTime = WorldTimer::getMSTime();
@@ -1649,6 +1661,8 @@ void World::RecordTimeDiff(const char *text, ...)
     }
 
     m_currentTime = thisTime;
+
+    return diff;
 }
 
 void World::LoadAutobroadcasts()
@@ -1914,7 +1928,26 @@ void World::UpdateSessions(const uint32 & diff)
     if (sessionThreads)
         tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size(), m_sessions.size()/sessionThreads), SessionsUpdater(&m_sessions, diff));
     else
-        tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size()), SessionsUpdater(&m_sessions, diff), tbb::auto_partitioner());
+    {
+        ///- Then send an update signal to remaining ones
+        for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)
+        {
+            next = itr;
+            ++next;
+
+            if (!itr->second)
+                continue;
+
+            ///- and remove not active sessions from the list
+            WorldSession * pSession = itr->second;
+            WorldSessionFilter updater(pSession);
+            if (!pSession->Update(diff, updater))    // As interval = 0
+            {
+                RemoveQueuedPlayer(pSession);
+                AddSessionToRemove(itr);
+            }
+        }
+    }
 
     for (std::list<SessionMap::iterator>::iterator itr = removedSessions.begin(); itr != removedSessions.end(); ++itr)
     {
