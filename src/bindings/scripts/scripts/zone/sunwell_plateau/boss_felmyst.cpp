@@ -468,6 +468,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     IntroTimer = 8000;
                     break;
                 case 10: // on falling when killed in phase 2
+                    me->SendMonsterStop();
                     me->Kill(me);
                     break;
                 default:
@@ -692,7 +693,7 @@ struct TRINITY_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         if(!m_creature->getVictim())
-            AttackStart(SelectUnit(SELECT_TARGET_RANDOM, 0, 5.0, true));
+            AttackStart(SelectUnit(SELECT_TARGET_NEAREST, 0, 20.0, true));
     }
 };
 
@@ -716,12 +717,17 @@ struct TRINITY_DLL_DECL mob_felmyst_trailAI : public Scripted_NoMovementAI
             DoCast(me, SPELL_DEAD_SUMMON);
     }
 
+    void JustSummoned(Creature* summon)
+    {
+        if(Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 20, true))
+            summon->AI()->AttackStart(target);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(Delay < diff)
         {
             DoCast(me, SPELL_DEAD_SUMMON);
-            DoZoneInCombat();
             Delay = 30000;  // will despawn sooner
         }
         else
