@@ -132,6 +132,12 @@ float FlightSide[2][3] =
     {1458.17, 501.3, 60.08}     // right
 };
 
+float FallCoord[2][3] = 
+{
+    {1476.30, 649, 21.5},     // left
+    {1472.55, 580, 22.5}     // right
+};
+
 float FogCoords[25][3][3] =
 {
      //left side
@@ -188,6 +194,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     uint32 OutroTimer;
     uint64 KalecgosGUID;
 
+    bool falling;
+
     void Reset()
     {
         Phase = PHASE_NULL;
@@ -202,6 +210,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         side = 0;
         path = 0;
         counter = 0;
+        falling = false;
 
         m_creature->CastSpell(m_creature, SPELL_SUNWELL_RADIANCE, true); // temporary, will be moved to DB
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
@@ -271,12 +280,9 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        if(pInstance && Killer->GetTypeId() != TYPEID_UNIT)
-        {
-            DoScriptText(YELL_DEATH, m_creature);
-            pInstance->SetData(DATA_FELMYST_EVENT, DONE);
-            me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
-        }
+        DoScriptText(YELL_DEATH, m_creature);
+        pInstance->SetData(DATA_FELMYST_EVENT, DONE);
+        //me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
     }
 
     void EnterEvadeMode()
@@ -314,8 +320,13 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if(Phase != PHASE_GROUND && damage >= m_creature->GetHealth())
         {
             damage = 0;
-            if(me->getDeathState() != DEAD_FALLING)
-                me->FallGround();
+            if(!falling)
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                me->SetSpeed(MOVE_FLIGHT, 10);
+                me->GetMotionMaster()->MovePoint(10, FallCoord[side][0], FallCoord[side][1], FallCoord[side][2]);
+                falling = true;
+            }
         }
     }
 
@@ -455,6 +466,9 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 case 6:
                     me->setHover(true);
                     IntroTimer = 8000;
+                    break;
+                case 10: // on falling when killed in phase 2
+                    me->Kill(me);
                     break;
                 default:
                     break;
