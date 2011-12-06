@@ -189,20 +189,27 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                 {
                     creature->GetMap()->CreatureRelocation(creature, 1476.3, 649, 21.5, creature->GetOrientation());
                     // spawn Felmyst when needed
-                    if(GetData(DATA_BRUTALLUS_EVENT) == DONE && GetData(DATA_FELMYST_EVENT) != DONE)
+                    if(GetData(DATA_BRUTALLUS_EVENT) == DONE)
                     {
                         // summon Felmyst
-                        if(!Felmyst)
+                        if(!Felmyst && GetData(DATA_FELMYST_EVENT) != DONE)
                         {
                             creature->CastSpell(creature, 45069, true);
                             if(Unit* Fel = FindCreature(45069, 20, creature))
                                 Felmyst = Fel->GetGUID();
                         }
+                        creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                        creature->SetReactState(REACT_PASSIVE);
+                        creature->setFaction(35);
+                        creature->SetVisibility(VISIBILITY_OFF);
                     }
-                    creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    creature->SetReactState(REACT_PASSIVE);
-                    creature->setFaction(35);
-                    creature->SetVisibility(VISIBILITY_OFF);
+                    else
+                    {
+                        creature->SetLevitate(false);
+                        creature->setFaction(35);
+                        creature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                        creature->SetFlag(UNIT_DYNAMIC_FLAGS, (UNIT_DYNFLAG_DEAD | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED));
+                    }
                 }
                 break;
             case 19871: BrutallusTrigger    = creature->GetGUID(); break;

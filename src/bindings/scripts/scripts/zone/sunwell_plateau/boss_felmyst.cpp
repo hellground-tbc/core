@@ -169,7 +169,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     boss_felmystAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        c->CastSpell(c, SPELL_SUNWELL_RADIANCE, true);
     }
 
     ScriptedInstance *pInstance;
@@ -204,6 +203,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         path = 0;
         counter = 0;
 
+        m_creature->CastSpell(m_creature, SPELL_SUNWELL_RADIANCE, true); // temporary, will be moved to DB
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
         m_creature->setActive(true);
@@ -221,10 +221,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         m_creature->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveIdle();
-        if(me->getVictim())
+        if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
         {
             float x, y, z;
-            me->getVictim()->GetNearPoint(me->getVictim(), x, y, z, 0, 5, me->GetAngle(me->getVictim()));
+            target->GetNearPoint(target, x, y, z, 0, 5, me->GetAngle(target));
             me->UpdateAllowedPositionZ(x, y, z);
             me->GetMotionMaster()->MovePoint(0, x, y, z);
         }
@@ -594,7 +594,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 else
                 {
                     side ? counter-- : counter++;
-                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 7 : 25) : 15));  // check this timer
+                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 8 : 25) : 15));  // check this timer
                 }
                 break;
         }
