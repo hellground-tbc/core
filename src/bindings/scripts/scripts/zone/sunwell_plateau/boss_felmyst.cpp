@@ -136,22 +136,22 @@ float FogCoords[25][3][3] =
 {
      //left side
                //[0]                     [1]                       [2]
-    {{1472.56, 680.00, 22.36}, {1495.10, 680.00, 21.22}, {1507.31, 693.96, 28.85}}, //0
-    {{1472.54, 660.00, 20.81}, {1472.56, 680.00, 22.36}, {1495.10, 680.00, 21.22}}, //1
-    {{1451.98, 660.00, 23.05}, {1495.10, 659.94, 22.84}, {1513.84, 672.90, 25.21}}, //2
-    {{1472.56, 640.00, 21.33}, {1472.54, 660.00, 20.81}, {1531.06, 666.55, 27.41}}, //3
-    {{1451.98, 640.00, 23.06}, {1495.29, 639.84, 23.64}, {1495.10, 659.94, 22.84}}, //4
-    {{1472.57, 620.00, 22.27}, {1472.56, 640.00, 21.33}, {1530.79, 650.80, 35.89}}, //5
-    {{1451.98, 620.00, 23.06}, {1495.13, 620.01, 25.37}, {1495.29, 639.84, 23.64}}, //6
-    {{1472.57, 600.00, 23.27}, {1472.57, 620.00, 22.27}, {1516.20, 642.40, 27.16}}, //7
-    {{1451.98, 600.00, 23.06}, {1494.96, 599.91, 25.30}, {1526.31, 636.49, 36.26}}, //8
-    {{1472.56, 580.02, 22.45}, {1472.57, 600.00, 23.27}, {1495.13, 620.01, 25.37}}, //9
-    {{1451.98, 580.00, 23.06}, {1495.94, 580.00, 23.84}, {1525.77, 622.45, 35.69}}, //10
-    {{1472.58, 560.00, 22.87}, {1472.56, 580.02, 22.45}, {1517.40, 614.23, 29.78}}, //11
-    {{1451.98, 560.00, 23.06}, {1494.96, 560.01, 25.24}, {1530.97, 609.00, 35.89}}, //12
-    {{1472.58, 540.00, 23.00}, {1472.58, 560.00, 22.87}, {1494.96, 599.91, 25.30}}, //13
-    {{1451.98, 540.00, 23.06}, {1451.98, 560.00, 23.06}, {1545.40, 594.88, 35.95}}, //14
-    {{                      }, {1494.97, 540.02, 25.81}, {1523.57, 587.71, 31.00}}, //15
+    {{1472.56, 680.00, 22.36}, {1472.56, 680.00, 22.36}, {1507.31, 693.96, 28.85}}, //0
+    {{1472.54, 660.00, 20.81}, {1472.54, 660.00, 20.81}, {1495.10, 680.00, 21.22}}, //1
+    {{1451.98, 660.00, 23.05}, {1472.56, 640.00, 21.33}, {1513.84, 672.90, 25.21}}, //2
+    {{1472.56, 640.00, 21.33}, {1472.57, 620.00, 22.27}, {1531.06, 666.55, 27.41}}, //3
+    {{1451.98, 640.00, 23.06}, {1472.57, 600.00, 23.27}, {1495.10, 659.94, 22.84}}, //4
+    {{1472.57, 620.00, 22.27}, {1472.56, 580.02, 22.45}, {1530.79, 650.80, 35.89}}, //5
+    {{1451.98, 620.00, 23.06}, {1472.58, 560.00, 22.87}, {1495.29, 639.84, 23.64}}, //6
+    {{1472.57, 600.00, 23.27}, {1451.98, 560.00, 23.06}, {1516.20, 642.40, 27.16}}, //7
+    {{1451.98, 600.00, 23.06}, {                      }, {1526.31, 636.49, 36.26}}, //8
+    {{1472.56, 580.02, 22.45}, {                      }, {1495.13, 620.01, 25.37}}, //9
+    {{1451.98, 580.00, 23.06}, {                      }, {1525.77, 622.45, 35.69}}, //10
+    {{1472.58, 560.00, 22.87}, {                      }, {1517.40, 614.23, 29.78}}, //11
+    {{1451.98, 560.00, 23.06}, {                      }, {1530.97, 609.00, 35.89}}, //12
+    {{1472.58, 540.00, 23.00}, {                      }, {1494.96, 599.91, 25.30}}, //13
+    {{1451.98, 540.00, 23.06}, {                      }, {1545.40, 594.88, 35.95}}, //14
+    {{                      }, {                      }, {1523.57, 587.71, 31.00}}, //15
     {{                      }, {                      }, {1495.94, 580.00, 23.84}}, //16
     {{                      }, {                      }, {1513.26, 571.21, 28.79}}, //17
     {{                      }, {                      }, {1494.96, 560.01, 25.24}}, //18
@@ -169,6 +169,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     boss_felmystAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
+        c->CastSpell(c, SPELL_SUNWELL_RADIANCE, true);
     }
 
     ScriptedInstance *pInstance;
@@ -206,6 +207,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
         m_creature->setActive(true);
+        m_creature->SetWalk(false);
 
         if(pInstance)
             pInstance->SetData(DATA_FELMYST_EVENT, NOT_STARTED);
@@ -219,11 +221,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         m_creature->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveIdle();
-        if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
+        if(me->getVictim())
         {
             float x, y, z;
-            target->GetPosition(x, y, z);
-            m_creature->GetMotionMaster()->MovePoint(0, x+2, y+1, z);
+            me->getVictim()->GetNearPoint(me->getVictim(), x, y, z, 0, 5, me->GetAngle(me->getVictim()));
+            me->UpdateAllowedPositionZ(x, y, z);
+            me->GetMotionMaster()->MovePoint(0, x, y, z);
         }
         else
         {
@@ -263,8 +266,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         Phase = PHASE_RESPAWNING;
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
-        m_creature->CastSpell(m_creature, SPELL_SUNWELL_RADIANCE, true);
-        me->setFaction(1771);
         IntroTimer = 4000;
     }
 
@@ -282,8 +283,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     {
         CreatureAI::EnterEvadeMode();
         me->SetSpeed(MOVE_FLIGHT, 1.8, false);
-        m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
-        IntroPhase = 5; // to make proper landing on next EnterCombat
+        me->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
+        IntroPhase = 6; // to make proper landing on next EnterCombat
 
         Map::PlayerList const &players = me->GetMap()->GetPlayers();
         for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
@@ -311,7 +312,11 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     void DamageTaken(Unit*, uint32 &damage)
     {
         if(Phase != PHASE_GROUND && damage >= m_creature->GetHealth())
+        {
             damage = 0;
+            if(me->getDeathState() != DEAD_FALLING)
+                me->FallGround();
+        }
     }
 
     void EnterPhase(PhaseFelmyst NextPhase)
@@ -410,12 +415,11 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             switch(Id)
             {
                 case 0: // on landing after aggroing
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                    m_creature->SetLevitate(false);
-                    m_creature->SetWalk(false);
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                    me->SetLevitate(false);
                     me->setHover(false);
                     me->SetSpeed(MOVE_RUN, 2.0,false);
-                    IntroTimer = 2000;
+                    IntroTimer = 3000;
                     break;
                 case 1: // on starting phase 2
                     me->setHover(true);
@@ -498,7 +502,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             path = urand(0,2);
             float *pos = FlightMarker[path][side];
             DoScriptText(EMOTE_BREATH, m_creature);
-            counter = side ? (path ? (path%2 ? 15 : 24) : 14) : 0;
+            counter = side ? (path ? (path%2 ? 7 : 24) : 14) : 0;
             m_creature->GetMotionMaster()->MovePoint(3, pos[0], pos[1], pos[2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
@@ -585,12 +589,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 float *posFog = FogCoords[counter][path];
                 if(Creature *Fog = m_creature->SummonCreature(MOB_FOG_OF_CORRUPTION, posFog[0], posFog[1], posFog[2], 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
                     Fog->CastSpell(Fog, SPELL_FOG_TRIGGER, true);
-                if((side && !counter) || (!side && counter == (path ? (path%2 ? 15 : 24) : 14)))
+                if((side && !counter) || (!side && counter == (path ? (path%2 ? 7 : 24) : 14)))
                     Timer[EVENT_SUMMON_FOG] = 0;
                 else
                 {
                     side ? counter-- : counter++;
-                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 16 : 25) : 15));  // check this timer
+                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 7 : 25) : 15));  // check this timer
                 }
                 break;
         }
@@ -630,7 +634,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 }
             }
             CastNextSpellIfAnyAndReady();
-            DoMeleeAttackIfReady();
+            if(Phase == PHASE_GROUND)
+                DoMeleeAttackIfReady();
         }
 
         if(Phase == PHASE_FLIGHT)
@@ -702,6 +707,7 @@ struct TRINITY_DLL_DECL mob_felmyst_trailAI : public Scripted_NoMovementAI
         if(Delay < diff)
         {
             DoCast(me, SPELL_DEAD_SUMMON);
+            DoZoneInCombat();
             Delay = 30000;  // will despawn sooner
         }
         else
