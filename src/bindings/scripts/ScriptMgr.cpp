@@ -485,7 +485,7 @@ bool AreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry)
 TRINITY_DLL_EXPORT
 bool CompletedCinematic(Player* pPlayer, CinematicSequencesEntry const* cinematic)
 {
-    Script* pTempScript = m_scripts[GetCompletedCinematicScriptId(cinematic->id)];
+    Script* pTempScript = m_scripts[GetCompletedCinematicScriptId(cinematic->Id)];
 
     if (!pTempScript || !pTempScript->pCompletedCinematic)
         return false;
