@@ -427,6 +427,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     break;
                 case 2: // on left/right side marker
                     me->setHover(true);
+                    me->GetMotionMaster()->MoveIdle();
                     Timer[EVENT_FLIGHT_SEQUENCE] = 6000;
                     break;
                 case 3: // on path start node
@@ -437,6 +438,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 case 4: // on path stop node
                     me->setHover(true);
                     me->SetSpeed(MOVE_FLIGHT, 1.8, false);
+                    me->GetMotionMaster()->MoveIdle();
                     m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
                     side = side?LEFT_SIDE:RIGHT_SIDE;
                     BreathCount++;
@@ -491,12 +493,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             break;
             }
         case 4: // go to side left/right marker
-            {
             me->SetSpeed(MOVE_FLIGHT, 1.8, false);
             m_creature->GetMotionMaster()->MovePoint(2, FlightSide[side][0], FlightSide[side][1], FlightSide[side][2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
-            }
         case 5: // decide path to go breathing
             {
             path = urand(0,2);
