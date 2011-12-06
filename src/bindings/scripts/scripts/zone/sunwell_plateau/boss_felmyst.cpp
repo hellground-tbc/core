@@ -468,9 +468,13 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     IntroTimer = 8000;
                     break;
                 case 10: // on falling when killed in phase 2
-                    me->SendMonsterStop();
+                    {
+                    float x, y, z;
+                    me->GetPosition(x, y, z);
+                    me->SendMonsterMove(x, y, z, 0);
                     me->Kill(me);
                     break;
+                    }
                 default:
                     break;
             }
@@ -719,8 +723,18 @@ struct TRINITY_DLL_DECL mob_felmyst_trailAI : public Scripted_NoMovementAI
 
     void JustSummoned(Creature* summon)
     {
-        if(Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 20, true))
-            summon->AI()->AttackStart(target);
+        Map::PlayerList const& players = me->GetMap()->GetPlayers();
+        if (!players.isEmpty())
+        {
+            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if(Player* plr = itr->getSource())
+                {
+                    summon->SetInCombatWith(plr);
+                    summon->AddThreat(plr, 0.0f);
+                }
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
