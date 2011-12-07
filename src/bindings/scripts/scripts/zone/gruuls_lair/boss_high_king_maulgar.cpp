@@ -70,29 +70,11 @@ bool CheckAllBossDied(ScriptedInstance* pInstance, Creature* m_creature)
     if (!pInstance || !m_creature)
         return false;
 
-    uint64 MaulgarGUID = 0;
-    uint64 KigglerGUID = 0;
-    uint64 BlindeyeGUID = 0;
-    uint64 OlmGUID = 0;
-    uint64 KroshGUID = 0;
-
-    Creature* Maulgar = NULL;
-    Creature* Kiggler = NULL;
-    Creature* Blindeye = NULL;
-    Creature* Olm = NULL;
-    Creature* Krosh = NULL;
-
-    MaulgarGUID = pInstance->GetData64(DATA_MAULGAR);
-    KigglerGUID = pInstance->GetData64(DATA_KIGGLERTHECRAZED);
-    BlindeyeGUID = pInstance->GetData64(DATA_BLINDEYETHESEER);
-    OlmGUID = pInstance->GetData64(DATA_OLMTHESUMMONER);
-    KroshGUID = pInstance->GetData64(DATA_KROSHFIREHAND);
-
-    Maulgar = m_creature->GetMap()->GetCreature(MaulgarGUID));
-    Kiggler = m_creature->GetMap()->GetCreature(KigglerGUID));
-    Blindeye = m_creature->GetMap()->GetCreature(BlindeyeGUID));
-    Olm = m_creature->GetMap()->GetCreature(OlmGUID));
-    Krosh = m_creature->GetMap()->GetCreature(KroshGUID));
+    Creature* Maulgar = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_MAULGAR));
+    Creature* Kiggler = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_KIGGLERTHECRAZED));
+    Creature* Blindeye = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_OLMTHESUMMONER));
+    Creature* Olm = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_BLINDEYETHESEER));
+    Creature* Krosh = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_KROSHFIREHAND));
 
     if (!Maulgar || !Kiggler || !Blindeye || !Olm || !Krosh)
         return false;
@@ -355,7 +337,7 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
     {
         //Only if not incombat check if the event is started
         if (!m_creature->isInCombat() && pInstance->GetData(DATA_MAULGAREVENT))
-            if (Unit* target = me=>GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
+            if (Unit* target = me->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target);
 
         //Return since we have no target
