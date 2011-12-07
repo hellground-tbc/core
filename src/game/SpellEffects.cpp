@@ -4651,13 +4651,13 @@ void Spell::EffectEnchantItemTmp(uint32 i)
     // Shaman Rockbiter Weapon
     if (i==0 && m_spellInfo->Effect[1]==SPELL_EFFECT_DUMMY)
     {
-        int32 enchnting_damage = CalculateDamage(1, NULL);//+1;
+        int32 enchanting_damage = CalculateDamage(1, NULL);//+1;
 
         // enchanting id selected by calculated damage-per-sec stored in Effect[1] base value
         // with already applied percent bonus from Elemental Weapons talent
         // Note: damage calculated (correctly) with rounding int32(float(v)) but
         // RW enchantments applied damage int32(float(v)+0.5), this create  0..1 difference sometime
-        switch (enchnting_damage)
+        switch (enchanting_damage)
         {
             // Rank 1
             case  2: enchant_id =   29; break;              //  0% [ 7% ==  2, 14% == 2, 20% == 2]

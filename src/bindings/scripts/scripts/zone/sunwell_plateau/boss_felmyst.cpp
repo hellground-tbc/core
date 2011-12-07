@@ -468,13 +468,9 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     IntroTimer = 8000;
                     break;
                 case 10: // on falling when killed in phase 2
-                    {
-                    float x, y, z;
-                    me->GetPosition(x, y, z);
-                    me->SendMonsterMove(x, y, z, 0);
+                    me->SendMonsterMove(FallCoord[side][0], FallCoord[side][1], FallCoord[side][2], 0);
                     me->Kill(me);
                     break;
-                    }
                 default:
                     break;
             }

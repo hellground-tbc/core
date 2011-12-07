@@ -62,7 +62,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
         ClearCastQueue();
         DoCast(me, SPELL_SUNWELL_RADIANCE, true);
 
-        ArcaneExplosion = urand(8000, 16000);
+        ArcaneExplosion = urand(5000, 12000);
         FrostNova = urand(5000, 10000);
         Blink = urand(10000, 18000);
     }
@@ -76,20 +76,6 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
-    bool InMeleeRange()
-    {
-        std::list<HostilReference*>& t_list = m_creature->getThreatManager().getThreatList();
-        for(std::list<HostilReference*>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
-        {
-            if(Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()))
-            {
-                if (target->IsWithinDistInMap(m_creature, 15))
-                    return true;
-            }
-        }
-        return false;
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -100,9 +86,8 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
 
         if(ArcaneExplosion < diff)
         {
-            if(InMeleeRange())
-                AddSpellToCast(SPELL_ARCANE_EXPLOSION, CAST_SELF);
-            ArcaneExplosion = urand(8000, 16000);
+            AddSpellToCast(SPELL_ARCANE_EXPLOSION, CAST_SELF);
+            ArcaneExplosion = urand(4000, 8000);
         }
         else
             ArcaneExplosion -= diff;
@@ -111,7 +96,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
         {
             if(InMeleeRange())
                 AddSpellToCast(SPELL_FROST_NOVA, CAST_SELF);
-            FrostNova = urand(5000, 10000);
+            FrostNova = urand(6000, 16000);
         }
         else
             FrostNova -= diff;
@@ -119,7 +104,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
         if(Blink < diff)
         {
             AddSpellToCast(SPELL_BLINK, CAST_NULL);
-            Blink = urand(30000, 40000);
+            Blink = urand(15000, 30000);
         }
         else
             Blink -= diff;
@@ -361,7 +346,7 @@ struct TRINITY_DLL_DECL mob_sunblade_dusk_priestAI : public ScriptedAI
 
         Fear = urand(5000, 15000);
         WordPain = urand(6000, 12000);
-        MindFlay = urand(10000, 25000);
+        MindFlay = urand(2000, 10000);
     }
 
     void EnterEvadeMode()
@@ -382,7 +367,7 @@ struct TRINITY_DLL_DECL mob_sunblade_dusk_priestAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 25, true, me->getVictim()->GetGUID()))
                 AddSpellToCast(target, SPELL_FEAR);
-            Fear = urand(6000, 30000);
+            Fear = urand(6000, 18000);
         }
         else
             Fear -= diff;
@@ -398,8 +383,9 @@ struct TRINITY_DLL_DECL mob_sunblade_dusk_priestAI : public ScriptedAI
 
         if(MindFlay < diff)
         {
-            AddSpellToCast(SPELL_MIND_FLAY, CAST_TANK);
-            MindFlay = urand(9000, 18000);
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true))
+                AddSpellToCast(target, SPELL_MIND_FLAY, false, true);
+            MindFlay = urand(9000, 12000);
         }
         else
             MindFlay -= diff;
@@ -537,7 +523,7 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
                 DoYell(SCOUT_YELL, 0, who);
                 float x, y, z;
                 me->GetMotionMaster()->Clear();
-                Protector->GetNearPoint(Protector, x, y, z, 0, urand(15, 25), Protector->GetAngle(me));
+                Protector->GetNearPoint(Protector, x, y, z, 0, urand(10, 20), Protector->GetAngle(me));
                 Protector->UpdateAllowedPositionZ(x, y, z);
                 me->SetWalk(false);
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
@@ -671,7 +657,7 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
         if(Shoot < diff)
         {
             AddSpellToCast(SPELL_SHOOT, CAST_TANK);
-            Shoot = urand(3000, 6000);
+            Shoot = urand(2500, 4000);
         }
         else
             Shoot -= diff;
