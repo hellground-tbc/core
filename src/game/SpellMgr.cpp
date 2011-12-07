@@ -3028,7 +3028,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = 1;
             break;
         case 37370: // Kelidan the breaker - vortex
-            spellInfo->EffectMiscValue[0] /= 10;
+            spellInfo->EffectMiscValue[0] /= 2;
             break;
         default:
             break;

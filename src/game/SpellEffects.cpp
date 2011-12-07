@@ -5795,6 +5795,16 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         }
+        // Gruul's Ground Slam
+        case 33525:
+        {
+            if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            // knock back for random distance with random angle
+            unitTarget->KnockBack(frand(0.0f, 2*M_PI), frand(2.0f, 40.0f), 15.0f);
+            break;
+        }
         // Gruul's shatter
         case 33654:
         {
@@ -5809,7 +5819,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (unitTarget->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            unitTarget->CastSpell(unitTarget,33671,true,0,0,m_caster->GetGUID());
+            unitTarget->CastSpell(unitTarget, 33671, true, 0, 0, m_caster->GetGUID());
             break;
         }
         case 41055:                                 // Copy Weapon

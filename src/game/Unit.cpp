@@ -12847,9 +12847,15 @@ void Unit::ApplyMeleeAPAttackerBonus(int32 value, bool apply)
     m_meleeAPAttackerBonus += apply ? value : -value;
 }
 
-void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpeed)
+void Unit::KnockBackFrom(Unit* target, float horizontalSpeed, float verticalSpeed)
 {
     float angle = this == target ? GetOrientation() + M_PI : target->GetAngle(this);
+
+    KnockBack(angle, horizontalSpeed, verticalSpeed)
+}
+
+void Unit::KnockBack(float angle, float horizontalSpeed, float verticalSpeed)
+{
     float vsin = sin(angle);
     float vcos = cos(angle);
 
@@ -12861,7 +12867,7 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
         data << uint32(0);                                  // Sequence
         data << float(vcos);                                // x direction
         data << float(vsin);                                // y direction
-        data << float(horizintalSpeed);                     // Horizontal speed
+        data << float(horizontalSpeed);                     // Horizontal speed
         data << float(-verticalSpeed);                      // Z Movement speed (vertical)
         ((Player*)this)->GetSession()->SendPacket(&data);
 
@@ -12869,7 +12875,7 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
     }
     else
     {
-        float dis = horizintalSpeed;
+        float dis = horizontalSpeed;
 
         float ox, oy, oz;
         GetPosition(ox, oy, oz);

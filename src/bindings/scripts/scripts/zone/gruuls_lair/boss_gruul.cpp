@@ -35,68 +35,64 @@ EndScriptData */
 #define SAY_SLAY3                   -1565017
 #define SAY_DEATH                   -1565018
 #define EMOTE_GROW                  -1565019
+#define EMOTE_SHATTER               -1565020
 
 /* Spells */
-#define SPELL_GROWTH              36300
-#define SPELL_CAVE_IN             36240
-#define SPELL_GROUND_SLAM         33525                     // AoE Ground Slam applying Ground Slam to everyone with a script effect (most likely the knock back, we can code it to a set knockback)
-#define SPELL_REVERBERATION       36297                     //AoE Silence
-#define SPELL_SHATTER             33654
-#define SPELL_KNOCK_BACK2         10689
-#define SPELL_KNOCK_BACK          40191                     //Knockback spell until correct implementation is made
+#define SPELL_GROWTH                36300
+#define SPELL_CAVE_IN               36240
+#define SPELL_GROUND_SLAM           33525                   // AoE Ground Slam applying Ground Slam to everyone with a script effect (most likely the knock back, we can code it to a set knockback)
+#define SPELL_REVERBERATION         36297                   // AoE Silence
+#define SPELL_SHATTER               33654
 #define SPELL_SHATTER_EFFECT        33671
 #define SPELL_HURTFUL_STRIKE        33813
-#define SPELL_STONED                33652                   //Spell is self cast
-#define SPELL_GRONN_LORDS_GRASP     33572                   //Triggered by Ground Slam
+#define SPELL_STONED                33652                   // Spell is self cast -> linked on ground slam fade
+#define SPELL_GRONN_LORDS_GRASP     33572                   // Triggered by Ground Slam
 
 struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 {
     boss_gruulAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        pInstance = c->GetInstanceData();
+        c->GetPosition(wLoc);
     }
 
     ScriptedInstance *pInstance;
 
+    WorldLocation wLoc;
+
     uint32 Growth_Timer;
     uint32 CaveIn_Timer;
     uint32 GroundSlamTimer;
-    uint32 GroundSlamStage;
+    uint32 ShatterTimer;
     uint32 PerformingGroundSlam;
     uint32 HurtfulStrike_Timer;
     uint32 Reverberation_Timer;
-    uint32 Combat_Timer;
+    uint32 Check_Timer;
 
     void Reset()
     {
-        Growth_Timer= 30000;
-        CaveIn_Timer= 40000;
-        GroundSlamTimer= 35000;
-        GroundSlamStage= 0;
-        PerformingGroundSlam= false;
-        HurtfulStrike_Timer= 8000;
-        Reverberation_Timer= 60000+45000;
-        Combat_Timer= 5000;
+        Growth_Timer = 30000;
+        CaveIn_Timer = 40000;
+        GroundSlamTimer = 35000;
+        ShatterTimer = 0;
+        HurtfulStrike_Timer = 8000;
+        Reverberation_Timer = 105000;
+        Combat_Timer = 3000;
 
-        if(pInstance)
-            pInstance->SetData(DATA_GRUULEVENT, NOT_STARTED);
+        pInstance->SetData(DATA_GRUULEVENT, NOT_STARTED);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
-
-        if(pInstance)
-            pInstance->SetData(DATA_GRUULEVENT, DONE);
+        pInstance->SetData(DATA_GRUULEVENT, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
-
-        if(pInstance)
-            pInstance->SetData(DATA_GRUULEVENT, IN_PROGRESS);
+        pInstance->SetData(DATA_GRUULEVENT, IN_PROGRESS);
     }
 
     void KilledUnit()
@@ -107,121 +103,61 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if(!UpdateVictim())
+        if (!UpdateVictim())
             return;
 
-        if(Combat_Timer < diff)
+        if (Check_Timer < diff)
         {
+            if (!m_creature->IsWithinDistInMap(wloc, 74.0f))
+            {
+               EnterEvadeMode();
+               return;
+            }
+
             DoZoneInCombat();
-            Combat_Timer= 5000;
+            m_creature->SetSpeed(MOVE_RUN, 2.0f);
+            Check_Timer= 3000;
         }
         else
-            Combat_Timer -= diff;
+            Check_Timer -= diff;
 
         // Growth
         // Gruul can cast this spell up to 30 times
-        if(Growth_Timer < diff)
+        if (Growth_Timer < diff)
         {
-            DoCast(m_creature,SPELL_GROWTH);
+            AddSpellToCast(m_creature, SPELL_GROWTH);
             DoScriptText(EMOTE_GROW, m_creature);
             Growth_Timer = 30000;
         }
         else
             Growth_Timer -= diff;
 
-        if(PerformingGroundSlam)
+        if (ShatterTimer)
         {
-            if(GroundSlamTimer < diff)
+            if (ShatterTimer <= diff)
             {
-                switch(GroundSlamStage)
+                m_creature->GetMotionMaster()->Clear();
+
+                Unit *victim = m_creature->getVictim();
+                if (victim)
                 {
-                    case 0:
-                    {
-                        //Begin the whole ordeal
-                        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-
-                        std::vector<Unit*> knockback_targets;
-
-                        //First limit the list to only players
-                        for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
-                        {
-                            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-
-                            if(target && target->GetTypeId() == TYPEID_PLAYER)
-                                knockback_targets.push_back(target);
-                        }
-
-                        //Now to totally disoriend those players
-                        for(std::vector<Unit*>::iterator itr = knockback_targets.begin(); itr!= knockback_targets.end(); ++itr)
-                        {
-                            Unit *target = *itr;
-                            Unit *target2 = *(knockback_targets.begin() + rand()%knockback_targets.size());
-
-                            if(target && target2)
-                                target->CastSpell(target, RAND(SPELL_KNOCK_BACK, SPELL_KNOCK_BACK2), true, NULL, NULL, m_creature->GetGUID());
-                        }
-
-                        GroundSlamTimer = 7000;
-                     break;
-                    }
-
-                    case 1:
-                    {
-                        //Players are going to get stoned
-                        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-
-                        for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
-                        {
-                            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-
-                            if(target)
-                            {
-                                target->RemoveAurasDueToSpell(SPELL_GRONN_LORDS_GRASP);
-                                target->CastSpell(target, SPELL_STONED, true, NULL, NULL, m_creature->GetGUID());
-                            }
-                        }
-
-                        GroundSlamTimer = 5000;
-
-                     break;
-                    }
-
-                    case 2:
-                    {
-                        //The dummy shatter spell is cast
-                        DoCast(m_creature, SPELL_SHATTER);
-
-                        GroundSlamTimer = 1000;
-
-                     break;
-                    }
-
-                    case 3:
-                    {
-                        m_creature->GetMotionMaster()->Clear();
-
-                        Unit *victim = m_creature->getVictim();
-                        if(victim)
-                        {
-                            m_creature->GetMotionMaster()->MoveChase(victim);
-                            m_creature->SetSelection(victim->GetGUID());
-                        }
-
-                        PerformingGroundSlam = false;
-
-                        GroundSlamTimer =120000;
-                        HurtfulStrike_Timer= 8000;
-                        if(Reverberation_Timer < 10000)     //Give a little time to the players to undo the damage from shatter
-                            Reverberation_Timer += 10000;
-
-                     break;
-                    }
+                    m_creature->GetMotionMaster()->MoveChase(victim);
+                    m_creature->SetSelection(victim->GetGUID());
                 }
 
-                GroundSlamStage++;
+                GroundSlamTimer = urand();
+                HurtfulStrike_Timer = 8000;
+                if (Reverberation_Timer < 10000)     //Give a little time to the players to undo the damage from shatter
+                    Reverberation_Timer += 10000;
+
+                ShatterTimer = 0;
+                //The dummy shatter spell is cast
+                ForceSpellCastWithScriptText(SPELL_SHATTER, CAST_NULL, RAND(SAY_SHATTER1, SAY_SHATTER2), INTERRUPT_AND_CAST_INSTANTLY);
             }
             else
-                GroundSlamTimer-=diff;
+                ShatterTimer -= diff;
+
+            CastNextSpellIfAnyAndReady();
         }
         else
         {
@@ -229,12 +165,12 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             if (HurtfulStrike_Timer < diff)
             {
                 Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_TOPAGGRO,1,GetSpellMaxRange(SPELL_HURTFUL_STRIKE), true);
+                target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, GetSpellMaxRange(SPELL_HURTFUL_STRIKE), true);
 
-                if(target)
-                    DoCast(target,SPELL_HURTFUL_STRIKE);
+                if (target)
+                    AddSpellToCast(target, SPELL_HURTFUL_STRIKE);
                 else
-                    DoCast(m_creature->getVictim(),SPELL_HURTFUL_STRIKE);
+                    AddSpellToCast(m_creature->getVictim(), SPELL_HURTFUL_STRIKE);
 
                 HurtfulStrike_Timer= 8000;
             }
@@ -242,19 +178,19 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 HurtfulStrike_Timer -= diff;
 
             // Reverberation
-            if(Reverberation_Timer < diff)
+            if (Reverberation_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_REVERBERATION, true);
+                AddSpellToCast(m_creature->getVictim(), SPELL_REVERBERATION, true);
                 Reverberation_Timer = 30000;
             }
             else
                 Reverberation_Timer -= diff;
 
             // Cave In
-            if(CaveIn_Timer < diff)
+            if (CaveIn_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, GetSpellMaxRange(SPELL_CAVE_IN), true))
-                    DoCast(target,SPELL_CAVE_IN);
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CAVE_IN), true))
+                    AddSpellToCast(target, SPELL_CAVE_IN);
 
                 CaveIn_Timer = 20000;
             }
@@ -262,20 +198,21 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 CaveIn_Timer -= diff;
 
             // Ground Slam, Gronn Lord's Grasp, Stoned, Shatter
-            if(GroundSlamTimer < diff)
+            if (GroundSlamTimer < diff)
             {
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveIdle();
                 m_creature->SetSelection(0);
 
-                PerformingGroundSlam= true;
-                GroundSlamTimer = 0;
-                GroundSlamStage = 0;
-                DoCast(m_creature->getVictim(), SPELL_GROUND_SLAM);
+                ShatterTimer = 15000;
+                GroundSlamTimer = urand(60000, 70000) + ShatterTimer;
+                DoScriptText(EMOTE_SHATTER, me);
+                ForceSpellCastWithScriptText(SPELL_GROUND_SLAM, CAST_NULL, RAND(SAY_SLAM1, SAY_SLAM2));
             }
             else
                 GroundSlamTimer -=diff;
 
+            CastNextSpellIfAnyAndReady();
             DoMeleeAttackIfReady();
         }
     }
@@ -289,9 +226,8 @@ CreatureAI* GetAI_boss_gruul(Creature *_Creature)
 void AddSC_boss_gruul()
 {
     Script *newscript;
-    newscript = new Script;
-    newscript->Name="boss_gruul";
-    newscript->GetAI = &GetAI_boss_gruul;
+    newscript           = new Script;
+    newscript->Name     = "boss_gruul";
+    newscript->GetAI    = &GetAI_boss_gruul;
     newscript->RegisterSelf();
 }
-
