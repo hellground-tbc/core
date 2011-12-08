@@ -7932,6 +7932,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 DoneTotalMod = 1.0f;
             }
+            else if (spellProto->Id == 46579) // Deathfrost
+            {
+                CastingTime = 0;
+            }
             break;
         case SPELLFAMILY_MAGE:
             // Ignite - do not modify, it is (8*Rank)% damage of procing Spell
