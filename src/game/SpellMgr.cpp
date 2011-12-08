@@ -2740,6 +2740,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 6774:                     // Slice'n'Dice
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO; // Do not put caster in combat after use
             break;
+        /* SHAMAN CUSTOM ATTRIBUTES */
+        case 2895:                      // Wrath of Air Totem - disallow weird stacking
+            spellInfo->EffectImplicitTargetA[0] = spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER; 
+            spellInfo->EffectImplicitTargetB[0] = spellInfo->EffectImplicitTargetB[1] = 0;
+            break;
         // Triggered spells that should be delayed
         case 20272:                     // Illumination
         case 32848:                     // Mana Restore
