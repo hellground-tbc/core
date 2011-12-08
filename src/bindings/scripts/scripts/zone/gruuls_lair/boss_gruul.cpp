@@ -179,7 +179,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             // Reverberation
             if (Reverberation_Timer < diff)
             {
-                AddSpellToCast(m_creature->getVictim(), SPELL_REVERBERATION, true);
+                AddSpellToCast(SPELL_REVERBERATION, CAST_NULL);
                 Reverberation_Timer = 30000;
             }
             else
@@ -204,12 +204,12 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 m_creature->SetSelection(0);
 
                 ShatterTimer = 15000;
-                GroundSlamTimer = urand(60000, 70000) + ShatterTimer;
+                GroundSlamTimer = urand(60000, 65000);
                 DoScriptText(EMOTE_SHATTER, me);
                 ForceSpellCastWithScriptText(SPELL_GROUND_SLAM, CAST_NULL, RAND(SAY_SLAM1, SAY_SLAM2));
             }
             else
-                GroundSlamTimer -=diff;
+                GroundSlamTimer -= diff;
 
             CastNextSpellIfAnyAndReady();
             DoMeleeAttackIfReady();
