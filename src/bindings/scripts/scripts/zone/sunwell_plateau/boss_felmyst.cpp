@@ -194,8 +194,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     uint32 OutroTimer;
     uint64 KalecgosGUID;
 
-    bool falling;
-
     void Reset()
     {
         Phase = PHASE_NULL;
@@ -210,7 +208,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         side = 0;
         path = 0;
         counter = 0;
-        falling = false;
 
         m_creature->CastSpell(m_creature, SPELL_SUNWELL_RADIANCE, true); // temporary, will be moved to DB
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
@@ -317,17 +314,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void DamageTaken(Unit*, uint32 &damage)
     {
-        if(Phase != PHASE_GROUND && damage >= m_creature->GetHealth())
-        {
+        if(Phase != PHASE_GROUND && ((uint32(me->GetHealth()*100/me->GetMaxHealth()) <= 1)))
             damage = 0;
-            if(!falling)
-            {
-                me->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                me->SetSpeed(MOVE_FLIGHT, 10);
-                me->GetMotionMaster()->MovePoint(10, FallCoord[side][0], FallCoord[side][1], FallCoord[side][2]);
-                falling = true;
-            }
-        }
     }
 
     void EnterPhase(PhaseFelmyst NextPhase)
@@ -335,10 +323,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         switch(NextPhase)
         {
         case PHASE_GROUND:
-            Timer[EVENT_CLEAVE] = 5000 + rand()%5 * 1000;
-            Timer[EVENT_CORROSION] = 10000 + rand()%10 * 1000;
-            Timer[EVENT_GAS_NOVA] = 15000 + rand()%5 * 1000;
-            Timer[EVENT_ENCAPSULATE] = 20000 + rand()%5 * 1000;
+            Timer[EVENT_CLEAVE] = urand(5000, 10000);
+            Timer[EVENT_CORROSION] = urand(10000, 20000);
+            Timer[EVENT_GAS_NOVA] = urand(15000, 20000);
+            Timer[EVENT_ENCAPSULATE] = urand(20000, 30000);
             Timer[EVENT_FLIGHT] = 60000;
             Timer[EVENT_CHECK] = 1000;
             break;
@@ -392,7 +380,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 AttackStart(m_creature->getVictim());
                 break;
         }
-
         IntroPhase++;
     }
 
@@ -413,7 +400,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 OutroTimer = 0;
                 break;
         }
-
         OutroPhase++;
     }
 
@@ -466,11 +452,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 case 6:
                     me->setHover(true);
                     IntroTimer = 8000;
-                    break;
-                case 10: // on falling when killed in phase 2
-                    me->SendMonsterMove(FallCoord[side][0], FallCoord[side][1], FallCoord[side][2], 0);
-                    me->Kill(me);
-                    break;
                 default:
                     break;
             }
@@ -592,6 +573,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 {
                     AddSpellToCast(target, SPELL_ENCAPSULATE_CHANNEL, false, true);
                     Timer[EVENT_ENCAPSULATE] = urand(25000, 35000);
+                    if(Timer[EVENT_FLIGHT] < 7000)
+                        Timer[EVENT_FLIGHT] = 7000;
                 }
                 break;
             case EVENT_FLIGHT:

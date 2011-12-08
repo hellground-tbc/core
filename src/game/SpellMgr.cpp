@@ -1098,6 +1098,8 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
         case 40175:     // Teron: Spirit Chains
         case 41483:     // High Nethermancer Zerevor: Arcane Bolt
         case 44335:     // Vexallus: Energy Feedback
+        case 47002:     // Felmyst: Noxious Fumes
+        case 45866:     // Felmyst: Corrosion
             return false;
     }
 
