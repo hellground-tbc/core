@@ -2923,7 +2923,7 @@ void Spell::finish(bool ok)
         ((Player*)m_caster)->RemoveSpellMods(this);
 
     // Okay to remove extra attacks
-    if (IsSpellHaveEffect(m_spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+    if (m_spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
         m_caster->m_extraAttacks = 0;
 
     // Heal caster for all health leech from all targets

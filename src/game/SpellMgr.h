@@ -183,14 +183,6 @@ inline float GetSpellMaxRange(uint32 id)
     return GetSpellMaxRange(spellInfo);
 }
 
-inline bool IsSpellHaveEffect(SpellEntry const *spellInfo, SpellEffects effect)
-{
-    for (int i= 0; i < 3; ++i)
-        if (spellInfo->Effect[i]==effect)
-            return true;
-    return false;
-}
-
 //bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
 
 inline bool IsSealSpell(SpellEntry const *spellInfo)
@@ -223,7 +215,7 @@ inline bool IsPassiveSpellStackableWithRanks(SpellEntry const* spellProto)
     if (!IsPassiveSpell(spellProto))
         return false;
 
-    return !IsSpellHaveEffect(spellProto,SPELL_EFFECT_APPLY_AURA);
+    return !spellProto->HasEffect(SPELL_EFFECT_APPLY_AURA);
 }
 
 inline bool IsDeathOnlySpell(SpellEntry const *spellInfo)
@@ -817,6 +809,8 @@ class TRINITY_DLL_SPEC SpellMgr
         bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
         bool IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
         bool IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
+
+        bool IsSplashBuffAura(SpellEntry const* spellInfo);
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 

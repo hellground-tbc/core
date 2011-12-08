@@ -12768,7 +12768,7 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
     }
 }
 
-void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
+void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry const *spellInfo)
 {
     Unit *owner = GetCharmerOrOwnerOrSelf();
     Group *pGroup = NULL;
@@ -12788,15 +12788,17 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
             {
                 if (Target->isAlive() && IsWithinDistInMap(Target, radius))
                 {
-                    if (IsWithinLOSInMap(Target))
+                    if (spellInfo && spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS || IsWithinLOSInMap(Target))
                         TagUnitMap.push_back(Target);
                 }
 
                 if (Pet* pet = Target->GetPet())
                 {
                     if (pet->isAlive() && IsWithinDistInMap(pet, radius))
-                        if (IsWithinLOSInMap(pet))
+                    {
+                        if (spellInfo && spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS || IsWithinLOSInMap(pet))
                             TagUnitMap.push_back(pet);
+                    }
                 }
             }
         }

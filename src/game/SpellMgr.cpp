@@ -1958,6 +1958,16 @@ bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
     return IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
 }
 
+bool SpellMgr::IsSplashBuffAura(SpellEntry const* spellInfo)
+{
+    for (uint8 i = 0; i < 3; i++)
+    {
+        if (IsPositiveEffect(spellInfo->Id, i) && spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
+           return true;
+    }
+    return false;
+}
+
 SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const
 {
     // ignore passive spells
