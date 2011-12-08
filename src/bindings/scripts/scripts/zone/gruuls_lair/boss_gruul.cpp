@@ -77,7 +77,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
         ShatterTimer = 0;
         HurtfulStrike_Timer = 8000;
         Reverberation_Timer = 105000;
-        Combat_Timer = 3000;
+        Check_Timer = 3000;
 
         pInstance->SetData(DATA_GRUULEVENT, NOT_STARTED);
     }
@@ -108,7 +108,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
         if (Check_Timer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(wloc, 74.0f))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 74.0f))
             {
                EnterEvadeMode();
                return;
@@ -145,7 +145,6 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                     m_creature->SetSelection(victim->GetGUID());
                 }
 
-                GroundSlamTimer = urand();
                 HurtfulStrike_Timer = 8000;
                 if (Reverberation_Timer < 10000)     //Give a little time to the players to undo the damage from shatter
                     Reverberation_Timer += 10000;

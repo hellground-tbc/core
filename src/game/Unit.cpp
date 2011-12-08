@@ -10771,7 +10771,7 @@ void CharmInfo::InitPossessCreateSpells()
             else
             {
                 // add spell only if there are cooldown or global cooldown // TODO: find proper solution
-                const SpellEntry * tmpSpellEntry = sSpellStore->LookupEntry(spellid);
+                const SpellEntry * tmpSpellEntry = sSpellStore.LookupEntry(spellid);
                 if (tmpSpellEntry && (tmpSpellEntry->RecoveryTime || tmpSpellEntry->StartRecoveryTime))
                     AddSpellToActionBar(0, spellid, ACT_CAST);
             }
@@ -12858,7 +12858,7 @@ void Unit::KnockBackFrom(Unit* target, float horizontalSpeed, float verticalSpee
 {
     float angle = this == target ? GetOrientation() + M_PI : target->GetAngle(this);
 
-    KnockBack(angle, horizontalSpeed, verticalSpeed)
+    KnockBack(angle, horizontalSpeed, verticalSpeed);
 }
 
 void Unit::KnockBack(float angle, float horizontalSpeed, float verticalSpeed)

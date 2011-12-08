@@ -326,7 +326,7 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        if (Creature *Maulgar = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_MAULGAR));)
+        if (Creature *Maulgar = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_MAULGAR)))
             ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
 
         if (CheckAllBossDied(pInstance, m_creature))
