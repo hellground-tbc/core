@@ -602,7 +602,7 @@ void Aura::Update(uint32 diff)
         }
     }
 
-    if (m_heartbeatTimer && m_heartbeatTimer > m_duration)
+    if (m_heartbeatTimer && m_heartbeatTimer > (m_maxduration - m_duration))
     {
         m_heartbeatTimer *= 2;
         if (Unit *caster = GetCaster())
