@@ -10769,7 +10769,12 @@ void CharmInfo::InitPossessCreateSpells()
             if (IsPassiveSpell(spellid))
                 m_unit->CastSpell(m_unit, spellid, true);
             else
-                AddSpellToActionBar(0, spellid, ACT_CAST);
+            {
+                // add spell only if there are cooldown or global cooldown // TODO: find proper solution
+                const SpellEntry * tmpSpellEntry = sSpellStore->LookupEntry(spellid);
+                if (tmpSpellEntry && (tmpSpellEntry->RecoveryTime || tmpSpellEntry->StartRecoveryTime))
+                    AddSpellToActionBar(0, spellid, ACT_CAST);
+            }
         }
     }
 }
@@ -10804,7 +10809,7 @@ void CharmInfo::InitCharmCreateSpells()
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
 
             if (!spellInfo) onlyselfcast = false;
-            for (uint32 i = 0;i<3 && onlyselfcast;++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
+            for (uint32 i = 0; i < 3 && onlyselfcast; ++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
             {
                 if (spellInfo->EffectImplicitTargetA[i] != TARGET_UNIT_CASTER && spellInfo->EffectImplicitTargetA[i] != 0)
                     onlyselfcast = false;
@@ -10815,7 +10820,9 @@ void CharmInfo::InitCharmCreateSpells()
             else
                 newstate = ACT_CAST;
 
-            AddSpellToActionBar(0, spellId, newstate);
+            // add spell only if there are cooldown or global cooldown // TODO: find proper solution
+            if (spellInfo && (spellInfo->RecoveryTime || spellInfo->StartRecoveryTime))
+                AddSpellToActionBar(0, spellId, newstate);
         }
     }
 }
