@@ -4475,63 +4475,7 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
     if (!m_target)
         return;
 
-    //proper flags unknown, uncomment this when verified
-    /*
-    miscVal i spelle którym są przypisane + immune wg TC2
-
-     TC2       S F ? d D T ? ? C t R
-    96      -  0 0 0 0 1 1 0 0 0 0 0  - Free Friend - niby disspeluje incapacitate
-    679     -  0 1 0 1 0 1 0 0 1 1 1  - MC
-    817     -  0 1 1 0 0 1 1 0 0 0 1  - Blue Dragon Immunity
-    878     -  0 1 1 0 1 1 0 1 1 1 0  - Whirlwind, Fog of Corruption
-    1557    -  1 1 0 0 0 0 1 0 1 0 1  - Starling Roar - niby disspeluje snare, cc, stun, (mc nie)
-    1615    -  1 1 0 0 1 0 0 1 1 1 1  - Incite Frenzy
-    1676    -  1 1 0 1 0 0 0 1 1 1 1  - Red Riding Hood
-    1694    -  1 1 0 1 0 0 1 1 1 1 0  - Fixated
-
-    R - root
-    t - transform
-    C - confuse
-    T - taunt
-    D - decrese speed
-    d - disarm
-    F - fear
-    S - stun
-    ? - unknown
-
-
-    std::list <AuraType> immunity_list;
-
-    if (GetMiscValue() & (1<<10))
-        immunity_list.push_back(SPELL_AURA_MOD_STUN);
-    if (GetMiscValue() & (1<<7))
-        immunity_list.push_back(SPELL_AURA_MOD_DISARM);
-    if (GetMiscValue() & (1<<1))
-        immunity_list.push_back(SPELL_AURA_TRANSFORM);
-
-    // These flag can be recognized wrong:
-    if (GetMiscValue() & (1<<5))
-        immunity_list.push_back(SPELL_AURA_MOD_TAUNT);
-    if (GetMiscValue() & (1<<6))
-        immunity_list.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
-    if (GetMiscValue() & (1<<0))
-        immunity_list.push_back(SPELL_AURA_MOD_ROOT);
-    if (GetMiscValue() & (1<<2))
-        immunity_list.push_back(SPELL_AURA_MOD_CONFUSE);
-    if (GetMiscValue() & (1<<9))
-        immunity_list.push_back(SPELL_AURA_MOD_FEAR);
-
-    if (apply)
-    {
-        for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
-            m_target->RemoveAurasByType(*iter);
-    }
-
-    for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
-    {
-        m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,*iter, apply);
-    }
-    */
+    // first, some custom verified values
     std::list<uint32> immunity;
 
     if (GetMiscValue() & ((1<<5) | (1<<6)))  //workaround for spell 40081
@@ -4587,6 +4531,69 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
     {
         m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,SPELL_AURA_MOD_TAUNT, apply);
         m_target->ApplySpellImmune(GetId(),IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, apply);
+    }
+
+    /*
+    miscVal i spelle którym są przypisane + immune wg TC2
+
+     TC2       S F ? d D T ? ? C t R
+    96      -  0 0 0 0 1 1 0 0 0 0 0  - Free Friend - niby disspeluje incapacitate
+    679     -  0 1 0 1 0 1 0 0 1 1 1  - MC
+    817     -  0 1 1 0 0 1 1 0 0 0 1  - Blue Dragon Immunity
+    878     -  0 1 1 0 1 1 0 1 1 1 0  - Whirlwind, Fog of Corruption
+    1557    -  1 1 0 0 0 0 1 0 1 0 1  - Starling Roar - niby disspeluje snare, cc, stun, (mc nie)
+    1615    -  1 1 0 0 1 0 0 1 1 1 1  - Incite Frenzy
+    1676    -  1 1 0 1 0 0 0 1 1 1 1  - Red Riding Hood
+    1694    -  1 1 0 1 0 0 1 1 1 1 0  - Fixated
+
+    R - root
+    t - transform
+    C - confuse
+    T - taunt
+    D - decrese speed
+    d - disarm
+    F - fear
+    S - stun
+    ? - unknown
+    */
+
+    //proper flags unknown, should be verified when more data screened
+    std::list <AuraType> immunity_list;
+
+    if (GetMiscValue() & (1<<10))
+        immunity_list.push_back(SPELL_AURA_MOD_STUN);
+    if (GetMiscValue() & (1<<7))
+        immunity_list.push_back(SPELL_AURA_MOD_DISARM);
+    if (GetMiscValue() & (1<<1))
+        immunity_list.push_back(SPELL_AURA_TRANSFORM);
+
+    // These flag can be recognized wrong:
+    if (GetMiscValue() & (1<<5))
+        immunity_list.push_back(SPELL_AURA_MOD_TAUNT);
+    if (GetMiscValue() & (1<<6))
+        immunity_list.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
+    if (GetMiscValue() & (1<<0))
+        immunity_list.push_back(SPELL_AURA_MOD_ROOT);
+    if (GetMiscValue() & (1<<2))
+        immunity_list.push_back(SPELL_AURA_MOD_CONFUSE);
+    if (GetMiscValue() & (1<<9))
+        immunity_list.push_back(SPELL_AURA_MOD_FEAR);
+
+    // Totally guessed
+    if (GetMiscValue() & (1<<3))
+        immunity_list.push_back(SPELL_AURA_MOD_POSSESS);
+    if (GetMiscValue() & (1<<8))
+        immunity_list.push_back(SPELL_AURA_MOD_SILENCE);
+
+    if (apply)
+    {
+        for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+            m_target->RemoveAurasByType(*iter);
+    }
+
+    for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+    {
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,*iter, apply);
     }
 }
 

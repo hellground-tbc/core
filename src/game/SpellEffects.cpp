@@ -5460,10 +5460,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Fog of Corruption (Felmyst)
         case 45714:
         {
-            if(!unitTarget->HasAura(45717, 0))
+            // unitTarget is here Felmyst, and affected player is a caster
+            if(!m_caster->HasAura(45717))
             {
-                m_caster->CastSpell(unitTarget, 46411, true);
-                unitTarget->CastSpell(m_caster, 45717, true); // odd but working
+                m_caster->CastSpell(m_caster, 46411, true); // self-stun for a few sec
+                uniitTarget->CastSpell(m_caster, 45717, true);
             }
             break;
         }
