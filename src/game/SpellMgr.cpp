@@ -2817,6 +2817,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41172: // Rapid Shot
         case 40834: // Agonizing Flames
         case 45032: // Curse of Boundless Agony
+        case 42357: // Axe Throw, triggered by 42359
             spellInfo->MaxAffectedTargets = 1;
             break;
         case 45034:
