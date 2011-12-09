@@ -4951,14 +4951,17 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (!target)
                         return false;
 
+                    triggered_spell_id = 12723;
+
                     if (procSpell)
                     {
                         // Execute will transfer normal swing damage amount if 2nd target HP is above 20%
                         if (procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
                         {
-                            MeleeDamageLog damageInfo(this, pVictim, GetMeleeDamageSchoolMask(), BASE_ATTACK);
-                            CalculateMeleeDamage(&damageInfo);
-                            damage = damageInfo.damage;
+                            damage = CalculateDamage(BASE_ATTACK, false);
+                            MeleeDamageBonus(target, &damage, BASE_ATTACK);
+                            basepoints0 = damage;
+                            break;
                         }
 
                         // Limit WhirlWind to hit one target applying 1s cooldown
@@ -4990,7 +4993,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     damage = uint32(damage / (1.0f - mitigation));
 
                     basepoints0 = damage;
-                    triggered_spell_id = 12723;
                     break;
                 }
                 // Unstable Power
@@ -8837,19 +8839,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
 
     if (APbonus!=0)                                         // Can be negative
     {
-        bool normalized = false;
-        if (spellProto)
-        {
-            for (uint8 i = 0; i<3;i++)
-            {
-                if (spellProto->Effect[i] == SPELL_EFFECT_NORMALIZED_WEAPON_DMG)
-                {
-                    normalized = true;
-                    break;
-                }
-            }
-        }
-
+        bool normalized = spellProto ? spellProto->HasEffect(SPELL_EFFECT_NORMALIZED_WEAPON_DMG) : false;
         DoneFlatBenefit += int32(APbonus/14.0f * GetAPMultiplier(attType,normalized));
     }
 
