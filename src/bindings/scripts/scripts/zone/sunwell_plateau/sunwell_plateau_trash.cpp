@@ -94,8 +94,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
 
         if(FrostNova < diff)
         {
-            if(InMeleeRange())
-                AddSpellToCast(SPELL_FROST_NOVA, CAST_SELF);
+            AddSpellToCast(SPELL_FROST_NOVA, CAST_SELF);
             FrostNova = urand(6000, 16000);
         }
         else
