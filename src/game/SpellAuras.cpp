@@ -3269,10 +3269,12 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
     {
         // remove other shapeshift before applying a new one
         if (m_target->m_ShapeShiftFormSpellId)
+        {
             m_target->RemoveAurasDueToSpell(m_target->m_ShapeShiftFormSpellId,this);
+            m_target->AddToClientUpdateList();
+        }
 
         m_target->SetByteValue(UNIT_FIELD_BYTES_2, 3, form);
-        m_target->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
 
         if (modelid > 0)
             m_target->SetDisplayId(modelid);
