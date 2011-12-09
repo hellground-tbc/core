@@ -132,6 +132,15 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
         else
             Growth_Timer -= diff;
 
+        // Reverberation - timer should expiring even if in ground slam mode
+        if (Reverberation_Timer < diff)
+        {
+            AddSpellToCast(SPELL_REVERBERATION, CAST_NULL);
+            Reverberation_Timer = 30000;
+        }
+        else
+            Reverberation_Timer -= diff;
+
         if (ShatterTimer)
         {
             if (ShatterTimer <= diff)
@@ -146,7 +155,9 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 }
 
                 HurtfulStrike_Timer = 8000;
-                if (Reverberation_Timer < 10000)     //Give a little time to the players to undo the damage from shatter
+
+                // is this true ? Oo
+                if (Reverberation_Timer < 10000)
                     Reverberation_Timer += 10000;
 
                 ShatterTimer = 0;
@@ -155,8 +166,6 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             }
             else
                 ShatterTimer -= diff;
-
-            CastNextSpellIfAnyAndReady();
         }
         else
         {
@@ -175,15 +184,6 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             }
             else
                 HurtfulStrike_Timer -= diff;
-
-            // Reverberation
-            if (Reverberation_Timer < diff)
-            {
-                AddSpellToCast(SPELL_REVERBERATION, CAST_NULL);
-                Reverberation_Timer = 30000;
-            }
-            else
-                Reverberation_Timer -= diff;
 
             // Cave In
             if (CaveIn_Timer < diff)
