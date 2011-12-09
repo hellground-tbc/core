@@ -1585,8 +1585,12 @@ void Unit::CalculateMeleeDamage(MeleeDamageLog *damageInfo)
             damageInfo->hitInfo |= HITINFO_ABSORB;
             damageInfo->procEx  |= PROC_EX_ABSORB;
         }
+        else
+            damageInfo->procEx |= PROC_EX_DIRECT_DAMAGE;
+
         if (damageInfo->resist)
             damageInfo->hitInfo |= HITINFO_RESIST;
+
         if (damageInfo->damage)
             damageInfo->procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
     }

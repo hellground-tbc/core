@@ -6866,6 +6866,11 @@ void Aura::PeriodicTick()
             if (damageInfo.damage)
                 procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
+            if (damageInfo.absorb)
+                procEx &= ~PROC_EX_DIRECT_DAMAGE;
+            else
+                procEx |= PROC_EX_DIRECT_DAMAGE;
+
             pCaster->DealDamage(&damageInfo, DOT, spellProto, true);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
             break;
