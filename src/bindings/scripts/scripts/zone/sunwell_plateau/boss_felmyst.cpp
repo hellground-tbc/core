@@ -32,7 +32,6 @@ enum Quotes
     YELL_TAKEOFF    =       -1580040,
     YELL_BERSERK    =       -1580041,
     YELL_DEATH      =       -1580042,
-    YELL_KALECGOS   =       -1580043, //after felmyst's death spawned and say this
     EMOTE_BREATH    =       -1811004
 };
 
@@ -187,12 +186,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     uint8 counter;
     uint32 FlightCount;
     uint32 BreathCount;
-
     uint32 IntroPhase;
     uint32 IntroTimer;
-    uint32 OutroPhase;
-    uint32 OutroTimer;
-    uint64 KalecgosGUID;
 
     void Reset()
     {
@@ -203,8 +198,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         FlightCount = 0;
         IntroPhase = 0;
         IntroTimer = 0;
-        OutroPhase = 0;
-        OutroTimer = 0;
         side = 0;
         path = 0;
         counter = 0;
@@ -224,9 +217,10 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         DoZoneInCombat();
         EnterPhase(PHASE_GROUND);
         Phase = PHASE_NULL; // not attack yet, but counters on
-        m_creature->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveIdle();
+        me->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
+        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->MoveIdle();
+        me->SetSpeed(MOVE_FLIGHT, 2);
         if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
         {
             float x, y, z;
@@ -298,18 +292,15 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             }
     }
 
-
     void JustSummoned(Creature *summon)
     {
         if(summon->GetEntry() == MOB_KALECGOS)
         {
             summon->setActive(true);
             summon->SetLevitate(true);
-            summon->SetSpeed(MOVE_FLIGHT, 1.4);
-            summon->SendMovementFlagUpdate();
+            summon->setHover(true);
+            summon->SetSpeed(MOVE_FLIGHT, 1.2);
             summon->GetMotionMaster()->MovePoint(50, 1471, 632, 37);
-            KalecgosGUID = summon->GetGUID();
-            OutroTimer = 20000;
         }
     }
 
@@ -382,26 +373,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
         }
         IntroPhase++;
-    }
-
-    void DoOutro()
-    {
-        Unit *Kalecgos = me->GetUnit(KalecgosGUID);
-        if(!Kalecgos)
-            return;
-
-        switch(OutroPhase)
-        {
-            case 0:
-                DoScriptText(YELL_KALECGOS, Kalecgos);
-                OutroTimer = 10000;
-                break;
-            case 1:
-                Kalecgos->GetMotionMaster()->MovePoint(60, 1768, 598, 173);
-                OutroTimer = 0;
-                break;
-        }
-        OutroPhase++;
     }
 
     void MovementInform(uint32 Type, uint32 Id)
@@ -607,14 +578,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 DoIntro();
             else
                 IntroTimer -= diff;
-        }
-
-        if(OutroTimer)
-        {
-            if(OutroTimer <= diff)
-                DoOutro();
-            else
-                OutroTimer -= diff;
         }
 
         if (!UpdateVictim())
