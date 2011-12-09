@@ -4814,10 +4814,15 @@ void Spell::EffectTaunt(uint32 /*i*/)
     // this effect use before aura Taunt apply for prevent taunt already attacking target
     // for spell as marked "non effective at already attacking target"
     if (!unitTarget->CanHaveThreatList()
-        || unitTarget->getVictim() == m_caster
-        || unitTarget->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
+        || unitTarget->getVictim() == m_caster)
     {
         SendCastResult(SPELL_FAILED_DONT_REPORT);
+        return;
+    }
+
+    if (unitTarget->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
+    {
+        SendCastResult(SPELL_FAILED_IMMUNE);
         return;
     }
 
