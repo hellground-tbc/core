@@ -70,8 +70,8 @@ struct TRINITY_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
     {
         ResetFlagTimer = 120000;
 
-        m_creature->setFaction(FACTION_CHICKEN);
-        m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+        me->setFaction(FACTION_CHICKEN);
+        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
     }
 
     void EnterCombat(Unit *who) {}
@@ -79,7 +79,7 @@ struct TRINITY_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         // Reset flags after a certain time has passed so that the next player has to start the 'event' again
-        if(m_creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
+        if(me->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
         {
             if(ResetFlagTimer < diff)
             {
@@ -165,16 +165,16 @@ struct TRINITY_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
     {
         active = true;
         can_iteract = 3500;
-        DoCast(m_creature,SPELL_BRAZIER,true);
-        DoCast(m_creature,SPELL_FIERY_AURA,false);
+        DoCast(me,SPELL_BRAZIER,true);
+        DoCast(me,SPELL_FIERY_AURA,false);
         float x, y, z;
-        m_creature->GetPosition(x,y,z);
-        m_creature->Relocate(x,y,z + 0.94f);
-        m_creature->SetLevitate(true);
-        m_creature->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
+        me->GetPosition(x,y,z);
+        me->Relocate(x,y,z + 0.94f);
+        me->SetLevitate(true);
+        me->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
         WorldPacket data;                       //send update position to client
-        m_creature->BuildHeartBeatMsg(&data);
-        m_creature->SendMessageToSet(&data,true);
+        me->BuildHeartBeatMsg(&data);
+        me->SendMessageToSet(&data,true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -185,7 +185,7 @@ struct TRINITY_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
             {
                 active = true;
                 can_iteract = 3500;
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
+                me->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
             }
             else
                 can_iteract -= diff;
@@ -366,7 +366,7 @@ struct TRINITY_DLL_DECL npc_doctorAI : public ScriptedAI
         PatientSavedCount = 0;
         PatientDiedCount = 0;
         Playerguid = 0;
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void BeginEvent(Player* player);
@@ -393,66 +393,66 @@ struct TRINITY_DLL_DECL npc_injured_patientAI : public ScriptedAI
 
         Coord = NULL;
         //no select
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         //no regen health
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
         //to make them lay with face down
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_DEAD);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_DEAD);
 
-        uint32 mobId = m_creature->GetEntry();
+        uint32 mobId = me->GetEntry();
 
         switch (mobId)
         {
             //lower max health
         case 12923:
         case 12938:                                     //Injured Soldier
-            m_creature->SetHealth(uint32(m_creature->GetMaxHealth()*.75));
+            me->SetHealth(uint32(me->GetMaxHealth()*.75));
             break;
         case 12924:
         case 12936:                                     //Badly injured Soldier
-            m_creature->SetHealth(uint32(m_creature->GetMaxHealth()*.50));
+            me->SetHealth(uint32(me->GetMaxHealth()*.50));
             break;
         case 12925:
         case 12937:                                     //Critically injured Soldier
-            m_creature->SetHealth(uint32(m_creature->GetMaxHealth()*.25));
+            me->SetHealth(uint32(me->GetMaxHealth()*.25));
             break;
         }
     }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
-        if (caster->GetTypeId() == TYPEID_PLAYER && m_creature->isAlive() && spell->Id == 20804)
+        if (caster->GetTypeId() == TYPEID_PLAYER && me->isAlive() && spell->Id == 20804)
         {
             if( (((Player*)caster)->GetQuestStatus(6624) == QUEST_STATUS_INCOMPLETE) || (((Player*)caster)->GetQuestStatus(6622) == QUEST_STATUS_INCOMPLETE))
             {
                 if(Doctorguid)
                 {
-                    Creature* Doctor = Unit::GetCreature((*m_creature), Doctorguid);
+                    Creature* Doctor = Unit::GetCreature((*me), Doctorguid);
                     if(Doctor)
-                        ((npc_doctorAI*)Doctor->AI())->PatientSaved(m_creature, ((Player*)caster), Coord);
+                        ((npc_doctorAI*)Doctor->AI())->PatientSaved(me, ((Player*)caster), Coord);
                 }
             }
             //make not selectable
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             //regen health
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
             //stand up
-            m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
+            me->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
             DoSay(SAY_DOC1,LANG_UNIVERSAL,NULL);
 
-            uint32 mobId = m_creature->GetEntry();
-            m_creature->SetWalk(false);
+            uint32 mobId = me->GetEntry();
+            me->SetWalk(false);
             switch (mobId)
             {
             case 12923:
             case 12924:
             case 12925:
-                m_creature->GetMotionMaster()->MovePoint(0, H_RUNTOX, H_RUNTOY, H_RUNTOZ);
+                me->GetMotionMaster()->MovePoint(0, H_RUNTOX, H_RUNTOY, H_RUNTOZ);
                 break;
             case 12936:
             case 12937:
             case 12938:
-                m_creature->GetMotionMaster()->MovePoint(0, A_RUNTOX, A_RUNTOY, A_RUNTOZ);
+                me->GetMotionMaster()->MovePoint(0, A_RUNTOX, A_RUNTOY, A_RUNTOZ);
                 break;
             }
         }
@@ -461,22 +461,22 @@ struct TRINITY_DLL_DECL npc_injured_patientAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (m_creature->isAlive() && m_creature->GetHealth() > 6)
+        if (me->isAlive() && me->GetHealth() > 6)
         {
             //lower HP on every world tick makes it a useful counter, not officlone though
-            m_creature->SetHealth(uint32(m_creature->GetHealth()-5) );
+            me->SetHealth(uint32(me->GetHealth()-5) );
         }
 
-        if (m_creature->isAlive() && m_creature->GetHealth() <= 6)
+        if (me->isAlive() && me->GetHealth() <= 6)
         {
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            m_creature->setDeathState(JUST_DIED);
-            m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, 32);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->setDeathState(JUST_DIED);
+            me->SetFlag(UNIT_DYNAMIC_FLAGS, 32);
 
             if(Doctorguid)
             {
-                Creature* Doctor = (Unit::GetCreature((*m_creature), Doctorguid));
+                Creature* Doctor = (Unit::GetCreature((*me), Doctorguid));
                 if(Doctor)
                     ((npc_doctorAI*)Doctor->AI())->PatientDied(Coord);
             }
@@ -502,7 +502,7 @@ void npc_doctorAI::BeginEvent(Player* player)
     PatientDiedCount = 0;
     PatientSavedCount = 0;
 
-    switch(m_creature->GetEntry())
+    switch(me->GetEntry())
     {
     case DOCTOR_ALLIANCE:
         for(uint8 i = 0; i < ALLIANCE_COORDS; ++i)
@@ -517,7 +517,7 @@ void npc_doctorAI::BeginEvent(Player* player)
 
     Event = true;
 
-    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 }
 
 void npc_doctorAI::PatientDied(Location* Point)
@@ -534,7 +534,7 @@ void npc_doctorAI::PatientDied(Location* Point)
                 player->FailQuest(6622);
 
             Event = false;
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
         Coordinates.push_back(Point);
@@ -557,7 +557,7 @@ void npc_doctorAI::PatientSaved(Creature* soldier, Player* player, Location* Poi
                     std::list<uint64>::iterator itr;
                     for(itr = Patients.begin(); itr != Patients.end(); ++itr)
                     {
-                        Creature* Patient = Unit::GetCreature((*m_creature), *itr);
+                        Creature* Patient = Unit::GetCreature((*me), *itr);
                         if( Patient )
                             Patient->setDeathState(JUST_DIED);
                     }
@@ -595,7 +595,7 @@ void npc_doctorAI::UpdateAI(const uint32 diff)
             std::vector<Location*>::iterator itr = Coordinates.begin()+rand()%Coordinates.size();
             uint32 patientEntry = 0;
 
-            switch(m_creature->GetEntry())
+            switch(me->GetEntry())
             {
             case DOCTOR_ALLIANCE:
                 patientEntry = AllianceSoldierId[rand()%3];
@@ -610,12 +610,12 @@ void npc_doctorAI::UpdateAI(const uint32 diff)
 
             Point = *itr;
 
-            Patient = m_creature->SummonCreature(patientEntry, Point->x, Point->y, Point->z, Point->o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+            Patient = me->SummonCreature(patientEntry, Point->x, Point->y, Point->z, Point->o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
 
             if(Patient)
             {
                 Patients.push_back(Patient->GetGUID());
-                ((npc_injured_patientAI*)Patient->AI())->Doctorguid = m_creature->GetGUID();
+                ((npc_injured_patientAI*)Patient->AI())->Doctorguid = me->GetGUID();
                 if(Point)
                     ((npc_injured_patientAI*)Patient->AI())->Coord = Point;
                 Coordinates.erase(itr);
@@ -653,7 +653,7 @@ struct TRINITY_DLL_DECL npc_guardianAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void EnterCombat(Unit *who)
@@ -666,10 +666,10 @@ struct TRINITY_DLL_DECL npc_guardianAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (m_creature->isAttackReady())
+        if (me->isAttackReady())
         {
-            m_creature->CastSpell(m_creature->getVictim(),SPELL_DEATHTOUCH, true);
-            m_creature->resetAttackTimer();
+            me->CastSpell(me->getVictim(),SPELL_DEATHTOUCH, true);
+            me->resetAttackTimer();
         }
     }
 };
@@ -953,7 +953,7 @@ struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
 {
     npc_tonk_mineAI(Creature *c) : ScriptedAI(c)
     {
-        m_creature->SetReactState(REACT_PASSIVE);
+        me->SetReactState(REACT_PASSIVE);
     }
 
     uint32 ArmingTimer;
@@ -986,8 +986,8 @@ struct TRINITY_DLL_DECL npc_tonk_mineAI : public ScriptedAI
             {
                 if(GetClosestCreatureWithEntry(me, NPC_STEAM_TONK, 2))
                 {
-                    m_creature->CastSpell(m_creature, SPELL_TONK_MINE_DETONATE, true);
-                    m_creature->setDeathState(DEAD);
+                    me->CastSpell(me, SPELL_TONK_MINE_DETONATE, true);
+                    me->setDeathState(DEAD);
                 }
                 CheckTimer = 1000;
             }
@@ -1036,64 +1036,74 @@ bool ReceiveEmote_npc_brewfest_reveler( Player *player, Creature *_Creature, uin
 ## npc_snake_trap_serpents
 ####*/
 
-#define SPELL_MIND_NUMBING_POISON    8692    //Viper
-#define SPELL_DEADLY_POISON          34655   //Venomous Snake
-#define SPELL_CRIPPLING_POISON       3409    //Viper
+#define SPELL_MIND_NUMBING_POISON    8692    // Viper
+#define SPELL_DEADLY_POISON          34655   // Venomous Snake
+#define SPELL_CRIPPLING_POISON       3409    // Viper
 
 #define VENOMOUS_SNAKE_TIMER 1200
 #define VIPER_TIMER 3000
 
 #define C_VIPER 19921
 
-#define RAND 5
-
 struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 {
     npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 SpellTimer;
-    Unit *Owner;
-    bool IsViper;
+    uint64 ownerGUID;
 
-    void EnterCombat(Unit *who) {}
+    bool IsViper;
 
     void Reset()
     {
-        Owner = m_creature->GetOwner();
+        ownerGUID = me->GetOwnerGUID();
 
-        if (!m_creature->isPet() || !Owner)
+        if (!me->isPet() || !ownerGUID)
+        {
+            me->ForcedDespawn();
             return;
+        }
 
-        CreatureInfo const *Info = m_creature->GetCreatureInfo();
+        CreatureInfo const *pInfo = me->GetCreatureInfo();
 
-        if(Info->Entry == C_VIPER)
+        if (pInfo->Entry == C_VIPER)
             IsViper = true;
 
-        //Add delta to make them not all hit the same time
-        uint32 delta = (rand() % 7) *100;
-        m_creature->SetStatFloatValue(UNIT_FIELD_BASEATTACKTIME, Info->baseattacktime + delta);
-        m_creature->SetStatFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER , Info->attackpower);
+        // Add delta to make them not all hit the same time
+        uint32 delta = urand(0, 700);
+        me->SetStatFloatValue(UNIT_FIELD_BASEATTACKTIME, pInfo->baseattacktime + delta);
+        me->SetStatFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER , pInfo->attackpower);
     }
 
-    //Redefined for random target selection:
+    // Redefined for random target selection:
     void MoveInLineOfSight(Unit *who)
     {
-        if (!m_creature->isPet() || !Owner)
+        if (!me->isPet() || me->getVictim())
             return;
 
-        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlacefor(m_creature) && Owner->IsHostileTo(who))//don't attack not-pvp-flaged
+        if (who->isTargetableForAttack() && me->IsHostileTo(who) && who->isInAccessiblePlacefor(me))
         {
-            if (m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
+            Unit *pOwner = me->GetUnit(ownerGUID);
+            if (!pOwner || !pOwner->IsInMap(me))
+            {
+                me->ForcedDespawn();
+                return;
+            }
+
+            if (!pOwner->IsHostileTo(who))
                 return;
 
-            float attackRadius = m_creature->GetAttackDistance(who);
-            if( m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->IsWithinLOSInMap(who) )
+            if (me->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
+                return;
+
+            float attackRadius = me->GetAttackDistance(who);
+            if (me->IsWithinDistInMap(who, attackRadius) && me->IsWithinLOSInMap(who) )
             {
-                if (!(rand() % RAND) )
+                if (roll_chance_f(20.0f))
                 {
-                    m_creature->setAttackTimer(BASE_ATTACK, (rand() % 10) * 100);
-                    SpellTimer = (rand() % 10) * 100;
-                    AttackStart(who);
+                    me->setAttackTimer(BASE_ATTACK, urand(100, 1000));
+                    SpellTimer = urand(0, 1000);
+                    ScriptedAI::AttackStart(who);
                 }
             }
         }
@@ -1101,55 +1111,53 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->isPet() || !Owner)
-            return;
-
-        //Follow if not in combat
-        if (!m_creature->hasUnitState(UNIT_STAT_FOLLOW) && !m_creature->isInCombat())
+        Unit *pOwner = me->GetUnit(ownerGUID);
+        if (!pOwner || !pOwner->IsInMap(me))
         {
-            m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MoveFollow(Owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+            me->ForcedDespawn();
+            return;
         }
 
-        //No victim -> get new from owner (need this because MoveInLineOfSight won't work while following -> corebug)
-        if (!m_creature->getVictim())
+        // Follow if not in combat
+        if (!me->hasUnitState(UNIT_STAT_FOLLOW) && !me->isInCombat())
         {
-            if (m_creature->isInCombat())
-                DoStopAttack();
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveFollow(pOwner, PET_FOLLOW_DIST, frand(0.0f, PET_FOLLOW_ANGLE));
+        }
 
-            if(Owner->getAttackerForHelper())
-                AttackStart(Owner->getAttackerForHelper());
+        // No victim -> get new from owner (need this because MoveInLineOfSight won't work while following -> corebug)
+        if (!me->getVictim())
+        {
+            if (Unit *pTarget = pOwner->getAttackerForHelper())
+                ScriptedAI::AttackStart(pTarget);
 
             return;
         }
 
         if (SpellTimer < diff)
         {
-            if (IsViper) //Viper
+            // Viper
+            if (IsViper)
             {
-                if (rand() % 3 == 0) //33% chance to cast
-                {
-                    uint32 spell;
-                    if( rand() % 2 == 0)
-                        spell = SPELL_MIND_NUMBING_POISON;
-                    else
-                        spell = SPELL_CRIPPLING_POISON;
-
-                    DoCast(m_creature->getVictim(),spell);
-                }
+                if (roll_chance_f(33.0f)) //33% chance to cast
+                    AddSpellToCast(RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON));
 
                 SpellTimer = VIPER_TIMER;
             }
-            else //Venomous Snake
+            // Venomous Snake
+            else
             {
-                if (rand() % 10 < 8) //80% chance to cast
-                    DoCast(m_creature->getVictim(),SPELL_DEADLY_POISON);
-                SpellTimer = VENOMOUS_SNAKE_TIMER + (rand() %5)*100;
+                // 80% chance to cast
+                if (roll_chance_f(80.0f))
+                    AddSpellToCast(SPELL_DEADLY_POISON);
+
+                SpellTimer = urand(VENOMOUS_SNAKE_TIMER, VENOMOUS_SNAKE_TIMER+500);
             }
         }
         else
-            SpellTimer-=diff;
+            SpellTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -1180,7 +1188,7 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
     void Reset() {}
     void SummonAdvisor()
     {
-        const char *subname = m_creature->GetSubName();
+        const char *subname = me->GetSubName();
         for(uint8 i = 0; i<5; i++)
         {
             if(subname[0] == type[i])
@@ -1196,9 +1204,9 @@ struct TRINITY_DLL_DECL npc_flight_masterAI : public ScriptedAI
     {
         if(add)
         {
-            add->setFaction(m_creature->getFaction());
-            add->SetLevel(m_creature->getLevel());
-            add->AI()->AttackStart(m_creature->getVictim());
+            add->setFaction(me->getFaction());
+            add->SetLevel(me->getLevel());
+            add->AI()->AttackStart(me->getVictim());
         }
     }
 
@@ -1286,9 +1294,9 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
 
         RunAwayTimer = 5000;
 
-        m_creature->SetStandState(PLAYER_STATE_KNEEL);
-        m_creature->SetHealth(int(m_creature->GetMaxHealth()*0.7));
-        m_creature->SetVisibility(VISIBILITY_ON);
+        me->SetStandState(PLAYER_STATE_KNEEL);
+        me->SetHealth(int(me->GetMaxHealth()*0.7));
+        me->SetVisibility(VISIBILITY_ON);
     }
 
     void EnterCombat(Unit *who) {}
@@ -1298,7 +1306,7 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
         if(Spell->Id == SPELL_LESSER_HEAL_R2 || Spell->Id == SPELL_FORTITUDE_R1)
         {
             //not while in combat
-            if(m_creature->isInCombat())
+            if(me->isInCombat())
                 return;
 
             //nothing to be done now
@@ -1307,21 +1315,21 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
 
             if(pCaster->GetTypeId() == TYPEID_PLAYER)
             {
-                switch(m_creature->GetEntry())
+                switch(me->GetEntry())
                 {
                 case ENTRY_SHAYA:
                     if (((Player*)pCaster)->GetQuestStatus(QUEST_MOON) == QUEST_STATUS_INCOMPLETE)
                     {
                         if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
                         {
-                            DoScriptText(SAY_SHAYA_THANKS,m_creature,pCaster);
+                            DoScriptText(SAY_SHAYA_THANKS,me,pCaster);
                             CanRun = true;
                         }
                         else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                         {
                             caster = pCaster->GetGUID();
-                            m_creature->SetStandState(PLAYER_STATE_NONE);
-                            DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                            me->SetStandState(PLAYER_STATE_NONE);
+                            DoScriptText(SAY_COMMON_HEALED,me,pCaster);
                             IsHealed = true;
                         }
                     }
@@ -1331,14 +1339,14 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
                     {
                         if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
                         {
-                            DoScriptText(SAY_ROBERTS_THANKS,m_creature,pCaster);
+                            DoScriptText(SAY_ROBERTS_THANKS,me,pCaster);
                             CanRun = true;
                         }
                         else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                         {
                             caster = pCaster->GetGUID();
-                            m_creature->SetStandState(PLAYER_STATE_NONE);
-                            DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                            me->SetStandState(PLAYER_STATE_NONE);
+                            DoScriptText(SAY_COMMON_HEALED,me,pCaster);
                             IsHealed = true;
                         }
                     }
@@ -1348,14 +1356,14 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
                     {
                         if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
                         {
-                            DoScriptText(SAY_DOLF_THANKS,m_creature,pCaster);
+                            DoScriptText(SAY_DOLF_THANKS,me,pCaster);
                             CanRun = true;
                         }
                         else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                         {
                             caster = pCaster->GetGUID();
-                            m_creature->SetStandState(PLAYER_STATE_NONE);
-                            DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                            me->SetStandState(PLAYER_STATE_NONE);
+                            DoScriptText(SAY_COMMON_HEALED,me,pCaster);
                             IsHealed = true;
                         }
                     }
@@ -1365,14 +1373,14 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
                     {
                         if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
                         {
-                            DoScriptText(SAY_KORJA_THANKS,m_creature,pCaster);
+                            DoScriptText(SAY_KORJA_THANKS,me,pCaster);
                             CanRun = true;
                         }
                         else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                         {
                             caster = pCaster->GetGUID();
-                            m_creature->SetStandState(PLAYER_STATE_NONE);
-                            DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                            me->SetStandState(PLAYER_STATE_NONE);
+                            DoScriptText(SAY_COMMON_HEALED,me,pCaster);
                             IsHealed = true;
                         }
                     }
@@ -1382,14 +1390,14 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
                     {
                         if (IsHealed && !CanRun && Spell->Id == SPELL_FORTITUDE_R1)
                         {
-                            DoScriptText(SAY_DG_KEL_THANKS,m_creature,pCaster);
+                            DoScriptText(SAY_DG_KEL_THANKS,me,pCaster);
                             CanRun = true;
                         }
                         else if (!IsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                         {
                             caster = pCaster->GetGUID();
-                            m_creature->SetStandState(PLAYER_STATE_NONE);
-                            DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
+                            me->SetStandState(PLAYER_STATE_NONE);
+                            DoScriptText(SAY_COMMON_HEALED,me,pCaster);
                             IsHealed = true;
                         }
                     }
@@ -1398,7 +1406,7 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
 
                 //give quest credit, not expect any special quest objectives
                 if (CanRun)
-                    ((Player*)pCaster)->TalkedToCreature(m_creature->GetEntry(),m_creature->GetGUID());
+                    ((Player*)pCaster)->TalkedToCreature(me->GetEntry(),me->GetGUID());
             }
         }
     }
@@ -1411,44 +1419,44 @@ struct TRINITY_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
         //we reached destination, kill ourselves
         if (id == 0)
         {
-            m_creature->SetVisibility(VISIBILITY_OFF);
-            m_creature->setDeathState(JUST_DIED);
-            m_creature->SetHealth(0);
-            m_creature->CombatStop();
-            m_creature->DeleteThreatList();
-            m_creature->RemoveCorpse();
+            me->SetVisibility(VISIBILITY_OFF);
+            me->setDeathState(JUST_DIED);
+            me->SetHealth(0);
+            me->CombatStop();
+            me->DeleteThreatList();
+            me->RemoveCorpse();
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (CanRun && !m_creature->isInCombat())
+        if (CanRun && !me->isInCombat())
         {
             if (RunAwayTimer <= diff)
             {
-                if (Unit *pUnit = Unit::GetUnit(*m_creature,caster))
+                if (Unit *pUnit = Unit::GetUnit(*me,caster))
                 {
-                    switch(m_creature->GetEntry())
+                    switch(me->GetEntry())
                     {
                     case ENTRY_SHAYA:
-                        DoScriptText(SAY_SHAYA_GOODBYE,m_creature,pUnit);
-                        m_creature->GetMotionMaster()->MovePoint(0, RunTo[0][0], RunTo[0][1], RunTo[0][2]);
+                        DoScriptText(SAY_SHAYA_GOODBYE,me,pUnit);
+                        me->GetMotionMaster()->MovePoint(0, RunTo[0][0], RunTo[0][1], RunTo[0][2]);
                         break;
                     case ENTRY_ROBERTS:
-                        DoScriptText(SAY_ROBERTS_GOODBYE,m_creature,pUnit);
-                        m_creature->GetMotionMaster()->MovePoint(0, RunTo[1][0], RunTo[1][1], RunTo[1][2]);
+                        DoScriptText(SAY_ROBERTS_GOODBYE,me,pUnit);
+                        me->GetMotionMaster()->MovePoint(0, RunTo[1][0], RunTo[1][1], RunTo[1][2]);
                         break;
                     case ENTRY_DOLF:
-                        DoScriptText(SAY_DOLF_GOODBYE,m_creature,pUnit);
-                        m_creature->GetMotionMaster()->MovePoint(0, RunTo[2][0], RunTo[2][1], RunTo[2][2]);
+                        DoScriptText(SAY_DOLF_GOODBYE,me,pUnit);
+                        me->GetMotionMaster()->MovePoint(0, RunTo[2][0], RunTo[2][1], RunTo[2][2]);
                         break;
                     case ENTRY_KORJA:
-                        DoScriptText(SAY_KORJA_GOODBYE,m_creature,pUnit);
-                        m_creature->GetMotionMaster()->MovePoint(0, RunTo[3][0], RunTo[3][1], RunTo[3][2]);
+                        DoScriptText(SAY_KORJA_GOODBYE,me,pUnit);
+                        me->GetMotionMaster()->MovePoint(0, RunTo[3][0], RunTo[3][1], RunTo[3][2]);
                         break;
                     case ENTRY_DG_KEL:
-                        DoScriptText(SAY_DG_KEL_GOODBYE,m_creature,pUnit);
-                        m_creature->GetMotionMaster()->MovePoint(0, RunTo[4][0], RunTo[4][1], RunTo[4][2]);
+                        DoScriptText(SAY_DG_KEL_GOODBYE,me,pUnit);
+                        me->GetMotionMaster()->MovePoint(0, RunTo[4][0], RunTo[4][1], RunTo[4][2]);
                         break;
                     }
                 }
@@ -1489,8 +1497,8 @@ struct TRINITY_DLL_DECL npc_mojoAI : public ScriptedAI
     {
         heartsResetTimer = 15000;
         hearts = false;
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
     }
 
     void EnterCombat(Unit *who) {}
@@ -1510,11 +1518,11 @@ struct TRINITY_DLL_DECL npc_mojoAI : public ScriptedAI
         {
             if (heartsResetTimer <= diff)
             {
-                m_creature->RemoveAurasDueToSpell(SPELL_HEARTS);
+                me->RemoveAurasDueToSpell(SPELL_HEARTS);
                 hearts = false;
-                m_creature->GetMotionMaster()->Clear(true);
-                m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
-                m_creature->SetSelection(NULL);
+                me->GetMotionMaster()->Clear(true);
+                me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
+                me->SetSelection(NULL);
             }
             else
                 heartsResetTimer -= diff;
@@ -1600,21 +1608,21 @@ struct TRINITY_DLL_DECL npc_woeful_healerAI : public ScriptedAI
     void Reset()
     {
         healTimer = urand(2500, 7500);
-        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+        me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
     }
 
     void EnterCombat(Unit *who) {}
 
     void UpdateAI(const uint32 diff)
     {
-        Unit * owner = m_creature->GetCharmerOrOwner();
+        Unit * owner = me->GetCharmerOrOwner();
 
         if (healTimer <= diff)
         {
             healTimer = urand(2500, 7500);
             if (!owner || !owner->isInCombat())
                 return;
-            m_creature->CastSpell(m_creature, SPELL_PREYER_OF_HEALING, false);
+            me->CastSpell(me, SPELL_PREYER_OF_HEALING, false);
         }
         else
             healTimer -= diff;
@@ -1728,7 +1736,7 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
     {
         if (!me->getVictim() && me->IsHostileTo(pWho))
         {
-            Creature *pTotem = m_creature->GetCreature(*m_creature, m_creature->GetOwnerGUID());
+            Creature *pTotem = me->GetCreature(*me, me->GetOwnerGUID());
             if (pTotem && pTotem->IsWithinDistInMap(pWho, 30.0f))
                 ScriptedAI::MoveInLineOfSight(pWho);
         }
@@ -1762,7 +1770,7 @@ struct TRINITY_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
                     return;
                 }
 
-                if(!m_creature->IsWithinDistInMap(pTotem, 30.0f))
+                if(!me->IsWithinDistInMap(pTotem, 30.0f))
                 {
                     EnterEvadeMode();
                     me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
@@ -2004,10 +2012,10 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
         netTimer = urand(10000, 20000);
         electricalTimer = urand(5000, 35000);
         checkTimer = 3000;
-        m_creature->SetDefaultMovementType(RANDOM_MOTION_TYPE);
-        m_creature->GetMotionMaster()->Initialize();
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveRandom(10.0);
+        me->SetDefaultMovementType(RANDOM_MOTION_TYPE);
+        me->GetMotionMaster()->Initialize();
+        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->MoveRandom(10.0);
         moveTimer = urand(1000, 10000);
         despawnTimer = 180000;
     }
@@ -2037,11 +2045,11 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
 
     void SpellHit(Unit * caster, const SpellEntry * spell)
     {
-        if (m_creature->isInCombat() || !caster || !spell || caster->GetEntry() != CRASHIN_TRASHIN_ROBOT_ID)
+        if (me->isInCombat() || !caster || !spell || caster->GetEntry() != CRASHIN_TRASHIN_ROBOT_ID)
             return;
 
-        m_creature->SetInCombatWith(caster);
-        caster->SetInCombatWith(m_creature);
+        me->SetInCombatWith(caster);
+        caster->SetInCombatWith(me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2056,12 +2064,12 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
             return;
         }
 
-        if (!m_creature->isAlive())
+        if (!me->isAlive())
             return;
 
         if (despawnTimer < diff)
         {
-            m_creature->Kill(m_creature, false);
+            me->Kill(me, false);
             return;
         }
         else
@@ -2087,7 +2095,7 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
 
         if (moveTimer < diff)
         {
-            if (!m_creature->HasAura(SPELL_NET, 0))
+            if (!me->HasAura(SPELL_NET, 0))
                 otherCrashinTrashinRobots = FindCrashinTrashinRobots();
 
             int count = otherCrashinTrashinRobots.size();
@@ -2205,8 +2213,8 @@ struct TRINITY_DLL_DECL npc_lurkyAI : public ScriptedAI
     {
         inDance = false;
         danceTimer = urand(MIN_DANCE_TIMER, MAX_DANCE_TIMER);
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
     }
 
     void OnAuraRemove(Aura* aur, bool stackRemove)
@@ -2220,14 +2228,14 @@ struct TRINITY_DLL_DECL npc_lurkyAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (inDance || m_creature->hasUnitState(UNIT_STAT_MOVE))
+        if (inDance || me->hasUnitState(UNIT_STAT_MOVE))
             return;
 
         if (danceTimer < diff)
         {
             inDance = true;
-            m_creature->CastSpell(m_creature, SPELL_BABY_MURLOC_DANCE, false);
-            m_creature->HandleEmoteCommand(EMOTE_STATE_DANCE);
+            me->CastSpell(me, SPELL_BABY_MURLOC_DANCE, false);
+            me->HandleEmoteCommand(EMOTE_STATE_DANCE);
         }
     }
 };
@@ -2254,8 +2262,8 @@ struct TRINITY_DLL_DECL pet_AleMugDrinkerAI : public ScriptedAI
     {
         wait = 0;
         aleMug_drink = false;
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveFollow(m_creature->GetOwner(), 2.0, M_PI/2);
+        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
     }
 
     void SpellHit(Unit * caster, const SpellEntry * spell)
@@ -2266,7 +2274,7 @@ struct TRINITY_DLL_DECL pet_AleMugDrinkerAI : public ScriptedAI
             aleMug_drink = true;
             float x, y, z;
             caster->GetPosition(x,y,z);
-            m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+            me->GetMotionMaster()->MovePoint(0, x, y, z);
         }
     }
 
@@ -2303,7 +2311,7 @@ struct TRINITY_DLL_DECL trigger_appleAI : public ScriptedAI
         if (!who)
             return;
 
-        if (m_creature->IsWithinDistInMap(who, 7.0f) && who->HasAura(43052, 0))
+        if (me->IsWithinDistInMap(who, 7.0f) && who->HasAura(43052, 0))
         {
             who->RemoveAurasDueToSpell(43052);
         }
@@ -2324,9 +2332,9 @@ struct TRINITY_DLL_DECL trigger_deliveryAI : public ScriptedAI
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
 
-        if (m_creature->IsWithinDistInMap(who, 20.0f) && (who->HasAura(43880, 0) || who->HasAura(43883, 0)) && ((Player*)who)->HasItemCount(33797, 1))
+        if (me->IsWithinDistInMap(who, 20.0f) && (who->HasAura(43880, 0) || who->HasAura(43883, 0)) && ((Player*)who)->HasItemCount(33797, 1))
         {
-            who->CastSpell(m_creature, 43662, true);
+            who->CastSpell(me, 43662, true);
             who->CastSpell(who, 44601, true);
             ((Player*)who)->DestroyItemCount(33797, 1, true);
 
@@ -2353,7 +2361,7 @@ struct TRINITY_DLL_DECL trigger_delivery_kegAI : public ScriptedAI
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
 
-        if (m_creature->IsWithinDistInMap(who, 20.0f) && (who->HasAura(43880, 0) || who->HasAura(43883, 0)) && !((Player*)who)->HasItemCount(33797, 1))
+        if (me->IsWithinDistInMap(who, 20.0f) && (who->HasAura(43880, 0) || who->HasAura(43883, 0)) && !((Player*)who)->HasItemCount(33797, 1))
         {
             who->CastSpell(who, 43660, true);
         }
@@ -2400,9 +2408,9 @@ struct TRINITY_DLL_DECL trigger_barkerAI : public ScriptedAI
         if (!who || who->GetTypeId() != TYPEID_PLAYER)
             return;
 
-        if (m_creature->IsWithinDistInMap(who, 10.0f) && who->HasAura(43883, 0))
+        if (me->IsWithinDistInMap(who, 10.0f) && who->HasAura(43883, 0))
         {
-            ((Player*)who)->CastedCreatureOrGO(m_creature->GetEntry(), m_creature->GetGUID(), 0);
+            ((Player*)who)->CastedCreatureOrGO(me->GetEntry(), me->GetGUID(), 0);
         }
     }
 };
