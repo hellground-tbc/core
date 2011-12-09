@@ -4588,7 +4588,7 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
     if (apply)
     {
         for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
-            m_target->RemoveAurasByType(*iter);
+            m_target->RemoveSpellsCausingAura(*iter);
     }
 
     for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
