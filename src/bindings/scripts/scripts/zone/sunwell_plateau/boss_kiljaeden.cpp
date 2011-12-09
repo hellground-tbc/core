@@ -298,9 +298,10 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
     boss_kalecgos_kjAI(Creature* c) : ScriptedAI(c){
         pInstance = (c->GetInstanceData());
     }
-
-    GameObject* Orb[4];
     ScriptedInstance* pInstance;
+    // to be rewritten later
+/*
+    GameObject* Orb[4];
     uint8 OrbsEmpowered;
     uint8 EmpowerCount;
 
@@ -384,14 +385,16 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 diff){
-        if(!Searched){
+    void UpdateAI(const uint32 diff)
+    {
+        if(!Searched)
+        {
             FindOrbs();
             Searched = true;
-            }
+        }
 
         if(OrbsEmpowered == 4) OrbsEmpowered = 0;
-    }
+    }*/
 };
 
 CreatureAI* GetAI_boss_kalecgos_kj(Creature *_Creature)
@@ -638,9 +641,10 @@ struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
                         }
                         break;
                     case TIMER_ORBS_EMPOWER: //Phase 3
-                        if(Phase == PHASE_SACRIFICE){
+                        /*if(Phase == PHASE_SACRIFICE)
+                        {
                             if(Kalec)((boss_kalecgos_kjAI*)Kalec->AI())->EmpowerOrb(true);
-                        }else if(Kalec)((boss_kalecgos_kjAI*)Kalec->AI())->EmpowerOrb(false);
+                        }else if(Kalec)((boss_kalecgos_kjAI*)Kalec->AI())->EmpowerOrb(false);*/
                         Timer[TIMER_ORBS_EMPOWER]= (Phase == PHASE_SACRIFICE) ? 45000 : 35000;
                         OrbActivated = true;
                         TimerIsDeactiveted[TIMER_ORBS_EMPOWER] = true;
@@ -742,7 +746,7 @@ struct TRINITY_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementA
 
     void Reset(){
         Phase = PHASE_DECEIVERS;
-        if(KalecKJ)((boss_kalecgos_kjAI*)KalecKJ->AI())->ResetOrbs();
+        //if(KalecKJ)((boss_kalecgos_kjAI*)KalecKJ->AI())->ResetOrbs();
         DeceiverDeathCount = 0;
         SummonedDeceivers = false;
         KiljaedenDeath = false;

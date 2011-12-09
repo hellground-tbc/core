@@ -68,7 +68,7 @@ enum Spells
     SPELL_FOG_CHARM2            =   45726,   // link to 45717
 
     //Other
-    SPELL_BERSERK               =   45078,
+    SPELL_BERSERK               =   46587,
 };
 
 enum Creatures
@@ -83,7 +83,7 @@ enum Creatures
     MOB_FOG_OF_CORRUPTION    =   25266,
     MOB_VAPOR                =   25265,
     MOB_VAPOR_TRAIL          =   25267,
-    MOB_KALECGOS             =   24844        // dunno if it's right one - its not ;p
+    MOB_KALECGOS             =   25319  // it is the same Kalecgos dragon that used id KJ script
 };
 
 enum PhaseFelmyst
@@ -279,7 +279,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     {
         DoScriptText(YELL_DEATH, m_creature);
         pInstance->SetData(DATA_FELMYST_EVENT, DONE);
-        //me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
+        me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
     }
 
     void EnterEvadeMode()
@@ -299,18 +299,19 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     }
 
 
-    /*void JustSummoned(Creature *summon)
+    void JustSummoned(Creature *summon)
     {
         if(summon->GetEntry() == MOB_KALECGOS)
         {
             summon->setActive(true);
             summon->SetLevitate(true);
-            m_creature->SendMovementFlagUpdate();
-            summon->GetMotionMaster()->MovePoint(60, 1471, 632, 37);
+            summon->SetSpeed(MOVE_FLIGHT, 1.4);
+            summon->SendMovementFlagUpdate();
+            summon->GetMotionMaster()->MovePoint(50, 1471, 632, 37);
             KalecgosGUID = summon->GetGUID();
             OutroTimer = 20000;
         }
-    }*/
+    }
 
     void DamageTaken(Unit*, uint32 &damage)
     {
@@ -396,7 +397,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 OutroTimer = 10000;
                 break;
             case 1:
-                Kalecgos->GetMotionMaster()->MovePoint(50, 1768, 598, 173);
+                Kalecgos->GetMotionMaster()->MovePoint(60, 1768, 598, 173);
                 OutroTimer = 0;
                 break;
         }
@@ -549,7 +550,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             case EVENT_BERSERK:
                 DoScriptText(YELL_BERSERK, m_creature);
                 ForceSpellCast(m_creature, SPELL_BERSERK, INTERRUPT_AND_CAST_INSTANTLY);
-                Timer[EVENT_BERSERK] = 10000;
+                Timer[EVENT_BERSERK] = 300000;   // 5 min just in case :)
                 break;
             case EVENT_CHECK:
                 DoZoneInCombat();
