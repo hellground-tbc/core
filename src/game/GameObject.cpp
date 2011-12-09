@@ -520,7 +520,6 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 SaveRespawnTime();
 
             UpdateObjectVisibility();
-
             break;
         }
     }
