@@ -4951,7 +4951,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (!target)
                         return false;
 
-                    if (procSpell && pVictim)
+                    if (procSpell)
                     {
                         // Execute will transfer normal swing damage amount if 2nd target HP is above 20%
                         if (procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
