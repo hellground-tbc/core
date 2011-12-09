@@ -155,17 +155,15 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 }
 
                 HurtfulStrike_Timer = 8000;
-
-                // is this true ? Oo
-                if (Reverberation_Timer < 10000)
-                    Reverberation_Timer += 10000;
-
                 ShatterTimer = 0;
+
                 //The dummy shatter spell is cast
-                ForceSpellCastWithScriptText(SPELL_SHATTER, CAST_NULL, RAND(SAY_SHATTER1, SAY_SHATTER2), INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCastWithScriptText(SPELL_SHATTER, CAST_NULL, RAND(SAY_SHATTER1, SAY_SHATTER2));
             }
             else
                 ShatterTimer -= diff;
+
+            CastNextSpellIfAnyAndReady();
         }
         else
         {
@@ -175,12 +173,11 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 Unit* target = NULL;
                 target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, GetSpellMaxRange(SPELL_HURTFUL_STRIKE), true);
 
-                if (target)
-                    AddSpellToCast(target, SPELL_HURTFUL_STRIKE);
-                else
-                    AddSpellToCast(m_creature->getVictim(), SPELL_HURTFUL_STRIKE);
+                if (!target)
+                    target = me->getVictim();
 
-                HurtfulStrike_Timer= 8000;
+                AddSpellToCast(target, SPELL_HURTFUL_STRIKE);
+                HurtfulStrike_Timer = 8000;
             }
             else
                 HurtfulStrike_Timer -= diff;
@@ -205,6 +202,11 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
                 ShatterTimer = 15000;
                 GroundSlamTimer = urand(60000, 65000);
+
+                // is this true ? Oo
+                if (Reverberation_Timer < 10000 + ShatterTimer)
+                    Reverberation_Timer = 10000 + ShatterTimer;
+
                 DoScriptText(EMOTE_SHATTER, me);
                 ForceSpellCastWithScriptText(SPELL_GROUND_SLAM, CAST_NULL, RAND(SAY_SLAM1, SAY_SLAM2));
             }
