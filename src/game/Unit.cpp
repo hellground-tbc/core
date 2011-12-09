@@ -4943,7 +4943,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 18765:
                 case 35429:
                 {
-                    // prevent trigger from execute and from self
+                    // prevent trigger from self
                     if (procSpell && procSpell->Id == 12723)
                         return false;
 
@@ -4951,19 +4951,46 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (!target)
                         return false;
 
-                    if (procSpell)
+                    if (procSpell && pVictim)
                     {
-                        // instead of returning false need to transfer normal swing damage amount
+                        // Execute will transfer normal swing damage amount if 2nd target HP is above 20%
                         if (procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
-                            return false;
+                        {
+                            MeleeDamageLog damageInfo(this, pVictim, GetMeleeDamageSchoolMask(), BASE_ATTACK);
+                            CalculateMeleeDamage(&damageInfo);
+                            damage = damageInfo.damage;
+                        }
 
                         // Limit WhirlWind to hit one target applying 1s cooldown
                         if (procSpell->SpellFamilyName == SPELLFAMILY_WARRIOR && procSpell->SpellFamilyFlags & 0x400000000LL)
                             cooldown = 1;
                     }
 
-                    triggered_spell_id = 12723;
+                    float armor = pVictim->GetArmor();
+                    // Ignore enemy armor by SPELL_AURA_MOD_TARGET_RESISTANCE aura
+                    armor += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, SPELL_SCHOOL_MASK_NORMAL);
+
+                    if (armor < 0.0f)
+                        armor = 0.0f;
+
+                    float levelModifier = getLevel();
+                    if (levelModifier > 59)
+                        levelModifier = levelModifier + (4.5f * (levelModifier-59));
+
+                    float mitigation = 0.1f * armor / (8.5f * levelModifier + 40);
+                    mitigation = mitigation/(1.0f + mitigation);
+
+                    if (mitigation < 0.0f)
+                        mitigation = 0.0f;
+
+                    if (mitigation > 0.75f)
+                        mitigation = 0.75f;
+
+                    // calculate base damage before armor mitigation
+                    damage = uint32(damage / (1.0f - mitigation));
+
                     basepoints0 = damage;
+                    triggered_spell_id = 12723;
                     break;
                 }
                 // Unstable Power
