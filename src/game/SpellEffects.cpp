@@ -4697,7 +4697,7 @@ void Spell::EffectEnchantItemTmp(uint32 i)
             case 70: enchant_id = 3019; break;              // 14%
             case 74: enchant_id = 3020; break;              // 20%
             default:
-                sLog.outError("Spell::EffectEnchantItemTmp: Damage %u not handled in S'RW",enchnting_damage);
+                sLog.outError("Spell::EffectEnchantItemTmp: Damage %u not handled in S'RW",enchanting_damage);
                 return;
         }
     }
@@ -5464,7 +5464,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if(!m_caster->HasAura(45717))
             {
                 m_caster->CastSpell(m_caster, 46411, true); // self-stun for a few sec
-                uniitTarget->CastSpell(m_caster, 45717, true);
+                unitTarget->CastSpell(m_caster, 45717, true);
             }
             break;
         }
