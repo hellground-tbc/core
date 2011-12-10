@@ -2297,15 +2297,32 @@ void WorldObject::PlayDirectSound( uint32 sound_id, Player* target /*= NULL*/ )
 
 Totem* WorldObject::ToTotem()
 {
-    if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->isTotem())
+    if (ToCreature() && ToCreature()->isTotem())
         return reinterpret_cast<Totem*>(this);
 
     return NULL;
 }
+
 const Totem* WorldObject::ToTotem() const
 {
-    if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->isTotem())
+    if (ToCreature() && ToCreature()->isTotem())
         return (const Totem*)((Totem*)this);
+
+    return NULL;
+}
+
+Pet* WorldObject::ToPet()
+{
+    if (ToCreature() && ToCreature()->isPet())
+        return reinterpret_cast<Pet*>(this);
+
+    return NULL;
+}
+
+const Pet* WorldObject::ToPet() const
+{
+    if (ToCreature() && ToCreature()->isPet())
+        return (const Pet*)((Pet*)this);
 
     return NULL;
 }

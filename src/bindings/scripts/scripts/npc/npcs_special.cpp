@@ -1050,22 +1050,12 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
     npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 SpellTimer;
-    uint64 ownerGUID;
 
     bool IsViper;
 
     void Reset()
     {
-        ownerGUID = me->GetOwnerGUID();
-
-        if (!me->isPet() || !ownerGUID)
-        {
-            me->ForcedDespawn();
-            return;
-        }
-
         CreatureInfo const *pInfo = me->GetCreatureInfo();
-
         if (pInfo->Entry == C_VIPER)
             IsViper = true;
 
@@ -1083,12 +1073,9 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 
         if (who->isTargetableForAttack() && me->IsHostileTo(who) && who->isInAccessiblePlacefor(me))
         {
-            Unit *pOwner = me->GetUnit(ownerGUID);
+            Unit *pOwner = me->GetUnit(me->GetOwnerGUID());
             if (!pOwner || !pOwner->IsInMap(me))
-            {
-                me->ForcedDespawn();
                 return;
-            }
 
             if (!pOwner->IsHostileTo(who))
                 return;
@@ -1111,7 +1098,7 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        Unit *pOwner = me->GetUnit(ownerGUID);
+        Unit *pOwner = me->GetUnit(me->GetOwnerGUID());
         if (!pOwner || !pOwner->IsInMap(me))
         {
             me->ForcedDespawn();
