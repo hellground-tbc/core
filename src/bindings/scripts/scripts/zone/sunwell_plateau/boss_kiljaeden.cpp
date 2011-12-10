@@ -317,7 +317,6 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
                     break;
                 case 60: // on starting phase 2
                     me->ForcedDespawn();
-                    FelmystOutroTimer = 0;
                     break;
                 default:
                     break;
@@ -333,6 +332,7 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
             {
                 me->SetSpeed(MOVE_FLIGHT, 2.5);
                 me->GetMotionMaster()->MovePoint(60, 1547, 531, 161);
+                FelmystOutroTimer = 0;
             }
             else
                 FelmystOutroTimer -= diff;
