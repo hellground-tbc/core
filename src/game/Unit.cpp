@@ -4164,7 +4164,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
             if(spellId == 43421)         // Special case - Hex Lord Malacrass Lifebloom (prevent lifebloom from blomming when spellstolen)
                 RemoveAura(iter, AURA_REMOVE_BY_DEFAULT);
             else
-                RemoveAura(iter, AURA_REMOVE_BY_DISPEL);
+                RemoveSingleAuraFromStackByDispel(spellId);
         }
         else
             ++iter;
