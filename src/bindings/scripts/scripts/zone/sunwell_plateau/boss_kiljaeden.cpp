@@ -330,7 +330,10 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
         if(FelmystOutroTimer)
         {
             if(FelmystOutroTimer <= diff)
-                me->GetMotionMaster()->MovePoint(60, 1768, 598, 173);
+            {
+                me->SetSpeed(MOVE_FLIGHT, 2.5);
+                me->GetMotionMaster()->MovePoint(60, 1547, 531, 161);
+            }
             else
                 FelmystOutroTimer -= diff;
         }

@@ -219,7 +219,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->SetLevitate(true);
             me->setHover(true);
-            me->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT);
+            me->SendMovementFlagUpdate();
             TalkTimer = 3000;
             break;
         case 3:
@@ -274,7 +274,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->SetLevitate(true);
             me->setHover(true);
-            me->AddUnitMovementFlag(MOVEFLAG_ONTRANSPORT);
+            me->SendMovementFlagUpdate();
             TalkTimer = 3000;
             break;
         case 3:
@@ -544,11 +544,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void JustDied(Unit *killer)
     {
-        //DoCast(me, SPELL_TELEPORT_NORMAL, true);
         DoScriptText(SAY_SATH_DEATH, m_creature);
-        //me->GetMap()->CreatureRelocation(me, m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
-        //me->UpdateObjectVisibility();
-        //me->NearTeleportTo(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, m_creature->GetOrientation());
         me->SendMonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, 0);
 
         if(pInstance)
