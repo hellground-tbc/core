@@ -813,7 +813,7 @@ struct TRINITY_DLL_DECL npc_felblood_initiateAI : public ScriptedAI
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
-        if(spell->Id == SPELL_FEL_SIPHON_QUEST && caster->GetTypeId() == TYPEID_PLAYER)
+        if(spell->Id == SPELL_FEL_SIPHON_QUEST)
         {
             DoCast(me, SPELL_SELF_STUN);
             ChangeTimer = 3000;
@@ -828,9 +828,9 @@ struct TRINITY_DLL_DECL npc_felblood_initiateAI : public ScriptedAI
           {
               if(!me->IsNonMeleeSpellCasted(false))
                   HandleOffCombatEffects();
-              if(roll_chance_i(5))
+              if(roll_chance_i(3))
                   me->Yell(YellSiphon[urand(0,3)], 0, 0);
-              OOCTimer = 10000;
+              OOCTimer = 60000;
           }
           else
               OOCTimer -= diff;
