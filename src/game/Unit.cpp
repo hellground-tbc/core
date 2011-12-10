@@ -4173,7 +4173,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
                     aur->ApplyModifier(true,true);
 
                     aur->UpdateSlotCounterAndDuration();
-                    continue; // not remove aura if stack amount > 1
+                    return; // should always only 1 aura per spell be stolen?
                 }
                 else
                     RemoveAura(iter,AURA_REMOVE_BY_DISPEL);
