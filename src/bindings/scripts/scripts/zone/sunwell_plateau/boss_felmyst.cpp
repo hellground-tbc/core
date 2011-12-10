@@ -202,7 +202,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         path = 0;
         counter = 0;
 
-        m_creature->CastSpell(m_creature, SPELL_SUNWELL_RADIANCE, true); // temporary, will be moved to DB
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
         m_creature->setActive(true);

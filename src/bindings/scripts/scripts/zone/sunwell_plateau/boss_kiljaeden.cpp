@@ -31,6 +31,9 @@ EndScriptData */
 /*** Speech and sounds***/
 enum Speeches
 {
+    // Felmyst outro
+    YELL_KALECGOS       = -1580043, //after felmyst's death spawned and say this
+
     // These are used throughout Sunwell and Magisters(?). Players can hear this while running through the instances.
     SAY_KJ_OFFCOMBAT1   = -1580066,
     SAY_KJ_OFFCOMBAT2   = -1580067,
@@ -299,6 +302,39 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
         pInstance = (c->GetInstanceData());
     }
     ScriptedInstance* pInstance;
+    uint32 FelmystOutroTimer;
+
+
+    void MovementInform(uint32 Type, uint32 Id)
+    {
+        if(Type == POINT_MOTION_TYPE)
+        {
+            switch(Id)
+            {
+                case 50: // felmyst outro speach
+                    DoScriptText(YELL_KALECGOS, me);
+                    FelmystOutroTimer = 10000;
+                    break;
+                case 60: // on starting phase 2
+                    me->ForcedDespawn();
+                    FelmystOutroTimer = 0;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(FelmystOutroTimer)
+        {
+            if(FelmystOutroTimer <= diff)
+                me->GetMotionMaster()->MovePoint(60, 1768, 598, 173);
+            else
+                FelmystOutroTimer -= diff;
+        }
+    }
     // to be rewritten later
 /*
     GameObject* Orb[4];

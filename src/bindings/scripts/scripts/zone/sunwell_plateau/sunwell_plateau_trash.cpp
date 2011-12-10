@@ -60,8 +60,6 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
     void Reset()
     {
         ClearCastQueue();
-        DoCast(me, SPELL_SUNWELL_RADIANCE, true);
-
         ArcaneExplosion = urand(5000, 12000);
         FrostNova = urand(5000, 10000);
         Blink = urand(10000, 18000);
@@ -146,8 +144,6 @@ struct TRINITY_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
     {
         ClearCastQueue();
         summons.DespawnAll();
-        DoCast(me, SPELL_SUNWELL_RADIANCE, true);
-
         IgniteMana = urand(3000, 10000);;
         ShadowBolt = urand(500, 1000);
         SummonImp = urand(1000, 8000);
@@ -242,7 +238,6 @@ struct TRINITY_DLL_DECL mob_sunblade_dawn_priestAI : public ScriptedAI
     void Reset()
     {
         ClearCastQueue();
-        DoCast(me, SPELL_SUNWELL_RADIANCE, true);
         DoCast(me, SPELL_HOLYFORM);
 
         HolyNova = urand(5000, 10000);
@@ -341,8 +336,6 @@ struct TRINITY_DLL_DECL mob_sunblade_dusk_priestAI : public ScriptedAI
     void Reset()
     {
         ClearCastQueue();
-        DoCast(me, SPELL_SUNWELL_RADIANCE, true);
-
         Fear = urand(5000, 15000);
         WordPain = urand(6000, 12000);
         MindFlay = urand(2000, 10000);
@@ -435,8 +428,6 @@ struct TRINITY_DLL_DECL mob_sunblade_protectorAI : public ScriptedAI
     void Reset()
     {
         ClearCastQueue();
-        DoCast(me, SPELL_SUNWELL_RADIANCE, true);
-
         FelLightning = urand(3000, 6000);
     }
 
@@ -500,7 +491,6 @@ struct TRINITY_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
     {
         ClearCastQueue();
         Unstack_Timer = 7000;
-        DoCast(me, SPELL_SUNWELL_RADIANCE, true);
         DoCast(me, SPELL_STEALTH_DETECT, true);
 
         SinisterStrike = urand(3000, 10000);
@@ -619,8 +609,6 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
     void Reset()
     {
         ClearCastQueue();
-        DoCast(me, SPELL_SUNWELL_RADIANCE, true);
-
         ScatterShot = urand(6000, 12000);
         Shoot = urand(100, 1000);
         SlayingShot = urand(8000, 15000);
@@ -705,8 +693,6 @@ struct TRINITY_DLL_DECL mob_sunblade_vindicatorAI : public ScriptedAI
     void Reset()
     {
         ClearCastQueue();
-        DoCast(me, SPELL_SUNWELL_RADIANCE, true);
-
         BrutalStrike = urand(1000, 5000);
         Cleave = urand(4000, 9000);
         MortalStrike = urand(5000, 15000);

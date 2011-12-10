@@ -167,8 +167,6 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
     void OnCreatureCreate(Creature* creature, uint32 entry)
     {
-        if(creature->GetTypeId() == TYPEID_UNIT)    // just in case of something weird happening
-            creature->CastSpell(creature, SPELL_SUNWELL_RADIANCE, true);
         switch(entry)
         {
             case 24850: Kalecgos_Dragon     = creature->GetGUID(); break;

@@ -163,7 +163,6 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
     mob_sunblade_magisterAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        DoCast(c, SPELL_ENCHANTMENT_OF_SPELL_HASTE, true);
     }
 
     ScriptedInstance* pInstance;
@@ -273,7 +272,6 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
     mob_sunblade_warlockAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        DoCast(c, SPELL_FEL_ARMOR, true);
         FelArmor_Timer = 120000;    //check each 2 minutes
         SummonGUID = NULL;
     }
@@ -289,6 +287,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
     void Reset()
     {
         SummonImp_Timer = 5000;
+        DoCast(me, SPELL_FEL_ARMOR, true);
         SetAutocast(SPELL_INCINERATE, 1900, true);
         Immolate_Timer = urand(8000, 12000);
         OOCTimer = 5000;
