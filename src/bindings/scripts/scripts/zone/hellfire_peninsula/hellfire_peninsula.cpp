@@ -767,7 +767,7 @@ CreatureAI* GetAI_npc_shattered_hand_berserker(Creature *_Creature)
 #define SPELL_SINISTER_STRIKE       14873
 #define SPELL_SPELLBREAKER          35871
 #define SPELL_FEL_SIPHON_QUEST      44936
-#define SPELL_SELF_STUN             48342
+#define SPELL_SELF_STUN             45066
 
 #define MOB_EMACIATED_FELBLOOD      24955
 
@@ -775,7 +775,7 @@ const char* YellChange[3] =
 {
     "No... no... NO!!!!!",
     "My power... is gone!",
-    "Waht have you done!"
+    "What have you done!"
 };
 const char* YellSiphon[4] = 
 {
@@ -846,7 +846,7 @@ struct TRINITY_DLL_DECL npc_felblood_initiateAI : public ScriptedAI
               me->UpdateEntry(MOB_EMACIATED_FELBLOOD);
               me->Yell(YellChange[urand(0,2)], 0, 0);
               me->AIM_Initialize();
-              me->AI()->Reset();
+              me->RemoveAurasDueToSpell(SPELL_SELF_STUN);
               me->AI()->AttackStart(me->getVictim());
               ChangeTimer = 0;
           }
@@ -886,7 +886,6 @@ struct TRINITY_DLL_DECL npc_emaciated_felbloodAI : public ScriptedAI
 
     void Reset()
     {
-        me->RemoveAurasDueToSpell(SPELL_SELF_STUN);
         BitterWithdrawal = urand(10000, 15000);
         SinisterStrike = urand(5000, 15000);
     }
