@@ -112,25 +112,13 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
         group = GetPlayer()->GetOriginalGroup();
 
     Group *group2 = player->GetGroup();
-    if( group2 && group2->isBGGroup() )
+    if (group2 && group2->isBGGroup())
         group2 = player->GetOriginalGroup();
 
     // player already in another group or invited
-    if( group2 || player->GetGroupInvite() )
+    if (group2 || player->GetGroupInvite())
     {
         SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_ALREADY_IN_GROUP);
-
-        if (group2)
-        {
-            // tell the player that they were invited but it failed as they were already in a group
-            WorldPacket data(SMSG_GROUP_INVITE, 10);                // guess size
-            data << uint8(0);                                       // invited/already in group flag
-            data << GetPlayer()->GetName();                         // max len 48
-            data << uint32(0);                                      // unk
-            data << uint8(0);                                       // count
-            data << uint32(0);                                      // unk
-            player->GetSession()->SendPacket(&data);
-        }
         return;
     }
 
