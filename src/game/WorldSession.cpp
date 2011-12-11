@@ -441,7 +441,7 @@ void WorldSession::LogoutPlayer(bool Save)
         while (_player->IsBeingTeleported())
             HandleMoveWorldportAckOpcode();
 
-        for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
+        for (int i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
         {
             if (int32 bgTypeId = _player->GetBattleGroundQueueId(i))
             {
