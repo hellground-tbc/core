@@ -171,10 +171,7 @@ class TRINITY_DLL_DECL InstanceSaveManager : public Trinity::Singleton<InstanceS
         // fast lookup for reset times
         ResetTimeVector m_resetTimeByMapId;
         ResetTimeQueue m_resetTimeQueue;
-
-        bool unbinded;
 };
 
 #define sInstanceSaveManager Trinity::Singleton<InstanceSaveManager>::Instance()
 #endif
-
