@@ -579,7 +579,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 IntroTimer -= diff;
         }
 
-        if(me->getVictim()->HasAura(SPELL_FOG_CHARM))
+        if(me->isInCombat() && me->getVictim() && me->getVictim()->HasAura(SPELL_FOG_CHARM))
             me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
 
         if (!UpdateVictim())
