@@ -180,6 +180,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     PhaseFelmyst Phase;
     EventFelmyst Event;
     uint32 Timer[10];
+    uint32 PulseCombat;
 
     uint8 side;
     uint8 path;
@@ -195,6 +196,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         Event = EVENT_NULL;
         Timer[EVENT_BERSERK] = 600000;
         Timer[EVENT_CHECK] = 1000;
+        PulseCombat = 2000;
         FlightCount = 0;
         IntroPhase = 0;
         IntroTimer = 0;
@@ -579,11 +581,16 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 IntroTimer -= diff;
         }
 
-        if(me->isInCombat() && me->getVictim() && me->getVictim()->HasAura(SPELL_FOG_CHARM))
-            me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
-
         if (!UpdateVictim())
             return;
+
+        if(PulseCombat < diff)
+        {
+            DoZoneInCombat();
+            PulseCombat = 2000;
+        }
+        else
+            PulseCombat -= diff;
 
         if(Phase == PHASE_GROUND || Phase == PHASE_NULL)
         {
