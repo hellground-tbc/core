@@ -273,6 +273,8 @@ enum WorldConfigs
     CONFIG_SESSION_UPDATE_MAX_TIME,
     CONFIG_SESSION_UPDATE_OVERTIME_METHOD,
 
+    CONFIG_KICK_PLAYER_ON_BAD_PACKET,
+
     CONFIG_VALUE_COUNT
 };
 
@@ -788,4 +790,3 @@ public:
 
 #endif
 /// @}
-
