@@ -4942,10 +4942,15 @@ void Spell::EffectTaunt(uint32 /*i*/)
     // this effect use before aura Taunt apply for prevent taunt already attacking target
     // for spell as marked "non effective at already attacking target"
     if (!unitTarget->CanHaveThreatList()
-        || unitTarget->getVictim() == m_caster
-        || unitTarget->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
+        || unitTarget->getVictim() == m_caster)
     {
         SendCastResult(SPELL_FAILED_DONT_REPORT);
+        return;
+    }
+
+    if (unitTarget->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME,MECHANIC_NONE))
+    {
+        SendCastResult(SPELL_FAILED_IMMUNE);
         return;
     }
 
@@ -5998,6 +6003,16 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         }
+        // Gruul's Ground Slam
+        case 33525:
+        {
+            if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            // knock back for random distance with random angle
+            unitTarget->KnockBack(frand(0.0f, 2*M_PI), frand(2.0f, 40.0f), 15.0f);
+            break;
+        }
         // Gruul's shatter
         case 33654:
         {
@@ -6012,7 +6027,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (unitTarget->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            unitTarget->CastSpell(unitTarget,33671,true,0,0,m_caster->GetGUID());
+            unitTarget->CastSpell(unitTarget, 33671, true, 0, 0, m_caster->GetGUID());
             break;
         }
         case 41055:                                 // Copy Weapon
@@ -6925,13 +6940,11 @@ void Spell::EffectSummonObject(uint32 i)
     }
 
     uint64 guid = m_caster->m_ObjectSlot[slot];
-    if (guid != 0)
+    if (guid)
     {
-        GameObject* obj = NULL;
-        if (m_caster)
-            obj = m_caster->GetMap()->GetGameObject(guid);
+        if (GameObject* obj = m_caster ? m_caster->GetMap()->GetGameObject(guid) : NULL)
+            obj->SetLootState(GO_JUST_DEACTIVATED);
 
-        if (obj) obj->Delete();
         m_caster->m_ObjectSlot[slot] = 0;
     }
 

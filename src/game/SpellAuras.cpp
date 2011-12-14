@@ -397,7 +397,8 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     if (m_maxduration == -1 || m_isPassive && m_spellProto->DurationIndex == 0)
         m_permanent = true;
 
-    if (!m_permanent && m_maxduration > 12000 && m_spellProto->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE && GetEffIndex() == 0)
+    if (!m_permanent && m_maxduration > 12000 && !m_target->GetCharmerOrOwnerPlayerOrPlayerItself() 
+        && m_spellProto->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE && GetEffIndex() == 0)
         m_heartbeatTimer = m_maxduration / 8;
 
     Player* modOwner = caster ? caster->GetSpellModOwner() : NULL;
@@ -602,11 +603,11 @@ void Aura::Update(uint32 diff)
         }
     }
 
-    if (m_heartbeatTimer && m_heartbeatTimer > m_duration)
+    if (m_heartbeatTimer && m_heartbeatTimer < (m_maxduration - m_duration))
     {
         m_heartbeatTimer *= 2;
         if (Unit *caster = GetCaster())
-            if (caster->SpellHitResult(m_target, m_spellProto) != SPELL_MISS_NONE)
+            if (caster->MagicSpellHitResult(m_target, m_spellProto) != SPELL_MISS_NONE)
                 m_target->RemoveAurasByCasterSpell(m_spellProto->Id, caster->GetGUID());
     }
 
@@ -774,15 +775,12 @@ void AreaAura::Update(uint32 diff)
 
                 if (SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel()))
                 {
-                    //int32 actualBasePoints = m_currentBasePoints;
-                    // recalculate basepoints for lower rank (all AreaAura spell not use custom basepoints?)
-                    //if(actualSpellInfo != GetSpellProto())
-                    //    actualBasePoints = actualSpellInfo->EffectBasePoints[m_effIndex];
                     AreaAura *aur;
                     if (actualSpellInfo == GetSpellProto())
                         aur = new AreaAura(actualSpellInfo, m_effIndex, &m_modifier.m_amount, (*tIter), caster, NULL);
                     else
                         aur = new AreaAura(actualSpellInfo, m_effIndex, NULL, (*tIter), caster, NULL);
+
                     (*tIter)->AddAura(aur);
 
                     if (m_areaAuraType == AREA_AURA_ENEMY)
@@ -6946,6 +6944,11 @@ void Aura::PeriodicTick()
             uint32 procEx = PROC_EX_INTERNAL_DOT | PROC_EX_NORMAL_HIT;
             if (damageInfo.damage)
                 procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
+
+            if (damageInfo.absorb)
+                procEx &= ~PROC_EX_DIRECT_DAMAGE;
+            else
+                procEx |= PROC_EX_DIRECT_DAMAGE;
 
             pCaster->DealDamage(&damageInfo, DOT, spellProto, true);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);

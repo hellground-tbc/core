@@ -205,19 +205,6 @@ void AuthSocket::OnAccept()
 {
     sLog.outBasic("Accepting connection from '%s'", get_remote_address().c_str());
 }
-/*/// Accept the connection and set the s random value for SRP6
-void AuthSocket::OnAccept()
-{
-    sLog.outBasic("Accepting connection from '%s:%d'",
-        GetRemoteAddress().c_str(), GetRemotePort());
-
-    if(!AllowedToConnect(GetRemoteAddress()))
-    {
-        sLog.outBasic("FLOOD! Dropping connection. [%s:%u]", GetRemoteAddress().c_str(), GetRemotePort());
-        SetCloseAndDelete();
-    }
-    s.SetRand(s_BYTE_SIZE * 8);
-}*/
 
 /// Read the packet from the client
 void AuthSocket::OnRead()
@@ -418,7 +405,7 @@ bool AuthSocket::_HandleLogonChallenge()
         {
             ///- If the IP is 'locked', check that the player comes indeed from the correct IP address
             bool locked = false;
-            if((*result)[2].GetUInt8() == 1)            // if ip is locked
+            if((*result)[2].GetUInt8() == 1)                // if ip is locked
             {
                 DEBUG_LOG("[AuthChallenge] Account '%s' is locked to IP - '%s'", _login.c_str(), (*result)[3].GetString());
                 DEBUG_LOG("[AuthChallenge] Player address is '%s'", get_remote_address().c_str());

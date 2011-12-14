@@ -980,6 +980,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (damageInfo.damage)
             procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
+        if (damageInfo.absorb)
+            procEx &= ~PROC_EX_DIRECT_DAMAGE;
+
         if (missInfo == SPELL_MISS_REFLECT)
             damageInfo.threatTarget = unit->GetGUID();
 
@@ -2942,7 +2945,7 @@ void Spell::finish(bool ok)
         ((Player*)m_caster)->RemoveSpellMods(this);
 
     // Okay to remove extra attacks
-    if (IsSpellHaveEffect(m_spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+    if (m_spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
         m_caster->m_extraAttacks = 0;
 
     // Heal caster for all health leech from all targets
@@ -5271,7 +5274,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     }
 
     //Do not check LOS for triggered spells
-    if (m_IsTriggeredSpell && !m_caster->ToTotem())
+    if (m_IsTriggeredSpell/* && !m_caster->ToTotem()*/)
         return true;
 
     //Check targets for LOS visibility (except spells without range limitations)

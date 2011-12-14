@@ -3036,7 +3036,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
 
     // cast talents with SPELL_EFFECT_LEARN_SPELL (other dependent spells will learned later as not auto-learned)
     // note: all spells with SPELL_EFFECT_LEARN_SPELL isn't passive
-    if (talentCost > 0 && IsSpellHaveEffect(spellInfo,SPELL_EFFECT_LEARN_SPELL))
+    if (talentCost > 0 && spellInfo->HasEffect(SPELL_EFFECT_LEARN_SPELL))
     {
         // ignore stance requirement for talent learn spell (stance set for spell only for client spell description show)
         CastSpell(this, spell_id, true);
@@ -3062,7 +3062,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             if (!spellInfo->CasterAuraState || HasAuraState(AuraState(spellInfo->CasterAuraState)))
                 CastSpell(this, spell_id, true);
     }
-    else if (IsSpellHaveEffect(spellInfo,SPELL_EFFECT_SKILL_STEP))
+    else if (spellInfo->HasEffect(SPELL_EFFECT_SKILL_STEP))
     {
         CastSpell(this, spell_id, true);
         return false;
@@ -7074,7 +7074,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             }
 
             // not allow proc extra attack spell at extra attack
-            if (m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+            if (m_extraAttacks && spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
                 return;
 
             float chance = spellInfo->procChance;
@@ -7154,7 +7154,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             }
 
             // not allow proc extra attack spell at extra attack
-            if (m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+            if (m_extraAttacks && spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
                 return;
 
             float chance = pEnchant->amount[s] != 0 ? float(pEnchant->amount[s]) : GetWeaponProcChance();

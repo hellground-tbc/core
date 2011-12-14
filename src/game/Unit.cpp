@@ -1590,8 +1590,12 @@ void Unit::CalculateMeleeDamage(MeleeDamageLog *damageInfo)
             damageInfo->hitInfo |= HITINFO_ABSORB;
             damageInfo->procEx  |= PROC_EX_ABSORB;
         }
+        else
+            damageInfo->procEx |= PROC_EX_DIRECT_DAMAGE;
+
         if (damageInfo->resist)
             damageInfo->hitInfo |= HITINFO_RESIST;
+
         if (damageInfo->damage)
             damageInfo->procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
     }
@@ -2051,7 +2055,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
 
             // Damage can be splitted only if aura has an alive caster
             Unit *caster = (*i)->GetCaster();
-            if (!caster || caster == pVictim || !caster->IsInWorld() || !caster->isAlive())
+            if (!caster || caster == pVictim || !caster->IsInWorld() || !caster->isAlive() || caster->IsImmunedToDamage((SpellSchoolMask)(*i)->GetSpellProto()->SchoolMask))
                 continue;
 
             int32 currentAbsorb;
@@ -2081,7 +2085,7 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
 
             // Damage can be splitted only if aura has an alive caster
             Unit *caster = (*i)->GetCaster();
-            if (!caster || caster == pVictim || !caster->IsInWorld() || !caster->isAlive())
+            if (!caster || caster == pVictim || !caster->IsInWorld() || !caster->isAlive() || caster->IsImmunedToDamage((SpellSchoolMask)(*i)->GetSpellProto()->SchoolMask))
                 continue;
 
             int32 splitted = int32(RemainingDamage * (*i)->GetModifier()->m_amount / 100.0f);
@@ -4964,7 +4968,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 18765:
                 case 35429:
                 {
-                    // prevent trigger from execute and from self
+                    // prevent trigger from self
                     if (procSpell && procSpell->Id == 12723)
                         return false;
 
@@ -4972,18 +4976,47 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (!target)
                         return false;
 
+                    triggered_spell_id = 12723;
+
                     if (procSpell)
                     {
-                        // instead of returning false need to transfer normal swing damage amount
+                        // Execute will transfer normal swing damage amount if 2nd target HP is above 20%
                         if (procSpell->Id == 20647 && target->GetHealth() > target->GetMaxHealth() *0.2f)
-                            return false;
+                        {
+                            damage = CalculateDamage(BASE_ATTACK, false);
+                            MeleeDamageBonus(target, &damage, BASE_ATTACK);
+                            basepoints0 = damage;
+                            break;
+                        }
 
                         // Limit WhirlWind to hit one target applying 1s cooldown
                         if (procSpell->SpellFamilyName == SPELLFAMILY_WARRIOR && procSpell->SpellFamilyFlags & 0x400000000LL)
                             cooldown = 1;
                     }
 
-                    triggered_spell_id = 12723;
+                    float armor = pVictim->GetArmor();
+                    // Ignore enemy armor by SPELL_AURA_MOD_TARGET_RESISTANCE aura
+                    armor += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, SPELL_SCHOOL_MASK_NORMAL);
+
+                    if (armor < 0.0f)
+                        armor = 0.0f;
+
+                    float levelModifier = getLevel();
+                    if (levelModifier > 59)
+                        levelModifier = levelModifier + (4.5f * (levelModifier-59));
+
+                    float mitigation = 0.1f * armor / (8.5f * levelModifier + 40);
+                    mitigation = mitigation/(1.0f + mitigation);
+
+                    if (mitigation < 0.0f)
+                        mitigation = 0.0f;
+
+                    if (mitigation > 0.75f)
+                        mitigation = 0.75f;
+
+                    // calculate base damage before armor mitigation
+                    damage = uint32(damage / (1.0f - mitigation));
+
                     basepoints0 = damage;
                     break;
                 }
@@ -6909,7 +6942,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     }
 
     // not allow proc extra attack spell at extra attack
-    if (m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+    if (m_extraAttacks && spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
         return false;
 
     if (cooldown && GetTypeId()==TYPEID_PLAYER && ((Player*)this)->HasSpellCooldown(trigger_spell_id))
@@ -7961,6 +7994,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 DoneTotalMod = 1.0f;
             }
+            else if (spellProto->Id == 46579) // Deathfrost
+            {
+                CastingTime = 0;
+            }
             break;
         case SPELLFAMILY_MAGE:
             // Ignite - do not modify, it is (8*Rank)% damage of procing Spell
@@ -8835,19 +8872,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
 
     if (APbonus!=0)                                         // Can be negative
     {
-        bool normalized = false;
-        if (spellProto)
-        {
-            for (uint8 i = 0; i<3;i++)
-            {
-                if (spellProto->Effect[i] == SPELL_EFFECT_NORMALIZED_WEAPON_DMG)
-                {
-                    normalized = true;
-                    break;
-                }
-            }
-        }
-
+        bool normalized = spellProto ? spellProto->HasEffect(SPELL_EFFECT_NORMALIZED_WEAPON_DMG) : false;
         DoneFlatBenefit += int32(APbonus/14.0f * GetAPMultiplier(attType,normalized));
     }
 
@@ -9461,7 +9486,7 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     visibleDistance += float(getLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f;
     //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
     //based on wowwiki every 5 mod we have 1 more level diff in calculation
-    visibleDistance += (float)(GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
+    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
     visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
 
     return distance < visibleDistance;
@@ -10811,7 +10836,12 @@ void CharmInfo::InitPossessCreateSpells()
             if (IsPassiveSpell(spellid))
                 m_unit->CastSpell(m_unit, spellid, true);
             else
-                AddSpellToActionBar(0, spellid, ACT_CAST);
+            {
+                // add spell only if there are cooldown or global cooldown // TODO: find proper solution
+                const SpellEntry * tmpSpellEntry = sSpellStore.LookupEntry(spellid);
+                if (tmpSpellEntry && (tmpSpellEntry->RecoveryTime || tmpSpellEntry->StartRecoveryTime || tmpSpellEntry->CategoryRecoveryTime))
+                    AddSpellToActionBar(0, spellid, ACT_CAST);
+            }
         }
     }
 }
@@ -10846,7 +10876,7 @@ void CharmInfo::InitCharmCreateSpells()
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
 
             if (!spellInfo) onlyselfcast = false;
-            for (uint32 i = 0;i<3 && onlyselfcast;++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
+            for (uint32 i = 0; i < 3 && onlyselfcast; ++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
             {
                 if (spellInfo->EffectImplicitTargetA[i] != TARGET_UNIT_CASTER && spellInfo->EffectImplicitTargetA[i] != 0)
                     onlyselfcast = false;
@@ -10857,7 +10887,9 @@ void CharmInfo::InitCharmCreateSpells()
             else
                 newstate = ACT_CAST;
 
-            AddSpellToActionBar(0, spellId, newstate);
+            // add spell only if there are cooldown or global cooldown // TODO: find proper solution
+            if (spellInfo && (spellInfo->RecoveryTime || spellInfo->StartRecoveryTime || spellInfo->CategoryRecoveryTime))
+                AddSpellToActionBar(0, spellId, newstate);
         }
     }
 }
@@ -12867,7 +12899,7 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
     }
 }
 
-void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
+void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry const *spellInfo)
 {
     Unit *owner = GetCharmerOrOwnerOrSelf();
     Group *pGroup = NULL;
@@ -12887,15 +12919,17 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
             {
                 if (Target->isAlive() && IsWithinDistInMap(Target, radius))
                 {
-                    if (IsWithinLOSInMap(Target))
+                    if (spellInfo && spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS || IsWithinLOSInMap(Target))
                         TagUnitMap.push_back(Target);
                 }
 
                 if (Pet* pet = Target->GetPet())
                 {
                     if (pet->isAlive() && IsWithinDistInMap(pet, radius))
-                        if (IsWithinLOSInMap(pet))
+                    {
+                        if (spellInfo && spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS || IsWithinLOSInMap(pet))
                             TagUnitMap.push_back(pet);
+                    }
                 }
             }
         }
@@ -12971,9 +13005,15 @@ void Unit::ApplyMeleeAPAttackerBonus(int32 value, bool apply)
     m_meleeAPAttackerBonus += apply ? value : -value;
 }
 
-void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpeed)
+void Unit::KnockBackFrom(Unit* target, float horizontalSpeed, float verticalSpeed)
 {
     float angle = this == target ? GetOrientation() + M_PI : target->GetAngle(this);
+
+    KnockBack(angle, horizontalSpeed, verticalSpeed);
+}
+
+void Unit::KnockBack(float angle, float horizontalSpeed, float verticalSpeed)
+{
     float vsin = sin(angle);
     float vcos = cos(angle);
 
@@ -12985,7 +13025,7 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
         data << uint32(0);                                  // Sequence
         data << float(vcos);                                // x direction
         data << float(vsin);                                // y direction
-        data << float(horizintalSpeed);                     // Horizontal speed
+        data << float(horizontalSpeed);                     // Horizontal speed
         data << float(-verticalSpeed);                      // Z Movement speed (vertical)
         ((Player*)this)->GetSession()->SendPacket(&data);
 
@@ -12993,7 +13033,7 @@ void Unit::KnockBackFrom(Unit* target, float horizintalSpeed, float verticalSpee
     }
     else
     {
-        float dis = horizintalSpeed;
+        float dis = horizontalSpeed;
 
         float ox, oy, oz;
         GetPosition(ox, oy, oz);

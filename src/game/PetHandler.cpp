@@ -367,8 +367,6 @@ void WorldSession::HandlePetSetAction(WorldPacket & recv_data)
 
     recv_data >> petguid;
 
-    // FIXME: charmed case
-    //Pet* pet = ObjectAccessor::Instance().GetPet(petguid);
     if (ObjectAccessor::FindPlayer(petguid))
         return;
 

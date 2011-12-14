@@ -88,4 +88,3 @@ void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
 
     GetPlayer()->DuelComplete(DUEL_INTERUPTED);
 }
-

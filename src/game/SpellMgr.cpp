@@ -662,9 +662,18 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
     if (!spellproto)
         return false;
+
     // talents
     if (IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
         return true;
+
+    /*
+    // explicit targeting set positiveness independent from real effect
+    // Note: IsExplicitNegativeTarget can't be used symmetric (look some TARGET_SINGLE_ENEMY spells for example)
+    if (IsExplicitPositiveTarget(spellproto->EffectImplicitTargetA[effIndex]) ||
+        IsExplicitPositiveTarget(spellproto->EffectImplicitTargetB[effIndex]))
+        return true;
+    */
 
     // should this work fine?
     if (spellproto->Attributes & SPELL_ATTR_NEGATIVE_1)
@@ -1962,6 +1971,16 @@ bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
     return IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
 }
 
+bool SpellMgr::IsSplashBuffAura(SpellEntry const* spellInfo)
+{
+    for (uint8 i = 0; i < 3; i++)
+    {
+        if (IsPositiveEffect(spellInfo->Id, i) && spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
+           return true;
+    }
+    return false;
+}
+
 SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const
 {
     // ignore passive spells
@@ -2746,6 +2765,11 @@ void SpellMgr::LoadSpellCustomAttr()
         case 6774:                     // Slice'n'Dice
             spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO; // Do not put caster in combat after use
             break;
+        /* SHAMAN CUSTOM ATTRIBUTES */
+        case 2895:                      // Wrath of Air Totem - disallow weird stacking
+            spellInfo->EffectImplicitTargetA[0] = spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER; 
+            spellInfo->EffectImplicitTargetB[0] = spellInfo->EffectImplicitTargetB[1] = 0;
+            break;
         // Triggered spells that should be delayed
         case 20272:                     // Illumination
         case 32848:                     // Mana Restore
@@ -2818,8 +2842,12 @@ void SpellMgr::LoadSpellCustomAttr()
         case 41172: // Rapid Shot
         case 40834: // Agonizing Flames
         case 45032: // Curse of Boundless Agony
+        case 42357: // Axe Throw, triggered by 42359
+            spellInfo->MaxAffectedTargets = 1;
+            break;
         case 45034:
             spellInfo->MaxAffectedTargets = 1;
+            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
             break;
         case 38281: // Static Charge (LV)
         case 39992: // Najentus: Needle Spine
@@ -2871,10 +2899,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 32727: // Arena Preparation - remove invisibility aura
         case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
             spellInfo->Effect[1] = NULL;
-            break;
-        case 12723: // Sweeping Strikes proc
-            spellInfo->AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            spellInfo->Attributes |= SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             break;
         case 24905: // Moonkin form -> elune's touch
             spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
@@ -2930,6 +2954,12 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 40334:
             spellInfo->procFlags = PROC_FLAG_SUCCESSFUL_MELEE_HIT;
+            break;
+        case 30015: // Summon Naias cooldown
+            spellInfo->RecoveryTime = 300000;
+            break;
+        case 35413: // Summon Goliathon cooldown
+            spellInfo->RecoveryTime = 300000;
             break;
         case 13280: // Gnomish Death Ray
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
@@ -3025,7 +3055,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = 1;
             break;
         case 37370: // Kelidan the breaker - vortex
-            spellInfo->EffectMiscValue[0] /= 10;
+            spellInfo->EffectMiscValue[0] /= 2;
             break;
         default:
             break;
@@ -3033,6 +3063,7 @@ void SpellMgr::LoadSpellCustomAttr()
     }
     CreatureAI::FillAISpellInfo();
 }
+
 // TODO: move this to database along with slot position in cast bar
 void SpellMgr::LoadCustomSpellCooldowns(SpellEntry* spellInfo)
 {

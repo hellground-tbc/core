@@ -47,19 +47,18 @@
 
 INSTANTIATE_SINGLETON_1(InstanceSaveManager);
 
-InstanceSaveManager::InstanceSaveManager() : lock_instLists(false), unbinded(false)
+InstanceSaveManager::InstanceSaveManager() : lock_instLists(false)
 {
+
 }
 
 InstanceSaveManager::~InstanceSaveManager()
 {
-    if (!unbinded)
-        UnbindBeforeDelete();
+    UnbindBeforeDelete();
 }
 
 void InstanceSaveManager::UnbindBeforeDelete()
 {
-    unbinded = true;
     // it is undefined whether this or objectmgr will be unloaded first
     // so we must be prepared for both cases
     lock_instLists = true;
@@ -77,6 +76,8 @@ void InstanceSaveManager::UnbindBeforeDelete()
         save->m_groupList.clear();
         delete save;
     }
+
+    m_instanceSaveById.clear();
 }
 
 /*

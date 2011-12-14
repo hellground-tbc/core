@@ -570,9 +570,9 @@ ChatCommand * ChatHandler::getCommandTable()
         { "list",           SEC_MODERATOR,      false,  &ChatHandler::HandleGMTicketListCommand,            "", NULL },
         { "onlinelist",     SEC_MODERATOR,      false,  &ChatHandler::HandleGMTicketListOnlineCommand,      "", NULL },
         { "response",       SEC_MODERATOR,      false,  &ChatHandler::HandleGMTicketResponseCommand,        "", NULL },
-        { "viewname",       SEC_MODERATOR,      false,  &ChatHandler::HandleGMTicketGetByNameCommand,       "", NULL },
-        { "viewid",         SEC_MODERATOR,      false,  &ChatHandler::HandleGMTicketGetByIdCommand,         "", NULL },
         { "unassign",       SEC_MODERATOR,      false,  &ChatHandler::HandleGMTicketUnAssignCommand,        "", NULL },
+        { "viewid",         SEC_MODERATOR,      false,  &ChatHandler::HandleGMTicketGetByIdCommand,         "", NULL },
+        { "viewname",       SEC_MODERATOR,      false,  &ChatHandler::HandleGMTicketGetByNameCommand,       "", NULL },
         { NULL,             0,                  false,  NULL,                                               "", NULL }
     };
 
@@ -613,8 +613,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "reset",          SEC_ADMINISTRATOR,  false,  NULL,                                           "", resetCommandTable },
         { "send",           SEC_MODERATOR,      true,   NULL,                                           "", sendCommandTable },
         { "server",         SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverCommandTable },
-        { "ticket",         SEC_MODERATOR,      false,  NULL,                                           "", ticketCommandTable },
         { "tele",           SEC_MODERATOR,      true,   NULL,                                           "", teleCommandTable },
+        { "ticket",         SEC_MODERATOR,      false,  NULL,                                           "", ticketCommandTable },
         { "unban",          SEC_ADMINISTRATOR,  true,   NULL,                                           "", unbanCommandTable },
         { "wp",             SEC_GAMEMASTER,     false,  NULL,                                           "", wpCommandTable },
 

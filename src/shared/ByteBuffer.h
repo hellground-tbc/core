@@ -287,8 +287,7 @@ class ByteBuffer
         template <typename T> T read(size_t pos) const
         {
             if (pos + sizeof(T) > size())
-                return T(0);
-//                throw ByteBufferException(false, pos, sizeof(T), size());
+                throw ByteBufferException(false, pos, sizeof(T), size());
             T val = *((T const*)&_storage[pos]);
             EndianConvert(val);
             return val;

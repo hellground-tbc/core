@@ -41,6 +41,7 @@
 #include "ScriptMgr.h"
 #include "Util.h"
 #include "InstanceSaveMgr.h"
+#include "DBCStores.h"
 
 #ifdef WIN32
 #include "ServiceWin32.h"
@@ -56,25 +57,6 @@ extern RunModes runMode;
 #pragma warning(disable:4305)
 
 INSTANTIATE_SINGLETON_1( Master );
-
-bool IsAcceptableClientBuild(uint32 build)
-{
-    int accepted_versions[] = EXPECTED_CLIENT_BUILD;
-    for(int i = 0; accepted_versions[i]; ++i)
-        if(int(build) == accepted_versions[i])
-            return true;
-
-    return false;
-}
-
-std::string AcceptableClientBuildsListStr()
-{
-    std::ostringstream data;
-    int accepted_versions[] = EXPECTED_CLIENT_BUILD;
-    for(int i = 0; accepted_versions[i]; ++i)
-        data << accepted_versions[i] << " ";
-    return data.str();
-}
 
 volatile uint32 Master::m_masterLoopCounter = 0;
 
@@ -278,7 +260,7 @@ int Master::Run()
     uint16 wsport = sWorld.getConfig (CONFIG_PORT_WORLD);
     std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
 
-    if (sWorldSocketMgr->StartNetwork (wsport, bind_ip.c_str ()) == -1)
+    if (sWorldSocketMgr->StartNetwork(wsport, bind_ip) == -1)
     {
         sLog.outError ("Failed to start network");
         World::StopNow(ERROR_EXIT_CODE);

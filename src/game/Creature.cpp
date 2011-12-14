@@ -826,6 +826,10 @@ void Creature::prepareGossipMenu(Player *pPlayer,uint32 gossipid)
     if (Charmed)
         return;
 
+    // don't prepere menu for dueling players
+    if (pPlayer->duel)
+        return;
+
     PlayerMenu* pm=pPlayer->PlayerTalkClass;
     pm->ClearMenus();
 
@@ -969,6 +973,10 @@ void Creature::sendPreparedGossip(Player* player)
 
 void Creature::OnGossipSelect(Player* player, uint32 option)
 {
+    // player can't select gossip if in duel
+    if (player->duel)
+        return;
+
     GossipMenu& gossipmenu = player->PlayerTalkClass->GetGossipMenu();
 
     if (option >= gossipmenu.MenuItemCount())
