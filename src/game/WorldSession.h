@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
  *
@@ -38,10 +38,10 @@ struct AuctionEntry;
 struct AuctionHouseEntry;
 struct DeclinedName;
 
+class ObjectGuid;
 class Creature;
 class Item;
 class Object;
-class ObjectGuid;
 class Player;
 class Unit;
 class WorldPacket;

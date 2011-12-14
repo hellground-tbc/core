@@ -1172,6 +1172,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_SESSION_UPDATE_MAX_TIME] = sConfig.GetIntDefault("SessionUpdate.MaxTime", 1000);
     m_configs[CONFIG_SESSION_UPDATE_OVERTIME_METHOD] = sConfig.GetIntDefault("SessionUpdate.Method", 3);
+
+    m_configs[CONFIG_KICK_PLAYER_ON_BAD_PACKET] = sConfig.GetBoolDefault("Network.KickOnBadPacket", true);
 }
 
 /// Initialize the World

@@ -3794,8 +3794,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
             pl = GetPlayer(m->receiverGuid.GetRawValue());
 
         if (pl)
-        {                                                   //this code will run very improbably (the time is between 4 and 5 am, in game is online a player, who has old mail
-            //his in mailbox and he has already listed his mails)
+        {
             delete m;
             continue;
         }
@@ -3817,8 +3816,11 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
                 }
                 while (resultItems->NextRow());
             }
-            //if it is mail from AH, it shouldn't be returned, but deleted
-            if (m->messageType != MAIL_NORMAL || (m->checked & (MAIL_CHECK_MASK_COD_PAYMENT | MAIL_CHECK_MASK_RETURNED)))
+
+            // mail should be deleted if:
+            // - it's from AH
+            // - it's readed mail from GM (or meybe all readed mails should be deleted not returned ?)
+            if (m->messageType != MAIL_NORMAL || (m->checked & (MAIL_CHECK_MASK_COD_PAYMENT | MAIL_CHECK_MASK_RETURNED)) || (m->stationery == MAIL_STATIONERY_GM && m->checked & MAIL_CHECK_MASK_READ))
             {
                 // mail open and then not returned
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)

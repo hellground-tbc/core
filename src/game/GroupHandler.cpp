@@ -112,11 +112,11 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
         group = GetPlayer()->GetOriginalGroup();
 
     Group *group2 = player->GetGroup();
-    if( group2 && group2->isBGGroup() )
+    if (group2 && group2->isBGGroup())
         group2 = player->GetOriginalGroup();
 
     // player already in another group or invited
-    if( group2 || player->GetGroupInvite() )
+    if (group2 || player->GetGroupInvite())
     {
         SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_ALREADY_IN_GROUP);
         return;

@@ -980,6 +980,9 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (damageInfo.damage)
             procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
 
+        if (damageInfo.absorb)
+            procEx &= ~PROC_EX_DIRECT_DAMAGE;
+
         if (missInfo == SPELL_MISS_REFLECT)
             damageInfo.threatTarget = unit->GetGUID();
 

@@ -767,6 +767,7 @@ void Map::Remove(Player *player, bool remove)
     assert(grid != NULL);
 
     player->UpdateObjectVisibility(true);
+    player->DestroyForNearbyPlayers();
     player->RemoveFromWorld();
     RemoveFromGrid(player,grid,cell);
 

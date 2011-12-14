@@ -662,9 +662,18 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
     if (!spellproto)
         return false;
+
     // talents
     if (IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
         return true;
+
+    /*
+    // explicit targeting set positiveness independent from real effect
+    // Note: IsExplicitNegativeTarget can't be used symmetric (look some TARGET_SINGLE_ENEMY spells for example)
+    if (IsExplicitPositiveTarget(spellproto->EffectImplicitTargetA[effIndex]) ||
+        IsExplicitPositiveTarget(spellproto->EffectImplicitTargetB[effIndex]))
+        return true;
+    */
 
     // should this work fine?
     if (spellproto->Attributes & SPELL_ATTR_NEGATIVE_1)

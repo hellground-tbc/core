@@ -71,6 +71,7 @@ class WorldSession;
 class Creature;
 class Player;
 class Totem;
+class Pet;
 class UpdateMask;
 class InstanceData;
 class GameObject;
@@ -621,6 +622,9 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
 
         Totem* ToTotem();
         const Totem* ToTotem() const;
+
+        Pet* ToPet();
+        const Pet* ToPet() const;
 
     protected:
         explicit WorldObject();

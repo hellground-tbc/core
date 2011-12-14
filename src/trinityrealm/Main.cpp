@@ -65,7 +65,7 @@ bool StartDB();
 void UnhookSignals();
 void HookSignals();
 
-bool stopEvent = false;                                       ///< Holds the list of realms for this server
+bool stopEvent = false;                                     ///< Setting it to true stops the server
 
 DatabaseType LoginDatabase;                                 ///< Accessor to the realm server database
 
@@ -388,6 +388,7 @@ bool StartDB()
     }
 
     sLog.outString("Database: %s", dbstring.c_str() );
+
     if(!LoginDatabase.Initialize(dbstring.c_str()))
     {
         sLog.outError("Cannot connect to database");

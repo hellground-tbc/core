@@ -279,7 +279,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX_UNK27                       0x08000000            // 27
 #define SPELL_ATTR_EX_UNK28                       0x10000000            // 28
 //in TC2: #define SPELL_ATTR_EX_IGNORE_IMMUNITY             0x10000000            // 28 ?? removed from Chains of Ice 3.3.0
-#define SPELL_ATTR_EX_UNK29                       0x20000000            // 29
+#define SPELL_ATTR_EX_CHANNEL_DISPLAY_SPELL_NAME  0x20000000            // 29 spell name is displayed in cast bar instead of 'channeling' text
 #define SPELL_ATTR_EX_ENABLE_AT_DODGE             0x40000000            // 30 overpower
 #define SPELL_ATTR_EX_UNK31                       0x80000000            // 31
 

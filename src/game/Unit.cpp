@@ -1585,8 +1585,12 @@ void Unit::CalculateMeleeDamage(MeleeDamageLog *damageInfo)
             damageInfo->hitInfo |= HITINFO_ABSORB;
             damageInfo->procEx  |= PROC_EX_ABSORB;
         }
+        else
+            damageInfo->procEx |= PROC_EX_DIRECT_DAMAGE;
+
         if (damageInfo->resist)
             damageInfo->hitInfo |= HITINFO_RESIST;
+
         if (damageInfo->damage)
             damageInfo->procVictim |= PROC_FLAG_TAKEN_ANY_DAMAGE;
     }
@@ -6917,7 +6921,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     }
 
     // not allow proc extra attack spell at extra attack
-    if (m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+    if (m_extraAttacks && spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
         return false;
 
     if (cooldown && GetTypeId()==TYPEID_PLAYER && ((Player*)this)->HasSpellCooldown(trigger_spell_id))
@@ -9442,7 +9446,7 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
     visibleDistance += float(getLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f;
     //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
     //based on wowwiki every 5 mod we have 1 more level diff in calculation
-    visibleDistance += (float)(GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
+    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
     visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
 
     return distance < visibleDistance;
