@@ -314,10 +314,9 @@ bool DropAggro(Creature* pAttacker, Unit * target)
         return true;
 
         // is this needed ? Oo if not then next check if also useless ;)
-    if (/*target->isCharmed() && */pAttacker->IsFriendlyTo(target))
+    if (target->isCharmed() && pAttacker->IsFriendlyTo(target))
         return true;
 
-    /* useless if isCharmed() check isn't needed
     // check if target is friendly because of faction or forced reactions
     FactionTemplateEntry const* faction = pAttacker->getFactionTemplateEntry();
     if (faction && target->GetTypeId() == TYPEID_PLAYER)
@@ -325,7 +324,7 @@ bool DropAggro(Creature* pAttacker, Unit * target)
         ReputationRank const * rank = ((Player const*)target)->GetReputationMgr().GetForcedRankIfAny(faction);
         if (rank && (*rank) >= REP_FRIENDLY)
             return true;
-    }*/
+    }
 
     //target has Spirit of Redemption aura (shapeshift effect)
     if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || target->HasAuraType(SPELL_AURA_IGNORED))
