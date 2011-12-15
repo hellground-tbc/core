@@ -225,7 +225,7 @@ WorldSocketMgr::~WorldSocketMgr()
         delete m_Acceptor;
 }
 
-int WorldSocketMgr::StartReactiveIO (ACE_UINT16 port, const char* address)
+int WorldSocketMgr::StartReactiveIO(ACE_UINT16 port, const char* address)
 {
     m_UseNoDelay = sConfig.GetBoolDefault ("Network.TcpNodelay", true);
 
@@ -257,7 +257,7 @@ int WorldSocketMgr::StartReactiveIO (ACE_UINT16 port, const char* address)
     WorldSocket::Acceptor* acc = new WorldSocket::Acceptor;
     m_Acceptor = acc;
 
-    ACE_INET_Addr listen_addr (port, address);
+    ACE_INET_Addr listen_addr(port, address);
 
     if (acc->open (listen_addr, m_NetThreads[0].GetReactor(), ACE_NONBLOCK) == -1)
     {
@@ -271,7 +271,7 @@ int WorldSocketMgr::StartReactiveIO (ACE_UINT16 port, const char* address)
     return 0;
 }
 
-int WorldSocketMgr::StartNetwork (ACE_UINT16 port, std::string& address)
+int WorldSocketMgr::StartNetwork(ACE_UINT16 port, std::string& address)
 {
     if (!sLog.IsOutDebug ())
         ACE_Log_Msg::instance()->priority_mask (LM_ERROR, ACE_Log_Msg::PROCESS);

@@ -257,7 +257,7 @@ int Master::Run()
 #endif
 
     ///- Launch the world listener socket
-    uint16 wsport = sWorld.getConfig (CONFIG_PORT_WORLD);
+    uint16 wsport = sWorld.getConfig(CONFIG_PORT_WORLD);
     std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
 
     if (sWorldSocketMgr->StartNetwork(wsport, bind_ip) == -1)
