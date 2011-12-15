@@ -511,8 +511,7 @@ void Map::Update(const uint32 &t_diff)
         if (plr && plr->IsInWorld())
         {
             WorldSession * pSession = plr->GetSession();
-            MapSessionFilter updater(pSession);
-            pSession->Update(t_diff, updater);
+            pSession->Update(t_diff, true);
         }
     }
 
@@ -531,9 +530,9 @@ void Map::Update(const uint32 &t_diff)
 
     Trinity::ObjectUpdater updater(t_diff);
     // for creature
-    TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer  > grid_object_update(updater);
+    TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer> grid_object_update(updater);
     // for pets
-    TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer > world_object_update(updater);
+    TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer> world_object_update(updater);
 
     // the player iterator is stored in the map object
     // to make sure calls to Map::Remove don't invalidate it

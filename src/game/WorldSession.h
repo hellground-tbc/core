@@ -98,43 +98,6 @@ enum OvertimeMethod
     OVERTIME_IPBAN  = 4
 };
 
-//class to deal with packet processing
-//allows to determine if next packet is safe to be processed
-class PacketFilter
-{
-public:
-    explicit PacketFilter(WorldSession * pSession) : m_pSession(pSession) {}
-    virtual ~PacketFilter() {}
-
-    virtual bool Process(WorldPacket * packet) { return true; }
-    virtual bool ProcessLogout() const { return true; }
-
-protected:
-    WorldSession * const m_pSession;
-};
-//process only thread-safe packets in Map::Update()
-class MapSessionFilter : public PacketFilter
-{
-public:
-    explicit MapSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
-    ~MapSessionFilter() {}
-
-    virtual bool Process(WorldPacket * packet);
-    //in Map::Update() we do not process player logout!
-    virtual bool ProcessLogout() const { return false; }
-};
-
-//class used to filer only thread-unsafe packets from queue
-//in order to update only be used in World::UpdateSessions()
-class WorldSessionFilter : public PacketFilter
-{
-public:
-    explicit WorldSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
-    ~WorldSessionFilter() {}
-
-    virtual bool Process(WorldPacket* packet);
-};
-
 /// Player session in the World
 class TRINITY_DLL_SPEC WorldSession
 {
@@ -205,7 +168,8 @@ class TRINITY_DLL_SPEC WorldSession
         void KickPlayer();
 
         void QueuePacket(WorldPacket* new_packet);
-        bool Update(uint32 diff, PacketFilter& updater);
+        void ProcessPacket(WorldPacket* packet);
+        bool Update(uint32 diff, bool threadSafe);
 
         /// Handle the authentication waiting queue (to be completed)
         void SendAuthWaitQue(uint32 position);
@@ -410,7 +374,8 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleMoveWorldportAckOpcode();                // for server-side calls
 
         void HandleMovementOpcodes(WorldPacket& recvPacket);
-        void HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo);        void HandleSetActiveMoverOpcode(WorldPacket &recv_data);
+        void HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo);
+        void HandleSetActiveMoverOpcode(WorldPacket &recv_data);
         void HandleMoveNotActiveMoverOpcode(WorldPacket &recv_data);
         void HandleMoveTimeSkippedOpcode(WorldPacket &recv_data);
 
@@ -753,7 +718,8 @@ class TRINITY_DLL_SPEC WorldSession
 
         uint16 m_opcodesDisabled;
 
-        ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
+        ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvThreadUnsafeQueue;
+        ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvThreadSafeQueue;
 };
 #endif
 /// @}

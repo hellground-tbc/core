@@ -61,44 +61,28 @@ namespace ACE_Based
              void add(const T& item)
              {
                  lock();
- 
+
                  //ASSERT(!this->_canceled);
                  // throw Cancellation_Exception();
                  _queue.push_back(item);
-             
+
                  unlock();
              }
- 
+
             //! Gets the next result in the queue, if any.
             bool next(T& result)
             {
                 ACE_GUARD_RETURN (LockType, g, this->_lock, false);
- 
+
                 if (_queue.empty())
                     return false;
- 
+
                 //ASSERT (!_queue.empty() || !this->_canceled);
                 // throw Cancellation_Exception();
- 
-                result = _queue.front();
-                _queue.pop_front();
- 
-                return true;
-            }
-
-            template<class Checker>
-            bool next(T& result, Checker& check)
-            {
-                ACE_Guard<LockType> g(this->_lock);
-
-                if (_queue.empty())
-                    return false;
 
                 result = _queue.front();
-                if(!check.Process(result))
-                    return false;
-
                 _queue.pop_front();
+
                 return true;
             }
 
@@ -114,11 +98,11 @@ namespace ACE_Based
             void cancel()
             {
                 lock();
- 
+
                 _canceled = true;
                 unlock();
             }
- 
+
             //! Checks if the queue is cancelled.
             bool cancelled()
             {
