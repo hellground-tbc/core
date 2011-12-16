@@ -12665,6 +12665,9 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
 
     // Set charmed
     charmer->SetCharm(this);
+    // delete charmed players for threat list
+    if(charmer->CanHaveThreatList())
+        charmer->getThreatManager().modifyThreatPercent(this, -101);
     SetCharmerGUID(charmer->GetGUID());
     setFaction(charmer->getFaction());
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
