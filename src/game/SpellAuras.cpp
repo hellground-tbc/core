@@ -262,7 +262,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         //203 SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE  implemented in Unit::CalculateMeleeDamage and Unit::CalculateSpellDamage
     &Aura::HandleNoImmediateEffect,                         //204 SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE implemented in Unit::CalculateMeleeDamage and Unit::CalculateSpellDamage
     &Aura::HandleNULL,                                      //205 vulnerable to school dmg?
-    &Aura::HandleNULL,                                      //206 SPELL_AURA_MOD_SPEED_MOUNTED
+    &Aura::HandleAuraModIncreaseFlightSpeed,                //206 SPELL_AURA_MOD_SPEED_MOUNTED
     &Aura::HandleAuraModIncreaseFlightSpeed,                //207 SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED
     &Aura::HandleAuraModIncreaseFlightSpeed,                //208 SPELL_AURA_MOD_SPEED_FLIGHT, used only in spell: Flight Form (Passive)
     &Aura::HandleAuraModIncreaseFlightSpeed,                //209 SPELL_AURA_MOD_FLIGHT_SPEED_ALWAYS
@@ -278,7 +278,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleModManaRegen,                              //219 SPELL_AURA_MOD_MANA_REGEN_FROM_STAT
     &Aura::HandleNULL,                                      //220 SPELL_AURA_MOD_RATING_FROM_STAT
     &Aura::HandleNULL,                                      //221 ignored
-    &Aura::HandleUnused,                                    //222 unused
+    &Aura::HandleNoImmediateEffect,                         //222 SPELL_AURA_PRAYER_OF_MENDING_NPC
     &Aura::HandleNULL,                                      //223 Cold Stare
     &Aura::HandleUnused,                                    //224 unused
     &Aura::HandleNoImmediateEffect,                         //225 SPELL_AURA_PRAYER_OF_MENDING
@@ -2336,6 +2336,33 @@ void Aura::TriggerSpell()
             case 43120:
                 target = m_target;
                 break;
+            // Burn should self-damage Phoenix
+            case 44197:
+            {
+                uint32 damage = caster->CalculateSpellDamage(triggeredSpellInfo, 0, 1750,caster);
+                caster->DealDamage(caster, damage, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_FIRE, GetSpellProto(), false);
+                break;
+            }
+            // Mana Rage bloodlust sound on trigger
+            case 44320:
+            {
+                WorldPacket data(4);
+                data.SetOpcode(SMSG_PLAY_SOUND);
+                data << uint32(10030);
+                target->SendMessageToSet(&data,false);
+                break;
+            }
+            // Self Repair
+            case 44994:
+                if(caster->GetTypeId() != TYPEID_UNIT)
+                    return;
+
+                if(100*caster->GetHealth()/caster->GetMaxHealth() >= 92)
+                {
+                    caster->SetHealth(0.95*caster->GetMaxHealth());
+                    caster->RemoveAurasDueToSpell(44994);
+                }
+                break;
         }
     }
     if (!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
@@ -4199,6 +4226,7 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
         switch (GetId())
         {
             case 28730:                                 // Arcane Torrent (Mana)
+            case 33390:                                 // Arcane Torrent (mana Wretched Devourer)
             {
                 Unit *caster = GetCaster();
                 if (!caster)
@@ -4445,63 +4473,7 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
     if (!m_target)
         return;
 
-    //proper flags unknown, uncomment this when verified
-    /*
-    miscVal i spelle którym są przypisane + immune wg TC2
-
-     TC2       S F ? d D T ? ? C t R
-    96      -  0 0 0 0 1 1 0 0 0 0 0  - Free Friend - niby disspeluje incapacitate
-    679     -  0 1 0 1 0 1 0 0 1 1 1  - MC
-    817     -  0 1 1 0 0 1 1 0 0 0 1  - Blue Dragon Immunity
-    878     -  0 1 1 0 1 1 0 1 1 1 0  - Whirlwind, Fog of Corruption
-    1557    -  1 1 0 0 0 0 1 0 1 0 1  - Starling Roar - niby disspeluje snare, cc, stun, (mc nie)
-    1615    -  1 1 0 0 1 0 0 1 1 1 1  - Incite Frenzy
-    1676    -  1 1 0 1 0 0 0 1 1 1 1  - Red Riding Hood
-    1694    -  1 1 0 1 0 0 1 1 1 1 0  - Fixated
-
-    R - root
-    t - transform
-    C - confuse
-    T - taunt
-    D - decrese speed
-    d - disarm
-    F - fear
-    S - stun
-    ? - unknown
-
-
-    std::list <AuraType> immunity_list;
-
-    if (GetMiscValue() & (1<<10))
-        immunity_list.push_back(SPELL_AURA_MOD_STUN);
-    if (GetMiscValue() & (1<<7))
-        immunity_list.push_back(SPELL_AURA_MOD_DISARM);
-    if (GetMiscValue() & (1<<1))
-        immunity_list.push_back(SPELL_AURA_TRANSFORM);
-
-    // These flag can be recognized wrong:
-    if (GetMiscValue() & (1<<5))
-        immunity_list.push_back(SPELL_AURA_MOD_TAUNT);
-    if (GetMiscValue() & (1<<6))
-        immunity_list.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
-    if (GetMiscValue() & (1<<0))
-        immunity_list.push_back(SPELL_AURA_MOD_ROOT);
-    if (GetMiscValue() & (1<<2))
-        immunity_list.push_back(SPELL_AURA_MOD_CONFUSE);
-    if (GetMiscValue() & (1<<9))
-        immunity_list.push_back(SPELL_AURA_MOD_FEAR);
-
-    if (apply)
-    {
-        for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
-            m_target->RemoveAurasByType(*iter);
-    }
-
-    for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
-    {
-        m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,*iter, apply);
-    }
-    */
+    // first, some custom verified values
     std::list<uint32> immunity;
 
     if (GetMiscValue() & ((1<<5) | (1<<6)))  //workaround for spell 40081
@@ -4558,6 +4530,69 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
         m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,SPELL_AURA_MOD_TAUNT, apply);
         m_target->ApplySpellImmune(GetId(),IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, apply);
     }
+
+    /*
+    miscVal i spelle którym są przypisane + immune wg TC2
+
+     TC2       S F ? d D T ? ? C t R
+    96      -  0 0 0 0 1 1 0 0 0 0 0  - Free Friend - niby disspeluje incapacitate
+    679     -  0 1 0 1 0 1 0 0 1 1 1  - MC
+    817     -  0 1 1 0 0 1 1 0 0 0 1  - Blue Dragon Immunity
+    878     -  0 1 1 0 1 1 0 1 1 1 0  - Whirlwind, Fog of Corruption
+    1557    -  1 1 0 0 0 0 1 0 1 0 1  - Starling Roar - niby disspeluje snare, cc, stun, (mc nie)
+    1615    -  1 1 0 0 1 0 0 1 1 1 1  - Incite Frenzy
+    1676    -  1 1 0 1 0 0 0 1 1 1 1  - Red Riding Hood
+    1694    -  1 1 0 1 0 0 1 1 1 1 0  - Fixated
+
+    R - root
+    t - transform
+    C - confuse
+    T - taunt
+    D - decrese speed
+    d - disarm
+    F - fear
+    S - stun
+    ? - unknown
+    */
+
+    //proper flags unknown, should be verified when more data screened
+    std::list <AuraType> immunity_list;
+
+    if (GetMiscValue() & (1<<10))
+        immunity_list.push_back(SPELL_AURA_MOD_STUN);
+    if (GetMiscValue() & (1<<7))
+        immunity_list.push_back(SPELL_AURA_MOD_DISARM);
+    if (GetMiscValue() & (1<<1))
+        immunity_list.push_back(SPELL_AURA_TRANSFORM);
+
+    // These flag can be recognized wrong:
+    if (GetMiscValue() & (1<<5))
+        immunity_list.push_back(SPELL_AURA_MOD_TAUNT);
+    if (GetMiscValue() & (1<<6))
+        immunity_list.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
+    if (GetMiscValue() & (1<<0))
+        immunity_list.push_back(SPELL_AURA_MOD_ROOT);
+    if (GetMiscValue() & (1<<2))
+        immunity_list.push_back(SPELL_AURA_MOD_CONFUSE);
+    if (GetMiscValue() & (1<<9))
+        immunity_list.push_back(SPELL_AURA_MOD_FEAR);
+
+    // Totally guessed
+    if (GetMiscValue() & (1<<3))
+        immunity_list.push_back(SPELL_AURA_MOD_POSSESS);
+    if (GetMiscValue() & (1<<8))
+        immunity_list.push_back(SPELL_AURA_MOD_SILENCE);
+
+    if (apply)
+    {
+        for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+            m_target->RemoveSpellsCausingAura(*iter);
+    }
+
+    for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
+    {
+        m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,*iter, apply);
+    }
 }
 
 void Aura::HandleModMechanicImmunity(bool apply, bool Real)
@@ -4567,7 +4602,7 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
         uint32 mechanic = 1 << m_modifier.m_miscvalue;
 
         //immune movement impairment and loss of control
-        if (GetId()==42292)
+        if (GetId()==42292 || GetId()==46227) // 46227 - NPC version in MgT
             mechanic=IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
 
         Unit::AuraMap& Auras = m_target->GetAuras();
@@ -5051,7 +5086,10 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             {
                 InstanceMap *instance = dynamic_cast<InstanceMap*>(m_target->GetMap());
                 if(instance && instance->GetInstanceData() && instance->GetInstanceData()->IsEncounterInProgress())
-                    m_target->CastSpell(m_target, 45034, true, 0, this, GetCasterGUID());
+                {
+                    if(uint64 SathGUID = m_target->GetMap()->GetCreatureGUID(24892))
+                        m_target->CastSpell(m_target, 45034, true, 0, 0, SathGUID);
+                }
             }
             // Serpentshrine Parasite
             if (m_spellProto->Id == 39053 && !apply)
@@ -6610,9 +6648,9 @@ void Aura::CleanupTriggeredSpells()
     if (GetSpellDuration(tProto) != -1)
         return;
 
-    // needed for spell 43680, maybe others
+    // needed for spell 43680, 44320 maybe others
     // TODO: is there a spell flag, which can solve this in a more sophisticated way?
-    if (m_spellProto->EffectApplyAuraName[GetEffIndex()] == SPELL_AURA_PERIODIC_TRIGGER_SPELL && GetSpellDuration(m_spellProto) == m_spellProto->EffectAmplitude[GetEffIndex()])
+    if (m_spellProto->Id == 44320 || (m_spellProto->EffectApplyAuraName[GetEffIndex()] == SPELL_AURA_PERIODIC_TRIGGER_SPELL && GetSpellDuration(m_spellProto) == m_spellProto->EffectAmplitude[GetEffIndex()]))
         return;
 
     m_target->RemoveAurasDueToSpell(tSpellId);
@@ -6759,10 +6797,51 @@ void Aura::PeriodicTick()
                         m_modifier.m_amount = 100 * m_tickNumber;
                     }
                     break;
+                    // Gravity Lapse (MgT) knock back players again if not flying
+                    case 44226:
+                    case 49887:
+                    {
+                        if(m_target->GetTypeId() != TYPEID_PLAYER)
+                            return;
+                        if(Aura* GLapse = m_target->GetAura(GetId(), 1))
+                        {
+                            int32 duration = GLapse->GetAuraDuration();
+                            float height = m_target->GetPositionZ();
+
+                            if(m_target->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR) | m_target->HasUnitMovementFlag(MOVEFLAG_FALLING))
+                            {
+                                if(height < 0)
+                                {
+                                    m_target->CastSpell(m_target, 44227, true);
+                                    if (Aura* aur = m_target->GetAura(44227, 0))
+                                    {
+                                        aur->SetAuraDuration(duration);
+                                        aur->UpdateAuraDuration();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if(!m_target->HasUnitMovementFlag(MOVEFLAG_FLYING))
+                                {
+                                    // re-cast knockback but keep same aura duration
+                                    m_target->RemoveAurasDueToSpell(GetId());
+                                    m_target->CastSpell(m_target, GetId(), true);
+                                    if(Aura* newGLapse = m_target->GetAura(GetId(), 1))
+                                    {
+                                        newGLapse->SetAuraDuration(duration);
+                                        newGLapse->UpdateAuraDuration();
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
                     // Curse of Agony - Sathrovarr
                     case 45032:
                     case 45034:
                     {
+                        m_target->CastSpell(m_target, 45083, true); // DoT visual on tick
                         if ((m_tickNumber-1) % 5 == 0 && (m_tickNumber-1) > 0)
                             m_modifier.m_amount *= 2;
                     }

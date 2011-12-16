@@ -46,6 +46,13 @@ void UnitAI::DoMeleeAttackIfReady()
     if (me->hasUnitState(UNIT_STAT_CASTING))
         return;
 
+    // set selection back to attacked victim if not selected (after spell casting)
+    if(me->GetTypeId() == TYPEID_UNIT)
+    {
+        if(((Creature*)me)->GetSelection() != me->getVictimGUID())
+            ((Creature*)me)->SetSelection(me->getVictimGUID());
+    }
+
     //Make sure our attack is ready and we aren't currently casting before checking distance
     if (me->isAttackReady())
     {

@@ -994,12 +994,27 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recv_data)
     }
 }
 
-void WorldSession::HandleCompleteCinema(WorldPacket & /*recv_data*/)
+void WorldSession::HandleCompleteCinema(WorldPacket & recv_data)
 {
-    DEBUG_LOG("WORLD: Player is watching cinema");
+    sLog.outDebug("WORLD: Received CMSG_COMPLETE_CINEMATIC");
+
+    uint32 Cinematic_ID = GetPlayer()->getWatchingCinematic();
+
+    CinematicSequencesEntry const* cinematic = sCinematicSequencesStore.LookupEntry(Cinematic_ID);
+
+    if (!cinematic)
+    {
+        sLog.outDebug("Player '%s' (GUID: %u) send unknown (by DBC) Cinematic Sequence ID:%u",GetPlayer()->GetName(),GetPlayer()->GetGUIDLow(), Cinematic_ID);
+        return;
+    }
+
+    GetPlayer()->setWatchingCinematic(NULL);
+
+    if (sScriptMgr.OnCompletedCinematic(GetPlayer(), cinematic))
+        return;
 }
 
-void WorldSession::HandleNextCinematicCamera(WorldPacket & /*recv_data*/)
+void WorldSession::HandleNextCinematicCamera(WorldPacket & recv_data)
 {
     DEBUG_LOG("WORLD: Which movie to play");
 }

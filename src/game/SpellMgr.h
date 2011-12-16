@@ -142,7 +142,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId);
 // Different spell properties
 inline float GetSpellRadiusForHostile(SpellRadiusEntry const *radius) { return (radius ? radius->radiusHostile : 0); }
 inline float GetSpellRadiusForFriend(SpellRadiusEntry const *radius) { return (radius ? radius->radiusFriend : 0); }
-uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
+TRINITY_DLL_SPEC uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
 uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo);
 inline float GetSpellMinRange(SpellRangeEntry const *range) { return (range ? range->minRange : 0); }
 inline float GetSpellMaxRange(SpellRangeEntry const *range) { return (range ? range->maxRange : 0); }
@@ -920,6 +920,7 @@ class TRINITY_DLL_SPEC SpellMgr
         void LoadSkillLineAbilityMap();
         void LoadSpellPetAuras();
         void LoadSpellCustomAttr();
+        void LoadCustomSpellCooldowns(SpellEntry* spellInfo);
         void LoadSpellLinked();
         void LoadSpellEnchantProcData();
         void LoadSpellBonusData();

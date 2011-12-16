@@ -155,5 +155,5 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         LockType i_playerGuard;
         LockType i_corpseGuard;
 };
-#endif
 
+#endif

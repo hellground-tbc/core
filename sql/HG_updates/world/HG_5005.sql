@@ -1,0 +1,1 @@
+UPDATE creature_template SET ScriptName = "mob_brightscale_wyrm" WHERE entry = 24761;

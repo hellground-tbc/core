@@ -228,3 +228,4 @@ bool MapInstanced::CanEnter(Player *player)
 
     return false;
 }
+

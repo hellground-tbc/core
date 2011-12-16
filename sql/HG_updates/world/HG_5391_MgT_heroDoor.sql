@@ -1,0 +1,1 @@
+UPDATE gameobject SET spawnMask = 3 WHERE guid IN (99813, 99807, 99798, 99799, 99808);

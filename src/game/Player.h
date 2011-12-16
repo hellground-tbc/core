@@ -39,10 +39,11 @@
 #include "Util.h"                                           // for Tokens typedef
 #include "ReputationMgr.h"
 #include "World.h"
+
 #include "SpellMgr.h"       // for GetSpellBaseCastTime
 
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 
 struct Mail;
 class Channel;
@@ -402,7 +403,7 @@ enum PlayerFlags
     PLAYER_FLAGS_UNK3           = 0x00008000,               // strange visual effect (2.0.1), looks like PLAYER_FLAGS_GHOST flag
     PLAYER_FLAGS_SANCTUARY      = 0x00010000,               // player entered sanctuary
     PLAYER_FLAGS_UNK4           = 0x00020000,               // taxi benchmark mode (on/off) (2.0.1)
-    PLAYER_UNK                  = 0x00040000,               // 2.0.8...
+    PLAYER_UNK                  = 0x00040000,               // in 3.0.2, pvp timer active (after you disable pvp manually)
 };
 
 // used for PLAYER__FIELD_KNOWN_TITLES field (uint64), (1<<bit_index) without (-1)
@@ -1506,6 +1507,14 @@ class TRINITY_DLL_SPEC Player : public Unit
         {
             m_cinematic = cine;
         }
+        uint32 getWatchingCinematic()
+        {
+            return m_watchingCinematicId;
+        }
+        void setWatchingCinematic(uint32 cinematicId)
+        {
+            m_watchingCinematicId = cinematicId;
+        }
 
         void addActionButton(uint8 button, uint16 action, uint8 type, uint8 misc);
         void removeActionButton(uint8 button);
@@ -2309,6 +2318,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         bool m_dontMove;
 
         int m_cinematic;
+        uint32 m_watchingCinematicId;
 
         Player *pTrader;
         bool acceptTrade;

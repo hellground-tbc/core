@@ -457,6 +457,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
 
         void SetOwnerGUID(uint64 owner)
         {
+            Yell("OWNER SET", LANG_UNIVERSAL, 0);
             m_spawnedByDefault = false;                     // all object with owner is despawned after delay
             SetUInt64Value(OBJECT_FIELD_CREATED_BY, owner);
         }

@@ -21,6 +21,7 @@
 const char AreaTableEntryfmt[]="iiinixxxxxissssssssssssssssxixxxxxx";
 const char AuctionHouseEntryfmt[]="niiixxxxxxxxxxxxxxxxx";
 const char AreaTriggerEntryfmt[]="niffffffff";
+const char CinematicEntryfmt[]="niiiiiiiii";
 const char BankBagSlotPricesEntryfmt[]="ni";
 const char BattlemasterListEntryfmt[]="niiixxxxxiiiixxssssssssssssssssxx";
 const char CharStartOutfitEntryfmt[]="diiiiiiiiiiiiixxxxxxxxxxxxxxxxxxxxxxxxxxx";
@@ -80,6 +81,7 @@ const char SpellRadiusfmt[]="nfxf";
 const char SpellRangefmt[]="nffixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char SpellShapeshiftfmt[]="nxxxxxxxxxxxxxxxxxxiixixxxxxxxxxxxx";
 const char StableSlotPricesfmt[] = "ni";
+//const char SummonPropertiesfmt[] = "niiiii";
 const char TalentEntryfmt[]="niiiiiiiixxxxixxixxxi";
 const char TalentTabEntryfmt[]="nxxxxxxxxxxxxxxxxxxxiix";
 const char TaxiNodesEntryfmt[]="nifffxxxxxxxxxxxxxxxxxii";

@@ -31,6 +31,9 @@ EndScriptData */
 /*** Speech and sounds***/
 enum Speeches
 {
+    // Felmyst outro
+    YELL_KALECGOS       = -1580043, //after felmyst's death spawned and say this
+
     // These are used throughout Sunwell and Magisters(?). Players can hear this while running through the instances.
     SAY_KJ_OFFCOMBAT1   = -1580066,
     SAY_KJ_OFFCOMBAT2   = -1580067,
@@ -298,9 +301,46 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
     boss_kalecgos_kjAI(Creature* c) : ScriptedAI(c){
         pInstance = (c->GetInstanceData());
     }
-
-    GameObject* Orb[4];
     ScriptedInstance* pInstance;
+    uint32 FelmystOutroTimer;
+
+
+    void MovementInform(uint32 Type, uint32 Id)
+    {
+        if(Type == POINT_MOTION_TYPE)
+        {
+            switch(Id)
+            {
+                case 50: // felmyst outro speach
+                    DoScriptText(YELL_KALECGOS, me);
+                    FelmystOutroTimer = 10000;
+                    break;
+                case 60: // on starting phase 2
+                    me->ForcedDespawn();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(FelmystOutroTimer)
+        {
+            if(FelmystOutroTimer <= diff)
+            {
+                me->SetSpeed(MOVE_FLIGHT, 2.5);
+                me->GetMotionMaster()->MovePoint(60, 1547, 531, 161);
+                FelmystOutroTimer = 0;
+            }
+            else
+                FelmystOutroTimer -= diff;
+        }
+    }
+    // to be rewritten later
+/*
+    GameObject* Orb[4];
     uint8 OrbsEmpowered;
     uint8 EmpowerCount;
 
@@ -384,14 +424,16 @@ struct TRINITY_DLL_DECL boss_kalecgos_kjAI : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 diff){
-        if(!Searched){
+    void UpdateAI(const uint32 diff)
+    {
+        if(!Searched)
+        {
             FindOrbs();
             Searched = true;
-            }
+        }
 
         if(OrbsEmpowered == 4) OrbsEmpowered = 0;
-    }
+    }*/
 };
 
 CreatureAI* GetAI_boss_kalecgos_kj(Creature *_Creature)
@@ -638,9 +680,10 @@ struct TRINITY_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
                         }
                         break;
                     case TIMER_ORBS_EMPOWER: //Phase 3
-                        if(Phase == PHASE_SACRIFICE){
+                        /*if(Phase == PHASE_SACRIFICE)
+                        {
                             if(Kalec)((boss_kalecgos_kjAI*)Kalec->AI())->EmpowerOrb(true);
-                        }else if(Kalec)((boss_kalecgos_kjAI*)Kalec->AI())->EmpowerOrb(false);
+                        }else if(Kalec)((boss_kalecgos_kjAI*)Kalec->AI())->EmpowerOrb(false);*/
                         Timer[TIMER_ORBS_EMPOWER]= (Phase == PHASE_SACRIFICE) ? 45000 : 35000;
                         OrbActivated = true;
                         TimerIsDeactiveted[TIMER_ORBS_EMPOWER] = true;
@@ -742,7 +785,7 @@ struct TRINITY_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementA
 
     void Reset(){
         Phase = PHASE_DECEIVERS;
-        if(KalecKJ)((boss_kalecgos_kjAI*)KalecKJ->AI())->ResetOrbs();
+        //if(KalecKJ)((boss_kalecgos_kjAI*)KalecKJ->AI())->ResetOrbs();
         DeceiverDeathCount = 0;
         SummonedDeceivers = false;
         KiljaedenDeath = false;
@@ -773,13 +816,19 @@ struct TRINITY_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementA
     {
         if(RandomSayTimer < diff && pInstance->GetData(DATA_MURU_EVENT) != DONE && pInstance->GetData(DATA_KILJAEDEN_EVENT) == NOT_STARTED)
         {
+            RandomSayTimer = 60000;
+            for(uint32 i = 0; i < 6; ++i)   // do not yell when any encounter in progress
+            {
+                if(pInstance->GetData(i) == IN_PROGRESS)
+                    return;
+            }
             DoScriptText(RAND(SAY_KJ_OFFCOMBAT1, SAY_KJ_OFFCOMBAT2, SAY_KJ_OFFCOMBAT3, SAY_KJ_OFFCOMBAT4, SAY_KJ_OFFCOMBAT5), m_creature);
-            RandomSayTimer = 30000;
         }
         else
             RandomSayTimer -= diff;
 
-        if(!SummonedDeceivers){
+        if(!SummonedDeceivers)
+        {
             for(uint8 i = 0; i < 3; ++i)
                 m_creature->SummonCreature(CREATURE_HAND_OF_THE_DECEIVER, DeceiverLocations[i][0], DeceiverLocations[i][1], FLOOR_Z, DeceiverLocations[i][2], TEMPSUMMON_DEAD_DESPAWN, 0);
 

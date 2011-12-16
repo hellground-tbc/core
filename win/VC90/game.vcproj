@@ -128,7 +128,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\include\g3dlite;..\..\dep\tbb\include"
+				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\g3dlite\include;..\..\dep\tbb\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -1100,10 +1100,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\game\MovementGeneratorImpl.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\game\PointMovementGenerator.cpp"
 				>
 			</File>
@@ -1289,14 +1285,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\MapRefManager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\MapUpdater.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\MapUpdater.h"
 				>
 			</File>
 			<File
@@ -1682,6 +1670,18 @@
 		</File>
 		<File
 			RelativePath="..\..\src\game\DBCStructure.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\MapUpdater.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\MapUpdater.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\game\MovementGeneratorImpl.h"
 			>
 		</File>
 	</Files>

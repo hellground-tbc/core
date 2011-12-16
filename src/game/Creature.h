@@ -140,7 +140,10 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN     = 0x00080000,       // 524288
     CREATURE_FLAG_EXTRA_ALWAYS_WALK         = 0x00100000,       // 1048576
     CREATURE_FLAG_EXTRA_NO_TARGET           = 0x00200000,       // 2097152 creature won't set UNIT_FIELD_TARGET by self (return in Attack function !)
-    CREATURE_FLAG_EXTRA_HASTE_IMMUNE        = 0x00400000        // 4194304
+    CREATURE_FLAG_EXTRA_HASTE_IMMUNE        = 0x00400000,       // 4194304
+    CREATURE_FLAG_EXTRA_CANT_MISS           = 0x00800000,       // 8388608 creature melee attacks cant miss
+    CREATURE_FLAG_EXTRA_NOT_REGEN_MANA      = 0x01000000,       // 16777216 creature has mana pool, but do not regenerates it when OOC
+    CREATURE_FLAG_EXTRA_NOT_REGEN_HEALTH    = 0x02000000        // 33554432 rare case that creature should not regen health when OOC
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
@@ -535,6 +538,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         uint32 GetCurrentEquipmentId() { return m_equipmentId; }
         float GetSpellDamageMod(int32 Rank);
 
+        void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
         void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); }
         uint64 GetSelection() { return GetUInt64Value(UNIT_FIELD_TARGET); }
 
@@ -564,7 +568,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
         GossipOption const* GetGossipOption(uint32 id) const;
         void addGossipOption(GossipOption const& gso) { m_goptions.push_back(gso); }
 
-        void setEmoteState(uint8 emote) { m_emoteState = emote; };
         void Say(const char* text, uint32 language, uint64 TargetGuid) { MonsterSay(text,language,TargetGuid); }
         void Yell(const char* text, uint32 language, uint64 TargetGuid) { MonsterYell(text,language,TargetGuid); }
         void TextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote = false) { MonsterTextEmote(text,TargetGuid,IsBossEmote); }
@@ -728,7 +731,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
         bool m_gossipOptionLoaded;
         GossipOptionList m_goptions;
 
-        uint8 m_emoteState;
         bool m_isPet;                                       // set only in Pet::Pet
         bool m_isTotem;                                     // set only in Totem::Totem
         ReactStates m_reactState;                           // for AI, not charmInfo

@@ -269,10 +269,10 @@ void World::AddSession_ (WorldSession* s)
 
     WorldPacket packet(SMSG_AUTH_RESPONSE, 1 + 4 + 1 + 4 + 1);
     packet << uint8 (AUTH_OK);
-    packet << uint32 (0); // unknown random value...
+    packet << uint32 (0);                       // unknown random value...
     packet << uint8 (0);
     packet << uint32 (0);
-    packet << uint8 (s->Expansion()); // 0 - normal, 1 - TBC, must be set in database manually for each account
+    packet << uint8 (s->Expansion());           // 0 - normal, 1 - TBC, must be set in database manually for each account
     s->SendPacket (&packet);
 
     UpdateMaxSessionCounters();
@@ -748,7 +748,7 @@ void World::LoadConfigSettings(bool reload)
     {
         sLog.outError("StartHonorPoints (%i) must be in range 0..MaxHonorPoints(%u). Set to %u.",
             m_configs[CONFIG_START_HONOR_POINTS],m_configs[CONFIG_MAX_HONOR_POINTS],0);
-        m_configs[CONFIG_MAX_HONOR_POINTS] = 0;
+        m_configs[CONFIG_START_HONOR_POINTS] = 0;
     }
     else if (m_configs[CONFIG_START_HONOR_POINTS] > m_configs[CONFIG_MAX_HONOR_POINTS])
     {
@@ -1367,6 +1367,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Loading AreaTrigger script names...");
     sScriptMgr.LoadAreaTriggerScripts();
+
+    sLog.outString("Loading CompletedCinematic script names...");
+    sScriptMgr.LoadCompletedCinematicScripts();
 
     sLog.outString("Loading event id script names...");
     sScriptMgr.LoadEventIdScripts();

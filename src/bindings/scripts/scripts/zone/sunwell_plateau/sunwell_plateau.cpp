@@ -61,6 +61,44 @@ enum LiadrinnSpeeches
 #define CS_GOSSIP3 "Why did they stop?"
 #define CS_GOSSIP4 "Your insight is appreciated."
 
+bool GossipHello_npc_captain_selana(Player *player, Creature *_Creature)
+{
+    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, CS_GOSSIP1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    player->SEND_GOSSIP_MENU(12588, _Creature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_captain_selana(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+{
+    switch (action)
+    {
+        case GOSSIP_ACTION_INFO_DEF:
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, CS_GOSSIP2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            player->SEND_GOSSIP_MENU(12589, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+1:
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, CS_GOSSIP3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(12590, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, CS_GOSSIP4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            player->SEND_GOSSIP_MENU(12591, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            player->SEND_GOSSIP_MENU(12592, _Creature->GetGUID());
+            break;
+    }
+    return true;
+}
+
 void AddSC_sunwell_plateau()
 {
+    Script *newscript;
+
+    newscript = new Script;
+    newscript->Name="npc_captain_selana";
+    newscript->pGossipHello =  &GossipHello_npc_captain_selana;
+    newscript->pGossipSelect = &GossipSelect_npc_captain_selana;
+    newscript->RegisterSelf();
 }

@@ -104,18 +104,24 @@ CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovemen
     HeroicMode = m_creature->GetMap()->IsHeroic();
 }
 
-void ScriptedAI::AttackStartNoMove(Unit* pWho)
+void ScriptedAI::AttackStartNoMove(Unit* pWho, movementCheckType type)
 {
     if (!pWho)
         return;
 
+    if (me->IsInEvadeMode())
+        return;
+
     if(m_creature->Attack(pWho, false))
-        DoStartNoMovement(pWho);
+        DoStartNoMovement(pWho, type);
 }
 
 void ScriptedAI::AttackStart(Unit* pWho)
 {
     if (!pWho)
+        return;
+
+    if (me->IsInEvadeMode())
         return;
 
     if (m_creature->Attack(pWho, true))
@@ -156,12 +162,112 @@ void ScriptedAI::DoStartMovement(Unit* pVictim, float fDistance, float fAngle)
         m_creature->GetMotionMaster()->MoveChase(pVictim, fDistance, fAngle);
 }
 
-void ScriptedAI::DoStartNoMovement(Unit* pVictim)
+void ScriptedAI::DoStartNoMovement(Unit* pVictim, movementCheckType type)
 {
     if (!pVictim)
         return;
 
+    switch(type)
+    {
+        case 1:
+            me->SetWalk(false);
+            casterTimer = 2000;
+            break;
+        case 2:
+            me->SetWalk(false);
+            casterTimer = 3000;
+            break;
+        default:
+            break;
+    }
+
     m_creature->GetMotionMaster()->MoveIdle();
+}
+
+void ScriptedAI::CheckCasterNoMovementInRange(uint32 diff, float maxrange)
+{
+    if(!UpdateVictim())
+        return;
+
+    if(!me->IsInMap(me->getVictim()))
+        return;
+
+    if(casterTimer > 2000)  // just in case
+        casterTimer = 2000;
+
+    if(casterTimer < diff)
+    {
+        // go to victim
+        if(!me->IsWithinDistInMap(me->getVictim(), maxrange) || !me->IsWithinLOSInMap(me->getVictim()))
+        {
+            float x, y, z;
+            float dist = me->GetDistance2d(me->getVictim());
+            float angle = me->GetAngle(me->getVictim());
+            me->GetPosition(x, y, z);
+            x = x + dist/2 * cos(angle);
+            y = y + dist/2 * sin(angle);
+            me->UpdateAllowedPositionZ(x, y, z);
+            me->SetSpeed(MOVE_RUN, 1.5);
+            me->GetMotionMaster()->MovePoint(40, x, y, z);  //to not possibly collide with any Movement Inform check
+            casterTimer = 200;
+        }
+        else
+            me->GetMotionMaster()->MoveIdle();
+
+        casterTimer = 2000;
+    }
+    else
+        casterTimer -= diff;
+}
+
+void ScriptedAI::CheckShooterNoMovementInRange(uint32 diff, float maxrange)
+{
+    if(!UpdateVictim())
+        return;
+
+    if(!me->IsInMap(me->getVictim()))
+        return;
+
+    if(casterTimer > 3000)  // just in case
+        casterTimer = 3000;
+
+    if(casterTimer < diff)
+    {
+        // if victim in melee range, than chase it
+        if(me->IsWithinDistInMap(me->getVictim(), 5.0))
+        {
+            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE)
+                DoStartMovement(me->getVictim());
+            else
+            {
+                casterTimer = 3000;
+                return;
+            }
+        }
+        else if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+            me->GetMotionMaster()->MoveIdle();
+
+        // when victim is in distance, stop and shoot
+        if(!me->IsWithinDistInMap(me->getVictim(), maxrange) || !me->IsWithinLOSInMap(me->getVictim()))
+        {
+            float x, y, z;
+            float dist = me->GetDistance2d(me->getVictim());
+            float angle = me->GetAngle(me->getVictim());
+            me->GetPosition(x, y, z);
+            x = x + dist/2 * cos(angle);
+            y = y + dist/2 * sin(angle);
+            me->UpdateAllowedPositionZ(x, y, z);
+            me->SetSpeed(MOVE_RUN, 1.5);
+            me->GetMotionMaster()->MovePoint(41, x, y, z);  //to not possibly collide with any Movement Inform check
+            casterTimer = 200;
+        }
+        else
+            me->GetMotionMaster()->MoveIdle();
+
+        casterTimer = 3000;
+    }
+    else
+        casterTimer -= diff;
 }
 
 void ScriptedAI::DoStopAttack()
@@ -216,12 +322,19 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                 {
                     if(temp.setAsTarget)
                         m_creature->SetSelection(temp.targetGUID);
-
-                    m_creature->CastSpell(tempU, temp.spellId, temp.triggered);
+                    if(temp.hasCustomValues)
+                        m_creature->CastCustomSpell(tempU, temp.spellId, &temp.damage[0], &temp.damage[1], &temp.damage[2], temp.triggered);
+                    else
+                        m_creature->CastSpell(tempU, temp.spellId, temp.triggered);
                 }
         }
         else
-            m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
+        {
+            if(temp.hasCustomValues)
+                m_creature->CastCustomSpell((Unit*)NULL, temp.spellId, &temp.damage[0], &temp.damage[1], &temp.damage[2], temp.triggered);
+            else
+                m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
+        }
 
         casted = true;
     }
@@ -320,6 +433,16 @@ void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, bo
     spellList.push_back(temp);
 }
 
+void ScriptedAI::AddCustomSpellToCast(Unit* victim, uint32 spellId, int32 dmg0, int32 dmg1, int32 dmg2, bool triggered, bool visualTarget)
+{
+    if(m_creature->isCrowdControlled())
+        return;
+
+    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, dmg0, dmg1, dmg2, triggered, 0, visualTarget);
+
+    spellList.push_back(temp);
+}
+
 void ScriptedAI::AddSpellToCast(float x, float y, float z, uint32 spellId, bool triggered, bool visualTarget)
 {
     if(m_creature->isCrowdControlled())
@@ -371,6 +494,43 @@ void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool 
     };
 
     SpellToCast temp(targetGUID, spellId, triggered, 0, false);
+
+    spellList.push_back(temp);
+}
+
+void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode, int32 dmg0, int32 dmg1, int32 dmg2, bool triggered)
+{
+    if (m_creature->isCrowdControlled())
+        return;
+
+    uint64 targetGUID = 0;
+    switch (targetMode)
+    {
+        case CAST_TANK:
+            targetGUID = me->getVictimGUID();
+            break;
+        case CAST_NULL:
+            targetGUID = 0;
+            break;
+        case CAST_RANDOM:
+        case CAST_RANDOM_WITHOUT_TANK:
+        {
+            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
+            Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
+            if(pTarget)
+                targetGUID = pTarget->GetGUID();
+            else
+                return;
+
+            break;
+        }
+        case CAST_SELF:
+            targetGUID = me->GetGUID();
+        default:
+            break;
+    };
+
+    SpellToCast temp(targetGUID, spellId, dmg0, dmg1, dmg2, triggered, 0, false);
 
     spellList.push_back(temp);
 }
@@ -571,7 +731,7 @@ void ScriptedAI::SetAutocast (uint32 spellId, uint32 timer, bool startImmediatel
 
     autocastId = spellId;
 
-    autocastTimer = timer;
+    autocastTimer = startImmediately ? 0 : timer;
     autocastTimerDef = timer;
 
     autocastMode = mode;

@@ -31,6 +31,8 @@ npc_wounded_blood_elf
 npc_earthcaller_ryga
 npc_ancestral_spirit_wolf
 npc_living_flare
+npc_felblood_initiate
+npc_emaciated_felblood
 EndContentData */
 
 #include "precompiled.h"
@@ -751,6 +753,148 @@ struct TRINITY_DLL_DECL npc_shattered_hand_berserkerAI : public ScriptedAI
     }
 };
 
+CreatureAI* GetAI_npc_shattered_hand_berserker(Creature *_Creature)
+{
+    return new npc_shattered_hand_berserkerAI(_Creature);
+}
+
+/*######
+## npc_felblood_initiate & npc_emaciated_felblood
+######*/
+
+#define SPELL_FELBLOOD_CHANNEL      44864
+#define SPELL_BITTER_WITHDRAWAL     29098
+#define SPELL_SINISTER_STRIKE       14873
+#define SPELL_SPELLBREAKER          35871
+#define SPELL_FEL_SIPHON_QUEST      44936
+#define SPELL_SELF_STUN             45066
+
+#define MOB_EMACIATED_FELBLOOD      24955
+
+const char* YellChange[3] = 
+{
+    "No... no... NO!!!!!",
+    "My power... is gone!",
+    "What have you done!"
+};
+const char* YellSiphon[4] = 
+{
+    "More... more... MORE!!!",
+    "I will soon be stronger than any elf! I will serve at Kil'jaeden's side!",
+    "Unparalleled power... I... crave... more!",
+    "Your life force is my nourishment, demon... Kil'jaeden's gift to us!"
+};
+
+struct TRINITY_DLL_DECL npc_felblood_initiateAI : public ScriptedAI
+{
+    npc_felblood_initiateAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Spellbreaker;
+    uint32 ChangeTimer;
+    uint32 OOCTimer;
+    uint32 BitterWithdrawal;
+    uint32 SinisterStrike;
+
+    void Reset()
+    {
+        Spellbreaker = urand(6000, 10000);
+        ChangeTimer = 0;
+        OOCTimer = 5000;
+        BitterWithdrawal = urand(10000, 15000);
+        SinisterStrike = urand(5000, 15000);
+    }
+
+    void HandleOffCombatEffects()
+    {
+        DoCast((Unit*)NULL, SPELL_FELBLOOD_CHANNEL);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if(spell->Id == SPELL_FEL_SIPHON_QUEST)
+        {
+            DoCast(me, SPELL_SELF_STUN);
+            ChangeTimer = 3000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+      if(!me->isInCombat())
+      {
+          if(OOCTimer < diff)
+          {
+              if(!me->IsNonMeleeSpellCasted(false))
+                  HandleOffCombatEffects();
+              if(roll_chance_i(3))
+                  me->Yell(YellSiphon[urand(0,3)], 0, 0);
+              OOCTimer = 60000;
+          }
+          else
+              OOCTimer -= diff;
+      }
+
+      if(!UpdateVictim())
+          return;
+
+      if(ChangeTimer)
+      {
+          if(ChangeTimer <= diff)
+          {
+              me->UpdateEntry(MOB_EMACIATED_FELBLOOD);
+              me->Yell(YellChange[urand(0,2)], 0, 0);
+              me->RemoveAurasDueToSpell(SPELL_SELF_STUN);
+              me->AI()->AttackStart(me->getVictim());
+              ChangeTimer = 0;
+          }
+          else ChangeTimer -= diff;
+      }
+
+      if(me->GetEntry() == MOB_EMACIATED_FELBLOOD)
+      {
+          if(BitterWithdrawal < diff)
+          {
+              AddSpellToCast(SPELL_BITTER_WITHDRAWAL);
+              BitterWithdrawal = urand(12000, 18000);
+          }
+          else
+              BitterWithdrawal -= diff;
+
+           if(SinisterStrike < diff)
+           {
+               AddSpellToCast(SPELL_SINISTER_STRIKE);
+               SinisterStrike = urand(10000, 15000);
+           }
+           else
+                SinisterStrike -= diff;
+      }
+      else
+      {
+          if(Spellbreaker < diff)
+          {
+              AddSpellToCast(SPELL_SPELLBREAKER);
+              Spellbreaker = urand(8000, 12000);
+          }
+          else
+                Spellbreaker -= diff;
+      }
+
+       CastNextSpellIfAnyAndReady();
+       DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_felblood_initiate(Creature *_Creature)
+{
+    CreatureAI* newAI = new npc_felblood_initiateAI(_Creature);
+    return newAI;
+}
 
 ///////
 /// Ice Stone
@@ -794,12 +938,6 @@ bool GossipSelect_go_ice_stone(Player *player, GameObject* _GO, uint32 sender, u
         case GOSSIP_SENDER_MAIN:    SendActionMenu_go_ice_stone(player, _GO, action); break;
     }
     return true;
-}
-
-
-CreatureAI* GetAI_npc_shattered_hand_berserker(Creature *_Creature)
-{
-    return new npc_shattered_hand_berserkerAI(_Creature);
 }
 
 void AddSC_hellfire_peninsula()
@@ -868,6 +1006,11 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name="npc_shattered_hand_berserker";
     newscript->GetAI = &GetAI_npc_shattered_hand_berserker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_felblood_initiate";
+    newscript->GetAI = &GetAI_npc_felblood_initiate;
     newscript->RegisterSelf();
 
     newscript = new Script;

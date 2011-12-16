@@ -245,6 +245,7 @@ enum WorldConfigs
     CONFIG_MIN_GM_TEXT_LVL,
     CONFIG_WARDEN_KICK,
     CONFIG_WARDEN_BAN,
+    CONFIG_MIN_GM_COMMAND_LOG_LEVEL,
 
     CONFIG_DONT_DELETE_CHARS,
     CONFIG_DONT_DELETE_CHARS_LVL,
@@ -438,8 +439,6 @@ struct CliCommandHolder
 
     ~CliCommandHolder() { delete[] m_command; }
 };
-
-
 
 // ye place for this sucks
 #define MAX_PVP_RANKS 14

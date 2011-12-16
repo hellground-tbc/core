@@ -79,9 +79,7 @@ enum Spells
     SPELL_FLAME_TOUCHED     =   45348,
     SPELL_CONFLAGRATION     =   45342, //30-35 secs
     SPELL_BLAZE             =   45235, //on main target every 3 secs
-    SPELL_FLAME_SEAR        =   46771,
-    SPELL_BLAZE_SUMMON      =   45236, //187366 GO
-    SPELL_BLAZE_BURN        =   45246
+    SPELL_FLAME_SEAR        =   46771
 };
 
 enum Creatures
@@ -98,11 +96,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         pInstance = c->GetInstanceData();
     }
 
-    ScriptedInstance *pInstance;
-
-    bool InCombat;
-    bool SisterDeath;
-    bool Enraged;
+    InstanceData *pInstance;
 
     uint32 ShadowbladesTimer;
     uint32 ShadownovaTimer;
@@ -113,82 +107,64 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
 
     void Reset()
     {
-        Enraged = false;
+        ShadowbladesTimer = 10000;
+        ShadownovaTimer = 30000;
+        ConfoundingblowTimer = 25000;
+        ShadowimageTimer = 20000;
+        ConflagrationTimer = 30000;
+        EnrageTimer = 360000;
 
-        // useless ? with CF
-        Creature* pAlythess = me->GetCreature(pInstance->GetData64(DATA_ALYTHESS));
-        if (pAlythess)
-        {
-            if (pAlythess->isDead())
-                pAlythess->Respawn();
-            else if(pAlythess->getVictim())
-                m_creature->getThreatManager().addThreat(pAlythess->getVictim(),0.0f);
-        }
-
-        if (!m_creature->isInCombat())
-        {
-            ShadowbladesTimer = 10000;
-            ShadownovaTimer = 30000;
-            ConfoundingblowTimer = 25000;
-            ShadowimageTimer = 20000;
-            ConflagrationTimer = 30000;
-            EnrageTimer = 360000;
-
-            SisterDeath = false;
-
-            pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
-        }       
+        pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
+        pInstance->SetData(DATA_SACROLASH, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-
-        // handle with creature formations
-        if (Creature* pAlythess =  me->GetCreature(pInstance->GetData64(DATA_ALYTHESS)))
-        {
-            if (pAlythess->isAlive() && !pAlythess->getVictim())
-                pAlythess->AI()->AttackStart(who);
-        }
-
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
     }
 
     void KilledUnit(Unit *victim)
     {
         if (roll_chance_i(20))
-            DoScriptText(RAND(YELL_SAC_KILL_1, YELL_SAC_KILL_2), m_creature);
+            DoScriptText(RAND(YELL_SAC_KILL_1, YELL_SAC_KILL_2), me);
     }
 
     void JustDied(Unit* Killer)
     {
-        // only if ALY death
-        if (SisterDeath)
+        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
         {
-            DoScriptText(SAY_SAC_DEAD, m_creature);
+            DoScriptText(SAY_SAC_DEAD, me);
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, DONE);
         }
         else
             me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+
+        pInstance->SetData(DATA_SACROLASH, DONE);
+    }
+
+    void DoAction(const int32 action)
+    {
+        if (action == SISTER_DEATH)
+            AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_ALYTHESS_DEAD);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
+        {
+            if (Creature *pAlythess = pInstance->GetCreature(pInstance->GetData64(DATA_ALYTHESS)))
+                pAlythess->Respawn();
+        }
+        ScriptedAI::EnterEvadeMode();
     }
 
     void UpdateAI(const uint32 diff)
     {
-        // get rid of IT ! move to instance script
-        if (!SisterDeath)
-        {
-            Creature* pAlythess = me->GetCreature(pInstance->GetData64(DATA_ALYTHESS));
-            if (pAlythess && pAlythess->isDead())
-            {
-                AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_ALYTHESS_DEAD);
-                SisterDeath = true;
-            }
-        }
-
         if (!UpdateVictim())
             return;
 
-        if (SisterDeath)
+        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
         {
             if (ConflagrationTimer < diff)
             {
@@ -202,8 +178,8 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         if (ShadownovaTimer < diff)
         {
             AddSpellToCastWithScriptText(SPELL_SHADOW_NOVA, CAST_RANDOM, EMOTE_SHADOW_NOVA);
-            if (!SisterDeath)
-                DoScriptText(YELL_SHADOW_NOVA, m_creature);
+            if (pInstance->GetData(DATA_ALYTHESS) != DONE)
+                DoScriptText(YELL_SHADOW_NOVA, me);
 
             ShadownovaTimer = urand(30000,35000);
         }
@@ -221,12 +197,8 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         if (ShadowimageTimer < diff)
         {
             for (int i = 0; i < 3; i++)
-            {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                Creature* shadowImage = DoSpawnCreature(MOB_SHADOW_IMAGE,0,0,0,0,TEMPSUMMON_CORPSE_DESPAWN,10000);
-                if(shadowImage && target)
-                    shadowImage->AI()->AttackStart(target);
-            }
+                DoSpawnCreature(MOB_SHADOW_IMAGE,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN, 15000);
+
             ShadowimageTimer = 20000;
         }
         else
@@ -240,10 +212,10 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         else
             ShadowbladesTimer -= diff;
 
-        if (!Enraged && EnrageTimer < diff)
+        if (EnrageTimer < diff)
         {
-            AddSpellToCast(SPELL_ENRAGE, CAST_SELF, YELL_ENRAGE);
-            Enraged = true;
+            AddSpellToCastWithScriptText(SPELL_ENRAGE, CAST_SELF, YELL_ENRAGE);
+            EnrageTimer = 360000;
         }
         else
             EnrageTimer -= diff;
@@ -268,16 +240,12 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
     InstanceData *pInstance;
 
-   // bool InCombat;
-    bool SisterDeath;
     bool IntroDone;
-    bool Enraged;
 
     uint32 IntroStepCounter;
     uint32 IntroYellTimer;
 
     uint32 ConflagrationTimer;
-    uint32 BlazeTimer;
     uint32 PyrogenicsTimer;
     uint32 ShadownovaTimer;
     uint32 FlamesearTimer;
@@ -285,58 +253,31 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        Enraged = false;
+        ConflagrationTimer = 45000;
+        PyrogenicsTimer = 15000;
+        ShadownovaTimer = 40000;
+        EnrageTimer = 360000;
+        FlamesearTimer = 15000;
+        IntroYellTimer = 10000;
+        IntroStepCounter = 10;
 
-        // useless ? with CF
-        if (Creature* pSacrolash = me->GetCreature(pInstance->GetData64(DATA_SACROLASH)))
-        {
-            if (pSacrolash->isDead())
-                pSacrolash->Respawn();
-            else if(pSacrolash->getVictim())
-                me->getThreatManager().addThreat(pSacrolash->getVictim(),0.0f);
-        }
+        IntroDone = false;
 
-        if (!me->isInCombat())
-        {
-            ConflagrationTimer = 45000;
-            BlazeTimer = 100;
-            PyrogenicsTimer = 15000;
-            ShadownovaTimer = 40000;
-            EnrageTimer = 360000;
-            FlamesearTimer = 15000;
-            IntroYellTimer = 10000;
-            IntroStepCounter = 10;
+        pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
+        pInstance->SetData(DATA_ALYTHESS, NOT_STARTED);
 
-            SisterDeath = false;
-            IntroDone = false;
-
-            pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
-        }
-
-        SetAutocast(SPELL_BLAZE, 3000, true);
+        SetAutocast(SPELL_BLAZE, 3000, false);
     }
 
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-
-        // handle with creature formations
-        Unit* Sacrolash =  m_creature->GetUnit(pInstance->GetData64(DATA_SACROLASH));
-        if (Sacrolash && Sacrolash->isAlive() && !(Sacrolash->getVictim()))
-            ((Creature*)Sacrolash)->AI()->AttackStart(who);
-
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
-    }
-
-    void AttackStart(Unit *who)
-    {
-        if (!m_creature->isInCombat())
-            Scripted_NoMovementAI::AttackStart(who);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(!IntroDone && IntroStepCounter == 10 && !m_creature->IsFriendlyTo(who) && m_creature->IsWithinDistInMap(who, 30) )
+        if(!IntroDone && IntroStepCounter == 10 && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 30) )
             IntroStepCounter = 0;
         
         Scripted_NoMovementAI::MoveInLineOfSight(who);
@@ -344,51 +285,77 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
     void KilledUnit(Unit *victim)
     {
-        if(roll_chance_i(20))
-            DoScriptText(RAND(YELL_ALY_KILL_1, YELL_ALY_KILL_2), m_creature);
+        if (roll_chance_i(20))
+            DoScriptText(RAND(YELL_ALY_KILL_1, YELL_ALY_KILL_2), me);
     }
 
     void JustDied(Unit* Killer)
     {
-        if (SisterDeath)
+        if (pInstance->GetData(DATA_SACROLASH) == DONE)
         {
-            DoScriptText(YELL_ALY_DEAD, m_creature);
-
+            DoScriptText(YELL_ALY_DEAD, me);
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, DONE);
         }
         else
-            m_creature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+
+        pInstance->SetData(DATA_ALYTHESS, DONE);
     }
 
     uint32 IntroStep(uint32 step)
     {
-        Creature* Sacrolash = (Creature*)(m_creature->GetUnit(pInstance->GetData64(DATA_SACROLASH)));
+        Creature* pSacrolash = me->GetCreature(pInstance->GetData64(DATA_SACROLASH));
+        if (!pSacrolash)
+            return 0;
 
         switch (step)
         {
-        case 0: return 0;
-        case 1:
-            if(Sacrolash)
-                DoScriptText(YELL_INTRO_SAC_1, Sacrolash);
-            return 1000;
-        case 2: DoScriptText(YELL_INTRO_ALY_2, m_creature); return 1000;
-        case 3:
-            if(Sacrolash)
-                DoScriptText(YELL_INTRO_SAC_3, Sacrolash);
-            return 2000;
-        case 4: DoScriptText(YELL_INTRO_ALY_4, m_creature); return 1000;
-        case 5:
-            if(Sacrolash)
-                DoScriptText(YELL_INTRO_SAC_5, Sacrolash);
-            return 2000;
-        case 6: DoScriptText(YELL_INTRO_ALY_6, m_creature); return 1000;
-        case 7:
-            if(Sacrolash)
-                DoScriptText(YELL_INTRO_SAC_7, Sacrolash);
-            return 3000;
-        case 8: DoScriptText(YELL_INTRO_ALY_8, m_creature); return 900000;
+            case 0:
+                return 0;
+            case 1:
+                DoScriptText(YELL_INTRO_SAC_1, pSacrolash);
+                return 1000;
+            case 2:
+                DoScriptText(YELL_INTRO_ALY_2, me);
+                return 1000;
+            case 3:
+                DoScriptText(YELL_INTRO_SAC_3, pSacrolash);
+                return 2000;
+            case 4:
+                DoScriptText(YELL_INTRO_ALY_4, me);
+                return 1000;
+            case 5:
+                DoScriptText(YELL_INTRO_SAC_5, pSacrolash);
+                return 2000;
+            case 6:
+                DoScriptText(YELL_INTRO_ALY_6, me);
+                return 1000;
+            case 7:
+                DoScriptText(YELL_INTRO_SAC_7, pSacrolash);
+                return 3000;
+            case 8:
+                DoScriptText(YELL_INTRO_ALY_8, me);
+                return 900000;
+            default:
+                return 10000;
         }
-        return 10000;
+    }
+
+    void DoAction(const int32 action)
+    {
+        if (action == SISTER_DEATH)
+            AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_SACROLASH_DEAD);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (pInstance->GetData(DATA_SACROLASH) == DONE)
+        {
+            if (Creature *pSacrolash = pInstance->GetCreature(pInstance->GetData64(DATA_SACROLASH)))
+                pSacrolash->Respawn();
+        }
+
+        ScriptedAI::EnterEvadeMode();
     }
 
     void UpdateAI(const uint32 diff)
@@ -403,26 +370,15 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
                 IntroYellTimer -= diff;
         }
 
-        if (!SisterDeath)
-        {
-            // handle with instance script
-            Unit* Sacrolash = m_creature->GetUnit(pInstance->GetData64(DATA_SACROLASH));
-            if (Sacrolash && Sacrolash->isDead())
-            {
-                AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_SACROLASH_DEAD);
-                SisterDeath = true;
-            }
-        }
-
         if (!UpdateVictim())
             return;
 
-        if (SisterDeath)
+        if (pInstance->GetData(DATA_SACROLASH) == DONE)
         {
             if (ShadownovaTimer < diff)
             {
                 AddSpellToCast(SPELL_SHADOW_NOVA, CAST_RANDOM);
-                ShadownovaTimer = 30000+(rand()%5000);
+                ShadownovaTimer = urand(30000, 35000);
             }
             else 
                 ShadownovaTimer -= diff;
@@ -431,8 +387,9 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
         if (ConflagrationTimer < diff)
         {
             AddSpellToCastWithScriptText(SPELL_CONFLAGRATION, CAST_RANDOM, EMOTE_CONFLAGRATION);
-            if (!SisterDeath)
-                DoScriptText(YELL_CANFLAGRATION, m_creature);
+
+            if (pInstance->GetData(DATA_SACROLASH) != DONE)
+                DoScriptText(YELL_CANFLAGRATION, me);
 
             ConflagrationTimer = urand(30000, 35000);
         }
@@ -455,14 +412,15 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
         else
             PyrogenicsTimer -= diff;
 
-        if (!Enraged && EnrageTimer < diff)
+        if (EnrageTimer < diff)
         {
             AddSpellToCastWithScriptText(SPELL_ENRAGE, CAST_SELF, YELL_BERSERK);
-            Enraged = true;
+            EnrageTimer = 360000;
         }
         else
             EnrageTimer -= diff;
 
+        DoMeleeAttackIfReady();
         CastNextSpellIfAnyAndReady(diff);
     }
 };
@@ -477,55 +435,59 @@ struct TRINITY_DLL_DECL mob_shadow_imageAI : public ScriptedAI
     mob_shadow_imageAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 ShadowfuryTimer;
-    uint32 KillTimer;
     uint32 DarkstrikeTimer;
 
     void Reset()
     {
-        ShadowfuryTimer = 5000 + (rand()%15000);
+        ShadowfuryTimer = urand(5000, 20000);
         DarkstrikeTimer = 3000;
-        KillTimer = 15000;
     }
 
-    void EnterCombat(Unit *who){}
+    void AttackStart(Unit * target)
+    {
+        if (me->getVictim())
+            return;
+
+        me->getThreatManager().addThreat(target, 100000.0f);
+        ScriptedAI::AttackStart(target);
+    }
+
+    void IsSummonedBy(Unit *pSummoner)
+    {
+        ForceSpellCast(SPELL_IMAGE_VISUAL, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
+        DoZoneInCombat();
+
+        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            AttackStart(pTarget);
+    }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->HasAura(SPELL_IMAGE_VISUAL, 0))
-            DoCast(m_creature, SPELL_IMAGE_VISUAL);
-
-        if (KillTimer < diff)
-        {
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            KillTimer = 9999999;
-        }
-        else
-            KillTimer -=diff;
-
         if (!UpdateVictim())
             return;
 
         if (ShadowfuryTimer < diff)
         {
-            DoCast(m_creature, SPELL_SHADOW_FURY);
+            AddSpellToCast(SPELL_SHADOW_FURY, CAST_NULL);
             ShadowfuryTimer = 10000;
         }
         else
-            ShadowfuryTimer -=diff;
+            ShadowfuryTimer -= diff;
 
-        // i think it should be handled by proc aura ?
         if (DarkstrikeTimer < diff)
         {
-            if(!m_creature->IsNonMeleeSpellCasted(false))
+            if (!me->IsNonMeleeSpellCasted(false))
             {
                 //If we are within range melee the target
-                if(m_creature->IsWithinMeleeRange(m_creature->getVictim()))
-                    DoCast(m_creature->getVictim(), SPELL_DARK_STRIKE);
+                if (me->IsWithinMeleeRange(me->getVictim()))
+                    AddSpellToCast(SPELL_DARK_STRIKE, CAST_TANK);
             }
-            DarkstrikeTimer = 3000;
+            DarkstrikeTimer = 1000;
         }
         else
             DarkstrikeTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
     }
 };
 
