@@ -58,7 +58,7 @@ void CreatureAI::DoZoneInCombat(float max_dist)
     {
         if (Player* pPlayer = i->getSource())
         {
-            if (pPlayer->isGameMaster())
+            if (pPlayer->isGameMaster() || pPlayer->IsFriendlyTo(me))
                 continue;
 
             if (pPlayer->isAlive() && me->IsWithinDistInMap(pPlayer, max_dist))
