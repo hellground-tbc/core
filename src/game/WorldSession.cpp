@@ -170,11 +170,6 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
     switch (opHandle.packetProcessing)
     {
         case PROCESS_INPLACE:
-            if (urand(0, 2) == 0)
-                _recvThreadUnsafeQueue.add(new_packet);
-            else
-                _recvThreadSafeQueue.add(new_packet);
-            break;
         case PROCESS_THREADSAFE:
             _recvThreadSafeQueue.add(new_packet);
             break;
