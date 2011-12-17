@@ -12953,19 +12953,23 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry
                     TagUnitMap.push_back(pet);
             }
         }
-        // for Creatures, grid search friendly units in radius
-        std::list<Creature*> pList;
-        Trinity::AllFriendlyCreaturesInGrid u_check(owner);
-        Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
-        Cell::VisitAllObjects(owner, searcher, radius);
-
-        for (std::list<Creature*>::iterator i = pList.begin(); i != pList.end(); ++i)
+        // Player cannot be in party with NPC's :)
+        if (owner->GetTypeId() == TYPEID_UNIT)
         {
-            if ((*i)->GetGUID() == owner->GetGUID() || (*i)->GetGUID() == owner->GetPetGUID())
-                continue;
+            // for Creatures, grid search friendly units in radius
+            std::list<Creature*> pList;
+            Trinity::AllFriendlyCreaturesInGrid u_check(owner);
+            Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+            Cell::VisitAllObjects(owner, searcher, radius);
 
-            if (IsWithinLOSInMap(*i))
-                TagUnitMap.push_back(*i);
+            for (std::list<Creature*>::iterator i = pList.begin(); i != pList.end(); ++i)
+            {
+                if ((*i)->GetGUID() == owner->GetGUID() || (*i)->GetGUID() == owner->GetPetGUID())
+                    continue;
+
+                if (IsWithinLOSInMap(*i))
+                    TagUnitMap.push_back(*i);
+            }
         }
     }
 }
