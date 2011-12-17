@@ -537,8 +537,11 @@ struct TRINITY_DLL_DECL brutallus_intro_triggerAI : public Scripted_NoMovementAI
     brutallus_intro_triggerAI(Creature *c) : Scripted_NoMovementAI(c)
     {
         pInstance = c->GetInstanceData();
-        if(Unit *pMadrigosa = me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
-            ((Creature*)pMadrigosa)->SetLevitate(true);
+        if(pInstance)
+        {
+            if(Unit *pMadrigosa = me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
+                ((Creature*)pMadrigosa)->SetLevitate(true);
+        }
     }
 
     ScriptedInstance* pInstance;
@@ -550,6 +553,9 @@ struct TRINITY_DLL_DECL brutallus_intro_triggerAI : public Scripted_NoMovementAI
 
     void MoveInLineOfSight(Unit *who)
     {
+        // temporary
+        if(!pInstance)
+            return;
         if(who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDist(who, 90) && pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == NOT_STARTED)
         {
             if(Unit *pBrutallus = me->GetUnit(pInstance->GetData64(DATA_BRUTALLUS)))
