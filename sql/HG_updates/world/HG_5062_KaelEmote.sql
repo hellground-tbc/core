@@ -1,2 +1,0 @@
-UPDATE script_texts SET emote = 5 WHERE entry = -1585029;
-REPLACE INTO script_texts (entry, content_default, `type`, `comment`) VALUES (-1585030, "begins to cast Pyroblast!", 3, "kaelthas MT EMOTE_HEROIC_PYROBLAST");

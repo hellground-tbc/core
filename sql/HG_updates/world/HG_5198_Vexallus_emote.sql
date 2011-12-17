@@ -1,1 +1,0 @@
-REPLACE INTO script_texts (entry, content_default, `type`, `comment`) VALUES (-1585031, "oveloads!", 3, "vexallus EMOTE_OVERLOAD");

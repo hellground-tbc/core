@@ -1,1 +1,0 @@
-REPLACE INTO spell_script_target VALUES (44883, 1, 24882);

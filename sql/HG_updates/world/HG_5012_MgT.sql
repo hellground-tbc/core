@@ -1,1 +1,0 @@
-UPDATE creature_template SET ScriptName = "mob_fizzle" WHERE entry = 24656;

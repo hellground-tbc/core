@@ -1,1 +1,0 @@
-REPLACE INTO spell_linked_spell VALUES (45717, 45726, 2, "Fog of Corruption link addtional auras to base spell");

@@ -1,1 +1,0 @@
-UPDATE creature_template SET mindmg = 1800, maxdmg = 2400, attackpower = 0 WHERE entry = 24744;

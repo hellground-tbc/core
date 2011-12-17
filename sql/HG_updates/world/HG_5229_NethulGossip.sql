@@ -1,1 +1,0 @@
-UPDATE creature_template SET ScriptName = "npc_archmage_nethul" WHERE entry = 25169;
