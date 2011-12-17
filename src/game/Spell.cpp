@@ -2092,7 +2092,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 break;
             }
             case TARGET_UNIT_PARTY_TARGET:
-                m_targets.getUnitTarget()->GetPartyMember(unitList, radius);
+                if(m_targets.getUnitTarget()->GetCharmerOrOwnerPlayerOrPlayerItself())
+                    m_targets.getUnitTarget()->GetPartyMember(unitList, radius);
                 break;
             case TARGET_UNIT_PARTY_CASTER:
                 m_caster->GetPartyMember(unitList, radius);
