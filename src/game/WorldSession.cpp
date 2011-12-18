@@ -427,20 +427,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         sOutdoorPvPMgr.HandlePlayerLeave(_player);
 
-        ///- Teleport to home if the player is in an invalid instance
-        if (!_player->m_InstanceValid && !_player->isGameMaster())
-        {
-            _player->TeleportToHomebind();
-            //this is a bad place to call for far teleport because we need player to be in world for successful logout
-            //maybe we should implement delayed far teleport logout?
-        }
-
-        // FG: finish pending transfers after starting the logout
-        // this should fix players beeing able to logout and login back with full hp at death position
-        while (_player->IsBeingTeleported())
-            HandleMoveWorldportAckOpcode();
-
-        for (int i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
         {
             if (int32 bgTypeId = _player->GetBattleGroundQueueId(i))
             {
