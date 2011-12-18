@@ -435,8 +435,7 @@ bool Map::Add(Player *player)
 }
 
 template<class T>
-void
-Map::Add(T *obj)
+void Map::Add(T *obj)
 {
     CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
 
