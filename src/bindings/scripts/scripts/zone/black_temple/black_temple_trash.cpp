@@ -1568,13 +1568,15 @@ CreatureAI* GetAI_mob_ashtongue_feral_spirit(Creature *_Creature)
 #define NPC_SUMMONED_WINDFURY_TOTEM 22897
 #define SPELL_CYCLON                39594
 #define SPELL_ATTACK                39593
-#define SPELL_WINDFURY_WEAPON       33727   //rank 5
+#define SPELL_WINDFURY_WEAPON       32911   //rank 3 AoE aura
+#define AURA_WINDFURY               32912
 
 struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
 {
     totem_ashtongue_mysticAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
     uint32 SpellTimer;
+    uint64 SummonerGUID;
 
     void Reset()
     {
@@ -1593,18 +1595,35 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
                 break;
             case NPC_SUMMONED_WINDFURY_TOTEM:
                 m_creature->SetMaxHealth(urand(1800,1900));
+                m_creature->CastSpell((Unit*)NULL, SPELL_WINDFURY_WEAPON, true);
                 break;
         }
         m_creature->SetHealth(m_creature->GetMaxHealth());
+    }
+    void IsSummonedBy(Unit* summoner)
+    {
+        if(summoner)
+            SummonerGUID = summoner->GetGUID();
     }
     void JustDied(Unit* killer)
     {
         if(m_creature->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
         {
-            if(Unit* Mystic = GetClosestCreatureWithEntry(m_creature, 22845, 15.0))
+            std::list<Creature*> pList;
+            Trinity::AllFriendlyCreaturesInGrid u_check(me);
+            Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+            Cell::VisitAllObjects(me, searcher, 60.0);  // range than of aura, in case mobs moved too far from totem when killed
+
+            if(!pList.empty())
             {
-                if(Mystic->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                    m_creature->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
+                for(std::list<Creature*>::iterator iter = pList.begin(); iter != pList.end(); ++iter)
+                {
+                    if((*iter)->HasAura(SPELL_WINDFURY_WEAPON, 0))
+                    {
+                        (*iter)->RemoveAurasDueToSpell(SPELL_WINDFURY_WEAPON);
+                        (*iter)->RemoveAurasDueToSpell(AURA_WINDFURY);
+                    }
+                }
             }
         }
     }
@@ -1666,28 +1685,10 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         DoZoneInCombat(80.0f);
         DoCast(m_creature, SPELL_BLOODLUST);
     }
-
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
             return;
-
-        if(CheckTimer < diff)
-        {
-            if(Unit* WindTotem = GetClosestCreatureWithEntry(m_creature, NPC_SUMMONED_WINDFURY_TOTEM, 15.0))
-            {
-                if(!m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                    m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
-            }
-            else
-            {
-                if(m_creature->HasAura(SPELL_WINDFURY_WEAPON, 0))
-                    m_creature->CastSpell(m_creature, SPELL_WINDFURY_WEAPON, true);
-            }
-            CheckTimer = 1500;
-        }
-        else
-            CheckTimer -= diff;
 
         if(FrostShock < diff)
         {
@@ -1728,7 +1729,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         if(SearingTotem < diff)
         {
             AddSpellToCast(m_creature, SPELL_SEARING_TOTEM);
-            SearingTotem = urand(30000, 40000);
+            SearingTotem = urand(8000, 15000);
         }
         else
             SearingTotem -= diff;
@@ -1736,7 +1737,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         if(WindfuryTotem < diff)
         {
             AddSpellToCast(m_creature, SPELL_SUMMON_WINDFURY_TOTEM);
-            WindfuryTotem = urand(30000, 40000);
+            WindfuryTotem = urand(8000, 15000);
         }
         else
             WindfuryTotem -= diff;
@@ -1744,7 +1745,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
         if(CycloneTotem < diff)
         {
             AddSpellToCast(m_creature, SPELL_CYCLONE_TOTEM);
-            CycloneTotem = urand(30000, 40000);
+            CycloneTotem = urand(8000, 15000);
         }
         else
             CycloneTotem -= diff;

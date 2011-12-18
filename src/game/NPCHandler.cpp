@@ -479,7 +479,6 @@ void WorldSession::SendBindPoint(Creature *npc)
     _player->PlayerTalkClass->CloseGossip();
 }
 
-//Need fix
 void WorldSession::HandleListStabledPetsOpcode(WorldPacket & recv_data)
 {
     CHECK_PACKET_SIZE(recv_data,8);
@@ -516,7 +515,9 @@ void WorldSession::SendStablePet(uint64 guid)
 
     Pet *pet = _player->GetPet();
 
+    size_t wpos = data.wpos();
     data << uint8(0);                                       // place holder for slot show number
+
     data << uint8(GetPlayer()->m_stableSlots);
 
     uint8 num = 0;                                          // counter for place holder
@@ -553,7 +554,7 @@ void WorldSession::SendStablePet(uint64 guid)
         }while (result->NextRow());
     }
 
-    data.put<uint8>(8, num);                                // set real data to placeholder
+    data.put<uint8>(wpos, num);                                // set real data to placeholder
     SendPacket(&data);
 }
 
@@ -603,8 +604,12 @@ void WorldSession::HandleStablePet(WorldPacket & recv_data)
 
             uint32 slot = fields[1].GetUInt32();
 
-            if (slot==free_slot)                             // this slot not free
-                ++free_slot;
+            // slots ordered in query, and if not equal then free
+            if (slot != free_slot)
+                break;
+
+            // this slot not free, skip
+            ++free_slot;
         }while (result->NextRow());
     }
 
@@ -645,8 +650,7 @@ void WorldSession::HandleUnstablePet(WorldPacket & recv_data)
     Pet* pet = _player->GetPet();
     if (pet && pet->isAlive())
     {
-        uint8 i = 0x06;
-        data << uint8(i);
+        data << uint8(0x06);
         SendPacket(&data);
         return;
     }
@@ -658,6 +662,7 @@ void WorldSession::HandleUnstablePet(WorldPacket & recv_data)
     Pet *newpet = NULL;
 
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT entry FROM character_pet WHERE owner = '%u' AND id = '%u' AND slot > 0 AND slot < 3",_player->GetGUIDLow(),petnumber);
+
     if (result)
     {
         Field *fields = result->Fetch();
@@ -700,7 +705,7 @@ void WorldSession::HandleBuyStableSlot(WorldPacket & recv_data)
 
     WorldPacket data(SMSG_STABLE_RESULT, 200);
 
-    if (GetPlayer()->m_stableSlots < 2)                      // max slots amount = 2
+    if (GetPlayer()->m_stableSlots < 2)
     {
         StableSlotPricesEntry const *SlotPrice = sStableSlotPricesStore.LookupEntry(GetPlayer()->m_stableSlots+1);
         if (_player->GetMoney() >= SlotPrice->Price)
@@ -752,7 +757,8 @@ void WorldSession::HandleStableSwapPet(WorldPacket & recv_data)
         return;
 
     // find swapped pet slot in stable
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT slot,entry FROM character_pet WHERE owner = '%u' AND id = '%u'",_player->GetGUIDLow(),pet_number);
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT slot,entry FROM character_pet WHERE owner = '%u' AND id = '%u'",
+                                                         _player->GetGUIDLow(), pet_number);
     if (!result)
         return;
 

@@ -54,13 +54,14 @@ class CreatureGroup
 
         uint32 m_groupID;
         bool m_Formed;
+        bool m_Respawned;
         uint32 m_movingUnits;
-    
+
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_movingUnits(0) {}
+        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_Respawned(false), m_movingUnits(0) {}
         ~CreatureGroup() { sLog.outDebug("Destroying group"); }
-        
+
         Creature* getLeader() const { return m_leader; }
         uint32 GetId() const { return m_groupID; }
         bool isEmpty() const { return m_members.empty(); }
@@ -69,10 +70,12 @@ class CreatureGroup
         void AddMember(Creature *member);
         void RemoveMember(Creature *member);
         void FormationReset(bool dismiss);
+        // as for now, used in scripts to respawn whole group when one member enters evade mode
+        TRINITY_DLL_SPEC void RespawnFormation(Creature *member);
 
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);
-
+        Creature* GetNextRandomCreatureGroupMember(Creature* member, float radius);
         void ReachedWaypoint() {  if( m_movingUnits > 0 ) m_movingUnits--; }
         bool AllUnitsReachedWaypoint() const { return !m_movingUnits; }
 };

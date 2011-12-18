@@ -1138,8 +1138,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         else
         {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
-            // TODO: this cause soul transfer bugged
-            if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id))
+            // this cause soul transfer, and curse of boundless agony bugged, for a moment exception added
+            if (m_spellInfo->Id != 45034 && m_spellInfo->Id != 30531 && (m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id))
             {
                 m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
@@ -1711,6 +1711,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         case TARGET_TYPE_UNIT_NEARBY:
         {
             float range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+            
+            // limit check range for some spells
+            if(range > 400)
+                range = 400;
+
             if (modOwner)
                 modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this);
 
@@ -2029,6 +2034,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (modOwner)
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, radius, this);
 
+        if(radius > 333)
+            radius = 333;
+
         std::list<Unit*> unitList;
         std::list<GameObject*> goList;
 
@@ -2084,7 +2092,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 break;
             }
             case TARGET_UNIT_PARTY_TARGET:
-                m_targets.getUnitTarget()->GetPartyMember(unitList, radius);
+                if(m_targets.getUnitTarget()->GetCharmerOrOwnerPlayerOrPlayerItself())
+                    m_targets.getUnitTarget()->GetPartyMember(unitList, radius);
                 break;
             case TARGET_UNIT_PARTY_CASTER:
                 m_caster->GetPartyMember(unitList, radius);
@@ -2156,6 +2165,10 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 44869:     // Spectral Blast
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
                     unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
+                case 45032:     // Curse of Boundless Agony
+                case 45034:
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 45034));
                     break;
                 default:
                     break;
@@ -2256,6 +2269,13 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     // calculate cast time (calculated after first CheckCast check to prevent charge counting for first CheckCast fail)
     m_casttime = GetSpellCastTime(m_spellInfo, this);
+
+    // HACK for instant opening of Spectral Blast Portal
+    if (m_spellInfo->Id == 3365)
+    {
+        if(m_targets.getGOTarget()&& m_targets.getGOTarget()->GetEntry() == 187055)
+            m_casttime = 0;
+    }
 
     // set timer base at cast time
     ReSetTimer();

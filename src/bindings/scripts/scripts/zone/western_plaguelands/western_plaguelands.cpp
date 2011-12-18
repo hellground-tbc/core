@@ -222,8 +222,8 @@ enum eTruuen
     SAY_WP_1                    = -1999982,  //It must be the purity of the Mark of the Lightbringer that is drawing forth the Scourge to attack us. We must proceed with caution lest we be overwhelmed!
     SAY_WP_2                    = -1999983,  //This land truly needs to be cleansed by the Light! Let us continue on to the tomb. It isn't far now...
     SAY_WP_3                    = -1999984,  //Be welcome, friends!
-    SAY_WP_4                    = -1999985,  //Thank you for coming here in remembrance of me. Your efforts in recovering that symbol, while unnecessary, are certainly touching to an old man's heart. 
-    SAY_WP_5                    = -1999986,  //Please, rise my friend. Keep the Blessing as a symbol of the strength of the Light and how heroes long gone might once again rise in each of us to inspire. 
+    SAY_WP_4                    = -1999985,  //Thank you for coming here in remembrance of me. Your efforts in recovering that symbol, while unnecessary, are certainly touching to an old man's heart.
+    SAY_WP_5                    = -1999986,  //Please, rise my friend. Keep the Blessing as a symbol of the strength of the Light and how heroes long gone might once again rise in each of us to inspire.
     SAY_WP_6                    = -1999987   //Thank you my friend for making this possible. This is a day that I shall never forget! I think I will stay a while. Please return to High Priestess MacDonnell at the camp. I know that she'll be keenly interested to know of what has transpired here.
 };
 
@@ -245,7 +245,7 @@ struct npc_anchorite_truuenAI : public npc_escortAI
         if (pSummoned->GetEntry() == NPC_GHOUL)
             pSummoned->AI()->AttackStart(m_creature);
     }
-    
+
     void WaypointReached(uint32 i)
     {
         Player* pPlayer = GetPlayerForEscort();
@@ -274,7 +274,7 @@ struct npc_anchorite_truuenAI : public npc_escortAI
             case 22:
                 break;
             case 23:
-                m_creature->setEmoteState(EMOTE_ONESHOT_KNEEL);
+                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_KNEEL);
                 if(Creature* Ughost = m_creature->SummonCreature(NPC_GHOST_UTHER, 971.86,-1825.42 ,81.99 , 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
                 {
                     UghostGUID = Ughost->GetGUID();
@@ -287,7 +287,7 @@ struct npc_anchorite_truuenAI : public npc_escortAI
                 if(Creature* Ughost = m_creature->GetCreature(*m_creature, UghostGUID))
                 {
                     DoScriptText(SAY_WP_5, Ughost, m_creature);
-                    m_creature->setEmoteState(EMOTE_ONESHOT_NONE);
+                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
                 }
                 m_uiChatTimer = 4000;
                 break;
@@ -335,7 +335,7 @@ bool QuestAccept_npc_anchorite_truuen(Player* pPlayer, Creature* pCreature, Ques
 }
 
 /*######
-##    npcs_andorhal_tower 
+##    npcs_andorhal_tower
 ######*/
 
 enum eAndorhalTower
@@ -394,7 +394,7 @@ void AddSC_western_plaguelands()
     newscript->GetAI = &GetAI_npc_anchorite_truuen;
     newscript->pQuestAcceptNPC =  &QuestAccept_npc_anchorite_truuen;
     newscript->RegisterSelf();
-    
+
     newscript = new Script;
     newscript->Name = "npc_andorhal_tower";
     newscript->GetAI = &GetAI_npc_andorhal_tower;

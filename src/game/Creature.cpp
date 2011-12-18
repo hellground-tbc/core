@@ -147,7 +147,7 @@ Creature::Creature() :
 Unit(), m_aggroRange(0.0),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_deathTimer(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f),
-m_gossipOptionLoaded(false), m_emoteState(0), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
+m_gossipOptionLoaded(false), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_AlreadyCallAssistance(false),
 m_regenHealth(true), m_isDeadByDefault(false), m_AlreadySearchedAssistance(false), m_creatureData(NULL),
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_DBTableGuid(0), m_formation(NULL), m_PlayerDamageReq(0),
@@ -576,6 +576,9 @@ void Creature::RegenerateMana()
     if (curValue >= maxValue)
         return;
 
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NOT_REGEN_MANA)
+        return;
+
     uint32 addvalue = 0;
 
     // Combat and any controlled creature
@@ -604,6 +607,9 @@ void Creature::RegenerateHealth()
     uint32 maxValue = GetMaxHealth();
 
     if (curValue >= maxValue)
+        return;
+
+    if(GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NOT_REGEN_HEALTH)
         return;
 
     uint32 addvalue = 0;
@@ -1666,26 +1672,36 @@ float Creature::GetAttackDistance(Unit const* pl) const
         leveldif = -25;
 
     // "The aggro radius of a mob having the same level as the player is roughly 20 yards"
-    float RetDistance = 20;
+    float RetDistance = m_aggroRange ? m_aggroRange : 20.0;
 
     // "Aggro Radius varies with level difference at a rate of roughly 1 yard/level"
     // radius grow if playlevel < creaturelevel
     RetDistance -= (float)leveldif;
 
-    if (creaturelevel+5 <= sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
+    int32 CreatureMod = 0;
+    int32 PlayerMod = 0;
+    //get detect range aura modifiers on creatures
+    AuraList const& mTotalAuraList = GetAurasByType(SPELL_AURA_MOD_DETECT_RANGE);
+    for (AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
     {
-        // detect range auras
-        RetDistance += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE);
-
-        // detected range auras
-        RetDistance += pl->GetTotalAuraModifier(SPELL_AURA_MOD_DETECTED_RANGE);
+        if(creaturelevel <= (*i)->GetSpellProto()->MaxTargetLevel)
+            CreatureMod += (*i)->GetModifierValue();
     }
+    //get detect range aura modifiers on players
+    AuraList const& mTotalPlayerAuraList = pl->GetAurasByType(SPELL_AURA_MOD_DETECT_RANGE);
+    for (AuraList::const_iterator i = mTotalPlayerAuraList.begin();i != mTotalPlayerAuraList.end(); ++i)
+    {
+        if(playerlevel <= (*i)->GetSpellProto()->MaxTargetLevel)
+            PlayerMod += (*i)->GetModifierValue();
+    }
+
+    RetDistance += (CreatureMod + PlayerMod);
 
     // "Minimum Aggro Radius for a mob seems to be combat range (5 yards)"
     if (RetDistance < 5)
         RetDistance = 5;
 
-    return m_aggroRange ? m_aggroRange : (RetDistance*aggroRate);
+    return RetDistance*aggroRate;
 }
 
 void Creature::setDeathState(DeathState s)
@@ -1696,7 +1712,7 @@ void Creature::setDeathState(DeathState s)
 
         // if no loot in DB, remove corpse quickly (20 sec ?)
         CreatureInfo const* cInfo = GetCreatureInfo();
-        if (cInfo && !cInfo->lootid && !(cInfo->mingold || cInfo->maxgold))
+        if (cInfo && !cInfo->lootid && !(cInfo->mingold || cInfo->maxgold) && !isWorldBoss())
             m_deathTimer = 20*IN_MILISECONDS;
 
         // always save boss respawn time at death to prevent crash cheating
@@ -1811,6 +1827,8 @@ void Creature::Respawn()
         if (poolid)
             poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_UNIT);
     }
+
+    SendMonsterStop();
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn)

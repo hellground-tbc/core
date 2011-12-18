@@ -64,7 +64,6 @@ CreatureEventAI::CreatureEventAI(Creature *c) : CreatureAI(c)
         std::vector<CreatureEventAI_Event>::const_iterator i;
         for (i = (*CreatureEvents).second.begin(); i != (*CreatureEvents).second.end(); ++i)
         {
-
             //Debug check
             #ifndef TRINITY_DEBUG
             if ((*i).event_flags & EFLAG_DEBUG_ONLY)
@@ -83,8 +82,6 @@ CreatureEventAI::CreatureEventAI(Creature *c) : CreatureAI(c)
             CreatureEventAIList.push_back(CreatureEventAIHolder(*i));
         }
     }
-    else
-        sLog.outError("CreatureEventAI: EventMap for Creature %u is empty but creature is using CreatureEventAI.", m_creature->GetEntry());
 
     // Need make copy for filter unneeded steps and safe in case table reload
     CreatureEvents = CreatureEAI_Mgr.GetCreatureEventAIMap().find(-int64(me->GetGUIDLow()));

@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Brutallus
-SD%Complete: 99
-SDComment: 
+SD%Complete: 98
+SDComment: Check Felmyst spawning event, final debugging
 EndScriptData */
 
 #include "precompiled.h"
@@ -50,6 +50,7 @@ enum Quotes
 
 enum Spells
 {
+    // Brutallus fight spells
     SPELL_METEOR_SLASH                 =   45150,
     SPELL_BURN                         =   45141,
     SPELL_STOMP                        =   45185,
@@ -58,11 +59,24 @@ enum Spells
     SPELL_SUMMON_DEATH_CLOUD           =   45884,
     SPELL_DEATH_CLOUD                  =   45212,
 
+    // Brutallus intro spells
+    SPELL_INTRO_CHARGE                 =   44884,
+    SPELL_INTRO_FROST_BREATH           =   45065,
     SPELL_INTRO_FROST_BLAST            =   45203,
     SPELL_INTRO_FROSTBOLT              =   44843,
-    SPELL_INTRO_ENCAPSULATE            =   45665,
-    SPELL_INTRO_ENCAPSULATE_CHANELLING =   45661
+    SPELL_INTRO_ENCAPSULATE            =   44883,
+    SPELL_INTRO_BREAK_ICE              =   46637,
+    SPELL_INTRO_BREAK_ICE_KNOCKBACK    =   47030,
+
+    // Felmyst intro spells
+    SPELL_FELMYST_PRE_VISUAL           =   44885,
+    SPELL_TRANSFORM_FELMYST            =   45068,
+    SPELL_FELMYST_SUMMON               =   45069
 };
+
+#define MADRI_FLY_X        1476.3
+#define MADRI_FLY_Y           649
+#define MADRI_FLY_Z          21.5
 
 #define MOB_DEATH_CLOUD 25703
 #define FELMYST 25038
@@ -81,38 +95,35 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
     uint32 StompTimer;
     uint32 BerserkTimer;
     uint32 CheckTimer;
+    uint32 CheckGroundTimer;
 
     uint32 IntroPhase;
     uint32 IntroPhaseTimer;
     uint32 IntroFrostBoltTimer;
-
-    bool IntroDone;
-    bool IsIntro;
     bool Enraged;
 
     void Reset()
     {
         SlashTimer = 11000;
         StompTimer = 30000;
-        BurnTimer = 60000;
+        BurnTimer = 20000;
         BerserkTimer = 360000;
         CheckTimer = 1000;
+        CheckGroundTimer = 500;
 
         IntroPhase = 0;
         IntroPhaseTimer = 0;
         IntroFrostBoltTimer = 0;
-
-        IsIntro = false;
-        IntroDone = false;
         Enraged = false;
 
         ForceSpellCast(me, SPELL_DUAL_WIELD, INTERRUPT_AND_CAST_INSTANTLY);
         pInstance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
+        me->CombatStop();
     }
 
     void EnterCombat(Unit* /*pWho*/)
     {
-        if (!IsIntro)
+        if (pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
         {
             DoScriptText(YELL_AGGRO, me);
             pInstance->SetData(DATA_BRUTALLUS_EVENT, IN_PROGRESS);
@@ -121,7 +132,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
 
     void KilledUnit(Unit* /*victim*/)
     {
-        if (!IsIntro)
+        if (pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
             DoScriptText(RAND(YELL_KILL1, YELL_KILL2, YELL_KILL3), me);
     }
 
@@ -131,36 +142,10 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         pInstance->SetData(DATA_BRUTALLUS_EVENT, DONE);
     }
 
-    void DamageTaken(Unit *pAttacker, uint32 &damage)
+    void DamageMade(Unit* target, uint32 &damage, bool /*direct_damage*/)
     {
-        if (IsIntro && pAttacker->isCharmedOwnedByPlayerOrPlayer())
-            damage = 0;
-    }
-
-    void StartIntro()
-    {
-        if (Unit* pMadrigosa = me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
-        {
-            if (pMadrigosa->isAlive())
-            {
-                pMadrigosa->setActive(true);
-                IsIntro = true;
-                return;
-            }
-            else
-            {
-                ((Creature*)pMadrigosa)->SetCorpseDelay(51000000);
-                pMadrigosa->setDeathState(JUST_DIED);  // to update corpse delay
-            }
-        }
-
-        EndIntro();
-    }
-
-    void EndIntro()
-    {
-        IntroDone = true;
-        IsIntro = false;
+        if(target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 24895)
+            damage *= 40;
     }
 
     void DoIntro()
@@ -173,99 +158,208 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         {
             case 0:
                 DoScriptText(YELL_MADR_ICE_BARRIER, pMadrigosa);
-                IntroPhaseTimer = 5500;
+                pMadrigosa->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                for(uint8 i = 0; i < 8;++i)
+                    pMadrigosa->SetSpeed(UnitMoveType(i), 2.5);
+                pMadrigosa->GetMotionMaster()->MovePoint(1, MADRI_FLY_X, MADRI_FLY_Y, MADRI_FLY_Z);
+                IntroPhaseTimer = 6500;
                 ++IntroPhase;
                 break;
             case 1:
-                me->SetInFront(pMadrigosa);
-                pMadrigosa->SetInFront(me);
-                DoScriptText(YELL_MADR_INTRO, pMadrigosa);
-                IntroPhaseTimer = 4000;
+                if(pInstance)
+                    pInstance->SetData(DATA_BRUTALLUS_INTRO_EVENT, IN_PROGRESS);
+                pMadrigosa->SetLevitate(false);
+                pMadrigosa->SetWalk(true);
+                pMadrigosa->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                IntroPhaseTimer = 2500;
                 ++IntroPhase;
                 break;
             case 2:
-                DoScriptText(YELL_INTRO, me);
+                pMadrigosa->SendMovementFlagUpdate();
+                DoScriptText(YELL_MADR_INTRO, pMadrigosa);
                 IntroPhaseTimer = 5000;
-                AttackStart(pMadrigosa);
                 ++IntroPhase;
                 break;
             case 3:
-            {
-                AddSpellToCast(me, SPELL_INTRO_FROST_BLAST);
-                pMadrigosa->SetLevitate(true);
                 float x, y, z;
-                pMadrigosa->GetPosition(x, y, z);
-                pMadrigosa->GetMotionMaster()->MovePoint(1, x, y, z+10);
-                IntroFrostBoltTimer = 3000;
-                IntroPhaseTimer = 28000;
+                pMadrigosa->GetMap()->CreatureRelocation((Creature*)pMadrigosa, MADRI_FLY_X, MADRI_FLY_Y, MADRI_FLY_Z, me->GetOrientation());
+                me->SetInFront(pMadrigosa);
+                pMadrigosa->SetInFront(me);
+                DoScriptText(YELL_INTRO, me);
+                IntroPhaseTimer = 6000;
                 ++IntroPhase;
                 break;
-            }
             case 4:
-                DoScriptText(YELL_INTRO_BREAK_ICE, me);
-                IntroPhaseTimer = 6000;
+                pMadrigosa->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                DoStartMovement(pMadrigosa);
+                pMadrigosa->GetMotionMaster()->MoveChase(me);
+                me->Attack(pMadrigosa, true);
+                pMadrigosa->Attack(me, true);
+                IntroPhaseTimer = 7000;
                 ++IntroPhase;
                 break;
             case 5:
-                pMadrigosa->CastSpell(me, SPELL_INTRO_ENCAPSULATE_CHANELLING, false);
-                DoScriptText(YELL_MADR_TRAP, pMadrigosa);
-                AddSpellToCast(me, SPELL_INTRO_ENCAPSULATE);
-                IntroPhaseTimer = 11000;
+                pMadrigosa->CastSpell(me, SPELL_INTRO_FROST_BREATH, false);
+                me->CastSpell(me, SPELL_INTRO_FROST_BREATH, true);
+                IntroPhaseTimer = 2500;
                 ++IntroPhase;
                 break;
             case 6:
-                me->SetSpeed(MOVE_RUN, 4.0f, true);
-                DoScriptText(YELL_INTRO_CHARGE, me);
-                IntroPhaseTimer = 3000;
+                me->GetMotionMaster()->MoveIdle();
+                pMadrigosa->SetLevitate(true);
+                pMadrigosa->GetPosition(x, y, z);
+                pMadrigosa->GetMotionMaster()->MovePoint(2, x, y, z+15);
+                pMadrigosa->setHover(true);
+                IntroPhaseTimer = 4500;
                 ++IntroPhase;
-                break;
             case 7:
-                me->DealDamage(pMadrigosa, pMadrigosa->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, true);
-                DoScriptText(YELL_MADR_DEATH, pMadrigosa);
-                me->SetHealth(me->GetMaxHealth());
-                me->AttackStop();
-                me->SetSpeed(MOVE_RUN, 1.0f, true);
-                IntroPhaseTimer = 3000;
+                pMadrigosa->SetInFront(me);
+                pMadrigosa->CastSpell(me, SPELL_INTRO_FROST_BLAST, false);
+                me->CastSpell(me, SPELL_INTRO_FROST_BLAST, true);
+                DoScriptText(YELL_MADR_ICE_BLOCK, pMadrigosa);
+                IntroFrostBoltTimer = 500;
+                IntroPhaseTimer = 10000;
                 ++IntroPhase;
                 break;
             case 8:
-                DoScriptText(YELL_INTRO_KILL_MADRIGOSA, me);
-                me->SetOrientation(0.14);
-                ((Creature*)pMadrigosa)->SetCorpseDelay(51000000);
-                pMadrigosa->setDeathState(JUST_DIED);
-                IntroPhaseTimer = 6000;
+                DoScriptText(YELL_INTRO_BREAK_ICE, me);
+                IntroPhaseTimer = 2000;
                 ++IntroPhase;
                 break;
             case 9:
-                DoScriptText(YELL_INTRO_TAUNT, me);
-                IntroPhaseTimer = 5000;
+                me->GetMotionMaster()->MoveIdle();
+                me->AttackStop();
+                pMadrigosa->setHover(false);
+                pMadrigosa->SetLevitate(false);
+                pMadrigosa->SetWalk(true);
+                pMadrigosa->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                pMadrigosa->SendMovementFlagUpdate();
+                IntroPhaseTimer = 1000;
                 ++IntroPhase;
                 break;
             case 10:
-                EndIntro();
+                pMadrigosa->GetMotionMaster()->MoveIdle();
+                IntroPhaseTimer = 2500;
+                ++IntroPhase;
+                break;
+            case 11:
+                pMadrigosa->GetMap()->CreatureRelocation((Creature*)pMadrigosa, MADRI_FLY_X, MADRI_FLY_Y, MADRI_FLY_Z, me->GetOrientation());
+                pMadrigosa->GetMotionMaster()->MoveIdle();
+                IntroPhaseTimer = 2000;
+                ++IntroPhase;
+                break;
+            case 12:
+                me->GetMotionMaster()->MoveIdle();
+                pMadrigosa->CastSpell(me, SPELL_INTRO_ENCAPSULATE, false);
+                DoScriptText(YELL_MADR_TRAP, pMadrigosa);
+                IntroPhaseTimer = 1000;
+                ++IntroPhase;
+                break;
+            case 13:
+                me->GetPosition(x, y, z);
+                me->GetMotionMaster()->MovePoint(1, x-6, y-15, z+10);
+                me->SetInFront(pMadrigosa);
+                IntroPhaseTimer = 8000;
+                ++IntroPhase;
+                break;
+            case 14:
+                me->RemoveAurasDueToSpell(44883);
+                pMadrigosa->InterruptNonMeleeSpells(false);
+                pMadrigosa->GetMotionMaster()->MoveIdle();
+                DoScriptText(YELL_INTRO_CHARGE, me);
+                me->SetInFront(pMadrigosa);
+                me->GetPosition(x, y, z);
+                float ground_Z;
+                ground_Z= me->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+                me->GetMotionMaster()->MoveFall(ground_Z);
+                IntroPhaseTimer = 3500;
+                ++IntroPhase;
+                break;  
+            case 15:
+                for(uint8 i = 0; i < 8;++i)
+                    me->SetSpeed(UnitMoveType(i), 10.0);
+                me->GetMotionMaster()->MoveCharge(MADRI_FLY_X-5, MADRI_FLY_Y-15, MADRI_FLY_Z);
+                AddSpellToCast((Unit*)NULL, SPELL_INTRO_CHARGE);
+                IntroPhaseTimer = 1000;
+                ++IntroPhase;
+                break;
+            case 16:
+                DoScriptText(YELL_MADR_DEATH, pMadrigosa);
+                pMadrigosa->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
+                pMadrigosa->SetFlag(UNIT_DYNAMIC_FLAGS, (UNIT_DYNFLAG_DEAD | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED));
+                pMadrigosa->CombatStop();
+                pMadrigosa->DeleteThreatList();
+                pMadrigosa->setFaction(35);
+                me->CombatStop();
+                me->RemoveFlag(UNIT_FIELD_FLAGS, (UNIT_FLAG_PET_IN_COMBAT | UNIT_FLAG_PVP_ATTACKABLE));
+                IntroPhaseTimer = 4000;
+                ++IntroPhase;
+                break;
+            case 17:
+                if(pInstance)
+                    me->SetFacingToObject(GameObject::GetGameObject(*me, pInstance->GetData64(DATA_BRUTALLUS_TRIGGER)));
+                for(uint8 i = 0; i < 8;++i)
+                    me->SetSpeed(UnitMoveType(i), 2.0);
+                IntroPhaseTimer = 6000;
+                ++IntroPhase;
+                break;
+            case 18:
+                DoScriptText(YELL_INTRO_KILL_MADRIGOSA, me);
+                IntroPhaseTimer = 8000;
+                ++IntroPhase;
+                break;
+            case 19:
+                DoScriptText(YELL_INTRO_TAUNT, me);
+                AddSpellToCast(me, SPELL_INTRO_BREAK_ICE);
+                if(pInstance)
+                    pInstance->SetData(DATA_BRUTALLUS_INTRO_EVENT, DONE);
+                else
+                    return;
+                if(Unit *pTrigger = me->GetUnit(pInstance->GetData64(DATA_BRUTALLUS_TRIGGER)))
+                    pTrigger->CastSpell((Unit*)NULL, SPELL_INTRO_BREAK_ICE_KNOCKBACK, false);
+                IntroPhaseTimer = 2000;
+                ++IntroPhase;
+                break;
+            case 20:
+                EnterEvadeMode();
+                ++IntroPhase;
                 break;
         }
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!IsIntro && !IntroDone && who->isCharmedOwnedByPlayerOrPlayer() && !me->IsFriendlyTo(who) && me->IsWithinDist(who, 40))
-            StartIntro();
-        
-        if (IntroDone)
+        if (pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
             ScriptedAI::MoveInLineOfSight(who);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (IsIntro)
+        if (pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == SPECIAL || pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == IN_PROGRESS || IntroPhase == 20)
         {
+            if(IntroPhase < 12 && IntroPhase > 14)
+            {
+                if (CheckGroundTimer < diff)
+                {
+                    float x, y, z;
+                    me->GetPosition(x, y, z);
+                    float ground_z = me->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+                    if(z > ground_z)
+                    me->GetMap()->CreatureRelocation(me, x, y, z, me->GetOrientation());
+                    CheckGroundTimer = 500;
+                }
+                else
+                    CheckGroundTimer -= diff;
+            }
+
             if (IntroPhaseTimer < diff)
                 DoIntro();
             else
                 IntroPhaseTimer -= diff;
 
-            if (IntroPhase == 4)
+            if (IntroPhase >= 7 && IntroPhase <= 9)
             {
                 if (IntroFrostBoltTimer < diff)
                 {
@@ -278,13 +372,13 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 else
                     IntroFrostBoltTimer -= diff;
             }
-            if (IntroPhase >= 2)
-                DoMeleeAttackIfReady();
 
+            DoMeleeAttackIfReady();
             CastNextSpellIfAnyAndReady();
+            return;
         }
 
-        if (IsIntro || !UpdateVictim())
+        if (!UpdateVictim())
             return;
 
         if (CheckTimer < diff)
@@ -318,9 +412,9 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 AddSpellToCast(pTarget, SPELL_BURN);
 
-            BurnTimer = 60000;
+            BurnTimer = 20000;
         }
-        else 
+        else
             BurnTimer -= diff;
 
         if (BerserkTimer < diff && !Enraged)
@@ -344,50 +438,129 @@ struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
     }
 
     ScriptedInstance* pInstance;
+    uint8 Phase;
+    uint32 Timer;
     uint32 SummonTimer;
-    
-    void Reset() 
+    uint32 DespawnTimer;    //Madrigosa in Felmyst's model despawn timer
+    bool summon;
+
+    void Reset()
     {
-        SummonTimer = 1000;
+        Phase = 0;
+        DespawnTimer = 0;
+        SummonTimer = 0;
+        Timer = 0;
+        summon = false;
+    }
+
+    uint32 CalculateSummonTimer()
+    {
+        if (Unit* pMadrigosa= me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
+        {
+            float dist = me->GetDistance2d(pMadrigosa);
+            uint32 steps = (int)(dist/10);
+            return (int)60000/(steps+1);
+        }
+        return 5000;
     }
 
     void JustRespawned()
     {
         ForceSpellCast(me, SPELL_DEATH_CLOUD, INTERRUPT_AND_CAST_INSTANTLY);
-        SummonTimer = 1000;
+        Phase = 1;
+        SummonTimer = Timer = CalculateSummonTimer();
     }
 
-    void UpdateAI(const uint32 diff) 
+    void UpdateAI(const uint32 diff)
     {
-        if (SummonTimer < diff)
+        if(Phase == 1)
         {
-            float x, y, z;
-            if (Unit* pMadrigosa= me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
+            if (Timer < diff)
             {
-                if (!me->IsWithinDist(pMadrigosa, 5.0f))
-                {      
-                    z = me->GetPositionZ();
-                    me->GetNearPoint2D(x, y, 5, me->GetAngle(pMadrigosa));
-                    me->UpdateAllowedPositionZ(x, y, z);
-                    me->SummonCreature(MOB_DEATH_CLOUD, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
-                } 
-                else
+                float x, y, z;
+                if (Unit* pMadrigosa= me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
                 {
-                    if (Creature* pFelmyst= me->GetCreature(pInstance->GetData64(DATA_FELMYST)))
+                    if(summon)
+                    {
+                        pMadrigosa->CastSpell(pMadrigosa, SPELL_TRANSFORM_FELMYST, false);
+                        Phase = 2;
+                        DespawnTimer = 1000;
+                        return;
+                    }
+                    else if (!me->IsWithinDist(pMadrigosa, 10.0f))
+                    {
+                        z = me->GetPositionZ();
+                        me->GetNearPoint2D(x, y, 10, me->GetAngle(pMadrigosa));
+                        me->UpdateAllowedPositionZ(x, y, z);
+                        me->GetMap()->CreatureRelocation(me, x, y, z, 0);
+                        Creature* Trigger = me->SummonTrigger(x, y, z, 0, SummonTimer*4);
+                        if(Trigger)
+                            Trigger->CastSpell(Trigger, SPELL_DEATH_CLOUD, true);
+                        Timer = SummonTimer;
+                    }
+                    else
                     {
                         pMadrigosa->GetPosition(x, y, z);
-                        ((Creature*)pFelmyst)->Respawn();
-                        pFelmyst->Relocate(x, y, z);
-                        pFelmyst->SetLevitate(false);
-                        pFelmyst->GetMotionMaster()->MoveRandom(1);
+                        Creature* Trigger = me->SummonTrigger(x, y, z, 0, SummonTimer);
+                        if(Trigger)
+                            Trigger->CastSpell(Trigger, SPELL_DEATH_CLOUD, true);
+                        pMadrigosa->CastSpell(pMadrigosa, SPELL_FELMYST_PRE_VISUAL, true);
+                        Timer = 10000;
+                        summon = true;
                     }
-                    ((Creature*)pMadrigosa)->RemoveCorpse();
                 }
             }
-            SummonTimer = 120000000;
+            else
+                Timer -= diff;
         }
-        else
-            SummonTimer -= diff;
+
+        if(Phase == 2)
+        {
+            if(DespawnTimer < diff)
+            {
+                if (Unit* pMadrigosa= me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
+                {
+                    pMadrigosa->RemoveAllAuras();
+                    pMadrigosa->SetVisibility(VISIBILITY_OFF);
+                    pMadrigosa->CastSpell(pMadrigosa, SPELL_FELMYST_SUMMON, false);
+                    Phase++;
+                }
+            }
+            else
+                DespawnTimer -= diff;
+        }
+    }
+};
+
+struct TRINITY_DLL_DECL brutallus_intro_triggerAI : public Scripted_NoMovementAI
+{
+    brutallus_intro_triggerAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+        pInstance = c->GetInstanceData();
+        if(pInstance)
+        {
+            if(Unit *pMadrigosa = me->GetUnit(pInstance->GetData64(DATA_MADRIGOSA)))
+                ((Creature*)pMadrigosa)->SetLevitate(true);
+        }
+    }
+
+    ScriptedInstance* pInstance;
+
+    void EnterCombat(Unit* /*pWho*/)
+    {
+        EnterEvadeMode();
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        // temporary
+        if(!pInstance)
+            return;
+        if(who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDist(who, 90) && pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == NOT_STARTED)
+        {
+            if(Unit *pBrutallus = me->GetUnit(pInstance->GetData64(DATA_BRUTALLUS)))
+                pInstance->SetData(DATA_BRUTALLUS_INTRO_EVENT, SPECIAL);
+        }
     }
 };
 
@@ -399,6 +572,11 @@ CreatureAI* GetAI_boss_brutallus(Creature *_Creature)
 CreatureAI* GetAI_npc_death_cloud(Creature *_Creature)
 {
     return new npc_death_cloudAI (_Creature);
+}
+
+CreatureAI* GetAI_brutallus_intro_trigger(Creature *_Creature)
+{
+    return new brutallus_intro_triggerAI (_Creature);
 }
 
 void AddSC_boss_brutallus()
@@ -413,5 +591,10 @@ void AddSC_boss_brutallus()
     newscript = new Script;
     newscript->Name="boss_brutallus";
     newscript->GetAI = &GetAI_boss_brutallus;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="brutallus_intro_trigger";
+    newscript->GetAI = &GetAI_brutallus_intro_trigger;
     newscript->RegisterSelf();
 }

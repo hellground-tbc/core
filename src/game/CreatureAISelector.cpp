@@ -98,7 +98,7 @@ namespace FactorySelector
         // select by permit check
         if (!ai_factory)
         {
-            int best_val = -1;
+            int best_val = PERMIT_BASE_NO;
             typedef CreatureAIRegistry::RegistryMapType RMT;
             RMT const &l = ai_registry.GetRegisteredItems();
             for (RMT::const_iterator iter = l.begin(); iter != l.end(); ++iter)

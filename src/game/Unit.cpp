@@ -87,6 +87,7 @@ static Unit::AuraTypeSet GenerateVictimProcCastAuraTypes()
     static Unit::AuraTypeSet auraTypes;
     auraTypes.insert(SPELL_AURA_DUMMY);
     auraTypes.insert(SPELL_AURA_PRAYER_OF_MENDING);
+    auraTypes.insert(SPELL_AURA_PRAYER_OF_MENDING_NPC);
     auraTypes.insert(SPELL_AURA_PROC_TRIGGER_SPELL);
     return auraTypes;
 }
@@ -819,6 +820,10 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
         if (area && area->flags & AREA_FLAG_SANCTUARY)       //sanctuary
             return 0;
     }
+
+    // Do not deal damage from AoE spells when target is immune to it
+    if (!pVictim->isAttackableByAOE() && spellProto && IsAreaOfEffectSpell(spellProto))
+        return 0;
 
     if (pVictim->GetTypeId() == TYPEID_PLAYER)
     {
@@ -2626,6 +2631,9 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
     // Miss = 100 - hit
     float miss_chance= 100.0f - HitChance;
 
+    if (GetTypeId() == TYPEID_UNIT && ((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CANT_MISS)
+        return 0;
+
     // Bonuses from attacker aura and ratings
     if (attType == RANGED_ATTACK)
         miss_chance -= m_modRangedHitChance;
@@ -3705,8 +3713,8 @@ bool Unit::AddAura(Aura *Aur)
     spellEffectPair spair = spellEffectPair(Aur->GetId(), Aur->GetEffIndex());
 
     bool stackModified = false;
-    // passive and persistent auras can stack with themselves any number of times
-    if (!Aur->IsPassive() && !Aur->IsPersistent())
+    // passive and persistent auras can stack with themselves any number of times (with NPCs windfury exception)
+    if ((Aur->GetId() == 32912) || !Aur->IsPassive() && !Aur->IsPersistent())
     {
         bool isDotOrHot = false;
         for (uint8 i = 0; i < 3; i++)
@@ -3739,7 +3747,7 @@ bool Unit::AddAura(Aura *Aur)
                 }
             }
 
-            if (i2->second->GetId() == 31944)    //HACK check for Doomfire DoT stacking
+            if (i2->second->GetId() == 31944 || i2->second->GetId() == 32911)    //HACK check for Doomfire DoT stacking and NPCs windfury
             {
                 RemoveAura(i2, AURA_REMOVE_BY_STACK);
                 i2 = m_Auras.lower_bound(spair);
@@ -4160,7 +4168,20 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
             if(spellId == 43421)         // Special case - Hex Lord Malacrass Lifebloom (prevent lifebloom from blomming when spellstolen)
                 RemoveAura(iter, AURA_REMOVE_BY_DEFAULT);
             else
-                RemoveAura(iter, AURA_REMOVE_BY_DISPEL);
+            {
+                if (aur->GetStackAmount() > 1)
+                {
+                    // reapply modifier with reduced stack amount
+                    aur->ApplyModifier(false,true);
+                    aur->SetStackAmount(iter->second->GetStackAmount()-1);
+                    aur->ApplyModifier(true,true);
+
+                    aur->UpdateSlotCounterAndDuration();
+                    return; // should always only 1 aura per spell be stolen?
+                }
+                else
+                    RemoveAura(iter,AURA_REMOVE_BY_DISPEL);
+            }
         }
         else
             ++iter;
@@ -6927,6 +6948,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     if (cooldown && GetTypeId()==TYPEID_PLAYER && ((Player*)this)->HasSpellCooldown(trigger_spell_id))
         return false;
 
+    // only for windfury proc for a moment
+    if(GetTypeId() == TYPEID_UNIT && ((Creature*)this)->HasSpellCooldown(trigger_spell_id))
+        return false;
+
     // try detect target manually if not set
     if (target == NULL)
        target = !(procFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL) && IsPositiveSpell(trigger_spell_id) ? this : pVictim;
@@ -6943,6 +6968,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         CastCustomSpell(target,trigger_spell_id,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
     else
         CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
+
+    // workaround: 3 sec cooldown for NPCs windfury proc
+    if(trigger_spell_id == 32910 && GetTypeId() == TYPEID_UNIT)
+        ((Creature*)this)->_AddCreatureSpellCooldown(32910, time(NULL) + 3);
 
     return true;
 }
@@ -7955,7 +7984,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 0;
             }
-            else if (spellProto->Id == 43427) // Ice Lance (Hex Lord Malacrass)
+            else if (spellProto->Id == 43427 || spellProto->Id == 46194 || spellProto->Id == 44176) // Ice Lance (Hex Lord Malacrass / Yazzai)
             {
                 CastingTime /= 3;                            // applied 1/3 bonuses in case generic target
                 if (pVictim->isFrozen())                     // and compensate this for frozen target.
@@ -9219,10 +9248,19 @@ void Unit::ClearInCombat()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
 
-//TODO: remove this function
 bool Unit::isTargetableForAttack() const
 {
-    return isAttackableByAOE() && !hasUnitState(UNIT_STAT_DIED);
+    if (!isAlive())
+        return false;
+
+    if (HasFlag(UNIT_FIELD_FLAGS,
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NOT_ATTACKABLE_2))
+        return false;
+
+    if (GetTypeId()==TYPEID_PLAYER && ((Player *)this)->isGameMaster())
+        return false;
+
+    return !IsTaxiFlying();
 }
 
 bool Unit::canAttack(Unit const* target, bool force) const
@@ -9237,7 +9275,7 @@ bool Unit::canAttack(Unit const* target, bool force) const
     else if (!IsHostileTo(target))
         return false;
 
-    if (!target->isAttackableByAOE())
+    if (!target->isTargetableForAttack())
         return false;
 
     // feign dead case
@@ -9262,17 +9300,19 @@ bool Unit::canAttack(Unit const* target, bool force) const
 
 bool Unit::isAttackableByAOE() const
 {
-    if (!isAlive())
-        return false;
-
-    if (HasFlag(UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NOT_ATTACKABLE_2))
-        return false;
-
-    if (GetTypeId()==TYPEID_PLAYER && ((Player *)this)->isGameMaster())
-        return false;
-
-    return !IsTaxiFlying();
+    // creatures that should not be damaged by AoE spells
+    if(GetTypeId() == TYPEID_UNIT)
+    {
+        switch(GetEntry())
+        {
+            case 24745: //Pure Energy
+                return false;
+            default:
+                return true;
+        }
+    }
+    // we may place here also conditions (if exist?) when Player should not be damaged by AoE spells
+    return true;
 }
 
 int32 Unit::ModifyHealth(int32 dVal)
@@ -9521,7 +9561,9 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             return;
         case MOVE_FLIGHT:
         {
-            if (IsMounted()) // Use on mount auras
+            if(HasAuraType(SPELL_AURA_MOD_SPEED_MOUNTED)) // Use for Ragged Flying Carpet & MgT Kael'thas Gravity Lapse
+                main_speed_mod  = GetTotalAuraModifier(SPELL_AURA_MOD_SPEED_MOUNTED);
+            else if (IsMounted()) // Use on mount auras
                 main_speed_mod  = GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
             else             // Use not mount (shapeshift for example) auras (should stack)
                 main_speed_mod  = GetTotalAuraModifier(SPELL_AURA_MOD_SPEED_FLIGHT);
@@ -9971,13 +10013,14 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
     if (!basePointsPerLevel && (spellProto->Attributes & SPELL_ATTR_LEVEL_DAMAGE_CALCULATION && spellProto->spellLevel) &&
             spellProto->Effect[effect_index] != SPELL_EFFECT_WEAPON_PERCENT_DAMAGE &&
             spellProto->Effect[effect_index] != SPELL_EFFECT_KNOCK_BACK &&
+            spellProto->Effect[effect_index] != SPELL_EFFECT_ADD_EXTRA_ATTACKS &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_SPEED_ALWAYS &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_SPEED_NOT_STACK &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_INCREASE_SPEED &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_DECREASE_SPEED)
             //there are many more: slow speed, -healing pct
-        //value = int32(value*0.25f*exp(getLevel()*(70-spellProto->spellLevel)/1000.0f));
-        value = int32(value * (int32)getLevel() / (int32)(spellProto->spellLevel ? spellProto->spellLevel : 1));
+        value *= exp(getLevel()*(70-spellProto->spellLevel)/1000.0f - 1);
+        //value = int32(value * (int32)getLevel() / (int32)(spellProto->spellLevel ? spellProto->spellLevel : 1));
 
     return value;
 }
@@ -10783,7 +10826,6 @@ void CharmInfo::InitPossessCreateSpells()
         return;
     }
 
-
     InitEmptyActionBar();
 
     if (m_unit->GetTypeId() == TYPEID_UNIT)
@@ -10959,6 +11001,7 @@ void InitTriggerAuraData()
     isTriggerAura[SPELL_AURA_MOD_HASTE] = true;
     isTriggerAura[SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE]=true;
     isTriggerAura[SPELL_AURA_PRAYER_OF_MENDING] = true;
+    isTriggerAura[SPELL_AURA_PRAYER_OF_MENDING_NPC] = true;
     isTriggerAura[SPELL_AURA_PROC_TRIGGER_SPELL_WITH_VALUE] = true;
 
     isNonTriggerAura[SPELL_AURA_MOD_POWER_REGEN]=true;
@@ -11189,7 +11232,12 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
             {
                 sLog.outDebug("ProcDamageAndSpell: casting mending (triggered by %s dummy aura of spell %u)",
                     (isVictim?"a victim's":"an attacker's"),triggeredByAura->GetId());
-                HandleMeandingAuraProc(triggeredByAura);
+                HandleMendingAuraProc(triggeredByAura);
+                break;
+            }
+            case SPELL_AURA_PRAYER_OF_MENDING_NPC:
+            {
+                HandleMendingNPCAuraProc(triggeredByAura);
                 break;
             }
             case SPELL_AURA_PROC_TRIGGER_SPELL_WITH_VALUE:
@@ -11928,7 +11976,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
     return roll_chance_f(chance);
 }
 
-bool Unit::HandleMeandingAuraProc(Aura* triggeredByAura)
+bool Unit::HandleMendingAuraProc(Aura* triggeredByAura)
 {
     // aura can be deleted at casts
     SpellEntry const* spellProto = triggeredByAura->GetSpellProto();
@@ -11975,6 +12023,67 @@ bool Unit::HandleMeandingAuraProc(Aura* triggeredByAura)
             }
         }
         heal = caster->SpellHealingBonus(spellProto, heal, HEAL, this);
+    }
+
+    // heal
+    CastCustomSpell(this,33110,&heal,NULL,NULL,true);
+    return true;
+}
+
+bool Unit::HandleMendingNPCAuraProc(Aura* triggeredByAura)
+{
+    SpellEntry const* spellProto = triggeredByAura->GetSpellProto();
+    uint32 effIdx = triggeredByAura->GetEffIndex();
+    int32 heal = triggeredByAura->GetModifier()->m_amount;
+
+    // jumps
+    int32 jumps = triggeredByAura->m_procCharges-1;
+
+    if (Unit* caster = triggeredByAura->GetCaster())
+    {
+        if(caster->GetTypeId() != TYPEID_UNIT)
+            return false;
+
+        Creature* CreatureCaster = (Creature*)caster;
+
+        // next target selection
+        if (jumps >= 0)
+        {
+            //triggeredByAura->m_procCharges = jumps;
+            triggeredByAura->UpdateAuraCharges();
+            float radius = 20.0;
+
+            CreatureGroup * formation = (CreatureCaster->GetFormation());
+            // only search for targets if having group formation !
+            if(!formation)
+            {
+                RemoveAurasDueToSpell(spellProto->Id);
+                CastCustomSpell(this,33110,&heal,NULL,NULL,true);
+                return false;
+            }
+
+            if (Creature* target = formation->GetNextRandomCreatureGroupMember(CreatureCaster, radius))
+            {
+                if(jumps > 0)
+                {
+                    //remove aura on caster
+                    RemoveAurasDueToSpell(spellProto->Id);
+                    // manually apply aura on target, to update charges count
+                    Aura* aura = CreateAura(spellProto, effIdx, NULL, this, NULL);
+                    aura->SetLoadedState(target->GetGUID(), heal, triggeredByAura->GetAuraMaxDuration(), triggeredByAura->GetAuraMaxDuration(), jumps);
+                    aura->SetTarget(target);
+                    target->AddAura(aura);
+                    // visual jump
+                    CastSpell(target, 41637, true, NULL, triggeredByAura, caster->GetGUID());
+                }
+            }
+            else
+            {
+                RemoveAurasDueToSpell(spellProto->Id);
+                CastCustomSpell(this,33110,&heal,NULL,NULL,true);
+                return false;
+            }
+        }
     }
 
     // heal
@@ -12041,6 +12150,7 @@ bool Unit::preventApplyPersistentAA(SpellEntry const *spellInfo, uint8 eff_index
         case 38575: //Toxic Spores
         case 40253: //Molten Flame
         case 31943: //Doomfire
+        case 33802: //Flame Wave
             unique = true;
             break;
     }
@@ -12555,6 +12665,9 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
 
     // Set charmed
     charmer->SetCharm(this);
+    // delete charmed players for threat list
+    if(charmer->CanHaveThreatList())
+        charmer->getThreatManager().modifyThreatPercent(this, -101);
     SetCharmerGUID(charmer->GetGUID());
     setFaction(charmer->getFaction());
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
@@ -12838,6 +12951,24 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry
             {
                 if (IsWithinLOSInMap(pet))
                     TagUnitMap.push_back(pet);
+            }
+        }
+        // Player cannot be in party with NPC's :)
+        if (owner->GetTypeId() == TYPEID_UNIT)
+        {
+            // for Creatures, grid search friendly units in radius
+            std::list<Creature*> pList;
+            Trinity::AllFriendlyCreaturesInGrid u_check(owner);
+            Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+            Cell::VisitAllObjects(owner, searcher, radius);
+
+            for (std::list<Creature*>::iterator i = pList.begin(); i != pList.end(); ++i)
+            {
+                if ((*i)->GetGUID() == owner->GetGUID() || (*i)->GetGUID() == owner->GetPetGUID())
+                    continue;
+
+                if (IsWithinLOSInMap(*i))
+                    TagUnitMap.push_back(*i);
             }
         }
     }

@@ -435,8 +435,7 @@ bool Map::Add(Player *player)
 }
 
 template<class T>
-void
-Map::Add(T *obj)
+void Map::Add(T *obj)
 {
     CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
 
@@ -2634,6 +2633,9 @@ void InstanceMap::InitVisibilityDistance()
         case 534:   //Hyjal Summit
         case 564:   //Black Temple
             m_VisibleDistance = sWorld.GetMaxSpecialVisibleDistance();
+            break;
+        case 580:   //Sunwell Plateau (for Ice Barrier visibility)
+            m_VisibleDistance = 400.0f;
             break;
         default:
             m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();

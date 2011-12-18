@@ -339,6 +339,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
     ClearTrade();
 
     m_cinematic = 0;
+    m_watchingCinematicId = 0;
 
     PlayerTalkClass = new PlayerMenu(GetSession());
     m_currentBuybackSlot = BUYBACK_SLOT_START;
@@ -5688,6 +5689,8 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId)
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(CinematicSequenceId);
     SendDirectMessage(&data);
+
+    setWatchingCinematic(CinematicSequenceId);
 }
 
 void Player::CheckAreaExploreAndOutdoor()
@@ -13440,10 +13443,10 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
                     q_status.uState = QUEST_CHANGED;
             }
 
-        if (CanCompleteQuest(questId))
-            CompleteQuest(questId);
-        else
-            SendQuestComplete(questId);
+            if (CanCompleteQuest(questId))
+                CompleteQuest(questId);
+            else
+                SendQuestComplete(questId);
         }
     }
 }
@@ -14458,6 +14461,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     }
 
     m_cinematic = fields[12].GetUInt32();
+    m_watchingCinematicId = 0;
     m_Played_time[0]= fields[13].GetUInt32();
     m_Played_time[1]= fields[14].GetUInt32();
 

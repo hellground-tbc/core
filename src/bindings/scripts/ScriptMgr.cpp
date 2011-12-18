@@ -25,7 +25,6 @@ Script *m_scripts[MAX_SCRIPTS];
 Config TScriptConfig;
 
 void FillSpellSummary();
-void LoadOverridenSQLData();
 
 // -------------------
 void LoadDatabase()
@@ -481,6 +480,17 @@ bool AreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry)
         return false;
 
     return pTempScript->pAreaTrigger(pPlayer, atEntry);
+}
+
+TRINITY_DLL_EXPORT
+bool CompletedCinematic(Player* pPlayer, CinematicSequencesEntry const* cinematic)
+{
+    Script* pTempScript = m_scripts[GetCompletedCinematicScriptId(cinematic->Id)];
+
+    if (!pTempScript || !pTempScript->pCompletedCinematic)
+        return false;
+
+    return pTempScript->pCompletedCinematic(pPlayer, cinematic);
 }
 
 TRINITY_DLL_EXPORT

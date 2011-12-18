@@ -26,7 +26,7 @@
 #include "Traveller.h"
 
 #define WANDER_DISTANCE    2.5f
-#define MAX_RANDOM_POINTS 6
+#define MAX_RANDOM_POINTS  6
 
 template<class T>
 class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMovementGenerator<T> >
@@ -60,3 +60,4 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMediu
 };
 
 #endif
+

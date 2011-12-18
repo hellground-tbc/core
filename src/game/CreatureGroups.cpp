@@ -200,6 +200,8 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
                 mem->AI()->AttackStart(target);
         }
     }
+    if(m_Respawned)
+        m_Respawned = false;
 }
 
 void CreatureGroup::FormationReset(bool dismiss)
@@ -222,6 +224,28 @@ void CreatureGroup::FormationReset(bool dismiss)
         }
     }
     m_Formed = !dismiss;
+}
+
+void CreatureGroup::RespawnFormation(Creature *member)
+{
+    if(!member || m_Respawned)
+        return;
+
+    for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        // Called at EnterEvadeMode, do not check self
+        if (itr->first == member->GetGUID())
+            continue;
+
+        if (Creature *mem = member->GetMap()->GetCreature(itr->first))
+        {
+            if (mem->isAlive())
+                continue;
+
+            mem->Respawn();
+        }
+    }
+    m_Respawned = true;
 }
 
 void CreatureGroup::LeaderMoveTo(float x, float y, float z)
@@ -269,4 +293,27 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
         member->SetHomePosition(dx, dy, dz, pathangle);
         m_movingUnits++;
     }
+}
+
+Creature* CreatureGroup::GetNextRandomCreatureGroupMember(Creature* member, float radius)
+{
+    std::vector<Creature*> nearMembers;
+    nearMembers.reserve(m_members.size()*2);
+
+    for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    {
+        if (Creature *mem = member->GetMap()->GetCreature(itr->first))
+        {
+            // IsHostileTo check controlled by enemy
+            if (itr->first != member->GetGUID() && member->IsWithinDistInMap(mem, radius)
+            && !member->IsHostileTo(mem) && mem->isAlive() && !mem->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+                nearMembers.push_back(mem);
+        }
+    }
+
+    if (nearMembers.empty())
+        return NULL;
+
+    uint32 randTarget = urand(0,nearMembers.size()-1);
+    return nearMembers[randTarget];
 }
