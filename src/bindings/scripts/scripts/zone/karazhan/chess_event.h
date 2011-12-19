@@ -238,10 +238,11 @@ enum MiniEvent
 
 enum GameEndEvent
 {
-    GAMEEND_NONE        = 0,
-    GAMEEND_MEDIVH_WIN  = 1,
-    GAMEEND_MEDIVH_LOSE = 2,
-    GAMEEND_CLEAR_BOARD = 3
+    GAMEEND_NONE            = 0,
+    GAMEEND_MEDIVH_WIN      = 1,
+    GAMEEND_MEDIVH_LOSE     = 2,
+    GAMEEND_CLEAR_BOARD     = 3,
+    GAMEEND_DESPAWN_CHEST   = 4
 };
 
 enum AbilityCooldowns
@@ -530,6 +531,8 @@ private:
     uint32 moveTimer;
     uint32 addPieceToMoveCheckTimer;
 
+    uint64 chestGUID;
+
 public:
     boss_MedivhAI(Creature *c);
 
@@ -570,6 +573,8 @@ public:
     void SpawnKings();
     void SpawnPawns();
     void SpawnTriggers();
+
+    void DeleteChest();
 
     //move
 

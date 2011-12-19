@@ -97,7 +97,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ARCMISSLE);
-        if(TempSpell)
+        if (TempSpell)
         {
             TempSpell->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
             TempSpell->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
@@ -184,13 +184,13 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         PotionUsed              = false;
         ArcaneCasting           = false;
 
-        if(pInstance)
+        if (pInstance)
         {
             // Not in progress
             if (pInstance->GetData(DATA_SHADEOFARAN_EVENT) != DONE)
                 pInstance->SetData(DATA_SHADEOFARAN_EVENT, NOT_STARTED);
 
-            if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
+            if (GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
                 Door->SetGoState(GO_STATE_ACTIVE);
         }
 
@@ -216,19 +216,16 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if(pInstance)
-        {
-            pInstance->SetData(DATA_SHADEOFARAN_EVENT, DONE);
+        pInstance->SetData(DATA_SHADEOFARAN_EVENT, DONE);
 
-            if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-                Door->SetGoState(GO_STATE_ACTIVE);
-        }
+        if (GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
+            Door->SetGoState(GO_STATE_ACTIVE);
     }
 
     bool PlayerHaveAtiesh()
     {
         Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
-        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
             if (i_pl->HasEquiped(22632) ||
@@ -248,7 +245,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         else
             DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
 
-        if(pInstance)
+        if (pInstance)
         {
             pInstance->SetData(DATA_SHADEOFARAN_EVENT, IN_PROGRESS);
             if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
@@ -269,18 +266,18 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
             //only on alive players
-            if(target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER )
-                targets.push_back( target);
+            if (target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
+                targets.push_back(target);
         }
 
         //cut down to size if we have more than 3 targets
-        while(targets.size() > 3)
+        while (targets.size() > 3)
             targets.erase(targets.begin()+rand()%targets.size());
 
         uint32 i = 0;
-        for(std::vector<Unit*>::iterator itr = targets.begin(); itr!= targets.end(); ++itr)
+        for (std::vector<Unit*>::iterator itr = targets.begin(); itr!= targets.end(); ++itr)
         {
-            if(*itr)
+            if (*itr)
             {
                 FlameWreathTarget[i] = (*itr)->GetGUID();
                 FWTargPosX[i] = (*itr)->GetPositionX();
@@ -310,13 +307,13 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
         //Check_Timer
-        if(CheckTimer < diff)
+        if (CheckTimer < diff)
         {
-            if(!m_creature->IsWithinDistInMap(&wLoc, 35.0f))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 35.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -326,13 +323,13 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         else
             CheckTimer -= diff;
 
-        if(CloseDoorTimer)
+        if (CloseDoorTimer)
         {
-            if(CloseDoorTimer <= diff)
+            if (CloseDoorTimer <= diff)
             {
-                if(pInstance)
+                if (pInstance)
                 {
-                    if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
+                    if (GameObject* Door = m_creature->GetMap()->GetGameObject(pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
                         Door->SetGoState(GO_STATE_READY);
                     CloseDoorTimer = 0;
                 }
@@ -366,7 +363,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 FrostCooldown = 0;
         }
 
-        if(!Drinking && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
+        if (!Drinking && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
         {
             if (DrinkingWaitTime > diff)            // wait 1 sec to prevent broking mass polymorph by last normal spell
             {
@@ -418,12 +415,12 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         }
 
         //Normal casts
-        if(NormalCastTimer < diff)
+        if (NormalCastTimer < diff)
         {
             if (!m_creature->IsNonMeleeSpellCasted(false))
             {
                 Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                target = SelectUnit(SELECT_TARGET_RANDOM, 0, 0.0f, true);
 
                 if (!target)
                     return;
@@ -462,7 +459,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         else
             NormalCastTimer -= diff;
 
-        if(SecondarySpellTimer < diff)
+        if (SecondarySpellTimer < diff)
         {
             switch (rand()%2)
             {
@@ -470,22 +467,22 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     AddSpellToCast(m_creature, SPELL_AOE_CS);
                     break;
                 case 1:
-                    if(Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CHAINSOFICE), true))
+                    if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CHAINSOFICE), true))
                         AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
                     break;
             }
 
-            SecondarySpellTimer = 5000 + (rand()%15000);
+            SecondarySpellTimer = urand(5000, 20000);
         }
         else
             SecondarySpellTimer -= diff;
 
-        if(SuperCastTimer < diff)
+        if (SuperCastTimer < diff)
         {
-            if(ArcaneCasting)
+            if (ArcaneCasting)
             {
                 ArcaneCasting = false;
-                SuperCastTimer = 19000+rand()%5000;
+                SuperCastTimer = urand(19000, 24000);
                 return;
             }
             uint8 Available[2];
@@ -511,11 +508,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             switch (LastSuperSpell)
             {
                 case SUPER_AE:
-
-                    if (rand()%2)
-                        DoScriptText(SAY_EXPLOSION1, m_creature);
-                    else
-                        DoScriptText(SAY_EXPLOSION2, m_creature);
+                    DoScriptText(RAND(SAY_EXPLOSION1, SAY_EXPLOSION2), m_creature);
 
                     TeleportCenter();
                     m_creature->CastSpell(m_creature, SPELL_PLAYERPULL, true);
@@ -525,10 +518,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     break;
 
                 case SUPER_FLAME:
-                    if (rand()%2)
-                        DoScriptText(SAY_FLAMEWREATH1, m_creature);
-                    else
-                        DoScriptText(SAY_FLAMEWREATH2, m_creature);
+                    DoScriptText(RAND(SAY_FLAMEWREATH1, SAY_FLAMEWREATH2), m_creature);
 
                     FlameWreathTimer = 20000;
                     FlameWreathCheckTime = 500;
@@ -541,15 +531,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     break;
 
                 case SUPER_BLIZZARD:
+                    DoScriptText(RAND(SAY_BLIZZARD1, SAY_BLIZZARD2), m_creature);
 
-                    if (rand()%2)
-                        DoScriptText(SAY_BLIZZARD1, m_creature);
-                    else
-                        DoScriptText(SAY_BLIZZARD2, m_creature);
-
-                    Creature * blizzard = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_BLIZZARD));
-
-                    if(blizzard)
+                    if  (Creature * blizzard = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_BLIZZARD)))
                     {
                         ChangeBlizzardWaypointsOrder(urand(0, 7));
                         blizzard->CastSpell(blizzard, SPELL_CIRCULAR_BLIZZARD, true);
@@ -558,15 +542,15 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     break;
             }
 
-            if(ArcaneCasting)
+            if (ArcaneCasting)
                 SuperCastTimer = 11000;
             else
-                SuperCastTimer = 30000 + (rand()%5000);
+                SuperCastTimer = urand(30000, 35000);
         }
         else
             SuperCastTimer -= diff;
 
-        if(!ElementalsSpawned && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 40)
+        if (!ElementalsSpawned && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 40)
         {
             ElementalsSpawned = true;
             TeleportCenter();
@@ -584,7 +568,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             DoScriptText(SAY_ELEMENTALS, m_creature);
         }
 
-        if(BerserkTimer < diff)
+        if (BerserkTimer < diff)
         {
             for (uint32 i = 0; i < 8; i++)
             {
@@ -608,7 +592,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             if (FlameWreathTimer >= diff)
                 FlameWreathTimer -= diff;
-            else FlameWreathTimer = 0;
+            else
+                FlameWreathTimer = 0;
 
             if (FlameWreathCheckTime < diff)
             {
@@ -617,7 +602,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     if (!FlameWreathTarget[i])
                         continue;
 
-                    Unit* pUnit = Unit::GetUnit(*m_creature, FlameWreathTarget[i]);
+                    Unit* pUnit = m_creature->GetMap()->GetUnit(FlameWreathTarget[i]);
                     if (pUnit && pUnit->GetDistance2d(FWTargPosX[i], FWTargPosY[i]) > 1)
                     {
                         pUnit->CastSpell(pUnit, 20476, true, 0, 0, m_creature->GetGUID());
@@ -626,13 +611,13 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     }
                 }
                 FlameWreathCheckTime = 500;
-            }else FlameWreathCheckTime -= diff;
+            }
+            else
+                FlameWreathCheckTime -= diff;
         }
 
         CastNextSpellIfAnyAndReady();
-
-        if (ArcaneCooldown && FireCooldown && FrostCooldown)
-            DoMeleeAttackIfReady();
+        DoMeleeAttackIfReady();
     }
 
     void DamageTaken(Unit* pAttacker, uint32 &damage)
@@ -649,7 +634,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             Spell->Effect[2] != SPELL_EFFECT_INTERRUPT_CAST) || !m_creature->IsNonMeleeSpellCasted(false))
             return;
 
-        if(ArcaneCasting)
+        if (ArcaneCasting)
             return;
 
         //Inturrupt effect
@@ -685,15 +670,15 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        CastTimer = 2000 + (rand()%3000);
+        CastTimer = urand(2000, 5000);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
-        if(CastTimer < diff)
+        if (CastTimer < diff)
         {
             //AddSpellToCast(m_creature->getVictim(), SPELL_WATERBOLT);
             DoCast(m_creature->getVictim(), SPELL_WATERBOLT);
@@ -719,23 +704,20 @@ struct TRINITY_DLL_DECL shadow_of_aranAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
-        if(CastTimer < diff)
+        if (CastTimer < diff)
         {
-            switch(rand()%2)
+            if (rand()%3)
             {
-            case 0:
                 m_creature->CastSpell(m_creature, SPELL_FROSTBOLT_VOLLEY, false);
                 CastTimer = 5000;
-                break;
-            case 1:
+            }
+            else
+            {
                 m_creature->CastSpell(m_creature, SPELL_AMISSILE_VOLLEY, false);
                 CastTimer = 20000;
-                break;
-            default:
-                break;
             }
         }
         else
@@ -747,7 +729,7 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
 {
     circular_blizzardAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        pInstance = c->GetInstanceData();
     }
 
     uint16 currentWaypoint;
@@ -767,17 +749,17 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
 
     void SpellHit(Unit * caster, const SpellEntry * spell)
     {
-        if (pInstance && spell->Id == SPELL_CIRCULAR_BLIZZARD)
+        if (spell->Id == SPELL_CIRCULAR_BLIZZARD)
         {
-            Creature *pAran = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_ARAN));
-            if(pAran)
+            Creature *pAran = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_ARAN));
+            if (pAran)
             {
                 wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
                 wLoc.coord_y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
                 wLoc.coord_z = pAran->GetPositionZ();
             }
 
-            if(wLoc.coord_x || wLoc.coord_y || wLoc.coord_z)
+            if (wLoc.coord_x || wLoc.coord_y || wLoc.coord_z)
                 DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
 
             currentWaypoint = 0;
@@ -801,7 +783,7 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
                 move = false;
             }
 
-            Creature *pAran = Unit::GetCreature(*m_creature, pInstance->GetData64(DATA_ARAN));
+            Creature *pAran = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_ARAN));
             if(pAran)
             {
                 wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];

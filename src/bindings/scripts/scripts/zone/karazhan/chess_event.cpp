@@ -2040,6 +2040,8 @@ void boss_MedivhAI::Reset()
     tpList.clear();
     moveList.clear();
 
+    chestGUID = 0;
+
     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -2101,7 +2103,7 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
             case NPC_KING_A:
 
                 if (pInstance->GetData(DATA_DUST_COVERED_CHEST) != DONE)
-                    m_creature->SummonGameObject(DUST_COVERED_CHEST, DUST_COVERED_CHEST_LOCATION, 0, 0, 0, 0, 7200000);
+                    chestGUID = m_creature->SummonGameObject(DUST_COVERED_CHEST, DUST_COVERED_CHEST_LOCATION, 0, 0, 0, 0, 7200000)->GetGUID();
                 //    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL); // temporary
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
@@ -2164,8 +2166,8 @@ void boss_MedivhAI::SayChessPieceDied(Unit * piece)
 
             case NPC_KING_H:
 
-                if (pInstance->GetData(DATA_CHESS_EVENT) != DONE)
-                    m_creature->SummonGameObject(DUST_COVERED_CHEST, DUST_COVERED_CHEST_LOCATION, 0, 0, 0, 0, 7200000);
+                if (pInstance->GetData(DATA_DUST_COVERED_CHEST) != DONE)
+                    chestGUID = m_creature->SummonGameObject(DUST_COVERED_CHEST, DUST_COVERED_CHEST_LOCATION, 0, 0, 0, 0, 7200000)->GetGUID();
                 //    me->Say("Teraz powinna sie skrzynka pojawic", LANG_UNIVERSAL, NULL); // temporary
 
                 DoScriptText(SCRIPTTEXT_PLAYER_WIN, m_creature);
@@ -2726,6 +2728,10 @@ void boss_MedivhAI::PrepareBoardForEvent()
 void boss_MedivhAI::StartMiniEvent()
 {
     ClearBoard();
+
+    if (chestGUID)
+        return;
+
     miniEventState = MINI_EVENT_KING;
 
     pInstance->SetData(DATA_DUST_COVERED_CHEST, IN_PROGRESS);
@@ -2740,6 +2746,18 @@ void boss_MedivhAI::StartEvent()
     DoZoneInCombat();
     eventStarted = true;
     addPieceToMoveCheckTimer = 10000;
+}
+
+void boss_MedivhAI::DeleteChest()
+{
+    if (chestGUID)
+    {
+        GameObject * tmpObj = me->GetMap()->GetGameObject(chestGUID);
+        if (tmpObj)
+            tmpObj->Delete();
+
+        chestGUID = 0;
+    }
 }
 
 void boss_MedivhAI::UpdateAI(const uint32 diff)
@@ -2809,6 +2827,7 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
         if (endEventTimer < diff)
         {
             Creature * tmpC;
+            endEventTimer = 2500;
             switch (endGameEventState)
             {
                 case GAMEEND_MEDIVH_WIN:
@@ -2837,11 +2856,17 @@ void boss_MedivhAI::UpdateAI(const uint32 diff)
                     break;
                 case GAMEEND_CLEAR_BOARD:
                     ClearBoard();
+                    endGameEventState = GAMEEND_DESPAWN_CHEST;
+
+                    if (chestGUID)
+                        endEventTimer = 180000;
+                    break;
+                case GAMEEND_DESPAWN_CHEST:
+                    DeleteChest();
                     EnterEvadeMode();
                     return;
             }
             endEventCount++;
-            endEventTimer = 2500;
         }
         else
             endEventTimer -= diff;
@@ -4127,6 +4152,7 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
 
         pInstance->SetData(CHESS_EVENT_TEAM, player->GetTeam());
         _Creature->GetMotionMaster()->MoveRandom(10);
+        _Creature->GetMotionMaster()->MoveIdle();
     }
 
     player->CLOSE_GOSSIP_MENU();

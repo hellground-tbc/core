@@ -71,7 +71,7 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetVisibility(VISIBILITY_ON);
 
-        if(pInstance && pInstance->GetData(DATA_ATTUMEN_EVENT) != DONE)
+        if(pInstance->GetData(DATA_ATTUMEN_EVENT) != DONE)
             pInstance->SetData(DATA_ATTUMEN_EVENT, NOT_STARTED);
         else
         {
@@ -82,17 +82,14 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(pInstance)
-            pInstance->SetData(DATA_ATTUMEN_EVENT, IN_PROGRESS);
+        pInstance->SetData(DATA_ATTUMEN_EVENT, IN_PROGRESS);
     }
 
     void KilledUnit(Unit *victim)
     {
-        if(Phase == 2)
-        {
+        if (Phase == 2)
             if (Unit *pUnit = Unit::GetUnit(*m_creature, Attumen))
-            DoScriptText(SAY_MIDNIGHT_KILL, pUnit);
-        }
+                DoScriptText(SAY_MIDNIGHT_KILL, pUnit);
     }
 
     void UpdateAI(const uint32 diff)
@@ -100,9 +97,9 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if(CheckTimer < diff)
+        if (CheckTimer < diff)
         {
-            if(!m_creature->IsWithinDistInMap(&wLoc, 50.0f))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 50.0f))
                 EnterEvadeMode();
             else
                 DoZoneInCombat();
@@ -112,50 +109,61 @@ struct TRINITY_DLL_DECL boss_midnightAI : public ScriptedAI
         else
             CheckTimer -= diff;
 
-        if(Phase == 1 && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 95)
+        switch (Phase)
         {
-            Phase = 2;
-            Creature *pAttumen = m_creature->SummonCreature(SUMMON_ATTUMEN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000); //DoSpawnCreature(SUMMON_ATTUMEN, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
-            if(pAttumen)
+            case 1:
             {
-                Attumen = pAttumen->GetGUID();
-                pAttumen->AI()->AttackStart(m_creature->getVictim());
-                SetMidnight(pAttumen, m_creature->GetGUID());
-
-                DoScriptText(RAND(SAY_APPEAR1, SAY_APPEAR2, SAY_APPEAR3), pAttumen);
-            }
-        }
-        else if(Phase == 2 && (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 25)
-        {
-            if (Unit *pAttumen = Unit::GetUnit(*m_creature, Attumen))
-                Mount(pAttumen);
-        }
-        else if(Phase ==3)
-        {
-            if(Mount_Timer)
-            {
-                if(Mount_Timer <= diff)
+                if ((m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 95)
                 {
-                    Mount_Timer = 0;
-                    m_creature->SetVisibility(VISIBILITY_OFF);
-                    m_creature->GetMotionMaster()->MoveIdle();
-                    if (Creature *pAttumen = Unit::GetCreature(*m_creature, Attumen))
+                    Phase = 2;
+                    Creature *pAttumen = m_creature->SummonCreature(SUMMON_ATTUMEN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000); //DoSpawnCreature(SUMMON_ATTUMEN, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000);
+                    if (pAttumen)
                     {
-                        pAttumen->SetUInt32Value(UNIT_FIELD_DISPLAYID, MOUNTED_DISPLAYID);
-                        pAttumen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        if(pAttumen->getVictim())
-                        {
-                            pAttumen->GetMotionMaster()->MoveChase(pAttumen->getVictim());
-                            pAttumen->SetSelection(pAttumen->getVictimGUID());
-                        }
-                        pAttumen->SetFloatValue(OBJECT_FIELD_SCALE_X,1);
+                        Attumen = pAttumen->GetGUID();
+                        pAttumen->AI()->AttackStart(m_creature->getVictim());
+                        SetMidnight(pAttumen, m_creature->GetGUID());
+
+                        DoScriptText(RAND(SAY_APPEAR1, SAY_APPEAR2, SAY_APPEAR3), pAttumen);
                     }
-                } else Mount_Timer -= diff;
+                }
+                break;
+            }
+            case 2:
+            {
+                if ((m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 25)
+                    if (Unit *pAttumen = Unit::GetUnit(*m_creature, Attumen))
+                        Mount(pAttumen);
+                break;
+            }
+            case 3:
+            {
+                if (Mount_Timer)
+                {
+                    if (Mount_Timer <= diff)
+                    {
+                        Mount_Timer = 0;
+                        m_creature->SetVisibility(VISIBILITY_OFF);
+                        m_creature->GetMotionMaster()->MoveIdle();
+                        if (Creature *pAttumen = Unit::GetCreature(*m_creature, Attumen))
+                        {
+                            pAttumen->SetUInt32Value(UNIT_FIELD_DISPLAYID, MOUNTED_DISPLAYID);
+                            pAttumen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            if (pAttumen->getVictim())
+                            {
+                                pAttumen->GetMotionMaster()->MoveChase(pAttumen->getVictim());
+                                pAttumen->SetSelection(pAttumen->getVictimGUID());
+                            }
+                            pAttumen->SetFloatValue(OBJECT_FIELD_SCALE_X,1);
+                        }
+                    }
+                    else
+                        Mount_Timer -= diff;
+                }
+                return;
             }
         }
 
-        if(Phase != 3)
-            DoMeleeAttackIfReady();
+        DoMeleeAttackIfReady();
     }
 
     void Mount(Unit *pAttumen)
@@ -198,9 +206,9 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         pInstance = (c->GetInstanceData());
         Phase = 1;
 
-        CleaveTimer = 10000 + (rand()%6)*1000;
+        CleaveTimer = urand(10000, 16000);
         CurseTimer = 30000;
-        RandomYellTimer = 30000 + (rand()%31)*1000;         //Occasionally yell
+        RandomYellTimer = urand(30000, 61000);         //Occasionally yell
         ChargeTimer = 20000;
         ResetTimer = 0;
     }
@@ -231,19 +239,18 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         if (Unit *pMidnight = Unit::GetUnit(*m_creature, Midnight))
             pMidnight->DealDamage(pMidnight, pMidnight->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
-        if(pInstance)
-            pInstance->SetData(DATA_ATTUMEN_EVENT, DONE);
+        pInstance->SetData(DATA_ATTUMEN_EVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(ResetTimer)
+        if (ResetTimer)
         {
-            if(ResetTimer <= diff)
+            if (ResetTimer <= diff)
             {
                 ResetTimer = 0;
                 Unit *pMidnight = Unit::GetUnit(*m_creature, Midnight);
-                if(pMidnight)
+                if (pMidnight)
                 {
                     pMidnight->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     pMidnight->SetVisibility(VISIBILITY_ON);
@@ -252,58 +259,49 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
                 m_creature->SetVisibility(VISIBILITY_OFF);
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
-        } else ResetTimer -= diff;
+        }
+        else
+            ResetTimer -= diff;
 
         //Return since we have no target
         if (!UpdateVictim())
             return;
 
-        if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE ))
+        if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE ))
             return;
 
-        if(CleaveTimer < diff)
+        if (CleaveTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SHADOWCLEAVE);
-            CleaveTimer = 10000 + (rand()%6)*1000;
+            AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWCLEAVE);
+            CleaveTimer = urand(10000, 16000);
         }
         else
             CleaveTimer -= diff;
 
-        if(CurseTimer < diff)
+        if (CurseTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_INTANGIBLE_PRESENCE);
+            AddSpellToCast(m_creature->getVictim(), SPELL_INTANGIBLE_PRESENCE);
             CurseTimer = 30000;
         }
         else
             CurseTimer -= diff;
 
-        if(RandomYellTimer < diff)
+        if (RandomYellTimer < diff)
         {
             DoScriptText(RAND(SAY_RANDOM1, SAY_RANDOM2), m_creature);
 
-            RandomYellTimer = 30000 + (rand()%31)*1000;
+            RandomYellTimer = urand(30000, 61000);
         }
         else
             RandomYellTimer -= diff;
 
-        if(m_creature->GetUInt32Value(UNIT_FIELD_DISPLAYID) == MOUNTED_DISPLAYID)
+        if (m_creature->GetUInt32Value(UNIT_FIELD_DISPLAYID) == MOUNTED_DISPLAYID)
         {
-            if(ChargeTimer < diff)
+            if (ChargeTimer < diff)
             {
-                Unit *target;
-                std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-                std::vector<Unit *> target_list;
-                for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
-                {
-                    target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-                    if(target && target->GetDistance2d(m_creature) > 5)
-                        target_list.push_back(target);
-                    target = NULL;
-                }
-                if(target_list.size())
-                    target = *(target_list.begin()+rand()%target_list.size());
+                if (Unit * target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true, 0, 5.0f))
+                    AddSpellToCast(target, SPELL_BERSERKER_CHARGE);
 
-                DoCast(target, SPELL_BERSERKER_CHARGE);
                 ChargeTimer = 20000;
             }
             else
@@ -311,10 +309,10 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
         }
         else
         {
-            if( (m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 25)
+            if ((m_creature->GetHealth()*100)/m_creature->GetMaxHealth() < 25)
             {
                 Creature *pMidnight = Unit::GetCreature(*m_creature, Midnight);
-                if(pMidnight && pMidnight->GetTypeId() == TYPEID_UNIT)
+                if (pMidnight && pMidnight->GetTypeId() == TYPEID_UNIT)
                 {
                     ((boss_midnightAI*)(pMidnight->AI()))->Mount(m_creature);
                     m_creature->SetHealth(pMidnight->GetHealth());
@@ -323,12 +321,13 @@ struct TRINITY_DLL_DECL boss_attumenAI : public ScriptedAI
             }
         }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 
     void SpellHit(Unit *source, const SpellEntry *spell)
     {
-        if(spell->Mechanic == MECHANIC_DISARM)
+        if (spell->Mechanic == MECHANIC_DISARM)
             DoScriptText(SAY_DISARMED, m_creature);
     }
 };
@@ -356,4 +355,3 @@ void AddSC_boss_attumen()
     newscript->GetAI = &GetAI_boss_midnight;
     newscript->RegisterSelf();
 }
-
