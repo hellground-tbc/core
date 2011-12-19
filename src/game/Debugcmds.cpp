@@ -46,7 +46,7 @@
 bool ChatHandler::HandleWPToFileCommand(const char* args)
 {
     std::ofstream file;
-    file.open("waypoints.txt", ios_base::out | ios_base::app);
+    file.open("waypoints.txt", std::ios_base::out | std::ios_base::app);
     if (file.fail())
         return false;
 
