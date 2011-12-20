@@ -171,7 +171,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             if (HurtfulStrike_Timer < diff)
             {
                 Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, GetSpellMaxRange(SPELL_HURTFUL_STRIKE), true);
+                target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, 5.0f, true);
 
                 if (!target)
                     target = me->getVictim();
@@ -185,7 +185,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             // Cave In
             if (CaveIn_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CAVE_IN), true))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                     AddSpellToCast(target, SPELL_CAVE_IN);
 
                 CaveIn_Timer = 20000;
