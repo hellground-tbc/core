@@ -201,11 +201,13 @@ void ScriptedAI::CheckCasterNoMovementInRange(uint32 diff, float maxrange)
         if(!me->IsWithinDistInMap(me->getVictim(), maxrange) || !me->IsWithinLOSInMap(me->getVictim()))
         {
             float x, y, z;
+            /*
             float dist = me->GetDistance2d(me->getVictim());
             float angle = me->GetAngle(me->getVictim());
             me->GetPosition(x, y, z);
             x = x + dist/2 * cos(angle);
-            y = y + dist/2 * sin(angle);
+            y = y + dist/2 * sin(angle);*/
+            me->getVictim()->GetPosition(x, y, z);
             me->UpdateAllowedPositionZ(x, y, z);
             me->SetSpeed(MOVE_RUN, 1.5);
             me->GetMotionMaster()->MovePoint(40, x, y, z);  //to not possibly collide with any Movement Inform check
@@ -251,11 +253,13 @@ void ScriptedAI::CheckShooterNoMovementInRange(uint32 diff, float maxrange)
         if(!me->IsWithinDistInMap(me->getVictim(), maxrange) || !me->IsWithinLOSInMap(me->getVictim()))
         {
             float x, y, z;
+            me->getVictim()->GetPosition(x, y, z);
+            /*
             float dist = me->GetDistance2d(me->getVictim());
             float angle = me->GetAngle(me->getVictim());
             me->GetPosition(x, y, z);
             x = x + dist/2 * cos(angle);
-            y = y + dist/2 * sin(angle);
+            y = y + dist/2 * sin(angle);*/
             me->UpdateAllowedPositionZ(x, y, z);
             me->SetSpeed(MOVE_RUN, 1.5);
             me->GetMotionMaster()->MovePoint(41, x, y, z);  //to not possibly collide with any Movement Inform check
@@ -268,12 +272,6 @@ void ScriptedAI::CheckShooterNoMovementInRange(uint32 diff, float maxrange)
     }
     else
         casterTimer -= diff;
-}
-
-void ScriptedAI::DoStopAttack()
-{
-    if (m_creature->getVictim())
-        m_creature->AttackStop();
 }
 
 void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
