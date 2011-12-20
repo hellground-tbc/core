@@ -531,15 +531,14 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
 
     void TeleportPlayers()
     {
-        Map *map = m_creature->GetMap();
-        Map::PlayerList const &PlayerList = map->GetPlayers();
+        Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
-            if(Player* player = i->getSource())
+            if (Player* player = i->getSource())
             {
-                if(player->isGameMaster())
+                if (player->isGameMaster())
                     continue;
-                player->TeleportTo(map->GetId(), 127, 0, -20.5, player->GetOrientation());
+                player->TeleportTo(me->GetMapId(), 127.0f, 0.0f, -20.5f, player->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
             }
         }
     }
@@ -601,7 +600,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
             else
                 ResetThreatTimer -= diff;
         }
-        CastNextSpellIfAnyAndReady();
+//        CastNextSpellIfAnyAndReady(); //Oo unneeded ... added in main code
     }
 };
 
