@@ -1646,8 +1646,11 @@ bool Creature::canStartAttack(Unit const* who) const
 {
     if (isCivilian()
         || !who->isInAccessiblePlacefor (this)
-        || !CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE
+        || (!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
         || !IsWithinDistInMap(who, GetAttackDistance(who)))
+        return false;
+
+    if (IsInEvadeMode())
         return false;
 
     if (!canAttack(who, false))
