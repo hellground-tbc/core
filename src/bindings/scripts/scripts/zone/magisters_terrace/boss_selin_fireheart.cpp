@@ -56,6 +56,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         me->GetPosition(wLoc);
+        me->SetAggroRange(8.0f);   // he is "stunned" by fel powers draining and his visibility is limited :)
     }
 
     ScriptedInstance* pInstance;
@@ -136,6 +137,7 @@ struct TRINITY_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
             m_creature->SetWalk(false);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
+            
             DrainingCrystal = true;
         }
     }

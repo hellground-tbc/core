@@ -341,6 +341,8 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
     void AttackStart(Unit* who)
     {
         ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
+        if(Creature* Imp = me->GetMap()->GetCreature(SummonGUID))
+            Imp->AI()->AttackStart(who);
     }
 
     void UpdateAI(const uint32 diff)
