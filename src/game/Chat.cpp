@@ -908,9 +908,9 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                     Player* p = m_session->GetPlayer();
                     uint64 sel_guid = p->GetSelection();
                     if (table[i].Name != "password")
-                    sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: (GUID: %u)]",
-                        fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
-                        GUID_LOPART(sel_guid));
+                        sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: (GUID: %u)]",
+                            fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
+                            GUID_LOPART(sel_guid));
                 }
             }
         }
