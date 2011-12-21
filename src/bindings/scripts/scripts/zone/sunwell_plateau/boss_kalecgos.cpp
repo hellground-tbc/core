@@ -480,12 +480,13 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void Reset()
     {
+        /*
         if(KalecGUID)
         {
             if(Unit* Kalec = Unit::GetUnit(*m_creature, KalecGUID))
                 Kalec->setDeathState(JUST_DIED);
             KalecGUID = 0;
-        }
+        }*/
 
         ShadowBoltTimer = 7000 + rand()%3 * 1000;
         AgonyCurseTimer = 20000;
@@ -499,13 +500,24 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             pInstance->SetData(DATA_KALECGOS_EVENT, NOT_STARTED);
     }
 
+    void EnterEvadeMode()
+    {
+        if(KalecGUID)
+        {
+            if(Unit* Kalec = Unit::GetUnit(*m_creature, KalecGUID))
+                Kalec->setDeathState(JUST_DIED);
+            KalecGUID = 0;
+        }
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void EnterCombat(Unit* who)
     {
         float x, y, z, ori;
-        me->GetClosePoint(x, y, z, 0, 10, me->GetAngle(me));
+        me->GetClosePoint(x, y, z, 0, 6, me->GetAngle(me));
         me->UpdateAllowedPositionZ(x, y, z);
         ori = me->GetAngle(x, y);
-        Creature* Kalec = me->SummonCreature(MOB_KALEC, x, y, z, ori, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
+        Creature* Kalec = me->SummonCreature(MOB_KALEC, x, y, z, ori, TEMPSUMMON_CORPSE_DESPAWN, 0);
         if(Kalec)
         {
             KalecGUID = Kalec->GetGUID();
