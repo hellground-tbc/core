@@ -1174,6 +1174,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_SESSION_UPDATE_OVERTIME_METHOD] = sConfig.GetIntDefault("SessionUpdate.Method", 3);
 
     m_configs[CONFIG_KICK_PLAYER_ON_BAD_PACKET] = sConfig.GetBoolDefault("Network.KickOnBadPacket", true);
+
+    m_configs[CONFIG_MIN_GM_COMMAND_LOG_LEVEL] = sConfig.GetIntDefault("GmLogMinLevel", 1);
 }
 
 /// Initialize the World
