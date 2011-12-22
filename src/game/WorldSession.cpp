@@ -167,6 +167,23 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
 
     OpcodeHandler& opHandle = opcodeTable[new_packet->GetOpcode()];
 
+    switch (opHandle.status)
+    {
+        // don't add packets which shouldn't be processed
+        case STATUS_NEVER:
+            return;
+        case STATUS_AUTHED:
+            // authed and inplace packets when player isn't logged in should be thread unsafe
+            if (opHandle.packetProcessing == PROCESS_INPLACE && !_player)
+            {
+                _recvThreadUnsafeQueue.add(new_packet);
+                return;
+            }
+            break;
+        default:
+            break;
+    }
+
     switch (opHandle.packetProcessing)
     {
         case PROCESS_INPLACE:
