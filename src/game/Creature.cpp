@@ -1661,7 +1661,8 @@ bool Creature::canStartAttack(Unit const* who) const
 
 float Creature::GetAttackDistance(Unit const* pl) const
 {
-    float aggroRate = sWorld.getRate(RATE_CREATURE_AGGRO);
+    float aggroRate = sWorld.getRate(isGuard() ? RATE_CREATURE_GUARD_AGGRO : RATE_CREATURE_AGGRO);
+
     if (aggroRate==0)
         return 0.0f;
 
