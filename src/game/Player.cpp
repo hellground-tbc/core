@@ -1740,6 +1740,11 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // prepare zone change detect
         uint32 old_zone = GetZoneId();
 
+        WorldLocation tmpWLoc(mapid, x, y, z, orientation);
+
+        if (!IsWithinDist(tmpWLoc, GetMap()->GetVisibilityDistance()))
+            DestroyForNearbyPlayers();
+
         // near teleport
         if (!GetSession()->PlayerLogout())
         {
@@ -1751,7 +1756,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         }
         else
             // this will be used instead of the current location in SaveToDB
-            m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+            m_teleport_dest = tmpWLoc;
 
         SetFallInformation(0, z);
 
@@ -1956,6 +1961,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         else
             return false;
     }
+
     return true;
 }
 
