@@ -272,8 +272,9 @@ Unit::Unit()
     m_attackTimer[BASE_ATTACK]   = 0;
     m_attackTimer[OFF_ATTACK]    = 0;
     m_attackTimer[RANGED_ATTACK] = 0;
-    m_modAttackSpeedPct[BASE_ATTACK] = 1.0f;
-    m_modAttackSpeedPct[OFF_ATTACK] = 1.0f;
+	
+    m_modAttackSpeedPct[BASE_ATTACK]   = 1.0f;
+    m_modAttackSpeedPct[OFF_ATTACK]    = 1.0f;
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
 
     m_extraAttacks = 0;
@@ -292,10 +293,6 @@ Unit::Unit()
         m_TotemSlot[i] = 0;
 
     m_ObjectSlot[0] = m_ObjectSlot[1] = m_ObjectSlot[2] = m_ObjectSlot[3] = 0;
-    //m_Aura = NULL;
-    //m_AurasCheck = 2000;
-    //m_removeAuraTimer = 4;
-    //tmpAura = NULL;
 
     m_AurasUpdateIterator = m_Auras.end();
     m_Visibility = VISIBILITY_ON;
@@ -317,7 +314,8 @@ Unit::Unit()
         m_auraModifiersGroup[i][TOTAL_VALUE] = 0.0f;
         m_auraModifiersGroup[i][TOTAL_PCT] = 1.0f;
     }
-                                                            // implement 50% base damage from offhand
+    
+	// implement 50% base damage from offhand
     m_auraModifiersGroup[UNIT_MOD_DAMAGE_OFFHAND][TOTAL_PCT] = 0.5f;
 
     for (uint8 i = 0; i < MAX_ATTACK; i++)
@@ -338,7 +336,6 @@ Unit::Unit()
     m_CombatTimer = 0;
     m_lastManaUse = 0;
 
-    //m_victimThreat = 0.0f;
     for (uint8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
         m_threatModifier[i] = 1.0f;
 
@@ -447,16 +444,12 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
         }
     }
 
-    //not implemented before 3.0.2
-    //if(!hasUnitState(UNIT_STAT_CASTING))
-    {
-        if (uint32 base_att = getAttackTimer(BASE_ATTACK))
-            setAttackTimer(BASE_ATTACK, (update_diff >= base_att ? 0 : base_att - update_diff));
-        if (uint32 ranged_att = getAttackTimer(RANGED_ATTACK))
-            setAttackTimer(RANGED_ATTACK, (update_diff >= ranged_att ? 0 : ranged_att - update_diff));
-        if (uint32 off_att = getAttackTimer(OFF_ATTACK))
-            setAttackTimer(OFF_ATTACK, (update_diff >= off_att ? 0 : off_att - update_diff));
-    }
+    if (uint32 base_att = getAttackTimer(BASE_ATTACK))
+        setAttackTimer(BASE_ATTACK, (update_diff >= base_att ? 0 : base_att - update_diff));
+    if (uint32 ranged_att = getAttackTimer(RANGED_ATTACK))
+        setAttackTimer(RANGED_ATTACK, (update_diff >= ranged_att ? 0 : ranged_att - update_diff));
+    if (uint32 off_att = getAttackTimer(OFF_ATTACK))
+        setAttackTimer(OFF_ATTACK, (update_diff >= off_att ? 0 : off_att - update_diff));
 
     // update abilities available only for fraction of time
     UpdateReactives(update_diff);
@@ -566,7 +559,8 @@ void Unit::resetAttackTimer(WeaponAttackType type)
 
 bool Unit::IsWithinCombatRange(const Unit *obj, float dist2compare) const
 {
-    if (!obj || !IsInMap(obj)) return false;
+    if (!obj || !IsInMap(obj))
+        return false;
 
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
@@ -581,7 +575,8 @@ bool Unit::IsWithinCombatRange(const Unit *obj, float dist2compare) const
 
 bool Unit::IsWithinMeleeRange(Unit *obj, float dist) const
 {
-    if (!obj || !IsInMap(obj)) return false;
+    if (!obj || !IsInMap(obj))
+        return false;
 
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
@@ -598,12 +593,8 @@ void Unit::GetRandomContactPoint(const Unit* obj, float &x, float &y, float &z, 
 {
     float combat_reach = GetCombatReach();
     if (combat_reach < 0.1) // sometimes bugged for players
-    {
-        //sLog.outError("Unit %u (Type: %u) has invalid combat_reach %f",GetGUIDLow(),GetTypeId(),combat_reach);
-       // if (GetTypeId() ==  TYPEID_UNIT)
-          //  sLog.outError("Creature entry %u has invalid combat_reach", ((Creature*)this)->GetEntry());
         combat_reach = DEFAULT_COMBAT_REACH;
-    }
+
     uint32 attacker_number = getAttackers().size();
     if (attacker_number > 0) --attacker_number;
     GetNearPoint(obj,x,y,z,obj->GetCombatReach(), distance2dMin+(distance2dMax-distance2dMin)*GetMap()->rand_norm()
@@ -1149,7 +1140,6 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
 
     SpellCastTargets targets;
     uint32 targetMask = spellInfo->Targets;
-    //if(targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNK2))
     for (int i = 0; i < 3; ++i)
     {
         if (spellmgr.SpellTargetType[spellInfo->EffectImplicitTargetA[i]] == TARGET_TYPE_UNIT_TARGET)
@@ -1627,6 +1617,7 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
     // Hmmmm dont like this emotes cloent must by self do all animations
     if (damageInfo->hitInfo & HITINFO_CRITICALHIT)
         pVictim->HandleEmoteCommand(EMOTE_ONESHOT_WOUNDCRITICAL);
+
     if (damageInfo->blocked && damageInfo->targetState != VICTIMSTATE_BLOCKS)
         pVictim->HandleEmoteCommand(EMOTE_ONESHOT_PARRYSHIELD);
 
@@ -2069,8 +2060,6 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
             SpellDamageLog damageInfo((*i)->GetSpellProto()->Id, this, caster, (*i)->GetSpellProto()->SchoolMask);
             damageInfo.damage = currentAbsorb;
 
-            //SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, currentAbsorb, schoolMask, 0, 0, false, 0, false);
-
             DealDamage(&damageInfo, DOT, (*i)->GetSpellProto(), false);
         }
 
@@ -2094,8 +2083,6 @@ void Unit::CalcAbsorb(Unit *pVictim,SpellSchoolMask schoolMask, const uint32 dam
 
             SpellDamageLog damageInfo((*i)->GetSpellProto()->Id, this, caster, (*i)->GetSpellProto()->SchoolMask);
             damageInfo.damage = splitted;
-
-//            SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellProto()->Id, splitted, schoolMask, 0, 0, false, 0, false);
 
             DealDamage(&damageInfo, DOT, (*i)->GetSpellProto(), false);
         }
@@ -2264,7 +2251,6 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (roll < sum)
     {
-  //      DEBUG_LOG ("RollMeleeOutcomeAgainst: MISS");
         damageInfo->hitInfo    |= HITINFO_MISS;
         damageInfo->targetState = VICTIMSTATE_NORMAL;
 
@@ -2324,7 +2310,6 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
             sum += dodge_chance;
             if (roll < sum)
             {
-   //             DEBUG_LOG ("RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-tmp, sum);
                 damageInfo->targetState  = VICTIMSTATE_DODGE;
                 damageInfo->procEx |= PROC_EX_DODGE;
                 damageInfo->rageDamage = damageInfo->damage;
@@ -2342,7 +2327,6 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
             sum += parry_chance;
             if (roll < sum)
             {
-    //            DEBUG_LOG ("RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-tmp, sum);
                 damageInfo->targetState  = VICTIMSTATE_PARRY;
                 damageInfo->procEx |= PROC_EX_PARRY;
                 damageInfo->rageDamage = damageInfo->damage;
@@ -2367,7 +2351,6 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
         sum += glancing_chance;
         if (roll < sum)
         {
-//            DEBUG_LOG ("RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
             damageInfo->hitInfo |= HITINFO_GLANCING;
             damageInfo->targetState = VICTIMSTATE_NORMAL;
             damageInfo->procEx |= PROC_EX_NORMAL_HIT;
@@ -2391,7 +2374,6 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
             sum += block_chance;
             if (roll < sum)
             {
- //               DEBUG_LOG ("RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-tmp, sum);
                 damageInfo->targetState = VICTIMSTATE_NORMAL;
                 damageInfo->procEx |= PROC_EX_BLOCK;
                 damageInfo->blocked = damageInfo->target->GetShieldBlockValue();
@@ -2474,7 +2456,6 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
             sum += crushing_chance;
             if (roll < sum)
             {
-  //              DEBUG_LOG ("RollMeleeOutcomeAgainst: CRUSHING <%d, %d)", sum-tmp, sum);
                 damageInfo->hitInfo     |= HITINFO_CRUSHING;
                 damageInfo->targetState  = VICTIMSTATE_NORMAL;
                 damageInfo->procEx |= PROC_EX_NORMAL_HIT;
@@ -2485,7 +2466,6 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
         }
     }
 
-    //DEBUG_LOG ("RollMeleeOutcomeAgainst: NORMAL");
     damageInfo->targetState = VICTIMSTATE_NORMAL;
     damageInfo->procEx |= PROC_EX_NORMAL_HIT;
     return;
@@ -2569,9 +2549,6 @@ void Unit::SendMeleeAttackStop(Unit* victim)
     data << uint32(0);                                      // can be 0x1
     SendMessageToSet(&data, true);
     sLog.outDetail("%s %u stopped attacking %s %u", (GetTypeId()==TYPEID_PLAYER ? "player" : "creature"), GetGUIDLow(), (victim->GetTypeId()==TYPEID_PLAYER ? "player" : "creature"),victim->GetGUIDLow());
-
-    /*if(victim->GetTypeId() == TYPEID_UNIT)
-    ((Creature*)victim)->AI().EnterEvadeMode(this);*/
 }
 
 int32 Unit::GetCurrentSpellCastTime(uint32 spell_id) const
@@ -2604,12 +2581,6 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
     int32 HitChance;
 
     // PvP - PvE melee chances
-    /*int32 lchance = pVictim->GetTypeId() == TYPEID_PLAYER ? 5 : 7;
-    int32 leveldif = pVictim->getLevelForTarget(this) - getLevelForTarget(pVictim);
-    if (leveldif < 3)
-        HitChance = 95 - leveldif;
-    else
-        HitChance = 93 - (leveldif - 2) * lchance;*/
     if (spellId || attType == RANGED_ATTACK || !haveOffhandWeapon())
         HitChance = 95.0f;
     else
@@ -2641,7 +2612,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
         miss_chance -= m_modMeleeHitChance;
 
     // bonus from skills is 0.04%
-    //miss_chance -= skillDiff * 0.04f;
+    // miss_chance -= skillDiff * 0.04f;
     int32 diff = -skillDiff;
     if (pVictim->GetTypeId()==TYPEID_PLAYER)
         miss_chance += diff > 0 ? diff * 0.04 : diff * 0.02;
@@ -2653,6 +2624,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
         return 0.0f;
     if (miss_chance > 60.0f)
         return 60.0f;
+
     return miss_chance;
 }
 
@@ -2666,6 +2638,7 @@ int32 Unit::GetMechanicResistChance(const SpellEntry *spell)
     {
         if (spell->Effect[eff] == 0)
            break;
+
         int32 effect_mech = GetEffectMechanic(spell, eff);
         if (effect_mech)
         {
