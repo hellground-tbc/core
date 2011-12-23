@@ -2165,6 +2165,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 44869:     // Spectral Blast
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
                     unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
+                    unitList.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_UNIT, true));
                 case 45032:     // Curse of Boundless Agony
                 case 45034:
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));

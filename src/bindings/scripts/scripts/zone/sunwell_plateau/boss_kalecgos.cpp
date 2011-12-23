@@ -447,7 +447,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
             if(SpectralBlastTimer < diff)
             {
-                AddSpellToCast(SPELL_SPECTRAL_BLAST, CAST_SELF);
+                AddSpellToCast(SPELL_SPECTRAL_BLAST, CAST_SELF, false, true);   //probably wont work this way
                 SpectralBlastTimer = 20000+(rand()%5000);
             }
             else
@@ -811,7 +811,7 @@ struct TRINITY_DLL_DECL boss_kalecAI : public ScriptedAI
         if(RevitalizeTimer < diff)
         {
             if(Unit* target = SelectUnitToRevitalize())
-                AddSpellToCast(target, SPELL_REVITALIZE);
+                AddSpellToCast(target, SPELL_REVITALIZE, false, true);
             RevitalizeTimer = 7000;
         }
         else

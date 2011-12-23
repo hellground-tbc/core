@@ -409,9 +409,8 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
 
         if (BurnTimer < diff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 300.0f, true))
                 AddSpellToCast(pTarget, SPELL_BURN);
-
             BurnTimer = 20000;
         }
         else
