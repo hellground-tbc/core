@@ -157,7 +157,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         TailLashTimer = 25000;
         ResetTimer = 0;
         SpectralBlastTimer = 20000+(rand()%5000);
-        CheckTimer = 0;
+        CheckTimer = 1000;
 
         TalkTimer = 0;
         TalkSequence = 0;
@@ -489,7 +489,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         }*/
 
         ShadowBoltTimer = 7000 + rand()%3 * 1000;
-        AgonyCurseTimer = 20000;
+        AgonyCurseTimer = urand(20000, 35000);
         CorruptionStrikeTimer = 13000;
         CheckTimer = 1000;
         isEnraged = false;
@@ -671,7 +671,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         if(AgonyCurseTimer < diff)
         {
             AddSpellToCast(SPELL_AGONY_CURSE, CAST_SELF);
-            AgonyCurseTimer = 20000;
+            AgonyCurseTimer = 35000;
         }
         else
             AgonyCurseTimer -= diff;
