@@ -157,7 +157,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
         TailLashTimer = 25000;
         ResetTimer = 0;
         SpectralBlastTimer = 20000+(rand()%5000);
-        CheckTimer = 1000;
+        CheckTimer = 0;
 
         TalkTimer = 0;
         TalkSequence = 0;

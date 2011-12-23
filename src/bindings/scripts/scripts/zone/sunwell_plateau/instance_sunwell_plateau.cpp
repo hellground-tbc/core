@@ -293,20 +293,22 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         switch(id)
         {
             case DATA_KALECGOS_EVENT:
-                if(data == IN_PROGRESS)
-                {
-                    HandleGameObject(ForceField, CLOSE);
-                    HandleGameObject(Collision_1, CLOSE);
-                    HandleGameObject(Collision_2, CLOSE);
-                }
-                else
-                {
-                    HandleGameObject(ForceField, OPEN);
-                    HandleGameObject(Collision_1, OPEN);
-                    HandleGameObject(Collision_2, OPEN);
-                }
                 if(Encounters[0] != DONE)
+                {
+                    if(data == IN_PROGRESS)
+                    {
+                        HandleGameObject(ForceField, CLOSE);
+                        HandleGameObject(Collision_1, CLOSE);
+                        HandleGameObject(Collision_2, CLOSE);
+                    }
+                    else
+                    {
+                        HandleGameObject(ForceField, OPEN);
+                        HandleGameObject(Collision_1, OPEN);
+                        HandleGameObject(Collision_2, OPEN);
+                    }
                     Encounters[0] = data;
+                }
                 break;
             case DATA_BRUTALLUS_INTRO_EVENT:
                 if(Encounters[1] != DONE)
