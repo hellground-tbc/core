@@ -955,11 +955,13 @@ struct npc_multiphase_disurbanceAI : public ScriptedAI
     {
         if (despawnTimer)
         {
-            if (despawnTimer <= 0)
+            if (despawnTimer <= diff)
             {
                 me->ForceDespawn();
                 despawnTimer = 0;
             }
+            else
+                despawnTimer -= diff;
         }
     }
 
