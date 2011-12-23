@@ -758,7 +758,7 @@ enum eNagrandCaptive
     SAY_MAG_NO_ESCAPE           = -1000483,
     SAY_MAG_MORE                = -1000484,
     SAY_MAG_MORE_REPLY          = -1000485,
-    SAY_SPELL_AGONY_CURSEMAG_LIGHTNING           = -1000486,
+    SAY_MAG_LIGHTNING           = -1000486,
     SAY_MAG_SHOCK               = -1000487,
     SAY_MAG_COMPLETE            = -1000488,
 
@@ -957,7 +957,7 @@ struct npc_multiphase_disurbanceAI : public ScriptedAI
         {
             if (despawnTimer <= diff)
             {
-                me->ForceDespawn();
+                me->ForcedDespawn();
                 despawnTimer = 0;
             }
             else
