@@ -1742,7 +1742,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         WorldLocation tmpWLoc(mapid, x, y, z, orientation);
 
-        if (!IsWithinDist(tmpWLoc, GetMap()->GetVisibilityDistance()))
+        if (!IsWithinDistInMap(&tmpWLoc, GetMap()->GetVisibilityDistance()))
             DestroyForNearbyPlayers();
 
         // near teleport
