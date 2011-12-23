@@ -104,6 +104,8 @@ void GuardAI::EnterEvadeMode()
     // Remove TargetedMovementGenerator from MotionMaster stack list, and add HomeMovementGenerator instead
     if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
         m_creature->GetMotionMaster()->MoveTargetedHome();
+
+    m_creature->UpdateSpeed(MOVE_RUN, true);
 }
 
 void GuardAI::UpdateAI(const uint32 /*diff*/)

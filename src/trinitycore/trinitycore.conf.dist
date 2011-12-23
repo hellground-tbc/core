@@ -869,6 +869,12 @@ DisablePVP = 0
 #                 1.5 - 150%
 #                 0   - off (0%)
 #
+#    Rate.Creature.Guard.Aggro
+#        Aggro radius percent for guards or off.
+#                 1   - 100%
+#        Default: 1.5 - 150%
+#                 0   - off (0%)
+#
 #    CreatureFamilyAssistanceRadius
 #        Creature family assistance radius
 #        Default: 10
