@@ -447,7 +447,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
             if(SpectralBlastTimer < diff)
             {
-                AddSpellToCast(SPELL_SPECTRAL_BLAST, CAST_SELF, false, true);   //probably wont work this way
+                AddSpellToCast(SPELL_SPECTRAL_BLAST, CAST_SELF);
                 SpectralBlastTimer = 20000+(rand()%5000);
             }
             else
