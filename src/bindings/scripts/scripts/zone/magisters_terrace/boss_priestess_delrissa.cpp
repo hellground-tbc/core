@@ -1710,7 +1710,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
         if(Fel_Iron_Bomb_Timer < diff)
         {
             AddSpellToCast(SPELL_FEL_IRON_BOMB, CAST_RANDOM);
-            Fel_Iron_Bomb_Timer =HeroicMode?urand(2500, 4000):urand(4000, 10000);
+            Fel_Iron_Bomb_Timer = HeroicMode?urand(2500, 4000):urand(4000, 10000);
             ResetThreatTimer = 0;
         }
         else
@@ -1718,6 +1718,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
 
         if(Recombobulate_Timer < diff)
         {
+            Recombobulate_Timer = 3000;
             std::list<Creature*> CC_list = FindFriendlyCC(30.0);
             if(!CC_list.empty())
             {
@@ -1731,7 +1732,6 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
                     }
                 }
             }
-            Recombobulate_Timer = 3000;
         }
         else
             Recombobulate_Timer -= diff;
