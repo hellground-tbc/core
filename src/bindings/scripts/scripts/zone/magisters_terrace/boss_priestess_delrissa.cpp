@@ -256,15 +256,15 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
-        CheckLootable();
         if(pInstance)
             pInstance->SetData(DATA_DELRISSA_DEATH_COUNT, 1);
+        DoScriptText(SAY_DEATH, m_creature);
+        CheckLootable();
     }
 
     void CheckLootable()
     {
-        if(pInstance && pInstance->GetData(DATA_DELRISSA_DEATH_COUNT) >= 4)
+        if(pInstance && pInstance->GetData(DATA_DELRISSA_DEATH_COUNT) >= 5) // Delrissa also counts
         {
             m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             pInstance->SetData(DATA_DELRISSA_EVENT, DONE);
