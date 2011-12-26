@@ -122,6 +122,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
     uint32 SWPain_Timer;
     uint32 Dispel_Timer;
     uint32 Check_Timer;
+    uint32 ResetThreatTimer;
 
     void Reset()
     {
@@ -141,6 +142,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         SWPain_Timer = 5000;
         Dispel_Timer = 7500;
         Check_Timer = 2000;
+        ResetThreatTimer = urand(8000, 20000);
         me->setActive(true);
 
         CheckAdds();
@@ -336,6 +338,19 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         }
         else
             Check_Timer -= diff;
+
+        if(ResetThreatTimer < diff)
+        {
+            DoResetThreat();
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+            {
+                AttackStart(target);
+                me->AddThreat(target, 200000);
+            }
+            ResetThreatTimer = urand(8000, 20000);
+        }
+        else
+            ResetThreatTimer -= diff;
 
         if(!canFear)
         {
@@ -593,14 +608,13 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, targetRange, true))
                 {
                     AttackStart(target);
-                    me->AddThreat(target, 10000);
+                    me->AddThreat(target, 200000);
                 }
                 ResetThreatTimer = urand(8000, 20000);
             }
             else
                 ResetThreatTimer -= diff;
         }
-//        CastNextSpellIfAnyAndReady(); //Oo unneeded ... added in main code
     }
 };
 
@@ -958,7 +972,7 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
 
     void DamageMade(Unit* target, uint32 & damage, bool direct_damage)
     {
-        if(damage && direct_damage && roll_chance_f(50))
+        if(damage && direct_damage && roll_chance_f(20))
             AddSpellToCast(target, SPELL_FISTS_OF_ARCANE_FURY, true);
     }
 
@@ -977,7 +991,7 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
             if(me->IsWithinMeleeRange(me->getVictim()))
             {
                 AddSpellToCast(SPELL_KNOCKDOWN, CAST_TANK);
-                Knockdown_Timer = 6000;
+                Knockdown_Timer = 10000;
             }
         }
         else
@@ -988,7 +1002,7 @@ struct TRINITY_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestA
             if(me->IsWithinMeleeRange(me->getVictim()))
             {
                 AddSpellToCast(SPELL_SNAP_KICK, CAST_TANK);
-                Snap_Kick_Timer  = 12000;
+                Snap_Kick_Timer = 12000;
             }
         }
         else
@@ -1169,14 +1183,13 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         if(Polymorph_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
+            Polymorph_Timer = 1000;
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true))
             {
                 AddSpellToCast(target, SPELL_POLYMORPH);
                 DoModifyThreatPercent(target,-100);
                 Polymorph_Timer = urand(15000, 25000);
             }
-            else
-                Polymorph_Timer = 1000;
         }
         else
             Polymorph_Timer -= diff;
@@ -1288,7 +1301,7 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
         if(Hamstring_Timer < diff)
         {
             AddSpellToCast(SPELL_HAMSTRING, CAST_TANK);
-            Hamstring_Timer = urand(4000, 5000);
+            Hamstring_Timer = urand(5000, 10000);
         }
         else
             Hamstring_Timer -= diff;
@@ -1296,7 +1309,7 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
         if(Mortal_Strike_Timer < diff)
         {
             AddSpellToCast(SPELL_MORTAL_STRIKE, CAST_TANK);
-            Mortal_Strike_Timer = urand(8000, 12000);
+            Mortal_Strike_Timer = urand(10000, 15000);
         }
         else
             Mortal_Strike_Timer -= diff;
@@ -1482,7 +1495,7 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
         {
             if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
                 AddSpellToCast(me->getVictim(), SPELL_SHOOT);
-            Shoot_Timer = urand(2500, 4000);
+            Shoot_Timer = urand(3000, 5000);
         }
         else
             Shoot_Timer -= diff;
@@ -1624,7 +1637,7 @@ struct TRINITY_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
         if(Frost_Shock_Timer < diff)
         {
             AddSpellToCast(SPELL_FROST_SHOCK, CAST_TANK);
-            Frost_Shock_Timer = urand(4000, 8000);
+            Frost_Shock_Timer = urand(6000, 15000);
         }
         else
             Frost_Shock_Timer -= diff;
@@ -1702,7 +1715,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
         if(Rocket_Launch_Timer < diff)
         {
             AddSpellToCast(SPELL_ROCKET_LAUNCH, CAST_RANDOM);
-            Rocket_Launch_Timer = urand(6000, 9000);
+            Rocket_Launch_Timer = urand(8000, 12000);
         }
         else
             Rocket_Launch_Timer -= diff;
@@ -1710,7 +1723,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
         if(Fel_Iron_Bomb_Timer < diff)
         {
             AddSpellToCast(SPELL_FEL_IRON_BOMB, CAST_RANDOM);
-            Fel_Iron_Bomb_Timer = HeroicMode?urand(2500, 4000):urand(4000, 10000);
+            Fel_Iron_Bomb_Timer = HeroicMode?urand(3500, 7000):urand(4000, 10000);
             ResetThreatTimer = 0;
         }
         else
