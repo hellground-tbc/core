@@ -142,7 +142,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         SWPain_Timer = 5000;
         Dispel_Timer = 7500;
         Check_Timer = 2000;
-        ResetThreatTimer = urand(8000, 20000);
+        ResetThreatTimer = urand(3000, 8000);
         me->setActive(true);
 
         CheckAdds();
@@ -376,6 +376,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
         if(Heal_Timer < diff)
         {
+            Heal_Timer = 2000;
             if(Unit* target = SelectLowestHpFriendly(40, 200))
             {
                 AddSpellToCast(target, SPELL_FLASH_HEAL, false, true);
@@ -384,14 +385,13 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 else
                     Heal_Timer = urand(4000, 10000);
             }
-            else
-                Heal_Timer = 2000;
         }
         else
             Heal_Timer -= diff;
 
         if(Renew_Timer < diff)
         {
+            Renew_Timer = 1000;
             if(Unit *target = SelectLowestHpFriendlyMissingBuff(40, SPELL_RENEW))
             {
                 AddSpellToCast(target, SPELL_RENEW);
@@ -400,21 +400,18 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 else
                     Renew_Timer = 8000;
             }
-            else
-                Renew_Timer = 1000;
         }
         else
             Renew_Timer -= diff;
 
         if(Shield_Timer < diff)
         {
+            Shield_Timer = 1000;
             if(Unit *target = SelectLowestHpFriendlyMissingBuff(40, SPELL_WEAKENED_SOUL))
             {
                 ForceSpellCast(target, SPELL_SHIELD, INTERRUPT_AND_CAST);
                 Shield_Timer = 15000;
             }
-            else
-                Shield_Timer = 1000;
         }
         else
             Shield_Timer -= diff;
@@ -422,6 +419,7 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if(Dispel_Timer < diff)
         {
             Unit* target = NULL;
+            Dispel_Timer = 1000;
             std::list<Creature*> friendlyCC;
             switch(rand()%3)
             {
@@ -446,8 +444,6 @@ struct TRINITY_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 AddSpellToCast(target, SPELL_DISPEL_MAGIC);
                 Dispel_Timer = 10000;
             }
-            else
-                Dispel_Timer = 1000;
         }
         else
             Dispel_Timer -= diff;
@@ -498,7 +494,7 @@ struct TRINITY_DLL_DECL boss_priestess_guestAI : public ScriptedAI
         usedPotion = false;
         resetThreat = true;
         canUseMedalion = true;
-        ResetThreatTimer = urand(8000, 20000);             // These guys like to switch targets often, and are not meant to be tanked.
+        ResetThreatTimer = urand(3000, 8000);             // These guys like to switch targets often, and are not meant to be tanked.
         Check_Timer = 2000;
         Medalion_Cooldown = 60000;
         targetRange = 100;
