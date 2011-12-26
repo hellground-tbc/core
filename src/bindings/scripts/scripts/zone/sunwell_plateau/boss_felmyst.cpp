@@ -648,8 +648,8 @@ struct TRINITY_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!m_creature->getVictim())
-            AttackStart(SelectUnit(SELECT_TARGET_NEAREST, 0, 20.0, true));
+        if(!me->getVictim() || !me->getVictim()->isTargetableForAttack())
+            AttackStart(SelectUnit(SELECT_TARGET_NEAREST, 0, 100.0, true));
     }
 };
 
@@ -669,7 +669,7 @@ struct TRINITY_DLL_DECL mob_felmyst_trailAI : public Scripted_NoMovementAI
 
     void SpellHitTarget(Unit* target, const SpellEntry *entry)
     {
-        if(entry->Id == SPELL_TRAIL_DAMAGE)
+        if(entry->Id == SPELL_TRAIL_DAMAGE && target->isTargetableForAttack())
             DoCast(me, SPELL_DEAD_SUMMON);
     }
 
