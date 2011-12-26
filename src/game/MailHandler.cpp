@@ -315,11 +315,11 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                         GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
                 }
 
-                if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
-                {
-                    sLog.outSpecial("Player %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
+                //if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
+                //{
+                    sLog.outMail("Player %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
                         GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
-                }
+                //}
 
                 pl->MoveItemFromInventory(item->GetBagSlot(), item->GetSlot(), true);
                 CharacterDatabase.BeginTransaction();
@@ -582,9 +582,9 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
                         sender_name = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
                 }
 
-                if (IsAccountFlagged(ACC_SPECIAL_LOG))
+                if (GetSecurity() == SEC_PLAYER)
                 {
-                    sLog.outSpecial("Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                    sLog.outMail("Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
                         GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
                 }
                 else
