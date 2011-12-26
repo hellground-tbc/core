@@ -204,13 +204,13 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
                 }
 
-                if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
-                {
-                    sLog.outSpecial("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
+                //if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
+                //{
+                    sLog.outMail("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                         _player->GetName(),_player->GetSession()->GetAccountId(),
                         myItems[i]->GetProto()->Name1,myItems[i]->GetEntry(),myItems[i]->GetCount(),
                         _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
-                }
+                //}
 
                 // store
                 _player->pTrader->MoveItemToInventory(traderDst, myItems[i], true, true);
