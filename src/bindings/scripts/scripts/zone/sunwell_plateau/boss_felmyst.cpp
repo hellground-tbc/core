@@ -385,6 +385,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             switch(Id)
             {
                 case 0: // on landing after aggroing
+                    me->GetMotionMaster()->MoveIdle();
                     me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     me->SetLevitate(false);
                     me->setHover(false);
