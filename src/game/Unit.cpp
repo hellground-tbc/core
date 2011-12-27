@@ -272,7 +272,7 @@ Unit::Unit()
     m_attackTimer[BASE_ATTACK]   = 0;
     m_attackTimer[OFF_ATTACK]    = 0;
     m_attackTimer[RANGED_ATTACK] = 0;
-	
+    
     m_modAttackSpeedPct[BASE_ATTACK]   = 1.0f;
     m_modAttackSpeedPct[OFF_ATTACK]    = 1.0f;
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
@@ -315,7 +315,7 @@ Unit::Unit()
         m_auraModifiersGroup[i][TOTAL_PCT] = 1.0f;
     }
     
-	// implement 50% base damage from offhand
+    // implement 50% base damage from offhand
     m_auraModifiersGroup[UNIT_MOD_DAMAGE_OFFHAND][TOTAL_PCT] = 0.5f;
 
     for (uint8 i = 0; i < MAX_ATTACK; i++)

@@ -4602,16 +4602,17 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
         uint32 mechanic = 1 << m_modifier.m_miscvalue;
 
         //immune movement impairment and loss of control
-        if (GetId()==42292 || GetId()==46227) // 46227 - NPC version in MgT
-            mechanic=IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+        if (GetId() == 42292 || GetId() == 46227) // 46227 - NPC version in MgT
+            mechanic = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
 
         Unit::AuraMap& Auras = m_target->GetAuras();
         for (Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
         {
             next = iter;
             ++next;
+
             SpellEntry const *spell = iter->second->GetSpellProto();
-            if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)  // spells unaffected by invulnerability
+            if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)   // spells unaffected by invulnerability
                 && !iter->second->IsPositive()                                    // only remove negative spells
                 && spell->Id != GetId())
             {
@@ -4628,7 +4629,25 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
         }
     }
 
-    m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, m_modifier.m_miscvalue, apply);
+    if (!apply)
+    {
+        uint8 count = 0;
+        Unit::AuraList mAuras = m_target->GetAurasByType(SPELL_AURA_MECHANIC_IMMUNITY);
+        for (Unit::AuraList::iterator iter = mAuras.begin(); iter != mAuras.end(); ++iter)
+        {
+            if (GetMiscValue() == (*iter)->GetMiscValue())
+                ++count;
+
+            // we have found 2 auras, there is no need to iterate further ;]
+            if (count > 1)
+                break;
+        }
+
+        if (count <= 1)
+            m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, m_modifier.m_miscvalue, false);
+    }
+    else
+        m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, m_modifier.m_miscvalue, true);
 
     // special cases
     switch (m_modifier.m_miscvalue)
