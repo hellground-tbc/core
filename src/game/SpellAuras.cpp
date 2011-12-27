@@ -3386,6 +3386,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
             m_target->SetDisplayId(m_target->GetNativeDisplayId());
 
         m_target->SetByteValue(UNIT_FIELD_BYTES_2, 3, FORM_NONE);
+        m_target->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
 
         if (m_target->getClass() == CLASS_DRUID)
             m_target->setPowerType(POWER_MANA);
