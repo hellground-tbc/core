@@ -15726,7 +15726,7 @@ void Player::SaveToDB()
     CharacterDatabase.escape_string(sql_name);
 
     std::ostringstream ss;
-    ss << "REPLACE INTO characters (guid,account,name,race,class,"
+    ss << "REPLACE INTO characters (guid,account,name,race,class,level,"
         "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
@@ -15736,7 +15736,8 @@ void Player::SaveToDB()
         << GetSession()->GetAccountId() << ", '"
         << sql_name << "', "
         << m_race << ", "
-        << m_class << ", ";
+        << m_class << ", "
+        << getLevel() << ", ";
 
     bool save_to_dest = false;
     if (IsBeingTeleported())
