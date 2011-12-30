@@ -291,9 +291,11 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (!target)
         return false;
 
+    // if target is immuned to melee dmg
     if (target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false))
         return true;
 
+    // if target is immune to actually casted spell - i think it's not good check because we don't switch spell target to proper one
     if (pAttacker->IsNonMeleeSpellCasted(false))
     {
         SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NONE;
@@ -306,14 +308,16 @@ bool DropAggro(Creature* pAttacker, Unit * target)
             return true;
     }
 
+    // maybe only fear shouldn't be in this check ? not all effects ?
     /*if (target->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_DAMAGE) && target->hasUnitState(UNIT_STAT_LOST_CONTROL))
         return true;*/
 
-    //disorient and confuse effects
+    // disorient and confuse effects
     if (target->hasUnitState(UNIT_STAT_CONFUSED))
         return true;
 
-        // is this needed ? Oo if not then next check if also useless ;)
+    // is this needed ? Oo if not then next check if also useless ;)
+    // check if target is charmed by friendly player
     if (target->isCharmed() && pAttacker->IsFriendlyTo(target))
         return true;
 
@@ -326,15 +330,20 @@ bool DropAggro(Creature* pAttacker, Unit * target)
             return true;
     }
 
-    //target has Spirit of Redemption aura (shapeshift effect)
+    // target has Spirit of Redemption aura (shapeshift effect) or should be ignored
     if (target->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION) || target->HasAuraType(SPELL_AURA_IGNORED))
         return true;
 
-    // target is stunned from Lady Vashj Shockblast, Concussive Blow and Throw, Gouge, Freezing Trap and other special cases
-    if (target->HasAura(38509,1) || target->HasAura(32588, 1) || target->HasAura(41182, 1) || target->HasAura(24698, 1) || target->HasAura(41086, 0)
-        || target->HasAura(41197,2))
+    // special cases
+    if (target->HasAura(38509, 1) || // Shock Blast
+        target->HasAura(32588, 1) || // Concussion Blow
+        target->HasAura(41182, 1) || // Concussive Throw
+        target->HasAura(24698, 1) || // Gouge
+        target->HasAura(41086, 0) || // Ice Trap
+        target->HasAura(41197,2))    // Shield Bash
         return true;
 
+    // Vengeful Spirit can't be attacked
     if (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 23109)
         return true;
 

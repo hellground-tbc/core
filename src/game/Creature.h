@@ -670,8 +670,24 @@ class TRINITY_DLL_SPEC Creature : public Unit
                 return m_charmInfo->GetCharmSpell(pos)->spellId;
         }
 
-        void SetHomePosition(float x, float y, float z, float ori) { mHome_X = x; mHome_Y = y; mHome_Z = z; mHome_O = ori;}
-        void GetHomePosition(float &x, float &y, float &z, float &ori) { x = mHome_X; y = mHome_Y; z = mHome_Z; ori = mHome_O; }
+        void SetHomePosition(float x, float y, float z, float ori)
+        {
+            homeLocation.coord_x = x;
+            homeLocation.coord_y = y;
+            homeLocation.coord_z = z;
+            homeLocation.orientation = ori;
+            homeLocation.mapid = GetMapId();
+        }
+
+        void GetHomePosition(float &x, float &y, float &z, float &ori)
+        {
+            x = homeLocation.coord_x;
+            y = homeLocation.coord_y;
+            z = homeLocation.coord_z;
+            ori = homeLocation.orientation;
+        }
+
+        WorldLocation GetHomePosition() { return homeLocation; }
 
         uint32 GetWaypointPath(){return m_path_id;}
         void LoadPath(uint32 pathid) { m_path_id = pathid; }
@@ -750,10 +766,7 @@ class TRINITY_DLL_SPEC Creature : public Unit
         SpellSchoolMask m_meleeDamageSchoolMask;
         uint32 m_originalEntry;
 
-        float mHome_X;
-        float mHome_Y;
-        float mHome_Z;
-        float mHome_O;
+        WorldLocation homeLocation;
 
         bool DisableReputationGain;
 

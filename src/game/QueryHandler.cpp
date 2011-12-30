@@ -274,7 +274,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recv_data*/)
     float x = corpse->GetPositionX();
     float y = corpse->GetPositionY();
     float z = corpse->GetPositionZ();
-    int32 corpsemapid = _player->GetMapId();
+    int32 corpsemapid = GetPlayer()->GetMapId();
 
     if (Map *map = corpse->GetMap())
     {
@@ -283,7 +283,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recv_data*/)
             if (!map->GetEntrancePos(mapid, x, y))
                 return;
 
-            Map *entrance_map = MapManager::Instance().GetMap(mapid, _player);
+            Map *entrance_map = sMapMgr.GetMap(mapid, GetPlayer());
             if (!entrance_map)
                 return;
 

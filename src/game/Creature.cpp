@@ -1480,7 +1480,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
         return false;
 
     //We should set first home position, because then AI calls home movement
-    SetHomePosition(data->posX,data->posY,data->posZ,data->orientation);
+    SetHomePosition(data->posX, data->posY, data->posZ, data->orientation);
 
     m_respawnradius = data->spawndist;
 
@@ -2157,18 +2157,17 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     if (!canAttack(pVictim))
         return true;
 
-    if (!pVictim->isInAccessiblePlacefor (this))
+    if (!pVictim->isInAccessiblePlacefor(this))
         return true;
 
     if (sMapStore.LookupEntry(GetMapId())->IsDungeon())
         return false;
 
-    float length = pVictim->GetDistance(mHome_X, mHome_Y, mHome_Z);
     float AttackDist = GetAttackDistance(pVictim);
     uint32 ThreatRadius = sWorld.getConfig(CONFIG_THREAT_RADIUS);
 
     //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return (length > (ThreatRadius > AttackDist ? ThreatRadius : AttackDist));
+    return !IsWithinDistInMap(homeLocation, (ThreatRadius > AttackDist ? ThreatRadius : AttackDist));
 }
 
 CreatureDataAddon const* Creature::GetCreatureAddon() const

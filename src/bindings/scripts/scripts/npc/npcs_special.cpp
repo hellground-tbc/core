@@ -2463,7 +2463,7 @@ void AddSC_npcs_special()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_chicken_cluck";
+    newscript->Name = "npc_chicken_cluck";
     newscript->GetAI = &GetAI_npc_chicken_cluck;
     newscript->pReceiveEmote =  &ReceiveEmote_npc_chicken_cluck;
     newscript->pQuestAcceptNPC =   &QuestAccept_npc_chicken_cluck;
@@ -2471,142 +2471,142 @@ void AddSC_npcs_special()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_dancing_flames";
+    newscript->Name = "npc_dancing_flames";
     newscript->GetAI = &GetAI_npc_dancing_flames;
     newscript->pReceiveEmote =  &ReceiveEmote_npc_dancing_flames;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_injured_patient";
+    newscript->Name = "npc_injured_patient";
     newscript->GetAI = &GetAI_npc_injured_patient;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_doctor";
+    newscript->Name = "npc_doctor";
     newscript->GetAI = &GetAI_npc_doctor;
     newscript->pQuestAcceptNPC = &QuestAccept_npc_doctor;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_guardian";
+    newscript->Name = "npc_guardian";
     newscript->GetAI = &GetAI_npc_guardian;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_mount_vendor";
+    newscript->Name = "npc_mount_vendor";
     newscript->pGossipHello =  &GossipHello_npc_mount_vendor;
     newscript->pGossipSelect = &GossipSelect_npc_mount_vendor;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_rogue_trainer";
+    newscript->Name = "npc_rogue_trainer";
     newscript->pGossipHello =  &GossipHello_npc_rogue_trainer;
     newscript->pGossipSelect = &GossipSelect_npc_rogue_trainer;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_sayge";
+    newscript->Name = "npc_sayge";
     newscript->pGossipHello = &GossipHello_npc_sayge;
     newscript->pGossipSelect = &GossipSelect_npc_sayge;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_tonk_mine";
+    newscript->Name = "npc_tonk_mine";
     newscript->GetAI = &GetAI_npc_tonk_mine;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_winter_reveler";
+    newscript->Name = "npc_winter_reveler";
     newscript->pReceiveEmote =  &ReceiveEmote_npc_winter_reveler;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_brewfest_reveler";
+    newscript->Name = "npc_brewfest_reveler";
     newscript->pReceiveEmote =  &ReceiveEmote_npc_brewfest_reveler;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_snake_trap_serpents";
+    newscript->Name = "npc_snake_trap_serpents";
     newscript->GetAI = &GetAI_npc_snake_trap_serpents;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_flight_master";
+    newscript->Name = "npc_flight_master";
     newscript->GetAI = &GetAI_npc_flight_master;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_mojo";
+    newscript->Name = "npc_mojo";
     newscript->GetAI = &GetAI_npc_mojo;
     newscript->pReceiveEmote =  &ReceiveEmote_npc_mojo;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_woeful_healer";
+    newscript->Name = "npc_woeful_healer";
     newscript->GetAI = &GetAI_npc_woeful_healer;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_ring_specialist";
+    newscript->Name = "npc_ring_specialist";
     newscript->pGossipHello = &GossipHello_npc_ring_specialist;
     newscript->pGossipSelect = &GossipSelect_npc_ring_specialist;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_elemental_guardian";
+    newscript->Name = "npc_elemental_guardian";
     newscript->GetAI = &GetAI_npc_elemental_guardian;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_master_omarion";
+    newscript->Name = "npc_master_omarion";
     newscript->pGossipHello =  &GossipHello_npc_master_omarion;
     newscript->pGossipSelect = &GossipSelect_npc_master_omarion;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_lorekeeper_lydros";
+    newscript->Name = "npc_lorekeeper_lydros";
     newscript->pGossipHello =  &GossipHello_npc_lorekeeper_lydros;
     newscript->pGossipSelect = &GossipSelect_npc_lorekeeper_lydros;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_crashin_trashin_robot";
+    newscript->Name = "npc_crashin_trashin_robot";
     newscript->GetAI = &GetAI_npc_crashin_trashin_robot;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_lurky";
+    newscript->Name = "npc_lurky";
     newscript->GetAI = &GetAI_npc_lurky;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="pet_AleMugDrinker";
+    newscript->Name = "pet_AleMugDrinker";
     newscript->GetAI = GetAI_pet_AleMugDrinker;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="trigger_apple";
+    newscript->Name = "trigger_apple";
     newscript->GetAI = GetAI_trigger_apple;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="trigger_delivery";
+    newscript->Name = "trigger_delivery";
     newscript->GetAI = GetAI_trigger_delivery;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="trigger_delivery_daily";
+    newscript->Name = "trigger_delivery_daily";
     newscript->pGossipHello = &GossipHello_npc_delivery_daily;
     newscript->pGossipSelect = &GossipSelect_npc_delivery_daily;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="trigger_delivery_keg";
+    newscript->Name = "trigger_delivery_keg";
     newscript->GetAI = GetAI_trigger_delivery_keg;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="trigger_barker";
+    newscript->Name = "trigger_barker";
     newscript->GetAI = GetAI_trigger_barker;
     newscript->RegisterSelf();
 
