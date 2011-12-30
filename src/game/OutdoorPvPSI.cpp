@@ -183,7 +183,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                 {
                     WorldLocation tmpWLoc(plr->GetMapId(), atEntry->x, atEntry->y, atEntry->z);
                     // 5.0f is safe-distance
-                    if (!plr->IsWithinDistInMap(tmpWLoc, 5.0f + atEntry->radius))
+                    if (!plr->IsWithinDistInMap(&tmpWLoc, 5.0f + atEntry->radius))
                     {
                         // he dropped it further, summon mound
                         GameObject * go = new GameObject;
