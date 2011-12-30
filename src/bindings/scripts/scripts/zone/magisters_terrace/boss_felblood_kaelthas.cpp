@@ -76,9 +76,9 @@ EndScriptData */
 #define CREATURE_PHOENIX_EGG          24675
 #define CREATURE_ARCANE_SPHERE        24708
 
-struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
+struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
 {
-    boss_felblood_kaelthasAI(Creature* c) : Scripted_NoMovementAI(c), summons(c)
+    boss_felblood_kaelthasAI(Creature* c) : ScriptedAI(c), summons(c)
     {
         pInstance = (c->GetInstanceData());
     }
@@ -86,6 +86,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
     ScriptedInstance* pInstance;
 
     SummonList summons;
+    uint32 FireballTimer;
     uint32 PhoenixTimer;
     uint32 FlameStrikeTimer;
     uint32 TrashCheckTimer;
@@ -107,6 +108,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
 
     void Reset()
     {
+        FireballTimer = 0;
         PhoenixTimer = urand(15000,20000);
         FlameStrikeTimer = urand(25000, 35000);
         TrashCheckTimer = 2000;
@@ -123,7 +125,6 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
         GravityLapsePhase = 0;
 
         Phase = 0;
-        SetAutocast(SPELL_FIREBALL, 2000, true);
         me->HandleEmoteCommand(EMOTE_STATE_NONE);
         me->setFaction(16); // probably should be using another faction here
 
@@ -163,6 +164,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
     {
         DoZoneInCombat();
         Phase = 1;
+        me->GetMotionMaster()->MoveIdle();
         if(pInstance)
         {
             pInstance->SetData(DATA_KAELTHAS_EVENT, IN_PROGRESS);
@@ -301,6 +303,25 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
                         PyroblastTimer -= diff;
                 }
 
+                if(FireballTimer < diff)
+                {
+                    AddSpellToCast(SPELL_FIREBALL, CAST_TANK);
+                    if(me->IsWithinMeleeRange(me->getVictim()))
+                    {
+                        if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+                            me->GetMotionMaster()->MoveChase(me->getVictim());
+                        FireballTimer = urand(2500, 6000);
+                    }
+                    else
+                    {
+                        if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+                        me->GetMotionMaster()->MoveIdle();
+                        FireballTimer = 2000;
+                    }
+                }
+                else
+                    FireballTimer -= diff;
+
                 if(PhoenixTimer < diff)
                 {
                     AddSpellToCastWithScriptText(SPELL_PHOENIX, CAST_SELF, SAY_PHOENIX);
@@ -381,6 +402,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public Scripted_NoMovementAI
             break;
         }
         CastNextSpellIfAnyAndReady(diff);
+        DoMeleeAttackIfReady();
     }
 };
 
