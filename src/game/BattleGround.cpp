@@ -1357,7 +1357,7 @@ void BattleGround::DoorClose(uint32 type)
     if (obj)
     {
         //if doors are open, close it
-        if (obj->getLootState() == GO_ACTIVATED && !obj->GetGoState())
+        if (obj->getLootState() == GO_ACTIVATED && obj->GetGoState() != GO_STATE_READY)
         {
             //change state to allow door to be closed
             obj->SetLootState(GO_READY);

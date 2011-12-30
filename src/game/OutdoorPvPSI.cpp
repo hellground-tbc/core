@@ -156,7 +156,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                     {
                         // he dropped it further, summon mound
                         GameObject * go = new GameObject;
-                        Map * map = sMapMgr.GetMap(plr->GetMapId(), plr);
+                        Map * map = plr->GetMap();
                         if (!map)
                         {
                             delete go;
@@ -181,12 +181,13 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                 AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(SI_AREATRIGGER_H);
                 if (atEntry)
                 {
+                    WorldLocation tmpWLoc(plr->GetMapId(), atEntry->x, atEntry->y, atEntry->z);
                     // 5.0f is safe-distance
-                    if (plr->GetDistance(atEntry->x,atEntry->y,atEntry->z) > 5.0f + atEntry->radius)
+                    if (!plr->IsWithinDistInMap(tmpWLoc, 5.0f + atEntry->radius))
                     {
                         // he dropped it further, summon mound
                         GameObject * go = new GameObject;
-                        Map * map = sMapMgr.GetMap(plr->GetMapId(), plr);
+                        Map * map = plr->GetMap();
                         if (!map)
                         {
                           delete go;
