@@ -3058,6 +3058,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 37370: // Kelidan the breaker - vortex
             spellInfo->EffectMiscValue[0] /= 2;
             break;
+        case 46394: // Burn is magic effect, for Cloak of Shadows dispelling
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+            break;
         default:
             break;
         }
