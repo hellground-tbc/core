@@ -401,8 +401,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
             }
             break;
         }
-        CastNextSpellIfAnyAndReady(diff);
-        DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
