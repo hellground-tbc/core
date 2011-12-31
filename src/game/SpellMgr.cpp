@@ -700,6 +700,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 40616:                                         // Fel Rage 2
         case 41625:                                         // Fel Rage 3
         case 46787:                                         // Fel Rage scale
+        case 32375:                                         // Mass Dispell on friendly targets
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault
@@ -3130,6 +3131,10 @@ void SpellMgr::LoadCustomSpellCooldowns(SpellEntry* spellInfo)
         // 30 min cooldown
         case 44520:
             spellInfo->RecoveryTime = 1800000;
+            break;
+        // 3h cooldown
+        case 16054: // Flames of the Black Flight
+            spellInfo->RecoveryTime = 10800000;
             break;
         default:
             break;
