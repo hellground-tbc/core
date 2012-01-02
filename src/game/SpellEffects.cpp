@@ -6668,15 +6668,26 @@ void Spell::EffectStuck(uint32 /*i*/)
     if (pTarget->IsTaxiFlying())
         return;
 
-    // homebind location is loaded always
-    pTarget->TeleportToHomebind(unitTarget == m_caster ? TELE_TO_SPELL : 0);
+    // if player hasn't cooldown on HearthStone then use him
+    // otherwise
+    if (!pTarget->GetSpellCooldownDelay(8690))
+    {
+        // homebind location is loaded always
+        pTarget->TeleportToHomebind(unitTarget == m_caster ? TELE_TO_SPELL : 0);
 
-    // Stuck spell trigger Hearthstone cooldown
-    SpellEntry const *spellInfo = sSpellStore.LookupEntry(8690);
-    if (!spellInfo)
-        return;
-    Spell spell(pTarget,spellInfo,true,0);
-    spell.SendSpellCooldown();
+        // Stuck spell trigger Hearthstone cooldown
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(8690);
+        if (!spellInfo)
+            return;
+        Spell spell(pTarget,spellInfo,true,0);
+        spell.SendSpellCooldown();
+    }
+    else
+    {
+        PlayerInfo const * tmpPlInfo = objmgr.GetPlayerInfo(pTarget->getRace(), pTarget->getClass());
+        if (tmpPlInfo)
+            pTarget->TeleportTo(tmpPlInfo->mapId, tmpPlInfo->positionX, tmpPlInfo->positionY, tmpPlInfo->positionZ, 0.0f);
+    }
 }
 
 void Spell::EffectSummonPlayer(uint32 /*i*/)
