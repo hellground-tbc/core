@@ -1637,10 +1637,12 @@ void Map::RemoveAllObjectsInRemoveList()
 
         switch (obj->GetTypeId())
         {
-        case TYPEID_UNIT:
-            if (!((Creature*)obj)->isPet())
-                SwitchGridContainers((Creature*)obj, on);
-            break;
+            case TYPEID_UNIT:
+                if (!((Creature*)obj)->isPet())
+                    SwitchGridContainers((Creature*)obj, on);
+                break;
+            default:
+                break;
         }
     }
 
@@ -1661,20 +1663,20 @@ void Map::RemoveAllObjectsInRemoveList()
                     Remove(corpse,true);
                 break;
             }
-        case TYPEID_DYNAMICOBJECT:
-            Remove((DynamicObject*)obj,true);
-            break;
-        case TYPEID_GAMEOBJECT:
-            Remove((GameObject*)obj,true);
-            break;
-        case TYPEID_UNIT:
-            // in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
-            // make sure that like sources auras/etc removed before destructor start
-            Remove((Creature*)obj,true);
-            break;
-        default:
-            sLog.outError("Non-grid object (TypeId: %u) in grid object removing list, ignored.",obj->GetTypeId());
-            break;
+            case TYPEID_DYNAMICOBJECT:
+                Remove((DynamicObject*)obj,true);
+                break;
+            case TYPEID_GAMEOBJECT:
+                Remove((GameObject*)obj,true);
+                break;
+            case TYPEID_UNIT:
+                // in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
+                // make sure that like sources auras/etc removed before destructor start
+                Remove((Creature*)obj,true);
+                break;
+            default:
+                sLog.outError("Non-grid object (TypeId: %u) in grid object removing list, ignored.",obj->GetTypeId());
+                break;
         }
 
         i_objectsToRemove.erase(itr);

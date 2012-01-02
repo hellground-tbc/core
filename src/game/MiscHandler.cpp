@@ -1509,7 +1509,7 @@ void WorldSession::HandleResetInstancesOpcode(WorldPacket & /*recv_data*/)
             if (Player *pl = objmgr.GetPlayer(citr->guid))
             {
                 const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
-                if (mapEntry->IsRaid())
+                if (mapEntry->IsDungeon() || mapEntry->IsRaid())
                 {
                     sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
                     _player->SendResetInstanceFailed(0, pl->GetMapId());
