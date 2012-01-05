@@ -172,14 +172,6 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
         // don't add packets which shouldn't be processed
         case STATUS_NEVER:
             return;
-        case STATUS_AUTHED:
-            // authed and inplace packets when player isn't logged in should be thread unsafe
-            if (opHandle.packetProcessing == PROCESS_INPLACE && !_player)
-            {
-                _recvThreadUnsafeQueue.add(new_packet);
-                return;
-            }
-            break;
         default:
             break;
     }
@@ -187,6 +179,12 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
     switch (opHandle.packetProcessing)
     {
         case PROCESS_INPLACE:
+            // inplace packets when player isn't logged or player isn't in world should be thread unsafe
+            if (!_player || !_player->IsInWorld())
+                _recvThreadUnsafeQueue.add(new_packet);
+            else
+                _recvThreadSafeQueue.add(new_packet);
+            break;
         case PROCESS_THREADSAFE:
             _recvThreadSafeQueue.add(new_packet);
             break;
