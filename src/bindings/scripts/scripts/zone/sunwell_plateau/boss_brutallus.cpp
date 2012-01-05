@@ -126,6 +126,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
         if (pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
         {
             DoScriptText(YELL_AGGRO, me);
+            BurnTimer = 20000;  // just in case?
             pInstance->SetData(DATA_BRUTALLUS_EVENT, IN_PROGRESS);
         }
     }
