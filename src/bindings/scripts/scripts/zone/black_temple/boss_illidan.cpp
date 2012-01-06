@@ -1504,9 +1504,6 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
-            return;
-
         events.Update(diff);
         while (uint32 eventId = events.ExecuteEvent())
         {
@@ -1553,6 +1550,9 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 }
             }
         }
+
+        if (!UpdateVictim())
+            return;
 
         CastNextSpellIfAnyAndReady(diff);
 
