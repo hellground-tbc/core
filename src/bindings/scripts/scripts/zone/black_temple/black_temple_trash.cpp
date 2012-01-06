@@ -1778,27 +1778,19 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
     uint32 WyvernSting;
     uint32 SweepingWingClip;
 
-    bool canShoot;
-
     void Reset()
     {
         ClearCastQueue();
 
-        canShoot = true;
         MultiShot = urand(20000, 40000);
         Shoot = 500;
         WyvernSting = urand(7000, 15000);
         SweepingWingClip = urand(20000, 37000);
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void AttackStart(Unit* who)
     {
-        if(m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 5.0) && m_creature->IsHostileTo(who))
-            canShoot = false;
-        else
-            canShoot = true;
-
-        ScriptedAI::MoveInLineOfSight(who);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_SHOOTER);
     }
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
@@ -1810,7 +1802,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         if(MultiShot < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true);
-            if(target && m_creature->GetDistance(target) > 5.0f)
+            if(target && !m_creature->IsWithinDist(target, 5.0f))
             {
                 ForceSpellCast(target, SPELL_MULTI_SHOT);
                 MultiShot = 40000;
@@ -1824,7 +1816,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         if(Shoot < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true);
-            if(canShoot && target && m_creature->GetDistance(target) > 5.0f)
+            if(target && !m_creature->IsWithinDist(target, 5.0f))
                 ForceSpellCast(target, SPELL_AP_SHOOT);
             Shoot = 1500;
         }
@@ -1834,7 +1826,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         if(WyvernSting < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 35.0f, true);
-            if(target && m_creature->GetDistance(target) > 5.0f)
+            if(target && !m_creature->IsWithinDist(target, 5.0f))
             {
                 ForceSpellCast(target, SPELL_WYVERN_STING);
                 WyvernSting = 15000;
@@ -1862,6 +1854,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         else
             SweepingWingClip -= diff;
 
+        CheckShooterNoMovementInRange(diff, 30.0);
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
@@ -2277,8 +2270,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
-        ScriptedAI::AttackStartNoMove(who);
-        //DoStartMovement(who, 25.0f);
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_SHOOTER);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2334,6 +2326,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         else
             Curse -= diff;
 
+        CheckShooterNoMovementInRange(diff, 25.0);
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
