@@ -600,7 +600,9 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
                     DoResetThreat();
                     SetWarglaivesEquipped(false);
 
+                    me->RemoveAurasDueToSpell(SPELL_ILLIDAN_DEMON_TRANSFORM_2);
                     ForceSpellCast(me, SPELL_ILLIDAN_DEMON_FORM, INTERRUPT_AND_CAST_INSTANTLY, true);
+                    ForceSpellCast(me, SPELL_ILLIDAN_DEMON_TRANSFORM_2, INTERRUPT_AND_CAST_INSTANTLY);
                     events.ScheduleEvent(EVENT_ILLIDAN_TRANSFORM_NO4, 3000, m_phase);
                     break;
                 }
