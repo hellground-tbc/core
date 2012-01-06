@@ -2786,6 +2786,9 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         /* UNSORTED */
         /* Damage Corrections */
+        case 16785: // Flamebreak
+            spellInfo->EffectBasePoints[0] = 24;
+            break;
         case 17289: // Shadow Shock
             spellInfo->EffectBasePoints[0] = 74;
             break;

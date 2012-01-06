@@ -350,8 +350,8 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
                     ForceSpellCastWithScriptText(SPELL_TELEPORT_CENTER, CAST_SELF, SAY_GRAVITY_LAPSE, INTERRUPT_AND_CAST_INSTANTLY);
                     m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
                     m_creature->StopMoving();
-                    m_creature->GetMotionMaster()->Clear();
-                    m_creature->GetMotionMaster()->MoveIdle();
+                    DoStartNoMovement(me->getVictim());
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);    // test it
                     GravityLapseTimer = 0;
                     GravityLapsePhase = 1;
                     Phase = 2;
