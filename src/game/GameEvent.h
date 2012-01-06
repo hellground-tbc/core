@@ -169,3 +169,4 @@ class GameEvent
 #endif
 
 TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id);
+TRINITY_DLL_SPEC void HandleWorldEventGossip(Player*, Creature*);

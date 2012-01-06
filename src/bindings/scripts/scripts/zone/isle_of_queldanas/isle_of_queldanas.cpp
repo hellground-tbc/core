@@ -65,7 +65,7 @@ bool GossipSelect_npc_archmage_nethul(Player *player, Creature *_Creature, uint3
     switch(action)
     {
         case GOSSIP_ACTION_INFO_DEF+50:
-            gameeventmgr.HandleWorldEventGossip(player, _Creature);
+            HandleWorldEventGossip(player, _Creature);
             player->SEND_GOSSIP_MENU(12400, _Creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+51:

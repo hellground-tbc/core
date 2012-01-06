@@ -1630,3 +1630,7 @@ TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id)
     return false;
 }
 
+TRINITY_DLL_SPEC void HandleWorldEventGossip(Player* p, Creature* c)
+{
+    gameeventmgr.HandleWorldEventGossip(p, c);
+}

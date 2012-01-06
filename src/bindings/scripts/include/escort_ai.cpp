@@ -324,9 +324,9 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
     {
         debug_log("TSCR: EscortAI has returned to original position before combat");
 
-        if (m_bIsRunning && m_creature->HasUnitMovementFlag(MOVEFLAG_WALK_MODE))
+        if (m_bIsRunning && m_creature->IsWalking())
             m_creature->SetWalk(false);
-        else if (!m_bIsRunning && !m_creature->HasUnitMovementFlag(MOVEFLAG_WALK_MODE))
+        else if (!m_bIsRunning && !m_creature->IsWalking())
             m_creature->SetWalk(true);
 
         RemoveEscortState(STATE_ESCORT_RETURNING);

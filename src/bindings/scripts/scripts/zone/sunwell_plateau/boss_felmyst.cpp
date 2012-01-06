@@ -505,7 +505,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             m_creature->SetLevitate(false);
             m_creature->SetWalk(false);
             me->setHover(false);
-            m_creature->SendMovementFlagUpdate();
+            m_creature->SendHeartBeat();
             EnterPhase(PHASE_GROUND);
             AttackStart(m_creature->getVictim());
             DoStartMovement(me->getVictim());

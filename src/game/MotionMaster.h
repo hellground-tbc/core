@@ -40,7 +40,7 @@ enum MovementGeneratorType
     MAX_DB_MOTION_TYPE    = 3,                              // *** this and below motion types can't be set in DB.
     ANIMAL_RANDOM_MOTION_TYPE = MAX_DB_MOTION_TYPE,         // AnimalRandomMovementGenerator.h
     CONFUSED_MOTION_TYPE  = 4,                              // ConfusedMovementGenerator.h
-    TARGETED_MOTION_TYPE  = 5,                              // TargetedMovementGenerator.h
+    CHASE_MOTION_TYPE     = 5,                              // TargetedMovementGenerator.h
     HOME_MOTION_TYPE      = 6,                              // HomeMovementGenerator.h
     FLIGHT_MOTION_TYPE    = 7,                              // WaypointMovementGenerator.h
     POINT_MOTION_TYPE     = 8,                              // PointMovementGenerator.h
@@ -49,8 +49,10 @@ enum MovementGeneratorType
     ASSISTANCE_MOTION_TYPE= 11,                             // PointMovementGenerator.h (first part of flee for assistance)
     ASSISTANCE_DISTRACT_MOTION_TYPE = 12,                   // IdleMovementGenerator.h (second part of flee for assistance)
     TIMED_FLEEING_MOTION_TYPE = 13,                         // FleeingMovementGenerator.h (alt.second part of flee for assistance)
-    ROTATE_MOTION_TYPE    = 14,
-    NULL_MOTION_TYPE      = 15,
+    FOLLOW_MOTION_TYPE    = 14,
+    ROTATE_MOTION_TYPE    = 15,
+    EFFECT_MOTION_TYPE    = 16,
+    NULL_MOTION_TYPE      = 17,
 };
 
 enum MovementSlot
@@ -87,7 +89,6 @@ class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
         typedef std::vector<_Ty> ExpireList;
         int i_top;
 
-        bool empty() const { return i_top < 0; }
         void pop() { Impl[i_top] = NULL; --i_top; }
         void push(_Ty _Val) { ++i_top; Impl[i_top] = _Val; }
 
@@ -108,6 +109,7 @@ class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
         void Initialize();
         void InitDefault();
 
+        bool empty() const { return (i_top < 0); }
         int size() const { return i_top + 1; }
         _Ty top() const { return Impl[i_top]; }
         _Ty GetMotionSlot(int slot) const { return Impl[slot]; }
@@ -159,6 +161,7 @@ class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
         void MoveDistract(uint32 time);
         void MovePath(uint32 path_id, bool repeatable);
         void MoveRotate(uint32 time, RotateDirection direction);
+        void MoveFall();
 
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         MovementGeneratorType GetMotionSlotType(int slot) const;

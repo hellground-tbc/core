@@ -171,7 +171,6 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             if (HurtfulStrike_Timer < diff)
             {
                 Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, me->GetMeleeReach(), true, me->getVictimGUID());
-
                 if (!target)
                     target = me->getVictim();
 

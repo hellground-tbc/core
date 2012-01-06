@@ -176,7 +176,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 ++IntroPhase;
                 break;
             case 2:
-                pMadrigosa->SendMovementFlagUpdate();
+                pMadrigosa->SendHeartBeat();
                 DoScriptText(YELL_MADR_INTRO, pMadrigosa);
                 IntroPhaseTimer = 5000;
                 ++IntroPhase;
@@ -235,7 +235,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 pMadrigosa->SetLevitate(false);
                 pMadrigosa->SetWalk(true);
                 pMadrigosa->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                pMadrigosa->SendMovementFlagUpdate();
+                pMadrigosa->SendHeartBeat();
                 IntroPhaseTimer = 1000;
                 ++IntroPhase;
                 break;

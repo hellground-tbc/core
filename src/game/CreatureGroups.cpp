@@ -286,7 +286,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
             if (member->GetDistance(m_leader) > 40.0f)
                 member->Relocate(m_leader->GetPositionX(), m_leader->GetPositionY(), m_leader->GetPositionZ(), 0.0f);
             else
-                member->RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
+                member->SetWalk(false);
         }
 
         member->GetMotionMaster()->MovePoint(0, dx, dy, dz);

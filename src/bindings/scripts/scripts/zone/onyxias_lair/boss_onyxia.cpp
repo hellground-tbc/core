@@ -105,7 +105,7 @@ struct TRINITY_DLL_DECL boss_onyxiaAI : public ScriptedAI
 
     void Fly()
     {
-        if (m_creature->HasUnitMovementFlag(MOVEFLAG_LEVITATING))
+        if (m_creature->IsLevitating())
         {
             m_creature->SendMeleeAttackStart(m_creature->getVictim());
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);

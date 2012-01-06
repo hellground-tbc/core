@@ -1653,13 +1653,11 @@ void Spell::EffectDummy(uint32 i)
                         //Prevent Falling during swap building/outerspace
                         m_caster->SetVisibility(VISIBILITY_OFF);
                         m_caster->Relocate(cx, cy, cz, m_caster->GetOrientation());
-                        m_caster->SendMonsterMove(cx, cy, cz, 0);
-                        WorldPacket data;
-                        m_caster->BuildHeartBeatMsg(&data);
-                        m_caster->SendMessageToSet(&data,false);
-                        m_caster->GetMotionMaster()->Clear();
-                        if(m_caster->getVictim())
+                        m_caster->MonsterMoveWithSpeed(cx, cy, cz, 0);
+
+                        if (m_caster->getVictim())
                             m_caster->GetMotionMaster()->MoveChase(m_caster->getVictim());
+
                         m_caster->SetVisibility(VISIBILITY_ON);
                     }
                 }
@@ -4249,25 +4247,13 @@ void Spell::EffectDistract(uint32 /*i*/)
     if (unitTarget->hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING))
         return;
 
-    float angle = unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY);
+    unitTarget->SetFacingTo(unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY));
+    unitTarget->clearUnitState(UNIT_STAT_MOVING);
 
     unitTarget->SetStandState(PLAYER_STATE_NONE);
 
-    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
-    {
-        // For players just turn them
-        WorldPacket data;
-        ((Player*)unitTarget)->BuildTeleportAckMsg(data, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), angle);
-        ((Player*)unitTarget)->GetSession()->SendPacket(&data);
-        ((Player*)unitTarget)->SetPosition(unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), angle, false);
-    }
-    else
-    {
-        // Set creature Distracted, Stop it, And turn it
-        unitTarget->SetOrientation(angle);
-        unitTarget->StopMoving();
-        unitTarget->GetMotionMaster()->MoveDistract(damage*1000);
-    }
+    if (unitTarget->GetTypeId() == TYPEID_UNIT)
+        unitTarget->GetMotionMaster()->MoveDistract(damage * IN_MILISECONDS);
 }
 
 void Spell::EffectPickPocket(uint32 /*i*/)
@@ -7142,7 +7128,7 @@ void Spell::EffectLeapForward(uint32 i)
 
         unitTarget->NearTeleportTo(cx, cy, cz +0.5f, unitTarget->GetOrientation(), unitTarget == m_caster);
         if(unitTarget->GetTypeId() == TYPEID_UNIT)
-            unitTarget->SendMonsterMove(cx, cy, cz + 0.5f, 0);
+            unitTarget->MonsterMoveWithSpeed(cx, cy, cz, 0);
     }
 }
 void Spell::EffectLeapBack(uint32 i)
@@ -7283,8 +7269,8 @@ void Spell::EffectCharge2(uint32 /*i*/)
     else
         return;
 
-    m_caster->SendMonsterMoveWithSpeed(x, y, z, MOVEFLAG_WALK_MODE);
     m_caster->Relocate(x, y, z);
+    m_caster->MonsterMoveWithSpeed(x, y, z, 0);
 
     // not all charge effects used in negative spells
     if (unitTarget && unitTarget != m_caster && !IsPositiveSpell(m_spellInfo->Id))
@@ -7535,7 +7521,7 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
     float x,y,z;
     _player->GetPosition(x, y, z);
     _player->GetMap()->CreatureRelocation(pet, x, y, z, _player->GetOrientation());
-    pet->SendMonsterMove(x,y,z,0,NULL);
+    pet->MonsterMoveWithSpeed(x, y, z, 0);
 
     pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
     pet->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
