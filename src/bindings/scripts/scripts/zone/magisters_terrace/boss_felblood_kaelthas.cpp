@@ -172,6 +172,13 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
         }
     }
 
+    void AttackStart(Unit* who)
+    {
+        if(Phase == 2)
+            return;
+        ScriptedAI::AttackStart(who);
+    }
+
     void MoveInLineOfSight(Unit* who)
     {
         if(Intro || (pInstance && pInstance->GetData(DATA_KAEL_TRASH_EVENT) != DONE))
@@ -351,7 +358,6 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
                     m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_INTERRUPT_CAST, true);
                     m_creature->StopMoving();
                     DoStartNoMovement(me->getVictim());
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);    // test it
                     GravityLapseTimer = 0;
                     GravityLapsePhase = 1;
                     Phase = 2;

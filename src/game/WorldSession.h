@@ -720,6 +720,8 @@ class TRINITY_DLL_SPEC WorldSession
 
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvThreadUnsafeQueue;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvThreadSafeQueue;
+
+        time_t m_timeLastWhoCommand;
 };
 #endif
 /// @}

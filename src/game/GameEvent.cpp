@@ -1613,9 +1613,9 @@ void GameEvent::SendWorldStateUpdate(Player * plr, uint16 event_id)
     {
         // if required limit exists, than show done values in percents
         if (itr->second.done_world_state)
-            plr->SendUpdateWorldState(itr->second.done_world_state, itr->second.reqNum?(uint32)(itr->second.done/itr->second.reqNum*100):(uint32)(itr->second.done));
+            plr->SendUpdateWorldState(itr->second.done_world_state, itr->second.reqNum?uint32(itr->second.done/itr->second.reqNum*100):uint32(itr->second.done));
         if (itr->second.max_world_state)
-            plr->SendUpdateWorldState(itr->second.max_world_state, (uint32)(itr->second.reqNum));
+            plr->SendUpdateWorldState(itr->second.max_world_state, uint32(itr->second.reqNum));
     }
 }
 
@@ -1628,5 +1628,10 @@ TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id)
         return true;
 
     return false;
+}
+
+TRINITY_DLL_SPEC void HandleWorldEventGossip(Player* p, Creature* c)
+{
+    gameeventmgr.HandleWorldEventGossip(p, c);
 }
 
