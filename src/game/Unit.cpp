@@ -8601,6 +8601,9 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                 // Prayer of Mending - 42.86%
                 if (spellProto->Id == 41635)
                     CastingTime = 1500;
+                // Gift of Naaru - 100%
+                if (spellProto->Id == 28880)
+                    CastingTime = 3500;
                 break;
             case SPELLFAMILY_PALADIN:
                 // Seal and Judgement of Light

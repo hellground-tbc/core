@@ -2171,6 +2171,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 45034));
                     break;
+                case 41376:     // Spite
+                    unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
+                    break;
                 default:
                     break;
             }
