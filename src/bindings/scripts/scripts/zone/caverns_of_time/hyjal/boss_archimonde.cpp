@@ -330,7 +330,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
     void SummonDoomfire()
     {
         Position dest;
-        me->GetValidPointInAngle(dest, 10.0f, frand(0.0f, 2*M_PI), true);
+        me->GetValidPointInAngle(dest, 20.0f, frand(0.0f, 2*M_PI), true);
 
         if (Creature* pDoomfire = me->SummonCreature(CREATURE_DOOMFIRE_TARGETING, dest.x, dest.y, dest.z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000))
         {
