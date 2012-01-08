@@ -1709,7 +1709,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         Player* GetGMToSendCombatStats() const { return m_GMToSendCombatStats ? GetPlayer(m_GMToSendCombatStats) : NULL; }
         void SetGMToSendCombatStats(uint64 guid) { m_GMToSendCombatStats = guid; }
-        void SendCombatStats(const char* str, ...) const;
+        void SendCombatStats(const char* str, Unit *pVictim, ...) const;
 
     protected:
         explicit Unit ();

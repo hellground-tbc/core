@@ -2684,7 +2684,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     {
         uint32 missChance = uint32(MeleeSpellMissChance(pVictim, attType, fullSkillDiff, spell->Id)*100.0f);
 
-        SendCombatStats("MeleeSpellHitResult: miss chance = %d", missChance);
+        SendCombatStats("MeleeSpellHitResult: miss chance = %d", pVictim, missChance);
         // Roll miss
         tmp += missChance;
         if (roll < tmp)
@@ -2693,7 +2693,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
 
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
-    SendCombatStats("MeleeSpellHitResult: mechanic resist chance = %d", resist_chance);
+    SendCombatStats("MeleeSpellHitResult: mechanic resist chance = %d", pVictim, resist_chance);
     tmp += resist_chance;
     if (roll < tmp)
         return SPELL_MISS_RESIST;
@@ -2832,7 +2832,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (HitChance <  100) HitChance =  100;
     if (HitChance > 9900) HitChance = 9900;
 
-    SendCombatStats("MagicSpellHitResult: hit chance = %d", HitChance);
+    SendCombatStats("MagicSpellHitResult: hit chance = %d", pVictim, HitChance);
     uint32 rand = GetMap()->urand(0,10000);
     if (rand > HitChance)
         return SPELL_MISS_RESIST;
@@ -13124,16 +13124,21 @@ float Unit::GetDeterminativeSize() const
     return _size;
 }
 
-void Unit::SendCombatStats(const char* format, ...) const
+void Unit::SendCombatStats(const char* format, Unit *pVictim, ...) const
 {
     Player *target = GetGMToSendCombatStats();
     if(!target)
         return;
     
     va_list ap;
-    char message[1024];
+    char str[1024], message[1024];
     va_start(ap, format);
-    vsnprintf(message, 1024, format, ap);
+    vsnprintf(str, 1024, format, ap);
+    if (pVictim)
+        snprintf("Combat result for %s (%ld) against %s (%ld). %s", 1024, GetName(), GetGUID(), pVictim->GetName(), pVictim->GetGUID(), str);
+    else
+        snprintf("Combat result for %s (%ld). %s", 1024, GetName(), GetGUID(), str);
+
     va_end(ap);
     
     WorldPacket data;
