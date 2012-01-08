@@ -171,7 +171,11 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         {
             case 24850: Kalecgos_Dragon     = creature->GetGUID(); break;
             case 24891: Kalecgos_Human      = creature->GetGUID(); break;
-            case 24892: Sathrovarr          = creature->GetGUID(); break;
+            case 24892: 
+                Sathrovarr = creature->GetGUID();
+                if(GetData(DATA_KALECGOS_EVENT) == DONE)
+                    creature->GetMap()->CreatureReloation(creature, 1705, 927, 53.07, creature->GetOrientation());
+                break;
             case 24882: Brutallus           = creature->GetGUID(); break;
             case 25166: Alythess            = creature->GetGUID(); break;
             case 25165: Sacrolash           = creature->GetGUID(); break;
