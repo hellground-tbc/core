@@ -44,6 +44,47 @@
 #include "WardenWin.h"
 #include "WardenMac.h"
 
+bool MapSessionFilter::Process(WorldPacket * packet)
+{
+    OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+
+    //let's check if our opcode can be really processed in Map::Update()
+    if (opHandle.packetProcessing == PROCESS_INPLACE)
+        return true;
+
+    if (opHandle.packetProcessing == PROCESS_THREADUNSAFE)
+        return false;
+
+    Player * plr = m_pSession->GetPlayer();
+
+    if (!plr)
+        return false;
+
+    //in Map::Update() we do not process packets where player is not in world!
+    return plr->IsInWorld();
+}
+
+//we should process ALL packets when player is not in world/logged in
+//OR packet handler is not thread-safe!
+
+bool WorldSessionFilter::Process(WorldPacket* packet)
+{
+    OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+
+    //check if packet handler is supposed to be safe
+    if (opHandle.packetProcessing == PROCESS_INPLACE)
+        return true;
+
+    if (opHandle.packetProcessing == PROCESS_THREADUNSAFE)
+         return true;
+    //no player attached? -> our client! ^^
+    Player * plr = m_pSession->GetPlayer();
+    if (!plr)
+        return true;
+    //lets process all packets for non-in-the-world player
+    return (plr->IsInWorld() == false);
+}
+
 /// WorldSession constructor
 WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, uint64 accFlags, uint16 opcDisabled) :
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time), m_muteReason(mute_reason),
@@ -79,10 +120,7 @@ WorldSession::~WorldSession()
         delete m_Warden;
 
     WorldPacket* packet;
-    while (_recvThreadSafeQueue.next(packet))
-        delete packet;
-
-    while (_recvThreadUnsafeQueue.next(packet))
+    while (_recvQueue.next(packet))
         delete packet;
 
     LoginDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
@@ -165,33 +203,7 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
     if (!new_packet)
         return;
 
-    OpcodeHandler& opHandle = opcodeTable[new_packet->GetOpcode()];
-
-    switch (opHandle.status)
-    {
-        // don't add packets which shouldn't be processed
-        case STATUS_NEVER:
-            return;
-        default:
-            break;
-    }
-
-    switch (opHandle.packetProcessing)
-    {
-        case PROCESS_INPLACE:
-            // inplace packets when player isn't logged or player isn't in world should be thread unsafe
-            if (!_player || !_player->IsInWorld())
-                _recvThreadUnsafeQueue.add(new_packet);
-            else
-                _recvThreadSafeQueue.add(new_packet);
-            break;
-        case PROCESS_THREADSAFE:
-            _recvThreadSafeQueue.add(new_packet);
-            break;
-        case PROCESS_THREADUNSAFE:
-            _recvThreadUnsafeQueue.add(new_packet);
-            break;
-    }
+    _recvQueue.add(new_packet);
 }
 
 /// Logging helper for unexpected opcodes
@@ -263,7 +275,7 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
 }
 
 /// Update the WorldSession (triggered by World update)
-bool WorldSession::Update(uint32 diff, bool threadSafe)
+bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 {
     if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
     {
@@ -281,20 +293,7 @@ bool WorldSession::Update(uint32 diff, bool threadSafe)
     /// not proccess packets if socket already closed
     WorldPacket* packet;
 
-    ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> * _recvQueue = NULL;
-
-    if (threadSafe)
-        _recvQueue = &_recvThreadSafeQueue;
-    else
-        _recvQueue = &_recvThreadUnsafeQueue;
-
-    if (!_recvQueue)
-    {
-        KickPlayer();
-        return false;
-    }
-
-    while (m_Socket && !m_Socket->IsClosed() && _recvQueue->next(packet))
+    while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
     {
         ProcessPacket(packet);
         delete packet;
@@ -329,7 +328,7 @@ bool WorldSession::Update(uint32 diff, bool threadSafe)
 
     //check if we are safe to proceed with logout
     //logout procedure should happen only in World::UpdateSessions() method!!!
-    if (!threadSafe)
+    if (updater.ProcessLogout())
     {
         ///- If necessary, log the player out
         time_t currTime = time(NULL);

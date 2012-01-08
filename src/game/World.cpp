@@ -1945,7 +1945,8 @@ void World::UpdateSessions(const uint32 & diff)
 
             ///- and remove not active sessions from the list
             WorldSession * pSession = itr->second;
-            if (!pSession->Update(diff, false))    // As interval = 0
+            WorldSessionFilter updater(pSession);
+            if (!pSession->Update(diff, updater))   // As interval = 0
             {
                 RemoveQueuedPlayer(pSession);
                 AddSessionToRemove(itr);
