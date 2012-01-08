@@ -357,6 +357,7 @@ Unit::Unit()
         m_reactiveTimer[i] = 0;
 
     m_meleeAPAttackerBonus = 0;
+    m_GMToSendCombatStats = 0;
 }
 
 ////////////////////////////////////////////////////////////
