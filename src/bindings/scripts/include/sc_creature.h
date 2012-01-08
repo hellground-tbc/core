@@ -405,6 +405,6 @@ struct TRINITY_DLL_DECL BossAI : public ScriptedAI
 };
 
 // SD2 grid searchers
-Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange, bool alive);
+Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange, bool alive = true);
 
 #endif
