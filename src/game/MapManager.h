@@ -23,7 +23,7 @@
 
 #include "Platform/Define.h"
 #include "Policies/Singleton.h"
-#include "ace/Thread_Mutex.h"
+#include "ace/Recursive_Thread_Mutex.h"
 #include "Common.h"
 #include "Map.h"
 #include "GridStates.h"
@@ -31,29 +31,43 @@
 
 class Transport;
 
-class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLockable<MapManager, ACE_Thread_Mutex> >
+struct TRINITY_DLL_DECL MapID
+{
+    explicit MapID(uint32 id) : nMapId(id), nInstanceId(0) {}
+    MapID(uint32 id, uint32 instid) : nMapId(id), nInstanceId(instid) {}
+
+    bool operator<(const MapID& val) const
+    {
+        if(nMapId == val.nMapId)
+            return nInstanceId < val.nInstanceId;
+
+        return nMapId < val.nMapId;
+    }
+
+    bool operator==(const MapID& val) const { return nMapId == val.nMapId && nInstanceId == val.nInstanceId; }
+
+    uint32 nMapId;
+    uint32 nInstanceId;
+};
+
+class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex> >
 {
 
     friend class Trinity::OperatorNew<MapManager>;
-    typedef UNORDERED_MAP<uint32, Map*> MapMapType;
-    typedef std::pair<UNORDERED_MAP<uint32, Map*>::iterator, bool>  MapMapPair;
+    typedef ACE_Recursive_Thread_Mutex LOCK_TYPE;
+    typedef ACE_Guard<LOCK_TYPE> LOCK_TYPE_GUARD;
+    typedef Trinity::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex>::Lock Guard;
 
     public:
+        typedef std::map<MapID, Map* > MapMapType;
 
-        Map* GetMap(uint32, const WorldObject* obj);
-        Map* CreateBaseMap(uint32 id);
+        Map* GetMap(uint32 id, const WorldObject* obj);
+        Map* CreateMap(uint32, const WorldObject* obj);
+        Map* CreateBgMap(uint32 mapid, uint32, BattleGround* bg);
         Map* FindMap(uint32 mapid, uint32 instanceId = 0) const;
 
         // only const version for outer users
         void DeleteInstance(uint32 mapid, uint32 instanceId);
-
-        uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
-        {
-            Map* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
-            return m->GetAreaFlag(x, y, z);
-        }
-        uint32 GetAreaId(uint32 mapid, float x, float y, float z) { return Map::GetAreaId(GetAreaFlag(mapid, x, y, z),mapid); }
-        uint32 GetZoneId(uint32 mapid, float x, float y, float z) { return Map::GetZoneId(GetAreaFlag(mapid, x, y, z),mapid); }
 
         void Initialize(void);
         void Update(uint32 diff);
@@ -127,7 +141,6 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         TransportMap m_TransportsByMap;
 
         bool CanPlayerEnter(uint32 mapid, Player* player);
-        void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
         uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
         void InitMaxInstanceId();
         void InitializeVisibilityDistanceInfo();
@@ -138,11 +151,12 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
 
         MapUpdater* GetMapUpdater() { return &m_updater; };
 
+        //get list of all maps
+        const MapMapType& Maps() const { return i_maps; }
+
     private:
-        // debugging code, should be deleted some day
-        void checkAndCorrectGridStatesArray();              // just for debugging to find some memory overwrites
         GridState* i_GridStates[MAX_GRID_STATE];            // shadow entries to the global array in Map.cpp
-        int i_GridStateErrorCount;
+
     private:
         MapManager();
         ~MapManager();
@@ -150,13 +164,10 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
 
-        Map* FindBaseMap(uint32 id) const
-        {
-            MapMapType::const_iterator iter = i_maps.find(id);
-            return (iter == i_maps.end() ? NULL : iter->second);
-        }
+        Map* CreateInstance(uint32 id, Player * player);
+        InstanceMap* CreateInstanceMap(uint32 id, uint32 InstanceId, DungeonDifficulties difficulty, InstanceSave *save = NULL);
+        BattleGroundMap* CreateBattleGroundMap(uint32 id, uint32 InstanceId, BattleGround* bg);
 
-        typedef Trinity::ClassLevelLockable<MapManager, ACE_Thread_Mutex>::Lock Guard;
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
         IntervalTimer i_timer;

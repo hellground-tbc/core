@@ -6369,7 +6369,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
                 if (!spellInfo || !(spellInfo->Attributes & ((1<<6) | (1<<7))))
                     continue;
 
-                bool outdoor = m_target->GetMap()->IsOutdoors(m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ());
+                bool outdoor = m_target->GetTerrain()->IsOutdoors(m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ());
                 if (outdoor && spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY)
                     continue;
 
@@ -7909,7 +7909,6 @@ void Aura::HandleAuraReflectSpellSchool(bool Apply, bool Real)
 {
     if (!Real)
         return;
-
 
     // Frost Ward and Fire Ward
     if (Apply && m_spellProto->SpellFamilyName == SPELLFAMILY_MAGE && m_spellProto->SpellFamilyFlags & 0x80108)

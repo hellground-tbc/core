@@ -273,7 +273,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 me->SetInFront(pMadrigosa);
                 me->GetPosition(x, y, z);
                 float ground_Z;
-                ground_Z= me->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+                ground_Z= me->GetTerrain()->GetHeight(x, y, MAX_HEIGHT, true);
                 me->GetMotionMaster()->MoveFall(ground_Z);
                 IntroPhaseTimer = 3500;
                 ++IntroPhase;
@@ -346,7 +346,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 {
                     float x, y, z;
                     me->GetPosition(x, y, z);
-                    float ground_z = me->GetMap()->GetHeight(x, y, MAX_HEIGHT, true);
+                    float ground_z = me->GetTerrain()->GetHeight(x, y, MAX_HEIGHT, true);
                     if(z > ground_z)
                     me->GetMap()->CreatureRelocation(me, x, y, z, me->GetOrientation());
                     CheckGroundTimer = 500;

@@ -144,9 +144,6 @@
     <ClCompile Include="..\..\src\game\Unit.cpp">
       <Filter>Objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\GlobalEvents.cpp">
-      <Filter>Server</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\game\Opcodes.cpp">
       <Filter>Server</Filter>
     </ClCompile>
@@ -358,9 +355,6 @@
       <Filter>Maps/Grids</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\Map.cpp">
-      <Filter>Maps/Grids</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\game\MapInstanced.cpp">
       <Filter>Maps/Grids</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\MapManager.cpp">
@@ -639,9 +633,6 @@
     <ClInclude Include="..\..\src\game\AntiCheat.h">
       <Filter>Server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\game\GlobalEvents.h">
-      <Filter>Server</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\game\Opcodes.h">
       <Filter>Server</Filter>
     </ClInclude>
@@ -856,9 +847,6 @@
       <Filter>Maps/Grids</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\Map.h">
-      <Filter>Maps/Grids</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\MapInstanced.h">
       <Filter>Maps/Grids</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\MapManager.h">

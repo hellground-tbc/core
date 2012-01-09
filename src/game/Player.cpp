@@ -36,7 +36,6 @@
 #include "Channel.h"
 #include "ChannelMgr.h"
 #include "MapManager.h"
-#include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -1406,7 +1405,7 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     }
 
     // not auto-free ghost from body in instances
-    if (m_deathTimer > 0  && !GetBaseMap()->Instanceable())
+    if (m_deathTimer > 0  && !GetMap()->Instanceable())
     {
         if (update_diff >= m_deathTimer)
         {
@@ -1509,7 +1508,7 @@ void Player::BuildEnumData(QueryResultAutoPtr result, WorldPacket * p_data)
 
     std::string name = GetName();
     // do not use GetMap! it will spawn a new instance since the bound instances are not loaded
-    uint32 zoneId = sMapMgr.GetZoneId(GetMapId(), GetPositionX(),GetPositionY(),GetPositionZ());
+    uint32 zoneId = sTerrainMgr.GetZoneId(GetMapId(), GetPositionX(),GetPositionY(),GetPositionZ());
     sLog.outDebug("Player::BuildEnumData: m:%u, x:%f, y:%f, z:%f zone:%u", GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), zoneId);
     *p_data << zoneId;
     *p_data << GetMapId();
@@ -2272,7 +2271,7 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
 
 bool Player::IsUnderWater() const
 {
-    return GetBaseMap()->IsUnderWater(GetPositionX(), GetPositionY(), GetPositionZ()+2);
+    return GetTerrain()->IsUnderWater(GetPositionX(), GetPositionY(), GetPositionZ()+2);
 }
 
 void Player::SetInWater(bool apply)
@@ -5708,15 +5707,10 @@ void Player::CheckAreaExploreAndOutdoor()
         return;
 
     bool isOutdoor;
-    uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ(), &isOutdoor);
+    uint16 areaFlag = GetTerrain()->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ(), &isOutdoor);
 
-    if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
-    {
-        if (!isOutdoor)
-            RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY, true);
-//        else
-//            RemoveAurasWithAttribute(SPELL_ATTR_INDOORS_ONLY);
-    }
+    if (!isOutdoor && sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && !isGameMaster())
+        RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY, true);
 
     if (areaFlag==0xffff)
         return;
@@ -6313,7 +6307,7 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
         float posy = fields[2].GetFloat();
 
         float posz = fields[3].GetFloat();
-        zone = sMapMgr.GetZoneId(map,posx,posy,posz);
+        zone = sTerrainMgr.GetZoneId(map,posx,posy,posz);
 
         ss.str("");
         ss << "UPDATE characters SET zone='"<<zone<<"' WHERE guid='"<<GUID_LOPART(guid)<<"'";
@@ -19967,7 +19961,7 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
     GridMapLiquidData liquid_status;
-    GridMapLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
+    GridMapLiquidStatus res = m->GetTerrain()->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
     if (!res)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER|UNDERWATER_INLAVA|UNDERWATER_INSLIME|UNDERWATER_INDARKWATER);

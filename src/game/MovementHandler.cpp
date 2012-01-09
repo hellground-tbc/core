@@ -325,7 +325,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     if (movementInfo.HasMovementFlag(MOVEFLAG_SWIMMING) != pPlayer->IsInWater())
     {
         // now client not include swimming flag in case jumping under water
-        pPlayer->SetInWater(!pPlayer->IsInWater() || pPlayer->GetBaseMap()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
+        pPlayer->SetInWater(!pPlayer->IsInWater() || pPlayer->GetTerrain()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
     }
 
     if (sWorld.m_ac.activated() && !pPlayer->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !pPlayer->isGameMaster() && pPlayer->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
@@ -402,7 +402,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
         if (movementInfo.HasMovementFlag(MOVEFLAG_SWIMMING) != plr->IsInWater())
         {
             // Now client not include swimming flag in case jumping under water
-            plr->SetInWater(!plr->IsInWater() || plr->GetBaseMap()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
+            plr->SetInWater(!plr->IsInWater() || plr->GetTerrain()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
         }
 
         plr->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o, false);

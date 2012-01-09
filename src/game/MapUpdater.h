@@ -10,7 +10,7 @@
 #include "Map.h"
 //class Map;
 
-typedef std::pair<uint32, uint32> MapID;
+typedef std::pair<uint32, uint32> MapIDs;
 
 struct MapBrokenData
 {
@@ -34,9 +34,9 @@ struct MapBrokenData
     time_t lastErrorTime;
 };
 
-typedef std::map<ACE_thread_t const, MapID> ThreadMapMap;
+typedef std::map<ACE_thread_t const, MapIDs> ThreadMapMap;
 typedef std::map<ACE_thread_t const, uint32/*MSTime*/>  ThreadStartTimeMap;
-typedef std::map<MapID, MapBrokenData> MapBrokenDataMap;
+typedef std::map<MapIDs, MapBrokenData> MapBrokenDataMap;
 
 class MapUpdater
 {
@@ -66,10 +66,10 @@ public:
     void register_thread(ACE_thread_t const threadId, uint32 mapId, uint32 instanceId);
     void unregister_thread(ACE_thread_t const threadId);
 
-    MapID const* GetMapPairByThreadId(ACE_thread_t const threadId);
+    MapIDs const* GetMapPairByThreadId(ACE_thread_t const threadId);
     void FreezeDetect();
 
-    void SetBroken( bool value = false)
+    void SetBroken(bool value = false)
     {
         m_broken = value;
     };
@@ -79,10 +79,10 @@ public:
         return m_broken;
     };
 
-    void ReActivate( uint32 threads);
+    void ReActivate(uint32 threads);
 
-    void MapBrokenEvent(MapID const* mapPair);
-    MapBrokenData const* GetMapBrokenData(MapID const* mapPair);
+    void MapBrokenEvent(MapIDs const* mapPair);
+    MapBrokenData const* GetMapBrokenData(MapIDs const* mapPair);
 
 private:
     ThreadMapMap m_threads;

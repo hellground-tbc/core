@@ -233,7 +233,7 @@ void SocialMgr::GetFriendInfo(Player *player, uint32 friendGUID, FriendInfo &fri
 
         if (sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA))
             if (pFriend->InArena())
-                friendInfo.Area = sMapMgr.GetZoneId(pFriend->GetBattleGroundEntryPointMap(), pFriend->GetBattleGroundEntryPointX(), pFriend->GetBattleGroundEntryPointY(), pFriend->GetBattleGroundEntryPointZ());
+                friendInfo.Area = sTerrainMgr.GetZoneId(pFriend->GetBattleGroundEntryPointMap(), pFriend->GetBattleGroundEntryPointX(), pFriend->GetBattleGroundEntryPointY(), pFriend->GetBattleGroundEntryPointZ());
 
         friendInfo.Level = pFriend->getLevel();
         friendInfo.Class = pFriend->getClass();

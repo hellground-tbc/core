@@ -31,7 +31,6 @@
 #include "CellImpl.h"
 #include "Map.h"
 #include "MapManager.h"
-#include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
 #include "Timer.h"
 #include "GridNotifiersImpl.h"
@@ -580,9 +579,9 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 {
     sLog.outDebug("InstanceSaveMgr::_ResetInstance %u, %u", mapid, instanceId);
 
-    Map *map = (MapInstanced*)sMapMgr.CreateBaseMap(mapid);
-    if (!map->Instanceable())
-        return;
+    MapEntry const* mapEntry = sMapStore.LookupEntry(mapid);
+    if (!mapEntry || !mapEntry->Instanceable())
+         return;
 
     InstanceSaveHashMap::iterator itr = m_instanceSaveById.find(instanceId);
     if (itr != m_instanceSaveById.end())
@@ -596,20 +595,21 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 
     DeleteInstanceFromDB(instanceId);                       // even if save not loaded
 
-    Map* iMap = ((MapInstanced*)map)->FindInstancedMap(instanceId);
+    Map * iMap = sMapMgr.FindMap(mapid, instanceId);
     if (iMap && iMap->IsDungeon())
         ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
     else
-        objmgr.DeleteRespawnTimeForInstance(instanceId);   // even if map is not loaded
+        sObjectMgr.DeleteRespawnTimeForInstance(instanceId);// even if map is not loaded
 }
 
 void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLeft)
 {
     // global reset for all instances of the given map
     // note: this isn't fast but it's meant to be executed very rarely
-    Map const *map = sMapMgr.CreateBaseMap(mapid);
-    if (!map->Instanceable())
-        return;
+    MapEntry const *mapEntry = sMapStore.LookupEntry(mapid);
+    if (!mapEntry->Instanceable())
+         return;
+
     uint64 now = (uint64)time(NULL);
 
     if (!warn)
@@ -650,14 +650,20 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLe
         ScheduleReset(true, (time_t) (next_reset-3600), InstResetEvent(1, mapid));
     }
 
-    MapInstanced::InstancedMaps &instMaps = ((MapInstanced*)map)->GetInstancedMaps();
-    MapInstanced::InstancedMaps::iterator mitr;
-    for (mitr = instMaps.begin(); mitr != instMaps.end(); ++mitr)
+    // note: this isn't fast but it's meant to be executed very rarely
+    const MapManager::MapMapType& maps = sMapMgr.Maps();
+
+    MapManager::MapMapType::const_iterator iter_last = maps.lower_bound(MapID(mapid + 1));
+    for(MapManager::MapMapType::const_iterator mitr = maps.lower_bound(MapID(mapid)); mitr != iter_last; ++mitr)
     {
         Map *map2 = mitr->second;
-        if (!map2->IsDungeon()) continue;
-        if (warn) ((InstanceMap*)map2)->SendResetWarnings(timeLeft);
-        else ((InstanceMap*)map2)->Reset(INSTANCE_RESET_GLOBAL);
+        if(map2->GetId() != mapid)
+            break;
+
+        if (warn)
+            ((InstanceMap*)map2)->SendResetWarnings(timeLeft);
+        else
+            ((InstanceMap*)map2)->Reset(INSTANCE_RESET_GLOBAL);
     }
 
     // TODO: delete creature/gameobject respawn times even if the maps are not loaded

@@ -97,6 +97,33 @@ class IntervalTimer
         time_t _current;
 };
 
+class ShortIntervalTimer
+{
+    public:
+        ShortIntervalTimer() : _interval(0), _current(0) {}
+
+        void Update(uint32 diff)
+        {
+            _current += diff;
+        }
+
+        bool Passed() const { return _current >= _interval; }
+        void Reset()
+        {
+            if (_current >= _interval)
+                _current -= _interval;
+        }
+
+        void SetCurrent(uint32 current) { _current = current; }
+        void SetInterval(uint32 interval) { _interval = interval; }
+        uint32 GetInterval() const { return _interval; }
+        uint32 GetCurrent() const { return _current; }
+
+    private:
+        uint32 _interval;
+        uint32 _current;
+};
+
 struct TimeTracker
 {
     public:

@@ -78,6 +78,8 @@ class Corpse : public WorldObject
 
         bool isVisibleForInState(Player const* u, bool inVisibleList) const;
 
+        bool IsExpired(time_t t) const;
+
         Loot loot;                                          // remove insignia ONLY at BG
         Player* lootRecipient;
         bool lootForBody;
@@ -100,5 +102,5 @@ class Corpse : public WorldObject
         time_t m_time;
         GridPair m_grid;                                    // gride for corpse position for fast search
 };
-#endif
 
+#endif

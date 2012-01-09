@@ -110,8 +110,8 @@ namespace Trinity
             class Lock
             {
                 public:
-                    Lock(T& /*host*/) { ClassLevelLockable<T, MUTEX>::si_mtx.acquire(); }
-                    Lock(ClassLevelLockable<T, MUTEX> &) { ClassLevelLockable<T, MUTEX>::si_mtx.acquire(); }
+                    Lock(const T& /*host*/) { ClassLevelLockable<T, MUTEX>::si_mtx.acquire(); }
+                    Lock(const ClassLevelLockable<T, MUTEX> &) { ClassLevelLockable<T, MUTEX>::si_mtx.acquire(); }
                     Lock() { ClassLevelLockable<T, MUTEX>::si_mtx.acquire(); }
                     ~Lock() { ClassLevelLockable<T, MUTEX>::si_mtx.release(); }
             };
@@ -127,4 +127,3 @@ template<class T, class MUTEX> MUTEX Trinity::ClassLevelLockable<T, MUTEX>::si_m
 #define INSTANTIATE_CLASS_MUTEX(CTYPE,MUTEX) \
     template class TRINITY_DLL_DECL Trinity::ClassLevelLockable<CTYPE, MUTEX >
 #endif
-

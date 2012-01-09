@@ -31,7 +31,7 @@
 #include "Cell.h"
 #include "Timer.h"
 #include "SharedDefines.h"
-//#include "GridMap.h"
+#include "GridMap.h"
 #include "GameSystem/GridRefManager.h"
 #include "MapRefManager.h"
 #include "mersennetwister/MersenneTwister.h"
@@ -57,10 +57,6 @@ class GridMap;
 
 struct ScriptInfo;
 struct ScriptAction;
-
-#define MAX_FALL_DISTANCE     250000.0f                     // "unlimited fall" to find VMap ground if it is available, just larger than MAX_HEIGHT - INVALID_HEIGHT
-#define DEFAULT_HEIGHT_SEARCH     10.0f                     // default search distance to find height at nearby locations
-#define DEFAULT_WATER_SEARCH      50.0f                     // default search distance to case detection water level
 
 struct CreatureMover
 {
@@ -124,7 +120,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 {
     friend class MapReference;
     public:
-        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent = NULL);
+        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
         virtual ~Map();
 
         // currently unused for normal maps
@@ -175,8 +171,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
             return loaded(p);
         }
 
-        Map* GetParent() const { return m_parent; }
-
         bool GetUnloadLock(const GridPair &p) const { return getNGrid(p.x_coord, p.y_coord)->getUnloadLock(); }
         void SetUnloadLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadExplicitLock(on); }
         void LoadGrid(float x, float y);
@@ -199,38 +193,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         bool hasVMapHeight();
 
         bool hasPosCollisionCalcEnabled();
-
-        // some calls like isInWater should not use vmaps due to processor power
-        // can return INVALID_HEIGHT if under z+2 z coord not found height
-        float GetHeight(float x, float y, float z, bool pCheckVMap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
-
-        float GetWaterLevel(float x, float y, float z, float* pGround = NULL) const;
-        float GetWaterOrGroundLevel(float x, float y, float z, float* pGround = NULL, bool swim = false) const;
-
-        GridMapLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, GridMapLiquidData *data = 0) const;
-
-        uint16 GetAreaFlag(float x, float y, float z, bool *isOutdoors=0) const;
-        bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
-
-        bool IsOutdoors(float x, float y, float z) const;
-
-        uint8 GetTerrainType(float x, float y) const;
-
-        bool IsUnderWater(float x, float y, float z) const;
-        bool IsInWater(float x, float y, float z,  GridMapLiquidData *data = 0) const;
-
-        static uint32 GetAreaId(uint16 areaflag,uint32 map_id);
-        static uint32 GetZoneId(uint16 areaflag,uint32 map_id);
-
-        uint32 GetAreaId(float x, float y, float z) const
-        {
-            return GetAreaId(GetAreaFlag(x,y,z),i_id);
-        }
-
-        uint32 GetZoneId(float x, float y, float z) const
-        {
-            return GetZoneId(GetAreaFlag(x,y,z),i_id);
-        }
 
         void MoveAllCreaturesInMoveList();
         void RemoveAllObjectsInRemoveList();
@@ -362,11 +324,10 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         void SetBroken( bool _value = true ) { m_broken = _value; };
         void ForcedUnload();
 
-    private:
-        void LoadVMap(int gx, int gy);
-        void LoadMap(int gx,int gy, bool reload = false);
-        GridMap *GetGrid(float x, float y);
+        //get corresponding TerrainData object for this particular map
+        const TerrainInfo * GetTerrain() const { return m_TerrainData; }
 
+    private:
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
         //uint64 CalculateGridMask(const uint32 &y) const;
 
@@ -414,8 +375,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         bool m_broken;
 
     protected:
-        void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
-
         typedef Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>::Lock Guard;
 
         MapEntry const* i_mapEntry;
@@ -424,8 +383,6 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         uint32 i_InstanceId;
         uint32 m_unloadTimer;
         float m_VisibleDistance;
-
-        Map* m_parent;
 
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
@@ -438,7 +395,11 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
     private:
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
-        GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
+
+        //Shared geodata object with map coord info...
+        TerrainInfo * const m_TerrainData;
+        bool m_bLoadedGrids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
+
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
         //these functions used to process player/mob aggro reactions and
@@ -500,7 +461,7 @@ enum InstanceResetMethod
 class TRINITY_DLL_SPEC InstanceMap : public Map
 {
     public:
-        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, Map* _parent);
+        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
         ~InstanceMap();
         bool Add(Player *);
         void Remove(Player *, bool);
@@ -530,7 +491,7 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
 class TRINITY_DLL_SPEC BattleGroundMap : public Map
 {
     public:
-        BattleGroundMap(uint32 id, time_t, uint32 InstanceId, BattleGround *bg, Map* _parent);
+        BattleGroundMap(uint32 id, time_t, uint32 InstanceId, BattleGround *bg);
         ~BattleGroundMap();
 
         bool Add(Player *);

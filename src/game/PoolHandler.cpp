@@ -272,20 +272,26 @@ bool PoolGroup<Creature>::Spawn1Object(uint32 guid)
     {
         objmgr.AddCreatureToGrid(guid, data);
 
-        // Spawn if necessary (loaded grids only)
-        Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
-        // We use spawn coords to spawn
-        if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
+        MapEntry const* mapEntry = sMapStore.LookupEntry(data->mapid);
+
+        // temporary limit pool system full power work to continents
+        if (mapEntry && !mapEntry->Instanceable())
         {
-            Creature* pCreature = new Creature;
-            //sLog.outDebug("Spawning creature %u",guid);
-            if (!pCreature->LoadFromDB(guid, map))
+            // Spawn if necessary (loaded grids only)
+            Map* map = const_cast<Map*>(sMapMgr.FindMap(data->mapid));
+            // We use spawn coords to spawn
+            if (map && map->IsLoaded(data->posX, data->posY))
             {
-                delete pCreature;
-                return false;
+                Creature* pCreature = new Creature;
+                //DEBUG_LOG("Spawning creature %u",obj->guid);
+                if (!pCreature->LoadFromDB(guid, map))
+                {
+                    delete pCreature;
+                    return false;
+                }
+                else
+                    map->Add(pCreature);
             }
-            else
-                map->Add(pCreature);
         }
         return true;
     }
@@ -301,21 +307,29 @@ bool PoolGroup<GameObject>::Spawn1Object(uint32 guid)
         objmgr.AddGameobjectToGrid(guid, data);
         // Spawn if necessary (loaded grids only)
         // this base map checked as non-instanced and then only existed
-        Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
-        // We use current coords to unspawn, not spawn coords since creature can have changed grid
-        if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
+        MapEntry const* mapEntry = sMapStore.LookupEntry(data->mapid);
+
+        // temporary limit pool system full power work to continents
+        if (mapEntry && !mapEntry->Instanceable())
         {
-            GameObject* pGameobject = new GameObject;
-            //sLog.outDebug("Spawning gameobject %u", guid);
-            if (!pGameobject->LoadFromDB(guid, map))
+            // Spawn if necessary (loaded grids only)
+            Map* map = const_cast<Map*>(sMapMgr.FindMap(data->mapid));
+
+            // We use spawn coords to spawn
+            if (map && map->IsLoaded(data->posX, data->posY))
             {
-                delete pGameobject;
-                return false;
-            }
-            else
-            {
-                if (pGameobject->isSpawnedByDefault())
-                    map->Add(pGameobject);
+                GameObject* pGameobject = new GameObject;
+                //sLog.outDebug("Spawning gameobject %u", guid);
+                if (!pGameobject->LoadFromDB(guid, map))
+                {
+                    delete pGameobject;
+                    return false;
+                }
+                else
+                {
+                    if (pGameobject->isSpawnedByDefault())
+                        map->Add(pGameobject);
+                }
             }
         }
         return true;

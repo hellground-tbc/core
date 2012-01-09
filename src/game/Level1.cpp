@@ -880,7 +880,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 
     Map2ZoneCoordinates(zone_x,zone_y,zone_id);
 
-    Map const *map = obj->GetBaseMap();
+    TerrainInfo const *map = obj->GetTerrain();
     float ground_z = map->GetHeight(obj->GetPositionX(), obj->GetPositionY(), MAX_HEIGHT);
     float floor_z = map->GetHeight(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ());
 
@@ -2580,7 +2580,7 @@ bool ChatHandler::HandleTeleNameCommand(const char * args)
     else if (uint64 guid = objmgr.GetPlayerGUIDByName(name.c_str()))
     {
         PSendSysMessage(LANG_TELEPORTING_TO, name.c_str(), GetTrinityString(LANG_OFFLINE), tele->name.c_str());
-        Player::SavePositionInDB(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation,sMapMgr.GetZoneId(tele->mapId,tele->position_x,tele->position_y,tele->position_z),guid);
+        Player::SavePositionInDB(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation,sTerrainMgr.GetZoneId(tele->mapId,tele->position_x,tele->position_y,tele->position_z),guid);
     }
     else
         PSendSysMessage(LANG_NO_PLAYER, name.c_str());
@@ -2794,7 +2794,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = sMapMgr.CreateBaseMap(mapid);
+    TerrainInfo const *map = sTerrainMgr.LoadTerrain(mapid);
     float z = map->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
 
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
@@ -2887,7 +2887,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     // update to parent zone if exist (client map show only zones without parents)
     AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
 
-    Map const *map = sMapMgr.CreateBaseMap(zoneEntry->mapid);
+    Map const *map = sMapMgr.GetMap(zoneEntry->mapid, _player);
 
     if (map->Instanceable())
     {
@@ -2915,7 +2915,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    float z = map->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
+    float z = map->GetTerrain()->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
     _player->TeleportTo(zoneEntry->mapid, x, y, z, _player->GetOrientation());
 
     return true;
@@ -2962,8 +2962,8 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = sMapMgr.CreateBaseMap(mapid);
-    float z = map->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
+    Map const *map = sMapMgr.GetMap(mapid, _player);
+    float z = map->GetTerrain()->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
 
     return true;

@@ -59,7 +59,7 @@ bool ChatHandler::HandleWPToFileCommand(const char* args)
         int dist = atoi((char*)args);
         float x = m_session->GetPlayer()->GetPositionX() + dist*cos(m_session->GetPlayer()->GetOrientation());
         float y = m_session->GetPlayer()->GetPositionY() + dist*sin(m_session->GetPlayer()->GetOrientation());
-        float z = m_session->GetPlayer()->GetBaseMap()->GetHeight(x, y, m_session->GetPlayer()->GetPositionZ(), false);
+        float z = m_session->GetPlayer()->GetTerrain()->GetHeight(x, y, m_session->GetPlayer()->GetPositionZ(), false);
         file << "'" << x << "', '" << y << "', '" << z << "'" << std::endl;
     }
     file.close();

@@ -3464,12 +3464,12 @@ bool Unit::isInAccessiblePlacefor (Creature const* c) const
 
 bool Unit::IsInWater() const
 {
-    return GetBaseMap()->IsInWater(GetPositionX(),GetPositionY(), GetPositionZ());
+    return GetTerrain()->IsInWater(GetPositionX(),GetPositionY(), GetPositionZ());
 }
 
 bool Unit::IsUnderWater() const
 {
-    return GetBaseMap()->IsUnderWater(GetPositionX(),GetPositionY(),GetPositionZ());
+    return GetTerrain()->IsUnderWater(GetPositionX(),GetPositionY(),GetPositionZ());
 }
 
 void Unit::DeMorph()
@@ -3483,7 +3483,7 @@ int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 
     bool outdoors = true;
     if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
-        outdoors = GetBaseMap()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
+        outdoors = GetTerrain()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
     for (AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
@@ -3499,7 +3499,7 @@ float Unit::GetTotalAuraMultiplier(AuraType auratype) const
 
     bool outdoors = true;
     if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
-        outdoors = GetBaseMap()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
+        outdoors = GetTerrain()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
     for (AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)
@@ -3515,7 +3515,7 @@ int32 Unit::GetMaxPositiveAuraModifier(AuraType auratype) const
 
     bool outdoors = true;
     if (sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK))
-        outdoors = GetBaseMap()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
+        outdoors = GetTerrain()->IsOutdoors(GetPositionX(),GetPositionY(),GetPositionZ());
 
     AuraList const& mTotalAuraList = GetAurasByType(auratype);
     for (AuraList::const_iterator i = mTotalAuraList.begin();i != mTotalAuraList.end(); ++i)

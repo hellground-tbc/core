@@ -33,7 +33,6 @@
 #include "GridNotifiersImpl.h"
 #include "Opcodes.h"
 #include "ObjectGuid.h"
-#include "MapInstanced.h"
 #include "World.h"
 
 #include <cmath>
@@ -321,6 +320,22 @@ Corpse * ObjectAccessor::GetCorpse(uint32 mapid, float x, float y, uint64 guid)
     }
 
     return NULL;
+}
+
+void ObjectAccessor::RemoveOldCorpses()
+{
+    time_t now = time(NULL);
+    Player2CorpsesMapType::iterator next;
+    for (Player2CorpsesMapType::iterator itr = i_player2corpse.begin(); itr != i_player2corpse.end(); itr = next)
+    {
+        next = itr;
+        ++next;
+
+        if (!itr->second->IsExpired(now))
+            continue;
+
+        ConvertCorpseForPlayer(itr->first);
+    }
 }
 
 /// Define the static member of HashMapHolder

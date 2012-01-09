@@ -42,7 +42,6 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include "GlobalEvents.h"
 #include "TicketMgr.h"
 #include "CreatureAI.h"
 #include "ChannelMgr.h"
@@ -3670,7 +3669,7 @@ bool ChatHandler::LookupPlayerSearchCommand(QueryResultAutoPtr result, int32 lim
 /// Triggering corpses expire check in world
 bool ChatHandler::HandleServerCorpsesCommand(const char* /*args*/)
 {
-    CorpsesErase();
+    ObjectAccessor::Instance().RemoveOldCorpses();
     return true;
 }
 

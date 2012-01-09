@@ -287,7 +287,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recv_data*/)
             if (!entrance_map)
                 return;
 
-            z = entrance_map->GetHeight(x, y, MAX_HEIGHT);
+            z = entrance_map->GetTerrain()->GetHeight(x, y, MAX_HEIGHT);
             corpsemapid = corpse->GetMapId();
         }
     }

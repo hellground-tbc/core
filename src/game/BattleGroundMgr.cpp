@@ -32,7 +32,6 @@
 #include "BattleGroundRL.h"
 #include "MapManager.h"
 #include "Map.h"
-#include "MapInstanced.h"
 #include "ObjectMgr.h"
 #include "Chat.h"
 #include "ArenaTeam.h"

@@ -148,7 +148,7 @@ void MapUpdater::update_finished ()
 void MapUpdater::register_thread(ACE_thread_t const threadId, uint32 mapId, uint32 instanceId)
 {
     ACE_GUARD(ACE_Thread_Mutex, guard, m_mutex);
-    MapID pair = MapID(mapId, instanceId);
+    MapIDs pair = MapIDs(mapId, instanceId);
     m_threads.insert(std::make_pair(threadId, pair));
     m_starttime.insert(std::make_pair(threadId, WorldTimer::getMSTime()));
 }
@@ -160,7 +160,7 @@ void MapUpdater::unregister_thread(ACE_thread_t const threadId)
     m_starttime.erase(threadId);
 }
 
-MapID const* MapUpdater::GetMapPairByThreadId(ACE_thread_t const threadId)
+MapIDs const* MapUpdater::GetMapPairByThreadId(ACE_thread_t const threadId)
 {
     if (!m_threads.empty())
     {
@@ -179,7 +179,7 @@ void MapUpdater::FreezeDetect()
         for (ThreadStartTimeMap::const_iterator itr = m_starttime.begin(); itr != m_starttime.end(); ++itr)
         if (WorldTimer::getMSTime() - itr->second > freezeDetectTime)
         {
-            if (MapID const* mapPair = GetMapPairByThreadId(itr->first))
+            if (MapIDs const* mapPair = GetMapPairByThreadId(itr->first))
             {
                 sLog.outCrash("MapUpdater::FreezeDetect thread "I64FMT" possible freezed (is update map %u instance %u). Killing.",itr->first,mapPair->first, mapPair->second);
                 DEBUG_LOG("MapUpdater::FreezeDetect thread "I64FMT" possible freezed (is update map %u instance %u). Killing.",itr->first,mapPair->first, mapPair->second);
@@ -189,7 +189,7 @@ void MapUpdater::FreezeDetect()
     }
 }
 
-void MapUpdater::MapBrokenEvent(MapID const* mapPair)
+void MapUpdater::MapBrokenEvent(MapIDs const* mapPair)
 {
     if (!m_brokendata.empty())
     {
@@ -207,7 +207,7 @@ void MapUpdater::MapBrokenEvent(MapID const* mapPair)
     m_brokendata.insert(std::make_pair(*mapPair, MapBrokenData()));
 }
 
-MapBrokenData const* MapUpdater::GetMapBrokenData(MapID const* mapPair)
+MapBrokenData const* MapUpdater::GetMapBrokenData(MapIDs const* mapPair)
 {
     if (!m_brokendata.empty())
     {

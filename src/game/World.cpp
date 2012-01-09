@@ -52,7 +52,6 @@
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
-#include "GlobalEvents.h"
 #include "GameEvent.h"
 #include "PoolHandler.h"
 #include "Database/DatabaseImpl.h"
@@ -1899,7 +1898,7 @@ void World::Update(uint32 diff)
     {
         m_timers[WUPDATE_CORPSES].Reset();
 
-        CorpsesErase();
+        ObjectAccessor::Instance().RemoveOldCorpses();
     }
 
     ///- Process Game events when necessary
@@ -1921,6 +1920,11 @@ void World::Update(uint32 diff)
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
+    RecordTimeDiff("UpdateProcessCLI");
+
+    //cleanup unused GridMap objects as well as VMaps
+    sTerrainMgr.Update(diff);
+    RecordTimeDiff("UpdateTerrainMGR");
 }
 
 void World::UpdateSessions(const uint32 & diff)

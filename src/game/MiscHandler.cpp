@@ -278,7 +278,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
             if (itr->second->InArena())
             {
                 Player *pPlayer = itr->second;
-                pzoneid = sMapMgr.GetZoneId(pPlayer->GetBattleGroundEntryPointMap(), pPlayer->GetBattleGroundEntryPointX(), pPlayer->GetBattleGroundEntryPointY(), pPlayer->GetBattleGroundEntryPointZ());
+                pzoneid = sTerrainMgr.GetZoneId(pPlayer->GetBattleGroundEntryPointMap(), pPlayer->GetBattleGroundEntryPointX(), pPlayer->GetBattleGroundEntryPointY(), pPlayer->GetBattleGroundEntryPointZ());
             }
         }
 

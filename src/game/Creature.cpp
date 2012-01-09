@@ -1497,7 +1497,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
 
         if (CanFly())
         {
-            float tz = GetBaseMap()->GetHeight(data->posX,data->posY,data->posZ,false);
+            float tz = GetTerrain()->GetHeight(data->posX,data->posY,data->posZ,false);
             if (data->posZ - tz > 0.1)
                 Relocate(data->posX,data->posY,tz);
         }
@@ -1775,7 +1775,7 @@ bool Creature::FallGround()
 
     float x, y, z;
     GetPosition(x, y, z);
-    float ground_Z = GetBaseMap()->GetHeight(x, y, z);
+    float ground_Z = GetTerrain()->GetHeight(x, y, z);
     if (fabs(z - ground_Z) < 0.1f)
         return false;
 

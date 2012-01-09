@@ -68,6 +68,7 @@ class WorldPacket;
 class UpdateData;
 class ByteBuffer;
 class WorldSession;
+class Unit;
 class Creature;
 class Player;
 class Totem;
@@ -77,6 +78,7 @@ class InstanceData;
 class GameObject;
 class CreatureAI;
 class ZoneScript;
+class TerrainInfo;
 
 typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
 
@@ -586,7 +588,9 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
 
         Map      * GetMap() const   { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
         Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->_findMap(); }
-        Map const* GetBaseMap() const;
+
+        // obtain terrain data for map where this object belong...
+        TerrainInfo const* GetTerrain() const;
 
         void SetZoneScript();
 

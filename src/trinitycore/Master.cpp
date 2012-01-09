@@ -447,7 +447,7 @@ void Master::_OnSignal(int s)
                 ACE_Stack_Trace StackTrace;
                 sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n",StackTrace.c_str());
 
-                if (MapID const* mapPair = sMapMgr.GetMapUpdater()->GetMapPairByThreadId(threadId))
+                if (MapIDs const* mapPair = sMapMgr.GetMapUpdater()->GetMapPairByThreadId(threadId))
                 {
                     sLog.outError("Signal Handler: crushed thread is update map %u instance %u",mapPair->first, mapPair->second);
                     sLog.outCrash("Signal Handler: crushed thread is update map %u instance %u",mapPair->first, mapPair->second);

@@ -84,7 +84,7 @@ struct TRINITY_DLL_DECL npc_kyle_frenziedAI : public ScriptedAI
             caster->GetPosition(x, y, z);
             x = x + 3.7*cos(caster->GetOrientation());
             y = y + 3.7*sin(caster->GetOrientation());
-            z2 = m_creature->GetBaseMap()->GetHeight(x,y,z,false);
+            z2 = m_creature->GetTerrain()->GetHeight(x,y,z,false);
             z = (z2 <= INVALID_HEIGHT) ? z : z2;
             m_creature->SetDefaultMovementType(IDLE_MOTION_TYPE);       //there is other way to stop waypoint movement?
             m_creature->GetMotionMaster()->Initialize();
@@ -143,7 +143,7 @@ struct TRINITY_DLL_DECL npc_kyle_frenziedAI : public ScriptedAI
                 m_creature->GetPosition(x,y,z);
                 x = x + 40*cos(angle);
                 y = y + 40*sin(angle);
-                z2 = m_creature->GetBaseMap()->GetHeight(x,y,MAX_HEIGHT,false);
+                z2 = m_creature->GetTerrain()->GetHeight(x,y,MAX_HEIGHT,false);
                 z = (z2 <= INVALID_HEIGHT) ? z : z2;
                 m_creature->GetMotionMaster()->MovePoint(0,x,y,z);
                 break;

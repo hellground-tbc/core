@@ -3705,11 +3705,11 @@ SpellCastResult Spell::CheckCast(bool strict)
         VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled(m_caster->GetMapId()))
     {
         if (m_spellInfo->Attributes & SPELL_ATTR_OUTDOORS_ONLY &&
-                !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+                !m_caster->GetTerrain()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
             return SPELL_FAILED_ONLY_OUTDOORS;
 
         if(m_spellInfo->Attributes & SPELL_ATTR_INDOORS_ONLY &&
-                m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
+                m_caster->GetTerrain()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
             return SPELL_FAILED_ONLY_INDOORS;
     }
 

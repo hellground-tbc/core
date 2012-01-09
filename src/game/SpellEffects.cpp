@@ -1621,7 +1621,7 @@ void Spell::EffectDummy(uint32 i)
                         for (float i=0.5f; i<45; i+=0.5f)
                         {
                             m_caster->GetNearPoint2D(dx,dy,i,angle);
-                            dz = m_caster->GetMap()->GetHeight(dx, dy, cz, useVmap);
+                            dz = m_caster->GetTerrain()->GetHeight(dx, dy, cz, useVmap);
 
                             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
                             if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (m_caster->IsWithinLOS(dx, dy, dz)))
@@ -7108,7 +7108,7 @@ void Spell::EffectLeapForward(uint32 i)
         for (float i=0.5f; i<dis; i+=0.5f)
         {
             unitTarget->GetNearPoint2D(dx,dy,i,angle);
-            dz = unitTarget->GetBaseMap()->GetHeight(dx, dy, cz, useVmap);
+            dz = unitTarget->GetTerrain()->GetHeight(dx, dy, cz, useVmap);
 
             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
             if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
@@ -7687,7 +7687,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
             fz = -19.9645;
 
         }
-        else */if (!cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))           // Hack to prevent fishing bobber from failing to land on fishing hole
+        else */if (!m_caster->GetTerrain()->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))           // Hack to prevent fishing bobber from failing to land on fishing hole
         {
             // but this is not proper, we really need to ignore not materialized objects
             SendCastResult(SPELL_FAILED_NOT_HERE);
