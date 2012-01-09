@@ -175,7 +175,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
     void AttackStart(Unit* who)
     {
         if(Phase == 2)
-            return;
+            DoStartNoMovement(who);
         ScriptedAI::AttackStart(who);
     }
 
