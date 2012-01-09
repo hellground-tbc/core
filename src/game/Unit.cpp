@@ -4604,7 +4604,7 @@ void Unit::RemoveDynObject(uint32 spellid)
 
 void Unit::RemoveAllDynObjects()
 {
-    if (Map *map = GetMap())
+    if (Map *map = m_map)
     while (!m_dynObjGUIDs.empty())
     {
         DynamicObject* dynObj = map->GetDynamicObject(*m_dynObjGUIDs.begin());
