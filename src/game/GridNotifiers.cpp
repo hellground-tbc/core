@@ -112,7 +112,6 @@ inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
     if (!u->isAlive() || !c->isAlive() || c == u)
         return;
 
-
     if (u->IsTaxiFlying() && !c->CanReactToPlayerOnTaxi())
         return;
 

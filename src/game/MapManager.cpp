@@ -381,7 +381,7 @@ Map* MapManager::CreateInstance(uint32 id, Player * player)
     {
         // find existing bg map for player
         NewInstanceId = player->GetBattleGroundId();
-        if (NewInstanceId == 0 || !player->GetBattleGround());
+        if (NewInstanceId == 0 || !player->GetBattleGround())
             return NULL;
 
         map = FindMap(id, NewInstanceId);

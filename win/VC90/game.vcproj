@@ -552,14 +552,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\game\ObjectPosSelector.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\ObjectPosSelector.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\game\Pet.cpp"
 				>
 			</File>
@@ -629,14 +621,6 @@
 			>
 			<File
 				RelativePath="..\..\src\game\AntiCheat.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\GlobalEvents.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\GlobalEvents.h"
 				>
 			</File>
 			<File
@@ -1261,14 +1245,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\Map.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\MapInstanced.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\MapInstanced.h"
 				>
 			</File>
 			<File
