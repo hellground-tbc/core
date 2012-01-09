@@ -174,7 +174,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case 24892: 
                 Sathrovarr = creature->GetGUID();
                 if(GetData(DATA_KALECGOS_EVENT) == DONE)
-                    creature->GetMap()->CreatureReloation(creature, 1705, 927, 53.07, creature->GetOrientation());
+                    creature->NearTeleportTo(1705, 927, 53.07, creature->GetOrientation());
                 break;
             case 24882: Brutallus           = creature->GetGUID(); break;
             case 25166: Alythess            = creature->GetGUID(); break;

@@ -386,9 +386,11 @@ void Loot::AddItem(LootStoreItem const & item)
     }
 }
 
-bool Loot::IsPlayerAllowedToLoot(Player *player)
+bool Loot::IsPlayerAllowedToLoot(Player *player, WorldObject *object)
 {
-    return players_allowed_to_loot.find(player->GetGUID()) != players_allowed_to_loot.end();
+    return players_allowed_to_loot.empty() ?
+        player->GetDistance2d(object) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE) :    
+        players_allowed_to_loot.find(player->GetGUID()) != players_allowed_to_loot.end();
 }
 
 void Loot::setCreatureGUID(Creature *pCreature)
@@ -411,7 +413,7 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
 {
     clear();
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount, playerGuids FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
     if (result)
     {
         m_creatureGUID = pCreature->GetGUID();
@@ -432,6 +434,18 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
                 LootItem item(itemid);
                 items.push_back(item);
                 unlootedCount++;
+            }
+
+            std::stringstream guids;
+            uint8 playerscount;
+            uint64 playerguid;
+
+            guids << fields[2].GetString();
+            guids >> playerscount;
+            for(uint8 i = 0; i < playerscount; ++i)
+            {
+                guids >> playerguid;
+                players_allowed_to_loot.insert(playerguid);
             }
         }
         while (result->NextRow());
@@ -566,6 +580,12 @@ void Loot::saveLootToDB(Player *owner)
     std::stringstream ss;
     ss << "Player's group: " << owner->GetName() << ":(" << owner->GetGUIDLow() << ") " << "LootedItems: ";
 
+    std::stringstream guids;
+
+    guids << players_allowed_to_loot.size();
+    for (std::set<uint64>::iterator it = players_allowed_to_loot.begin(); it != players_allowed_to_loot.end(); it++)
+        guids << " " << *it ;
+
     for (std::vector<LootItem>::iterator iter = items.begin(); iter != items.end(); ++iter)
     {
         LootItem const *item = &(*iter);
@@ -588,7 +608,7 @@ void Loot::saveLootToDB(Player *owner)
             }
             else
             {
-                SqlStatement stmt = CharacterDatabase.CreateStatement(insertItem, "INSERT INTO group_saved_loot VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                SqlStatement stmt = CharacterDatabase.CreateStatement(insertItem, "INSERT INTO group_saved_loot VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 stmt.addUInt32(pCreature->GetEntry());
                 stmt.addUInt32(pCreature->GetInstanceId());
                 stmt.addUInt32(item->itemid);
@@ -597,6 +617,7 @@ void Loot::saveLootToDB(Player *owner)
                 stmt.addFloat(pCreature->GetPositionX());
                 stmt.addFloat(pCreature->GetPositionY());
                 stmt.addFloat(pCreature->GetPositionZ());
+                stmt.addString(guids.str());
                 stmt.Execute();
             }
             ss << "[" << item->itemid << "] ";
