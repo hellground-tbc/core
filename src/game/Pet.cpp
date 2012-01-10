@@ -1818,6 +1818,8 @@ bool Pet::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 pet_number)
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
 
+    SetMap(map);
+
     Object::_Create(guidlow, pet_number, HIGHGUID_PET);
 
     m_DBTableGuid = guidlow;

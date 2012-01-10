@@ -270,25 +270,29 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recv_data*/)
         return;
     }
 
-    int32 mapid = corpse->GetMapId();
+    uint32 corpsemapid = corpse->GetMapId();
     float x = corpse->GetPositionX();
     float y = corpse->GetPositionY();
     float z = corpse->GetPositionZ();
-    int32 corpsemapid = GetPlayer()->GetMapId();
+    int32 mapid = corpsemapid;
 
-    if (Map *map = corpse->GetMap())
+    // if corpse at different map
+    if (corpsemapid != _player->GetMapId())
     {
-        if (map->IsDungeon())
+        // search entrance map for proper show entrance
+        if (MapEntry const* corpseMapEntry = sMapStore.LookupEntry(corpsemapid))
         {
-            if (!map->GetEntrancePos(mapid, x, y))
-                return;
-
-            Map *entrance_map = sMapMgr.GetMap(mapid, GetPlayer());
-            if (!entrance_map)
-                return;
-
-            z = entrance_map->GetTerrain()->GetHeight(x, y, MAX_HEIGHT);
-            corpsemapid = corpse->GetMapId();
+            if (corpseMapEntry->IsDungeon() && corpseMapEntry->entrance_map >= 0)
+            {
+                // if corpse map have entrance
+                if(TerrainInfo const* entranceMap = sTerrainMgr.LoadTerrain(corpseMapEntry->entrance_map))
+                {
+                    mapid = corpseMapEntry->entrance_map;
+                    x = corpseMapEntry->entrance_x;
+                    y = corpseMapEntry->entrance_y;
+                    z = entranceMap->GetHeight(x, y, MAX_HEIGHT);
+                }
+            }
         }
     }
 

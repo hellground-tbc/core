@@ -586,8 +586,8 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
         // Low Level Packets
         void SendPlaySound(uint32 Sound, bool OnlySelf);
 
-        Map      * GetMap() const   { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
-        Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->_findMap(); }
+        Map* GetMap() const { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
+        void SetMap(Map *newMap) { m_map = newMap; }
 
         // obtain terrain data for map where this object belong...
         TerrainInfo const* GetTerrain() const;
@@ -640,10 +640,9 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
     private:
         uint32 m_mapId;
         uint32 m_InstanceId;
-        Map    *m_map;
 
+        Map* m_map;
         Map* _getMap();
-        Map* _findMap();
 
         float m_positionX;
         float m_positionY;

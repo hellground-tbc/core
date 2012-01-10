@@ -52,9 +52,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // possible errors in the coordinate validity check
     if (!MapManager::IsValidMapCoord(loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation))
     {
-        sLog.outError("WorldSession::HandleMoveWorldportAckOpcode: %u was teleported far to a not valid location "
-                      "(map:%u, x:%f, y:%f, z:%f) logouting player...",
-                      GetPlayer()->GetGUIDLow(), loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z);
         // stop teleportation else we would try this again and again in LogoutPlayer...
         GetPlayer()->SetSemaphoreTeleport(false);
         // player don't gets saved - so his coords will stay at the point where
@@ -65,6 +62,27 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     // get the destination map entry, not the current one, this will fix homebind and reset greeting
     MapEntry const* mEntry = sMapStore.LookupEntry(loc.mapid);
+
+    Map *map = NULL;
+
+    // prevent crash at attempt landing to not existed battleground instance
+    if(mEntry->IsBattleGroundOrArena())
+    {
+        if (GetPlayer()->GetBattleGroundId())
+            map = sMapMgr.FindMap(loc.mapid, GetPlayer()->GetBattleGroundId());
+
+        if (!map)
+        {
+            GetPlayer()->SetSemaphoreTeleport(false);
+
+            // Teleport to previous place, if cannot be ported back TP to homebind place
+            if (!GetPlayer()->TeleportTo(old_loc))
+                GetPlayer()->TeleportToHomebind();
+
+            return;
+        }
+    }
+
     InstanceTemplate const* mInstance = ObjectMgr::GetInstanceTemplate(loc.mapid);
 
     // reset instance validity, except if going to an instance inside an instance
@@ -73,12 +91,18 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
     GetPlayer()->SetSemaphoreTeleport(false);
 
+    // relocate the player to the teleport destination
+    if (!map)
+        map = sMapMgr.CreateMap(loc.mapid, GetPlayer());
+
     GetPlayer()->SetMapId(loc.mapid);
+    GetPlayer()->SetMap(map);
+
     GetPlayer()->Relocate(loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation);
 
     // since the MapId is set before the GetInstance call, the InstanceId must be set to 0
     // to let GetInstance() determine the proper InstanceId based on the player's binds
-    GetPlayer()->SetInstanceId(0);
+    GetPlayer()->SetInstanceId(map->GetInstanceId());
 
     // check this before Map::Add(player), because that will create the instance save!
     bool reset_notify = (GetPlayer()->GetBoundInstance(GetPlayer()->GetMapId(), GetPlayer()->GetDifficulty()) == NULL);
@@ -88,17 +112,11 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     // while the player is in transit, for example the map may get full
     if (!GetPlayer()->GetMap()->Add(GetPlayer()))
     {
-        sLog.outDebug("WORLD: teleport of player %s (%u) to location %d, %f, %f, %f, %f failed", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z, loc.orientation);
-
         // Teleport to previous place, if cannot be ported back TP to homebind place
         GetPlayer()->SetDontMove(false);
         if (!GetPlayer()->TeleportTo(old_loc))
-        {
-            // the player must always be able to teleport home
-            sLog.outDetail("WorldSession::HandleMoveWorldportAckOpcode: %u cannot be ported to his previous place, teleporting him to his homebind place...",
-                           GetPlayer()->GetGUIDLow());
             GetPlayer()->TeleportToHomebind();
-        }
+
         return;
     }
 

@@ -2886,14 +2886,16 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     // update to parent zone if exist (client map show only zones without parents)
     AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
 
-    Map const *map = sMapMgr.GetMap(zoneEntry->mapid, _player);
+    MapEntry const *mapEntry = sMapStore.LookupEntry(zoneEntry->mapid);
 
-    if (map->Instanceable())
+    if (mapEntry->Instanceable())
     {
-        PSendSysMessage(LANG_INVALID_ZONE_MAP,areaEntry->ID,areaEntry->area_name[m_session->GetSessionDbcLocale()],map->GetId(),map->GetMapName());
+        PSendSysMessage(LANG_INVALID_ZONE_MAP,areaEntry->ID,areaEntry->area_name[m_session->GetSessionDbcLocale()],mapEntry->MapID,mapEntry->name);
         SetSentErrorMessage(true);
         return false;
     }
+
+    Map *map = sMapMgr.FindMap(zoneEntry->mapid);
 
     Zone2MapCoordinates(x,y,zoneEntry->ID);
 
@@ -2961,11 +2963,22 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = sMapMgr.GetMap(mapid, _player);
-    float z = map->GetTerrain()->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
-    _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
+    MapEntry const *mapEntry = sMapStore.LookupEntry(mapid);
 
-    return true;
+    if (mapEntry->Instanceable())
+    {
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (Map *map = sMapMgr.FindMap(mapid))
+    {
+        float z = map->GetTerrain()->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
+        _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
+        return true;
+    }
+
+    return false;
 }
 
 bool ChatHandler::HandleModifyDrunkCommand(const char* args)
