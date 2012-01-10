@@ -101,6 +101,7 @@ bool SummonList::isEmpty()
 ScriptedAI::ScriptedAI(Creature* pCreature) :
 CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovement(true), m_uiEvadeCheckCooldown(2500), autocast(false)
 {
+    m_pulseCombatTimer = 0;
     HeroicMode = m_creature->GetMap()->IsHeroic();
 }
 
@@ -1130,6 +1131,17 @@ void Scripted_NoMovementAI::AttackStart(Unit* pWho)
 
     if (m_creature->Attack(pWho, true))
         DoStartNoMovement(pWho);
+}
+
+void ScriptedAI::DoPulseCombat(uint32 diff, float inRange)
+{
+    if (m_pulseCombatTimer <= diff)
+    {
+        DoZoneInCombat(inRange);
+        m_pulseCombatTimer = 3000;
+    }
+    else
+        m_pulseCombatTimer -= diff;
 }
 
 BossAI::BossAI(Creature *c, uint32 id) : ScriptedAI(c),

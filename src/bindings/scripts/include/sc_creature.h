@@ -360,6 +360,11 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     bool IsCombatMovement() { return m_bCombatMovement; }
 
+    // call DoZoneInCombat every 3s in specified range
+    void DoPulseCombat(uint32, float = 200);
+
+    uint32 m_pulseCombatTimer;
+
     //Spawns a creature relative to m_creature
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
 
