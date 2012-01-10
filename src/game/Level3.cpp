@@ -7316,3 +7316,20 @@ bool ChatHandler::HandleChannelMassKickCommand(const char* args)
 
     return true;
 }
+
+bool ChatHandler::HandleCrashMapCommand(const char */*args*/)
+{
+    if (!m_session)
+        return false;
+
+    Player * tmpPlayer = m_session->GetPlayer();
+    if (!tmpPlayer)
+        return false;
+
+    tmpPlayer->GetMap()->SetBroken(true);
+}
+
+bool ChatHandler::HandleCrashServerCommand(const char */*args*/)
+{
+    *((uint32 volatile*)NULL) = 0;                       // bang crash
+}

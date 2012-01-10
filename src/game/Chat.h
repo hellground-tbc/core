@@ -126,6 +126,9 @@ class ChatHandler
         bool HandleCastSelfCommand(const char *args);
         bool HandleCastTargetCommand(const char *args);
 
+        bool HandleCrashMapCommand(const char *args);
+        bool HandleCrashServerCommand(const char *args);
+
         bool HandleDebugAddFormationToFileCommand(const char* args);
         bool HandleDebugAnimCommand(const char* args);
         bool HandleDebugArenaCommand(const char * args);
