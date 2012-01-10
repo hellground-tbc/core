@@ -937,6 +937,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
     //    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     //    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetVisibility(VISIBILITY_ON);
+        m_creature->setActive(true);
         EventStarted = false;
         warriorsTimer = 40000;
         eaglesTimer = 1000;
@@ -982,7 +983,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(me->getVictim())
+        if(pInstance->GetData(DATA_AKILZONEVENT) == AKILZON_GAUNTLET_IN_PROGRESS)
             return;
        // if(EventStarted)
        //     return;
@@ -1058,7 +1059,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         else if(pInstance && pInstance->GetData(DATA_AKILZONGAUNTLET) == AKILZON_GAUNTLET_TEMPEST_DEAD)
         {
             Reset();
-            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth());
+            me->Kill(me, false);
         }
 
         if(EventStarted && !UpdateVictim())

@@ -580,8 +580,9 @@ struct TRINITY_DLL_DECL feather_vortexAI : public ScriptedAI
             AttackStart(target);
     }
 
-    void SpellHit(Unit *caster, const SpellEntry *spell)
+    void DamageTaken(Unit* done_by, uint32 &damage)
     {
+        damage = 0;
     }
 
     void UpdateAI(const uint32 diff)
