@@ -101,7 +101,7 @@ bool SummonList::isEmpty()
 ScriptedAI::ScriptedAI(Creature* pCreature) :
 CreatureAI(pCreature), m_creature(pCreature), IsFleeing(false), m_bCombatMovement(true), m_uiEvadeCheckCooldown(2500), autocast(false)
 {
-    m_pulseCombatTimer = 0;
+    m_specialThingTimer = 0;
     HeroicMode = m_creature->GetMap()->IsHeroic();
 }
 
@@ -1133,15 +1133,31 @@ void Scripted_NoMovementAI::AttackStart(Unit* pWho)
         DoStartNoMovement(pWho);
 }
 
-void ScriptedAI::DoPulseCombat(uint32 diff, float inRange)
+void ScriptedAI::DoSpecialThings(uint32 diff, SpecialThing flags, float range, float speedRate)
 {
-    if (m_pulseCombatTimer <= diff)
+    if (m_specialThingTimer <= diff)
     {
-        DoZoneInCombat(inRange);
-        m_pulseCombatTimer = 3000;
+        if (flags & DO_PULSE_COMBAT)
+            DoZoneInCombat(range);
+
+        if (flags & DO_SPEED_UPDATE)
+        {
+            me->SetSpeed(MOVE_WALK, speedRate, true);
+            me->SetSpeed(MOVE_RUN, speedRate, true);
+        }
+
+        if (flags & DO_EVADE_CHECK)
+        {
+            // need to call SetHomePosition ?
+            WorldLocation home = me->GetHomePosition();
+            if (!me->IsWithinDistInMap(&home, range, true))
+                EnterEvadeMode();
+        }
+
+        m_specialThingTimer = 3000;
     }
     else
-        m_pulseCombatTimer -= diff;
+        m_specialThingTimer -= diff;
 }
 
 BossAI::BossAI(Creature *c, uint32 id) : ScriptedAI(c),
