@@ -242,7 +242,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             if(pInstance)
             {
                 if(Creature* Sathrovarr = Creature::GetCreature(*m_creature, pInstance->GetData64(DATA_SATHROVARR)))
-                    Sathrovarr->GetMap()->CreatureRelocation(Sathrovarr, Sathrovarr->GetPositionX(), Sathrovarr->GetPositionY(), DRAGON_REALM_Z, Sathrovarr->GetOrientation());
+                    Sathrovarr->NearTeleportTo(Sathrovarr->GetPositionX(), Sathrovarr->GetPositionY(), DRAGON_REALM_Z, Sathrovarr->GetOrientation());
             }
             m_creature->GetMotionMaster()->MovePoint(2, FlyCoord[1][0],FlyCoord[1][1],FlyCoord[1][2]);
             TalkTimer = 20000;

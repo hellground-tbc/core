@@ -59,6 +59,7 @@ enum PermissionTypes
     NONE_PERMISSION   = 3
 };
 
+class WorldObject;
 class Player;
 class LootStore;
 
@@ -277,7 +278,7 @@ struct Loot
 
     void saveLootToDB(Player *owner);
 
-    bool IsPlayerAllowedToLoot(Player *player);
+    bool IsPlayerAllowedToLoot(Player *player, WorldObject *object);
 
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);

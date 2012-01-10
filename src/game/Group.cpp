@@ -640,14 +640,10 @@ void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
                 Player *member = itr->getSource();
                 if (!member || !member->GetSession())
                     continue;
-                if (i->AllowedForPlayer(member))
-                {
-                    if ((!loot->players_allowed_to_loot.empty() && loot->IsPlayerAllowedToLoot(member)) ||
-                        member->GetDistance2d(object) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
-                    {
-                        r->playerVote[member->GetGUID()] = NOT_EMITED_YET;
-                        ++r->totalPlayersRolling;
-                    }
+                if (i->AllowedForPlayer(member) && loot->IsPlayerAllowedToLoot(member, object))
+                {        
+                    r->playerVote[member->GetGUID()] = NOT_EMITED_YET;
+                    ++r->totalPlayersRolling;   
                 }
             }
 
@@ -691,14 +687,10 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
                 if (!playerToRoll || !playerToRoll->GetSession())
                     continue;
 
-                if (playerToRoll->CanUseItem(item) && i->AllowedForPlayer(playerToRoll))
+                if (playerToRoll->CanUseItem(item) && i->AllowedForPlayer(playerToRoll) && loot->IsPlayerAllowedToLoot(playerToRoll, object))
                 {
-                    if ((!loot->players_allowed_to_loot.empty() && loot->IsPlayerAllowedToLoot(playerToRoll)) ||
-                        playerToRoll->GetDistance2d(object) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
-                    {
-                        r->playerVote[playerToRoll->GetGUID()] = NOT_EMITED_YET;
-                        ++r->totalPlayersRolling;
-                    }
+                    r->playerVote[playerToRoll->GetGUID()] = NOT_EMITED_YET;
+                    ++r->totalPlayersRolling;
                 }
             }
 
@@ -742,8 +734,7 @@ void Group::MasterLoot(const uint64& playerGUID, Loot* loot, WorldObject* object
         if (!looter->IsInWorld())
             continue;
 
-        if ((!loot->players_allowed_to_loot.empty() && loot->IsPlayerAllowedToLoot(looter)) ||
-                looter->GetDistance2d(object) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
+        if (loot->IsPlayerAllowedToLoot(looter, object))
         {
             data << looter->GetGUID();
             ++real_count;
@@ -755,8 +746,7 @@ void Group::MasterLoot(const uint64& playerGUID, Loot* loot, WorldObject* object
     for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
         Player *looter = itr->getSource();
-        if ((!loot->players_allowed_to_loot.empty() && loot->IsPlayerAllowedToLoot(looter)) ||
-                looter->GetDistance2d(object) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE))
+        if (loot->IsPlayerAllowedToLoot(looter, object))
             looter->GetSession()->SendPacket(&data);
     }
 }
