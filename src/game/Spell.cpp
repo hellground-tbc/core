@@ -2174,6 +2174,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 41376:     // Spite
                     unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
+                case 42472:     // Protective Ward
+                    unitList.remove_if(Trinity::ObjectIsTotemCheck(true));
+                    break;
                 default:
                     break;
             }

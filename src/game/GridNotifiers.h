@@ -1138,6 +1138,21 @@ namespace Trinity
             bool _equals;
     };
 
+    class ObjectIsTotemCheck
+    {
+        public:
+            ObjectIsTotemCheck(bool equals) : _equals(equals) {}
+            bool operator()(WorldObject* object)
+            {
+                if(object->GetTypeId() != TYPEID_UNIT)
+                    return !_equals;
+                return (((Creature*)object)->isTotem()) == _equals;
+            }
+
+        private:
+            bool _equals;
+    };
+
     class UnitAuraCheck
     {
         public:
