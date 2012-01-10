@@ -550,6 +550,8 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     SetMapId(info->mapId);
     Relocate(info->positionX,info->positionY,info->positionZ);
 
+    SetMap(sMapMgr.CreateMap(info->mapId, this));
+
     ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(class_);
     if (!cEntry)
     {
@@ -14382,6 +14384,8 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             SetInstanceId(pSave->GetInstanceId());
 
     // load the player's map here if it's not already loaded
+    SetMap(sMapMgr.CreateMap(GetMapId(), this));
+
     Map *map = GetMap();
     if (!map)
     {
@@ -14626,15 +14630,17 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             sLog.outError("Character %u have wrong data in taxi destination list, teleport to homebind.",GetGUIDLow());
             SetMapId(m_homebindMapId);
             Relocate(m_homebindX, m_homebindY, m_homebindZ,0.0f);
-            SaveRecallPosition();                           // save as recall also to prevent recall and fall from sky
         }
         else                                                // have start node, to it
         {
             sLog.outError("Character %u have too short taxi destination list, teleport to original node.",GetGUIDLow());
             SetMapId(nodeEntry->map_id);
             Relocate(nodeEntry->x, nodeEntry->y, nodeEntry->z,0.0f);
-            SaveRecallPosition();                           // save as recall also to prevent recall and fall from sky
         }
+
+        SaveRecallPosition();                           // save as recall also to prevent recall and fall from sky
+
+        SetMap(sMapMgr.CreateMap(GetMapId(), this));
         CleanupAfterTaxiFlight();
     }
     else if (uint32 node_id = m_taxi.GetTaxiSource())

@@ -1065,7 +1065,7 @@ void WorldObject::setActive(bool on)
     if (!IsInWorld())
         return;
 
-    Map *map = FindMap();
+    Map *map = GetMap();
     if (!map)
         return;
 
@@ -1716,11 +1716,6 @@ void WorldObject::SendGameObjectCustomAnim(uint64 guid)
 
 Map* WorldObject::_getMap()
 {
-    return m_map = sMapMgr.GetMap(GetMapId(), this);
-}
-
-Map* WorldObject::_findMap()
-{
     return m_map = sMapMgr.FindMap(GetMapId(), GetInstanceId());
 }
 
@@ -1778,7 +1773,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
 void WorldObject::SetZoneScript()
 {
-    if (Map *map = FindMap())
+    if (Map *map = GetMap())
     {
         if (map->IsDungeon())
             m_zoneScript = (ZoneScript*)((InstanceMap*)map)->GetInstanceData();

@@ -1477,6 +1477,8 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(BattleGroundTypeId bgTypeI
 
     bg->SetHoliday(bg_template->getHonorMode());
 
+    sMapMgr.CreateBgMap(bg->GetMapId(), bg->GetInstanceID(), bg);
+
     /*   will be setup in BG::Update() when the first player is ported in
     if (!(bg->SetupBattleGround()))
     {

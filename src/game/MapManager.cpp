@@ -77,18 +77,6 @@ void MapManager::InitializeVisibilityDistanceInfo()
         (*iter).second->InitVisibilityDistance();
 }
 
-Map* MapManager::GetMap(uint32 id, const WorldObject* obj)
-{
-    Guard _guard(*this);
-
-    Map * m = FindMap(id, obj->GetInstanceId());
-    if (m == NULL)
-        m = CreateMap(id, obj);
-
-    return m;
-
-}
-
 Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
 {
     Guard _guard(*this);
@@ -381,12 +369,9 @@ Map* MapManager::CreateInstance(uint32 id, Player * player)
     {
         // find existing bg map for player
         NewInstanceId = player->GetBattleGroundId();
-        if (NewInstanceId == 0 || !player->GetBattleGround())
-            return NULL;
-
+        ASSERT(NewInstanceId);
         map = FindMap(id, NewInstanceId);
-        if (map == NULL)
-            pNewMap = CreateBgMap(id, NewInstanceId, player->GetBattleGround());
+        ASSERT(map);
 
     }
     else if (InstanceSave* pSave = player->GetInstanceSave(id))

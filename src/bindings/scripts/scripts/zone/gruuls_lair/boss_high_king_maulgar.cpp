@@ -162,7 +162,14 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        StartEvent(who);
+        GetCouncil();
+
+        DoScriptText(SAY_AGGRO, m_creature);
+
+        pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
+        pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
+
+        DoZoneInCombat();
     }
 
     void GetCouncil()
@@ -174,22 +181,10 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
         Council[3] = pInstance->GetData64(DATA_KROSHFIREHAND);
     }
 
-    void StartEvent(Unit *who)
-    {
-        GetCouncil();
-
-        DoScriptText(SAY_AGGRO, m_creature);
-
-        pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
-        pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
-
-        DoZoneInCombat();
-    }
-
     void UpdateAI(const uint32 diff)
     {
         //Only if not incombat check if the event is started
-        if (!m_creature->isInCombat() && pInstance && pInstance->GetData(DATA_MAULGAREVENT))
+        if (!m_creature->isInCombat() && pInstance->GetData(DATA_MAULGAREVENT))
         {
             if (Unit* target = m_creature->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
             {
@@ -307,6 +302,8 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
     uint32 Summon_Timer;
     uint32 DeathCoil_Timer;
 
+    uint32 pulseCombatTimer;
+
     void Reset()
     {
         ClearCastQueue();
@@ -315,6 +312,8 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
         Summon_Timer = 15000;
         DeathCoil_Timer = 20000;
 
+        pulseCombatTimer = 5000;
+
         pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
@@ -322,6 +321,7 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
     {
         pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
         pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
+        DoZoneInCombat();
     }
 
     void JustDied(Unit* Killer)
@@ -343,6 +343,14 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim())
             return;
+
+        if (pulseCombatTimer < diff)
+        {
+            DoZoneInCombat();
+            pulseCombatTimer = 5000;
+        }
+        else
+            pulseCombatTimer -= diff;
 
         //someone evaded!
         if (!pInstance->GetData(DATA_MAULGAREVENT))
@@ -397,6 +405,8 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
     uint32 ArcaneShock_Timer;
     uint32 ArcaneExplosion_Timer;
 
+    uint32 pulseCombatTimer;
+
     ScriptedInstance* pInstance;
 
     void Reset()
@@ -408,6 +418,8 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         ArcaneShock_Timer = 20000;
         ArcaneExplosion_Timer = 30000;
 
+        pulseCombatTimer = 5000;
+
         pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
@@ -415,6 +427,7 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
     {
         pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
         pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
+        DoZoneInCombat();
     }
 
     void JustDied(Unit* Killer)
@@ -438,6 +451,14 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim())
             return;
+
+        if (pulseCombatTimer < diff)
+        {
+            DoZoneInCombat();
+            pulseCombatTimer = 5000;
+        }
+        else
+            pulseCombatTimer -= diff;
 
         //someone evaded!
         if (!pInstance->GetData(DATA_MAULGAREVENT))
@@ -499,6 +520,9 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
 
     uint32 Shield_PoH_Timer;       // always cast sequence of shield and Prayer of Healing
     uint32 Heal_Timer;
+
+    uint32 pulseCombatTimer;
+
     bool shieldCasted;
 
     ScriptedInstance* pInstance;
@@ -511,6 +535,8 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         Heal_Timer = urand(7000, 10000);
         shieldCasted = false;
 
+        pulseCombatTimer = 5000;
+
         pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
@@ -518,6 +544,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
     {
         pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
         pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
+        DoZoneInCombat();
     }
 
     void JustDied(Unit* Killer)
@@ -539,6 +566,14 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim())
             return;
+
+        if (pulseCombatTimer < diff)
+        {
+            DoZoneInCombat();
+            pulseCombatTimer = 5000;
+        }
+        else
+            pulseCombatTimer -= diff;
 
         //someone evaded!
         if (!pInstance->GetData(DATA_MAULGAREVENT))
@@ -583,6 +618,8 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
     uint32 SpellShield_Timer;
     uint32 BlastWave_Timer;
 
+    uint32 pulseCombatTimer;
+
     ScriptedInstance* pInstance;
 
     void Reset()
@@ -593,6 +630,8 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         SpellShield_Timer = 0;
         BlastWave_Timer = 5000;
 
+        pulseCombatTimer = 5000;
+
         pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
     }
 
@@ -600,6 +639,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
     {
         pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
         pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
+        DoZoneInCombat();
     }
 
     void JustDied(Unit* Killer)
@@ -615,12 +655,20 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
     {
         //Only if not incombat check if the event is started
         if (!m_creature->isInCombat() && pInstance->GetData(DATA_MAULGAREVENT))
-            if(Unit* target = m_creature->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
+            if (Unit* target = m_creature->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
                 AttackStart(target, false);
 
         //Return since we have no target
         if (!UpdateVictim())
             return;
+
+        if (pulseCombatTimer < diff)
+        {
+            DoZoneInCombat();
+            pulseCombatTimer = 5000;
+        }
+        else
+            pulseCombatTimer -= diff;
 
         //someone evaded!
         if (pInstance && !pInstance->GetData(DATA_MAULGAREVENT))

@@ -667,6 +667,8 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 team, float
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
 
+    SetMap(map);
+
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
     const bool bResult = CreateFromProto(guidlow, Entry, team, data);
 

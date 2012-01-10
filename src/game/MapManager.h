@@ -61,7 +61,6 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
     public:
         typedef std::map<MapID, Map* > MapMapType;
 
-        Map* GetMap(uint32 id, const WorldObject* obj);
         Map* CreateMap(uint32, const WorldObject* obj);
         Map* CreateBgMap(uint32 mapid, uint32, BattleGround* bg);
         Map* FindMap(uint32 mapid, uint32 instanceId = 0) const;

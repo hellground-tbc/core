@@ -125,24 +125,62 @@ Unit *UnitAI::ReturnTargetHelper(SelectAggroTarget targetType, uint32 position, 
 
     switch (targetType)
     {
-         // list has been already sorted, so there is no need to use reversed iterator
-         case SELECT_TARGET_NEAREST:
-         case SELECT_TARGET_FARTHEST:
-         case SELECT_TARGET_BOTTOMAGGRO:
-         case SELECT_TARGET_TOPAGGRO:
-         {
-              std::list<Unit*>::iterator itr = targetList.begin();
-              std::advance(itr, position);
-              return *itr;
-         }
-         case SELECT_TARGET_RANDOM:
-         {
+        // list has been already sorted, so there is no need to use reversed iterator
+        case SELECT_TARGET_NEAREST:
+        case SELECT_TARGET_FARTHEST:
+        case SELECT_TARGET_BOTTOMAGGRO:
+        case SELECT_TARGET_TOPAGGRO:
+        {
              std::list<Unit*>::iterator itr = targetList.begin();
-             std::advance(itr, urand(position, targetList.size() - 1));
+             std::advance(itr, position);
              return *itr;
-          }
-          default:
-              break;
+        }
+        case SELECT_TARGET_RANDOM:
+        {
+            std::list<Unit*>::iterator itr = targetList.begin();
+            std::advance(itr, urand(position, targetList.size() - 1));
+            return *itr;
+        }
+        case SELECT_TARGET_LOWEST_HP:
+        {
+            Unit* lowestHpTarget = targetList.front();
+            Unit* tmpUnit = NULL;
+            uint32 lowestHp = lowestHpTarget->GetHealth();
+
+            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+            {
+                tmpUnit = *itr;
+
+                if (tmpUnit->GetHealth() < lowestHp)
+                {
+                    lowestHpTarget = tmpUnit;
+                    lowestHp = tmpUnit->GetHealth();
+                }
+            }
+
+            return lowestHpTarget;
+        }
+        case SELECT_TARGET_HIGHEST_HP:
+        {
+            Unit* highestHpTarget = targetList.front();
+            Unit* tmpUnit = NULL;
+            uint32 highestHp = highestHpTarget->GetHealth();
+
+            for (std::list<Unit*>::const_iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+            {
+                tmpUnit = *itr;
+
+                if (tmpUnit->GetHealth() > highestHp)
+                {
+                    highestHpTarget = tmpUnit;
+                    highestHp = tmpUnit->GetHealth();
+                }
+            }
+
+            return highestHpTarget;
+        }
+        default:
+            break;
     }
     return NULL;
 }

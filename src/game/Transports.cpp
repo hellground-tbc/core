@@ -471,7 +471,9 @@ void Transport::TeleportTransport(uint32 newMapid, float x, float y, float z)
         //plr->GetSession()->SendPacket(&data);
     }
 
-    Map const* newMap = GetMap();
+    Map* newMap = sMapMgr.CreateMap(newMapid, this);
+
+    SetMap(newMap);
 
     if (oldMap != newMap)
     {

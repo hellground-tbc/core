@@ -586,6 +586,13 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false,  NULL,                                               "", NULL }
     };
 
+    static ChatCommand crashCommandTable[] =
+    {
+        { "map",            SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleCrashMapCommand,                "", NULL },
+        { "server",         SEC_GAMEMASTER,     true,   &ChatHandler::HandleCrashServerCommand,             "", NULL },
+        { NULL,             0,                  false,  NULL,                                               "", NULL }
+    };
+
     static ChatCommand commandTable[] =
     {
         { "account",        SEC_PLAYER,         true,   NULL,                                           "", accountCommandTable },
@@ -594,6 +601,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "banlist",        SEC_ADMINISTRATOR,  true,   NULL,                                           "", banlistCommandTable },
         { "cast",           SEC_ADMINISTRATOR,  false,  NULL,                                           "", castCommandTable },
         { "channel",        SEC_ADMINISTRATOR,  false,  NULL,                                           "", channelCommandTable},
+        { "crash",          SEC_ADMINISTRATOR,  false,  NULL,                                           "", crashCommandTable },
         { "debug",          SEC_MODERATOR,      false,  NULL,                                           "", debugCommandTable },
         { "event",          SEC_GAMEMASTER,     false,  NULL,                                           "", eventCommandTable },
         { "gm",             SEC_MODERATOR,      true,   NULL,                                           "", gmCommandTable },

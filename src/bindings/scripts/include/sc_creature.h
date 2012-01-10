@@ -79,6 +79,15 @@ enum movementCheckType
     CHECK_TYPE_SHOOTER          = 2     // chase when in 5yd distance, move when outranged or not in LoS
 };
 
+enum SpecialThing
+{
+    DO_SPEED_UPDATE   = 0x01,
+    DO_EVADE_CHECK    = 0x02,
+    DO_PULSE_COMBAT   = 0x04,
+    DO_COMBAT_N_SPEED = (DO_PULSE_COMBAT | DO_SPEED_UPDATE),
+    DO_EVERYTHING     = (DO_COMBAT_N_SPEED | DO_EVADE_CHECK), 
+};
+
 class SpellToCast
 {
 public:
@@ -359,6 +368,10 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void SetCombatMovement(bool CombatMove);
 
     bool IsCombatMovement() { return m_bCombatMovement; }
+
+    void DoSpecialThings(uint32 diff, SpecialThing, float range = 200.0f, float speedRate = 2.0f);
+
+    uint32 m_specialThingTimer;
 
     //Spawns a creature relative to m_creature
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);

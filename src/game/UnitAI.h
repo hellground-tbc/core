@@ -37,6 +37,8 @@ enum SelectAggroTarget
     SELECT_TARGET_BOTTOMAGGRO,                              //Selects targets from bottom aggro to top
     SELECT_TARGET_NEAREST,
     SELECT_TARGET_FARTHEST,
+    SELECT_TARGET_LOWEST_HP,
+    SELECT_TARGET_HIGHEST_HP,
 };
 
 class TRINITY_DLL_SPEC UnitAI
