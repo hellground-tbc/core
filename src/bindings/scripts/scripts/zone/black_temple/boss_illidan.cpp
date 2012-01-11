@@ -356,7 +356,10 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             case PHASE_MAIEV:
             {
                 b_maievPhase = false;
+
                 me->AttackStop();
+                me->SetReactState(REACT_PASSIVE);
+
                 ForceSpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, CAST_SELF, YELL_ILLIDAN_INPRISON_RAID);
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
@@ -859,7 +862,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if (m_phase != PHASE_MAIEV && !UpdateVictim())
             return;
 
         if (m_combatTimer < diff)
@@ -916,6 +919,8 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         {
             if (m_phase == PHASE_FOUR)
             {
+                me->InterruptNonMeleeSpells(false);
+
                 events.CancelEventsByGCD(m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_TRANSFORM_BACKNO1, 0, m_phase);
                 b_maievPhase = true;
@@ -1411,10 +1416,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
         me->StopMoving();
 
         if (pSummoner->GetTypeId() == TYPEID_UNIT)
-        {
-            ((Creature*)pSummoner)->SetReactState(REACT_PASSIVE);
             ((Creature*)pSummoner)->SetSelection(me->GetGUID());
-        }
 
         me->SetReactState(REACT_PASSIVE);
         me->SetSelection(pSummoner->GetGUID());
