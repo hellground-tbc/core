@@ -97,7 +97,7 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public BossAI
         events.Update(diff);
         while (uint32 eventId = events.ExecuteEvent())
         {
-            switch(eventId)
+            switch (eventId)
             {
                 case EVENT_HATEFULLSTRIKE:
                 {
