@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Gluth
-SD%Complete: 75
-SDComment:    Decimate NYI, zombies aren't chasing players, Gluth don't try to eat zombies
+SD%Complete: ??
+SDComment: ??
 SDCategory: Naxxramas
 EndScriptData */
 
@@ -33,7 +33,7 @@ enum GluthSpells
     SPELL_DECIMATE2             = 28375,
     SPELL_TERRIFYING_ROAR       = 29685,
     SPELL_FRENZY                = 19812,
-    SPELL_ZOMBIE_CHOW_SEARCH    = 28239,    // 28404?
+    SPELL_ZOMBIE_CHOW_SEARCH    = 28404, //28239,    // 28404?
     SPELL_ENRAGE                = 28747
 };
 
@@ -44,7 +44,8 @@ enum GluthEvents
     EVENT_TERRIFYING_ROAR   = 3,
     EVENT_FRENZY            = 4,
     EVENT_ZOMBIES           = 5,
-    EVENT_ENRAGE            = 6
+    EVENT_EAT_ZOMBIES       = 6,
+    EVENT_ENRAGE            = 7
 };
 
 float GluthAddPos[9][3] = {
@@ -69,6 +70,7 @@ struct TRINITY_DLL_DECL boss_gluthAI : public BossAI
         events.ScheduleEvent(EVENT_TERRIFYING_ROAR, 21000);
         events.ScheduleEvent(EVENT_FRENZY, 15000);
         events.ScheduleEvent(EVENT_ZOMBIES, 10000);
+        events.ScheduleEvent(EVENT_EAT_ZOMBIES, 12000);
         events.ScheduleEvent(EVENT_ENRAGE, 315000);
 
         instance->SetData(DATA_GLUTH, NOT_STARTED);
@@ -82,6 +84,12 @@ struct TRINITY_DLL_DECL boss_gluthAI : public BossAI
     void JustDied(Unit * killer)
     {
         instance->SetData(DATA_GLUTH, DONE);
+    }
+
+    void KilledUnit(Unit * unit)
+    {
+        if (m_creature->isAlive() && unit->GetTypeId() == TYPEID_UNIT && unit->GetEntry() == ZOMBIE_CHOW_ID)
+            m_creature->ModifyHealth(m_creature->GetMaxHealth()*0.05);  // if zombie was eaten grow hp by 5%
     }
 
     void UpdateAI(const uint32 diff)
@@ -138,6 +146,12 @@ struct TRINITY_DLL_DECL boss_gluthAI : public BossAI
                     }
 
                     events.ScheduleEvent(EVENT_ZOMBIES, 10000);
+                    break;
+                }
+                case EVENT_EAT_ZOMBIES:
+                {
+                    AddSpellToCast(SPELL_ZOMBIE_CHOW_SEARCH, CAST_NULL);
+                    events.ScheduleEvent(EVENT_EAT_ZOMBIES, 2000);
                     break;
                 }
                 case EVENT_ENRAGE:
