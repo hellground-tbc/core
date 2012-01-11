@@ -1054,7 +1054,7 @@ float TerrainInfo::GetWaterLevel(float x, float y, float z, float* pGround /*= N
     return VMAP_INVALID_HEIGHT_VALUE;
 }
 
-bool TerrainInfo::IsLineOfSightEnabled()
+bool TerrainInfo::IsLineOfSightEnabled() const
 {
     return VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled(m_mapId);
 }

@@ -107,7 +107,7 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public BossAI
                         target = me->getVictim();
 
                     if (target)
-                        AddSpellToCast(pMostHPTarget, SPELL_HATEFULSTRIKE);
+                        AddSpellToCast(target, SPELL_HATEFULSTRIKE);
 
                     events.ScheduleEvent(EVENT_HATEFULLSTRIKE, 1200);
                     break;
