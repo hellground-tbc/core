@@ -131,16 +131,11 @@ struct TRINITY_DLL_DECL boss_gluthAI : public BossAI
                 }
                 case EVENT_ZOMBIES:
                 {
-                    Unit* target = NULL;
-                    Unit* SummonedZombies = NULL;
                     for (uint8 i = 0; i < 9; ++i)
                     {
-                        SummonedZombies = m_creature->SummonCreature(ZOMBIE_CHOW_ID, GluthAddPos[i][0], GluthAddPos[i][1], GluthAddPos[i][2], 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 80000);
-
-                        if (SummonedZombies)
+                        if (Creature* SummonedZombies = m_creature->SummonCreature(ZOMBIE_CHOW_ID, GluthAddPos[i][0], GluthAddPos[i][1], GluthAddPos[i][2], 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 80000))
                         {
-                            target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                            if (target)
+                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                                 SummonedZombies->AI()->AttackStart(target);
                         }
                     }

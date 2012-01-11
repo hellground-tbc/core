@@ -22,15 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
-
-// move it later to header file used by whole instance
-enum eEncounters
-{
-    EVENT_FUEGEN   = 0,
-    EVENT_STALAGG  = 1,
-    EVENT_THADDIUS = 2
-    // rest later
-};
+#include "def_naxxramas.h"
 
 //Stalagg
 #define SAY_STAL_AGGRO          -1533023
@@ -101,11 +93,11 @@ enum eEvents
 
 struct boss_thaddiusAI : public BossAI
 {
-    boss_thaddiusAI(Creature *c) : BossAI(c, EVENT_THADDIUS) {}
+    boss_thaddiusAI(Creature *c) : BossAI(c, DATA_THADDIUS) {}
 
     void Reset()
     {
-        //ClearCastQueue();
+        ClearCastQueue();
 
         events.ScheduleEvent(EVENT_POLARITY_SHIFT, 30000);
         events.ScheduleEvent(EVENT_BERSERK, 300000);
@@ -117,9 +109,9 @@ struct boss_thaddiusAI : public BossAI
             return;
 
         events.Update(diff);
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            switch(eventId)
+            switch (eventId)
             {
                 case EVENT_POLARITY_SHIFT:
                 {
@@ -143,7 +135,7 @@ struct boss_thaddiusAI : public BossAI
 
 struct boss_stalaggAI : public BossAI
 {
-    boss_stalaggAI(Creature *c) : BossAI(c, EVENT_STALAGG) {}
+    boss_stalaggAI(Creature *c) : BossAI(c, DATA_STALAGG) {}
 
     void Reset()
     {
@@ -164,9 +156,9 @@ struct boss_stalaggAI : public BossAI
             return;
 
         events.Update(diff);
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            switch(eventId)
+            switch (eventId)
             {
                 case EVENT_CHECK_COIL:
                 {
@@ -187,9 +179,9 @@ struct boss_stalaggAI : public BossAI
                 }
                 case EVENT_PULL_TANK:
                 {
-                    Unit *pFuegen = NULL;
-                    // Select Fuegens as target, rest will be handled in scripteffect
-                    AddSpellToCast(pFuegen, SPELL_MAGNETIC_PULL);
+                    if (Unit *pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
+                        AddSpellToCast(pFeugen, SPELL_MAGNETIC_PULL);
+
                     events.ScheduleEvent(EVENT_PULL_TANK, 20500);
                     break;
                 }
@@ -202,9 +194,9 @@ struct boss_stalaggAI : public BossAI
     }
 };
 
-struct boss_fuegenAI : public BossAI
+struct boss_feugenAI : public BossAI
 {
-    boss_fuegenAI(Creature *c): BossAI(c, EVENT_FUEGEN) {}
+    boss_feugenAI(Creature *c): BossAI(c, DATA_FEUGEN) {}
 
     void Reset()
     {
@@ -225,9 +217,9 @@ struct boss_fuegenAI : public BossAI
             return;
 
         events.Update(diff);
-        while(uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            switch(eventId)
+            switch (eventId)
             {
                 case EVENT_CHECK_COIL:
                 {
@@ -248,9 +240,9 @@ struct boss_fuegenAI : public BossAI
                 }
                 case EVENT_PULL_TANK:
                 {
-                    Unit *pStalagg = NULL;
-                    // Select Stalaggs as target, rest will be handled in scripteffect
-                    AddSpellToCast(pStalagg, SPELL_MAGNETIC_PULL);
+                    if (Unit *pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
+                        AddSpellToCast(pStalagg, SPELL_MAGNETIC_PULL);
+
                     events.ScheduleEvent(EVENT_PULL_TANK, 20500);
                     break;
                 }

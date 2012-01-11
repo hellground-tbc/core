@@ -16,10 +16,16 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     uint32 Encounters[ENCOUNTERS];
 
+    uint64 m_stalaggGUID;
+    uint64 m_feugenGUID;
+
     void Initialize()
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
+
+        m_stalaggGUID = 0;
+        m_feugenGUID = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -62,6 +68,8 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 15932:
                 return DATA_GLUTH;
             case 15928:
+            case 15929:
+            case 15930:
                 return DATA_THADDIUS;
             case 15989:
                 return DATA_SAPPHIRON;
@@ -76,7 +84,11 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
     {
         switch(creature_entry)
         {
-            case 0:
+            case 15929:
+                m_stalaggGUID = creature->GetGUID();
+                break;
+            case 15930:
+                m_feugenGUID = creature->GetGUID();
                 break;
             default:
                 break;
@@ -210,8 +222,10 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
     {
         switch(identifier)
         {
-            case 0:
-                return 0;
+            case DATA_STALAGG:
+                return m_stalaggGUID;
+            case DATA_FEUGEN:
+                return m_feugenGUID;
             default:
                 return 0;
         }
