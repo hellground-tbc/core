@@ -5406,6 +5406,21 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // TODO: we must implement hunter pet summon at login there (spell 6962)
     switch (m_spellInfo->Id)
     {
+        case 28338:
+        case 28339:
+        {
+            if (m_caster->ToCreature() && unitTarget->ToCreature())
+            {
+                if (Unit *pVictim = unitTarget->getVictim())
+                {
+                    unitTarget->getThreatManager().modifyThreatPercent(pVictim, -100);
+                    m_caster->CastSpell(pVictim, 28337, true);
+
+                    // need to add threat to new victim, but if unitTarget need to cast MagneticPull on us we will bring same victim back to us :p
+                }
+            }
+            break;
+        }
         case 40609:
         {
             unitTarget->CastSpell(unitTarget, 40637, true, 0, 0, m_caster->GetGUID());

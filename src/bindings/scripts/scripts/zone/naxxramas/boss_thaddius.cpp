@@ -62,7 +62,8 @@ enum eSpells
 
     // shared
     SPELL_WAR_STOMP               = 28125,
-    SPELL_MAGNETIC_PULL           = 28338, // scripteffect to script
+    SPELL_MAGNETIC_PULL_F         = 28338,
+    SPELL_MAGNETIC_PULL_S         = 28339,
 
     // Thaddius
     SPELL_SELF_STUN               = 28160,
@@ -179,9 +180,7 @@ struct boss_stalaggAI : public BossAI
                 }
                 case EVENT_PULL_TANK:
                 {
-                    if (Unit *pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
-                        AddSpellToCast(pFeugen, SPELL_MAGNETIC_PULL);
-
+                    AddSpellToCast(SPELL_MAGNETIC_PULL_S, CAST_NULL);
                     events.ScheduleEvent(EVENT_PULL_TANK, 20500);
                     break;
                 }
@@ -240,9 +239,7 @@ struct boss_feugenAI : public BossAI
                 }
                 case EVENT_PULL_TANK:
                 {
-                    if (Unit *pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
-                        AddSpellToCast(pStalagg, SPELL_MAGNETIC_PULL);
-
+                    AddSpellToCast(SPELL_MAGNETIC_PULL_F, CAST_NULL);
                     events.ScheduleEvent(EVENT_PULL_TANK, 20500);
                     break;
                 }
