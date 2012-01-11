@@ -53,22 +53,24 @@ EndScriptData */
 enum eSpells
 {
     // Fuegen
-    FEUG_TESLA_PASSIVE            = 28109,
     SPELL_MANA_BURN               = 28135,
+    SPELL_CHAIN_F                 = 28111,
+    SPELL_TESLA_PASSIVE_F         = 28109,
+    SPELL_MAGNETIC_PULL_F         = 28338,
 
     // Stalagg
-    STAL_TESLA_PASSIVE            = 28097,
+    SPELL_CHAIN_S                 = 28096,
     SPELL_POWER_SURGE             = 28134,
+    SPELL_TESLA_PASSIVE_S         = 28097,
+    SPELL_MAGNETIC_PULL_S         = 28339,
 
     // shared
     SPELL_WAR_STOMP               = 28125,
-    SPELL_MAGNETIC_PULL_F         = 28338,
-    SPELL_MAGNETIC_PULL_S         = 28339,
 
     // Thaddius
     SPELL_SELF_STUN               = 28160,
     SPELL_BALL_LIGHTNING          = 28299,
-    SPELL_POLARITY_SHIFT          = 28089, // dummy to script
+    SPELL_POLARITY_SHIFT          = 28089,
 
     SPELL_CHAIN_LIGHTNING         = 28167,
     SPELL_BERSERK                 = 26662
@@ -77,19 +79,18 @@ enum eSpells
 enum eEvents
 {
     // 1st phase shared
-    EVENT_CHECK_COIL     = 1,
-    EVENT_WAR_STOMP      = 2,
-    EVENT_PULL_TANK      = 3,
+    EVENT_WAR_STOMP      = 1,
+    EVENT_PULL_TANK      = 2,
 
     // Fuegen
-    EVENT_MANA_BURN      = 4,
+    EVENT_MANA_BURN      = 3,
 
     // Stalagg
-    EVENT_POWER_SURGE    = 5,
+    EVENT_POWER_SURGE    = 4,
 
     // Thaddius
-    EVENT_POLARITY_SHIFT = 6,
-    EVENT_BERSERK        = 7
+    EVENT_POLARITY_SHIFT = 5,
+    EVENT_BERSERK        = 6
 };
 
 struct boss_thaddiusAI : public BossAI
@@ -143,12 +144,27 @@ struct boss_stalaggAI : public BossAI
         ClearCastQueue();
 
         // proper timers
-        events.ScheduleEvent(EVENT_CHECK_COIL, 2000);
         events.ScheduleEvent(EVENT_PULL_TANK, 20500);
 
         // guessed timers, to FIX
         events.ScheduleEvent(EVENT_POWER_SURGE, 10000);
         events.ScheduleEvent(EVENT_WAR_STOMP, 30000);
+
+        me->RemoveAurasDueToSpell(SPELL_TESLA_PASSIVE_S);
+    }
+
+    void EnterCombat(Unit*)
+    {
+        ForceSpellCast(SPELL_TESLA_PASSIVE_S, CAST_SELF);
+    }
+
+    void JustDied(Unit *pKiller)
+    {
+        if (Creature* pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
+        {
+            if (!pFeugen->HealthBelowPct(5))
+                me->Respawn();
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -161,11 +177,6 @@ struct boss_stalaggAI : public BossAI
         {
             switch (eventId)
             {
-                case EVENT_CHECK_COIL:
-                {
-                    events.ScheduleEvent(EVENT_CHECK_COIL, 2000);
-                    break;
-                }
                 case EVENT_POWER_SURGE:
                 {
                     AddSpellToCast(SPELL_POWER_SURGE, CAST_SELF);
@@ -202,12 +213,27 @@ struct boss_feugenAI : public BossAI
         ClearCastQueue();
 
         // proper timers
-        events.ScheduleEvent(EVENT_CHECK_COIL, 2000);
         events.ScheduleEvent(EVENT_PULL_TANK, 20500);
 
         // guessed timers, to FIX
         events.ScheduleEvent(EVENT_MANA_BURN, 10000);
         events.ScheduleEvent(EVENT_WAR_STOMP, 30000);
+
+        me->RemoveAurasDueToSpell(SPELL_TESLA_PASSIVE_F);
+    }
+
+    void EnterCombat(Unit*)
+    {
+        ForceSpellCast(SPELL_TESLA_PASSIVE_F, CAST_SELF);
+    }
+
+    void JustDied(Unit *pKiller)
+    {
+        if (Creature* pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
+        {
+            if (!pStalagg->HealthBelowPct(5))
+                me->Respawn();
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -220,11 +246,6 @@ struct boss_feugenAI : public BossAI
         {
             switch (eventId)
             {
-                case EVENT_CHECK_COIL:
-                {
-                    events.ScheduleEvent(EVENT_CHECK_COIL, 2000);
-                    break;
-                }
                 case EVENT_MANA_BURN:
                 {
                     AddSpellToCast(SPELL_MANA_BURN, CAST_SELF);
@@ -251,17 +272,3 @@ struct boss_feugenAI : public BossAI
         DoMeleeAttackIfReady();
     }
 };
-
-/*
-28089 just sample, move it to scripteffec or effectdummy later ;]
-
-    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
-    {
-        // those spells have 1 min duration so they need be removed to prevent stack of both types
-        unitTarget->RemoveAurasDueToSpell(28059);
-        unitTarget->RemoveAurasDueToSpell(28084);
-
-        // Apply positive or negative charge
-        m_caster->CastSpell(unitTarget, RAND(28059, 28084), true);
-    }
-*/

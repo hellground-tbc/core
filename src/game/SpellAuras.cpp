@@ -1553,10 +1553,12 @@ void Aura::TriggerSpell()
 //                    case 28095: break;
 //                    // Stalagg Chain
 //                    case 28096: break;
-//                    // Stalagg Tesla Passive
-//                    case 28097: break;
-//                    // Feugen Tesla Passive
-//                    case 28109: break;
+                    case 28097: // Stalagg Tesla Passive
+                    case 28109: // Feugen Tesla Passive
+                    {
+                        // find creature in range: 16218(Tesla Coil) or specific GO :p if not do special shit ?
+                        break;
+                    }
 //                    // Feugen Chain
 //                    case 28111: break;
 //                    // Mark of Didier

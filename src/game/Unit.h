@@ -1075,6 +1075,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         uint32 GetHealth()    const { return GetUInt32Value(UNIT_FIELD_HEALTH); }
         uint32 GetMaxHealth() const { return GetUInt32Value(UNIT_FIELD_MAXHEALTH); }
+
+        bool HealthBelowPct(uint32 pct) const { return GetHealth() *100 < GetMaxHealth() *pct; }
+
         void SetHealth(  uint32 val);
         void SetMaxHealth(uint32 val);
         int32 ModifyHealth(int32 val);
