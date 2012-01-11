@@ -99,10 +99,27 @@ struct boss_thaddiusAI : public BossAI
 
     void Reset()
     {
+        events.Reset();
         ClearCastQueue();
 
         events.ScheduleEvent(EVENT_POLARITY_SHIFT, 30000);
         events.ScheduleEvent(EVENT_BERSERK, 300000);
+    }
+
+    void EnterCombat(Unit*)
+    {
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
+    }
+
+    void KilledUnit(Unit*)
+    {
+        if (roll_chance_f(20.0f))
+            DoScriptText(SAY_SLAY, me);
+    }
+
+    void JustDied(Unit*)
+    {
+        DoScriptText(SAY_DEATH, me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -117,7 +134,7 @@ struct boss_thaddiusAI : public BossAI
             {
                 case EVENT_POLARITY_SHIFT:
                 {
-                    AddSpellToCast(SPELL_POLARITY_SHIFT, CAST_SELF);
+                    AddSpellToCast(SPELL_POLARITY_SHIFT, CAST_NULL);
                     events.ScheduleEvent(EVENT_POLARITY_SHIFT, 30000);
                     break;
                 }
@@ -126,7 +143,8 @@ struct boss_thaddiusAI : public BossAI
                     AddSpellToCast(SPELL_BERSERK, CAST_SELF);
                     break;
                 }
-                default: break;
+                default:
+                    break;
             }
         }
 
@@ -141,6 +159,7 @@ struct boss_stalaggAI : public BossAI
 
     void Reset()
     {
+        events.Reset();
         ClearCastQueue();
 
         // proper timers
@@ -155,7 +174,14 @@ struct boss_stalaggAI : public BossAI
 
     void EnterCombat(Unit*)
     {
+        DoScriptText(SAY_STAL_AGGRO, me);
         ForceSpellCast(SPELL_TESLA_PASSIVE_S, CAST_SELF);
+    }
+
+    void KilledUnit(Unit*)
+    {
+        if (roll_chance_f(20.0f))
+            DoScriptText(SAY_STAL_SLAY, me);
     }
 
     void JustDied(Unit *pKiller)
@@ -163,8 +189,13 @@ struct boss_stalaggAI : public BossAI
         if (Creature* pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
         {
             if (!pFeugen->HealthBelowPct(5))
+            {
                 me->Respawn();
+                return;
+            }
         }
+
+        DoScriptText(SAY_STAL_DEATH, me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -195,7 +226,8 @@ struct boss_stalaggAI : public BossAI
                     events.ScheduleEvent(EVENT_PULL_TANK, 20500);
                     break;
                 }
-                default: break;
+                default:
+                    break;
             }
         }
 
@@ -210,6 +242,7 @@ struct boss_feugenAI : public BossAI
 
     void Reset()
     {
+        events.Reset();
         ClearCastQueue();
 
         // proper timers
@@ -224,7 +257,14 @@ struct boss_feugenAI : public BossAI
 
     void EnterCombat(Unit*)
     {
+        DoScriptText(SAY_FEUG_AGGRO, me);
         ForceSpellCast(SPELL_TESLA_PASSIVE_F, CAST_SELF);
+    }
+
+    void KilledUnit(Unit*)
+    {
+        if (roll_chance_f(20.0f))
+            DoScriptText(SAY_FEUG_SLAY, me);
     }
 
     void JustDied(Unit *pKiller)
@@ -232,8 +272,13 @@ struct boss_feugenAI : public BossAI
         if (Creature* pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
         {
             if (!pStalagg->HealthBelowPct(5))
+            {
                 me->Respawn();
+                return;
+            }
         }
+
+        DoScriptText(SAY_FEUG_DEATH, me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -264,7 +309,8 @@ struct boss_feugenAI : public BossAI
                     events.ScheduleEvent(EVENT_PULL_TANK, 20500);
                     break;
                 }
-                default: break;
+                default:
+                    break;
             }
         }
 
