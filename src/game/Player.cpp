@@ -14403,14 +14403,14 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             sLog.outError("Player (guidlow %d) is teleported to home (Map: %u X: %f Y: %f Z: %f O: %f).",guid,GetMapId(),GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
         }
 
-        map = GetMap();
+        map = sMapMgr.CreateMap(GetMapId(), this);
         if (!map)
         {
             sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
 
             RelocateToHomebind();
 
-            map = GetMap();
+            map = sMapMgr.CreateMap(GetMapId(), this);
             if (!map)
             {
                 sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
@@ -14435,14 +14435,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt. Relocate to homebind.", GetName(), GetGUIDLow(), GetMapId());
             RelocateToHomebind();
         }
-/*
-        AreaTrigger const* at = objmgr.GetMapEntranceTrigger(GetMapId());
-        if (at)
-             Relocate(at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
-        else
-             sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", GetName(), GetGUIDLow(), GetMapId());
-*/
+
+        map = sMapMgr.CreateMap(GetMapId(), this);
     }
+
+    SetMap(map);
 
     SaveRecallPosition();
 
