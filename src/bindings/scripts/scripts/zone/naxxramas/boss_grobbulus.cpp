@@ -48,6 +48,7 @@ struct TRINITY_DLL_DECL boss_grobbulusAI : public BossAI
 
     void Reset()
     {
+        events.Reset();
         events.ScheduleEvent(EVENT_POISON_CLOUD, 15000);
         events.ScheduleEvent(EVENT_SLIME_SPRAY, 15000);
         events.ScheduleEvent(EVENT_MUTATING_INFECTION, urand(18000, 22000));

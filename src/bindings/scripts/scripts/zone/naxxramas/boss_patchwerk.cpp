@@ -58,6 +58,7 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public BossAI
 
     void Reset()
     {
+        events.Reset();
         events.ScheduleEvent(EVENT_HATEFULLSTRIKE, 1200);   // 1.2 seconds
         events.ScheduleEvent(EVENT_BERSERK, 420000);        // 7 minutes 420,000
         events.ScheduleEvent(EVENT_SLIMEBOLT, 450000);      // 7.5 minutes 450,000

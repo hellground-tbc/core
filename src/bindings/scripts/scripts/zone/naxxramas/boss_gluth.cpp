@@ -65,6 +65,7 @@ struct TRINITY_DLL_DECL boss_gluthAI : public BossAI
 
     void Reset()
     {
+        events.Reset();
         events.ScheduleEvent(EVENT_MORTALWOUND, 8000);
         events.ScheduleEvent(EVENT_DECIMATE, 105000);
         events.ScheduleEvent(EVENT_TERRIFYING_ROAR, 21000);
