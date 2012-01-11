@@ -2453,6 +2453,41 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
     return false;
 }
 
+/*###
+# npc_land_mine
+# UPDATE `creature_template` SET `ScriptName` = 'npc_land_mine' WHERE `entry` = 7527;
+###*/
+
+struct TRINITY_DLL_DECL npc_land_mineAI : public Scripted_NoMovementAI
+{
+    npc_land_mineAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    void IsSummonedBy(Unit *pSummoner)
+    {
+        me->setFaction(pSummoner->getFaction());
+
+        // despawn after 10s
+        me->ForcedDespawn(10000);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who->IsHostileTo(me))
+            return;
+
+        if (!me->IsWithinDistInMap(who, 5.0f))
+            return;
+
+        int32 damage = urand(394, 507);
+        me->CastCustomSpell(me, 27745, &damage, 0, 0, true);
+    }
+};
+
+CreatureAI* GetAI_npc_land_mine(Creature* pCreature)
+{
+    return new npc_land_mineAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2614,5 +2649,10 @@ void AddSC_npcs_special()
     newscript->Name = "npc_arena_spectator";
     newscript->pGossipHello =           &GossipHello_npc_arena_spectator;
     newscript->pGossipSelectWithCode =  &GossipSelectWithCode_npc_arena_spectator;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_land_mine";
+    newscript->GetAI = &GetAI_npc_land_mine;
     newscript->RegisterSelf();
 }
