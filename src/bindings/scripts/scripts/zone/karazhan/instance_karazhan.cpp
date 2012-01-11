@@ -155,7 +155,7 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
             break;
     }
 
-    if (!VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled(creature->GetMapId()))
+    if (creature->GetTerrain()->IsLineOfSightEnabled())
         creature->SetAggroRange(15);
 
     const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();

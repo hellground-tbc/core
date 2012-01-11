@@ -78,13 +78,13 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public BossAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
-        pInstance->SetData(DATA_PATCHWERK, DONE);
+        instance->SetData(DATA_PATCHWERK, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2), m_creature);
-        pInstance->SetData(DATA_PATCHWERK, IN_PROGRESS);
+        instance->SetData(DATA_PATCHWERK, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
@@ -92,7 +92,7 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public BossAI
         if (!UpdateVictim())
             return;
 
-        DoSpecialThings(diff, DO_SPEED_UPDATE|DO_PULSE_COMBAT, 200.0f, 1.5f);
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 1.5f);
 
         events.Update(diff);
         while (uint32 eventId = events.ExecuteEvent())

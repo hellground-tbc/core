@@ -98,7 +98,7 @@ struct TRINITY_DLL_DECL boss_grobbulusAI : public BossAI
                 }
                 case EVENT_ENRAGE:
                 {
-                    AddSpellToCast(SPELL_ENRAGE, CAST_SELF);
+                    AddSpellToCast(SPELL_ENRAGES, CAST_SELF);
                     break;
                 }
             }
