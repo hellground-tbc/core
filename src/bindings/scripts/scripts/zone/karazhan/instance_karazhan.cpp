@@ -155,7 +155,7 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
             break;
     }
 
-    if (creature->GetTerrain()->IsLineOfSightEnabled())
+    if (!creature->GetTerrain()->IsLineOfSightEnabled())
         creature->SetAggroRange(15);
 
     const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
