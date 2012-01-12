@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Loatheb
-SD%Complete: 100
+SD%Complete: 100?
 SDComment:
 SDCategory: Naxxramas
 EndScriptData */
@@ -153,6 +153,7 @@ struct TRINITY_DLL_DECL boss_loathebAI : public BossAI
         DoMeleeAttackIfReady();
     }
 };
+
 CreatureAI* GetAI_boss_loatheb(Creature *_Creature)
 {
     return new boss_loathebAI (_Creature);
@@ -166,4 +167,3 @@ void AddSC_boss_loatheb()
     newscript->GetAI = &GetAI_boss_loatheb;
     newscript->RegisterSelf();
 }
-
