@@ -58,11 +58,11 @@ struct TRINITY_DLL_DECL boss_anubrekhanAI : public BossAI
 {
     boss_anubrekhanAI(Creature *c) : BossAI(c, DATA_ANUB_REKHAN) { }
 
-    bool taunted;
+    bool greeted;
 
     void Reset()
     {
-        taunted = false;
+        greeted = false;
         uint32 tmpSwarmTimer = urand(80000, 120000);
 
         events.Reset();
@@ -92,10 +92,10 @@ struct TRINITY_DLL_DECL boss_anubrekhanAI : public BossAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!HasTaunted && m_creature->IsWithinDistInMap(who, 60.0f))
+        if (!greeted && m_creature->IsWithinDistInMap(who, 60.0f))
         {
             DoScriptText(RAND(SAY_GREET, SAY_TAUNT1, SAY_TAUNT2, SAY_TAUNT3, SAY_TAUNT4), m_creature);
-            HasTaunted = true;
+            greeted = true;
         }
 
         ScriptedAI::MoveInLineOfSight(who);
@@ -118,10 +118,7 @@ struct TRINITY_DLL_DECL boss_anubrekhanAI : public BossAI
                     //Cast Impale on a random target
                     //Do NOT cast it when we are afflicted by locust swarm
                     if (!m_creature->HasAura(SPELL_LOCUSTSWARM,1))
-                    {
-                        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                            AddSpellToCast(target, SPELL_IMPALE);
-                    }
+                        AddSpellToCast(SPELL_IMPALE, CAST_RANDOM);
 
                     events.ScheduleEvent(EVENT_IMPALE, 15000)
                     break;
