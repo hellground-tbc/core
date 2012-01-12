@@ -493,6 +493,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                     DemonForm = true;
                     NeedThreatReset = true;
                     SwitchToDemon_Timer = 45000;
+                    m_creature->SetReactState(REACT_AGGRESSIVE);
                 }
                 else
                     SwitchToDemon_Timer -= diff;
