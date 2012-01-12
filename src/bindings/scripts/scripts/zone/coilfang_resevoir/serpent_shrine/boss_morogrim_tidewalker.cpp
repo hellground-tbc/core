@@ -100,7 +100,6 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
     ScriptedInstance* pInstance;
 
     uint32 TidalWave_Timer;
-    uint32 PulseCombat_Timer;
     uint32 WateryGrave_Timer;
     uint32 Earthquake_Timer;
     uint32 WateryGlobules_Timer;
@@ -113,7 +112,6 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
     void Reset()
     {
         TidalWave_Timer = 10000;
-        PulseCombat_Timer = 5000;
         WateryGrave_Timer = 30000;
         Earthquake_Timer = 40000;
         WateryGlobules_Timer = 0;
@@ -196,7 +194,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
             {
                 //Teleport 4 players under the waterfalls
                 std::list<Unit*> tmpList;
-                SelectUnitList(tmpList, 4, SELECT_TARGET_RANDOM, 200.0f, true, me->getVictim()->GetGUID());
+                SelectUnitList(tmpList, 4, SELECT_TARGET_RANDOM, 200.0f, true, me->getVictimGUID());
 
                 int i = 0;
                 for (std::list<Unit*>::const_iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
@@ -220,7 +218,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
             if (WateryGlobules_Timer < diff)
             {
                 std::list<Unit*> tmpList;
-                SelectUnitList(tmpList, 4, SELECT_TARGET_RANDOM, 200.0f, true, me->getVictim()->GetGUID());
+                SelectUnitList(tmpList, 4, SELECT_TARGET_RANDOM, 200.0f, true, me->getVictimGUID());
 
                 int i = 0;
                 for (std::list<Unit*>::const_iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
