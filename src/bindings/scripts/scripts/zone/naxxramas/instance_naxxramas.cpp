@@ -10,6 +10,9 @@ EndScriptData */
 
 #define ENCOUNTERS 15
 
+// This spawns 5 corpse scarabs ontop of us (most likely the player casts this on death)
+#define SPELL_SELF_SPAWN_5  29105
+
 struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 {
     instance_naxxramas(Map *map) : ScriptedInstance(map) {Initialize();};
@@ -21,7 +24,7 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     void Initialize()
     {
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
 
         m_stalaggGUID = 0;
@@ -30,15 +33,16 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     bool IsEncounterInProgress() const
     {
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
-            if(Encounters[i] == IN_PROGRESS) return true;
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounters[i] == IN_PROGRESS)
+                return true;
 
         return false;
     }
 
     uint32 GetEncounterForEntry(uint32 entry)
     {
-        switch(entry)
+        switch (entry)
         {
             case 15956:
                 return DATA_ANUB_REKHAN;
@@ -82,7 +86,7 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
-        switch(creature_entry)
+        switch (creature_entry)
         {
             case 15929:
                 m_stalaggGUID = creature->GetGUID();
@@ -109,77 +113,77 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     void SetData(uint32 type, uint32 data)
     {
-        switch(type)
+        switch (type)
         {
             case DATA_ANUB_REKHAN:
-                if(Encounters[0] != DONE)
+                if (Encounters[0] != DONE)
                     Encounters[0] = data;
                 break;
             case DATA_GRAND_WIDOW_FAERLINA:
-                if(Encounters[1] != DONE)
+                if (Encounters[1] != DONE)
                     Encounters[1] = data;
                 break;
             case DATA_MAEXXNA:
-                if(Encounters[2] != DONE)
+                if (Encounters[2] != DONE)
                     Encounters[2] = data;
                 break;
             case DATA_NOTH_THE_PLAGUEBRINGER:
-                if(Encounters[3] != DONE)
+                if (Encounters[3] != DONE)
                     Encounters[3] = data;
                 break;
             case DATA_HEIGAN_THE_UNCLEAN:
-                if(Encounters[4] != DONE)
+                if (Encounters[4] != DONE)
                     Encounters[4] = data;
                 break;
             case DATA_LOATHEB:
-                if(Encounters[5] != DONE)
+                if (Encounters[5] != DONE)
                     Encounters[5] = data;
                 break;
             case DATA_INSTRUCTOR_RAZUVIOUS:
-                if(Encounters[6] != DONE)
+                if (Encounters[6] != DONE)
                     Encounters[6] = data;
                 break;
             case DATA_GOTHIK_THE_HARVESTER:
-                if(Encounters[7] != DONE)
+                if (Encounters[7] != DONE)
                     Encounters[7] = data;
                 break;
             case DATA_THE_FOUR_HORSEMEN:
-                if(Encounters[8] != DONE)
+                if (Encounters[8] != DONE)
                     Encounters[8] = data;
                 break;
             case DATA_PATCHWERK:
-                if(Encounters[9] != DONE)
+                if (Encounters[9] != DONE)
                     Encounters[9] = data;
                 break;
             case DATA_GROBBULUS:
-                if(Encounters[10] != DONE)
+                if (Encounters[10] != DONE)
                     Encounters[10] = data;
                 break;
             case DATA_GLUTH:
-                if(Encounters[11] != DONE)
+                if (Encounters[11] != DONE)
                     Encounters[11] = data;
                 break;
             case DATA_THADDIUS:
-                if(Encounters[12] != DONE)
+                if (Encounters[12] != DONE)
                     Encounters[12] = data;
                 break;
             case DATA_SAPPHIRON:
-                if(Encounters[13] != DONE)
+                if (Encounters[13] != DONE)
                     Encounters[13] = data;
                 break;
             case DATA_KEL_THUZAD:
-                if(Encounters[14] != DONE)
+                if (Encounters[14] != DONE)
                     Encounters[14] = data;
                 break;
         }
 
-        if(data == DONE)
+        if (data == DONE)
             SaveToDB();
     }
 
     uint32 GetData(uint32 type)
     {
-        switch(type)
+        switch (type)
         {
             case DATA_ANUB_REKHAN:
                 return Encounters[0];
@@ -220,7 +224,7 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     uint64 GetData64(uint32 identifier)
     {
-        switch(identifier)
+        switch (identifier)
         {
             case DATA_STALAGG:
                 return m_stalaggGUID;
@@ -257,9 +261,15 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
         return stream.str();
     }
 
+    void OnPlayerDeath(Player * plr)
+    {
+        if (GetData(DATA_ANUB_REKHAN) == IN_PROGRESS)
+            plr->CastSpell(plr, SPELL_SELF_SPAWN_5, true);
+    }
+
     void Load(const char* in)
     {
-        if(!in)
+        if (!in)
         {
             OUT_LOAD_INST_DATA_FAIL;
             return;
@@ -270,9 +280,11 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
         stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4]
              >> Encounters[5] >> Encounters[6] >> Encounters[7] >> Encounters[8] >> Encounters[9]
              >> Encounters[10] >> Encounters[11] >> Encounters[12] >> Encounters[13] >> Encounters[14];
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
-            if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
+
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounters[i] == IN_PROGRESS) // Do not load an encounter as "In Progress" - reset it instead.
                 Encounters[i] = NOT_STARTED;
+
         OUT_LOAD_INST_DATA_COMPLETE;
     }
 };
@@ -290,4 +302,3 @@ void AddSC_instance_naxxramas()
     newscript->GetInstanceData = &GetInstanceData_instance_naxxramas;
     newscript->RegisterSelf();
 }
-
