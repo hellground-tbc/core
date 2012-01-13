@@ -15611,7 +15611,11 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
         if (ar->quest && !GetQuestRewardStatus(ar->quest))
             missingQuest = ar->quest;
 
-        if (LevelMin || LevelMax || missingItem || missingKey || missingQuest || missingHeroicQuest)
+        uint32 missingAura = 0;
+        if (ar->auraId && !HasAura(ar->auraId))
+            missingAura = ar->auraId;
+
+        if (LevelMin || LevelMax || missingItem || missingKey || missingQuest || missingHeroicQuest || missingAura)
         {
             if (report)
             {
@@ -15625,6 +15629,8 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
                     GetSession()->SendAreaTriggerMessage(ar->questFailedText.c_str());
                 else if (LevelMin)
                     GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED), LevelMin);
+                else if (missingAura)
+                    GetSession()->SendAreaTriggerMessage(ar->missingAuraText.c_str());
             }
             return false;
         }

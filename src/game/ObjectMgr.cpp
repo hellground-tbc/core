@@ -4394,8 +4394,8 @@ void ObjectMgr::LoadAccessRequirements()
 
     uint32 count = 0;
 
-    //                                                       0       1          2       3      4        5           6             7              8                   9                  10
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, level_min, level_max, item, item2, heroic_key, heroic_key2, quest_done, quest_failed_text, heroic_quest_done, heroic_quest_failed_text FROM access_requirement");
+    //                                                       0       1          2       3      4        5           6             7              8                   9                  10                11           12
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, level_min, level_max, item, item2, heroic_key, heroic_key2, quest_done, quest_failed_text, heroic_quest_done, heroic_quest_failed_text, aura_id, missing_aura_text FROM access_requirement");
     if (!result)
     {
 
@@ -4432,6 +4432,8 @@ void ObjectMgr::LoadAccessRequirements()
         ar.questFailedText          = fields[8].GetCppString();
         ar.heroicQuest              = fields[9].GetUInt32();
         ar.heroicQuestFailedText    = fields[10].GetCppString();
+        ar.auraId                   = fields[11].GetUInt32();
+        ar.missingAuraText          = fields[12].GetCppString();
 
         if (ar.item)
         {
@@ -4488,6 +4490,15 @@ void ObjectMgr::LoadAccessRequirements()
             {
                 sLog.outErrorDb("Required Quest %u not exist for trigger %u, remove quest done requirement.",ar.quest,requiremt_ID);
                 ar.quest = 0;
+            }
+        }
+
+        if (ar.auraId)
+        {
+            if (!GetSpellStore()->LookupEntry(ar.auraId))
+            {
+                sLog.outErrorDb("Required aura %u not exist for trigger %u, remove aura requirement.", ar.auraId, requiremt_ID);
+                ar.auraId = 0;
             }
         }
 
