@@ -515,15 +515,15 @@ void Loot::removeItemFromSavedLoot(LootItem *item)
     {
         // log only for raids
         if (pMap->IsRaid())
-            sLog.outBoss("Loot::removeItemFromSavedLoot: pCreature not found !! guid: %u, instanceid: %u, player %s (%u) ", m_creatureGUID, tmpMap->GetInstanceId(), pPlayer->GetName(), pPlayer->GetGUIDLow());
+            sLog.outBoss("Loot::removeItemFromSavedLoot: pCreature not found !! guid: %u, instanceid: %u) ", m_creatureGUID, pMap->GetInstanceId());
         return;
     }
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, tmpMap->GetInstanceId(), pCreature->GetEntry());
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pMap->GetInstanceId(), pCreature->GetEntry());
     if (!result)
     {
-        if (tmpMap->IsRaid())
-            sLog.outBoss("Loot::removeItemFromSavedLoot: result empty !! SQL: SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, tmpMap->GetInstanceId(), pCreature->GetEntry());
+        if (pMap->IsRaid())
+            sLog.outBoss("Loot::removeItemFromSavedLoot: result empty !! SQL: SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pMap->GetInstanceId(), pCreature->GetEntry());
         return;
     }
 
