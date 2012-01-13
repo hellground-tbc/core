@@ -128,6 +128,8 @@ struct TRINITY_DLL_DECL boss_faerlinaAI : public BossAI
                     events.ScheduleEvent(EVENT_ENRAGE, 61000);
                     break;
                 }
+                default:
+                    break;
             }
         }
 

@@ -176,6 +176,8 @@ struct TRINITY_DLL_DECL boss_maexxnaAI : public BossAI
                     events.ScheduleEvent(EVENT_SUMMON_SPIDERLING, 40000);
                     break;
                 }
+                default:
+                    break;
             }
         }
 

@@ -124,6 +124,8 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public BossAI
                     events.ScheduleEvent(EVENT_SLIMEBOLT, 5000);
                     break;
                 }
+                default:
+                    break;
             }
         }
 

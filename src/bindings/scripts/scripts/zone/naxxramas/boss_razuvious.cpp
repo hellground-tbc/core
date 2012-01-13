@@ -51,53 +51,49 @@ EndScriptData */
 #define SOUND_DEATH     8860
 #define SOUND_AGGROMIX  8847
 
-#define SPELL_UNBALANCINGSTRIKE     26613
-#define SPELL_DISRUPTINGSHOUT       29107
-
-struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
+enum RazuviousSpells
 {
-    boss_razuviousAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
+    SPELL_UNBALANCINGSTRIKE     = 26613,
+    SPELL_DISRUPTINGSHOUT       = 29107
+};
 
-    ScriptedInstance * pInstance;
+enum RazuviousEvents
+{
+    EVENT_UNBALANCING_STRIKE    = 1,
+    EVENT_DISTRUPTING_SHOUT     = 2,
+    EVENT_COMMAND_SOUND         = 3
+};
 
-    uint32 UnbalancingStrike_Timer;
-    uint32 DisruptingShout_Timer;
-    uint32 CommandSound_Timer;
+struct TRINITY_DLL_DECL boss_razuviousAI : public BossAI
+{
+    boss_razuviousAI(Creature *c) : BossAI(c, DATA_INSTRUCTOR_RAZUVIOUS) { }
 
     void Reset()
     {
-        UnbalancingStrike_Timer = 30000;                    //30 seconds
-        DisruptingShout_Timer = 25000;                      //25 seconds
-        CommandSound_Timer = 40000;                         //40 seconds
+        events.Reset();
+        events.ScheduleEvent(EVENT_UNBALANCING_STRIKE, 30000);
+        events.ScheduleEvent(EVENT_DISTRUPTING_SHOUT, 25000);
+        events.ScheduleEvent(EVENT_COMMAND_SOUND, 40000);
 
-        if (pInstance)
-            pInstance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, NOT_STARTED);
+        instance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
     {
-        if (rand()%3)
-            return;
-
-        DoPlaySoundToSet(m_creature, RAND(SOUND_SLAY1, SOUND_SLAY2));
+        if (roll_chance_f(30.0f))
+            DoPlaySoundToSet(m_creature, RAND(SOUND_SLAY1, SOUND_SLAY2));
     }
 
     void JustDied(Unit* Killer)
     {
         DoPlaySoundToSet(m_creature, SOUND_DEATH);
-        if (pInstance)
-            pInstance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, DONE);
+        instance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         DoPlaySoundToSet(m_creature, RAND(SOUND_AGGRO1, SOUND_AGGRO2, SOUND_AGGRO3));
-
-        if (pInstance)
-            pInstance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, IN_PROGRESS);
+        instance->SetData(DATA_INSTRUCTOR_RAZUVIOUS, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
@@ -105,36 +101,42 @@ struct TRINITY_DLL_DECL boss_razuviousAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        //UnbalancingStrike_Timer
-        if (UnbalancingStrike_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(),SPELL_UNBALANCINGSTRIKE);
-            UnbalancingStrike_Timer = 30000;
-        }
-        else
-            UnbalancingStrike_Timer -= diff;
+        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 100.0f);
 
-        //DisruptingShout_Timer
-        if (DisruptingShout_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(), SPELL_DISRUPTINGSHOUT);
-            DisruptingShout_Timer = 25000;
-        }
-        else
-            DisruptingShout_Timer -= diff;
+        events.Update(diff);
 
-        //CommandSound_Timer
-        if (CommandSound_Timer < diff)
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            DoPlaySoundToSet(m_creature, RAND(SOUND_COMMND1, SOUND_COMMND2, SOUND_COMMND3, SOUND_COMMND4, SOUND_COMMND5));
-            CommandSound_Timer = 40000;
+            switch (eventId)
+            {
+                case EVENT_UNBALANCING_STRIKE:
+                {
+                    AddSpellToCast(SPELL_UNBALANCINGSTRIKE, CAST_TANK);
+                    events.ScheduleEvent(EVENT_UNBALANCING_STRIKE, 30000);
+                    break;
+                }
+                case EVENT_DISTRUPTING_SHOUT:
+                {
+                    AddSpellToCast(SPELL_DISRUPTINGSHOUT, CAST_NULL);
+                    events.ScheduleEvent(EVENT_DISTRUPTING_SHOUT, 25000);
+                    break;
+                }
+                case EVENT_COMMAND_SOUND:
+                {
+                    DoPlaySoundToSet(m_creature, RAND(SOUND_COMMND1, SOUND_COMMND2, SOUND_COMMND3, SOUND_COMMND4, SOUND_COMMND5));
+                    events.ScheduleEvent(EVENT_COMMAND_SOUND, 40000);
+                    break;
+                }
+                default:
+                    break;
+            }
         }
-        else
-            CommandSound_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
+
 CreatureAI* GetAI_boss_razuvious(Creature *_Creature)
 {
     return new boss_razuviousAI (_Creature);
@@ -148,4 +150,3 @@ void AddSC_boss_razuvious()
     newscript->GetAI = &GetAI_boss_razuvious;
     newscript->RegisterSelf();
 }
-

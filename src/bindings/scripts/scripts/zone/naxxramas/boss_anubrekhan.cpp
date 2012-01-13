@@ -135,6 +135,8 @@ struct TRINITY_DLL_DECL boss_anubrekhanAI : public BossAI
                     events.ScheduleEvent(EVENT_SUMMON, 45000);
                     break;
                 }
+                default:
+                    break;
             }
         }
 

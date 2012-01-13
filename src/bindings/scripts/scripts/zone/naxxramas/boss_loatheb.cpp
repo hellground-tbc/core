@@ -146,6 +146,8 @@ struct TRINITY_DLL_DECL boss_loathebAI : public BossAI
                         m_creature->SummonCreature(16286, SporesLocations[i][0], SporesLocations[i][1], SporesLocations[i][2], 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
                     break;
                 }
+                default:
+                    break;
             }
         }
 

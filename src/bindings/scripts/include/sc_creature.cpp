@@ -561,7 +561,7 @@ void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode tar
             SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
             if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0))
                 targetGUID = pTarget->GetGUID();
-            else 
+            else
                 return;
             break;
         }
@@ -1135,7 +1135,7 @@ void Scripted_NoMovementAI::AttackStart(Unit* pWho)
 
 void ScriptedAI::DoSpecialThings(uint32 diff, SpecialThing flags, float range, float speedRate)
 {
-    if (m_specialThingTimer <= diff)
+    if (m_specialThingTimer < diff)
     {
         if (flags & DO_PULSE_COMBAT)
             DoZoneInCombat(range);

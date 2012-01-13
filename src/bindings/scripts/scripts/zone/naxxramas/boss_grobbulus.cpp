@@ -102,6 +102,8 @@ struct TRINITY_DLL_DECL boss_grobbulusAI : public BossAI
                     AddSpellToCast(SPELL_ENRAGES, CAST_SELF);
                     break;
                 }
+                default:
+                    break;
             }
         }
 

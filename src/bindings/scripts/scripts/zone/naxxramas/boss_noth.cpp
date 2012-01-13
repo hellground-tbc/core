@@ -137,6 +137,8 @@ struct TRINITY_DLL_DECL boss_nothAI : public BossAI
                     events.ScheduleEvent(EVENT_SKELETONS, 30000);
                     break;
                 }
+                default:
+                    break;
             }
         }
 
