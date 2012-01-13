@@ -158,7 +158,7 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
                 switch (data)
                 {
                     case DONE:
-                        if ((++deadHorsemens) == 4)
+                        if ((++deadHorsemans) == 4)
                             Encounters[8] = data;
                         // add chest spawn
                         break;

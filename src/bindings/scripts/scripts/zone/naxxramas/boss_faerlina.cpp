@@ -38,8 +38,8 @@ enum FaerlinaTexts
 
 enum FaerlinaSpells
 {
-    SPELL_POSIONBOLT_VOLLEY     = 28796,
-    SPELL_RAINOFFIRE            = 28794,    //Not sure if targeted AoEs work if casted directly upon a player
+    SPELL_POISONBOLT_VOLLEY     = 28796,
+    SPELL_RAIN_OF_FIRE          = 28794,    //Not sure if targeted AoEs work if casted directly upon a player
     SPELL_ENRAGE                = 28798
 };
 
@@ -119,7 +119,7 @@ struct TRINITY_DLL_DECL boss_faerlinaAI : public BossAI
                 case EVENT_RAIN_OF_FIRE:
                 {
                     AddSpellToCast(SPELL_RAIN_OF_FIRE, CAST_RANDOM);
-                    events.ScheduleEvent(EVENT_RAIN_OF_FIRE);
+                    events.ScheduleEvent(EVENT_RAIN_OF_FIRE, 16000);
                     break;
                 }
                 case EVENT_ENRAGE:

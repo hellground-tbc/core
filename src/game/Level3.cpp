@@ -7317,7 +7317,7 @@ bool ChatHandler::HandleChannelMassKickCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleCrashMapCommand(const char */*args*/)
+bool ChatHandler::HandleCrashMapCommand(const char * /*args*/)
 {
     if (!m_session)
         return false;
@@ -7330,7 +7330,7 @@ bool ChatHandler::HandleCrashMapCommand(const char */*args*/)
     return false;
 }
 
-bool ChatHandler::HandleCrashServerCommand(const char */*args*/)
+bool ChatHandler::HandleCrashServerCommand(const char * /*args*/)
 {
     *((uint32 volatile*)NULL) = 0;                       // bang crash
     return false;

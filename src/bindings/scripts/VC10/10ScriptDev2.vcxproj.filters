@@ -744,9 +744,6 @@
     <ClCompile Include="..\scripts\zone\naxxramas\boss_heigan.cpp">
       <Filter>Scripts\zone\Naxxramas</Filter>
     </ClCompile>
-    <ClCompile Include="..\scripts\zone\naxxramas\boss_highlord_mograine.cpp">
-      <Filter>Scripts\zone\Naxxramas</Filter>
-    </ClCompile>
     <ClCompile Include="..\scripts\zone\naxxramas\boss_kelthuzad.cpp">
       <Filter>Scripts\zone\Naxxramas</Filter>
     </ClCompile>

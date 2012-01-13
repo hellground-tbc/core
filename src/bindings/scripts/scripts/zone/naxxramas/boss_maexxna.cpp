@@ -46,10 +46,12 @@ enum MaexxnaEvents
 #define MAEXXNA_SPIDERLING_ID   17055
 #define WEB_WRAP_ID             16486
 
-float webWrapLocations[][] = {
-        {3546.796,  -3869.082, 296.450},
-        {3531.271, -3847.424, 299.450},
-        {3497.067, -3843.384, 302.384}};
+float webWrapLocations[3][3] =
+{
+    {3546.796,  -3869.082, 296.450},
+    {3531.271, -3847.424, 299.450},
+    {3497.067, -3843.384, 302.384}
+};
 
 struct TRINITY_DLL_DECL mob_webwrapAI : public ScriptedAI
 {
@@ -67,14 +69,14 @@ struct TRINITY_DLL_DECL mob_webwrapAI : public ScriptedAI
         if (victim)
         {
             victimGUID = victim->GetGUID();
-            victim->CastSpell(victim, SPELL_WEBTRAP, true);
+            victim->CastSpell(victim, SPELL_WEB_WRAP, true);
         }
     }
 
     void JustDied(Unit * /*killer*/)
     {
         if (Unit * victim = me->GetUnit(victimGUID))
-            victim->RemoveAurasDueToSpell(SPELL_WEBTRAP);
+            victim->RemoveAurasDueToSpell(SPELL_WEB_WRAP);
     }
 
     void UpdateAI(const uint32 diff) { }
@@ -137,7 +139,7 @@ struct TRINITY_DLL_DECL boss_maexxnaAI : public BossAI
                         if (Creature * wrap = m_creature->SummonCreature(WEB_WRAP_ID, webWrapLocations[i][0], webWrapLocations[i][1], webWrapLocations[i][2], 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000))
                         {
                             wrap->setFaction(m_creature->getFaction());
-                            ((mob_webwrapAI*)wrap->AI())->SetVictim(target);
+                            ((mob_webwrapAI*)wrap->AI())->SetVictim(*itr);
                         }
                     }
 
@@ -182,10 +184,10 @@ struct TRINITY_DLL_DECL boss_maexxnaAI : public BossAI
         }
 
         //Enrage if not already enraged and below 30%
-        if (!Enraged && HealthBelowPct(30))
+        if (!enraged && HealthBelowPct(30))
         {
             ForceSpellCast(SPELL_ENRAGE, CAST_SELF);
-            Enraged = true;
+            enraged = true;
         }
 
         CastNextSpellIfAnyAndReady();

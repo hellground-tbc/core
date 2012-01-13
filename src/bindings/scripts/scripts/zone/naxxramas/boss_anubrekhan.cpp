@@ -120,7 +120,7 @@ struct TRINITY_DLL_DECL boss_anubrekhanAI : public BossAI
                     if (!m_creature->HasAura(SPELL_LOCUSTSWARM,1))
                         AddSpellToCast(SPELL_IMPALE, CAST_RANDOM);
 
-                    events.ScheduleEvent(EVENT_IMPALE, 15000)
+                    events.ScheduleEvent(EVENT_IMPALE, 15000);
                     break;
                 }
                 case EVENT_SWARM:

@@ -345,7 +345,6 @@
     <ClCompile Include="..\scripts\zone\naxxramas\boss_gothik.cpp" />
     <ClCompile Include="..\scripts\zone\naxxramas\boss_grobbulus.cpp" />
     <ClCompile Include="..\scripts\zone\naxxramas\boss_heigan.cpp" />
-    <ClCompile Include="..\scripts\zone\naxxramas\boss_highlord_mograine.cpp" />
     <ClCompile Include="..\scripts\zone\naxxramas\boss_kelthuzad.cpp" />
     <ClCompile Include="..\scripts\zone\naxxramas\boss_loatheb.cpp" />
     <ClCompile Include="..\scripts\zone\naxxramas\boss_maexxna.cpp" />

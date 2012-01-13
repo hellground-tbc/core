@@ -2740,6 +2740,7 @@ void World::ResetDailyQuests()
     SelectRandomDungeonDaily();
     SelectRandomCookingDaily();
     SelectRandomPvPDaily();
+}
 
 void World::SetPlayerLimit(int32 limit, bool needUpdate)
 {

@@ -355,7 +355,7 @@ struct TRINITY_DLL_DECL boss_thane_korthazzAI : public BossAI
                 }
                 case EVENT_KORTHAZZ_METEOR:
                 {
-                    if (Unit * tmpUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0f, true);
+                    if (Unit * tmpUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0f, true))
                         AddSpellToCast(tmpUnit, SPELL_METEOR);
                     events.ScheduleEvent(EVENT_KORTHAZZ_METEOR, 12000); // needs proper timer
                     break;
@@ -522,7 +522,6 @@ void AddSC_boss_four_horsemen()
     newscript->GetAI = &GetAI_boss_lady_blaumeux;
     newscript->RegisterSelf();
 
-    Script *newscript;
     newscript = new Script;
     newscript->Name="boss_highlord_mograine";
     newscript->GetAI = &GetAI_boss_highlord_mograine;
