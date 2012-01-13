@@ -468,11 +468,15 @@ bool Unit::haveOffhandWeapon() const
         return m_canDualWield;
 }
 
-void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed)
+void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed, bool time)
 {
+    if (time)
+        speed = GetDistance(x, y, z) / ((float)speed * 0.001f);
+
     Movement::MoveSplineInit init(*this);
     init.MoveTo(x,y,z);
-    init.SetVelocity(speed);
+    if (speed)
+        init.SetVelocity(speed);
     init.Launch();
 }
 

@@ -557,7 +557,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
     void JustDied(Unit *killer)
     {
         DoScriptText(SAY_SATH_DEATH, m_creature);
-        me->MonsterMoveWithSpeed(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, 0);
+        DoTeleportTo(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, 0);
 
         if(pInstance)
             pInstance->SetData(DATA_KALECGOS_EVENT, DONE);

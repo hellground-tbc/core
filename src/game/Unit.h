@@ -1258,7 +1258,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false);
 
-        void MonsterMoveWithSpeed(float x, float y, float z, float speed);
+        void MonsterMoveWithSpeed(float x, float y, float z, float speed, bool time=false);
 
         void SendMonsterStop();
         void SendHeartBeat();

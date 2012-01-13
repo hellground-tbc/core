@@ -7022,65 +7022,15 @@ void Spell::EffectLeapForward(uint32 i)
     if (unitTarget->IsTaxiFlying())
         return;
 
-    if (m_spellInfo->rangeIndex== 1)                        //self range
+    if (m_spellInfo->rangeIndex == 1)                        //self range
     {
-        uint32 mapid = m_caster->GetMapId();
-        float dis = GetSpellRadius(m_spellInfo,i,false);
+        Position dest;
+        unitTarget->GetValidPointInAngle(dest, GetSpellRadius(m_spellInfo,i,false), 0.0f, true);
 
-        // Start Info //
-        float cx,cy,cz;
-        float dx,dy,dz;
-        float angle = unitTarget->GetOrientation();
-        unitTarget->GetPosition(cx,cy,cz);
-
-        //Check use of vamps//
-        bool useVmap = false;
-        bool swapZone = true;
-
-        if (VMAP::VMapFactory::createOrGetVMapManager()->isHeightCalcEnabled(mapid))
-            useVmap = true;
-
-        //Going foward 0.5f until max distance
-        for (float i=0.5f; i<dis; i+=0.5f)
-        {
-            unitTarget->GetNearPoint2D(dx,dy,i,angle);
-            dz = unitTarget->GetBaseMap()->GetHeight(dx, dy, cz, useVmap);
-
-            //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
-            if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
-            {
-                //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
-                cx = dx;
-                cy = dy;
-                cz = dz;
-            }
-            else
-            {
-                //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
-                if (swapZone)
-                {
-                    //so... change use of vamp and go back 1 step backward and recheck again.
-                    swapZone = false;
-                    useVmap = !useVmap;
-                    i-=0.5f;
-                }
-                else
-                {
-                    //bad recheck result... so break this and use last good coord for teleport player...
-                    dz += 0.5f;
-                    break;
-                }
-            }
-        }
-
-        //Prevent Falling during swap building/outerspace
-        unitTarget->UpdateGroundPositionZ(cx, cy, cz);
-
-        unitTarget->NearTeleportTo(cx, cy, cz +0.5f, unitTarget->GetOrientation(), unitTarget == m_caster);
-        if(unitTarget->GetTypeId() == TYPEID_UNIT)
-            unitTarget->MonsterMoveWithSpeed(cx, cy, cz, 0);
+        unitTarget->NearTeleportTo(dest.x, dest.y, dest.z, unitTarget->GetOrientation(), unitTarget == m_caster);
     }
 }
+
 void Spell::EffectLeapBack(uint32 i)
 {
     if (unitTarget->IsTaxiFlying())
@@ -7219,8 +7169,7 @@ void Spell::EffectCharge2(uint32 /*i*/)
     else
         return;
 
-    m_caster->Relocate(x, y, z);
-    m_caster->MonsterMoveWithSpeed(x, y, z, 0);
+    m_caster->MonsterMoveWithSpeed(x, y, z, SPEED_CHARGE);
 
     // not all charge effects used in negative spells
     if (unitTarget && unitTarget != m_caster && !IsPositiveSpell(m_spellInfo->Id))
@@ -7470,8 +7419,7 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
 
     float x,y,z;
     _player->GetPosition(x, y, z);
-    _player->GetMap()->CreatureRelocation(pet, x, y, z, _player->GetOrientation());
-    pet->MonsterMoveWithSpeed(x, y, z, 0);
+    pet->NearTeleportTo(x, y, z, _player->GetOrientation());
 
     pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
     pet->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);

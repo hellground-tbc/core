@@ -2177,8 +2177,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
         OlumGUID = Olum->GetGUID();
         DoScriptText(SAY_DIALOG_OLUM_1,Olum);
 
-        Olum->Relocate(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],OlumNewPos[3]);
-        Olum->MonsterMoveWithSpeed(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],5000);
+        Olum->MonsterMoveWithSpeed(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2],5000,true);
 
         TalkTimer = 13000;
     }
@@ -2222,8 +2221,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                     DoScriptText(SAY_DIALOG_OLUM_5,(Creature*)olum);
                 return 14500;
             case 9:
-                m_creature->Relocate(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2], AkamaNewPos[3]);
-                m_creature->MonsterMoveWithSpeed(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2],2000);
+                m_creature->MonsterMoveWithSpeed(AkamaNewPos[0],AkamaNewPos[1],AkamaNewPos[2],2000,true);
                 return 2500;
             case 10:
                 if (olum)
@@ -2238,7 +2236,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                         spirit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         spirit->SetLevitate(true);
                         // spirit->SetUInt32Value(UNIT_NPC_EMOTESTATE,STATE_DROWNED); // improve Olum's Spirit animation using Drowned State, right movement flag or monster move type needed
-                        spirit->MonsterMoveWithSpeed(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2]+8.0f,16000);
+                        spirit->MonsterMoveWithSpeed(OlumNewPos[0],OlumNewPos[1],OlumNewPos[2]+8.0f,16000,true);
                     }
                 }
                 return 7000;
@@ -2246,11 +2244,10 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_5,m_creature);
                 return 12000;
             case 13:
-                m_creature->MonsterMoveWithSpeed((AkamaPos[0]+0.1f), (AkamaPos[1]-0.1f), AkamaPos[2], 2000);
-                m_creature->Relocate(AkamaPos[0]+0.1f, AkamaPos[1]-0.1f, AkamaPos[2]);
+                m_creature->MonsterMoveWithSpeed((AkamaPos[0]+0.1f), (AkamaPos[1]-0.1f), AkamaPos[2], 2000,true);
                 return 2100;
             case 14:
-                m_creature->MonsterMoveWithSpeed((AkamaPos[0]-0.05f), (AkamaPos[1]), AkamaPos[2], 200);    // just to turn back Akama to Illidan
+                m_creature->MonsterMoveWithSpeed((AkamaPos[0]-0.05f), (AkamaPos[1]), AkamaPos[2], 200,true);    // just to turn back Akama to Illidan
                 return 6000;
             case 15:
                 DoScriptText(SAY_DIALOG_PRE_AKAMA_6,m_creature);

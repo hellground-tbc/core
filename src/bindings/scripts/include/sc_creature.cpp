@@ -1045,9 +1045,13 @@ void ScriptedAI::DoModifyThreatPercent(Unit *pUnit, int32 pct)
 
 void ScriptedAI::DoTeleportTo(float x, float y, float z, uint32 time)
 {
-    m_creature->Relocate(x,y,z);
-    float speed = me->GetDistance(x, y, z) / ((float)time * 0.001f);
-    me->MonsterMoveWithSpeed(x, y, z, speed);
+    if (time)
+    {
+        float speed = me->GetDistance(x, y, z) / ((float)time * 0.001f);
+        me->MonsterMoveWithSpeed(x, y, z, speed);
+    }
+    else
+        me->NearTeleportTo(x, y, z, me->GetOrientation(), false);
 }
 
 void ScriptedAI::DoTeleportPlayer(Unit* pUnit, float x, float y, float z, float o)

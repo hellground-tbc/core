@@ -300,8 +300,7 @@ struct TRINITY_DLL_DECL mob_rizzle_sprysprocketAI : public ScriptedAI
 
             if(Teleport_Timer < diff)
             {
-                me->Relocate(3706.39, -3969.15, 35.9118, 0);
-                me->MonsterMoveWithSpeed(3706.39, -3969.15, 35.9118, 0);
+                DoTeleportTo(3706.39, -3969.15, 35.9118, 0);
 
                 //begin swimming and summon depth charges
                 Player* player = Unit::GetPlayer(PlayerGUID);
