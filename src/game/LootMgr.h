@@ -25,6 +25,8 @@
 #include "ByteBuffer.h"
 #include "Utilities/LinkedReference/RefManager.h"
 
+#include "MapManager.h"
+
 #include <map>
 #include <vector>
 
@@ -232,7 +234,7 @@ struct Loot
     uint32 gold;
     uint8 unlootedCount;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false), m_creatureGUID(0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false), m_creatureGUID(0), m_mapID(0,0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -310,6 +312,8 @@ struct Loot
 
         uint64 m_creatureGUID;
         bool m_lootLoadedFromDB;
+
+        MapID m_mapID;
 
         // All rolls are registered here. They need to know, when the loot is not valid anymore
         LootValidatorRefManager i_LootValidatorRefManager;
