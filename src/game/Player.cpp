@@ -12342,22 +12342,7 @@ void Player::PrepareQuestMenu(uint64 guid)
         if (pQuest->IsAutoComplete() && CanTakeQuest(pQuest, false))
             qm.AddMenuItem(quest_id, DIALOG_STATUS_REWARD_REP);
         else if (status == QUEST_STATUS_NONE && CanTakeQuest(pQuest, false))
-        {
-            if (pObject->GetEntry() == 24369 && quest_id != sWorld.specialQuest[HEROIC])
-                continue;
-            if (pObject->GetEntry() == 24370 && quest_id != sWorld.specialQuest[QNORMAL])
-                continue;
-            if (pObject->GetEntry() == 24393 && quest_id != sWorld.specialQuest[COOKING])
-                continue;
-            if (pObject->GetEntry() == 25580 && quest_id != sWorld.specialQuest[FISHING])
-                continue;
-            if (pObject->GetEntry() == 15350 && quest_id != 8388 && quest_id != sWorld.specialQuest[PVPH])
-                continue;
-            if (pObject->GetEntry() == 15351 && quest_id != 8385 && quest_id != sWorld.specialQuest[PVPA])
-                continue;
-
             qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);
-        }
     }
 }
 
