@@ -368,7 +368,6 @@ extern void AddSC_boss_gluth();
 extern void AddSC_boss_gothik();
 extern void AddSC_boss_grobbulus();
 extern void AddSC_boss_heigan();
-extern void AddSC_boss_highlord_mograine();
 extern void AddSC_boss_kelthuzad();
 extern void AddSC_boss_loatheb();
 extern void AddSC_boss_maexxna();
@@ -980,7 +979,6 @@ void AddScripts()
     AddSC_boss_gothik();
     AddSC_boss_grobbulus();
     AddSC_boss_heigan();
-    AddSC_boss_highlord_mograine();
     AddSC_boss_kelthuzad();
     AddSC_boss_loatheb();
     AddSC_boss_maexxna();

@@ -15,12 +15,18 @@ EndScriptData */
 
 struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 {
-    instance_naxxramas(Map *map) : ScriptedInstance(map) {Initialize();};
+    instance_naxxramas(Map *map) : ScriptedInstance(map) { Initialize(); };
 
     uint32 Encounters[ENCOUNTERS];
 
+    uint8 deadHorsemans;
+
     uint64 m_stalaggGUID;
     uint64 m_feugenGUID;
+    uint64 m_lady_blaumeuxGUID;
+    uint64 m_thane_korthazzGUID;
+    uint64 m_sir_zeliekGUID;
+    uint64 m_highlord_mograineGUID;
 
     void Initialize()
     {
@@ -29,6 +35,7 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
 
         m_stalaggGUID = 0;
         m_feugenGUID = 0;
+        deadHorsemans = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -148,8 +155,25 @@ struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
                     Encounters[7] = data;
                 break;
             case DATA_THE_FOUR_HORSEMEN:
-                if (Encounters[8] != DONE)
-                    Encounters[8] = data;
+                switch (data)
+                {
+                    case DONE:
+                        if ((++deadHorsemens) == 4)
+                            Encounters[8] = data;
+                        // add chest spawn
+                        break;
+                    case NOT_STARTED:
+                        if (Encounters[8] != DONE)
+                        {
+                            Encounters[8] = data;
+                            deadHorsemans = 0;
+                        }
+                        break;
+                    default:
+                        if (Encounters[8] != DONE)
+                            Encounters[8] = data;
+                        break;
+                }
                 break;
             case DATA_PATCHWERK:
                 if (Encounters[9] != DONE)
