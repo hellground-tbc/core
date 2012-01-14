@@ -2706,7 +2706,16 @@ void Spell::_handle_finish_phase()
 {
     // spell log
     if (m_needSpellLog)
-        SendLogExecute();
+    {
+        try
+        {
+            SendLogExecute();
+        }
+        catch(...)
+        {
+            sLog.outCrash("Crash prevented in: SendLogExecute()");
+        }
+    }
 }
 
 void Spell::SendSpellCooldown()
