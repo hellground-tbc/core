@@ -7910,34 +7910,16 @@ void Aura::HandleAuraMeleeAPAttackerBonus(bool apply, bool Real)
     m_target->ApplyMeleeAPAttackerBonus(GetModifierValue(), apply);
 }
 
-void Aura::HandleAuraReflectSpellSchool(bool Apply, bool Real)
+void Aura::HandleAuraReflectSpellSchool(bool apply, bool real)
 {
-    if (!Real)
+    if (!real || !apply)
         return;
 
-    // Frost Ward and Fire Ward
-    if (Apply && m_spellProto->SpellFamilyName == SPELLFAMILY_MAGE && m_spellProto->SpellFamilyFlags & 0x80108)
+    Unit::AuraList const& DummyAuras = m_target->GetAurasByType(SPELL_AURA_DUMMY);
+    for (Unit::AuraList::const_iterator i = DummyAuras.begin(); i != DummyAuras.end(); ++i)
     {
-        if (Unit *caster = GetCaster())
-            if (caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                Player *playerCaster = (Player*)caster;
-
-                if (m_spellProto->SpellFamilyFlags & 0x8)
-                {
-                    if (playerCaster->HasSpell(13043))
-                        m_modifier.m_amount += 20;
-                    else if (playerCaster->HasSpell(11094))
-                        m_modifier.m_amount += 10;
-                }
-                else
-                {
-                    if (playerCaster->HasSpell(28332))
-                        m_modifier.m_amount += 20;
-                    else if (playerCaster->HasSpell(11189))
-                        m_modifier.m_amount += 10;
-                }
-            }
+        if (spellmgr.IsAffectedBySpell(GetSpellProto(), (*i)->GetId(), GetEffIndex(), GetSpellProto()->SpellFamilyFlags))
+            GetModifier()->m_amount += (*i)->GetModifierValue();
     }
 }
 
