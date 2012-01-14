@@ -1597,18 +1597,18 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 46573:                                 // Blink (Sunblade Arch Mage)
                 {
-                    if (unitTarget->GetTypeId() == TYPEID_UNIT)
+                    if (m_caster->GetTypeId() == TYPEID_UNIT)
                     {
                         //firts AoE stun
-                        unitTarget->CastSpell(unitTarget, 41421, true);
+                        m_caster->CastSpell(unitTarget, 41421, true);
 
                         Position dest;
-                        unitTarget->GetValidPointInAngle(dest, 45.0f, 0.0f, true);
+                        m_caster->GetValidPointInAngle(dest, 45.0f, 0.0f, true);
 
-                        unitTarget->NearTeleportTo(dest.x, dest.y, dest.z, unitTarget->GetOrientation(), true);
+                        m_caster->NearTeleportTo(dest.x, dest.y, dest.z, unitTarget->GetOrientation(), true);
 
-                        if (unitTarget->getVictim())
-                            unitTarget->GetMotionMaster()->MoveChase(m_caster->getVictim());
+                        if (m_caster->getVictim())
+                            m_caster->GetMotionMaster()->MoveChase(m_caster->getVictim());
                     }
                 }
                 case 50243:                                 // Teach Language
