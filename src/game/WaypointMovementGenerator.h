@@ -28,10 +28,8 @@
  */
 
 #include "MovementGenerator.h"
-#include "DestinationHolder.h"
 #include "WaypointManager.h"
 #include "Path.h"
-#include "Traveller.h"
 
 #include "Player.h"
 
@@ -46,48 +44,66 @@ template<class T, class P>
 class TRINITY_DLL_SPEC PathMovementBase
 {
     public:
-        PathMovementBase() : i_currentNode(0) {}
+        PathMovementBase() : i_currentNode(0), i_path(NULL) {}
         virtual ~PathMovementBase() {};
-
-        bool MovementInProgress(void) const { return i_currentNode < i_path->size(); }
 
         // template pattern, not defined .. override required
         void LoadPath(T &);
         uint32 GetCurrentNode() const { return i_currentNode; }
 
-        bool GetDestination(float& x, float& y, float& z) const { i_destinationHolder.GetDestination(x,y,z); return true; }
-        bool GetPosition(float& x, float& y, float& z) const { i_destinationHolder.GetLocationNowNoMicroMovement(x,y,z); return true; }
     protected:
-        uint32 i_currentNode;
-        DestinationHolder< Traveller<T> > i_destinationHolder;
         P i_path;
+        uint32 i_currentNode;
 };
 
 template<class T>
+class WaypointMovementGenerator;
 
-class TRINITY_DLL_SPEC WaypointMovementGenerator
-    : public MovementGeneratorMedium< T, WaypointMovementGenerator<T> >, public PathMovementBase<T, WaypointPath const*>
+template<>
+class WaypointMovementGenerator<Creature>
+: public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
+public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
-        WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true) :
-          i_nextMoveTime(0), path_id(_path_id), repeating(_repeating), StopedByPlayer(false), node(NULL), FormationMove(false), MicroMove(false) {}
+        WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true) : i_nextMoveTime(0), path_id(_path_id), m_isArrivalDone(false), repeating(_repeating)  {}
+        ~WaypointMovementGenerator() { i_path = NULL; }
+        void Initialize(Creature &);
+        void Finalize(Creature &);
+        void Reset(Creature &);
+        bool Update(Creature &, const uint32 &diff);
 
-        void Initialize(T &);
-        void Finalize(T &);
-        void MovementInform(T &);
-        void InitTraveller(T &, const WaypointData &);
-        void GeneratePathId(T &);
-        void Reset(T &unit);
-        bool Update(T &, const uint32 &);
-        bool GetDestination(float &x, float &y, float &z) const;
+        void MovementInform(Creature &);
+
         MovementGeneratorType GetMovementGeneratorType() { return WAYPOINT_MOTION_TYPE; }
 
+        // now path movement implmementation
+        void LoadPath(Creature &c);
+
+        bool GetResetPosition(Creature&, float& x, float& y, float& z);
+
     private:
-        WaypointData *node;
-        uint32 path_id;
+        void Stop(int32 time) { i_nextMoveTime.Reset(time);}
+        bool Stopped() { return !i_nextMoveTime.Passed();}
+
+        bool CanMove(int32 diff)
+        {
+            i_nextMoveTime.Update(diff);
+            return i_nextMoveTime.Passed();
+        }
+
+        void OnArrived(Creature&);
+        bool StartMove(Creature&);
+
+        void StartMoveNow(Creature& creature)
+        {
+            i_nextMoveTime.Reset(0);
+            StartMove(creature);
+        }
+
         TimeTrackerSmall i_nextMoveTime;
-        WaypointPath *waypoints;
-        bool repeating, StopedByPlayer, WasActive, FormationMove, MicroMove;
+        bool m_isArrivalDone;
+        uint32 path_id;
+        bool repeating;
 };
 
 /** FlightPathMovementGenerator generates movement of the player for the paths
@@ -116,9 +132,7 @@ public PathMovementBase<Player,TaxiPathNodeList const*>
         void SetCurrentNodeAfterTeleport();
         void SkipCurrentNode() { ++i_currentNode; }
         void DoEventIfAny(Player& player, TaxiPathNodeEntry const& node, bool departure);
-
-        // allow use for overwrite empty implementation
-        bool GetDestination(float& x, float& y, float& z) const { return PathMovementBase<Player,TaxiPathNodeList const*>::GetDestination(x,y,z); }
+        bool GetResetPosition(Player&, float& x, float& y, float& z);
 };
 
 #endif

@@ -1063,7 +1063,7 @@ struct TRINITY_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
                 if (m_updateSpeed)
                 {
-                    if (me->GetUnitMovementFlags() & MOVEFLAG_WALK_MODE)
+                    if (me->IsWalking())
                         me->SetWalk(false);
 
                     me->UpdateSpeed(MOVE_RUN, true);

@@ -278,12 +278,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
                         m_creature->CastCustomSpell(target, SPELL_DIVE_CUSTOM, NULL, &damage, &knock, false);
                     }
                     else
-                    {
-                        WorldLocation temp;
-                        target->GetClosePoint(temp.coord_x, temp.coord_y, temp.coord_z, 20.0f, false, m_creature->GetOrientation());  //if boss >40yd from victim make him run fast till 20yd and charge without damage
-                        m_creature->SendMonsterMoveWithSpeed(temp.coord_x, temp.coord_y, temp.coord_z, MOVEFLAG_WALK_MODE);
-                        m_creature->CastSpell(target, SPELL_CHARGE, false);
-                    }
+                        m_creature->CastSpell(target, SPELL_CHARGE, true);
                 }
                 MoltenPunch_Timer = 8000+rand()%4000;
             }

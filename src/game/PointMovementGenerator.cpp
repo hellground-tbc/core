@@ -21,10 +21,13 @@
 #include "PointMovementGenerator.h"
 #include "Errors.h"
 #include "Creature.h"
+#include "Player.h"
 #include "CreatureAI.h"
 #include "MapManager.h"
-#include "DestinationHolderImp.h"
 #include "World.h"
+
+#include "movement/MoveSplineInit.h"
+#include "movement/MoveSpline.h"
 
 //----- Point Movement Generator
 template<class T>
@@ -33,10 +36,13 @@ void PointMovementGenerator<T>::Initialize(T &unit)
     if (!unit.IsStopped())
         unit.StopMoving();
 
-    unit.addUnitState(UNIT_STAT_ROAMING);
+    unit.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    Movement::MoveSplineInit init(unit);
+    init.MoveTo(i_x, i_y, i_z);
+    if (speed > 0.0f)
+        init.SetVelocity(speed);
 
-    Traveller<T> traveller(unit);
-    i_destinationHolder.SetDestination(traveller,i_x,i_y,i_z);
+    init.Launch();
 }
 
 template<class T>
@@ -47,39 +53,30 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     if (unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
     {
-        if (unit.hasUnitState(UNIT_STAT_CHARGING))
-            return false;
-        else
-            return true;
+        unit.clearUnitState(UNIT_STAT_ROAMING_MOVE);
+        return true;
     }
 
-    Traveller<T> traveller(unit);
-
-    if (i_destinationHolder.UpdateTraveller(traveller, diff, false))
-    {
-        //if (!IsActive(unit)) // force stop processing (movement can move out active zone with cleanup movegens list)
-        //    return true; // not expire now, but already lost
-    }
-
-    if (i_destinationHolder.HasArrived())
-    {
-        unit.clearUnitState(UNIT_STAT_MOVE);
-        return false;
-    }
-
-    return true;
+    unit.addUnitState(UNIT_STAT_ROAMING_MOVE);
+    return !unit.movespline->Finalized();
 }
 
 template<class T>
 void PointMovementGenerator<T>:: Finalize(T &unit)
 {
-    if (unit.hasUnitState(UNIT_STAT_CHARGING))
-        unit.clearUnitState(UNIT_STAT_CHARGING | UNIT_STAT_JUMPING);
+    unit.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
 
-    unit.clearUnitState(UNIT_STAT_ROAMING);
-
-    if (i_destinationHolder.HasArrived()) // without this crash!
+    if (unit.movespline->Finalized())
         MovementInform(unit);
+}
+
+template<class T>
+void PointMovementGenerator<T>::Reset(T &unit)
+{
+    if (!unit.IsStopped())
+        unit.StopMoving();
+
+    unit.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
 }
 
 template<class T>
@@ -90,14 +87,8 @@ void PointMovementGenerator<T>::MovementInform(T &unit)
 template <>
 void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
-    if (id == EVENT_FALL_GROUND)
-    {
-        unit.setDeathState(JUST_DIED);
-        //TODO: SKY FIX TEMP!!!
-        unit.SetFlying(true);
-        //unit.AddUnitMovementFlag(SPLINEFLAG_FLYINGING2);
-    }
-    unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
+    if (unit.AI())
+        unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
 
     if(unit.GetFormation() && unit.GetFormation()->getLeader() && unit.GetFormation()->getLeader()->GetGUID() != unit.GetGUID())
     {
@@ -106,14 +97,14 @@ void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
     }
 }
 
-template void PointMovementGenerator<Player>::Initialize(Player&);
-template bool PointMovementGenerator<Player>::Update(Player &, const uint32 &diff);
-template void PointMovementGenerator<Player>::MovementInform(Player&);
-template void PointMovementGenerator<Player>::Finalize(Player&);
-
 template void PointMovementGenerator<Creature>::Initialize(Creature&);
-template bool PointMovementGenerator<Creature>::Update(Creature&, const uint32 &diff);
+template void PointMovementGenerator<Player>::Initialize(Player&);
 template void PointMovementGenerator<Creature>::Finalize(Creature&);
+template void PointMovementGenerator<Player>::Finalize(Player&);
+template void PointMovementGenerator<Player>::Reset(Player&);
+template void PointMovementGenerator<Creature>::Reset(Creature&);
+template bool PointMovementGenerator<Player>::Update(Player &, const uint32 &);
+template bool PointMovementGenerator<Creature>::Update(Creature&, const uint32 &);
 
 void AssistanceMovementGenerator::Finalize(Unit &unit)
 {
@@ -123,4 +114,18 @@ void AssistanceMovementGenerator::Finalize(Unit &unit)
     ((Creature*)&unit)->CallAssistance();
     if (unit.isAlive())
         unit.GetMotionMaster()->MoveSeekAssistanceDistract(sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY));
+}
+
+bool EffectMovementGenerator::Update(Unit &unit, const uint32&)
+{
+    return !unit.movespline->Finalized();
+}
+
+void EffectMovementGenerator::Finalize(Unit &unit)
+{
+    if (unit.GetTypeId() != TYPEID_UNIT)
+        return;
+
+    if (unit.IsAIEnabled && unit.movespline->Finalized())
+        unit.ToCreature()->AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
 }

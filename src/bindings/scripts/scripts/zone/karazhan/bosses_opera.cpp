@@ -1626,7 +1626,6 @@ struct TRINITY_DLL_DECL npc_barnesAI : public ScriptedAI
                 case 4:
                     m_creature->GetMotionMaster()->Clear();
                     m_creature->GetMotionMaster()->MovePoint(id+1, StageLocations[id+1][0], StageLocations[id+1][1], SPAWN_Z);
-                    m_creature->SendMonsterMove(StageLocations[id+1][0], StageLocations[id+1][1], SPAWN_Z, 0, NULL);
                     break;
                 case 2:
                     IsTalking = true;

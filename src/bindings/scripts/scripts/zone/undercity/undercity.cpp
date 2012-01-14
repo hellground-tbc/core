@@ -86,8 +86,7 @@ struct TRINITY_DLL_DECL npc_lady_sylvanas_windrunnerAI : public ScriptedAI
         {
             if( Unit* target = Unit::GetUnit(*summoned,targetGUID) )
             {
-                target->SendMonsterMove(target->GetPositionX(), target->GetPositionY(), myZ+15.0,0);
-                target->Relocate(target->GetPositionX(), target->GetPositionY(), myZ+15.0);
+                target->NearTeleportTo(target->GetPositionX(), target->GetPositionY(), myZ+15.0,0);
                 summoned->CastSpell(target, SPELL_RIBBON_OF_SOULS, false);
             }
 
@@ -175,7 +174,7 @@ struct TRINITY_DLL_DECL npc_highborne_lamenterAI : public ScriptedAI
             if( EventMove_Timer < diff )
             {
                 m_creature->SetLevitate(true);
-                m_creature->SendMonsterMoveWithSpeed(m_creature->GetPositionX(),m_creature->GetPositionY(),HIGHBORNE_LOC_Y_NEW,5000);                m_creature->GetMap()->CreatureRelocation(m_creature,m_creature->GetPositionX(),m_creature->GetPositionY(),HIGHBORNE_LOC_Y_NEW,m_creature->GetOrientation());
+                m_creature->MonsterMoveWithSpeed(m_creature->GetPositionX(),m_creature->GetPositionY(),HIGHBORNE_LOC_Y_NEW,5000,true);
                 EventMove = false;
             }else EventMove_Timer -= diff;
         }

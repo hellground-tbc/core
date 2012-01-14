@@ -321,7 +321,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
                     }
                     else
                     {
-                        if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+                        if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
                             me->GetMotionMaster()->MoveIdle();
                         FireballTimer = 2000;
                     }

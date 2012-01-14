@@ -22,8 +22,6 @@
 #define TRINITY_FLEEINGMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
-#include "DestinationHolder.h"
-#include "Traveller.h"
 #include "MapManager.h"
 
 template<class T>
@@ -31,20 +29,18 @@ class TRINITY_DLL_SPEC FleeingMovementGenerator
 : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:
-        FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright) {}
+        FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright), i_nextCheckTime(0) {}
 
         void Initialize(T &);
         void Finalize(T &);
         void Reset(T &);
         bool Update(T &, const uint32 &);
-        bool GetDestination(float &x, float &y, float &z) const;
 
         MovementGeneratorType GetMovementGeneratorType() { return FLEEING_MOTION_TYPE; }
 
     private:
         void _setTargetLocation(T &owner);
         bool _getPoint(T &owner, float &x, float &y, float &z);
-        bool _setMoveData(T &owner);
         void _Init(T &);
 
         bool is_water_ok   :1;
@@ -60,7 +56,7 @@ class TRINITY_DLL_SPEC FleeingMovementGenerator
         float i_dest_z;
         uint64 i_frightGUID;
 
-        DestinationHolder< Traveller<T> > i_destinationHolder;
+        TimeTracker i_nextCheckTime;
 };
 
 class TRINITY_DLL_SPEC TimedFleeingMovementGenerator

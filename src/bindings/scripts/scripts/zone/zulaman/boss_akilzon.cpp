@@ -240,7 +240,7 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             // throw player to air and cast electrical storm on (should be handled by proper script effect targeting?)
             float x,y,z;
             target->GetPosition(x,y,z);
-            target->SendMonsterMove(x,y,m_creature->GetPositionZ()+15,0);
+            target->NearTeleportTo(x,y,m_creature->GetPositionZ()+15,0);
             DoScriptText(EMOTE_STORM, m_creature, 0, true);
             m_creature->CastSpell(target, SPELL_ELECTRICAL_STORM, false);
 

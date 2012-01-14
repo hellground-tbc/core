@@ -397,25 +397,10 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
 
         void _Create(uint32 guidlow, HighGuid guidhigh, uint32 mapid);
 
-        void Relocate(float x, float y, float z, float orientation)
-        {
-            m_positionX = x;
-            m_positionY = y;
-            m_positionZ = z;
-            m_orientation = orientation;
-        }
-
-        void Relocate(float x, float y, float z)
-        {
-            m_positionX = x;
-            m_positionY = y;
-            m_positionZ = z;
-        }
-
-        void Relocate(Position pos)
-            { m_positionX = pos.x; m_positionY = pos.y; m_positionZ = pos.z; m_orientation = pos.o; }
-
-        void SetOrientation(float orientation) { m_orientation = orientation; }
+        void Relocate(float x, float y, float z, float orientation);
+        void Relocate(float x, float y, float z);
+        void Relocate(Position pos);
+        void SetOrientation(float orientation);
 
         float GetPositionX() const { return m_positionX; }
         float GetPositionY() const { return m_positionY; }

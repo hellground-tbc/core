@@ -1930,7 +1930,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
             return;
 
         visual_energy->CastSpell(visual_energy,46242,true); // Visual magic ball
-        visual_energy->SendMonsterMove(portal_trigger->GetPositionX(),portal_trigger->GetPositionY(),portal_trigger->GetPositionZ(),1500);
+        visual_energy->MonsterMoveWithSpeed(portal_trigger->GetPositionX(),portal_trigger->GetPositionY(),portal_trigger->GetPositionZ(),1500,true);
 
         std::list<Creature*> beam_visual_triggers = FindAllCreaturesWithEntry(21451, 30.0f);
         for (std::list<Creature*>::iterator itr = beam_visual_triggers.begin(); itr != beam_visual_triggers.end(); ++itr)
@@ -1968,8 +1968,7 @@ struct TRINITY_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
                 if (!Defender_Trigger || !Dranei_Guardian)
                     return;
 
-                Dranei_Guardian->GetMotionMaster()->MovePoint(0,Defender_Trigger->GetPositionX(),Defender_Trigger->GetPositionY(),Defender_Trigger->GetPositionZ());
-                Dranei_Guardian->SendMonsterMove(Defender_Trigger->GetPositionX(),Defender_Trigger->GetPositionY(),Defender_Trigger->GetPositionZ(),6000); //we ned this to visual movement with delay
+                Dranei_Guardian->MonsterMoveWithSpeed(Defender_Trigger->GetPositionX(),Defender_Trigger->GetPositionY(),Defender_Trigger->GetPositionZ(),6000,true); //we ned this to visual movement with delay
             }
         }
         else

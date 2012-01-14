@@ -21,7 +21,6 @@
 #include "MotionMaster.h"
 #include "CreatureAISelector.h"
 #include "Creature.h"
-#include "Traveller.h"
 
 #include "ConfusedMovementGenerator.h"
 #include "FleeingMovementGenerator.h"
@@ -31,6 +30,9 @@
 #include "TargetedMovementGenerator.h"
 #include "WaypointMovementGenerator.h"
 #include "RandomMovementGenerator.h"
+
+#include "movement/MoveSpline.h"
+#include "movement/MoveSplineInit.h"
 
 #include <cassert>
 
@@ -234,13 +236,12 @@ void MotionMaster::MoveTargetedHome()
     {
         Mutate(new HomeMovementGenerator<Creature>(), MOTION_SLOT_ACTIVE);
     }
-    else if (i_owner->GetTypeId()==TYPEID_UNIT && ((Creature*)i_owner)->GetCharmerOrOwnerGUID())
+    else if(i_owner->GetTypeId()==TYPEID_UNIT && ((Creature*)i_owner)->GetCharmerOrOwnerGUID())
     {
-        if (Unit *target = ((Creature*)i_owner)->GetCharmerOrOwner())
+        Unit *target = ((Creature*)i_owner)->GetCharmerOrOwner();
+        if(target)
         {
-            i_owner->addUnitState(UNIT_STAT_FOLLOW);
-
-            Mutate(new TargetedMovementGenerator<Creature>(*target,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE), MOTION_SLOT_ACTIVE);
+            Mutate(new FollowMovementGenerator<Creature>(*target,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE), MOTION_SLOT_ACTIVE);
         }
     }
     else
@@ -270,16 +271,10 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
     if (i_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
 
-    i_owner->clearUnitState(UNIT_STAT_FOLLOW);
-
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
-    {
-        Mutate(new TargetedMovementGenerator<Player>(*target,dist,angle), MOTION_SLOT_ACTIVE);
-    }
+        Mutate(new ChaseMovementGenerator<Player>(*target,dist,angle), MOTION_SLOT_ACTIVE);
     else
-    {
-        Mutate(new TargetedMovementGenerator<Creature>(*target,dist,angle), MOTION_SLOT_ACTIVE);
-    }
+        Mutate(new ChaseMovementGenerator<Creature>(*target,dist,angle), MOTION_SLOT_ACTIVE);
 }
 
 void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlot slot)
@@ -291,28 +286,18 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlo
     if (i_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
 
-    i_owner->addUnitState(UNIT_STAT_FOLLOW);
-
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
-    {
-        Mutate(new TargetedMovementGenerator<Player>(*target,dist,angle), slot);
-    }
+        Mutate(new FollowMovementGenerator<Player>(*target,dist,angle), slot);
     else
-    {
-        Mutate(new TargetedMovementGenerator<Creature>(*target,dist,angle), slot);
-    }
+        Mutate(new FollowMovementGenerator<Creature>(*target,dist,angle), slot);
 }
 
 void MotionMaster::MovePoint(uint32 id, float x, float y, float z)
 {
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
-    {
         Mutate(new PointMovementGenerator<Player>(id,x,y,z), MOTION_SLOT_ACTIVE);
-    }
     else
-    {
         Mutate(new PointMovementGenerator<Creature>(id,x,y,z), MOTION_SLOT_ACTIVE);
-    }
 }
 
 void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id)
@@ -320,23 +305,16 @@ void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id)
     if (Impl[MOTION_SLOT_CONTROLLED] && Impl[MOTION_SLOT_CONTROLLED]->GetMovementGeneratorType() != DISTRACT_MOTION_TYPE)
         return;
 
-    i_owner->addUnitState(UNIT_STAT_CHARGING);
-    i_owner->m_TempSpeed = speed;
-
     if (i_owner->GetTypeId() == TYPEID_PLAYER)
-    {
-        Mutate(new PointMovementGenerator<Player>(id,x,y,z), MOTION_SLOT_CONTROLLED);
-    }
+        Mutate(new PointMovementGenerator<Player>(id,x,y,z,speed), MOTION_SLOT_CONTROLLED);
     else
-    {
-       Mutate(new PointMovementGenerator<Creature>(id,x,y,z), MOTION_SLOT_CONTROLLED);
-    }
+       Mutate(new PointMovementGenerator<Creature>(id,x,y,z,speed), MOTION_SLOT_CONTROLLED);
 }
 
 void MotionMaster::MoveFall(float z, uint32 id)
 {
     i_owner->SetFlying(false);
-    i_owner->SendMovementFlagUpdate();
+    i_owner->SendHeartBeat();
 
     MoveCharge(i_owner->GetPositionX(), i_owner->GetPositionY(), z, SPEED_CHARGE, id);
 }
@@ -421,6 +399,24 @@ void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)
         return;
 
     Mutate(new RotateMovementGenerator(time, direction), MOTION_SLOT_ACTIVE);
+}
+
+void MotionMaster::MoveFall()
+{
+    // use larger distance for vmap height search than in most other cases
+    float tz = i_owner->GetMap()->GetHeight(i_owner->GetPositionX(), i_owner->GetPositionY(), i_owner->GetPositionZ(), true, MAX_FALL_DISTANCE);
+    if (tz <= INVALID_HEIGHT)
+        return;
+
+    // Abort too if the ground is very near
+    if (fabs(i_owner->GetPositionZ() - tz) < 0.1f)
+        return;
+
+    Movement::MoveSplineInit init(*i_owner);
+    init.MoveTo(i_owner->GetPositionX(),i_owner->GetPositionY(),tz);
+    init.SetFall();
+    init.Launch();
+    Mutate(new EffectMovementGenerator(0), MOTION_SLOT_CONTROLLED);
 }
 
 void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
@@ -512,9 +508,12 @@ void MotionMaster::DelayedDelete(_Ty curr)
 
 bool MotionMaster::GetDestination(float &x, float &y, float &z)
 {
-   if (empty())
+   if (i_owner->movespline->Finalized())
        return false;
 
-   return top() ? top()->GetDestination(x,y,z) : false;
+    const G3D::Vector3& dest = i_owner->movespline->FinalDestination();
+    x = dest.x;
+    y = dest.y;
+    z = dest.z;
+    return true;
 }
-

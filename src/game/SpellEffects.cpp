@@ -1597,67 +1597,18 @@ void Spell::EffectDummy(uint32 i)
                 }
                 case 46573:                                 // Blink (Sunblade Arch Mage)
                 {
-                    if(m_caster->GetTypeId() == TYPEID_UNIT)
+                    if (m_caster->GetTypeId() == TYPEID_UNIT)
                     {
                         //firts AoE stun
-                        unitTarget->CastSpell(unitTarget, 41421, true);
-                        // than Blink
-                        uint32 mapid = m_caster->GetMapId();
+                        m_caster->CastSpell(unitTarget, 41421, true);
 
-                        // Start Info //
-                        float cx,cy,cz;
-                        float dx,dy,dz;
-                        float angle = m_caster->GetOrientation();
-                        m_caster->GetPosition(cx,cy,cz);
+                        Position dest;
+                        m_caster->GetValidPointInAngle(dest, 45.0f, 0.0f, true);
 
-                        //Check use of vamps//
-                        bool useVmap = true;
-                        bool swapZone = true;
+                        m_caster->NearTeleportTo(dest.x, dest.y, dest.z, unitTarget->GetOrientation(), true);
 
-                        //Going foward 0.5f until max distance
-                        for (float i=0.5f; i<45; i+=0.5f)
-                        {
-                            m_caster->GetNearPoint2D(dx,dy,i,angle);
-                            dz = m_caster->GetTerrain()->GetHeight(dx, dy, cz, useVmap);
-
-                            //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
-                            if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (m_caster->IsWithinLOS(dx, dy, dz)))
-                            {
-                                //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
-                                cx = dx;
-                                cy = dy;
-                                cz = dz;
-                            }
-                            else
-                            {
-                                //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
-                                if (swapZone)
-                                {
-                                    //so... change use of vamp and go back 1 step backward and recheck again.
-                                    swapZone = false;
-                                    useVmap = !useVmap;
-                                    i-=0.5f;
-                                }
-                                else
-                                {
-                                    //bad recheck result... so break this and use last good coord for teleport player...
-                                    dz += 0.5f;
-                                    break;
-                                }
-                            }
-                        }
-
-                        //Prevent Falling during swap building/outerspace
-                        m_caster->SetVisibility(VISIBILITY_OFF);
-                        m_caster->Relocate(cx, cy, cz, m_caster->GetOrientation());
-                        m_caster->SendMonsterMove(cx, cy, cz, 0);
-                        WorldPacket data;
-                        m_caster->BuildHeartBeatMsg(&data);
-                        m_caster->SendMessageToSet(&data,false);
-                        m_caster->GetMotionMaster()->Clear();
-                        if(m_caster->getVictim())
+                        if (m_caster->getVictim())
                             m_caster->GetMotionMaster()->MoveChase(m_caster->getVictim());
-                        m_caster->SetVisibility(VISIBILITY_ON);
                     }
                 }
                 case 50243:                                 // Teach Language
@@ -4246,25 +4197,13 @@ void Spell::EffectDistract(uint32 /*i*/)
     if (unitTarget->hasUnitState(UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING))
         return;
 
-    float angle = unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY);
+    unitTarget->SetFacingTo(unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY));
+    unitTarget->clearUnitState(UNIT_STAT_MOVING);
 
     unitTarget->SetStandState(PLAYER_STATE_NONE);
 
-    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
-    {
-        // For players just turn them
-        WorldPacket data;
-        ((Player*)unitTarget)->BuildTeleportAckMsg(data, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), angle);
-        ((Player*)unitTarget)->GetSession()->SendPacket(&data);
-        ((Player*)unitTarget)->SetPosition(unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), angle, false);
-    }
-    else
-    {
-        // Set creature Distracted, Stop it, And turn it
-        unitTarget->SetOrientation(angle);
-        unitTarget->StopMoving();
-        unitTarget->GetMotionMaster()->MoveDistract(damage*1000);
-    }
+    if (unitTarget->GetTypeId() == TYPEID_UNIT)
+        unitTarget->GetMotionMaster()->MoveDistract(damage * IN_MILISECONDS);
 }
 
 void Spell::EffectPickPocket(uint32 /*i*/)
@@ -7098,62 +7037,15 @@ void Spell::EffectLeapForward(uint32 i)
     if (unitTarget->IsTaxiFlying())
         return;
 
-    if (m_spellInfo->rangeIndex== 1)                        //self range
+    if (m_spellInfo->rangeIndex == 1)                        //self range
     {
-        uint32 mapid = m_caster->GetMapId();
-        float dis = GetSpellRadius(m_spellInfo,i,false);
+        Position dest;
+        unitTarget->GetValidPointInAngle(dest, GetSpellRadius(m_spellInfo,i,false), 0.0f, true);
 
-        // Start Info //
-        float cx,cy,cz;
-        float dx,dy,dz;
-        float angle = unitTarget->GetOrientation();
-        unitTarget->GetPosition(cx,cy,cz);
-
-        //Check use of vamps//
-        bool useVmap = true;
-        bool swapZone = true;
-
-        //Going foward 0.5f until max distance
-        for (float i=0.5f; i<dis; i+=0.5f)
-        {
-            unitTarget->GetNearPoint2D(dx,dy,i,angle);
-            dz = unitTarget->GetTerrain()->GetHeight(dx, dy, cz, useVmap);
-
-            //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
-            if ((dz-cz) < 2.0f && (dz-cz) > -2.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
-            {
-                //No climb, the z differenze between this and prev step is ok. Store this destination for future use or check.
-                cx = dx;
-                cy = dy;
-                cz = dz;
-            }
-            else
-            {
-                //Something wrong with los or z differenze... maybe we are going from outer world inside a building or viceversa
-                if (swapZone)
-                {
-                    //so... change use of vamp and go back 1 step backward and recheck again.
-                    swapZone = false;
-                    useVmap = !useVmap;
-                    i-=0.5f;
-                }
-                else
-                {
-                    //bad recheck result... so break this and use last good coord for teleport player...
-                    dz += 0.5f;
-                    break;
-                }
-            }
-        }
-
-        //Prevent Falling during swap building/outerspace
-        unitTarget->UpdateGroundPositionZ(cx, cy, cz);
-
-        unitTarget->NearTeleportTo(cx, cy, cz +0.5f, unitTarget->GetOrientation(), unitTarget == m_caster);
-        if(unitTarget->GetTypeId() == TYPEID_UNIT)
-            unitTarget->SendMonsterMove(cx, cy, cz + 0.5f, 0);
+        unitTarget->NearTeleportTo(dest.x, dest.y, dest.z, unitTarget->GetOrientation(), unitTarget == m_caster);
     }
 }
+
 void Spell::EffectLeapBack(uint32 i)
 {
     if (unitTarget->IsTaxiFlying())
@@ -7292,8 +7184,7 @@ void Spell::EffectCharge2(uint32 /*i*/)
     else
         return;
 
-    m_caster->SendMonsterMoveWithSpeed(x, y, z, MOVEFLAG_WALK_MODE);
-    m_caster->Relocate(x, y, z);
+    m_caster->MonsterMoveWithSpeed(x, y, z, SPEED_CHARGE);
 
     // not all charge effects used in negative spells
     if (unitTarget && unitTarget != m_caster && !IsPositiveSpell(m_spellInfo->Id))
@@ -7543,8 +7434,7 @@ void Spell::EffectSummonDeadPet(uint32 /*i*/)
 
     float x,y,z;
     _player->GetPosition(x, y, z);
-    _player->GetMap()->CreatureRelocation(pet, x, y, z, _player->GetOrientation());
-    pet->SendMonsterMove(x,y,z,0,NULL);
+    pet->NearTeleportTo(x, y, z, _player->GetOrientation());
 
     pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
     pet->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);

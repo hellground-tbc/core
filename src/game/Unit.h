@@ -371,7 +371,6 @@ enum DeathState
     CORPSE      = 2,
     DEAD        = 3,
     JUST_ALIVED = 4,
-    DEAD_FALLING= 5
 };
 
 enum UnitState
@@ -398,7 +397,12 @@ enum UnitState
     UNIT_STAT_MOVE            = 0x00100000,
     UNIT_STAT_ROTATING        = 0x00200000,
     UNIT_STAT_EVADE           = 0x00400000,
-    UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING | UNIT_STAT_CHASE),
+    UNIT_STAT_ROAMING_MOVE    = 0x00800000,
+    UNIT_STAT_CONFUSED_MOVE   = 0x01000000,
+    UNIT_STAT_FLEEING_MOVE    = 0x02000000,
+    UNIT_STAT_CHASE_MOVE      = 0x04000000,
+    UNIT_STAT_FOLLOW_MOVE     = 0x08000000,
+    UNIT_STAT_MOVING          = (UNIT_STAT_ROAMING_MOVE | UNIT_STAT_CONFUSED_MOVE | UNIT_STAT_FLEEING_MOVE| UNIT_STAT_CHASE_MOVE | UNIT_STAT_FOLLOW_MOVE),
     UNIT_STAT_LOST_CONTROL    = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
     UNIT_STAT_SIGHTLESS       = (UNIT_STAT_LOST_CONTROL),
     UNIT_STAT_NOT_MOVE        = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
@@ -611,27 +615,10 @@ enum MovementFlags
         MOVEFLAG_TURN_LEFT | MOVEFLAG_TURN_RIGHT,
 };
 
-// used in SMSG_MONSTER_MOVE
-// only some values known as correct for 2.4.3
-enum SplineFlags
+namespace Movement
 {
-    SPLINEFLAG_NONE           = 0x00000000,
-    SPLINEFLAG_WALKMODE       = 0x00000100,
-    SPLINEFLAG_FLYING         = 0x00000200,
-    SPLINEFLAG_NO_SPLINE      = 0x00000400,               // former: SPLINEFLAG_LEVITATING
-    SPLINEFLAG_FALLING        = 0x00001000,
-    SPLINEFLAG_UNKNOWN7       = 0x02000000,               // swimming/flying (depends on mob?)
-    SPLINEFLAG_SPLINE         = 0x00002000,               // spline n*(float x,y,z)
-};
-
-enum SplineType
-{
-    SPLINETYPE_NORMAL       = 0,
-    SPLINETYPE_STOP         = 1,
-    SPLINETYPE_FACINGSPOT   = 2,
-    SPLINETYPE_FACINGTARGET = 3,
-    SPLINETYPE_FACINGANGLE  = 4
-};
+    class MoveSpline;
+}
 
 class MovementInfo
 {
@@ -675,6 +662,8 @@ class MovementInfo
         Position const *GetTransportPos() const { return &t_pos; }
         uint32 GetTransportTime() const { return t_time; }
         uint32 GetFallTime() const { return fallTime; }
+
+        void ChangeOrientation(float o) { pos.o = o; }
         void ChangePosition(float x, float y, float z, float o) { pos.x = x; pos.y = y; pos.z = z; pos.o = o; }
         void UpdateTime(uint32 _time) { time = _time; }
 
@@ -1272,20 +1261,17 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false);
 
+        void MonsterMoveWithSpeed(float x, float y, float z, float speed, bool time=false);
+
         void SendMonsterStop();
-        void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 Time, Player* player = NULL);
+        void SendHeartBeat();
 
-        template<typename PathElem, typename PathNode>
-        void SendMonsterMoveByPath(Path<PathElem,PathNode> const& path, uint32 start, uint32 end, SplineFlags flags);
+        bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEFLAG_LEVITATING);}
+        bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEFLAG_WALK_MODE);}
 
-        void SendMonsterMoveWithSpeed(float x, float y, float z, uint32 transitTime = 0, Player* player = NULL);
-
-        void SendMonsterMoveWithSpeedToCurrentDestination(Player* player = NULL);
-        void SendMonsterMove(float NewPosX, float NewPosY, float NewPosZ, uint32 MoveFlags, uint32 time, float speedZ, Player *player = NULL);
-
-        void SendMovementFlagUpdate();
-
-        void BuildHeartBeatMsg(WorldPacket *data) const;
+        void SetInFront(Unit const* target);
+        void SetFacingTo(float ori);
+        void SetFacingToObject(WorldObject* pObject);
 
         virtual void MoveOutOfRange(Player &) {};
 
@@ -1483,8 +1469,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         bool isInFront(Unit const* target,float distance, float arc = M_PI) const;
         bool isInFront(GameObject const* target,float distance, float arc = M_PI) const;
-        void SetInFront(Unit const* target);
-        void SetFacingToObject(WorldObject* pObject);
         bool isInBack(Unit const* target, float distance, float arc = M_PI) const;
         bool isInBack(GameObject const* target, float distance, float arc = M_PI) const;
         bool isInLine(Unit const* target, float distance) const;
@@ -1643,15 +1627,11 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         void StopMoving();
 
-        void AddUnitMovementFlag(uint32 f) { m_unit_movement_flags |= f; }
-        void RemoveUnitMovementFlag(uint32 f)
-        {
-            uint32 oldval = m_unit_movement_flags;
-            m_unit_movement_flags = oldval & ~f;
-        }
-        uint32 HasUnitMovementFlag(uint32 f) const { return m_unit_movement_flags & f; }
-        uint32 GetUnitMovementFlags() const { return m_unit_movement_flags; }
-        void SetUnitMovementFlags(uint32 f) { m_unit_movement_flags = f; }
+        void AddUnitMovementFlag(uint32 f) { m_movementInfo.AddMovementFlag(MovementFlags(f)); }
+        void RemoveUnitMovementFlag(uint32 f) { m_movementInfo.RemoveMovementFlag(MovementFlags(f)); }
+        uint32 HasUnitMovementFlag(uint32 f) const { return m_movementInfo.HasMovementFlag(MovementFlags(f)); }
+        uint32 GetUnitMovementFlags() const { return m_movementInfo.GetMovementFlags(); }
+        void SetUnitMovementFlags(uint32 f) { m_movementInfo.SetMovementFlags(MovementFlags(f)); }
 
         void SetControlled(bool apply, UnitState state);
         void SetFeared(bool apply/*, uint64 casterGUID = 0, uint32 spellID = 0*/);
@@ -1713,6 +1693,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         Player* GetGMToSendCombatStats() const { return m_GMToSendCombatStats ? GetPlayer(m_GMToSendCombatStats) : NULL; }
         void SetGMToSendCombatStats(uint64 guid) { m_GMToSendCombatStats = guid; }
         void SendCombatStats(const char* str, Unit *pVictim, ...) const;
+        
+        // Movement info
+        Movement::MoveSpline * movespline;
+        MovementInfo m_movementInfo;
 
     protected:
         explicit Unit ();
@@ -1770,7 +1754,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
         MotionMaster i_motionMaster;
-        uint32 m_unit_movement_flags;
 
         uint32 m_reactiveTimer[MAX_REACTIVE];
         uint32 m_regenTimer;
@@ -1778,8 +1761,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         ThreatManager m_ThreatManager;
 
         int32 m_meleeAPAttackerBonus;
-    private:
 
+        void DisableSpline();
+
+    private:
         bool IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent);
         bool HandleDummyAuraProc(  Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleHasteAuraProc(  Unit *pVictim, uint32 damage, Aura* triggredByAura, SpellEntry const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
@@ -1810,6 +1795,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 m_procDeep;
 
         uint64 m_GMToSendCombatStats;
+        
+        void UpdateSplineMovement(uint32 t_diff);
+        TimeTrackerSmall m_movesplineTimer;
 };
 
 namespace Trinity
@@ -1824,35 +1812,6 @@ namespace Trinity
             _list.erase(itr);
         }
     }
-}
-
-template<typename Elem, typename Node>
-inline void Unit::SendMonsterMoveByPath(Path<Elem,Node> const& path, uint32 start, uint32 end, SplineFlags flags)
-{
-    uint32 traveltime = uint32(path.GetTotalLength(start, end) * 32.0f);
-
-    uint32 pathSize = end - start;
-
-    WorldPacket data(SMSG_MONSTER_MOVE, (GetPackGUID().size()+1+4+4+4+4+1+4+4+4+pathSize*4*3));
-    data << GetPackGUID();
-    data << GetPositionX();
-    data << GetPositionY();
-    data << GetPositionZ();
-    data << uint32(WorldTimer::getMSTime());
-    data << uint8(SPLINETYPE_NORMAL);
-    data << uint32(flags);
-    data << uint32(traveltime);
-    data << uint32(pathSize);
-
-    for (uint32 i = start; i < end; ++i)
-    {
-        data << float(path[i].x);
-        data << float(path[i].y);
-        data << float(path[i].z);
-    }
-
-    SendMessageToSet(&data, true);
-  //  addUnitState(UNIT_STAT_MOVE);
 }
 
 #endif
