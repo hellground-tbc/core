@@ -2447,9 +2447,11 @@ enum
 
     NPC_DRAGON_KITE             = 25110,
     SPELL_DRAGON_KITE_LIGHTNING = 45197,
+    SPELL_DRAGON_KITE_STRING    = 45192,
 
     NPC_MURKY                   = 15186,
     NPC_LURKY                   = 15358,
+    NPC_GURKY                   = 16069,
     SPELL_MURKY_DANCE           = 25165,
 
     NPC_EGBERT                  = 23258,
@@ -2457,6 +2459,8 @@ enum
 
     NPC_SCORCHLING              = 25706,
     SPELL_SCORCHLING_BLAST      = 45889,
+
+    NPC_DISGUSTING_OOZELING     = 15429,
 };
 
 struct TRINITY_DLL_DECL npc_small_pet_handlerAI : public ScriptedAI
@@ -2468,24 +2472,20 @@ struct TRINITY_DLL_DECL npc_small_pet_handlerAI : public ScriptedAI
 
     uint32 m_uiCheckTimer;
     uint32 m_uiActionTimer;
-    uint64 m_uiPlayerGUID;
 
     void Reset()
     {
+        ClearCastQueue();
+
         m_bIsIdle = false;
         m_bIsInAction = false;
 
         m_uiCheckTimer = 1000;
         m_uiActionTimer = urand(10000, 30000);
-        m_uiPlayerGUID = 0;
 
-        if (Unit* pOwner = me->GetCharmerOrOwner())
-        {
-            me->GetMotionMaster()->MoveFollow(pOwner, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-            m_uiPlayerGUID = pOwner->GetGUID();
-        }
+        me->GetMotionMaster()->MoveFollow(me->GetOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
-        ClearCastQueue();
+        PetCreateAction(me->GetEntry());
     }
 
     void AttackStart(Unit* who) {}
@@ -2497,8 +2497,10 @@ struct TRINITY_DLL_DECL npc_small_pet_handlerAI : public ScriptedAI
         // Check if pet is moving
         if (m_uiCheckTimer < uiDiff)
         {
-            if (Player* pPlayer = me->GetPlayer(m_uiPlayerGUID))
+            if (Unit* pUnit = me->GetOwner())
             {
+                Player *pPlayer = pUnit->ToPlayer();
+
                 // Change speed if owner is mounted
                 if (pPlayer->IsMounted())
                     me->SetSpeed(MOVE_RUN, 2.0f, true);
@@ -2560,12 +2562,29 @@ struct TRINITY_DLL_DECL npc_small_pet_handlerAI : public ScriptedAI
         CastNextSpellIfAnyAndReady();
     }
 
-    void PetAction(uint32 uiPetGUID)
+    void PetCreateAction(uint32 uiPetEntry)
     {
-        if (!uiPetGUID)
+        if (!uiPetEntry)
             return;
 
-        switch (uiPetGUID)
+        switch (uiPetEntry)
+        {
+            case NPC_DRAGON_KITE:
+            {
+                AddSpellToCast(me->GetOwner(), SPELL_DRAGON_KITE_STRING);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    void PetAction(uint32 uiPetEntry)
+    {
+        if (!uiPetEntry)
+            return;
+
+        switch (uiPetEntry)
         {
             case NPC_PANDA:
             {
@@ -2595,6 +2614,7 @@ struct TRINITY_DLL_DECL npc_small_pet_handlerAI : public ScriptedAI
             }
             case NPC_MURKY:
             case NPC_LURKY:
+            case NPC_GURKY:
             {
                 me->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
                 AddSpellToCast(SPELL_MURKY_DANCE);
