@@ -1365,7 +1365,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
 
         std::list<Unit*>::iterator next;
 
-        bool ignoreLOS = SpellIgnoreLOS(m_spellInfo, GetEffectIdx());
+        bool ignoreLOS = SpellIgnoreLOS(m_spellInfo, 0);
         if (TargetType == SPELL_TARGETS_CHAINHEAL)
         {
             next = tempUnitMap.begin();

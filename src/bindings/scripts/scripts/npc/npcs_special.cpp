@@ -2430,7 +2430,7 @@ CreatureAI* GetAI_npc_land_mine(Creature* pCreature)
     return new npc_land_mineAI(pCreature);
 }
 
-enum
+enum MiniPetsInfo
 {
     NPC_PANDA                   = 11325,
     SPELL_PANDA_SLEEP           = 19231,
