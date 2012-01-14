@@ -404,7 +404,7 @@ void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)
 void MotionMaster::MoveFall()
 {
     // use larger distance for vmap height search than in most other cases
-    float tz = i_owner->GetMap()->GetHeight(i_owner->GetPositionX(), i_owner->GetPositionY(), i_owner->GetPositionZ(), true, MAX_FALL_DISTANCE);
+    float tz = i_owner->GetTerrain()->GetHeight(i_owner->GetPositionX(), i_owner->GetPositionY(), i_owner->GetPositionZ(), true, MAX_FALL_DISTANCE);
     if (tz <= INVALID_HEIGHT)
         return;
 

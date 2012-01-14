@@ -1631,8 +1631,3 @@ TRINITY_DLL_SPEC void HandleWorldEventGossip(Player* p, Creature* c)
 {
     gameeventmgr.HandleWorldEventGossip(p, c);
 }
-
-TRINITY_DLL_SPEC void HandleWorldEventGossip(Player* p, Creature* c)
-{
-    gameeventmgr.HandleWorldEventGossip(p, c);
-}
