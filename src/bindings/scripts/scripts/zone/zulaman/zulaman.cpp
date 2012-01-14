@@ -934,8 +934,8 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void Reset()
     {
-    //    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-    //    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetVisibility(VISIBILITY_ON);
         m_creature->setActive(true);
         EventStarted = false;
@@ -983,7 +983,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(pInstance->GetData(DATA_AKILZONEVENT) == AKILZON_GAUNTLET_IN_PROGRESS)
+        if(me->getVictim())
             return;
        // if(EventStarted)
        //     return;
@@ -1011,7 +1011,6 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
                 Move = true;
                 MovePoint = id + 1;
             }
-
         }
     }
 
