@@ -199,7 +199,7 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        if (me->IsWithinDistInMap(who, 6)
+        if (me->IsWithinDistInMap(who, 6))
             ChangeTargetTimer = 200;
     }
 
