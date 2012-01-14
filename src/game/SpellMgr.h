@@ -347,6 +347,7 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
 
 bool IsBinaryResistable(SpellEntry const* spellInfo);
 bool IsPartialyResistable(SpellEntry const* spellInfo);
+bool SpellIgnoreLOS(SpellEntry const* spellInfo, uint8 effIdx);
 
 // Spell affects related declarations (accessed using SpellMgr functions)
 typedef std::map<uint32, uint64> SpellAffectMap;
@@ -642,7 +643,6 @@ inline bool IgnoreMagnetTargetAura(SpellEntry const* spellInfo)
             return false;
     }
 }
-
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
@@ -944,5 +944,5 @@ class TRINITY_DLL_SPEC SpellMgr
 };
 
 #define spellmgr SpellMgr::Instance()
-#endif
 
+#endif

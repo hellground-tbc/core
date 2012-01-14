@@ -1365,11 +1365,12 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
 
         std::list<Unit*>::iterator next;
 
+        bool ignoreLOS = SpellIgnoreLOS(m_spellInfo, GetEffectIdx());
         if (TargetType == SPELL_TARGETS_CHAINHEAL)
         {
             next = tempUnitMap.begin();
             while (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS
-                || !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !cur->IsWithinLOSInMap(*next) || (*next)->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET))
+                || !ignoreLOS && !cur->IsWithinLOSInMap(*next) || (*next)->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET))
             {
                 ++next;
                 if (next == tempUnitMap.end())
@@ -1388,7 +1389,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
                 && !m_caster->isInFront(*next, max_range)
                 || !m_caster->canSeeOrDetect(*next, false)
                 || (m_spellInfo->AttributesEx6 & SPELL_ATTR_EX6_CANT_TARGET_CCD && ((*next)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC) || (*next)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*next))->GetCreatureType() == CREATURE_TYPE_CRITTER))
-                || !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !cur->IsWithinLOSInMap(*next))
+                || !ignoreLOS && !cur->IsWithinLOSInMap(*next))
             {
                 ++next;
                 if (next == tempUnitMap.end() || cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
@@ -3741,7 +3742,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             if (target->IsTaxiFlying() && m_caster->GetTypeId() == TYPEID_PLAYER)
                 return SPELL_FAILED_BAD_TARGETS;
 
-            if (!m_IsTriggeredSpell && !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
+            if (!m_IsTriggeredSpell && !SpellIgnoreLOS(m_spellInfo, 0) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
                 return SPELL_FAILED_LINE_OF_SIGHT;
 
             // auto selection spell rank implemented in WorldSession::HandleCastSpellOpcode
@@ -3858,7 +3859,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 if (Pet *pPet = m_caster->GetPet())
                 {
-                    if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !pPet->IsWithinLOSInMap(m_caster))
+                    if (!SpellIgnoreLOS(m_spellInfo, j) && !pPet->IsWithinLOSInMap(m_caster))
                         return SPELL_FAILED_LINE_OF_SIGHT;
                 }
                 break;
@@ -4435,7 +4436,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }
 
-    if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS))
+    if (!SpellIgnoreLOS(m_spellInfo, 0))
     {
         if (!m_targets.getUnitTarget() && !m_targets.getGOTarget() && !m_targets.getItemTarget())
             if (m_targets.m_destX && m_targets.m_destY && m_targets.m_destZ && !m_caster->IsWithinLOS(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ))
@@ -5305,7 +5306,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
             //fall through
         case SPELL_EFFECT_RESURRECT_NEW:
             // player far away, maybe his corpse near?
-            if (target!=m_caster && !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !target->IsWithinLOSInMap(m_caster))
+            if (target!=m_caster && !SpellIgnoreLOS(m_spellInfo, eff) && !target->IsWithinLOSInMap(m_caster))
             {
                 if (!m_targets.getCorpseTargetGUID())
                     return false;
@@ -5317,14 +5318,14 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
                 if (target->GetGUID()!=corpse->GetOwnerGUID())
                     return false;
 
-                if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !corpse->IsWithinLOSInMap(m_caster))
+                if (!SpellIgnoreLOS(m_spellInfo, eff) && !corpse->IsWithinLOSInMap(m_caster))
                     return false;
             }
 
             // all ok by some way or another, skip normal check
             break;
         default:                                            // normal case
-            if (target!=m_caster && !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !target->IsWithinLOSInMap(m_caster))
+            if (target!=m_caster && !SpellIgnoreLOS(m_spellInfo, eff) && !target->IsWithinLOSInMap(m_caster))
                 return false;
 
             break;
