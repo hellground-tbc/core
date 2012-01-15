@@ -5889,8 +5889,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 return;
 
             //Remove Stoned
-            if (unitTarget->HasAura(33652,0))
-                unitTarget->RemoveAurasDueToSpell(33652);
+            unitTarget->RemoveAurasDueToSpell(33652);
 
             // Only player cast this
             if (unitTarget->GetTypeId() != TYPEID_PLAYER)
