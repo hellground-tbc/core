@@ -2093,6 +2093,9 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         float GetXPRate(Rates rate);
 
+        void SetFlying(bool apply);
+        bool forcedFly;
+
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
         /*********************************************************/

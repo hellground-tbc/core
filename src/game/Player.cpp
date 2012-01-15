@@ -450,6 +450,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
     m_isActive = true;
 
     saving = false;
+    forcedFly = false;
 }
 
 Player::~Player ()
@@ -20263,4 +20264,19 @@ float Player::GetXPRate(Rates rate)
         return 1.0f;
     else
         return sWorld.getRate(Rates(rate));
+}
+
+void Player::SetFlying(bool apply)
+{
+    forcedFly = apply;
+
+    WorldPacket data;
+    if (apply)
+        data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
+    else
+        data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
+
+    data << GetPackGUID();
+    data << uint32(0);                                      // unknown
+    SendMessageToSet(&data, true);
 }
