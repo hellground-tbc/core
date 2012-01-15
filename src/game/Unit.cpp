@@ -6793,7 +6793,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Molten Shields
         case 30482:
         {
-            sLog.outString("FLAGS: %S", procFlags);
             if (procFlags & (PROC_FLAG_TAKEN_RANGED_SPELL_HIT | PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT))
             {
                 float chance = HasAura(11094, 0) ? 50.0f : HasAura(13043, 0) ? 100.0f : 0.0f;
