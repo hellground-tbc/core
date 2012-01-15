@@ -4635,9 +4635,10 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
         }
     }
 
+    m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, m_modifier.m_miscvalue, apply);
+
     if (!apply)
     {
-        uint8 count = 0;
         Unit::AuraList mAuras = m_target->GetAurasByType(SPELL_AURA_MECHANIC_IMMUNITY);
         for (Unit::AuraList::iterator iter = mAuras.begin(); iter != mAuras.end(); ++iter)
         {
