@@ -1451,7 +1451,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             }
             else
                 Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
-
+            TagUnitMap.remove_if(Trinity::ObjectIsTotemCheck(true)); // totems should not be affected by AoE spells (check if no exceptions?)
             break;
         }
         case SPELL_TARGET_TYPE_DEAD:
