@@ -723,104 +723,555 @@ bool GOUse_go_thunderspike(Player *player, GameObject* _GO)
 ## Simon Game - An Apexis Relic
 ######*/
 
-enum usedSpells
+enum SimonGame
 {
-    SPELL_SG_SWITCHED_ON    = 40494,
-    SPELL_SG_SWITCHED_OF    = 40495,
+    NPC_SIMON_BUNNY                 = 22923,
+    NPC_APEXIS_GUARDIAN             = 22275,
 
-    SPELL_SG_SWITCHED_ON_DISABLE_OFF = 40512,
-    SPELL_SG_SWITCHED_ON_ENABLE_OFF  = 40499,
+    GO_APEXIS_RELIC                 = 185890,
+    GO_APEXIS_MONUMENT              = 185944,
+    GO_AURA_BLUE                    = 185872,
+    GO_AURA_GREEN                   = 185873,
+    GO_AURA_RED                     = 185874,
+    GO_AURA_YELLOW                  = 185875,
 
-    SPELL_SG_SUPPRESS_MOBS_TEST = 41154,
+    GO_BLUE_CLUSTER_DISPLAY         = 7369,
+    GO_GREEN_CLUSTER_DISPLAY        = 7371,
+    GO_RED_CLUSTER_DISPLAY          = 7373,
+    GO_YELLOW_CLUSTER_DISPLAY       = 7375,
+    GO_BLUE_CLUSTER_DISPLAY_LARGE   = 7364,
+    GO_GREEN_CLUSTER_DISPLAY_LARGE  = 7365,
+    GO_RED_CLUSTER_DISPLAY_LARGE    = 7366,
+    GO_YELLOW_CLUSTER_DISPLAY_LARGE = 7367,
 
-    SPELL_SG_START_GAME_SOLO           = 41137, // trigger: 41145
-    SPELL_SG_START_GAME_SOLO_REAGENTS  = 41145, // 1 shard + trigger: 39993, 41153
+    SPELL_PRE_GAME_BLUE             = 40176,
+    SPELL_PRE_GAME_GREEN            = 40177,
+    SPELL_PRE_GAME_RED              = 40178,
+    SPELL_PRE_GAME_YELLOW           = 40179,
+    SPELL_VISUAL_BLUE               = 40244,
+    SPELL_VISUAL_GREEN              = 40245,
+    SPELL_VISUAL_RED                = 40246,
+    SPELL_VISUAL_YELLOW             = 40247,
 
-    SPELL_SG_START_GAME_PARTY          = 41139, // trigger: 41139
-    SPELL_SG_START_GAME_PARTY_REAGENTS = 41146, // 35 shards + trigger: 39993, 41153
+    SOUND_BLUE                      = 11588,
+    SOUND_GREEN                     = 11589,
+    SOUND_RED                       = 11590,
+    SOUND_YELLOW                    = 11591,
+    SOUND_DISABLE_NODE              = 11758,
 
-    SPELL_SG_REWARD_OFFSET = 41259,             // Reward all in spell range ?
-    SPELL_SG_GROUP_REWARD_PRE_SPELL = 41952,    // triggers: 41124
+    SPELL_AUDIBLE_GAME_TICK         = 40391,
+    SPELL_VISUAL_START_PLAYER_LEVEL = 40436,
+    SPELL_VISUAL_START_AI_LEVEL     = 40387,
 
-    SPELL_SG_AUDIBLE_OFFSET = 41407,
-
-    SPELL_SG_PRE_GAME_YELLOW_AURA      = 40179, // activate GOs, trigger: 40289
-    SPELL_SG_PRE_GAME_S_YELLOW_A_SMALL = 40289, // summons: yellow aura GO
-    SPELL_SG_PRE_GAME_S_YELLOW_A_LARGE = 41110, // activate GOs, summons: large yellow aura GO?
-
-    SPELL_SG_PRE_GAME_RED_AURA      = 40178, // activate GOs, trigger: 40288
-    SPELL_SG_PRE_GAME_S_RED_A_SMALL = 40288, // summons: red aura GO
-    SPELL_SG_PRE_GAME_S_RED_A_LARGE = 41111, // activate GOs, summons: large red aura GO?
-
-    SPELL_SG_PRE_GAME_GREEN_AURA      = 40177, // activate GOs, trigger: 40287
-    SPELL_SG_PRE_GAME_S_GREEN_A_SMALL = 40287, // summons: green aura GO
-    SPELL_SG_PRE_GAME_S_GREEN_A_LARGE = 41112, // activate GOs, summons: large green aura GO?
-
-    SPELL_SG_PRE_GAME_BLUE_AURA      = 40176, // activate GOs, trigger: 40281
-    SPELL_SG_PRE_GAME_S_BLUE_A_SMALL = 40281, // summons: green aura GO
-    SPELL_SG_PRE_GAME_S_BLUE_A_LARGE = 41113, // activate GOs, summons: large green aura GO?
-
-    SPELL_SG_START_YELLOW = 40172,
-    SPELL_SG_START_RED = 40169,
-    SPELL_SG_START_GREEN = 40171,
-    SPELL_SG_START_BLUE = 40170,
-
-    SPELL_SG_START_TIMER = 39993, // should trigger: 40362?
-    SPELL_SG_START_TIMER_FORCE_PRIODIC = 40362,
-
-    SPELL_SG_PRE_GAME_TIMER = 40041,
-
-    SPELL_SG_END_YELLOW = 40286,
-    SPELL_SG_END_RED = 40285,
-    SPELL_SG_END_GREEN = 40284,
-    SPELL_SG_END_BLUE = 40283,
-
-    SPELL_SG_END_TIMER = 40359,
-
-    SPELL_SG_BUTTON_PRESSED = 39999,
-
-    SPELL_SG_VISUAL_LEVEL_START_OFFSET = 41235,
-    SPELL_SG_VISUAL_LEVEL_START = 40436,
-
-    SPELL_SG_VISUAL_GAME_TICK = 40391,
-    SPELL_SG_VISUAL_GAME_TICK_L = 42019,
-
-    SPELL_SG_VISUAL_GAME_START_TEST = 41300,
-    SPELL_SG_VISUAL_GAME_START = 40387,
-
-    SPELL_SG_VISUAL_GAME_FAILED_L = 41257,
-    SPELL_SG_VISUAL_GAME_FAILED = 40437,
-
-    SPELL_SG_VISUAL_BUTTON_PRESS_YELLOW = 40247,
-    SPELL_SG_VISUAL_BUTTON_PRESS_RED = 40246,
-    SPELL_SG_VISUAL_BUTTON_PRESS_GREEN = 40245,
-    SPELL_SG_VISUAL_BUTTON_PRESS_BLUE = 40244,
-
-    SPELL_SG_CREATE_BUNNY = 40502,
-    SPELL_SG_PORT_BUNNY_LARGE = 41090,
-
-    SPELL_SG_GOOD_PRESS = 40063,
-    SPELL_SG_BAD_PRESS = 41241, // trigers: 40065
-
-    SPELL_SG_AUDIBLE_BUTTON_PUSH_BLUE = 41398,
-
-    SPELL_APEXIS_VIBRATIONS_QUEST = 40310, // triggers: 40623
+    SPELL_BAD_PRESS_TRIGGER         = 41241,
+    SPELL_BAD_PRESS_DAMAGE          = 40065,
+    SPELL_REWARD_BUFF_1             = 40310,
+    SPELL_REWARD_BUFF_2             = 40311,
+    SPELL_REWARD_BUFF_3             = 40312,
 };
 
-/*
-
-ONEDAY THERE WILL BE A SCRIPT
-
-*/
-
-enum uNPC
+enum SimonEvents
 {
-    SG_BUNNY = 22923,
-    SG_BUNNY_LARGE = 23378,
-    SG_SUMMON_TARGET = 23382,
-    SIMON_UNIT = 23385,
+    EVENT_SIMON_SETUP_PRE_GAME         = 1,
+    EVENT_SIMON_PLAY_SEQUENCE          = 2,
+    EVENT_SIMON_RESET_CLUSTERS         = 3,
+    EVENT_SIMON_PERIODIC_PLAYER_CHECK  = 4,
+    EVENT_SIMON_TOO_LONG_TIME          = 5,
+    EVENT_SIMON_GAME_TICK              = 6,
+    EVENT_SIMON_ROUND_FINISHED         = 7,
+
+    ACTION_SIMON_CORRECT_FULL_SEQUENCE = 8,
+    ACTION_SIMON_WRONG_SEQUENCE        = 9,
+    ACTION_SIMON_ROUND_FINISHED        = 10,
 };
 
+enum SimonColors
+{
+    SIMON_BLUE          = 0,
+    SIMON_RED           = 1,
+    SIMON_GREEN         = 2,
+    SIMON_YELLOW        = 3,
+    SIMON_MAX_COLORS    = 4,
+};
+
+struct npc_simon_bunnyAI : public ScriptedAI
+{
+    npc_simon_bunnyAI(Creature* creature) : ScriptedAI(creature) { }
+
+    bool large;
+    bool listening;
+    uint8 gameLevel;
+    uint8 fails;
+    uint8 gameTicks;
+    uint64 playerGUID;
+    uint32 clusterIds[SIMON_MAX_COLORS];
+    float zCoordCorrection;
+    float searchDistance;
+    EventMap _events;
+    std::list<uint8> colorSequence, playableSequence, playerSequence;
+
+    void UpdateAI(const uint32 diff)
+    {
+        _events.Update(diff);
+        switch (_events.ExecuteEvent())
+        {
+            case EVENT_SIMON_PERIODIC_PLAYER_CHECK:
+                if (!CheckPlayer())
+                    ResetNode();
+                else
+                    _events.ScheduleEvent(EVENT_SIMON_PERIODIC_PLAYER_CHECK, 2000);
+                break;
+            case EVENT_SIMON_SETUP_PRE_GAME:
+                SetUpPreGame();
+                _events.CancelEvent(EVENT_SIMON_GAME_TICK);
+                _events.ScheduleEvent(EVENT_SIMON_PLAY_SEQUENCE, 1000);
+                break;
+            case EVENT_SIMON_PLAY_SEQUENCE:
+                if (!playableSequence.empty())
+                {
+                    PlayNextColor();
+                    _events.ScheduleEvent(EVENT_SIMON_PLAY_SEQUENCE, 1500);
+                }
+                else
+                {
+                    listening = true;
+                    AddSpellToCast(SPELL_VISUAL_START_PLAYER_LEVEL, CAST_NULL);
+                    playerSequence.clear();
+                    PrepareClusters();
+                    gameTicks = 0;
+                    _events.ScheduleEvent(EVENT_SIMON_GAME_TICK, 3000);
+                }
+                break;
+            case EVENT_SIMON_GAME_TICK:
+                AddSpellToCast(SPELL_AUDIBLE_GAME_TICK, CAST_NULL);
+                
+                if (gameTicks > gameLevel)
+                    _events.ScheduleEvent(EVENT_SIMON_TOO_LONG_TIME, 500);
+                else
+                    _events.ScheduleEvent(EVENT_SIMON_GAME_TICK, 3000);
+                gameTicks++;
+                break;
+            case EVENT_SIMON_RESET_CLUSTERS:
+                PrepareClusters(true);
+                break;
+            case EVENT_SIMON_TOO_LONG_TIME:
+                DoAction(ACTION_SIMON_WRONG_SEQUENCE);
+                break;
+            case EVENT_SIMON_ROUND_FINISHED:
+                DoAction(ACTION_SIMON_ROUND_FINISHED);
+                break;
+        }
+        CastNextSpellIfAnyAndReady();
+    }
+
+    void DoAction(const int32 action)
+    {
+        switch (action)
+        {
+            case ACTION_SIMON_ROUND_FINISHED:
+                listening = false;
+                AddSpellToCast(SPELL_VISUAL_START_AI_LEVEL, CAST_NULL);
+                GiveRewardForLevel(gameLevel);
+                _events.CancelEventsByGCD(0);
+                if (gameLevel == 10)
+                    ResetNode();
+                else
+                    _events.ScheduleEvent(EVENT_SIMON_SETUP_PRE_GAME, 1000);
+                break;
+            case ACTION_SIMON_CORRECT_FULL_SEQUENCE:
+                gameLevel++;
+                DoAction(ACTION_SIMON_ROUND_FINISHED);
+                break;
+            case ACTION_SIMON_WRONG_SEQUENCE:
+                GivePunishment();
+                DoAction(ACTION_SIMON_ROUND_FINISHED);
+                break;
+        }
+    }
+
+    // Called by color clusters script (go_simon_cluster) and used for knowing the button pressed by player
+    void SetData(uint32 type, uint32 /*data*/)
+    {
+        if (!listening)
+            return;
+
+        uint8 pressedColor;
+
+        if (type == clusterIds[SIMON_RED])
+            pressedColor = SIMON_RED;
+        else if (type == clusterIds[SIMON_BLUE])
+            pressedColor = SIMON_BLUE;
+        else if (type == clusterIds[SIMON_GREEN])
+            pressedColor = SIMON_GREEN;
+        else if (type == clusterIds[SIMON_YELLOW])
+            pressedColor = SIMON_YELLOW;
+
+        PlayColor(pressedColor);
+        playerSequence.push_back(pressedColor);
+        _events.ScheduleEvent(EVENT_SIMON_RESET_CLUSTERS, 500);
+        CheckPlayerSequence();
+    }
+
+    // Used for getting involved player guid. Parameter id is used for defining if is a large(Monument) or small(Relic) node
+    void SetGUID(uint64 guid, int32 id)
+    {
+        ClearCastQueue();
+
+        me->SetLevitate(true);
+
+        large = (bool)id;
+        playerGUID = guid;
+        StartGame();
+    }
+
+    /*
+    Resets all variables and also find the ids of the four closests color clusters, since every simon
+    node have diferent ids for clusters this is absolutely NECESSARY.
+    */
+    void StartGame()
+    {
+        listening = false;
+        gameLevel = 0;
+        fails = 0;
+        gameTicks = 0;
+        zCoordCorrection = large ? 8.0f : 2.75f;
+        searchDistance = large ? 13.0f : 5.0f;
+        colorSequence.clear();
+        playableSequence.clear();
+        playerSequence.clear();
+        me->SetFloatValue(OBJECT_FIELD_SCALE_X, large ? 2 : 1);
+
+        std::list<GameObject*> ClusterList;
+        Trinity::AllGameObjectsInRange objects(me, searchDistance);
+        Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(ClusterList, objects);
+        Cell::VisitGridObjects(me, searcher, searchDistance);
+
+        for (std::list<GameObject*>::const_iterator i = ClusterList.begin(); i != ClusterList.end(); ++i)
+        {
+            if (GameObject* go = (*i)->ToGameObject())
+            {
+                // We are checking for displayid because all simon nodes have 4 clusters with different entries
+                if (large)
+                {
+                    switch (go->GetGOInfo()->displayId)
+                    {
+                        case GO_BLUE_CLUSTER_DISPLAY_LARGE: clusterIds[SIMON_BLUE] = go->GetEntry(); break;
+                        case GO_RED_CLUSTER_DISPLAY_LARGE: clusterIds[SIMON_RED] = go->GetEntry(); break;
+                        case GO_GREEN_CLUSTER_DISPLAY_LARGE: clusterIds[SIMON_GREEN] = go->GetEntry(); break;
+                        case GO_YELLOW_CLUSTER_DISPLAY_LARGE: clusterIds[SIMON_YELLOW] = go->GetEntry(); break;
+                    }
+                }
+                else
+                {
+                    switch (go->GetGOInfo()->displayId)
+                    {
+                        case GO_BLUE_CLUSTER_DISPLAY: clusterIds[SIMON_BLUE] = go->GetEntry(); break;
+                        case GO_RED_CLUSTER_DISPLAY: clusterIds[SIMON_RED] = go->GetEntry(); break;
+                        case GO_GREEN_CLUSTER_DISPLAY: clusterIds[SIMON_GREEN] = go->GetEntry(); break;
+                        case GO_YELLOW_CLUSTER_DISPLAY: clusterIds[SIMON_YELLOW] = go->GetEntry(); break;
+                    }
+                }
+            }
+        }
+
+        _events.Reset();
+        _events.ScheduleEvent(EVENT_SIMON_ROUND_FINISHED, 1000);
+        _events.ScheduleEvent(EVENT_SIMON_PERIODIC_PLAYER_CHECK, 2000);
+
+        if (GameObject* relic = GetClosestGameObjectWithEntry(me, large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
+            relic->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+    }
+
+    // Called when despawning the bunny. Sets all the node GOs to their default states.
+    void ResetNode()
+    {
+        DoPlaySoundToSet(me, SOUND_DISABLE_NODE);
+
+        for (uint32 clusterId = SIMON_BLUE; clusterId < SIMON_MAX_COLORS; clusterId++)
+            if (GameObject* cluster = GetClosestGameObjectWithEntry(me, clusterIds[clusterId], searchDistance))
+                cluster->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+
+        for (uint32 auraId = GO_AURA_BLUE; auraId <= GO_AURA_YELLOW; auraId++)
+            if (GameObject* auraGo = GetClosestGameObjectWithEntry(me, auraId, searchDistance))
+                auraGo->RemoveFromWorld();
+
+        if (GameObject* relic = GetClosestGameObjectWithEntry(me, large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
+            relic->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+
+        me->ForcedDespawn(1000);
+    }
+
+    /*
+    Called on every button click of player. Adds the clicked color to the player created sequence and
+    checks if it corresponds to the AI created sequence. If so, incremente gameLevel and start a new
+    round, if not, give punishment and restart current level.
+    */
+    void CheckPlayerSequence()
+    {
+        bool correct = true;
+        if (playerSequence.size() <= colorSequence.size())
+            for (std::list<uint8>::const_iterator i = playerSequence.begin(), j = colorSequence.begin(); i != playerSequence.end(); ++i, ++j)
+                if ((*i) != (*j))
+                    correct = false;
+
+        if (correct && (playerSequence.size() == colorSequence.size()))
+            DoAction(ACTION_SIMON_CORRECT_FULL_SEQUENCE);
+        else if (!correct)
+            DoAction(ACTION_SIMON_WRONG_SEQUENCE);
+    }
+
+    /*
+    Generates a random sequence of colors depending on the gameLevel. We also copy this sequence to
+    the playableSequence wich will be used when playing the sequence to the player.
+    */
+    void GenerateColorSequence()
+    {
+        colorSequence.clear();
+        for (uint8 i = 0; i <= gameLevel; i++)
+            colorSequence.push_back(RAND(SIMON_BLUE, SIMON_RED, SIMON_GREEN, SIMON_YELLOW));
+
+        for (std::list<uint8>::const_iterator i = colorSequence.begin(); i != colorSequence.end(); ++i)
+            playableSequence.push_back(*i);
+    }
+
+
+    // Remove any existant glowing auras over clusters and set clusters ready for interating with them.
+    void PrepareClusters(bool clustersOnly = false)
+    {
+        for (uint32 clusterId = SIMON_BLUE; clusterId < SIMON_MAX_COLORS; clusterId++)
+            if (GameObject* cluster = GetClosestGameObjectWithEntry(me, clusterIds[clusterId], searchDistance))
+                cluster->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+
+        if (clustersOnly)
+            return;
+
+        for (uint32 auraId = GO_AURA_BLUE; auraId <= GO_AURA_YELLOW; auraId++)
+            if (GameObject* auraGo = GetClosestGameObjectWithEntry(me, auraId, searchDistance))
+                auraGo->RemoveFromWorld();
+    }
+
+    /*
+    Called when AI is playing the sequence for player. We cast the visual spell and then remove the
+    casted color from the casting sequence.
+    */
+    void PlayNextColor()
+    {
+        PlayColor(*playableSequence.begin());
+        playableSequence.erase(playableSequence.begin());
+    }
+
+    // Casts a spell and plays a sound depending on parameter color.
+    void PlayColor(uint8 color)
+    {
+        switch (color)
+        {
+            case SIMON_BLUE:
+                AddSpellToCast(SPELL_VISUAL_BLUE, CAST_NULL);
+                DoPlaySoundToSet(me, SOUND_BLUE);
+                break;
+            case SIMON_GREEN:
+                AddSpellToCast(SPELL_VISUAL_GREEN, CAST_NULL);
+                DoPlaySoundToSet(me, SOUND_GREEN);
+                break;
+            case SIMON_RED:
+                AddSpellToCast(SPELL_VISUAL_RED, CAST_NULL);
+                DoPlaySoundToSet(me, SOUND_RED);
+                break;
+            case SIMON_YELLOW:
+                AddSpellToCast(SPELL_VISUAL_YELLOW, CAST_NULL);
+                DoPlaySoundToSet(me, SOUND_YELLOW);
+                break;
+        }
+    }
+
+    /*
+    Creates the transparent glowing auras on every cluster of this node.
+    After calling this function bunny is teleported to the center of the node.
+    */
+    void SetUpPreGame()
+    {
+        for (uint32 clusterId = SIMON_BLUE; clusterId < SIMON_MAX_COLORS; clusterId++)
+        {
+            if (GameObject* cluster = GetClosestGameObjectWithEntry(me,clusterIds[clusterId], 2.0f*searchDistance))
+            {
+                cluster->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+
+                // break since we don't need glowing auras for large clusters
+                if (large)
+                    break;
+
+                float x, y, z, o = 0.0f;
+                cluster->GetPosition(x, y, z);
+                me->NearTeleportTo(x, y, z, o);
+
+                uint32 preGameSpellId;
+                if (cluster->GetEntry() == clusterIds[SIMON_RED])
+                    preGameSpellId = SPELL_PRE_GAME_RED;
+                else if (cluster->GetEntry() == clusterIds[SIMON_BLUE])
+                    preGameSpellId = SPELL_PRE_GAME_BLUE;
+                else if (cluster->GetEntry() == clusterIds[SIMON_GREEN])
+                    preGameSpellId = SPELL_PRE_GAME_GREEN;
+                else if (cluster->GetEntry() == clusterIds[SIMON_YELLOW])
+                    preGameSpellId = SPELL_PRE_GAME_YELLOW;
+                else
+                    break;
+
+                me->CastSpell(cluster, preGameSpellId, true);
+            }
+        }
+
+        if (GameObject* relic = GetClosestGameObjectWithEntry(me, large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
+        {
+            float x, y, z, o = 0.0f;
+            relic->GetPosition(x, y, z);
+            me->NearTeleportTo(x, y, z + zCoordCorrection, o);
+        }
+
+        GenerateColorSequence();
+    }
+
+    // Handles the spell rewards. The spells also have the QuestCompleteEffect, so quests credits are working.
+    void GiveRewardForLevel(uint8 level)
+    {
+        uint32 rewSpell;
+        switch (level)
+        {
+            case 6:
+                if (large)
+                    GivePunishment();
+                else
+                    rewSpell = SPELL_REWARD_BUFF_1;
+                break;
+            case 8:
+                rewSpell = SPELL_REWARD_BUFF_2;
+                break;
+            case 10:
+                rewSpell = SPELL_REWARD_BUFF_3;
+                break;
+            default:
+                rewSpell = 0;
+        }
+
+        if (rewSpell)
+            if (Player* player = me->GetPlayer(playerGUID))
+                DoCast(player, rewSpell, true);
+    }
+
+    /*
+    Depending on the number of failed pushes for player the damage of the spell scales, so we first
+    cast the spell on the target that hits for 50 and shows the visual and then forces the player
+    to cast the damaging spell on it self with the modified basepoints.
+    4 fails = death.
+    On large nodes punishment and reward are the same, summoning the Apexis Guardian.
+    */
+    void GivePunishment()
+    {
+        if (large)
+        {
+            if (Player* player = me->GetPlayer(playerGUID))
+                if (Creature* guardian = me->SummonCreature(NPC_APEXIS_GUARDIAN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() - zCoordCorrection, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000))
+                    guardian->AI()->AttackStart(player);
+
+            ResetNode();
+        }
+        else
+        {
+            fails++;
+
+            if (Player* player = me->GetPlayer(playerGUID))
+                DoCast(player, SPELL_BAD_PRESS_TRIGGER, true);
+
+            if (fails >= 4)
+                ResetNode();
+        }
+    }
+
+    void SpellHitTarget(Unit* target, const SpellEntry* spell)
+    {
+        // Cast SPELL_BAD_PRESS_DAMAGE with scaled basepoints when the visual hits the target.
+        // Need Fix: When SPELL_BAD_PRESS_TRIGGER hits target it triggers spell SPELL_BAD_PRESS_DAMAGE by itself
+        // so player gets damage equal to calculated damage  dbc basepoints for SPELL_BAD_PRESS_DAMAGE (~50)
+        if (spell->Id == SPELL_BAD_PRESS_TRIGGER)
+        {
+            int32 bp = (int32)((float)(fails)*0.33f*target->GetMaxHealth());
+            target->CastCustomSpell(target, SPELL_BAD_PRESS_DAMAGE, &bp, NULL, NULL, true);
+        }
+    }
+
+    // Checks if player has already die or has get too far from the current node
+    bool CheckPlayer()
+    {
+        if (Player* player = me->GetPlayer(playerGUID))
+        {
+            if (player->isDead())
+                return false;
+
+            if (player->GetDistance2d(me) >= 2.0f*searchDistance)
+            {
+                GivePunishment();
+                return false;
+            }
+        }
+        else
+            return false;
+
+        return true;
+    }
+};
+
+CreatureAI* GetAI(Creature* creature)
+{
+    return new npc_simon_bunnyAI(creature);
+}
+
+bool OnGossipHello_go_simon_cluster(Player* player, GameObject* go)
+{
+    if (Creature* bunny = GetClosestCreatureWithEntry(go, NPC_SIMON_BUNNY, 12.0f, true))
+        bunny->AI()->SetData(go->GetEntry(), 0);
+
+    player->CastSpell(player, go->GetGOInfo()->goober.spellId, true);
+    go->AddUse();
+    return true;
+}
+
+enum ApexisRelic
+{
+    QUEST_CRYSTALS            = 11025,
+    GOSSIP_TEXT_ID            = 10948,
+
+    ITEM_APEXIS_SHARD         = 32569,
+    SPELL_TAKE_REAGENTS_SOLO  = 41145,
+    SPELL_TAKE_REAGENTS_GROUP = 41146,
+};
+
+#define GOSSIP_ITEM_1 "Insert shard"
+bool OnGossipHello_go_apexis_relic(Player* player, GameObject* go)
+{
+    bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
+
+    if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
+        player->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+    player->MonsterSay("S", LANG_UNIVERSAL, 0);
+    player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());
+    return true;
+}
+
+bool OnGossipSelect_go_apexis_relic(Player* player, GameObject* go, uint32 /*sender*/, uint32 /*action*/)
+{
+    player->CLOSE_GOSSIP_MENU();
+
+    bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
+    if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
+    {
+        player->CastSpell(player, large ? SPELL_TAKE_REAGENTS_GROUP : SPELL_TAKE_REAGENTS_SOLO, false);
+
+        if (Creature* bunny = player->SummonCreature(NPC_SIMON_BUNNY, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0))
+             bunny->AI()->SetGUID(player->GetGUID(), large);
+    }
+
+    return true;
+}
 /*######
 ## AddSC
 ######*/
@@ -898,4 +1349,14 @@ void AddSC_blades_edge_mountains()
     newscript->Name = "go_thunderspike";
     newscript->pGOUse = &GOUse_go_thunderspike;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_apexis_relic";
+    newscript->pGOUse = &OnGossipHello_go_apexis_relic;
+    newscript->pGossipSelectGO = &OnGossipSelect_go_apexis_relic;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_simon_cluster";
+    newscript->pGOUse = &OnGossipHello_go_simon_cluster;
 }
