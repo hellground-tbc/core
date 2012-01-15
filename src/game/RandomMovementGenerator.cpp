@@ -46,10 +46,6 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     init.MoveTo(dest.x, dest.y, dest.z);
     init.SetWalk(true);
     init.Launch();
-
-    //Call for creature group update
-    if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
-        creature.GetFormation()->LeaderMoveTo(dest.x, dest.y, dest.z);
 }
 
 template<>

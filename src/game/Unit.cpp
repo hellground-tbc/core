@@ -12556,12 +12556,25 @@ void Unit::SetFlying(bool apply)
     if (apply)
     {
         SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        AddUnitMovementFlag(SPLINEFLAG_FLYINGING | MOVEFLAG_FLYING);
+        AddUnitMovementFlag(MOVEFLAG_FLYING| MOVEFLAG_LEVITATING);
     }
     else
     {
         RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        RemoveUnitMovementFlag(SPLINEFLAG_FLYINGING | MOVEFLAG_FLYING);
+        RemoveUnitMovementFlag(MOVEFLAG_FLYING | MOVEFLAG_LEVITATING);
+    }
+
+    if (Player *pPlayer = ToPlayer())
+    {
+        WorldPacket data;
+        if (apply)
+            data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
+        else
+            data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
+
+        data << GetPackGUID();
+        data << uint32(0);
+        SendMessageToSet(&data, true);
     }
 }
 

@@ -4896,6 +4896,17 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 
     m_isPeriodic = apply;
 
+    if (GetId() == 43648)
+    {
+        if (m_target->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        m_target->SetFlying(apply);
+
+        if (apply)
+            m_target->MonsterMoveWithSpeed(m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ() +15.0f, 1000, true);
+    }
+
     // on aura remove
     if (!apply)
     {
@@ -4905,13 +4916,6 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
             {
                 if (Unit* caster = GetCaster())
                     caster->CastSpell(caster, 21029, true, 0, this);
-                break;
-            }
-            case 43648: // Electrical Storm makes target levitating
-            {
-                if (m_target->GetTypeId() != TYPEID_PLAYER)
-                    return;
-                ((Player*)m_target)->SetFlying(false);
                 break;
             }
             case 40106: // Merge
@@ -4959,13 +4963,6 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
                     if(m_target->GetTypeId() == TYPEID_UNIT && !m_target->isInCombat())
                             ((Creature*)m_target)->AI()->AttackStart(caster);
                 }
-                break;
-            }
-            case 43648: // Electrical Storm - stop levitating when spell ends
-            {
-                if (m_target->GetTypeId() != TYPEID_PLAYER)
-                    return;
-                ((Player*)m_target)->SetFlying(true);
                 break;
             }
         }
