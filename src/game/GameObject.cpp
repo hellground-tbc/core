@@ -996,6 +996,12 @@ void GameObject::Use(Unit* user)
     Unit* spellCaster = user;
     uint32 spellId = 0;
 
+    if (Player *pPlayer = user->ToPlayer())
+    {
+        if (sScriptMgr.OnGameObjectUse(pPlayer, this))
+            return;
+    }
+
     switch (GetGoType())
     {
         case GAMEOBJECT_TYPE_DOOR:                          //0

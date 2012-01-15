@@ -3621,9 +3621,6 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
         if(!gameObjTarget->isSpawned())
             return;
 
-        if (sScriptMgr.OnGameObjectUse(player, gameObjTarget))
-            return;
-
         switch (gameObjTarget->GetGoType())
         {
             case GAMEOBJECT_TYPE_DOOR:
@@ -3658,7 +3655,6 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                     if (player->GetQuestStatus(gameObjTarget->GetGOInfo()->goober.questId) != QUEST_STATUS_INCOMPLETE)
                         return;
 
-                sScriptMgr.OnGameObjectUse(player, gameObjTarget);
                 gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
 
                 gameObjTarget->AddUniqueUse(player);

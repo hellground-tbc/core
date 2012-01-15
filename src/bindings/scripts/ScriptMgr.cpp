@@ -300,19 +300,6 @@ bool GossipHello(Player* pPlayer, Creature* pCreature)
 }
 
 TRINITY_DLL_EXPORT
-bool GOGossipHello(Player* pPlayer, GameObject* pGo)
-{
-    Script* pTempScript = m_scripts[pGo->GetGOInfo()->ScriptId];
-
-    if (!pTempScript || !pTempScript->pGossipHelloGO)
-        return false;
-
-    pPlayer->PlayerTalkClass->ClearMenus();
-
-    return pTempScript->pGossipHelloGO(pPlayer, pGo);
-}
-
-TRINITY_DLL_EXPORT
 bool GossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
 {
     debug_log("SD2: Gossip selection, sender: %u, action: %u", uiSender, uiAction);

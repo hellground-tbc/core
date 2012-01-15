@@ -1213,3 +1213,13 @@ Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float 
     Cell::VisitGridObjects(pSource, searcher, MaxSearchRange);
     return pCreature;
 }
+
+GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    GameObject *pGameObject = NULL;
+    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*source, entry, maxSearchRange);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGameObject, go_check);
+
+    Cell::VisitGridObjects(source, searcher, maxSearchRange);
+    return pGameObject;
+}
