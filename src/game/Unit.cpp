@@ -6795,7 +6795,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         {
             if (procFlags & (PROC_FLAG_TAKEN_RANGED_SPELL_HIT | PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT))
             {
-                float chance = HasAura(11094, 0) ? 50.0f : HasAura(13043, 0) ? 100.0f : 0.0f;
+                if (!ToPlayer())
+                    break;
+
+                float chance = ToPlayer()->HasSpell(11094) ? 50.0f : ToPlayer()->HasSpell(13043) ? 100.0f : 0.0f;
                 if (!chance || !roll_chance_f(chance))
                     return false;
             }
@@ -12063,12 +12066,14 @@ void Unit::RemoveAurasAtChanneledTarget(SpellEntry const* spellInfo, Unit * cast
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/ )
 {
     DisableSpline();
+
     if (Player *pThis = ToPlayer())
         pThis->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
     {
-        SetPosition(x, y, z, orientation, true);
-        SendHeartBeat();
+        DestroyForNearbyPlayers();
+        Relocate(x, y, z);
+        UpdateObjectVisibility(true);
     }
 }
 
