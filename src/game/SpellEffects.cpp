@@ -3618,15 +3618,6 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     if (gameObjTarget)
     {
-        if (gameObjTarget->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
-        {
-            gameObjTarget->Use(m_caster);
-            return;
-        }
-
-        if (sScriptMgr.OnGameObjectUse(player, gameObjTarget))
-            return;
-
         if (!gameObjTarget->isSpawned())
             return;
 
@@ -3634,22 +3625,20 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
         {
             case GAMEOBJECT_TYPE_DOOR:
             case GAMEOBJECT_TYPE_BUTTON:
-                gameObjTarget->UseDoorOrButton();
-                player->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
-                return;
-
             case GAMEOBJECT_TYPE_QUESTGIVER:
-                // start or end quest
-                player->PrepareQuestMenu(guid);
-                player->SendPreparedQuest(guid);
-                return;
-
             case GAMEOBJECT_TYPE_SPELL_FOCUS:
-                // triggering linked GO
-                if (uint32 trapEntry = gameObjTarget->GetGOInfo()->spellFocus.linkedTrapId)
-                    gameObjTarget->TriggeringLinkedGameObject(trapEntry,m_caster);
+            case GAMEOBJECT_TYPE_GOOBER:
+            {
+                gameObjTarget->Use(m_caster);
                 return;
+            }
+        }
 
+        if (sScriptMgr.OnGameObjectUse(player, gameObjTarget))
+            return;
+
+        switch (gameObjTarget->GetGoType())
+        {
             case GAMEOBJECT_TYPE_CHEST:
                 // TODO: possible must be moved to loot release (in different from linked triggering)
                 if (gameObjTarget->GetGOInfo()->chest.eventId)

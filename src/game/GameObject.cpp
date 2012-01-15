@@ -996,7 +996,8 @@ void GameObject::Use(Unit* user)
     Unit* spellCaster = user;
     uint32 spellId = 0;
 
-    if (Player *pPlayer = user->ToPlayer())
+    Player *pPlayer = user->GetCharmerOrOwnerPlayerOrPlayerItself();
+    if (pPlayer)
     {
         if (sScriptMgr.OnGameObjectUse(pPlayer, this))
             return;
@@ -1012,16 +1013,18 @@ void GameObject::Use(Unit* user)
             // activate script
             GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), spellCaster, this);
             return;
-
+        case GAMEOBJECT_TYPE_SPELL_FOCUS:
+            // triggering linked GO
+            if (uint32 trapEntry = GetGOInfo()->spellFocus.linkedTrapId)
+                TriggeringLinkedGameObject(trapEntry, user);
+            return;
         case GAMEOBJECT_TYPE_QUESTGIVER:                    //2
         {
-            if (user->GetTypeId()!=TYPEID_PLAYER)
+            if (!pPlayer)
                 return;
 
-            Player* player = (Player*)user;
-
-            player->PrepareQuestMenu(GetGUID());
-            player->SendPreparedQuest(GetGUID());
+            pPlayer->PrepareQuestMenu(GetGUID());
+            pPlayer->SendPreparedQuest(GetGUID());
             return;
         }
         //Sitting: Wooden bench, chairs enzz
@@ -1031,13 +1034,10 @@ void GameObject::Use(Unit* user)
             if (!info)
                 return;
 
-            if (user->GetTypeId()!=TYPEID_PLAYER)
+            if (!pPlayer)
                 return;
 
-            Player* player = (Player*)user;
-
             // a chair may have n slots. we have to calculate their positions and teleport the player to the nearest one
-
             // check if the db is sane
             if (info->chair.slots > 0)
             {
@@ -1059,15 +1059,7 @@ void GameObject::Use(Unit* user)
                     float y_i = GetPositionY() + relativeDistance * sin(orthogonalOrientation);
 
                     // calculate the distance between the player and this slot
-                    float thisDistance = player->GetDistance2d(x_i, y_i);
-
-                    /* debug code. It will spawn a npc on each slot to visualize them.
-                    Creature* helper = player->SummonCreature(14496, x_i, y_i, GetPositionZ(), GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000);
-                    std::ostringstream output;
-                    output << i << ": thisDist: " << thisDistance;
-                    helper->MonsterSay(output.str().c_str(), LANG_UNIVERSAL, 0);
-                    */
-
+                    float thisDistance = pPlayer->GetDistance2d(x_i, y_i);
                     if (thisDistance <= lowestDist)
                     {
                         lowestDist = thisDistance;
@@ -1075,44 +1067,44 @@ void GameObject::Use(Unit* user)
                         y_lowest = y_i;
                     }
                 }
-                player->TeleportTo(GetMapId(), x_lowest, y_lowest, GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
+                pPlayer->TeleportTo(GetMapId(), x_lowest, y_lowest, GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
             }
             else
             {
                 // fallback, will always work
-                player->TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
+                pPlayer->TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
             }
-            player->SetStandState(PLAYER_STATE_SIT_LOW_CHAIR+info->chair.height);
+            pPlayer->SetStandState(PLAYER_STATE_SIT_LOW_CHAIR+info->chair.height);
             return;
         }
         case GAMEOBJECT_TYPE_GOOBER:                        //10
         {
             GameObjectInfo const* info = GetGOInfo();
-            if (Player* player = user->GetCharmerOrOwnerPlayerOrPlayerItself())
+            if (pPlayer)
             {
                 // show page
                 if (info->goober.pageId)
                 {
                     WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8);
                     data << GetGUID();
-                    player->GetSession()->SendPacket(&data);
+                    pPlayer->GetSession()->SendPacket(&data);
                 }
 
                 // possible quest objective for active quests
                 if (info->goober.questId && objmgr.GetQuestTemplate(info->goober.questId))
                 {
                     //Quest require to be active for GO using
-                    if (player->GetQuestStatus(info->goober.questId) != QUEST_STATUS_INCOMPLETE)
+                    if (pPlayer->GetQuestStatus(info->goober.questId) != QUEST_STATUS_INCOMPLETE)
                         break;
                 }
 
-                AddUniqueUse(player);
-                player->CastedCreatureOrGO(GetEntry(), GetGUID(), 0);
+                AddUniqueUse(pPlayer);
+                pPlayer->CastedCreatureOrGO(GetEntry(), GetGUID(), 0);
 
                 if (info->goober.eventId)
                 {
-                    if (!sScriptMgr.OnProcessEvent(info->goober.eventId, this, user, true))
-                        player->GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
+                    if (!sScriptMgr.OnProcessEvent(info->goober.eventId, this, pPlayer, true))
+                        pPlayer->GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, pPlayer, this);
                 }
 
                 SetLootState(GO_ACTIVATED); // or SetLootState(GO_JUST_DEACTIVATED);
@@ -1120,7 +1112,7 @@ void GameObject::Use(Unit* user)
                 m_cooldownTime = time(NULL) + info->goober.cooldown;
             }
 
-            GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), user, this);
+            GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), pPlayer, this);
 
             if (uint32 trapEntry = info->goober.linkedTrapId)
                 TriggeringLinkedGameObject(trapEntry, user);
@@ -1135,25 +1127,21 @@ void GameObject::Use(Unit* user)
             if (!info)
                 return;
 
-            if (user->GetTypeId()!=TYPEID_PLAYER)
+            if (!pPlayer)
                 return;
 
-            Player* player = (Player*)user;
-
             if (info->camera.cinematicId)
-                player->SendCinematicStart(info->camera.cinematicId);
+                pPlayer->SendCinematicStart(info->camera.cinematicId);
 
             return;
         }
         //fishing bobber
         case GAMEOBJECT_TYPE_FISHINGNODE:                   //17
         {
-            if (user->GetTypeId()!=TYPEID_PLAYER)
+            if (!pPlayer)
                 return;
 
-            Player* player = (Player*)user;
-
-            if (player->GetGUID() != GetOwnerGUID())
+            if (pPlayer->GetGUID() != GetOwnerGUID())
                 return;
 
             switch (getLootState())
@@ -1174,7 +1162,7 @@ void GameObject::Use(Unit* user)
                     if (!zone_skill)
                         sLog.outErrorDb("Fishable areaId %u are not properly defined in `skill_fishing_base_level`.",subzone);
 
-                    int32 skill = player->GetSkillValue(SKILL_FISHING);
+                    int32 skill = pPlayer->GetSkillValue(SKILL_FISHING);
                     int32 chance = skill - zone_skill + 5;
                     int32 roll = GetMap()->irand(1,100);
 
@@ -1183,21 +1171,21 @@ void GameObject::Use(Unit* user)
                     if (skill >= zone_skill && chance >= roll)
                     {
                         // prevent removing GO at spell cancel
-                        player->RemoveGameObject(this,false);
-                        SetOwnerGUID(player->GetGUID());
+                        pPlayer->RemoveGameObject(this,false);
+                        SetOwnerGUID(pPlayer->GetGUID());
 
                         //fish catched
-                        player->UpdateFishingSkill();
+                        pPlayer->UpdateFishingSkill();
 
                         //TODO: find reasonable value for fishing hole search
                         GameObject* ok = LookupFishingHoleAround(20.0f + CONTACT_DISTANCE);
                         if (ok)
                         {
-                            player->SendLoot(ok->GetGUID(),LOOT_FISHINGHOLE);
+                            pPlayer->SendLoot(ok->GetGUID(),LOOT_FISHINGHOLE);
                             SetLootState(GO_JUST_DEACTIVATED);
                         }
                         else
-                            player->SendLoot(GetGUID(),LOOT_FISHING);
+                            pPlayer->SendLoot(GetGUID(),LOOT_FISHING);
                     }
                     else
                     {
@@ -1205,7 +1193,7 @@ void GameObject::Use(Unit* user)
                         SetLootState(GO_JUST_DEACTIVATED);
 
                         WorldPacket data(SMSG_FISH_ESCAPED, 0);
-                        player->GetSession()->SendPacket(&data);
+                        pPlayer->GetSession()->SendPacket(&data);
                     }
                     break;
                 }
@@ -1216,28 +1204,25 @@ void GameObject::Use(Unit* user)
                     SetLootState(GO_JUST_DEACTIVATED);
 
                     WorldPacket data(SMSG_FISH_NOT_HOOKED, 0);
-                    player->GetSession()->SendPacket(&data);
+                    pPlayer->GetSession()->SendPacket(&data);
                     break;
                 }
             }
 
-            if (player->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if (pPlayer->m_currentSpells[CURRENT_CHANNELED_SPELL])
             {
-                player->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                player->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+                pPlayer->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+                pPlayer->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
             }
             return;
         }
 
         case GAMEOBJECT_TYPE_SUMMONING_RITUAL:              //18
         {
-            if (user->GetTypeId()!=TYPEID_PLAYER)
+            if (!pPlayer)
                 return;
 
-            Player* player = (Player*)user;
-
             GameObjectInfo const* info = GetGOInfo();
-
             if(Unit* owner = GetOwner())
             {
                 spellCaster = owner;
@@ -1245,12 +1230,12 @@ void GameObject::Use(Unit* user)
                     return;
 
                 // accept only use by player from same group for caster except caster itself
-                if (((Player*)owner)==player || !((Player*)owner)->IsInSameRaidWith(player))
+                if (((Player*)owner)==pPlayer || !((Player*)owner)->IsInSameRaidWith(pPlayer))
                     return;
             }
-            AddUniqueUse(player);
+            AddUniqueUse(pPlayer);
 
-            player->CastSpell(player, info->summoningRitual.animSpell, true);
+            pPlayer->CastSpell(pPlayer, info->summoningRitual.animSpell, true);
 
             // full amount unique participants including original summoner
             if (GetUniqueUseCount() < info->summoningRitual.reqParticipants)

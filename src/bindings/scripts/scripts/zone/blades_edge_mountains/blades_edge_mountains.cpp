@@ -1252,7 +1252,7 @@ bool OnGossipHello_go_apexis_relic(Player* player, GameObject* go)
     if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
         player->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->MonsterSay("S", LANG_UNIVERSAL, 0);
+    player->Kill(player, false);
     player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());
     return true;
 }
@@ -1272,6 +1272,7 @@ bool OnGossipSelect_go_apexis_relic(Player* player, GameObject* go, uint32 /*sen
 
     return true;
 }
+
 /*######
 ## AddSC
 ######*/
@@ -1359,4 +1360,5 @@ void AddSC_blades_edge_mountains()
     newscript = new Script;
     newscript->Name = "go_simon_cluster";
     newscript->pGOUse = &OnGossipHello_go_simon_cluster;
+    newscript->RegisterSelf();
 }
