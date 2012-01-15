@@ -12574,7 +12574,7 @@ void Unit::SetFlying(bool apply)
 
         data << GetPackGUID();
         data << uint32(0);
-        SendMessageToSet(&data, true);
+        pPlayer->SendMessageToSet(&data, true);
     }
 }
 

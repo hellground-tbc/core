@@ -4901,10 +4901,10 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
         if (m_target->GetTypeId() != TYPEID_PLAYER)
             return;
 
-        m_target->SetFlying(apply);
-
         if (apply)
-            m_target->MonsterMoveWithSpeed(m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ() +15.0f, 1000, true);
+            m_target->NearTeleportTo(m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ() +15.0f, m_target->GetOrientation());
+
+        m_target->SetFlying(apply);
     }
 
     // on aura remove
