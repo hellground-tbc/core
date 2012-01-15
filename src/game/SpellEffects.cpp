@@ -3686,11 +3686,10 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
                 // Don't return, let loots been taken
         }
+        // Send loot
+        player->SendLoot(guid, loottype);
+        gameObjTarget->SetLootState(GO_ACTIVATED);
     }
-
-    // Send loot
-    player->SendLoot(guid, loottype);
-    gameObjTarget->SetLootState(GO_ACTIVATED);
 }
 
 void Spell::EffectOpenLock(uint32 effIndex)
