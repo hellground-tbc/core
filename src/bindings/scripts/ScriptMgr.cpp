@@ -194,6 +194,9 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget, bool wi
         case CHAT_TYPE_ZONE_YELL:
             pSource->MonsterYellToZone(iTextEntry, pData->uiLanguage, pTarget ? pTarget->GetGUID() : 0);
             break;
+        case CHAT_TYPE_ZONE_BOSS_EMOTE:
+            pSource->MonsterTextEmoteToZone(iTextEntry, pTarget ? pTarget->GetGUID() : 0, true, withoutPrename);
+            break;
     }
 
     if (pTarget && pTarget->GetTypeId() == TYPEID_UNIT)

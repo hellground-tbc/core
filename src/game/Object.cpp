@@ -1537,6 +1537,19 @@ void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossE
     Cell::VisitWorldObjects(this, say_worker, range);
 }
 
+void WorldObject::MonsterTextEmoteToZone(int32 textId, uint64 TargetGuid, bool IsBossEmote, bool withoutPrename)
+{
+    Trinity::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid, withoutPrename);
+    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
+
+    uint32 zoneid = GetZoneId();
+
+    Map::PlayerList const& pList = GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
+        if (itr->getSource()->GetCachedZone()==zoneid)
+            say_do(itr->getSource());
+}
+
 void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisper)
 {
     Player *player = objmgr.GetPlayer(receiver);
