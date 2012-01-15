@@ -704,6 +704,19 @@ bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName  ,uin
     return false;
 }
 
+uint32 Unit::GetAurasAmountByMiscValue(AuraType auraType, uint32 misc)
+{
+    uint32 count = 0;
+    Unit::AuraList mAuras = GetAurasByType(SPELL_AURA_MECHANIC_IMMUNITY);
+    for (Unit::AuraList::iterator iter = mAuras.begin(); iter != mAuras.end(); ++iter)
+    {
+        if ((*iter)->GetMiscValue() == misc)
+            ++count;
+    }
+
+    return count;
+}
+
 /* Called by DealDamage for auras that have a chance to be dispelled on damage taken. */
 void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 {

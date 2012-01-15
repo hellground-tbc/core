@@ -1828,6 +1828,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
     RemoveCorpse();
     SetHealth(0);                                           // just for nice GM-mode view
 }
+
 bool Creature::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
 {
     if (!spellInfo)

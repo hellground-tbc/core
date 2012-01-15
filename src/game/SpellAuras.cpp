@@ -4637,19 +4637,7 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
 
     if (!apply)
     {
-        uint8 count = 0;
-        Unit::AuraList mAuras = m_target->GetAurasByType(SPELL_AURA_MECHANIC_IMMUNITY);
-        for (Unit::AuraList::iterator iter = mAuras.begin(); iter != mAuras.end(); ++iter)
-        {
-            if (GetMiscValue() == (*iter)->GetMiscValue())
-                ++count;
-
-            // we have found 2 auras, there is no need to iterate further ;]
-            if (count > 1)
-                break;
-        }
-
-        if (count <= 1)
+        if (m_target->GetAurasAmountByMiscValue(SPELL_AURA_MECHANIC_IMMUNITY, m_modifier.m_miscvalue) == 0)
             m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, m_modifier.m_miscvalue, false);
     }
     else
