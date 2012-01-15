@@ -536,7 +536,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
         void MonsterSay(int32 textId, uint32 language, uint64 TargetGuid);
         void MonsterYell(int32 textId, uint32 language, uint64 TargetGuid);
         void MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false, bool withoutPrename = false);
-        void WorldObject::MonsterTextEmoteToZone(int32 textId, uint64 TargetGuid, bool IsBossEmote, bool withoutPrename = false);
+        void MonsterTextEmoteToZone(int32 textId, uint64 TargetGuid, bool IsBossEmote, bool withoutPrename = false);
         void MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
         void MonsterYellToZone(int32 textId, uint32 language, uint64 TargetGuid);
         void BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 TargetGuid, bool withoutPrename = false) const;
