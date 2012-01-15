@@ -1018,6 +1018,26 @@ void GameObject::Use(Unit* user)
             if (uint32 trapEntry = GetGOInfo()->spellFocus.linkedTrapId)
                 TriggeringLinkedGameObject(trapEntry, user);
             return;
+        case GAMEOBJECT_TYPE_CHEST:
+        {
+            if (!pPlayer)
+                return;
+
+            pPlayer->SendLoot(GetGUID(), LOOT_SKINNING);
+            SetLootState(GO_ACTIVATED);
+
+            if (GetGOInfo()->chest.eventId)
+            {
+                if (!sScriptMgr.OnProcessEvent(GetGOInfo()->chest.eventId, this, pPlayer, true))
+                    pPlayer->GetMap()->ScriptsStart(sEventScripts, GetGOInfo()->chest.eventId, pPlayer, this);
+            }
+
+            // triggering linked GO
+            if (uint32 trapEntry = GetGOInfo()->chest.linkedTrapId)
+                TriggeringLinkedGameObject(trapEntry, pPlayer);
+
+            return;
+        }
         case GAMEOBJECT_TYPE_QUESTGIVER:                    //2
         {
             if (!pPlayer)
@@ -1070,10 +1090,8 @@ void GameObject::Use(Unit* user)
                 pPlayer->TeleportTo(GetMapId(), x_lowest, y_lowest, GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
             }
             else
-            {
-                // fallback, will always work
                 pPlayer->TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
-            }
+
             pPlayer->SetStandState(PLAYER_STATE_SIT_LOW_CHAIR+info->chair.height);
             return;
         }

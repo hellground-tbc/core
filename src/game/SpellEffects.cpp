@@ -3610,55 +3610,6 @@ void Spell::EffectEnergisePct(uint32 i)
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, realGain, power);
 }
 
-void Spell::SendLoot(uint64 guid, LootType loottype)
-{
-    Player* player = m_caster->ToPlayer();
-    if (!player)
-        return;
-
-    if (gameObjTarget)
-    {
-        if (!gameObjTarget->isSpawned())
-            return;
-
-        switch (gameObjTarget->GetGoType())
-        {
-            case GAMEOBJECT_TYPE_DOOR:
-            case GAMEOBJECT_TYPE_BUTTON:
-            case GAMEOBJECT_TYPE_QUESTGIVER:
-            case GAMEOBJECT_TYPE_SPELL_FOCUS:
-            case GAMEOBJECT_TYPE_GOOBER:
-            {
-                gameObjTarget->Use(m_caster);
-                return;
-            }
-        }
-
-        if (sScriptMgr.OnGameObjectUse(player, gameObjTarget))
-            return;
-
-        switch (gameObjTarget->GetGoType())
-        {
-            case GAMEOBJECT_TYPE_CHEST:
-                // TODO: possible must be moved to loot release (in different from linked triggering)
-                if (gameObjTarget->GetGOInfo()->chest.eventId)
-                {
-                    if (!sScriptMgr.OnProcessEvent(gameObjTarget->GetGOInfo()->chest.eventId, gameObjTarget, player, true))
-                        player->GetMap()->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->chest.eventId, player, gameObjTarget);
-                }
-
-                // triggering linked GO
-                if (uint32 trapEntry = gameObjTarget->GetGOInfo()->chest.linkedTrapId)
-                    gameObjTarget->TriggeringLinkedGameObject(trapEntry,m_caster);
-
-                // Don't return, let loots been taken
-        }
-        // Send loot
-        player->SendLoot(guid, loottype);
-        gameObjTarget->SetLootState(GO_ACTIVATED);
-    }
-}
-
 void Spell::EffectOpenLock(uint32 effIndex)
 {
     if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -3730,7 +3681,8 @@ void Spell::EffectOpenLock(uint32 effIndex)
         return;
     }
 
-    SendLoot(guid, LOOT_SKINNING);
+    if (gameObjTarget)
+        gameObjTarget->Use(m_caster);
 
     // not allow use skill grow at item base open
     if(!m_CastItem && skillId != SKILL_NONE)
