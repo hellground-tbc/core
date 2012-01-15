@@ -1088,11 +1088,8 @@ void GameObject::Use(Unit* user)
         case GAMEOBJECT_TYPE_GOOBER:                        //10
         {
             GameObjectInfo const* info = GetGOInfo();
-
-            if (user->GetTypeId() == TYPEID_PLAYER)
+            if (Player* player = user->GetCharmerOrOwnerPlayerOrPlayerItself())
             {
-                Player* player = (Player*)user;
-
                 // show page
                 if (info->goober.pageId)
                 {
@@ -1109,41 +1106,25 @@ void GameObject::Use(Unit* user)
                         break;
                 }
 
+                AddUniqueUse(player);
                 player->CastedCreatureOrGO(GetEntry(), GetGUID(), 0);
 
-                // activate event
                 if (info->goober.eventId)
                 {
-                    player->GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
+                    if (!sScriptMgr.OnProcessEvent(info->goober.eventId, this, user, true))
+                        player->GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
                 }
 
-                SetLootState(GO_ACTIVATED);
+                SetLootState(GO_ACTIVATED); // or SetLootState(GO_JUST_DEACTIVATED);
                 SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                 m_cooldownTime = time(NULL) + info->goober.cooldown;
             }
 
+            GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), user, this);
+
             if (uint32 trapEntry = info->goober.linkedTrapId)
                 TriggeringLinkedGameObject(trapEntry, user);
 
-            /*
-            SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
-            SetLootState(GO_ACTIVATED);
-
-            uint32 time_to_restore = GetAutoCloseTime();
-
-            // this appear to be ok, however others exist in addition to this that should have custom (ex: 190510, 188692, 187389)
-            if (time_to_restore && info->goober.customAnim)
-            {
-                WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8+4);
-                data << uint64(GetGUID());
-                data << uint32(0);                                      // not known what this is
-                SendMessageToSet(&data, true);
-            }
-            else
-                SetGoState(GO_STATE_ACTIVE);
-
-            m_cooldownTime = time(NULL) + time_to_restore;
-            */
             // cast this spell later if provided
             spellId = info->goober.spellId;
             break;
