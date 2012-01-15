@@ -200,10 +200,10 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                             if(Unit* Fel = FindCreature(45069, 20, creature))
                                 Felmyst = Fel->GetGUID();
                         }
-                        creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        creature->SetReactState(REACT_PASSIVE);
-                        creature->setFaction(35);
-                        creature->SetVisibility(VISIBILITY_OFF);
+                        // truly kill Madrigosa when Felmyst spawned
+                        creature->Kill(creature, false);
+                        creature->RemoveCorpse();
+                        break;
                     }
                     else
                     {
