@@ -317,9 +317,9 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
         case PHASE_GROUND:
             Timer[EVENT_CLEAVE] = urand(5000, 10000);
-            Timer[EVENT_CORROSION] = urand(10000, 20000);
-            Timer[EVENT_GAS_NOVA] = urand(15000, 20000);
-            Timer[EVENT_ENCAPSULATE] = urand(20000, 30000);
+            Timer[EVENT_CORROSION] = urand(12000, 20000);
+            Timer[EVENT_GAS_NOVA] = urand(18000, 22000);
+            Timer[EVENT_ENCAPSULATE] = 30000;
             Timer[EVENT_FLIGHT] = 60000;
             Timer[EVENT_CHECK] = 1000;
             break;
@@ -399,12 +399,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 case 2: // on left/right side marker
                     me->setHover(true);
                     me->GetMotionMaster()->MoveIdle();
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 6000;
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
                     break;
                 case 3: // on path start node
                     me->setHover(true);
                     me->SetSpeed(MOVE_FLIGHT, 3.6, false);
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 200;
+                    Timer[EVENT_FLIGHT_SEQUENCE] = urand(3000, 4000);
                     break;
                 case 4: // on path stop node
                     me->setHover(true);
@@ -417,7 +417,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                         FlightCount = 4;
                     else
                         FlightCount = 7;
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 50;
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
                     break;
                 case 5: // on landing after phase 2
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
@@ -546,7 +546,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))
                 {
                     AddSpellToCast(target, SPELL_ENCAPSULATE_CHANNEL, false, true);
-                    Timer[EVENT_ENCAPSULATE] = urand(25000, 35000);
+                    Timer[EVENT_ENCAPSULATE] = urand(22000, 35000);
                     if(Timer[EVENT_FLIGHT] < 7000)
                         Timer[EVENT_FLIGHT] = 7000;
                 }
@@ -566,7 +566,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 else
                 {
                     side ? counter-- : counter++;
-                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 8 : 25) : 15));  // check this timer
+                    Timer[EVENT_SUMMON_FOG] = (7000/(path ? (path%2 ? 8 : 25) : 15));  // check this timer
                 }
                 break;
         }

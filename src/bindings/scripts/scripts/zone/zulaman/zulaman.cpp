@@ -1005,6 +1005,7 @@ struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
             if(id > 3)
             {
                 m_creature->SetVisibility(VISIBILITY_OFF);
+                m_creature->SetReactState(REACT_PASSIVE);
             }
             else
             {
