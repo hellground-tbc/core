@@ -171,7 +171,7 @@ float FogCoords[25][3][3] =
 
 struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 {
-    boss_felmystAI(Creature *c) : ScriptedAI(c)
+    boss_felmystAI(Creature *c) : ScriptedAI(c), summons(c)
     {
         pInstance = (c->GetInstanceData());
     }
@@ -181,6 +181,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     EventFelmyst Event;
     uint32 Timer[10];
     uint32 PulseCombat;
+
+    SummonList summons;
 
     uint8 side;
     uint8 path;
@@ -211,6 +213,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
         if(pInstance)
             pInstance->SetData(DATA_FELMYST_EVENT, NOT_STARTED);
+
+        summons.DespawnAll();
     }
 
     void EnterCombat(Unit *who)
@@ -303,6 +307,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             summon->SetSpeed(MOVE_FLIGHT, 1.2);
             summon->GetMotionMaster()->MovePoint(50, 1471, 632, 37);
         }
+
+        summons.Summon(summon);
     }
 
     void DamageTaken(Unit*, uint32 &damage)
