@@ -58,6 +58,9 @@
     <Filter Include="Spline Movement">
       <UniqueIdentifier>{588b49b6-0134-4b80-8ae1-cfe1ebe63156}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PrecompiledHeader">
+      <UniqueIdentifier>{d93eb92a-975d-452d-a85b-400e3ea4a263}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\game\Channel.cpp">
@@ -531,6 +534,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\game\movement\util.cpp">
       <Filter>Spline Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\pchdef.cpp">
+      <Filter>PrecompiledHeader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1011,6 +1017,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\movement\typedefs.h">
       <Filter>Spline Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\pchdef.h">
+      <Filter>PrecompiledHeader</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
