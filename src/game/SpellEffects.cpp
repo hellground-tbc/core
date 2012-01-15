@@ -3618,6 +3618,9 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     if (gameObjTarget)
     {
+        if(!gameObjTarget->isSpawned())
+            return;
+
         if (sScriptMgr.OnGameObjectUse(player, gameObjTarget))
             return;
 
@@ -3691,6 +3694,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     // Send loot
     player->SendLoot(guid, loottype);
+    gameObjTarget->SetLootState(GO_ACTIVATED);
 }
 
 void Spell::EffectOpenLock(uint32 effIndex)
