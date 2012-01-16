@@ -28,7 +28,6 @@
 TemporarySummon::TemporarySummon(uint64 summoner) :
 Creature(), m_type(TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN), m_timer(0), m_lifetime(0), m_summoner(summoner)
 {
-     m_unit_movement_flags = 0;
      m_tempSummon = true;
 }
 

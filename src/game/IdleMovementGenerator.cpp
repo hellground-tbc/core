@@ -66,7 +66,7 @@ bool RotateMovementGenerator::Update(Unit& owner, const uint32& diff)
     }
 
     owner.SetOrientation(angle);
-    owner.SendMovementFlagUpdate(); // this is a hack. we do not have anything correct to send in the beginning
+    owner.SendHeartBeat(); // this is a hack. we do not have anything correct to send in the beginning
 
     if (owner.GetTypeId() == TYPEID_UNIT)
     {

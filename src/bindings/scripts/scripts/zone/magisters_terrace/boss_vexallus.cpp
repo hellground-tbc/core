@@ -73,6 +73,13 @@ struct TRINITY_DLL_DECL boss_vexallusAI : public ScriptedAI
             pInstance->SetData(DATA_VEXALLUS_EVENT, NOT_STARTED);
     }
 
+    void AttackStart(Unit* who)
+    {
+        if(!who->GetCharmerOrOwnerPlayerOrPlayerItself())
+            EnterEvadeMode();
+        ScriptedAI::AttackStart(who);
+    }
+
     void KilledUnit(Unit *victim)
     {
         DoScriptText(SAY_KILL, m_creature);
@@ -186,6 +193,13 @@ struct TRINITY_DLL_DECL mob_pure_energyAI : public ScriptedAI
     }
 
     ScriptedInstance* pInstance;
+
+    void AttackStart(Unit* who)
+    {
+        if(!who->GetCharmerOrOwnerPlayerOrPlayerItself())
+            EnterEvadeMode();
+        ScriptedAI::AttackStart(who);
+    }
 
     void Reset()
     {

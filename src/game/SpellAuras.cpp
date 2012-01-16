@@ -1553,10 +1553,12 @@ void Aura::TriggerSpell()
 //                    case 28095: break;
 //                    // Stalagg Chain
 //                    case 28096: break;
-//                    // Stalagg Tesla Passive
-//                    case 28097: break;
-//                    // Feugen Tesla Passive
-//                    case 28109: break;
+                    case 28097: // Stalagg Tesla Passive
+                    case 28109: // Feugen Tesla Passive
+                    {
+                        // find creature in range: 16218(Tesla Coil) or specific GO :p if not do special shit ?
+                        break;
+                    }
 //                    // Feugen Chain
 //                    case 28111: break;
 //                    // Mark of Didier
@@ -4093,6 +4095,9 @@ void Aura::HandleModStealth(bool apply, bool Real)
                     */
                 }
             }
+
+            if (m_removeMode == AURA_REMOVE_BY_CANCEL)
+                pTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
         }
     }
 
@@ -4630,25 +4635,21 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
         }
     }
 
+    m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, m_modifier.m_miscvalue, apply);
+
     if (!apply)
     {
-        uint8 count = 0;
         Unit::AuraList mAuras = m_target->GetAurasByType(SPELL_AURA_MECHANIC_IMMUNITY);
         for (Unit::AuraList::iterator iter = mAuras.begin(); iter != mAuras.end(); ++iter)
         {
-            if (GetMiscValue() == (*iter)->GetMiscValue())
-                ++count;
-
-            // we have found 2 auras, there is no need to iterate further ;]
-            if (count > 1)
+            if ((*iter)->GetMiscValue() == GetMiscValue())
+            {
+                m_target->ApplySpellImmune((*iter)->GetId(), IMMUNITY_MECHANIC, (*iter)->GetMiscValue(), true);
                 break;
+            }
         }
 
-        if (count <= 1)
-            m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, m_modifier.m_miscvalue, false);
     }
-    else
-        m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, m_modifier.m_miscvalue, true);
 
     // special cases
     switch (m_modifier.m_miscvalue)
@@ -4895,6 +4896,17 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 
     m_isPeriodic = apply;
 
+    if (GetId() == 43648)
+    {
+        if (m_target->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if (apply)
+            m_target->NearTeleportTo(m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ() +15.0f, m_target->GetOrientation());
+
+        m_target->SetFlying(apply);
+    }
+
     // on aura remove
     if (!apply)
     {
@@ -4904,12 +4916,6 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
             {
                 if (Unit* caster = GetCaster())
                     caster->CastSpell(caster, 21029, true, 0, this);
-                break;
-            }
-            case 43648: // Electrical Storm makes target levitating
-            {
-                if (m_target->HasUnitMovementFlag(MOVEFLAG_LEVITATING))
-                    m_target->RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
                 break;
             }
             case 40106: // Merge
@@ -4957,12 +4963,6 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
                     if(m_target->GetTypeId() == TYPEID_UNIT && !m_target->isInCombat())
                             ((Creature*)m_target)->AI()->AttackStart(caster);
                 }
-                break;
-            }
-            case 43648: // Electrical Storm - stop levitating when spell ends
-            {
-                if (!m_target->HasUnitMovementFlag(MOVEFLAG_LEVITATING))
-                    m_target->SetUnitMovementFlags(MOVEFLAG_LEVITATING);
                 break;
             }
         }
@@ -7905,34 +7905,22 @@ void Aura::HandleAuraMeleeAPAttackerBonus(bool apply, bool Real)
     m_target->ApplyMeleeAPAttackerBonus(GetModifierValue(), apply);
 }
 
-void Aura::HandleAuraReflectSpellSchool(bool Apply, bool Real)
+void Aura::HandleAuraReflectSpellSchool(bool apply, bool real)
 {
-    if (!Real)
+    if (!real || !apply)
         return;
 
-    // Frost Ward and Fire Ward
-    if (Apply && m_spellProto->SpellFamilyName == SPELLFAMILY_MAGE && m_spellProto->SpellFamilyFlags & 0x80108)
+    if (Player *pTarget = m_target->ToPlayer())
     {
-        if (Unit *caster = GetCaster())
-            if (caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                Player *playerCaster = (Player*)caster;
-
-                if (m_spellProto->SpellFamilyFlags & 0x8)
-                {
-                    if (playerCaster->HasSpell(13043))
-                        m_modifier.m_amount += 20;
-                    else if (playerCaster->HasSpell(11094))
-                        m_modifier.m_amount += 10;
-                }
-                else
-                {
-                    if (playerCaster->HasSpell(28332))
-                        m_modifier.m_amount += 20;
-                    else if (playerCaster->HasSpell(11189))
-                        m_modifier.m_amount += 10;
-                }
-            }
+        if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_MAGE)
+        {
+            // Fire Ward
+            if (GetSpellProto()->SpellFamilyFlags & 0x8)
+                GetModifier()->m_amount += pTarget->HasSpell(11094) ? 10.0f : pTarget->HasSpell(13043) ? 20.0f : 0.0f;
+            // Frost Ward
+            else if (GetSpellProto()->SpellFamilyFlags & 0x80100)
+                GetModifier()->m_amount += pTarget->HasSpell(11189) ? 10.0f : pTarget->HasSpell(28332) ? 20.0f : 0.0f;
+        }
     }
 }
 

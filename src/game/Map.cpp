@@ -1615,8 +1615,15 @@ void Map::ScriptsProcess()
                     sLog.outError("SCRIPT_COMMAND_MOVE_TO call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
-                ((Unit *)source)->SendMonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, step.script->datalong2);
-                ((Unit *)source)->GetMap()->CreatureRelocation(((Creature *)source), step.script->x, step.script->y, step.script->z, 0);
+
+                if (step.script->datalong2 != 0)
+                {
+                    float speed = ((Unit*)source)->GetDistance(step.script->x, step.script->y, step.script->z) / ((float)step.script->datalong2 * 0.001f);
+                    ((Unit*)source)->MonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, speed);
+                }
+                else
+                    ((Unit*)source)->NearTeleportTo(step.script->x, step.script->y, step.script->z, ((Unit*)source)->GetOrientation());
+
                 break;
             case SCRIPT_COMMAND_FLAG_SET:
                 if (!source)

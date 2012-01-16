@@ -17,47 +17,46 @@
 /* ScriptData
 SDName: Boss_Noth
 SD%Complete: 40
-SDComment: Missing Balcony stage
+SDComment: Missing Balcony stage !
 SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
 #include "def_naxxramas.h"
 
-#define SAY_AGGRO1              -1533075
-#define SAY_AGGRO2              -1533076
-#define SAY_AGGRO3              -1533077
-#define SAY_SUMMON              -1533078
-#define SAY_SLAY1               -1533079
-#define SAY_SLAY2               -1533080
-#define SAY_DEATH               -1533081
+#define SOUND_DEATH         8848
+#define PLAGUED_WARRIOR_ID  16984
 
-#define SPELL_BLINK                     29211               //29208, 29209 and 29210 too
-#define SPELL_CRIPPLE                   29212
-#define H_SPELL_CRIPPLE                 54814
-#define SPELL_CURSE_PLAGUEBRINGER       28213
-#define H_SPELL_CURSE_PLAGUEBRINGER     54835
-#define SOUND_DEATH      8848
+#define BALCONY_LOC 2631.370, -3529.680, 274.040, 6.277
 
-#define C_PLAGUED_WARRIOR               16984
-
-// Teleport position of Noth on his balcony
-#define TELE_X 2631.370
-#define TELE_Y -3529.680
-#define TELE_Z 274.040
-#define TELE_O 6.277
-
-// IMPORTANT: BALCONY TELEPORT NOT ADDED YET! WILL BE ADDED SOON!
-// Dev note 26.12.2008: When is soon? :)
-
-struct TRINITY_DLL_DECL boss_nothAI : public ScriptedAI
+enum NothTexts
 {
-    boss_nothAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
+    SAY_AGGRO1              = -1533075,
+    SAY_AGGRO2              = -1533076,
+    SAY_AGGRO3              = -1533077,
+    SAY_SUMMON              = -1533078,
+    SAY_SLAY1               = -1533079,
+    SAY_SLAY2               = -1533080,
+    SAY_DEATH               = -1533081
+};
 
-    ScriptedInstance * pInstance;
+enum NothSpells
+{
+    SPELL_BLINK                     = 29211,    //29208, 29209 and 29210 too
+    SPELL_CRIPPLE                   = 29212,
+    SPELL_CURSE_PLAGUEBRINGER       = 29213
+};
+
+enum NothEvents
+{
+    EVENT_BLINK             = 1,
+    EVENT_CURSE             = 2,
+    EVENT_SKELETONS         = 3
+};
+
+struct TRINITY_DLL_DECL boss_nothAI : public BossAI
+{
+    boss_nothAI(Creature *c) : BossAI(c, DATA_NOTH_THE_PLAGUEBRINGER) { }
 
     uint32 Blink_Timer;
     uint32 Curse_Timer;
@@ -65,20 +64,18 @@ struct TRINITY_DLL_DECL boss_nothAI : public ScriptedAI
 
     void Reset()
     {
-        Blink_Timer = 25000;
-        Curse_Timer = 4000;
-        Summon_Timer = 12000;
+        events.Reset();
+        events.ScheduleEvent(EVENT_BLINK, 25000);
+        events.ScheduleEvent(EVENT_CURSE, 4000);
+        events.ScheduleEvent(EVENT_SKELETONS, 12000);
 
-        if (pInstance)
-            pInstance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, NOT_STARTED);
+        instance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
-
-        if (pInstance)
-            pInstance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, IN_PROGRESS);
+        instance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* victim)
@@ -88,15 +85,14 @@ struct TRINITY_DLL_DECL boss_nothAI : public ScriptedAI
 
     void JustSummoned(Creature* summoned)
     {
-        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-            summoned->AddThreat(target,0.0f);
+        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            summoned->AI()->AttackStart(target);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
-        if (pInstance)
-            pInstance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, DONE);
+        instance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -104,36 +100,53 @@ struct TRINITY_DLL_DECL boss_nothAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        //Blink_Timer
-        if (Blink_Timer < diff)
+        DoSpecialThings(diff, DO_EVERYTHING);
+
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            DoCast(m_creature->getVictim(),SPELL_CRIPPLE);
-            DoCast(m_creature,SPELL_BLINK);
+            switch (eventId)
+            {
+                case EVENT_BLINK:
+                {
+                    AddSpellToCast(SPELL_CRIPPLE, CAST_NULL);
+                    AddSpellToCast(SPELL_BLINK, CAST_SELF);
+                    events.ScheduleEvent(EVENT_BLINK, 25000);
+                    break;
+                }
+                case EVENT_CURSE:
+                {
+                    AddSpellToCast(SPELL_CURSE_PLAGUEBRINGER, CAST_NULL);
+                    events.ScheduleEvent(EVENT_CURSE, urand(10000, 20000));
+                    break;
+                }
+                case EVENT_SKELETONS:
+                {
+                    DoScriptText(SAY_SUMMON, m_creature);
+                    Creature * tmpCreature;
+                    Unit * tmpUnit;
 
-            Blink_Timer = 25000;
-        }else Blink_Timer -= diff;
+                    for (uint8 i = 0; i < 6; ++i)
+                    {
+                        tmpCreature = m_creature->SummonCreature(PLAGUED_WARRIOR_ID, 2684.804, -3502.517, 261.313, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 80000);
+                        tmpUnit = SelectUnit(SELECT_TARGET_RANDOM);
+                        if (tmpCreature && tmpUnit)
+                            tmpCreature->AI()->AttackStart(tmpUnit);
+                    }
 
-        //Curse_Timer
-        if (Curse_Timer < diff)
-        {
-             DoCast(m_creature->getVictim(),SPELL_CURSE_PLAGUEBRINGER);
-            Curse_Timer = 28000;
-        }else Curse_Timer -= diff;
+                    events.ScheduleEvent(EVENT_SKELETONS, 30000);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
 
-        //Summon_Timer
-        if (Summon_Timer < diff)
-        {
-            DoScriptText(SAY_SUMMON, m_creature);
-
-            for(uint8 i = 0; i < 6; i++)
-                  m_creature->SummonCreature(C_PLAGUED_WARRIOR,2684.804,-3502.517,261.313,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000);
-
-            Summon_Timer = 30500;
-        } else Summon_Timer -= diff;
-
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
+
 CreatureAI* GetAI_boss_noth(Creature *_Creature)
 {
     return new boss_nothAI (_Creature);
@@ -147,4 +160,3 @@ void AddSC_boss_noth()
     newscript->GetAI = &GetAI_boss_noth;
     newscript->RegisterSelf();
 }
-

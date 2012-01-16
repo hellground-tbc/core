@@ -21,10 +21,12 @@
 #include "Creature.h"
 #include "MapManager.h"
 #include "FleeingMovementGenerator.h"
-#include "DestinationHolderImp.h"
 #include "ObjectAccessor.h"
 #include "VMapFactory.h"
 #include "CreatureAI.h"
+
+#include "movement/MoveSplineInit.h"
+#include "movement/MoveSpline.h"
 
 #define MIN_QUIET_DISTANCE 28.0f
 #define MAX_QUIET_DISTANCE 43.0f
@@ -32,9 +34,6 @@
 template<class T>
 void FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
 {
-    if (!&owner)
-        return;
-
     if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         return;
 
@@ -42,46 +41,28 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
     if (!_getPoint(owner, x, y, z))
         return;
 
-    owner.addUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
+    owner.addUnitState(UNIT_STAT_FLEEING_MOVE);
 
-    Traveller<T> traveller(owner);
-    i_destinationHolder.SetDestination(traveller, i_dest_x, i_dest_y, i_dest_z);
-}
+    Movement::MoveSplineInit init(owner);
+    init.MoveTo(x,y,z);
+    init.SetWalk(false);
+    init.Launch();
 
-template<>
-bool FleeingMovementGenerator<Creature>::GetDestination(float &x, float &y, float &z) const
-{
-    if (i_destinationHolder.HasArrived())
-        return false;
-
-    i_destinationHolder.GetDestination(x, y, z);
-    return true;
-}
-
-template<>
-bool FleeingMovementGenerator<Player>::GetDestination(float &x, float &y, float &z) const
-{
-    return false;
+    i_nextCheckTime.Reset(urand(500,1000));
 }
 
 template<class T>
 bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
 {
-    if (!&owner)
-        return false;
+    Position temp;
 
-    x = owner.GetPositionX();
-    y = owner.GetPositionY();
-    z = owner.GetPositionZ();
+    float angle = 0.0f;
+    float distance = 8.0f;
 
-    float temp_x, temp_y, temp_z, angle;
-    const TerrainInfo *_map = owner.GetTerrain();
     //primitive path-finding
     for (uint8 i = 0; i < 8; ++i)
     {
-        float distance = 14.0f;
-
-        switch (i)
+        switch (urand(0, 7))
         {
             case 0:
                 angle = i_cur_angle;
@@ -110,85 +91,34 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
         }
 
         // destination point
-        temp_x = x + distance * cos(angle);
-        temp_y = y + distance * sin(angle);
-        Trinity::NormalizeMapCoord(temp_x);
-        Trinity::NormalizeMapCoord(temp_y);
+        owner.GetValidPointInAngle(temp, distance, angle, true);
 
-        float ground, floor;
-        ground = _map->GetHeight(temp_x, temp_y, MAX_HEIGHT, true);
-        floor = _map->GetHeight(temp_x, temp_y, z, true);
-
-        temp_z = (fabs(ground - z) >= fabs(floor - z)) ? floor : ground;
-
-        if (temp_z <= INVALID_HEIGHT)
-            continue;
-
-        // if something on way get Hit Position and update distance
-        if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(owner.GetMapId(), x, y, z+0.5f, temp_x, temp_y, temp_z+0.5f, temp_x, temp_y, temp_z, -1.0f))
-            distance = owner.GetDistance2d(temp_x, temp_y);
-
-        float dest_floor, dest_ground;
-        float dest_x = x;
-        float dest_y = y;
-        float dest_z = z;
-
-        for (int j = 1; j <= 7; ++j)
+        if (i_dest_x != temp.x || i_dest_y != temp.y)
         {
-            float dist = j*2.0f;
-            if (dist > distance)
-            {
-                dist = distance;
-                j = 8; // end loop after executing code below
-            }
-
-            temp_x = x + dist*cos(angle);
-            temp_y = y + dist*sin(angle);
-            dest_ground = _map->GetHeight(temp_x, temp_y, MAX_HEIGHT, true);
-            dest_floor  = _map->GetHeight(temp_x, temp_y, dest_z, true);
-            temp_z = (fabs(dest_ground - dest_z) >= fabs(dest_floor - dest_z)) ? dest_floor : dest_ground;
-
-            if (temp_z < INVALID_HEIGHT || fabs(temp_z - dest_z) > 1.6f)
-                break;
-
-            dest_x = temp_x;
-            dest_y = temp_y;
-            dest_z = temp_z;
-        }
-
-        if (i_dest_x != dest_x || i_dest_y != dest_y)
-        {
-            i_dest_x = dest_x;
-            i_dest_y = dest_y;
-            i_dest_z = dest_z;
+            x = i_dest_x = temp.x;
+            y = i_dest_y = temp.y;
+            z = i_dest_z = temp.z;
             return true;
         }
-    }
-    return false;
-}
 
-template<class T>
-bool FleeingMovementGenerator<T>::_setMoveData(T &owner)
-{
-    return true;
+        distance /= 2;
+    }
+
+    return false;
 }
 
 template<class T>
 void FleeingMovementGenerator<T>::Initialize(T &owner)
 {
-    if (!&owner)
-        return;
-
     Unit * fright = owner.GetMap()->GetUnit(i_frightGUID);
     if (!fright)
         return;
 
-    _Init(owner);
     owner.CastStop();
-    owner.addUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
+    owner.addUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
     owner.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-    owner.SetUInt64Value(UNIT_FIELD_TARGET, 0);
-    owner.RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
+
+    _Init(owner);
 
     i_dest_x = i_caster_x = fright->GetPositionX();
     i_dest_y = i_caster_y = fright->GetPositionY();
@@ -202,9 +132,6 @@ void FleeingMovementGenerator<T>::Initialize(T &owner)
 template<>
 void FleeingMovementGenerator<Creature>::_Init(Creature &owner)
 {
-    if (!&owner)
-        return;
-
     is_water_ok = owner.CanSwim();
     is_land_ok  = owner.CanWalk();
 }
@@ -216,13 +143,20 @@ void FleeingMovementGenerator<Player>::_Init(Player &)
     is_land_ok  = true;
 }
 
-template<class T>
-void FleeingMovementGenerator<T>::Finalize(T &owner)
+template<>
+void FleeingMovementGenerator<Player>::Finalize(Player &owner)
 {
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-    owner.clearUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
-    if (owner.GetTypeId() == TYPEID_UNIT && owner.getVictim())
-        owner.SetUInt64Value(UNIT_FIELD_TARGET, owner.getVictimGUID());
+    owner.clearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+}
+
+template<>
+void FleeingMovementGenerator<Creature>::Finalize(Creature &owner)
+{
+    owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
+    owner.clearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+    if (uint64 vGUID = owner.getVictimGUID())
+        owner.SetSelection(vGUID);
 }
 
 template<class T>
@@ -232,32 +166,30 @@ void FleeingMovementGenerator<T>::Reset(T &owner)
 }
 
 template<class T>
-bool FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
+bool FleeingMovementGenerator<T>::Update(T &owner, const uint32 &time_diff)
 {
     if (!&owner || !owner.isAlive())
         return false;
 
     if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
+    {
+        owner.clearUnitState(UNIT_STAT_FLEEING_MOVE);
         return true;
+    }
 
-    Traveller<T> traveller(owner);
-    if (i_destinationHolder.UpdateTraveller(traveller, time_diff))
-        if (i_destinationHolder.HasArrived())
-            _setTargetLocation(owner);
+    i_nextCheckTime.Update(time_diff);
+    if (i_nextCheckTime.Passed() && owner.movespline->Finalized())
+        _setTargetLocation(owner);
 
     return true;
 }
 
 template void FleeingMovementGenerator<Player>::Initialize(Player &);
 template void FleeingMovementGenerator<Creature>::Initialize(Creature &);
-template bool FleeingMovementGenerator<Player>::_setMoveData(Player &);
-template bool FleeingMovementGenerator<Creature>::_setMoveData(Creature &);
 template bool FleeingMovementGenerator<Player>::_getPoint(Player &, float &, float &, float &);
 template bool FleeingMovementGenerator<Creature>::_getPoint(Creature &, float &, float &, float &);
 template void FleeingMovementGenerator<Player>::_setTargetLocation(Player &);
 template void FleeingMovementGenerator<Creature>::_setTargetLocation(Creature &);
-template void FleeingMovementGenerator<Player>::Finalize(Player &);
-template void FleeingMovementGenerator<Creature>::Finalize(Creature &);
 template void FleeingMovementGenerator<Player>::Reset(Player &);
 template void FleeingMovementGenerator<Creature>::Reset(Creature &);
 template bool FleeingMovementGenerator<Player>::Update(Player &, const uint32 &);
@@ -266,7 +198,7 @@ template bool FleeingMovementGenerator<Creature>::Update(Creature &, const uint3
 void TimedFleeingMovementGenerator::Finalize(Unit &owner)
 {
     owner.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-    owner.clearUnitState(UNIT_STAT_FLEEING | UNIT_STAT_ROAMING);
+    owner.clearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
     if (Unit* victim = owner.getVictim())
     {
         if (owner.isAlive())
@@ -283,7 +215,10 @@ bool TimedFleeingMovementGenerator::Update(Unit & owner, const uint32 & time_dif
         return false;
 
     if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
+    {
+        owner.clearUnitState(UNIT_STAT_FLEEING_MOVE);
         return true;
+    }
 
     i_totalFleeTime.Update(time_diff);
     if (i_totalFleeTime.Passed())

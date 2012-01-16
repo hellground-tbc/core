@@ -171,7 +171,7 @@ float FogCoords[25][3][3] =
 
 struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 {
-    boss_felmystAI(Creature *c) : ScriptedAI(c)
+    boss_felmystAI(Creature *c) : ScriptedAI(c), summons(c)
     {
         pInstance = (c->GetInstanceData());
     }
@@ -181,6 +181,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     EventFelmyst Event;
     uint32 Timer[10];
     uint32 PulseCombat;
+
+    SummonList summons;
 
     uint8 side;
     uint8 path;
@@ -208,9 +210,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
         m_creature->setActive(true);
         m_creature->SetWalk(false);
+        DespawnSummons();   // for unyielding dead summoned by trigger
 
         if(pInstance)
             pInstance->SetData(DATA_FELMYST_EVENT, NOT_STARTED);
+
+        summons.DespawnAll();   // for any other summons? (should not be needed?)
     }
 
     void EnterCombat(Unit *who)
@@ -258,7 +263,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        if(!urand(0,3))
+        if(roll_chance_i(15))
             DoScriptText(RAND(YELL_KILL1, YELL_KILL2), m_creature);
     }
 
@@ -280,7 +285,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     void EnterEvadeMode()
     {
         CreatureAI::EnterEvadeMode();
-        me->SetSpeed(MOVE_FLIGHT, 1.8, false);
+        me->SetSpeed(MOVE_FLIGHT, 1.7, false);
         me->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
         IntroPhase = 6; // to make proper landing on next EnterCombat
 
@@ -293,6 +298,19 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             }
     }
 
+    void DespawnSummons()
+    {
+        std::list<uint64> AddList = me->GetMap()->GetCreaturesGUIDList(MOB_UNYIELDING_DEAD, GET_FIRST_CREATURE_GUID, 0);
+        if (AddList.empty())
+            return;
+
+        for (std::list<uint64>::iterator i = AddList.begin(); i!= AddList.end(); ++i)
+        {
+            if(Creature* Skeleton = me->GetCreature(*i))
+                Skeleton->ForcedDespawn();
+        }
+    }
+
     void JustSummoned(Creature *summon)
     {
         if(summon->GetEntry() == MOB_KALECGOS)
@@ -303,6 +321,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             summon->SetSpeed(MOVE_FLIGHT, 1.2);
             summon->GetMotionMaster()->MovePoint(50, 1471, 632, 37);
         }
+
+        summons.Summon(summon);
     }
 
     void DamageTaken(Unit*, uint32 &damage)
@@ -317,9 +337,9 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
         case PHASE_GROUND:
             Timer[EVENT_CLEAVE] = urand(5000, 10000);
-            Timer[EVENT_CORROSION] = urand(10000, 20000);
-            Timer[EVENT_GAS_NOVA] = urand(15000, 20000);
-            Timer[EVENT_ENCAPSULATE] = urand(20000, 30000);
+            Timer[EVENT_CORROSION] = urand(12000, 20000);
+            Timer[EVENT_GAS_NOVA] = urand(18000, 22000);
+            Timer[EVENT_ENCAPSULATE] = 30000;
             Timer[EVENT_FLIGHT] = 60000;
             Timer[EVENT_CHECK] = 1000;
             break;
@@ -359,7 +379,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 IntroTimer = 0;
                 break;
             case 4:
-                me->SetSpeed(MOVE_FLIGHT, 1.8, false);
+                me->SetSpeed(MOVE_FLIGHT, 1.7, false);
                 m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
                 IntroTimer = 10000;
                 break;
@@ -382,10 +402,13 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             m_creature->SetLevitate(true);
         else if(Type == POINT_MOTION_TYPE)
         {
+            // stop moving on each waypoint
+            me->GetMotionMaster()->MoveIdle();
+            if(me->getVictim()) // cosmetics: to be tested if working
+                me->SetInFront(me->getVictim());
             switch(Id)
             {
                 case 0: // on landing after aggroing
-                    me->GetMotionMaster()->MoveIdle();
                     me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     me->SetLevitate(false);
                     me->setHover(false);
@@ -398,18 +421,17 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     break;
                 case 2: // on left/right side marker
                     me->setHover(true);
-                    me->GetMotionMaster()->MoveIdle();
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 6000;
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
                     break;
                 case 3: // on path start node
                     me->setHover(true);
-                    me->SetSpeed(MOVE_FLIGHT, 3.6, false);
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 200;
+                    me->SetSpeed(MOVE_FLIGHT, 3.4, false);
+                    DoScriptText(EMOTE_BREATH, m_creature);
+                    Timer[EVENT_FLIGHT_SEQUENCE] = urand(3000, 4000);
                     break;
                 case 4: // on path stop node
                     me->setHover(true);
-                    me->SetSpeed(MOVE_FLIGHT, 1.8, false);
-                    me->GetMotionMaster()->MoveIdle();
+                    me->SetSpeed(MOVE_FLIGHT, 1.7, false);
                     m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
                     side = side?LEFT_SIDE:RIGHT_SIDE;
                     BreathCount++;
@@ -417,7 +439,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                         FlightCount = 4;
                     else
                         FlightCount = 7;
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 50;
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
                     break;
                 case 5: // on landing after phase 2
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
@@ -463,7 +485,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             break;
             }
         case 4: // go to side left/right marker
-            me->SetSpeed(MOVE_FLIGHT, 1.8, false);
+            me->SetSpeed(MOVE_FLIGHT, 1.7, false);
             m_creature->GetMotionMaster()->MovePoint(2, FlightSide[side][0], FlightSide[side][1], FlightSide[side][2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
@@ -471,7 +493,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             {
             path = urand(0,2);
             float *pos = FlightMarker[path][side];
-            DoScriptText(EMOTE_BREATH, m_creature);
             counter = side ? (path ? (path%2 ? 7 : 24) : 14) : 0;
             m_creature->GetMotionMaster()->MovePoint(3, pos[0], pos[1], pos[2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
@@ -505,7 +526,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             m_creature->SetLevitate(false);
             m_creature->SetWalk(false);
             me->setHover(false);
-            m_creature->SendMovementFlagUpdate();
+            m_creature->SendHeartBeat();
             EnterPhase(PHASE_GROUND);
             AttackStart(m_creature->getVictim());
             DoStartMovement(me->getVictim());
@@ -546,7 +567,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))
                 {
                     AddSpellToCast(target, SPELL_ENCAPSULATE_CHANNEL, false, true);
-                    Timer[EVENT_ENCAPSULATE] = urand(25000, 35000);
+                    Timer[EVENT_ENCAPSULATE] = urand(22000, 35000);
                     if(Timer[EVENT_FLIGHT] < 7000)
                         Timer[EVENT_FLIGHT] = 7000;
                 }
@@ -566,7 +587,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 else
                 {
                     side ? counter-- : counter++;
-                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 8 : 25) : 15));  // check this timer
+                    Timer[EVENT_SUMMON_FOG] = (7000/(path ? (path%2 ? 8 : 25) : 15));  // check this timer
                 }
                 break;
         }

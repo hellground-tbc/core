@@ -171,7 +171,6 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             if (HurtfulStrike_Timer < diff)
             {
                 Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, me->GetMeleeReach(), true, me->getVictimGUID());
-
                 if (!target)
                     target = me->getVictim();
 
@@ -207,7 +206,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                     Reverberation_Timer = 10000 + ShatterTimer;
 
                 DoScriptText(EMOTE_SHATTER, me);
-                ForceSpellCastWithScriptText(SPELL_GROUND_SLAM, CAST_NULL, RAND(SAY_SLAM1, SAY_SLAM2));
+                ForceSpellCastWithScriptText(SPELL_GROUND_SLAM, CAST_SELF, RAND(SAY_SLAM1, SAY_SLAM2));
             }
             else
                 GroundSlamTimer -= diff;

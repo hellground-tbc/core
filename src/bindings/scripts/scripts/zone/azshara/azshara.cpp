@@ -300,13 +300,8 @@ struct TRINITY_DLL_DECL mob_rizzle_sprysprocketAI : public ScriptedAI
 
             if(Teleport_Timer < diff)
             {
-                //temp solution - unit can't be teleported by core using spelleffect 5, only players
-                Map *map = m_creature->GetMap();
-                if(map)
-                {
-                    map->CreatureRelocation(m_creature, 3706.39, -3969.15, 35.9118, 0);
-                    m_creature->AI_SendMoveToPacket(3706.39, -3969.15, 35.9118, 0, 0, SPLINETYPE_NORMAL);
-                }
+                DoTeleportTo(3706.39, -3969.15, 35.9118, 0);
+
                 //begin swimming and summon depth charges
                 Player* player = Unit::GetPlayer(PlayerGUID);
                 SendText(MSG_ESCAPE_NOTICE, player);

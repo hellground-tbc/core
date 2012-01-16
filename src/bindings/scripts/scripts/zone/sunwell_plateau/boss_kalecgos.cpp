@@ -146,7 +146,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
     void Reset()
     {
         m_creature->setFaction(14);
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetLevitate(false);
         me->RemoveUnitMovementFlag(MOVEFLAG_ONTRANSPORT);
         m_creature->SetStandState(PLAYER_STATE_SLEEP);
@@ -219,7 +219,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->SetLevitate(true);
             me->setHover(true);
-            me->SendMovementFlagUpdate();
+            me->SendHeartBeat();
             TalkTimer = 3000;
             break;
         case 3:
@@ -274,7 +274,7 @@ struct TRINITY_DLL_DECL boss_kalecgosAI : public ScriptedAI
             me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             me->SetLevitate(true);
             me->setHover(true);
-            me->SendMovementFlagUpdate();
+            me->SendHeartBeat();
             TalkTimer = 3000;
             break;
         case 3:
@@ -557,7 +557,7 @@ struct TRINITY_DLL_DECL boss_sathrovarrAI : public ScriptedAI
     void JustDied(Unit *killer)
     {
         DoScriptText(SAY_SATH_DEATH, m_creature);
-        me->SendMonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, 0);
+        DoTeleportTo(m_creature->GetPositionX(), m_creature->GetPositionY(), DRAGON_REALM_Z, 0);
 
         if(pInstance)
             pInstance->SetData(DATA_KALECGOS_EVENT, DONE);

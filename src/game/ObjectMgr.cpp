@@ -4394,8 +4394,8 @@ void ObjectMgr::LoadAccessRequirements()
 
     uint32 count = 0;
 
-    //                                                       0       1          2       3      4        5           6             7              8                   9                  10
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, level_min, level_max, item, item2, heroic_key, heroic_key2, quest_done, quest_failed_text, heroic_quest_done, heroic_quest_failed_text FROM access_requirement");
+    //                                                       0       1          2       3      4        5           6             7              8                   9                  10                11           12
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, level_min, level_max, item, item2, heroic_key, heroic_key2, quest_done, quest_failed_text, heroic_quest_done, heroic_quest_failed_text, aura_id, missing_aura_text FROM access_requirement");
     if (!result)
     {
 
@@ -4432,6 +4432,8 @@ void ObjectMgr::LoadAccessRequirements()
         ar.questFailedText          = fields[8].GetCppString();
         ar.heroicQuest              = fields[9].GetUInt32();
         ar.heroicQuestFailedText    = fields[10].GetCppString();
+        ar.auraId                   = fields[11].GetUInt32();
+        ar.missingAuraText          = fields[12].GetCppString();
 
         if (ar.item)
         {
@@ -4488,6 +4490,15 @@ void ObjectMgr::LoadAccessRequirements()
             {
                 sLog.outErrorDb("Required Quest %u not exist for trigger %u, remove quest done requirement.",ar.quest,requiremt_ID);
                 ar.quest = 0;
+            }
+        }
+
+        if (ar.auraId)
+        {
+            if (!GetSpellStore()->LookupEntry(ar.auraId))
+            {
+                sLog.outErrorDb("Required aura %u not exist for trigger %u, remove aura requirement.", ar.auraId, requiremt_ID);
+                ar.auraId = 0;
             }
         }
 
@@ -6032,61 +6043,6 @@ const char *ObjectMgr::GetTrinityString(int32 entry, int locale_idx) const
     else
         sLog.outErrorDb("Trinity string entry %i not found in DB.",entry);
     return "<error>";
-}
-
-void ObjectMgr::LoadSpecialQuests()
-{
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT * FROM saved_variables");
-
-    if (!result)
-    {
-        CharacterDatabase.PExecute("INSERT INTO saved_variables VALUES('0','0','0','0','0','0','0')");
-        LoadSpecialQuests();
-    }
-    else
-    {
-        if (!(sWorld.specialQuest[HEROIC] = (*result)[1].GetUInt32()))
-        {
-            uint32 heroicQuest[16] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373/*, 11378 OHF*/, 11374, 11372, 11368, 11388, 11370, 11499 };
-            sWorld.specialQuest[HEROIC] = heroicQuest[urand(0,13)];
-            CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u'", sWorld.specialQuest[HEROIC]);
-        }
-
-        if (!(sWorld.specialQuest[QNORMAL] = (*result)[2].GetUInt32()))
-        {
-            uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, 11500, 11385, 11387 };
-            sWorld.specialQuest[QNORMAL] = normalQuest[urand(0,6)];
-            CharacterDatabase.PExecute("UPDATE saved_variables set NormalQuest='%u'", sWorld.specialQuest[QNORMAL]);
-        }
-
-        if (!(sWorld.specialQuest[COOKING] = (*result)[3].GetUInt32()))
-        {
-            uint32 cookingQuest[4] = { 11380, 11377, 11381, 11379 };
-            sWorld.specialQuest[COOKING] = cookingQuest[urand(0,3)];
-            CharacterDatabase.PExecute("UPDATE saved_variables set CookingQuest='%u'", sWorld.specialQuest[COOKING]);
-        }
-
-        if (!(sWorld.specialQuest[FISHING] = (*result)[4].GetUInt32()))
-        {
-            uint32 fishingQuest[5] = { 11666, 11665, 11669,11668, 11667 };
-            sWorld.specialQuest[FISHING] = fishingQuest[urand(0,4)];
-            CharacterDatabase.PExecute("UPDATE saved_variables set FishingQuest='%u'", sWorld.specialQuest[FISHING]);
-        }
-
-        if (!(sWorld.specialQuest[PVPA] = (*result)[5].GetUInt32()))
-        {
-            uint32 alliancePVP[4]  = { 11335, 11336, 11337, 11338 };
-            sWorld.specialQuest[PVPA] = alliancePVP[urand(0,3)];
-            CharacterDatabase.PExecute("UPDATE saved_variables set PVPAlliance='%u'", sWorld.specialQuest[PVPA]);
-        }
-
-        if (!(sWorld.specialQuest[PVPH] = (*result)[6].GetUInt32()))
-        {
-            uint32 hordePVP[4]     = { 11339, 11340, 11341, 11342 };
-            sWorld.specialQuest[PVPH] = hordePVP[urand(0,3)];
-            CharacterDatabase.PExecute("UPDATE saved_variables set PVPHorde='%u'", sWorld.specialQuest[PVPH]);
-        }
-    }
 }
 
 void ObjectMgr::LoadSpellDisabledEntrys()

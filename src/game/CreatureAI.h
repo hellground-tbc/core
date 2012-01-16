@@ -177,6 +177,11 @@ class TRINITY_DLL_SPEC CreatureAI : public UnitAI
         // Pointer to controlled by AI creature
         //Creature* const m_creature;
 
+        virtual uint32 GetData(uint32 /*id = 0*/) { return 0; }
+        virtual void SetData(uint32 /*id*/, uint32 /*value*/) {}
+        virtual void SetGUID(uint64 /*guid*/, int32 /*id*/ = 0) {}
+        virtual uint64 GetGUID(int32 /*id*/ = 0) { return 0; }
+
         virtual void PassengerBoarded(Unit *who, int8 seatId, bool apply) {}
 
     protected:

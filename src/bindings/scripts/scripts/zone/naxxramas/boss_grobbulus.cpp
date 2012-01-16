@@ -16,58 +16,107 @@
 
 /* ScriptData
 SDName: Boss_Grobbulus
-SD%Complete: 0
-SDComment: Place holder
+SD%Complete: ??
+SDComment: Initial script.
 SDCategory: Naxxramas
 EndScriptData */
-
-/*Poison Cloud 26590
-Slime Spray 28157
-Fallout slime 28218
-Mutating Injection 28169
-Enrages 26527*/
 
 #include "precompiled.h"
 #include "def_naxxramas.h"
 
-struct TRINITY_DLL_DECL boss_grobbulusAI : public ScriptedAI
+enum GrobbulusSpells
 {
-    boss_grobbulusAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
+    SPELL_POISON_CLOUD          = 26590,
+    SPELL_SLIME_SPRAY           = 28157,
+    SPELL_FALLOUT_SLIME         = 28218,
+    SPELL_MUTATING_INFECTION    = 28169,
+    SPELL_ENRAGES               = 26527,
+    SPELL_SLIME_STREAM          = 28137
+};
 
-    ScriptedInstance* pInstance;
+enum GrobbulusEvents
+{
+    EVENT_POISON_CLOUD          = 1,
+    EVENT_SLIME_SPRAY           = 2,
+    EVENT_MUTATING_INFECTION    = 3,
+    EVENT_ENRAGE                = 4
+};
+
+struct TRINITY_DLL_DECL boss_grobbulusAI : public BossAI
+{
+    boss_grobbulusAI(Creature *c) : BossAI(c, DATA_GROBBULUS) { }
 
     void Reset()
     {
-        if (pInstance && pInstance->GetData(DATA_GROBBULUS) != DONE)
-            pInstance->SetData(DATA_GROBBULUS, NOT_STARTED);
+        events.Reset();
+        events.ScheduleEvent(EVENT_POISON_CLOUD, 15000);
+        events.ScheduleEvent(EVENT_SLIME_SPRAY, 15000);
+        events.ScheduleEvent(EVENT_MUTATING_INFECTION, urand(18000, 22000));
+        events.ScheduleEvent(EVENT_ENRAGE, 720000);
+
+        instance->SetData(DATA_GROBBULUS, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
-        if (pInstance)
-            pInstance->SetData(DATA_GROBBULUS, IN_PROGRESS);
+        instance->SetData(DATA_GROBBULUS, IN_PROGRESS);
     }
 
     void JustDied(Unit * killer)
     {
-        if (pInstance)
-            pInstance->SetData(DATA_GROBBULUS, DONE);
+        instance->SetData(DATA_GROBBULUS, DONE);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
+
+        DoSpecialThings(diff, DO_EVERYTHING);
+
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_POISON_CLOUD:
+                {
+                    AddSpellToCast(SPELL_POISON_CLOUD, CAST_SELF);
+                    events.ScheduleEvent(EVENT_POISON_CLOUD, 15000);
+                    break;
+                }
+                case EVENT_SLIME_SPRAY:
+                {
+                    AddSpellToCast(SPELL_SLIME_SPRAY, CAST_NULL);
+                    events.ScheduleEvent(EVENT_SLIME_SPRAY, 15000);
+                    break;
+                }
+                case EVENT_MUTATING_INFECTION:
+                {
+                    AddSpellToCast(SPELL_MUTATING_INFECTION, CAST_RANDOM_WITHOUT_TANK);
+                    events.ScheduleEvent(EVENT_MUTATING_INFECTION, urand(18000, 22000));
+                    break;
+                }
+                case EVENT_ENRAGE:
+                {
+                    AddSpellToCast(SPELL_ENRAGES, CAST_SELF);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
+
 CreatureAI* GetAI_boss_grobbulus(Creature *_Creature)
 {
     return new boss_grobbulusAI (_Creature);
 }
+
 void AddSC_boss_grobbulus()
 {
     Script *newscript;

@@ -448,6 +448,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
             DoResetThreat();
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+            m_creature->SetReactState(REACT_AGGRESSIVE);
         }
 
         //Enrage_Timer ( 10 min )
@@ -472,6 +473,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                     // while whirlwinding this variable is used to countdown target's change
                     Whirlwind_Timer = 2000;
                     NeedThreatReset = true;
+                    m_creature->SetReactState(REACT_PASSIVE);
                 }
                 else
                     Whirlwind_Timer -= diff;
@@ -491,6 +493,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                     DemonForm = true;
                     NeedThreatReset = true;
                     SwitchToDemon_Timer = 45000;
+                    m_creature->SetReactState(REACT_AGGRESSIVE);
                 }
                 else
                     SwitchToDemon_Timer -= diff;

@@ -34,7 +34,7 @@ bool PlayerAI::UpdateVictim(float range)
     }
 
     if (Unit *target = me->getVictim())
-        me->SetOrientation(me->GetAngle(target));
+        me->SetInFront(target);
 
     return me->getVictim();
 }

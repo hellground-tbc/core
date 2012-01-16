@@ -194,6 +194,9 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget, bool wi
         case CHAT_TYPE_ZONE_YELL:
             pSource->MonsterYellToZone(iTextEntry, pData->uiLanguage, pTarget ? pTarget->GetGUID() : 0);
             break;
+        case CHAT_TYPE_ZONE_BOSS_EMOTE:
+            pSource->MonsterTextEmoteToZone(iTextEntry, pTarget ? pTarget->GetGUID() : 0, true, withoutPrename);
+            break;
     }
 
     if (pTarget && pTarget->GetTypeId() == TYPEID_UNIT)
@@ -294,19 +297,6 @@ bool GossipHello(Player* pPlayer, Creature* pCreature)
     pPlayer->PlayerTalkClass->ClearMenus();
 
     return pTempScript->pGossipHello(pPlayer, pCreature);
-}
-
-TRINITY_DLL_EXPORT
-bool GOGossipHello(Player* pPlayer, GameObject* pGo)
-{
-    Script* pTempScript = m_scripts[pGo->GetGOInfo()->ScriptId];
-
-    if (!pTempScript || !pTempScript->pGossipHelloGO)
-        return false;
-
-    pPlayer->PlayerTalkClass->ClearMenus();
-
-    return pTempScript->pGossipHelloGO(pPlayer, pGo);
 }
 
 TRINITY_DLL_EXPORT

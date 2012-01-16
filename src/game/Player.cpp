@@ -439,9 +439,6 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
     m_summon_y = 0.0f;
     m_summon_z = 0.0f;
 
-    //Default movement to run mode
-    m_unit_movement_flags = 0;
-
     m_miniPet = 0;
     m_bgAfkReportedTimer = 0;
     m_contestedPvPTimer = 0;
@@ -1734,7 +1731,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     }
 
     // reset movement flags at teleport, because player will continue move with these flags after teleport
-    SetUnitMovementFlags(0);
+    m_movementInfo.SetMovementFlags(MOVEFLAG_NONE);
+    DisableSpline();
 
     if ((GetMapId() == mapid) && (!m_transport))
     {
@@ -7465,7 +7463,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             if (loot_type == LOOT_FISHING)
                 go->getFishLoot(loot, this);
 
-            go->SetLootState(GO_ACTIVATED);
         }
     }
     else if (IS_ITEM_GUID(guid))
@@ -12342,22 +12339,7 @@ void Player::PrepareQuestMenu(uint64 guid)
         if (pQuest->IsAutoComplete() && CanTakeQuest(pQuest, false))
             qm.AddMenuItem(quest_id, DIALOG_STATUS_REWARD_REP);
         else if (status == QUEST_STATUS_NONE && CanTakeQuest(pQuest, false))
-        {
-            if (pObject->GetEntry() == 24369 && quest_id != sWorld.specialQuest[HEROIC])
-                continue;
-            if (pObject->GetEntry() == 24370 && quest_id != sWorld.specialQuest[QNORMAL])
-                continue;
-            if (pObject->GetEntry() == 24393 && quest_id != sWorld.specialQuest[COOKING])
-                continue;
-            if (pObject->GetEntry() == 25580 && quest_id != sWorld.specialQuest[FISHING])
-                continue;
-            if (pObject->GetEntry() == 15350 && quest_id != 8388 && quest_id != sWorld.specialQuest[PVPH])
-                continue;
-            if (pObject->GetEntry() == 15351 && quest_id != 8385 && quest_id != sWorld.specialQuest[PVPA])
-                continue;
-
             qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);
-        }
     }
 }
 
@@ -14403,14 +14385,14 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             sLog.outError("Player (guidlow %d) is teleported to home (Map: %u X: %f Y: %f Z: %f O: %f).",guid,GetMapId(),GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
         }
 
-        map = GetMap();
+        map = sMapMgr.CreateMap(GetMapId(), this);
         if (!map)
         {
             sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
 
             RelocateToHomebind();
 
-            map = GetMap();
+            map = sMapMgr.CreateMap(GetMapId(), this);
             if (!map)
             {
                 sLog.outError("ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
@@ -14435,14 +14417,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt. Relocate to homebind.", GetName(), GetGUIDLow(), GetMapId());
             RelocateToHomebind();
         }
-/*
-        AreaTrigger const* at = objmgr.GetMapEntranceTrigger(GetMapId());
-        if (at)
-             Relocate(at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
-        else
-             sLog.outError("Player %s(GUID: %u) logged in to a reset instance (map: %u) and there is no area-trigger leading to this map. Thus he can't be ported back to the entrance. This _might_ be an exploit attempt.", GetName(), GetGUIDLow(), GetMapId());
-*/
+
+        map = sMapMgr.CreateMap(GetMapId(), this);
     }
+
+    SetMap(map);
 
     SaveRecallPosition();
 
@@ -15614,7 +15593,11 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
         if (ar->quest && !GetQuestRewardStatus(ar->quest))
             missingQuest = ar->quest;
 
-        if (LevelMin || LevelMax || missingItem || missingKey || missingQuest || missingHeroicQuest)
+        uint32 missingAura = 0;
+        if (ar->auraId && !HasAura(ar->auraId))
+            missingAura = ar->auraId;
+
+        if (LevelMin || LevelMax || missingItem || missingKey || missingQuest || missingHeroicQuest || missingAura)
         {
             if (report)
             {
@@ -15628,6 +15611,8 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
                     GetSession()->SendAreaTriggerMessage(ar->questFailedText.c_str());
                 else if (LevelMin)
                     GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED), LevelMin);
+                else if (missingAura)
+                    GetSession()->SendAreaTriggerMessage(ar->missingAuraText.c_str());
             }
             return false;
         }
@@ -18312,8 +18297,6 @@ void Player::SendInitialVisiblePackets(Unit* target)
     SendAuraDurationsForTarget(target);
     if (target->isAlive())
     {
-        if (target->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE)
-            target->SendMonsterMoveWithSpeedToCurrentDestination(this);
         if (target->hasUnitState(UNIT_STAT_MELEE_ATTACKING) && target->getVictim())
             target->SendMeleeAttackStart(target->getVictim());
     }
@@ -19958,7 +19941,7 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
     else
     {
         // never use SetOriginalGroup without a subgroup unless you specify NULL for group
-        //MANGOS_ASSERT(subgroup >= 0);
+        //ASSERT(subgroup >= 0);
         m_originalGroup.link(group, this);
         m_originalGroup.setSubGroup((uint8)subgroup);
     }

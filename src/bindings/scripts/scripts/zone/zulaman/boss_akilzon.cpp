@@ -238,9 +238,6 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
                 return;
             }
             // throw player to air and cast electrical storm on (should be handled by proper script effect targeting?)
-            float x,y,z;
-            target->GetPosition(x,y,z);
-            target->SendMonsterMove(x,y,m_creature->GetPositionZ()+15,0);
             DoScriptText(EMOTE_STORM, m_creature, 0, true);
             m_creature->CastSpell(target, SPELL_ELECTRICAL_STORM, false);
 
@@ -283,6 +280,8 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
     {
         DoZoneInCombat();
         EagleSwoop_Timer = urand(2000, 6000);
+        me->SetLevitate(true);
+        m_creature->SetWalk(false);
         Return_Timer = 200;
         canMoveRandom = true;
         canCast = true;
@@ -304,9 +303,8 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
         if (Creature* Akil = me->GetMap()->GetCreature(pInstance->GetData64(DATA_AKILZONEVENT)))
         {
             float x, y, z;
-            Akil->GetRandomPoint(Akil->GetPositionX(), Akil->GetPositionY(), Akil->GetPositionZ()+15.0f, 30.0f, x, y, z);
-            if(m_creature->HasUnitMovementFlag(MOVEFLAG_WALK_MODE))
-                m_creature->SetWalk(false);
+            Akil->GetPosition(x, y, z);
+            Akil->GetRandomPoint(x, y, z+15, 40.0f, x, y, z);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
             canMoveRandom = false;
         }

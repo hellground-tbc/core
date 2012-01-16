@@ -263,7 +263,7 @@ struct TRINITY_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                         Walk_Pos_Z = ADDZ_RIGHT_NEAR;
                         break;
                 }
-                pUnit->SendMonsterMoveWithSpeed(Walk_Pos_X, Walk_Pos_Y, Walk_Pos_Z,MOVEFLAG_WALK_MODE);
+                pUnit->NearTeleportTo(Walk_Pos_X, Walk_Pos_Y, Walk_Pos_Z, 0);
             }
         if (pInstance)
             pInstance->SetData(DATA_KEL_THUZAD, DONE);
@@ -413,7 +413,7 @@ struct TRINITY_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 {
                     //if we find no one to figth walk to the center
                     if(!pUnit->isInCombat())
-                        pUnit->SendMonsterMoveWithSpeed(Walk_Pos_X,Walk_Pos_Y,Walk_Pos_Z,MOVEFLAG_WALK_MODE);
+                        pUnit->NearTeleportTo(Walk_Pos_X,Walk_Pos_Y,Walk_Pos_Z, 0);
 
                     //Safe storing of creatures
                     GuardiansOfIcecrown[GuardiansOfIcecrown_Count] = pUnit->GetGUID();

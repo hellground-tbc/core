@@ -22,8 +22,7 @@
 #define TRINITY_CONFUSEDGENERATOR_H
 
 #include "MovementGenerator.h"
-#include "DestinationHolder.h"
-#include "Traveller.h"
+#include "Timer.h"
 
 #define WANDER_DISTANCE    2.5f
 #define MAX_RANDOM_POINTS  6
@@ -32,21 +31,12 @@ template<class T>
 class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMovementGenerator<T> >
 {
     public:
-        explicit ConfusedMovementGenerator() {}
+        explicit ConfusedMovementGenerator() : i_nextMoveTime(0) {}
 
         void Initialize(T &);
         void Finalize(T &);
         void Reset(T &);
         bool Update(T &, const uint32 &);
-
-        bool GetDestination(float &x, float &y, float &z) const
-        {
-            if (i_destinationHolder.HasArrived())
-                return false;
-
-            i_destinationHolder.GetDestination(x,y,z);
-            return true;
-        }
 
         void GenerateMovement(T &unit);
 
@@ -54,10 +44,9 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMediu
 
     private:
 
+        TimeTracker i_nextMoveTime;
         Position randomPosition[MAX_RANDOM_POINTS+1];
-        DestinationHolder< Traveller<T> > i_destinationHolder;
         uint32 i_nextMove;
 };
 
 #endif
-

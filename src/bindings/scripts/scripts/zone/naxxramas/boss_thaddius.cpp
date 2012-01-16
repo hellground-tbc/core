@@ -15,10 +15,9 @@
  */
 
 /* ScriptData
-SDName: Boss_Thaddius
-SD%Complete: 15
-SDComment: ball lightning NYI, tesla coils not spawned, F&S not scripted correctly, some issues with reset, had to comment some part of the script
-Don't read it, it's way too ugly... Script is not registered in ScriptLoader, don't do it, until 100% done
+SDName: Thaddius encounter
+SD%Complete: 0
+SDComment:
 SDCategory: Naxxramas
 EndScriptData */
 
@@ -30,20 +29,10 @@ EndScriptData */
 #define SAY_STAL_SLAY           -1533024
 #define SAY_STAL_DEATH          -1533025
 
-#define STAL_TESLA_PASSIVE      28097
-#define SPELL_POWERSURGE        28134
-
 //Feugen
 #define SAY_FEUG_AGGRO          -1533026
 #define SAY_FEUG_SLAY           -1533027
 #define SAY_FEUG_DEATH          -1533028
-
-#define FEUG_TESLA_PASSIVE      28109
-#define SPELL_MANABURN          28135
-
-//both
-#define SPELL_WARSTOMP          28125
-#define SPELL_MAGNETIC_PULL     28337    //way too strong, any ideas? maybe 28338
 
 //Thaddus
 #define SAY_GREET               -1533029
@@ -57,315 +46,275 @@ EndScriptData */
 #define SAY_SCREAM2             -1533037
 #define SAY_SCREAM3             -1533038
 #define SAY_SCREAM4             -1533039
-//8873-8876 sounds
 
-#define SPELL_SELF_STUN                     28160            //Thaddius is stunned, while Feugen and Stalagg are alive
-#define SPELL_BALL_LIGHTNING                28299
+#define GO_TESLA_COIL1    181477
+#define GO_TESLA_COIL2    181478    //those 2 are not spawned
 
-#define SPELL_CHARGE_POSITIVE_DMGBUFF       29659
-#define SPELL_CHARGE_POSITIVE_NEARDMG       28059
-
-#define SPELL_CHARGE_NEGATIVE_DMGBUFF       29660
-#define SPELL_CHARGE_NEGATIVE_NEARDMG       28084
-
-#define SPELL_CHAIN_LIGHTNING               28167
-
-#define SPELL_BERSERK                       26662
-
- //generic
-#define C_TESLA_COIL                        16218           //the coils (emotes "Tesla Coil overloads!")
-#define GO_TESLA_COIL1                      181477
-#define GO_TESLA_COIL2                      181478            //those 2 are not spawned
-
-struct TRINITY_DLL_DECL boss_thaddiusAI : public ScriptedAI
+enum eSpells
 {
-    boss_thaddiusAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
+    // Fuegen
+    SPELL_MANA_BURN               = 28135,
+    SPELL_CHAIN_F                 = 28111,
+    SPELL_TESLA_PASSIVE_F         = 28109,
+    SPELL_MAGNETIC_PULL_F         = 28338,
 
-    ScriptedInstance * pInstance;
-    uint32 Enrage_Timer;
-    uint32 Scream_Timer;    //random screams in Naxx while Thaddius is alive
-    uint32 PolarityShift_Timer;
-    uint32 Ball_Timer;
-    uint32 Chain_Timer;
-    uint32 Free_Timer;    //breaking free after killing F&S
+    // Stalagg
+    SPELL_CHAIN_S                 = 28096,
+    SPELL_POWER_SURGE             = 28134,
+    SPELL_TESLA_PASSIVE_S         = 28097,
+    SPELL_MAGNETIC_PULL_S         = 28339,
 
-    bool stunned;
-    bool yelled;
+    // shared
+    SPELL_WAR_STOMP               = 28125,
+
+    // Thaddius
+    SPELL_SELF_STUN               = 28160,
+    SPELL_BALL_LIGHTNING          = 28299,
+    SPELL_POLARITY_SHIFT          = 28089,
+
+    SPELL_CHAIN_LIGHTNING         = 28167,
+    SPELL_BERSERK                 = 26662
+};
+
+enum eEvents
+{
+    // 1st phase shared
+    EVENT_WAR_STOMP      = 1,
+    EVENT_PULL_TANK      = 2,
+
+    // Fuegen
+    EVENT_MANA_BURN      = 3,
+
+    // Stalagg
+    EVENT_POWER_SURGE    = 4,
+
+    // Thaddius
+    EVENT_POLARITY_SHIFT = 5,
+    EVENT_BERSERK        = 6
+};
+
+struct boss_thaddiusAI : public BossAI
+{
+    boss_thaddiusAI(Creature *c) : BossAI(c, DATA_THADDIUS) {}
 
     void Reset()
     {
-        //what an ugly script! But it's working
-        //me->GetCreature(pInstance->GetData64(2))->Respawn();
-        //me->GetCreature(pInstance->GetData64(2))->AI()->EnterEvadeMode();
-        //me->GetCreature(pInstance->GetData64(3))->Respawn();
-        //me->GetCreature(pInstance->GetData64(3))->AI()->EnterEvadeMode();
-        //UP - Crash mode off
-        Scream_Timer = 10000;
-        PolarityShift_Timer = 30000;                        //30 secs
-        Ball_Timer = 3000;                                  //only when there is noone in melee range
-        Chain_Timer = 15000;                                //10-20 secs, could be wrong
-        Enrage_Timer = 300000;                              //5 mins
-        Free_Timer = 20000;                                 //20 secs
-        stunned = true;
-        yelled = false;
-        if (pInstance)
-            pInstance->SetData(DATA_THADDIUS, NOT_STARTED);
+        events.Reset();
+        ClearCastQueue();
+
+        events.ScheduleEvent(EVENT_POLARITY_SHIFT, 30000);
+        events.ScheduleEvent(EVENT_BERSERK, 300000);
     }
 
-    void KilledUnit(Unit* Victim)
+    void EnterCombat(Unit*)
     {
-        if (rand()%2)
-            return;
-        DoScriptText(SAY_SLAY, m_creature);
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
     }
 
-    void JustDied(Unit* Killer)
+    void KilledUnit(Unit*)
     {
-        DoScriptText(SAY_DEATH, m_creature);
-        if (pInstance)
-            pInstance->SetData(DATA_THADDIUS, DONE);
+        if (roll_chance_f(20.0f))
+            DoScriptText(SAY_SLAY, me);
     }
 
-    void EnterCombat(Unit *who)
+    void JustDied(Unit*)
     {
-        /*if (stunned)
-        {
-        me->CastSpell(me, 28160, true);//selfstun visual, placed here to avoid visual bugs
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        DoScriptText(SAY_GREET, m_creature);
-        }*/
-        if (pInstance)
-            pInstance->SetData(DATA_THADDIUS, IN_PROGRESS);
-        //temp
-        //me->RemoveAurasDueToSpell(28160);
-        //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        DoScriptText(SAY_DEATH, me);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
-        {
             return;
-        }
 
-        /*if (!me->GetCreature(pInstance->GetData64(2))->isAlive() && !me->GetCreature(pInstance->GetData64(3))->isAlive() && Free_Timer>=0)
-            Free_Timer-=diff;
-
-        if (Free_Timer<=0)
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            stunned = false;
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            me->RemoveAurasDueToSpell(28160);
-        }*/
-
-        //if (!stunned)
-        //{
-            if  (!yelled)
+            switch (eventId)
             {
-                DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
-                yelled=true;
-            }
-            if (Enrage_Timer < diff)
-            {
-                DoCast(m_creature, SPELL_BERSERK);
-                Enrage_Timer = 300000;
-            }
-            else Enrage_Timer -= diff;
-
-            if (Chain_Timer < diff)
-            {
-                if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+                case EVENT_POLARITY_SHIFT:
                 {
-                    DoCast(target, SPELL_CHAIN_LIGHTNING);
-                    Chain_Timer = urand(10000, 20000);
+                    AddSpellToCast(SPELL_POLARITY_SHIFT, CAST_NULL);
+                    events.ScheduleEvent(EVENT_POLARITY_SHIFT, 30000);
+                    break;
                 }
-            }
-            else Chain_Timer -= diff;
-
-            if (PolarityShift_Timer < diff)
-            {
-                DoCast(m_creature, 28089);
-                PolarityShift_Timer = 30000;
-            }
-            else PolarityShift_Timer -= diff;
-        //}
-
-        //Zonewide scream, while he is still alive
-        if (Scream_Timer < diff)
-            {
-                Map *map = m_creature->GetMap();
-                if(!map->IsDungeon()) return;
-
-                Map::PlayerList const &PlayerList = map->GetPlayers();
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                case EVENT_BERSERK:
                 {
-                    if (Player* i_pl = i->getSource())
-                    {
-                        //Play random sound to the zone
-                        i_pl->SendPlaySound(8873 + irand(0,3), true);
-                    }
+                    AddSpellToCast(SPELL_BERSERK, CAST_SELF);
+                    break;
                 }
-
-                //One random scream every 90 - 300 seconds
-                Scream_Timer = 90000 + (rand()% 210000);
-                //shame, it only works, while he is in combat, when it should work as long as he is alive
+                default:
+                    break;
             }
-        else Scream_Timer -= diff;
+        }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
 
-struct TRINITY_DLL_DECL boss_feugenAI : public ScriptedAI
+struct boss_stalaggAI : public BossAI
 {
-    boss_feugenAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
-
-    ScriptedInstance * pInstance;
-    uint32 Switch_Timer;
-    uint32 Rez_Timer;
-    uint32 StalaggGUID;
-    uint32 ThaddiusGUID;
+    boss_stalaggAI(Creature *c) : BossAI(c, DATA_STALAGG) {}
 
     void Reset()
     {
-        Rez_Timer = 5000;
-        Switch_Timer = 20000;
-        StalaggGUID=pInstance->GetData64(2);
-        ThaddiusGUID=pInstance->GetData64(1);
+        events.Reset();
+        ClearCastQueue();
+
+        // proper timers
+        events.ScheduleEvent(EVENT_PULL_TANK, 20500);
+
+        // guessed timers, to FIX
+        events.ScheduleEvent(EVENT_POWER_SURGE, 10000);
+        events.ScheduleEvent(EVENT_WAR_STOMP, 30000);
+
+        me->RemoveAurasDueToSpell(SPELL_TESLA_PASSIVE_S);
     }
 
-    void KilledUnit(Unit* Victim)
+    void EnterCombat(Unit*)
     {
-        DoScriptText(SAY_FEUG_SLAY, m_creature);
+        DoScriptText(SAY_STAL_AGGRO, me);
+        ForceSpellCast(SPELL_TESLA_PASSIVE_S, CAST_SELF);
     }
 
-    void JustDied(Unit* Killer)
+    void KilledUnit(Unit*)
     {
-        DoScriptText(SAY_FEUG_DEATH, m_creature);
+        if (roll_chance_f(20.0f))
+            DoScriptText(SAY_STAL_SLAY, me);
     }
 
-    void EnterCombat(Unit *who)
+    void JustDied(Unit *pKiller)
     {
-        DoScriptText(SAY_FEUG_AGGRO, m_creature);
-        DoCast(m_creature, FEUG_TESLA_PASSIVE);
-        //crash prevent
-        if (m_creature->GetCreature(pInstance->GetData64(2)))
-        m_creature->GetCreature(pInstance->GetData64(2))->AI()->AttackStart(m_creature->getVictim());
-        //m_creature->GetCreature(pInstance->GetData64(1))->AI()->AttackStart(m_creature->getVictim());
-        if (pInstance)
-            pInstance->SetData(DATA_THADDIUS, IN_PROGRESS);
+        if (Creature* pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
+        {
+            if (!pFeugen->HealthBelowPct(5))
+            {
+                me->Respawn();
+                return;
+            }
+        }
+
+        DoScriptText(SAY_STAL_DEATH, me);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
-        if (Switch_Timer < diff)
+
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            //m_creature->getVictim()->KnockBackFrom(m_creature->getVictim(), -25,25);
-            Switch_Timer = 20000;
+            switch (eventId)
+            {
+                case EVENT_POWER_SURGE:
+                {
+                    AddSpellToCast(SPELL_POWER_SURGE, CAST_SELF);
+                    events.ScheduleEvent(EVENT_POWER_SURGE, 20000); // guessed timer
+                    break;
+                }
+                case EVENT_WAR_STOMP:
+                {
+                    AddSpellToCast(SPELL_WAR_STOMP, CAST_SELF);
+                    events.ScheduleEvent(EVENT_WAR_STOMP, 15000); // guessed timer
+                    break;
+                }
+                case EVENT_PULL_TANK:
+                {
+                    AddSpellToCast(SPELL_MAGNETIC_PULL_S, CAST_NULL);
+                    events.ScheduleEvent(EVENT_PULL_TANK, 20500);
+                    break;
+                }
+                default:
+                    break;
+            }
         }
-        else Switch_Timer -= diff;
 
-
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
 
-struct TRINITY_DLL_DECL boss_stalaggAI : public ScriptedAI
+struct boss_feugenAI : public BossAI
 {
-    boss_stalaggAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
-    ScriptedInstance * pInstance;
-    uint32 Switch_Timer;
-    uint32 Rez_Timer;
+    boss_feugenAI(Creature *c): BossAI(c, DATA_FEUGEN) {}
 
     void Reset()
     {
-        Rez_Timer = 5000;
-        Switch_Timer = 20000;
+        events.Reset();
+        ClearCastQueue();
+
+        // proper timers
+        events.ScheduleEvent(EVENT_PULL_TANK, 20500);
+
+        // guessed timers, to FIX
+        events.ScheduleEvent(EVENT_MANA_BURN, 10000);
+        events.ScheduleEvent(EVENT_WAR_STOMP, 30000);
+
+        me->RemoveAurasDueToSpell(SPELL_TESLA_PASSIVE_F);
     }
 
-    void KilledUnit(Unit* Victim)
+    void EnterCombat(Unit*)
     {
-        DoScriptText(SAY_STAL_SLAY, m_creature);
+        DoScriptText(SAY_FEUG_AGGRO, me);
+        ForceSpellCast(SPELL_TESLA_PASSIVE_F, CAST_SELF);
     }
 
-    void JustDied(Unit* Killer)
+    void KilledUnit(Unit*)
     {
-        DoScriptText(SAY_STAL_DEATH, m_creature);
+        if (roll_chance_f(20.0f))
+            DoScriptText(SAY_FEUG_SLAY, me);
     }
 
-    void EnterCombat(Unit *who)
+    void JustDied(Unit *pKiller)
     {
-        DoCast(m_creature, STAL_TESLA_PASSIVE);
-        DoScriptText(SAY_STAL_AGGRO, m_creature);
-        //ugly part to prevent crash
-        if (m_creature->GetCreature(pInstance->GetData64(3)))
-        m_creature->GetCreature(pInstance->GetData64(3))->AI()->AttackStart(m_creature->getVictim());
-        if (m_creature->GetCreature(pInstance->GetData64(1)))
-        m_creature->GetCreature(pInstance->GetData64(1))->AI()->AttackStart(m_creature->getVictim());
-        if (pInstance)
-            pInstance->SetData(DATA_THADDIUS, IN_PROGRESS);
+        if (Creature* pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
+        {
+            if (!pStalagg->HealthBelowPct(5))
+            {
+                me->Respawn();
+                return;
+            }
+        }
+
+        DoScriptText(SAY_FEUG_DEATH, me);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
-        if (Switch_Timer < diff)
-        {
-            //m_creature->getVictim()->CastCustomSpell(m_creature->getVictim(), 28337, 50,0,0,true);
-            //m_creature->getVictim()->KnockBackFrom(m_caster,-dist,30);
-            Switch_Timer = 20000;
-        }
-        else Switch_Timer -= diff;
 
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_MANA_BURN:
+                {
+                    AddSpellToCast(SPELL_MANA_BURN, CAST_SELF);
+                    events.ScheduleEvent(EVENT_MANA_BURN, 10000); // guessed timer
+                    break;
+                }
+                case EVENT_WAR_STOMP:
+                {
+                    AddSpellToCast(SPELL_WAR_STOMP, CAST_SELF);
+                    events.ScheduleEvent(EVENT_WAR_STOMP, 15000); // guessed timer
+                    break;
+                }
+                case EVENT_PULL_TANK:
+                {
+                    AddSpellToCast(SPELL_MAGNETIC_PULL_F, CAST_NULL);
+                    events.ScheduleEvent(EVENT_PULL_TANK, 20500);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
-
-CreatureAI* GetAI_boss_thaddius(Creature *_Creature)
-{
-    return new boss_thaddiusAI (_Creature);
-}
-CreatureAI* GetAI_boss_feugen(Creature *_Creature)
-{
-    return new boss_feugenAI (_Creature);
-}
-CreatureAI* GetAI_boss_stalagg(Creature *_Creature)
-{
-    return new boss_stalaggAI (_Creature);
-}
-void AddSC_boss_thaddius()
-{
-    Script *newscript;
-    newscript = new Script;
-    newscript->Name="boss_thaddius";
-    newscript->GetAI = &GetAI_boss_thaddius;
-    newscript->RegisterSelf();
-}
-void AddSC_boss_feugen()
-{
-    Script *newscript;
-    newscript = new Script;
-    newscript->Name="boss_fugen";
-    newscript->GetAI = &GetAI_boss_feugen;
-    newscript->RegisterSelf();
-}
-void AddSC_boss_stalagg()
-{
-    Script *newscript;
-    newscript = new Script;
-    newscript->Name="boss_stalagg";
-    newscript->GetAI = &GetAI_boss_stalagg;
-    newscript->RegisterSelf();
-}

@@ -615,7 +615,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
             return 1000;
         case 5:
             m_creature->SetLevitate(true);
-            m_creature->SendMonsterMove(GRAVITY_X-0.5f, GRAVITY_Y, GRAVITY_Z+25.0f, 12000);
+            m_creature->MonsterMoveWithSpeed(GRAVITY_X-0.5f, GRAVITY_Y, GRAVITY_Z+25.0f, 12000,true);
             DoCast(m_creature, SPELL_EXPLODE_SHAKE1, true);
             return 4000;
         case 6:
@@ -650,7 +650,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
         case 14:
             return 2000;
         case 15:
-            m_creature->SendMonsterMove(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z, 13000);
+            m_creature->MonsterMoveWithSpeed(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z, 13000,true);
             m_creature->Relocate(GRAVITY_X-1.0f, GRAVITY_Y, GRAVITY_Z);
             return 13000;
         case 16:
@@ -1987,9 +1987,8 @@ struct TRINITY_DLL_DECL mob_nether_vaporAI : public ScriptedAI
         if(Move_Timer < diff)
         {
             float newX, newY, newZ;
-            m_creature->Relocate(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ());
             m_creature->GetRandomPoint(m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(), 6.0, newX, newY, newZ);
-            m_creature->SendMonsterMoveWithSpeed(newX, newY, newZ, 2500);
+            m_creature->MonsterMoveWithSpeed(newX, newY, newZ, 2500,true);
             Move_Timer = 3000;
         }
         else

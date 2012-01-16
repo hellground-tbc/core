@@ -45,7 +45,6 @@ ScriptMgr::ScriptMgr() :
     m_pCreateInstanceData(NULL),
 
     m_pOnGossipHello(NULL),
-    m_pOnGOGossipHello(NULL),
     m_pOnGossipSelect(NULL),
     m_pOnGOGossipSelect(NULL),
     m_pOnGossipSelectWithCode(NULL),
@@ -745,11 +744,6 @@ bool ScriptMgr::OnGossipHello(Player* pPlayer, Creature* pCreature)
     return m_pOnGossipHello != NULL && m_pOnGossipHello(pPlayer, pCreature);
 }
 
-bool ScriptMgr::OnGossipHello(Player* pPlayer, GameObject* pGameObject)
-{
-    return m_pOnGOGossipHello != NULL && m_pOnGOGossipHello(pPlayer, pGameObject);
-}
-
 bool ScriptMgr::OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action, const char* code)
 {
     if (code)
@@ -888,7 +882,6 @@ bool ScriptMgr::LoadScriptLibrary(const char* libName)
     GetScriptHookPtr(m_pCreateInstanceData,         "CreateInstanceData");
 
     GetScriptHookPtr(m_pOnGossipHello,              "GossipHello");
-    GetScriptHookPtr(m_pOnGOGossipHello,            "GOGossipHello");
     GetScriptHookPtr(m_pOnGossipSelect,             "GossipSelect");
     GetScriptHookPtr(m_pOnGOGossipSelect,           "GOGossipSelect");
     GetScriptHookPtr(m_pOnGossipSelectWithCode,     "GossipSelectWithCode");
@@ -945,7 +938,6 @@ void ScriptMgr::UnloadScriptLibrary()
     m_pCreateInstanceData       = NULL;
 
     m_pOnGossipHello            = NULL;
-    m_pOnGOGossipHello          = NULL;
     m_pOnGossipSelect           = NULL;
     m_pOnGOGossipSelect         = NULL;
     m_pOnGossipSelectWithCode   = NULL;

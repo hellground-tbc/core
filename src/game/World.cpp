@@ -1557,9 +1557,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Calculate next daily quest reset time...");
     InitDailyQuestResetTime();
 
-    sLog.outString("Loading special daily quests...");
-    objmgr.LoadSpecialQuests();
-
     sLog.outString("Starting Game Event system...");
     uint32 nextGameEvent = gameeventmgr.Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
@@ -2611,6 +2608,126 @@ void World::UpdateAllowedSecurity()
      }
 }
 
+void World::SelectRandomHeroicDungeonDaily()
+{
+    const uint32 HeroicEventStart = 100;
+    const uint32 HeroicEventEnd   = 115;
+
+    uint8 currentId = 0;
+    for (uint8 eventId = HeroicEventStart; eventId <= HeroicEventEnd; ++eventId)
+    {
+        if (gameeventmgr.IsActiveEvent(eventId))
+        {
+            currentId = eventId;
+            gameeventmgr.StopEvent(eventId);
+        }
+        WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+    }
+
+    uint8 random = urand(HeroicEventStart, HeroicEventEnd);
+    while (random == currentId)
+        random = urand(HeroicEventStart, HeroicEventEnd);
+
+    gameeventmgr.StartEvent(random);
+    WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
+}
+
+void World::SelectRandomDungeonDaily()
+{
+    const uint32 DungeonEventStart = 116;
+    const uint32 DungeonEventEnd   = 123;
+
+    uint8 currentId = 0;
+    for (uint8 eventId = DungeonEventStart; eventId <= DungeonEventEnd; ++eventId)
+    {
+        if (gameeventmgr.IsActiveEvent(eventId))
+        {
+            currentId = eventId;
+            gameeventmgr.StopEvent(eventId);
+        }
+        WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+    }
+
+    uint8 random = urand(DungeonEventStart, DungeonEventEnd);
+    while (random == currentId)
+        random = urand(DungeonEventStart, DungeonEventEnd);
+
+    gameeventmgr.StartEvent(random);
+    WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
+}
+
+void World::SelectRandomCookingDaily()
+{
+    const uint32 CookingEventStart = 124;
+    const uint32 CookingEventEnd   = 127;
+
+    uint8 currentId = 0;
+    for (uint8 eventId = CookingEventStart; eventId <= CookingEventEnd; ++eventId)
+    {
+        if (gameeventmgr.IsActiveEvent(eventId))
+        {
+            currentId = eventId;
+            gameeventmgr.StopEvent(eventId);
+        }
+        WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+    }
+
+    uint8 random = urand(CookingEventStart, CookingEventEnd);
+    while (random == currentId)
+        random = urand(CookingEventStart, CookingEventEnd);
+
+    gameeventmgr.StartEvent(random);
+    WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
+}
+
+void World::SelectRandomFishingDaily()
+{
+    const uint32 FishingEventStart = 128;
+    const uint32 FishingEventEnd   = 132;
+
+    uint8 currentId = 0;
+    for (uint8 eventId = FishingEventStart; eventId <= FishingEventEnd; ++eventId)
+    {
+        if (gameeventmgr.IsActiveEvent(eventId))
+        {
+            currentId = eventId;
+            gameeventmgr.StopEvent(eventId);
+        }
+        WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+    }
+
+    uint8 random = urand(FishingEventStart, FishingEventEnd);
+    while (random == currentId)
+        random = urand(FishingEventStart, FishingEventEnd);
+
+    gameeventmgr.StartEvent(random);
+    WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
+}
+
+void World::SelectRandomPvPDaily()
+{
+    const uint32 PvPEventStart = 133;
+    const uint32 PvPEventEnd   = 136;
+
+    uint8 currentId = 0;
+    for (uint8 eventId = PvPEventStart; eventId <= PvPEventEnd; ++eventId)
+    {
+        if (gameeventmgr.IsActiveEvent(eventId))
+        {
+            currentId = eventId;
+            gameeventmgr.StopEvent(eventId);
+        }
+        WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+    }
+
+    uint8 random = urand(PvPEventStart, PvPEventEnd);;
+    while (random == currentId)
+        random = urand(PvPEventStart, PvPEventEnd);
+
+    gameeventmgr.StartEvent(random);
+    WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
+}
+
 void World::ResetDailyQuests()
 {
     sLog.outDetail("Daily quests reset for all characters.");
@@ -2619,49 +2736,12 @@ void World::ResetDailyQuests()
         if (itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();
 
-    uint32 heroicQuest[15] = { 11369, 11384, 11382, 11363, 11362, 11375, 11354, 11386, 11373, /*11378,*/ 11374, 11372, 11368, 11388, 11370 };
-    uint32 normalQuest[8]  = { 11389, 11371, 11376, 11383, 11364, /*11500,*/ 11385, 11387 };
-    uint32 cookingQuest[4] = { 11380, 11377, 11381, 11379 };
-    uint32 fishingQuest[5] = { 11666, 11665, 11669,11668, 11667 };
-    uint32 alliancePVP[4]  = { 11335, 11336, 11337, 11338 };
-    uint32 hordePVP[4]     = { 11339, 11340, 11341, 11342 };
+    SelectRandomHeroicDungeonDaily();
+    SelectRandomDungeonDaily();
+    SelectRandomCookingDaily();
+    SelectRandomPvPDaily();
 
-    uint32 temp = heroicQuest[urand(0,13)];
-    while (temp && temp == specialQuest[HEROIC])
-        temp = heroicQuest[urand(0,13)];
-
-    specialQuest[HEROIC]  = temp;
-
-    temp = normalQuest[urand(0,6)];
-    while (temp && temp == specialQuest[QNORMAL])
-        temp = normalQuest[urand(0,6)];
-
-    specialQuest[QNORMAL] = temp;
-
-    temp = cookingQuest[urand(0,3)];
-    while (temp && temp == specialQuest[COOKING])
-        temp = cookingQuest[urand(0,3)];
-
-    specialQuest[COOKING] = temp;
-
-    temp = fishingQuest[urand(0,4)];
-    while (temp && temp == specialQuest[FISHING])
-        temp = fishingQuest[urand(0,4)];
-
-    specialQuest[FISHING] = temp;
-
-    int pvp_rand = 0;
-    do
-    {
-        pvp_rand = urand(0, 3);
-        temp = hordePVP[pvp_rand];
-    }
-    while (temp && temp == specialQuest[PVPH]);
-
-    specialQuest[PVPH] = temp;
-    specialQuest[PVPA] = alliancePVP[pvp_rand];
-
-    CharacterDatabase.PExecute("UPDATE saved_variables set HeroicQuest='%u', NormalQuest='%u', CookingQuest='%u', FishingQuest='%u', PVPAlliance='%u', PVPHorde='%u'",specialQuest[HEROIC],specialQuest[QNORMAL],specialQuest[COOKING],specialQuest[FISHING],specialQuest[PVPA],specialQuest[PVPH]);
+    gameeventmgr.LoadFromDB();
 }
 
 void World::SetPlayerLimit(int32 limit, bool needUpdate)

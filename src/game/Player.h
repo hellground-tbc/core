@@ -836,7 +836,9 @@ struct AccessRequirement
     std::string questFailedText;
     uint32 heroicQuest;
     std::string heroicQuestFailedText;
- };
+    uint32 auraId;
+    std::string missingAuraText;
+};
 
 class TRINITY_DLL_SPEC PlayerTaxi
 {
@@ -1994,7 +1996,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
         /***                 VARIOUS SYSTEMS                   ***/
         /*********************************************************/
-        MovementInfo m_movementInfo;
+
         uint32 m_lastFallTime;
         float  m_lastFallZ;
         void SetFallInformation(uint32 time, float z)

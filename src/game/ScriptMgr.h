@@ -162,7 +162,6 @@ class ScriptMgr
         InstanceData* (TRINITY_IMPORT* m_pCreateInstanceData) (Map*);
 
         bool (TRINITY_IMPORT* m_pOnGossipHello) (Player*, Creature*);
-        bool (TRINITY_IMPORT* m_pOnGOGossipHello) (Player*, GameObject*);
         bool (TRINITY_IMPORT* m_pOnGossipSelect) (Player*, Creature*, uint32, uint32);
         bool (TRINITY_IMPORT* m_pOnGOGossipSelect) (Player*, GameObject*, uint32, uint32);
         bool (TRINITY_IMPORT* m_pOnGossipSelectWithCode) (Player*, Creature*, uint32, uint32, const char*);

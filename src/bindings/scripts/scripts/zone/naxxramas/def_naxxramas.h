@@ -16,5 +16,7 @@
 #define DATA_THADDIUS                   12
 #define DATA_SAPPHIRON                  13
 #define DATA_KEL_THUZAD                 14
+#define DATA_STALAGG                    15
+#define DATA_FEUGEN                     16
 
 #endif

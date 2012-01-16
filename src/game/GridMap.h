@@ -228,6 +228,8 @@ class TRINITY_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
         //THIS METHOD IS NOT THREAD-SAFE!!!! AND IT SHOULDN'T BE THREAD-SAFE!!!!
         void CleanUpGrids(const uint32 diff);
 
+        bool IsLineOfSightEnabled() const;
+
     protected:
         friend class Map;
         //load/unload terrain data

@@ -3102,7 +3102,7 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
         if (!players.isEmpty())
             for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 if (Player* plr = itr->getSource())
-                    cPiece->SendMonsterMove(chessBoard[tmpi][tmpj].position.coord_x, chessBoard[tmpi][tmpj].position.coord_y, chessBoard[tmpi][tmpj].position.coord_z, 0, plr);
+                    cPiece->NearTeleportTo(chessBoard[tmpi][tmpj].position.coord_x, chessBoard[tmpi][tmpj].position.coord_y, chessBoard[tmpi][tmpj].position.coord_z, 0);
     }
 }
 
@@ -4100,8 +4100,7 @@ bool GossipHello_npc_chesspiece(Player* player, Creature* _Creature)
 void npc_chess_statusAI::Reset()
 {
     m_creature->SetLevitate(true);
-    m_creature->Relocate(-11080.599609, -1876.380005, 231.000092);
-    m_creature->SendMonsterMove(-11080.599609, -1876.380005, 231.000092, 0);
+    m_creature->NearTeleportTo(-11080.599609, -1876.380005, 231.000092, 0.0);
     me->CastSpell(me, SPELL_GAME_IN_SESSION, false);
 }
 

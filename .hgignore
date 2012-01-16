@@ -23,6 +23,15 @@ src/realmd/
 *.*-*
 
 # use regexp syntax.
+sql/dbc_spell/dbc_spell.sql
+dep/lib/Win32_Release_PCH/tbbmalloc.map
+dep/lib/Win32_Release_PCH/tbbmalloc.dll
+dep/lib/Win32_Release_PCH/tbb.map
+dep/lib/Win32_Release_PCH/tbb.dll
+dep/lib/Win32_Release_PCH/ACE_Wrappers.pdb
+dep/lib/Win32_Release_PCH/ACE.lib
+dep/lib/Win32_Release_PCH/ACE.exp
+dep/lib/Win32_Release_PCH/ACE.dll
 syntax: regexp
 
 ^src/shared/revision\.h

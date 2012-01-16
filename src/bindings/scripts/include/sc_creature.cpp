@@ -239,7 +239,7 @@ void ScriptedAI::CheckShooterNoMovementInRange(uint32 diff, float maxrange)
         // if victim in melee range, than chase it
         if(me->IsWithinDistInMap(me->getVictim(), 5.0))
         {
-            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE)
+            if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)
                 DoStartMovement(me->getVictim());
             else
             {
@@ -247,7 +247,7 @@ void ScriptedAI::CheckShooterNoMovementInRange(uint32 diff, float maxrange)
                 return;
             }
         }
-        else if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+        else if(me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
             me->GetMotionMaster()->MoveIdle();
 
         // when victim is in distance, stop and shoot
@@ -363,7 +363,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                         SpellEntry const *m_spellInfo = GetSpellStore()->LookupEntry(autocastId);
 
                         // while (!victim or not in los) and i < threatlist size
-                        while ((!victim || (!(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS) && !m_creature->IsWithinLOSInMap(victim))) && i < m_creature->getThreatManager().getThreatList().size())
+                        while ((!victim || (!SpellIgnoreLOS(m_spellInfo, 0) && !m_creature->IsWithinLOSInMap(victim))) && i < m_creature->getThreatManager().getThreatList().size())
                         {
                             ++i;
                             victim = SelectUnit(SELECT_TARGET_TOPAGGRO, i, GetSpellMaxRange(autocastId), true);
@@ -561,7 +561,7 @@ void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode tar
             SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
             if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0))
                 targetGUID = pTarget->GetGUID();
-            else 
+            else
                 return;
             break;
         }
@@ -1046,8 +1046,13 @@ void ScriptedAI::DoModifyThreatPercent(Unit *pUnit, int32 pct)
 
 void ScriptedAI::DoTeleportTo(float x, float y, float z, uint32 time)
 {
-    m_creature->Relocate(x,y,z);
-    m_creature->SendMonsterMove(x, y, z, time);
+    if (time)
+    {
+        float speed = me->GetDistance(x, y, z) / ((float)time * 0.001f);
+        me->MonsterMoveWithSpeed(x, y, z, speed);
+    }
+    else
+        me->NearTeleportTo(x, y, z, me->GetOrientation(), false);
 }
 
 void ScriptedAI::DoTeleportPlayer(Unit* pUnit, float x, float y, float z, float o)
@@ -1135,7 +1140,7 @@ void Scripted_NoMovementAI::AttackStart(Unit* pWho)
 
 void ScriptedAI::DoSpecialThings(uint32 diff, SpecialThing flags, float range, float speedRate)
 {
-    if (m_specialThingTimer <= diff)
+    if (m_specialThingTimer < diff)
     {
         if (flags & DO_PULSE_COMBAT)
             DoZoneInCombat(range);
@@ -1207,4 +1212,14 @@ Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float 
 
     Cell::VisitGridObjects(pSource, searcher, MaxSearchRange);
     return pCreature;
+}
+
+GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    GameObject *pGameObject = NULL;
+    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*source, entry, maxSearchRange);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGameObject, go_check);
+
+    Cell::VisitGridObjects(source, searcher, maxSearchRange);
+    return pGameObject;
 }

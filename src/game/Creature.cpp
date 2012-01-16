@@ -49,6 +49,10 @@
 #include "OutdoorPvPMgr.h"
 #include "GameEvent.h"
 #include "CreatureGroups.h"
+
+#include "movement/MoveSplineInit.h"
+#include "movement/MoveSpline.h"
+
 // apply implementation of the singletons
 #include "Policies/SingletonImp.h"
 #include "Map.h"
@@ -162,7 +166,6 @@ m_tempSummon(false)
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
 
-    m_unit_movement_flags = MOVEFLAG_WALK_MODE;
     DisableReputationGain = false;
 }
 
@@ -327,6 +330,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data)
     SetSpeed(MOVE_SWIM, m_baseSpeed);
 
     SetFloatValue(OBJECT_FIELD_SCALE_X, cinfo->scale);
+    SetLevitate(CanFly());
 
     // checked at loading
     m_defaultMovementType = MovementGeneratorType(cinfo->MovementType);
@@ -418,6 +422,14 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data)
 
 void Creature::Update(uint32 update_diff, uint32 diff)
 {
+    if (IsInWater())
+    {
+        if (CanSwim())
+            AddUnitMovementFlag(MOVEFLAG_SWIMMING);
+    }
+    else if (CanWalk())
+        RemoveUnitMovementFlag(MOVEFLAG_SWIMMING);
+
     switch (m_deathState)
     {
         case JUST_ALIVED:
@@ -452,6 +464,8 @@ void Creature::Update(uint32 update_diff, uint32 diff)
         }
         case CORPSE:
         {
+            Unit::Update(update_diff, diff);
+
             if (m_isDeadByDefault)
                 break;
 
@@ -550,9 +564,6 @@ void Creature::Update(uint32 update_diff, uint32 diff)
             m_regenTimer = 2000;
             break;
         }
-        case DEAD_FALLING:
-            GetMotionMaster()->UpdateMotion(update_diff);
-            break;
         default:
             break;
     }
@@ -1166,29 +1177,6 @@ void Creature::LoadGossipOptions()
     m_gossipOptionLoaded = true;
 }
 
-void Creature::AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, SplineType type)
-{
-    /*    uint32 timeElap = WorldTimer::getMSTime();
-        if ((timeElap - m_startMove) < m_moveTime)
-        {
-            oX = (dX - oX) * ((timeElap - m_startMove) / m_moveTime);
-            oY = (dY - oY) * ((timeElap - m_startMove) / m_moveTime);
-        }
-        else
-        {
-            oX = dX;
-            oY = dY;
-        }
-
-        dX = x;
-        dY = y;
-        m_orientation = atan2((oY - dY), (oX - dX));
-
-        m_startMove = WorldTimer::getMSTime();
-        m_moveTime = time;*/
-    SendMonsterMove(x, y, z, time);
-}
-
 Player *Creature::GetLootRecipient() const
 {
     if (!m_lootRecipient) return NULL;
@@ -1475,7 +1463,8 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     }
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
+    if (map->GetInstanceId() != 0)
+        guid = objmgr.GenerateLowGuid(HIGHGUID_UNIT);
 
     uint16 team = 0;
     if (!Create(guid,map,data->id,team,data->posX,data->posY,data->posZ,data->orientation,data))
@@ -1731,7 +1720,8 @@ void Creature::setDeathState(DeathState s)
         if (m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
 
-//        if (CanFly() && FallGround())
+        //if ((CanFly() || IsFlying()))
+        //    i_motionMaster.MoveFall();
     }
     Unit::setDeathState(s);
 
@@ -1760,30 +1750,15 @@ void Creature::setDeathState(DeathState s)
         Unit::setDeathState(ALIVE);
         CreatureInfo const *cinfo = GetCreatureInfo();
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
-        AddUnitMovementFlag(MOVEFLAG_WALK_MODE);
+
+        SetWalk(true);
+
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
         clearUnitState(UNIT_STAT_ALL_STATE);
         i_motionMaster.Initialize();
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);
     }
-}
-
-bool Creature::FallGround()
-{
-    // Let's abort after we called this function one time
-    if (getDeathState() == DEAD_FALLING)
-        return false;
-
-    float x, y, z;
-    GetPosition(x, y, z);
-    float ground_Z = GetTerrain()->GetHeight(x, y, z);
-    if (fabs(z - ground_Z) < 0.1f)
-        return false;
-
-    GetMotionMaster()->MoveFall(ground_Z, EVENT_FALL_GROUND);
-    Unit::setDeathState(DEAD_FALLING);
-    return true;
 }
 
 void Creature::Respawn()
@@ -1853,6 +1828,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
     RemoveCorpse();
     SetHealth(0);                                           // just for nice GM-mode view
 }
+
 bool Creature::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
 {
     if (!spellInfo)

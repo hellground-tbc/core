@@ -311,9 +311,6 @@ void WorldSession::HandleGameObjectUseOpcode(WorldPacket & recv_data)
     if (!obj)
         return;
 
-    if (sScriptMgr.OnGameObjectUse(_player, obj))
-        return;
-
     obj->Use(_player);
 }
 

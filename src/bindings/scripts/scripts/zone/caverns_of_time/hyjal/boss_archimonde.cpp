@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Archimonde
-SD%Complete: 90
-SDComment: Doomfires not completely offlike, draining tree visuals to me fixed. Tyrande and second phase not fully implemented.
+SD%Complete: 92
+SDComment: Doomfires to be tested. Draining tree visuals to be fixed. Tyrande and second phase not fully implemented.
 SDCategory: Caverns of Time, Mount Hyjal
 EndScriptData */
 
@@ -51,10 +51,10 @@ EndScriptData */
 #define SPELL_HAND_OF_DEATH         35354
 #define SPELL_AIR_BURST             32014
 #define SPELL_GRIP_OF_THE_LEGION    31972
-#define SPELL_DOOMFIRE_STRIKE       31903                   //summons two creatures - not working properly, not used
-#define SPELL_DOOMFIRE_SPAWN        32074                   //visual
+#define SPELL_DOOMFIRE_STRIKE       31903   // this spell seems to be working fine
+#define SPELL_DOOMFIRE_SPAWN        32074   // visual when Doomfire spawned
 #define SPELL_DOOMFIRE              31945
-#define SPELL_DOOMFIRE_DAMAGE       31944                   //triggered by doomfire persistent aura
+#define SPELL_DOOMFIRE_DAMAGE       31944   // triggered by doomfire persistent aura
 #define SPELL_UNLEASH_SOUL_YELLOW   32054
 #define SPELL_UNLEASH_SOUL_GREEN    32057
 #define SPELL_UNLEASH_SOUL_RED      32053
@@ -119,13 +119,88 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
     InstanceData * pInstance;
 
     uint32 ChangeTargetTimer;
-    uint32 SummonTimer;                                     // This timer will serve to check on Archionde
+    uint32 SummonTimer;     // This timer will serve to check on Archionde
 
     void Reset()
     {
-        ChangeTargetTimer = 0;
+        ChangeTargetTimer = 100;
         SummonTimer = 1000;
+        me->SetWalk(false);
+        me->setActive(true);
+        me->SetSpeed(MOVE_RUN, 0.85);
+        DoCast(me, SPELL_DOOMFIRE_SPAWN, true);
         DoCast(me, SPELL_DOOMFIRE);
+    }
+
+    Player* SelectPlayerForChasing(float mindist, float maxdist)
+    {
+        Map *map = me->GetMap();
+        if(map->GetId() != 534) // Battle for MH
+            return NULL;
+
+        Unit* Archi = pInstance->GetCreature(pInstance->GetData64(DATA_ARCHIMONDE));
+        if(!Archi || !Archi->isAlive())
+            return NULL;
+
+        Map::PlayerList const &PlayerList = map->GetPlayers();
+        if (PlayerList.isEmpty())
+            return NULL;
+
+        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            if (Player* pl = i->getSource())
+            {
+                if (pl->isGameMaster()) // omit GMs
+                    continue;
+                if (pl->IsWithinDistInMap(me, mindist) || me->GetDistance(pl) > maxdist)
+                    continue;
+                if (pl->IsWithinDistInMap(Archi, 15.0))   // do not chase in 15yd range around Archimonde
+                    continue;
+                return pl;
+            }
+        }
+        return NULL;
+    }
+
+    uint32 ChangeWaypointAndTimer()
+    {
+        Unit* Archi = pInstance->GetCreature(pInstance->GetData64(DATA_ARCHIMONDE));
+        if(!Archi || !Archi->isAlive())
+            return 0;
+
+        //1. select victim at proper distance, and not in Archimonde proximity
+        Player* ChaseVictim = SelectPlayerForChasing(10.0, 40.0);
+        if(ChaseVictim)
+        {
+            me->GetMotionMaster()->MoveChase(ChaseVictim);
+            return urand(4000, 11000);
+        }
+        //2. if no victim than linear movement in random direction but not towards the boss unless far away
+        else
+        {
+            Position dest;
+            if(me->GetDistance2d(Archi) >= 60)
+            {
+                // we are far from boss, choose any angle
+                float angle = frand(0, 2*M_PI);
+                me->GetValidPointInAngle(dest, 24, angle, true);
+            }
+            else
+            {
+                float angle = Archi->GetAngle(me);
+                // select angle in +/- 30 degree from Archimonde opposite direction
+                float direction = angle+frand(-M_PI/4, M_PI/4);
+                me->GetValidPointInAngle(dest, 24, direction, true);
+            }
+            me->GetMotionMaster()->MovePoint(1, dest.x, dest.y, dest.z);
+            return 6000;
+        }
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDistInMap(who, 5))
+            ChangeTargetTimer = 200;
     }
 
     void UpdateAI(const uint32 diff)
@@ -134,59 +209,73 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
         {
             Unit* pArchimonde = pInstance->GetCreature(pInstance->GetData64(DATA_ARCHIMONDE));
             if (pArchimonde && pArchimonde->isAlive())
-                SummonTimer = 2000;
+            {
+                if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
+                {
+                    Position dest;
+                    me->GetValidPointInAngle(dest, 12, frand(0, M_PI), true);
+                    me->GetMotionMaster()->MovePoint(2, dest.x, dest.y, dest.z);
+                    ChangeTargetTimer = 2200;
+                }
+                SummonTimer = 1000;
+            }
             else
                 me->Kill(me, false);
         }
         else
             SummonTimer -= diff;
 
-        if (ChangeTargetTimer < diff)    //only random linear movement, no player chasing!!
+        if (ChangeTargetTimer)
         {
-            me->SetSpeed(MOVE_RUN, 1);
-            me->SetSpeed(MOVE_WALK, 2);
-
-            Unit* pArchimonde = pInstance->GetCreature(pInstance->GetData64(DATA_ARCHIMONDE));
-            if (pArchimonde && pArchimonde->isAlive())
+            if (ChangeTargetTimer <= diff)
             {
-                Position dest;
-
-                float angle = frand(0.0f, 3.0f); //randomise angle, a bit less than M_PI
-
-                float ArchiX = pArchimonde->GetPositionX();
-                float ArchiY = pArchimonde->GetPositionY();
-
-                me->GetPosition(dest);
-
-                float diffX = dest.x - ArchiX;
-                float diffY = -dest.y + ArchiY; // position Y is here below 0
-
-                if (diffX > 0) // make doomfire move away from actual boss position
+                /*
+                Unit* pArchimonde = pInstance->GetCreature(pInstance->GetData64(DATA_ARCHIMONDE));
+                if (pArchimonde && pArchimonde->isAlive())
                 {
-                    if (diffY > 0)
-                        angle = (angle > 3*M_PI/4) ? (2*M_PI - angle) : angle;
+                    float angle = me->GetAngle(pArchimonde);
+                    Position dest;
+                    me->GetPosition(dest);
+                    if(!me->IsWithinDistInMap(pArchimonde, 30))
+                        angle = frand(0, 2*M_PI);
+                    Position dest;
+
+                    float angle = frand(0.0f, 3.0f); //randomise angle, a bit less than M_PI
+
+                    float ArchiX = pArchimonde->GetPositionX();
+                    float ArchiY = pArchimonde->GetPositionY();
+
+                    me->GetPosition(dest);
+
+                    float diffX = dest.x - ArchiX;
+                    float diffY = -dest.y + ArchiY; // position Y is here below 0
+
+                    if (diffX > 0) // make doomfire move away from actual boss position
+                    {
+                        if (diffY > 0)
+                            angle = (angle > 3*M_PI/4) ? (2*M_PI - angle) : angle;
+                        else
+                            angle = (angle > M_PI/4) ? (2*M_PI - angle) : angle;
+                    }
                     else
-                        angle = (angle > M_PI/4) ? (2*M_PI - angle) : angle;
-                }
-                else
-                {
-                    if (diffY > 0)
-                        angle = (angle < M_PI/4) ? (M_PI + angle) : angle;
-                    else
-                        angle = (angle < 3*M_PI/4) ? (2*M_PI - angle) : angle;
-                }
+                    {
+                        if (diffY > 0)
+                            angle = (angle < M_PI/4) ? (M_PI + angle) : angle;
+                        else
+                            angle = (angle < 3*M_PI/4) ? (2*M_PI - angle) : angle;
+                    }
 
-                (diffX > 0) ? dest.x += (40.0f * cos(angle)) : dest.x -= (40.0f * cos(angle));
-                (diffY > 0) ? dest.y += (40.0f * cos(angle)) : dest.y -= (40.0f * cos(angle));
+                    (diffX > 0) ? dest.x += (40.0f * cos(angle)) : dest.x -= (40.0f * cos(angle));
+                    (diffY > 0) ? dest.y += (40.0f * cos(angle)) : dest.y -= (40.0f * cos(angle));
 
-                me->GetValidPointInAngle(dest, 5.0f, angle, false);     //find point on the ground 5 yd from first destination location
-                me->GetMotionMaster()->MovePoint(0, dest.x, dest.y, dest.z);
-
-                ChangeTargetTimer = 7000;
+                    me->GetValidPointInAngle(dest, 40, angle, false);
+                    //me->GetValidPointInAngle(dest, 5.0f, angle, false);     //find point on the ground 5 yd from first destination location
+                    me->GetMotionMaster()->MovePoint(0, dest.x, dest.y, dest.z);*/
+                    ChangeTargetTimer = ChangeWaypointAndTimer();
             }
+            else
+                ChangeTargetTimer -= diff;
         }
-        else
-            ChangeTargetTimer -= diff;
     }
 };
 
@@ -243,7 +332,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         DrainNordrassilTimer = 0;
         FearTimer = 42000;
         AirBurstTimer = 30000;
-        GripOfTheLegionTimer = 5000 + rand()%20000;
+        GripOfTheLegionTimer = urand(5000, 25000);
         DoomfireTimer = 20000;
         SoulChargeTimer = 3000;
         SoulChargeCount = 0;
@@ -327,7 +416,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         return true;
     }
 
-    void SummonDoomfire()
+    /*void SummonDoomfire()
     {
         Position dest;
         me->GetValidPointInAngle(dest, 20.0f, frand(0.0f, 2*M_PI), true);
@@ -339,10 +428,10 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             pDoomfire->setFaction(me->getFaction());
             pDoomfire->CastSpell(pDoomfire, SPELL_DOOMFIRE_SPAWN, true);
 
-            if (roll_chance_f(20.0f)) //10% chance on yell
+            if (roll_chance_f(20.0f)) //20% chance on yell
                 DoScriptText(RAND(SAY_DOOMFIRE1, SAY_DOOMFIRE2), me);
         }
-    }
+    }*/
 
 
     void UpdateAI(const uint32 diff)
@@ -482,7 +571,6 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
             }
             else
                 HandOfDeathTimer -= diff;
-
             return;                                         // Don't do anything after this point.
         }
 
@@ -495,21 +583,21 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
                     SoulChargeUnleash = true;
                     chargeSpell = SPELL_SOUL_CHARGE_YELLOW;
                     unleashSpell = SPELL_UNLEASH_SOUL_YELLOW;
-                    SoulChargeUnleashTimer = rand()%5000+5000;
+                    SoulChargeUnleashTimer = urand(5000, 10000);
                 }
                 else if (me->HasAura(SPELL_SOUL_CHARGE_RED, 0))
                 {
                     SoulChargeUnleash = true;
                     chargeSpell = SPELL_SOUL_CHARGE_RED;
                     unleashSpell = SPELL_UNLEASH_SOUL_RED;
-                    SoulChargeUnleashTimer = rand()%5000+5000;
+                    SoulChargeUnleashTimer = urand(5000, 10000);
                 }
                 else if(me->HasAura(SPELL_SOUL_CHARGE_GREEN, 0))
                 {
                     SoulChargeUnleash = true;
                     chargeSpell = SPELL_SOUL_CHARGE_GREEN;
                     unleashSpell = SPELL_UNLEASH_SOUL_GREEN;
-                    SoulChargeUnleashTimer = rand()%5000+5000;
+                    SoulChargeUnleashTimer = urand(5000, 10000);
                 }
                 SoulChargeTimer = 3000;
             }
@@ -583,8 +671,11 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
 
         if (DoomfireTimer < diff)
         {
-            SummonDoomfire();
-            DoomfireTimer = 9000+rand()%3000;
+            //SummonDoomfire();
+            if (roll_chance_f(20.0f)) //20% chance on yell
+                DoScriptText(RAND(SAY_DOOMFIRE1, SAY_DOOMFIRE2), me);
+            AddSpellToCast(SPELL_DOOMFIRE_STRIKE, CAST_SELF);
+            DoomfireTimer = urand(9000, 12000);
         }
         else
             DoomfireTimer -= diff;
@@ -607,7 +698,7 @@ struct TRINITY_DLL_DECL boss_archimondeAI : public hyjal_trashAI
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
-    void WaypointReached(uint32 i){}
+    void WaypointReached(uint32 /*i*/) {}
 };
 
 CreatureAI* GetAI_boss_archimonde(Creature *_Creature)

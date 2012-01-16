@@ -711,8 +711,6 @@ class TRINITY_DLL_DECL ObjectMgr
 
         static bool CheckDeclinedNames(std::wstring mainpart, DeclinedName const& names);
 
-        void LoadSpecialQuests();
-
         void LoadSpellDisabledEntrys();
         bool IsPlayerSpellDisabled(uint32 spellid) { return (m_DisabledPlayerSpells.count(spellid) != 0); }
         bool IsCreatureSpellDisabled(uint32 spellid) { return (m_DisabledCreatureSpells.count(spellid) != 0); }

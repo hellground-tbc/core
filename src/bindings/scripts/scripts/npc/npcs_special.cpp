@@ -38,7 +38,6 @@ npc_mojo                    100%    AI for companion Mojo (summoned by item: 339
 npc_master_omarion          100%    Master Craftsman Omarion, patterns menu
 npc_lorekeeper_lydros       100%    Dialogue (story) + add A Dull and Flat Elven Blade
 npc_crashin_thrashin_robot  100%    AI for Crashin' Thrashin' Robot from engineering
-npc_lurky                   100%    AI for Lurky, Blue Murloc and Pink Murloc
 EndContentData */
 
 #include "precompiled.h"
@@ -172,9 +171,6 @@ struct TRINITY_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
         me->Relocate(x,y,z + 0.94f);
         me->SetLevitate(true);
         me->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
-        WorldPacket data;                       //send update position to client
-        me->BuildHeartBeatMsg(&data);
-        me->SendMessageToSet(&data,true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -206,9 +202,6 @@ bool ReceiveEmote_npc_dancing_flames( Player *player, Creature *flame, uint32 em
         flame->SetInFront(player);
         ((npc_dancing_flamesAI*)flame->AI())->active = false;
 
-        WorldPacket data;
-        flame->BuildHeartBeatMsg(&data);
-        flame->SendMessageToSet(&data,true);
         switch(emote)
         {
         case TEXTEMOTE_KISS:
@@ -2182,57 +2175,6 @@ CreatureAI* GetAI_npc_crashin_trashin_robot(Creature* pCreature)
 }
 
 /*########
-# npc_lurky
-#########*/
-
-#define MIN_DANCE_TIMER             30000
-#define MAX_DANCE_TIMER             300000
-#define SPELL_BABY_MURLOC_DANCE     25165
-
-struct TRINITY_DLL_DECL npc_lurkyAI : public ScriptedAI
-{
-    npc_lurkyAI(Creature *c) : ScriptedAI(c) {}
-
-    uint32 danceTimer;
-    bool inDance;
-
-    void Reset()
-    {
-        inDance = false;
-        danceTimer = urand(MIN_DANCE_TIMER, MAX_DANCE_TIMER);
-        me->GetMotionMaster()->Clear();
-        me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
-    }
-
-    void OnAuraRemove(Aura* aur, bool stackRemove)
-    {
-        if (aur->GetId() == SPELL_BABY_MURLOC_DANCE)
-        {
-            inDance = false;
-            danceTimer = urand(MIN_DANCE_TIMER, MAX_DANCE_TIMER);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (inDance || me->hasUnitState(UNIT_STAT_MOVE))
-            return;
-
-        if (danceTimer < diff)
-        {
-            inDance = true;
-            me->CastSpell(me, SPELL_BABY_MURLOC_DANCE, false);
-            me->HandleEmoteCommand(EMOTE_STATE_DANCE);
-        }
-    }
-};
-
-CreatureAI* GetAI_npc_lurky(Creature* pCreature)
-{
-    return new npc_lurkyAI(pCreature);
-}
-
-/*########
 # npc_Oozeling
 #########*/
 
@@ -2453,6 +2395,250 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
     return false;
 }
 
+/*###
+# npc_land_mine
+# UPDATE `creature_template` SET `ScriptName` = 'npc_land_mine' WHERE `entry` = 7527;
+###*/
+
+struct TRINITY_DLL_DECL npc_land_mineAI : public Scripted_NoMovementAI
+{
+    npc_land_mineAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
+    void IsSummonedBy(Unit *pSummoner)
+    {
+        me->setFaction(pSummoner->getFaction());
+
+        // despawn after 10s
+        me->ForcedDespawn(10000);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (!who->IsHostileTo(me))
+            return;
+
+        if (!me->IsWithinDistInMap(who, 5.0f))
+            return;
+
+        int32 damage = urand(394, 507);
+        me->CastCustomSpell(me, 27745, &damage, 0, 0, true);
+    }
+};
+
+CreatureAI* GetAI_npc_land_mine(Creature* pCreature)
+{
+    return new npc_land_mineAI(pCreature);
+}
+
+enum MiniPetsInfo
+{
+    NPC_PANDA                   = 11325,
+    SPELL_PANDA_SLEEP           = 19231,
+    SPELL_PANDA_ROAR            = 40664,
+
+    NPC_DIABLO                  = 11326,
+    SPELL_DIABLO_FLAME          = 18874,
+
+    NPC_ZERGLING                = 11327,
+    SPELL_ZERGLING              = 19227,
+
+    NPC_WILLY                   = 23231,
+    SPELL_WILLY_SLEEP           = 40663,
+
+    NPC_DRAGON_KITE             = 25110,
+    SPELL_DRAGON_KITE_LIGHTNING = 45197,
+    SPELL_DRAGON_KITE_STRING    = 45192,
+
+    NPC_MURKY                   = 15186,
+    NPC_LURKY                   = 15358,
+    NPC_GURKY                   = 16069,
+    SPELL_MURKY_DANCE           = 25165,
+
+    NPC_EGBERT                  = 23258,
+    SPELL_EGBERT_HAPPYNESS      = 40669,
+
+    NPC_SCORCHLING              = 25706,
+    SPELL_SCORCHLING_BLAST      = 45889,
+
+    NPC_DISGUSTING_OOZELING     = 15429,
+};
+
+struct TRINITY_DLL_DECL npc_small_pet_handlerAI : public ScriptedAI
+{
+    npc_small_pet_handlerAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+
+    bool m_bIsIdle;
+    bool m_bIsInAction;
+
+    uint32 m_uiCheckTimer;
+    uint32 m_uiActionTimer;
+
+    void Reset()
+    {
+        ClearCastQueue();
+
+        m_bIsIdle = false;
+        m_bIsInAction = false;
+
+        m_uiCheckTimer = 1000;
+        m_uiActionTimer = urand(10000, 30000);
+
+        me->GetMotionMaster()->MoveFollow(me->GetOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+
+        PetCreateAction(me->GetEntry());
+    }
+
+    void AttackStart(Unit* who) {}
+
+    void EnterCombat(Unit *who) {}
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        // Check if pet is moving
+        if (m_uiCheckTimer < uiDiff)
+        {
+            if (Unit* pUnit = me->GetOwner())
+            {
+                Player *pPlayer = pUnit->ToPlayer();
+
+                // Change speed if owner is mounted
+                if (pPlayer->IsMounted())
+                    me->SetSpeed(MOVE_RUN, 2.0f, true);
+                else
+                    me->SetSpeed(MOVE_RUN, 1.0f, true);
+
+                // Check if owner is stopped
+                if (pPlayer->isMoving() && m_bIsIdle)
+                {
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+
+                    if (me->IsNonMeleeSpellCasted(false))
+                        me->InterruptNonMeleeSpells(false);
+
+                    m_bIsIdle = false;
+                    m_uiActionTimer = urand(10000, 20000);
+                }
+                else if (me->IsWithinDistInMap(pPlayer, 1.5f) && !m_bIsIdle)
+                {
+                    m_bIsIdle = true;
+                }
+            }
+            m_uiCheckTimer = 1000;
+        }
+        else
+            m_uiCheckTimer -= uiDiff;
+
+        // Return if pet is moving
+        if (!m_bIsIdle)
+        {
+            m_bIsInAction = false;
+            return;
+        }
+
+        // Do pet's action
+        if (m_uiActionTimer < uiDiff)
+        {
+            // Do action
+            if (!m_bIsInAction)
+            {
+                m_uiActionTimer = urand(30000, 60000); // Prevent stopping action too early
+                m_bIsInAction = true;
+                PetAction(me->GetEntry());
+            }
+            // Stop action
+            else
+            {
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
+                if (me->IsNonMeleeSpellCasted(false))
+                    me->InterruptNonMeleeSpells(false);
+
+                m_uiActionTimer = urand(10000, 30000);
+                m_bIsInAction = false;
+            }
+        }
+        else
+            m_uiActionTimer -= uiDiff;
+
+        CastNextSpellIfAnyAndReady();
+    }
+
+    void PetCreateAction(uint32 uiPetEntry)
+    {
+        if (!uiPetEntry)
+            return;
+
+        switch (uiPetEntry)
+        {
+            case NPC_DRAGON_KITE:
+            {
+                AddSpellToCast(me->GetOwner(), SPELL_DRAGON_KITE_STRING);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    void PetAction(uint32 uiPetEntry)
+    {
+        if (!uiPetEntry)
+            return;
+
+        switch (uiPetEntry)
+        {
+            case NPC_PANDA:
+            {
+                AddSpellToCast(RAND(SPELL_PANDA_SLEEP, SPELL_PANDA_ROAR), CAST_SELF);
+                break;
+            }
+            case NPC_DIABLO:
+            {
+                AddSpellToCast(SPELL_DIABLO_FLAME, CAST_SELF);
+                break;
+            }
+            case NPC_ZERGLING:
+            {
+                AddSpellToCast(SPELL_ZERGLING, CAST_SELF);
+                break;
+            }
+            case NPC_WILLY:
+            {
+                AddSpellToCast(SPELL_WILLY_SLEEP, CAST_SELF);
+                break;
+            }
+            case NPC_DRAGON_KITE:
+            {
+                if (Unit* pOwner = me->GetCharmerOrOwner())
+                    AddSpellToCast(pOwner, SPELL_DRAGON_KITE_LIGHTNING);
+                break;
+            }
+            case NPC_MURKY:
+            case NPC_LURKY:
+            case NPC_GURKY:
+            {
+                me->HandleEmoteCommand(EMOTE_ONESHOT_DANCE);
+                AddSpellToCast(SPELL_MURKY_DANCE);
+                break;
+            }
+            case NPC_EGBERT:
+            {
+                AddSpellToCast(SPELL_EGBERT_HAPPYNESS, CAST_SELF);
+                break;
+            }
+            case NPC_SCORCHLING:
+            {
+                AddSpellToCast(SPELL_SCORCHLING_BLAST, CAST_SELF);
+                break;
+            }
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_small_pet_handler(Creature* pCreature)
+{
+    return new npc_small_pet_handlerAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2575,11 +2761,6 @@ void AddSC_npcs_special()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "npc_lurky";
-    newscript->GetAI = &GetAI_npc_lurky;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
     newscript->Name = "pet_AleMugDrinker";
     newscript->GetAI = GetAI_pet_AleMugDrinker;
     newscript->RegisterSelf();
@@ -2614,5 +2795,15 @@ void AddSC_npcs_special()
     newscript->Name = "npc_arena_spectator";
     newscript->pGossipHello =           &GossipHello_npc_arena_spectator;
     newscript->pGossipSelectWithCode =  &GossipSelectWithCode_npc_arena_spectator;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_land_mine";
+    newscript->GetAI = &GetAI_npc_land_mine;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_small_pet_handler";
+    newscript->GetAI = &GetAI_npc_small_pet_handler;
     newscript->RegisterSelf();
 }

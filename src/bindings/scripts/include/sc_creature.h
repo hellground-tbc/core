@@ -85,7 +85,8 @@ enum SpecialThing
     DO_EVADE_CHECK    = 0x02,
     DO_PULSE_COMBAT   = 0x04,
     DO_COMBAT_N_SPEED = (DO_PULSE_COMBAT | DO_SPEED_UPDATE),
-    DO_EVERYTHING     = (DO_COMBAT_N_SPEED | DO_EVADE_CHECK), 
+    DO_COMBAT_N_EVADE = (DO_PULSE_COMBAT | DO_EVADE_CHECK),
+    DO_EVERYTHING     = (DO_COMBAT_N_SPEED | DO_EVADE_CHECK),
 };
 
 class SpellToCast
@@ -355,7 +356,7 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
 
     void DoTeleportTo(float x, float y, float z, uint32 time = 0);
 
-    void DoAction(const int32 param) {}
+    virtual void DoAction(const int32 param) {}
 
     //Teleports a player without dropping threat (only teleports to same map)
     void DoTeleportPlayer(Unit* pUnit, float x, float y, float z, float o);
@@ -419,5 +420,5 @@ struct TRINITY_DLL_DECL BossAI : public ScriptedAI
 
 // SD2 grid searchers
 Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange, bool alive = true);
-
+GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange);
 #endif

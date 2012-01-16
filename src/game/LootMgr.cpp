@@ -407,6 +407,7 @@ void Loot::setCreatureGUID(Creature *pCreature)
         return;
 
     m_creatureGUID = pCreature->GetGUID();
+    m_mapID = MapID(pCreature->GetMapId(), pCreature->GetInstanceId());
 }
 
 void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
@@ -417,6 +418,7 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
     if (result)
     {
         m_creatureGUID = pCreature->GetGUID();
+        m_mapID = MapID(pCreature->GetMapId(), pCreature->GetInstanceId());
 
         std::stringstream ss;
         ss << "Loaded LootedItems: ";
@@ -504,30 +506,24 @@ void Loot::removeItemFromSavedLoot(LootItem *item)
     if (!m_creatureGUID)
         return;
 
-    uint32 p_guid = 0;
-    if (PlayersLooting.begin() != PlayersLooting.end())
-        p_guid = *PlayersLooting.begin();
-
-    Player *pPlayer = ObjectAccessor::FindPlayer(p_guid);
-    if (!pPlayer)
+    Map *pMap = sMapMgr.FindMap(m_mapID.nMapId, m_mapID.nInstanceId);
+    if (!pMap || !pMap->Instanceable())
         return;
 
-    Map *tmpMap = pPlayer->GetMap();
-
-    Creature *pCreature = tmpMap->GetCreatureOrPet(m_creatureGUID);
+    Creature *pCreature = pMap->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
     {
         // log only for raids
-        if (tmpMap->IsRaid())
-            sLog.outBoss("Loot::removeItemFromSavedLoot: pCreature not found !! guid: %u, instanceid: %u, player %s (%u) ", m_creatureGUID, tmpMap->GetInstanceId(), pPlayer->GetName(), pPlayer->GetGUIDLow());
+        if (pMap->IsRaid())
+            sLog.outBoss("Loot::removeItemFromSavedLoot: pCreature not found !! guid: %u, instanceid: %u) ", m_creatureGUID, pMap->GetInstanceId());
         return;
     }
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, tmpMap->GetInstanceId(), pCreature->GetEntry());
+    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pMap->GetInstanceId(), pCreature->GetEntry());
     if (!result)
     {
-        if (tmpMap->IsRaid())
-            sLog.outBoss("Loot::removeItemFromSavedLoot: result empty !! SQL: SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, tmpMap->GetInstanceId(), pCreature->GetEntry());
+        if (pMap->IsRaid())
+            sLog.outBoss("Loot::removeItemFromSavedLoot: result empty !! SQL: SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pMap->GetInstanceId(), pCreature->GetEntry());
         return;
     }
 
@@ -559,7 +555,11 @@ void Loot::saveLootToDB(Player *owner)
     if (!m_creatureGUID)
         return;
 
-    Creature *pCreature = owner->GetMap()->GetCreatureOrPet(m_creatureGUID);
+    Map *pMap = sMapMgr.FindMap(m_mapID.nMapId, m_mapID.nInstanceId);
+    if (!pMap || !pMap->Instanceable())
+        return;
+
+    Creature *pCreature = pMap->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
     {
         sLog.outBoss("Loot::saveLootToDB: pCreature not found !!: player %s(%u)", owner->GetName(),owner->GetGUIDLow());
@@ -913,7 +913,6 @@ LootItem* Loot::LootItemInSlot(uint32 lootSlot, Player* player, QuestItem **qite
 
     return item;
 }
-
 
 LootItem* Loot::LootItemInSlot(uint32 lootSlot)
 {
@@ -1575,4 +1574,3 @@ void LoadLootTemplates_Reference()
     // output error for any still listed ids (not referenced from any loot table)
     LootTemplates_Reference.ReportUnusedIds(ids_set);
 }
-

@@ -24,63 +24,67 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_naxxramas.h"
 
-#define SAY_GREET                   -1533009
-#define SAY_AGGRO1                  -1533010
-#define SAY_AGGRO2                  -1533011
-#define SAY_AGGRO3                  -1533012
-#define SAY_AGGRO4                  -1533013
-#define SAY_SLAY1                   -1533014
-#define SAY_SLAY2                   -1533015
-#define SAY_DEATH                   -1533016
-
-#define SPELL_POSIONBOLT_VOLLEY     28796
-#define H_SPELL_POSIONBOLT_VOLLEY   54098
-#define SPELL_ENRAGE                28798
-#define H_SPELL_ENRAGE              54100
-#define SPELL_RAINOFFIRE            28794                   //Not sure if targeted AoEs work if casted directly upon a player
-
-struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
+enum FaerlinaTexts
 {
-    boss_faerlinaAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
+    SAY_GREET       = -1533009,
+    SAY_AGGRO1      = -1533010,
+    SAY_AGGRO2      = -1533011,
+    SAY_AGGRO3      = -1533012,
+    SAY_AGGRO4      = -1533013,
+    SAY_SLAY1       = -1533014,
+    SAY_SLAY2       = -1533015,
+    SAY_DEATH       = -1533016
+};
 
-    ScriptedInstance * pInstance;
+enum FaerlinaSpells
+{
+    SPELL_POISONBOLT_VOLLEY     = 28796,
+    SPELL_RAIN_OF_FIRE          = 28794,    //Not sure if targeted AoEs work if casted directly upon a player
+    SPELL_ENRAGE                = 28798
+};
+
+enum FaerlinaEvents
+{
+    EVENT_POISONBOLT_VOLLEY     = 1,
+    EVENT_RAIN_OF_FIRE          = 2,
+    EVENT_ENRAGE                = 3
+};
+
+struct TRINITY_DLL_DECL boss_faerlinaAI : public BossAI
+{
+    boss_faerlinaAI(Creature *c) : BossAI(c, DATA_GRAND_WIDOW_FAERLINA) { }
 
     uint32 PoisonBoltVolley_Timer;
     uint32 RainOfFire_Timer;
     uint32 Enrage_Timer;
-    bool HasTaunted;
+    bool greet;
 
     void Reset()
     {
-        PoisonBoltVolley_Timer = 8000;
-        RainOfFire_Timer = 16000;
-        Enrage_Timer = 60000;
-        HasTaunted = false;
+        events.Reset();
+        events.ScheduleEvent(EVENT_POISONBOLT_VOLLEY, 8000);
+        events.ScheduleEvent(EVENT_RAIN_OF_FIRE, 16000);
+        events.ScheduleEvent(EVENT_ENRAGE, 60000);
+        greet = false;
 
-        if (pInstance)
-            pInstance->SetData(DATA_GRAND_WIDOW_FAERLINA, NOT_STARTED);
+        instance->SetData(DATA_GRAND_WIDOW_FAERLINA, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3, SAY_AGGRO4), m_creature);
-
-        if (pInstance)
-            pInstance->SetData(DATA_GRAND_WIDOW_FAERLINA, IN_PROGRESS);
+        instance->SetData(DATA_GRAND_WIDOW_FAERLINA, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-         if (!HasTaunted && m_creature->IsWithinDistInMap(who, 60.0f))
-         {
-                DoScriptText(SAY_GREET, m_creature);
-                HasTaunted = true;
-
+        if (!greet && m_creature->IsWithinDistInMap(who, 60.0f))
+        {
+            DoScriptText(SAY_GREET, m_creature);
+            greet = true;
         }
-         ScriptedAI::MoveInLineOfSight(who);
+
+        ScriptedAI::MoveInLineOfSight(who);
     }
 
     void KilledUnit(Unit* victim)
@@ -91,8 +95,7 @@ struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
-        if (pInstance)
-            pInstance->SetData(DATA_GRAND_WIDOW_FAERLINA, DONE);
+        instance->SetData(DATA_GRAND_WIDOW_FAERLINA, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -100,31 +103,41 @@ struct TRINITY_DLL_DECL boss_faerlinaAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        //PoisonBoltVolley_Timer
-        if (PoisonBoltVolley_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(),SPELL_POSIONBOLT_VOLLEY);
-            PoisonBoltVolley_Timer = 11000;
-        }else PoisonBoltVolley_Timer -= diff;
+        DoSpecialThings(diff, DO_EVERYTHING, 120.0f);
 
-        //RainOfFire_Timer
-        if (RainOfFire_Timer < diff)
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_RAINOFFIRE);
-            RainOfFire_Timer = 16000;
-        }else RainOfFire_Timer -= diff;
+            switch (eventId)
+            {
+                case EVENT_POISONBOLT_VOLLEY:
+                {
+                    AddSpellToCast(SPELL_POISONBOLT_VOLLEY, CAST_NULL);
+                    events.ScheduleEvent(EVENT_POISONBOLT_VOLLEY, 11000);
+                    break;
+                }
+                case EVENT_RAIN_OF_FIRE:
+                {
+                    AddSpellToCast(SPELL_RAIN_OF_FIRE, CAST_RANDOM);
+                    events.ScheduleEvent(EVENT_RAIN_OF_FIRE, 16000);
+                    break;
+                }
+                case EVENT_ENRAGE:
+                {
+                    AddSpellToCast(SPELL_ENRAGE, CAST_SELF);
+                    events.ScheduleEvent(EVENT_ENRAGE, 61000);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
 
-        //Enrage_Timer
-        if (Enrage_Timer < diff)
-        {
-            DoCast(m_creature,SPELL_ENRAGE);
-            Enrage_Timer = 61000;
-        }else Enrage_Timer -= diff;
-
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
+
 CreatureAI* GetAI_boss_faerlina(Creature *_Creature)
 {
     return new boss_faerlinaAI (_Creature);
@@ -138,4 +151,3 @@ void AddSC_boss_faerlina()
     newscript->GetAI = &GetAI_boss_faerlina;
     newscript->RegisterSelf();
 }
-

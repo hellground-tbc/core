@@ -34,7 +34,7 @@ struct ItemPrototype;
 struct Script
 {
     Script() :
-        pGossipHello(NULL), pGossipHelloGO(NULL), pGossipSelect(NULL), pGossipSelectGO(NULL),
+        pGossipHello(NULL), pGossipSelect(NULL), pGossipSelectGO(NULL),
         pGossipSelectWithCode(NULL), pGossipSelectGOWithCode(NULL),
         pDialogStatusNPC(NULL), pDialogStatusGO(NULL),
         pQuestAcceptNPC(NULL), pQuestAcceptGO(NULL), pQuestAcceptItem(NULL),
@@ -51,7 +51,6 @@ struct Script
     std::string Name;
 
     bool (*pGossipHello             )(Player*, Creature*);
-    bool (*pGossipHelloGO           )(Player*, GameObject*);
     bool (*pGossipSelect            )(Player*, Creature*, uint32, uint32);
     bool (*pGossipSelectGO          )(Player*, GameObject*, uint32, uint32);
     bool (*pGossipSelectWithCode    )(Player*, Creature*, uint32, uint32, const char*);
@@ -105,4 +104,3 @@ void ScriptText(int32 textEntry, Unit* pSource, Unit* target = NULL);
 #endif
 
 #endif
-

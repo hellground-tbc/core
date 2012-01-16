@@ -3649,3 +3649,14 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
     return DRTYPE_NONE;
 }
 
+bool SpellIgnoreLOS(SpellEntry const* spellproto, uint8 effIdx)
+{
+    if (spellproto->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS)
+        return true;
+
+    // Most QuestItems should ommit los ;]
+    if (spellproto->Effect[effIdx] == SPELL_EFFECT_DUMMY && spellproto->EffectImplicitTargetA[effIdx] == TARGET_UNIT_NEARBY_ENTRY)
+        return true;
+
+    return false;
+}

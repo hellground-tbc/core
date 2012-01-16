@@ -16,51 +16,56 @@
 
 /* ScriptData
 SDName: Boss_Patchwerk
-SD%Complete: 100
-SDComment: Some issues with hateful strike inturrupting the melee swing timer. Probably core issue.
+SD%Complete: 100 ?
+SDComment: Some issues with hateful strike inturrupting the melee swing timer ?
 SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
 #include "def_naxxramas.h"
 
-#define SAY_AGGRO1              -1533017
-#define SAY_AGGRO2              -1533018
-#define SAY_SLAY                -1533019
-#define SAY_DEATH               -1533020
-
-#define EMOTE_BERSERK           -1533021
-#define EMOTE_ENRAGE            -1533022
-
-#define SPELL_HATEFULSTRIKE     28308
-#define H_SPELL_HATEFULSTRIKE   59192
-#define SPELL_ENRAGE            2813
-#define SPELL_BERSERK           26662
-#define SPELL_SLIMEBOLT         32309
-
-struct TRINITY_DLL_DECL boss_patchwerkAI : public ScriptedAI
+enum PatchwerkTexts
 {
-    boss_patchwerkAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
+    SAY_AGGRO1              = -1533017,
+    SAY_AGGRO2              = -1533018,
+    SAY_SLAY                = -1533019,
+    SAY_DEATH               = -1533020,
 
-    ScriptedInstance * pInstance;
+    EMOTE_BERSERK           = -1533021,
+    EMOTE_ENRAGE            = -1533022
+};
 
-    uint32 HatefullStrike_Timer;
-    uint32 Enrage_Timer;
-    uint32 Slimebolt_Timer;
+enum PatchwerkSpells
+{
+    SPELL_HATEFULSTRIKE     = 28308,
+    SPELL_ENRAGE            = 2813,
+    SPELL_SLIMEBOLT         = 32309,
+    SPELL_BERSERK           = 26662
+};
+
+enum PatchwerkEvents
+{
+    EVENT_HATEFULLSTRIKE    = 1,
+    EVENT_BERSERK           = 2,
+    EVENT_SLIMEBOLT         = 3
+};
+
+struct TRINITY_DLL_DECL boss_patchwerkAI : public BossAI
+{
+    boss_patchwerkAI(Creature* c) : BossAI(c, DATA_PATCHWERK) { }
+
     bool Enraged;
 
     void Reset()
     {
-        HatefullStrike_Timer = 1200;                        //1.2 seconds
-        Enrage_Timer = 420000;                              //7 minutes 420,000
-        Slimebolt_Timer = 450000;                           //7.5 minutes 450,000
+        events.Reset();
+        events.ScheduleEvent(EVENT_HATEFULLSTRIKE, 1200);   // 1.2 seconds
+        events.ScheduleEvent(EVENT_BERSERK, 420000);        // 7 minutes 420,000
+        events.ScheduleEvent(EVENT_SLIMEBOLT, 450000);      // 7.5 minutes 450,000
+
         Enraged = false;
 
-        if (pInstance)
-            pInstance->SetData(DATA_PATCHWERK, NOT_STARTED);
+        instance->SetData(DATA_PATCHWERK, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
@@ -74,16 +79,13 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
-        if (pInstance)
-            pInstance->SetData(DATA_PATCHWERK, DONE);
+        instance->SetData(DATA_PATCHWERK, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2), m_creature);
-
-        if (pInstance)
-            pInstance->SetData(DATA_PATCHWERK, IN_PROGRESS);
+        instance->SetData(DATA_PATCHWERK, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
@@ -91,60 +93,54 @@ struct TRINITY_DLL_DECL boss_patchwerkAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        //HatefullStrike_Timer
-        if (HatefullStrike_Timer < diff)
-        {
-            //Cast Hateful strike on the player with the highest
-            //amount of HP within melee distance
-            uint32 MostHP = 0;
-            Unit* pMostHPTarget = NULL;
-            Unit* pTemp = NULL;
-            std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 1.5f);
 
-            for (i = m_creature->getThreatManager().getThreatList().begin(); i!=m_creature->getThreatManager().getThreatList().end();)
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
             {
-                pTemp = Unit::GetUnit((*m_creature),(*i)->getUnitGuid());
-                ++i;
-                if (pTemp && pTemp->isAlive() && pTemp->GetHealth() > MostHP && m_creature->GetDistance2d(pTemp) < 5)
+                case EVENT_HATEFULLSTRIKE:
                 {
-                    MostHP = pTemp->GetHealth();
-                    pMostHPTarget = pTemp;
+                    Unit * target = SelectUnit(SELECT_TARGET_HIGHEST_HP, 0, m_creature->GetCombatReach(), true);
+
+                    if (!target)
+                        target = me->getVictim();
+
+                    if (target)
+                        AddSpellToCast(target, SPELL_HATEFULSTRIKE);
+
+                    events.ScheduleEvent(EVENT_HATEFULLSTRIKE, 1200);
+                    break;
                 }
+                case EVENT_BERSERK:
+                {
+                    AddSpellToCastWithScriptText(SPELL_BERSERK, CAST_SELF, EMOTE_BERSERK);
+                    break;
+                }
+                case EVENT_SLIMEBOLT:
+                {
+                    AddSpellToCast(SPELL_SLIMEBOLT, CAST_NULL);
+                    events.ScheduleEvent(EVENT_SLIMEBOLT, 5000);
+                    break;
+                }
+                default:
+                    break;
             }
-
-            if (pMostHPTarget)
-                DoCast(pMostHPTarget, SPELL_HATEFULSTRIKE);
-
-            HatefullStrike_Timer = 1200;
-        }else HatefullStrike_Timer -= diff;
-
-        //Enrage_Timer
-        if (Enrage_Timer < diff)
-        {
-            DoCast(m_creature, SPELL_BERSERK);
-             DoScriptText(EMOTE_BERSERK, m_creature);
-
-            Enrage_Timer = 300000;
-        }else Enrage_Timer -= diff;
-
-        //Slimebolt_Timer
-        if (Slimebolt_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(),SPELL_SLIMEBOLT);
-            Slimebolt_Timer = 5000;
-        }else Slimebolt_Timer -= diff;
+        }
 
         //Enrage if not already enraged and below 5%
-        if (!Enraged && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 5)
+        if (!Enraged && HealthBelowPct(5))
         {
-            DoCast(m_creature,SPELL_ENRAGE);
-            DoScriptText(EMOTE_ENRAGE,NULL);
+            ForceSpellCastWithScriptText(m_creature, SPELL_ENRAGE, EMOTE_ENRAGE);
             Enraged = true;
         }
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
+
 CreatureAI* GetAI_boss_patchwerk(Creature *_Creature)
 {
     return new boss_patchwerkAI (_Creature);
@@ -158,4 +154,3 @@ void AddSC_boss_patchwerk()
     newscript->GetAI = &GetAI_boss_patchwerk;
     newscript->RegisterSelf();
 }
-

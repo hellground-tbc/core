@@ -208,8 +208,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     void TeleportCenter()
     {
         m_creature->CastSpell(m_creature, SPELL_BLINK_CENTER, true);
-        m_creature->Relocate(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z);
-        m_creature->SendMonsterMove(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z, 0);
+        DoTeleportTo(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z, 0);
     }
 
     void JustDied(Unit *victim)

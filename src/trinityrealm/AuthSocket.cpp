@@ -400,7 +400,7 @@ bool AuthSocket::_HandleLogonChallenge()
         ///- Get the account details from the account table
         // No SQL injection (escaped user name)
 
-        result = LoginDatabase.PQuery("SELECT sha_pass_hash,id,locked,last_ip,gmlevel,v,s FROM account WHERE username = '%s'",_safelogin.c_str ());
+        result = LoginDatabase.PQuery("SELECT sha_pass_hash,id,locked,last_ip,gmlevel,v,s,email FROM account WHERE username = '%s'",_safelogin.c_str ());
         if( result )
         {
             ///- If the IP is 'locked', check that the player comes indeed from the correct IP address
@@ -446,7 +446,7 @@ bool AuthSocket::_HandleLogonChallenge()
                 }
                 else
                 {
-                    QueryResultAutoPtr  emailbanresult = LoginDatabase.PQuery("SELECT email FROM email_banned WHERE email = '%s'", (*result)[5].GetString());
+                    QueryResultAutoPtr  emailbanresult = LoginDatabase.PQuery("SELECT email FROM email_banned WHERE email = '%s'", (*result)[7].GetString());
                     if(emailbanresult)
                     {
                         pkt << (uint8) WOW_FAIL_BANNED;
