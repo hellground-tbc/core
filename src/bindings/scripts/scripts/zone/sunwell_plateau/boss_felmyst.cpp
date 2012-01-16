@@ -215,7 +215,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_FELMYST_EVENT, NOT_STARTED);
 
-        summons.DespawnAll();
+        summons.DespawnAll();   // for any other summons? (should not be needed?)
     }
 
     void EnterCombat(Unit *who)
@@ -285,7 +285,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     void EnterEvadeMode()
     {
         CreatureAI::EnterEvadeMode();
-        me->SetSpeed(MOVE_FLIGHT, 1.8, false);
+        me->SetSpeed(MOVE_FLIGHT, 1.7, false);
         me->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
         IntroPhase = 6; // to make proper landing on next EnterCombat
 
@@ -379,7 +379,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 IntroTimer = 0;
                 break;
             case 4:
-                me->SetSpeed(MOVE_FLIGHT, 1.8, false);
+                me->SetSpeed(MOVE_FLIGHT, 1.7, false);
                 m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
                 IntroTimer = 10000;
                 break;
@@ -404,6 +404,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         {
             // stop moving on each waypoint
             me->GetMotionMaster()->MoveIdle();
+            if(me->getVictim()) // cosmetics: to be tested if working
+                me->SetInFront(me->getVictim());
             switch(Id)
             {
                 case 0: // on landing after aggroing
@@ -423,12 +425,13 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     break;
                 case 3: // on path start node
                     me->setHover(true);
-                    me->SetSpeed(MOVE_FLIGHT, 3.6, false);
+                    me->SetSpeed(MOVE_FLIGHT, 3.4, false);
+                    DoScriptText(EMOTE_BREATH, m_creature);
                     Timer[EVENT_FLIGHT_SEQUENCE] = urand(3000, 4000);
                     break;
                 case 4: // on path stop node
                     me->setHover(true);
-                    me->SetSpeed(MOVE_FLIGHT, 1.8, false);
+                    me->SetSpeed(MOVE_FLIGHT, 1.7, false);
                     m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
                     side = side?LEFT_SIDE:RIGHT_SIDE;
                     BreathCount++;
@@ -482,7 +485,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             break;
             }
         case 4: // go to side left/right marker
-            me->SetSpeed(MOVE_FLIGHT, 1.8, false);
+            me->SetSpeed(MOVE_FLIGHT, 1.7, false);
             m_creature->GetMotionMaster()->MovePoint(2, FlightSide[side][0], FlightSide[side][1], FlightSide[side][2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
@@ -490,7 +493,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             {
             path = urand(0,2);
             float *pos = FlightMarker[path][side];
-            DoScriptText(EMOTE_BREATH, m_creature);
             counter = side ? (path ? (path%2 ? 7 : 24) : 14) : 0;
             m_creature->GetMotionMaster()->MovePoint(3, pos[0], pos[1], pos[2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
