@@ -676,6 +676,7 @@ struct TRINITY_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
         if(move < diff)
         {
             me->SetWalk(true);
+            me->SetSpeed(MOVE_WALK, 0.6, true);
             if (phase == 1)
             {
                 m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
@@ -891,8 +892,8 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_WALK,3);
-        m_creature->SetSpeed(MOVE_RUN,3);
+        m_creature->SetSpeed(MOVE_WALK, 3);
+        m_creature->SetSpeed(MOVE_RUN, 3);
 
         for(int i = 0; i < 3; ++i)
         {
@@ -1004,8 +1005,7 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_WALK,3);
-        m_creature->SetSpeed(MOVE_RUN,3);
+        m_creature->SetSpeed(MOVE_RUN, 2);
 
         m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 2);
         m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 2);
@@ -1042,8 +1042,8 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
     {
         if(OnPath)
         {
-            m_creature->SetSpeed(MOVE_WALK,1.5);
-            m_creature->SetSpeed(MOVE_RUN,1.5);
+            m_creature->SetSpeed(MOVE_WALK, 1.1);
+            m_creature->SetSpeed(MOVE_RUN, 1.1);
 
             m_creature->GetMotionMaster()->Clear(false);
             DoStartMovement(done_by);
@@ -1066,8 +1066,8 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         {
             if(MoveWP >= 4)
             {
-                m_creature->SetSpeed(MOVE_WALK,1.5);
-                m_creature->SetSpeed(MOVE_RUN,1.5);
+                m_creature->SetSpeed(MOVE_WALK, 1.1);
+                m_creature->SetSpeed(MOVE_RUN, 1.1);
 
                 m_creature->GetMotionMaster()->Clear(false);
                 OnPath = false;
