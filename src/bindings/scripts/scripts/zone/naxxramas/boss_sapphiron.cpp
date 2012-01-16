@@ -16,76 +16,80 @@
 
 /* ScriptData
 SDName: Boss_Sapphiron
-SD%Complete: 0
-SDComment: Place Holder
+SD%Complete: ??
+SDComment:
 SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
 #include "def_naxxramas.h"
 
-#define EMOTE_BREATH            -1533082
-#define EMOTE_ENRAGE            -1533083
-
-#define SPELL_ICEBOLT           28522
-#define SPELL_FROST_BREATH      29318
-#define SPELL_FROST_AURA        28531
-#define SPELL_LIFE_DRAIN        28542
-#define SPELL_BLIZZARD          28547
-#define SPELL_BESERK            26662
-
-struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
+enum SapphironTexts
 {
-    boss_sapphironAI(Creature* c) : ScriptedAI(c)
-    {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-    }
+    EMOTE_BREATH            = -1533082,
+    EMOTE_ENRAGE            = -1533083
+};
 
-    ScriptedInstance * pInstance;
+enum SapphironSpells
+{
+    SPELL_ICEBOLT           = 28522,
+    SPELL_FROST_BREATH      = 29318,
+    SPELL_FROST_AURA        = 28531,
+    SPELL_LIFE_DRAIN        = 28542,
+    SPELL_BLIZZARD          = 28547,
+    SPELL_BESERK            = 26662
+};
 
-    uint32 Icebolt_Count;
-    uint32 Icebolt_Timer;
-    uint32 FrostBreath_Timer;
-    uint32 FrostAura_Timer;
-    uint32 LifeDrain_Timer;
-    uint32 Blizzard_Timer;
-    uint32 Fly_Timer;
-    uint32 Fly2_Timer;
-    uint32 Beserk_Timer;
-    uint32 phase;
-    bool IsInFly;
-    uint32 land_Timer;
+enum SapphironEvents
+{
+    EVENT_ICE_BOLT          = 1,
+    EVENT_FROST_BREATH      = 2,
+    EVENT_LIFE_DRAIN        = 3,
+    EVENT_BLIZZARD          = 4,
+    EVENT_BERSERK           = 5,
+    EVENT_PHASE_2           = 6,
+    EVENT_PHASE_1           = 7
+};
+
+enum SapphironPhase
+{
+    SAPPHIRON_GROUND_PHASE  = 1,
+    SAPPHIRON_AIR_PHASE     = 2
+};
+
+struct TRINITY_DLL_DECL boss_sapphironAI : public BossAI
+{
+    boss_sapphironAI(Creature* c) : BossAI(c, DATA_SAPPHIRON) { }
+
+    uint32 iceboltCount;
+    bool berserk;
+
+    SapphironPhase phase;
 
     void Reset()
     {
-        FrostAura_Timer = 2000;
-        LifeDrain_Timer = 24000;
-        Blizzard_Timer = 20000;
-        Fly_Timer = 45000;
-        Icebolt_Timer = 4000;
-        land_Timer = 0;
-        Beserk_Timer = 0;
-        phase = 1;
-        Icebolt_Count = 0;
-        IsInFly = false;
+        phase = SAPPHIRON_GROUND_PHASE;
+        events.Reset();
+        events.ScheduleEvent(EVENT_LIFE_DRAIN, 24000);
+        events.ScheduleEvent(EVENT_BLIZZARD, 20000);
+        events.ScheduleEvent(EVENT_PHASE_2, 45000);
+
+        iceboltCount = 0;
+        berserk = false;
 
         m_creature->SetLevitate(false);
 
-        if (pInstance)
-            pInstance->SetData(DATA_SAPPHIRON, NOT_STARTED);
+        instance->SetData(DATA_SAPPHIRON, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
-
-        if (pInstance)
-            pInstance->SetData(DATA_SAPPHIRON, IN_PROGRESS);
+        instance->SetData(DATA_SAPPHIRON, IN_PROGRESS);
     }
 
     void JustDied(Unit * killer)
     {
-        if (pInstance)
-            pInstance->SetData(DATA_SAPPHIRON, DONE);
+        instance->SetData(DATA_SAPPHIRON, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -93,93 +97,88 @@ struct TRINITY_DLL_DECL boss_sapphironAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-            if(phase == 1)
+        DoSpecialThings(diff, DO_EVERYTHING, 120.0f);
+
+        events.Update(diff);
+        uint32 eventId;
+        while (eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
             {
-                if(FrostAura_Timer < diff)
+                case EVENT_ICE_BOLT:
                 {
-                    DoCast(m_creature->getVictim(),SPELL_FROST_AURA);
-                    FrostAura_Timer = 5000;
-                }else FrostAura_Timer -= diff;
+                    AddSpellToCast(SPELL_ICEBOLT, CAST_RANDOM);
 
-                if(LifeDrain_Timer < diff)
-                {
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                        DoCast(target,SPELL_LIFE_DRAIN);
-                    LifeDrain_Timer = 24000;
-                }else LifeDrain_Timer -= diff;
+                    if (++iceboltCount < 5)
+                        events.ScheduleEvent(EVENT_ICE_BOLT, 4000);
+                    else
+                        events.ScheduleEvent(EVENT_FROST_BREATH, 2000);
 
-                if(Blizzard_Timer < diff)
+                    break;
+                }
+                case EVENT_FROST_BREATH:
                 {
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                        DoCast(target,SPELL_BLIZZARD);
-                    Blizzard_Timer = 20000;
-                }else Blizzard_Timer -= diff;
+                    AddSpellToCastWithScriptText(SPELL_FROST_BREATH, CAST_SELF, EMOTE_BREATH);
+                    events.ScheduleEvent(EVENT_PHASE_1, 2000);
+                    break;
+                }
+                case EVENT_LIFE_DRAIN:
+                {
+                    AddSpellToCast(SPELL_LIFE_DRAIN, CAST_RANDOM);
+                    events.ScheduleEvent(EVENT_LIFE_DRAIN, 24000);
+                    break;
+                }
+                case EVENT_BLIZZARD:
+                {
+                    AddSpellToCast(SPELL_BLIZZARD, CAST_SELF);
+                    events.ScheduleEvent(EVENT_BLIZZARD, 20000);
+                    break;
+                }
+                case EVENT_PHASE_2:
+                {
+                    if (HealthBelowPct(10))
+                        break;
 
-                if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() > 10)
+                    iceboltCount = 0;
+                    phase = SAPPHIRON_AIR_PHASE;
+                    events.CancelEvent(EVENT_BLIZZARD);
+                    events.CancelEvent(EVENT_LIFE_DRAIN);
+                    events.ScheduleEvent(EVENT_ICE_BOLT, 4000);
+
+                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+                    m_creature->SetLevitate(true);
+                    m_creature->GetMotionMaster()->Clear(false);
+                    m_creature->GetMotionMaster()->MoveIdle();
+
+                    break;
+                }
+                case EVENT_PHASE_1:
                 {
-                    if(Fly_Timer < diff)
-                    {
-                        phase = 2;
-                        m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-                        m_creature->SetLevitate(true);
-                        m_creature->GetMotionMaster()->Clear(false);
-                        m_creature->GetMotionMaster()->MoveIdle();
-                        m_creature->setHover(true);
-                        Icebolt_Timer = 4000;
-                        Icebolt_Count = 0;
-                        IsInFly = true;
-                    }else Fly_Timer -= diff;
+                    phase = SAPPHIRON_GROUND_PHASE;
+                    events.ScheduleEvent(EVENT_BLIZZARD, urand(10000, 20000));
+                    events.ScheduleEvent(EVENT_LIFE_DRAIN, urand(12000, 24000));
+                    events.ScheduleEvent(EVENT_PHASE_2, 67000);
+
+                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                    m_creature->SetLevitate(false);
+                    m_creature->GetMotionMaster()->Clear(false);
+                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+
+                    break;
                 }
             }
+        }
 
-                if (phase == 2)
-                {
-                    if(Icebolt_Timer < diff && Icebolt_Count < 5)
-                    {
-                        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                        {
-                            DoCast(target,SPELL_ICEBOLT);
-                            ++Icebolt_Count;
-                            error_log("Count incremented");
-                        }
-                        FrostBreath_Timer = 6000;
-                        Icebolt_Timer = 4000;
-                    }else Icebolt_Timer -= diff;
+        if (!berserk && HealthBelowPct(10))
+        {
+            berserk = true;
+            ForceSpellCastWithScriptText(SPELL_BERSERK, CAST_SELF, EMOTE_ENRAGE);
+        }
 
-                    if(Icebolt_Count == 5 && IsInFly && FrostBreath_Timer < diff )
-                    {
-                        DoScriptText(EMOTE_BREATH, m_creature);
-                        DoCast(m_creature->getVictim(),SPELL_FROST_BREATH);
-                        land_Timer = 2000;
-                        IsInFly = false;
-                        FrostBreath_Timer = 6000;
-                    }else FrostBreath_Timer -= diff;
+        CastNextSpellIfAnyAndReady();
 
-                    if(!IsInFly && land_Timer < diff)
-                    {
-                        phase = 1;
-                        m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                        m_creature->SetLevitate(false);
-                        m_creature->GetMotionMaster()->Clear(false);
-                        m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
-                        m_creature->setHover(true);
-                        land_Timer = 0;
-                        Fly_Timer = 67000;
-                    }else land_Timer -= diff;
-                }
-
-                if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() <= 10)
-                {
-                    if (Beserk_Timer < diff)
-                    {
-                        DoScriptText(EMOTE_ENRAGE, m_creature);
-                        DoCast(m_creature,SPELL_BESERK);
-                        Beserk_Timer = 300000;
-                    }else Beserk_Timer -= diff;
-                }
-
-                 if (phase!=2)
-                     DoMeleeAttackIfReady();
+        if (phase == SAPPHIRON_GROUND_PHASE)
+            DoMeleeAttackIfReady();
     }
 };
 
@@ -196,4 +195,3 @@ void AddSC_boss_sapphiron()
     newscript->GetAI = &GetAI_boss_sapphiron;
     newscript->RegisterSelf();
 }
-
