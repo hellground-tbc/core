@@ -215,7 +215,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_FELMYST_EVENT, NOT_STARTED);
 
-        summons.DespawnAll();   // for any other summons? (should not be needed?)
+        summons.DespawnAll();
     }
 
     void EnterCombat(Unit *who)
