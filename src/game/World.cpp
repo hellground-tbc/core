@@ -2741,7 +2741,7 @@ void World::ResetDailyQuests()
     SelectRandomCookingDaily();
     SelectRandomPvPDaily();
 
-    gameeventmgr.ReloadGameEvent();
+    gameeventmgr.LoadFromDB();
 }
 
 void World::SetPlayerLimit(int32 limit, bool needUpdate)
