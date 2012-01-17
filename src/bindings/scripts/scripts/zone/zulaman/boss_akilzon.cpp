@@ -239,6 +239,8 @@ struct TRINITY_DLL_DECL boss_akilzonAI : public ScriptedAI
             }
             // throw player to air and cast electrical storm on (should be handled by proper script effect targeting?)
             DoScriptText(EMOTE_STORM, m_creature, 0, true);
+            // temporary test, normally used in spell_linked_spell, should be casted before players flying
+            target->CastSpell(target, 44007, true);
             m_creature->CastSpell(target, SPELL_ELECTRICAL_STORM, false);
 
             ElectricalStorm_Timer = 60000;
@@ -280,8 +282,9 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
     {
         DoZoneInCombat();
         EagleSwoop_Timer = urand(2000, 6000);
+        me->SetWalk(false);
         me->SetLevitate(true);
-        m_creature->SetWalk(false);
+        me->SetSpeed(MOVE_FLIGHT, 1.5);
         Return_Timer = 200;
         canMoveRandom = true;
         canCast = true;
@@ -291,7 +294,7 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
     {
         if (uiType != POINT_MOTION_TYPE)
             return;
-        m_creature->GetMotionMaster()->MoveIdle();
+        me->GetMotionMaster()->MoveIdle();
         canCast = true;
     }
 
@@ -304,8 +307,8 @@ struct TRINITY_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
         {
             float x, y, z;
             Akil->GetPosition(x, y, z);
-            Akil->GetRandomPoint(x, y, z+15, 40.0f, x, y, z);
-            m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
+            Akil->GetRandomPoint(x, y, z, 40.0f, x, y, z);
+            m_creature->GetMotionMaster()->MovePoint(1, x, y, z+frand(12, 16));
             canMoveRandom = false;
         }
     }
