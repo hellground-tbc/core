@@ -32,7 +32,7 @@ struct PlayerAI : public UnitAI
 
     SpellEntry const *selectHighestRank(uint32 spell_id);
 
-    bool UpdateVictim(float = 20.0f);
+    bool UpdateVictim(float = /*20.0*/100.0f);   // test more range for Felmyst, if no problems, should stay
     void OnCharmed(bool){}
 
     protected:

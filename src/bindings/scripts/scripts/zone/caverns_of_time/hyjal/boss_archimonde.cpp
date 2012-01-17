@@ -197,11 +197,13 @@ struct TRINITY_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
         }
     }
 
+    /* temporary test
     void MoveInLineOfSight(Unit* who)
     {
         if (who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDistInMap(who, 5))
             ChangeTargetTimer = 200;
     }
+    */
 
     void UpdateAI(const uint32 diff)
     {
