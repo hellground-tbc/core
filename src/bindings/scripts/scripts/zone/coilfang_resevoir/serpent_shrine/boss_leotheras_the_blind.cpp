@@ -214,6 +214,9 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
 
         if(pInstance && pInstance->GetData(DATA_LEOTHERASTHEBLINDEVENT) != DONE)
             pInstance->SetData(DATA_LEOTHERASTHEBLINDEVENT, NOT_STARTED);
+
+        m_creature->SetReactState(REACT_AGGRESSIVE);
+        m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
     }
 
     void CheckChannelers(bool DoEvade = true)
@@ -416,9 +419,6 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
         else
             PulseCombat_Timer -= diff;
 
-        if(m_creature->getVictim()->HasAura(30300,0))
-            DoResetThreat();
-
         if(m_creature->HasAura(SPELL_WHIRLWIND, 0))
         {
             if(Whirlwind_Timer < diff)
@@ -494,6 +494,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                     NeedThreatReset = true;
                     SwitchToDemon_Timer = 45000;
                     m_creature->SetReactState(REACT_AGGRESSIVE);
+                    m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_FIRE);
                 }
                 else
                     SwitchToDemon_Timer -= diff;
@@ -584,6 +585,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
                 NeedThreatReset = true;
 
                 SwitchToHuman_Timer = 60000;
+                m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
             }
             else
                 SwitchToHuman_Timer -= diff;
@@ -625,6 +627,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blind_demonformAI : public ScriptedAI
         ChaosBlast_Timer = 1000;
         checkTimer = 2000;
         DealDamage = true;
+        m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_FIRE);
     }
 
     void StartEvent()
