@@ -176,7 +176,8 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
     {
         if(Phase == 2)
             DoStartNoMovement(who);
-        ScriptedAI::AttackStart(who);
+        else
+            ScriptedAI::AttackStart(who);
     }
 
     void MoveInLineOfSight(Unit* who)
