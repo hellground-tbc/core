@@ -523,6 +523,9 @@ struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
                     pMadrigosa->RemoveAllAuras();
                     pMadrigosa->SetVisibility(VISIBILITY_OFF);
                     pMadrigosa->CastSpell(pMadrigosa, SPELL_FELMYST_SUMMON, false);
+                    // kill madrigosa, not needed at this point
+                    pMadrigosa->Kill(pMadrigosa, false);
+                    ((Creature*)pMadrigosa)->RemoveCorpse();
                     Phase++;
                 }
             }

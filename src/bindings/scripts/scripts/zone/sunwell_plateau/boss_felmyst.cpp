@@ -421,12 +421,11 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                     break;
                 case 2: // on left/right side marker
                     me->setHover(true);
-                    Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
+                    Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
                     break;
                 case 3: // on path start node
                     me->setHover(true);
-                    me->SetSpeed(MOVE_FLIGHT, 3.4, false);
-                    DoScriptText(EMOTE_BREATH, m_creature);
+                    me->SetSpeed(MOVE_FLIGHT, 3.5, false);
                     Timer[EVENT_FLIGHT_SEQUENCE] = urand(3000, 4000);
                     break;
                 case 4: // on path stop node
@@ -502,6 +501,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             {
             float *pos = FlightMarker[path][side?LEFT_SIDE:RIGHT_SIDE];
             m_creature->GetMotionMaster()->MovePoint(4, pos[0], pos[1], pos[2]);
+            DoScriptText(EMOTE_BREATH, m_creature);
             AddSpellToCast(m_creature, SPELL_FOG_BREATH);
             Timer[EVENT_SUMMON_FOG] = 50;
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
@@ -587,7 +587,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 else
                 {
                     side ? counter-- : counter++;
-                    Timer[EVENT_SUMMON_FOG] = (7000/(path ? (path%2 ? 8 : 25) : 15));  // check this timer
+                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 8 : 25) : 15));  // check this timer
                 }
                 break;
         }

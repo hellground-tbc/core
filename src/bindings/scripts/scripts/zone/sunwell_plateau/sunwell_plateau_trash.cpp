@@ -100,7 +100,7 @@ struct TRINITY_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
 
         if(Blink < diff)
         {
-            AddSpellToCast(SPELL_BLINK, CAST_NULL);
+            AddSpellToCast(SPELL_BLINK, CAST_SELF);
             Blink = urand(15000, 30000);
         }
         else
