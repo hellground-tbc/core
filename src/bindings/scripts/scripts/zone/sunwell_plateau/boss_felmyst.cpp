@@ -381,7 +381,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
             case 6:
                 Phase = PHASE_GROUND;
-                if (me->HasAura(AURA_NOXIOUS_FUMES))
+                if (!me->HasAura(AURA_NOXIOUS_FUMES))
                     me->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
                 AttackStart(m_creature->getVictim());
                 break;
