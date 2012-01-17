@@ -503,7 +503,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)
         }
         else                                                // must be lesser - cheating
         {
-            sLog.outBasic("Player %s from account id %u kicked for incorrect speed (must be %f instead %f)",
+            sLog.outError("Player %s from account id %u kicked for incorrect speed (must be %f instead %f)",
                 _player->GetName(),_player->GetSession()->GetAccountId(),_player->GetSpeed(move_type), newspeed);
             _player->GetSession()->KickPlayer();
         }
