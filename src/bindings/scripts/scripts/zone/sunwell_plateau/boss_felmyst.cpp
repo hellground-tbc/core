@@ -141,31 +141,23 @@ float FogCoords[25][3][3] =
 {
      //left side
                //[0]                     [1]                       [2]
-    {{1472.56, 680.00, 22.36}, {1472.56, 680.00, 22.36}, {1507.31, 693.96, 28.85}}, //0
-    {{1472.54, 660.00, 20.81}, {1472.54, 660.00, 20.81}, {1495.10, 680.00, 21.22}}, //1
-    {{1451.98, 660.00, 23.05}, {1472.56, 640.00, 21.33}, {1513.84, 672.90, 25.21}}, //2
-    {{1472.56, 640.00, 21.33}, {1472.57, 620.00, 22.27}, {1531.06, 666.55, 27.41}}, //3
-    {{1451.98, 640.00, 23.06}, {1472.57, 600.00, 23.27}, {1495.10, 659.94, 22.84}}, //4
-    {{1472.57, 620.00, 22.27}, {1472.56, 580.02, 22.45}, {1530.79, 650.80, 35.89}}, //5
-    {{1451.98, 620.00, 23.06}, {1472.58, 560.00, 22.87}, {1495.29, 639.84, 23.64}}, //6
-    {{1472.57, 600.00, 23.27}, {1451.98, 560.00, 23.06}, {1516.20, 642.40, 27.16}}, //7
-    {{1451.98, 600.00, 23.06}, {                      }, {1526.31, 636.49, 36.26}}, //8
-    {{1472.56, 580.02, 22.45}, {                      }, {1495.13, 620.01, 25.37}}, //9
-    {{1451.98, 580.00, 23.06}, {                      }, {1525.77, 622.45, 35.69}}, //10
-    {{1472.58, 560.00, 22.87}, {                      }, {1517.40, 614.23, 29.78}}, //11
-    {{1451.98, 560.00, 23.06}, {                      }, {1530.97, 609.00, 35.89}}, //12
-    {{1472.58, 540.00, 23.00}, {                      }, {1494.96, 599.91, 25.30}}, //13
-    {{1451.98, 540.00, 23.06}, {                      }, {1545.40, 594.88, 35.95}}, //14
-    {{                      }, {                      }, {1523.57, 587.71, 31.00}}, //15
-    {{                      }, {                      }, {1495.94, 580.00, 23.84}}, //16
-    {{                      }, {                      }, {1513.26, 571.21, 28.79}}, //17
-    {{                      }, {                      }, {1494.96, 560.01, 25.24}}, //18
-    {{                      }, {                      }, {1532.74, 556.12, 33.09}}, //19
-    {{                      }, {                      }, {1514.72, 549.31, 30.14}}, //20
-    {{                      }, {                      }, {1494.97, 540.02, 25.81}}, //21
-    {{                      }, {                      }, {1527.60, 536.79, 30.63}}, //22
-    {{                      }, {                      }, {1550.99, 537.98, 33.60}}, //23
-    {{                      }, {                      }, {1510.45, 524.35, 26.63}}, //24
+    {{1451.98, 660.00, 23.05}, {1494.97, 540.00, 25.81}, {1510.45, 524.35, 26.63}}, //0
+    {{1451.98, 640.00, 23.06}, {1472.56, 640.00, 21.33}, {1517.40, 614.24, 29.78}}, //1
+    {{1451.98, 620.00, 23.06}, {1494.96, 560.00, 25.24}, {1526.31, 636.50, 36.26}}, //2
+    {{1451.98, 600.00, 23.06}, {1472.58, 540.00, 23.01}, {1531.06, 666.55, 27.41}}, //3
+    {{1451.98, 580.00, 23.06}, {1472.58, 560.00, 22.88}, {1530.79, 650.80, 35.89}}, //4
+    {{1451.98, 560.00, 23.06}, {1472.54, 660.00, 20.81}, {1550.99, 537.98, 33.60}}, //5
+    {{1451.98, 540.00, 23.06}, {1495.10, 680.00, 21.22}, {1530.97, 609.01, 35.89}}, //6
+    {{                      }, {1472.55, 580.00, 22.45}, {1513.84, 672.90, 25.21}}, //7
+    {{                      }, {1472.57, 600.00, 23.26}, {1527.60, 536.79, 30.64}}, //8
+    {{                      }, {1495.10, 660.00, 22.84}, {1525.77, 622.45, 35.69}}, //9
+    {{                      }, {1494.96, 600.00, 25.30}, {1514.72, 549.31, 30.14}}, //10
+    {{                      }, {1472.56, 680.00, 22.36}, {1507.31, 693.96, 28.85}}, //11
+    {{                      }, {1494.94, 580.00, 23.84}, {1545.40, 594.89, 35.95}}, //12
+    {{                      }, {1495.29, 640.00, 23.64}, {1532.74, 556.12, 33.09}}, //13
+    {{                      }, {1495.13, 620.00, 25.37}, {1513.26, 571.21, 28.80}}, //14
+    {{                      }, {1472.57, 620.00, 22.27}, {1517.90, 632.39, 41.67}}, //15
+    {{                      }, {                      }, {1523.57, 587.71, 31.01}}, //16
      //right side
 };
 
@@ -223,7 +215,6 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         DoZoneInCombat();
         EnterPhase(PHASE_GROUND);
         Phase = PHASE_NULL; // not attack yet, but counters on
-        me->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
         me->GetMotionMaster()->Clear();
         me->GetMotionMaster()->MoveIdle();
         me->SetSpeed(MOVE_FLIGHT, 2);
@@ -335,24 +326,24 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     {
         switch(NextPhase)
         {
-        case PHASE_GROUND:
-            Timer[EVENT_CLEAVE] = urand(5000, 10000);
-            Timer[EVENT_CORROSION] = urand(12000, 20000);
-            Timer[EVENT_GAS_NOVA] = urand(18000, 22000);
-            Timer[EVENT_ENCAPSULATE] = 30000;
-            Timer[EVENT_FLIGHT] = 60000;
-            Timer[EVENT_CHECK] = 1000;
-            break;
-        case PHASE_FLIGHT:
-            side = RAND(LEFT_SIDE, RIGHT_SIDE);
-            Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
-            Timer[EVENT_SUMMON_FOG] = 0;
-            Timer[EVENT_CHECK] = 1000;
-            FlightCount = 0;
-            BreathCount = 0;
-            break;
-        default:
-            break;
+            case PHASE_GROUND:
+                Timer[EVENT_CLEAVE] = urand(5000, 10000);
+                Timer[EVENT_CORROSION] = urand(12000, 20000);
+                Timer[EVENT_GAS_NOVA] = urand(20000, 25000);
+                Timer[EVENT_ENCAPSULATE] = 30000;
+                Timer[EVENT_FLIGHT] = 60000;
+                Timer[EVENT_CHECK] = 1000;
+                break;
+            case PHASE_FLIGHT:
+                side = RAND(LEFT_SIDE, RIGHT_SIDE);
+                Timer[EVENT_FLIGHT_SEQUENCE] = 1000;
+                Timer[EVENT_SUMMON_FOG] = 0;
+                Timer[EVENT_CHECK] = 1000;
+                FlightCount = 0;
+                BreathCount = 0;
+                break;
+            default:
+                break;
         }
         Phase = NextPhase;
     }
@@ -390,6 +381,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
             case 6:
                 Phase = PHASE_GROUND;
+                if (me->HasAura(AURA_NOXIOUS_FUMES))
+                    me->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
                 AttackStart(m_creature->getVictim());
                 break;
         }
@@ -492,7 +485,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             {
             path = urand(0,2);
             float *pos = FlightMarker[path][side];
-            counter = side ? (path ? (path%2 ? 7 : 24) : 14) : 0;
+            counter = side ? (path ? (path%2 ? 14 : 15) : 6) : 0;
             m_creature->GetMotionMaster()->MovePoint(3, pos[0], pos[1], pos[2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
@@ -557,7 +550,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
             case EVENT_CORROSION:
                 AddSpellToCast(m_creature->getVictim(), SPELL_CORROSION);
-                Timer[EVENT_CORROSION] = urand(20000, 30000);
+                // gas nova should only be used 2 times in phase 1
+                Timer[EVENT_CORROSION] =(Timer[EVENT_FLIGHT] <= 21000)?40000:urand(20000, 30000);
                 break;
             case EVENT_GAS_NOVA:
                 AddSpellToCastWithScriptText(m_creature, SPELL_GAS_NOVA, YELL_BREATH);
@@ -582,12 +576,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 float *posFog = FogCoords[counter][path];
                 if(Creature *Fog = m_creature->SummonCreature(MOB_FOG_OF_CORRUPTION, posFog[0], posFog[1], posFog[2], 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
                     Fog->CastSpell(Fog, SPELL_FOG_TRIGGER, true);
-                if((side && !counter) || (!side && counter == (path ? (path%2 ? 7 : 24) : 14)))
+                if((side && !counter) || (!side && counter == (path ? (path%2 ? 14 : 15) : 6)))
                     Timer[EVENT_SUMMON_FOG] = 0;
                 else
                 {
                     side ? counter-- : counter++;
-                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 8 : 25) : 15));  // check this timer
+                    Timer[EVENT_SUMMON_FOG] = (6000/(path ? (path%2 ? 15 : 16) : 7));  // check this timer
                 }
                 break;
         }
