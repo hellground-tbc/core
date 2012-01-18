@@ -5725,7 +5725,8 @@ int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, float *mul
 
             if (m_damage > 0)
             {
-                if (IsAreaEffectTarget[m_spellInfo->EffectImplicitTargetA[i]] || IsAreaEffectTarget[m_spellInfo->EffectImplicitTargetB[i]])
+                if (IsAreaEffectTarget[m_spellInfo->EffectImplicitTargetA[i]] || IsAreaEffectTarget[m_spellInfo->EffectImplicitTargetB[i]]
+                    || m_spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY)
                 {
                     if (int32 reducedPct = unit->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE))
                         m_damage = m_damage * (100 + reducedPct) / 100;
