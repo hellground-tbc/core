@@ -62,7 +62,7 @@ bool Guild::create(uint64 lGuid, std::string gname)
     if (objmgr.GetGuildByName(gname))
         return false;
 
-    sLog.outDebug("GUILD: creating guild %s to leader: %u", gname.c_str(), GUID_LOPART(lGuid));
+    sLog.outSpecial("GUILD: creating guild %s to leader: %u", gname.c_str(), GUID_LOPART(lGuid));
 
     leaderGuid = lGuid;
     name = gname;
