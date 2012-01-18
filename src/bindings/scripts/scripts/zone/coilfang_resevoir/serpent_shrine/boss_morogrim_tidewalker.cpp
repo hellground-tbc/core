@@ -164,6 +164,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                 {
                     Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
                     Creature* Murloc = m_creature->SummonCreature(MurlocCords[i][0], MurlocCords[i][1], MurlocCords[i][2], MurlocCords[i][3], MurlocCords[i][4], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+
                     if (target && Murloc)
                     {
                         Murloc->setActive(true);
@@ -200,7 +201,6 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                 for (std::list<Unit*>::const_iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
                     (*itr)->CastSpell(*itr, wateryGraves[i++], true);
 
-
                 DoScriptText(RAND(SAY_SUMMON_BUBL1, SAY_SUMMON_BUBL2), m_creature);
                 DoScriptText(EMOTE_WATERY_GRAVE, m_creature);
                 WateryGrave_Timer = 30000;
@@ -209,7 +209,7 @@ struct TRINITY_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                 WateryGrave_Timer -= diff;
 
             //Start Phase2
-            if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 25)
+            if (HealthBelowPct(25))
                 Phase2 = true;
         }
         else
@@ -253,8 +253,8 @@ struct TRINITY_DLL_DECL mob_water_globuleAI : public ScriptedAI
     {
         Check_Timer = 1000;
 
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->setFaction(14);
     }
 
@@ -281,7 +281,7 @@ struct TRINITY_DLL_DECL mob_water_globuleAI : public ScriptedAI
 
         if (Check_Timer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(&wLoc, 75.0f))
+            if (!m_creature->IsWithinDistInMap(&wLoc, 85.0f))
             {
                 m_creature->ForcedDespawn();
                 return;
@@ -293,7 +293,7 @@ struct TRINITY_DLL_DECL mob_water_globuleAI : public ScriptedAI
                 m_creature->ForcedDespawn();
             }
 
-            Check_Timer = 500;
+            Check_Timer = 1000;
         }
         else
             Check_Timer -= diff;
