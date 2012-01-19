@@ -62,32 +62,37 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
     //primitive path-finding
     for (uint8 i = 0; i < 8; ++i)
     {
-        switch (urand(0, 7))
+        angle = i_cur_angle;
+
+        if (roll_chance_i(33))
         {
-            case 0:
-                angle = i_cur_angle;
-                break;
-            case 1:
-                angle = i_cur_angle + M_PI/4.0f;
-                break;
-            case 2:
-                angle = i_cur_angle + M_PI/2.0f;
-                break;
-            case 3:
-                angle = i_cur_angle - M_PI/4.0f;
-                break;
-            case 4:
-                angle = i_cur_angle - M_PI/2.0f;
-                break;
-            case 5:
-                angle = i_cur_angle + M_PI*3/4.0f;
-                break;
-            case 6:
-                angle = i_cur_angle - M_PI*3/4.0f;
-                break;
-            case 7:
-                angle = i_cur_angle + M_PI;
-                break;
+            switch (urand(0, 7))
+            {
+                case 0:
+                    angle = i_cur_angle;
+                    break;
+                case 1:
+                    angle = i_cur_angle + M_PI/4.0f;
+                    break;
+                case 2:
+                    angle = i_cur_angle + M_PI/2.0f;
+                    break;
+                case 3:
+                    angle = i_cur_angle - M_PI/4.0f;
+                    break;
+                case 4:
+                    angle = i_cur_angle - M_PI/2.0f;
+                    break;
+                case 5:
+                    angle = i_cur_angle + M_PI*3/4.0f;
+                    break;
+                case 6:
+                    angle = i_cur_angle - M_PI*3/4.0f;
+                    break;
+                case 7:
+                    angle = i_cur_angle + M_PI;
+                    break;
+            }
         }
 
         // destination point
