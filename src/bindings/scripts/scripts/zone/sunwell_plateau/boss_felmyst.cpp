@@ -616,6 +616,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         else
             PulseCombat -= diff;
 
+        // use enrage timer both phases
+        if(Timer[EVENT_BERSERK] <= diff)
+            ProcessEvent(EVENT_BERSERK);
+        else
+            Timer[EVENT_BERSERK] -= diff;
+
         if(Phase == PHASE_GROUND || Phase == PHASE_NULL)
         {
             for(uint32 i = 1; i <= 7; i++)
