@@ -2152,6 +2152,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     break;
                 case 43657:
                     unitList.remove_if(Trinity::UnitAuraCheck(true, 44007));
+                    unitList.remove_if(Trinity::UnitAuraCheck(true, 43648));
                     break;
                 case 28062:     // Positive Charge
                 case 39090:
