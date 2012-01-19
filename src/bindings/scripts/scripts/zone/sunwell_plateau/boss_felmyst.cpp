@@ -624,7 +624,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
         if(Phase == PHASE_GROUND || Phase == PHASE_NULL)
         {
-            for(uint32 i = 1; i <= 7; i++)
+            for(uint32 i = 2; i <= 7; i++)
             {
                 if(Timer[i])
                 {
