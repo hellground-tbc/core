@@ -273,7 +273,7 @@ Unit::Unit() :
     m_attackTimer[BASE_ATTACK]   = 0;
     m_attackTimer[OFF_ATTACK]    = 0;
     m_attackTimer[RANGED_ATTACK] = 0;
-    
+
     m_modAttackSpeedPct[BASE_ATTACK]   = 1.0f;
     m_modAttackSpeedPct[OFF_ATTACK]    = 1.0f;
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
@@ -315,7 +315,7 @@ Unit::Unit() :
         m_auraModifiersGroup[i][TOTAL_VALUE] = 0.0f;
         m_auraModifiersGroup[i][TOTAL_PCT] = 1.0f;
     }
-    
+
     // implement 50% base damage from offhand
     m_auraModifiersGroup[UNIT_MOD_DAMAGE_OFFHAND][TOTAL_PCT] = 0.5f;
 
@@ -12045,9 +12045,8 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         pThis->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
     {
-        DestroyForNearbyPlayers();
         Relocate(x, y, z);
-        UpdateObjectVisibility(true);
+        SendHeartBeat();
     }
 }
 
@@ -13099,7 +13098,7 @@ void Unit::SendCombatStats(const char* format, Unit *pVictim, ...) const
     Player *target = GetGMToSendCombatStats();
     if(!target)
         return;
-    
+
     va_list ap;
     char str[1024], message[1024];
     va_start(ap, format);
@@ -13110,15 +13109,15 @@ void Unit::SendCombatStats(const char* format, Unit *pVictim, ...) const
         snprintf("Combat result for %s (%ld). %s", 1024, GetName(), GetGUID(), str);
 
     va_end(ap);
-    
+
     WorldPacket data;
     uint32 messageLength = (message ? strlen(message) : 0) + 1;
 
     data.Initialize(SMSG_MESSAGECHAT, 100);                // guess size
     data << uint8(CHAT_MSG_SYSTEM);
     data << uint32(LANG_UNIVERSAL);
-    data << uint64(0);                           
-    data << uint32(0);                           
+    data << uint64(0);
+    data << uint32(0);
     data << uint64(0);
     data << uint32(messageLength);
     data << message;
