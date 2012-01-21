@@ -158,7 +158,7 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 ShatterTimer = 0;
 
                 //The dummy shatter spell is cast
-                ForceSpellCastWithScriptText(SPELL_SHATTER, CAST_NULL, RAND(SAY_SHATTER1, SAY_SHATTER2));
+                ForceSpellCastWithScriptText(SPELL_SHATTER, CAST_SELF, RAND(SAY_SHATTER1, SAY_SHATTER2));
             }
             else
                 ShatterTimer -= diff;
