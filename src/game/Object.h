@@ -147,7 +147,6 @@ class TRINITY_DLL_SPEC Object
 
         void BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) const;
         void BuildOutOfRangeUpdateBlock(UpdateData *data) const;
-        void BuildMovementUpdateBlock(UpdateData * data, uint32 flags = 0) const;
 
         virtual void DestroyForPlayer(Player *target) const;
 
@@ -314,6 +313,7 @@ class TRINITY_DLL_SPEC Object
         virtual void _SetUpdateBits(UpdateMask *updateMask, Player *target) const;
 
         virtual void _SetCreateBits(UpdateMask *updateMask, Player *target) const;
+
         void BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const;
         void BuildValuesUpdate(uint8 updatetype, ByteBuffer *data, UpdateMask *updateMask, Player *target) const;
 

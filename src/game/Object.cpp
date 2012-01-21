@@ -129,33 +129,19 @@ void Object::_Create(uint32 guidlow, uint32 entry, HighGuid guidhigh)
     m_PackGUID.Set(guid);
 }
 
-void Object::BuildMovementUpdateBlock(UpdateData * data, uint32 flags) const
-{
-    ByteBuffer buf(500);
-
-    buf << uint8(UPDATETYPE_MOVEMENT);
-    buf << GetGUID();
-
-    BuildMovementUpdate(&buf, flags);
-
-    data->AddUpdateBlock(buf);
-}
-
 void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const
 {
     if (!target)
-    {
         return;
-    }
 
-    uint8  updatetype = UPDATETYPE_CREATE_OBJECT;
-    uint8  flags      = m_updateFlag;
+    uint8 updatetype   = UPDATETYPE_CREATE_OBJECT;
+    uint8 updateFlags  = m_updateFlag;
 
     /** lower flag1 **/
-    if (target == this)                                      // building packet for oneself
-        flags |= UPDATEFLAG_SELF;
+    if (target == this)                                      // building packet for yourself
+        updateFlags |= UPDATEFLAG_SELF;
 
-    if (flags & UPDATEFLAG_HAS_POSITION)
+    if (updateFlags & UPDATEFLAG_HAS_POSITION)
     {
         // UPDATETYPE_CREATE_OBJECT2 dynamic objects, corpses...
         if (isType(TYPEMASK_DYNAMICOBJECT) || isType(TYPEMASK_CORPSE) || isType(TYPEMASK_PLAYER))
@@ -177,21 +163,27 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
                     updatetype = UPDATETYPE_CREATE_OBJECT2;
                     break;
                 case GAMEOBJECT_TYPE_TRANSPORT:
-                    flags |= UPDATEFLAG_TRANSPORT;
+                    updateFlags |= UPDATEFLAG_TRANSPORT;
+                    break;
+                default:
                     break;
             }
         }
+
+        if (isType(TYPEMASK_UNIT))
+        {
+            if (((Unit*)this)->getVictim())
+                updateFlags |= UPDATEFLAG_HAS_ATTACKING_TARGET;
+        }
     }
 
-    //sLog.outDebug("BuildCreateUpdate: update-type: %u, object-type: %u got flags: %X, flags2: %X", updatetype, m_objectTypeId, flags, flags2);
-
     ByteBuffer buf(500);
-    buf << (uint8)updatetype;
+    buf << uint8(updatetype);
     //buf.append(GetPackGUID());    //client crashes when using this
-    buf << (uint8)0xFF << GetGUID();
-    buf << (uint8)m_objectTypeId;
+    buf << uint8(0xFF) << GetGUID();
+    buf << uint8(m_objectTypeId);
 
-    BuildMovementUpdate(&buf, flags);
+    BuildMovementUpdate(&buf, updateFlags);
 
     UpdateMask updateMask;
     updateMask.SetCount(m_valuesCount);
@@ -202,24 +194,22 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
 
 void Object::SendCreateUpdateToPlayer(Player* player)
 {
-     // send create update to player
+    // send create update to player
     UpdateData upd;
     WorldPacket packet;
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
     upd.BuildPacket(&packet);
     player->GetSession()->SendPacket(&packet);
-
-    // now object updated/(create updated)
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) const
 {
     ByteBuffer buf(500);
 
-    buf << (uint8) UPDATETYPE_VALUES;
+    buf << uint8(UPDATETYPE_VALUES);
     //buf.append(GetPackGUID());    //client crashes when using this. but not have crash in debug mode
-    buf << (uint8)0xFF;
+    buf << uint8(0xFF);
     buf << GetGUID();
 
     UpdateMask updateMask;
@@ -574,7 +564,6 @@ void Object::ClearUpdateMask(bool remove)
         m_objectUpdated = false;
     }
 }
-
 
 bool Object::LoadValues(const char* data)
 {
