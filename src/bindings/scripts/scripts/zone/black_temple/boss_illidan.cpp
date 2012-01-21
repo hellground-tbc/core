@@ -1669,7 +1669,9 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
 
         m_owner = 0;
         check_timer = 2000;
+
         m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_FIRE);
+        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
     }
 
     void EnterCombat(Unit *pWho)
