@@ -1289,7 +1289,7 @@ void Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castI
         return;
     }
 
-    if (!(spellInfo->Targets & (TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK)))
+    if (!(spellInfo->Targets & (TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_OBJECT_UNK)))
     {
         sLog.outError("CastSpell: spell id %i by caster: %s %u) is not gameobject spell", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
         return;
@@ -1477,6 +1477,11 @@ void Unit::DealSpellDamage(SpellDamageLog *damageInfo, bool durabilityLoss)
     {
         const AreaTableEntry *area = GetAreaEntryByAreaID(((Player*)pVictim)->GetCachedArea());
         if (area && area->flags & 0x800)                     //sanctuary
+            return;
+
+        // prevent cross-zone attack: caster in sanctuary, victim not
+        area = GetAreaEntryByAreaID(((Player*)this)->GetCachedArea());
+        if (area && area->flags & 0x800)
             return;
     }
 

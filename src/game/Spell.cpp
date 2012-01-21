@@ -136,7 +136,7 @@ void SpellCastTargets::setGOTarget(GameObject *target)
 {
     m_GOTarget = target;
     m_GOTargetGUID = target->GetGUID();
-    //    m_targetMask |= TARGET_FLAG_OBJECT;
+    m_targetMask |= TARGET_FLAG_GAMEOBJECT;
 }
 
 void SpellCastTargets::setItemTarget(Item* item)
@@ -190,7 +190,7 @@ void SpellCastTargets::read(ByteBuffer& data, Unit *caster)
     if (m_targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_UNK2))
         data >> m_unitTargetGUID.ReadAsPacked();
 
-    if (m_targetMask & (TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK))
+    if (m_targetMask & (TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_OBJECT_UNK))
         data >> m_GOTargetGUID.ReadAsPacked();
 
     if ((m_targetMask & (TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM)) && caster->GetTypeId() == TYPEID_PLAYER)
@@ -226,7 +226,7 @@ void SpellCastTargets::write (ByteBuffer& data) const
 {
     data << uint32(m_targetMask);
 
-    if (m_targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_PVP_CORPSE | TARGET_FLAG_OBJECT | TARGET_FLAG_CORPSE | TARGET_FLAG_UNK2))
+    if (m_targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_PVP_CORPSE | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE | TARGET_FLAG_UNK2))
     {
         if (m_targetMask & TARGET_FLAG_UNIT)
         {
@@ -235,7 +235,7 @@ void SpellCastTargets::write (ByteBuffer& data) const
             else
                 data << uint8(0);
         }
-        else if (m_targetMask & (TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK))
+        else if (m_targetMask & (TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_OBJECT_UNK))
         {
             if (m_GOTarget)
                 data << m_GOTarget->GetPackGUID();
@@ -357,7 +357,7 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
     m_needAliveTargetMask = 0;
 
     // determine reflection
-    m_canReflect = m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !(m_spellInfo->Attributes & SPELL_ATTR_ABILITY) 
+    m_canReflect = m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !(m_spellInfo->Attributes & SPELL_ATTR_ABILITY)
                && !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_BE_REFLECTED) && !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
                && !IsPassiveSpell(m_spellInfo) && !IsPositiveSpell(m_spellInfo->Id);
 
@@ -390,6 +390,7 @@ void Spell::FillTargetMap()
 
         if (targetA)
             SetTargetMap(i, targetA);
+
         if (targetB) // In very rare case !A && B
             SetTargetMap(i, targetB);
 
@@ -1712,7 +1713,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         case TARGET_TYPE_UNIT_NEARBY:
         {
             float range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
-            
+
             // limit check range for some spells
             if(range > 400)
                 range = 400;

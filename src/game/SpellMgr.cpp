@@ -2768,7 +2768,7 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         /* SHAMAN CUSTOM ATTRIBUTES */
         case 2895:                      // Wrath of Air Totem - disallow weird stacking
-            spellInfo->EffectImplicitTargetA[0] = spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER; 
+            spellInfo->EffectImplicitTargetA[0] = spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
             spellInfo->EffectImplicitTargetB[0] = spellInfo->EffectImplicitTargetB[1] = 0;
             break;
         // Triggered spells that should be delayed
@@ -2818,7 +2818,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 38054:
             spellInfo->MaxAffectedTargets = 10;
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENTRY_SRC;
-            spellInfo->Targets = TARGET_FLAG_OBJECT & TARGET_FLAG_DEST_LOCATION;
+            spellInfo->Targets = TARGET_FLAG_GAMEOBJECT & TARGET_FLAG_DEST_LOCATION;
             spellInfo->EffectMiscValue[0] = 0;
             break;
         case 33824:
