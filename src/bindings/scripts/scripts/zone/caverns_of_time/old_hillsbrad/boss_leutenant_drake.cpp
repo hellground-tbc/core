@@ -94,7 +94,12 @@ static Location DrakeWP[]=
 
 struct TRINITY_DLL_DECL boss_lieutenant_drakeAI : public ScriptedAI
 {
-    boss_lieutenant_drakeAI(Creature *c) : ScriptedAI(c) {}
+    boss_lieutenant_drakeAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance * pInstance;
 
     bool CanPatrol;
     uint32 wpId;
@@ -128,6 +133,11 @@ struct TRINITY_DLL_DECL boss_lieutenant_drakeAI : public ScriptedAI
     void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (pInstance->GetData(DATA_DRAKE_DEATH) == DONE)
+            m_creature->SetLootRecipient(NULL);
+        else
+            pInstance->SetData(DATA_DRAKE_DEATH, DONE);
     }
 
     void UpdateAI(const uint32 diff)

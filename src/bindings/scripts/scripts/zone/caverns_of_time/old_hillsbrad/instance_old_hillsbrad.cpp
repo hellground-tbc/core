@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_old_hillsbrad.h"
 
-#define ENCOUNTERS      6
+#define ENCOUNTERS      9
 
 #define THRALL_ENTRY    17876
 #define TARETHA_ENTRY   18887
@@ -57,6 +57,14 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
 
         for (uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounter[i] = NOT_STARTED;
+    }
+
+    bool IsEncounterInProgress() const
+    {
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounter[i] == IN_PROGRESS)
+                return true;
+        return false;
     }
 
     Player* GetPlayerInMap()
@@ -192,7 +200,22 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
                 Encounter[5] = data;
                  debug_log("TSCR: Instance Old Hillsbrad: Thrall event part IV adjusted to data %u.",data);
                 break;
+            case DATA_SKARLOC_DEATH:
+                if (Encounter[6] != DONE)
+                    Encounter[6] = data;
+                break;
+            case DATA_DRAKE_DEATH:
+                if (Encounter[7] != DONE)
+                    Encounter[7] = data;
+                break;
+            case DATA_EPOCH_DEATH:
+                if (Encounter[8] != DONE)
+                    Encounter[8] = data;
+                break;
         }
+
+        if (data == DONE)
+            SaveToDB();
     }
 
     uint32 GetData(uint32 data)
@@ -211,7 +234,14 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
                 return Encounter[4];
             case TYPE_THRALL_PART4:
                 return Encounter[5];
+            case DATA_SKARLOC_DEATH:
+                return Encounter[6];
+            case DATA_DRAKE_DEATH:
+                return Encounter[7];
+            case DATA_EPOCH_DEATH:
+                return Encounter[8];
         }
+
         return 0;
     }
 
@@ -228,7 +258,50 @@ struct TRINITY_DLL_DECL instance_old_hillsbrad : public ScriptedInstance
         }
         return 0;
     }
+
+    std::string GetSaveData()
+    {
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2] << " ";
+        stream << Encounter[3] << " ";
+        stream << Encounter[4] << " ";
+        stream << Encounter[5] << " ";
+        stream << Encounter[6] << " ";
+        stream << Encounter[7] << " ";
+        stream << Encounter[8];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
+    }
+
+    void Load(const char* in)
+    {
+        if(!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(in);
+
+        std::istringstream stream(in);
+        stream  >> Encounter[0] >> Encounter[1] >> Encounter[2]
+                >> Encounter[3] >> Encounter[4] >> Encounter[5]
+                >> Encounter[6] >> Encounter[7] >> Encounter[8];
+
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounter[i] == IN_PROGRESS)        // Do not load an encounter as "In Progress" - reset it instead.
+                Encounter[i] = NOT_STARTED;
+
+        OUT_LOAD_INST_DATA_COMPLETE;
+    }
 };
+
 InstanceData* GetInstanceData_instance_old_hillsbrad(Map* map)
 {
     return new instance_old_hillsbrad(map);

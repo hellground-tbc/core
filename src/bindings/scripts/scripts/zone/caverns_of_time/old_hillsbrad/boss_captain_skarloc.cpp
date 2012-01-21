@@ -92,8 +92,13 @@ struct TRINITY_DLL_DECL boss_captain_skarlocAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        if (pInstance && pInstance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS)
+        if (pInstance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS)
             pInstance->SetData(TYPE_THRALL_PART1, DONE);
+
+        if (pInstance->GetData(DATA_SKARLOC_DEATH) == DONE)
+            m_creature->SetLootRecipient(NULL);
+        else
+            pInstance->SetData(DATA_SKARLOC_DEATH, DONE);
     }
 
     void UpdateAI(const uint32 diff)
