@@ -558,12 +558,12 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
             case EVENT_CORROSION:
                 AddSpellToCast(m_creature->getVictim(), SPELL_CORROSION);
-                // gas nova should only be used 2 times in phase 1
-                Timer[EVENT_CORROSION] =(Timer[EVENT_FLIGHT] <= 21000)?40000:urand(20000, 30000);
+                Timer[EVENT_CORROSION] = urand(20000, 30000);
                 break;
             case EVENT_GAS_NOVA:
                 AddSpellToCastWithScriptText(m_creature, SPELL_GAS_NOVA, YELL_BREATH);
-                Timer[EVENT_GAS_NOVA] = urand(20000, 25000);
+                // gas nova should only be used 2 times in phase 1
+                Timer[EVENT_GAS_NOVA] =(Timer[EVENT_FLIGHT] <= 20000)?40000:urand(20000, 25000);
                 break;
             case EVENT_ENCAPSULATE:
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))

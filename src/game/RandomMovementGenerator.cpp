@@ -75,7 +75,7 @@ void RandomMovementGenerator<Creature>::Finalize(Creature &creature)
 template<>
 bool RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff)
 {
-    if (creature.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED | UNIT_STAT_DIED))
+    if (creature.hasUnitState(UNIT_STAT_CASTING | UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED | UNIT_STAT_DIED))
     {
         i_nextMoveTime.Reset(0);  // Expire the timer
         creature.clearUnitState(UNIT_STAT_ROAMING_MOVE);

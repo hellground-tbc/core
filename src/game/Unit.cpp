@@ -8609,9 +8609,6 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                 // Prayer of Mending - 42.86%
                 if (spellProto->Id == 41635)
                     CastingTime = 1500;
-                // Gift of Naaru - 100%
-                if (spellProto->Id == 28880)
-                    CastingTime = 3500;
                 break;
             case SPELLFAMILY_PALADIN:
                 // Seal and Judgement of Light
@@ -9408,6 +9405,19 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
 {
     if (m_invisibilityMask & u->m_invisibilityMask) // same group
         return true;
+
+    if(m_invisibilityMask == 1) // normal invisibility
+    {
+        uint32 invLevel = 0;
+        Unit::AuraList const& iAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
+        for (Unit::AuraList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
+            if (invLevel < (*itr)->GetModifier()->m_amount)
+                invLevel = (*itr)->GetModifier()->m_amount;
+        // creatures with greater visibility can see other creatures
+        if(invLevel >= 300)
+            return true;
+    }
+
     AuraList const& auras = u->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
     for (AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
         if ((*iter)->GetCasterGUID()==GetGUID())

@@ -756,16 +756,446 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
     * Blazing Infernal
     * Felguard Slayer
     * Shadowsword Assassin
+    * Shadowsword Commander
+    * Shadowsword Deathbringer - gauntlet
     * Shadowsword Lifeshaper
     * Shadowsword Manafiend
     * Shadowsword Soulbinder
     * Shadowsword Vanquisher
-    * Unyielding Dead
+    * Volatile Fiend - gauntlet
 */
 
 /****************
 * Blazing Infernal - id
 *****************/
+
+/****************
+* Felguard Slayer - id
+*****************/
+
+/****************
+* Shadowsword Assassin - id 25484
+*****************/
+
+enum ShadowswordAssassin
+{
+    SPELL_ASSASSINS_MARK            = 46459,
+    SPELL_AIMED_SHOT                = 46460,    // not clear if  & when used?
+    SPELL_GREATER_INVISIBILITY      = 16380,
+    SPELL_SHADOWSTEP                = 46463
+};
+
+struct TRINITY_DLL_DECL mob_shadowsword_assassinAI : public ScriptedAI
+{
+    mob_shadowsword_assassinAI(Creature *c) : ScriptedAI(c) { }
+
+    uint32 Shadowstep;
+
+    void Reset()
+    {
+        ClearCastQueue();
+        Shadowstep = urand(10000, 20000);
+        DoCast(me, SPELL_GREATER_INVISIBILITY, true);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(who->GetTypeId() != TYPEID_PLAYER || me->getVictim() || me->IsInEvadeMode())
+            return;
+
+        if(me->IsWithinDistInMap(who, 15))
+        {
+            Map::PlayerList const &plList = me->GetMap()->GetPlayers();
+            if (plList.isEmpty())
+                return;
+
+            for (Map::PlayerList::const_iterator i = plList.begin(); i != plList.end(); ++i)
+            {
+                if (Player* plr = i->getSource())
+                {
+                    if (plr->isGameMaster() || plr->IsFriendlyTo(me))
+                        continue;
+                    if (plr->isAlive() && me->IsWithinDistInMap(plr, 35))
+                    {
+                        DoCast(plr, SPELL_ASSASSINS_MARK, true);
+                        DoCast(plr, SPELL_SHADOWSTEP);
+                        AttackStart(plr);
+                    }
+                }
+            }
+        }
+    }
+
+    void EnterCombat(Unit* who) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Shadowstep < diff)
+        {
+            AddSpellToCast(SPELL_SHADOWSTEP, CAST_TANK);
+            Shadowstep = urand(10000, 20000);
+        }
+        else
+            Shadowstep -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowsword_assassin(Creature *_Creature)
+{
+    return new mob_shadowsword_assassinAI(_Creature);
+}
+
+/****************
+* Shadowsword Commander - id 25837
+
+  Immunities: 
+
+*****************/
+
+enum ShadowswordCommander
+{
+    SPELL_BATTLE_SHOUT              = 46763,
+    SPELL_SHIELD_SLAM               = 46762
+};
+
+/****************
+* Shadowsword Deathbringer - id 25485
+
+  Immunities: 
+
+*****************/
+
+enum ShadowswordDeathbringer
+{
+    SPELL_DISEASE_BUFFET            = 46481,
+    SPELL_VOLATILE_DISEASE          = 46483
+};
+
+/****************
+* Shadowsword Lifeshaper - id 25506
+
+  Immunities: 
+
+*****************/
+
+enum ShadowswordLifeshaper
+{
+    SPELL_DRAIN_LIFE                = 46466,
+    SPELL_HEALTH_FUNNEL             = 46467,
+};
+
+struct TRINITY_DLL_DECL mob_shadowsword_lifeshaperAI : public ScriptedAI
+{
+    mob_shadowsword_lifeshaperAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+
+    uint32 DrainLife;
+    uint32 HealthFunnel;
+    bool canFunnelHP;
+
+    void Reset()
+    {
+        ClearCastQueue();
+        DrainLife = (4000, 10000);
+        HealthFunnel = 8000;
+        canFunnelHP = true;
+    }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(!canFunnelHP)
+        {
+            if(HealthFunnel < diff)
+                canFunnelHP = true;
+            else
+                HealthFunnel -= diff;
+        }
+
+        if(Unit* healTarget = SelectLowestHpFriendly(25, 50000))
+        {
+            if(!HealthBelowPct(35) && canFunnelHP)
+            {
+                AddSpellToCast(healTarget, SPELL_HEALTH_FUNNEL);
+                canFunnelHP = false;
+                HealthFunnel = 8000;
+            }
+        }
+
+        if(DrainLife < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true))
+                AddSpellToCast(target, SPELL_DRAIN_LIFE);
+            DrainLife = urand(10000,15000);
+        }
+        else
+            DrainLife -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowsword_lifeshaper(Creature *_Creature)
+{
+    return new mob_shadowsword_lifeshaperAI(_Creature);
+}
+
+/****************
+* Shadowsword Manafiend - id 25483
+
+  Immunities: stun
+
+*****************/
+
+enum ShadowswordManafiend
+{
+    SPELL_ARCANE_EXPLOSION_2        = 46457,
+    SPELL_CHILLING_TOUCH_AURA       = 46744,
+    SPELL_DRAIN_MANA                = 46453
+};
+
+struct TRINITY_DLL_DECL mob_shadowsword_manafiendAI : public ScriptedAI
+{
+    mob_shadowsword_manafiendAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+
+    uint32 ArcaneExplosion;
+    uint32 DrainMana;
+    uint32 CheckTimer;
+
+    void Reset()
+    {
+        ClearCastQueue();
+        DoCast(me, SPELL_CHILLING_TOUCH_AURA);
+        SetAutocast(SPELL_ARCANE_EXPLOSION_2, 2600, false, CAST_NULL);
+        DrainMana = RAND(8000, 12000);
+        CheckTimer = 1000;
+    }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(CheckTimer < diff)
+        {
+            if(me->IsWithinDistInMap(me->getVictim(), 15))
+                StartAutocast();
+            else
+                StopAutocast();
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
+
+        if(DrainMana < diff)
+        {
+            AddSpellToCast(SPELL_DRAIN_MANA, CAST_NULL);
+            DrainMana = RAND(8000, 12000);
+        }
+        else
+            DrainMana -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowsword_manafiend(Creature *_Creature)
+{
+    return new mob_shadowsword_manafiendAI(_Creature);
+}
+
+/****************
+* Shadowsword Soulbinder - id 25373
+
+  Immunities: polymorph, ?
+
+*****************/
+
+enum ShadowswordSoulbinder
+{
+    SPELL_CURSE_OF_EXHAUSTION       = 46434,
+    SPELL_DOMINATION                = 46427,
+    SPELL_FLASH_OF_DARKNESS         = 46442
+};
+
+struct TRINITY_DLL_DECL mob_shadowsword_soulbinderAI : public ScriptedAI
+{
+    mob_shadowsword_soulbinderAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+
+    uint32 CurseOfExhaustion;
+    uint32 Domination;
+    uint32 FlashOfDarkness;
+
+    void Reset()
+    {
+        ClearCastQueue();
+        CurseOfExhaustion = urand(4000, 8000);
+        Domination = urand(6000, 10000);
+        FlashOfDarkness = urand(2000, 4000);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(CurseOfExhaustion < diff)
+        {
+            AddSpellToCast(SPELL_BRUTAL_STRIKE, CAST_TANK);
+            CurseOfExhaustion = urand(5000,11000);
+        }
+        else
+            CurseOfExhaustion -= diff;
+
+        if(Domination < diff)
+        {
+            AddSpellToCast(SPELL_CLEAVE, CAST_TANK);
+            Domination = urand(4000, 9000);
+        }
+        else
+            Domination -= diff;
+
+        if(FlashOfDarkness < diff)
+        {
+            AddSpellToCast(SPELL_MORTAL_STRIKE, CAST_TANK);
+            FlashOfDarkness = urand(8000, 15000);
+        }
+        else
+            FlashOfDarkness -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowsword_soulbinder(Creature *_Creature)
+{
+    return new mob_shadowsword_soulbinderAI(_Creature);
+}
+
+/****************
+* Shadowsword Vanquisher - id 25486
+
+  Immunities: 
+
+*****************/
+
+enum ShadowswordVanquisher
+{
+    SPELL_CLEAVE_2                  = 46468,
+    SPELL_MELT_AROMOR               = 46469
+};
+
+struct TRINITY_DLL_DECL mob_shadowsword_vanquisherAI : public ScriptedAI
+{
+    mob_shadowsword_vanquisherAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+
+    uint32 Cleave;
+    uint32 MeltArmor;
+
+    void Reset()
+    {
+        ClearCastQueue();
+        Cleave = urand(5000, 16000);
+        MeltArmor = urand(3000, 10000);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(MeltArmor < diff)
+        {
+            AddSpellToCast(SPELL_MELT_AROMOR, CAST_TANK);
+            MeltArmor = urand(8000, 16000);
+        }
+        else
+            MeltArmor -= diff;
+
+        if(Cleave < diff)
+        {
+            AddSpellToCast(SPELL_CLEAVE_2, CAST_TANK);
+            Cleave = urand(4000, 9000);
+        }
+        else
+            Cleave -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowsword_vanquisher(Creature *_Creature)
+{
+    return new mob_shadowsword_vanquisherAI(_Creature);
+}
+
+/****************
+* Volatile Fiend - id 25486
+
+  Immunities: 
+
+*****************/
+
+enum VolatileFiend
+{
+    SPELL_BURNING_WINGS             = 46308,
+    SPELL_BURNING_DESTRUCTION       = 47287,
+    SPELL_FELFIRE_FISSION           = 45779 // used in KJ fight?
+};
 
 /* ============================
 *
@@ -852,5 +1282,31 @@ void AddSC_sunwell_plateau_trash()
     newscript = new Script;
     newscript->Name = "mob_sunblade_vindicator";
     newscript->GetAI = &GetAI_mob_sunblade_vindicator;
+    newscript->RegisterSelf();
+
+    // Eredar Twins
+    newscript = new Script;
+    newscript->Name = "mob_shadowsword_assassin";
+    newscript->GetAI = &GetAI_mob_shadowsword_assassin;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowsword_lifeshaper";
+    newscript->GetAI = &GetAI_mob_shadowsword_lifeshaper;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowsword_manafiend";
+    newscript->GetAI = &GetAI_mob_shadowsword_manafiend;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowsword_soulbinder";
+    newscript->GetAI = &GetAI_mob_shadowsword_soulbinder;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowsword_vanquisher";
+    newscript->GetAI = &GetAI_mob_shadowsword_vanquisher;
     newscript->RegisterSelf();
 }
