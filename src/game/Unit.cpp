@@ -11419,6 +11419,7 @@ void Unit::StopMoving()
     Movement::MoveSplineInit init(*this);
     init.SetFacing(GetOrientation());
     init.Launch();
+    DisableSpline();
 }
 
 bool Unit::IsSitState() const
