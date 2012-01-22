@@ -878,7 +878,7 @@ enum ShadowswordCommander
 
 *****************/
 
-enum ShadowswordCommander
+enum ShadowswordDeathbringer
 {
     SPELL_DISEASE_BUFFET            = 46481,
     SPELL_VOLATILE_DISEASE          = 46483
