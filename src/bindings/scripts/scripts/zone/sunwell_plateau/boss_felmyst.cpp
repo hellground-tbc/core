@@ -568,6 +568,8 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
             case EVENT_ENCAPSULATE:
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))
                 {
+                    ClearCastQueue();
+                    me->SetSelection(target);
                     AddSpellToCast(target, SPELL_ENCAPSULATE_CHANNEL, false, true);
                     Timer[EVENT_ENCAPSULATE] = urand(22000, 35000);
                     if(Timer[EVENT_FLIGHT] < 7000)
