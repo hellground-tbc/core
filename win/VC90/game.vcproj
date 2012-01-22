@@ -1115,6 +1115,62 @@
 				RelativePath="..\..\src\game\WaypointMovementGenerator.h"
 				>
 			</File>
+			<Filter
+				Name="SplineMovement"
+				>
+				<File
+					RelativePath="..\..\src\game\movement\MoveSpline.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\MoveSpline.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\MoveSplineFlag.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\MoveSplineInit.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\MoveSplineInit.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\MoveSplineInitArgs.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\packet_builder.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\packet_builder.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\spline.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\spline.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\spline.impl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\typedefs.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movement\util.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Spells/Skills"

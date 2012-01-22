@@ -37,7 +37,7 @@ enum SapphironSpells
     SPELL_FROST_AURA        = 28531,
     SPELL_LIFE_DRAIN        = 28542,
     SPELL_BLIZZARD          = 28547,
-    SPELL_BESERK            = 26662
+    SPELL_BERSERK           = 26662
 };
 
 enum SapphironEvents
