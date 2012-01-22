@@ -12068,6 +12068,12 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
     {
         Relocate(x, y, z);
         SendHeartBeat();
+
+        if (GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
+        {
+            if (getVictim())
+                GetMotionMaster()->MoveChase(getVictim());
+        }
     }
 }
 
