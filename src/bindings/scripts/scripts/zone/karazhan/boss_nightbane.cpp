@@ -260,7 +260,7 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         if(WaitTimer)
-        if(WaitTimer < diff)
+        if(WaitTimer <= diff)
         {
             if(Intro)
             {
@@ -297,6 +297,8 @@ struct TRINITY_DLL_DECL boss_nightbaneAI : public ScriptedAI
 
         if(!UpdateVictim())
             return;
+
+        DoSpecialThings(diff, DO_PULSE_COMBAT);
 
         if(Flying)
             return;
