@@ -868,7 +868,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
         if (m_combatTimer < diff)
         {
             DoZoneInCombat();
-            me->UpdateSpeed(MOVE_RUN, 2.5f);
+            me->SetSpeed(MOVE_RUN, 2.5f);
 
             if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
                 DoModifyThreatPercent(pAkama, -101);
@@ -1218,7 +1218,7 @@ struct TRINITY_DLL_DECL boss_illidan_akamaAI : public BossAI
                     pIllidan->GetClosePoint(x, y, z, 0.0f, 8.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
 
                     me->Relocate(x, y, z);
-                    me->UpdateObjectVisibility();
+                    me->SendHeartBeat();
                     me->StopMoving();
                 }
                 break;
@@ -1409,7 +1409,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
     void IsSummonedBy(Unit *pSummoner)
     {
         me->Relocate(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() +1.0f);
-        me->UpdateObjectVisibility();
+        me->SendHeartBeat();
 
         ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL);
 
@@ -1471,7 +1471,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 z = 354.519;
 
                 me->Relocate(x, y, z);
-                me->UpdateObjectVisibility();
+                me->SendHeartBeat();
 
                 ForceSpellCast(me, SPELL_MAIEV_TELEPORT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
                 ForceSpellCast(me, SPELL_MAIEV_SUMMON_CAGE_TRAP, INTERRUPT_AND_CAST_INSTANTLY, true);
@@ -1492,7 +1492,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                     z = 354.519;
 
                     me->Relocate(x, y, z);
-                    me->UpdateObjectVisibility();
+                    me->SendHeartBeat();
 
                     me->SetSelection(pIllidan->GetGUID());
                 }
@@ -1707,8 +1707,7 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
         if(check_timer < diff)
         {
             me->SetWalk(false);
-            me->UpdateSpeed(MOVE_RUN, 2.5f);
-            me->UpdateSpeed(MOVE_WALK, 4.5f);       // test?
+            me->SetSpeed(MOVE_RUN, 2.5f);
             check_timer = 2000;
         }
         else
@@ -1727,10 +1726,10 @@ struct TRINITY_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
                     {
                         AttackStart(pTarget);
 
-                        me->UpdateSpeed(MOVE_RUN, 20.0f);
+                        me->SetSpeed(MOVE_RUN, 20.0f);
                         me->CastSpell(pTarget, SPELL_FLAME_CHARGE, true);
 
-                        check_timer = 8000;
+                        check_timer = 5000;
                     }
 
                     if (Creature *pOwner = me->GetMap()->GetCreature(m_owner))
@@ -1789,7 +1788,7 @@ struct TRINITY_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
 
     void MovementInform(uint32 type, uint32 data)
     {
-        if (type != POINT_MOTION_TYPE || data)
+        if (type != POINT_MOTION_TYPE || data != 666)
             return;
 
         if (Unit *pTarget = me->GetUnit(m_targetGUID))

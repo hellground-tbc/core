@@ -805,20 +805,13 @@ void Spell::EffectDummy(uint32 i)
 
                     break;
                 }
-                //
-                case 41232:
-                {
-                    unitTarget->StopMoving();
-                    unitTarget->GetMotionMaster()->MovePoint(6666, unitTarget->GetPositionX() +1.0f, unitTarget->GetPositionY() +1.0f, unitTarget->GetPositionZ());
-                    break;
-                }
                 case 41082:
                 {
                     m_caster->CastSpell(unitTarget, 41083, true);
 
                     float x, y, z;
                     unitTarget->GetClosePoint(x,y,z, 0.0f, 0.0f, unitTarget->GetAngle(m_caster));
-                    m_caster->GetMotionMaster()->MovePoint(0, x, y, z);
+                    m_caster->GetMotionMaster()->MovePoint(666, x, y, z);
 
                     m_caster->CastSpell(unitTarget, 39123, true);
                     break;
