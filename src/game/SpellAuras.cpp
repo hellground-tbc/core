@@ -6504,19 +6504,7 @@ void Aura::HandleAuraAllowFlight(bool apply, bool Real)
     if (!Real)
         return;
 
-    if (m_target->GetTypeId() == TYPEID_UNIT)
-        m_target->SetFlying(apply);
-
-    // allow fly
-    WorldPacket data;
-    if (apply)
-        data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
-    else
-        data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-
-    data << m_target->GetPackGUID();
-    data << uint32(0);                                      // unk
-    m_target->SendMessageToSet(&data, true);
+    m_target->SetFlying(apply);
 }
 
 void Aura::HandleModRating(bool apply, bool Real)
