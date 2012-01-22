@@ -42,10 +42,10 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 
     if (owner.IsNonMeleeSpellCasted(false, false, true))
     {
-        if (!owner.m_currentSpells[CURRENT_GENERIC_SPELL] || owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
+        if (owner.m_currentSpells[CURRENT_GENERIC_SPELL] && owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
             return;
 
-        if (!owner.m_currentSpells[CURRENT_CHANNELED_SPELL] || owner.m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
+        if (owner.m_currentSpells[CURRENT_CHANNELED_SPELL] && owner.m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
             return;
     }
 
@@ -147,9 +147,9 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     if (owner.IsNonMeleeSpellCasted(false, false,  true))
     {
         bool needToStop = false;
-        if (!owner.m_currentSpells[CURRENT_GENERIC_SPELL] || owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
+        if (owner.m_currentSpells[CURRENT_GENERIC_SPELL] && owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
             needToStop = true;
-        else if (!owner.m_currentSpells[CURRENT_CHANNELED_SPELL] || owner.m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
+        else if (owner.m_currentSpells[CURRENT_CHANNELED_SPELL] && owner.m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
             needToStop = true;
 
         if (needToStop)
