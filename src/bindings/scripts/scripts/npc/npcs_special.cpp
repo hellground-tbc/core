@@ -2422,6 +2422,7 @@ struct TRINITY_DLL_DECL npc_land_mineAI : public Scripted_NoMovementAI
 
         int32 damage = urand(394, 507);
         me->CastCustomSpell(me, 27745, &damage, 0, 0, true);
+        me->ForcedDespawn();
     }
 };
 
