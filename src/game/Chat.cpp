@@ -41,83 +41,84 @@ ChatCommand * ChatHandler::getCommandTable()
 {
     static ChatCommand accountSetCommandTable[] =
     {
-        { "addon",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAccountSetAddonCommand,     "", NULL },
-        { "gmlevel",        SEC_CONSOLE,        true,  &ChatHandler::HandleAccountSetGmLevelCommand,   "", NULL },
-        { "password",       SEC_CONSOLE,        true,  &ChatHandler::HandleAccountSetPasswordCommand,  "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "addon",          SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleAccountSetAddonCommand,     "", NULL },
+        { "gmlevel",        SEC_CONSOLE,        true,   &ChatHandler::HandleAccountSetGmLevelCommand,   "", NULL },
+        { "password",       SEC_CONSOLE,        true,   &ChatHandler::HandleAccountSetPasswordCommand,  "", NULL },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand accountCommandTable[] =
     {
-        { "create",         SEC_CONSOLE,        true,  &ChatHandler::HandleAccountCreateCommand,       "", NULL },
-        { "delete",         SEC_CONSOLE,        true,  &ChatHandler::HandleAccountDeleteCommand,       "", NULL },
-        { "gann",           SEC_PLAYER,         false, &ChatHandler::HandleAccountGuildAnnToggleCommand, "", NULL },
-        { "log",            SEC_MODERATOR,      true,  &ChatHandler::HandleAccountSpecialLogCommand,   "", NULL },
-        { "onlinelist",     SEC_CONSOLE,        true,  &ChatHandler::HandleAccountOnlineListCommand,   "", NULL },
-        { "set",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", accountSetCommandTable },
-        { "whisp",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleAccountWhispLogCommand,     "", NULL },
-        { "",               SEC_PLAYER,         false, &ChatHandler::HandleAccountCommand,             "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "create",         SEC_CONSOLE,        true,   &ChatHandler::HandleAccountCreateCommand,       "", NULL },
+        { "delete",         SEC_CONSOLE,        true,   &ChatHandler::HandleAccountDeleteCommand,       "", NULL },
+        { "gann",           SEC_PLAYER,         false,  &ChatHandler::HandleAccountGuildAnnToggleCommand, "", NULL },
+        { "log",            SEC_MODERATOR,      true,   &ChatHandler::HandleAccountSpecialLogCommand,   "", NULL },
+        { "onlinelist",     SEC_CONSOLE,        true,   &ChatHandler::HandleAccountOnlineListCommand,   "", NULL },
+        { "set",            SEC_ADMINISTRATOR,  true,   NULL,                                           "", accountSetCommandTable },
+        { "whisp",          SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleAccountWhispLogCommand,     "", NULL },
+        { "",               SEC_PLAYER,         false,  &ChatHandler::HandleAccountCommand,             "", NULL },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand serverSetCommandTable[] =
     {
-        { "difftime",       SEC_CONSOLE,        true,  &ChatHandler::HandleServerSetDiffTimeCommand,   "", NULL },
-        { "loglevel",       SEC_CONSOLE,        true,  &ChatHandler::HandleServerSetLogLevelCommand,   "", NULL },
-        { "motd",           SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerSetMotdCommand,       "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "difftime",       SEC_CONSOLE,        true,   &ChatHandler::HandleServerSetDiffTimeCommand,   "", NULL },
+        { "loglevel",       SEC_CONSOLE,        true,   &ChatHandler::HandleServerSetLogLevelCommand,   "", NULL },
+        { "motd",           SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerSetMotdCommand,       "", NULL },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand sendCommandTable[] =
     {
-        { "items",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleSendItemsCommand,           "", NULL },
-        { "mail",           SEC_MODERATOR,      true,  &ChatHandler::HandleSendMailCommand,            "", NULL },
-        { "message",        SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleSendMessageCommand,         "", NULL },
-        { "money",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleSendMoneyCommand,           "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "items",          SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleSendItemsCommand,           "", NULL },
+        { "mail",           SEC_MODERATOR,      true,   &ChatHandler::HandleSendMailCommand,            "", NULL },
+        { "message",        SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleSendMessageCommand,         "", NULL },
+        { "money",          SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleSendMoneyCommand,           "", NULL },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand serverIdleRestartCommandTable[] =
     {
-        { "cancel",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerShutDownCancelCommand,"", NULL },
-        { ""   ,            SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerIdleRestartCommand,   "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "cancel",         SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerShutDownCancelCommand,"", NULL },
+        { ""   ,            SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerIdleRestartCommand,   "", NULL },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand serverIdleShutdownCommandTable[] =
     {
-        { "cancel",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerShutDownCancelCommand,"", NULL },
-        { ""   ,            SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerIdleShutDownCommand,  "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "cancel",         SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerShutDownCancelCommand,"", NULL },
+        { ""   ,            SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerIdleShutDownCommand,  "", NULL },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand serverRestartCommandTable[] =
     {
-        { "cancel",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerShutDownCancelCommand,"", NULL },
-        { ""   ,            SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerRestartCommand,       "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "cancel",         SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerShutDownCancelCommand,"", NULL },
+        { ""   ,            SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerRestartCommand,       "", NULL },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand serverShutdownCommandTable[] =
     {
-        { "cancel",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerShutDownCancelCommand,"", NULL },
-        { ""   ,            SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerShutDownCommand,      "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "cancel",         SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerShutDownCancelCommand,"", NULL },
+        { ""   ,            SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerShutDownCommand,      "", NULL },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand serverCommandTable[] =
     {
-        { "corpses",        SEC_GAMEMASTER,     true,  &ChatHandler::HandleServerCorpsesCommand,       "", NULL },
-        { "exit",           SEC_CONSOLE,        true,  &ChatHandler::HandleServerExitCommand,          "", NULL },
-        { "idlerestart",    SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverIdleRestartCommandTable },
-        { "idleshutdown",   SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverShutdownCommandTable },
-        { "info",           SEC_PLAYER,         true,  &ChatHandler::HandleServerInfoCommand,          "", NULL },
-        { "motd",           SEC_PLAYER,         true,  &ChatHandler::HandleServerMotdCommand,          "", NULL },
-        { "restart",        SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverRestartCommandTable },
-        { "rollshutdown",   SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerRollShutDownCommand,  "", NULL},
-        { "set",            SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverSetCommandTable },
-        { "shutdown",       SEC_ADMINISTRATOR,  true,  NULL,                                           "", serverShutdownCommandTable },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+        { "corpses",        SEC_GAMEMASTER,     true,   &ChatHandler::HandleServerCorpsesCommand,       "", NULL },
+        { "exit",           SEC_CONSOLE,        true,   &ChatHandler::HandleServerExitCommand,          "", NULL },
+        { "idlerestart",    SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverIdleRestartCommandTable },
+        { "idleshutdown",   SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverShutdownCommandTable },
+        { "info",           SEC_PLAYER,         true,   &ChatHandler::HandleServerInfoCommand,          "", NULL },
+        { "motd",           SEC_PLAYER,         true,   &ChatHandler::HandleServerMotdCommand,          "", NULL },
+        { "mute",           SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerMuteCommand,          "", NULL },
+        { "restart",        SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverRestartCommandTable },
+        { "rollshutdown",   SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerRollShutDownCommand,  "", NULL},
+        { "set",            SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverSetCommandTable },
+        { "shutdown",       SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverShutdownCommandTable },
+        { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
     static ChatCommand modifyCommandTable[] =

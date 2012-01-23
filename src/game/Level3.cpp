@@ -4804,7 +4804,33 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
     return true;
 }
 
-bool ChatHandler::HandleServerShutDownCancelCommand(const char* args)
+bool ChatHandler::HandleServerMuteCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    char* time_str = strtok((char*) args, " ");
+    char* reason = strtok (NULL, "");
+
+    if (!time_str)
+        return false;
+
+    int32 time = atoi(time_str);
+
+    if (time <= 0)
+        return false;
+
+    sWorld.SetMassMute(time(NULL) + time,reason);
+
+    if (reason)
+        PSendSysMessage("Server was muted for %i seconds with reason: %s.", time, reason);
+    else
+        PSendSysMessage("Server was muted for %i seconds.", time);
+
+    return true;
+}
+
+bool ChatHandler::HandleServerShutDownCancelCommand(const char* /*args*/)
 {
     sWorld.ShutdownCancel();
     return true;

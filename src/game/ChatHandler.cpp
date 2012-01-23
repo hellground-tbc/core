@@ -77,6 +77,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         SendNotification(LANG_UNKNOWN_LANGUAGE);
         return;
     }
+
     if (langDesc->skill_id != 0 && !_player->HasSkill(langDesc->skill_id))
     {
         // also check SPELL_AURA_COMPREHEND_LANGUAGE (client offers option to speak in that language)
@@ -90,11 +91,19 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
                 break;
             }
         }
+
         if (!foundAura)
         {
             SendNotification(LANG_NOT_LEARNED_LANGUAGE);
             return;
         }
+    }
+
+    if (sWorld.GetMassMuteTime() > time(NULL))
+    {
+        if (sWorld.GetMassMuteReason())
+            ChatHandler(_player).PSendSysMessage("Mass mute reason: %s", sWorld.GetMassMuteReason());
+        return;
     }
 
     if (lang == LANG_ADDON)

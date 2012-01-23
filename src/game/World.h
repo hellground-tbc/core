@@ -635,6 +635,19 @@ class World
         void SelectRandomFishingDaily();
         void SelectRandomPvPDaily();
 
+        void SetMassMute(uint64 time, const char * reason)
+        {
+            m_massMuteTime = time;
+
+            if (reason)
+                m_massMuteReason = reason;
+            else
+                m_massMuteReason = "";
+        }
+
+        uint64 GetMassMuteTime() { return m_massMuteTime; }
+        const char * GetMassMuteReason() { return m_massMuteReason.c_str(); }
+
         LfgContainerType & GetLfgContainer(uint32 team)
         {
             switch (team)
@@ -703,6 +716,9 @@ class World
         std::string m_motd;
         std::string m_dataPath;
         std::set<uint32> m_forbiddenMapIds;
+
+        static uint64 m_massMuteTime;
+        static std::string m_massMuteReason;
 
         // for max speed access
         static float m_MaxVisibleDistance;
