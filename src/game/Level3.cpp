@@ -4815,17 +4815,17 @@ bool ChatHandler::HandleServerMuteCommand(const char* args)
     if (!time_str)
         return false;
 
-    int32 time = atoi(time_str);
+    int32 time2 = atoi(time_str);
 
-    if (time <= 0)
+    if (time2 <= 0)
         return false;
 
-    sWorld.SetMassMute(time(NULL) + time,reason);
+    sWorld.SetMassMute(time(NULL) + time2, reason);
 
     if (reason)
-        PSendSysMessage("Server was muted for %i seconds with reason: %s.", time, reason);
+        PSendSysMessage("Server was muted for %i seconds with reason: %s.", time2, reason);
     else
-        PSendSysMessage("Server was muted for %i seconds.", time);
+        PSendSysMessage("Server was muted for %i seconds.", time2);
 
     return true;
 }

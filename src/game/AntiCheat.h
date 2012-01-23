@@ -151,7 +151,7 @@ class ACRequest : public ACE_Method_Request
                 {
                     sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) (LATENCY KICKED) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
                               pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), fDistance2d, m_speed, m_speed*fClientRate, pPlayer->GetMapId(), m_pos.x, m_pos.y, m_pos.z, m_newPacket.pos.x, m_newPacket.pos.y, m_newPacket.pos.z, m_newPacket.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
-                    pPlayer->GetSession()->KickPlayer();
+                    //pPlayer->GetSession()->KickPlayer();
                     return 0;
                 }
 

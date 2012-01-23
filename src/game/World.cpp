@@ -110,6 +110,8 @@ World::World()
     m_updateTimeSum = 0;
     m_updateTimeCount = 0;
 
+    m_massMuteTime = 0;
+
     // TODO: move to config
     m_honorRanks[0] = 10000000;//100;
     m_honorRanks[1] = 10000000;//500;

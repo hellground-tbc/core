@@ -717,8 +717,8 @@ class World
         std::string m_dataPath;
         std::set<uint32> m_forbiddenMapIds;
 
-        static uint64 m_massMuteTime;
-        static std::string m_massMuteReason;
+        uint64 m_massMuteTime;
+        std::string m_massMuteReason;
 
         // for max speed access
         static float m_MaxVisibleDistance;
