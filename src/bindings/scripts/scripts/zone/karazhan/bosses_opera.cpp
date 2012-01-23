@@ -1054,9 +1054,7 @@ struct TRINITY_DLL_DECL boss_julianneAI : public boss_operaAI
     void JustDied(Unit* killer)
     {
         DoScriptText(SAY_JULIANNE_DEATH02, m_creature);
-
-        if (pInstance)
-            pInstance->SetData(DATA_OPERA_EVENT, evade ? NOT_STARTED : DONE);
+        pInstance->SetData(DATA_OPERA_EVENT, evade ? NOT_STARTED : DONE);
     }
 
     void KilledUnit(Unit* victim)
@@ -1297,7 +1295,7 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
     {
         if (SummonRomuloTimer < diff)
         {
-            Creature* Romulo = m_creature->SummonCreature(CREATURE_ROMULO, ROMULO_X, ROMULO_Y, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+            Creature* Romulo = m_creature->SummonCreature(CREATURE_ROMULO, ROMULO_X, ROMULO_Y, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 300000);
             if (Romulo)
             {
                 RomuloGUID = Romulo->GetGUID();
@@ -1615,7 +1613,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public ScriptedAI
 
     void MovementInform(uint32 type, uint32 id)
     {
-        if(type == POINT_MOTION_TYPE)
+        if (type == POINT_MOTION_TYPE)
         {
             switch(id)
             {
@@ -1624,7 +1622,6 @@ struct TRINITY_DLL_DECL npc_barnesAI : public ScriptedAI
                 case 0:
                 case 1:
                 case 4:
-                    m_creature->GetMotionMaster()->Clear();
                     m_creature->GetMotionMaster()->MovePoint(id+1, StageLocations[id+1][0], StageLocations[id+1][1], SPAWN_Z);
                     break;
                 case 2:

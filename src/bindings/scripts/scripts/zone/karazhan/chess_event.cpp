@@ -83,8 +83,7 @@ void move_triggerAI::MakeMove()
         case PIECE_MOVE:
             me->CastSpell(m_creature, SPELL_MOVE_MARKER, false);
             temp->StopMoving();
-            temp->RemoveUnitMovementFlag(MOVEFLAG_ROOT);
-            temp->GetMotionMaster()->Clear();
+//            temp->RemoveUnitMovementFlag(MOVEFLAG_ROOT);
             temp->GetMotionMaster()->MovePoint(0, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
 
             if (temp2)
@@ -94,7 +93,7 @@ void move_triggerAI::MakeMove()
             }
             break;
         case PIECE_CHANGE_FACING:
-            temp->RemoveUnitMovementFlag(MOVEFLAG_ROOT);
+//            temp->RemoveUnitMovementFlag(MOVEFLAG_ROOT);
             if (temp2)
             {
                 ((boss_MedivhAI*)temp2->AI())->ChangePieceFacing(temp, me);
@@ -408,19 +407,19 @@ void npc_chesspieceAI::Reset()
     changeFacingTimer = urand (3000, 7500);
 }
 
-void npc_chesspieceAI::MovementInform(uint32 MovementType, uint32 Data)
+void npc_chesspieceAI::MovementInform(uint32 type, uint32 data)
 {
     #ifdef CHESS_DEBUG_INFO
-    printf("\n Wywolanie MovementInform(uint32 MovementType = %u, uint32 Data = %u)", MovementType, Data);
+    printf("\n Wywolanie MovementInform(uint32 type = %u, uint32 data = %u)", type, data);
     #endif
-    if (MovementType != POINT_MOTION_TYPE)
+    if (type != POINT_MOTION_TYPE)
         return;
 
     npc_medivh = m_creature->GetCreature(MedivhGUID);
     if (npc_medivh)
         ((boss_MedivhAI*)npc_medivh->AI())->SetOrientation(m_creature->GetGUID());
 
-    me->AddUnitMovementFlag(MOVEFLAG_ROOT);
+//    me->AddUnitMovementFlag(MOVEFLAG_ROOT);
 }
 
 void npc_chesspieceAI::JustRespawned()
@@ -450,7 +449,7 @@ void npc_chesspieceAI::OnCharmed(bool apply)
         if (Creature * medivh = me->GetCreature(MedivhGUID))
             ((boss_MedivhAI*)medivh->AI())->SetOrientation(me->GetGUID());
 
-    me->AddUnitMovementFlag(MOVEFLAG_ROOT);
+//    me->AddUnitMovementFlag(MOVEFLAG_ROOT);
 }
 
 void npc_chesspieceAI::SpellHit(Unit * caster, const SpellEntry * spell)
@@ -3095,6 +3094,8 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
                 break;
         }
 
+        cPiece->SendHeartBeat();
+/*
         me->GetMap()->CreatureRelocation(cPiece, chessBoard[tmpi][tmpj].position.coord_x, chessBoard[tmpi][tmpj].position.coord_y, chessBoard[tmpi][tmpj].position.coord_z, cPiece->GetOrientation());
 
         Map::PlayerList const& players = m_creature->GetMap()->GetPlayers();
@@ -3103,6 +3104,7 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
             for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 if (Player* plr = itr->getSource())
                     cPiece->NearTeleportTo(chessBoard[tmpi][tmpj].position.coord_x, chessBoard[tmpi][tmpj].position.coord_y, chessBoard[tmpi][tmpj].position.coord_z, 0);
+*/
     }
 }
 
@@ -3274,9 +3276,9 @@ void boss_MedivhAI::ChangePieceFacing(Creature * piece, Creature * destTrigger)
     if (!piece || !destTrigger)
         return;
 
-    piece->SetInFront(destTrigger);
+//    piece->SetInFront(destTrigger);
     SetOrientation(piece->GetGUID());
-
+/*
     int tmpI = -1, tmpJ = -1;
 
     if (!FindPlaceInBoard(piece->GetGUID(), tmpI, tmpJ))
@@ -3301,6 +3303,7 @@ void boss_MedivhAI::ChangePieceFacing(Creature * piece, Creature * destTrigger)
 
     if (tmpC)
         piece->SetFacingToObject(tmpC);
+*/
 }
 
 uint32 boss_MedivhAI::GetMoveSpell(uint64 piece)
@@ -4151,7 +4154,6 @@ bool GossipSelect_npc_echo_of_medivh(Player* player, Creature* _Creature, uint32
 
         pInstance->SetData(CHESS_EVENT_TEAM, player->GetTeam());
         _Creature->GetMotionMaster()->MoveRandom(10);
-        _Creature->GetMotionMaster()->MoveIdle();
     }
 
     player->CLOSE_GOSSIP_MENU();
