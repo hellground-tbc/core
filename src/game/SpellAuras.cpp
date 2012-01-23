@@ -6816,7 +6816,7 @@ void Aura::PeriodicTick()
                             int32 duration = GLapse->GetAuraDuration();
                             float height = m_target->GetPositionZ();
 
-                            if(m_target->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR) | m_target->HasUnitMovementFlag(MOVEFLAG_FALLING))
+                            if(m_target->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR | MOVEFLAG_FALLING))
                             {
                                 if(height < 0)
                                 {
@@ -6900,6 +6900,12 @@ void Aura::PeriodicTick()
                 if (GetSpellProto()->SpellFamilyName==SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 6))
                 {
                     damageInfo.damage += damageInfo.damage * GetModifier()->m_miscvalue / 10;
+                }
+
+                if (GetSpellProto()->Effect[GetEffIndex()] == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY)
+                {
+                    if (int32 reducedPct = m_target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE))
+                        damageInfo.damage = damageInfo.damage * (100 + reducedPct) / 100;
                 }
 
             }
