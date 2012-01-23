@@ -209,6 +209,19 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
             pInstance->SetData(DATA_TERESTIAN_EVENT, NOT_STARTED);
     }
 
+    void EnterEvadeMode()
+    {
+        if (Creature * kilrek = me->GetCreature(pInstance->GetData64(DATA_KILREK)))
+        {
+            if (kilrek->isAlive())
+                kilrek->AI()->EnterEvadeMode();
+            else
+                kilrek->Respawn();
+        }
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_AGGRO, m_creature);

@@ -149,76 +149,76 @@ struct TRINITY_DLL_DECL npc_image_of_medivhAI : public ScriptedAI
         Map *map = m_creature->GetMap();
         switch(Step)
         {
-        case 0: return 9999999;
-        case 1:
-            m_creature->Yell(SAY_DIALOG_MEDIVH_1,LANG_UNIVERSAL,NULL);
-            return 10000;
-        case 2:
-            if(arca)
-                ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_2,LANG_UNIVERSAL,NULL);
-            return 20000;
-        case 3:
-            m_creature->Yell(SAY_DIALOG_MEDIVH_3,LANG_UNIVERSAL,NULL);
-            return 10000;
-        case 4:
-            if(arca)
-                ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_4, LANG_UNIVERSAL, NULL);
-            return 20000;
-        case 5:
-            m_creature->Yell(SAY_DIALOG_MEDIVH_5, LANG_UNIVERSAL, NULL);
-            return 20000;
-        case 6:
-            if(arca)
-                ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_6, LANG_UNIVERSAL, NULL);
-            return 10000;
-        case 7:
-            FireArcanagosTimer = 500;
-            return 5000;
-        case 8:
-            FireMedivhTimer = 500;
-            DoCast(m_creature, SPELL_MANA_SHIELD);
-            return 10000;
-        case 9:
-            m_creature->TextEmote(EMOTE_DIALOG_MEDIVH_7, 0, false);
-            return 10000;
-        case 10:
-            if(arca)
-                m_creature->CastSpell(arca, SPELL_CONFLAGRATION_BLAST, false);
-            return 1000;
-        case 11:
-            if(arca)
-                ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_8, LANG_UNIVERSAL, NULL);
-            return 5000;
-        case 12:
-            arca->GetMotionMaster()->MovePoint(0, -11010.82,-1761.18, 156.47);
-            arca->setActive(true);
-            arca->InterruptNonMeleeSpells(true);
-            arca->SetSpeed(MOVE_FLIGHT, 2.0f);
-            return 10000;
-        case 13:
-            m_creature->Yell(SAY_DIALOG_MEDIVH_9, LANG_UNIVERSAL, NULL);
-            return 10000;
-        case 14:
-            m_creature->SetVisibility(VISIBILITY_OFF);
-            m_creature->ClearInCombat();
+            case 0: return 9999999;
+            case 1:
+                m_creature->Yell(SAY_DIALOG_MEDIVH_1,LANG_UNIVERSAL,NULL);
+                return 10000;
+            case 2:
+                if(arca)
+                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_2,LANG_UNIVERSAL,NULL);
+                return 20000;
+            case 3:
+                m_creature->Yell(SAY_DIALOG_MEDIVH_3,LANG_UNIVERSAL,NULL);
+                return 10000;
+            case 4:
+                if(arca)
+                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_4, LANG_UNIVERSAL, NULL);
+                return 20000;
+            case 5:
+                m_creature->Yell(SAY_DIALOG_MEDIVH_5, LANG_UNIVERSAL, NULL);
+                return 20000;
+            case 6:
+                if(arca)
+                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_6, LANG_UNIVERSAL, NULL);
+                return 10000;
+            case 7:
+                FireArcanagosTimer = 500;
+                return 5000;
+            case 8:
+                FireMedivhTimer = 500;
+                DoCast(m_creature, SPELL_MANA_SHIELD);
+                return 10000;
+            case 9:
+                m_creature->TextEmote(EMOTE_DIALOG_MEDIVH_7, 0, false);
+                return 10000;
+            case 10:
+                if(arca)
+                    m_creature->CastSpell(arca, SPELL_CONFLAGRATION_BLAST, false);
+                return 1000;
+            case 11:
+                if(arca)
+                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_8, LANG_UNIVERSAL, NULL);
+                return 5000;
+            case 12:
+                arca->GetMotionMaster()->MovePoint(0, -11010.82,-1761.18, 156.47);
+                arca->setActive(true);
+                arca->InterruptNonMeleeSpells(true);
+                arca->SetSpeed(MOVE_FLIGHT, 2.0f);
+                return 10000;
+            case 13:
+                m_creature->Yell(SAY_DIALOG_MEDIVH_9, LANG_UNIVERSAL, NULL);
+                return 10000;
+            case 14:
+                m_creature->SetVisibility(VISIBILITY_OFF);
+                m_creature->ClearInCombat();
 
-            if(map->IsDungeon())
-            {
-                InstanceMap::PlayerList const &PlayerList = ((InstanceMap*)map)->GetPlayers();
-                for (InstanceMap::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                if(map->IsDungeon())
                 {
-                    if(i->getSource()->isAlive())
+                    InstanceMap::PlayerList const &PlayerList = ((InstanceMap*)map)->GetPlayers();
+                    for (InstanceMap::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        if(i->getSource()->GetQuestStatus(9645) == QUEST_STATUS_INCOMPLETE)
-                            i->getSource()->CompleteQuest(9645);
+                        if(i->getSource()->isAlive())
+                        {
+                            if(i->getSource()->GetQuestStatus(9645) == QUEST_STATUS_INCOMPLETE)
+                                i->getSource()->CompleteQuest(9645);
+                        }
                     }
                 }
-            }
-            return 50000;
-        case 15:
-            arca->DealDamage(arca,arca->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            return 5000;
-        default : return 9999999;
+                return 50000;
+            case 15:
+                arca->DealDamage(arca,arca->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                return 5000;
+            default : return 9999999;
         }
 
     }
