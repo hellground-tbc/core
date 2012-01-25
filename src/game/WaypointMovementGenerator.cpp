@@ -75,14 +75,20 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
         return;
 
     creature.clearUnitState(UNIT_STAT_ROAMING_MOVE);
-    m_isArrivalDone = true;
 
-    if (i_path->at(i_currentNode)->event_id && urand(0, 99) < i_path->at(i_currentNode)->event_chance)
-        creature.GetMap()->ScriptsStart(sWaypointScripts, i_path->at(i_currentNode)->event_id, &creature, NULL/*, false*/);
+    if (!_microMove)
+    {
+        m_isArrivalDone = true;
 
-    // Inform script
-    MovementInform(creature);
-    Stop(i_path->at(i_currentNode)->delay);
+        if (i_path->at(i_currentNode)->event_id && urand(0, 99) < i_path->at(i_currentNode)->event_chance)
+            creature.GetMap()->ScriptsStart(sWaypointScripts, i_path->at(i_currentNode)->event_id, &creature, NULL/*, false*/);
+
+        // Inform script
+        MovementInform(creature);
+        Stop(i_path->at(i_currentNode)->delay);
+    }
+    else
+        Stop(0);
 }
 
 bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
@@ -93,7 +99,51 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
     if (Stopped())
         return true;
 
+    if (_formationMove)
+    {
+        if (creature.IsFormationLeader())
+        {
+            if (creature.GetFormation()->AllUnitsReachedWaypoint())
+                _formationMove = false;
+            else
+            {
+                Stop(500);
+                return true;
+            }
+        }
+        else
+            _formationMove = false;
+    }
+
     const WaypointData *node = i_path->at(i_currentNode);
+    if (creature.IsFormationLeader())
+    {
+        if (_microMove)
+            _microMove = false;
+        else
+        {
+            float x, y, z = node->z;
+            if (creature.GetDistanceSq(node->x, node->y, node->z) > 5*5)
+            {
+                creature.GetNearPoint2D(x, y, 2, creature.GetAngle(node->x, node->y));
+
+                creature.UpdateGroundPositionZ(x,y,z);
+                Movement::MoveSplineInit init(creature);
+                init.MoveTo(node->x, node->y, node->z);
+
+                init.SetWalk(!node->run);
+                init.Launch();
+
+                creature.GetFormation()->LeaderMoveTo(x, y, z);
+
+                _formationMove = true;
+                _microMove = true;
+                i_currentNode--;
+                return true;
+            }
+        }
+    }
+
     if (m_isArrivalDone)
     {
         if ((i_currentNode == i_path->size() - 1) &&  !repeating) // If that's our last waypoint
@@ -117,9 +167,11 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
     init.Launch();
 
     //Call for creature group update
-    if (creature.GetFormation() && creature.GetFormation()->getLeader() == &creature)
+    if (creature.IsFormationLeader())
+    {
+        _formationMove = true;
         creature.GetFormation()->LeaderMoveTo(node->x, node->y, node->z);
-
+    }
     return true;
 }
 
