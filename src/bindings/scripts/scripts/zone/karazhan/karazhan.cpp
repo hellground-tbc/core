@@ -35,27 +35,145 @@ EndContentData */
 
 #define SPELL_TELEPORT           39567
 
-#define GOSSIP_ITEM_TELEPORT     "Teleport me to the Guardian's Library"
+#define GOSSIP_ITEM_PLACE        "What is this place?"
+#define GOSSIP_ITEM_MEDIVH       "Where is Medivh?"
+#define GOSSIP_ITEM_TOWER        "How do you navigate the tower?"
+#define GOSSIP_ITEM_TELEPORT     "Please transport me to the Guardian's Library."
 
 bool GossipHello_npc_berthold(Player* player, Creature* _Creature)
 {
     ScriptedInstance* pInstance = (_Creature->GetInstanceData());
                                                             // Check if Shade of Aran is dead or not
+    bool aranDone = false;
     if(pInstance && (pInstance->GetData(DATA_SHADEOFARAN_EVENT) >= DONE))
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TELEPORT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        aranDone = true;
+    
+    player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_PLACE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_MEDIVH, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+    player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TOWER, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+    if (aranDone)
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TELEPORT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    if (aranDone)
+        player->SEND_GOSSIP_MENU(25035, _Creature->GetGUID());
+    else
+        player->SEND_GOSSIP_MENU(25044, _Creature->GetGUID());
+    
     return true;
 }
 
 bool GossipSelect_npc_berthold(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
-    if(action == GOSSIP_ACTION_INFO_DEF + 1)
-        player->CastSpell(player, SPELL_TELEPORT, true);
-
-    player->CLOSE_GOSSIP_MENU();
+    switch (action)
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            player->SEND_GOSSIP_MENU(25036, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            player->SEND_GOSSIP_MENU(25037, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 3:
+            player->SEND_GOSSIP_MENU(25038, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 4:
+            player->CastSpell(player, SPELL_TELEPORT, true);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+    }
     return true;
 }
+
+
+/*###
+# npc_calliard
+####*/
+
+#define GOSSIP_ITEM_MIDNIGHT    "Who is Midnight?"
+
+#define CALLIARD_SAY1           "Who goes there?"
+#define CALLIARD_SAY2           "All quiet."
+#define CALLIARD_SAY3           "Am I hearing things?"
+
+struct TRINITY_DLL_DECL npc_calliardAI : public ScriptedAI
+{
+    npc_calliardAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 Timer;
+
+    void Reset()
+    {
+        Timer = 60000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (Timer < diff)
+        {
+            me->Say(RAND<const char*>(CALLIARD_SAY1, CALLIARD_SAY2, CALLIARD_SAY3), 0, 0);
+            Timer = urand(60000, 180000);
+        } 
+        else
+            Timer -= diff;
+
+    }    
+};
+
+CreatureAI* GetAI_npc_calliard(Creature *_Creature)
+{
+    return new npc_calliardAI(_Creature);
+}
+
+bool GossipHello_npc_calliard(Player* player, Creature* _Creature)
+{
+    player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_MIDNIGHT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    player->SEND_GOSSIP_MENU(25042, _Creature->GetGUID());
+    
+    return true;
+}
+
+bool GossipSelect_npc_calliard(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+{
+    switch (action)
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            player->SEND_GOSSIP_MENU(25043, _Creature->GetGUID());
+            break;
+    }
+    return true;
+}
+
+/*###
+# npc_hastings
+####*/
+
+#define GOSSIP_ITEM_HELP    "Help you with what situation?"
+#define GOSSIP_ITEM_BIG     "Big ones?"
+
+bool GossipHello_npc_hastings(Player* player, Creature* _Creature)
+{
+    player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_HELP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    player->SEND_GOSSIP_MENU(25039, _Creature->GetGUID());
+    
+    return true;
+}
+
+bool GossipSelect_npc_hastings(Player* player, Creature* _Creature, uint32 sender, uint32 action)
+{
+    switch (action)
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_BIG, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            player->SEND_GOSSIP_MENU(25040, _Creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            player->SEND_GOSSIP_MENU(25041, _Creature->GetGUID());
+            break;
+    }
+    return true;
+}
+
+
+
 
 /*###
 # npc_image_of_medivh
@@ -269,6 +387,19 @@ void AddSC_karazhan()
     newscript->Name = "npc_berthold";
     newscript->pGossipHello = &GossipHello_npc_berthold;
     newscript->pGossipSelect = &GossipSelect_npc_berthold;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_calliard";
+    newscript->GetAI = &GetAI_npc_calliard;
+    newscript->pGossipHello = &GossipHello_npc_calliard;
+    newscript->pGossipSelect = &GossipSelect_npc_calliard;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_hastings";
+    newscript->pGossipHello = &GossipHello_npc_hastings;
+    newscript->pGossipSelect = &GossipSelect_npc_hastings;
     newscript->RegisterSelf();
 
     newscript = new Script;
