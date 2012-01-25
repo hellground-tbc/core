@@ -720,6 +720,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 30421:                                         // Neterspite - Player buffs(3)
         case 30422:
         case 30423:
+        case 47002:                                         // Noxious Fumes (not sure if needed, just in case)
             return false;
     }
 
