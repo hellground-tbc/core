@@ -69,7 +69,8 @@ enum castTargetMode
     CAST_NULL                   = 1,    //cast on (Unit*)NULL target
     CAST_RANDOM                 = 2,    //cast on SelectUnit(SELECT_TARGET_RANDOM) target (needs additionals: range, only player)
     CAST_RANDOM_WITHOUT_TANK    = 3,    //same as AUTOCAST_RANDOM but without tank
-    CAST_SELF                   = 4     //target is m_creature
+    CAST_SELF                   = 4,    //target is m_creature
+    CAST_LOWEST_HP_FRIENDLY     = 5     //cast on SelectLowestHpFriendly
 };
 
 enum movementCheckType
@@ -325,10 +326,14 @@ struct TRINITY_DLL_DECL ScriptedAI : public CreatureAI
     void StartAutocast() { autocast = true; }
     void StopAutocast() { autocast = false; }
 
+
     //Additional
     void ClearCastQueue() { spellList.clear(); }
     void RemoveFromCastQueue(uint32 spellId);
     void RemoveFromCastQueue(uint64 targetGUID);
+
+    // Helper for selecting target
+    Unit* SelectCastTarget(uint32 spellId, castTargetMode mode);
 
     //Cast spell by spell info
     void DoCastSpell(Unit* who, SpellEntry const *spellInfo, bool triggered = false);
