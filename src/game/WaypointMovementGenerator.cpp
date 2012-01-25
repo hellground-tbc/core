@@ -49,6 +49,9 @@ void WaypointMovementGenerator<Creature>::Initialize(Creature &creature)
     _wasActive = creature.isActiveObject();
     if (!_wasActive)
         creature.setActive(true);
+
+    _formationMove = false;
+    _microMove = false;
 }
 
 void WaypointMovementGenerator<Creature>::Finalize(Creature &creature)
@@ -122,7 +125,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
             _microMove = false;
         else
         {
-            float x, y, z = node->z;
+            float x, y, z = creature.GetPositionZ();
             if (creature.GetDistanceSq(node->x, node->y, node->z) > 5*5)
             {
                 creature.GetNearPoint2D(x, y, 2, creature.GetAngle(node->x, node->y));
@@ -146,7 +149,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
 
     if (m_isArrivalDone)
     {
-        if ((i_currentNode == i_path->size() - 1) &&  !repeating) // If that's our last waypoint
+        if ((i_currentNode == i_path->size() - 1) && !repeating) // If that's our last waypoint
         {
             creature.SetHomePosition(node->x, node->y, node->z, creature.GetOrientation());
             creature.GetMotionMaster()->Initialize();

@@ -98,7 +98,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
 
     Movement::MoveSplineInit init(owner);
     init.MoveTo(x,y,z);
-    init.SetWalk(((D*)this)->EnableWalking());
+    init.SetWalk(((D*)this)->EnableWalking(owner));
     init.Launch();
 }
 
@@ -233,15 +233,27 @@ void ChaseMovementGenerator<T>::Reset(T &owner)
     Initialize(owner);
 }
 
-//-----------------------------------------------//
 template<>
-bool FollowMovementGenerator<Creature>::EnableWalking() const
+bool ChaseMovementGenerator<Creature>::EnableWalking(Creature &creature) const
 {
-    return i_target.isValid() && (i_target->IsWalking() || i_target->ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK);
+    return creature.GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK;
 }
 
 template<>
-bool FollowMovementGenerator<Player>::EnableWalking() const
+bool ChaseMovementGenerator<Player>::EnableWalking(Player &) const
+{
+    return false;
+}
+
+//-----------------------------------------------//
+template<>
+bool FollowMovementGenerator<Creature>::EnableWalking(Creature &) const
+{
+    return i_target.isValid() && i_target->IsWalking();
+}
+
+template<>
+bool FollowMovementGenerator<Player>::EnableWalking(Player &) const
 {
     return false;
 }
