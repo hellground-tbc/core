@@ -141,7 +141,9 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
 
                 _formationMove = true;
                 _microMove = true;
-                i_currentNode--;
+
+                // it is incremented later, so we don't decrement it here ?
+                //i_currentNode--;
                 return true;
             }
         }
