@@ -463,30 +463,6 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
             //if Gameobject should cast spell, then this, but some GOs (type = 10) should be destroyed
             if (GetGoType() == GAMEOBJECT_TYPE_GOOBER)
             {
-                uint32 spellId = GetGOInfo()->goober.spellId;
-
-                if (spellId)
-                {
-                    SpellEntry const * spellInfo = sSpellStore.LookupEntry(spellId);
-
-                    std::set<uint32>::iterator it = m_unique_users.begin();
-                    std::set<uint32>::iterator end = m_unique_users.end();
-                    for (; it != end; it++)
-                    {
-                        if (Unit* owner = Unit::GetUnit(*this, uint64(*it)))
-                        {
-                            if (spellInfo)
-                                owner->CastSpell(owner, spellId, false);
-                            else if(owner->GetTypeId() == TYPEID_PLAYER)
-                                HandleNonDbcSpell(spellId, (Player*)owner);
-                        }
-                    }
-
-                    m_unique_users.clear();
-                    m_usetimes = 0;
-                }
-                //any return here in case battleground traps
-
                 // don't despawn goober object if isn't consumable
                 if (!GetGOInfo()->goober.consumable)
                 {
@@ -1119,7 +1095,6 @@ void GameObject::Use(Unit* user)
                         break;
                 }
 
-                AddUniqueUse(pPlayer);
                 pPlayer->CastedCreatureOrGO(GetEntry(), GetGUID(), 0);
 
                 if (info->goober.eventId)

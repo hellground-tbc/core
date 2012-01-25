@@ -262,7 +262,6 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-
             if (!m_creature->IsWithinDistInMap(&wLoc, 135) || !CheckPlayersInInstance())
             {
                 EnterEvadeMode();
@@ -293,7 +292,6 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
             }
             else
                 ForceTimer -= diff;
-
         }
 
         if(WaitEvent)
@@ -310,88 +308,88 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
 
                     switch(WaitEvent)
                     {
-                    case WE_PLATFORM:
-                        Platforms_Move_Timer = 30000+rand()%5000;
-                        break;
-                    case WE_QUILL:
-                        m_creature->CastSpell(m_creature, SPELL_FLAME_QUILLS, true);
-                        Platforms_Move_Timer = 1;
-                        WaitTimer = 10000;
-                        WaitEvent = WE_DUMMY;
-                        return;
-                    case WE_DIE:
-                        ForceMove = false;
-                        DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, 0.0f);
-                        WaitTimer = 5000;
-                        WaitEvent = WE_REVIVE;
-                        return;
-                    case WE_REVIVE:
-                        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
-                        m_creature->SetHealth(m_creature->GetMaxHealth());
-                        m_creature->SetSpeed(MOVE_RUN, DefaultMoveSpeedRate);
-                        m_creature->SetSpeed(MOVE_FLIGHT, DefaultMoveSpeedRate);
-                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        DoZoneInCombat();
-                        m_creature->CastSpell(m_creature, SPELL_REBIRTH, true);
-                        MeltArmor_Timer = 60000;
-                        Charge_Timer = 7000;
-                        DiveBomb_Timer = 40000+rand()%5000;
-                        FlamePatch_Timer = 30000;
-                        Phase1 = false;
-                        if(Unit *top = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
-                            AttackStart(top);
-                        break;
-                    case WE_METEOR:
-                        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, false);
-                        m_creature->CastSpell(m_creature, SPELL_DIVE_BOMB_VISUAL, false);
-                        WaitEvent = WE_DIVE;
-                        WaitTimer = 4000;
-                        return;
-                    case WE_DIVE:
-                        if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0,GetSpellMaxRange(SPELL_DIVE_BOMB),true))
-                        {
-                            m_creature->RemoveAurasDueToSpell(SPELL_DIVE_BOMB_VISUAL);
-                            m_creature->CastSpell(target, SPELL_DIVE_BOMB, true);
-                            float dist = 3.0f;
-                            if(m_creature->IsWithinDistInMap(target, 5.0f))
-                                dist = 5.0f;
-                            WaitTimer = 1000 + floor(dist / 80 * 1000.0f);
-                            m_creature->StopMoving();
-                            DoTeleportTo(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + 0.2f,0.0f);
-                            WaitEvent = WE_LAND;
-                        }
-                        else
-                        {
-                            EnterEvadeMode();
+                        case WE_PLATFORM:
+                            Platforms_Move_Timer = 30000+rand()%5000;
+                            break;
+                        case WE_QUILL:
+                            m_creature->CastSpell(m_creature, SPELL_FLAME_QUILLS, true);
+                            Platforms_Move_Timer = 1;
+                            WaitTimer = 10000;
+                            WaitEvent = WE_DUMMY;
                             return;
-                        }
-                    case WE_LAND:
-                        WaitEvent = WE_SUMMON;
-                        WaitTimer = 3000;
-                        return;
-                    case WE_SUMMON:
-                        WaitEvent = WE_REBIRTH;
-                        for(uint8 i = 0; i < 2; ++i)
-                            DoSpawnCreature(CREATURE_EMBER_OF_ALAR, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-                        WaitTimer = 2000;
-                        return;
-                    case WE_REBIRTH:
-                        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
-                        m_creature->SetReactState(REACT_AGGRESSIVE);
-                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
-                        m_creature->CastSpell(m_creature, SPELL_REBIRTH_2, true);
-                        if(Unit *top = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
-                            AttackStart(top);
-                        break;
-                    case WE_TRULY_DIE:
-                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                        break;
-                    case WE_DUMMY:
-                    default:
-                        break;
+                        case WE_DIE:
+                            ForceMove = false;
+                            DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, 0.0f);
+                            WaitTimer = 5000;
+                            WaitEvent = WE_REVIVE;
+                            return;
+                        case WE_REVIVE:
+                            m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
+                            m_creature->SetHealth(m_creature->GetMaxHealth());
+                            m_creature->SetSpeed(MOVE_RUN, DefaultMoveSpeedRate);
+                            m_creature->SetSpeed(MOVE_FLIGHT, DefaultMoveSpeedRate);
+                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            DoZoneInCombat();
+                            m_creature->CastSpell(m_creature, SPELL_REBIRTH, true);
+                            MeltArmor_Timer = 60000;
+                            Charge_Timer = 7000;
+                            DiveBomb_Timer = 40000+rand()%5000;
+                            FlamePatch_Timer = 30000;
+                            Phase1 = false;
+                            if(Unit *top = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
+                                AttackStart(top);
+                            break;
+                        case WE_METEOR:
+                            m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, false);
+                            m_creature->CastSpell(m_creature, SPELL_DIVE_BOMB_VISUAL, false);
+                            WaitEvent = WE_DIVE;
+                            WaitTimer = 4000;
+                            return;
+                        case WE_DIVE:
+                            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0,GetSpellMaxRange(SPELL_DIVE_BOMB),true))
+                            {
+                                m_creature->RemoveAurasDueToSpell(SPELL_DIVE_BOMB_VISUAL);
+                                m_creature->CastSpell(target, SPELL_DIVE_BOMB, true);
+                                float dist = 3.0f;
+                                if(m_creature->IsWithinDistInMap(target, 5.0f))
+                                    dist = 5.0f;
+                                WaitTimer = 1000 + floor(dist / 80 * 1000.0f);
+                                m_creature->StopMoving();
+                                DoTeleportTo(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ() + 0.2f,0.0f);
+                                WaitEvent = WE_LAND;
+                            }
+                            else
+                            {
+                                EnterEvadeMode();
+                                return;
+                            }
+                        case WE_LAND:
+                            WaitEvent = WE_SUMMON;
+                            WaitTimer = 3000;
+                            return;
+                        case WE_SUMMON:
+                            WaitEvent = WE_REBIRTH;
+                            for(uint8 i = 0; i < 2; ++i)
+                                DoSpawnCreature(CREATURE_EMBER_OF_ALAR, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+                            WaitTimer = 2000;
+                            return;
+                        case WE_REBIRTH:
+                            m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
+                            m_creature->SetReactState(REACT_AGGRESSIVE);
+                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            m_creature->SetDisplayId(m_creature->GetNativeDisplayId());
+                            m_creature->CastSpell(m_creature, SPELL_REBIRTH_2, true);
+                            if(Unit *top = SelectUnit(SELECT_TARGET_TOPAGGRO,0))
+                                AttackStart(top);
+                            break;
+                        case WE_TRULY_DIE:
+                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                            break;
+                        case WE_DUMMY:
+                        default:
+                            break;
                     }
 
                     WaitEvent = WE_NONE;
