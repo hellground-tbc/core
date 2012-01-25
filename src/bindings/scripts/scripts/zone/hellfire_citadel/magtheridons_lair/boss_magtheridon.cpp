@@ -542,15 +542,17 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         else
             Fear_Timer -= diff;
 
-        if(Infernal_Timer < diff)
+        if(Infernal_Timer)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_BURNING_ABYSSAL), true))
-                m_creature->CastSpell(target, SPELL_BURNING_ABYSSAL, true);
-
-            Infernal_Timer = 30000 + rand()%10000;
+            if(Infernal_Timer <= diff)
+            {
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_BURNING_ABYSSAL), true))
+                    m_creature->CastSpell(target, SPELL_BURNING_ABYSSAL, true);
+                Infernal_Timer = 0;
+            }
+            else
+                Infernal_Timer -= diff;
         }
-        else
-            Infernal_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
