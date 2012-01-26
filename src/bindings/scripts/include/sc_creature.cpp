@@ -282,6 +282,32 @@ void ScriptedAI::DoStopAttack()
 
 }
 
+Unit* ScriptedAI::SelectCastTarget(uint32 spellId, castTargetMode targetMode)
+{
+    switch (targetMode)
+    {
+        case CAST_TANK:
+            return me->getVictim();
+        case CAST_NULL:
+            return NULL;
+        case CAST_RANDOM:
+        case CAST_RANDOM_WITHOUT_TANK:
+        {
+            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
+            return SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
+        }
+        case CAST_SELF:
+            return me;
+        case CAST_LOWEST_HP_FRIENDLY:
+        {
+            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
+            return SelectLowestHpFriendly(GetSpellMaxRange(spellId));
+        }
+        default:
+            return NULL;
+    };
+}
+
 void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
 {
     // creature can't cast if lost control
@@ -474,30 +500,10 @@ void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool 
     if (m_creature->isCrowdControlled())
         return;
 
-    uint64 targetGUID = 0;
-    switch (targetMode)
-    {
-        case CAST_TANK:
-            targetGUID = me->getVictimGUID();
-            break;
-        case CAST_NULL:
-            targetGUID = 0;
-            break;
-        case CAST_RANDOM:
-        case CAST_RANDOM_WITHOUT_TANK:
-        {
-            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
-            if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0))
-                targetGUID = pTarget->GetGUID();
-            else
-                return;
-            break;
-        }
-        case CAST_SELF:
-            targetGUID = me->GetGUID();
-        default:
-            break;
-    };
+    Unit *pTarget = SelectCastTarget(spellId, targetMode);
+    if (!pTarget && targetMode != CAST_NULL)
+        return;
+    uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
 
     SpellToCast temp(targetGUID, spellId, triggered, 0, false);
 
@@ -509,32 +515,11 @@ void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode,
     if (m_creature->isCrowdControlled())
         return;
 
-    uint64 targetGUID = 0;
-    switch (targetMode)
-    {
-        case CAST_TANK:
-            targetGUID = me->getVictimGUID();
-            break;
-        case CAST_NULL:
-            targetGUID = 0;
-            break;
-        case CAST_RANDOM:
-        case CAST_RANDOM_WITHOUT_TANK:
-        {
-            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
-            Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
-            if(pTarget)
-                targetGUID = pTarget->GetGUID();
-            else
-                return;
+    Unit *pTarget = SelectCastTarget(spellId, targetMode);
+    if (!pTarget && targetMode != CAST_NULL)
+        return;
+    uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
 
-            break;
-        }
-        case CAST_SELF:
-            targetGUID = me->GetGUID();
-        default:
-            break;
-    };
 
     SpellToCast temp(targetGUID, spellId, dmg0, dmg1, dmg2, triggered, 0, false);
 
@@ -546,30 +531,11 @@ void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode tar
     if (m_creature->isCrowdControlled())
         return;
 
-    uint64 targetGUID = 0;
-    switch (targetMode)
-    {
-        case CAST_TANK:
-            targetGUID = me->getVictimGUID();
-            break;
-        case CAST_NULL:
-            targetGUID = 0;
-            break;
-        case CAST_RANDOM:
-        case CAST_RANDOM_WITHOUT_TANK:
-        {
-            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
-            if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0))
-                targetGUID = pTarget->GetGUID();
-            else
-                return;
-            break;
-        }
-        case CAST_SELF:
-            targetGUID = me->GetGUID();
-        default:
-            break;
-    };
+    Unit *pTarget = SelectCastTarget(spellId, targetMode);
+    if (!pTarget && targetMode != CAST_NULL)
+        return;
+    uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
+
 
     SpellToCast temp(targetGUID, spellId, triggered, scriptTextEntry, false);
 
@@ -634,32 +600,11 @@ void ScriptedAI::ForceSpellCast(uint32 spellId, castTargetMode targetMode, inter
     if (m_creature->isCrowdControlled())
         return;
 
-    uint64 targetGUID = 0;
-    Unit *pTarget = NULL;
-    switch (targetMode)
-    {
-        case CAST_TANK:
-            targetGUID = me->getVictimGUID();
-            pTarget = me->getVictim();
-            break;
-        case CAST_NULL:
-            targetGUID = 0;
-            pTarget = NULL;
-            break;
-        case CAST_RANDOM:
-        case CAST_RANDOM_WITHOUT_TANK:
-        {
-            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
-            pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
-            targetGUID = pTarget->GetGUID();
-            break;
-        }
-        case CAST_SELF:
-            targetGUID = me->GetGUID();
-            pTarget = me;
-        default:
-            break;
-    };
+    Unit *pTarget = SelectCastTarget(spellId, targetMode);
+    if (!pTarget && targetMode != CAST_NULL)
+        return;
+    uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
+
 
     switch(interruptCurrent)
     {
@@ -683,32 +628,11 @@ void ScriptedAI::ForceSpellCastWithScriptText(uint32 spellId, castTargetMode tar
     if(m_creature->isCrowdControlled())
         return;
 
-    uint64 targetGUID = 0;
-    Unit *pTarget = NULL;
-    switch (targetMode)
-    {
-        case CAST_TANK:
-            targetGUID = me->getVictimGUID();
-            pTarget = me->getVictim();
-            break;
-        case CAST_NULL:
-            targetGUID = 0;
-            pTarget = NULL;
-            break;
-        case CAST_RANDOM:
-        case CAST_RANDOM_WITHOUT_TANK:
-        {
-            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
-            pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY, targetMode == CAST_RANDOM_WITHOUT_TANK ? me->getVictimGUID() : 0);
-            targetGUID = pTarget->GetGUID();
-            break;
-        }
-        case CAST_SELF:
-            targetGUID = me->GetGUID();
-            pTarget = me;
-        default:
-            break;
-    };
+    Unit *pTarget = SelectCastTarget(spellId, targetMode);
+    if (!pTarget && targetMode != CAST_NULL)
+        return;
+    uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
+
 
     switch(interruptCurrent)
     {

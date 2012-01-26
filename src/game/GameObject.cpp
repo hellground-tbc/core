@@ -1033,9 +1033,6 @@ void GameObject::Use(Unit* user)
             if (!info)
                 return;
 
-            if (!pPlayer)
-                return;
-
             // a chair may have n slots. we have to calculate their positions and teleport the player to the nearest one
             // check if the db is sane
             if (info->chair.slots > 0)
@@ -1058,7 +1055,7 @@ void GameObject::Use(Unit* user)
                     float y_i = GetPositionY() + relativeDistance * sin(orthogonalOrientation);
 
                     // calculate the distance between the player and this slot
-                    float thisDistance = pPlayer->GetDistance2d(x_i, y_i);
+                    float thisDistance = spellCaster->GetDistance2d(x_i, y_i);
                     if (thisDistance <= lowestDist)
                     {
                         lowestDist = thisDistance;
@@ -1066,12 +1063,15 @@ void GameObject::Use(Unit* user)
                         y_lowest = y_i;
                     }
                 }
-                pPlayer->TeleportTo(GetMapId(), x_lowest, y_lowest, GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
+                spellCaster->NearTeleportTo(x_lowest, y_lowest, GetPositionZ(), GetOrientation());
             }
             else
-                pPlayer->TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(),TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
+                spellCaster->NearTeleportTo(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
-            pPlayer->SetStandState(PLAYER_STATE_SIT_LOW_CHAIR+info->chair.height);
+            if(spellCaster->GetTypeId() == TYPEID_PLAYER)
+                spellCaster->SetStandState(PLAYER_STATE_SIT_LOW_CHAIR+info->chair.height);
+            else
+                spellCaster->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR);
             return;
         }
         case GAMEOBJECT_TYPE_GOOBER:                        //10

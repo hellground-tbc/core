@@ -1824,6 +1824,10 @@
 						RelativePath="..\scripts\zone\karazhan\karazhan.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\scripts\zone\karazhan\karazhan_trash.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Nagrand"

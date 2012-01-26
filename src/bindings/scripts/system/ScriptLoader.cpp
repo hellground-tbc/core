@@ -314,6 +314,7 @@ extern void AddSC_boss_moroes();
 extern void AddSC_opera_event();
 extern void AddSC_instance_karazhan();
 extern void AddSC_karazhan();
+extern void AddSC_karazhan_trash();
 extern void AddSC_boss_nightbane();
 extern void AddSC_boss_netherspite();
 extern void AddSC_chess_event();
@@ -925,6 +926,7 @@ void AddScripts()
     AddSC_opera_event();
     AddSC_instance_karazhan();
     AddSC_karazhan();
+    AddSC_karazhan_trash();
     AddSC_boss_nightbane();
     AddSC_boss_netherspite();
     AddSC_chess_event();
