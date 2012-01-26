@@ -121,6 +121,8 @@ uint32 GetEncounterForEntry(uint32 entry)
             return DATA_NIGHTBANE_EVENT;
         case 15690:
             return DATA_MALCHEZZAR_EVENT;
+        case 18654:
+            return DATA_OPERA_EVENT;
         default:
             return 0;
     }
