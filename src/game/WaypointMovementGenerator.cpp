@@ -212,6 +212,9 @@ void WaypointMovementGenerator<Creature>::MovementInform(Creature &creature)
 {
      if (creature.IsAIEnabled)
          creature.AI()->MovementInform(WAYPOINT_MOTION_TYPE, i_currentNode);
+
+     if (creature.GetFormation() && !creature.IsFormationLeader())
+         creature.GetFormation()->ReachedWaypoint();
 }
 
 bool WaypointMovementGenerator<Creature>::GetResetPosition(Creature&, float& x, float& y, float& z)
