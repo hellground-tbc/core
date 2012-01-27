@@ -1764,14 +1764,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         /*********************************************************/
         /***                 ANTICHEAT SYSTEM                  ***/
         /*********************************************************/
-        float GetLastSpeedRate() { return fLastSpeedRate; }
-        void SetLastSpeedRate(float fSpeedRateRate) { fLastSpeedRate = fSpeedRateRate; }
-
         uint32 m_AC_timer;
-        uint32 m_AC_count;
         uint32 m_AC_NoFall_count;
-
-        float fLastSpeedRate;
 
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/

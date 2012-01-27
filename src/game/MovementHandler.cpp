@@ -33,6 +33,7 @@
 #include "InstanceSaveMgr.h"
 #include "AntiCheat.h"
 #include "ObjectMgr.h"
+#include "Language.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recv_data*/)
 {
@@ -256,42 +257,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         }
     }
 
-/*
-    // TP cheat
-    UnitMoveType m_type = pPlayer->IsFlying() ? MOVE_FLIGHT : pPlayer->IsUnderWater() ? MOVE_SWIM : MOVE_RUN;
-
-    float m_speedRate = pPlayer->GetSpeedRate(m_type);
-    float m_lastSpeedRate = pPlayer->GetLastSpeedRate();
-    float m_speed = pPlayer->GetSpeed(m_type);
-
-    if (!pPlayer->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_TAXI_FLIGHT) && pPlayer->m_taxi.empty() && m_speedRate == m_speed)
-    {
-        Position m_pos = oldMovementInfo.pos;
-        float dx = movementInfo.pos.x - m_pos.x;
-        float dy = movementInfo.pos.y - m_pos.y;
-        float dz = movementInfo.pos.z - m_pos.z;
-        float fDistance3d = sqrt(dx*dx + dy*dy + dz*dz);
-
-        // time between packets
-        uint32 uiDiffTime = WorldTimer::getMSTimeDiff(oldMovementInfo.time, movementInfo.time);
-
-        float fClientRate = (fDistance3d * 1000 / uiDiffTime) / m_speed;
-        float fServerRate = m_speed * uiDiffTime / 1000 +1.0f;
-
-        if (fDistance3d > 500.0f && fClientRate > fServerRate*4 && m_speed +0.2 < m_speed*fClientRate)
-        {
-            pPlayer->m_AC_count++;
-            pPlayer->m_AC_timer = IN_MILISECONDS;   // 1 sek
-
-            sWorld.SendGMText(LANG_ANTICHEAT, pPlayer->GetName(), pPlayer->m_AC_count, m_speed, m_speed*fClientRate);
-
-            sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
-                          pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), fDistance3d, m_speed, m_speed*fClientRate, pPlayer->GetMapId(), m_pos.x, m_pos.y, m_pos.z, movementInfo.pos.x, movementInfo.pos.y, movementInfo.pos.z, movementInfo.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
-            pPlayer->Relocate(oldMovementInfo.pos);
-        }
-    }
-*/
-
     //Save movement flags
     pPlayer->SetUnitMovementFlags(movementInfo.GetMovementFlags());
 
@@ -347,19 +312,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     }
 
     if (sWorld.m_ac.activated() && !pPlayer->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !pPlayer->isGameMaster() && pPlayer->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
-        sWorld.m_ac.execute(new ACRequest(pPlayer, GetLatency(), pPlayer->m_movementInfo, movementInfo, pPlayer->GetLastSpeedRate()));
-
-    /*----------------------*/
-    uint8 uiMoveType = 0;
-
-    if (pPlayer->IsFlying())
-       uiMoveType = MOVE_FLIGHT;
-    else if (pPlayer->IsUnderWater())
-        uiMoveType = MOVE_SWIM;
-    else
-        uiMoveType = MOVE_RUN;
-
-    pPlayer->SetLastSpeedRate(pPlayer->GetSpeedRate(UnitMoveType(uiMoveType)));
+        sWorld.m_ac.execute(new ACRequest(pPlayer, oldMovementInfo, movementInfo));
 
     /* process position-change */
     recv_data.put<uint32>(5, WorldTimer::getMSTime());                  // offset flags(4) + unk(1)
