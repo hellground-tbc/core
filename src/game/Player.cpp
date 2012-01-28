@@ -446,7 +446,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
 
     m_farsightVision = false;
 
-    m_isActive = true;
+    m_activeBy = 0;
 
     saving = false;
 }
