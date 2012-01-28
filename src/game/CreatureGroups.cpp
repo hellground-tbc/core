@@ -283,7 +283,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
         else
         {
             // jak sie za bardzo rozjada xO
-            if (member->GetDistance(m_leader) > 40.0f)
+            if (!member->IsWithinDistInMap(m_leader, 40.0f))
                 member->Relocate(m_leader->GetPositionX(), m_leader->GetPositionY(), m_leader->GetPositionZ(), 0.0f);
             else
                 member->SetWalk(false);
