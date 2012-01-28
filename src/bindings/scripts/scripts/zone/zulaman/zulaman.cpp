@@ -681,7 +681,7 @@ struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
                 DoScriptText(SAY_AT_GONG, m_creature);
 
                 if (GameObject* pEntranceDoor = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_GONG)))
-                    pEntranceDoor->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+                    pEntranceDoor->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
 
                 //Start bang gong for 10min
                 m_creature->CastSpell(m_creature, SPELL_BANGING_THE_GONG, false);
@@ -878,7 +878,7 @@ struct TRINITY_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMovementA
                     pHarrisonAI->SetHoldState(false);
             }
             if(GameObject* pGo = me->GetMap()->GetGameObject(pInstance->GetData64(DATA_GO_GONG)))
-                pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+                pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
             StoperTime = 0;
         }
     }
