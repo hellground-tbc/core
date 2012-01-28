@@ -45,12 +45,14 @@ void WaypointMovementGenerator<Creature>::Initialize(Creature &creature)
 {
     LoadPath(creature);
     creature.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.setActive(true, ACTIVE_BY_WAYPOINT_MOVEMENT);
 }
 
 void WaypointMovementGenerator<Creature>::Finalize(Creature &creature)
 {
     creature.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
     creature.SetWalk(false);
+    creature.setActive(false, ACTIVE_BY_WAYPOINT_MOVEMENT);
 }
 
 void WaypointMovementGenerator<Creature>::Reset(Creature &creature)
@@ -70,6 +72,9 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
     creature.clearUnitState(UNIT_STAT_ROAMING_MOVE);
     m_isArrivalDone = true;
 
+    if(creature.GetFormation() && !creature.IsFormationLeader())
+        creature.GetFormation()->ReachedWaypoint();
+
     if (i_path->at(i_currentNode)->event_id && urand(0, 99) < i_path->at(i_currentNode)->event_chance)
         creature.GetMap()->ScriptsStart(sWaypointScripts, i_path->at(i_currentNode)->event_id, &creature, NULL/*, false*/);
 
@@ -87,6 +92,9 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
         return true;
 
     const WaypointData *node = i_path->at(i_currentNode);
+
+    if (creature.IsFormationLeader() && !creature.GetFormation()->AllUnitsReachedWaypoint())
+        return true;   
 
     if (m_isArrivalDone)
     {
