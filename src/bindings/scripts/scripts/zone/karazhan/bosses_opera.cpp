@@ -1622,6 +1622,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public ScriptedAI
                 case 0:
                 case 1:
                 case 4:
+                    m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MovePoint(id+1, StageLocations[id+1][0], StageLocations[id+1][1], SPAWN_Z);
                     break;
                 case 2:
@@ -1650,6 +1651,7 @@ struct TRINITY_DLL_DECL npc_barnesAI : public ScriptedAI
                     operaAdds.DoAction(0, 0);
 
                     me->RemoveAurasDueToSpell(SPELL_TUXEDO);
+                    m_creature->GetMotionMaster()->Clear(false);
                     me->GetMotionMaster()->MoveTargetedHome();
                     break;
             }
