@@ -1,0 +1,1 @@
+INSERT INTO command VALUES ('server mute', 3, 'Syntax: .server mute $time [$reason]\r\nMutes whole server for $time seconds. If reason is specified players will get reason msg every time while they will try to write');

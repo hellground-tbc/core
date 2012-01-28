@@ -1,0 +1,8 @@
+#ifndef DEF_MANA_TOMBS_H
+#define DEF_MANA_TOMBS_H
+
+#define DATA_YOREVENT 1
+#define DATA_PANDEMONIUSEVENT 2
+#define DATA_NEXUSPRINCEEVENT 3
+
+#endif
