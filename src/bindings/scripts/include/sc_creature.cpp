@@ -379,7 +379,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
             {
                 Unit * victim = NULL;
 
-                switch(autocastMode)
+                switch (autocastMode)
                 {
                     case CAST_TANK:
                     {

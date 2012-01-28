@@ -278,7 +278,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
 
         member->UpdateGroundPositionZ(dx, dy, dz);
 
-        if (member->GetDistance(m_leader) < dist + MAX_DESYNC)
+        if (member->IsWithinDistInMap(m_leader, dist + MAX_DESYNC))
             member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
         else
         {

@@ -204,19 +204,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
             return;
         }
 
-        if (checkTimer < diff)
-        {
-            if (!m_creature->IsWithinDistInMap(&wLoc, 200.0f, true))
-            {
-                EnterEvadeMode();
-                return;
-            }
-
-            DoZoneInCombat();
-            checkTimer = 3000;
-        }
-        else
-            checkTimer -= diff;
+        DoSpecialThings(diff, DO_EVERYTHING, 200.0f, 2.0f);
 
         //ArcingSmash_Timer
         if (ArcingSmash_Timer < diff)
@@ -344,13 +332,7 @@ struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (pulseCombatTimer < diff)
-        {
-            DoZoneInCombat();
-            pulseCombatTimer = 5000;
-        }
-        else
-            pulseCombatTimer -= diff;
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 2.0f);
 
         //someone evaded!
         if (!pInstance->GetData(DATA_MAULGAREVENT))
@@ -401,7 +383,6 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
     }
 
     uint32 GreaterPolymorph_Timer;
-    uint32 LightningBolt_Timer;
     uint32 ArcaneShock_Timer;
     uint32 ArcaneExplosion_Timer;
 
@@ -414,13 +395,13 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         ClearCastQueue();
 
         GreaterPolymorph_Timer = 5000;
-        LightningBolt_Timer = 10000;
         ArcaneShock_Timer = 20000;
         ArcaneExplosion_Timer = 30000;
 
         pulseCombatTimer = 5000;
 
         pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
+        SetAutocast(SPELL_LIGHTNING_BOLT, 2200);
     }
 
     void EnterCombat(Unit *who)
@@ -428,6 +409,7 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
         pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
         DoZoneInCombat();
+        StartAutocast();
     }
 
     void JustDied(Unit* Killer)
@@ -452,13 +434,7 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (pulseCombatTimer < diff)
-        {
-            DoZoneInCombat();
-            pulseCombatTimer = 5000;
-        }
-        else
-            pulseCombatTimer -= diff;
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 2.0f);
 
         //someone evaded!
         if (!pInstance->GetData(DATA_MAULGAREVENT))
@@ -477,15 +453,6 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
         }
         else
             GreaterPolymorph_Timer -= diff;
-
-        //LightningBolt_Timer
-        if (LightningBolt_Timer < diff)
-        {
-            AddSpellToCast(m_creature->getVictim(), SPELL_LIGHTNING_BOLT);
-            LightningBolt_Timer = 15000;
-        }
-        else
-            LightningBolt_Timer -= diff;
 
         //ArcaneShock_Timer
         if (ArcaneShock_Timer < diff)
@@ -567,13 +534,7 @@ struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (pulseCombatTimer < diff)
-        {
-            DoZoneInCombat();
-            pulseCombatTimer = 5000;
-        }
-        else
-            pulseCombatTimer -= diff;
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 2.0f);
 
         //someone evaded!
         if (!pInstance->GetData(DATA_MAULGAREVENT))
@@ -662,13 +623,7 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (pulseCombatTimer < diff)
-        {
-            DoZoneInCombat();
-            pulseCombatTimer = 5000;
-        }
-        else
-            pulseCombatTimer -= diff;
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 2.0f);
 
         //someone evaded!
         if (pInstance && !pInstance->GetData(DATA_MAULGAREVENT))
