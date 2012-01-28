@@ -265,7 +265,6 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
     m_transport = 0;
 
     m_AC_timer = 0;
-    m_AC_count = 0;
     m_AC_NoFall_count = 0;
 
     m_speakTime = 0;
