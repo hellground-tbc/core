@@ -94,7 +94,10 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
     const WaypointData *node = i_path->at(i_currentNode);
 
     if (creature.IsFormationLeader() && !creature.GetFormation()->AllUnitsReachedWaypoint())
+    {
+        Stop(1);
         return true;   
+    }
 
     if (m_isArrivalDone)
     {
