@@ -5865,52 +5865,6 @@ int ObjectMgr::GetOrNewIndexForLocale(LocaleConstant loc)
     return m_LocalForIndex.size()-1;
 }
 
-void ObjectMgr::LoadGameObjectForQuests()
-{
-    mGameObjectForQuestSet.clear();                         // need for reload case
-
-    uint32 count = 0;
-
-    // collect GO entries for GO that must activated
-    for (uint32 go_entry = 1; go_entry < sGOStorage.MaxEntry; ++go_entry)
-    {
-        GameObjectInfo const* goInfo = sGOStorage.LookupEntry<GameObjectInfo>(go_entry);
-        if (!goInfo)
-            continue;
-
-        switch (goInfo->type)
-        {
-            // scan GO chest with loot including quest items
-            case GAMEOBJECT_TYPE_CHEST:
-            {
-                uint32 loot_id = GameObject::GetLootId(goInfo);
-
-                // find quest loot for GO
-                if (LootTemplates_Gameobject.HaveQuestLootfor (loot_id))
-                {
-                    mGameObjectForQuestSet.insert(go_entry);
-                    ++count;
-                }
-                break;
-            }
-            case GAMEOBJECT_TYPE_GOOBER:
-            {
-                if (goInfo->goober.questId)                  //quests objects
-                {
-                    mGameObjectForQuestSet.insert(go_entry);
-                    count++;
-                }
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-    sLog.outString();
-    sLog.outString(">> Loaded %u GameObject for quests", count);
-}
-
 bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value)
 {
     int32 start_value = min_value;

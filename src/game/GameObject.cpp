@@ -849,37 +849,29 @@ void GameObject::Respawn()
 
 bool GameObject::ActivateToQuest(Player *pTarget)const
 {
-    if (!objmgr.IsGameObjectForQuests(GetEntry()))
-        return false;
-
     switch (GetGoType())
     {
-        // scan GO chest with loot including quest items
         case GAMEOBJECT_TYPE_CHEST:
         {
-            if (LootTemplates_Gameobject.HaveQuestLootForPlayer(GetLootId(), pTarget))
-            {
-                //TODO: fix this hack
-                //look for battlegroundAV for some objects which are only activated after mine gots captured by own team
-                if (GetEntry() == BG_AV_OBJECTID_MINE_N || GetEntry() == BG_AV_OBJECTID_MINE_S)
-                    if (BattleGround *bg = pTarget->GetBattleGround())
-                        if (bg->GetTypeID() == BATTLEGROUND_AV && !(((BattleGroundAV*)bg)->PlayerCanDoMineQuest(GetEntry(),pTarget->GetTeam())))
-                            return false;
-                return true;
-            }
-            break;
+            //TODO: fix this hack
+            //look for battlegroundAV for some objects which are only activated after mine gots captured by own team
+            if (GetEntry() == BG_AV_OBJECTID_MINE_N || GetEntry() == BG_AV_OBJECTID_MINE_S)
+                if (BattleGround *bg = pTarget->GetBattleGround())
+                    if (bg->GetTypeID() == BATTLEGROUND_AV && !(((BattleGroundAV*)bg)->PlayerCanDoMineQuest(GetEntry(),pTarget->GetTeam())))
+                        return false;
+            return LootTemplates_Gameobject.HaveQuestLootForPlayer(GetLootId(), pTarget);
         }
         case GAMEOBJECT_TYPE_GOOBER:
         {
-            if (pTarget->GetQuestStatus(GetGOInfo()->goober.questId) == QUEST_STATUS_INCOMPLETE)
-                return true;
-            break;
+            return pTarget->GetQuestStatus(GetGOInfo()->goober.questId) == QUEST_STATUS_INCOMPLETE;
+        }
+        case GAMEOBJECT_TYPE_GENERIC:
+        {
+            return pTarget->GetQuestStatus(GetGOInfo()->_generic.questID) == QUEST_STATUS_INCOMPLETE;
         }
         default:
-            break;
+            return false;
     }
-
-    return false;
 }
 
 void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, Unit* target)

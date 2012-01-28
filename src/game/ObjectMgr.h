@@ -382,11 +382,6 @@ class TRINITY_DLL_DECL ObjectMgr
             return mTavernAreaTriggerSet.find(Trigger_ID) != mTavernAreaTriggerSet.end();
         }
 
-        bool IsGameObjectForQuests(uint32 entry) const
-        {
-            return mGameObjectForQuestSet.find(entry) != mGameObjectForQuestSet.end();
-        }
-
         GossipText const * GetGossipText(uint32 Text_ID) const;
 
         WorldSafeLocsEntry const *GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team);
@@ -808,7 +803,6 @@ class TRINITY_DLL_DECL ObjectMgr
 
         QuestAreaTriggerMap mQuestAreaTriggerMap;
         TavernAreaTriggerSet mTavernAreaTriggerSet;
-        GameObjectForQuestSet mGameObjectForQuestSet;
         GossipTextMap       mGossipText;
         AreaTriggerMap      mAreaTriggers;
         AccessRequirementMap  mAccessRequirements;
