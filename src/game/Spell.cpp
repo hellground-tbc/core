@@ -2832,8 +2832,11 @@ void Spell::update(uint32 difftime)
         (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
         (m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR)))
     {
-        if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
-            cancel();
+        if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
+        {
+            if ((IsChanneledSpell(m_spellInfo) && m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT) || (!IsChanneledSpell(m_spellInfo) && m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
+                cancel();
+        }
     }
 
     switch (m_spellState)
