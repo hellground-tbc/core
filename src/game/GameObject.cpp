@@ -215,6 +215,25 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
         return;
     }
 
+    if (m_respawnTime > 0)
+    {
+        if (m_respawnTime <= time(NULL))
+        {
+            if(m_spawnedByDefault)
+            {
+                Respawn();
+            }
+            else
+            {
+                Despawn();
+            }
+        }
+    }
+
+    if(!isSpawned())
+        return;
+
+
     switch (m_lootState)
     {
         case GO_NOT_READY:
@@ -262,72 +281,37 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
         }
         case GO_READY:
         {
-            if (m_respawnTime > 0)                          // timer on
+            switch (GetGoType())
             {
-                if (m_respawnTime <= time(NULL))            // timer expired
+                case GAMEOBJECT_TYPE_FISHINGNODE:   //  can't fish now
                 {
-                    m_respawnTime = 0;
-                    m_SkillupList.clear();
-                    m_usetimes = 0;
-
-                    switch (GetGoType())
+                    Unit* caster = GetOwner();
+                    if (caster && caster->GetTypeId()==TYPEID_PLAYER)
                     {
-                        case GAMEOBJECT_TYPE_FISHINGNODE:   //  can't fish now
+                        if (caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
                         {
-                            Unit* caster = GetOwner();
-                            if (caster && caster->GetTypeId()==TYPEID_PLAYER)
-                            {
-                                if (caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                                {
-                                    caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                                    caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish(false);
-                                }
-
-                                WorldPacket data(SMSG_FISH_NOT_HOOKED,0);
-                                ((Player*)caster)->GetSession()->SendPacket(&data);
-                            }
-                            // can be delete
-                            m_lootState = GO_JUST_DEACTIVATED;
-                            return;
+                            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+                            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish(false);
                         }
-                        case GAMEOBJECT_TYPE_GOOBER:
-                            if(!GetGOInfo()->goober.consumable) // delete not consumable GO when timer expired
-                            {
-                                if (GetOwnerGUID())
-                                {
-                                    if (Unit* owner = GetOwner())
-                                        owner->RemoveGameObject(this, false);
-                                    Delete();
-                                    return;
-                                }
-                            }
-                            return;
-                        case GAMEOBJECT_TYPE_DOOR:
-                        case GAMEOBJECT_TYPE_BUTTON:
-                            //we need to open doors if they are closed (add there another condition if this code breaks some usage, but it need to be here for battlegrounds)
-                            if (GetGoState() != GO_STATE_READY)
-                                //SwitchDoorOrButton(false);
-                                ResetDoorOrButton();
-                            //flags in AB are type_button and we need to add them here so no break!
-                        default:
-                            if (!m_spawnedByDefault)         // despawn timer
-                            {
-                                                            // can be despawned or destroyed
-                                SetLootState(GO_JUST_DEACTIVATED);
-                                return;
-                            }
-                                                            // respawn timer
-                            uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), TYPEID_GAMEOBJECT);
-                            if (poolid)
-                                poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_GAMEOBJECT);
-                            else
-                                GetMap()->Add(this);
-                            break;
-                    }
 
-                    UpdateObjectVisibility();
+                        WorldPacket data(SMSG_FISH_NOT_HOOKED,0);
+                        ((Player*)caster)->GetSession()->SendPacket(&data);
+                    }
+                    // can be delete
+                    m_lootState = GO_JUST_DEACTIVATED;
+                    return;
                 }
+                case GAMEOBJECT_TYPE_DOOR:
+                case GAMEOBJECT_TYPE_BUTTON:
+                //we need to open doors if they are closed (add there another condition if this code breaks some usage, but it need to be here for battlegrounds)
+                if (GetGoState() != GO_STATE_READY)
+                    //SwitchDoorOrButton(false);
+                    ResetDoorOrButton();
+                //flags in AB are type_button and we need to add them here so no break!
+                default:
+                break;
             }
+
 
             // traps can have time and can not have
             GameObjectInfo const* goInfo = GetGOInfo();
@@ -410,10 +394,6 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     }
                 }
             }
-
-            if (m_charges && m_usetimes >= m_charges)
-                SetLootState(GO_JUST_DEACTIVATED);          // can be despawned or destroyed
-
             break;
         }
         case GO_ACTIVATED:
@@ -460,56 +440,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
         }
         case GO_JUST_DEACTIVATED:
         {
-            //if Gameobject should cast spell, then this, but some GOs (type = 10) should be destroyed
-            if (GetGoType() == GAMEOBJECT_TYPE_GOOBER)
-            {
-                // don't despawn goober object if isn't consumable
-                if (!GetGOInfo()->goober.consumable)
-                {
-                    loot.clear();
-                    SetLootState(GO_READY);
-                    //m_respawnTime = 0;
-                    return;
-                }
-            }
-
-            if (GetOwnerGUID())
-            {
-                if (Unit* owner = GetOwner())
-                    owner->RemoveGameObject(this, false);
-
-                m_respawnTime = 0;
-                Delete();
-                return;
-            }
-
-            //burning flags in some battlegrounds, if you find better condition, just add it
-            if (GetGoAnimProgress() > 0)
-            {
-                SendObjectDeSpawnAnim(this->GetGUID());
-                //reset flags
-                SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
-            }
-
-            loot.clear();
-            SetLootState(GO_READY);
-
-            if (!m_respawnDelayTime)
-                return;
-
-            if (!m_spawnedByDefault)
-            {
-                m_respawnTime = 0;
-                return;
-            }
-
-            m_respawnTime = time(NULL) + m_respawnDelayTime;
-
-            // if option not set then object will be saved at grid unload
-            if (sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
-                SaveRespawnTime();
-
-            UpdateObjectVisibility();
+            Despawn();
             break;
         }
     }
@@ -840,10 +771,60 @@ bool GameObject::canDetectTrap(Player const* u, float distance) const
 
 void GameObject::Respawn()
 {
-    if (m_spawnedByDefault && m_respawnTime > 0)
+    Reset();
+    m_respawnTime = 0;
+    SendSpawnAnimation();
+
+    uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), TYPEID_GAMEOBJECT);
+    if (poolid)
+        poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_GAMEOBJECT);
+    else
+        GetMap()->Add(this);
+
+    UpdateObjectVisibility();
+}
+
+void GameObject::Activate()
+{
+    SendGameObjectCustomAnim(GetGUID());
+    SetLootState(GO_ACTIVATED);
+}
+
+void GameObject::Reset()
+{
+    m_SkillupList.clear();
+    m_usetimes = 0;
+    loot.clear();
+    SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
+    SetLootState(GO_READY);
+}
+
+void GameObject::Despawn()
+{
+    if (GetOwnerGUID())
     {
-        m_respawnTime = time(NULL);
-        objmgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),0);
+        if (Unit* owner = GetOwner())
+            owner->RemoveGameObject(this, false);
+
+        m_respawnTime = 0;
+        Delete();
+        return;
+    }
+
+    if(GetDespawnPossibility() && m_respawnDelayTime) //check if GO need respawn
+    {
+        SendObjectDeSpawnAnim(GetGUID());
+        m_respawnTime = m_spawnedByDefault ? time(NULL) + m_respawnDelayTime : 0;
+
+        // if option not set then object will be saved at grid unload
+        if (sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
+            SaveRespawnTime();
+
+        UpdateObjectVisibility();
+    }
+    else // reset GO if respawn is not required
+    {
+        Reset();
     }
 }
 
@@ -967,6 +948,7 @@ void GameObject::Use(Unit* user)
     Unit* spellCaster = user;
     uint32 spellId = 0;
 
+    Activate();
     Player *pPlayer = user->GetCharmerOrOwnerPlayerOrPlayerItself();
     if (pPlayer)
     {
