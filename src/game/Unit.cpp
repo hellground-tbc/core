@@ -1156,10 +1156,13 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     if (!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
-    if (!triggered && spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
+    if (!triggered)
     {
-        DisableSpline();
-        StopMoving();
+        if ((IsChanneledSpell(spellInfo) && spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT) || (!IsChanneledSpell(spellInfo) && spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
+        {
+            DisableSpline();
+            StopMoving();
+        }
     }
 
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster);
