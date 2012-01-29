@@ -222,10 +222,6 @@ struct TRINITY_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
         wLoc.coord_y = 1035.45;
         wLoc.coord_z = 29.4481;
         wLoc.mapid = c->GetMapId();
-
-        SpellEntry *temp = (SpellEntry *)(GetSpellStore()->LookupEntry(SPELL_SPIRIT_BOLTS));
-        if(temp)
-            temp->ChannelInterruptFlags = 0;
     }
 
     ScriptedInstance *pInstance;
