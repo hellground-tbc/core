@@ -8231,6 +8231,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     if (spellProto->SpellFamilyName && spellProto->SchoolMask != SPELL_SCHOOL_MASK_NORMAL)
         TakenActualBenefit *= ((float)CastingTime / 3500.0f);
 
+    // HACK for Felmyst's Noxious Fumes dmg calculation when under Berserk effect
+    if (spellProto->Id == 47002)
+        DoneTotalMod = 1.0;
+
     float tmpDamage = (float(pdamage)+DoneActualBenefit)*DoneTotalMod;
 
     // Add flat bonus from spell damage versus

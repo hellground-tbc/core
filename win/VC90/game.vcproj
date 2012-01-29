@@ -620,6 +620,10 @@
 			Name="Server"
 			>
 			<File
+				RelativePath="..\..\src\game\AntiCheat.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\AntiCheat.h"
 				>
 			</File>
