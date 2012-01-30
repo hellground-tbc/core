@@ -3075,6 +3075,10 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 41345: // Infatuation (BT Trash)
             spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_IGNORE_LOS;
+            break;
+        case 43383: // Spirit Bolts (HexLord)
+            spellInfo->ChannelInterruptFlags = CHANNEL_FLAG_MOVEMENT;
+            break;
         default:
             break;
         }

@@ -1156,10 +1156,13 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     if (!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
 
-    if (!triggered && spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
+    if (!triggered)
     {
-        DisableSpline();
-        StopMoving();
+        if ((IsChanneledSpell(spellInfo) && spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT) || (!IsChanneledSpell(spellInfo) && spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
+        {
+            DisableSpline();
+            StopMoving();
+        }
     }
 
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster);
@@ -8230,6 +8233,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     float TakenActualBenefit = TakenAdvertisedBenefit * DotFactor * LvlPenalty;
     if (spellProto->SpellFamilyName && spellProto->SchoolMask != SPELL_SCHOOL_MASK_NORMAL)
         TakenActualBenefit *= ((float)CastingTime / 3500.0f);
+
+    // HACK for Felmyst's Noxious Fumes dmg calculation when under Berserk effect
+    if (spellProto->Id == 47002)
+        DoneTotalMod = 1.0;
 
     float tmpDamage = (float(pdamage)+DoneActualBenefit)*DoneTotalMod;
 

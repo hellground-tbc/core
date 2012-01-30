@@ -351,7 +351,7 @@ struct TRINITY_DLL_DECL npc_muglashAI : public npc_escortAI
                 {
                     m_uiBrazierGUID = pGo->GetGUID();
                     
-                    pGo->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+                    pGo->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
                     SetEscortPaused(true);
                 }
                 break;
@@ -370,7 +370,7 @@ struct TRINITY_DLL_DECL npc_muglashAI : public npc_escortAI
                     if (GameObject* pGo = GameObject::GetGameObject(*m_creature, m_uiBrazierGUID))
                     {
                         pGo->SetLootState(GO_JUST_DEACTIVATED);
-                        pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+                        pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
                         pGo->SetGoState(GO_STATE_READY);
                     }
                 }
@@ -428,7 +428,7 @@ struct TRINITY_DLL_DECL npc_muglashAI : public npc_escortAI
                 if (GameObject* pGo = GameObject::GetGameObject(*pPlayer, m_uiBrazierGUID))
                 {
                     pGo->SetLootState(GO_JUST_DEACTIVATED);
-                    pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+                    pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
                     pGo->SetGoState(GO_STATE_READY);
                 }
             }

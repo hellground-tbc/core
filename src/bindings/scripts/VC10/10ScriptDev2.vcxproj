@@ -385,6 +385,7 @@
     <ClCompile Include="..\scripts\zone\darkshore\darkshore.cpp" />
     <ClCompile Include="..\scripts\zone\eastern_plaguelands\eastern_plaguelands.cpp" />
     <ClCompile Include="..\scripts\zone\karazhan\chess_event.cpp" />
+    <ClCompile Include="..\scripts\zone\karazhan\karazhan_trash.cpp" />
     <ClCompile Include="..\scripts\zone\magisters_terrace\magisters_terrace_trash.cpp" />
     <ClCompile Include="..\scripts\zone\moonglade\moonglade.cpp" />
     <ClCompile Include="..\scripts\zone\razorfen_kraul\instance_razorfen_kraul.cpp" />

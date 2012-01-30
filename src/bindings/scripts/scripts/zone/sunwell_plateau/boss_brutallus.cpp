@@ -133,8 +133,11 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
 
     void KilledUnit(Unit* /*victim*/)
     {
-        if (pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
-            DoScriptText(RAND(YELL_KILL1, YELL_KILL2, YELL_KILL3), me);
+        if (pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE && me->isAlive())
+        {
+            if(roll_chance_f(40.0))
+                DoScriptText(RAND(YELL_KILL1, YELL_KILL2, YELL_KILL3), me);
+        }
     }
 
     void JustDied(Unit* /*pKiller*/)

@@ -96,7 +96,7 @@ struct instance_razorfen_downs : public ScriptedInstance
             case GO_GONG:
                 uiGongGUID = pGo->GetGUID();
                 if (m_auiEncounter[0] == DONE)
-                    pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+                    pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_NOTSELECTABLE);
                 break;
             default:
                 break;
@@ -114,7 +114,7 @@ struct instance_razorfen_downs : public ScriptedInstance
                 case 9:
                 case 14:
                     if (GameObject* pGo = instance->GetGameObject(uiGongGUID))
-                        pGo->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+                        pGo->RemoveFlag(GAMEOBJECT_FLAGS,GO_FLAG_NOTSELECTABLE);
                     break;
                 case 1:
                 case 10:
@@ -125,7 +125,7 @@ struct instance_razorfen_downs : public ScriptedInstance
                     if (!pGo)
                         return;
 
-                    pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_UNK1);
+                    pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_NOTSELECTABLE);
 
                     uint32 uiCreature = 0;
                     uint8 uiSummonTimes = 0;

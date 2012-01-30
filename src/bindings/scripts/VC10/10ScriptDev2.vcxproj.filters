@@ -1531,6 +1531,9 @@
     <ClCompile Include="..\scripts\zone\coilfang_resevoir\serpent_shrine\serpent_shrine_trash.cpp">
       <Filter>Scripts\zone\Coilfang Resevoir\Serpent Shrine Cavern</Filter>
     </ClCompile>
+    <ClCompile Include="..\scripts\zone\karazhan\karazhan_trash.cpp">
+      <Filter>Scripts\zone\Karazhan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\scripts\creature\simple_ai.h">

@@ -289,11 +289,6 @@ bool ChatHandler::HandleReloadQuestTemplateCommand(const char*)
     objmgr.LoadQuests();
     SendGlobalGMSysMessage("DB table `quest_template` (quest definitions) reloaded.");
 
-    /// dependent also from `gameobject` but this table not reloaded anyway
-    sLog.outString( "Re-Loading GameObjects for quests..." );
-    objmgr.LoadGameObjectForQuests();
-    SendGlobalSysMessage("Data GameObjects for quests reloaded.");
-
     return true;
 }
 

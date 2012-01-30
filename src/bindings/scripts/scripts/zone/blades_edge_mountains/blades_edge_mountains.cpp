@@ -979,7 +979,7 @@ struct npc_simon_bunnyAI : public ScriptedAI
         _events.ScheduleEvent(EVENT_SIMON_PERIODIC_PLAYER_CHECK, 2000);
 
         if (GameObject* relic = GetClosestGameObjectWithEntry(me, large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
-            relic->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+            relic->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
     }
 
     // Called when despawning the bunny. Sets all the node GOs to their default states.
@@ -989,14 +989,14 @@ struct npc_simon_bunnyAI : public ScriptedAI
 
         for (uint32 clusterId = SIMON_BLUE; clusterId < SIMON_MAX_COLORS; clusterId++)
             if (GameObject* cluster = GetClosestGameObjectWithEntry(me, clusterIds[clusterId], searchDistance))
-                cluster->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+                cluster->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
 
         for (uint32 auraId = GO_AURA_BLUE; auraId <= GO_AURA_YELLOW; auraId++)
             if (GameObject* auraGo = GetClosestGameObjectWithEntry(me, auraId, searchDistance))
                 auraGo->RemoveFromWorld();
 
         if (GameObject* relic = GetClosestGameObjectWithEntry(me, large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
-            relic->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+            relic->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
 
         me->ForcedDespawn(1000);
     }
@@ -1040,7 +1040,7 @@ struct npc_simon_bunnyAI : public ScriptedAI
     {
         for (uint32 clusterId = SIMON_BLUE; clusterId < SIMON_MAX_COLORS; clusterId++)
             if (GameObject* cluster = GetClosestGameObjectWithEntry(me, clusterIds[clusterId], searchDistance))
-                cluster->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+                cluster->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
 
         if (clustersOnly)
             return;
@@ -1094,7 +1094,7 @@ struct npc_simon_bunnyAI : public ScriptedAI
         {
             if (GameObject* cluster = GetClosestGameObjectWithEntry(me,clusterIds[clusterId], 2.0f*searchDistance))
             {
-                cluster->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
+                cluster->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
 
                 // break since we don't need glowing auras for large clusters
                 if (large)
