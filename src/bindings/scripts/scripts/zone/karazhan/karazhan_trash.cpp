@@ -41,7 +41,7 @@ struct TRINITY_DLL_DECL mob_phantom_guestAI : public ScriptedAI
     void AttackStart(Unit *who)
     {
         if(Type == 0 || Type == 1)
-            ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
+            ScriptedAI::AttackStartNoMove(who, Type == 0 ? CHECK_TYPE_CASTER : CHEST_TYPE_SHOOTER);
         else
             ScriptedAI::AttackStart(who);
     }
@@ -109,8 +109,10 @@ struct TRINITY_DLL_DECL mob_phantom_guestAI : public ScriptedAI
         else
             SecondaryTimer -= diff;
 
-        if(Type == 0 || Type == 1)
-            CheckCasterNoMovementInRange(diff, 20.0);
+        if(Type == 0)
+            CheckCasterNoMovementInRange(diff, 30.0);
+        else if(Type == 1)
+            CheckShoterNoMovementInRange(diff, 30.0);
         CastNextSpellIfAnyAndReady(diff);
         DoMeleeAttackIfReady();
     }    
@@ -121,6 +123,86 @@ CreatureAI* GetAI_mob_phantom_guest(Creature *_Creature)
     return new mob_phantom_guestAI(_Creature);
 }
 
+#define SPELL_DUAL_WIELD    674
+#define SPELL_SHOT          29575
+#define SPELL_MULTI_SHOT    29576
+
+#define SENTRY_SAY_AGGRO1   "What is this?"
+#define SENTRY_SAY_AGGRO2   "Stop them!"
+#define SENTRY_SAY_AGGRO3   "Invaders in the tower!"
+#define SENTRY_SAY_DEATH1   "I have failed..." 
+#define SENTRY_SAY_RANDOM   "It's great assigment, yeah, but \"all looking and no touching\" gets old after a while."
+
+struct TRINITY_DLL_DECL mob_spectral_sentryAI : public ScriptedAI
+{
+    mob_spectral_sentryAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 ShotTimer;
+    uint32 MultiShotTimer;
+    uint32 RandomSayTimer;
+
+    void Reset()
+    {
+        me->CastSpell(me, SPELL_DUAL_WIELD, true);
+
+        ShotTimer = 0;
+        MultiShotTimer = 8000;
+        RandomSayTimer = urand(40000, 80000);
+    }
+    
+    void EnterCombat(Unit *who)
+    {
+        if(urand(0, 3))
+            me->Say(RAND<const char*>(SENTRY_SAY_AGGRO1, SENTRY_SAY_AGGRO2, SENTRY_SAY_AGGRO3), 0, 0);
+    }
+
+    void AttackStart(Unit *who)
+    {
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_SHOOTER);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+        {
+            if (RandomSayTimer < diff)
+            {
+                if(!urand(0,2))
+                    me->Say(SENTRY_SAY_RANDOM, 0, 0);
+                RandomSayTimer = urand(40000, 80000);
+            }
+            else 
+                RandomSayTimer -= diff
+            return;
+        }
+
+        if(ShotTimer < diff)
+        {
+            AddSpellToCast(SPELL_SHOT, CAST_TANK);
+            ShotTimer = 2000;
+        } 
+        else
+            ShotTimer -= diff;
+
+        if(MultiShotTimer < diff)
+        {
+            AddSpellToCast(SPELL_MULTI_SHOT, CAST_RANDOM);
+            MultiShotTimer = 8000;
+        }
+        else
+            MultiShotTimer -= diff;
+
+        CheckShooterNoMovementInRange(diff, 20.0);
+        CastNextSpellIfAnyAndReady(diff);
+        DoMeleeAttackIfReady();
+    }    
+};
+
+CreatureAI* GetAI_mob_spectral_sentry(Creature *_Creature)
+{
+    return new mob_spectral_sentryAI(_Creature);
+}
+
 
 bool Spell_charge(const Aura* aura, bool apply)
 {
@@ -129,7 +211,6 @@ bool Spell_charge(const Aura* aura, bool apply)
         if(Unit* caster = aura->GetCaster())
             caster->CastSpell(aura->GetTarget(), 29321, true);      // trigger fear after charge
     }
-
     return true;
 }
 
@@ -145,6 +226,11 @@ void AddSC_karazhan_trash()
     newscript = new Script;
     newscript->Name = "mob_phantom_guest";
     newscript->GetAI = &GetAI_mob_phantom_guest;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_spectral_sentry";
+    newscript->GetAI = &GetAI_mob_spectral_sentry;
     newscript->RegisterSelf();
 }
 

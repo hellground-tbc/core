@@ -47,6 +47,8 @@ bool GossipHello_npc_berthold(Player* player, Creature* _Creature)
     bool aranDone = false;
     if(pInstance && (pInstance->GetData(DATA_SHADEOFARAN_EVENT) >= DONE))
         aranDone = true;
+
+    _Creature->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
     
     player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_PLACE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
     player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_MEDIVH, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
@@ -55,15 +57,17 @@ bool GossipHello_npc_berthold(Player* player, Creature* _Creature)
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TELEPORT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
 
     if (aranDone)
-        player->SEND_GOSSIP_MENU(25035, _Creature->GetGUID());
-    else
         player->SEND_GOSSIP_MENU(25044, _Creature->GetGUID());
+    else
+        player->SEND_GOSSIP_MENU(25035, _Creature->GetGUID());
     
     return true;
 }
 
 bool GossipSelect_npc_berthold(Player* player, Creature* _Creature, uint32 sender, uint32 action)
 {
+    _Creature->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
+
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF + 1:
