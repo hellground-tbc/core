@@ -2,7 +2,7 @@
 # Trinity Core worldd configuration file #
 ##########################################
 [CoreConf]
-ConfVersion=2011101301
+ConfVersion=2012013001
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -923,6 +923,12 @@ DisablePVP = 0
 #        Distance from player to listen text that creature (or other world object) yell
 #        Default: 300
 #
+#	 WaypointMovementAutoActive.Continents
+#	 WaypointMovementAutoActive.Instances
+#		 Set to 0 if you don't want to creatures using waypoint movemet become automaticly active
+#		 Default: 1
+#
+#
 ###################################################################################################################
 
 ThreatRadius = 60
@@ -954,6 +960,8 @@ Rate.Creature.Elite.RARE.HP = 1
 ListenRange.Say = 40
 ListenRange.TextEmote = 40
 ListenRange.Yell = 300
+WaypointMovementAutoActive.Continents = 1
+WaypointMovementAutoActive.Instances = 1
 
 ###################################################################################################################
 # CHAT SETTINGS
@@ -1116,6 +1124,10 @@ GM.AllowFriend    = 0
 #        Visibility grey distance for dynobjects/gameobjects/corpses/creature bodies
 #        Default: 10 (yards)
 #
+#	 Visibility.Distance.ActiveObjectUpdate.Continents
+#	 Visibility.Distance.ActiveObjectUpdate.Instances
+#		Range in which objects around active objects (not players) will be updated
+#
 #
 ###################################################################################################################
 
@@ -1135,6 +1147,9 @@ Visibility.Distance.Grey.Object = 10
 Visibility.Notify.Period.OnContinents = 1000
 Visibility.Notify.Period.InInstances  = 1000
 Visibility.Notify.Period.InBGArenas   = 1000
+
+Visibility.Distance.ActiveObjectUpdate.Continents = 132
+Visibility.Distance.ActiveObjectUpdate.Instances = 132
 
 ###################################################################################################################
 # SERVER RATES

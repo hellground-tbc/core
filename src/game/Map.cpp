@@ -126,6 +126,7 @@ void Map::InitVisibilityDistance()
 {
     //init visibility for continents
     m_VisibleDistance = sWorld.GetMaxVisibleDistanceOnContinents();
+    m_ActiveObjectUpdateDistance = sWorld.GetActiveObjectUpdateDistanceOnContinents();
 }
 
 // Template specialization of utility methods
@@ -522,7 +523,7 @@ void Map::Update(const uint32 &t_diff)
             if (!obj->IsInWorld() || !obj->IsPositionValid())
                 continue;
 
-            CellArea area = Cell::CalculateCellArea(obj->GetPositionX(), obj->GetPositionY(), GetVisibilityDistance());
+            CellArea area = Cell::CalculateCellArea(obj->GetPositionX(), obj->GetPositionY(), GetActiveObjectUpdateDistance());
 
             for (uint32 x = area.low_bound.x_coord; x < area.high_bound.x_coord; ++x)
             {
@@ -2242,6 +2243,8 @@ void InstanceMap::InitVisibilityDistance()
             m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();
             break;
     }
+
+    m_ActiveObjectUpdateDistance = sWorld.GetActiveObjectUpdateDistanceInInstances();
 }
 
 /*
@@ -2632,6 +2635,8 @@ void BattleGroundMap::InitVisibilityDistance()
        m_VisibleDistance = sWorld.GetMaxVisibleDistanceInArenas();
     else
         m_VisibleDistance = sWorld.GetMaxVisibleDistanceInBG();
+
+    m_ActiveObjectUpdateDistance = sWorld.GetActiveObjectUpdateDistanceInInstances();
 }
 
 bool BattleGroundMap::CanEnter(Player * player)
@@ -3143,4 +3148,12 @@ float Map::GetVisibilityDistance(WorldObject* obj) const
     }
 
     return m_VisibleDistance;
+}
+
+bool Map::WaypointMovementAutoActive() const
+{
+    if(Instanceable())
+        return sWorld.getConfig(CONFIG_WAYPOINT_MOVEMENT_ACTIVE_IN_INSTANCES);
+    else
+        return sWorld.getConfig(CONFIG_WAYPOINT_MOVEMENT_ACTIVE_ON_CONTINENTS);
 }

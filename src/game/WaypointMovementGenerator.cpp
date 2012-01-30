@@ -45,7 +45,9 @@ void WaypointMovementGenerator<Creature>::Initialize(Creature &creature)
 {
     LoadPath(creature);
     creature.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
-    creature.setActive(true, ACTIVE_BY_WAYPOINT_MOVEMENT);
+
+    if (creature.GetMap()->WaypointMovementAutoActive())
+        creature.setActive(true, ACTIVE_BY_WAYPOINT_MOVEMENT);
 }
 
 void WaypointMovementGenerator<Creature>::Finalize(Creature &creature)

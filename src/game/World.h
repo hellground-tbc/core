@@ -276,6 +276,9 @@ enum WorldConfigs
 
     CONFIG_MIN_GM_COMMAND_LOG_LEVEL,
 
+    CONFIG_WAYPOINT_MOVEMENT_ACTIVE_ON_CONTINENTS,
+    CONFIG_WAYPOINT_MOVEMENT_ACTIVE_IN_INSTANCES,
+
     CONFIG_VALUE_COUNT
 };
 
@@ -602,6 +605,9 @@ class World
         static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
         static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
+        static int32 GetActiveObjectUpdateDistanceOnContinents() { return m_activeObjectUpdateDistanceOnContinents; }
+        static int32 GetActiveObjectUpdateDistanceInInstances() { return m_activeObjectUpdateDistanceInInstances; }
+
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder::Print* zprintf, char const* input) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
 
@@ -735,6 +741,9 @@ class World
         static int32 m_visibility_notify_periodOnContinents;
         static int32 m_visibility_notify_periodInInstances;
         static int32 m_visibility_notify_periodInBGArenas;
+
+        static int32 m_activeObjectUpdateDistanceOnContinents;
+        static int32 m_activeObjectUpdateDistanceInInstances;
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*, ACE_Thread_Mutex> cliCmdQueue;
