@@ -41,7 +41,7 @@ struct TRINITY_DLL_DECL mob_phantom_guestAI : public ScriptedAI
     void AttackStart(Unit *who)
     {
         if(Type == 0 || Type == 1)
-            ScriptedAI::AttackStartNoMove(who, Type == 0 ? CHECK_TYPE_CASTER : CHEST_TYPE_SHOOTER);
+            ScriptedAI::AttackStartNoMove(who, Type == 0 ? CHECK_TYPE_CASTER : CHECK_TYPE_SHOOTER);
         else
             ScriptedAI::AttackStart(who);
     }
@@ -112,7 +112,7 @@ struct TRINITY_DLL_DECL mob_phantom_guestAI : public ScriptedAI
         if(Type == 0)
             CheckCasterNoMovementInRange(diff, 30.0);
         else if(Type == 1)
-            CheckShoterNoMovementInRange(diff, 30.0);
+            CheckShooterNoMovementInRange(diff, 30.0);
         CastNextSpellIfAnyAndReady(diff);
         DoMeleeAttackIfReady();
     }    
@@ -172,7 +172,7 @@ struct TRINITY_DLL_DECL mob_spectral_sentryAI : public ScriptedAI
                 RandomSayTimer = urand(40000, 80000);
             }
             else 
-                RandomSayTimer -= diff
+                RandomSayTimer -= diff;
             return;
         }
 
