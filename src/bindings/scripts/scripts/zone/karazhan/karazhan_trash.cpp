@@ -152,7 +152,7 @@ struct TRINITY_DLL_DECL mob_spectral_sentryAI : public ScriptedAI
     
     void EnterCombat(Unit *who)
     {
-        if(urand(0, 3))
+        if(roll_chance_i(70))
             me->Say(RAND<const char*>(SENTRY_SAY_AGGRO1, SENTRY_SAY_AGGRO2, SENTRY_SAY_AGGRO3), 0, 0);
     }
 
@@ -163,7 +163,7 @@ struct TRINITY_DLL_DECL mob_spectral_sentryAI : public ScriptedAI
 
     void JustDied(Unit *)
     {
-        if(!urand(0, 2))
+        if(roll_chance_i(30))
             me->Say(SENTRY_SAY_DEATH1, 0, 0);
     }
 
@@ -173,7 +173,7 @@ struct TRINITY_DLL_DECL mob_spectral_sentryAI : public ScriptedAI
         {
             if (RandomSayTimer < diff)
             {
-                if(!urand(0,2))
+                if(roll_chance_i(30))
                     me->Say(SENTRY_SAY_RANDOM, 0, 0);
                 RandomSayTimer = urand(40000, 80000);
             }
@@ -261,7 +261,7 @@ struct TRINITY_DLL_DECL mob_arcane_protectorAI : public ScriptedAI
 
     void JustDied(Unit *)
     {
-        if(!urand(0, 2))
+        if(roll_chance_i(30))
             me->Say(RAND<const char*>("You will not make it out alive!",
                                       "This... changes nothing. Eternal damnation awaits you!",
                                       "Others will take my place"), 0, 0);
@@ -275,7 +275,7 @@ struct TRINITY_DLL_DECL mob_arcane_protectorAI : public ScriptedAI
 
         if(SkillTimer < diff)
         {
-            if(urand(0, 1))
+            if(roll_chance_i(50))
                 me->SummonCreature(NPC_ASTRAL_SPARK, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(),
                         TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
             else
@@ -293,6 +293,47 @@ CreatureAI* GetAI_mob_arcane_protector(Creature *_Creature)
     return new mob_arcane_protectorAI(_Creature);
 }
 
+#define SPELL_WARP_BREACH_AOE       29919
+#define SPELL_WARP_BREACH_VISUAL    37079
+
+struct TRINITY_DLL_DECL mob_mana_warpAI : public ScriptedAI
+{
+    mob_mana_warpAI(Creature* c) : ScriptedAI(c) {}
+
+    bool Exploded;
+
+    void Reset()
+    {
+        Exploded = false;
+    }
+    
+    void DamageTaken(Unit* pDone_by, uint32& uiDamage)
+    {
+        if(me->IsNonMeleeSpellCasted(true) && uiDamage > me->GetHealth())
+            uiDamage = me->GetHealth() - 1;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(!Exploded && HealthBelowPct(10))
+        {
+            me->CastSpell(me, SPELL_WARP_BREACH_AOE, false);
+            me->CastSpell(me, SPELL_WARP_BREACH_VISUAL, true);
+            Exploded = true;
+        }
+
+        DoMeleeAttackIfReady();
+    }    
+};
+
+CreatureAI* GetAI_mob_mana_warp(Creature *_Creature)
+{
+    return new mob_mana_warpAI(_Creature);
+}
+
 bool Spell_charge(const Aura* aura, bool apply)
 {
     if(!apply)
@@ -301,6 +342,82 @@ bool Spell_charge(const Aura* aura, bool apply)
             caster->CastSpell(aura->GetTarget(), 29321, true);      // trigger fear after charge
     }
     return true;
+}
+
+#define SPELL_SEARING_PAIN      29492
+#define SPELL_IMMOLATE          29928
+#define SPELL_CURSE_OF_AGONY    29930
+
+struct TRINITY_DLL_DECL mob_shadow_pillagerAI : public ScriptedAI
+{
+    mob_shadow_pillagerAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 DotTimer;
+
+    void Reset()
+    {
+        SetAutocast(SPELL_SEARING_PAIN, 2500, true);
+        DotTimer = urand(2000, 6000);
+    }
+    
+    void AttackStart(Unit *who)
+    {
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        
+        if(DotTimer < diff)
+        {
+            AddSpellToCast(roll_chance_i(50) ? SPELL_IMMOLATE : SPELL_CURSE_OF_AGONY, CAST_RANDOM);
+            DotTimer = urand(2000, 8000);
+        } 
+        else
+            DotTimer -= diff;
+
+        CheckCasterNoMovementInRange(diff, 40.0);
+        CastNextSpellIfAnyAndReady(diff);
+    }    
+};
+
+CreatureAI* GetAI_mob_shadow_pillager(Creature *_Creature)
+{
+    return new mob_shadow_pillagerAI(_Creature);
+}
+
+
+#define SPELL_FIREBOLT    30180
+
+struct TRINITY_DLL_DECL mob_homunculusAI : public ScriptedAI
+{
+    mob_homunculusAI(Creature* c) : ScriptedAI(c) {}
+
+    void Reset()
+    {
+        SetAutocast(SPELL_FIREBOLT, 2000, true);
+    }
+    
+    void AttackStart(Unit *who)
+    {
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        CheckCasterNoMovementInRange(diff, 40.0);
+        CastNextSpellIfAnyAndReady(diff);
+    }    
+};
+
+CreatureAI* GetAI_mob_homunculus(Creature *_Creature)
+{
+    return new mob_homunculusAI(_Creature);
 }
 
 
@@ -325,5 +442,20 @@ void AddSC_karazhan_trash()
     newscript = new Script;
     newscript->Name = "mob_arcane_protector";
     newscript->GetAI = &GetAI_mob_arcane_protector;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_mana_warp";
+    newscript->GetAI = &GetAI_mob_mana_warp;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadow_pillager";
+    newscript->GetAI = &GetAI_mob_shadow_pillager;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_homunculus";
+    newscript->GetAI = &GetAI_mob_homunculus;
     newscript->RegisterSelf();
 }

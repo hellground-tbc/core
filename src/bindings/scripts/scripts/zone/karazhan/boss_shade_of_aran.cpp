@@ -50,7 +50,7 @@ EndScriptData */
 #define SPELL_CHAINSOFICE   29991
 #define SPELL_DRAGONSBREATH 29964
 #define SPELL_MASSSLOW      30035
-#define SPELL_FLAME_WREATH  29946
+#define SPELL_FLAME_WREATH  30004
 #define SPELL_AOE_CS        29961
 #define SPELL_PLAYERPULL    32265
 #define SPELL_AEXPLOSION    29973
@@ -64,7 +64,7 @@ EndScriptData */
 
 //Creature Spells
 #define SPELL_CIRCULAR_BLIZZARD     29952
-#define SPELL_WATERBOLT             31012
+#define SPELL_WATERBOLT             37054
 #define SPELL_SHADOW_PYRO           29978
 #define SPELL_FROSTBOLT_VOLLEY      38837
 #define SPELL_AMISSILE_VOLLEY       29960
@@ -140,7 +140,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     bool Drinking;
     bool DrinkInturrupted;
     bool PotionUsed;
-    bool ArcaneCasting;
+    bool InterruptImmune;
 
     void SetBlizzardWaypoints()
     {
@@ -182,7 +182,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         Drinking                = false;
         DrinkInturrupted        = false;
         PotionUsed              = false;
-        ArcaneCasting           = false;
+        InterruptImmune         = false;
 
         if (pInstance)
         {
@@ -249,41 +249,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             pInstance->SetData(DATA_SHADEOFARAN_EVENT, IN_PROGRESS);
             if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
                 Door->SetGoState(GO_STATE_READY);
-        }
-    }
-
-    void FlameWreathEffect()
-    {
-        std::vector<Unit*> targets;
-        std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-
-        if(!t_list.size())
-            return;
-
-        //store the threat list in a different container
-        for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
-        {
-            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
-            //only on alive players
-            if (target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
-                targets.push_back(target);
-        }
-
-        //cut down to size if we have more than 3 targets
-        while (targets.size() > 3)
-            targets.erase(targets.begin()+rand()%targets.size());
-
-        uint32 i = 0;
-        for (std::vector<Unit*>::iterator itr = targets.begin(); itr!= targets.end(); ++itr)
-        {
-            if (*itr)
-            {
-                FlameWreathTarget[i] = (*itr)->GetGUID();
-                FWTargPosX[i] = (*itr)->GetPositionX();
-                FWTargPosY[i] = (*itr)->GetPositionY();
-                m_creature->CastSpell((*itr), SPELL_FLAME_WREATH, true);
-                i++;
-            }
         }
     }
 
@@ -478,12 +443,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
         if (SuperCastTimer < diff)
         {
-            if (ArcaneCasting)
-            {
-                ArcaneCasting = false;
-                SuperCastTimer = urand(19000, 24000);
-                return;
-            }
             uint8 Available[2];
 
             switch (LastSuperSpell)
@@ -513,20 +472,13 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     m_creature->CastSpell(m_creature, SPELL_PLAYERPULL, true);
                     m_creature->CastSpell(m_creature, SPELL_MASSSLOW, true);
                     m_creature->CastSpell(m_creature, SPELL_AEXPLOSION, false);
-                    ArcaneCasting = true;
+                    InterruptImmune = true;
                     break;
 
                 case SUPER_FLAME:
                     DoScriptText(RAND(SAY_FLAMEWREATH1, SAY_FLAMEWREATH2), m_creature);
-
-                    FlameWreathTimer = 20000;
-                    FlameWreathCheckTime = 500;
-
-                    FlameWreathTarget[0] = 0;
-                    FlameWreathTarget[1] = 0;
-                    FlameWreathTarget[2] = 0;
-
-                    FlameWreathEffect();
+                    m_creature->CastSpell(m_creature, SPELL_FLAME_WREATH, false);
+                    InterruptImmune = true;
                     break;
 
                 case SUPER_BLIZZARD:
@@ -535,21 +487,19 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     if  (Creature * blizzard = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_BLIZZARD)))
                     {
                         ChangeBlizzardWaypointsOrder(urand(0, 7));
-                        blizzard->CastSpell(blizzard, SPELL_CIRCULAR_BLIZZARD, true);
+                        blizzard->CastSpell(blizzard, SPELL_CIRCULAR_BLIZZARD, false);
+                        InterruptImmune = true;
                     }
 
                     break;
             }
 
-            if (ArcaneCasting)
-                SuperCastTimer = 11000;
-            else
-                SuperCastTimer = urand(30000, 35000);
+            SuperCastTimer = urand(30000, 35000);
         }
         else
             SuperCastTimer -= diff;
 
-        if (!ElementalsSpawned && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 40)
+        if (!ElementalsSpawned && HealthBelowPct(40))
         {
             ElementalsSpawned = true;
             TeleportCenter();
@@ -586,35 +536,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         else
             BerserkTimer -= diff;
 
-        //Flame Wreath check
-        if (FlameWreathTimer)
-        {
-            if (FlameWreathTimer >= diff)
-                FlameWreathTimer -= diff;
-            else
-                FlameWreathTimer = 0;
-
-            if (FlameWreathCheckTime < diff)
-            {
-                for (uint32 i = 0; i < 3; i++)
-                {
-                    if (!FlameWreathTarget[i])
-                        continue;
-
-                    Unit* pUnit = m_creature->GetMap()->GetUnit(FlameWreathTarget[i]);
-                    if (pUnit && pUnit->GetDistance2d(FWTargPosX[i], FWTargPosY[i]) > 1)
-                    {
-                        pUnit->CastSpell(pUnit, 20476, true, 0, 0, m_creature->GetGUID());
-                        pUnit->CastSpell(pUnit, 11027, true);
-                        FlameWreathTarget[i] = 0;
-                    }
-                }
-                FlameWreathCheckTime = 500;
-            }
-            else
-                FlameWreathCheckTime -= diff;
-        }
-
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
@@ -625,6 +546,11 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             DrinkInturrupted = true;
     }
 
+    void SpellHitTarget(Unit *target, const SpellEntry *spell)
+    {
+        InterruptImmune = false;
+    }
+
     void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
     {
         //We only care about inturrupt effects and only if they are durring a spell currently being casted
@@ -633,7 +559,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             Spell->Effect[2] != SPELL_EFFECT_INTERRUPT_CAST) || !m_creature->IsNonMeleeSpellCasted(false))
             return;
 
-        if (ArcaneCasting)
+        if (InterruptImmune)
             return;
 
         //Inturrupt effect
@@ -672,6 +598,11 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
         CastTimer = urand(2000, 5000);
     }
 
+    void AttackStart(Unit *who)
+    {
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -686,6 +617,7 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
         else
             CastTimer -= diff;
 
+        CheckCasterNoMovementInRange(diff, 45.0);
         CastNextSpellIfAnyAndReady();
     }
 };
@@ -821,6 +753,18 @@ CreatureAI* GetAI_circular_blizzard(Creature *_Creature)
     return (CreatureAI*)blizzardAI;
 }
 
+bool FlameWreathHandleEffect(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    if(!pCaster || !pUnit)
+        return true;
+
+    pCaster->CastSpell(pUnit, 29946, true);
+    pCaster->CastSpell(pUnit, 29947, true);
+
+    return true;
+}
+
+
 void AddSC_boss_shade_of_aran()
 {
     Script *newscript;
@@ -842,6 +786,11 @@ void AddSC_boss_shade_of_aran()
     newscript = new Script;
     newscript->Name="mob_aran_blizzard";
     newscript->GetAI = &GetAI_circular_blizzard;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="spell_flame_wreath";
+    newscript->pSpellHandleEffect = &FlameWreathHandleEffect;
     newscript->RegisterSelf();
 }
 

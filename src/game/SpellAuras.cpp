@@ -1403,6 +1403,15 @@ void Aura::TriggerSpell()
             {
                 switch (auraId)
                 {
+                    // Flame Wreath
+                    case 29945:
+                        if (!m_target->HasAura(29946, 1))
+                            trigger_spell_id = 29949;
+                        break;
+                    case 29947:
+                        if (!m_target->HasAura(29946, 0))
+                            trigger_spell_id = 29949;
+                        break;
                     // Firestone Passive (1-5 ranks)
                     case 758:
                     case 17945:
