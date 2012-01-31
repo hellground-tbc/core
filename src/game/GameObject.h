@@ -659,7 +659,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
 
         void HandleNonDbcSpell(uint32 spellId, Player* pUser);
     private:
-        void SwitchDoorOrButton(bool activate, bool alternative = false);
+        void SwitchDoorOrButton();
         void Activate();
         void Reset();
         void Despawn();

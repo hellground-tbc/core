@@ -258,7 +258,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                         if (caster && caster->GetTypeId()==TYPEID_PLAYER)
                         {
                             SetGoState(GO_STATE_ACTIVE);
-                            SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
+                            //SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
 
                             UpdateData udata;
                             WorldPacket packet;
@@ -281,38 +281,6 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
         }
         case GO_READY:
         {
-            switch (GetGoType())
-            {
-                case GAMEOBJECT_TYPE_FISHINGNODE:   //  can't fish now
-                {
-                    Unit* caster = GetOwner();
-                    if (caster && caster->GetTypeId()==TYPEID_PLAYER)
-                    {
-                        if (caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                        {
-                            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish(false);
-                        }
-
-                        WorldPacket data(SMSG_FISH_NOT_HOOKED,0);
-                        ((Player*)caster)->GetSession()->SendPacket(&data);
-                    }
-                    // can be delete
-                    m_lootState = GO_JUST_DEACTIVATED;
-                    return;
-                }
-                case GAMEOBJECT_TYPE_DOOR:
-                case GAMEOBJECT_TYPE_BUTTON:
-                //we need to open doors if they are closed (add there another condition if this code breaks some usage, but it need to be here for battlegrounds)
-                if (GetGoState() != GO_STATE_READY)
-                    //SwitchDoorOrButton(false);
-                    ResetDoorOrButton();
-                //flags in AB are type_button and we need to add them here so no break!
-                default:
-                break;
-            }
-
-
             // traps can have time and can not have
             GameObjectInfo const* goInfo = GetGOInfo();
             if (goInfo && goInfo->type == GAMEOBJECT_TYPE_TRAP)
@@ -401,14 +369,31 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
             switch (GetGoType())
             {
                 case GAMEOBJECT_TYPE_DOOR:
-                case GAMEOBJECT_TYPE_BUTTON:
-                    if (GetAutoCloseTime() && (m_cooldownTime < time(NULL)))
-                    {
-                        ResetDoorOrButton();
-                        //SwitchDoorOrButton(false);
-                        //SetLootState(GO_JUST_DEACTIVATED);
-                    }
+                {
+                    if(!GetGOInfo()->door.autoCloseTime)
+                        return;
+
+                    if(m_cooldownTime > time(NULL))
+                        return;
+
+                    SetGoState(GetGOInfo()->door.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
+                    SetLootState(GO_READY);
+                    m_cooldownTime = 0;
                     break;
+                }
+                case GAMEOBJECT_TYPE_BUTTON:
+                {
+                    if(!GetGOInfo()->button.autoCloseTime)
+                        return;
+
+                    if(m_cooldownTime > time(NULL))
+                        return;
+
+                    SetGoState(GetGOInfo()->button.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
+                    SetLootState(GO_READY);
+                    m_cooldownTime = 0;
+                    break;
+                }
                 case GAMEOBJECT_TYPE_GOOBER:
                     if (m_cooldownTime < time(NULL))
                     {
@@ -440,7 +425,8 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
         }
         case GO_JUST_DEACTIVATED:
         {
-            Despawn();
+            if(GetDespawnPossibility())
+                Despawn();
             break;
         }
     }
@@ -801,6 +787,9 @@ void GameObject::Reset()
 
 void GameObject::Despawn()
 {
+    if(GetUInt32Value(GAMEOBJECT_FLAGS) & GO_FLAG_NODESPAWN)
+        return;
+
     if (GetOwnerGUID())
     {
         if (Unit* owner = GetOwner())
@@ -811,21 +800,15 @@ void GameObject::Despawn()
         return;
     }
 
-    if(GetDespawnPossibility() && m_respawnDelayTime) //check if GO need respawn
-    {
-        SendObjectDeSpawnAnim(GetGUID());
-        m_respawnTime = m_spawnedByDefault ? time(NULL) + m_respawnDelayTime : 0;
 
-        // if option not set then object will be saved at grid unload
-        if (sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
-            SaveRespawnTime();
+    SendObjectDeSpawnAnim(GetGUID());
+    m_respawnTime = m_spawnedByDefault ? time(NULL) + m_respawnDelayTime : 0;
 
-        UpdateObjectVisibility();
-    }
-    else // reset GO if respawn is not required
-    {
-        Reset();
-    }
+    // if option not set then object will be saved at grid unload
+    if (sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
+        SaveRespawnTime();
+
+    UpdateObjectVisibility();
 }
 
 bool GameObject::ActivateToQuest(Player *pTarget)const
@@ -896,11 +879,6 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
 
 void GameObject::ResetDoorOrButton()
 {
-    if (m_lootState == GO_READY || m_lootState == GO_JUST_DEACTIVATED)
-        return;
-
-    SwitchDoorOrButton(false);
-    SetLootState(GO_JUST_DEACTIVATED);
     m_cooldownTime = 0;
 }
 
@@ -912,7 +890,7 @@ void GameObject::UseDoorOrButton(uint32 time_to_restore, bool alternative /* = f
     if (!time_to_restore)
         time_to_restore = GetAutoCloseTime();
 
-    SwitchDoorOrButton(true, alternative);
+    SwitchDoorOrButton();
     SetLootState(GO_ACTIVATED);
 
     m_cooldownTime = time(NULL) + time_to_restore;
@@ -926,15 +904,10 @@ void GameObject::SetGoArtKit(uint32 kit)
         data->ArtKit = kit;
 }
 
-void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false */)
+void GameObject::SwitchDoorOrButton()
 {
-    if (activate)
-        SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
-    else
-        RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
-
     if (GetGoState() == GO_STATE_READY)                     //if closed -> open
-        SetGoState(alternative ? GO_STATE_ACTIVE_ALTERNATIVE : GO_STATE_ACTIVE);
+        SetGoState(GO_STATE_ACTIVE);
     else                                                    //if open -> close
         SetGoState(GO_STATE_READY);
 }
@@ -948,24 +921,27 @@ void GameObject::Use(Unit* user)
     Unit* spellCaster = user;
     uint32 spellId = 0;
 
-    Activate();
     Player *pPlayer = user->GetCharmerOrOwnerPlayerOrPlayerItself();
     if (pPlayer)
     {
         if (sScriptMgr.OnGameObjectUse(pPlayer, this))
             return;
     }
-
+    GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), user, this);
+    
     switch (GetGoType())
     {
-        case GAMEOBJECT_TYPE_DOOR:                          //0
         case GAMEOBJECT_TYPE_BUTTON:                        //1
-            //doors/buttons never really despawn, only reset to default state/flags
-            UseDoorOrButton();
-
-            // activate script
-            GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), spellCaster, this);
-            return;
+            if (uint32 trapEntry = GetGOInfo()->button.linkedTrap)
+                TriggeringLinkedGameObject(trapEntry, user);
+        case GAMEOBJECT_TYPE_DOOR:                          //0
+            if (GetGoState() == GO_STATE_READY)                     //if closed -> open
+                SetGoState(GO_STATE_ACTIVE);
+            else                                                    //if open -> close
+                SetGoState(GO_STATE_READY);
+            m_cooldownTime = time(NULL) + GetAutoCloseTime();
+            Activate();
+            break;
         case GAMEOBJECT_TYPE_SPELL_FOCUS:
             // triggering linked GO
             if (uint32 trapEntry = GetGOInfo()->spellFocus.linkedTrapId)
@@ -1108,15 +1084,17 @@ void GameObject::Use(Unit* user)
         //fishing bobber
         case GAMEOBJECT_TYPE_FISHINGNODE:                   //17
         {
-            if (!pPlayer)
+            if (user->GetTypeId()!=TYPEID_PLAYER)
                 return;
 
-            if (pPlayer->GetGUID() != GetOwnerGUID())
+            Player* player = (Player*)user;
+
+            if (player->GetGUID() != GetOwnerGUID())
                 return;
 
             switch (getLootState())
             {
-                case GO_READY:                              // ready for loot
+            case GO_READY:                              // ready for loot
                 {
                     // 1) skill must be >= base_zone_skill
                     // 2) if skill == base_zone_skill => 5% chance
@@ -1132,7 +1110,7 @@ void GameObject::Use(Unit* user)
                     if (!zone_skill)
                         sLog.outErrorDb("Fishable areaId %u are not properly defined in `skill_fishing_base_level`.",subzone);
 
-                    int32 skill = pPlayer->GetSkillValue(SKILL_FISHING);
+                    int32 skill = player->GetSkillValue(SKILL_FISHING);
                     int32 chance = skill - zone_skill + 5;
                     int32 roll = GetMap()->irand(1,100);
 
@@ -1141,21 +1119,22 @@ void GameObject::Use(Unit* user)
                     if (skill >= zone_skill && chance >= roll)
                     {
                         // prevent removing GO at spell cancel
-                        pPlayer->RemoveGameObject(this,false);
-                        SetOwnerGUID(pPlayer->GetGUID());
+                        player->RemoveGameObject(this,false);
+                        SetOwnerGUID(player->GetGUID());
+                        m_respawnTime = 0;
 
                         //fish catched
-                        pPlayer->UpdateFishingSkill();
+                        player->UpdateFishingSkill();
 
                         //TODO: find reasonable value for fishing hole search
                         GameObject* ok = LookupFishingHoleAround(20.0f + CONTACT_DISTANCE);
                         if (ok)
                         {
-                            pPlayer->SendLoot(ok->GetGUID(),LOOT_FISHINGHOLE);
+                            player->SendLoot(ok->GetGUID(),LOOT_FISHINGHOLE);
                             SetLootState(GO_JUST_DEACTIVATED);
                         }
                         else
-                            pPlayer->SendLoot(GetGUID(),LOOT_FISHING);
+                            player->SendLoot(GetGUID(),LOOT_FISHING);
                     }
                     else
                     {
@@ -1163,30 +1142,29 @@ void GameObject::Use(Unit* user)
                         SetLootState(GO_JUST_DEACTIVATED);
 
                         WorldPacket data(SMSG_FISH_ESCAPED, 0);
-                        pPlayer->GetSession()->SendPacket(&data);
+                        player->GetSession()->SendPacket(&data);
                     }
                     break;
                 }
-                case GO_JUST_DEACTIVATED:                   // nothing to do, will be deleted at next update
-                    break;
-                default:
+            case GO_JUST_DEACTIVATED:                   // nothing to do, will be deleted at next update
+                break;
+            default:
                 {
                     SetLootState(GO_JUST_DEACTIVATED);
 
                     WorldPacket data(SMSG_FISH_NOT_HOOKED, 0);
-                    pPlayer->GetSession()->SendPacket(&data);
+                    player->GetSession()->SendPacket(&data);
                     break;
                 }
             }
 
-            if (pPlayer->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if (player->m_currentSpells[CURRENT_CHANNELED_SPELL])
             {
-                pPlayer->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                pPlayer->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+                player->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+                player->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
             }
-            return;
         }
-
+        break;
         case GAMEOBJECT_TYPE_SUMMONING_RITUAL:              //18
         {
             if (!pPlayer)
@@ -1206,7 +1184,7 @@ void GameObject::Use(Unit* user)
             AddUniqueUse(pPlayer);
 
             pPlayer->CastSpell(pPlayer, info->summoningRitual.animSpell, true);
-
+            Activate();
             // full amount unique participants including original summoner
             if (GetUniqueUseCount() < info->summoningRitual.reqParticipants)
                 return;
