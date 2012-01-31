@@ -63,13 +63,13 @@ void WaypointMovementGenerator<Creature>::Reset(Creature &creature)
     StartMoveNow(creature);
 }
 
-void WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
+bool WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
 {
     if (!i_path || i_path->empty())
-        return;
+        return false;
 
     if (m_isArrivalDone)
-        return;
+        return true;
 
     creature.clearUnitState(UNIT_STAT_ROAMING_MOVE);
     m_isArrivalDone = true;
@@ -87,10 +87,10 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
     {
         creature.SetHomePosition(node->x, node->y, node->z, creature.GetOrientation());
         creature.GetMotionMaster()->Initialize();
-        i_currentNode = i_path->size();
-        return;
+        return false;
     }
     i_currentNode = (i_currentNode+1) % i_path->size();
+    return true;
 }
 
 bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
@@ -147,7 +147,8 @@ bool WaypointMovementGenerator<Creature>::Update(Creature &creature, const uint3
         Stop(STOP_TIME_FOR_PLAYER);
     else if (creature.movespline->Finalized())
     {
-        OnArrived(creature);
+        if(!OnArrived(creature))
+            return false;
         return StartMove(creature);
     }
 

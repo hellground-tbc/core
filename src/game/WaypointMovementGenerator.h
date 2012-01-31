@@ -91,7 +91,7 @@ public PathMovementBase<Creature, WaypointPath const*>
             return i_nextMoveTime.Passed();
         }
 
-        void OnArrived(Creature&);
+        bool OnArrived(Creature&);
         bool StartMove(Creature&);
 
         void StartMoveNow(Creature& creature)
