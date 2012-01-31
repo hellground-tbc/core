@@ -1998,6 +1998,17 @@ void Aura::TriggerSpell()
 //                    case 47015: break;
 //                    // Party G.R.E.N.A.D.E.
 //                    case 51510: break;
+                    
+                        // Return fire
+                    case 29805:
+                        trigger_spell_id = urand(0, 1) ? 29793 : 29794;
+                        break;
+                    case 29806:
+                        trigger_spell_id = urand(0, 1) ? 29788 : 29793;
+                        break;
+                    case 29807:
+                        trigger_spell_id = urand(0, 1) ? 29788 : 29794;
+                        break;
                     default:
                         break;
                 }

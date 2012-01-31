@@ -161,6 +161,12 @@ struct TRINITY_DLL_DECL mob_spectral_sentryAI : public ScriptedAI
         ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_SHOOTER);
     }
 
+    void JustDied(Unit *)
+    {
+        if(!urand(0, 2))
+            me->Say(SENTRY_SAY_DEATH1, 0, 0);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(!UpdateVictim())
@@ -203,6 +209,89 @@ CreatureAI* GetAI_mob_spectral_sentry(Creature *_Creature)
     return new mob_spectral_sentryAI(_Creature);
 }
 
+#define SPELL_RETURN_FIRE1  29793
+#define SPELL_RETURN_FIRE2  29794
+#define SPELL_RETURN_FIRE3  29788
+#define SPELL_FIST_OF_STONE 29840
+#define SPELL_DETONATE      29876
+#define SPELL_SEAR          29864
+#define NPC_ASTRAL_SPARK    17283
+
+
+struct TRINITY_DLL_DECL mob_arcane_protectorAI : public ScriptedAI
+{
+    mob_arcane_protectorAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 SkillTimer;
+
+    void Reset()
+    {
+        SkillTimer = urand(10000, 20000);
+    }
+    
+    void EnterCombat(Unit *who)
+    {
+        me->CastSpell(me, RAND(SPELL_RETURN_FIRE1, SPELL_RETURN_FIRE2, SPELL_RETURN_FIRE3), false); 
+    }
+
+    void JustSummoned(Creature *c)
+    {
+        if (c->GetEntry() == NPC_ASTRAL_SPARK)
+        {
+            c->CastSpell(me, SPELL_DETONATE, true);
+            c->CastSpell(me, SPELL_SEAR, true);
+        }
+    }
+
+    void OnAuraApply(Aura *aur, Unit*, bool stack)
+    {
+        switch(aur->GetId())
+        {
+        case SPELL_RETURN_FIRE1:
+            me->Say("Activating defence mode EL-2S.", 0, 0);
+            break;
+        case SPELL_RETURN_FIRE2:
+            me->Say("Activating defence mode EL-5R.", 0, 0);
+            break;
+        case SPELL_RETURN_FIRE3:
+            me->Say("Activating defence mode EL-7M.", 0, 0);
+            break;
+        }
+    }
+
+    void JustDied(Unit *)
+    {
+        if(!urand(0, 2))
+            me->Say(RAND<const char*>("You will not make it out alive!",
+                                      "This... changes nothing. Eternal damnation awaits you!",
+                                      "Others will take my place"), 0, 0);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+
+        if(SkillTimer < diff)
+        {
+            if(urand(0, 1))
+                me->SummonCreature(NPC_ASTRAL_SPARK, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(),
+                        TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+            else
+                me->CastSpell(me, SPELL_FIST_OF_STONE, false);
+            SkillTimer = urand(15000, 30000);
+        }
+
+        CastNextSpellIfAnyAndReady(diff);
+        DoMeleeAttackIfReady();
+    }    
+};
+
+CreatureAI* GetAI_mob_arcane_protector(Creature *_Creature)
+{
+    return new mob_arcane_protectorAI(_Creature);
+}
 
 bool Spell_charge(const Aura* aura, bool apply)
 {
@@ -232,5 +321,9 @@ void AddSC_karazhan_trash()
     newscript->Name = "mob_spectral_sentry";
     newscript->GetAI = &GetAI_mob_spectral_sentry;
     newscript->RegisterSelf();
-}
 
+    newscript = new Script;
+    newscript->Name = "mob_arcane_protector";
+    newscript->GetAI = &GetAI_mob_arcane_protector;
+    newscript->RegisterSelf();
+}
