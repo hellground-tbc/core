@@ -2793,6 +2793,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 17289: // Shadow Shock
             spellInfo->EffectBasePoints[0] = 74;
             break;
+        case 36920: // Fireball (Vazruden)
+            spellInfo->EffectBasePoints[0] = 151;
+            break;
         case 34934: // Shadow Bolt Volley
             spellInfo->EffectBasePoints[0] = 124;
             break;

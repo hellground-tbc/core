@@ -9986,7 +9986,7 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_INCREASE_SPEED &&
             spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_DECREASE_SPEED)
             //there are many more: slow speed, -healing pct
-        value *= exp(getLevel()*(70-spellProto->spellLevel)/1000.0f - 1);
+        value *= exp(getLevel()*(getLevel()-spellProto->spellLevel)/1000.0f - 1);
         //value = int32(value * (int32)getLevel() / (int32)(spellProto->spellLevel ? spellProto->spellLevel : 1));
 
     return value;
