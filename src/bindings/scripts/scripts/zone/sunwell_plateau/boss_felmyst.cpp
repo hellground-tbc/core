@@ -241,7 +241,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
         if(pInstance)
         {
             pInstance->SetData(DATA_FELMYST_EVENT, IN_PROGRESS);
-            if(Creature* pBrutallus = me->GetCreature(pInstance->GetData64(DATA_BRUTALLUS))
+            if(Creature* pBrutallus = me->GetCreature(pInstance->GetData64(DATA_BRUTALLUS)))
                 pBrutallus->RemoveCorpse();
         }
     }
