@@ -248,6 +248,7 @@ void instance_karazhan::SetData(uint32 type, uint32 data)
         case DATA_SHADEOFARAN_EVENT:
             if (Encounters[6] != DONE)
                 Encounters[6] = data;
+            HandleGameObject(LibraryDoor, data != IN_PROGRESS);
             break;
         case DATA_TERESTIAN_EVENT:
             if (Encounters[7] != DONE)

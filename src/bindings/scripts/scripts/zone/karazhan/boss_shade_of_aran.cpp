@@ -44,23 +44,24 @@ EndScriptData */
 #define SAY_ATIESH                  -1532088                //Atiesh is equipped by a raid member
 
 //Spells
-#define SPELL_FROSTBOLT     29954
-#define SPELL_FIREBALL      29953
-#define SPELL_ARCMISSLE     29955
-#define SPELL_CHAINSOFICE   29991
-#define SPELL_DRAGONSBREATH 29964
-#define SPELL_MASSSLOW      30035
-#define SPELL_FLAME_WREATH  30004
-#define SPELL_AOE_CS        29961
-#define SPELL_PLAYERPULL    32265
-#define SPELL_AEXPLOSION    29973
-#define SPELL_MASS_POLY     29963
-#define SPELL_BLINK_CENTER  29967
-#define SPELL_ELEMENTALS    29962
-#define SPELL_CONJURE       29975
-#define SPELL_DRINK         30024
-#define SPELL_POTION        32453
-#define SPELL_AOE_PYROBLAST 29978
+#define SPELL_FROSTBOLT         29954
+#define SPELL_FIREBALL          29953
+#define SPELL_ARCMISSLE         29955
+#define SPELL_CHAINSOFICE       29991
+#define SPELL_DRAGONSBREATH     29964
+#define SPELL_MASSSLOW          30035
+#define SPELL_FLAME_WREATH      30004
+#define SPELL_AOE_CS            29961
+#define SPELL_PLAYERPULL        32265
+#define SPELL_AEXPLOSION        29973
+#define SPELL_MASS_POLY         29963
+#define SPELL_BLINK_CENTER      29967
+#define SPELL_ELEMENTALS        29962
+#define SPELL_CONJURE           29975
+#define SPELL_DRINK             30024
+#define SPELL_POTION            32453
+#define SPELL_AOE_PYROBLAST     29978
+#define SPELL_SUMMON_BLIZZARD   29969
 
 //Creature Spells
 #define SPELL_CIRCULAR_BLIZZARD     29952
@@ -103,6 +104,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             TempSpell->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
             TempSpell->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ENEMY;
         }
+        SetBlizzardWaypoints();
     }
 
     ScriptedInstance* pInstance;
@@ -111,17 +113,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     uint32 NormalCastTimer;
     uint32 SuperCastTimer;
     uint32 BerserkTimer;
-    uint32 CloseDoorTimer;                                  // Don't close the door right on aggro in case some people are still entering.
 
     uint8 LastSuperSpell;
 
-    uint32 FlameWreathTimer;
-    uint32 FlameWreathCheckTime;
-    uint64 FlameWreathTarget[3];
-    float FWTargPosX[3];
-    float FWTargPosY[3];
-
-    uint32 CurrentNormalSpell;
     uint32 ArcaneCooldown;
     uint32 FireCooldown;
     uint32 FrostCooldown;
@@ -134,13 +128,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     WorldLocation wLoc;
 
     uint32 DrinkInturruptTimer;
-    uint32 DrinkingWaitTime;
 
     bool ElementalsSpawned;
     bool Drinking;
-    bool DrinkInturrupted;
-    bool PotionUsed;
-    bool InterruptImmune;
 
     void SetBlizzardWaypoints()
     {
@@ -162,42 +152,23 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         NormalCastTimer     = 0;
         SuperCastTimer      = 30000;
         BerserkTimer        = 720000;
-        CloseDoorTimer      = 15000;
         CheckTimer          = 3000;
 
         LastSuperSpell = rand()%3;
 
-        FlameWreathTimer     = 0;
-        FlameWreathCheckTime = 0;
 
-        CurrentNormalSpell = 0;
         ArcaneCooldown     = 0;
         FireCooldown       = 0;
         FrostCooldown      = 0;
 
-        DrinkInturruptTimer = 10000;
-        DrinkingWaitTime    = 1000;
 
         ElementalsSpawned       = false;
         Drinking                = false;
-        DrinkInturrupted        = false;
-        PotionUsed              = false;
-        InterruptImmune         = false;
 
         if (pInstance)
-        {
-            // Not in progress
-            if (pInstance->GetData(DATA_SHADEOFARAN_EVENT) != DONE)
-                pInstance->SetData(DATA_SHADEOFARAN_EVENT, NOT_STARTED);
+            pInstance->SetData(DATA_SHADEOFARAN_EVENT, NOT_STARTED);
 
-            if (GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-                Door->SetGoState(GO_STATE_ACTIVE);
-        }
-
-        if (m_creature->isAlive())
-        {
-            SetBlizzardWaypoints();
-        }
+        SetBlizzardWaypoints();
     }
 
     void KilledUnit(Unit *victim)
@@ -205,20 +176,12 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         DoScriptText(RAND(SAY_KILL1, SAY_KILL2), m_creature);
     }
 
-    void TeleportCenter()
-    {
-        m_creature->CastSpell(m_creature, SPELL_BLINK_CENTER, true);
-        DoTeleportTo(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z, 0);
-    }
-
     void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, m_creature);
 
-        pInstance->SetData(DATA_SHADEOFARAN_EVENT, DONE);
-
-        if (GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-            Door->SetGoState(GO_STATE_ACTIVE);
+        if(pInstance)
+            pInstance->SetData(DATA_SHADEOFARAN_EVENT, DONE);
     }
 
     bool PlayerHaveAtiesh()
@@ -245,11 +208,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
 
         if (pInstance)
-        {
             pInstance->SetData(DATA_SHADEOFARAN_EVENT, IN_PROGRESS);
-            if(GameObject* Door = GameObject::GetGameObject(*m_creature, pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-                Door->SetGoState(GO_STATE_READY);
-        }
     }
 
     void ChangeBlizzardWaypointsOrder(uint16 change)
@@ -287,21 +246,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         else
             CheckTimer -= diff;
 
-        if (CloseDoorTimer)
-        {
-            if (CloseDoorTimer <= diff)
-            {
-                if (pInstance)
-                {
-                    if (GameObject* Door = m_creature->GetMap()->GetGameObject(pInstance->GetData64(DATA_GAMEOBJECT_LIBRARY_DOOR)))
-                        Door->SetGoState(GO_STATE_READY);
-                    CloseDoorTimer = 0;
-                }
-            }
-            else
-                CloseDoorTimer -= diff;
-        }
-
         //Cooldowns for casts
         if (ArcaneCooldown)
         {
@@ -329,192 +273,140 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
         if (!Drinking && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
         {
-            if (DrinkingWaitTime > diff)            // wait 1 sec to prevent broking mass polymorph by last normal spell
-            {
-                DrinkingWaitTime -= diff;
-                return;
-            }
-
+            ClearCastQueue();
             Drinking = true;
-            m_creature->InterruptNonMeleeSpells(false);
-
-            DoScriptText(SAY_DRINK, m_creature);
-
-            if (!DrinkInturrupted)
-            {
-                m_creature->RemoveAllAuras();
-                m_creature->CastSpell(m_creature, SPELL_MASS_POLY, true);
-                m_creature->CastSpell(m_creature, SPELL_CONJURE, false);
-                m_creature->CastSpell(m_creature, SPELL_DRINK, false);
-                                                            //Sitting down
-                m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 1);
-                DrinkInturruptTimer = 10000;
-                PotionUsed = false;
-            }
+            AddSpellToCast(SPELL_MASS_POLY, CAST_SELF);
+            AddSpellToCastWithScriptText(SPELL_CONJURE, CAST_SELF, SAY_DRINK);
+            AddSpellToCast(SPELL_DRINK, CAST_SELF, true);   // TODO: find proper spell
+            DrinkInturruptTimer = 5000;
         }
 
         //Drinking check
         if (Drinking)
         {
-            if (DrinkInturrupted && !PotionUsed)
-            {
-                DrinkInturruptTimer = 1000;                            //to prevent interrupting SPELL_POTION
-                PotionUsed = true;
-                m_creature->CastSpell(m_creature, SPELL_POTION, false);
-            }
-
             if (DrinkInturruptTimer < diff)
             {
                 Drinking = false;
-                DrinkInturrupted = false;
-                m_creature->RemoveAurasDueToSpell(SPELL_DRINK);
-                m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-                m_creature->CastSpell(m_creature, SPELL_AOE_PYROBLAST, false);
-                DrinkingWaitTime = 1000;
+                //m_creature->RemoveAurasDueToSpell(SPELL_DRINK);
+                //m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
+                AddSpellToCast(SPELL_POTION, CAST_SELF);
+                AddSpellToCast(SPELL_AOE_PYROBLAST, CAST_SELF);
             }
             else
                 DrinkInturruptTimer -= diff;
-
-            return;
         }
 
-        //Normal casts
-        if (NormalCastTimer < diff)
+        if(!Drinking)
         {
-            if (!m_creature->IsNonMeleeSpellCasted(false))
+            //Normal casts
+            if (NormalCastTimer < diff)
             {
-                Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM, 0, 0.0f, true);
-
-                if (!target)
-                    return;
-
-                uint32 Spells[3];
-                uint8 AvailableSpells = 0;
-
-                //Check for what spells are not on cooldown
-                if (!ArcaneCooldown)
+                if (!m_creature->IsNonMeleeSpellCasted(false))
                 {
-                    Spells[AvailableSpells] = SPELL_ARCMISSLE;
-                    AvailableSpells++;
-                }
+                    uint32 Spells[3];
+                    uint8 AvailableSpells = 0;
+                    //Check for what spells are not on cooldown
+                    if (!ArcaneCooldown)
+                        Spells[AvailableSpells++] = SPELL_ARCMISSLE;
 
-                if (!FireCooldown)
-                {
-                    Spells[AvailableSpells] = SPELL_FIREBALL;
-                    AvailableSpells++;
-                }
+                    if (!FireCooldown)
+                        Spells[AvailableSpells++] = SPELL_FIREBALL;
 
-                if (!FrostCooldown)
-                {
-                    Spells[AvailableSpells] = SPELL_FROSTBOLT;
-                    AvailableSpells++;
-                }
+                    if (!FrostCooldown)
+                        Spells[AvailableSpells++] = SPELL_FROSTBOLT;
 
-                //If no available spells wait 1 second and try again
-                if (AvailableSpells)
-                {
-                    CurrentNormalSpell = Spells[rand() % AvailableSpells];
-                    AddSpellToCast(target, CurrentNormalSpell, false, true);
+                    //If no available spells wait 1 second and try again
+                    if (AvailableSpells)
+                        AddSpellToCast(Spells[rand() % AvailableSpells], CAST_RANDOM, false, true);
                 }
+                NormalCastTimer = 1000;
             }
-            NormalCastTimer = 1000;
-        }
-        else
-            NormalCastTimer -= diff;
+            else
+                NormalCastTimer -= diff;
 
-        if (SecondarySpellTimer < diff)
-        {
-            switch (rand()%2)
+            if (SecondarySpellTimer < diff)
             {
-                case 0:
-                    AddSpellToCast(m_creature, SPELL_AOE_CS);
-                    break;
-                case 1:
-                    if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_CHAINSOFICE), true))
-                        AddSpellToCast(pUnit, SPELL_CHAINSOFICE);
-                    break;
+                if(roll_chance_i(50))
+                    AddSpellToCast(SPELL_AOE_CS, CAST_SELF);
+                else
+                    AddSpellToCast(SPELL_CHAINSOFICE, CAST_RANDOM);        
+                SecondarySpellTimer = urand(5000, 20000);
             }
+            else
+                SecondarySpellTimer -= diff;
 
-            SecondarySpellTimer = urand(5000, 20000);
-        }
-        else
-            SecondarySpellTimer -= diff;
-
-        if (SuperCastTimer < diff)
-        {
-            uint8 Available[2];
-
-            switch (LastSuperSpell)
+            if (SuperCastTimer < diff)
             {
-                case SUPER_AE:
-                    Available[0] = SUPER_FLAME;
-                    Available[1] = SUPER_BLIZZARD;
-                    break;
-                case SUPER_FLAME:
-                    Available[0] = SUPER_AE;
-                    Available[1] = SUPER_BLIZZARD;
-                    break;
-                case SUPER_BLIZZARD:
-                    Available[0] = SUPER_FLAME;
-                    Available[1] = SUPER_AE;
-                    break;
+                uint8 Available[2];
+                ClearCastQueue();
+
+                switch (LastSuperSpell)
+                {
+                    case SUPER_AE:
+                        Available[0] = SUPER_FLAME;
+                        Available[1] = SUPER_BLIZZARD;
+                        break;
+                    case SUPER_FLAME:
+                        Available[0] = SUPER_AE;
+                        Available[1] = SUPER_BLIZZARD;
+                        break;
+                    case SUPER_BLIZZARD:
+                        Available[0] = SUPER_FLAME;
+                        Available[1] = SUPER_AE;
+                        break;
+                }
+
+                LastSuperSpell = Available[rand()%2];
+
+                switch (LastSuperSpell)
+                {
+                    case SUPER_AE:
+                        //TeleportCenter(); // todo: move it somewhere
+                        //AddSpellToCast(SPELL_PLAYERPULL, CAST_SELF, true);      // it's shirak's spell
+                        AddSpellToCast(SPELL_MASSSLOW, CAST_SELF);
+                        AddSpellToCastWithScriptText(SPELL_AEXPLOSION, CAST_SELF, RAND(SAY_EXPLOSION1, SAY_EXPLOSION2));
+                        break;
+
+                    case SUPER_FLAME:
+                        AddSpellToCastWithScriptText(SPELL_FLAME_WREATH, CAST_SELF, RAND(SAY_FLAMEWREATH1, SAY_FLAMEWREATH2));
+                        break;
+
+                    case SUPER_BLIZZARD:
+                        AddSpellToCastWithScriptText(SPELL_SUMMON_BLIZZARD, CAST_NULL, RAND(SAY_BLIZZARD1, SAY_BLIZZARD2));
+                        break;
+                        /*
+                        if  (Creature * blizzard = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_BLIZZARD)))
+                        {
+                            ChangeBlizzardWaypointsOrder(urand(0, 7));
+                            blizzard->CastSpell(blizzard, SPELL_CIRCULAR_BLIZZARD, false);
+                        }
+
+                        break;
+                        */
+                }
+
+                SuperCastTimer = urand(30000, 35000);
             }
+            else
+                SuperCastTimer -= diff;
 
-            LastSuperSpell = Available[rand()%2];
-
-            switch (LastSuperSpell)
+            if (!ElementalsSpawned && HealthBelowPct(40))
             {
-                case SUPER_AE:
-                    DoScriptText(RAND(SAY_EXPLOSION1, SAY_EXPLOSION2), m_creature);
+                ElementalsSpawned = true;
+                // TeleportCenter();         todo: teleport to center
 
-                    TeleportCenter();
-                    m_creature->CastSpell(m_creature, SPELL_PLAYERPULL, true);
-                    m_creature->CastSpell(m_creature, SPELL_MASSSLOW, true);
-                    m_creature->CastSpell(m_creature, SPELL_AEXPLOSION, false);
-                    InterruptImmune = true;
-                    break;
-
-                case SUPER_FLAME:
-                    DoScriptText(RAND(SAY_FLAMEWREATH1, SAY_FLAMEWREATH2), m_creature);
-                    m_creature->CastSpell(m_creature, SPELL_FLAME_WREATH, false);
-                    InterruptImmune = true;
-                    break;
-
-                case SUPER_BLIZZARD:
-                    DoScriptText(RAND(SAY_BLIZZARD1, SAY_BLIZZARD2), m_creature);
-
-                    if  (Creature * blizzard = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_BLIZZARD)))
+                for (uint32 i = 0; i < 4; i++)
+                {
+                    Creature* pUnit = m_creature->SummonCreature(CREATURE_WATER_ELEMENTAL, ElementalSpawnPoints[0][i], ElementalSpawnPoints[1][i], m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 90000);
+                    if (pUnit)
                     {
-                        ChangeBlizzardWaypointsOrder(urand(0, 7));
-                        blizzard->CastSpell(blizzard, SPELL_CIRCULAR_BLIZZARD, false);
-                        InterruptImmune = true;
+                        pUnit->Attack(m_creature->getVictim(), true);
+                        pUnit->setFaction(m_creature->getFaction());
                     }
-
-                    break;
-            }
-
-            SuperCastTimer = urand(30000, 35000);
-        }
-        else
-            SuperCastTimer -= diff;
-
-        if (!ElementalsSpawned && HealthBelowPct(40))
-        {
-            ElementalsSpawned = true;
-            TeleportCenter();
-
-            for (uint32 i = 0; i < 4; i++)
-            {
-                Creature* pUnit = m_creature->SummonCreature(CREATURE_WATER_ELEMENTAL, ElementalSpawnPoints[0][i], ElementalSpawnPoints[1][i], m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 90000);
-                if (pUnit)
-                {
-                    pUnit->Attack(m_creature->getVictim(), true);
-                    pUnit->setFaction(m_creature->getFaction());
                 }
-            }
 
-            DoScriptText(SAY_ELEMENTALS, m_creature);
+                DoScriptText(SAY_ELEMENTALS, m_creature);
+            }
         }
 
         if (BerserkTimer < diff)
@@ -540,44 +432,39 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void DamageTaken(Unit* pAttacker, uint32 &damage)
-    {
-        if (!DrinkInturrupted && Drinking && damage)
-            DrinkInturrupted = true;
-    }
 
     void SpellHitTarget(Unit *target, const SpellEntry *spell)
     {
-        InterruptImmune = false;
+        if (spell->Id == SPELL_MASSSLOW)
+        {
+            DoTeleportTo(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z, 0);
+            m_creature->CastSpell(target, SPELL_BLINK_CENTER, true);
+        }
     }
 
-    void SpellHit(Unit* pAttacker, const SpellEntry* Spell)
+    void SpellHit(Unit* pAttacker, const SpellEntry* spellEntry)
     {
         //We only care about inturrupt effects and only if they are durring a spell currently being casted
-        if ((Spell->Effect[0] != SPELL_EFFECT_INTERRUPT_CAST &&
-            Spell->Effect[1] != SPELL_EFFECT_INTERRUPT_CAST &&
-            Spell->Effect[2] != SPELL_EFFECT_INTERRUPT_CAST) || !m_creature->IsNonMeleeSpellCasted(false))
+        if ((spellEntry->Effect[0] != SPELL_EFFECT_INTERRUPT_CAST &&
+            spellEntry->Effect[1] != SPELL_EFFECT_INTERRUPT_CAST &&
+            spellEntry->Effect[2] != SPELL_EFFECT_INTERRUPT_CAST) || !m_creature->IsNonMeleeSpellCasted(false))
             return;
-
-        if (InterruptImmune)
-            return;
-
-        //Inturrupt effect
-        m_creature->InterruptNonMeleeSpells(false);
 
         //Normally we would set the cooldown equal to the spell duration
         //but we do not have access to the DurationStore
-
-        switch (CurrentNormalSpell)
+        switch (me->GetCurrentSpellId())
         {
             case SPELL_ARCMISSLE:
                 ArcaneCooldown = 5000;
+                m_creature->InterruptNonMeleeSpells(false);
                 break;
             case SPELL_FIREBALL:
                 FireCooldown = 5000;
+                m_creature->InterruptNonMeleeSpells(false);
                 break;
             case SPELL_FROSTBOLT:
                 FrostCooldown = 5000;
+                m_creature->InterruptNonMeleeSpells(false);
                 break;
             default:
                 break;
@@ -680,11 +567,13 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
 
     void SpellHit(Unit * caster, const SpellEntry * spell)
     {
-        if (spell->Id == SPELL_CIRCULAR_BLIZZARD)
+        if (spell->Id == SPELL_SUMMON_BLIZZARD && pInstance)
         {
-            Creature *pAran = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_ARAN));
-            if (pAran)
+            uint64 AranGUID = pInstance->GetData64(DATA_ARAN);
+            me->CastSpell(me, SPELL_CIRCULAR_BLIZZARD, false, 0, 0, AranGUID);
+            if (Creature *pAran = me->GetCreature(AranGUID))
             {
+                
                 wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
                 wLoc.coord_y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
                 wLoc.coord_z = pAran->GetPositionZ();

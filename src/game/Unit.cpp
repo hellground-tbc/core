@@ -2568,6 +2568,15 @@ int32 Unit::GetCurrentSpellCastTime(uint32 spell_id) const
     return 0;
 }
 
+uint32 Unit::GetCurrentSpellId() const
+{
+    for (int i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+        if(m_currentSpells[i])
+            return m_currentSpells[i]->m_spellInfo->Id;
+         
+    return 0;
+}
+
 bool Unit::isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType)
 {
     if (pVictim->HasInArc(M_PI,this))

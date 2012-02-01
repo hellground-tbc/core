@@ -1420,6 +1420,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         Spell* FindCurrentSpellBySpellId(uint32 spell_id) const;
         int32 GetCurrentSpellCastTime(uint32 spell_id) const;
+        uint32 GetCurrentSpellId() const;
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 
