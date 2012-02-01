@@ -221,6 +221,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
+        RemoveMCAuraIfExist();  // just in case
         EnterPhase(PHASE_GROUND);
         Phase = PHASE_NULL; // not attack yet, but counters on
         me->GetMotionMaster()->Clear();
@@ -262,6 +263,17 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
         if(Phase != PHASE_FLIGHT && Phase != PHASE_RESPAWNING)
             ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void RemoveMCAuraIfExist()
+    {
+        Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        {
+            Player* i_pl = i->getSource();
+            i_pl->RemoveAurasDueToSpell(SPELL_FOG_CHARM);
+            i_pl->RemoveAurasDueToSpell(SPELL_FOG_CHARM2);
+        }
     }
 
     void KilledUnit(Unit* victim)
