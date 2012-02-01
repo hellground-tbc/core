@@ -2579,6 +2579,10 @@ void Spell::EffectTriggerSpell(uint32 i)
             if(100*unitTarget->GetHealth()/unitTarget->GetMaxHealth() > 70)
                 return;
             break;
+        // Explosion from Flame Wreath (Shade of Aran)
+        case 29950:
+            m_caster->RemoveAurasDueToSpell(29947);
+            return;
     }
 
     // normal case

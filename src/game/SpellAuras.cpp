@@ -1404,8 +1404,8 @@ void Aura::TriggerSpell()
                 switch (auraId)
                 {
                     // Flame Wreath
-                    case 29945:
-                        if (!m_target->HasAura(29946, 1))
+                    case 29946:
+                        if (!m_target->HasAura(29947, 0))
                             trigger_spell_id = 29949;
                         break;
                     case 29947:

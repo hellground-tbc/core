@@ -759,7 +759,7 @@ bool FlameWreathHandleEffect(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject
         return true;
 
     pCaster->CastSpell(pUnit, 29946, true);
-    pCaster->CastSpell(pUnit, 29947, true);
+    pUnit->CastSpell(pUnit, 29947, true);
 
     return true;
 }
