@@ -81,7 +81,7 @@ bool WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
 
     // Inform script
     MovementInform(creature);
-    Stop(node->delay);
+    //Stop(node->delay);    this causes creature to stop and never move again if delay > 0
 
     if ((i_currentNode == i_path->size() - 1) && !repeating) // If that's our last waypoint
     {
