@@ -311,8 +311,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         pPlayer->SetInWater(!pPlayer->IsInWater() || pPlayer->GetTerrain()->IsUnderWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
     }
 
-    if (sWorld.m_ac.activated() && !pPlayer->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !pPlayer->isGameMaster() && pPlayer->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
-        sWorld.m_ac.execute(new ACRequest(pPlayer, oldMovementInfo, movementInfo));
+    if (sWorld.getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && sWorld.m_ac.activated())
+    {
+        if (!pPlayer->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !pPlayer->isGameMaster() && pPlayer->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
+            sWorld.m_ac.execute(new ACRequest(pPlayer, oldMovementInfo, movementInfo));
+    }
 
     /* process position-change */
     recv_data.put<uint32>(5, WorldTimer::getMSTime());                  // offset flags(4) + unk(1)
