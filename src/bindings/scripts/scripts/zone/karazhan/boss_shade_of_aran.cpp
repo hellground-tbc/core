@@ -52,16 +52,20 @@ EndScriptData */
 #define SPELL_MASSSLOW          30035
 #define SPELL_FLAME_WREATH      30004
 #define SPELL_AOE_CS            29961
-#define SPELL_PLAYERPULL        32265
 #define SPELL_AEXPLOSION        29973
 #define SPELL_MASS_POLY         29963
 #define SPELL_BLINK_CENTER      29967
-#define SPELL_ELEMENTALS        29962
+#define SPELL_ELEMENTAL1        29962
+#define SPELL_ELEMENTAL2        37053
+#define SPELL_ELEMENTAL3        37051
+#define SPELL_ELEMENTAL4        37052
 #define SPELL_CONJURE           29975
 #define SPELL_DRINK             30024
 #define SPELL_POTION            32453
 #define SPELL_AOE_PYROBLAST     29978
 #define SPELL_SUMMON_BLIZZARD   29969
+#define SPELL_MAGNETIC_PULL     29979
+#define SPELL_TELEPORT_MIDDLE   39567           // used also by npc_berthold not sure if valid here
 
 //Creature Spells
 #define SPELL_CIRCULAR_BLIZZARD     29952
@@ -79,6 +83,13 @@ enum SuperSpell
     SUPER_FLAME = 0,
     SUPER_BLIZZARD,
     SUPER_AE,
+};
+
+enum DrinkingState
+{
+    DRINKING_NO_DRINKING,
+    DRINKING_PREPARING,
+    DRINKING_DONE_DRINKING
 };
 
 float ElementalSpawnPoints[2][4] = {
@@ -130,7 +141,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     uint32 DrinkInturruptTimer;
 
     bool ElementalsSpawned;
-    bool Drinking;
+    DrinkingState Drinking;
 
     void SetBlizzardWaypoints()
     {
@@ -163,7 +174,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
 
         ElementalsSpawned       = false;
-        Drinking                = false;
+        Drinking                = DRINKING_NO_DRINKING;
 
         if (pInstance)
             pInstance->SetData(DATA_SHADEOFARAN_EVENT, NOT_STARTED);
@@ -271,32 +282,22 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 FrostCooldown = 0;
         }
 
-        if (!Drinking && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
+        if (Drinking == DRINKING_NO_DRINKING && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
         {
             ClearCastQueue();
-            Drinking = true;
+            Drinking = DRINKING_PREPARING;
             AddSpellToCast(SPELL_MASS_POLY, CAST_SELF);
             AddSpellToCastWithScriptText(SPELL_CONJURE, CAST_SELF, SAY_DRINK);
-            AddSpellToCast(SPELL_DRINK, CAST_SELF, true);   // TODO: find proper spell
-            DrinkInturruptTimer = 5000;
+            AddSpellToCast(SPELL_DRINK, CAST_SELF); 
         }
 
-        //Drinking check
-        if (Drinking)
+        if (Drinking == DRINKING_DONE_DRINKING)
         {
-            if (DrinkInturruptTimer < diff)
-            {
-                Drinking = false;
-                //m_creature->RemoveAurasDueToSpell(SPELL_DRINK);
-                //m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-                AddSpellToCast(SPELL_POTION, CAST_SELF);
-                AddSpellToCast(SPELL_AOE_PYROBLAST, CAST_SELF);
-            }
-            else
-                DrinkInturruptTimer -= diff;
+            AddSpellToCast(SPELL_POTION, CAST_SELF);
+            AddSpellToCast(SPELL_AOE_PYROBLAST, CAST_SELF);
         }
 
-        if(!Drinking)
+        if(Drinking == DRINKING_NO_DRINKING)
         {
             //Normal casts
             if (NormalCastTimer < diff)
@@ -361,8 +362,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 switch (LastSuperSpell)
                 {
                     case SUPER_AE:
-                        //TeleportCenter(); // todo: move it somewhere
-                        //AddSpellToCast(SPELL_PLAYERPULL, CAST_SELF, true);      // it's shirak's spell
+                        AddSpellToCast(SPELL_TELEPORT_MIDDLE, CAST_SELF);
+                        AddSpellToCast(SPELL_MAGNETIC_PULL, CAST_SELF);  
                         AddSpellToCast(SPELL_MASSSLOW, CAST_SELF);
                         AddSpellToCastWithScriptText(SPELL_AEXPLOSION, CAST_SELF, RAND(SAY_EXPLOSION1, SAY_EXPLOSION2));
                         break;
@@ -393,19 +394,12 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             if (!ElementalsSpawned && HealthBelowPct(40))
             {
                 ElementalsSpawned = true;
-                // TeleportCenter();         todo: teleport to center
-
-                for (uint32 i = 0; i < 4; i++)
-                {
-                    Creature* pUnit = m_creature->SummonCreature(CREATURE_WATER_ELEMENTAL, ElementalSpawnPoints[0][i], ElementalSpawnPoints[1][i], m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 90000);
-                    if (pUnit)
-                    {
-                        pUnit->Attack(m_creature->getVictim(), true);
-                        pUnit->setFaction(m_creature->getFaction());
-                    }
-                }
-
-                DoScriptText(SAY_ELEMENTALS, m_creature);
+                AddSpellToCast(SPELL_TELEPORT_MIDDLE, CAST_SELF);
+                AddSpellToCast(SPELL_MAGNETIC_PULL, CAST_SELF); 
+                AddSpellToCastWithScriptText(SPELL_ELEMENTAL1, CAST_NULL, SAY_ELEMENTALS);
+                AddSpellToCast(SPELL_ELEMENTAL2, CAST_NULL);
+                AddSpellToCast(SPELL_ELEMENTAL3, CAST_NULL);
+                AddSpellToCast(SPELL_ELEMENTAL4, CAST_NULL);
             }
         }
 
@@ -420,7 +414,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                     pUnit->setFaction(m_creature->getFaction());
                 }
             }
-
             DoScriptText(SAY_TIMEOVER, m_creature);
 
             BerserkTimer = 60000;
@@ -435,11 +428,25 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     void SpellHitTarget(Unit *target, const SpellEntry *spell)
     {
-        if (spell->Id == SPELL_MASSSLOW)
+        if (spell->Id == SPELL_MAGNETIC_PULL)
+            target->CastSpell(target, SPELL_BLINK_CENTER, true);
+        else if(spell->Id == SPELL_POTION)
+            Drinking = DRINKING_NO_DRINKING;
+    }
+
+    void JustSummoned(Creature *c)
+    {
+        if (c->GetEntry() == 17167)
         {
-            DoTeleportTo(wLoc.coord_x,wLoc.coord_y,wLoc.coord_z, 0);
-            m_creature->CastSpell(target, SPELL_BLINK_CENTER, true);
+            c->AI()->AttackStart(m_creature->getVictim());
+            c->setFaction(m_creature->getFaction());
         }
+    }
+
+    void OnAuraRemove(Aura *aura, bool)
+    {
+        if(aura->GetId() == SPELL_DRINK)
+            Drinking = DRINKING_DONE_DRINKING;
     }
 
     void SpellHit(Unit* pAttacker, const SpellEntry* spellEntry)
