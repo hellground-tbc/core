@@ -393,6 +393,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         ActiveNonPlayers m_activeNonPlayers;
         ActiveNonPlayers::iterator m_activeNonPlayersIter;
 
+        uint32 RecordTimeDiff();
+
     private:
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
 
@@ -409,6 +411,8 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         time_t i_gridExpiry;
 
         bool i_scriptLock;
+
+        uint32 m_currentTime;
 
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;

@@ -1894,8 +1894,12 @@ void World::Update(uint32 diff)
 
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures,...)
-    sMapMgr.Update(diff);                // As interval = 0
-    RecordTimeDiff("MapManager::update");
+    MapUpdatediff().ClearDiffInfo();
+    {
+        sMapMgr.Update(diff);                // As interval = 0
+        RecordTimeDiff("MapManager::update");
+    }
+    MapUpdatediff().PrintCumulativeMapUpdateDiff();
 
     sBattleGroundMgr.Update(diff);
     RecordTimeDiff("UpdateBattleGroundMgr");

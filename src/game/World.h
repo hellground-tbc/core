@@ -440,6 +440,45 @@ struct CliCommandHolder
 typedef tbb::concurrent_hash_map<uint32, std::list<uint64> > LfgContainerType;
 typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
 
+enum CumulateMapDiff
+{
+    DIFF_SESSION_UPDATE          = 0,
+    DIFF_PLAYER_UPDATE           = 1,
+    DIFF_CREATURE_UPDATE         = 2,
+    DIFF_PET_UPDATE              = 3,
+
+    DIFF_PLAYER_GRID_VISIT       = 4,
+    DIFF_ACTIVEUNIT_GRID_VISIT   = 5,
+
+    DIFF_SEND_OBJECTS_UPDATE     = 6,
+    DIFF_PROCESS_SCRIPTS         = 7,
+    DIFF_MOVE_CREATURES_IN_LIST  = 8,
+
+    DIFF_PROCESS_RELOCATION      = 9,
+
+    DIFF_MAP_SPECIAL_DATA_UPDATE = 10,
+
+    DIFF_MAX_CUMULATIVE_INFO     = 11
+};
+
+struct MapUpdateDiffInfo
+{
+    void ClearDiffInfo()
+    {
+        for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
+            _cumulativeDiffInfo[i] = 0;
+    }
+
+    void CumulateDiffFor(CumulateMapDiff type, uint32 diff)
+    {
+        _cumulativeDiffInfo[type] += diff;
+    }
+
+    void PrintCumulativeMapUpdateDiff();
+
+    ACE_Atomic_Op<ACE_Thread_Mutex, uint32> _cumulativeDiffInfo[DIFF_MAX_CUMULATIVE_INFO];
+};
+
 /// The World
 class World
 {
@@ -632,6 +671,7 @@ class World
         void SetScriptsVersion(char const* version) { m_ScriptsVersion = version ? version : "unknown scripting library"; }
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
+        uint32 RecordSessionTimeDiff(const char *text, ...);
         uint32 RecordTimeDiff(const char * text, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
 
@@ -671,6 +711,8 @@ class World
         LfgContainerType lfgHordeContainer;
         LfgContainerType lfgAllyContainer;
 
+        MapUpdateDiffInfo& MapUpdatediff() { return m_mapUpdateDiffInfo; }
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -702,6 +744,7 @@ class World
         uint32 m_currentTime;
         uint32 m_currentSessionTime;
 
+        MapUpdateDiffInfo m_mapUpdateDiffInfo;
         uint64 m_serverUpdateTimeSum, m_serverUpdateTimeCount;
 
         typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
@@ -806,6 +849,15 @@ public:
         }
     }
 };
+
+void MapUpdateDiffInfo::PrintCumulativeMapUpdateDiff()
+{
+    for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
+    {
+        if (_cumulativeDiffInfo[i] >= sWorld.getConfig(CONFIG_MIN_LOG_UPDATE))
+            sLog.outDiff("Cumulative Map Update for: %u - %u", i, _cumulativeDiffInfo[i]);
+    }
+}
 
 #endif
 /// @}
