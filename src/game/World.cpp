@@ -92,6 +92,15 @@ int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_
 int32 World::m_activeObjectUpdateDistanceOnContinents = DEFAULT_VISIBILITY_DISTANCE;
 int32 World::m_activeObjectUpdateDistanceInInstances = DEFAULT_VISIBILITY_DISTANCE;
 
+void MapUpdateDiffInfo::PrintCumulativeMapUpdateDiff()
+{
+    for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
+    {
+        if (_cumulativeDiffInfo[i] >= sWorld.getConfig(CONFIG_MIN_LOG_UPDATE))
+            sLog.outDiff("Cumulative Map Update for: %u - %u", i, _cumulativeDiffInfo[i]);
+    }
+}
+
 /// World constructor
 World::World()
 {
@@ -1894,12 +1903,12 @@ void World::Update(uint32 diff)
 
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures,...)
-    MapUpdatediff().ClearDiffInfo();
+    MapUpdateDiff().ClearDiffInfo();
     {
         sMapMgr.Update(diff);                // As interval = 0
         RecordTimeDiff("MapManager::update");
     }
-    MapUpdatediff().PrintCumulativeMapUpdateDiff();
+    MapUpdateDiff().PrintCumulativeMapUpdateDiff();
 
     sBattleGroundMgr.Update(diff);
     RecordTimeDiff("UpdateBattleGroundMgr");

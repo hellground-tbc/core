@@ -711,7 +711,7 @@ class World
         LfgContainerType lfgHordeContainer;
         LfgContainerType lfgAllyContainer;
 
-        MapUpdateDiffInfo& MapUpdatediff() { return m_mapUpdateDiffInfo; }
+        MapUpdateDiffInfo& MapUpdateDiff() { return m_mapUpdateDiffInfo; }
 
     protected:
         void _UpdateGameTime();
@@ -849,15 +849,6 @@ public:
         }
     }
 };
-
-void MapUpdateDiffInfo::PrintCumulativeMapUpdateDiff()
-{
-    for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
-    {
-        if (_cumulativeDiffInfo[i] >= sWorld.getConfig(CONFIG_MIN_LOG_UPDATE))
-            sLog.outDiff("Cumulative Map Update for: %u - %u", i, _cumulativeDiffInfo[i]);
-    }
-}
 
 #endif
 /// @}
