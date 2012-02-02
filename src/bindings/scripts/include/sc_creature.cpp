@@ -495,7 +495,7 @@ void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int3
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool triggered)
+void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool triggered, bool visualTarget)
 {
     if (m_creature->isCrowdControlled())
         return;
@@ -505,7 +505,7 @@ void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool 
         return;
     uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
 
-    SpellToCast temp(targetGUID, spellId, triggered, 0, false);
+    SpellToCast temp(targetGUID, spellId, triggered, 0, visualTarget);
 
     spellList.push_back(temp);
 }
