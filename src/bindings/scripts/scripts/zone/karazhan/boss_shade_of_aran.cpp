@@ -376,7 +376,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
                     case SUPER_BLIZZARD:
                         ChangeBlizzardWaypointsOrder(urand(0, 7));
-                        AddSpellToCastWithScriptText(SPELL_SUMMON_BLIZZARD, CAST_SELF, RAND(SAY_BLIZZARD1, SAY_BLIZZARD2));
+                        AddSpellToCastWithScriptText(SPELL_SUMMON_BLIZZARD, CAST_NULL, RAND(SAY_BLIZZARD1, SAY_BLIZZARD2));
                         break;
                 }
 
