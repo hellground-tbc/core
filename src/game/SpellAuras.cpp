@@ -1407,13 +1407,12 @@ void Aura::TriggerSpell()
                     case 29946:
                         if (!m_target->HasAura(29947, 0))
                             trigger_spell_id = 29949;
-                        else if(m_tickNumber < 40)              // need to reaply 29947 to prevent it from ticking
-                            trigger_spell_id = 29947;
-                        else                                    // last tick, remove 29947
-                            target->RemoveAurasDueToSpell(29949);
+                        else if(m_tickNumber == 40 )             // last tick, remove 29947
+                            target->RemoveAurasDueToSpell(29947);
                         break;
                     case 29947:
-                        trigger_spell_id = 29949;
+                        if(!m_target->HasAura(29946, 0))
+                            trigger_spell_id = 29949;
                         break;
                     // Firestone Passive (1-5 ranks)
                     case 758:
