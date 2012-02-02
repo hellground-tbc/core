@@ -2012,13 +2012,13 @@ void Aura::TriggerSpell()
 //                    case 51510: break;
                     
                         // Return fire
-                    case 29805:
+                    case 29788:
                         trigger_spell_id = urand(0, 1) ? 29793 : 29794;
                         break;
-                    case 29806:
+                    case 29794:
                         trigger_spell_id = urand(0, 1) ? 29788 : 29793;
                         break;
-                    case 29807:
+                    case 29793:
                         trigger_spell_id = urand(0, 1) ? 29788 : 29794;
                         break;
                     default:

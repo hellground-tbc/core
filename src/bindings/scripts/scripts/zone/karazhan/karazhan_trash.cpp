@@ -245,17 +245,20 @@ struct TRINITY_DLL_DECL mob_arcane_protectorAI : public ScriptedAI
 
     void OnAuraApply(Aura *aur, Unit*, bool stack)
     {
-        switch(aur->GetId())
+        if(aur->GetEffIndex() == 0)
         {
-        case SPELL_RETURN_FIRE1:
-            me->Say("Activating defence mode EL-2S.", 0, 0);
-            break;
-        case SPELL_RETURN_FIRE2:
-            me->Say("Activating defence mode EL-5R.", 0, 0);
-            break;
-        case SPELL_RETURN_FIRE3:
-            me->Say("Activating defence mode EL-7M.", 0, 0);
-            break;
+            switch(aur->GetId())
+            {
+            case SPELL_RETURN_FIRE1:
+                me->Say("Activating defence mode EL-2S.", 0, 0);
+                break;
+            case SPELL_RETURN_FIRE2:
+                me->Say("Activating defence mode EL-5R.", 0, 0);
+                break;
+            case SPELL_RETURN_FIRE3:
+                me->Say("Activating defence mode EL-7M.", 0, 0);
+                break;
+            }
         }
     }
 
@@ -272,7 +275,6 @@ struct TRINITY_DLL_DECL mob_arcane_protectorAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-
         if(SkillTimer < diff)
         {
             if(roll_chance_i(50))
@@ -282,6 +284,8 @@ struct TRINITY_DLL_DECL mob_arcane_protectorAI : public ScriptedAI
                 me->CastSpell(me, SPELL_FIST_OF_STONE, false);
             SkillTimer = urand(15000, 30000);
         }
+        else
+            SkillTimer -= diff;
 
         CastNextSpellIfAnyAndReady(diff);
         DoMeleeAttackIfReady();
