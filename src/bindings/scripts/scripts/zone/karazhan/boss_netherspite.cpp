@@ -263,6 +263,8 @@ struct TRINITY_DLL_DECL boss_netherspiteAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
+        DoSpecialThings(diff, DO_EVERYTHING, 125.0f, 1.5f);
+
         // Void Zone
         if(VoidZoneTimer < diff)
         {

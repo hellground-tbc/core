@@ -573,6 +573,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_GUILD_ANN_INTERVAL] = (sConfig.GetIntDefault("GuildAnnounce.Timer", 1)*MINUTE*1000);
     m_configs[CONFIG_GUILD_ANN_COOLDOWN] = (sConfig.GetIntDefault("GuildAnnounce.Cooldown", 60)*MINUTE);
 
+    m_configs[CONFIG_ENABLE_PASSIVE_ANTICHEAT] = sConfig.GetIntDefault("AntiCheat.Enable", 1);
+
     m_configs[CONFIG_RETURNOLDMAILS_MODE] = sConfig.GetIntDefault("Mail.OldReturnMode", 0);
     m_configs[CONFIG_RETURNOLDMAILS_INTERVAL] = sConfig.GetIntDefault("Mail.OldReturnTimer", 60);
 
@@ -1579,7 +1581,7 @@ void World::SetInitialWorldSettings()
     CleanupDeletedChars();
 
     sLog.outString("Activating AntiCheat");
-    if (m_ac.activate() == -1)
+    if (sWorld.getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && m_ac.activate() == -1)
         sLog.outString("Couldn't activate AntiCheat");
 
     sLog.outString("WORLD: World initialized");
