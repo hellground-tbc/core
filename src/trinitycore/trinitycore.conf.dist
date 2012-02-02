@@ -1591,11 +1591,20 @@ VMSS.MapFreezeDetectTime = 1000
 #        Default: 0 (Disabled)
 #                 1 (Enabled)
 #
+#    AntiCheat.Enable
+#        Enable passive anticheat
+#        Default: 1 (Enabled)
+#                 0 (Disabled)
+#
 ###################################################################################################################
 
 AutoBroadcast.Timer = 0
 Auction.EnableSort = 1
+
 Mail.OldReturnMode = 0
 Mail.OldReturnTimer = 60
+
 Warden.Kick = 0
 Warden.Ban = 0
+
+AntiCheat.Enable = 1

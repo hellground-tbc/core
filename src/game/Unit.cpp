@@ -2577,6 +2577,16 @@ uint32 Unit::GetCurrentSpellId() const
     return 0;
 }
 
+Spell* Unit::GetCurrentSpell(CurrentSpellTypes type) const
+{
+    return m_currentSpells[type];
+}
+
+SpellEntry const* Unit::GetCurrentSpellProto(CurrentSpellTypes type) const
+{
+    return (m_currentSpells[type] ? m_currentSpells[type]->m_spellInfo : NULL);
+}
+
 bool Unit::isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType)
 {
     if (pVictim->HasInArc(M_PI,this))

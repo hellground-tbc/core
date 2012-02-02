@@ -1424,6 +1424,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 
+        Spell* GetCurrentSpell(CurrentSpellTypes type) const;
+        SpellEntry const* GetCurrentSpellProto(CurrentSpellTypes type) const;
+
         uint32 m_addDmgOnce;
         uint64 m_TotemSlot[MAX_TOTEM];
         uint64 m_ObjectSlot[4];
