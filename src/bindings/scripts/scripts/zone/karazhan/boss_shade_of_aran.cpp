@@ -89,7 +89,8 @@ enum DrinkingState
 {
     DRINKING_NO_DRINKING,
     DRINKING_PREPARING,
-    DRINKING_DONE_DRINKING
+    DRINKING_DONE_DRINKING,
+    DRINKING_POTION
 };
 
 float ElementalSpawnPoints[2][4] = {
@@ -295,6 +296,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             AddSpellToCast(SPELL_POTION, CAST_SELF);
             AddSpellToCast(SPELL_AOE_PYROBLAST, CAST_SELF);
+            Drinking = DRINKING_POTION
         }
 
         if(Drinking == DRINKING_NO_DRINKING)
@@ -373,17 +375,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                         break;
 
                     case SUPER_BLIZZARD:
-                        AddSpellToCastWithScriptText(SPELL_SUMMON_BLIZZARD, CAST_NULL, RAND(SAY_BLIZZARD1, SAY_BLIZZARD2));
+                        ChangeBlizzardWaypointsOrder(urand(0, 7));
+                        AddSpellToCastWithScriptText(SPELL_SUMMON_BLIZZARD, CAST_SELF, RAND(SAY_BLIZZARD1, SAY_BLIZZARD2));
                         break;
-                        /*
-                        if  (Creature * blizzard = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_BLIZZARD)))
-                        {
-                            ChangeBlizzardWaypointsOrder(urand(0, 7));
-                            blizzard->CastSpell(blizzard, SPELL_CIRCULAR_BLIZZARD, false);
-                        }
-
-                        break;
-                        */
                 }
 
                 SuperCastTimer = urand(30000, 35000);
@@ -396,10 +390,10 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 ElementalsSpawned = true;
                 AddSpellToCast(SPELL_TELEPORT_MIDDLE, CAST_SELF);
                 AddSpellToCast(SPELL_MAGNETIC_PULL, CAST_SELF); 
-                AddSpellToCastWithScriptText(SPELL_ELEMENTAL1, CAST_NULL, SAY_ELEMENTALS);
-                AddSpellToCast(SPELL_ELEMENTAL2, CAST_NULL);
-                AddSpellToCast(SPELL_ELEMENTAL3, CAST_NULL);
-                AddSpellToCast(SPELL_ELEMENTAL4, CAST_NULL);
+                AddSpellToCastWithScriptText(SPELL_ELEMENTAL1, CAST_SELF, SAY_ELEMENTALS);
+                AddSpellToCast(SPELL_ELEMENTAL2, CAST_SELF);
+                AddSpellToCast(SPELL_ELEMENTAL3, CAST_SELF);
+                AddSpellToCast(SPELL_ELEMENTAL4, CAST_SELF);
             }
         }
 
@@ -446,7 +440,17 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     void OnAuraRemove(Aura *aura, bool)
     {
         if(aura->GetId() == SPELL_DRINK)
+        {
+            m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0); // stand up
             Drinking = DRINKING_DONE_DRINKING;
+        }
+    }
+
+    void OnAuraApply(Aura *aura, Unit *caster, bool)
+    {
+        if(aura->GetId() == SPELL_DRINK)
+            m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 1); // sit down
+
     }
 
     void SpellHit(Unit* pAttacker, const SpellEntry* spellEntry)
