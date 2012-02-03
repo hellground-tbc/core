@@ -139,9 +139,9 @@ struct TRINITY_DLL_DECL boss_alarAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        if(pInstance)
-            pInstance->SetData(DATA_ALAREVENT, IN_PROGRESS);
+        pInstance->SetData(DATA_ALAREVENT, IN_PROGRESS);
 
+        m_creature->GetMotionMaster()->Clear(false);
         m_creature->SetSpeed(MOVE_RUN, DefaultMoveSpeedRate);
         m_creature->SetSpeed(MOVE_FLIGHT, DefaultMoveSpeedRate);
         m_creature->SetLevitate(true); // after enterevademode will be set walk movement
