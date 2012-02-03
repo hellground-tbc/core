@@ -1767,6 +1767,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         int32 m_meleeAPAttackerBonus;
 
+    public:
         void DisableSpline();
 
     private:

@@ -88,6 +88,22 @@ MotionMaster::~MotionMaster()
     }
 }
 
+void MotionMaster::MovementExpired(bool reset)
+{
+    if (m_cleanFlag & MMCF_UPDATE)
+    {
+        if (reset)
+            m_cleanFlag |= MMCF_RESET;
+        else
+            m_cleanFlag &= ~MMCF_RESET;
+        DelayedExpire();
+    }
+    else
+        DirectExpire(reset);
+
+    i_owner->DisableSpline();
+}
+
 void MotionMaster::UpdateMotion(uint32 diff)
 {
     if (i_owner->hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))

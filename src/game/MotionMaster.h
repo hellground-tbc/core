@@ -131,19 +131,7 @@ class TRINITY_DLL_SPEC MotionMaster //: private std::stack<MovementGenerator *>
             else
                 DirectClean(reset);
         }
-        void MovementExpired(bool reset = true)
-        {
-            if (m_cleanFlag & MMCF_UPDATE)
-            {
-                if (reset)
-                    m_cleanFlag |= MMCF_RESET;
-                else
-                    m_cleanFlag &= ~MMCF_RESET;
-                DelayedExpire();
-            }
-            else
-                DirectExpire(reset);
-        }
+        void MovementExpired(bool reset = true);
 
         void MoveIdle(MovementSlot slot = MOTION_SLOT_ACTIVE);
         void MoveTargetedHome();
