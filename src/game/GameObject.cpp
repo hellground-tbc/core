@@ -1018,10 +1018,7 @@ void GameObject::Use(Unit* user)
             else
                 spellCaster->NearTeleportTo(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
-            if(spellCaster->GetTypeId() == TYPEID_PLAYER)
-                spellCaster->SetStandState(PLAYER_STATE_SIT_LOW_CHAIR+info->chair.height);
-            else
-                spellCaster->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR);
+            spellCaster->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR+info->chair.height);
             return;
         }
         case GAMEOBJECT_TYPE_GOOBER:                        //10
