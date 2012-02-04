@@ -549,7 +549,7 @@ int32 ArenaTeam::WonAgainst(uint32 againstRating)
 {
     // called when the team has won
     //'chance' calculation - to beat the opponent
-    float chance = GetChanceAgainst(stats.rating,againstRating);
+    float chance = GetChanceAgainst(stats.rating, againstRating);
     // calculate the rating modification (ELO system with k=32)
     int32 mod = (int32)floor(32.0f * (1.0f - chance));
     // modify the team stats accordingly
@@ -575,7 +575,7 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
 {
     // called when the team has lost
     //'chance' calculation - to loose to the opponent
-    float chance = GetChanceAgainst(stats.rating,againstRating);
+    float chance = GetChanceAgainst(stats.rating, againstRating);
     // calculate the rating modification (ELO system with k=32)
     int32 mod = (int32)ceil(32.0f * (0.0f - chance));
     // modify the team stats accordingly
@@ -598,15 +598,13 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
 
 void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHiddenRating)
 {
-    bool hiddenEnabled = sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING);
-
     // called for each participant of a match after losing
     for (MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
         if (itr->guid == plr->GetGUID())
         {
             // update personal rating
-            float chance = GetChanceAgainst(itr->personal_rating, hiddenEnabled ? againstHiddenRating : againstRating);
+            float chance = GetChanceAgainst(itr->personal_rating, againstRating);
             int32 mod = (int32)ceil(32.0f * (0.0f - chance));
             itr->ModifyPersonalRating(plr, mod, GetSlot());
 
@@ -629,15 +627,13 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHid
 
 void ArenaTeam::MemberWon(Player * plr, uint32 againstRating, uint32 againstHiddenRating)
 {
-    bool hiddenEnabled = sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING);
-
     // called for each participant after winning a match
     for (MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
         if (itr->guid == plr->GetGUID())
         {
             // update personal rating
-            float chance = GetChanceAgainst(itr->personal_rating, hiddenEnabled ? againstHiddenRating : againstRating);
+            float chance = GetChanceAgainst(itr->personal_rating, againstRating);
             int32 mod = (int32)floor(32.0f * (1.0f - chance));
             itr->ModifyPersonalRating(plr, mod, GetSlot());
 
