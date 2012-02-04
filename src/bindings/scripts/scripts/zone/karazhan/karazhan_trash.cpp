@@ -32,9 +32,9 @@ struct TRINITY_DLL_DECL mob_phantom_guestAI : public ScriptedAI
         me->CastSpell(me, SPELL_DANCE_VIBE, true);
 
         MainTimer = 0;
-        SecondaryTimer = 5000;
+        SecondaryTimer = urand(5000, 20000);
 
-        if(GameObject *chair = FindGameObject(GO_CHAIR, 3.0, me))
+        if(GameObject *chair = FindGameObject(GO_CHAIR, 5.0, me))
             chair->Use(me);
     }
 
@@ -69,11 +69,11 @@ struct TRINITY_DLL_DECL mob_phantom_guestAI : public ScriptedAI
                 break;
             case 3:
                 AddSpellToCast(SPELL_PUNCH, CAST_TANK);
-                MainTimer = 5000;
+                MainTimer = urand(10000, 30000);
                 break;
             case 4:
                 AddSpellToCast(SPELL_HEAL, CAST_LOWEST_HP_FRIENDLY);
-                MainTimer = 5000;
+                MainTimer = urand(5000, 20000);
                 break;
             }
         } 
@@ -86,23 +86,23 @@ struct TRINITY_DLL_DECL mob_phantom_guestAI : public ScriptedAI
             {
             case 0:
                 AddSpellToCast(SPELL_IMMOLATE, CAST_RANDOM);
-                SecondaryTimer = 7000;
+                SecondaryTimer = urand(7000, 30000);
                 break;
             case 1:
                 AddSpellToCast(SPELL_IMPALE, CAST_RANDOM);
-                SecondaryTimer = 7000;
+                SecondaryTimer = urand(5000, 30000);
                 break;
             case 2:
                 AddSpellToCast(SPELL_THROW_DYNAMITE, CAST_RANDOM);
-                SecondaryTimer = 9000;
+                SecondaryTimer = urand(15000, 40000);
                 break;
             case 3:
                 AddSpellToCast(SPELL_CURSE_OF_AGONY, CAST_RANDOM);
-                SecondaryTimer = 7000;
+                SecondaryTimer = urand(10000, 30000);
                 break;
             case 4:
                 AddSpellToCast(SPELL_HOLY_NOVA, CAST_SELF);
-                SecondaryTimer = 10000;
+                SecondaryTimer = urand(10000, 30000);
                 break;
             }
         }

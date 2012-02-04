@@ -1405,14 +1405,9 @@ void Aura::TriggerSpell()
                 {
                     // Flame Wreath
                     case 29946:
-                        if (!m_target->HasAura(29947, 0))
-                            trigger_spell_id = 29949;
-                        else if(m_tickNumber == 40 )             // last tick, remove 29947
-                            target->RemoveAurasDueToSpell(29947);
                         break;
                     case 29947:
-                        if(!m_target->HasAura(29946, 0))
-                            trigger_spell_id = 29949;
+                        trigger_spell_id = 29949;
                         break;
                     // Firestone Passive (1-5 ranks)
                     case 758:
@@ -4971,6 +4966,11 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 
                 ((Creature*)m_target)->UpdateEntry(20680); // Transform into Arzeth the Powerless
                 break;
+            }
+            case 29946: // Flame Wreath
+            {
+                if (m_removeMode != AURA_REMOVE_BY_EXPIRE)
+                    m_target->CastSpell(m_target, 29947, true, NULL, this);
             }
         }
     }
