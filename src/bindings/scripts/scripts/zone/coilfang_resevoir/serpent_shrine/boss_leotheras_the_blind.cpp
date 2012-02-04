@@ -609,6 +609,7 @@ struct TRINITY_DLL_DECL boss_leotheras_the_blindAI : public ScriptedAI
             DoScriptText(SAY_FINAL_FORM, m_creature);
             m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, MODEL_NIGHTELF);
             m_creature->LoadEquipment(m_creature->GetEquipmentId());
+            m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
         }
     }
 };
