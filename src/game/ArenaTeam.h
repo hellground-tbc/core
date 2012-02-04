@@ -223,7 +223,7 @@ class ArenaTeam
             return NULL;
         }
 
-        uint32 GetMemberMMR(uint64 & guid)
+        uint32 GetMemberMMR(const uint64 & guid)
         {
             for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
                 if (itr->guid == guid)
