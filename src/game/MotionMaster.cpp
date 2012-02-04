@@ -100,8 +100,6 @@ void MotionMaster::MovementExpired(bool reset)
     }
     else
         DirectExpire(reset);
-
-    i_owner->DisableSpline();
 }
 
 void MotionMaster::UpdateMotion(uint32 diff)
