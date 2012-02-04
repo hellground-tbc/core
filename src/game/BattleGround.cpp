@@ -626,7 +626,6 @@ void BattleGround::EndBattleGround(uint32 winner)
             if (!Source)
                 Source = plr;
             RewardMark(plr,ITEM_WINNER_COUNT);
-            UpdatePlayerScore(plr, SCORE_BONUS_HONOR, 20);
             RewardQuest(plr);
         }
         else if (winner !=0)
@@ -732,7 +731,7 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
 
         if (!dest.empty())                // can add some
             if (Item* item = plr->StoreNewItem(dest, mark, true, 0))
-                plr->SendNewItem(item,count,false,true);
+                plr->SendNewItem(item, count, true, false);
 
         if (no_space_count > 0)
             SendRewardMarkByMail(plr,mark,no_space_count);
@@ -1023,6 +1022,10 @@ void BattleGround::AnnounceBGStart()
 
 void BattleGround::AddPlayer(Player *plr)
 {
+    // remove afk from player
+    if (plr->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK))
+        plr->ToggleAFK();
+
     // score struct must be created in inherited class
 
     uint64 guid = plr->GetGUID();

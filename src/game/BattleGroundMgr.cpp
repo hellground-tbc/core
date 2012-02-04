@@ -1054,16 +1054,16 @@ void BattleGroundMgr::DeleteAlllBattleGrounds()
 // used to update running battlegrounds, and delete finished ones
 void BattleGroundMgr::Update(uint32 diff)
 {
-    BattleGroundSet::iterator itr, next;
-    for (itr = m_BattleGrounds.begin(); itr != m_BattleGrounds.end(); itr = next)
+    BattleGroundSet::iterator itr, tmpItr;
+    for (itr = m_BattleGrounds.begin(); itr != m_BattleGrounds.end();)
     {
-        next = itr;
-        ++next;
+        tmpItr = itr;
+        ++itr;
 
-        if (itr->second->m_SetDeleteThis)
+        if (tmpItr->second->m_SetDeleteThis)
         {
-            BattleGround * bg = itr->second;
-            m_BattleGrounds.erase(itr);
+            BattleGround * bg = tmpItr->second;
+            m_BattleGrounds.erase(tmpItr);
             delete bg;
         }
     }
