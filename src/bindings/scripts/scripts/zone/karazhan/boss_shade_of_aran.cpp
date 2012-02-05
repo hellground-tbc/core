@@ -133,6 +133,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
     bool ElementalsSpawned;
     DrinkingState Drinking;
+    uint32 DrinkingDelay;
 
 
 
@@ -146,6 +147,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         BerserkTimer        = 720000;
         CheckTimer          = 3000;
         PyroblastTimer      = 0;
+        DrinkingDelay       = 0;
 
 
         LastSuperSpell = rand()%3;
@@ -245,7 +247,15 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 FrostCooldown = 0;
         }
 
-        if (Drinking == DRINKING_NO_DRINKING && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
+        if (DrinkingDelay)
+        {
+            if (DrinkingDelay <= diff)
+                DrinkingDelay = 0
+            else
+                DrinkingDelay -= diff;
+        }
+
+        if (!DrinkingDelay && Drinking == DRINKING_NO_DRINKING && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
         {
             ClearCastQueue();
             Drinking = DRINKING_PREPARING;
@@ -258,7 +268,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         {
             AddSpellToCast(SPELL_POTION, CAST_SELF);
             PyroblastTimer = 2000;
-            AddSpellToCast(SPELL_AOE_PYROBLAST, CAST_SELF);
             Drinking = DRINKING_POTION;
         }
 
@@ -340,18 +349,21 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                         AddSpellToCast(SPELL_MAGNETIC_PULL, CAST_SELF);  
                         AddSpellToCast(SPELL_MASSSLOW, CAST_SELF);
                         AddSpellToCastWithScriptText(SPELL_AEXPLOSION, CAST_SELF, RAND(SAY_EXPLOSION1, SAY_EXPLOSION2));
+                        DrinkingDelay = 15000;
                         break;
 
                     case SUPER_FLAME:
                         AddSpellToCastWithScriptText(SPELL_FLAME_WREATH, CAST_SELF, RAND(SAY_FLAMEWREATH1, SAY_FLAMEWREATH2));
+                        DrinkingDelay = 25000;
                         break;
 
                     case SUPER_BLIZZARD:
                         AddSpellToCastWithScriptText(SPELL_SUMMON_BLIZZARD, CAST_NULL, RAND(SAY_BLIZZARD1, SAY_BLIZZARD2));
+                        DrinkingDelay = 30000;
                         break;
                 }
 
-                SuperCastTimer = urand(30000, 35000);
+                SuperCastTimer = urand(35000, 40000);
             }
             else
                 SuperCastTimer -= diff;
