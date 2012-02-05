@@ -2698,9 +2698,12 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     uint32 roll = GetMap()->urand (0, 10000);
 
     uint32 tmp = 0;
-    bool canDodge = true;
-    bool canParry = true;
-    bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3;
+
+    bool isCasting = pVictim->IsNonMeleeSpellCasted(false);
+
+    bool canDodge = !isCasting;
+    bool canParry = !isCasting;
+    bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3 && !isCasting;
 
     // Creature has unblockable attack info
     if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
@@ -2963,6 +2966,7 @@ float Unit::GetUnitDodgeChance() const
 {
     if (IsNonMeleeSpellCasted(false) || hasUnitState(UNIT_STAT_LOST_CONTROL))
         return 0.0f;
+
     if (GetTypeId() == TYPEID_PLAYER)
         return GetFloatValue(PLAYER_DODGE_PERCENTAGE);
     else
