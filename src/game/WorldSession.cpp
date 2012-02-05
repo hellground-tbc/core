@@ -93,7 +93,7 @@ LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mu
 _player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(objmgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
-m_kickTimer(MINUTE * 15 * 1000), m_accFlags(accFlags), m_Warden(NULL), m_timeLastWhoCommand(0)
+m_kickTimer(MINUTE * 15 * 1000), m_accFlags(accFlags), m_Warden(NULL)
 {
     if (sock)
     {
@@ -102,7 +102,7 @@ m_kickTimer(MINUTE * 15 * 1000), m_accFlags(accFlags), m_Warden(NULL), m_timeLas
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
 
         // do it more gently :p
-        (_opcodeCooldowns[CMSG_WHOIS] = ShortIntervalTimer()).SetInterval(OPCODE_COOLDOWN);
+        (_opcodeCooldowns[CMSG_WHOIS] = ShortIntervalTimer()).SetInterval(OPCODE_COOLDOWN *0.5);
         (_opcodeCooldowns[CMSG_INSPECT] = ShortIntervalTimer()).SetInterval(OPCODE_COOLDOWN);
     }
 }

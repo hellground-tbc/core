@@ -253,4 +253,10 @@ enum RunModes
 #define PAIR32_HIPART(x)   (uint16)((uint32(x) >> 16) & 0x0000FFFF)
 #define PAIR32_LOPART(x)   (uint16)(uint32(x)         & 0x0000FFFF)
 
+#ifdef MAP_UPDATE_DIFF_INFO
+    #define MAP_UPDATE_DIFF(t) t;
+#else
+    #define MAP_UPDATE_DIFF(t)
+#endif
+
 #endif

@@ -250,7 +250,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         if (DrinkingDelay)
         {
             if (DrinkingDelay <= diff)
-                DrinkingDelay = 0
+                DrinkingDelay = 0;
             else
                 DrinkingDelay -= diff;
         }

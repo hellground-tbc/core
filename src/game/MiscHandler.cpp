@@ -145,11 +145,6 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
     sLog.outDebug("WORLD: Recvd CMSG_WHO Message");
     //recv_data.hexlike();
 
-    time_t now = time(NULL);
-    if (now - m_timeLastWhoCommand < 5)
-        return;
-    else m_timeLastWhoCommand = now;
-
     uint32 clientcount = 0;
 
     uint32 level_min, level_max, racemask, classmask, zones_count, str_count;

@@ -717,6 +717,7 @@ class TRINITY_DLL_SPEC WorldSession
         void HandleGuildBankBuyTab(WorldPacket& recv_data);
         void HandleGuildBankTabText(WorldPacket& recv_data);
         void HandleGuildBankSetTabText(WorldPacket& recv_data);
+
     private:
         // private trade methods
         void moveItems(Item* myItems[], Item* hisItems[]);
@@ -758,9 +759,7 @@ class TRINITY_DLL_SPEC WorldSession
         OpcodesCooldownMap _opcodeCooldowns;
 
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
-
-        time_t m_timeLastWhoCommand;
 };
+
 #endif
 /// @}
-

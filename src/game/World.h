@@ -711,7 +711,7 @@ class World
         LfgContainerType lfgHordeContainer;
         LfgContainerType lfgAllyContainer;
 
-        MapUpdateDiffInfo& MapUpdateDiff() { return m_mapUpdateDiffInfo; }
+        MAP_UPDATE_DIFF(MapUpdateDiffInfo& MapUpdateDiff() { return m_mapUpdateDiffInfo; })
 
     protected:
         void _UpdateGameTime();
@@ -744,7 +744,7 @@ class World
         uint32 m_currentTime;
         uint32 m_currentSessionTime;
 
-        MapUpdateDiffInfo m_mapUpdateDiffInfo;
+        MAP_UPDATE_DIFF(MapUpdateDiffInfo m_mapUpdateDiffInfo)
         uint64 m_serverUpdateTimeSum, m_serverUpdateTimeCount;
 
         typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
