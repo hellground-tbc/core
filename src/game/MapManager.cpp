@@ -264,12 +264,6 @@ void MapManager::Update(uint32 diff)
 
     sWorld.RecordTimeDiff("Delayed update");
 
-    if (m_updater.IsBroken())
-    {
-        m_updater.ReActivate(sWorld.getConfig(CONFIG_NUMTHREADS));
-        DEBUG_LOG("Map:Update map virtual server pool reactivated, thread num is %u", sWorld.getConfig(CONFIG_NUMTHREADS));
-    }
-
     for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
     {
         WorldObject::UpdateHelper helper((*iter));

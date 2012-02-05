@@ -1164,8 +1164,6 @@ void World::LoadConfigSettings(bool reload)
 
     // VMSS system
     m_configs[CONFIG_VMSS_ENABLE] = sConfig.GetBoolDefault("VMSS.Enable", false);
-    m_configs[CONFIG_VMSS_MAXTHREADBREAKS] = sConfig.GetIntDefault("VMSS.MaxThreadBreaks", 5);
-    m_configs[CONFIG_VMSS_TBREMTIME] = sConfig.GetIntDefault("VMSS.ThreadBreakRememberTime", 3600);
     m_configs[CONFIG_VMSS_MAPFREEMETHOD] = sConfig.GetIntDefault("VMSS.MapFreeMethod", 0);
     m_configs[CONFIG_VMSS_FREEZECHECKPERIOD] = sConfig.GetIntDefault("VMSS.FreezeCheckPeriod", 1000);
     m_configs[CONFIG_VMSS_FREEZEDETECTTIME] = sConfig.GetIntDefault("VMSS.MapFreezeDetectTime", 1000);

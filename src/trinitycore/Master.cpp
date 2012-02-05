@@ -49,8 +49,6 @@
 #include "PosixDaemon.h"
 #endif
 
-#include <ace/Stack_Trace.h>
-
 extern RunModes runMode;
 
 /// \todo Warning disabling not useful under VC++2005. Can somebody say on which compiler it is useful?
@@ -437,54 +435,6 @@ void Master::_OnSignal(int s)
             signal(s, _OnSignal);
             break;
         #endif
-        case SIGSEGV:
-        case SIGABRT:
-        case SIGFPE:
-            if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
-            {
-                ACE_thread_t const threadId = ACE_OS::thr_self();
-                sLog.outCrash("Signal Handler: Signal %.2u received from thread "I64FMT".\r\n",s,threadId);
-                ACE_Stack_Trace StackTrace;
-                sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n",StackTrace.c_str());
-
-                if (MapIDs const* mapPair = sMapMgr.GetMapUpdater()->GetMapPairByThreadId(threadId))
-                {
-                    sLog.outError("Signal Handler: crushed thread is update map %u instance %u",mapPair->first, mapPair->second);
-                    sLog.outCrash("Signal Handler: crushed thread is update map %u instance %u",mapPair->first, mapPair->second);
-                    if (Map* map = sMapMgr.FindMap(mapPair->first, mapPair->second))
-                        map->SetBroken(true);
-                    sMapMgr.GetMapUpdater()->MapBrokenEvent(mapPair);
-                    if (sMapMgr.GetMapUpdater()->GetMapBrokenData(mapPair)->count > sWorld.getConfig(CONFIG_VMSS_MAXTHREADBREAKS))
-                    {
-                        sLog.outError("Signal Handler: Limit of map restarting (map %u instance %u) exceeded. Stopping world!",mapPair->first, mapPair->second);
-                        sLog.outCrash("Signal Handler: Limit of map restarting (map %u instance %u) exceeded. Stopping world!",mapPair->first, mapPair->second);
-                        signal(s, SIG_DFL);
-                        ACE_OS::kill(getpid(), s);
-                    }
-                    else
-                    {
-                        sLog.outError("Signal Handler: Restarting virtual map server (map %u instance %u). Count of restarts: %u",mapPair->first, mapPair->second, sMapMgr.GetMapUpdater()->GetMapBrokenData(mapPair)->count);
-                        sLog.outCrash("Signal Handler: Restarting virtual map server (map %u instance %u). Count of restarts: %u",mapPair->first, mapPair->second, sMapMgr.GetMapUpdater()->GetMapBrokenData(mapPair)->count);
-                        sMapMgr.GetMapUpdater()->unregister_thread(threadId);
-                        sMapMgr.GetMapUpdater()->update_finished();
-                        sMapMgr.GetMapUpdater()->SetBroken(true);
-                        ACE_OS::thr_exit();
-                    }
-                }
-                else
-                {
-                    sLog.outError("Signal Handler: Thread "I64FMT" is not virtual map server. Stopping world.",threadId);
-                    sLog.outCrash("Signal Handler: Thread "I64FMT" is not virtual map server. Stopping world.",threadId);
-                    signal(s, SIG_DFL);
-                    ACE_OS::kill(getpid(), s);
-                }
-            }
-            else
-            {
-                signal(s, SIG_DFL);
-                ACE_OS::kill(getpid(), s);
-            }
-            break;
         default:
             signal(s, SIG_DFL);
             break;
@@ -499,12 +449,6 @@ void Master::_HookSignals()
     #ifdef _WIN32
     signal(SIGBREAK, _OnSignal);
     #endif
-    if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
-    {
-        signal(SIGSEGV,  _OnSignal);
-        signal(SIGABRT,  _OnSignal);
-        signal(SIGFPE ,  _OnSignal);
-    }
 }
 
 /// Unhook the signals before leaving
