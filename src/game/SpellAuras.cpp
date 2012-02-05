@@ -494,6 +494,15 @@ Unit *caster, Item* castItem, uint64 dynObjGUID) : Aura(spellproto, eff, current
 {
     m_dynamicObjectGUID = dynObjGUID;
     m_isPersistent = true;
+
+    DynamicObject *dynObj = NULL;
+    if (m_dynamicObjectGUID)
+        dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID); //prev version commented, delete one
+    if(dynObj)
+    {
+        m_maxduration = dynObj->GetDuration();
+        m_duration = m_maxduration;
+    }
 }
 
 PersistentAreaAura::~PersistentAreaAura()
@@ -847,7 +856,7 @@ void PersistentAreaAura::Update(uint32 diff)
                 remove = true;
         }
         else
-            remove = true;
+            m_duration = 0;     // will be removed BY_EXPIRE in Unit::_UpdateSpells
     }
     else
         remove = true;
