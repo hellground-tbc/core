@@ -2680,7 +2680,7 @@ void World::SelectRandomHeroicDungeonDaily()
         if (gameeventmgr.IsActiveEvent(eventId))
         {
             currentId = eventId;
-            gameeventmgr.StopEvent(eventId);
+            gameeventmgr.StopEvent(eventId, true);
         }
         WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
     }
@@ -2689,7 +2689,7 @@ void World::SelectRandomHeroicDungeonDaily()
     while (random == currentId)
         random = urand(HeroicEventStart, HeroicEventEnd);
 
-    gameeventmgr.StartEvent(random);
+    gameeventmgr.StartEvent(random, true);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
 }
 
@@ -2704,7 +2704,7 @@ void World::SelectRandomDungeonDaily()
         if (gameeventmgr.IsActiveEvent(eventId))
         {
             currentId = eventId;
-            gameeventmgr.StopEvent(eventId);
+            gameeventmgr.StopEvent(eventId, true);
         }
         WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
     }
@@ -2713,7 +2713,7 @@ void World::SelectRandomDungeonDaily()
     while (random == currentId)
         random = urand(DungeonEventStart, DungeonEventEnd);
 
-    gameeventmgr.StartEvent(random);
+    gameeventmgr.StartEvent(random, true);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
 }
 
@@ -2728,7 +2728,7 @@ void World::SelectRandomCookingDaily()
         if (gameeventmgr.IsActiveEvent(eventId))
         {
             currentId = eventId;
-            gameeventmgr.StopEvent(eventId);
+            gameeventmgr.StopEvent(eventId, true);
         }
         WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
     }
@@ -2737,7 +2737,7 @@ void World::SelectRandomCookingDaily()
     while (random == currentId)
         random = urand(CookingEventStart, CookingEventEnd);
 
-    gameeventmgr.StartEvent(random);
+    gameeventmgr.StartEvent(random, true);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
 }
 
@@ -2749,19 +2749,20 @@ void World::SelectRandomFishingDaily()
     uint8 currentId = 0;
     for (uint8 eventId = FishingEventStart; eventId <= FishingEventEnd; ++eventId)
     {
+        WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+
         if (gameeventmgr.IsActiveEvent(eventId))
         {
             currentId = eventId;
-            gameeventmgr.StopEvent(eventId);
+            gameeventmgr.StopEvent(eventId, true);
         }
-        WorldDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
     }
 
     uint8 random = urand(FishingEventStart, FishingEventEnd);
     while (random == currentId)
         random = urand(FishingEventStart, FishingEventEnd);
 
-    gameeventmgr.StartEvent(random);
+    gameeventmgr.StartEvent(random, true);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
 }
 
@@ -2802,7 +2803,7 @@ void World::ResetDailyQuests()
     SelectRandomCookingDaily();
     SelectRandomPvPDaily();
 
-    gameeventmgr.LoadFromDB();
+    //gameeventmgr.LoadFromDB();
 }
 
 void World::SetPlayerLimit(int32 limit, bool needUpdate)
