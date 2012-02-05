@@ -779,6 +779,20 @@ struct SpellEntry
         return false;
     }
 
+    bool NeedFillTargetMapForTargets(uint8 eff) const
+    {
+        // check combinations A <> B of implicit targets
+        switch (EffectImplicitTargetA[eff])
+        {
+            case TARGET_UNIT_NEARBY_ENTRY:
+            case TARGET_DST_NEARBY_ENTRY:
+                return true;
+            default:
+                return false;
+        }
+        return false;
+    }
+
     private:
         // prevent creating custom entries (copy data from original in fact)
         SpellEntry(SpellEntry const&);                      // DON'T must have implementation

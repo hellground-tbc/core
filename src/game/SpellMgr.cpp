@@ -2483,24 +2483,6 @@ void SpellMgr::LoadSpellScriptTarget()
             continue;
         }
 
-        /*bool targetfound = false;
-        for (int i = 0; i <3; ++i)
-        {
-            if (spellProto->EffectImplicitTargetA[i]==TARGET_UNIT_NEARBY_ENTRY ||
-                spellProto->EffectImplicitTargetB[i]==TARGET_UNIT_NEARBY_ENTRY ||
-                spellProto->EffectImplicitTargetA[i]==TARGET_DST_NEARBY_ENTRY ||
-                spellProto->EffectImplicitTargetB[i]==TARGET_DST_NEARBY_ENTRY)
-            {
-                targetfound = true;
-                break;
-            }
-        }
-        if (!targetfound)
-        {
-            sLog.outErrorDb("Table `spell_script_target`: spellId %u listed for TargetEntry %u does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DST_NEARBY_ENTRY (46).",spellId,targetEntry);
-            continue;
-        }*/
-
         if (type >= MAX_SPELL_TARGET_TYPE)
         {
             sLog.outErrorDb("Table `spell_script_target`: target type %u for TargetEntry %u is incorrect.",type,targetEntry);
@@ -2549,31 +2531,6 @@ void SpellMgr::LoadSpellScriptTarget()
 
         ++count;
     } while (result->NextRow());
-
-    // Check all spells
-    /* Disabled (lot errors at this moment)
-    for (uint32 i = 1; i < sSpellStore.nCount; ++i)
-    {
-        SpellEntry const * spellInfo = sSpellStore.LookupEntry(i);
-        if (!spellInfo)
-            continue;
-
-        bool found = false;
-        for (int j=0; j<3; ++j)
-        {
-            if (spellInfo->EffectImplicitTargetA[j] == TARGET_UNIT_NEARBY_ENTRY || spellInfo->EffectImplicitTargetA[j] != TARGET_UNIT_CASTER && spellInfo->EffectImplicitTargetB[j] == TARGET_UNIT_NEARBY_ENTRY)
-            {
-                SpellScriptTarget::const_iterator lower = spellmgr.GetBeginSpellScriptTarget(spellInfo->Id);
-                SpellScriptTarget::const_iterator upper = spellmgr.GetEndSpellScriptTarget(spellInfo->Id);
-                if (lower==upper)
-                {
-                    sLog.outErrorDb("Spell (ID: %u) has effect EffectImplicitTargetA/EffectImplicitTargetB = %u (TARGET_UNIT_NEARBY_ENTRY), but does not have record in `spell_script_target`",spellInfo->Id,TARGET_UNIT_NEARBY_ENTRY);
-                    break;                                  // effects of spell
-                }
-            }
-        }
-    }
-    */
 
     sLog.outString();
     sLog.outString(">> Loaded %u Spell Script Targets", count);
@@ -3678,7 +3635,7 @@ bool SpellIgnoreLOS(SpellEntry const* spellproto, uint8 effIdx)
         return true;
 
     // Most QuestItems should ommit los ;]
-    if (spellproto->Effect[effIdx] == SPELL_EFFECT_DUMMY && spellproto->EffectImplicitTargetA[effIdx] == TARGET_UNIT_NEARBY_ENTRY)
+    if (spellproto->Effect[effIdx] == SPELL_EFFECT_DUMMY && spellproto->NeedFillTargetMapForTargets(effIdx))
         return true;
 
     return false;

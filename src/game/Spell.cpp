@@ -3874,7 +3874,7 @@ SpellCastResult Spell::CheckCast(bool strict)
 
     if (m_CastItem)
     {
-        if (m_spellInfo->EffectImplicitTargetA[0] == TARGET_UNIT_NEARBY_ENTRY && m_targets.IsEmpty())
+        if (m_spellInfo->NeedFillTargetMapForTargets(0) && m_targets.IsEmpty())
             return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
     }
 
