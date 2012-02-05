@@ -3089,6 +3089,10 @@ void SpellMgr::LoadSpellCustomAttr()
         case 37052:
             spellInfo->rangeIndex = 6;
             break;
+        case 40214: // Dragonmaw illusion
+        case 28006: // Arcane Cloaking
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
+            break;
         default:
             break;
         }

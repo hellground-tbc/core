@@ -4158,10 +4158,6 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         (item = HasEquiped(35749))))
         CastSpell(this, 17619, true, item);
 
-    //HACK restore Netherwing aura
-    if (!HasAura(40214) && m_reputationMgr.GetRank(1015) >= REP_NEUTRAL && GetQuestRewardStatus(10870))
-        CastSpell(this, 40214, true);
-
     UpdateZone(GetZoneId());
 
     // update visibility
@@ -14710,6 +14706,15 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
         removeSpell(6562);
     }
+
+    //HACK restore Netherwing aura
+    if (!HasAura(40214) && m_reputationMgr.GetRank(1015) >= REP_NEUTRAL && GetQuestRewardStatus(10870))
+        CastSpell(this, 40214, true);
+
+    //HACK restore Arcane Cloaking aura (Naxx attu)
+    if (!HasAura(28006) && (GetQuestRewardStatus(9121) || GetQuestRewardStatus(9122) || GetQuestRewardStatus(9123)))
+        CastSpell(this, 28006, true);
+
     return true;
 }
 
