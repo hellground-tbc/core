@@ -427,7 +427,6 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
         {
             if(GetDespawnPossibility())
                 Despawn();
-            break;
         }
     }
 }
@@ -797,17 +796,16 @@ void GameObject::Despawn()
 
         m_respawnTime = 0;
         Delete();
-        return;
     }
+    else
+    {
+        SendObjectDeSpawnAnim(GetGUID());
+        m_respawnTime = m_spawnedByDefault ? time(NULL) + m_respawnDelayTime : 0;
 
-
-    SendObjectDeSpawnAnim(GetGUID());
-    m_respawnTime = m_spawnedByDefault ? time(NULL) + m_respawnDelayTime : 0;
-
-    // if option not set then object will be saved at grid unload
-    if (sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
-        SaveRespawnTime();
-
+        // if option not set then object will be saved at grid unload
+        if (sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
+            SaveRespawnTime();
+    }
     UpdateObjectVisibility();
 }
 
@@ -1018,10 +1016,7 @@ void GameObject::Use(Unit* user)
             else
                 spellCaster->NearTeleportTo(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
-            if(spellCaster->GetTypeId() == TYPEID_PLAYER)
-                spellCaster->SetStandState(PLAYER_STATE_SIT_LOW_CHAIR+info->chair.height);
-            else
-                spellCaster->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR);
+            spellCaster->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR+info->chair.height);
             return;
         }
         case GAMEOBJECT_TYPE_GOOBER:                        //10
@@ -1121,7 +1116,7 @@ void GameObject::Use(Unit* user)
                         // prevent removing GO at spell cancel
                         player->RemoveGameObject(this,false);
                         SetOwnerGUID(player->GetGUID());
-                        m_respawnTime = 0;
+                        m_respawnTime = time(NULL) + 300;
 
                         //fish catched
                         player->UpdateFishingSkill();

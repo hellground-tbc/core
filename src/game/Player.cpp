@@ -4158,10 +4158,6 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         (item = HasEquiped(35749))))
         CastSpell(this, 17619, true, item);
 
-    //HACK restore Netherwing aura
-    if (!HasAura(40214) && m_reputationMgr.GetRank(1015) >= REP_NEUTRAL && GetQuestRewardStatus(10870))
-        CastSpell(this, 40214, true);
-
     UpdateZone(GetZoneId());
 
     // update visibility
@@ -14710,6 +14706,15 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
         removeSpell(6562);
     }
+
+    //HACK restore Netherwing aura
+    if (!HasAura(40214) && m_reputationMgr.GetRank(1015) >= REP_NEUTRAL && GetQuestRewardStatus(10870))
+        CastSpell(this, 40214, true);
+
+    //HACK restore Arcane Cloaking aura (Naxx attu)
+    if (!HasAura(28006) && (GetQuestRewardStatus(9121) || GetQuestRewardStatus(9122) || GetQuestRewardStatus(9123)))
+        CastSpell(this, 28006, true);
+
     return true;
 }
 
@@ -18834,7 +18839,7 @@ uint32 Player::GetMinLevelForBattleGroundQueueId(uint32 queue_id)
 
 uint32 Player::GetMaxLevelForBattleGroundQueueId(uint32 queue_id)
 {
-    if (queue_id >=6)
+    if (queue_id >= 7)
         return 255;                                         // hardcoded max level
 
     return 10*(queue_id+2)-1;
@@ -20149,14 +20154,14 @@ void Player::SetFarsightTarget(WorldObject* obj)
 
 bool Player::isAllowUseBattleGroundObject()
 {
-    return (//InBattleGround() &&                            // in battleground - not need, check in other cases
-             !IsMounted() &&                                  // not mounted
-             !isTotalImmunity() &&                            // not totally immuned
-             !HasStealthAura() &&                             // not stealthed
-             !HasInvisibilityAura() &&                        // not invisible
-             !HasAura(SPELL_RECENTLY_DROPPED_FLAG, 0) &&      // can't pickup
-             isAlive() &&                                     // live player
-             !HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION)    // isn't in Spirit of Redemption form
+    return (//InBattleGround() &&                               // in battleground - not need, check in other cases
+             !IsMounted() &&                                    // not mounted
+             !isTotalImmunity() &&                              // not totally immuned
+             !HasStealthAura() &&                               // not stealthed
+             !HasInvisibilityAura() &&                          // not invisible
+             !HasAura(SPELL_RECENTLY_DROPPED_FLAG) &&           // can't pickup
+             isAlive() &&                                       // live player
+             !HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION)      // isn't in Spirit of Redemption form
           );
 }
 

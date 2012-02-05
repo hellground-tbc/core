@@ -3089,6 +3089,14 @@ void SpellMgr::LoadSpellCustomAttr()
         case 37052:
             spellInfo->rangeIndex = 6;
             break;
+        case 40214: // Dragonmaw illusion
+        case 28006: // Arcane Cloaking
+            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
+            break;
+        case 29955: // Arcane Missiles (Shade of Aran)
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ENEMY;
         default:
             break;
         }

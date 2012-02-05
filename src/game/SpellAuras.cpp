@@ -397,7 +397,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     if (m_maxduration == -1 || m_isPassive && m_spellProto->DurationIndex == 0)
         m_permanent = true;
 
-    if (!m_permanent && m_maxduration > 12000 && !m_target->GetCharmerOrOwnerPlayerOrPlayerItself() 
+    if (!m_permanent && m_maxduration > 12000 && !m_target->GetCharmerOrOwnerPlayerOrPlayerItself()
         && m_spellProto->Attributes & SPELL_ATTR_BREAKABLE_BY_DAMAGE && GetEffIndex() == 0)
         m_heartbeatTimer = m_maxduration / 8;
 
@@ -494,6 +494,15 @@ Unit *caster, Item* castItem, uint64 dynObjGUID) : Aura(spellproto, eff, current
 {
     m_dynamicObjectGUID = dynObjGUID;
     m_isPersistent = true;
+
+    DynamicObject *dynObj = NULL;
+    if (m_dynamicObjectGUID)
+        dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID); //prev version commented, delete one
+    if(dynObj)
+    {
+        m_maxduration = dynObj->GetDuration();
+        m_duration = m_maxduration;
+    }
 }
 
 PersistentAreaAura::~PersistentAreaAura()
@@ -847,7 +856,7 @@ void PersistentAreaAura::Update(uint32 diff)
                 remove = true;
         }
         else
-            remove = true;
+            m_duration = 0;     // will be removed BY_EXPIRE in Unit::_UpdateSpells
     }
     else
         remove = true;
@@ -865,7 +874,7 @@ void PersistentAreaAura::Update(uint32 diff)
 
 void Aura::ApplyModifier(bool apply, bool Real)
 {
-    if (m_isRemoved)
+    if (m_isRemoved || m_in_use)
         return;
 
     AuraType aura = m_modifier.m_auraname;
@@ -1405,14 +1414,9 @@ void Aura::TriggerSpell()
                 {
                     // Flame Wreath
                     case 29946:
-                        if (!m_target->HasAura(29947, 0))
-                            trigger_spell_id = 29949;
-                        else if(m_tickNumber == 40 )             // last tick, remove 29947
-                            target->RemoveAurasDueToSpell(29947);
                         break;
                     case 29947:
-                        if(!m_target->HasAura(29946, 0))
-                            trigger_spell_id = 29949;
+                        trigger_spell_id = 29949;
                         break;
                     // Firestone Passive (1-5 ranks)
                     case 758:
@@ -2009,7 +2013,7 @@ void Aura::TriggerSpell()
 //                    case 47015: break;
 //                    // Party G.R.E.N.A.D.E.
 //                    case 51510: break;
-                    
+
                         // Return fire
                     case 29788:
                         trigger_spell_id = urand(0, 1) ? 29793 : 29794;
@@ -4971,6 +4975,11 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
 
                 ((Creature*)m_target)->UpdateEntry(20680); // Transform into Arzeth the Powerless
                 break;
+            }
+            case 29946: // Flame Wreath
+            {
+                if (m_removeMode != AURA_REMOVE_BY_EXPIRE)
+                    m_target->CastSpell(m_target, 29947, true, NULL, this);
             }
         }
     }

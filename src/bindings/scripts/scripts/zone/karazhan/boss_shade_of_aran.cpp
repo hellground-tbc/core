@@ -109,14 +109,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
-        SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_ARCMISSLE);
-        if (TempSpell)
-        {
-            TempSpell->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
-            TempSpell->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
-            TempSpell->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ENEMY;
-        }
-        SetBlizzardWaypoints();
     }
 
     ScriptedInstance* pInstance;
@@ -132,29 +124,18 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     uint32 FireCooldown;
     uint32 FrostCooldown;
     uint32 CheckTimer;
+    uint32 PyroblastTimer;
 
     uint64 shadeOfAranTeleportCreatures[8];
-
-    float blizzardWaypoints[2][8];
-
     WorldLocation wLoc;
 
     uint32 DrinkInturruptTimer;
 
     bool ElementalsSpawned;
     DrinkingState Drinking;
+    uint32 DrinkingDelay;
 
-    void SetBlizzardWaypoints()
-    {
-        blizzardWaypoints[0][0] = -11154.3;    blizzardWaypoints[1][0] = -1903.3;
-        blizzardWaypoints[0][1] = -11163.6;    blizzardWaypoints[1][1] = -1898.7;
-        blizzardWaypoints[0][2] = -11173.6;    blizzardWaypoints[1][2] = -1901.2;
-        blizzardWaypoints[0][3] = -11178.1;    blizzardWaypoints[1][3] = -1910.4;
-        blizzardWaypoints[0][4] = -11175.4;    blizzardWaypoints[1][4] = -1920.6;
-        blizzardWaypoints[0][5] = -11166.6;    blizzardWaypoints[1][5] = -1925.1;
-        blizzardWaypoints[0][6] = -11156.5;    blizzardWaypoints[1][6] = -1922.8;
-        blizzardWaypoints[0][7] = -11151.8;    blizzardWaypoints[1][7] = -1913.5;
-    }
+
 
     void Reset()
     {
@@ -165,6 +146,9 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         SuperCastTimer      = 30000;
         BerserkTimer        = 720000;
         CheckTimer          = 3000;
+        PyroblastTimer      = 0;
+        DrinkingDelay       = 0;
+
 
         LastSuperSpell = rand()%3;
 
@@ -173,14 +157,11 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         FireCooldown       = 0;
         FrostCooldown      = 0;
 
-
         ElementalsSpawned       = false;
         Drinking                = DRINKING_NO_DRINKING;
 
         if (pInstance)
             pInstance->SetData(DATA_SHADEOFARAN_EVENT, NOT_STARTED);
-
-        SetBlizzardWaypoints();
     }
 
     void KilledUnit(Unit *victim)
@@ -221,23 +202,6 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
         if (pInstance)
             pInstance->SetData(DATA_SHADEOFARAN_EVENT, IN_PROGRESS);
-    }
-
-    void ChangeBlizzardWaypointsOrder(uint16 change)
-    {
-        float temp[2] = {0, 0};
-        for (int16 i = 0; i < change; i++)
-        {
-            temp[0] = blizzardWaypoints[0][0];
-            temp[1] = blizzardWaypoints[1][0];
-            for (int16 j = 0; j < 7; j++)
-            {
-                blizzardWaypoints[0][j] = blizzardWaypoints[0][j + 1];
-                blizzardWaypoints[1][j] = blizzardWaypoints[1][j + 1];
-            }
-            blizzardWaypoints[0][7] = temp[0];
-            blizzardWaypoints[1][7] = temp[1];
-        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -283,7 +247,15 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                 FrostCooldown = 0;
         }
 
-        if (Drinking == DRINKING_NO_DRINKING && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
+        if (DrinkingDelay)
+        {
+            if (DrinkingDelay <= diff)
+                DrinkingDelay = 0
+            else
+                DrinkingDelay -= diff;
+        }
+
+        if (!DrinkingDelay && Drinking == DRINKING_NO_DRINKING && (m_creature->GetPower(POWER_MANA)*100 / m_creature->GetMaxPower(POWER_MANA)) < 20)
         {
             ClearCastQueue();
             Drinking = DRINKING_PREPARING;
@@ -295,8 +267,20 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
         if (Drinking == DRINKING_DONE_DRINKING)
         {
             AddSpellToCast(SPELL_POTION, CAST_SELF);
-            AddSpellToCast(SPELL_AOE_PYROBLAST, CAST_SELF);
+            PyroblastTimer = 2000;
             Drinking = DRINKING_POTION;
+        }
+
+        if (PyroblastTimer)
+        {
+            if (PyroblastTimer <= diff)
+            {
+                AddSpellToCast(SPELL_AOE_PYROBLAST, CAST_SELF);
+                Drinking = DRINKING_NO_DRINKING;
+                PyroblastTimer = 0;
+            }
+            else
+                PyroblastTimer -= diff;
         }
 
         if(Drinking == DRINKING_NO_DRINKING)
@@ -329,11 +313,8 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
 
             if (SecondarySpellTimer < diff)
             {
-                if(roll_chance_i(50))
-                    AddSpellToCast(SPELL_AOE_CS, CAST_SELF);
-                else
-                    AddSpellToCast(SPELL_CHAINSOFICE, CAST_RANDOM);        
-                SecondarySpellTimer = urand(5000, 20000);
+                AddSpellToCast(SPELL_AOE_CS, CAST_SELF);
+                SecondarySpellTimer = urand(10000, 40000);
             }
             else
                 SecondarySpellTimer -= diff;
@@ -368,19 +349,21 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
                         AddSpellToCast(SPELL_MAGNETIC_PULL, CAST_SELF);  
                         AddSpellToCast(SPELL_MASSSLOW, CAST_SELF);
                         AddSpellToCastWithScriptText(SPELL_AEXPLOSION, CAST_SELF, RAND(SAY_EXPLOSION1, SAY_EXPLOSION2));
+                        DrinkingDelay = 15000;
                         break;
 
                     case SUPER_FLAME:
                         AddSpellToCastWithScriptText(SPELL_FLAME_WREATH, CAST_SELF, RAND(SAY_FLAMEWREATH1, SAY_FLAMEWREATH2));
+                        DrinkingDelay = 25000;
                         break;
 
                     case SUPER_BLIZZARD:
-                        ChangeBlizzardWaypointsOrder(urand(0, 7));
-                        AddSpellToCastWithScriptText(SPELL_SUMMON_BLIZZARD, CAST_SELF, RAND(SAY_BLIZZARD1, SAY_BLIZZARD2));
+                        AddSpellToCastWithScriptText(SPELL_SUMMON_BLIZZARD, CAST_NULL, RAND(SAY_BLIZZARD1, SAY_BLIZZARD2));
+                        DrinkingDelay = 30000;
                         break;
                 }
 
-                SuperCastTimer = urand(30000, 35000);
+                SuperCastTimer = urand(35000, 40000);
             }
             else
                 SuperCastTimer -= diff;
@@ -416,16 +399,22 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
             BerserkTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
+        if(Drinking == DRINKING_NO_DRINKING)
+            DoMeleeAttackIfReady();
     }
 
 
     void SpellHitTarget(Unit *target, const SpellEntry *spell)
     {
         if (spell->Id == SPELL_MAGNETIC_PULL)
+        {
+            target->RemoveAurasDueToSpell(29947);
             target->CastSpell(target, SPELL_BLINK_CENTER, true);
-        else if(spell->Id == SPELL_POTION)
-            Drinking = DRINKING_NO_DRINKING;
+        } 
+        else if(spell->Id == SPELL_FROSTBOLT && roll_chance_i(33))
+        {
+            me->CastSpell(target, SPELL_CHAINSOFICE, true);
+        }
     }
 
     void JustSummoned(Creature *c)
@@ -449,7 +438,10 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     void OnAuraApply(Aura *aura, Unit *caster, bool)
     {
         if(aura->GetId() == SPELL_DRINK)
+        {
+            m_creature->GetMotionMaster()->MoveIdle();
             m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 1); // sit down
+        }
 
     }
 
@@ -565,6 +557,7 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
     uint16 waypointTimer;
     WorldLocation wLoc;
     ScriptedInstance *pInstance;
+    float blizzardWaypoints[2][8];
     bool move;
 
     void Reset()
@@ -572,26 +565,57 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
         move = false;
         currentWaypoint = 0;
         waypointTimer = 0;
+        SetBlizzardWaypoints();
+    }
+
+    void ChangeBlizzardWaypointsOrder(uint16 change)
+    {
+        float temp[2] = {0, 0};
+        for (int16 i = 0; i < change; i++)
+        {
+            temp[0] = blizzardWaypoints[0][0];
+            temp[1] = blizzardWaypoints[1][0];
+            for (int16 j = 0; j < 7; j++)
+            {
+                blizzardWaypoints[0][j] = blizzardWaypoints[0][j + 1];
+                blizzardWaypoints[1][j] = blizzardWaypoints[1][j + 1];
+            }
+            blizzardWaypoints[0][7] = temp[0];
+            blizzardWaypoints[1][7] = temp[1];
+        }
+    }
+
+
+    void SetBlizzardWaypoints()
+    {
+        blizzardWaypoints[0][0] = -11154.3;    blizzardWaypoints[1][0] = -1903.3;
+        blizzardWaypoints[0][1] = -11163.6;    blizzardWaypoints[1][1] = -1898.7;
+        blizzardWaypoints[0][2] = -11173.6;    blizzardWaypoints[1][2] = -1901.2;
+        blizzardWaypoints[0][3] = -11178.1;    blizzardWaypoints[1][3] = -1910.4;
+        blizzardWaypoints[0][4] = -11175.4;    blizzardWaypoints[1][4] = -1920.6;
+        blizzardWaypoints[0][5] = -11166.6;    blizzardWaypoints[1][5] = -1925.1;
+        blizzardWaypoints[0][6] = -11156.5;    blizzardWaypoints[1][6] = -1922.8;
+        blizzardWaypoints[0][7] = -11151.8;    blizzardWaypoints[1][7] = -1913.5;
     }
 
     void JustDied(Unit* killer){}
 
     void SpellHit(Unit * caster, const SpellEntry * spell)
     {
-        if (spell->Id == SPELL_SUMMON_BLIZZARD && pInstance)
+        if (spell->Id == SPELL_SUMMON_BLIZZARD)
         {
-            uint64 AranGUID = pInstance->GetData64(DATA_ARAN);
+            uint64 AranGUID = 0;
+            if(pInstance)
+                AranGUID = pInstance->GetData64(DATA_ARAN);
             me->CastSpell(me, SPELL_CIRCULAR_BLIZZARD, false, 0, 0, AranGUID);
-            if (Creature *pAran = me->GetCreature(AranGUID))
-            {
-                
-                wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][0];
-                wLoc.coord_y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][0];
-                wLoc.coord_z = pAran->GetPositionZ();
-            }
 
-            if (wLoc.coord_x || wLoc.coord_y || wLoc.coord_z)
-                DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
+            ChangeBlizzardWaypointsOrder(urand(0, 7));
+
+            wLoc.coord_x = blizzardWaypoints[0][0];
+            wLoc.coord_y = blizzardWaypoints[1][0];
+            wLoc.coord_z = me->GetPositionZ();
+
+            DoTeleportTo(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
 
             currentWaypoint = 0;
             waypointTimer = 0;
@@ -614,12 +638,8 @@ struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
                 move = false;
             }
 
-            Creature *pAran = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_ARAN));
-            if(pAran)
-            {
-                wLoc.coord_x = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[0][currentWaypoint];
-                wLoc.coord_y = ((boss_aranAI*)pAran->AI())->blizzardWaypoints[1][currentWaypoint];
-            }
+            wLoc.coord_x = blizzardWaypoints[0][currentWaypoint];
+            wLoc.coord_y = blizzardWaypoints[1][currentWaypoint];
 
             m_creature->GetMotionMaster()->MovePoint(currentWaypoint, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z);
             waypointTimer = 3000;
@@ -659,8 +679,6 @@ bool FlameWreathHandleEffect(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject
         return true;
 
     pCaster->CastSpell(pUnit, 29946, true);
-    pUnit->CastSpell(pUnit, 29947, true);
-
     return true;
 }
 

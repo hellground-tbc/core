@@ -413,6 +413,8 @@ class TRINITY_DLL_SPEC BattleGround
         uint32 GetArenaTeamIdForTeam(uint32 Team) const { return m_ArenaTeamIds[GetTeamIndexByTeamId(Team)]; }
         void SetArenaTeamRatingChangeForTeam(uint32 Team, int32 RatingChange) { m_ArenaTeamRatingChanges[GetTeamIndexByTeamId(Team)] = RatingChange; }
         int32 GetArenaTeamRatingChangeForTeam(uint32 Team) const { return m_ArenaTeamRatingChanges[GetTeamIndexByTeamId(Team)]; }
+        void AddToArenaTeamMMR(uint32 Team, uint32 hidden) { m_ArenaTeamHiddenRatingSum[GetTeamIndexByTeamId(Team)] += hidden; }
+        uint32 GetArenaTeamMMRSum(uint32 team) { return m_ArenaTeamHiddenRatingSum[GetTeamIndexByTeamId(team)]; }
 
         /* Triggers handle */
         // must be implemented in BG subclass
@@ -534,6 +536,9 @@ class TRINITY_DLL_SPEC BattleGround
 
         /* Arena team ids by team */
         uint32 m_ArenaTeamIds[2];
+
+        /* Arena team hidden ratings */
+        uint32 m_ArenaTeamHiddenRatingSum[2];
 
         int32 m_ArenaTeamRatingChanges[2];
 

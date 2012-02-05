@@ -223,6 +223,15 @@ class ArenaTeam
             return NULL;
         }
 
+        uint32 GetMemberMMR(const uint64 & guid)
+        {
+            for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
+                if (itr->guid == guid)
+                    return itr->matchmaker_rating;
+
+            return 0;
+        }
+
         bool IsFighting() const;
 
         bool LoadArenaTeamFromDB(uint32 ArenaTeamId);

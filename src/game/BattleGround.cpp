@@ -544,11 +544,8 @@ void BattleGround::EndBattleGround(uint32 winner)
             loser_rating = loser_arena_team->GetStats().rating;
             winner_rating = winner_arena_team->GetStats().rating;
 
-            loser_hidden_rating = loser_arena_team->GetAverageMMR(GetBgRaid(GetOtherTeam(winner)));
-            winner_hidden_rating = winner_arena_team->GetAverageMMR(GetBgRaid(winner));
-
-            int32 winner_change = winner_arena_team->WonAgainst(hiddenEnabled ? loser_hidden_rating : loser_rating);
-            int32 loser_change = loser_arena_team->LostAgainst(hiddenEnabled ? winner_hidden_rating : winner_rating);
+            int32 winner_change = winner_arena_team->WonAgainst(loser_rating);
+            int32 loser_change = loser_arena_team->LostAgainst(winner_rating);
 
             sLog.outDebug("--- Winner rating: %u, Loser rating: %u, Winner change: %u, Losser change: %u ---", winner_rating, loser_rating, winner_change, loser_change);
 
@@ -615,6 +612,8 @@ void BattleGround::EndBattleGround(uint32 winner)
         // per player calculation
         if (isArena() && isRated() && winner_arena_team && loser_arena_team)
         {
+            loser_hidden_rating = GetArenaTeamMMRSum(GetOtherTeam(winner))/GetMaxPlayersPerTeam();
+            winner_hidden_rating = GetArenaTeamMMRSum(winner)/GetMaxPlayersPerTeam();
             if (team == winner)
                 winner_arena_team->MemberWon(plr, loser_rating, loser_hidden_rating);
             else
@@ -626,7 +625,6 @@ void BattleGround::EndBattleGround(uint32 winner)
             if (!Source)
                 Source = plr;
             RewardMark(plr,ITEM_WINNER_COUNT);
-            UpdatePlayerScore(plr, SCORE_BONUS_HONOR, 20);
             RewardQuest(plr);
         }
         else if (winner !=0)
@@ -732,7 +730,7 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
 
         if (!dest.empty())                // can add some
             if (Item* item = plr->StoreNewItem(dest, mark, true, 0))
-                plr->SendNewItem(item,count,false,true);
+                plr->SendNewItem(item, count, true, false);
 
         if (no_space_count > 0)
             SendRewardMarkByMail(plr,mark,no_space_count);
@@ -1023,6 +1021,10 @@ void BattleGround::AnnounceBGStart()
 
 void BattleGround::AddPlayer(Player *plr)
 {
+    // remove afk from player
+    if (plr->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK))
+        plr->ToggleAFK();
+
     // score struct must be created in inherited class
 
     uint64 guid = plr->GetGUID();
