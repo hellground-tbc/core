@@ -2827,16 +2827,14 @@ void Spell::update(uint32 difftime)
         return;
     }
 
+    bool movementInterrupt = IsChanneledSpell(m_spellInfo) ? m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT : m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT;
     // check if caster has moved before the spell finished
     if (m_timer != 0 &&
         (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
         (m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR)))
     {
-        if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
-        {
-            if ((IsChanneledSpell(m_spellInfo) && m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT) || (!IsChanneledSpell(m_spellInfo) && m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
-                cancel();
-        }
+        if (movementInterrupt && !IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
+            cancel();
     }
 
     switch (m_spellState)
@@ -2861,8 +2859,7 @@ void Spell::update(uint32 difftime)
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                 {
                     // check if player has jumped before the channeling finished
-                    bool canBreak = IsChanneledSpell(m_spellInfo) ? m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT : m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT;
-                    if (canBreak && m_caster->HasUnitMovementFlag(MOVEFLAG_FALLING))
+                    if (movementInterrupt && m_caster->HasUnitMovementFlag(MOVEFLAG_FALLING))
                         cancel();
                 }
 
