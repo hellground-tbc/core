@@ -30,7 +30,7 @@
 #include "QuestDef.h"
 #include "GossipDef.h"
 #include "Player.h"
-#include "PoolHandler.h"
+#include "PoolManager.h"
 #include "Opcodes.h"
 #include "Log.h"
 #include "LootMgr.h"
@@ -1804,9 +1804,9 @@ void Creature::Respawn()
         AI()->JustRespawned();
 
         //GetMap()->Add(this);
-        uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), GetTypeId());
+        uint16 poolid = sPoolMgr.IsPartOfAPool<Creature>(GetGUIDLow());
         if (poolid)
-            poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_UNIT);
+            sPoolMgr.UpdatePool<Creature>(poolid, GetGUIDLow());
     }
 
     SendMonsterStop();

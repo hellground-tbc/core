@@ -21,7 +21,7 @@
 #include "GameEvent.h"
 #include "World.h"
 #include "ObjectMgr.h"
-#include "PoolHandler.h"
+#include "PoolManager.h"
 #include "ProgressBar.h"
 #include "Language.h"
 #include "Log.h"
@@ -933,7 +933,7 @@ void GameEvent::LoadFromDB()
                 continue;
             }
 
-            if (!poolhandler.CheckPool(entry))
+            if (!sPoolMgr.CheckPool(entry))
             {
                 sLog.outErrorDb("Pool Id (%u) has all creatures or gameobjects with explicit chance sum <>100 and no equal chance defined. The pool system cannot pick one to spawn.", entry);
                 continue;
@@ -1241,11 +1241,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
     }
 
     for (IdList::iterator itr = mGameEventPoolIds[internal_event_id].begin(); itr != mGameEventPoolIds[internal_event_id].end(); ++itr)
-    {
-        poolhandler.SpawnPool(*itr, 0, 0);
-        poolhandler.SpawnPool(*itr, 0, TYPEID_GAMEOBJECT);
-        poolhandler.SpawnPool(*itr, 0, TYPEID_UNIT);
-    }
+        sPoolMgr.SpawnPool(*itr, 0);
 }
 
 void GameEvent::GameEventUnspawn(int16 event_id)
@@ -1305,7 +1301,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
     }
 
     for (IdList::iterator itr = mGameEventPoolIds[internal_event_id].begin(); itr != mGameEventPoolIds[internal_event_id].end(); ++itr)
-        poolhandler.DespawnPool(*itr);
+        sPoolMgr.DespawnPool(*itr);
 }
 
 void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)

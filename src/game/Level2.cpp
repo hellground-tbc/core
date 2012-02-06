@@ -34,7 +34,7 @@
 #include "World.h"
 #include "GameEvent.h"
 #include "SpellMgr.h"
-#include "PoolHandler.h"
+#include "PoolManager.h"
 #include "AccountMgr.h"
 #include "WaypointManager.h"
 #include "Util.h"
@@ -365,8 +365,8 @@ bool ChatHandler::HandleGameObjectTargetCommand(const char* args)
         z =       fields[4].GetFloat();
         o =       fields[5].GetFloat();
         mapid =   fields[6].GetUInt16();
-        pool_id = poolhandler.IsPartOfAPool(lowguid, TYPEID_GAMEOBJECT);
-        if (!pool_id || (pool_id && poolhandler.IsSpawnedObject(pool_id, lowguid, TYPEID_GAMEOBJECT)))
+        pool_id = sPoolMgr.IsPartOfAPool<GameObject>(lowguid);
+        if (!pool_id || (pool_id && sPoolMgr.IsSpawnedObject<GameObject>(lowguid)))
             found = true;
     } while (result->NextRow() && (!found));
 

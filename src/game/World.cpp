@@ -53,7 +53,7 @@
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
 #include "GameEvent.h"
-#include "PoolHandler.h"
+#include "PoolManager.h"
 #include "Database/DatabaseImpl.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
@@ -1341,7 +1341,7 @@ void World::SetInitialWorldSettings()
     objmgr.LoadGameobjectRespawnTimes();
 
     sLog.outString("Loading Objects Pooling Data...");
-    poolhandler.LoadFromDB();
+    sPoolMgr.LoadFromDB();
 
     sLog.outString("Loading Game Event Data...");
     gameeventmgr.LoadFromDB();
@@ -1573,7 +1573,7 @@ void World::SetInitialWorldSettings()
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
     sLog.outString("Starting objects Pooling system...");
-    poolhandler.Initialize();
+    sPoolMgr.Initialize();
 
     sLog.outString("Calculate next daily quest reset time...");
     InitDailyQuestResetTime();

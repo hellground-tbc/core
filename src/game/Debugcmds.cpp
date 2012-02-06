@@ -38,7 +38,6 @@
 #include "InstanceData.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "PoolHandler.h"
 #include "CellImpl.h"
 
 #define COMMAND_COOLDOWN 2
@@ -830,7 +829,7 @@ bool ChatHandler::HandleDebugGetInstanceData64Command(const char *args)
 
 bool ChatHandler::HandleGetPoolObjectStatsCommand(const char *args)
 {
-    if(!m_session->GetPlayer())
+   /* if(!m_session->GetPlayer())
         return false;
 
     if(!args)
@@ -894,7 +893,7 @@ bool ChatHandler::HandleGetPoolObjectStatsCommand(const char *args)
     for(UNORDERED_MAP<uint16, uint32>::iterator it = map_unspawned.begin(); it != map_unspawned.end(); it++)
     {
         PSendSysMessage("%u | %u | %u | %u", (uint32)(it->first), map_worldspawned.find(it->first)->second, map_poolspawned.find(it->first)->second, it->second);
-    }
+    }*/
     return true;
 }
 

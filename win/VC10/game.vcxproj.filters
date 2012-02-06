@@ -138,9 +138,6 @@
     <ClCompile Include="..\..\src\game\Player.cpp">
       <Filter>Objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\PoolHandler.cpp">
-      <Filter>Objects</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\game\TemporarySummon.cpp">
       <Filter>Objects</Filter>
     </ClCompile>
@@ -544,6 +541,9 @@
     <ClCompile Include="..\..\src\game\AntiCheat.cpp">
       <Filter>Anticheat</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\PoolManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -622,9 +622,6 @@
       <Filter>Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\Player.h">
-      <Filter>Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\PoolHandler.h">
       <Filter>Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\TemporarySummon.h">
@@ -1026,6 +1023,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\AntiCheat.h">
       <Filter>Anticheat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\PoolManager.h">
+      <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

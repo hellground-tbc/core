@@ -22,7 +22,7 @@
 #include "QuestDef.h"
 #include "GameObject.h"
 #include "ObjectMgr.h"
-#include "PoolHandler.h"
+#include "PoolManager.h"
 #include "SpellMgr.h"
 #include "Spell.h"
 #include "UpdateMask.h"
@@ -456,9 +456,9 @@ void GameObject::Delete()
     SetGoState(GO_STATE_READY);
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
 
-    uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), TYPEID_GAMEOBJECT);
+    uint16 poolid = sPoolMgr.IsPartOfAPool<GameObject>(GetGUIDLow());
     if (poolid)
-        poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_GAMEOBJECT);
+        sPoolMgr.UpdatePool<GameObject>(poolid, GetGUIDLow());
     else
         AddObjectToRemoveList();
 }
@@ -760,9 +760,9 @@ void GameObject::Respawn()
     m_respawnTime = 0;
     SendSpawnAnimation();
 
-    uint16 poolid = poolhandler.IsPartOfAPool(GetGUIDLow(), TYPEID_GAMEOBJECT);
+    uint16 poolid = sPoolMgr.IsPartOfAPool<GameObject>(GetGUIDLow());
     if (poolid)
-        poolhandler.UpdatePool(poolid, GetGUIDLow(), TYPEID_GAMEOBJECT);
+        sPoolMgr.UpdatePool<GameObject>(poolid, GetGUIDLow());
     else
         GetMap()->Add(this);
 
