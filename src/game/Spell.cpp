@@ -2861,7 +2861,8 @@ void Spell::update(uint32 difftime)
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                 {
                     // check if player has jumped before the channeling finished
-                    if (m_caster->HasUnitMovementFlag(MOVEFLAG_FALLING))
+                    bool canBreak = IsChanneledSpell(m_spellInfo) && m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT;
+                    if (canBreak && m_caster->HasUnitMovementFlag(MOVEFLAG_FALLING))
                         cancel();
                 }
 
