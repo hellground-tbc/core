@@ -12860,6 +12860,38 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
         CastSpell(this, pQuest->GetRewSpell(), true);
 }
 
+void Player::RewardDNDQuest(uint32 questId)
+{
+    const Quest * tmpQ = sObjectMgr.GetQuestTemplate(questId);
+    if (!tmpQ)
+        return;
+
+    QuestStatusData& q_status = mQuestStatus[questId];
+
+    // Not give XP in case already completed once repeatable quest
+    uint32 XP = q_status.m_rewarded ? 0 : uint32(tmpQ->XPValue(this)*GetXPRate(RATE_XP_QUEST));
+
+    if (getLevel() < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
+        GiveXP(XP , NULL);
+    else
+        ModifyMoney(int32(tmpQ->GetRewMoneyMaxLevel() * sWorld.getRate(RATE_DROP_MONEY)));
+
+    RewardReputation(tmpQ);
+
+    // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
+    ModifyMoney(tmpQ->GetRewOrReqMoney());
+
+    q_status.m_rewarded = true;
+
+    if (q_status.uState != QUEST_NEW)
+        q_status.uState = QUEST_CHANGED;
+
+    if (tmpQ->GetRewSpellCast() > 0)
+        CastSpell(this, tmpQ->GetRewSpellCast(), true);
+    else if (tmpQ->GetRewSpell() > 0)
+        CastSpell(this, tmpQ->GetRewSpell(), true);
+}
+
 void Player::FailQuest(uint32 quest_id)
 {
     if (quest_id)

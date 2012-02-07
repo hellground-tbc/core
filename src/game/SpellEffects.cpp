@@ -1373,7 +1373,10 @@ void Spell::EffectDummy(uint32 i)
                 case 28006:                                 // Arcane Cloaking
                 {
                     if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        m_caster->ToPlayer()->RewardDNDQuest(9378);
                         m_caster->CastSpell(unitTarget,29294,true);
+                    }
                     return;
                 }
                 /*case 28730:                                 // Arcane Torrent (Mana)
