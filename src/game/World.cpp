@@ -2687,6 +2687,9 @@ void World::SelectRandomHeroicDungeonDaily()
     while (random == currentId)
         random = urand(HeroicEventStart, HeroicEventEnd);
 
+    gameeventmgr.GetEventMap()[currentId].occurence = 5184000;
+    gameeventmgr.GetEventMap()[random].occurence = 1400;
+
     gameeventmgr.StartEvent(random, true);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
 }
@@ -2711,6 +2714,9 @@ void World::SelectRandomDungeonDaily()
     while (random == currentId)
         random = urand(DungeonEventStart, DungeonEventEnd);
 
+    gameeventmgr.GetEventMap()[currentId].occurence = 5184000;
+    gameeventmgr.GetEventMap()[random].occurence = 1400;
+
     gameeventmgr.StartEvent(random, true);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
 }
@@ -2734,6 +2740,9 @@ void World::SelectRandomCookingDaily()
     uint8 random = urand(CookingEventStart, CookingEventEnd);
     while (random == currentId)
         random = urand(CookingEventStart, CookingEventEnd);
+
+    gameeventmgr.GetEventMap()[currentId].occurence = 5184000;
+    gameeventmgr.GetEventMap()[random].occurence = 1400;
 
     gameeventmgr.StartEvent(random, true);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
@@ -2760,6 +2769,9 @@ void World::SelectRandomFishingDaily()
     while (random == currentId)
         random = urand(FishingEventStart, FishingEventEnd);
 
+    gameeventmgr.GetEventMap()[currentId].occurence = 5184000;
+    gameeventmgr.GetEventMap()[random].occurence = 1400;
+
     gameeventmgr.StartEvent(random, true);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
 }
@@ -2783,6 +2795,9 @@ void World::SelectRandomPvPDaily()
     uint8 random = urand(PvPEventStart, PvPEventEnd);;
     while (random == currentId)
         random = urand(PvPEventStart, PvPEventEnd);
+
+    gameeventmgr.GetEventMap()[currentId].occurence = 5184000;
+    gameeventmgr.GetEventMap()[random].occurence = 1400;
 
     gameeventmgr.StartEvent(random);
     WorldDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", random);
