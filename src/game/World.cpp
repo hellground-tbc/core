@@ -2799,6 +2799,7 @@ void World::ResetDailyQuests()
     SelectRandomHeroicDungeonDaily();
     SelectRandomDungeonDaily();
     SelectRandomCookingDaily();
+    SelectRandomFishingDaily();
     SelectRandomPvPDaily();
 
     //gameeventmgr.LoadFromDB();
