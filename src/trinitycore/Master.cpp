@@ -23,6 +23,7 @@
 */
 
 #include <ace/OS_NS_signal.h>
+#include <exception>
 
 #include "WorldSocketMgr.h"
 #include "Common.h"
@@ -32,6 +33,7 @@
 #include "World.h"
 #include "Log.h"
 #include "MapManager.h"
+#include "MapUpdater.h"
 #include "Timer.h"
 #include "Policies/SingletonImp.h"
 #include "SystemConfig.h"
@@ -248,12 +250,6 @@ int Master::Run()
         t.setPriority(ACE_Based::Highest);
     }
 
-#ifdef ANTICHEAT_SOCK
-    AntiCheatRunnable *acr = new AntiCheatRunnable();
-    if (acr)
-        ACE_Based::Thread t2(acr);
-#endif
-
     ///- Launch the world listener socket
     uint16 wsport = sWorld.getConfig(CONFIG_PORT_WORLD);
     std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
@@ -425,6 +421,20 @@ void Master::_OnSignal(int s)
 {
     switch (s)
     {
+        case SIGSEGV:
+        case SIGABRT:
+            if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
+            {
+                ACE_thread_t const threadId = ACE_OS::thr_self();
+                if (sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
+                {
+                    throw new std::exception("SIGNAL HANDLED EXCEPTION");
+                    break;
+                }
+            }
+            signal(s, SIG_DFL);
+            ACE_OS::kill(getpid(), s);
+            break;
         case SIGINT:
             World::StopNow(RESTART_EXIT_CODE);
             signal(s, _OnSignal);
@@ -449,6 +459,9 @@ void Master::_HookSignals()
     #ifdef _WIN32
     signal(SIGBREAK, _OnSignal);
     #endif
+
+    signal(SIGABRT, _OnSignal);
+    signal(SIGSEGV, _OnSignal);
 }
 
 /// Unhook the signals before leaving

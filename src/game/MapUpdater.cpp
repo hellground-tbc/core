@@ -9,6 +9,7 @@
 #include <ace/Guard_T.h>
 #include <ace/Method_Request.h>
 #include <ace/Stack_Trace.h>
+#include <exception>
 
 //the reason this things are here is that i want to make
 //the netcode patch and the multithreaded maps independant
@@ -58,10 +59,10 @@ class MapUpdateRequest : public ACE_Method_Request
                 if (!m_map.IsBroken())
                     m_map.Update(m_diff);
             }
-            catch(...)
+            catch(std::exception& e)
             {
                 ACE_Stack_Trace stackTrace;
-                sLog.outCrash("CRASH: mapid: %u, instanceid: %u", m_map.GetId(), m_map.GetInstanceId());
+                sLog.outCrash("CRASH: mapid: %u, instanceid: %u, with: %s", m_map.GetId(), m_map.GetInstanceId(), e.what());
                 sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
 
                 m_map.SetBroken(true);
