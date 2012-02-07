@@ -457,8 +457,6 @@ void Map::Update(const uint32 &t_diff)
 {
     MAP_UPDATE_DIFF(RecordTimeDiff())
 
-    raise(SIGSEGV);
-
     /// update worldsessions for existing players
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
     {
