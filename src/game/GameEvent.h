@@ -97,7 +97,7 @@ class GameEvent
         typedef std::set<uint16> ActiveEvents;
         typedef std::vector<GameEventData> GameEventDataMap;
         ActiveEvents const& GetActiveEventList() const { return m_ActiveEvents; }
-        GameEventDataMap const& GetEventMap() const { return mGameEvent; }
+        GameEventDataMap /*const*/& GetEventMap() /*const*/ { return mGameEvent; }
         bool CheckOneGameEvent(uint16 entry) const;
         uint32 NextCheck(uint16 entry) const;
         void LoadFromDB();
