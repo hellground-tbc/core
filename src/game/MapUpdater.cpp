@@ -161,6 +161,14 @@ void MapUpdater::unregister_thread(ACE_thread_t const threadId)
     m_threads.erase(threadId);
 }
 
+MapUpdateInfo const* MapUpdater::GetMapUpdateInfo(ACE_thread_t const threadId)
+{
+    if (m_threads.find(threadId) != m_threads.end())
+        return &m_threads[threadId];
+
+    return NULL;
+}
+
 void MapUpdater::FreezeDetect()
 {
     ACE_GUARD(ACE_Thread_Mutex, guard, m_mutex);

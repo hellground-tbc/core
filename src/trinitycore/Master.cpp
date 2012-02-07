@@ -33,7 +33,6 @@
 #include "World.h"
 #include "Log.h"
 #include "MapManager.h"
-#include "MapUpdater.h"
 #include "Timer.h"
 #include "Policies/SingletonImp.h"
 #include "SystemConfig.h"
