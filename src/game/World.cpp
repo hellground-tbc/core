@@ -1724,10 +1724,14 @@ void World::LoadAutobroadcasts()
 void World::Update(uint32 diff)
 {
     m_updateTime = uint32(diff);
+
+    bool accumulateMapDiff = false;
     if (m_configs[CONFIG_INTERVAL_LOG_UPDATE])
     {
         if (m_updateTimeSum > m_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
+             accumulateMapDiff = true;
+
             m_curAvgUpdateTime = m_updateTimeSum/m_updateTimeCount;   // from last log time
             m_serverUpdateTimeSum += m_updateTimeSum;
             m_serverUpdateTimeCount += m_updateTimeCount;
@@ -1902,12 +1906,14 @@ void World::Update(uint32 diff)
 
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures,...)
-    MAP_UPDATE_DIFF(MapUpdateDiff().ClearDiffInfo())
-    {
-        sMapMgr.Update(diff);                // As interval = 0
-        RecordTimeDiff("MapManager::update");
-    }
-    MAP_UPDATE_DIFF(MapUpdateDiff().PrintCumulativeMapUpdateDiff())
+    if (accumulateMapDiff)
+        MAP_UPDATE_DIFF(MapUpdateDiff().ClearDiffInfo())
+
+    sMapMgr.Update(diff);                // As interval = 0
+    RecordTimeDiff("MapManager::update");
+
+    if (accumulateMapDiff)
+        MAP_UPDATE_DIFF(MapUpdateDiff().PrintCumulativeMapUpdateDiff())
 
     sBattleGroundMgr.Update(diff);
     RecordTimeDiff("UpdateBattleGroundMgr");

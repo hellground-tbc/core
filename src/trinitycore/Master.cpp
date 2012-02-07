@@ -420,6 +420,7 @@ void Master::_OnSignal(int s)
 {
     switch (s)
     {
+        case SIGFPE:
         case SIGSEGV:
         case SIGABRT:
             if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
@@ -427,10 +428,11 @@ void Master::_OnSignal(int s)
                 ACE_thread_t const threadId = ACE_OS::thr_self();
                 if (sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
                 {
-                    throw new std::exception("SIGNAL HANDLED EXCEPTION");
+                    throw new SignalException(s);
                     break;
                 }
             }
+
             signal(s, SIG_DFL);
             ACE_OS::kill(getpid(), s);
             break;
@@ -453,12 +455,13 @@ void Master::_OnSignal(int s)
 /// Define hook '_OnSignal' for all termination signals
 void Master::_HookSignals()
 {
-    signal(SIGINT,   _OnSignal);
-    signal(SIGTERM,  _OnSignal);
+    signal(SIGINT, _OnSignal);
+    signal(SIGTERM, _OnSignal);
     #ifdef _WIN32
     signal(SIGBREAK, _OnSignal);
     #endif
 
+    signal(SIGFPE, _OnSignal);
     signal(SIGABRT, _OnSignal);
     signal(SIGSEGV, _OnSignal);
 }
@@ -466,12 +469,12 @@ void Master::_HookSignals()
 /// Unhook the signals before leaving
 void Master::_UnhookSignals()
 {
-    signal(SIGINT,   SIG_DFL);
-    signal(SIGTERM,  SIG_DFL);
+    signal(SIGINT, SIG_DFL);
+    signal(SIGTERM, SIG_DFL);
     #ifdef _WIN32
     signal(SIGBREAK, SIG_DFL);
     #endif
-    signal(SIGSEGV,  SIG_DFL);
-    signal(SIGABRT,  SIG_DFL);
-    signal(SIGFPE ,  SIG_DFL);
+    signal(SIGSEGV, SIG_DFL);
+    signal(SIGABRT, SIG_DFL);
+    signal(SIGFPE, SIG_DFL);
 }

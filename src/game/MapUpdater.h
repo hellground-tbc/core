@@ -4,10 +4,35 @@
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Condition_Thread_Mutex.h>
+#include <exception>
 
 #include "DelayExecutor.h"
 #include "Common.h"
 #include "Map.h"
+
+class SignalException
+{
+    public:
+        SignalException(int sigNo) : _sigNo(sigNo) {}
+
+        char const* SignalString() const
+        {
+            switch (_sigNo)
+            {
+                case SIGSEGV:
+                    return "SegmentationFault";
+                case SIGABRT:
+                    return "Terminate";
+                case SIGFPE:
+                    return "ErroneousArithmeticOperation";
+                default:
+                    return "UNHANDLED";
+            }
+        }
+
+    private:
+        int _sigNo;
+};
 
 struct MapUpdateInfo
 {
