@@ -428,6 +428,7 @@ void Master::_OnSignal(int s)
                 ACE_thread_t const threadId = ACE_OS::thr_self();
                 if (sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
                 {
+                    sLog.outCrash("Received signal: %i, throwing exception", s);
                     throw new SignalException(s);
                     break;
                 }
