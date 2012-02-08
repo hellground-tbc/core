@@ -4012,6 +4012,15 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 break;
             }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags & 0x80000000)
+                {
+                    if (m_caster->ToPlayer() && m_caster->ToPlayer()->GetBattleGround())
+                        return SPELL_FAILED_NOT_IN_BATTLEGROUND;
+                }
+                break;
+            }
             case SPELL_EFFECT_LEARN_PET_SPELL:
             {
                 Pet* pet = m_caster->GetPet();
@@ -4241,10 +4250,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!target || m_caster == target || !target->IsInSameRaidWith(dynamic_cast<Player *>(m_caster)))
                     return SPELL_FAILED_BAD_TARGETS;
 
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    if (BattleGround const *bg = dynamic_cast<Player *>(m_caster)->GetBattleGround())
-                        if (bg->GetStatus() != STATUS_IN_PROGRESS)
-                            return SPELL_FAILED_DONT_REPORT; // Ritual of Summoning Effect is triggered so don't report
+                if (m_caster->ToPlayer() && m_caster->ToPlayer()->GetBattleGround())
+                    return SPELL_FAILED_DONT_REPORT; // Ritual of Summoning Effect is triggered so don't report
 
                 // check if our map is dungeon
                 if (sMapStore.LookupEntry(m_caster->GetMapId())->IsDungeon())
