@@ -23,7 +23,7 @@
 */
 
 #include <ace/OS_NS_signal.h>
-#include <exception>
+#include <ace/Stack_Trace.h>
 
 #include "WorldSocketMgr.h"
 #include "Common.h"
@@ -162,8 +162,28 @@ int Master::Run()
     WorldDatabase.AllowAsyncTransactions();
     LoginDatabase.AllowAsyncTransactions();
 
-    ///- Catch termination signals
-    _HookSignals();
+    ACE_SIGACTION action;
+    action.sa_handler = _OnSignal;
+    action.sa_flags = 0; //SA_RESTART
+
+    ACE_OS::sigemptyset(&action.sa_mask);
+    ACE_OS::sigaction(SIGTERM, &action, NULL);
+
+    // Register signal handlers.
+    ACE_OS::sigaction(SIGINT, &action, NULL);
+    ACE_OS::sigaction(SIGTERM, &action, NULL);
+
+    #ifdef _WIN32
+    ACE_OS::sigaction(SIGBREAK, &action, NULL);
+    #endif
+
+    if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
+    {
+        // VMSS handler
+        ACE_OS::sigaction(SIGFPE, &action, NULL);
+        ACE_OS::sigaction(SIGABRT, &action, NULL);
+        ACE_OS::sigaction(SIGSEGV, &action, NULL);
+    }
 
     ///- Launch WorldRunnable thread
     ACE_Based::Thread t(new WorldRunnable);
@@ -264,9 +284,6 @@ int Master::Run()
 
     ///- Set server offline in realmlist
     LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
-
-    ///- Remove signal handling before leaving
-    _UnhookSignals();
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
@@ -426,56 +443,34 @@ void Master::_OnSignal(int s)
             if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
             {
                 ACE_thread_t const threadId = ACE_OS::thr_self();
-                if (sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
+                if (MapUpdateInfo const* m = sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
                 {
-                    sLog.outCrash("Received signal: %i, throwing exception", s);
-                    throw new SignalException(s);
+                    ACE_Stack_Trace stackTrace;
+                    sLog.outCrash("CRASH[%i]: mapid: %u, instanceid: %u", s, m->GetId(), m->GetInstanceId());
+                    sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
+
+                    if (Map *map = sMapMgr.FindMap(m->GetId(), m->GetInstanceId()))
+                        map->SetBroken(true);
+
+                    sMapMgr.GetMapUpdater()->unregister_thread(ACE_OS::thr_self());
+                    sMapMgr.GetMapUpdater()->update_finished();
+
+                    ACE_OS::thr_exit();
                     break;
                 }
             }
-
-            signal(s, SIG_DFL);
-            ACE_OS::kill(getpid(), s);
+            sLog.outError("Signal Handler: Thread is not virtual map server. Stopping world.");
+            World::StopNow(SHUTDOWN_EXIT_CODE);
             break;
         case SIGINT:
             World::StopNow(RESTART_EXIT_CODE);
-            signal(s, _OnSignal);
             break;
         #ifdef _WIN32
         case SIGBREAK:
             World::StopNow(SHUTDOWN_EXIT_CODE);
-            signal(s, _OnSignal);
             break;
         #endif
         default:
-            signal(s, SIG_DFL);
             break;
     }
-}
-
-/// Define hook '_OnSignal' for all termination signals
-void Master::_HookSignals()
-{
-    signal(SIGINT, _OnSignal);
-    signal(SIGTERM, _OnSignal);
-    #ifdef _WIN32
-    signal(SIGBREAK, _OnSignal);
-    #endif
-
-    signal(SIGFPE, _OnSignal);
-    signal(SIGABRT, _OnSignal);
-    signal(SIGSEGV, _OnSignal);
-}
-
-/// Unhook the signals before leaving
-void Master::_UnhookSignals()
-{
-    signal(SIGINT, SIG_DFL);
-    signal(SIGTERM, SIG_DFL);
-    #ifdef _WIN32
-    signal(SIGBREAK, SIG_DFL);
-    #endif
-    signal(SIGSEGV, SIG_DFL);
-    signal(SIGABRT, SIG_DFL);
-    signal(SIGFPE, SIG_DFL);
 }

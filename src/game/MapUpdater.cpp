@@ -8,7 +8,6 @@
 
 #include <ace/Guard_T.h>
 #include <ace/Method_Request.h>
-#include <ace/Stack_Trace.h>
 
 //the reason this things are here is that i want to make
 //the netcode patch and the multithreaded maps independant
@@ -53,30 +52,9 @@ class MapUpdateRequest : public ACE_Method_Request
         {
             m_updater.register_thread(ACE_OS::thr_self(), m_map.GetId(), m_map.GetInstanceId());
 
-            try
-            {
-                if (!m_map.IsBroken())
-                    m_map.Update(m_diff);
-            }
-            catch (SignalException& e)
-            {
-                ACE_Stack_Trace stackTrace;
-                sLog.outCrash("CRASH[%s]: mapid: %u, instanceid: %u", e.SignalString(), m_map.GetId(), m_map.GetInstanceId());
-                sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
-
-                m_map.SetBroken(true);
-            }
-            catch (...)
-            {
-                // whole block is just temporary
-                ACE_Stack_Trace stackTrace;
-                sLog.outCrash("CRASH: CATCHED SOMETHING, who knows what is that, mapid: %u, instanceid: %u", m_map.GetId(), m_map.GetInstanceId());
-                sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
-
-                m_map.SetBroken(true);
-            }
-
-            if (m_map.IsBroken())
+            if (!m_map.IsBroken())
+                m_map.Update(m_diff);
+            else
                 m_map.ForcedUnload();
 
             m_updater.unregister_thread(ACE_OS::thr_self());
