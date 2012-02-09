@@ -24,6 +24,7 @@
 #include "GroupReference.h"
 #include "GroupRefManager.h"
 #include "LootMgr.h"
+#include "BattleGround.h"
 
 #include <map>
 #include <vector>
