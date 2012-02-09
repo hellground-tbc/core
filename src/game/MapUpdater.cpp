@@ -66,6 +66,15 @@ class MapUpdateRequest : public ACE_Method_Request
 
                 m_map.SetBroken(true);
             }
+            catch (...)
+            {
+                // whole block is just temporary
+                ACE_Stack_Trace stackTrace;
+                sLog.outCrash("CRASH: CATCHED SOMETHING, who knows what is that, mapid: %u, instanceid: %u", m_map.GetId(), m_map.GetInstanceId());
+                sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
+
+                m_map.SetBroken(true);
+            }
 
             if (m_map.IsBroken())
                 m_map.ForcedUnload();
