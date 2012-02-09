@@ -260,9 +260,9 @@ struct TRINITY_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
 enum spiritbinderSpells
 {
-    SPELL_CHAIN_HEAL  = 42027,
-    SPELL_SPIRIT_HEAL = 42317,
-    SPELL_SPIRIT_MEND = 42025
+    SPELL_CHAIN_HEAL   = 42027,
+    SPELL_SSPIRIT_HEAL = 42317,
+    SPELL_SPIRIT_MEND  = 42025
 };
 
 struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
@@ -374,7 +374,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
         {
             //if(Unit *pFriend = FindSpiritHealTarget())
             //{
-                AddSpellToCast(NULL, SPELL_SPIRIT_HEAL, false, true);
+                AddSpellToCast(NULL, SPELL_SSPIRIT_HEAL, false, true);
                 m_spiritHealTimer = 10000;
             //}
             //else

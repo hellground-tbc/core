@@ -59,12 +59,6 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
     std::string membername;
     recv_data >> membername;
 
-    if (_player->InBattleGround())
-    {
-        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_INVITE_RESTRICTED);
-        return;
-    }
-
     // attempt add selected player
 
     // cheating
@@ -108,7 +102,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
     }
 
     Group *group = GetPlayer()->GetGroup();
-    if( group && group->isBGGroup() )
+    if (group && group->isBGGroup())
         group = GetPlayer()->GetOriginalGroup();
 
     Group *group2 = player->GetGroup();
@@ -198,12 +192,6 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket & /*recv_data*/)
     }
 
     Player* leader = objmgr.GetPlayer(group->GetLeaderGUID());
-
-    if (leader && leader->InBattleGround())
-    {
-        SendPartyResult(PARTY_OP_INVITE, "", PARTY_RESULT_INVITE_RESTRICTED);
-        return;
-    }
 
     // forming a new group, create it
     if (!group->IsCreated())
@@ -549,6 +537,9 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket & recv_data)
     CHECK_PACKET_SIZE(recv_data,(name.size()+1)+1);
 
     recv_data >> groupNr;
+
+    if (groupNr >= MAX_RAID_SUBGROUPS)
+        return;
 
     /** error handling **/
     if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))

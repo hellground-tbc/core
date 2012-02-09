@@ -663,6 +663,12 @@ bool ChatHandler::HandleDebugArenaCommand(const char * /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleDebugBattleGroundCommand(const char * /*args*/)
+{
+    sBattleGroundMgr.ToggleTesting();
+    return true;
+}
+
 bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
 {
     Creature* target = getSelectedCreature();

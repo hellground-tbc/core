@@ -41,7 +41,7 @@ npc_crashin_thrashin_robot  100%    AI for Crashin' Thrashin' Robot from enginee
 EndContentData */
 
 #include "precompiled.h"
-//#include "BattleGround.h"
+#include "BattleGround.h"
 #include "Totem.h"
 #include "PetAI.h"
 #include <list>
@@ -2359,8 +2359,6 @@ bool GossipHello_npc_arena_spectator(Player *player, Creature *_Creature)
     return true;
 }
 
-#define ARENA_NPC_SPECTATOR 0 // its from battleground.h but why we should include whole header for only one enum :F
-
 bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creature, uint32 sender, uint32 action, const char* sCode)
 {
     if (sender == GOSSIP_SENDER_MAIN)
@@ -2377,7 +2375,7 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
                 {
                     player->SetVisibility(VISIBILITY_OFF);
 
-                    player->SetBattleGroundId(pPlayer->GetBattleGroundId());
+                    player->SetBattleGroundId(pPlayer->GetBattleGroundId(), pPlayer->GetBattleGroundTypeId());
                     player->SetBattleGroundEntryPoint(player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation());
 
                     player->TeleportTo(pSpectator->GetMapId(), pSpectator->GetPositionX(), pSpectator->GetPositionY(), pSpectator->GetPositionZ(), pSpectator->GetOrientation());

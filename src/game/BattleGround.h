@@ -87,6 +87,7 @@ enum BattleGroundTimeIntervals
 {
     RESURRECTION_INTERVAL           = 30000,                // ms
     REMIND_INTERVAL                 = 30000,                // ms
+    INVITATION_REMIND_TIME          = 60000,                // ms
     INVITE_ACCEPT_WAIT_TIME         = 80000,                // ms
     TIME_TO_AUTOREMOVE              = 120000,               // ms
     MAX_OFFLINE_TIME                = 300000,               // ms
@@ -136,13 +137,23 @@ struct BattleGroundObjectInfo
 // handle the queue types and bg types separately to enable joining queue for different sized arenas at the same time
 enum BattleGroundQueueTypeId
 {
+    BATTLEGROUND_QUEUE_NONE   = 0,
     BATTLEGROUND_QUEUE_AV     = 1,
     BATTLEGROUND_QUEUE_WS     = 2,
     BATTLEGROUND_QUEUE_AB     = 3,
     BATTLEGROUND_QUEUE_EY     = 4,
-    BATTLEGROUND_QUEUE_2v2     = 5,
-    BATTLEGROUND_QUEUE_3v3     = 6,
-    BATTLEGROUND_QUEUE_5v5     = 7,
+    BATTLEGROUND_QUEUE_2v2    = 5,
+    BATTLEGROUND_QUEUE_3v3    = 6,
+    BATTLEGROUND_QUEUE_5v5    = 7,
+};
+#define MAX_BATTLEGROUND_QUEUE_TYPES 8
+
+enum BattleGroundBracketId                                  // bracketId for level ranges
+{
+    BG_BRACKET_ID_FIRST          = 0,                       // brackets start from specific BG min level and each include 10 levels range
+    BG_BRACKET_ID_LAST           = 6,                       // so for start level 10 will be 10-19, 20-29, ...  all greater max bg level included in last breaket
+
+    MAX_BATTLEGROUND_BRACKETS    = 7                        // used as one from values, so in enum
 };
 
 enum ScoreType
@@ -196,6 +207,7 @@ enum BattleGroundTeamId
     BG_TEAM_ALLIANCE        = 0,
     BG_TEAM_HORDE           = 1
 };
+#define BG_TEAMS_COUNT  2
 
 enum BattleGroundJoinError
 {
@@ -231,6 +243,8 @@ class BattleGroundScore
         uint32 DamageDone;
         uint32 HealingDone;
 };
+
+typedef std::map<uint64, BattleGroundScore*> BattleGroundScoreMap;
 
 enum BGHonorMode
 {
@@ -270,6 +284,7 @@ class TRINITY_DLL_SPEC BattleGround
         // Get methods:
         char const* GetName() const         { return m_Name; }
         BattleGroundTypeId GetTypeID() const { return m_TypeID; }
+        BattleGroundBracketId GetBracketId() const { return m_BracketId; }
         uint32 GetQueueType() const         { return m_Queue_type; }
         uint32 GetInstanceID() const        { return m_InstanceID; }
         uint32 GetStatus() const            { return m_Status; }
@@ -293,6 +308,7 @@ class TRINITY_DLL_SPEC BattleGround
         // Set methods:
         void SetName(char const* Name)      { m_Name = Name; }
         void SetTypeID(BattleGroundTypeId TypeID) { m_TypeID = TypeID; }
+        void SetBracketId(BattleGroundBracketId ID) { m_BracketId = ID; }
         void SetQueueType(uint32 ID)        { m_Queue_type = ID; }
         void SetInstanceID(uint32 InstanceID) { m_InstanceID = InstanceID; }
         void SetStatus(uint32 Status)       { m_Status = Status; }
@@ -327,7 +343,7 @@ class TRINITY_DLL_SPEC BattleGround
             else
                 return m_InvitedHorde;
         }
-        bool HasFreeSlotsForTeam(uint32 Team) const;
+
         bool HasFreeSlots() const;
         uint32 GetFreeSlotsForTeam(uint32 Team) const;
 
@@ -357,12 +373,12 @@ class TRINITY_DLL_SPEC BattleGround
         void SetMapId(uint32 MapID) { m_MapId = MapID; }
         uint32 GetMapId() const { return m_MapId; }
         void SetMap(Map* map){ m_Map = map; }
-        Map* GetMap() { return m_Map ? m_Map : m_Map = sMapMgr.FindMap(GetMapId(),GetInstanceID()); }
+        Map* GetMap();
 
         void SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O);
         void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
         {
-            uint8 idx = GetTeamIndexByTeamId(TeamID);
+            BattleGroundTeamId idx = GetTeamIndexByTeamId(TeamID);
             X = m_TeamStartLocX[idx];
             Y = m_TeamStartLocY[idx];
             Z = m_TeamStartLocZ[idx];
@@ -397,7 +413,7 @@ class TRINITY_DLL_SPEC BattleGround
 
         virtual void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
 
-        uint8 GetTeamIndexByTeamId(uint32 Team) const { return Team == ALLIANCE ? BG_TEAM_ALLIANCE : BG_TEAM_HORDE; }
+        static BattleGroundTeamId GetTeamIndexByTeamId(uint32 Team) { return Team == ALLIANCE ? BG_TEAM_ALLIANCE : BG_TEAM_HORDE; }
         uint32 GetPlayersCountByTeam(uint32 Team) const { return m_PlayersCount[GetTeamIndexByTeamId(Team)]; }
         uint32 GetAlivePlayersCountByTeam(uint32 Team) const;   // used in arenas to correctly handle death in spirit of redemption / last stand etc. (killer = killed) cases
         void UpdatePlayersCountByTeam(uint32 Team, bool remove)
@@ -486,7 +502,7 @@ class TRINITY_DLL_SPEC BattleGround
         std::map<uint64, std::vector<uint64> >  m_ReviveQueue;
 
         /*
-        this is important variable used for invitation messages
+        these are important variables used for starting messages
         */
         uint8 m_Events;
 
@@ -497,6 +513,7 @@ class TRINITY_DLL_SPEC BattleGround
     private:
         /* Battleground */
         BattleGroundTypeId m_TypeID;
+        BattleGroundBracketId m_BracketId;
         uint32 m_InstanceID;                                //BattleGround Instance's GUID!
         uint32 m_Status;
         uint32 m_StartTime;
@@ -558,5 +575,5 @@ class TRINITY_DLL_SPEC BattleGround
         float m_TeamStartLocO[2];
         Map * m_Map;
 };
-#endif
 
+#endif

@@ -227,7 +227,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "addformation",   SEC_GAMEMASTER,     false,  &ChatHandler::HandleDebugAddFormationToFileCommand, "", NULL },
         { "anim",           SEC_GAMEMASTER,     false,  &ChatHandler::HandleDebugAnimCommand,               "", NULL },
         { "arena",          SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugArenaCommand,              "", NULL },
-//        { "bg",             SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugBattlegroundCommand,        "", NULL },
+        { "bg",             SEC_ADMINISTRATOR,  false, &ChatHandler::HandleDebugBattleGroundCommand,        "", NULL },
         { "getitemstate",   SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugGetItemState,              "", NULL },
         { "getinstdata",    SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugGetInstanceDataCommand,    "", NULL },
         { "getinstdata64",  SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugGetInstanceData64Command,  "", NULL },

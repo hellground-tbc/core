@@ -132,7 +132,7 @@ class ChatHandler
         bool HandleDebugAddFormationToFileCommand(const char* args);
         bool HandleDebugAnimCommand(const char* args);
         bool HandleDebugArenaCommand(const char * args);
-//        bool HandleDebugBattlegroundCommand(const char * args);
+        bool HandleDebugBattleGroundCommand(const char * args);
         bool HandleDebugGetInstanceDataCommand(const char* args);
         bool HandleDebugGetInstanceData64Command(const char* args);
         bool HandleDebugGetItemState(const char * args);

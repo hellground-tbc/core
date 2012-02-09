@@ -76,7 +76,7 @@ void WorldRunnable::run()
     sWorld.UpdateSessions(tmp);                             // real players unload required UpdateSessions call
 
     // unload battleground templates before different singletons destroyed
-    sBattleGroundMgr.DeleteAlllBattleGrounds();
+    sBattleGroundMgr.DeleteAllBattleGrounds();
 
     sWorldSocketMgr->StopNetwork();
 

@@ -1079,7 +1079,7 @@ void Creature::OnGossipSelect(Player* player, uint32 option)
         case GOSSIP_OPTION_BATTLEFIELD:
         {
             BattleGroundTypeId bgTypeId = sBattleGroundMgr.GetBattleMasterBG(GetEntry());
-            player->GetSession()->SendBattlegGroundList(GetGUID(), bgTypeId);
+            player->GetSession()->SendBattlegGroundList(ObjectGuid(GetGUID()), bgTypeId);
             break;
         }
         default:

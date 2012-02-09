@@ -370,9 +370,10 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
     m_DetectInvTimer = 1000;
 
     m_bgBattleGroundID = 0;
+    m_bgTypeID = BATTLEGROUND_TYPE_NONE;
     for (int j=0; j < PLAYER_MAX_BATTLEGROUND_QUEUES; j++)
     {
-        m_bgBattleGroundQueueID[j].bgQueueType  = 0;
+        m_bgBattleGroundQueueID[j].bgQueueTypeId  = BATTLEGROUND_QUEUE_NONE;
         m_bgBattleGroundQueueID[j].invitedToInstance = 0;
     }
     m_bgTeam = 0;
@@ -4535,7 +4536,7 @@ void Player::RepopAtGraveyard()
     WorldSafeLocsEntry const *ClosestGrave = NULL;
 
     // Special handle for battleground maps
-    BattleGround *bg = sBattleGroundMgr.GetBattleGround(GetBattleGroundId());
+    BattleGround *bg = sBattleGroundMgr.GetBattleGround(GetBattleGroundId(), GetBattleGroundTypeId());
 
     if (bg && (bg->GetTypeID() == BATTLEGROUND_AB || bg->GetTypeID() == BATTLEGROUND_EY || bg->GetTypeID() == BATTLEGROUND_AV))
         ClosestGrave = bg->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetTeam());
@@ -14299,14 +14300,14 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         {
             SetBattleGroundEntryPoint(fieldsbg[2].GetUInt32(),fieldsbg[3].GetFloat(),fieldsbg[4].GetFloat(),fieldsbg[5].GetFloat(),fieldsbg[6].GetFloat());
 
-            BattleGround *currentBg = sBattleGroundMgr.GetBattleGround(bgid);
+            BattleGround *currentBg = sBattleGroundMgr.GetBattleGround(bgid, BATTLEGROUND_TYPE_NONE);
 
             if (currentBg && currentBg->IsPlayerInBattleGround(GetGUID()))
             {
-                uint32 bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetArenaType());
+                BattleGroundQueueTypeId bgQueueTypeId = sBattleGroundMgr.BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetArenaType());
                 uint32 queueSlot = AddBattleGroundQueueId(bgQueueTypeId);
 
-                SetBattleGroundId(currentBg->GetInstanceID());
+                SetBattleGroundId(currentBg->GetInstanceID(), currentBg->GetTypeID());
                 SetBGTeam(bgteam);
                 currentBg->AddOrSetPlayerToCorrectBgGroup(this, GetGUID(), bgteam);
 
@@ -18468,7 +18469,8 @@ void Player::ClearComboPoints()
 
 void Player::SetGroup(Group *group, int8 subgroup)
 {
-    if (group == NULL) m_group.unlink();
+    if (group == NULL)
+        m_group.unlink();
     else
     {
         // never use SetGroup without a subgroup unless you specify NULL for group
@@ -18834,7 +18836,7 @@ BattleGround* Player::GetBattleGround() const
     if (GetBattleGroundId() == 0)
         return NULL;
 
-    return sBattleGroundMgr.GetBattleGround(GetBattleGroundId());
+    return sBattleGroundMgr.GetBattleGround(GetBattleGroundId(), m_bgTypeID);
 }
 
 bool Player::InArena() const
@@ -18859,40 +18861,25 @@ bool Player::GetBGAccessByLevel(BattleGroundTypeId bgTypeId) const
     return true;
 }
 
-uint32 Player::GetMinLevelForBattleGroundQueueId(uint32 queue_id)
+uint32 Player::GetMinLevelForBattleGroundBracketId(BattleGroundBracketId bracket_id, BattleGroundTypeId bgTypeId)
 {
-    if (queue_id < 1)
+    if (bracket_id < 1)
         return 0;
 
-    if (queue_id >=6)
-        queue_id = 6;
+    if (bracket_id > BG_BRACKET_ID_LAST)
+        bracket_id = BG_BRACKET_ID_LAST;
 
-    return 10*(queue_id+1);
-}
-
-uint32 Player::GetMaxLevelForBattleGroundQueueId(uint32 queue_id)
-{
-    if (queue_id >= 7)
-        return 255;                                         // hardcoded max level
-
-    return 10*(queue_id+2)-1;
-}
-
-//TODO make this more generic - current implementation is wrong
-uint32 Player::GetBattleGroundQueueIdFromLevel() const
-{
-    uint32 level = getLevel();
-    if (level <= 19)
-        return 0;
-    else if (level > 69)
-        return 6;
-    else
-        return level/10 - 1;                                // 20..29 -> 1, 30-39 -> 2, ...
-    /*
-    assert(bgTypeId < MAX_BATTLEGROUND_TYPES);
     BattleGround *bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
     assert(bg);
-    return (getLevel() - bg->GetMinLevel()) / 10;*/
+    return 10 * bracket_id + bg->GetMinLevel();
+}
+
+uint32 Player::GetMaxLevelForBattleGroundBracketId(BattleGroundBracketId bracket_id, BattleGroundTypeId bgTypeId)
+{
+    if (bracket_id >= BG_BRACKET_ID_LAST)
+        return 255;                                         // hardcoded max level
+
+    return GetMinLevelForBattleGroundBracketId(bracket_id, bgTypeId) + 10;
 }
 
 Creature* Player::GetBGCreature(uint32 type)
@@ -19965,7 +19952,7 @@ void Player::RemoveFromBattleGroundRaid()
     m_group.unlink();
     if (Group* group = GetOriginalGroup())
     {
-        m_group.link(group, this);
+         m_group.link(group, this);
         m_group.setSubGroup(GetOriginalSubGroup());
     }
     SetOriginalGroup(NULL);
@@ -19978,7 +19965,7 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
     else
     {
         // never use SetOriginalGroup without a subgroup unless you specify NULL for group
-        //ASSERT(subgroup >= 0);
+        assert(subgroup >= 0);
         m_originalGroup.link(group, this);
         m_originalGroup.setSubGroup((uint8)subgroup);
     }
@@ -20300,4 +20287,18 @@ float Player::GetXPRate(Rates rate)
         return 1.0f;
     else
         return sWorld.getRate(Rates(rate));
+}
+
+BattleGroundBracketId Player::GetBattleGroundBracketIdFromLevel(BattleGroundTypeId bgTypeId) const
+{
+    BattleGround *bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
+    assert(bg);
+    if (getLevel() < bg->GetMinLevel())
+        return BG_BRACKET_ID_FIRST;
+
+    uint32 bracket_id = (getLevel() - bg->GetMinLevel()) / 10;
+    if (bracket_id > MAX_BATTLEGROUND_BRACKETS)
+        return BG_BRACKET_ID_LAST;
+
+    return BattleGroundBracketId(bracket_id);
 }

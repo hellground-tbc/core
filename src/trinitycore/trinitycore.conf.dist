@@ -610,20 +610,20 @@ IrcParser = "parser.irc"
 #        Default: 1 (true)
 #                 0 (false)
 #
-#    Battleground.QueueAnnouncer.Enable
-#        Enable queue announcer posting to chat
+#    Battleground.PrematureReward
+#        Reward players in case of prematurely finished BG
 #        Default: 1 (true)
 #                 0 (false)
 #
-#    Battleground.QueueAnnouncer.PlayerOnly
-#        Enable queue announcer posting to chat
-#        Default: 0 (false)
-#                 1 (true)
+#    Battleground.InvitationType
+#        Set Battleground invitation type
+#        Default: 0 (normal - invite as much players to bg as possible, don't bother with ballance)
+#                 1 (Experimental - don't allow to invite much more players of one faction)
 #
-#   Battleground.PrematureReward
-#     Reward players in case of prematurely finished BG
-#     Default: 1 (true)
-#           0 (false)
+#    BattleGround.PremadeGroupWaitForMatch
+#        The time in which premade group of 1 faction waits in BG Queue for premade group of other faction
+#        Default: 1800000 (30 minutes)
+#                 0 - disable (not recommended)
 #
 #    CastUnstuck
 #        Allow cast or not Unstuck spell at .start or client Help option use
@@ -751,8 +751,8 @@ AllFlightPaths = 0
 AlwaysMaxSkillForLevel = 0
 ActivateWeather = 1
 Battleground.CastDeserter = 1
-Battleground.QueueAnnouncer.Enable = 1
-Battleground.QueueAnnouncer.PlayerOnly = 0
+Battleground.InvitationType = 1
+BattleGround.PremadeGroupWaitForMatch = 300000
 Battleground.PrematureReward = 1
 CastUnstuck = 1
 Instance.IgnoreLevel = 0

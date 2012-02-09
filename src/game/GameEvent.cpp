@@ -1076,8 +1076,6 @@ void GameEvent::UnApplyEvent(uint16 event_id)
     UpdateEventNPCFlags(event_id);
     // remove vendor items
     UpdateEventNPCVendor(event_id, false);
-    // update bg holiday
-    UpdateBattleGroundSettings();
 }
 
 const char *GameEvent::getActiveEventsString()
@@ -1115,8 +1113,6 @@ void GameEvent::ApplyNewEvent(uint16 event_id)
     UpdateEventNPCFlags(event_id);
     // add vendor items
     UpdateEventNPCVendor(event_id, true);
-    // update bg holiday
-    UpdateBattleGroundSettings();
 }
 
 void GameEvent::UpdateEventNPCFlags(uint16 event_id)
@@ -1145,14 +1141,6 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
             }
         }
     }
-}
-
-void GameEvent::UpdateBattleGroundSettings()
-{
-    uint32 mask = 0;
-    for (ActiveEvents::const_iterator itr = m_ActiveEvents.begin(); itr != m_ActiveEvents.end(); ++itr)
-        mask |= mGameEventBattleGroundHolidays[*itr];
-    sBattleGroundMgr.SetHolidayWeekends(mask);
 }
 
 void GameEvent::UpdateEventNPCVendor(uint16 event_id, bool activate)
