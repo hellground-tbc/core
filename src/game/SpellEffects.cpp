@@ -7070,7 +7070,7 @@ void Spell::EffectCharge(uint32 /*i*/)
         ((Player *)m_caster)->m_AC_timer = 3000;
 
     Position dest;
-    target->GetValidPointInAngle(dest, 3.666f, target->GetAngle(m_caster), true);
+    target->GetValidPointInAngle(dest, 3.666f, (target->GetAngle(m_caster) - target->GetOrientation()), true);
     m_caster->GetMotionMaster()->MoveCharge(dest.x, dest.y, dest.z +0.5f);
 
     // not all charge effects used in negative spells
