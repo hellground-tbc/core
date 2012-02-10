@@ -459,7 +459,11 @@ void Master::_OnSignal(int s)
                     break;
                 }
             }
-            sLog.outError("Signal Handler: Thread is not virtual map server. Stopping world.");
+
+            ACE_Stack_Trace stackTrace;
+            sLog.outCrash("Signal Handler: Thread is not virtual map server. Stopping world.");
+            sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
+
             World::StopNow(SHUTDOWN_EXIT_CODE);
             break;
         case SIGINT:

@@ -7153,6 +7153,10 @@ bool Unit::IsHostileTo(Unit const* unit) const
     if (getVictim() == unit || unit->getVictim() == this)
         return true;
 
+    // if is neutral to all, so it won't be hostile ;P
+    if (IsNeutralToAll() || unit->IsNeutralToAll())
+        return false;
+
     // test pet/charm masters instead pers/charmeds
     Unit const* testerOwner = GetCharmerOrOwner();
     Unit const* targetOwner = unit->GetCharmerOrOwner();
@@ -7378,6 +7382,9 @@ bool Unit::IsHostileToPlayers() const
 
 bool Unit::IsNeutralToAll() const
 {
+    if (GetCreatureType() == CREATURE_TYPE_CRITTER)
+        return true;
+
     FactionTemplateEntry const* my_faction = getFactionTemplateEntry();
     if (!my_faction || !my_faction->faction)
         return true;

@@ -102,8 +102,9 @@ void CreatureAI::SelectNearestTarget(Unit *who)
 {
     if (me->getVictim() && me->GetDistanceOrder(who, me->getVictim()) && me->canAttack(who))
     {
+        float threat = me->getThreatManager().getThreat(me->getVictim());
         me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
-        me->AddThreat(who, 1000000.0f);
+        me->AddThreat(who, threat);
     }
 }
 
