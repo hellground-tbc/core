@@ -336,6 +336,7 @@ void ImpAI::AttackStart(Unit *victim)
 
     if (me->Attack(victim, true))
     {
+        me->GetMotionMaster()->Clear(false);
         //DEBUG_LOG("Creature %s tagged a victim to kill [guid=%u]", me->GetName(), victim->GetGUIDLow());
         me->GetMotionMaster()->MoveChase(victim, 0, 0);
         m_chasing = true;
@@ -381,6 +382,7 @@ void ImpAI::UpdateAI(const uint32 diff)
         }
         if (dist > 30 && !m_chasing)
         {
+            me->GetMotionMaster()->Clear(false);
             m_creature->GetMotionMaster()->MoveChase(target);
             m_chasing = true;
         }

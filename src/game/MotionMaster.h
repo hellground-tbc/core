@@ -24,7 +24,8 @@
 #include "Common.h"
 #include <stack>
 #include <vector>
-//#include "SharedDefines.h"
+
+#include "SharedDefines.h"
 
 class MovementGenerator;
 class Unit;

@@ -87,6 +87,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
                 case COMMAND_STAY:                          //flat=1792  //STAY
                     pet->AttackStop();
                     pet->InterruptNonMeleeSpells(false);
+                    pet->GetMotionMaster()->Clear(false);
                     pet->GetMotionMaster()->MoveIdle();
                     pet->clearUnitState(UNIT_STAT_FOLLOW);
                     charmInfo->SetCommandState(COMMAND_STAY);
@@ -128,6 +129,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
 
                     if (pet->GetTypeId() != TYPEID_PLAYER && ((Creature*)pet)->IsAIEnabled)
                     {
+                        pet->GetMotionMaster()->Clear(false);
                         ((Creature*)pet)->AI()->AttackStart(TargetUnit);
 
                         //10% chance to play special pet attack talk, else growl
