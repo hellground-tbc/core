@@ -1719,10 +1719,8 @@ void Creature::setDeathState(DeathState s)
         //Dismiss group if is leader
         if (m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
-
-        //if ((CanFly() || IsFlying()))
-        //    i_motionMaster.MoveFall();
     }
+
     Unit::setDeathState(s);
 
     if (s == JUST_DIED)
@@ -1736,18 +1734,20 @@ void Creature::setDeathState(DeathState s)
             if (LootTemplates_Skinning.HaveLootfor (GetCreatureInfo()->SkinLootId))
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
-//        if (CanFly() && FallGround())
+        if (CanFly())
+            i_motionMaster.MoveFall();
 
         Unit::setDeathState(CORPSE);
     }
+
     if (s == JUST_ALIVED)
     {
-        //if(isPet())
-        //    setActive(true);
         SetHealth(GetMaxHealth());
         SetLootRecipient(NULL);
         ResetPlayerDamageReq();
+
         Unit::setDeathState(ALIVE);
+
         CreatureInfo const *cinfo = GetCreatureInfo();
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
