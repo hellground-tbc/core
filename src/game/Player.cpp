@@ -12894,6 +12894,7 @@ void Player::RewardDNDQuest(uint32 questId)
     ModifyMoney(tmpQ->GetRewOrReqMoney());
 
     q_status.m_rewarded = true;
+    q_status.m_status = QUEST_STATUS_COMPLETE;
 
     if (q_status.uState != QUEST_NEW)
         q_status.uState = QUEST_CHANGED;

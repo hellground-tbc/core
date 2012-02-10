@@ -1374,7 +1374,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
                     {
-                        m_caster->ToPlayer()->RewardDNDQuest(9378);
+                        unitTarget->ToPlayer()->RewardDNDQuest(9378);
                         m_caster->CastSpell(unitTarget,29294,true);
                     }
                     return;
