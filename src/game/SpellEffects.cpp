@@ -2730,7 +2730,8 @@ void Spell::EffectTeleportUnits(uint32 i)
 
     float x = m_targets.m_destX;
     float y = m_targets.m_destY;
-    float z = m_targets.m_destZ +0.5f;
+    float z = m_targets.m_destZ;
+
     float orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
     sLog.outDebug("Spell::EffectTeleportUnits - teleport unit to %u %f %f %f\n", mapid, x, y, z);
     // Teleport
@@ -7070,8 +7071,11 @@ void Spell::EffectCharge(uint32 /*i*/)
         ((Player *)m_caster)->m_AC_timer = 3000;
 
     Position dest;
-    target->GetValidPointInAngle(dest, 3.666f, (target->GetAngle(m_caster) - target->GetOrientation()), true);
-    m_caster->GetMotionMaster()->MoveCharge(dest.x, dest.y, dest.z +0.5f);
+    target->GetPosition(dest);
+
+    float angle = m_caster->GetAngle(target) - m_caster->GetOrientation() - M_PI;
+    m_caster->GetValidPointInAngle(dest, 2.0f, angle, false);
+    m_caster->GetMotionMaster()->MoveCharge(dest.x, dest.y, dest.z);
 
     // not all charge effects used in negative spells
     if (!IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)

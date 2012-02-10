@@ -1298,29 +1298,28 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     float ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
     float floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
 
-    dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
+    dest.z = 1.0f +fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
 
     // collision occured
-    if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(),pos.x, pos.y, pos.z+0.5f, dest.x, dest.y, dest.z+0.5f, dest.x, dest.y, dest.z, -0.5f))
+    if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, 0.0f))
     {
         // move back a bit
-        dest.x -= CONTACT_DISTANCE * cos(angle);
-        dest.y -= CONTACT_DISTANCE * sin(angle);
+        dest.x -= 1.0f * cos(angle);
+        dest.y -= 1.0f * sin(angle);
         dist = sqrt((pos.x - dest.x)*(pos.x - dest.x) + (pos.y - dest.y)*(pos.y - dest.y));
     }
 
     float step = dist / 10.0f;
-
     for (int j = 0; j < 10; ++j)
     {
         // do not allow too big z changes
-        if (fabs(pos.z - dest.z) > 6)
+        if (fabs(pos.z - dest.z) > 6.0f)
         {
             dest.x -= step * cos(angle);
             dest.y -= step * sin(angle);
             ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-            floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
-            dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
+            floor = _map->GetHeight(dest.x, dest.y, pos.z +2.0f, true);
+            dest.z = 1.0f +fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
         }
         // we have correct destz now
         else
@@ -1332,14 +1331,14 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
 
     Trinity::NormalizeMapCoord(pos.x);
     Trinity::NormalizeMapCoord(pos.y);
-    UpdateGroundPositionZ(pos.x, pos.y, pos.z);
+    pos.z = 0.5f + GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
     float new_z = GetTerrain()->GetHeight(x,y,z,true);
     if (new_z > INVALID_HEIGHT)
-        z = new_z + 0.05f;                                  // just to be sure that we are not a few pixel under the surface
+        z = new_z + 0.666f;                                  // just to be sure that we are not a few pixel under the surface
 }
 
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
