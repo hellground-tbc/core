@@ -900,7 +900,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
 
             //we should update battleground queue, but only if bg isn't ending
             if (isBattleGround() && GetStatus() < STATUS_WAIT_LEAVE)
-                sBattleGroundMgr.ScheduleQueueUpdate(bgQueueTypeId, bgTypeId, GetQueueType());
+                sBattleGroundMgr.ScheduleQueueUpdate(bgQueueTypeId, bgTypeId, GetBracketId());
 
             Group * group = plr->GetGroup();
             // remove from raid group if exist

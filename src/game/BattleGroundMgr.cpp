@@ -693,21 +693,6 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
             //this switch can be much shorter
             MaxPlayersPerTeam = arenaType;
             MinPlayersPerTeam = arenaType;
-            /*switch(arenaType)
-            {
-            case ARENA_TYPE_2v2:
-                MaxPlayersPerTeam = 2;
-                MinPlayersPerTeam = 2;
-                break;
-            case ARENA_TYPE_3v3:
-                MaxPlayersPerTeam = 3;
-                MinPlayersPerTeam = 3;
-                break;
-            case ARENA_TYPE_5v5:
-                MaxPlayersPerTeam = 5;
-                MinPlayersPerTeam = 5;
-                break;
-            }*/
         }
     }
 
@@ -985,7 +970,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             }
             plr->RemoveBattleGroundQueueId(bgQueueTypeId);
             sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].RemovePlayer(m_PlayerGuid, true);
-            sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].Update(bg->GetTypeID(),bg->GetBracketId());
+            sBattleGroundMgr.ScheduleQueueUpdate(bgQueueTypeId, bg->GetTypeID(), bg->GetBracketId());
             WorldPacket data;
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, m_PlayersTeam, queueSlot, STATUS_NONE, 0, 0);
             plr->GetSession()->SendPacket(&data);
@@ -1076,9 +1061,9 @@ void BattleGroundMgr::Update(uint32 diff)
         m_QueueUpdateScheduler.clear();
         for (uint8 i = 0; i < scheduled.size(); i++)
         {
-            BattleGroundQueueTypeId bgQueueTypeId = BattleGroundQueueTypeId(scheduled[i] / 65536);
-            BattleGroundTypeId bgTypeId = BattleGroundTypeId((scheduled[i] % 65536) / 256);
-            BattleGroundBracketId bracket_id = BattleGroundBracketId(scheduled[i] % 256);
+            BattleGroundQueueTypeId bgQueueTypeId = BattleGroundQueueTypeId(scheduled[i] >> 16);
+            BattleGroundTypeId bgTypeId = BattleGroundTypeId((scheduled[i] >> 8) & 255);
+            BattleGroundBracketId bracket_id = BattleGroundBracketId(scheduled[i] & 256);
             m_BattleGroundQueues[bgQueueTypeId].Update(bgTypeId, bracket_id);
         }
     }
@@ -1090,9 +1075,9 @@ void BattleGroundMgr::Update(uint32 diff)
         if (m_NextRatingDiscardUpdate < diff)
         {
             // forced update for level 70 rated arenas
-            m_BattleGroundQueues[BATTLEGROUND_QUEUE_2v2].Update(BATTLEGROUND_AA,BG_BRACKET_ID_LAST,ARENA_TYPE_2v2,true,0);
-            m_BattleGroundQueues[BATTLEGROUND_QUEUE_3v3].Update(BATTLEGROUND_AA,BG_BRACKET_ID_LAST,ARENA_TYPE_3v3,true,0);
-            m_BattleGroundQueues[BATTLEGROUND_QUEUE_5v5].Update(BATTLEGROUND_AA,BG_BRACKET_ID_LAST,ARENA_TYPE_5v5,true,0);
+            m_BattleGroundQueues[BATTLEGROUND_QUEUE_2v2].Update(BATTLEGROUND_AA,BG_BRACKET_ID_LAST,ARENA_TYPE_2v2,true,0,0);
+            m_BattleGroundQueues[BATTLEGROUND_QUEUE_3v3].Update(BATTLEGROUND_AA,BG_BRACKET_ID_LAST,ARENA_TYPE_3v3,true,0,0);
+            m_BattleGroundQueues[BATTLEGROUND_QUEUE_5v5].Update(BATTLEGROUND_AA,BG_BRACKET_ID_LAST,ARENA_TYPE_5v5,true,0,0);
             m_NextRatingDiscardUpdate = sWorld.getConfig(CONFIG_ARENA_RATING_DISCARD_TIMER);
         }
         else
@@ -1124,11 +1109,11 @@ void BattleGroundMgr::Update(uint32 diff)
     }
 }
 
-void BattleGroundMgr::ScheduleQueueUpdate(uint32 bgQueueTypeId, uint32 bgTypeId, uint32 bracket_id)
+void BattleGroundMgr::ScheduleQueueUpdate(BattleGroundQueueTypeId bgQueueTypeId, BattleGroundTypeId bgTypeId, BattleGroundBracketId bracket_id)
 {
     //This method must be atomic!
     //we will use only 1 number created of bgTypeId and bracket_id
-    uint32 schedule_id = (bgQueueTypeId * 65536) + (bgTypeId * 256) + bracket_id;
+    uint32 schedule_id = (bgQueueTypeId << 16) | (bgTypeId << 8) | bracket_id;
     bool found = false;
     for (uint8 i = 0; i < m_QueueUpdateScheduler.size(); i++)
     {

@@ -441,24 +441,21 @@ void Master::_OnSignal(int s)
         case SIGSEGV:
         case SIGABRT:
         {
-            if (sWorld.getConfig(CONFIG_VMSS_ENABLE))
+            ACE_thread_t const threadId = ACE_OS::thr_self();
+            if (MapUpdateInfo const* m = sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
             {
-                ACE_thread_t const threadId = ACE_OS::thr_self();
-                if (MapUpdateInfo const* m = sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
-                {
-                    ACE_Stack_Trace stackTrace;
-                    sLog.outCrash("CRASH[%i]: mapid: %u, instanceid: %u", s, m->GetId(), m->GetInstanceId());
-                    sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
+                ACE_Stack_Trace stackTrace;
+                sLog.outCrash("CRASH[%i]: mapid: %u, instanceid: %u", s, m->GetId(), m->GetInstanceId());
+                sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
 
-                    if (Map *map = sMapMgr.FindMap(m->GetId(), m->GetInstanceId()))
-                        map->SetBroken(true);
+                if (Map *map = sMapMgr.FindMap(m->GetId(), m->GetInstanceId()))
+                    map->SetBroken(true);
 
-                    sMapMgr.GetMapUpdater()->unregister_thread(ACE_OS::thr_self());
-                    sMapMgr.GetMapUpdater()->update_finished();
+                sMapMgr.GetMapUpdater()->unregister_thread(ACE_OS::thr_self());
+                sMapMgr.GetMapUpdater()->update_finished();
 
-                    ACE_OS::thr_exit();
-                    break;
-                }
+                ACE_OS::thr_exit();
+                break;
             }
 
             ACE_Stack_Trace stackTrace;
