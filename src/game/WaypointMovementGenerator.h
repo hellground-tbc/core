@@ -60,14 +60,14 @@ template<class T>
 class WaypointMovementGenerator;
 
 template<>
-class WaypointMovementGenerator<Creature>
-: public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
-public PathMovementBase<Creature, WaypointPath const*>
+class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >, public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
-        WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true) : i_nextMoveTime(0), path_id(_path_id), m_isArrivalDone(false), repeating(_repeating)  {}
+        WaypointMovementGenerator(const Creature&) : i_nextMoveTime(0), path_id(0), m_isArrivalDone(false), repeating(false) {}
+        WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true) : i_nextMoveTime(0), path_id(_path_id), m_isArrivalDone(false), repeating(_repeating) {}
         ~WaypointMovementGenerator() { i_path = NULL; }
         void Initialize(Creature &);
+        void Interrupt(Creature &);
         void Finalize(Creature &);
         void Reset(Creature &);
         bool Update(Creature &, const uint32 &diff);

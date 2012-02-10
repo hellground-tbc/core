@@ -51,7 +51,7 @@
 #include "CreatureAI.h"
 #include "VMapFactory.h"
 #include "UnitAI.h"
-
+#include "MovementGenerator.h"
 #include "movement/MoveSplineInit.h"
 #include "movement/MoveSpline.h"
 
@@ -495,8 +495,7 @@ void Unit::SendMonsterStop()
 
 void Unit::UpdateSplineMovement(uint32 t_diff)
 {
-    enum
-    {
+    enum{
         POSITION_UPDATE_DELAY = 400,
     };
 
@@ -515,7 +514,10 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
         m_movesplineTimer.Reset(POSITION_UPDATE_DELAY);
         Movement::Location loc = movespline->ComputePosition();
 
-        SetPosition(loc.x,loc.y,loc.z,loc.orientation);
+        if (GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->SetPosition(loc.x,loc.y,loc.z,loc.orientation);
+        else
+            GetMap()->CreatureRelocation((Creature*)this,loc.x,loc.y,loc.z,loc.orientation);
     }
 }
 
@@ -524,7 +526,6 @@ void Unit::DisableSpline()
     m_movementInfo.RemoveMovementFlag(MovementFlags(MOVEFLAG_SPLINE_ENABLED|MOVEFLAG_FORWARD));
     movespline->_Interrupt();
 }
-
 void Unit::resetAttackTimer(WeaponAttackType type)
 {
     m_attackTimer[type] = uint32(GetAttackTime(type) * m_modAttackSpeedPct[type]);
@@ -1155,15 +1156,6 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
 
     if (!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
-
-    if (!triggered)
-    {
-        if ((IsChanneledSpell(spellInfo) && spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT) || (!IsChanneledSpell(spellInfo) && spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT))
-        {
-            DisableSpline();
-            StopMoving();
-        }
-    }
 
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster);
 
@@ -3276,7 +3268,11 @@ void Unit::SetCurrentCastedSpell(Spell * pSpell)
                     InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
                 m_AutoRepeatFirstCast = true;
             }
+
             addUnitState(UNIT_STAT_CASTING);
+
+            if (pSpell->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
+                addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
         } break;
 
         case CURRENT_CHANNELED_SPELL:
@@ -3289,7 +3285,11 @@ void Unit::SetCurrentCastedSpell(Spell * pSpell)
             if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
                 m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351)
                 InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+
             addUnitState(UNIT_STAT_CASTING);
+
+            if (pSpell->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
+                addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
         } break;
 
         case CURRENT_AUTOREPEAT_SPELL:
@@ -12106,14 +12106,17 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         pThis->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
     {
+        Creature *c = ToCreature();
+        if (!c->GetMotionMaster()->empty())
+            if (MovementGenerator *movgen = c->GetMotionMaster()->top())
+                movgen->Interrupt(*c);
+
         Relocate(x, y, z);
         SendHeartBeat();
 
-        if (GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
-        {
-            if (getVictim())
-                GetMotionMaster()->MoveChase(getVictim());
-        }
+        if (!c->GetMotionMaster()->empty())
+            if (MovementGenerator *movgen = c->GetMotionMaster()->top())
+                movgen->Reset(*c);
     }
 }
 
@@ -12552,30 +12555,42 @@ void Unit::SetFeared(bool apply)
 {
     if (apply)
     {
-        SetUInt64Value(UNIT_FIELD_TARGET, 0);
+        if (HasAuraType(SPELL_AURA_PREVENTS_FLEEING))
+            return;
+
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
+
+        GetMotionMaster()->MovementExpired(false);
 
         Unit *caster = NULL;
         Unit::AuraList const& fearAuras = GetAurasByType(SPELL_AURA_MOD_FEAR);
         if (!fearAuras.empty())
             caster = GetMap()->GetUnit(fearAuras.front()->GetCasterGUID());
+
         if (!caster)
             caster = getAttackerForHelper();
 
-        GetMotionMaster()->MoveFleeing(caster, fearAuras.empty() ? sWorld.getConfig(CONFIG_CREATURE_FAMILY_FLEE_DELAY) : 0);             // caster==NULL processed in MoveFleeing
+        GetMotionMaster()->MoveFleeing(caster, fearAuras.empty() ? sWorld.getConfig(CONFIG_CREATURE_FAMILY_FLEE_DELAY) : 0);
     }
     else
     {
-        if (isAlive())
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
+
+        GetMotionMaster()->MovementExpired(false);
+
+        if (GetTypeId() != TYPEID_PLAYER && isAlive())
         {
-            if (GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
-                GetMotionMaster()->MovementExpired();
+            Creature* c = ToCreature();
+            // restore appropriate movement generator
             if (getVictim())
-                SetUInt64Value(UNIT_FIELD_TARGET, getVictimGUID());
+                c->AI()->AttackStart(getVictim());
+            else
+                GetMotionMaster()->Initialize();
         }
     }
 
     if (GetTypeId() == TYPEID_PLAYER)
-        ((Player*)this)->SetClientControl(this, !apply);
+        ToPlayer()->SetClientControl(this, !apply);
 }
 
 void Unit::SetFlying(bool apply)
@@ -12609,16 +12624,27 @@ void Unit::SetConfused(bool apply)
 {
     if (apply)
     {
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
         GetMotionMaster()->MoveConfused();
     }
     else
     {
-        if (isAlive() && GetMotionMaster()->GetCurrentMovementGeneratorType() == CONFUSED_MOTION_TYPE)
-            GetMotionMaster()->MovementExpired();
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
+
+        GetMotionMaster()->MovementExpired(false);
+
+        if (GetTypeId() != TYPEID_PLAYER && isAlive())
+        {
+            // restore appropriate movement generator
+            if (getVictim())
+                ToCreature()->AI()->AttackStart(getVictim());
+            else
+                GetMotionMaster()->Initialize();
+        }
     }
 
     if (GetTypeId() == TYPEID_PLAYER)
-        ((Player*)this)->SetClientControl(this, !apply);
+        ToPlayer()->SetClientControl(this, !apply);
 }
 
 void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)

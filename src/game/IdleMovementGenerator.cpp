@@ -24,18 +24,13 @@
 
 IdleMovementGenerator si_idleMovement;
 
-// StopMoving is needed to make unit stop if its last movement generator expires
-// But it should not be sent otherwise there are many redundent packets
-void IdleMovementGenerator::Initialize(Unit &owner)
+void IdleMovementGenerator::Reset(Unit& /*owner*/)
 {
-    if (owner.hasUnitState(UNIT_STAT_MOVE))
-        owner.StopMoving();
 }
 
-void IdleMovementGenerator::Reset(Unit& owner)
+void RotateMovementGenerator::Interrupt(Unit& unit)
 {
-    if (owner.hasUnitState(UNIT_STAT_MOVE))
-        owner.StopMoving();
+    unit.clearUnitState(UNIT_STAT_ROTATING);
 }
 
 void RotateMovementGenerator::Initialize(Unit& owner)
@@ -47,7 +42,6 @@ void RotateMovementGenerator::Initialize(Unit& owner)
         owner.SetInFront(owner.getVictim());
 
     owner.addUnitState(UNIT_STAT_ROTATING);
-
     owner.AttackStop(); 
 }
 
@@ -99,9 +93,18 @@ void DistractMovementGenerator::Finalize(Unit& owner)
     owner.clearUnitState(UNIT_STAT_DISTRACTED);
 }
 
-bool DistractMovementGenerator::Update(Unit& owner, const uint32& time_diff)
+void DistractMovementGenerator::Reset(Unit& owner)
 {
-    if (time_diff > m_timer)
+    Initialize(owner);
+}
+
+void DistractMovementGenerator::Interrupt(Unit& /*owner*/)
+{
+}
+
+bool DistractMovementGenerator::Update(Unit& /*owner*/, const uint32& time_diff)
+{
+    if(time_diff > m_timer)
         return false;
 
     m_timer -= time_diff;

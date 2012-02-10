@@ -51,6 +51,7 @@
 #include "Util.h"
 #include "TemporarySummon.h"
 #include "PetAI.h"
+#include "MovementGenerator.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
@@ -330,7 +331,6 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
     for (int i=0; i <3; ++i)
         m_currentBasePoints[i] = m_spellValue->EffectBasePoints[i];
 
-    m_castPositionX = m_castPositionY = m_castPositionZ = 0;
     m_TriggerSpells.clear();
     m_IsTriggeredSpell = triggered;
     //m_AreaAura = false;
@@ -2213,11 +2213,10 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     m_targets = *targets;
 
-    m_caster->GetPosition(m_castPositionX, m_castPositionY, m_castPositionZ);
-    m_castOrientation = m_caster->GetOrientation();
-
     if (triggeredByAura)
         m_triggeredByAuraSpell = triggeredByAura->GetSpellProto();
+
+    m_caster->GetPosition(m_cast);
 
     // create and add update event for this spell
     SpellEvent* Event = new SpellEvent(this);
@@ -2377,8 +2376,8 @@ void Spell::cancel()
 
 void Spell::cast(bool skipCheck)
 {
-    if (m_spellInfo->Id <= 0 || m_spellInfo->Id > MAX_SPELL_ID)
-       return;
+    if (m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
+        m_caster->StopMoving();
 
     SpellEntry const* spellInfo = sSpellStore.LookupEntry(m_spellInfo->Id);
     if (!spellInfo)
@@ -2388,12 +2387,14 @@ void Spell::cast(bool skipCheck)
     UpdatePointers();
 
     if (Unit *pTarget = m_targets.getUnitTarget())
+    {
         if (pTarget->isAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
             return;
         }
+    }
 
     if (m_casttime && m_caster->GetTypeId() == TYPEID_UNIT && ((Creature *)m_caster)->isPet())
     {
@@ -2827,13 +2828,11 @@ void Spell::update(uint32 difftime)
         return;
     }
 
-    bool movementInterrupt = IsChanneledSpell(m_spellInfo) ? m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT : m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT;
     // check if caster has moved before the spell finished
-    if (m_timer != 0 &&
-        (m_castPositionX != m_caster->GetPositionX() || m_castPositionY != m_caster->GetPositionY() || m_castPositionZ != m_caster->GetPositionZ()) &&
-        (m_spellInfo->Effect[0] != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR)))
+    if (m_timer != 0 && m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE) && !m_caster->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR))
     {
-        if (movementInterrupt && !IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
+        // add little offset for creature stop movement
+        if (!m_caster->IsInRange2d(m_cast.x, m_cast.y, 0.0f, 1.5f) && !IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
             cancel();
     }
 
@@ -2859,7 +2858,7 @@ void Spell::update(uint32 difftime)
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                 {
                     // check if player has jumped before the channeling finished
-                    if (movementInterrupt && m_caster->HasUnitMovementFlag(MOVEFLAG_FALLING))
+                    if (m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE) && m_caster->HasUnitMovementFlag(MOVEFLAG_FALLING))
                         cancel();
                 }
 
@@ -2950,7 +2949,7 @@ void Spell::finish(bool ok)
         m_caster->UpdateInterruptMask();
 
     if (!m_caster->IsNonMeleeSpellCasted(false, false, true))
-        m_caster->clearUnitState(UNIT_STAT_CASTING);
+        m_caster->clearUnitState(UNIT_STAT_CASTING | UNIT_STAT_CASTING_NOT_MOVE);
 
     if (!ok)
     {

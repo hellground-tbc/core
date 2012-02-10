@@ -290,7 +290,7 @@ void FollowerAI::StartFollow(Player* pLeader, uint32 uiFactionForFollower, const
 
     if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE)
     {
-        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->Clear(false);
         me->GetMotionMaster()->MoveIdle();
         //sLog.outDebug("OSCR: FollowerAI start with WAYPOINT_MOTION_TYPE, set to MoveIdle.");
     }
@@ -341,7 +341,7 @@ void FollowerAI::SetFollowComplete(bool bWithEndEvent)
         me->clearUnitState(UNIT_STAT_FOLLOW);
 
         me->StopMoving();
-        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->Clear(false);
         me->GetMotionMaster()->MoveIdle();
     }
 
@@ -370,7 +370,7 @@ void FollowerAI::SetFollowPaused(bool bPaused)
             me->clearUnitState(UNIT_STAT_FOLLOW);
 
             me->StopMoving();
-            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->Clear(false);
             me->GetMotionMaster()->MoveIdle();
         }
     }

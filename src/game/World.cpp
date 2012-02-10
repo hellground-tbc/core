@@ -1073,6 +1073,13 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_WAYPOINT_MOVEMENT_ACTIVE_ON_CONTINENTS] = sConfig.GetBoolDefault("WaypointMovementAutoActive.Continents", true);
     m_configs[CONFIG_WAYPOINT_MOVEMENT_ACTIVE_IN_INSTANCES] = sConfig.GetBoolDefault("WaypointMovementAutoActive.Instances", true);
 
+    m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] = sConfig.GetIntDefault("Movement.RecalculateRange", 2);
+
+    if (m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] < 0)
+        m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] = 0;
+
+    if (m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] > 5)
+        m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] = 5;
 
     ///- Read the "Data" directory from the config file
     std::string dataPath = sConfig.GetStringDefault("DataDir","./");

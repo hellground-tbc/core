@@ -46,12 +46,27 @@ void PointMovementGenerator<T>::Initialize(T &unit)
 }
 
 template<class T>
+void PointMovementGenerator<T>::Interrupt(T &unit)
+{
+    unit.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+}
+
+template<class T>
+void PointMovementGenerator<T>::Reset(T &unit)
+{
+    if (!unit.IsStopped())
+        unit.StopMoving();
+
+    unit.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+}
+
+template<class T>
 bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 {
     if (!&unit)
         return false;
 
-    if (unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
+    if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE))
     {
         unit.clearUnitState(UNIT_STAT_ROAMING_MOVE);
         return true;
@@ -70,17 +85,8 @@ void PointMovementGenerator<T>::Finalize(T &unit)
         MovementInform(unit);
 }
 
-template<class T>
-void PointMovementGenerator<T>::Reset(T &unit)
-{
-    if (!unit.IsStopped())
-        unit.StopMoving();
-
-    unit.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
-}
-
-template<class T>
-void PointMovementGenerator<T>::MovementInform(T &unit)
+template<>
+void PointMovementGenerator<Player>::MovementInform(Player&)
 {
 }
 
@@ -90,21 +96,23 @@ void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
     if (unit.AI())
         unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
 
-    if(unit.GetFormation() && unit.GetFormation()->getLeader() && unit.GetFormation()->getLeader()->GetGUID() != unit.GetGUID())
+    if (unit.GetFormation() && unit.GetFormation()->getLeader() && unit.GetFormation()->getLeader()->GetGUID() != unit.GetGUID())
     {
         unit.GetFormation()->ReachedWaypoint();
         unit.SetOrientation(unit.GetFormation()->getLeader()->GetOrientation());
     }
 }
 
-template void PointMovementGenerator<Creature>::Initialize(Creature&);
 template void PointMovementGenerator<Player>::Initialize(Player&);
-template void PointMovementGenerator<Creature>::Finalize(Creature&);
+template void PointMovementGenerator<Creature>::Initialize(Creature&);
 template void PointMovementGenerator<Player>::Finalize(Player&);
+template void PointMovementGenerator<Creature>::Finalize(Creature&);
+template void PointMovementGenerator<Player>::Interrupt(Player&);
+template void PointMovementGenerator<Creature>::Interrupt(Creature&);
 template void PointMovementGenerator<Player>::Reset(Player&);
 template void PointMovementGenerator<Creature>::Reset(Creature&);
-template bool PointMovementGenerator<Player>::Update(Player &, const uint32 &);
-template bool PointMovementGenerator<Creature>::Update(Creature&, const uint32 &);
+template bool PointMovementGenerator<Player>::Update(Player &, const uint32 &diff);
+template bool PointMovementGenerator<Creature>::Update(Creature&, const uint32 &diff);
 
 void AssistanceMovementGenerator::Finalize(Unit &unit)
 {
@@ -116,7 +124,7 @@ void AssistanceMovementGenerator::Finalize(Unit &unit)
         unit.GetMotionMaster()->MoveSeekAssistanceDistract(sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY));
 }
 
-bool EffectMovementGenerator::Update(Unit &unit, const uint32&)
+bool EffectMovementGenerator::Update(Unit &unit, const uint32 &)
 {
     return !unit.movespline->Finalized();
 }
@@ -126,6 +134,15 @@ void EffectMovementGenerator::Finalize(Unit &unit)
     if (unit.GetTypeId() != TYPEID_UNIT)
         return;
 
-    if (unit.IsAIEnabled && unit.movespline->Finalized())
-        unit.ToCreature()->AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
+    if (((Creature&)unit).AI() && unit.movespline->Finalized())
+        ((Creature&)unit).AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
+
+    // Need restore previous movement since we have no proper states system
+    if (unit.isAlive() && !unit.hasUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_FLEEING))
+    {
+        if (Unit * victim = unit.getVictim())
+            unit.ToCreature()->AI()->AttackStart(victim);
+        else
+            unit.GetMotionMaster()->Initialize();
+    }
 }

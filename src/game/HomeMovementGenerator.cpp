@@ -30,7 +30,6 @@
 
 void HomeMovementGenerator<Creature>::Initialize(Creature & owner)
 {
-    owner.addUnitState(UNIT_STAT_EVADE);
     _setTargetLocation(owner);
 }
 
@@ -40,19 +39,25 @@ void HomeMovementGenerator<Creature>::Reset(Creature &)
 
 void HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
 {
-    if (owner.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+    if (owner.hasUnitState(UNIT_STAT_NOT_MOVE))
         return;
 
     Movement::MoveSplineInit init(owner);
     float x, y, z, o;
-    owner.GetHomePosition(x, y, z, o);
-    init.SetFacing(o);
+
+    // at apply we can select more nice return points base at current movegen
+    if (owner.GetMotionMaster()->empty() || !owner.GetMotionMaster()->top()->GetResetPosition(owner,x,y,z))
+    {
+        owner.GetRespawnCoord(x, y, z, &o);
+        init.SetFacing(o);
+    }
+
     init.MoveTo(x,y,z);
     init.SetWalk(false);
     init.Launch();
 
     arrived = false;
-    owner.clearUnitState(UNIT_STAT_ALL_STATE & ~UNIT_STAT_EVADE);
+    owner.clearUnitState(UNIT_STAT_ALL_STATE);
 }
 
 bool HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time_diff)
@@ -65,14 +70,8 @@ void HomeMovementGenerator<Creature>::Finalize(Creature& owner)
 {
     if (arrived)
     {
-        owner.clearUnitState(UNIT_STAT_EVADE);
         owner.SetWalk(true);
         owner.LoadCreaturesAddon(true);
-
-        if (owner.IsAIEnabled)
-        {
-            owner.AI()->MovementInform(HOME_MOTION_TYPE, RAND_MAX);
-            owner.AI()->JustReachedHome();
-        }
+        owner.AI()->JustReachedHome();
     }
 }

@@ -1178,7 +1178,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
             {
                 m_creature->CastSpell(tmpTarget, SPELL_WINDREAVER_FREEZE, false);
                 m_creature->StopMoving();
-                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MoveChase(tmpTarget, 15);
                 distCheckTimer = 5000;
             }
@@ -3854,7 +3854,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
                 float x, y, z = 0;
                 m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
                 m_creature->GetGroundPointAroundUnit(x, y, z, 10.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
-                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
                 MoveTimer = 2500;
             }
@@ -4477,7 +4477,7 @@ struct TRINITY_DLL_DECL mob_image_of_dementiaAI: public ScriptedAI
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200.0f, true))
             {
                 target->GetGroundPointAroundUnit(x, y, z, 10.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
-                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->Clear(false);
                 m_creature->SetSpeed(MOVE_RUN, 2.5, true);
                 m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
             }

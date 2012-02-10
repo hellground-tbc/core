@@ -614,4 +614,3 @@ void AddSC_boss_zuljin()
     newscript->GetAI = &GetAI_feather_vortexAI;
     newscript->RegisterSelf();
 }
-

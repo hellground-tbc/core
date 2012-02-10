@@ -522,7 +522,7 @@ struct TRINITY_DLL_DECL mob_aetherrayAI : public ScriptedAI
 
     void JustSummoned(Creature* summoned)
     {
-        summoned->GetMotionMaster()->MoveFollow(Unit::GetPlayer(PlayerGUID), PET_FOLLOW_DIST, m_creature->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+        summoned->GetMotionMaster()->MoveFollow(Unit::GetPlayer(PlayerGUID), PET_FOLLOW_DIST, m_creature->GetFollowAngle());
     }
 
     void UpdateAI(const uint32 diff)

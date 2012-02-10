@@ -275,9 +275,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
                 DoScriptText(YELL_INTRO_CHARGE, me);
                 me->SetInFront(pMadrigosa);
                 me->GetPosition(x, y, z);
-                float ground_Z;
-                ground_Z= me->GetTerrain()->GetHeight(x, y, MAX_HEIGHT, true);
-                me->GetMotionMaster()->MoveFall(ground_Z);
+                me->GetMotionMaster()->MoveFall();
                 IntroPhaseTimer = 3500;
                 ++IntroPhase;
                 break;  

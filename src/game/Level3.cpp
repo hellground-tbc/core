@@ -5812,76 +5812,67 @@ bool ChatHandler::HandleNpcChangeEntryCommand(const char *args)
 bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
 {
     Unit* unit = getSelectedUnit();
-    if (!unit)
+    if(!unit)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
         return false;
     }
 
-    PSendSysMessage(LANG_MOVEGENS_LIST,(unit->GetTypeId()==TYPEID_PLAYER ? "Player" : "Creature"),unit->GetGUIDLow());
+    PSendSysMessage(LANG_MOVEGENS_LIST,(unit->GetTypeId()==TYPEID_PLAYER ? "Player" : "Creature" ),unit->GetGUIDLow());
 
     MotionMaster* mm = unit->GetMotionMaster();
-
     float x,y,z;
     mm->GetDestination(x,y,z);
-
-    for (int i = 0; i < MAX_MOTION_SLOT; ++i)
+    for(MotionMaster::const_iterator itr = mm->begin(); itr != mm->end(); ++itr)
     {
-        MovementGenerator* mg = mm->GetMotionSlot(i);
-        if (!mg)
-        {
-            SendSysMessage("Empty");
-            continue;
-        }
-        switch (mg->GetMovementGeneratorType())
+        switch((*itr)->GetMovementGeneratorType())
         {
             case IDLE_MOTION_TYPE:          SendSysMessage(LANG_MOVEGENS_IDLE);          break;
             case RANDOM_MOTION_TYPE:        SendSysMessage(LANG_MOVEGENS_RANDOM);        break;
             case WAYPOINT_MOTION_TYPE:      SendSysMessage(LANG_MOVEGENS_WAYPOINT);      break;
-            case ANIMAL_RANDOM_MOTION_TYPE: SendSysMessage(LANG_MOVEGENS_ANIMAL_RANDOM); break;
             case CONFUSED_MOTION_TYPE:      SendSysMessage(LANG_MOVEGENS_CONFUSED);      break;
+
             case CHASE_MOTION_TYPE:
             {
                 Unit* target = NULL;
-                if (unit->ToPlayer())
-                    target = static_cast<ChaseMovementGenerator<Player> const*>(mg)->GetTarget();
+                if(unit->GetTypeId()==TYPEID_PLAYER)
+                    target = static_cast<ChaseMovementGenerator<Player> const*>(*itr)->GetTarget();
                 else
-                    target = static_cast<ChaseMovementGenerator<Creature> const*>(mg)->GetTarget();
+                    target = static_cast<ChaseMovementGenerator<Creature> const*>(*itr)->GetTarget();
 
                 if (!target)
                     SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
-                else if (target->ToPlayer())
+                else if (target->GetTypeId()==TYPEID_PLAYER)
                     PSendSysMessage(LANG_MOVEGENS_CHASE_PLAYER,target->GetName(),target->GetGUIDLow());
                 else
                     PSendSysMessage(LANG_MOVEGENS_CHASE_CREATURE,target->GetName(),target->GetGUIDLow());
-
                 break;
             }
             case FOLLOW_MOTION_TYPE:
             {
                 Unit* target = NULL;
-                if(unit->ToPlayer())
-                    target = static_cast<FollowMovementGenerator<Player> const*>(mg)->GetTarget();
+                if(unit->GetTypeId()==TYPEID_PLAYER)
+                    target = static_cast<FollowMovementGenerator<Player> const*>(*itr)->GetTarget();
                 else
-                    target = static_cast<FollowMovementGenerator<Creature> const*>(mg)->GetTarget();
+                    target = static_cast<FollowMovementGenerator<Creature> const*>(*itr)->GetTarget();
 
                 if (!target)
                     SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);
-                else if (target->ToPlayer())
+                else if (target->GetTypeId()==TYPEID_PLAYER)
                     PSendSysMessage(LANG_MOVEGENS_FOLLOW_PLAYER,target->GetName(),target->GetGUIDLow());
                 else
                     PSendSysMessage(LANG_MOVEGENS_FOLLOW_CREATURE,target->GetName(),target->GetGUIDLow());
                 break;
             }
             case HOME_MOTION_TYPE:
-            {
-                if (unit->ToUnit())
+                if(unit->GetTypeId()==TYPEID_UNIT)
+                {
                     PSendSysMessage(LANG_MOVEGENS_HOME_CREATURE,x,y,z);
+                }
                 else
                     SendSysMessage(LANG_MOVEGENS_HOME_PLAYER);
                 break;
-            }
             case FLIGHT_MOTION_TYPE:   SendSysMessage(LANG_MOVEGENS_FLIGHT);  break;
             case POINT_MOTION_TYPE:
             {
@@ -5892,7 +5883,7 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
             case DISTRACT_MOTION_TYPE: SendSysMessage(LANG_MOVEGENS_DISTRACT);  break;
             case EFFECT_MOTION_TYPE: SendSysMessage(LANG_MOVEGENS_EFFECT);  break;
             default:
-                PSendSysMessage(LANG_MOVEGENS_UNKNOWN,mg->GetMovementGeneratorType());
+                PSendSysMessage(LANG_MOVEGENS_UNKNOWN,(*itr)->GetMovementGeneratorType());
                 break;
         }
     }

@@ -37,17 +37,8 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     if (!i_target.isValid() || !i_target->IsInWorld())
         return;
 
-    if (owner.hasUnitState(UNIT_STAT_NOT_MOVE))
+    if (owner.hasUnitState(UNIT_STAT_NOT_MOVE | UNIT_STAT_CASTING_NOT_MOVE))
         return;
-
-    if (owner.IsNonMeleeSpellCasted(false, false, true))
-    {
-        if (owner.m_currentSpells[CURRENT_GENERIC_SPELL] && owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
-            return;
-
-        if (owner.m_currentSpells[CURRENT_CHANNELED_SPELL] && owner.m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
-            return;
-    }
 
     float x, y, z;
 
@@ -143,22 +134,12 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
         return true;
     }
 
-    // prevent movement while casting spells with cast time or channel time
-    if (owner.IsNonMeleeSpellCasted(false, false,  true))
+    if (owner.hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
     {
-        bool needToStop = false;
-        if (owner.m_currentSpells[CURRENT_GENERIC_SPELL] && owner.m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
-            needToStop = true;
-        else if (owner.m_currentSpells[CURRENT_CHANNELED_SPELL] && owner.m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
-            needToStop = true;
+        if (!owner.IsStopped())
+            owner.StopMoving();
 
-        if (needToStop)
-        {
-            if (!owner.IsStopped())
-                owner.StopMoving();
-
-            return true;
-        }
+        return true;
     }
 
     // prevent crash after creature killed pet
@@ -173,15 +154,16 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     {
         i_recheckDistance.Reset(50);
         //More distance let have better performance, less distance let have more sensitive reaction at target move.
-        float allowed_dist = i_target->GetObjectSize() + owner.GetObjectSize() + MELEE_RANGE - 0.5f;
-        float dist = (owner.movespline->FinalDestination() - G3D::Vector3(i_target->GetPositionX(),i_target->GetPositionY(),i_target->GetPositionZ())).squaredLength();
+        float allowed_dist = i_target->GetObjectBoundingRadius() + owner.GetObjectBoundingRadius()
+            + sWorld.getConfig(CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE);
+        float dist = (owner.movespline->FinalDestination() -
+            G3D::Vector3(i_target->GetPositionX(),i_target->GetPositionY(),i_target->GetPositionZ())).squaredLength();
         if (dist >= allowed_dist * allowed_dist)
             _setTargetLocation(owner);
     }
 
     if (owner.movespline->Finalized())
     {
-        static_cast<D*>(this)->MovementInform(owner);
         if (i_angle == 0.f && !owner.HasInArc(0.01f, i_target.getTarget()))
             owner.SetInFront(i_target.getTarget());
 
@@ -217,12 +199,19 @@ void ChaseMovementGenerator<Player>::Initialize(Player &owner)
 template<>
 void ChaseMovementGenerator<Creature>::Initialize(Creature &owner)
 {
+    owner.SetWalk(false);
     owner.addUnitState(UNIT_STAT_CHASE|UNIT_STAT_CHASE_MOVE);
     _setTargetLocation(owner);
 }
 
 template<class T>
 void ChaseMovementGenerator<T>::Finalize(T &owner)
+{
+    owner.clearUnitState(UNIT_STAT_CHASE|UNIT_STAT_CHASE_MOVE);
+}
+
+template<class T>
+void ChaseMovementGenerator<T>::Interrupt(T &owner)
 {
     owner.clearUnitState(UNIT_STAT_CHASE|UNIT_STAT_CHASE_MOVE);
 }
@@ -247,7 +236,7 @@ bool ChaseMovementGenerator<Player>::EnableWalking(Player &) const
 
 //-----------------------------------------------//
 template<>
-bool FollowMovementGenerator<Creature>::EnableWalking(Creature &) const
+bool FollowMovementGenerator<Creature>::EnableWalking(Creature &creature) const
 {
     return i_target.isValid() && i_target->IsWalking();
 }
@@ -300,22 +289,16 @@ void FollowMovementGenerator<T>::Finalize(T &owner)
 }
 
 template<class T>
-void FollowMovementGenerator<T>::Reset(T &owner)
+void FollowMovementGenerator<T>::Interrupt(T &owner)
 {
-    Initialize(owner);
+    owner.clearUnitState(UNIT_STAT_FOLLOW|UNIT_STAT_FOLLOW_MOVE);
+    _updateSpeed(owner);
 }
 
 template<class T>
-void FollowMovementGenerator<T>::MovementInform(T & /*unit*/)
+void FollowMovementGenerator<T>::Reset(T &owner)
 {
-}
-
-template<>
-void FollowMovementGenerator<Creature>::MovementInform(Creature &unit)
-{
-    // Pass back the GUIDLow of the target. If it is pet's owner then PetAI will handle
-    if (unit.AI())
-        unit.AI()->MovementInform(FOLLOW_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+    Initialize(owner);
 }
 
 //-----------------------------------------------//
@@ -332,11 +315,14 @@ template void ChaseMovementGenerator<Player>::_reachTarget(Player &);
 template void ChaseMovementGenerator<Creature>::_reachTarget(Creature &);
 template void ChaseMovementGenerator<Player>::Finalize(Player &);
 template void ChaseMovementGenerator<Creature>::Finalize(Creature &);
+template void ChaseMovementGenerator<Player>::Interrupt(Player &);
+template void ChaseMovementGenerator<Creature>::Interrupt(Creature &);
 template void ChaseMovementGenerator<Player>::Reset(Player &);
 template void ChaseMovementGenerator<Creature>::Reset(Creature &);
 
 template void FollowMovementGenerator<Player>::Finalize(Player &);
 template void FollowMovementGenerator<Creature>::Finalize(Creature &);
+template void FollowMovementGenerator<Player>::Interrupt(Player &);
+template void FollowMovementGenerator<Creature>::Interrupt(Creature &);
 template void FollowMovementGenerator<Player>::Reset(Player &);
 template void FollowMovementGenerator<Creature>::Reset(Creature &);
-template void FollowMovementGenerator<Player>::MovementInform(Player &unit);

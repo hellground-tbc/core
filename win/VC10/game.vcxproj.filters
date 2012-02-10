@@ -31,9 +31,6 @@
     <Filter Include="Artificial Intelligence\PlayerAI">
       <UniqueIdentifier>{f45ca68d-4ea9-4ba6-bf89-03e94fef2f60}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Movement Generators">
-      <UniqueIdentifier>{22b499ce-a879-41e4-906f-bbfc71a660be}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Spells/Skills">
       <UniqueIdentifier>{44255918-0b1a-4975-bdfc-37b8eff3634c}</UniqueIdentifier>
     </Filter>
@@ -63,6 +60,9 @@
     </Filter>
     <Filter Include="Anticheat">
       <UniqueIdentifier>{37c921ef-41b1-4e19-84e9-42eac5469f94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Movement">
+      <UniqueIdentifier>{22b499ce-a879-41e4-906f-bbfc71a660be}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -118,9 +118,6 @@
       <Filter>Objects</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\Item.cpp">
-      <Filter>Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\game\MotionMaster.cpp">
       <Filter>Objects</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\Object.cpp">
@@ -289,31 +286,31 @@
       <Filter>Artificial Intelligence\PlayerAI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\ConfusedMovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\FleeingMovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\HomeMovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\IdleMovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\MovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\PointMovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\RandomMovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\TargetedMovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\WaypointMovementGenerator.cpp">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\SkillDiscovery.cpp">
       <Filter>Spells/Skills</Filter>
@@ -544,6 +541,9 @@
     <ClCompile Include="..\..\src\game\PoolManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\MotionMaster.cpp">
+      <Filter>Movement</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -604,9 +604,6 @@
       <Filter>Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\ItemPrototype.h">
-      <Filter>Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\MotionMaster.h">
       <Filter>Objects</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\Object.h">
@@ -784,31 +781,31 @@
       <Filter>Artificial Intelligence\PlayerAI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\ConfusedMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\FleeingMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\HomeMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\IdleMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\MovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\PointMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\RandomMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\TargetedMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\WaypointMovementGenerator.h">
-      <Filter>Movement Generators</Filter>
+      <Filter>Movement</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\SkillDiscovery.h">
       <Filter>Spells/Skills</Filter>
@@ -1026,6 +1023,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\PoolManager.h">
       <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\MotionMaster.h">
+      <Filter>Movement</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

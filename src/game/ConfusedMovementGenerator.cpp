@@ -31,15 +31,20 @@
 template<class T>
 void ConfusedMovementGenerator<T>::Initialize(T &unit)
 {
-    i_nextMove = 1;
+    i_nextMove = 0;
 
     GenerateMovement(unit);
 
     unit.CastStop();
     unit.StopMoving();
-
-    unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.addUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
+}
+
+template<class T>
+void ConfusedMovementGenerator<T>::Interrupt(T &unit)
+{
+    // confused state still applied while movegen disabled
+    unit.clearUnitState(UNIT_STAT_CONFUSED_MOVE);
 }
 
 template<class T>
@@ -62,12 +67,15 @@ void ConfusedMovementGenerator<T>::Reset(T &unit)
 template<class T>
 bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 {
-    if (unit.hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DISTRACTED))
+    // ignore in case other no reaction state
+    if (unit.hasUnitState(UNIT_STAT_CAN_NOT_REACT & ~UNIT_STAT_CONFUSED))
         return true;
 
     if (i_nextMoveTime.Passed())
     {
+        // currently moving, update location
         unit.addUnitState(UNIT_STAT_CONFUSED_MOVE);
+
         if (unit.movespline->Finalized())
         {
             i_nextMove = urand(0, MAX_RANDOM_POINTS);
@@ -93,22 +101,19 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 template<>
 void ConfusedMovementGenerator<Player>::Finalize(Player &unit)
 {
-    unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.clearUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
 }
 
 template<>
 void ConfusedMovementGenerator<Creature>::Finalize(Creature &unit)
 {
-    unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit.clearUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
-
-    if (uint64 vGUID = unit.getVictimGUID())
-        unit.SetSelection(vGUID);
 }
 
 template void ConfusedMovementGenerator<Player>::Initialize(Player &player);
 template void ConfusedMovementGenerator<Creature>::Initialize(Creature &creature);
+template void ConfusedMovementGenerator<Player>::Interrupt(Player &player);
+template void ConfusedMovementGenerator<Creature>::Interrupt(Creature &creature);
 template void ConfusedMovementGenerator<Player>::Reset(Player &player);
 template void ConfusedMovementGenerator<Creature>::Reset(Creature &creature);
 template bool ConfusedMovementGenerator<Player>::Update(Player &player, const uint32 &diff);

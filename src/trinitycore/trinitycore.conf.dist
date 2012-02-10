@@ -1,4 +1,4 @@
-##########################################
+﻿##########################################
 # Trinity Core worldd configuration file #
 ##########################################
 [CoreConf]
@@ -1150,6 +1150,18 @@ Visibility.Notify.Period.InBGArenas   = 1000
 
 Visibility.Distance.ActiveObjectUpdate.Continents = 132
 Visibility.Distance.ActiveObjectUpdate.Instances = 132
+
+###################################################################################################################
+# MOVEMENT
+#
+#    Movement.RecalculateRange
+#        Minimal range after which creature will recalculate movement for chase/follow movegen, higher = less stress on CPU
+#        Default: 1 (yards)
+#          Range: 0-5 (yards)
+#
+###################################################################################################################
+
+Movement.RecalculateRange = 1
 
 ###################################################################################################################
 # SERVER RATES

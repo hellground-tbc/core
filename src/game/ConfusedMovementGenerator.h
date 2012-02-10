@@ -35,6 +35,7 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMediu
 
         void Initialize(T &);
         void Finalize(T &);
+        void Interrupt(T &);
         void Reset(T &);
         bool Update(T &, const uint32 &);
 
@@ -43,8 +44,7 @@ class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMediu
         MovementGeneratorType GetMovementGeneratorType() { return CONFUSED_MOTION_TYPE; }
 
     private:
-
-        TimeTracker i_nextMoveTime;
+        TimeTrackerSmall i_nextMoveTime;
         Position randomPosition[MAX_RANDOM_POINTS+1];
         uint32 i_nextMove;
 };

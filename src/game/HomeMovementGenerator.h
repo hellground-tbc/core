@@ -29,24 +29,21 @@ template <class T>
 class TRINITY_DLL_SPEC HomeMovementGenerator;
 
 template <>
-class TRINITY_DLL_SPEC HomeMovementGenerator<Creature>
-: public MovementGeneratorMedium< Creature, HomeMovementGenerator<Creature> >
+class TRINITY_DLL_SPEC HomeMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, HomeMovementGenerator<Creature> >
 {
     public:
-
         HomeMovementGenerator() : arrived(false) {}
         ~HomeMovementGenerator() {}
 
         void Initialize(Creature &);
         void Finalize(Creature &);
+        void Interrupt(Creature &) {}
         void Reset(Creature &);
         bool Update(Creature &, const uint32 &);
-
         MovementGeneratorType GetMovementGeneratorType() { return HOME_MOTION_TYPE; }
 
     private:
         void _setTargetLocation(Creature &);
-
         bool arrived;
 };
 

@@ -583,7 +583,7 @@ struct TRINITY_DLL_DECL boss_illidan_stormrageAI : public BossAI
             {
                 case EVENT_ILLIDAN_TRANSFORM_NO1:
                 {
-                    me->GetMotionMaster()->Clear();
+                    me->GetMotionMaster()->Clear(false);
 
                     DoScriptText(YELL_ILLIDAN_DEMON_FORM, me);
 
@@ -1432,7 +1432,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
                 if (m_canMelee)
                 {
                     m_canMelee = false;
-                    me->GetMotionMaster()->Clear();
+                    me->GetMotionMaster()->Clear(false);
 
                     if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
@@ -1464,7 +1464,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
             }
             case EVENT_MAIEV_CAGE_TRAP:
             {
-                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->Clear(false);
 
                 float x, y, z;
                 me->GetClosePoint(x, y, z, 0.0f, 25.0f, frand(0, 2*M_PI));
@@ -1483,7 +1483,7 @@ struct TRINITY_DLL_DECL boss_illidan_maievAI : public BossAI
             }
             case EVENT_MAIEV_END_FIGHT_SPEECH:
             {
-                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->Clear(false);
 
                 if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                 {

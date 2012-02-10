@@ -2712,6 +2712,15 @@ void SpellMgr::LoadSpellCustomAttr()
         if (spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x10000LL)
             spellInfo->SchoolMask = SPELL_SCHOOL_MASK_SHADOW;
 
+        // so channeled  spell can NOT be interrupted by movement :p
+        if (spellInfo->Effect[0] == SPELL_EFFECT_STUCK)
+        {
+            if (IsChanneledSpell(spellInfo))
+                spellInfo->ChannelInterruptFlags &= ~CHANNEL_FLAG_MOVEMENT;
+            else
+                spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
+        }
+
         LoadCustomSpellCooldowns(spellInfo);
 
         switch (i)

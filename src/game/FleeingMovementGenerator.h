@@ -25,14 +25,14 @@
 #include "MapManager.h"
 
 template<class T>
-class TRINITY_DLL_SPEC FleeingMovementGenerator
-: public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
+class TRINITY_DLL_SPEC FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:
         FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright), i_nextCheckTime(0) {}
 
         void Initialize(T &);
         void Finalize(T &);
+        void Interrupt(T &);
         void Reset(T &);
         bool Update(T &, const uint32 &);
 
@@ -59,8 +59,7 @@ class TRINITY_DLL_SPEC FleeingMovementGenerator
         TimeTracker i_nextCheckTime;
 };
 
-class TRINITY_DLL_SPEC TimedFleeingMovementGenerator
-: public FleeingMovementGenerator<Creature>
+class TRINITY_DLL_SPEC TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
 {
     public:
         TimedFleeingMovementGenerator(uint64 fright, uint32 time) :
@@ -76,4 +75,3 @@ class TRINITY_DLL_SPEC TimedFleeingMovementGenerator
 };
 
 #endif
-

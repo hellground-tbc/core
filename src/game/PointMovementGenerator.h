@@ -35,6 +35,7 @@ class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< 
 
         void Initialize(T &);
         void Finalize(T &);
+        void Interrupt(T &);
         void Reset(T &);
         bool Update(T &, const uint32 &);
 
@@ -65,11 +66,12 @@ class TRINITY_DLL_SPEC EffectMovementGenerator : public MovementGenerator
         explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) {}
         void Initialize(Unit &) {}
         void Finalize(Unit &unit);
+        void Interrupt(Unit &) {}
         void Reset(Unit &) {}
-        bool Update(Unit &u, const uint32&);
+        bool Update(Unit &u, const uint32 &);
         MovementGeneratorType GetMovementGeneratorType() { return EFFECT_MOTION_TYPE; }
 
-private:
+    private:
         uint32 m_Id;
 };
 

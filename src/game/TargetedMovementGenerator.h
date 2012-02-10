@@ -29,7 +29,8 @@ class TargetedMovementGeneratorBase
 {
     public:
         TargetedMovementGeneratorBase(Unit &target) { i_target.link(&target, this); }
-        void stopFollowing() { }
+        void stopFollowing() {}
+
     protected:
         FollowerReference i_target;
 };
@@ -48,6 +49,7 @@ class TargetedMovementGeneratorMedium
 
     public:
         bool Update(T &, const uint32 &);
+
         Unit* GetTarget() const { return i_target.getTarget(); }
 
         void unitSpeedChanged() { i_recalculateTravel=true; }
@@ -56,7 +58,7 @@ class TargetedMovementGeneratorMedium
     protected:
         void _setTargetLocation(T &);
 
-        TimeTrackerSmall i_recheckDistance;
+        TimeTracker i_recheckDistance;
         float i_offset;
         float i_angle;
         bool i_recalculateTravel : 1;
@@ -77,8 +79,8 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
 
         void Initialize(T &);
         void Finalize(T &);
+        void Interrupt(T &);
         void Reset(T &);
-        void MovementInform(T &){}
 
         static void _clearUnitStateMove(T &u) { u.clearUnitState(UNIT_STAT_CHASE_MOVE); }
         static void _addUnitStateMove(T &u)  { u.addUnitState(UNIT_STAT_CHASE_MOVE); }
@@ -101,14 +103,15 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
 
         void Initialize(T &);
         void Finalize(T &);
+        void Interrupt(T &);
         void Reset(T &);
-        void MovementInform(T &);
 
         static void _clearUnitStateMove(T &u) { u.clearUnitState(UNIT_STAT_FOLLOW_MOVE); }
         static void _addUnitStateMove(T &u)  { u.addUnitState(UNIT_STAT_FOLLOW_MOVE); }
         bool EnableWalking(T &) const;
         bool _lostTarget(T &) const { return false; }
         void _reachTarget(T &) {}
+
     private:
         void _updateSpeed(T &u);
 };
