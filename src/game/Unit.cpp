@@ -2519,6 +2519,9 @@ float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
     if (spellProto->spellLevel <= 0)
         return 1.0f;
 
+    if (spellProto->Id == 28880) // Gift of Naaru, TODO: more general check for racial spells
+        return 1.0f
+
     float LvlPenalty = 0.0f;
 
     if (spellProto->spellLevel < 20)
