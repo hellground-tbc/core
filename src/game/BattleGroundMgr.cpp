@@ -1063,7 +1063,7 @@ void BattleGroundMgr::Update(uint32 diff)
         {
             BattleGroundQueueTypeId bgQueueTypeId = BattleGroundQueueTypeId(scheduled[i] >> 16);
             BattleGroundTypeId bgTypeId = BattleGroundTypeId((scheduled[i] >> 8) & 255);
-            BattleGroundBracketId bracket_id = BattleGroundBracketId(scheduled[i] & 256);
+            BattleGroundBracketId bracket_id = BattleGroundBracketId(scheduled[i] & 255);
             m_BattleGroundQueues[bgQueueTypeId].Update(bgTypeId, bracket_id);
         }
     }
