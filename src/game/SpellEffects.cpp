@@ -6635,20 +6635,11 @@ void Spell::EffectSummonTotem(uint32 i)
 
     float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
 
-    float x,y,z;
-
-    if (((Player*)m_caster)->InArena())
-        m_caster->GetPosition(x,y,z);
-    else
-        m_caster->GetClosePoint(x, y, z, 0.0f ,2.0f, angle);
-
-    // totem must be at same Z in case swimming caster and etc.
-    if (fabs(z - m_caster->GetPositionZ()) > 5)
-        z = m_caster->GetPositionZ();
+    Position dest;
+    m_caster->GetValidPointInAngle(dest, 2.0f, angle, true);
 
     Totem* pTotem = new Totem;
-
-    if (!pTotem->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team, x, y, z, m_caster->GetOrientation()))
+    if (!pTotem->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team, dest.x, dest.y, dest.z, m_caster->GetOrientation()))
     {
         delete pTotem;
         return;
