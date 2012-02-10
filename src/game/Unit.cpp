@@ -12415,63 +12415,45 @@ void Unit::SetControlled(bool apply, UnitState state)
             return;
 
         addUnitState(state);
-        switch (state)
-        {
-            case UNIT_STAT_STUNNED:
-                SetStunned(true);
-                CastStop();
-                break;
-            case UNIT_STAT_ROOT:
-                if (!hasUnitState(UNIT_STAT_STUNNED))
-                    SetRooted(true);
-
-                break;
-            case UNIT_STAT_CONFUSED:
-                if (!hasUnitState(UNIT_STAT_STUNNED))
-                    SetConfused(true);
-
-                break;
-            case UNIT_STAT_FLEEING:
-                if (!hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CONFUSED))
-                {
-                    SetFeared(true);
-                    CastStop();
-                }
-                break;
-            default:
-                break;
-        }
     }
     else
-    {
-        switch (state)
-        {
-            case UNIT_STAT_STUNNED: if (HasAuraType(SPELL_AURA_MOD_STUN))    return;
-                                    else    SetStunned(false);    break;
-            case UNIT_STAT_ROOT:    if (HasAuraType(SPELL_AURA_MOD_ROOT))    return;
-                                    else    SetRooted(false);     break;
-            case UNIT_STAT_CONFUSED:if(HasAuraType(SPELL_AURA_MOD_CONFUSE)) return;
-                                    else    SetConfused(false);   break;
-            case UNIT_STAT_FLEEING: if (HasAuraType(SPELL_AURA_MOD_FEAR))    return;
-                                    else    SetFeared(false);     break;
-            default: return;
-        }
-
         clearUnitState(state);
 
-        if (hasUnitState(UNIT_STAT_STUNNED))
-            SetStunned(true);
-        else
-        {
-            if (hasUnitState(UNIT_STAT_ROOT))
-                SetRooted(true);
+    switch (state)
+    {
+        case UNIT_STAT_STUNNED:
+            SetStunned(apply);
+            break;
+        case UNIT_STAT_ROOT:
+            SetRooted(apply);
+            break;
+        case UNIT_STAT_CONFUSED:
+            SetConfused(apply);
+            break;
+        case UNIT_STAT_FLEEING:
+            if (apply && HasAuraType(SPELL_AURA_MOD_CONFUSE))
+                break;
 
-            if (hasUnitState(UNIT_STAT_CONFUSED))
-                SetConfused(true);
-            else if (hasUnitState(UNIT_STAT_FLEEING))
-                SetFeared(true);
-        }
+            SetFeared(apply);
+            break;
+        default:
+            break;
     }
+
+    if (apply)
+        return;
+
+    if (HasAuraType(SPELL_AURA_MOD_STUN))
+        SetStunned(true);
+
+    if (HasAuraType(SPELL_AURA_MOD_ROOT))
+        SetRooted(true);
+
+    if (HasAuraType(SPELL_AURA_MOD_FEAR))
+        SetFeared(true);
+
+    if (HasAuraType(SPELL_AURA_MOD_CONFUSE))
+        SetConfused(true);
 }
 
 void Unit::SetStunned(bool apply)
@@ -12565,6 +12547,8 @@ void Unit::SetFeared(bool apply)
         if (HasAuraType(SPELL_AURA_PREVENTS_FLEEING))
             return;
 
+        CastStop();
+
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
 
         GetMotionMaster()->MovementExpired(false);
@@ -12590,7 +12574,7 @@ void Unit::SetFeared(bool apply)
             Creature* c = ToCreature();
             // restore appropriate movement generator
             if (getVictim())
-                c->AI()->AttackStart(getVictim());
+                GetMotionMaster()->MoveChase(getVictim());
             else
                 GetMotionMaster()->Initialize();
         }
@@ -12631,6 +12615,7 @@ void Unit::SetConfused(bool apply)
 {
     if (apply)
     {
+        CastStop();
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
         GetMotionMaster()->MoveConfused();
     }
@@ -12644,7 +12629,7 @@ void Unit::SetConfused(bool apply)
         {
             // restore appropriate movement generator
             if (getVictim())
-                ToCreature()->AI()->AttackStart(getVictim());
+                GetMotionMaster()->MoveChase(getVictim());
             else
                 GetMotionMaster()->Initialize();
         }

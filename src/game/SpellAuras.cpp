@@ -3862,7 +3862,7 @@ void Aura::HandleModConfuse(bool apply, bool Real)
     if (!Real)
         return;
 
-    m_target->SetConfused(apply);
+    m_target->SetControlled(apply, UNIT_STAT_CONFUSED);
 }
 
 void Aura::HandleModFear(bool apply, bool Real)
@@ -3870,7 +3870,7 @@ void Aura::HandleModFear(bool apply, bool Real)
     if (!Real)
         return;
 
-    m_target->SetFeared(apply);
+    m_target->SetControlled(apply, UNIT_STAT_FLEEING);
 }
 
 void Aura::HandleFeignDeath(bool apply, bool Real)
@@ -4052,7 +4052,7 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
     if (!Real)
         return;
 
-    m_target->SetStunned(apply);
+    m_target->SetControlled(apply, UNIT_STAT_STUNNED);
 }
 
 void Aura::HandleModStealth(bool apply, bool Real)
@@ -4227,7 +4227,7 @@ void Aura::HandleAuraModRoot(bool apply, bool Real)
     if (!Real)
         return;
 
-    m_target->SetRooted(apply);
+    m_target->SetControlled(apply, UNIT_STAT_ROOT);
 }
 
 void Aura::HandleAuraModSilence(bool apply, bool Real)

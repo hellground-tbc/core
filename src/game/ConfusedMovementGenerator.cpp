@@ -35,7 +35,6 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
 
     GenerateMovement(unit);
 
-    unit.CastStop();
     unit.StopMoving();
     unit.addUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
 }
