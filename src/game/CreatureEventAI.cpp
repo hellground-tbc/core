@@ -510,6 +510,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                                 AttackDistance = 0.0f;
                                 AttackAngle = 0.0f;
 
+                                m_creature->GetMotionMaster()->Clear(false);
                                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
                             }
                         }
@@ -572,6 +573,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                                 AttackDistance = 0.0f;
                                 AttackAngle = 0.0f;
 
+                                m_creature->GetMotionMaster()->Clear(false);
                                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
                             }
                         }
@@ -671,6 +673,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                     if (Unit* victim = m_creature->getVictim())
                         m_creature->SendMeleeAttackStart(victim);
 
+                m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
             }
             else
@@ -679,6 +682,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                     if (Unit* victim = m_creature->getVictim())
                         m_creature->SendMeleeAttackStop(victim);
 
+                m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MoveIdle();
             }
             break;
@@ -739,6 +743,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
 
             if (CombatMovementEnabled)
             {
+                m_creature->GetMotionMaster()->Clear(false);
                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), AttackDistance, AttackAngle);
             }
             break;
@@ -1116,6 +1121,7 @@ void CreatureEventAI::AttackStart(Unit *who)
         else
         {
             m_creature->GetMotionMaster()->MoveIdle();
+            m_creature->StopMoving();
         }
     }
 }
@@ -1217,7 +1223,10 @@ void CreatureEventAI::UpdateAI(const uint32 diff)
                                 if (m_creature->IsInRange(m_creature->getVictim(),(float)(*i).Event.range.minDist,(float)(*i).Event.range.maxDist))
                                 {
                                     if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE)
+                                    {
+                                        m_creature->GetMotionMaster()->Clear(false);
                                         m_creature->GetMotionMaster()->MoveIdle();
+                                    }
 
                                     ProcessEvent(*i);
                                 }

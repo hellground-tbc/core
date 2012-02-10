@@ -80,7 +80,7 @@ void PetAI::_stopAttack()
     if (!m_creature->isAlive())
     {
         DEBUG_LOG("Creature stoped attacking cuz his dead [guid=%u]", m_creature->GetGUIDLow());
-        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->Clear(false);
         m_creature->GetMotionMaster()->MoveIdle();
         m_creature->CombatStop();
         m_creature->getHostilRefManager().deleteReferences();
@@ -102,7 +102,7 @@ void PetAI::UpdateMotionMaster()
     else
     {
         m_creature->clearUnitState(UNIT_STAT_FOLLOW);
-        m_creature->GetMotionMaster()->Clear();
+        m_creature->GetMotionMaster()->Clear(false);
         m_creature->GetMotionMaster()->MoveIdle();
     }
 }
@@ -375,7 +375,7 @@ void ImpAI::UpdateAI(const uint32 diff)
         if (dist < 30 && m_chasing)
         {
             m_creature->clearUnitState(UNIT_STAT_FOLLOW);
-            m_creature->GetMotionMaster()->Clear();
+            m_creature->GetMotionMaster()->Clear(false);
             m_creature->GetMotionMaster()->MoveIdle();
             m_chasing = false;
         }
