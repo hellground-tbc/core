@@ -2376,7 +2376,7 @@ void Spell::cancel()
 
 void Spell::cast(bool skipCheck)
 {
-    if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
+    if (m_casttime && m_caster->GetTypeId() == TYPEID_UNIT && m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
         m_caster->StopMoving();
 
     SpellEntry const* spellInfo = sSpellStore.LookupEntry(m_spellInfo->Id);
