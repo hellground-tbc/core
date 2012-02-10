@@ -12443,17 +12443,17 @@ void Unit::SetControlled(bool apply, UnitState state)
     if (apply)
         return;
 
-    if (HasAuraType(SPELL_AURA_MOD_STUN))
-        SetStunned(true);
-
-    if (HasAuraType(SPELL_AURA_MOD_ROOT))
-        SetRooted(true);
-
-    if (HasAuraType(SPELL_AURA_MOD_FEAR))
+    if (HasAuraType(SPELL_AURA_MOD_FEAR) && !hasUnitState(UNIT_STAT_FLEEING | UNIT_STAT_CONFUSED))
         SetFeared(true);
 
-    if (HasAuraType(SPELL_AURA_MOD_CONFUSE))
+    if (HasAuraType(SPELL_AURA_MOD_CONFUSE) && !hasUnitState(UNIT_STAT_CONFUSED))
         SetConfused(true);
+
+    if (HasAuraType(SPELL_AURA_MOD_STUN) && !hasUnitState(UNIT_STAT_STUNNED))
+        SetStunned(true);
+
+    if (HasAuraType(SPELL_AURA_MOD_ROOT) && !hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
+        SetRooted(true);
 }
 
 void Unit::SetStunned(bool apply)
@@ -12466,9 +12466,11 @@ void Unit::SetStunned(bool apply)
 
         // Creature specific
         if (GetTypeId() != TYPEID_PLAYER)
-            ((Creature*)this)->StopMoving();
+            ToCreature()->StopMoving();
         else
             SetUnitMovementFlags(MOVEFLAG_NONE);    //Clear movement flags
+
+        SetStandState(UNIT_STAND_STATE_STAND);
 
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8);
         data << GetPackGUID();
@@ -12500,8 +12502,7 @@ void Unit::SetRooted(bool apply)
     uint32 apply_stat = UNIT_STAT_ROOT;
     if (apply)
     {
-        SetFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
-
+        //SetFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
         if (GetTypeId() == TYPEID_PLAYER)
         {
             SetUnitMovementFlags(MOVEFLAG_NONE);
@@ -12512,12 +12513,11 @@ void Unit::SetRooted(bool apply)
             SendMessageToSet(&data,true);
         }
         else
-            ((Creature *)this)->StopMoving();
+            StopMoving();
     }
     else
     {
-        RemoveFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
-
+        //RemoveFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
         if (!hasUnitState(UNIT_STAT_STUNNED))      // prevent allow move if have also stun effect
         {
             if (GetTypeId() == TYPEID_PLAYER)
@@ -12617,6 +12617,8 @@ void Unit::SetConfused(bool apply)
     {
         CastStop();
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
+
+        GetMotionMaster()->MovementExpired(false);
         GetMotionMaster()->MoveConfused();
     }
     else

@@ -141,7 +141,7 @@ void EffectMovementGenerator::Finalize(Unit &unit)
     if (unit.isAlive() && !unit.hasUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_FLEEING))
     {
         if (Unit * victim = unit.getVictim())
-            unit.ToCreature()->AI()->AttackStart(victim);
+            unit.GetMotionMaster()->MoveChase(victim);
         else
             unit.GetMotionMaster()->Initialize();
     }
