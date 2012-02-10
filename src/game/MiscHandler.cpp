@@ -268,7 +268,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
             continue;
 
         uint32 pzoneid = itr->second->GetCachedZone();
-        if (sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA))
+        if (!GetPlayer()->isGameMaster() && sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA))
         {
             if (itr->second->InArena())
             {
