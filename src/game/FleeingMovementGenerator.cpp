@@ -58,8 +58,6 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
     Position temp;
 
     float angle = i_cur_angle;
-    float distance = 8.0f;
-
     if (roll_chance_i(33))
     {
         switch (urand(1, 7))
@@ -89,7 +87,10 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
     }
 
     // destination point
-    owner.GetValidPointInAngle(temp, distance, angle, true, true);
+    owner.GetValidPointInAngle(temp, 8.0f, angle, true, true);
+    x = i_dest_x = temp.x;
+    y = i_dest_y = temp.y;
+    z = i_dest_z = temp.z;
     return true;
 }
 
