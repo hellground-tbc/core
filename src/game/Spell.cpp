@@ -477,12 +477,8 @@ void Spell::FillTargetMap()
                         AddUnitTarget(m_caster, i);
                     break;
                 case SPELL_EFFECT_SUMMON_PLAYER:
-                    if (m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->GetSelection())
-                    {
-                        Player* target = objmgr.GetPlayer(((Player*)m_caster)->GetSelection());
-                        if (target)
-                            AddUnitTarget(target, i);
-                    }
+                    if (m_targets.getUnitTarget())
+                        AddUnitTarget(m_targets.getUnitTarget(), i);
                     break;
                 case SPELL_EFFECT_RESURRECT_NEW:
                     if (m_targets.getUnitTarget())
@@ -4243,8 +4239,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!dynamic_cast<Player *>(m_caster)->GetSelection())
                     return SPELL_FAILED_BAD_TARGETS;
 
-                Player* target = objmgr.GetPlayer(dynamic_cast<Player *>(m_caster)->GetSelection());
-                if (!target || m_caster == target || !target->IsInSameRaidWith(dynamic_cast<Player *>(m_caster)))
+                Player* target = m_targets.getUnitTarget()->ToPlayer();
+                if (!target || m_caster == target || !target->IsInSameGroupWith(dynamic_cast<Player *>(m_caster)))
                     return SPELL_FAILED_BAD_TARGETS;
 
                 if (m_caster->ToPlayer() && m_caster->ToPlayer()->GetBattleGround())

@@ -7557,6 +7557,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
             {
                 pGameObj->AddUniqueUse((Player*)m_caster);
                 m_caster->AddGameObject(pGameObj);          // will removed at spell cancel
+                pGameObj->SetTarget(((Player*)m_caster)->GetSelection());
             }
             break;
         }

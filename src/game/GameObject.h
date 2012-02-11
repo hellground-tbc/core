@@ -517,6 +517,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
                 case GAMEOBJECT_TYPE_GOOBER:     return GetGOInfo()->goober.consumable;
                 case GAMEOBJECT_TYPE_FLAGSTAND:  return GetGOInfo()->flagstand.noDamageImmune;
                 case GAMEOBJECT_TYPE_FLAGDROP:   return GetGOInfo()->flagdrop.noDamageImmune;
+                case GAMEOBJECT_TYPE_SUMMONING_RITUAL:  return !GetGOInfo()->summoningRitual.ritualPersistent;
                 default: return true;
             }
         }
@@ -564,6 +565,9 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
 
         float GetObjectBoundingRadius() const;              // overwrite WorldObject version
+
+        uint64 GetTarget() { return m_target; }
+        void SetTarget(uint64 targetGUID) { m_target = targetGUID; }
 
         void Use(Unit* user);
 
@@ -659,6 +663,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
 
         void HandleNonDbcSpell(uint32 spellId, Player* pUser);
     private:
+        uint64      m_target;
         void SwitchDoorOrButton();
         void Activate();
         void Reset();

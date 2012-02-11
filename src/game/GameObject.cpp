@@ -420,13 +420,68 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                         }
                     }
                     break;
+                case GAMEOBJECT_TYPE_SUMMONING_RITUAL:
+                {
+                    if (!m_unique_users.empty())
+                    {
+                        std::set<uint32>::iterator i = m_unique_users.begin();
+                        for(; i != m_unique_users.end(); i++)
+                        {    
+                            Unit* caster = Unit::GetUnit(*this, uint64(*i));
+                            if (!(caster && caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)))
+                            {
+                                m_lootState = GO_JUST_DEACTIVATED;
+                                break;
+                            }
+                        }
+                        SendGameObjectCustomAnim(GetGUID());
+                    }
+                    else
+                        m_lootState = GO_JUST_DEACTIVATED;
+                    break;
+                }
             }
             break;
         }
         case GO_JUST_DEACTIVATED:
         {
+            switch (GetGoType())
+            {
+                case GAMEOBJECT_TYPE_SUMMONING_RITUAL:
+                {
+                    if(m_target)
+                    {
+                        if(Player* target = Player::GetPlayer(m_target))
+                        {
+                            if(GetGOInfo()->summoningRitual.spellId == 7720)
+                            {
+                                target->SummonIfPossible(false);
+                                WorldPacket data(SMSG_SUMMON_CANCEL, 0);
+                                //data << uint64(GetOwnerGUID());                    // summoner guid
+                                //data << uint32(zoneid);                                 // summoner zone
+                                target->GetSession()->SendPacket(&data);
+
+                            }
+                        }
+                    }
+                    std::set<uint32>::iterator i = m_unique_users.begin();
+                    for(; i != m_unique_users.end(); i++)
+                    {    
+                        if (Unit* caster = Unit::GetUnit(*this, uint64(*i)))
+                        {
+                            if (caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                            {
+                                caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+                                caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
             if(GetDespawnPossibility())
                 Despawn();
+            break;
         }
     }
 }
@@ -1165,39 +1220,35 @@ void GameObject::Use(Unit* user)
             if (!pPlayer)
                 return;
 
+            Unit* owner = GetOwner();
             GameObjectInfo const* info = GetGOInfo();
-            if(Unit* owner = GetOwner())
+            
+            if(owner)
             {
-                spellCaster = owner;
                 if (owner->GetTypeId()!=TYPEID_PLAYER)
                     return;
 
+                spellCaster = owner;
                 // accept only use by player from same group for caster except caster itself
                 if (((Player*)owner)==pPlayer || !((Player*)owner)->IsInSameRaidWith(pPlayer))
                     return;
             }
+            
+            m_lootState = GO_ACTIVATED;
+
             AddUniqueUse(pPlayer);
+            if(info->summoningRitual.animSpell)
+                pPlayer->CastSpell(pPlayer, info->summoningRitual.animSpell, false);
+            else
+                pPlayer->CastSpell(pPlayer, 32783, false);
 
-            pPlayer->CastSpell(pPlayer, info->summoningRitual.animSpell, true);
-            Activate();
-            // full amount unique participants including original summoner
-            if (GetUniqueUseCount() < info->summoningRitual.reqParticipants)
-                return;
+            if(m_unique_users.size() == GetGOInfo()->summoningRitual.reqParticipants)
+            {
+                if(Player* target = Player::GetPlayer(m_target))
+                    spellCaster->CastSpell(target, info->summoningRitual.spellId, true);
+            }
 
-            spellId = info->summoningRitual.spellId;
-
-            // can be deleted now
-            SetLootState(GO_JUST_DEACTIVATED);
-
-            if (!spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-                break;
-
-            // finish spell
-            spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-            spellCaster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
-
-            // go to end function to spell casting
-            break;
+            return;
         }
         case GAMEOBJECT_TYPE_SPELLCASTER:                   //22
         {
@@ -1234,7 +1285,7 @@ void GameObject::Use(Unit* user)
             Player* targetPlayer = ObjectAccessor::FindPlayer(player->GetSelection());
 
             // accept only use by player from same group for caster except caster itself
-            if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameRaidWith(player))
+            if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameGroupWith(player))
                 return;
 
             //required lvl checks!
