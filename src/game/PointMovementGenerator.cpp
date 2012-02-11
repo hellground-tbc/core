@@ -81,6 +81,15 @@ void PointMovementGenerator<T>::Finalize(T &unit)
 {
     unit.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
 
+    // Need restore previous movement since we have no proper states system
+    if (unit.GetTypeId() == TYPEID_UNIT && unit.isAlive() && !unit.hasUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_FLEEING))
+    {
+        if (Unit * victim = unit.getVictim())
+            unit.GetMotionMaster()->MoveChase(victim);
+        else
+            unit.GetMotionMaster()->Initialize();
+    }
+
     if (unit.movespline->Finalized())
         MovementInform(unit);
 }
