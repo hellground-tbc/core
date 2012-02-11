@@ -2828,8 +2828,17 @@ void Spell::update(uint32 difftime)
     if (m_timer != 0 && m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE) && !m_caster->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR))
     {
         // add little offset for creature stop movement
-        if (!m_caster->IsInRange2d(m_cast.x, m_cast.y, 0.0f, 1.5f) && !IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
-            cancel();
+        if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
+        {
+             bool moved = false;
+             if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                 moved = (m_cast.x != m_caster->GetPositionX() || m_cast.y != m_caster->GetPositionY() || m_cast.z != m_caster->GetPositionZ());
+             else // little offset for creatures (difference comes from creaturerelocation called after queing spell event
+                 moved = m_caster->GetExactDist2dSq(m_cast.x, m_cast.y) > 0.5f;
+
+            if (moved)
+                cancel();
+        }
     }
 
     switch (m_spellState)
