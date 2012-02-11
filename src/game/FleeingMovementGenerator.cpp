@@ -88,9 +88,9 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
 
     // destination point
     owner.GetValidPointInAngle(temp, 8.0f, angle, true, true);
-    x = i_dest_x = temp.x;
-    y = i_dest_y = temp.y;
-    z = i_dest_z = temp.z;
+    x = temp.x;
+    y = temp.y;
+    z = temp.z;
     return true;
 }
 

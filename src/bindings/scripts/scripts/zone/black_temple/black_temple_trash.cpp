@@ -4288,6 +4288,10 @@ struct TRINITY_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
 
     void JustDied(Unit* killer)
     {
+        float x,y,z;
+        m_creature->GetRespawnCoord(x, y, z);
+        m_creature->Relocate(x,y,z);
+
         m_creature->RemoveCorpse();
     }
 
@@ -4331,6 +4335,10 @@ struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
 
     void JustDied(Unit* killer)
     {
+        float x,y,z;
+        m_creature->GetRespawnCoord(x, y, z);
+        m_creature->Relocate(x,y,z);
+
         m_creature->RemoveCorpse();
     }
 
