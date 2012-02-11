@@ -303,10 +303,11 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z)
 
 void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id)
 {
-    if (m_owner->GetTypeId() == TYPEID_PLAYER)
-        Mutate(new PointMovementGenerator<Player>(id,x,y,z,speed));
-    else
-        Mutate(new PointMovementGenerator<Creature>(id,x,y,z,speed));
+    Movement::MoveSplineInit init(*m_owner);
+    init.MoveTo(x, y, z);
+    init.SetVelocity(speed);
+    init.Launch();
+    Mutate(new EffectMovementGenerator(id));
 }
 
 void MotionMaster::MoveSeekAssistance(float x, float y, float z)
