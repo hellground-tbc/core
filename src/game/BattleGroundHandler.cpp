@@ -150,7 +150,7 @@ void WorldSession::HandleBattleGroundJoinOpcode(WorldPacket & recv_data )
         if (!grp)
             return;
         uint32 err = grp->CanJoinBattleGroundQueue(bgTypeId, bgQueueTypeId, 0, bg->GetMaxPlayersPerTeam(), false, 0);
-        isPremade = sWorld.getConfig(CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH) && (grp->GetMembersCount() >= bg->GetMinPlayersPerTeam());
+        isPremade = sWorld.getConfig(CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH) && (grp->GetMembersCount() >= bg->GetMaxPlayersPerTeam()*0.6f);
         if (err != BG_JOIN_ERR_OK)
         {
             SendBattleGroundOrArenaJoinError(err);
