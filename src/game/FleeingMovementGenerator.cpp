@@ -57,57 +57,40 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
 {
     Position temp;
 
-    float angle = 0.0f;
+    float angle = i_cur_angle;
     float distance = 8.0f;
 
-    //primitive path-finding
-    for (uint8 i = 0; i < 8; ++i)
+    if (roll_chance_i(33))
     {
-        angle = i_cur_angle;
-
-        if (roll_chance_i(33))
+        switch (urand(1, 7))
         {
-            switch (urand(1, 7))
-            {
-                case 1:
-                    angle = i_cur_angle + M_PI/4.0f;
-                    break;
-                case 2:
-                    angle = i_cur_angle + M_PI/2.0f;
-                    break;
-                case 3:
-                    angle = i_cur_angle - M_PI/4.0f;
-                    break;
-                case 4:
-                    angle = i_cur_angle - M_PI/2.0f;
-                    break;
-                case 5:
-                    angle = i_cur_angle + M_PI*3/4.0f;
-                    break;
-                case 6:
-                    angle = i_cur_angle - M_PI*3/4.0f;
-                    break;
-                case 7:
-                    angle = i_cur_angle + M_PI;
-                    break;
-            }
+            case 1:
+                angle = i_cur_angle + M_PI/4.0f;
+                break;
+            case 2:
+                angle = i_cur_angle + M_PI/2.0f;
+                break;
+            case 3:
+                angle = i_cur_angle - M_PI/4.0f;
+                break;
+            case 4:
+                angle = i_cur_angle - M_PI/2.0f;
+                break;
+            case 5:
+                angle = i_cur_angle + M_PI*3/4.0f;
+                break;
+            case 6:
+                angle = i_cur_angle - M_PI*3/4.0f;
+                break;
+            case 7:
+                angle = i_cur_angle + M_PI;
+                break;
         }
-
-        // destination point
-        owner.GetValidPointInAngle(temp, distance, angle, true);
-
-        if (i_dest_x != temp.x || i_dest_y != temp.y)
-        {
-            x = i_dest_x = temp.x;
-            y = i_dest_y = temp.y;
-            z = i_dest_z = temp.z;
-            return true;
-        }
-
-        distance /= 2;
     }
 
-    return false;
+    // destination point
+    owner.GetValidPointInAngle(temp, distance, angle, true, true);
+    return true;
 }
 
 template<class T>

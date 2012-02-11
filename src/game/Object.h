@@ -455,7 +455,7 @@ class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
         void UpdateAllowedPositionZ(float x, float y, float &z) const;
 
         void GetRandomPoint(float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const;
-        void GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePo);
+        void GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePo, bool ignoreLOSOffset = false);
 
         void SetMapId(uint32 newMap) { m_mapId = newMap; m_map = NULL; }
         uint32 GetMapId() const { return m_mapId; }

@@ -1283,7 +1283,7 @@ void WorldObject::GetRandomPoint(float x, float y, float z, float distance, floa
 }
 
 // this will find point in LOS before collision occur
-void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePos)
+void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePos, bool ignoreLOSOffset)
 {
     angle += GetOrientation();
 
@@ -1301,7 +1301,13 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     dest.z = 1.0f +fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
 
     // collision occured
-    if (VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, 0.0f))
+    bool result = false;
+    if (ignoreLOSOffset)
+        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +0.5f, dest.x, dest.y, dest.z, -0.5f);
+    else
+        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, -0.5f);
+
+    if (result)
     {
         // move back a bit
         dest.x -= 1.0f * cos(angle);
@@ -1331,7 +1337,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
 
     Trinity::NormalizeMapCoord(pos.x);
     Trinity::NormalizeMapCoord(pos.y);
-    pos.z = 0.5f + GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
+    pos.z = 0.666f + GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
