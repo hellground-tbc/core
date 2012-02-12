@@ -1303,7 +1303,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     // collision occured
     bool result = false;
     if (ignoreLOSOffset)
-        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +0.5f, dest.x, dest.y, dest.z, -0.5f);
+        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +0.5f, dest.x, dest.y, dest.z, -1.5f);
     else
         result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, -0.5f);
 
@@ -1319,7 +1319,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     for (int j = 0; j < 10; ++j)
     {
         // do not allow too big z changes
-        if (fabs(pos.z - dest.z) > 6.0f)
+        if (fabs(pos.z - dest.z) > 5.0f)
         {
             dest.x -= step * cos(angle);
             dest.y -= step * sin(angle);
@@ -1338,6 +1338,10 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     Trinity::NormalizeMapCoord(pos.x);
     Trinity::NormalizeMapCoord(pos.y);
     pos.z = 0.666f + GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
+
+    // we do NOT love micromovement :p
+    if (IsInRange2d(pos.x, pos.y, 0.0f, 1.5f))
+        GetPosition(pos);
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
