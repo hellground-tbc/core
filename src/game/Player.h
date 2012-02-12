@@ -937,7 +937,7 @@ class TRINITY_DLL_SPEC Player : public Unit
             m_summon_y = y;
             m_summon_z = z;
         }
-        void SummonIfPossible(bool agree);
+        void SummonIfPossible(bool agree, uint64 summonerGUID);
 
         bool Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId);
 

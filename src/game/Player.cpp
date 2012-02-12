@@ -18992,8 +18992,17 @@ void Player::UpdateForQuestsGO()
     GetSession()->SendPacket(&packet);
 }
 
-void Player::SummonIfPossible(bool agree)
+void Player::SummonIfPossible(bool agree, uint64 summonerGUID)
 {
+    if(Unit* summoner = Unit::GetUnit(summonerGUID))
+    {
+        if (summoner->m_currentSpells[CURRENT_CHANNELED_SPELL])
+        {
+            summoner->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+            summoner->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+        }
+    }
+
     if (!agree)
     {
         m_summon_expire = 0;

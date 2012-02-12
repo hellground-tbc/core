@@ -557,5 +557,5 @@ void WorldSession::HandleSummonResponseOpcode(WorldPacket& recv_data)
     recv_data >> summoner_guid;
     recv_data >> agree;
 
-    _player->SummonIfPossible(agree);
+    _player->SummonIfPossible(agree, summoner_guid);
 }
