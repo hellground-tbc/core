@@ -455,10 +455,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                         {
                             if(GetGOInfo()->summoningRitual.spellId == 7720)
                             {
-                                target->SummonIfPossible(false);
                                 WorldPacket data(SMSG_SUMMON_CANCEL, 0);
-                                //data << uint64(GetOwnerGUID());                    // summoner guid
-                                //data << uint32(zoneid);                                 // summoner zone
                                 target->GetSession()->SendPacket(&data);
 
                             }
@@ -1218,6 +1215,9 @@ void GameObject::Use(Unit* user)
         case GAMEOBJECT_TYPE_SUMMONING_RITUAL:              //18
         {
             if (!pPlayer)
+                return;
+
+            if (pPlayer->isInCombat())
                 return;
 
             Unit* owner = GetOwner();
