@@ -18994,7 +18994,7 @@ void Player::UpdateForQuestsGO()
 
 void Player::SummonIfPossible(bool agree, uint64 summonerGUID)
 {
-    if(Unit* summoner = Unit::GetUnit(summonerGUID))
+    if(Unit* summoner = GetUnit(summonerGUID))
     {
         if (summoner->m_currentSpells[CURRENT_CHANNELED_SPELL])
         {
