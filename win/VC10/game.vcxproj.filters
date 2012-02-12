@@ -544,6 +544,9 @@
     <ClCompile Include="..\..\src\game\MotionMaster.cpp">
       <Filter>Movement</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\CharmInfo.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -1026,6 +1029,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\MotionMaster.h">
       <Filter>Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\CharmInfo.h">
+      <Filter>Objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

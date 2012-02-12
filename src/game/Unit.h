@@ -261,6 +261,7 @@ struct Modifier;
 struct SpellEntry;
 struct SpellValue;
 struct CasterModifiers;
+struct CharmInfo;
 
 class Aura;
 class Creature;
@@ -768,12 +769,6 @@ struct MeleeDamageLog : public DamageLog
 
 uint32 createProcExtendMask(SpellDamageLog *damageInfo, SpellMissInfo missCondition);
 
-struct UnitActionBarEntry
-{
-    uint32 Type;
-    uint32 SpellOrAction;
-};
-
 #define MAX_DECLINED_NAME_CASES 5
 
 struct DeclinedName
@@ -789,41 +784,6 @@ enum CurrentSpellTypes
     CURRENT_AUTOREPEAT_SPELL = 2,
     CURRENT_CHANNELED_SPELL = 3,
     CURRENT_MAX_SPELL = 4                                   // just counter
-};
-
-enum ActiveStates
-{
-    ACT_ENABLED  = 0xC100,
-    ACT_DISABLED = 0x8100,
-    ACT_COMMAND  = 0x0700,
-    ACT_REACTION = 0x0600,
-    ACT_CAST     = 0x0100,
-    ACT_PASSIVE  = 0x0000,
-    ACT_DECIDE   = 0x0001
-};
-
-struct GlobalCooldown
-{
-    explicit GlobalCooldown(uint32 _dur = 0, uint32 _time = 0) : duration(_dur), cast_time(_time) {}
-
-    uint32 duration;
-    uint32 cast_time;
-};
-
-typedef UNORDERED_MAP<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
-
-class GlobalCooldownMgr                                     // Shared by Player and CharmInfo
-{
-public:
-    GlobalCooldownMgr() {}
-
-public:
-    bool HasGlobalCooldown(SpellEntry const* spellInfo) const;
-    void AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd);
-    void CancelGlobalCooldown(SpellEntry const* spellInfo);
-
-private:
-    GlobalCooldownList m_GlobalCooldowns;
 };
 
 class CastSpellEvent : public BasicEvent
@@ -846,89 +806,7 @@ class CastSpellEvent : public BasicEvent
         Unit&             m_owner;
 };
 
-enum ReactStates
-{
-    REACT_PASSIVE    = 0,
-    REACT_DEFENSIVE  = 1,
-    REACT_AGGRESSIVE = 2
-};
-
-enum CommandStates
-{
-    COMMAND_STAY    = 0,
-    COMMAND_FOLLOW  = 1,
-    COMMAND_ATTACK  = 2,
-    COMMAND_ABANDON = 3
-};
-
-struct CharmSpellEntry
-{
-    uint16 spellId;
-    uint16 active;
-};
-
 typedef std::list<Player*> SharedVisionList;
-
-struct TRINITY_DLL_SPEC CharmInfo
-{
-    public:
-        explicit CharmInfo(Unit* unit);
-        ~CharmInfo();
-        uint32 GetPetNumber() const { return m_petnumber; }
-        void SetPetNumber(uint32 petnumber, bool statwindow);
-
-        void SetCommandState(CommandStates st) { m_CommandState = st; }
-        CommandStates GetCommandState() { return m_CommandState; }
-        bool HasCommandState(CommandStates state) { return (m_CommandState == state); }
-        //void SetReactState(ReactStates st) { m_reactState = st; }
-        //ReactStates GetReactState() { return m_reactState; }
-        //bool HasReactState(ReactStates state) { return (m_reactState == state); }
-
-        void InitPossessCreateSpells();
-        void InitCharmCreateSpells();
-        void InitPetActionBar();
-        void InitEmptyActionBar(bool withAttack = true);
-                                                            //return true if successful
-        bool AddSpellToActionBar(uint32 oldid, uint32 newid, ActiveStates newstate = ACT_DECIDE);
-        void ToggleCreatureAutocast(uint32 spellid, bool apply);
-
-        UnitActionBarEntry* GetActionBarEntry(uint8 index) { return &(PetActionBar[index]); }
-        CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
-
-        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
-
-        void SetIsCommandAttack(bool val);
-        bool IsCommandAttack();
-        void SetIsAtStay(bool val);
-        bool IsAtStay();
-        void SetIsFollowing(bool val);
-        bool IsFollowing();
-        void SetIsReturning(bool val);
-        bool IsReturning();
-        void SaveStayPosition();
-        void GetStayPosition(float &x, float &y, float &z);
-    private:
-        Unit* m_unit;
-        UnitActionBarEntry PetActionBar[10];
-        CharmSpellEntry m_charmspells[4];
-        CommandStates   m_CommandState;
-        //ReactStates     m_reactState;
-        uint32          m_petnumber;
-        bool            m_barInit;
-
-        //for restoration after charmed
-        ReactStates     m_oldReactState;
-
-        bool m_isCommandAttack;
-        bool m_isAtStay;
-        bool m_isFollowing;
-        bool m_isReturning;
-        float m_stayX;
-        float m_stayY;
-        float m_stayZ;
-
-        GlobalCooldownMgr m_GlobalCooldownMgr;
-};
 
 // for clearing special attacks
 #define REACTIVE_TIMER_START 4000

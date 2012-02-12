@@ -30,6 +30,8 @@
 #include "Cell.h"
 #include "CreatureGroups.h"
 
+#include "CharmInfo.h"
+
 #include <list>
 
 struct SpellEntry;

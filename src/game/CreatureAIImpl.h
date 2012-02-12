@@ -548,6 +548,9 @@ inline bool CreatureAI::UpdateVictim()
         }
     }
 
+    if (me->hasUnitState(UNIT_STAT_LOST_CONTROL))
+        return true;
+
     if (!me->HasReactState(REACT_PASSIVE))
     {
         if (Unit *pVictim = me->SelectVictim())

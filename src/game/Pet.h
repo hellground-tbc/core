@@ -241,6 +241,7 @@ class Pet : public Creature
 
         bool    m_loading;
         bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
+
     protected:
         uint32  m_happinessTimer;
         uint32  m_loyaltyTimer;
