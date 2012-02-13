@@ -94,11 +94,14 @@ int32 World::m_activeObjectUpdateDistanceInInstances = DEFAULT_VISIBILITY_DISTAN
 
 void MapUpdateDiffInfo::PrintCumulativeMapUpdateDiff()
 {
-    for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
+    for (CumulativeDiffMap::iterator itr = _cumulativeDiffInfo.begin(); itr != _cumulativeDiffInfo.end(); ++itr)
     {
-        uint32 diff = _cumulativeDiffInfo[i].value();
-        if (diff >= sWorld.getConfig(CONFIG_MIN_LOG_UPDATE))
-            sLog.outDiff("Cumulative Map Update for: %i - %u", i, diff);
+        for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
+        {
+            uint32 diff = itr->second[i].value();
+            if (diff >= sWorld.getConfig(CONFIG_MIN_LOG_UPDATE))
+                sLog.outDiff("Map[%u] diff for: %i - %u", itr->first, i, diff);
+        }
     }
 }
 

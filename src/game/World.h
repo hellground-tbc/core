@@ -465,18 +465,27 @@ struct MapUpdateDiffInfo
 {
     void ClearDiffInfo()
     {
-        for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
-            _cumulativeDiffInfo[i] = 0;
+        for (CumulativeDiffMap::iterator itr = _cumulativeDiffInfo.begin(); itr != _cumulativeDiffInfo.end(); ++itr)
+        {
+            for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
+                itr->second[i] = 0;
+        }
     }
 
-    void CumulateDiffFor(CumulateMapDiff type, uint32 diff)
+    void CumulateDiffFor(CumulateMapDiff type, uint32 diff, uint32 mapid)
     {
-        _cumulativeDiffInfo[type] += diff;
+        if (_cumulativeDiffInfo.find(mapid) == _cumulativeDiffInfo.end())
+            _cumulativeDiffInfo[mapid] = new atomic_uint[DIFF_MAX_CUMULATIVE_INFO];
+
+        _cumulativeDiffInfo[mapid][type] += diff;
     }
 
     void PrintCumulativeMapUpdateDiff();
 
-    ACE_Atomic_Op<ACE_Thread_Mutex, uint32> _cumulativeDiffInfo[DIFF_MAX_CUMULATIVE_INFO];
+    typedef ACE_Atomic_Op<ACE_Thread_Mutex, uint32> atomic_uint;
+    typedef std::map<uint32, atomic_uint*> CumulativeDiffMap;
+
+    CumulativeDiffMap _cumulativeDiffInfo;
 };
 
 /// The World
