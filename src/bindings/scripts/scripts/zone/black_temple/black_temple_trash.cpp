@@ -87,7 +87,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 {
                     target->GetClosePoint(temp.coord_x, temp.coord_y, temp.coord_z, 15.0);
-                    Creature* Spawn = m_creature->SummonCreature(NPC_AQUEOUS_SPAWN, temp.coord_x, temp.coord_y, temp.coord_z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    Creature* Spawn = me->SummonCreature(NPC_AQUEOUS_SPAWN, temp.coord_x, temp.coord_y, temp.coord_z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
                     Spawn->AI()->AttackStart(target);
                 }
             }
@@ -98,7 +98,7 @@ struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 
         if(CrashingWave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CRASHING_WAVE);
+            AddSpellToCast(me->getVictim(), SPELL_CRASHING_WAVE);
             CrashingWave = 15000;
         }
         else
@@ -170,7 +170,7 @@ struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 
         if(!merging && MergeTimer < diff)
         {
-            if(Unit* pLord = FindCreature(NPC_AQUEOUS_LORD, 80, m_creature))
+            if(Unit* pLord = FindCreature(NPC_AQUEOUS_LORD, 80, me))
             {
                 AddSpellToCast(pLord, SPELL_MERGE, false, true);
                 merging = true;
@@ -223,7 +223,7 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+            AddSpellToCast(me->getVictim(), SPELL_CLEAVE);
             Cleave = urand(15000, 25000);
         }
         else
@@ -247,13 +247,13 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 
                 if(target)
                 {
-                    DoScriptText(SAY_FREE_FRIEND, m_creature);
+                    DoScriptText(SAY_FREE_FRIEND, me);
                     AddSpellToCast(target, SPELL_FREE_FRIEND);
                     pList.remove((Creature*)target);
 
-                    if(!m_creature->HasAura(SPELL_BOOMING_VOICE, 0))
+                    if(!me->HasAura(SPELL_BOOMING_VOICE, 0))
                     {
-                        AddSpellToCast(m_creature, SPELL_BOOMING_VOICE);
+                        AddSpellToCast(me, SPELL_BOOMING_VOICE);
                         BoomingVoice = urand(30000, 60000);
                     }
                 }
@@ -265,7 +265,7 @@ struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 
         if(BoomingVoice < diff)     //make Booming Voice from time to time even if no creature in CC
         {
-            AddSpellToCast(m_creature, SPELL_BOOMING_VOICE);
+            AddSpellToCast(me, SPELL_BOOMING_VOICE);
             BoomingVoice = urand(40000, 60000);
         }
         else
@@ -327,7 +327,7 @@ struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 
         if(HarpoonersMark < diff)
         {
-            if(Player* target = m_creature->GetPlayer(MarkTargetGUID))
+            if(Player* target = me->GetPlayer(MarkTargetGUID))
             {
                 if(!target->HasAura(40084, 0))
                     DoCast(target, SPELL_HARPOONERS_MARK, true);
@@ -419,7 +419,7 @@ struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
 
         if(SummonGeyser < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SUMMON_GEYSER);
+            AddSpellToCast(me, SPELL_SUMMON_GEYSER);
             SummonGeyser = urand(8000, 16000);
         }
         else
@@ -447,19 +447,19 @@ struct TRINITY_DLL_DECL mob_coilskar_geyserAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        Unit* SeaCaller = FindCreature(MOB_COILSCAR_SEACALLER, 20, m_creature);
+        Unit* SeaCaller = FindCreature(MOB_COILSCAR_SEACALLER, 20, me);
         if(SeaCaller)
         {
-            m_creature->SetLevel(SeaCaller->getLevel());
-            m_creature->setFaction(SeaCaller->getFaction());
+            me->SetLevel(SeaCaller->getLevel());
+            me->setFaction(SeaCaller->getFaction());
         }
         else
         {
-            m_creature->SetLevel(71);
-            m_creature->setFaction(14);
+            me->SetLevel(71);
+            me->setFaction(14);
         }
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->CastSpell(m_creature, SPELL_GEYSER, false);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->CastSpell(me, SPELL_GEYSER, false);
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 };
@@ -556,7 +556,7 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_1);
+            AddSpellToCast(me->getVictim(), SPELL_CLEAVE_1);
             Cleave = urand(10000, 15000);
         }
         else
@@ -573,7 +573,7 @@ struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 
         if(LightningProd < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_LIGHTNING_PROD);
+            AddSpellToCast(me->getVictim(), SPELL_LIGHTNING_PROD);
             LightningProd = urand(10000, 20000);
         }
         else
@@ -621,7 +621,7 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
         {
             if(!CanBeShielded)
             {
-                if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 50)
+                if(me->GetHealth()*100 / me->GetMaxHealth() < 50)
                     CanBeShielded = true;
                 ShellShield = 1000;
             }
@@ -650,7 +650,7 @@ struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
                         AddSpellToCast(target, SPELL_WATER_SPIT);
                 }
                 else
-                    AddSpellToCast(m_creature->getVictim(), SPELL_WATER_SPIT);
+                    AddSpellToCast(me->getVictim(), SPELL_WATER_SPIT);
                 WaterSpit = urand(2500, 3500);
             }
         }
@@ -845,14 +845,14 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
         DoZoneInCombat(80.0f);
         if (urand(0, 100) < 25)
         {
-            m_creature->CastSpell(m_creature, SPELL_BONECHEWER_DISGRUNTLED, false);
+            me->CastSpell(me, SPELL_BONECHEWER_DISGRUNTLED, false);
             disgruntledCasted = true;
         }
     }
 
     void WorkerDied()
     {
-        m_creature->CastSpell(m_creature, SPELL_BONECHEWER_FURY, false);
+        me->CastSpell(me, SPELL_BONECHEWER_FURY, false);
     }
 
     void UpdateAI(const uint32 diff)
@@ -862,9 +862,9 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 
         if (!disgruntledCasted)
         {
-            if (disgruntledTimer < diff || m_creature->GetHealth()*100/m_creature->GetMaxHealth() < 75)
+            if (disgruntledTimer < diff || me->GetHealth()*100/me->GetMaxHealth() < 75)
             {
-                m_creature->CastSpell(m_creature, SPELL_BONECHEWER_DISGRUNTLED, false);
+                me->CastSpell(me, SPELL_BONECHEWER_DISGRUNTLED, false);
                 disgruntledCasted = true;
             }
             else
@@ -897,7 +897,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
         {
             if (urand(0, 100) < 20)
             {
-                m_creature->CastSpell(who, SPELL_WORKER_THROW_PICK, false);
+                me->CastSpell(who, SPELL_WORKER_THROW_PICK, false);
             }
         }
     }
@@ -926,7 +926,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
             Unit * victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 35, true);
 
             if (victim)
-                m_creature->CastSpell(victim, SPELL_WORKER_THROW_PICK, false);
+                me->CastSpell(victim, SPELL_WORKER_THROW_PICK, false);
 
             throwTimer = 15000 + urand(0, 5000);
         }
@@ -960,19 +960,19 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat(80.0f);
-        m_creature->StopMoving();
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveChase(who, 15);
+        me->StopMoving();
+        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->MoveChase(who, 15);
     }
 
     Unit * GetNewTarget()
     {
-        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        Map::PlayerList const &PlayerList = ((InstanceMap*)me->GetMap())->GetPlayers();
         std::list<Unit*> rangedList;
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && !m_creature->IsWithinDistInMap(i_pl, 15) && m_creature->IsWithinDistInMap(i_pl, 40))
+            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && !me->IsWithinDistInMap(i_pl, 15) && me->IsWithinDistInMap(i_pl, 40))
                 rangedList.push_back((Unit*)i_pl);
         }
 
@@ -995,27 +995,27 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        Unit * victim = m_creature->getVictim();
+        Unit * victim = me->getVictim();
 
         if (!victim)
             return;
 
         if (distCheckTimer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(victim, 37))
+            if (!me->IsWithinDistInMap(victim, 37))
             {
-                m_creature->StopMoving();
-                m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                me->StopMoving();
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MoveChase(victim, 25);
                 distCheckTimer = 3000;
             }
             else
             {
-                if (m_creature->IsWithinDistInMap(victim, 10))
+                if (me->IsWithinDistInMap(victim, 10))
                 {
-                    m_creature->SetLevitate(false);
+                    me->SetLevitate(false);
 
-                    if (!m_creature->IsNonMeleeSpellCasted(false))
+                    if (!me->IsNonMeleeSpellCasted(false))
                     {
                         DoResetThreat();
                         victim = GetNewTarget();
@@ -1023,9 +1023,9 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
                         if (!victim)
                         {
                             victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true);
-                            m_creature->StopMoving();
-                            m_creature->GetMotionMaster()->Clear();
-                            m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                            me->StopMoving();
+                            me->GetMotionMaster()->Clear();
+                            me->GetMotionMaster()->MoveChase(victim, 25);
                         }
                         distCheckTimer = 3000;
                     }
@@ -1074,18 +1074,18 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat(80.0f);
-        m_creature->StopMoving();
-        m_creature->GetMotionMaster()->Clear();
-        m_creature->GetMotionMaster()->MoveChase(who, 15);
+        me->StopMoving();
+        me->GetMotionMaster()->Clear();
+        me->GetMotionMaster()->MoveChase(who, 15);
     }
 
     Unit * CheckMeleeRange()
     {
-        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        Map::PlayerList const &PlayerList = ((InstanceMap*)me->GetMap())->GetPlayers();
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && m_creature->IsWithinDistInMap(i_pl, 6))
+            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && me->IsWithinDistInMap(i_pl, 6))
                 return (Unit*)i_pl;
         }
 
@@ -1094,12 +1094,12 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 
     Unit * GetNewTarget()
     {
-        Map::PlayerList const &PlayerList = ((InstanceMap*)m_creature->GetMap())->GetPlayers();
+        Map::PlayerList const &PlayerList = ((InstanceMap*)me->GetMap())->GetPlayers();
         std::list<Unit*> rangedList;
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && !m_creature->IsWithinDistInMap(i_pl, 15) && m_creature->IsWithinDistInMap(i_pl, 40))
+            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && !me->IsWithinDistInMap(i_pl, 15) && me->IsWithinDistInMap(i_pl, 40))
                 rangedList.push_back((Unit*)i_pl);
         }
 
@@ -1122,25 +1122,25 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        Unit * victim = m_creature->getVictim();
+        Unit * victim = me->getVictim();
 
         if (!victim)
             return;
 
         if (distCheckTimer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(victim, 37))
+            if (!me->IsWithinDistInMap(victim, 37))
             {
-                m_creature->StopMoving();
-                m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                me->StopMoving();
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MoveChase(victim, 25);
             }
             else
             {
-                if (m_creature->IsWithinDistInMap(victim, 10))
+                if (me->IsWithinDistInMap(victim, 10))
                 {
-                    m_creature->SetLevitate(false);
-                    if (!m_creature->IsNonMeleeSpellCasted(false))
+                    me->SetLevitate(false);
+                    if (!me->IsNonMeleeSpellCasted(false))
                     {
                         DoResetThreat();
                         victim = GetNewTarget();
@@ -1148,9 +1148,9 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
                         if (!victim)
                         {
                             victim = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true);
-                            m_creature->StopMoving();
-                            m_creature->GetMotionMaster()->Clear();
-                            m_creature->GetMotionMaster()->MoveChase(victim, 25);
+                            me->StopMoving();
+                            me->GetMotionMaster()->Clear();
+                            me->GetMotionMaster()->MoveChase(victim, 25);
                         }
                         distCheckTimer = 3000;
                     }
@@ -1176,10 +1176,10 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
             Unit * tmpTarget = CheckMeleeRange();
             if (tmpTarget)
             {
-                m_creature->CastSpell(tmpTarget, SPELL_WINDREAVER_FREEZE, false);
-                m_creature->StopMoving();
-                m_creature->GetMotionMaster()->Clear(false);
-                m_creature->GetMotionMaster()->MoveChase(tmpTarget, 15);
+                me->CastSpell(tmpTarget, SPELL_WINDREAVER_FREEZE, false);
+                me->StopMoving();
+                me->GetMotionMaster()->Clear(false);
+                me->GetMotionMaster()->MoveChase(tmpTarget, 15);
                 distCheckTimer = 5000;
             }
             else
@@ -1226,14 +1226,14 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        Unit * victim = m_creature->getVictim();
+        Unit * victim = me->getVictim();
 
         if (!victim)
             return;
 
         if (cleaveTimer < diff)
         {
-            m_creature->CastSpell(victim, SPELL_WYRMCALLER_CLEAVE, false);
+            me->CastSpell(victim, SPELL_WYRMCALLER_CLEAVE, false);
             cleaveTimer = 5000 + urand(0, 10000);
         }
         else
@@ -1241,7 +1241,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
 
         if (jabTimer < diff)
         {
-            m_creature->CastSpell(victim, SPELL_WYRMCALLER_JAB, false);
+            me->CastSpell(victim, SPELL_WYRMCALLER_JAB, false);
             jabTimer = 5000 + urand(0, 5000);
         }
         else
@@ -1309,14 +1309,14 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
 
         if(checkTimer < diff)
         {
-            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            me->SetSpeed(MOVE_RUN, 2.5);
             checkTimer = 2000;
         }
         else
             checkTimer -= diff;
         if (flamesTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_FEARBRINGER_ILLIDARI_FLAMES);
+            AddSpellToCast(me->getVictim(), SPELL_FEARBRINGER_ILLIDARI_FLAMES);
             flamesTimer = 10000 + urand(0, 10000);
         }
         else
@@ -1332,7 +1332,7 @@ struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
 
         if (stompTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_FEARBRINGER_WAR_STOMP);
+            AddSpellToCast(me, SPELL_FEARBRINGER_WAR_STOMP);
 
             stompTimer = 15000 + urand(0, 10000);
         }
@@ -1449,7 +1449,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_1);
+            AddSpellToCast(me->getVictim(), SPELL_CLEAVE_1);
             Cleave = 10000;
         }
         else
@@ -1457,7 +1457,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
 
         if(ConcussionBlow < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CONCUSSION_BLOW);
+            AddSpellToCast(me->getVictim(), SPELL_CONCUSSION_BLOW);
             ConcussionBlow = 25000;
         }
         else
@@ -1476,8 +1476,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
 
         if(Frenzy < diff)
         {
-            if(!m_creature->HasAura(SPELL_FRENZY, 0))
-                AddSpellToCast(m_creature->getVictim(), SPELL_FRENZY);
+            if(!me->HasAura(SPELL_FRENZY, 0))
+                AddSpellToCast(me->getVictim(), SPELL_FRENZY);
             Frenzy = 30000;
         }
         else
@@ -1525,7 +1525,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
 
         if(ChargeRage < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CHARGE_RAGE);
+            AddSpellToCast(me, SPELL_CHARGE_RAGE);
             ChargeRage = urand(20000, 30000);
         }
         else
@@ -1533,8 +1533,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
 
         if(SpiritBond < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SPIRIT_BOND);
-            if(Creature* Primalist = GetClosestCreatureWithEntry(m_creature, NPC_ASHTONGUE_PRIMALIST, 40.0f))
+            AddSpellToCast(me, SPELL_SPIRIT_BOND);
+            if(Creature* Primalist = GetClosestCreatureWithEntry(me, NPC_ASHTONGUE_PRIMALIST, 40.0f))
                 Primalist->CastSpell(Primalist, SPELL_SPIRIT_BOND, true);
             SpiritBond = 30000;
         }
@@ -1583,22 +1583,22 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
         ClearCastQueue();
 
         DoZoneInCombat(80.0f);
-        switch(m_creature->GetEntry())
+        switch(me->GetEntry())
         {
             case NPC_CYCLONE_TOTEM:
-                m_creature->SetMaxHealth(urand(4100,4200));
+                me->SetMaxHealth(urand(4100,4200));
                 SpellTimer = urand(2000, 11000);
                 break;
             case NPC_ASHTONGUE_SEARING_TOTEM:
-                m_creature->SetMaxHealth(urand(4800,4900));
+                me->SetMaxHealth(urand(4800,4900));
                 SpellTimer = 1000;
                 break;
             case NPC_SUMMONED_WINDFURY_TOTEM:
-                m_creature->SetMaxHealth(urand(1800,1900));
-                m_creature->CastSpell((Unit*)NULL, SPELL_WINDFURY_WEAPON, true);
+                me->SetMaxHealth(urand(1800,1900));
+                me->CastSpell((Unit*)NULL, SPELL_WINDFURY_WEAPON, true);
                 break;
         }
-        m_creature->SetHealth(m_creature->GetMaxHealth());
+        me->SetHealth(me->GetMaxHealth());
     }
     void IsSummonedBy(Unit* summoner)
     {
@@ -1607,7 +1607,7 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
     }
     void JustDied(Unit* killer)
     {
-        if(m_creature->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
+        if(me->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
         {
             std::list<Creature*> pList;
             Trinity::AllFriendlyCreaturesInGrid u_check(me);
@@ -1631,7 +1631,7 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
     {
             if(SpellTimer < diff)
             {
-                switch(m_creature->GetEntry())
+                switch(me->GetEntry())
                 {
                     case NPC_CYCLONE_TOTEM:
                         if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
@@ -1639,7 +1639,7 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
                         SpellTimer = 11000;
                         break;
                     case NPC_ASHTONGUE_SEARING_TOTEM:
-                        AddSpellToCast(m_creature, SPELL_ATTACK);
+                        AddSpellToCast(me, SPELL_ATTACK);
                         SpellTimer = 3000;
                         break;
                 }
@@ -1683,7 +1683,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         DoZoneInCombat(80.0f);
-        DoCast(m_creature, SPELL_BLOODLUST);
+        DoCast(me, SPELL_BLOODLUST);
     }
     void UpdateAI(const uint32 diff)
     {
@@ -1710,9 +1710,9 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
 
         if(ChainHeal < diff)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 70)
+            if(me->GetHealth()*100 / me->GetMaxHealth() < 70)
             {
-                ForceSpellCast(m_creature, SPELL_CHAIN_HEAL);
+                ForceSpellCast(me, SPELL_CHAIN_HEAL);
                 ChainHeal = 20000;
             }
             else if(Unit* healTarget = SelectLowestHpFriendly(40, 15000))
@@ -1728,7 +1728,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
 
         if(SearingTotem < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SEARING_TOTEM);
+            AddSpellToCast(me, SPELL_SEARING_TOTEM);
             SearingTotem = urand(8000, 15000);
         }
         else
@@ -1736,7 +1736,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
 
         if(WindfuryTotem < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SUMMON_WINDFURY_TOTEM);
+            AddSpellToCast(me, SPELL_SUMMON_WINDFURY_TOTEM);
             WindfuryTotem = urand(8000, 15000);
         }
         else
@@ -1744,7 +1744,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
 
         if(CycloneTotem < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CYCLONE_TOTEM);
+            AddSpellToCast(me, SPELL_CYCLONE_TOTEM);
             CycloneTotem = urand(8000, 15000);
         }
         else
@@ -1802,7 +1802,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         if(MultiShot < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true);
-            if(target && !m_creature->IsWithinDist(target, 5.0f))
+            if(target && !me->IsWithinDist(target, 5.0f))
             {
                 ForceSpellCast(target, SPELL_MULTI_SHOT);
                 MultiShot = 40000;
@@ -1816,7 +1816,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         if(Shoot < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true);
-            if(target && !m_creature->IsWithinDist(target, 5.0f))
+            if(target && !me->IsWithinDist(target, 5.0f))
                 ForceSpellCast(target, SPELL_AP_SHOOT);
             Shoot = 1500;
         }
@@ -1826,7 +1826,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
         if(WyvernSting < diff)
         {
             Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1, 35.0f, true);
-            if(target && !m_creature->IsWithinDist(target, 5.0f))
+            if(target && !me->IsWithinDist(target, 5.0f))
             {
                 ForceSpellCast(target, SPELL_WYVERN_STING);
                 WyvernSting = 15000;
@@ -1839,13 +1839,13 @@ struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
 
         if(SweepingWingClip < diff)
         {
-            if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
+            if(me->IsWithinDistInMap(me->getVictim(), 5.0))
             {
-                AddSpellToCast(m_creature->getVictim(), SPELL_SWEEPING_WING_CLIP);
+                AddSpellToCast(me->getVictim(), SPELL_SWEEPING_WING_CLIP);
 
                 float x, y, z;
                 me->GetClosePoint(x,y,z,0.0f, urand(10,15), frand(0.0f, 2*M_PI));
-                m_creature->GetMotionMaster()->MovePoint(1, x,y,z);
+                me->GetMotionMaster()->MovePoint(1, x,y,z);
                 SweepingWingClip = 37000;
             }
             else
@@ -1887,8 +1887,8 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        DoCast(m_creature, SPELL_STEALTH);
-        DoCast(m_creature, SPELL_DUAL_WIELD);
+        DoCast(me, SPELL_STEALTH);
+        DoCast(me, SPELL_DUAL_WIELD);
         Blind = urand(10000, 20000);
         InstantPoison = urand(5000, 10000);
         MindNumbingPoison = urand(5000, 10000);
@@ -1902,7 +1902,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
 
         if(Blind < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_BLIND);
+            AddSpellToCast(me->getVictim(), SPELL_BLIND);
             Blind = 20000;
         }
         else
@@ -1974,7 +1974,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         DoZoneInCombat(80.0f);
-        DoCast(m_creature, SPELL_LIGHTNING_SHIELD);
+        DoCast(me, SPELL_LIGHTNING_SHIELD);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1984,7 +1984,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
 
         if(ChainLightning < diff)
         {
-            ForceSpellCast(m_creature->getVictim(), SPELL_CHAIN_LIGHTNING);
+            ForceSpellCast(me->getVictim(), SPELL_CHAIN_LIGHTNING);
             ChainLightning = 10000;
         }
         else
@@ -2003,7 +2003,7 @@ struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
 
         if(LightningShield < diff)
         {
-            DoCast(m_creature, SPELL_LIGHTNING_SHIELD);
+            DoCast(me, SPELL_LIGHTNING_SHIELD);
             LightningShield = 22000;
         }
         else
@@ -2048,7 +2048,7 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
     }
     void EnterCombat(Unit*)
     {
-        DoCast(m_creature, SPELL_CLOAK_OF_SHADOWS);
+        DoCast(me, SPELL_CLOAK_OF_SHADOWS);
         DoZoneInCombat(80.0f);
     }
 
@@ -2064,7 +2064,7 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
 
         if(CloakOfShadows < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CLOAK_OF_SHADOWS);
+            AddSpellToCast(me, SPELL_CLOAK_OF_SHADOWS);
             CloakOfShadows = 15000;
         }
         else
@@ -2072,7 +2072,7 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
 
         if(Gouge < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_GOUGE);
+            AddSpellToCast(me->getVictim(), SPELL_GOUGE);
             Gouge = 10000;
         }
         else
@@ -2080,7 +2080,7 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
 
         if(Shadowstep < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWSTEP);
+            AddSpellToCast(me->getVictim(), SPELL_SHADOWSTEP);
             Shadowstep = 15000;
         }
         else
@@ -2088,7 +2088,7 @@ struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
 
         if(WoundPoison < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_WOUND_POISON);
+            AddSpellToCast(me->getVictim(), SPELL_WOUND_POISON);
             WoundPoison = 3000;
         }
         else
@@ -2133,7 +2133,7 @@ struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_1);
+            AddSpellToCast(me->getVictim(), SPELL_CLEAVE_1);
             Cleave = 10000;
         }
         else
@@ -2141,7 +2141,7 @@ struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
 
         if(SonicStrike < diff)  //in cone in front of a caster, should "in front" be changed randomly?
         {
-            AddSpellToCast(m_creature, SPELL_SONIC_STRIKE);
+            AddSpellToCast(me, SPELL_SONIC_STRIKE);
             SonicStrike = 15000;
         }
         else
@@ -2193,7 +2193,7 @@ struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
 
         if(FelImmolate < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_FEL_IMMOLATE);
+            AddSpellToCast(me->getVictim(), SPELL_FEL_IMMOLATE);
             FelImmolate = 25000;
         }
         else
@@ -2201,7 +2201,7 @@ struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
 
         if(CurseOfAgony < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CURSE_OF_AGONY);
+            AddSpellToCast(me, SPELL_CURSE_OF_AGONY);
             CurseOfAgony = 35000;
         }
         else
@@ -2295,7 +2295,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 
         if(RapidShot < diff)
         {
-            AddSpellToCast(m_creature, SPELL_RAPID_SHOT);
+            AddSpellToCast(me, SPELL_RAPID_SHOT);
             RapidShot = 20000;
         }
         else
@@ -2305,7 +2305,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true))
             {
-                if(target->IsWithinDistInMap(m_creature, 8.0))
+                if(target->IsWithinDistInMap(me, 8.0))
                     SkeletonShot = 1000;
                 else
                 {
@@ -2320,7 +2320,7 @@ struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
         if(Curse < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 60, true))    // workaround...
-                target->CastSpell(target, SPELL_CURSE_OF_THE_BLEAKHEART, true, 0, 0, m_creature->GetGUID());
+                target->CastSpell(target, SPELL_CURSE_OF_THE_BLEAKHEART, true, 0, 0, me->GetGUID());
             Curse = 20000;
         }
         else
@@ -2382,7 +2382,7 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
 
         if(Fear < diff)
         {
-            ForceSpellCast(m_creature, SPELL_FEAR);
+            ForceSpellCast(me, SPELL_FEAR);
             Fear = urand(10000, 15000);
         }
         else
@@ -2396,7 +2396,7 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
                 CurseOfMending += 8000;
             if(Shadowfiends < 8200)
                 Shadowfiends += 8000;
-            ForceSpellCast(m_creature, SPELL_SHADOW_INFERNO);
+            ForceSpellCast(me, SPELL_SHADOW_INFERNO);
             ShadowInferno = 20000;
         }
         else
@@ -2404,7 +2404,7 @@ struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
 
         if(Shadowfiends < diff)
         {
-            ForceSpellCast(m_creature, SPELL_SUMMON_SHADOWFIENDS);
+            ForceSpellCast(me, SPELL_SUMMON_SHADOWFIENDS);
             Shadowfiends = 25000;
         }
         else
@@ -2447,7 +2447,7 @@ struct TRINITY_DLL_DECL mob_storm_furyAI : public ScriptedAI
 
         if(StormBlink < diff)
         {
-            AddSpellToCast(m_creature, SPELL_STORM_BLINK);
+            AddSpellToCast(me, SPELL_STORM_BLINK);
             StormBlink = 25000;
         }
         else
@@ -2508,7 +2508,7 @@ struct TRINITY_DLL_DECL mob_hand_of_gorefiendAI : public ScriptedAI
 
         if(Enrage < diff)
         {
-            DoCast(m_creature, SPELL_ENRAGE);
+            DoCast(me, SPELL_ENRAGE);
             Enrage = 30000;
         }
         else
@@ -2550,7 +2550,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
     }
     void EnterCombat(Unit *)
     {
-        m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
+        me->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
         DoZoneInCombat(80.0f);
     }
 
@@ -2564,9 +2564,9 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
     {
         if(!UpdateVictim())
         {
-            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            if (!me->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
             {
-                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, m_creature))
+                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, me))
                 {
                     if (skeleton->isAlive())
                         DoCast(skeleton, SPELL_GREEN_BEAM);
@@ -2577,7 +2577,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
 
         if(BloodSiphon < diff)
         {
-            AddSpellToCast(m_creature, SPELL_BLOOD_SIPHON);
+            AddSpellToCast(me, SPELL_BLOOD_SIPHON);
             BloodSiphon = 20000;
         }
         else
@@ -2636,7 +2636,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
 
         if(ChaoticLight < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CHAOTIC_LIGHT);
+            AddSpellToCast(me, SPELL_CHAOTIC_LIGHT);
             ChaoticLight = urand(5000, 10000);
         }
         else
@@ -2672,7 +2672,7 @@ struct TRINITY_DLL_DECL mob_whirling_bladeAI: public Scripted_NoMovementAI
     {
         ClearCastQueue();
 
-        DoCast(m_creature, SPELL_WHIRLWIND, true);
+        DoCast(me, SPELL_WHIRLWIND, true);
         Whirl = 6000;
         DieTimer = 14000;
     }
@@ -2681,7 +2681,7 @@ struct TRINITY_DLL_DECL mob_whirling_bladeAI: public Scripted_NoMovementAI
     {
         if(Whirl < diff)
         {
-            AddSpellToCast(m_creature, SPELL_WHIRLWIND);
+            AddSpellToCast(me, SPELL_WHIRLWIND);
             Whirl = 6000;
         }
         else
@@ -2689,8 +2689,8 @@ struct TRINITY_DLL_DECL mob_whirling_bladeAI: public Scripted_NoMovementAI
 
         if(DieTimer < diff)
         {
-            m_creature->Kill(m_creature, false);
-            m_creature->RemoveCorpse();
+            me->Kill(me, false);
+            me->RemoveCorpse();
             DieTimer = 2000;
         }
         else
@@ -2739,8 +2739,8 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
 
     void EnterCombat(Unit *)
     {
-        m_creature->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
-        DoCast(m_creature, SPELL_DEMON_ARMOR);
+        me->InterruptNonMeleeSpells(false, SPELL_GREEN_BEAM);
+        DoCast(me, SPELL_DEMON_ARMOR);
         DoZoneInCombat(80.0f);
     }
 
@@ -2797,9 +2797,9 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
     {
         if(!UpdateVictim())
         {
-            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            if (!me->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
             {
-                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, m_creature))
+                if (Unit *skeleton = FindCreature(MOB_SKELETON, 20.0f, me))
                 {
                     if (skeleton->isAlive())
                         DoCast(skeleton, SPELL_GREEN_BEAM);
@@ -2830,7 +2830,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
         {
             if(uint64 targetGUID = SelectCorpseGUID())
             {
-                if(Unit* target = Unit::GetUnit(*m_creature, targetGUID))
+                if(Unit* target = Unit::GetUnit(*me, targetGUID))
                 {
                     AddSpellToCast(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), SPELL_RAISE_DEAD, false);
                     UsedCorpsesGUID.push_back(targetGUID);
@@ -2843,7 +2843,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
 
         if(DemonArmor < diff)
         {
-            ForceSpellCast(m_creature, SPELL_DEMON_ARMOR);
+            ForceSpellCast(me, SPELL_DEMON_ARMOR);
             DemonArmor = 1800000;
         }
         else
@@ -2912,12 +2912,12 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        if(Creature* Hound = GetClosestCreatureWithEntry(m_creature, MOB_SHADOWMOON_RIDING_HOUND, 80))
+        if(Creature* Hound = GetClosestCreatureWithEntry(me, MOB_SHADOWMOON_RIDING_HOUND, 80))
         {
             Hound->Kill(Hound, false);
             Hound->RemoveCorpse();
         }
-        m_creature->Mount(14334);
+        me->Mount(14334);
         Shoot = 2000;
         FreezingTrap = 15000;
         SilencingShot = urand(5000, 15000);
@@ -2928,9 +2928,9 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 
     void EnterCombat(Unit *)
     {
-        m_creature->Unmount();
-        DoCast(m_creature, SPELL_SUMMON_RIDING_WARHOUND);
-        DoCast(m_creature, SPELL_FREEZING_TRAP);
+        me->Unmount();
+        DoCast(me, SPELL_SUMMON_RIDING_WARHOUND);
+        DoCast(me, SPELL_FREEZING_TRAP);
         DoZoneInCombat(80.0f);
     }
 
@@ -2948,7 +2948,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 
         if (FreezingTrap < diff)
         {
-            DoCast(m_creature, SPELL_FREEZING_TRAP);
+            DoCast(me, SPELL_FREEZING_TRAP);
             FreezingTrap = 15000;
         }
         else
@@ -2992,9 +2992,9 @@ struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 
         if(WingClip < diff)
         {
-            if(m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0))
+            if(me->IsWithinDistInMap(me->getVictim(), 5.0))
             {
-                AddSpellToCast(m_creature->getVictim(), SPELL_WING_CLIP);
+                AddSpellToCast(me->getVictim(), SPELL_WING_CLIP);
                 WingClip = 20000;
             }
             else
@@ -3052,7 +3052,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
 
         if(SpellAbsorption < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SPELL_ABSORPTION);
+            AddSpellToCast(me, SPELL_SPELL_ABSORPTION);
             SpellAbsorption = 40000;
         }
         else
@@ -3134,7 +3134,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
 
         if(Enrage < diff)
         {
-            AddSpellToCast(m_creature, SPELL_ENRAGE_1);
+            AddSpellToCast(me, SPELL_ENRAGE_1);
             Enrage = 30000;
         }
         else
@@ -3177,7 +3177,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
         switch (id)
         {
             case 0:
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+                me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
             break;
         }
     }
@@ -3191,7 +3191,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
 
         if(Strike < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_STRIKE);
+            AddSpellToCast(me->getVictim(), SPELL_STRIKE);
             Strike = urand(3000, 8000);
         }
         else
@@ -3277,7 +3277,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->LoadEquipment(484, true);
+        me->LoadEquipment(484, true);
         Stance = DEFENSIVE;
         KnockAway = urand(3000, 20000);
         SpecialTimer = 0;
@@ -3291,39 +3291,39 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 
     void SetWeaponModelAndDamage(uint8 Stance)
     {
-        const CreatureInfo *cinfo = m_creature->GetCreatureInfo();
+        const CreatureInfo *cinfo = me->GetCreatureInfo();
         switch(Stance)
         {
             case DEFENSIVE:
                 //main hand: 1h axe, off-hand: shield
-                m_creature->LoadEquipment(439, true);
-                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
-                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
-                m_creature->UpdateDamagePhysical(BASE_ATTACK);
+                me->LoadEquipment(439, true);
+                me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
+                me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                me->UpdateDamagePhysical(BASE_ATTACK);
                 break;
             case BERSERKER:
                 // 2h sword
-                m_creature->LoadEquipment(484, true);
-                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
-                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
-                m_creature->UpdateDamagePhysical(BASE_ATTACK);
+                me->LoadEquipment(484, true);
+                me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
+                me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                me->UpdateDamagePhysical(BASE_ATTACK);
                 break;
             case BATTLE:
                 //main hand: 1h axe
-                m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, AXE_MODEL);
-                m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, AXE_INFO);
+                me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, AXE_MODEL);
+                me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, AXE_INFO);
                 // off-hand: 1h axe
-                m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, AXE_MODEL);
-                m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+2, AXE_INFO);
+                me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, AXE_MODEL);
+                me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+2, AXE_INFO);
 
-                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
-                m_creature->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
-                m_creature->UpdateDamagePhysical(BASE_ATTACK);
-                m_creature->SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, cinfo->mindmg);
-                m_creature->SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, cinfo->maxdmg);
-                m_creature->SetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, cinfo->mindmg);
-                m_creature->SetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, cinfo->maxdmg);
-                m_creature->SetAttackTime(OFF_ATTACK, (m_creature->GetAttackTime(BASE_ATTACK)*150)/100);
+                me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
+                me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                me->UpdateDamagePhysical(BASE_ATTACK);
+                me->SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, cinfo->mindmg);
+                me->SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                me->SetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, cinfo->mindmg);
+                me->SetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, cinfo->maxdmg);
+                me->SetAttackTime(OFF_ATTACK, (me->GetAttackTime(BASE_ATTACK)*150)/100);
                 break;
             default:
                 return;
@@ -3334,27 +3334,27 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
     {
         if(damage)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 80 && Stance == DEFENSIVE)
+            if(me->GetHealth()*100 / me->GetMaxHealth() < 80 && Stance == DEFENSIVE)
             {
-                m_creature->RemoveAurasDueToSpell(SPELL_DEFENSIVE_STANCE);
-                m_creature->RemoveAurasDueToSpell(SPELL_DEFENSIVE_AURA);
-                DoYell(BATTLE_STANCE_YELL, 0, m_creature);
-                if(m_creature->HasAura(SPELL_SWM_SHIELD_WALL, 0))
-                    m_creature->RemoveAurasDueToSpell(SPELL_SWM_SHIELD_WALL);
-                ForceSpellCast(m_creature, SPELL_BERSERKER_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
-                ForceSpellCast(m_creature, SPELL_BERSERKER_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+                me->RemoveAurasDueToSpell(SPELL_DEFENSIVE_STANCE);
+                me->RemoveAurasDueToSpell(SPELL_DEFENSIVE_AURA);
+                DoYell(BATTLE_STANCE_YELL, 0, me);
+                if(me->HasAura(SPELL_SWM_SHIELD_WALL, 0))
+                    me->RemoveAurasDueToSpell(SPELL_SWM_SHIELD_WALL);
+                ForceSpellCast(me, SPELL_BERSERKER_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(me, SPELL_BERSERKER_AURA, INTERRUPT_AND_CAST_INSTANTLY);
                 Stance = BERSERKER;
                 SetWeaponModelAndDamage(Stance);
                 SpecialTimer = 0;
             }
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 35 && Stance == BERSERKER)
+            if(me->GetHealth()*100 / me->GetMaxHealth() < 35 && Stance == BERSERKER)
             {
-                m_creature->RemoveAurasDueToSpell(SPELL_BERSERKER_STANCE);
-                m_creature->RemoveAurasDueToSpell(SPELL_BERSERKER_AURA);
-                if(m_creature->HasAura(SPELL_WHIRLWIND_1, 0))
-                    m_creature->RemoveAurasDueToSpell(SPELL_WHIRLWIND_1);
-                ForceSpellCast(m_creature, SPELL_BATTLE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
-                ForceSpellCast(m_creature, SPELL_BATTLE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+                me->RemoveAurasDueToSpell(SPELL_BERSERKER_STANCE);
+                me->RemoveAurasDueToSpell(SPELL_BERSERKER_AURA);
+                if(me->HasAura(SPELL_WHIRLWIND_1, 0))
+                    me->RemoveAurasDueToSpell(SPELL_WHIRLWIND_1);
+                ForceSpellCast(me, SPELL_BATTLE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
+                ForceSpellCast(me, SPELL_BATTLE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
                 Stance = BATTLE;
                 SetWeaponModelAndDamage(Stance);
                 SpecialTimer = 0;
@@ -3373,7 +3373,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
             {
                 m_nextMove = 2300;
                 m_nextId   = 1;
-                m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_POINT_NOSHEATHE);
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_POINT_NOSHEATHE);
             }
             break;
             case 1:
@@ -3389,10 +3389,10 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
     void EnterCombat(Unit *)
     {
         DoZoneInCombat(80.0f);
-        ForceSpellCast(m_creature, SPELL_DEFENSIVE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
-        ForceSpellCast(m_creature, SPELL_DEFENSIVE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
-        DoYell(DEFENSIVE_STANCE_YELL, 0, m_creature);
-        m_creature->SetArmor(m_creature->GetArmor()*2.5);   // arbitrary
+        ForceSpellCast(me, SPELL_DEFENSIVE_STANCE, INTERRUPT_AND_CAST_INSTANTLY);
+        ForceSpellCast(me, SPELL_DEFENSIVE_AURA, INTERRUPT_AND_CAST_INSTANTLY);
+        DoYell(DEFENSIVE_STANCE_YELL, 0, me);
+        me->SetArmor(me->GetArmor()*2.5);   // arbitrary
         SetWeaponModelAndDamage(Stance);
     }
 
@@ -3407,7 +3407,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
                     for (int i = DATA_WEAPONMASTER_SOLDIER; i < DATA_WEAPONMASTER_SOLDIER+8; ++i)
                     {
                         soldiersList.push_back(pInstance->GetData64(i));
-                        if (Creature *soldier = m_creature->GetMap()->GetCreature(pInstance->GetData64(i)))
+                        if (Creature *soldier = me->GetMap()->GetCreature(pInstance->GetData64(i)))
                         {
                             soldier->Relocate(fieldPositions[i-30][0], fieldPositions[i-30][1], _HEIGHT, 0);
                             soldier->SetHomePosition(fieldPositions[i-30][0], fieldPositions[i-30][1], _HEIGHT, 0);
@@ -3440,23 +3440,23 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
                             {
                                 for (int i = 0; i < 8; ++i)
                                 {
-                                    if (Unit *soldier = m_creature->GetUnit(*m_creature, soldiersList[i]))
+                                    if (Unit *soldier = me->GetUnit(*me, soldiersList[i]))
                                     {
                                         x = soldier->GetPositionX() + DISTANCE_TO_MOVE * cos(0.0f);
                                         y = soldier->GetPositionY() + DISTANCE_TO_MOVE * sin(0.0f);
                                         soldier->GetMotionMaster()->MovePoint(0, x, y, _HEIGHT);
                                     }
                                 }
-                                x = m_creature->GetPositionX() + DISTANCE_TO_MOVE * cos(0.0f);
-                                y = m_creature->GetPositionY() + DISTANCE_TO_MOVE * sin(0.0f);
+                                x = me->GetPositionX() + DISTANCE_TO_MOVE * cos(0.0f);
+                                y = me->GetPositionY() + DISTANCE_TO_MOVE * sin(0.0f);
                             }
                             break;
                             case 1:
                             {
-                                m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
+                                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
                                 for (int i = 0; i < 8; ++i)
                                 {
-                                    if (Unit *soldier = m_creature->GetUnit(*m_creature, soldiersList[i]))
+                                    if (Unit *soldier = me->GetUnit(*me, soldiersList[i]))
                                         soldier->GetMotionMaster()->MovePoint(1, fieldPositions[i][0], fieldPositions[i][1], _HEIGHT);
                                 }
                                 x = WEAPON_X;
@@ -3464,7 +3464,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
                             }
                             break;
                         }
-                        m_creature->GetMotionMaster()->MovePoint(id, x, y, _HEIGHT);
+                        me->GetMotionMaster()->MovePoint(id, x, y, _HEIGHT);
                     }
                     else m_nextMove -= diff;
                 }
@@ -3477,15 +3477,15 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
             switch(Stance)
             {
                 case DEFENSIVE:
-                    AddSpellToCast(m_creature, SPELL_SWM_SHIELD_WALL);
+                    AddSpellToCast(me, SPELL_SWM_SHIELD_WALL);
                     SpecialTimer = 40000;
                     break;
                 case BERSERKER:
-                    AddSpellToCast(m_creature, SPELL_WHIRLWIND_1);
+                    AddSpellToCast(me, SPELL_WHIRLWIND_1);
                     SpecialTimer = 25000;
                     break;
                 case BATTLE:
-                    AddSpellToCast(m_creature->getVictim(), SPELL_MUTILATE);
+                    AddSpellToCast(me->getVictim(), SPELL_MUTILATE);
                     SpecialTimer = 25000;
                     break;
             }
@@ -3495,7 +3495,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 
         if(KnockAway < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_KNOCK_AWAY);
+            AddSpellToCast(me->getVictim(), SPELL_KNOCK_AWAY);
             KnockAway = 20000;
         }
         else
@@ -3542,7 +3542,7 @@ struct TRINITY_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_2);
+            AddSpellToCast(me->getVictim(), SPELL_CLEAVE_2);
             Cleave = 3000;
         }
         else
@@ -3550,7 +3550,7 @@ struct TRINITY_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
 
         if(Ignored < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_IGNORED);
+            AddSpellToCast(me->getVictim(), SPELL_IGNORED);
             Ignored = 10000;
         }
         else
@@ -3644,7 +3644,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
                                 SpellTimer = 2000;
                             break;
                         case SPELL_FEL_STOMP:
-                            AddSpellToCast(m_creature, SPELL_FEL_STOMP);
+                            AddSpellToCast(me, SPELL_FEL_STOMP);
                             break;
                     }
                     break;
@@ -3670,7 +3670,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
                     break;
                 }
             }
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_2);
+            AddSpellToCast(me->getVictim(), SPELL_CLEAVE_2);
             SpellTimer = Type ? 20000 : 15000;
         }
         else
@@ -3678,8 +3678,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
 
         if(Frenzy < diff)
         {
-            if(!m_creature->HasAura(SPELL_FRENZY_1, 0))
-                AddSpellToCast(m_creature, SPELL_FRENZY_1);
+            if(!me->HasAura(SPELL_FRENZY_1, 0))
+                AddSpellToCast(me, SPELL_FRENZY_1);
             Frenzy = 10000;
         }
         else
@@ -3730,8 +3730,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
     {
         if(damage)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30 && !m_creature->HasAura(SPELL_BSD_SHIELD_WALL, 0))
-                ForceSpellCast(m_creature, SPELL_BSD_SHIELD_WALL);
+            if(me->GetHealth()*100 / me->GetMaxHealth() < 30 && !me->HasAura(SPELL_BSD_SHIELD_WALL, 0))
+                ForceSpellCast(me, SPELL_BSD_SHIELD_WALL);
         }
     }
 
@@ -3742,8 +3742,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
 
         if(Intervene < diff)
         {
-            Unit* InterveneTarget = GetClosestCreatureWithEntry(m_creature,MOB_BONECHEWER_BLADE_FURY, 25.0f);
-            if(InterveneTarget && !m_creature->IsWithinDistInMap(InterveneTarget, 8.0) && InterveneTarget->isInCombat())
+            Unit* InterveneTarget = GetClosestCreatureWithEntry(me,MOB_BONECHEWER_BLADE_FURY, 25.0f);
+            if(InterveneTarget && !me->IsWithinDistInMap(InterveneTarget, 8.0) && InterveneTarget->isInCombat())
             {
                 ForceSpellCast(InterveneTarget, SPELL_INTERVENE);
                 Intervene = 20000;
@@ -3756,7 +3756,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
 
         if(ShieldBash < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_SHIELD_BASH);
+            AddSpellToCast(me->getVictim(), SPELL_SHIELD_BASH);
             ShieldBash = 15000;
         }
         else
@@ -3819,7 +3819,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
     void SetCCImmunity(bool apply)
     {
         for(uint8 i=0;i<8;++i)
-            m_creature->ApplySpellImmune(i, IMMUNITY_MECHANIC, CCMechanics[i], apply);
+            me->ApplySpellImmune(i, IMMUNITY_MECHANIC, CCMechanics[i], apply);
     }
 
     void OnAuraRemove(Aura* aur, bool stackRemove)
@@ -3827,8 +3827,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
         if(aur->GetId() == SPELL_WHIRLWIND_2)
         {
             SetCCImmunity(false);
-            m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
-            DoStartMovement(m_creature->getVictim());
+            me->Relocate(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
+            DoStartMovement(me->getVictim());
             MoveTimer = 0;
         }
     }
@@ -3840,22 +3840,22 @@ struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
 
         if(Whirlwind < diff)
         {
-            AddSpellToCast(m_creature, SPELL_WHIRLWIND_2);
+            AddSpellToCast(me, SPELL_WHIRLWIND_2);
             Whirlwind = 15000;
         }
         else
             Whirlwind -= diff;
 
-        if(m_creature->HasAura(SPELL_WHIRLWIND_2, 0))
+        if(me->HasAura(SPELL_WHIRLWIND_2, 0))
         {
             if(MoveTimer < diff)
             {
                 SetCCImmunity(true);
                 float x, y, z = 0;
-                m_creature->Relocate(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
-                m_creature->GetGroundPointAroundUnit(x, y, z, 10.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
-                m_creature->GetMotionMaster()->Clear(false);
-                m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+                me->Relocate(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
+                me->GetGroundPointAroundUnit(x, y, z, 10.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
+                me->GetMotionMaster()->Clear(false);
+                me->GetMotionMaster()->MovePoint(0, x, y, z);
                 MoveTimer = 2500;
             }
             else
@@ -3906,8 +3906,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
     {
         if(damage)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 35)
-                ForceSpellCast(m_creature, SPELL_FRENZY_1);
+            if(me->GetHealth()*100 / me->GetMaxHealth() < 35)
+                ForceSpellCast(me, SPELL_FRENZY_1);
         }
     }
 
@@ -3918,7 +3918,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
 
         if(BloodDrain < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_BLOOD_DRAIN);
+            AddSpellToCast(me->getVictim(), SPELL_BLOOD_DRAIN);
             BloodDrain = 25000;
         }
         else
@@ -3974,16 +3974,16 @@ struct TRINITY_DLL_DECL mob_mutated_war_houndAI: public ScriptedAI
 
     void Reset()
     {
-        if(!m_creature->HasAura(SPELL_DISEASE_CLOUD, 0))
-            DoCast(m_creature, SPELL_DISEASE_CLOUD);
+        if(!me->HasAura(SPELL_DISEASE_CLOUD, 0))
+            DoCast(me, SPELL_DISEASE_CLOUD);
     }
 
     void EnterCombat(Unit *) { DoZoneInCombat(80.0f); }
 
     void DamageTaken(Unit* who, uint32& damage)
     {
-        if(damage && damage > m_creature->GetHealth())
-            m_creature->CastSpell(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), SPELL_CLOUD_OF_DISEASE, false);
+        if(damage && damage > me->GetHealth())
+            me->CastSpell(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), SPELL_CLOUD_OF_DISEASE, false);
     }
 
     void UpdateAI(const uint32 diff)
@@ -4024,8 +4024,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_brawlerAI: public ScriptedAI
     {
         if(damage)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
-                ForceSpellCast(m_creature, SPELL_FRENZY_1);
+            if(me->GetHealth()*100 / me->GetMaxHealth() < 30)
+                ForceSpellCast(me, SPELL_FRENZY_1);
         }
     }
 
@@ -4036,7 +4036,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_brawlerAI: public ScriptedAI
 
         if(Enrage < diff)
         {
-            AddSpellToCast(m_creature, SPELL_ENRAGE_2);
+            AddSpellToCast(me, SPELL_ENRAGE_2);
             Enrage = 25000;
         }
         else
@@ -4077,8 +4077,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_combatantAI: public ScriptedAI
     {
         if(damage)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
-                ForceSpellCast(m_creature, SPELL_FRENZY_1);
+            if(me->GetHealth()*100 / me->GetMaxHealth() < 30)
+                ForceSpellCast(me, SPELL_FRENZY_1);
         }
     }
 
@@ -4089,7 +4089,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_combatantAI: public ScriptedAI
 
         if(CombatRage < diff)
         {
-            AddSpellToCast(m_creature, SPELL_COMBAT_RAGE);
+            AddSpellToCast(me, SPELL_COMBAT_RAGE);
             CombatRage = 10000;
         }
         else
@@ -4142,8 +4142,8 @@ struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
     {
         if(damage)
         {
-            if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
-                ForceSpellCast(m_creature, SPELL_FRENZY_1);
+            if(me->GetHealth()*100 / me->GetMaxHealth() < 30)
+                ForceSpellCast(me, SPELL_FRENZY_1);
         }
     }
 
@@ -4163,7 +4163,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
 
         if(Cleave < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE_3);
+            AddSpellToCast(me->getVictim(), SPELL_CLEAVE_3);
             Cleave = 15000;
         }
         else
@@ -4171,7 +4171,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
 
         if(MortalWound < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_MORTAL_WOUND);
+            AddSpellToCast(me->getVictim(), SPELL_MORTAL_WOUND);
             MortalWound = urand(8000, 12000);
         }
         else
@@ -4179,7 +4179,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
 
         if(Strike < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_STRIKE_1);
+            AddSpellToCast(me->getVictim(), SPELL_STRIKE_1);
             Strike = urand(4000, 6000);
         }
         else
@@ -4187,7 +4187,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
 
         if(SunderArmor < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_SUNDER_ARMOR);
+            AddSpellToCast(me->getVictim(), SPELL_SUNDER_ARMOR);
             SunderArmor = 10000;
         }
         else
@@ -4240,7 +4240,7 @@ struct TRINITY_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        m_creature->RemoveCorpse();
+        me->SetCorpseDelay(0);
     }
 
     void UpdateAI(const uint32 diff)
@@ -4250,7 +4250,7 @@ struct TRINITY_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
 
         if(Anger < diff)
         {
-            AddSpellToCast(m_creature, SPELL_ANGER);
+            AddSpellToCast(me, SPELL_ANGER);
             Anger = urand(6000, 16000);
         }
         else
@@ -4278,7 +4278,7 @@ struct TRINITY_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
 
     void Reset()
     {
-        DoCast(m_creature, SPELL_CONSUMING_STRIKES);
+        DoCast(me, SPELL_CONSUMING_STRIKES);
     }
 
     void EnterCombat(Unit *)
@@ -4288,11 +4288,7 @@ struct TRINITY_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        float x,y,z;
-        m_creature->GetRespawnCoord(x, y, z);
-        m_creature->Relocate(x,y,z);
-
-        m_creature->RemoveCorpse();
+        me->SetCorpseDelay(0);
     }
 
     void UpdateAI(const uint32 diff)
@@ -4335,11 +4331,7 @@ struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        float x,y,z;
-        m_creature->GetRespawnCoord(x, y, z);
-        m_creature->Relocate(x,y,z);
-
-        m_creature->RemoveCorpse();
+        me->SetCorpseDelay(0);
     }
 
     void UpdateAI(const uint32 diff)
@@ -4349,11 +4341,11 @@ struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
 
         if(SoulBlast < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SOUL_BLAST);
+            AddSpellToCast(me, SPELL_SOUL_BLAST);
             SoulBlast = urand(8000, 12000);
         }
         else
-            SoulBlast -=diff;
+            SoulBlast -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
@@ -4424,7 +4416,7 @@ struct TRINITY_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
 
         if(Confusion < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CONFUSION);
+            AddSpellToCast(me, SPELL_CONFUSION);
             Confusion = urand(15000, 25000);
         }
         else
@@ -4432,7 +4424,7 @@ struct TRINITY_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
 
         if(Dementia < diff)
         {
-            AddSpellToCast(m_creature, SPELL_DEMENTIA);
+            AddSpellToCast(me, SPELL_DEMENTIA);
             Dementia = urand(40000, 50000);
         }
         else
@@ -4446,7 +4438,7 @@ struct TRINITY_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200.0f, true))
                 {
                     target->GetClosePoint(x, y, z, 5.0f);
-                    m_creature->SummonCreature(NPC_IMAGE_OF_DEMENTIA, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                    me->SummonCreature(NPC_IMAGE_OF_DEMENTIA, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
                 }
             }
             ImageSummon = urand(25000, 35000);
@@ -4472,7 +4464,7 @@ struct TRINITY_DLL_DECL mob_image_of_dementiaAI: public ScriptedAI
 
     void Reset()
     {
-        m_creature->CastSpell(m_creature, SPELL_WHIRLWIND_3, false);
+        me->CastSpell(me, SPELL_WHIRLWIND_3, false);
         MoveTimer = 1000;
         DoZoneInCombat(80.0f);
     }
@@ -4485,9 +4477,9 @@ struct TRINITY_DLL_DECL mob_image_of_dementiaAI: public ScriptedAI
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200.0f, true))
             {
                 target->GetGroundPointAroundUnit(x, y, z, 10.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
-                m_creature->GetMotionMaster()->Clear(false);
-                m_creature->SetSpeed(MOVE_RUN, 2.5, true);
-                m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+                me->GetMotionMaster()->Clear(false);
+                me->SetSpeed(MOVE_RUN, 2.5, true);
+                me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
             MoveTimer = urand(1500, 3000);
         }
@@ -4603,26 +4595,26 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
     {
         DoZoneInCombat(80.0f);
 
-        if(Unit* Sister = FindCreature(NPC_SISTER_OF_PLEASURE, 30, m_creature))
+        if(Unit* Sister = FindCreature(NPC_SISTER_OF_PLEASURE, 30, me))
         {
-            if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
-                Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
+            if(!me->HasAura(SPELL_SHARED_BONDS, 0))
+                Sister->CastSpell(me, SPELL_SHARED_BONDS, false);
         }
     }
 
     void DamageTaken(Unit* who, uint32 &damage)
     {
-        uint32 HPPercent = m_creature->GetHealth()*100 / m_creature->GetMaxHealth();
+        uint32 HPPercent = me->GetHealth()*100 / me->GetMaxHealth();
         uint8 stack = 0;
-        if(m_creature->HasAura(SPELL_PAINFUL_RAGE, 0))
+        if(me->HasAura(SPELL_PAINFUL_RAGE, 0))
         {
-            if(Aura* Rage = m_creature->GetAura(SPELL_PAINFUL_RAGE, 0))
+            if(Aura* Rage = me->GetAura(SPELL_PAINFUL_RAGE, 0))
                 stack = Rage->GetStackAmount();
         }
         if(damage)
         {
             if(HPPercent < (95 - 10*stack))
-                m_creature->CastSpell(m_creature, SPELL_PAINFUL_RAGE, true);
+                me->CastSpell(me, SPELL_PAINFUL_RAGE, true);
             if(urand(1, 1000) > 995)
                 DoYell(YELL_SISTER_OF_PAIN, 0, who);
         }
@@ -4635,7 +4627,7 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
 
         if(LashOfPain < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_LASH_OF_PAIN);
+            AddSpellToCast(me->getVictim(), SPELL_LASH_OF_PAIN);
             LashOfPain = urand(12000, 15000);
         }
         else
@@ -4652,7 +4644,7 @@ struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
 
         if(ShellOfPain < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SHELL_OF_PAIN);
+            AddSpellToCast(me, SPELL_SHELL_OF_PAIN);
             ShellOfPain = urand(30000, 50000);
         }
         else
@@ -4705,21 +4697,21 @@ struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
         DoZoneInCombat(80.0f);
         DoYell(YELL_SISTER_OF_PLEASURE, 0, who);
 
-        if(Unit* Sister = FindCreature(NPC_SISTER_OF_PAIN, 30, m_creature))
+        if(Unit* Sister = FindCreature(NPC_SISTER_OF_PAIN, 30, me))
         {
-            if(!m_creature->HasAura(SPELL_SHARED_BONDS, 0))
-                Sister->CastSpell(m_creature, SPELL_SHARED_BONDS, false);
+            if(!me->HasAura(SPELL_SHARED_BONDS, 0))
+                Sister->CastSpell(me, SPELL_SHARED_BONDS, false);
         }
     }
 
     void DamageTaken(Unit* who, uint32 &damage)
     {
-        uint32 HPPercent = m_creature->GetHealth()*100 / m_creature->GetMaxHealth();
+        uint32 HPPercent = me->GetHealth()*100 / me->GetMaxHealth();
         if(damage)
         {
             if(HPPercent < 75 && !cooldown)
             {
-                ForceSpellCast(m_creature, SPELL_SHELL_OF_LIFE);
+                ForceSpellCast(me, SPELL_SHELL_OF_LIFE);
                 cooldown = true;
             }
         }
@@ -4870,9 +4862,9 @@ struct TRINITY_DLL_DECL mob_spellbound_attendentAI: public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(m_creature->getVictim() && m_creature->getVictim()->IsNonMeleeSpellCasted(false) && !cooldown)
+        if(me->getVictim() && me->getVictim()->IsNonMeleeSpellCasted(false) && !cooldown)
         {
-            ForceSpellCast(m_creature->getVictim(), SPELL_KICK, INTERRUPT_AND_CAST_INSTANTLY);
+            ForceSpellCast(me->getVictim(), SPELL_KICK, INTERRUPT_AND_CAST_INSTANTLY);
             cooldown = true;
         }
 
@@ -4940,7 +4932,7 @@ struct TRINITY_DLL_DECL mob_enslaved_servantAI: public ScriptedAI
 
         if(KidneyShot < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_KIDNEY_SHOT);
+            AddSpellToCast(me->getVictim(), SPELL_KIDNEY_SHOT);
             KidneyShot = urand(20000, 30000);
         }
         else
@@ -4948,7 +4940,7 @@ struct TRINITY_DLL_DECL mob_enslaved_servantAI: public ScriptedAI
 
         if(Uppercut < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_UPPERCUT);
+            AddSpellToCast(me->getVictim(), SPELL_UPPERCUT);
             Uppercut = urand(5000, 10000);
         }
         else
@@ -5087,7 +5079,7 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
         {
             case HOLY_TYPE:
                 {
-                    DoCast(m_creature, SPELL_POWER_WORD_SHIELD);
+                    DoCast(me, SPELL_POWER_WORD_SHIELD);
                     Heal = 2500;
                     shieldCooldownTimer = 15000;
                     shieldCooldown = true;
@@ -5099,7 +5091,7 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
             case SHADOW_TYPE:
                 {
                     StopAutocast();
-                    DoCast(m_creature, SPELL_SHADOWFORM);
+                    DoCast(me, SPELL_SHADOWFORM);
                     MindFlay = 6000;
                     MindBlast = 2000;
                     wordDeathTimer = 8000;
@@ -5153,10 +5145,10 @@ struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
             {
                 if(!wordDeathCooldown)
                 {
-                    if(m_creature->getVictim()->GetHealth()*100 / m_creature->getVictim()->GetMaxHealth() < 30)
+                    if(me->getVictim()->GetHealth()*100 / me->getVictim()->GetMaxHealth() < 30)
                     {
                         ClearCastQueue();
-                        ForceSpellCast(m_creature->getVictim(), SPELL_POWER_WORD_DEATH, INTERRUPT_AND_CAST);
+                        ForceSpellCast(me->getVictim(), SPELL_POWER_WORD_DEATH, INTERRUPT_AND_CAST);
                         wordDeathCooldown = true;
                         wordDeathTimer = 8000;
                     }
@@ -5223,7 +5215,7 @@ struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
     {
         ClearCastQueue();
 
-        DoCast(m_creature, SPELL_RIPOSTE_AURA);
+        DoCast(me, SPELL_RIPOSTE_AURA);
         VanishEvent = urand(6000, 8000);
         ParalyzingPoison = 15000;
         AmbushTagetGUID = 0;
@@ -5238,7 +5230,7 @@ struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
     void OnAuraRemove(Aura* Aur, bool stack)
     {
         if(Aur->GetId() == SPELL_VANISH)
-            AttackStart(m_creature->getVictim());
+            AttackStart(me->getVictim());
     }
 
     void UpdateAI(const uint32 diff)
@@ -5249,7 +5241,7 @@ struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
         if(VanishEvent < diff)
         {
             ClearCastQueue();
-            ForceSpellCast(m_creature, SPELL_VANISH, INTERRUPT_AND_CAST);
+            ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST);
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0f, true))
             {
                 AmbushTagetGUID = target->GetGUID();
@@ -5261,11 +5253,11 @@ struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
         else
             VanishEvent -= diff;
 
-        if(!ambushed && m_creature->HasAura(SPELL_VANISH, 1))
+        if(!ambushed && me->HasAura(SPELL_VANISH, 1))
         {
-            if(Player* PlayerTarget = m_creature->GetPlayer(AmbushTagetGUID))
+            if(Player* PlayerTarget = me->GetPlayer(AmbushTagetGUID))
             {
-                if(m_creature->IsWithinDistInMap(PlayerTarget, 14.0))
+                if(me->IsWithinDistInMap(PlayerTarget, 14.0))
                 {
                     ForceSpellCast(PlayerTarget, SPELL_AMBUSH);
                     ambushed = true;
@@ -5278,7 +5270,7 @@ struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
 
         if(ParalyzingPoison < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_PARALYZING_POISON);
+            AddSpellToCast(me->getVictim(), SPELL_PARALYZING_POISON);
             ParalyzingPoison = urand(10000, 14000);
         }
         else
@@ -5413,15 +5405,15 @@ struct TRINITY_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 20 && !shielded)
+        if(me->GetHealth()*100 / me->GetMaxHealth() < 20 && !shielded)
         {
-            ForceSpellCast(m_creature, SPELL_DIVINE_SHIELD, INTERRUPT_AND_CAST, true);
+            ForceSpellCast(me, SPELL_DIVINE_SHIELD, INTERRUPT_AND_CAST, true);
             shielded = true;
         }
 
         if(HammerOfJustice < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_HAMMER_OF_JUSTICE);
+            AddSpellToCast(me->getVictim(), SPELL_HAMMER_OF_JUSTICE);
             HammerOfJustice = urand(15000, 25000);
         }
         else
@@ -5429,7 +5421,7 @@ struct TRINITY_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
 
         if(JudgmentOfCommand < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_JUDGEMENT_OF_COMMAND);
+            AddSpellToCast(me->getVictim(), SPELL_JUDGEMENT_OF_COMMAND);
             JudgmentOfCommand = urand(3000, 8000);
         }
         else
@@ -5479,7 +5471,7 @@ struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
     {
         DoZoneInCombat(80.0f);
         DoYell(YELL_PROMENADE_SENTINEL, 0, who);
-        DoCast(m_creature, SPELL_L1_ARCANE_CHARGE);
+        DoCast(me, SPELL_L1_ARCANE_CHARGE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -5523,7 +5515,7 @@ struct TRINITY_DLL_DECL mob_arcane_chargeAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        DoCast(m_creature, SPELL_SPOTLIGHT);
+        DoCast(me, SPELL_SPOTLIGHT);
         Delay = 3000;
     }
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
@@ -5531,7 +5523,7 @@ struct TRINITY_DLL_DECL mob_arcane_chargeAI : public Scripted_NoMovementAI
     {
         if(Delay < diff)
         {
-            DoCast(m_creature, SPELL_L4_ARCANE_CHARGE);
+            DoCast(me, SPELL_L4_ARCANE_CHARGE);
             Delay = 10000;
         }
         else

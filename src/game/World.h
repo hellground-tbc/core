@@ -463,6 +463,13 @@ enum CumulateMapDiff
 
 struct MapUpdateDiffInfo
 {
+
+    ~MapUpdateDiffInfo()
+    {
+        for (CumulativeDiffMap::iterator itr = _cumulativeDiffInfo.begin(); itr != _cumulativeDiffInfo.end(); ++itr)
+            delete itr->second;
+    }
+
     void ClearDiffInfo()
     {
         for (CumulativeDiffMap::iterator itr = _cumulativeDiffInfo.begin(); itr != _cumulativeDiffInfo.end(); ++itr)
