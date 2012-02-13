@@ -470,8 +470,11 @@ struct MapUpdateDiffInfo
             delete itr->second;
     }
 
+    void InitializeMapData();
+
     void ClearDiffInfo()
     {
+        InitializeMapData();
         for (CumulativeDiffMap::iterator itr = _cumulativeDiffInfo.begin(); itr != _cumulativeDiffInfo.end(); ++itr)
         {
             for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
@@ -481,9 +484,6 @@ struct MapUpdateDiffInfo
 
     void CumulateDiffFor(CumulateMapDiff type, uint32 diff, uint32 mapid)
     {
-        if (_cumulativeDiffInfo.find(mapid) == _cumulativeDiffInfo.end())
-            _cumulativeDiffInfo[mapid] = new atomic_uint[DIFF_MAX_CUMULATIVE_INFO];
-
         _cumulativeDiffInfo[mapid][type] += diff;
     }
 

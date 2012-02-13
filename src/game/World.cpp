@@ -92,6 +92,15 @@ int32 World::m_visibility_notify_periodInBGArenas   = DEFAULT_VISIBILITY_NOTIFY_
 int32 World::m_activeObjectUpdateDistanceOnContinents = DEFAULT_VISIBILITY_DISTANCE;
 int32 World::m_activeObjectUpdateDistanceInInstances = DEFAULT_VISIBILITY_DISTANCE;
 
+void MapUpdateDiffInfo::InitializeMapData()
+{
+    for(MapManager::MapMapType::const_iterator i = sMapMgr.Maps().begin(); i != sMapMgr.Maps().end(); ++i)
+    {
+        if (_cumulativeDiffInfo.find(i->first) == _cumulativeDiffInfo.end())
+            _cumulativeDiffInfo[i->first] = new atomic_uint[DIFF_MAX_CUMULATIVE_INFO];
+    }
+}
+
 void MapUpdateDiffInfo::PrintCumulativeMapUpdateDiff()
 {
     for (CumulativeDiffMap::iterator itr = _cumulativeDiffInfo.begin(); itr != _cumulativeDiffInfo.end(); ++itr)
