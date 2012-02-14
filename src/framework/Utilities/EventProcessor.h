@@ -27,7 +27,7 @@
 
 // Note. All times are in milliseconds here.
 
-class BasicEvent
+class TRINITY_DLL_SPEC BasicEvent
 {
     public:
         BasicEvent() { to_Abort = false; }
@@ -54,7 +54,7 @@ class BasicEvent
 
 typedef std::multimap<uint64, BasicEvent*> EventList;
 
-class EventProcessor
+class TRINITY_DLL_SPEC EventProcessor
 {
     public:
         EventProcessor();

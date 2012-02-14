@@ -96,8 +96,8 @@ void MapUpdateDiffInfo::InitializeMapData()
 {
     for(MapManager::MapMapType::const_iterator i = sMapMgr.Maps().begin(); i != sMapMgr.Maps().end(); ++i)
     {
-        if (_cumulativeDiffInfo.find(i->first) == _cumulativeDiffInfo.end())
-            _cumulativeDiffInfo[i->first] = new atomic_uint[DIFF_MAX_CUMULATIVE_INFO];
+        if (_cumulativeDiffInfo.find(i->first.nMapId) == _cumulativeDiffInfo.end())
+            _cumulativeDiffInfo[i->first.nMapId] = new atomic_uint[DIFF_MAX_CUMULATIVE_INFO];
     }
 }
 

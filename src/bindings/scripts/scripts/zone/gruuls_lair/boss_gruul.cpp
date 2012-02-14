@@ -24,6 +24,8 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_gruuls_lair.h"
 
+#include "../../../../../framework/Utilities/EventProcessor.h"
+
 /* Yells & Quotes */
 #define SAY_AGGRO                   -1565010
 #define SAY_SLAM1                   -1565011
@@ -47,6 +49,26 @@ EndScriptData */
 #define SPELL_HURTFUL_STRIKE        33813
 #define SPELL_STONED                33652                   // Spell is self cast -> linked on ground slam fade
 #define SPELL_GRONN_LORDS_GRASP     33572                   // Triggered by Ground Slam
+
+class ChaseEvent : public BasicEvent
+{
+    public:
+        ChaseEvent(uint64 targetGUID, Unit& owner) : _targetGUID(targetGUID), _owner(owner) {};
+        virtual ~ChaseEvent() {};
+
+        virtual bool Execute(uint64 e_time, uint32 p_time)
+        {
+            if (Unit *pTarget = _owner.GetUnit(_targetGUID))
+                _owner.GetMotionMaster()->MoveChase(pTarget);
+
+            return true;
+        }
+        virtual void Abort(uint64 e_time) {}
+
+    private:
+        uint64 _targetGUID;
+        Unit& _owner;
+};
 
 struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 {
@@ -84,20 +106,20 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
         pInstance->SetData(DATA_GRUULEVENT, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, me);
         DoZoneInCombat();
         pInstance->SetData(DATA_GRUULEVENT, IN_PROGRESS);
     }
 
     void KilledUnit()
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -108,14 +130,14 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
 
         if (Check_Timer < diff)
         {
-            if (!m_creature->IsWithinDistInMap(&wLoc, 74.0f))
+            if (!me->IsWithinDistInMap(&wLoc, 74.0f))
             {
                EnterEvadeMode();
                return;
             }
 
             DoZoneInCombat();
-            m_creature->SetSpeed(MOVE_RUN, 2.0f);
+            me->SetSpeed(MOVE_RUN, 2.0f);
             Check_Timer= 3000;
         }
         else
@@ -125,8 +147,8 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
         // Gruul can cast this spell up to 30 times
         if (Growth_Timer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_GROWTH);
-            DoScriptText(EMOTE_GROW, m_creature);
+            AddSpellToCast(me, SPELL_GROWTH);
+            DoScriptText(EMOTE_GROW, me);
             Growth_Timer = 30000;
         }
         else
@@ -145,22 +167,21 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
         {
             if (ShatterTimer <= diff)
             {
-                m_creature->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->Clear();
 
-                Unit *victim = m_creature->getVictim();
+                Unit *victim = me->getVictim();
                 if (victim)
                 {
-                    m_creature->GetMotionMaster()->MoveChase(victim);
-                    // hack fix ;P
-                    m_creature->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
-                    m_creature->SetSelection(victim->GetGUID());
+                    // re-chase target after 2 seconds
+                    me->m_Events.AddEvent(new ChaseEvent(me->getVictimGUID(), *me), me->m_Events.CalculateTime(2000), true);
+                    me->SetSelection(victim->GetGUID());
                 }
 
                 HurtfulStrike_Timer = 8000;
                 ShatterTimer = 0;
 
                 //The dummy shatter spell is cast
-                ForceSpellCastWithScriptText(SPELL_SHATTER, CAST_SELF, RAND(SAY_SHATTER1, SAY_SHATTER2));
+                ForceSpellCastWithScriptText(SPELL_SHATTER, CAST_SELF, RAND(SAY_SHATTER1, SAY_SHATTER2), INTERRUPT_AND_CAST_INSTANTLY);
             }
             else
                 ShatterTimer -= diff;
@@ -196,9 +217,9 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
             // Ground Slam, Gronn Lord's Grasp, Stoned, Shatter
             if (GroundSlamTimer < diff)
             {
-                m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveIdle();
-                m_creature->SetSelection(0);
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MoveIdle();
+                me->SetSelection(0);
 
                 ShatterTimer = 15000;
                 GroundSlamTimer = urand(60000, 65000);
