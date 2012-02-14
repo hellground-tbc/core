@@ -151,6 +151,8 @@ struct TRINITY_DLL_DECL boss_gruulAI : public ScriptedAI
                 if (victim)
                 {
                     m_creature->GetMotionMaster()->MoveChase(victim);
+                    // hack fix ;P
+                    m_creature->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
                     m_creature->SetSelection(victim->GetGUID());
                 }
 
