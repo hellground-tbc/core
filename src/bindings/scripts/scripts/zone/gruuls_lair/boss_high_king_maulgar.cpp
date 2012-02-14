@@ -35,240 +35,158 @@ EndScriptData */
 #define SAY_SLAY3               -1565008
 #define SAY_DEATH               -1565009
 
-// High King Maulgar
-#define SPELL_ARCING_SMASH      39144
-#define SPELL_MIGHTY_BLOW       33230
-#define SPELL_WHIRLWIND         33238
-#define SPELL_BERSERKER_C       26561
-#define SPELL_ROAR              16508
-#define SPELL_FLURRY            33232
-#define SPELL_DUAL_WIELD        29651
-
-// Olm the Summoner
-#define SPELL_DARK_DECAY        33129
-#define SPELL_DEATH_COIL        33130
-#define SPELL_SUMMON_WFH        33131
-
-//Kiggler the Craed
-#define SPELL_GREATER_POLYMORPH 33173
-#define SPELL_LIGHTNING_BOLT    36152
-#define SPELL_ARCANE_SHOCK      33175
-#define SPELL_ARCANE_EXPLOSION  33237
-
-//Blindeye the Seer
-#define SPELL_GREATER_PW_SHIELD 33147
-#define SPELL_HEAL              33144
-#define SPELL_PRAYEROFHEALING   33152
-
-//Krosh Firehand
-#define SPELL_GREATER_FIREBALL  33051
-#define SPELL_SPELLSHIELD       33054
-#define SPELL_BLAST_WAVE        33061
-
-bool CheckAllBossDied(ScriptedInstance* pInstance, Creature* m_creature)
+enum eHKMSpells
 {
-    if (!pInstance || !m_creature)
-        return false;
+    SPELL_ARCING_SMASH = 39144,
+    SPELL_MIGHTY_BLOW  = 33230,
+    SPELL_WHIRLWIND    = 33238,
+    SPELL_BERSERKER_C  = 26561,
+    SPELL_ROAR         = 16508,
+    SPELL_FLURRY       = 33232,
+    SPELL_DUAL_WIELD   = 29651
+};
 
-    Creature* Maulgar = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_MAULGAR));
-    Creature* Kiggler = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_KIGGLERTHECRAZED));
-    Creature* Blindeye = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_OLMTHESUMMONER));
-    Creature* Olm = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_BLINDEYETHESEER));
-    Creature* Krosh = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_KROSHFIREHAND));
+enum eHKMEvents
+{
+    EVENT_ARCING_SMASH = 1,
+    EVENT_MIGHTY_BLOW  = 2,
+    EVENT_CHARGE       = 3,
+    EVENT_WHIRLWIND    = 4,
+    EVENT_ROAR         = 5
+};
 
-    if (!Maulgar || !Kiggler || !Blindeye || !Olm || !Krosh)
-        return false;
-
-    if (!Maulgar->isAlive() && !Kiggler->isAlive() && !Blindeye->isAlive() && !Olm->isAlive() && !Krosh->isAlive())
-        return true;
-
-    return false;
-}
+enum ePhase
+{
+    PHASE_ONE = 1,
+    PHASE_TWO = 2
+};
 
 //High King Maulgar AI
-struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
+struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public BossAI
 {
-    boss_high_king_maulgarAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-        for (uint8 i = 0; i < 4; ++i)
-            Council[i] = 0;
+    boss_high_king_maulgarAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
 
-        c->GetPosition(wLoc);
-    }
-
-    ScriptedInstance* pInstance;
-
-    uint32 ArcingSmash_Timer;
-    uint32 MightyBlow_Timer;
-    uint32 Whirlwind_Timer;
-    uint32 Charging_Timer;
-    uint32 Roar_Timer;
-    uint32 checkTimer;
-
-    WorldLocation wLoc;
-
-    bool Phase2;
-
-    uint64 Council[4];
+    ePhase _phase;
 
     void Reset()
     {
+        events.Reset();
         ClearCastQueue();
 
-        pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
+        _phase = PHASE_ONE;
 
-        ArcingSmash_Timer = 10000;
-        MightyBlow_Timer = 40000;
-        Whirlwind_Timer = 30000;
-        Charging_Timer = 0;
-        Roar_Timer = 0;
-        checkTimer = 3000;
+        instance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
 
-        m_creature->CastSpell(m_creature, SPELL_DUAL_WIELD, false);
+        events.ScheduleEvent(EVENT_MIGHTY_BLOW, 40000);
+        events.ScheduleEvent(EVENT_ARCING_SMASH, 10000);
+        events.ScheduleEvent(EVENT_WHIRLWIND, 30000);
+        events.ScheduleEvent(EVENT_CHARGE, 1000);
 
-        Phase2 = false;
-
-        Creature *pCreature = NULL;
-        for (uint8 i = 0; i < 4; i++)
-        {
-            if (Council[i])
-            {
-                pCreature = m_creature->GetMap()->GetCreature(Council[i]);
-                if (pCreature && !pCreature->isAlive())
-                {
-                    pCreature->Respawn();
-                    pCreature->AI()->EnterEvadeMode();
-                }
-            }
-        }
+        ForceSpellCast(me, SPELL_DUAL_WIELD);
     }
 
     void KilledUnit()
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
     }
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
-        pInstance->SetData(DATA_MAULGAREVENT, DONE);
-    }
-
-    void AddDeath()
-    {
-        DoScriptText(RAND(SAY_OGRE_DEATH1, SAY_OGRE_DEATH2, SAY_OGRE_DEATH3, SAY_OGRE_DEATH4), m_creature);
+        DoScriptText(SAY_DEATH, me);
+        instance->SetData(DATA_MAULGAREVENT, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
-        GetCouncil();
+        DoScriptText(SAY_AGGRO, me);
 
-        DoScriptText(SAY_AGGRO, m_creature);
-
-        pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
-        pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
+        instance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
 
         DoZoneInCombat();
     }
 
-    void GetCouncil()
+    void DoAction(int32 param)
     {
-        //get council member's guid to respawn them if needed
-        Council[0] = pInstance->GetData64(DATA_KIGGLERTHECRAZED);
-        Council[1] = pInstance->GetData64(DATA_BLINDEYETHESEER);
-        Council[2] = pInstance->GetData64(DATA_OLMTHESUMMONER);
-        Council[3] = pInstance->GetData64(DATA_KROSHFIREHAND);
+        if (me->isAlive())
+            DoScriptText(RAND(SAY_OGRE_DEATH1, SAY_OGRE_DEATH2, SAY_OGRE_DEATH3, SAY_OGRE_DEATH4), me);
+    }
+
+    void EnterEvadeMode()
+    {
+        //if (me->GetFormation())
+        //    me->GetFormation()->FormationReset();
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustReachedHome()
+    {
+        if (me->GetFormation())
+            me->GetFormation()->RespawnFormation(me);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        //Only if not incombat check if the event is started
-        if (!m_creature->isInCombat() && pInstance->GetData(DATA_MAULGAREVENT))
-        {
-            if (Unit* target = m_creature->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
-            {
-                AttackStart(target);
-                GetCouncil();
-            }
-        }
-
         //Return since we have no target
         if (!UpdateVictim())
             return;
 
-        //someone evaded!
-        if (!pInstance->GetData(DATA_MAULGAREVENT))
-        {
-            EnterEvadeMode();
-            return;
-        }
+        DoSpecialThings(diff, DO_EVERYTHING, 200.0f, 1.6f);
 
-        DoSpecialThings(diff, DO_EVERYTHING, 200.0f, 2.0f);
-
-        //ArcingSmash_Timer
-        if (ArcingSmash_Timer < diff)
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_ARCING_SMASH);
-            ArcingSmash_Timer = 10000;
+            switch (eventId)
+            {
+                case EVENT_ARCING_SMASH:
+                {
+                    AddSpellToCast(SPELL_ARCING_SMASH);
+                    events.ScheduleEvent(eventId, 10000);
+                    break;
+                }
+                case EVENT_WHIRLWIND:
+                {
+                    AddSpellToCast(SPELL_WHIRLWIND, CAST_SELF);
+                    events.ScheduleEvent(eventId, 55000);
+                    break;
+                }
+                case EVENT_MIGHTY_BLOW:
+                {
+                    AddSpellToCast(SPELL_MIGHTY_BLOW);
+                    events.ScheduleEvent(eventId, urand(30000, 40000));
+                    break;
+                }
+                case EVENT_CHARGE:
+                {
+                    AddSpellToCast(SPELL_BERSERKER_C, CAST_RANDOM);
+                    events.ScheduleEvent(eventId, 20000);
+                    break;
+                }
+                case EVENT_ROAR:
+                {
+                    AddSpellToCast(SPELL_ROAR, CAST_SELF);
+                    events.ScheduleEvent(eventId, 20000);
+                    break;
+                }
+            }
         }
-        else
-            ArcingSmash_Timer -= diff;
-
-        //Whirlwind_Timer
-        if (Whirlwind_Timer < diff)
-        {
-            AddSpellToCast(m_creature->getVictim(), SPELL_WHIRLWIND);
-            Whirlwind_Timer = 55000;
-        }
-        else
-            Whirlwind_Timer -= diff;
-
-        //MightyBlow_Timer
-        if (MightyBlow_Timer < diff)
-        {
-            AddSpellToCast(m_creature->getVictim(), SPELL_MIGHTY_BLOW, true);
-            MightyBlow_Timer = urand(30000, 40000);
-        }
-        else
-            MightyBlow_Timer -= diff;
 
         //Entering Phase 2
-        if (!Phase2 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
+        if (_phase == PHASE_ONE && HealthBelowPct(50))
         {
-            Phase2 = true;
-            DoScriptText(SAY_ENRAGE, m_creature);
-            Whirlwind_Timer = 30000;
+            _phase = PHASE_TWO;
 
-            m_creature->CastSpell(m_creature, SPELL_DUAL_WIELD, true);
-            m_creature->CastSpell(m_creature, SPELL_FLURRY, true);
-            m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);
-            m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 0);
-        }
+            DoScriptText(SAY_ENRAGE, me);
 
-        if (Phase2)
-        {
-            //Charging_Timer
-            if (Charging_Timer < diff)
-            {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_BERSERKER_C), true))
-                {
-                    AttackStart(target);
-                    AddSpellToCast(target, SPELL_BERSERKER_C);
-                }
-                Charging_Timer = 20000;
-            }
-            else
-                Charging_Timer -= diff;
+            events.RescheduleEvent(EVENT_WHIRLWIND, 30000);
+            events.ScheduleEvent(EVENT_CHARGE, 2000);
+            events.ScheduleEvent(EVENT_ROAR, 3000);
 
-            // Intimidating Roar
-            if (Roar_Timer < diff)
-            {
-                AddSpellToCast(me->getVictim(), SPELL_ROAR);
-                Roar_Timer = urand(40000, 50000);
-            }
-            else
-                Roar_Timer -= diff;
+            ForceSpellCast(me, SPELL_DUAL_WIELD);
+            ForceSpellCast(me, SPELL_FLURRY);
+
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 0);
         }
 
         CastNextSpellIfAnyAndReady();
@@ -276,410 +194,318 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public ScriptedAI
     }
 };
 
-//Olm The Summoner AI
-struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public ScriptedAI
+enum eOlmEvents
 {
-    boss_olm_the_summonerAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = c->GetInstanceData();
-    }
+    EVENT_DARK_DECAY = 1,
+    EVENT_SUMMON     = 2,
+    EVENT_DEATH_COIL = 3
+};
 
-    ScriptedInstance* pInstance;
+enum eOlmSpells
+{
+    SPELL_DARK_DECAY = 33129,
+    SPELL_DEATH_COIL = 33130,
+    SPELL_SUMMON_WFH = 33131,
+};
 
-    uint32 DarkDecay_Timer;
-    uint32 Summon_Timer;
-    uint32 DeathCoil_Timer;
-
-    uint32 pulseCombatTimer;
+//Olm The Summoner AI
+struct TRINITY_DLL_DECL boss_olm_the_summonerAI : public BossAI
+{
+    boss_olm_the_summonerAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
 
     void Reset()
     {
+        events.Reset();
         ClearCastQueue();
 
-        DarkDecay_Timer = 10000;
-        Summon_Timer = 15000;
-        DeathCoil_Timer = 20000;
-
-        pulseCombatTimer = 5000;
-
-        pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
+        events.ScheduleEvent(EVENT_DARK_DECAY, 10000);
+        events.ScheduleEvent(EVENT_SUMMON, 15000);
+        events.ScheduleEvent(EVENT_DEATH_COIL, 20000);
     }
 
     void EnterCombat(Unit *who)
     {
-        pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
-        pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
         DoZoneInCombat();
     }
 
     void JustDied(Unit* Killer)
     {
-        if (Creature *Maulgar = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_MAULGAR)))
-            ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
-
-        if (CheckAllBossDied(pInstance, m_creature))
-            pInstance->SetData(DATA_MAULGAREVENT, DONE);
+        // inform leader about our death
+        if (me->GetFormation())
+            me->GetFormation()->getLeader()->AI()->DoAction();
     }
 
     void UpdateAI(const uint32 diff)
     {
-        //Only if not incombat check if the event is started
-        if (!m_creature->isInCombat() && pInstance->GetData(DATA_MAULGAREVENT))
-            if (Unit* target = me->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
-                AttackStart(target);
-
         //Return since we have no target
         if (!UpdateVictim())
             return;
 
         DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 2.0f);
 
-        //someone evaded!
-        if (!pInstance->GetData(DATA_MAULGAREVENT))
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            EnterEvadeMode();
-            return;
+            switch (eventId)
+            {
+                case EVENT_DARK_DECAY:
+                {
+                    AddSpellToCast(SPELL_DARK_DECAY);
+                    events.ScheduleEvent(eventId, 20000);
+                    break;
+                }
+                case EVENT_SUMMON:
+                {
+                    AddSpellToCast(SPELL_SUMMON_WFH, CAST_SELF);
+                    events.ScheduleEvent(eventId, 50000);
+                    break;
+                }
+                case EVENT_DEATH_COIL:
+                {
+                    AddSpellToCast(SPELL_DEATH_COIL, CAST_RANDOM);
+                    events.ScheduleEvent(eventId, 20000);
+                    break;
+                }
+            }
         }
-
-        //DarkDecay_Timer
-        if (DarkDecay_Timer < diff)
-        {
-            AddSpellToCast(m_creature->getVictim(), SPELL_DARK_DECAY);
-            DarkDecay_Timer = 20000;
-        }
-        else
-            DarkDecay_Timer -= diff;
-
-        //Summon_Timer
-        if (Summon_Timer < diff)
-        {
-            AddSpellToCast(m_creature, SPELL_SUMMON_WFH);
-            Summon_Timer = 50000;
-        }
-        else
-            Summon_Timer -= diff;
-
-        //DeathCoil Timer /need correct timer
-        if (DeathCoil_Timer < diff)
-        {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_DEATH_COIL), true))
-                AddSpellToCast(target, SPELL_DEATH_COIL);
-            DeathCoil_Timer = 20000;
-        }
-        else
-            DeathCoil_Timer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
 
-//Kiggler The Crazed AI
-struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public ScriptedAI
+enum eKigglerSpells
 {
-    boss_kiggler_the_crazedAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-    }
+    SPELL_GREATER_POLYMORPH = 33173,
+    SPELL_LIGHTNING_BOLT    = 36152,
+    SPELL_ARCANE_SHOCK      = 33175,
+    SPELL_ARCANE_EXPLOSION  = 33237,
+};
 
-    uint32 GreaterPolymorph_Timer;
-    uint32 ArcaneShock_Timer;
-    uint32 ArcaneExplosion_Timer;
+enum eKigglerEvents
+{
+    EVENT_POLYMORPH    = 1,
+    EVENT_ARCANE_SHOCK = 2,
+    EVENT_ARCANE_EXPLO = 3
+};
 
-    uint32 pulseCombatTimer;
-
-    ScriptedInstance* pInstance;
+//Kiggler The Crazed AI
+struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public BossAI
+{
+    boss_kiggler_the_crazedAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
 
     void Reset()
     {
+        events.Reset();
         ClearCastQueue();
 
-        GreaterPolymorph_Timer = 5000;
-        ArcaneShock_Timer = 20000;
-        ArcaneExplosion_Timer = 30000;
+        events.ScheduleEvent(EVENT_POLYMORPH, 5000);
+        events.ScheduleEvent(EVENT_ARCANE_SHOCK, 20000);
+        events.ScheduleEvent(EVENT_ARCANE_EXPLO, 30000);
 
-        pulseCombatTimer = 5000;
-
-        pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
         SetAutocast(SPELL_LIGHTNING_BOLT, 2200);
     }
 
     void EnterCombat(Unit *who)
     {
-        pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
-        pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
         DoZoneInCombat();
         StartAutocast();
     }
 
     void JustDied(Unit* Killer)
     {
-        Creature *Maulgar = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_MAULGAR));
-
-        if (Maulgar)
-            ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
-
-        if (CheckAllBossDied(pInstance, m_creature))
-            pInstance->SetData(DATA_MAULGAREVENT, DONE);
+        // inform leader about our death
+        if (me->GetFormation())
+            me->GetFormation()->getLeader()->AI()->DoAction();
     }
 
     void UpdateAI(const uint32 diff)
     {
-        //Only if not incombat check if the event is started
-        if (!m_creature->isInCombat() && pInstance->GetData(DATA_MAULGAREVENT))
-            if(Unit* target = m_creature->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
-                AttackStart(target);
-
         //Return since we have no target
         if (!UpdateVictim())
             return;
 
-        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 2.0f);
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 1.6f);
 
-        //someone evaded!
-        if (!pInstance->GetData(DATA_MAULGAREVENT))
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
         {
-            EnterEvadeMode();
-            return;
-        }
-
-        //GreaterPolymorph_Timer
-        if (GreaterPolymorph_Timer < diff)
-        {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_GREATER_POLYMORPH), true))
-                AddSpellToCast(target, SPELL_GREATER_POLYMORPH);
-
-            GreaterPolymorph_Timer = 20000;
-        }
-        else
-            GreaterPolymorph_Timer -= diff;
-
-        //ArcaneShock_Timer
-        if (ArcaneShock_Timer < diff)
-        {
-            AddSpellToCast(m_creature->getVictim(), SPELL_ARCANE_SHOCK);
-            ArcaneShock_Timer = 20000;
-        }
-        else
-            ArcaneShock_Timer -= diff;
-
-        //ArcaneExplosion_Timer
-        if (ArcaneExplosion_Timer < diff)
-        {
-            AddSpellToCast(m_creature->getVictim(), SPELL_ARCANE_EXPLOSION);
-            ArcaneExplosion_Timer = 30000;
-        }
-        else
-            ArcaneExplosion_Timer -= diff;
-
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
-    }
-};
-
-//Blindeye The Seer AI
-struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public ScriptedAI
-{
-    boss_blindeye_the_seerAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-    }
-
-    uint32 Shield_PoH_Timer;       // always cast sequence of shield and Prayer of Healing
-    uint32 Heal_Timer;
-
-    uint32 pulseCombatTimer;
-
-    bool shieldCasted;
-
-    ScriptedInstance* pInstance;
-
-    void Reset()
-    {
-        ClearCastQueue();
-
-        Shield_PoH_Timer = 15000;
-        Heal_Timer = urand(7000, 10000);
-        shieldCasted = false;
-
-        pulseCombatTimer = 5000;
-
-        pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
-    }
-
-    void EnterCombat(Unit *who)
-    {
-        pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
-        pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
-        DoZoneInCombat();
-    }
-
-    void JustDied(Unit* Killer)
-    {
-        if (Creature *Maulgar = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_MAULGAR)))
-            ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
-
-        if (CheckAllBossDied(pInstance, m_creature))
-            pInstance->SetData(DATA_MAULGAREVENT, DONE);
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        //Only if not incombat check if the event is started
-        if (!m_creature->isInCombat() && pInstance->GetData(DATA_MAULGAREVENT))
-            if (Unit* target = me->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
-                AttackStart(target);
-
-        //Return since we have no target
-        if (!UpdateVictim())
-            return;
-
-        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 2.0f);
-
-        //someone evaded!
-        if (!pInstance->GetData(DATA_MAULGAREVENT))
-        {
-            EnterEvadeMode();
-            return;
-        }
-
-        //GreaterPowerWordShield_Timer
-        if (Shield_PoH_Timer < diff)
-        {
-            AddSpellToCast(m_creature, SPELL_GREATER_PW_SHIELD);
-            AddSpellToCast(m_creature, SPELL_PRAYEROFHEALING);
-            Shield_PoH_Timer = urand(30000, 40000);
-        }
-        else
-            Shield_PoH_Timer -= diff;
-
-        //Heal_Timer
-        if (Heal_Timer < diff)
-        {
-            AddSpellToCast(m_creature, SPELL_HEAL);
-            Heal_Timer = urand(10000, 35000);
-        }
-        else
-            Heal_Timer -= diff;
-
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
-    }
-};
-
-//Krosh Firehand AI
-struct TRINITY_DLL_DECL boss_krosh_firehandAI : public ScriptedAI
-{
-    boss_krosh_firehandAI(Creature *c) : ScriptedAI(c)
-    {
-        pInstance = (c->GetInstanceData());
-    }
-
-    uint32 GreaterFireball_Timer;
-    uint32 SpellShield_Timer;
-    uint32 BlastWave_Timer;
-
-    uint32 pulseCombatTimer;
-
-    ScriptedInstance* pInstance;
-
-    void Reset()
-    {
-        ClearCastQueue();
-
-        GreaterFireball_Timer = 4000;
-        SpellShield_Timer = 0;
-        BlastWave_Timer = 5000;
-
-        pulseCombatTimer = 5000;
-
-        pInstance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
-    }
-
-    void EnterCombat(Unit *who)
-    {
-        pInstance->SetData64(DATA_MAULGAREVENT_TANK, who->GetGUID());
-        pInstance->SetData(DATA_MAULGAREVENT, IN_PROGRESS);
-        DoZoneInCombat();
-    }
-
-    void JustDied(Unit* Killer)
-    {
-        if (Creature *Maulgar = m_creature->GetMap()->GetCreature(pInstance->GetData64(DATA_MAULGAR)))
-            ((boss_high_king_maulgarAI*)Maulgar->AI())->AddDeath();
-
-        if (CheckAllBossDied(pInstance, m_creature))
-            pInstance->SetData(DATA_MAULGAREVENT, DONE);
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        //Only if not incombat check if the event is started
-        if (!m_creature->isInCombat() && pInstance->GetData(DATA_MAULGAREVENT))
-            if (Unit* target = m_creature->GetMap()->GetUnit(pInstance->GetData64(DATA_MAULGAREVENT_TANK)))
-                AttackStart(target, false);
-
-        //Return since we have no target
-        if (!UpdateVictim())
-            return;
-
-        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 2.0f);
-
-        //someone evaded!
-        if (pInstance && !pInstance->GetData(DATA_MAULGAREVENT))
-        {
-            EnterEvadeMode();
-            return;
-        }
-
-        //cast from distance
-        if (m_creature->GetDistance2d(m_creature->getVictim()) < 20)
-            m_creature->StopMoving();
-
-        //GreaterFireball_Timer
-        if (GreaterFireball_Timer < diff)
-        {
-            // will cast only when in range of spell
-            if (m_creature->GetDistance2d(m_creature->getVictim()) < 30 && !m_creature->hasUnitState(UNIT_STAT_CASTING))
-                AddSpellToCast(m_creature->getVictim(), SPELL_GREATER_FIREBALL);
-            GreaterFireball_Timer = 3000;
-        }
-        else
-            GreaterFireball_Timer -= diff;
-
-        //SpellShield_Timer
-        if (SpellShield_Timer < diff)
-        {
-            ForceSpellCast(m_creature, SPELL_SPELLSHIELD);
-            SpellShield_Timer = 31000;
-        }
-        else
-            SpellShield_Timer -= diff;
-
-        //BlastWave_Timer
-        if (BlastWave_Timer < diff)
-        {
-            bool InRange = false;
-            std::list<HostilReference*>& t_list = m_creature->getThreatManager().getThreatList();
-            for (std::list<HostilReference*>::iterator itr = t_list.begin(); itr!= t_list.end();++itr)
+            switch (eventId)
             {
-                Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-                //if in range
-                if (pUnit && pUnit->IsWithinDistInMap(m_creature, 15))
+                case EVENT_POLYMORPH:
                 {
-                    InRange = true;
+                    AddSpellToCast(SPELL_GREATER_POLYMORPH, CAST_RANDOM);
+                    events.ScheduleEvent(eventId, 20000);
+                    break;
+                }
+                case EVENT_ARCANE_SHOCK:
+                {
+                    AddSpellToCast(SPELL_ARCANE_SHOCK);
+                    events.ScheduleEvent(eventId, 20000);
+                    break;
+                }
+                case EVENT_ARCANE_EXPLO:
+                {
+                    AddSpellToCast(SPELL_ARCANE_EXPLOSION, CAST_SELF);
+                    events.ScheduleEvent(eventId, 30000);
                     break;
                 }
             }
-
-            if (InRange)
-                ForceSpellCast(SPELL_BLAST_WAVE, CAST_SELF);
-
-            BlastWave_Timer = urand(3000, 5000);
         }
-        else
-            BlastWave_Timer -= diff;
 
+        CastNextSpellIfAnyAndReady(diff);
+        DoMeleeAttackIfReady();
+    }
+};
+
+enum eBlindEvents
+{
+    EVENT_HEAL   = 1,
+    EVENT_SHIELD = 2
+};
+
+enum eBlindSpells
+{
+    SPELL_GREATER_PW_SHIELD = 33147,
+    SPELL_HEAL              = 33144,
+    SPELL_PRAYEROFHEALING   = 33152
+};
+
+//Blindeye The Seer AI
+struct TRINITY_DLL_DECL boss_blindeye_the_seerAI : public BossAI
+{
+    boss_blindeye_the_seerAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
+
+    void Reset()
+    {
+        events.Reset();
+        ClearCastQueue();
+
+        events.ScheduleEvent(EVENT_SHIELD, 15000);
+        events.ScheduleEvent(EVENT_HEAL, urand(7000, 10000));
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        DoZoneInCombat();
+    }
+
+    void JustDied(Unit* Killer)
+    {
+        // inform leader about our death
+        if (me->GetFormation())
+            me->GetFormation()->getLeader()->AI()->DoAction();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        //Return since we have no target
+        if (!UpdateVictim())
+            return;
+
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 1.6f);
+
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_HEAL:
+                {
+                    AddSpellToCast(SPELL_HEAL, CAST_SELF);
+                    events.ScheduleEvent(eventId, urand(10000, 35000));
+                    break;
+                }
+                case EVENT_SHIELD:
+                {
+                    AddSpellToCast(SPELL_GREATER_PW_SHIELD, CAST_SELF);
+                    AddSpellToCast(SPELL_PRAYEROFHEALING, CAST_SELF);
+                    events.ScheduleEvent(eventId, urand(30000, 40000));
+                    break;
+                }
+            }
+        }
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+enum eKroshEvents
+{
+    EVENT_SPELL_SHIELD = 1,
+    EVENT_BLAST_WAVE   = 2
+};
+
+enum eKroshSpells
+{
+    SPELL_GREATER_FIREBALL = 33051,
+    SPELL_SPELLSHIELD      = 33054,
+    SPELL_BLAST_WAVE       = 33061
+};
+
+//Krosh Firehand AI
+struct TRINITY_DLL_DECL boss_krosh_firehandAI : public BossAI
+{
+    boss_krosh_firehandAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
+
+    void Reset()
+    {
+        events.Reset();
+        ClearCastQueue();
+
+        events.ScheduleEvent(EVENT_SPELL_SHIELD, 31000);
+        events.ScheduleEvent(EVENT_BLAST_WAVE, 5000);
+
+        SetAutocast(SPELL_GREATER_FIREBALL, 4200);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        StartAutocast();
+        DoZoneInCombat();
+
+        ForceSpellCast(me, SPELL_SPELLSHIELD, INTERRUPT_AND_CAST);
+    }
+
+    void JustDied(Unit* Killer)
+    {
+        // inform leader about our death
+        if (me->GetFormation())
+            me->GetFormation()->getLeader()->AI()->DoAction();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        //Return since we have no target
+        if (!UpdateVictim())
+            return;
+
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, 1.6f);
+
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_SPELL_SHIELD:
+                {
+                    ForceSpellCast(me, SPELL_SPELLSHIELD);
+                    events.ScheduleEvent(eventId, 31000);
+                    break;
+                }
+                case EVENT_BLAST_WAVE:
+                {
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_NEAREST, 0, 15.0f, true))
+                        ForceSpellCast(SPELL_BLAST_WAVE, CAST_SELF);
+
+                    events.ScheduleEvent(eventId, urand(3000, 5000));
+                    break;
+                }
+            }
+        }
+
+        CheckCasterNoMovementInRange(diff);
         CastNextSpellIfAnyAndReady();
     }
 };
