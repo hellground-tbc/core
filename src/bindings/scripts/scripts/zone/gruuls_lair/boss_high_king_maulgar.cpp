@@ -50,7 +50,7 @@ enum eHKMEvents
 {
     EVENT_ARCING_SMASH = 1,
     EVENT_MIGHTY_BLOW  = 2,
-    EVENT_CHARGE       = 3,
+    EVENT_CHARGE_HKM   = 3,
     EVENT_WHIRLWIND    = 4,
     EVENT_ROAR         = 5
 };
@@ -80,7 +80,6 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public BossAI
         events.ScheduleEvent(EVENT_MIGHTY_BLOW, 40000);
         events.ScheduleEvent(EVENT_ARCING_SMASH, 10000);
         events.ScheduleEvent(EVENT_WHIRLWIND, 30000);
-        events.ScheduleEvent(EVENT_CHARGE, 1000);
 
         ForceSpellCast(me, SPELL_DUAL_WIELD);
     }
@@ -105,7 +104,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public BossAI
         DoZoneInCombat();
     }
 
-    void DoAction(int32 param)
+    void DoAction(const int32 param)
     {
         if (me->isAlive())
             DoScriptText(RAND(SAY_OGRE_DEATH1, SAY_OGRE_DEATH2, SAY_OGRE_DEATH3, SAY_OGRE_DEATH4), me);
@@ -156,7 +155,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public BossAI
                     events.ScheduleEvent(eventId, urand(30000, 40000));
                     break;
                 }
-                case EVENT_CHARGE:
+                case EVENT_CHARGE_HKM:
                 {
                     AddSpellToCast(SPELL_BERSERKER_C, CAST_RANDOM);
                     events.ScheduleEvent(eventId, 20000);
@@ -179,7 +178,7 @@ struct TRINITY_DLL_DECL boss_high_king_maulgarAI : public BossAI
             DoScriptText(SAY_ENRAGE, me);
 
             events.RescheduleEvent(EVENT_WHIRLWIND, 30000);
-            events.ScheduleEvent(EVENT_CHARGE, 2000);
+            events.ScheduleEvent(EVENT_CHARGE_HKM, 2000);
             events.ScheduleEvent(EVENT_ROAR, 3000);
 
             ForceSpellCast(me, SPELL_DUAL_WIELD);
