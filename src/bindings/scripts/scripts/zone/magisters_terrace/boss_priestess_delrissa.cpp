@@ -1086,7 +1086,7 @@ struct TRINITY_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        if(me->getVictim()->isCrowdControlled())
+        if(me->getVictim() && me->getVictim()->isCrowdControlled())
             DoModifyThreatPercent(me->getVictim(), -100);
 
         if(Check_Timer < diff)
@@ -1258,7 +1258,7 @@ struct TRINITY_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        if(me->getVictim()->isCrowdControlled())
+        if(me->getVictim() && me->getVictim()->isCrowdControlled())
             DoModifyThreatPercent(me->getVictim(), -100);
 
         if(BattleShout_Timer < diff)
@@ -1414,7 +1414,7 @@ struct TRINITY_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        if(me->getVictim()->isCrowdControlled())
+        if(me->getVictim() && me->getVictim()->isCrowdControlled())
             DoModifyThreatPercent(me->getVictim(), -100);
 
         if(!canSetTrap)
@@ -1513,7 +1513,7 @@ struct TRINITY_DLL_DECL mob_sliverAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(me->getVictim()->isCrowdControlled())
+        if(me->getVictim() && me->getVictim()->isCrowdControlled())
             DoModifyThreatPercent(me->getVictim(), -100);
 
         DoMeleeAttackIfReady();
@@ -1692,7 +1692,7 @@ struct TRINITY_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
 
         boss_priestess_guestAI::UpdateAI(diff);
 
-        if(me->getVictim()->isCrowdControlled())
+        if(me->getVictim() && me->getVictim()->isCrowdControlled())
             DoModifyThreatPercent(me->getVictim(), -100);
 
         if(Goblin_Dragon_Gun_Timer < diff)

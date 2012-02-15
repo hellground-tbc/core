@@ -187,7 +187,7 @@ void ScriptedAI::DoStartNoMovement(Unit* pVictim, movementCheckType type)
 
 void ScriptedAI::CheckCasterNoMovementInRange(uint32 diff, float maxrange)
 {
-    if(!UpdateVictim())
+    if(!UpdateVictim() || !me->getVictim())
         return;
 
     if(!me->IsInMap(me->getVictim()))
@@ -225,7 +225,7 @@ void ScriptedAI::CheckCasterNoMovementInRange(uint32 diff, float maxrange)
 
 void ScriptedAI::CheckShooterNoMovementInRange(uint32 diff, float maxrange)
 {
-    if(!UpdateVictim())
+    if(!UpdateVictim() || !me->getVictim())
         return;
 
     if(!me->IsInMap(me->getVictim()))
