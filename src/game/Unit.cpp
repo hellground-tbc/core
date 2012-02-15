@@ -12233,7 +12233,6 @@ void Unit::SetControlled(bool apply, UnitState state)
 
     if (HasAuraType(SPELL_AURA_MOD_ROOT) && !hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         SetRooted(true);
-
 }
 
 void Unit::SetStunned(bool apply)
@@ -12246,7 +12245,10 @@ void Unit::SetStunned(bool apply)
 
         // Creature specific
         if (GetTypeId() != TYPEID_PLAYER)
-            ToCreature()->StopMoving();
+        {
+            StopMoving();
+            DisableSpline();
+        }
         else
             SetUnitMovementFlags(MOVEFLAG_NONE);    //Clear movement flags
 
@@ -12293,7 +12295,10 @@ void Unit::SetRooted(bool apply)
             SendMessageToSet(&data,true);
         }
         else
+        {
             StopMoving();
+            DisableSpline();
+        }
     }
     else
     {
