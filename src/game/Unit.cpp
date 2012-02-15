@@ -3252,9 +3252,6 @@ void Unit::SetCurrentCastedSpell(Spell * pSpell)
             }
 
             addUnitState(UNIT_STAT_CASTING);
-
-            if (pSpell->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT)
-                addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
         } break;
 
         case CURRENT_CHANNELED_SPELL:
@@ -3269,9 +3266,6 @@ void Unit::SetCurrentCastedSpell(Spell * pSpell)
                 InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 
             addUnitState(UNIT_STAT_CASTING);
-
-            if (pSpell->m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
-                addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
         } break;
 
         case CURRENT_AUTOREPEAT_SPELL:

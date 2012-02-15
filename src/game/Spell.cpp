@@ -2212,6 +2212,16 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     if (triggeredByAura)
         m_triggeredByAuraSpell = triggeredByAura->GetSpellProto();
 
+    if ((!m_IsTriggeredSpell && !IsChanneledSpell(m_spellInfo) ? m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT))
+    {
+        m_caster->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
+        if (m_caster->GetTypeId() == TYPEID_UNIT)
+        {
+            m_caster->StopMoving();
+            m_caster->DisableSpline();
+        }
+    }
+
     m_caster->GetPosition(m_cast);
 
     // create and add update event for this spell
@@ -2372,9 +2382,6 @@ void Spell::cancel()
 
 void Spell::cast(bool skipCheck)
 {
-    if (m_casttime && m_caster->GetTypeId() == TYPEID_UNIT && m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
-        m_caster->StopMoving();
-
     SpellEntry const* spellInfo = sSpellStore.LookupEntry(m_spellInfo->Id);
     if (!spellInfo)
         return;
@@ -2830,13 +2837,9 @@ void Spell::update(uint32 difftime)
         // add little offset for creature stop movement
         if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
         {
-             bool moved = false;
-             if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                 moved = (m_cast.x != m_caster->GetPositionX() || m_cast.y != m_caster->GetPositionY() || m_cast.z != m_caster->GetPositionZ());
-             else // little offset for creatures (difference comes from creaturerelocation called after queing spell event
-                 moved = m_caster->GetExactDist2dSq(m_cast.x, m_cast.y) > 0.5f;
-
-            if (moved)
+             Position casterPos;
+             m_caster->GetPosition(casterPos);
+             if (m_cast != casterPos)
                 cancel();
         }
     }

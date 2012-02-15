@@ -94,6 +94,8 @@ struct Position
 {
     Position() : x(0.0f), y(0.0f), z(0.0f), o(0.0f) {}
     float x, y, z, o;
+
+    bool operator!=(Position &b) { return (x != b.x || y != b.y || z != b.z); }
 };
 
 struct WorldLocation

@@ -302,7 +302,7 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public BossAI
         events.ScheduleEvent(EVENT_ARCANE_SHOCK, 20000);
         events.ScheduleEvent(EVENT_ARCANE_EXPLO, 30000);
 
-        SetAutocast(SPELL_LIGHTNING_BOLT, 2200);
+        SetAutocast(SPELL_LIGHTNING_BOLT, 2200, true);
     }
 
     void EnterCombat(Unit *who)
@@ -316,6 +316,11 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public BossAI
         // inform leader about our death
         if (me->GetFormation())
             me->GetFormation()->getLeader()->AI()->DoAction();
+    }
+
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void UpdateAI(const uint32 diff)
@@ -352,8 +357,8 @@ struct TRINITY_DLL_DECL boss_kiggler_the_crazedAI : public BossAI
             }
         }
 
+        CheckCasterNoMovementInRange(diff, 42.0f);
         CastNextSpellIfAnyAndReady(diff);
-        DoMeleeAttackIfReady();
     }
 };
 
@@ -456,15 +461,20 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public BossAI
         events.ScheduleEvent(EVENT_SPELL_SHIELD, 31000);
         events.ScheduleEvent(EVENT_BLAST_WAVE, 5000);
 
-        SetAutocast(SPELL_GREATER_FIREBALL, 4200);
+        SetAutocast(SPELL_GREATER_FIREBALL, 4000, true);
     }
 
     void EnterCombat(Unit *who)
     {
-        StartAutocast();
         DoZoneInCombat();
 
         ForceSpellCast(me, SPELL_SPELLSHIELD, INTERRUPT_AND_CAST);
+        StartAutocast();
+    }
+
+    void AttackStart(Unit* who)
+    {
+        ScriptedAI::AttackStartNoMove(who, CHECK_TYPE_CASTER);
     }
 
     void JustDied(Unit* Killer)
@@ -504,8 +514,8 @@ struct TRINITY_DLL_DECL boss_krosh_firehandAI : public BossAI
             }
         }
 
-        CheckCasterNoMovementInRange(diff);
-        CastNextSpellIfAnyAndReady();
+        CheckCasterNoMovementInRange(diff, 42.0f);
+        CastNextSpellIfAnyAndReady(diff);
     }
 };
 
