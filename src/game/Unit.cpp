@@ -12208,7 +12208,10 @@ void Unit::SetControlled(bool apply, UnitState state)
             break;
         case UNIT_STAT_FLEEING:
             if (apply && HasAuraType(SPELL_AURA_MOD_CONFUSE))
+            {
+                clearUnitState(UNIT_STAT_FLEEING);
                 break;
+            }
 
             SetFeared(apply);
             break;
@@ -12230,6 +12233,7 @@ void Unit::SetControlled(bool apply, UnitState state)
 
     if (HasAuraType(SPELL_AURA_MOD_ROOT) && !hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
         SetRooted(true);
+
 }
 
 void Unit::SetStunned(bool apply)
