@@ -2768,6 +2768,9 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40317: // Throw
             spellInfo->EffectBasePoints[0] = 199;
             break;
+        case 40103: // Sludge Nova
+            spellInfo->EffectBasePoints[0] = urand(24, 29);
+            break;
         /****************/
         case 39042: // Rampant Infection
             spellInfo->MaxAffectedTargets = 1;

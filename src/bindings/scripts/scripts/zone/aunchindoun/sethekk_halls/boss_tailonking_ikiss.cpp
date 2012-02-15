@@ -194,7 +194,7 @@ struct TRINITY_DLL_DECL boss_talon_king_ikissAI : public ScriptedAI
                 //Spell doesn't work, but we use for visual effect at least
                 DoCast(target,SPELL_BLINK);
 
-                DoTeleportTo(target->GetPositionX(),(target->GetPositionY(),target->GetPositionZ());
+                DoTeleportTo(target->GetPositionX(),target->GetPositionY(),target->GetPositionZ());
 
                 DoCast(target,SPELL_BLINK_TELEPORT);
                 Blink = true;
