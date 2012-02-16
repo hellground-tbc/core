@@ -1011,6 +1011,11 @@ WaypointMovementAutoActive.Instances = 1
 #        Minimum level to use chat masked in Chat.DenyMask option.
 #        Default: 5
 #
+#    Channel.PrivateLimitCount
+#        Maximum count of players which can be on private chat channel (without world, engworld, handel channels).
+#        Type 0 to turn off this feature.
+#        Default: 20
+#
 ###################################################################################################################
 
 ChatFakeMessagePreventing = 0
@@ -1019,6 +1024,7 @@ ChatFlood.MessageDelay = 1
 ChatFlood.MuteTime = 10
 Channel.RestrictedLfg = 1
 Channel.SilentlyGMJoin = 0
+Channel.PrivateLimitCount = 20
 
 ###################################################################################################################
 # GAME MASTER SETTINGS

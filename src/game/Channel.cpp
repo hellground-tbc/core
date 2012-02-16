@@ -66,6 +66,18 @@ void Channel::Join(uint64 p, const char *pass)
         return;
     }
 
+    if (!IsConstant() && m_name != "world" && m_name != "engworld" && m_name != "handel")
+    {
+        uint32 limitCount = sWorld.getConfig(CONFIG_PRIVATE_CHANNEL_LIMIT);
+
+        if (limitCount && players.size() > limitCount)
+        {
+            MakeInvalidName(&data);
+            SendToOne(&data, p);
+            return;
+        }
+    }
+
     Player *plr = objmgr.GetPlayer(p);
 
     if (IsBanned(p) && (!plr || !plr->isGameMaster()))
