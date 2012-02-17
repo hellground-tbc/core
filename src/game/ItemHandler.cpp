@@ -712,7 +712,7 @@ void WorldSession::SendListInventory(uint64 vendorguid)
         GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     // Stop the npc if moving
-    pCreature->StopMoving();
+    pCreature->GetMotionMaster()->StopMovement();
 
     VendorItemData const* vItems = pCreature->GetVendorItems();
     if (!vItems)

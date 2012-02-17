@@ -36,14 +36,12 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
     GenerateMovement(unit);
 
     unit.StopMoving();
-    unit.addUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
+    unit.addUnitState(UNIT_STAT_CONFUSED);
 }
 
 template<class T>
 void ConfusedMovementGenerator<T>::Interrupt(T &unit)
 {
-    // confused state still applied while movegen disabled
-    unit.clearUnitState(UNIT_STAT_CONFUSED_MOVE);
 }
 
 template<class T>
@@ -60,7 +58,7 @@ void ConfusedMovementGenerator<T>::Reset(T &unit)
     i_nextMoveTime.Reset(0);
 
     unit.StopMoving();
-    unit.addUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
+    unit.addUnitState(UNIT_STAT_CONFUSED);
 }
 
 template<class T>
@@ -72,9 +70,6 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     if (i_nextMoveTime.Passed())
     {
-        // currently moving, update location
-        unit.addUnitState(UNIT_STAT_CONFUSED_MOVE);
-
         if (unit.movespline->Finalized())
         {
             i_nextMove = urand(0, MAX_RANDOM_POINTS);
@@ -86,7 +81,6 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
         i_nextMoveTime.Update(diff);
         if (i_nextMoveTime.Passed())
         {
-            unit.addUnitState(UNIT_STAT_CONFUSED_MOVE);
             Movement::MoveSplineInit init(unit);
             init.MoveTo(randomPosition[i_nextMove].x, randomPosition[i_nextMove].y, randomPosition[i_nextMove].z);
             init.SetWalk(true);
@@ -100,13 +94,13 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 template<>
 void ConfusedMovementGenerator<Player>::Finalize(Player &unit)
 {
-    unit.clearUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
+    unit.clearUnitState(UNIT_STAT_CONFUSED);
 }
 
 template<>
 void ConfusedMovementGenerator<Creature>::Finalize(Creature &unit)
 {
-    unit.clearUnitState(UNIT_STAT_CONFUSED|UNIT_STAT_CONFUSED_MOVE);
+    unit.clearUnitState(UNIT_STAT_CONFUSED);
 }
 
 template void ConfusedMovementGenerator<Player>::Initialize(Player &player);

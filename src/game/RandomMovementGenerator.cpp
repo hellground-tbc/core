@@ -40,8 +40,6 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
 
     i_nextMoveTime.Reset(urand(500, 10000));
 
-    creature.addUnitState(UNIT_STAT_ROAMING_MOVE);
-
     Movement::MoveSplineInit init(creature);
     init.MoveTo(dest.x, dest.y, dest.z);
     init.SetWalk(true);
@@ -54,7 +52,7 @@ void RandomMovementGenerator<Creature>::Initialize(Creature &creature)
     if (!creature.isAlive())
         return;
 
-    creature.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.addUnitState(UNIT_STAT_ROAMING);
     _setRandomLocation(creature);
 }
 
@@ -67,14 +65,14 @@ void RandomMovementGenerator<Creature>::Reset(Creature &creature)
 template<>
 void RandomMovementGenerator<Creature>::Interrupt(Creature &creature)
 {
-    creature.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.clearUnitState(UNIT_STAT_ROAMING);
     creature.SetWalk(false);
 }
 
 template<>
 void RandomMovementGenerator<Creature>::Finalize(Creature &creature)
 {
-    creature.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.clearUnitState(UNIT_STAT_ROAMING);
     creature.SetWalk(false);
 }
 
@@ -84,7 +82,6 @@ bool RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 
     if (creature.hasUnitState(UNIT_STAT_NOT_MOVE))
     {
         i_nextMoveTime.Reset(0);  // Expire the timer
-        creature.clearUnitState(UNIT_STAT_ROAMING_MOVE);
         return true;
     }
 

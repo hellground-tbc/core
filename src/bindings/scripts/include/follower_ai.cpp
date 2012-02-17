@@ -340,7 +340,7 @@ void FollowerAI::SetFollowComplete(bool bWithEndEvent)
     {
         me->clearUnitState(UNIT_STAT_FOLLOW);
 
-        me->StopMoving();
+        me->GetMotionMaster()->StopMovement();
         me->GetMotionMaster()->Clear(false);
         me->GetMotionMaster()->MoveIdle();
     }
@@ -369,7 +369,7 @@ void FollowerAI::SetFollowPaused(bool bPaused)
         {
             me->clearUnitState(UNIT_STAT_FOLLOW);
 
-            me->StopMoving();
+            me->GetMotionMaster()->StopMovement();
             me->GetMotionMaster()->Clear(false);
             me->GetMotionMaster()->MoveIdle();
         }

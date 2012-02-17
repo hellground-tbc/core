@@ -4119,7 +4119,6 @@ void Spell::EffectDistract(uint32 /*i*/)
         return;
 
     unitTarget->SetFacingTo(unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY));
-    unitTarget->clearUnitState(UNIT_STAT_MOVING);
 
     unitTarget->SetStandState(PLAYER_STATE_NONE);
 
@@ -7095,7 +7094,7 @@ void Spell::EffectCharge2(uint32 /*i*/)
         z = m_targets.m_destZ;
 
         if (unitTarget && unitTarget->GetTypeId() != TYPEID_PLAYER)
-            ((Creature *)unitTarget)->StopMoving();
+            unitTarget->GetMotionMaster()->StopMovement();
     }
     else if (unitTarget && unitTarget != m_caster)
         unitTarget->GetContactPoint(m_caster, x, y, z, 3.666666f);

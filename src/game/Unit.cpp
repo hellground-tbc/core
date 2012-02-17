@@ -11239,15 +11239,17 @@ bool Unit::SetPosition(float x, float y, float z, float orientation, bool telepo
 
 void Unit::StopMoving()
 {
-    clearUnitState(UNIT_STAT_MOVING);
-
-    // not need send any packets if not in world
-    if (!IsInWorld())
+    if (!IsInWorld() || IsStopped())
         return;
 
     Movement::MoveSplineInit init(*this);
     init.SetFacing(GetOrientation());
     init.Launch();
+}
+
+bool Unit::IsStopped() const
+{
+    return movespline->Finalized();
 }
 
 bool Unit::IsSitState() const

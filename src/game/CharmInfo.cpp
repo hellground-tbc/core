@@ -231,14 +231,10 @@ void CharmInfo::HandleStayCommand()
 {
     SetCommandState(COMMAND_STAY);
 
-    // we are NOT following or chasing anyone, just return :P
-    if (!m_unit->hasUnitState(UNIT_STAT_FOLLOW_MOVE | UNIT_STAT_CHASE_MOVE))
-        return;
-
     m_unit->AttackStop();
     m_unit->InterruptNonMeleeSpells(false);
 
-    m_unit->StopMoving();
+    m_unit->GetMotionMaster()->StopMovement();
 
     // We are already in follow mode, just interrupt
     m_unit->GetMotionMaster()->Clear(false, true);
@@ -249,12 +245,10 @@ void CharmInfo::HandleFollowCommand()
 {
     SetCommandState(COMMAND_FOLLOW);
 
-    // We are already in follow mode
-    if (m_unit->hasUnitState(UNIT_STAT_FOLLOW_MOVE))
-        return;
-
     m_unit->AttackStop();
     m_unit->InterruptNonMeleeSpells(false);
+
+    m_unit->GetMotionMaster()->StopMovement();
 
     // it will clear all movement generators
     m_unit->GetMotionMaster()->MoveFollow(m_unit->GetCharmerOrOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
@@ -369,7 +363,7 @@ void CharmInfo::HandleSpellActCommand(uint64 targetGUID, uint32 spellId)
                 pCreature->AI()->AttackStart(pSpellTarget);
         }
 
-        m_unit->StopMoving();
+        //m_unit->GetMotionMaster()->StopMovement();
         //m_unit->GetMotionMaster()->MovementExpired(false);
 
         spell->prepare(&(spell->m_targets));

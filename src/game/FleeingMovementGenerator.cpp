@@ -42,8 +42,6 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
     if (!_getPoint(owner, x, y, z))
         return;
 
-    owner.addUnitState(UNIT_STAT_FLEEING_MOVE);
-
     Movement::MoveSplineInit init(owner);
     init.MoveTo(x,y,z);
     init.SetWalk(false);
@@ -101,7 +99,7 @@ void FleeingMovementGenerator<T>::Initialize(T &owner)
     if (!fright)
         return;
 
-    owner.addUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+    owner.addUnitState(UNIT_STAT_FLEEING);
 
     _Init(owner);
 
@@ -131,20 +129,18 @@ void FleeingMovementGenerator<Player>::_Init(Player &)
 template<>
 void FleeingMovementGenerator<Player>::Finalize(Player &owner)
 {
-    owner.clearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+    owner.clearUnitState(UNIT_STAT_FLEEING);
 }
 
 template<>
 void FleeingMovementGenerator<Creature>::Finalize(Creature &owner)
 {
-    owner.clearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+    owner.clearUnitState(UNIT_STAT_FLEEING);
 }
 
 template<class T>
 void FleeingMovementGenerator<T>::Interrupt(T &owner)
 {
-    // flee state still applied while movegen disabled
-    owner.clearUnitState(UNIT_STAT_FLEEING_MOVE);
 }
 
 template<class T>
@@ -161,10 +157,7 @@ bool FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
 
     // ignore in case other no reaction state
     if (owner.hasUnitState(UNIT_STAT_CAN_NOT_REACT & ~UNIT_STAT_FLEEING))
-    {
-        owner.clearUnitState(UNIT_STAT_FLEEING_MOVE);
         return true;
-    }
 
     i_nextCheckTime.Update(time_diff);
     if (i_nextCheckTime.Passed() && owner.movespline->Finalized())
@@ -188,7 +181,7 @@ template bool FleeingMovementGenerator<Creature>::Update(Creature &, const uint3
 
 void TimedFleeingMovementGenerator::Finalize(Unit &owner)
 {
-    owner.clearUnitState(UNIT_STAT_FLEEING|UNIT_STAT_FLEEING_MOVE);
+    owner.clearUnitState(UNIT_STAT_FLEEING);
     if (Unit* victim = owner.getVictim())
     {
         if (owner.isAlive())
@@ -206,10 +199,7 @@ bool TimedFleeingMovementGenerator::Update(Unit & owner, const uint32 & time_dif
 
     // ignore in case other no reaction state
     if (owner.hasUnitState(UNIT_STAT_CAN_NOT_REACT & ~UNIT_STAT_FLEEING))
-    {
-        owner.clearUnitState(UNIT_STAT_FLEEING_MOVE);
         return true;
-    }
 
     i_totalFleeTime.Update(time_diff);
     if (i_totalFleeTime.Passed())

@@ -121,7 +121,6 @@ struct TRINITY_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
             {
                 Beacon[i]->RemoveAllAuras();
                 Beacon[i]->CombatStop();
-                Beacon[i]->StopMoving();
                 Beacon[i]->Kill(Beacon[i]);
             }
         }

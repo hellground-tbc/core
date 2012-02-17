@@ -214,7 +214,8 @@ void PetAI::AutocastPreparedSpells()
         if (m_creature->isPet())
             ((Pet*)m_creature)->CheckLearning(spell->m_spellInfo->Id);
 
-        m_creature->StopMoving();
+        //m_creature->GetMotionMaster()->StopMovement();
+
         spell->prepare(&targets);
     }
 

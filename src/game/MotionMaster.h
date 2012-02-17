@@ -137,6 +137,8 @@ class TRINITY_DLL_SPEC MotionMaster : private std::stack<MovementGenerator *>
 
         bool GetDestination(float &x, float &y, float &z);
 
+        void StopMovement(uint32 time = 3 * MINUTE * IN_MILISECONDS);
+
     private:
         void Mutate(MovementGenerator *m);                  // use Move* functions instead
 

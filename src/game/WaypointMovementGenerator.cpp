@@ -44,7 +44,7 @@ void WaypointMovementGenerator<Creature>::LoadPath(Creature &creature)
 void WaypointMovementGenerator<Creature>::Initialize(Creature &creature)
 {
     LoadPath(creature);
-    creature.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.addUnitState(UNIT_STAT_ROAMING);
 
     if (creature.GetMap()->WaypointMovementAutoActive())
         creature.setActive(true, ACTIVE_BY_WAYPOINT_MOVEMENT);
@@ -52,20 +52,20 @@ void WaypointMovementGenerator<Creature>::Initialize(Creature &creature)
 
 void WaypointMovementGenerator<Creature>::Finalize(Creature &creature)
 {
-    creature.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.clearUnitState(UNIT_STAT_ROAMING);
     creature.SetWalk(false);
     creature.setActive(false, ACTIVE_BY_WAYPOINT_MOVEMENT);
 }
 
 void WaypointMovementGenerator<Creature>::Reset(Creature &creature)
 {
-    creature.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.addUnitState(UNIT_STAT_ROAMING);
     StartMoveNow(creature);
 }
 
 void WaypointMovementGenerator<Creature>::Interrupt(Creature &creature)
 {
-    creature.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    creature.clearUnitState(UNIT_STAT_ROAMING);
     creature.SetWalk(false);
     creature.setActive(false, ACTIVE_BY_WAYPOINT_MOVEMENT);
 }
@@ -78,7 +78,6 @@ bool WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
     if (m_isArrivalDone)
         return true;
 
-    creature.clearUnitState(UNIT_STAT_ROAMING_MOVE);
     m_isArrivalDone = true;
 
     const WaypointData *node = i_path->at(i_currentNode);
@@ -112,13 +111,12 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
 
     if (creature.IsFormationLeader() && !creature.GetFormation()->AllUnitsReachedWaypoint())
     {
-        Stop(1);
-        return true;   
+        StopMovement(1);
+        return true;
     }
 
     m_isArrivalDone = false;
 
-    creature.addUnitState(UNIT_STAT_ROAMING_MOVE);
 
     Movement::MoveSplineInit init(creature);
     init.MoveTo(node->x, node->y, node->z);
@@ -138,10 +136,7 @@ bool WaypointMovementGenerator<Creature>::Update(Creature &creature, const uint3
     // Waypoint movement can be switched on/off
     // This is quite handy for escort quests and other stuff
     if (creature.hasUnitState(UNIT_STAT_NOT_MOVE))
-    {
-        creature.clearUnitState(UNIT_STAT_ROAMING_MOVE);
         return true;
-    }
 
     // prevent a crash at empty waypoint path.
     if (!i_path || i_path->empty())
@@ -150,9 +145,9 @@ bool WaypointMovementGenerator<Creature>::Update(Creature &creature, const uint3
     if (Stopped() && CanMove(diff))
         return StartMove(creature);
 
-    if (creature.IsStopped())
-        Stop(STOP_TIME_FOR_PLAYER);
-    else if (creature.movespline->Finalized())
+    /*if (creature.IsStopped())
+        StopMovement(STOP_TIME_FOR_PLAYER);
+    else */if (creature.movespline->Finalized())
     {
         if(!OnArrived(creature))
             return false;

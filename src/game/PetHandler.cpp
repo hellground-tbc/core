@@ -536,7 +536,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
             }
         }
 
-        caster->StopMoving();
+        //caster-->GetMotionMaster()->StopMovement();
         //caster->GetMotionMaster()->MovementExpired(false);
 
         spell->prepare(&(spell->m_targets));

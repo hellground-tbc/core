@@ -1522,7 +1522,7 @@ bool ReceiveEmote_npc_mojo( Player *player, Creature *_Creature, uint32 emote )
                 player->CastSpell(player, SPELL_FEELING_FROGGY, false);
                 _Creature->CastSpell(_Creature, SPELL_HEARTS, false);
                 _Creature->SetSelection(player->GetGUID());
-                _Creature->StopMoving();
+                _Creature->GetMotionMaster()->StopMovement();
                 _Creature->GetMotionMaster()->Clear();
                 _Creature->GetMotionMaster()->MoveFollow(player, 1.0, 0);
 

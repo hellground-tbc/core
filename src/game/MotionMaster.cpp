@@ -112,6 +112,12 @@ void MotionMaster::UpdateMotion(uint32 diff)
     }
 }
 
+void MotionMaster::StopMovement(uint32 time /*= 3 * MINUTE * IN_MILLISECONDS*/)
+{
+    m_owner->StopMoving();
+    top()->StopMovement(time);
+}
+
 void MotionMaster::DirectClean(bool reset, bool all)
 {
     while (all ? !empty() : size() > 1)

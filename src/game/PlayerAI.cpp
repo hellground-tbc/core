@@ -110,7 +110,7 @@ void HunterAI::UpdateAI(const uint32 diff)
     if (!UpdateVictim())
         return;
 
-    me->StopMoving();
+    me->GetMotionMaster()->StopMovement();
 
     if (Steady_Timer < diff)
     {

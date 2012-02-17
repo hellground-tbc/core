@@ -36,7 +36,7 @@ void PointMovementGenerator<T>::Initialize(T &unit)
     if (!unit.IsStopped())
         unit.StopMoving();
 
-    unit.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    unit.addUnitState(UNIT_STAT_ROAMING);
     Movement::MoveSplineInit init(unit);
     init.MoveTo(i_x, i_y, i_z);
     if (speed > 0.0f)
@@ -48,7 +48,7 @@ void PointMovementGenerator<T>::Initialize(T &unit)
 template<class T>
 void PointMovementGenerator<T>::Interrupt(T &unit)
 {
-    unit.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    unit.clearUnitState(UNIT_STAT_ROAMING);
 }
 
 template<class T>
@@ -57,7 +57,7 @@ void PointMovementGenerator<T>::Reset(T &unit)
     if (!unit.IsStopped())
         unit.StopMoving();
 
-    unit.addUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    unit.addUnitState(UNIT_STAT_ROAMING);
 }
 
 template<class T>
@@ -67,19 +67,15 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
         return false;
 
     if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE))
-    {
-        unit.clearUnitState(UNIT_STAT_ROAMING_MOVE);
         return true;
-    }
 
-    unit.addUnitState(UNIT_STAT_ROAMING_MOVE);
     return !unit.movespline->Finalized();
 }
 
 template<class T>
 void PointMovementGenerator<T>::Finalize(T &unit)
 {
-    unit.clearUnitState(UNIT_STAT_ROAMING|UNIT_STAT_ROAMING_MOVE);
+    unit.clearUnitState(UNIT_STAT_ROAMING);
 
     if (unit.movespline->Finalized())
         MovementInform(unit);

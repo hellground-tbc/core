@@ -1120,8 +1120,8 @@ void CreatureEventAI::AttackStart(Unit *who)
         }
         else
         {
+            m_creature->GetMotionMaster()->StopMovement();
             m_creature->GetMotionMaster()->MoveIdle();
-            m_creature->StopMoving();
         }
     }
 }

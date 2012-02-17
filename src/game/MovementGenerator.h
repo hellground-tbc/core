@@ -38,7 +38,7 @@ class TRINITY_DLL_SPEC MovementGenerator
         // called before adding movement generator to motion stack
         virtual void Initialize(Unit &) = 0;
         // called aftre remove movement generator from motion stack
-        virtual void Finalize(Unit &) = 0;
+        virtual void Finalize(Unit &unit) { unit.StopMoving(); }
 
         // called before lost top position (before push new movement generator above)
         virtual void Interrupt(Unit &) = 0;
@@ -56,6 +56,8 @@ class TRINITY_DLL_SPEC MovementGenerator
         // used by Evade code for select point to evade with expected restart default movement
         virtual bool GetResetPosition(Unit &, float& /*x*/, float& /*y*/, float& /*z*/) { return false; }
 
+        virtual void StopMovement(uint32) {}
+
         // used for check from Update call is movegen still be active (top movement generator)
         // after some not safe for this calls
         bool IsActive(Unit& u);
@@ -72,7 +74,7 @@ class TRINITY_DLL_SPEC MovementGeneratorMedium : public MovementGenerator
         }
         void Finalize(Unit &u)
         {
-            //u->AssertIsType<T>();
+            MovementGenerator::Finalize(u);
             (static_cast<D*>(this))->Finalize(*((T*)&u));
         }
         void Interrupt(Unit &u)
