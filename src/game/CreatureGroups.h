@@ -55,6 +55,7 @@ class CreatureGroup
         uint32 m_groupID;
         bool m_Formed;
         bool m_Respawned;
+        bool m_Evaded;
         uint32 m_movingUnits;
 
     public:

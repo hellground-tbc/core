@@ -308,7 +308,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
 
     // randomize first save time in range [CONFIG_INTERVAL_SAVE] around [CONFIG_INTERVAL_SAVE]
     // this must help in case next save after mass player load after server startup
-    m_nextSave = GetMap()->urand(m_nextSave/2,m_nextSave*3/2);
+    m_nextSave = urand(m_nextSave/2,m_nextSave*3/2);
 
     clearResurrectRequestData();
 
@@ -961,7 +961,7 @@ void Player::HandleDrowning(uint32 time_diff)
                 m_MirrorTimer[BREATH_TIMER]+= 1*IN_MILISECONDS;
                 // Calculate and deal damage
                 // TODO: Check this formula
-                uint32 damage = GetMaxHealth() / 5 + GetMap()->urand(0, getLevel()-1);
+                uint32 damage = GetMaxHealth() / 5 + urand(0, getLevel()-1);
                 EnvironmentalDamage(DAMAGE_DROWNING, damage);
             }
             else if (!(m_MirrorTimerFlagsLast & UNDERWATER_INWATER))      // Update time in client if need
@@ -997,7 +997,7 @@ void Player::HandleDrowning(uint32 time_diff)
                 m_MirrorTimer[FATIGUE_TIMER]+= 1*IN_MILISECONDS;
                 if (isAlive())                                            // Calculate and deal damage
                 {
-                    uint32 damage = GetMaxHealth() / 5 + GetMap()->urand(0, getLevel()-1);
+                    uint32 damage = GetMaxHealth() / 5 + urand(0, getLevel()-1);
                     EnvironmentalDamage(DAMAGE_EXHAUSTED, damage);
                 }
                 else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))       // Teleport ghost to graveyard
@@ -1030,7 +1030,7 @@ void Player::HandleDrowning(uint32 time_diff)
                 m_MirrorTimer[FIRE_TIMER]+= 1*IN_MILISECONDS;
                 // Calculate and deal damage
                 // TODO: Check this formula
-                uint32 damage = GetMap()->urand(600, 700);
+                uint32 damage = urand(600, 700);
                 if (m_MirrorTimerFlags&UNDERWATER_INLAVA)
                     EnvironmentalDamage(DAMAGE_LAVA, damage);
                 else if (m_zoneUpdateId != 1497)
@@ -5084,7 +5084,7 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
     if ((!max) || (!value) || (value >= max))
         return false;
 
-    if (value*512 < max*GetMap()->urand(0,512))
+    if (value*512 < max*urand(0,512))
     {
         uint32 new_value = value+step;
         if (new_value > max)
@@ -5206,7 +5206,7 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
     if (!MaxValue || !SkillValue || SkillValue >= MaxValue)
         return false;
 
-    int32 Roll = GetMap()->irand(1,1000);
+    int32 Roll = irand(1,1000);
 
     if (Roll <= Chance)
     {
@@ -6165,7 +6165,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
         if (groupsize > 1)
             honor /= groupsize;
 
-        honor *= (((float)GetMap()->urand(8,12))/10);                 // approx honor: 80% - 120% of real honor
+        honor *= (((float)urand(8,12))/10);                 // approx honor: 80% - 120% of real honor
     }
 
     // honor - for show honor points in log
@@ -7540,7 +7540,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     loot->FillLoot(1, LootTemplates_Creature, this, true);
             // It may need a better formula
             // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
-            bones->loot.gold = (uint32)(GetMap()->urand(50, 150) * 0.016f * pow(((float)pLevel)/5.76f, 2.5f) * sWorld.getRate(RATE_DROP_MONEY));
+            bones->loot.gold = (uint32)(urand(50, 150) * 0.016f * pow(((float)pLevel)/5.76f, 2.5f) * sWorld.getRate(RATE_DROP_MONEY));
         }
 
         if (bones->lootRecipient != this)
@@ -7576,8 +7576,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     loot->FillLoot(lootid, LootTemplates_Pickpocketing, this, false);
 
                 // Generate extra money for pick pocket loot
-                const uint32 a = GetMap()->urand(0, creature->getLevel()/2);
-                const uint32 b = GetMap()->urand(0, getLevel()/2);
+                const uint32 a = urand(0, creature->getLevel()/2);
+                const uint32 b = urand(0, getLevel()/2);
                 loot->gold = uint32(10 * (a + b) * sWorld.getRate(RATE_DROP_MONEY));
             }
         }

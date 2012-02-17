@@ -1653,7 +1653,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     //AddUnitTarget(m_caster, i);
                     float min_dis = GetSpellMinRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
                     float max_dis = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
-                    float dis = m_caster->GetMap()->rand_norm() * (max_dis - min_dis) + min_dis;
+                    float dis = rand_norm() * (max_dis - min_dis) + min_dis;
                     float x, y, z;
                     m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE, dis);
                     m_targets.setDestination(x, y, z);
@@ -1785,7 +1785,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             if (dist < objSize)
                 dist = objSize;
             else if (cur == TARGET_DEST_CASTER_RANDOM)
-              dist = objSize + (dist - objSize) * m_caster->GetMap()->rand_norm();
+              dist = objSize + (dist - objSize) * rand_norm();
 
             switch (cur)
             {
@@ -1829,7 +1829,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             if (dist < objSize)
                 dist = objSize;
             else if (cur == TARGET_DEST_CASTER_RANDOM)
-              dist = objSize + (dist - objSize) * m_caster->GetMap()->rand_norm();
+              dist = objSize + (dist - objSize) * rand_norm();
 
             switch (cur)
             {
@@ -1841,7 +1841,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case TARGET_DEST_TARGET_BACK_LEFT:  angle = -3*M_PI/4;  break;
                 case TARGET_DEST_TARGET_BACK_RIGHT: angle = 3*M_PI/4;   break;
                 case TARGET_DEST_TARGET_FRONT_RIGHT:angle = M_PI/4;     break;
-            default:                            angle = m_caster->GetMap()->rand_norm()*2*M_PI; break;
+                default:                            angle = rand_norm()*2*M_PI; break;
             }
 
             target->GetGroundPointAroundUnit(x, y, z, dist, angle);
@@ -1874,13 +1874,13 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case TARGET_DEST_DEST_BACK_LEFT:  angle = -3*M_PI/4;  break;
                 case TARGET_DEST_DEST_BACK_RIGHT: angle = 3*M_PI/4;   break;
                 case TARGET_DEST_DEST_FRONT_RIGHT:angle = M_PI/4;     break;
-            default:                          angle = m_caster->GetMap()->rand_norm()*2*M_PI; break;
+                default:                          angle = rand_norm()*2*M_PI; break;
             }
 
             float dist, x, y, z;
             dist = GetSpellRadius(m_spellInfo,i,true);
             if (cur == TARGET_DEST_DEST_RANDOM)
-              dist *= m_caster->GetMap()->rand_norm();
+              dist *= rand_norm();
 
             x = m_targets.m_destX;
             y = m_targets.m_destY;
@@ -3561,7 +3561,7 @@ void Spell::TakePower()
     if (hit || (NeedsComboPoints(m_spellInfo) && m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetClass() == CLASS_DRUID) )  // not sure if it's limited only to druid
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
-        m_caster->ModifyPower(powerType, -m_caster->GetMap()->irand(0, m_powerCost/4));
+        m_caster->ModifyPower(powerType, -irand(0, m_powerCost/4));
 
     // Set the five second timer
     if (powerType == POWER_MANA && m_powerCost > 0)
@@ -4117,7 +4117,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // chance for fail at orange skinning attempt
                 if ((m_selfContainer && (*m_selfContainer) == this) &&
                     skillValue < sWorld.GetConfigMaxSkillValue() &&
-                    (ReqValue < 0 ? 0 : ReqValue) > m_caster->GetMap()->irand(skillValue-25, skillValue+37))
+                    (ReqValue < 0 ? 0 : ReqValue) > irand(skillValue-25, skillValue+37))
                     return SPELL_FAILED_TRY_AGAIN;
 
                 break;
