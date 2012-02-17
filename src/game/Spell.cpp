@@ -299,7 +299,7 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
             break;
         default:
             // Wands
-            if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_REQ_WAND)
+            if (m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG)
             {
                 m_attackType = RANGED_ATTACK;
                 if (m_caster->getClassMask() & CLASSMASK_WAND_USERS && m_caster->GetTypeId()==TYPEID_PLAYER)
