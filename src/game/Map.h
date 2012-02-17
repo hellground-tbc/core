@@ -271,27 +271,27 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         int32 irand(int32 min, int32 max)
         {
-          return int32 (mtRand.randInt(max - min)) + min;
+            return int32 (mtRand.randInt(max - min)) + min;
         }
 
         uint32 urand(uint32 min, uint32 max)
         {
-          return mtRand.randInt(max - min) + min;
+            return mtRand.randInt(max - min) + min;
         }
 
         int32 rand32()
         {
-          return mtRand.randInt();
+            return mtRand.randInt();
         }
 
         double rand_norm(void)
         {
-          return mtRand.randExc();
+            return mtRand.randExc();
         }
 
         double rand_chance(void)
         {
-          return mtRand.randExc(100.0);
+            return mtRand.randExc(100.0);
         }
 
         Creature* GetCreature(uint64 guid);

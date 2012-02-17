@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
@@ -28,8 +28,8 @@ class CreatureGroup;
 struct FormationInfo
 {
     uint32 leaderGUID;
-    float follow_dist; 
-    float follow_angle; 
+    float follow_dist;
+    float follow_angle;
     uint8 groupAI;
 };
 
@@ -72,6 +72,9 @@ class CreatureGroup
         void FormationReset(bool dismiss);
         // as for now, used in scripts to respawn whole group when one member enters evade mode
         TRINITY_DLL_SPEC void RespawnFormation(Creature *member);
+
+        // used to respawn and evade whole formation
+        TRINITY_DLL_SPEC void EvadeFormation(Creature *member);
 
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);

@@ -122,6 +122,10 @@ void CreatureAI::EnterEvadeMode()
     }
     else
          me->GetMotionMaster()->MoveTargetedHome();
+
+    if (CreatureGroup *formation = me->GetFormation())
+        formation->EvadeFormation(me);
+
     Reset();
 }
 
