@@ -2725,349 +2725,359 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
-        /* ROGUE CUSTOM ATTRIBUTES */
-        case 2094:                     // Blind
-            spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY; // add const fake delay
-            break;
-        case 5171:
-        case 6774:                     // Slice'n'Dice
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO; // Do not put caster in combat after use
-            break;
-        /* SHAMAN CUSTOM ATTRIBUTES */
-        case 2895:                      // Wrath of Air Totem - disallow weird stacking
-            spellInfo->EffectImplicitTargetA[0] = spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
-            spellInfo->EffectImplicitTargetB[0] = spellInfo->EffectImplicitTargetB[1] = 0;
-            break;
-        // Triggered spells that should be delayed
-        case 20272:                     // Illumination
-        case 32848:                     // Mana Restore
-        case 14189:                     // Seal Fate
-        case 14157:                     // Ruthlessness
-        case 14181:                     // Relentless Strikes
-        case 17794:                     // Improved Shadow Bolt ranks 1-5
-        case 17797:
-        case 17798:
-        case 17799:
-        case 17800:
-            spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;
-            break;
-        /* UNSORTED */
-        /* Damage Corrections */
-        case 16785: // Flamebreak
-            spellInfo->EffectBasePoints[0] = 24;
-            break;
-        case 17289: // Shadow Shock
-            spellInfo->EffectBasePoints[0] = 74;
-            break;
-        case 36920: // Fireball (Vazruden)
-            spellInfo->EffectBasePoints[0] = 151;
-            break;
-        case 34934: // Shadow Bolt Volley
-            spellInfo->EffectBasePoints[0] = 124;
-            break;
-        case 40317: // Throw
-            spellInfo->EffectBasePoints[0] = 199;
-            break;
-        case 40103: // Sludge Nova
-            spellInfo->EffectBasePoints[0] = urand(24, 29);
-            break;
-        /****************/
-        case 39042: // Rampant Infection
-            spellInfo->MaxAffectedTargets = 1;
-            break;
-        case 40017: // If we can't adjust speed :P we spawn it in bigger periods
-            spellInfo->EffectAmplitude[1] = 1900;
-            break;
-        case 40841:
-            spellInfo->EffectRadiusIndex[0] = 15;
-            break;
-        case 41120:
-            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_LEFT;
-            break;
-        case 41117:
-            spellInfo->Effect[0] = 0;
-            spellInfo->Effect[1] = 0;
-            break;
-        case 38054:
-            spellInfo->MaxAffectedTargets = 10;
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENTRY_SRC;
-            spellInfo->Targets = TARGET_FLAG_GAMEOBJECT & TARGET_FLAG_DEST_LOCATION;
-            spellInfo->EffectMiscValue[0] = 0;
-            break;
-        case 33824:
-            spellInfo->Effect[2] = 0;
-            break;
-        case 34121: // Al'ar Flame Buffet
-            spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
-        case 26029: // dark glare
-        case 43140: case 43215: // flame breath
-            spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
-            break;
-        case 24340: case 26558: case 28884:     // Meteor
-        case 36837: case 38903: case 41276:     // Meteor
-        case 26789:                             // Shard of the Fallen Star
-        case 31436:                             // Malevolent Cleave
-        case 35181:                             // Dive Bomb
-        case 40810: case 43267: case 43268:     // Saber Lash
-        case 42384:                             // Brutal Swipe
-        case 45150:                             // Meteor Slash
-            spellInfo->AttributesCu |= SPELL_ATTR_CU_SHARE_DAMAGE;
-            switch (i) // Saber Lash Targets
-            {
-            case 40810:             spellInfo->MaxAffectedTargets = 3; break;
-            case 43267: case 43268: spellInfo->MaxAffectedTargets = 2; break;
-            }
-            break;
-        case 44978: case 45001: case 45002:     // Wild Magic
-        case 45004: case 45006: case 45010:     // Wild Magic
-        //case 31347: // Doom
-        case 41635: // Prayer of Mending
-        case 44869: // Spectral Blast
-        case 45027: // Revitalize
-        case 45976: // Muru Portal Channel
-        case 39365: // Thundering Storm
-        case 41071: // Raise Dead
-        case 41172: // Rapid Shot
-        case 40834: // Agonizing Flames
-        case 45032: // Curse of Boundless Agony
-        case 42357: // Axe Throw, triggered by 42359
-            spellInfo->MaxAffectedTargets = 1;
-            break;
-        case 45034:
-            spellInfo->MaxAffectedTargets = 1;
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
-            break;
-        case 38281: // Static Charge (LV)
-        case 39992: // Najentus: Needle Spine
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
-        case 41357: // L1 Acane Charge
-        case 41376: // Spite
-        case 29576: // Multi-Shot
-        case 37790: // Spread Shot
-        case 46771: // Flame Sear
-        case 45248: // Shadow Blades
-        case 41303: // Soul Drain
-        case 31298: // Anetheron: Sleep
-        case 30004: // Aran: Flame Wreath
-            spellInfo->MaxAffectedTargets = 3;
-            break;
-        case 38310: // Multi-Shot
-            spellInfo->MaxAffectedTargets = 4;
-            break;
-        case 42005: // Bloodboil
-        case 31347: // Doom
-        case 39594: // Cyclone
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-            spellInfo->EffectImplicitTargetB[0] = 0;
-            if (i == 42005)
+            /* ROGUE CUSTOM ATTRIBUTES */
+            case 2094:                     // Blind
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY; // add const fake delay
+                break;
+            case 5171:
+            case 6774:                     // Slice'n'Dice
+                spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO; // Do not put caster in combat after use
+                break;
+            /* SHAMAN CUSTOM ATTRIBUTES */
+            case 2895:                      // Wrath of Air Totem - disallow weird stacking
+                spellInfo->EffectImplicitTargetA[0] = spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+                spellInfo->EffectImplicitTargetB[0] = spellInfo->EffectImplicitTargetB[1] = 0;
+                break;
+            // Triggered spells that should be delayed
+            case 20272:                     // Illumination
+            case 32848:                     // Mana Restore
+            case 14189:                     // Seal Fate
+            case 14157:                     // Ruthlessness
+            case 14181:                     // Relentless Strikes
+            case 17794:                     // Improved Shadow Bolt ranks 1-5
+            case 17797:
+            case 17798:
+            case 17799:
+            case 17800:
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY;
+                break;
+            /* UNSORTED */
+            /* Damage Corrections */
+            case 16785: // Flamebreak
+                spellInfo->EffectBasePoints[0] = 24;
+                break;
+            case 17289: // Shadow Shock
+                spellInfo->EffectBasePoints[0] = 74;
+                break;
+            case 36920: // Fireball (Vazruden)
+                spellInfo->EffectBasePoints[0] = 151;
+                break;
+            case 34934: // Shadow Bolt Volley
+                spellInfo->EffectBasePoints[0] = 124;
+                break;
+            case 40317: // Throw
+                spellInfo->EffectBasePoints[0] = 199;
+                break;
+            case 40103: // Sludge Nova
+                spellInfo->EffectBasePoints[0] = urand(24, 29);
+                break;
+            /****************/
+            case 39042: // Rampant Infection
+                spellInfo->MaxAffectedTargets = 1;
+                break;
+            case 40017: // If we can't adjust speed :P we spawn it in bigger periods
+                spellInfo->EffectAmplitude[1] = 1900;
+                break;
+            case 40841:
+                spellInfo->EffectRadiusIndex[0] = 15;
+                break;
+            case 41120:
+                spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_LEFT;
+                break;
+            case 41117:
+                spellInfo->Effect[0] = 0;
+                spellInfo->Effect[1] = 0;
+                break;
+            case 38054:
+                spellInfo->MaxAffectedTargets = 10;
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENTRY_SRC;
+                spellInfo->Targets = TARGET_FLAG_GAMEOBJECT & TARGET_FLAG_DEST_LOCATION;
+                spellInfo->EffectMiscValue[0] = 0;
+                break;
+            case 33824:
+                spellInfo->Effect[2] = 0;
+                break;
+            case 34121: // Al'ar Flame Buffet
+                spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
+            case 26029: // dark glare
+            case 43140: case 43215: // flame breath
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
+                break;
+            case 24340: case 26558: case 28884:     // Meteor
+            case 36837: case 38903: case 41276:     // Meteor
+            case 26789:                             // Shard of the Fallen Star
+            case 31436:                             // Malevolent Cleave
+            case 35181:                             // Dive Bomb
+            case 40810: case 43267: case 43268:     // Saber Lash
+            case 42384:                             // Brutal Swipe
+            case 45150:                             // Meteor Slash
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_SHARE_DAMAGE;
+                switch (i) // Saber Lash Targets
+                {
+                case 40810:             spellInfo->MaxAffectedTargets = 3; break;
+                case 43267: case 43268: spellInfo->MaxAffectedTargets = 2; break;
+                }
+                break;
+            case 44978: case 45001: case 45002:     // Wild Magic
+            case 45004: case 45006: case 45010:     // Wild Magic
+            //case 31347: // Doom
+            case 41635: // Prayer of Mending
+            case 44869: // Spectral Blast
+            case 45027: // Revitalize
+            case 45976: // Muru Portal Channel
+            case 39365: // Thundering Storm
+            case 41071: // Raise Dead
+            case 41172: // Rapid Shot
+            case 40834: // Agonizing Flames
+            case 45032: // Curse of Boundless Agony
+            case 42357: // Axe Throw, triggered by 42359
+                spellInfo->MaxAffectedTargets = 1;
+                break;
+            case 45034:
+                spellInfo->MaxAffectedTargets = 1;
+                spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
+                break;
+            case 38281: // Static Charge (LV)
+            case 39992: // Najentus: Needle Spine
+                spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
+            case 41357: // L1 Acane Charge
+            case 41376: // Spite
+            case 29576: // Multi-Shot
+            case 37790: // Spread Shot
+            case 46771: // Flame Sear
+            case 45248: // Shadow Blades
+            case 41303: // Soul Drain
+            case 31298: // Anetheron: Sleep
+            case 30004: // Aran: Flame Wreath
+                spellInfo->MaxAffectedTargets = 3;
+                break;
+            case 38310: // Multi-Shot
+                spellInfo->MaxAffectedTargets = 4;
+                break;
+            case 42005: // Bloodboil
+            case 31347: // Doom
+            case 39594: // Cyclone
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->EffectImplicitTargetB[0] = 0;
+                if (i == 42005)
+                    spellInfo->rangeIndex = 6;
+                break;
+            case 41625: // Fel Rage 3
+                spellInfo->Stances = 0;
+                break;
+            case 38296: // Spitfire Totem
+            case 37676: // Insidious Whisper
+            case 46008: // Negative Energy
+            case 45641: // Fire Bloom
+                spellInfo->MaxAffectedTargets = 5;
+                break;
+            case 40827: // Sinful Beam
+            case 40859: // Sinister Beam
+            case 40860: // Vile Beam
+            case 40861: // Wicked Beam
+                spellInfo->MaxAffectedTargets = 10;
+                break;
+            case 8122: case 8124: case 10888: case 10890: // Psychic Scream
+            case 12494: // Frostbite
+                spellInfo->Attributes |= SPELL_ATTR_BREAKABLE_BY_DAMAGE;
+                break;
+            case 38794: case 33711: // Murmur's Touch
+                spellInfo->MaxAffectedTargets = 1;
+                spellInfo->EffectTriggerSpell[0] = 33760;
+                break;
+            case 32727: // Arena Preparation - remove invisibility aura
+            case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
+                spellInfo->Effect[1] = NULL;
+                break;
+            case 24905: // Moonkin form -> elune's touch
+                spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
+                break;
+            case 27066: // Trueshot r4 - poprzednie ranki nie maja dispel type: MAGIC o.O
+                spellInfo->Dispel = DISPEL_NONE;
+                break;
+            case 31117: // UA dispell effect
+                spellInfo->SpellFamilyFlags = 0x010000000000LL;
+                break;
+            case 32045: // Archimonde: Soul Charge - yellow
+            case 32051: // Archimonde: Soul Charge - green
+            case 32052: // Archimonde: Soul Charge - red
+                spellInfo->procCharges = 0;
+                spellInfo->procChance = 101;
+                spellInfo->procFlags = 0;
+                break;
+            case 40105:
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+                spellInfo->Effect[2] = NULL;
+            case 40106:
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->EffectTriggerSpell[0] = NULL;
+            case 41001: // Fatal Attraction Aura
+                spellInfo->EffectTriggerSpell[1] = 0;
+                break;
+            case 40869: // Fatal Attraction
+                spellInfo->EffectRadiusIndex[0] = 12;
+                spellInfo->MaxAffectedTargets = 3;
+                spellInfo->Effect[1] = 0;
+                break;
+            case 40870: // Fatal Attraction Trigger
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
+                spellInfo->EffectImplicitTargetB[0] = 0;
+                break;
+            case 40594: // Fel Rage
+                spellInfo->EffectBasePoints[1] = 99;
+                break;
+            case 40855: // Akama Soul Expel
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 40401: // Shade of Akama Channeling
+                spellInfo->Effect[2] = spellInfo->Effect[0];
+                spellInfo->EffectApplyAuraName[2] = spellInfo->EffectApplyAuraName[0];
+                spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
+                break;
+            case 40251:
+                spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+                break;
+            case 36819: // Kael Pyroblast
+                spellInfo->rangeIndex = 6;  // from 40yd to 100yd to avoid running from dmg
+                break;
+            case 40334:
+                spellInfo->procFlags = PROC_FLAG_SUCCESSFUL_MELEE_HIT;
+                break;
+            case 30015: // Summon Naias cooldown
+                spellInfo->RecoveryTime = 300000;
+                break;
+            case 35413: // Summon Goliathon cooldown
+                spellInfo->RecoveryTime = 300000;
+                break;
+            case 13280: // Gnomish Death Ray
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 6947:  // Curse of the Bleakheart
+                spellInfo->procFlags = 65876;      //any succesfull melee, ranged or negative spell hit
+                break;
+            case 34580: // Impale(Despair item)
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
+                break;
+            case 66:    // Invisibility (fading) - break on casting spell
+                spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CAST;
+                break;
+            case 37363: // set 5y radius instead of 25y
+                spellInfo->EffectRadiusIndex[0] = 8;
+                spellInfo->EffectRadiusIndex[0] = 8;
+                break;
+            case 37433: // just in case, where u don't get spout sometimes ?
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->EffectImplicitTargetB[0] = 0;
+                spellInfo->EffectImplicitTargetB[1] = 0;
+                break;
+            case 42835: // set visual only
+                spellInfo->Effect[0] = 0;
+                break;
+            case 47977: // Broom Broom
+            case 42679:
+            case 42673:
+            case 42680:
+            case 42681:
+            case 42683:
+            case 42684:
+                spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
+                break;
+            case 43730: // Stormchops effect
+                spellInfo->EffectTriggerSpell[0] = 43733;
+                spellInfo->EffectTriggerSpell[1] = 43731;
+                spellInfo->EffectImplicitTargetA[1] = 1;
+                spellInfo->EffectImplicitTargetB[1] = 0;
+                break;
+            case 41470: //Judgement of Command should be reflectable
+                spellInfo->AttributesEx2 = 0;
+                break;
+            case 26373: // Lunar Invitation
+                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+                spellInfo->EffectImplicitTargetB[1] = 0;
+                break;
+            case 31532: // Repair from Mekgineer event in Steamvault
+            case 37936:
+                spellInfo->Attributes &= ~SPELL_ATTR_BREAKABLE_BY_DAMAGE;
+                break;
+            case 37454: // Chess event: Bite
+            case 37453: // Chess event: Smash
+            case 37413: // Chess event: Visious Strike
+            case 37406: // Chess event: Heroic Blow
+                spellInfo->EffectRadiusIndex[0] = 15;    // effect radius from 8 to 3 yd
+                break;
+            case 37502: // Chess event: Howl
+            case 37498: // Chess event: Stomp
+                spellInfo->EffectRadiusIndex[0] = 29;    // effect radius from 8 to 6 yd
+                break;
+            case 37834: spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY; //Unbanish Azaloth
+                break;
+            case 37461: // Chess event: Shadow Spear
+            case 37459: // Chess event: Holy Lance
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
+                spellInfo->EffectRadiusIndex[0] = 18;   // effect radius from 18 to 15 yd
+                break;
+            case 41363: // Shared Bonds
+                spellInfo->AttributesEx &= ~SPELL_ATTR_EX_CHANNELED_1;
+            case 16007: // DRACO_INCARCINATRIX_900
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 39331: // In Session
+                spellInfo->DurationIndex = 21;  // infinity
+                spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
+                spellInfo->EffectRadiusIndex[0] = 27;   // effect radius from 65 to 50 yd
+                break;
+            case 19937: //Illusion: Black Dragonkin
+                spellInfo->AreaId = 15;
+                break;
+            case 28062: // Positive Charge
+            case 28085: // Negative Charge
+            case 39090: // Positive Charge
+            case 39093: // Negative Charge
+            case 39968: // Needle Spine Explosion
+            case 39692: // Cannon
+                spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
+                break;
+            case 42992: //ram - neutral
+            case 43310: //ram - trot
+                spellInfo->EffectImplicitTargetA[1] = 1;
+                break;
+            case 37370: // Kelidan the breaker - vortex
+                spellInfo->EffectMiscValue[0] /= 2;
+                break;
+            case 41345: // Infatuation (BT Trash)
+                spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_IGNORE_LOS;
+                break;
+            case 43383: // Spirit Bolts (HexLord)
+                spellInfo->ChannelInterruptFlags = CHANNEL_FLAG_MOVEMENT;
+                break;
+            case 29962: // Summon Elemental (Shade of Aran)
+            case 37053:
+            case 37051:
+            case 37052:
                 spellInfo->rangeIndex = 6;
-            break;
-        case 41625: // Fel Rage 3
-            spellInfo->Stances = 0;
-            break;
-        case 38296: // Spitfire Totem
-        case 37676: // Insidious Whisper
-        case 46008: // Negative Energy
-        case 45641: // Fire Bloom
-            spellInfo->MaxAffectedTargets = 5;
-            break;
-        case 40827: // Sinful Beam
-        case 40859: // Sinister Beam
-        case 40860: // Vile Beam
-        case 40861: // Wicked Beam
-            spellInfo->MaxAffectedTargets = 10;
-            break;
-        case 8122: case 8124: case 10888: case 10890: // Psychic Scream
-        case 12494: // Frostbite
-            spellInfo->Attributes |= SPELL_ATTR_BREAKABLE_BY_DAMAGE;
-            break;
-        case 38794: case 33711: // Murmur's Touch
-            spellInfo->MaxAffectedTargets = 1;
-            spellInfo->EffectTriggerSpell[0] = 33760;
-            break;
-        case 32727: // Arena Preparation - remove invisibility aura
-        case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
-            spellInfo->Effect[1] = NULL;
-            break;
-        case 24905: // Moonkin form -> elune's touch
-            spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
-            break;
-        case 27066: // Trueshot r4 - poprzednie ranki nie maja dispel type: MAGIC o.O
-            spellInfo->Dispel = DISPEL_NONE;
-            break;
-        case 31117: // UA dispell effect
-            spellInfo->SpellFamilyFlags = 0x010000000000LL;
-            break;
-        case 32045: // Archimonde: Soul Charge - yellow
-        case 32051: // Archimonde: Soul Charge - green
-        case 32052: // Archimonde: Soul Charge - red
-            spellInfo->procCharges = 0;
-            spellInfo->procChance = 101;
-            spellInfo->procFlags = 0;
-            break;
-        case 40105:
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
-            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
-            spellInfo->Effect[2] = NULL;
-        case 40106:
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-            spellInfo->EffectTriggerSpell[0] = NULL;
-        case 41001: // Fatal Attraction Aura
-            spellInfo->EffectTriggerSpell[1] = 0;
-            break;
-        case 40869: // Fatal Attraction
-            spellInfo->EffectRadiusIndex[0] = 12;
-            spellInfo->MaxAffectedTargets = 3;
-            spellInfo->Effect[1] = 0;
-            break;
-        case 40870: // Fatal Attraction Trigger
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ALLY;
-            spellInfo->EffectImplicitTargetB[0] = 0;
-            break;
-        case 40594: // Fel Rage
-            spellInfo->EffectBasePoints[1] = 99;
-            break;
-        case 40855: // Akama Soul Expel
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-            break;
-        case 40401: // Shade of Akama Channeling
-            spellInfo->Effect[2] = spellInfo->Effect[0];
-            spellInfo->EffectApplyAuraName[2] = spellInfo->EffectApplyAuraName[0];
-            spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
-            break;
-        case 40251:
-            spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
-            break;
-        case 36819: // Kael Pyroblast
-            spellInfo->rangeIndex = 6;  // from 40yd to 100yd to avoid running from dmg
-            break;
-        case 40334:
-            spellInfo->procFlags = PROC_FLAG_SUCCESSFUL_MELEE_HIT;
-            break;
-        case 30015: // Summon Naias cooldown
-            spellInfo->RecoveryTime = 300000;
-            break;
-        case 35413: // Summon Goliathon cooldown
-            spellInfo->RecoveryTime = 300000;
-            break;
-        case 13280: // Gnomish Death Ray
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-            break;
-        case 6947:  // Curse of the Bleakheart
-            spellInfo->procFlags = 65876;      //any succesfull melee, ranged or negative spell hit
-            break;
-        case 34580: // Impale(Despair item)
-            spellInfo->AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
-            break;
-        case 66:    // Invisibility (fading) - break on casting spell
-            spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CAST;
-            break;
-        case 37363: // set 5y radius instead of 25y
-            spellInfo->EffectRadiusIndex[0] = 8;
-            spellInfo->EffectRadiusIndex[0] = 8;
-            break;
-        case 37433: // just in case, where u don't get spout sometimes ?
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
-            spellInfo->EffectImplicitTargetB[0] = 0;
-            spellInfo->EffectImplicitTargetB[1] = 0;
-            break;
-        case 42835: // set visual only
-            spellInfo->Effect[0] = 0;
-            break;
-        case 47977: // Broom Broom
-        case 42679:
-        case 42673:
-        case 42680:
-        case 42681:
-        case 42683:
-        case 42684:
-            spellInfo->AttributesEx4 |= SPELL_ATTR_EX4_NOT_USABLE_IN_ARENA;
-            break;
-        case 43730: // Stormchops effect
-            spellInfo->EffectTriggerSpell[0] = 43733;
-            spellInfo->EffectTriggerSpell[1] = 43731;
-            spellInfo->EffectImplicitTargetA[1] = 1;
-            spellInfo->EffectImplicitTargetB[1] = 0;
-            break;
-        case 41470: //Judgement of Command should be reflectable
-            spellInfo->AttributesEx2 = 0;
-            break;
-        case 26373: // Lunar Invitation
-            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
-            spellInfo->EffectImplicitTargetB[1] = 0;
-            break;
-        case 31532: // Repair from Mekgineer event in Steamvault
-        case 37936:
-            spellInfo->Attributes &= ~SPELL_ATTR_BREAKABLE_BY_DAMAGE;
-            break;
-        case 37454: // Chess event: Bite
-        case 37453: // Chess event: Smash
-        case 37413: // Chess event: Visious Strike
-        case 37406: // Chess event: Heroic Blow
-            spellInfo->EffectRadiusIndex[0] = 15;    // effect radius from 8 to 3 yd
-            break;
-        case 37502: // Chess event: Howl
-        case 37498: // Chess event: Stomp
-            spellInfo->EffectRadiusIndex[0] = 29;    // effect radius from 8 to 6 yd
-            break;
-        case 37834: spellInfo->Attributes |= SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY; //Unbanish Azaloth
-            break;
-        case 37461: // Chess event: Shadow Spear
-        case 37459: // Chess event: Holy Lance
-            spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
-            spellInfo->EffectRadiusIndex[0] = 18;   // effect radius from 18 to 15 yd
-            break;
-        case 41363: // Shared Bonds
-            spellInfo->AttributesEx &= ~SPELL_ATTR_EX_CHANNELED_1;
-        case 16007: // DRACO_INCARCINATRIX_900
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-            break;
-        case 39331: // In Session
-            spellInfo->DurationIndex = 21;  // infinity
-            spellInfo->Effect[0] = SPELL_EFFECT_APPLY_AREA_AURA_FRIEND;
-            spellInfo->EffectRadiusIndex[0] = 27;   // effect radius from 65 to 50 yd
-            break;
-        case 19937: //Illusion: Black Dragonkin
-            spellInfo->AreaId = 15;
-            break;
-        case 28062: // Positive Charge
-        case 28085: // Negative Charge
-        case 39090: // Positive Charge
-        case 39093: // Negative Charge
-        case 39968: // Needle Spine Explosion
-        case 39692: // Cannon
-            spellInfo->AttributesEx |= SPELL_ATTR_EX_CANT_TARGET_SELF;
-            break;
-        case 42992: //ram - neutral
-        case 43310: //ram - trot
-            spellInfo->EffectImplicitTargetA[1] = 1;
-            break;
-        case 37370: // Kelidan the breaker - vortex
-            spellInfo->EffectMiscValue[0] /= 2;
-            break;
-        case 41345: // Infatuation (BT Trash)
-            spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_IGNORE_LOS;
-            break;
-        case 43383: // Spirit Bolts (HexLord)
-            spellInfo->ChannelInterruptFlags = CHANNEL_FLAG_MOVEMENT;
-            break;
-        case 29962: // Summon Elemental (Shade of Aran)
-        case 37053:
-        case 37051:
-        case 37052:
-            spellInfo->rangeIndex = 6;
-            break;
-        case 40214: // Dragonmaw illusion
-        case 28006: // Arcane Cloaking
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
-            break;
-        case 29955: // Arcane Missiles (Shade of Aran)
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
-            spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
-            spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ENEMY;
-        default:
-            break;
+                break;
+            case 40214: // Dragonmaw illusion
+                spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
+                break;
+            case 29955: // Arcane Missiles (Shade of Aran)
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
+                spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 30541: // Magtheridon's Blaze
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->EffectImplicitTargetB[0] = 0;
+                break;
+            case 36449: // Magtheridon's Debris (30% hp)
+                spellInfo->EffectImplicitTargetA[0] = TARGET_SRC_CASTER;
+                spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENEMY_SRC;
+                spellInfo->EffectImplicitTargetA[1] = TARGET_SRC_CASTER;
+                spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_AREA_ENEMY_SRC;
+                break;
+            default:
+                break;
         }
     }
     CreatureAI::FillAISpellInfo();

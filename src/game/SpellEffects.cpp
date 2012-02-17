@@ -6328,6 +6328,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 45235: // Eredar Twins: Blaze
             unitTarget->CastSpell(unitTarget, 45236, true, NULL, NULL, m_caster->GetGUID());
             break;
+        case 30541: // Magtheridon's Blaze
+            unitTarget->CastSpell(unitTarget, 30542, true, NULL, NULL, m_caster->GetGUID());
+            break;
     }
 
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN)
