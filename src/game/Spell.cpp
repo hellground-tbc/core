@@ -2212,7 +2212,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     if (triggeredByAura)
         m_triggeredByAuraSpell = triggeredByAura->GetSpellProto();
 
-    if ((!m_IsTriggeredSpell && !IsChanneledSpell(m_spellInfo) ? m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT))
+    if ((!m_IsTriggeredSpell && m_casttime && !IsChanneledSpell(m_spellInfo) ? m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT))
     {
         m_caster->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
         if (m_caster->GetTypeId() == TYPEID_UNIT)
