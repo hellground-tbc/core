@@ -50,7 +50,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
 
     // used also for charmed creature
     Unit* pCharm = pPlayer->GetUnit(charmGUID);
-    if (!pCharm || (charmGUID != pPlayer->GetPetGUID() && charmGUID && pPlayer->GetCharmGUID()))
+    if (!pCharm || (charmGUID != pPlayer->GetPetGUID() && charmGUID != pPlayer->GetCharmGUID()))
     {
         sLog.outError("PetHandler:: charm(%u), player doesn't have such pet/charm.", uint32(GUID_LOPART(charmGUID)));
         return;

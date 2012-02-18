@@ -2332,11 +2332,11 @@ float Creature::GetBaseSpeed() const
 
 bool Creature::HasSpell(uint32 spellID) const
 {
-    uint8 i;
-    for (i = 0; i < CREATURE_MAX_SPELLS; ++i)
+    for (uint8 i = 0; i < CREATURE_MAX_SPELLS; ++i)
         if (spellID == m_spells[i])
-            break;
-    return i < CREATURE_MAX_SPELLS;                         //broke before end of iteration of known spells
+            return true;
+
+    return false;
 }
 
 time_t Creature::GetRespawnTimeEx() const

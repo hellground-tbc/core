@@ -164,12 +164,19 @@ void CharmInfo::InitCharmCreateSpells()
             bool onlyselfcast = true;
             SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
 
-            if (!spellInfo) onlyselfcast = false;
-            for (uint32 i = 0; i < 3 && onlyselfcast; ++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
+            if (spellInfo)
             {
-                if (spellInfo->EffectImplicitTargetA[i] != TARGET_UNIT_CASTER && spellInfo->EffectImplicitTargetA[i] != 0)
-                    onlyselfcast = false;
+                for (uint32 i = 0; i < 3; ++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
+                {
+                    if (spellInfo->EffectImplicitTargetA[i] != TARGET_UNIT_CASTER && spellInfo->EffectImplicitTargetA[i] != 0)
+                    {
+                        onlyselfcast = false;
+                        break;
+                    }
+                }
             }
+            else
+                onlyselfcast = false;
 
             if (onlyselfcast || !IsPositiveSpell(spellId))   //only self cast and spells versus enemies are autocastable
                 newstate = ACT_DISABLED;
@@ -310,10 +317,8 @@ void CharmInfo::HandleSpellActCommand(uint64 targetGUID, uint32 spellId)
         return;
 
     for (uint32 i = 0; i < 3;i++)
-    {
          if (spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENEMY_SRC || spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENEMY_DST || spellInfo->EffectImplicitTargetA[i] == TARGET_DEST_DYNOBJ_ENEMY)
              return;
-    }
 
     // do not cast not learned spells
     if (!m_unit->HasSpell(spellId) || IsPassiveSpell(spellId))
