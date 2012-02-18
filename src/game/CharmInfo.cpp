@@ -355,7 +355,7 @@ void CharmInfo::HandleSpellActCommand(uint64 targetGUID, uint32 spellId)
                 pPet->SendPetAIReaction(charmerGUID);
         }
         else
-            pPet->SendPetAIReaction(charmerGUID);
+            pCreature->SendPetAIReaction(charmerGUID);
 
         Unit *pSpellTarget = spell->m_targets.getUnitTarget();
 
