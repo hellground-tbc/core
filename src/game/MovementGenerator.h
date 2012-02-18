@@ -27,8 +27,7 @@
 #include "Dynamic/ObjectRegistry.h"
 #include "Dynamic/FactoryHolder.h"
 #include "MotionMaster.h"
-
-class Unit;
+#include "Unit.h"
 
 class TRINITY_DLL_SPEC MovementGenerator
 {
