@@ -1327,17 +1327,29 @@ void BattleGroundMgr::InvitePlayer(Player* plr, uint32 bgInstanceGUID, BattleGro
     {
         switch(bg->GetArenaType())
         {
-        case ARENA_TYPE_2v2:
-            bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(0));
-            break;
-        case ARENA_TYPE_3v3:
-            bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(1));
-            break;
-        case ARENA_TYPE_5v5:
-            bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(2));
-            break;
-        default:
-            break;
+            case ARENA_TYPE_2v2:
+            {
+                bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(0));
+                if (ArenaTeam * tmpTeam = sObjectMgr.GetArenaTeamById(plr->GetArenaTeamId(0)))
+                    bg->AddToArenaTeamMMR(team, tmpTeam->GetMemberMMR(plr->GetGUID()));
+                break;
+            }
+            case ARENA_TYPE_3v3:
+            {
+                bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(1));
+                if (ArenaTeam * tmpTeam = sObjectMgr.GetArenaTeamById(plr->GetArenaTeamId(1)))
+                    bg->AddToArenaTeamMMR(team, tmpTeam->GetMemberMMR(plr->GetGUID()));
+                break;
+            }
+            case ARENA_TYPE_5v5:
+            {
+                bg->SetArenaTeamIdForTeam(team, plr->GetArenaTeamId(2));
+                if (ArenaTeam * tmpTeam = sObjectMgr.GetArenaTeamById(plr->GetArenaTeamId(2)))
+                    bg->AddToArenaTeamMMR(team, tmpTeam->GetMemberMMR(plr->GetGUID()));
+                break;
+            }
+            default:
+                break;
         }
     }
 
