@@ -422,14 +422,6 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data)
 
 void Creature::Update(uint32 update_diff, uint32 diff)
 {
-    if (IsInWater())
-    {
-        if (CanSwim())
-            AddUnitMovementFlag(MOVEFLAG_SWIMMING);
-    }
-    else if (CanWalk())
-        RemoveUnitMovementFlag(MOVEFLAG_SWIMMING);
-
     switch (m_deathState)
     {
         case JUST_ALIVED:
