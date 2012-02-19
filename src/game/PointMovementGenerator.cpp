@@ -63,11 +63,22 @@ void PointMovementGenerator<T>::Reset(T &unit)
 template<class T>
 bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 {
-    if (!&unit)
-        return false;
+    if (!_arrived && unit.IsWithinDist3d(i_x, i_y, i_z, 0.05f))
+    {
+        MovementInform(unit);
+        return true;
+    }
 
     if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE))
+    {
+        StopMovement();
         return true;
+    }
+    else if (unit.IsStopped() && !_arrived)
+    {
+        Initialize(&unit);
+        return true;
+    }
 
     return !unit.movespline->Finalized();
 }
@@ -76,19 +87,19 @@ template<class T>
 void PointMovementGenerator<T>::Finalize(T &unit)
 {
     unit.clearUnitState(UNIT_STAT_ROAMING);
-
-    if (unit.movespline->Finalized())
-        MovementInform(unit);
 }
 
 template<>
 void PointMovementGenerator<Player>::MovementInform(Player&)
 {
+    _arrived = true;
 }
 
 template <>
 void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
 {
+    _arrived = true;
+
     if (unit.AI())
         unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
 

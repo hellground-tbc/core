@@ -31,7 +31,7 @@ class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< 
 {
     public:
         PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _speed = 0.0f, bool _generatePath = false) : id(_id),
-            i_x(_x), i_y(_y), i_z(_z), speed(_speed), m_generatePath(_generatePath) {}
+            i_x(_x), i_y(_y), i_z(_z), speed(_speed), m_generatePath(_generatePath), _arrived(false) {}
 
         void Initialize(T &);
         void Finalize(T &);
@@ -48,6 +48,7 @@ class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< 
         uint32 id;
         float speed;
         bool m_generatePath;
+        bool _arrived;
 };
 
 class TRINITY_DLL_SPEC AssistanceMovementGenerator : public PointMovementGenerator<Creature>
