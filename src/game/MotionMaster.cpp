@@ -114,6 +114,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
 
 void MotionMaster::StopMovement(uint32 time /*= 3 * MINUTE * IN_MILLISECONDS*/)
 {
+    m_owner->DisableSpline();
     m_owner->StopMoving();
     top()->StopMovement(time);
 }
