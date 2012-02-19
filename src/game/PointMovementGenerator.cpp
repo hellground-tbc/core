@@ -71,12 +71,16 @@ bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 
     if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE))
     {
-        StopMovement();
+        if (!unit.IsStopped())
+        {
+            unit.DisableSpline();
+            unit.StopMoving();
+        }
         return true;
     }
     else if (unit.IsStopped() && !_arrived)
     {
-        Initialize(&unit);
+        Initialize(unit);
         return true;
     }
 
