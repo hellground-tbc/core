@@ -6,6 +6,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/
   ${CMAKE_CURRENT_SOURCE_DIR}/vmap
+  ${CMAKE_CURRENT_SOURCE_DIR}/movemap
   ${CMAKE_SOURCE_DIR}/dep/include
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_SOURCE_DIR}/src/shared/Database

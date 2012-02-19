@@ -54,6 +54,7 @@ class CreatureGroup;
 class BattleGround;
 
 class GridMap;
+class TerrainInfo;
 
 struct ScriptInfo;
 struct ScriptAction;
