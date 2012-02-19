@@ -1,7 +1,7 @@
-﻿Build started 2012-02-18 02:10:05.
-     1>Project "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj" on node 2 (build target(s)).
-     1>PrepareForBuild:
-         Creating directory "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\\..\..\..\..\lib\Win32_Release\".
+﻿Build started 2012-02-18 21:06:42.
+     1>Project "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file ".\Detour__Win32_Release\Detour.lastbuildstate".
        InitializeBuildStatus:
          Creating ".\Detour__Win32_Release\Detour.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
@@ -24,8 +24,8 @@
        FinalizeBuildStatus:
          Deleting file ".\Detour__Win32_Release\Detour.unsuccessfulbuild".
          Touching ".\Detour__Win32_Release\Detour.lastbuildstate".
-     1>Done Building Project "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj" (build target(s)).
+     1>Done Building Project "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj" (rebuild target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:05.31
+Time Elapsed 00:00:05.05

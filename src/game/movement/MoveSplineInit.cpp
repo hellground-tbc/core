@@ -82,6 +82,9 @@ namespace Movement
         if (!args.Validate())
             return 0;
 
+        if (moveFlags & MOVEFLAG_ROOT)
+            moveFlags &= ~MOVEFLAG_MOVING;
+
         unit.m_movementInfo.SetMovementFlags((MovementFlags)moveFlags);
         move_spline.Initialize(args);
 

@@ -230,8 +230,6 @@ namespace VMAP
         return(height);
     }
 
-    //=========================================================
-
     bool StaticMapTree::CanLoadMap(const std::string &vmapPath, uint32 mapID, uint32 tileX, uint32 tileY)
     {
         std::string basePath = vmapPath;
