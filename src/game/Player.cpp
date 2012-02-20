@@ -4533,6 +4533,11 @@ void Player::RepopAtGraveyard()
         SpawnCorpseBones();
     }
 
+    TeleportToNearestGraveyard();
+}
+
+void Player::TeleportToNearestGraveyard()
+{
     WorldSafeLocsEntry const *ClosestGrave = NULL;
 
     // Special handle for battleground maps

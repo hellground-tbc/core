@@ -1686,6 +1686,7 @@ class TRINITY_DLL_SPEC Player : public Unit
         void ResurrectPlayer(float restore_percent, bool applySickness = false);
         void BuildPlayerRepop();
         void RepopAtGraveyard();
+        void TeleportToNearestGraveyard();
 
         void DurabilityLossAll(double percent, bool inventory);
         void DurabilityLoss(Item* item, double percent);
@@ -1845,10 +1846,11 @@ class TRINITY_DLL_SPEC Player : public Unit
         /***               BATTLEGROUND SYSTEM                 ***/
         /*********************************************************/
 
-        bool InBattleGround()       const                { return m_bgBattleGroundID != 0; }
+        bool InBattleGround()       const                   { return m_bgBattleGroundID != 0; }
         bool InArena()              const;
-        uint32 GetBattleGroundId()  const                { return m_bgBattleGroundID; }
-        BattleGroundTypeId GetBattleGroundTypeId() const { return m_bgTypeID; }
+        bool InArenaOrBG()          const;                  { return InBattleGround() || InArena(); }
+        uint32 GetBattleGroundId()  const                   { return m_bgBattleGroundID; }
+        BattleGroundTypeId GetBattleGroundTypeId() const    { return m_bgTypeID; }
         BattleGround* GetBattleGround() const;
 
 
