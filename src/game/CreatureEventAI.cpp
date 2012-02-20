@@ -126,6 +126,20 @@ CreatureEventAI::CreatureEventAI(Creature *c) : CreatureAI(c)
 
     InvinceabilityHpLevel = 0;
 
+    CreatureEventAI_Event cevent;
+    cevent.event_type = EVENT_T_TIMER;
+    cevent.event_inverse_phase_mask = 0;
+    cevent.event_chance = 100;
+    cevent.timer.initialMin = 0;
+    cevent.timer.initialMax = 2000;
+    cevent.timer.repeatMin = 2000;
+    cevent.timer.repeatMax = 3000;
+    cevent.action[0].type = ACTION_T_CHECK_OUT_OF_THREAT;
+    cevent.action[1].type = ACTION_T_NONE;
+    cevent.action[2].type = ACTION_T_NONE;
+
+    CreatureEventAIList.push_back(CreatureEventAIHolder(cevent));
+
     //Handle Spawned Events
     if (!bEmptyList)
     {
@@ -688,6 +702,11 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             break;
         case ACTION_T_COMBAT_STOP:
             _EnterEvadeMode();
+            break;
+        case ACTION_T_CHECK_OUT_OF_THREAT:
+            if (me->getVictim() && me->IsOutOfThreatArea(me->getVictim()))
+                me->AI()->EnterEvadeMode();
+
             break;
         case ACTION_T_SET_PHASE:
             Phase = action.set_phase.phase;

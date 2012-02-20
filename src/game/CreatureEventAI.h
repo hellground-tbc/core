@@ -113,6 +113,7 @@ enum EventAI_ActionType
     ACTION_T_REMOVE_CORPSE              = 43,               // No Params
     ACTION_T_CAST_GUID                  = 44,               // SpellId, TargetGUID, CastFlags
     ACTION_T_COMBAT_STOP                = 45,               // No Params
+    ACTION_T_CHECK_OUT_OF_THREAT        = 46,
 
     ACTION_T_SET_PHASE_MASK             = 97,
     ACTION_T_SET_STAND_STATE            = 98,
@@ -416,6 +417,10 @@ struct CreatureEventAI_Action
             uint64 targetGUID;
             uint32 castFlags;
         } castguid;
+        // ACTION_T_CHECK_OUT_OF_THREAT                     = 45
+        struct
+        {
+        } outofarea;
         // RAW
         struct
         {
