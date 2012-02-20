@@ -6548,7 +6548,7 @@ void Spell::EffectStuck(uint32 /*i*/)
         // if player hasn't cooldown on HearthStone and have in bags then use him
         // otherwise teleport to player start location
         if (!pTarget->GetSpellCooldownDelay(8690) && pTarget->HasItemCount(6948, 1))
-            pTarget->CastSpell(8690, pTarget, true);
+            pTarget->CastSpell(pTarget, 8690, true);
         else
             if (PlayerInfo const * tmpPlInfo = objmgr.GetPlayerInfo(pTarget->getRace(), pTarget->getClass()))
                 pTarget->TeleportTo(tmpPlInfo->mapId, tmpPlInfo->positionX, tmpPlInfo->positionY, tmpPlInfo->positionZ, 0.0f);

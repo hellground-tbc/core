@@ -1848,7 +1848,7 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         bool InBattleGround()       const                   { return m_bgBattleGroundID != 0; }
         bool InArena()              const;
-        bool InArenaOrBG()          const;                  { return InBattleGround() || InArena(); }
+        bool InArenaOrBG()          const                   { return InBattleGround() || InArena(); }
         uint32 GetBattleGroundId()  const                   { return m_bgBattleGroundID; }
         BattleGroundTypeId GetBattleGroundTypeId() const    { return m_bgTypeID; }
         BattleGround* GetBattleGround() const;
