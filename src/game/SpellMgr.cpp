@@ -2772,6 +2772,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectBasePoints[0] = urand(24, 29);
                 break;
             /****************/
+            // do NOT remove encapsulate on druid shapeshift, attribute is added higher, so is safe to remove it here
+            case 45665:
+                spellInfo->AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                break;
             case 39042: // Rampant Infection
                 spellInfo->MaxAffectedTargets = 1;
                 break;

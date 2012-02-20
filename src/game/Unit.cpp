@@ -562,7 +562,7 @@ void Unit::RemoveMovementImpairingAuras()
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
         // do not remove Encapsulate as movem imp effect
-        if (iter->second->GetId() != 45665 && iter->second->GetSpellProto()->AttributesCu & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
+        if (iter->second->GetSpellProto()->AttributesCu & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
             RemoveAura(iter);
         else
             ++iter;
