@@ -6528,22 +6528,18 @@ void Spell::EffectDuel(uint32 i)
 
 void Spell::EffectStuck(uint32 /*i*/)
 {
-    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+    if (!unitTarget)
         return;
 
-    if (!sWorld.getConfig(CONFIG_CAST_UNSTUCK))
+    Player* pTarget = unitTarget->ToPlayer();
+
+    if (!pTarget || !sWorld.getConfig(CONFIG_CAST_UNSTUCK))
         return;
 
-    Player* pTarget = (Player*)unitTarget;
-
-    sLog.outDebug("Spell Effect: Stuck");
     sLog.outDetail("Player %s (guid %u) used auto-unstuck future at map %u (%f, %f, %f)", pTarget->GetName(), pTarget->GetGUIDLow(), m_caster->GetMapId(), m_caster->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
 
-    if (pTarget->IsTaxiFlying())
-        return;
-
     // player stucked on arena or bg just should leave ;]
-    if (pTarget->InArenaOrBG())
+    if (pTarget->IsTaxiFlying() || pTarget->InArenaOrBG())
         return;
 
     // if player isn't alive repop him on nearest graveyard (for stucking while in ghost)
@@ -6552,23 +6548,10 @@ void Spell::EffectStuck(uint32 /*i*/)
         // if player hasn't cooldown on HearthStone and have in bags then use him
         // otherwise teleport to player start location
         if (!pTarget->GetSpellCooldownDelay(8690) && pTarget->HasItemCount(6948, 1))
-        {
-            // homebind location is loaded always
-            pTarget->TeleportToHomebind(unitTarget == m_caster ? TELE_TO_SPELL : 0);
-
-            // Stuck spell trigger Hearthstone cooldown
-            SpellEntry const *spellInfo = sSpellStore.LookupEntry(8690);
-            if (!spellInfo)
-                return;
-            Spell spell(pTarget,spellInfo,true,0);
-            spell.SendSpellCooldown();
-        }
+            pTarget->CastSpell(8690, pTarget, true);
         else
-        {
-            PlayerInfo const * tmpPlInfo = objmgr.GetPlayerInfo(pTarget->getRace(), pTarget->getClass());
-            if (tmpPlInfo)
+            if (PlayerInfo const * tmpPlInfo = objmgr.GetPlayerInfo(pTarget->getRace(), pTarget->getClass()))
                 pTarget->TeleportTo(tmpPlInfo->mapId, tmpPlInfo->positionX, tmpPlInfo->positionY, tmpPlInfo->positionZ, 0.0f);
-        }
     }
     else
         pTarget->TeleportToNearestGraveyard();
