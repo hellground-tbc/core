@@ -6554,7 +6554,11 @@ void Spell::EffectStuck(uint32 /*i*/)
                 pTarget->TeleportTo(tmpPlInfo->mapId, tmpPlInfo->positionX, tmpPlInfo->positionY, tmpPlInfo->positionZ, 0.0f);
     }
     else
+    {
+        if (!pTarget->GetCorpse())
+            pTarget->BuildPlayerRepop();
         pTarget->TeleportToNearestGraveyard();
+    }
 }
 
 void Spell::EffectSummonPlayer(uint32 /*i*/)
