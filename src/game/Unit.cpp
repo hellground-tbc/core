@@ -3684,7 +3684,7 @@ bool Unit::AddAura(Aura *Aur)
 
     bool stackModified = false;
     // passive and persistent auras can stack with themselves any number of times (with NPCs windfury exception)
-    if ((Aur->GetId() == 32912) || !Aur->IsPassive() && !Aur->IsPersistent())
+    if (Aur->GetId() == 32912 || (!Aur->IsPassive() && !Aur->IsPersistent()))
     {
         bool isDotOrHot = false;
         for (uint8 i = 0; i < 3; i++)
@@ -3710,11 +3710,8 @@ bool Unit::AddAura(Aura *Aur)
         {
             if (Aur->DiffPerCaster() && Aur->GetCasterGUID() != i2->second->GetCasterGUID())
             {
-                //if(!GetAuraByCasterSpell(Aur->GetId(), Aur->GetCasterGUID()))
-                {
-                    i2++;
-                    continue;
-                }
+                i2++;
+                continue;
             }
 
             if (i2->second->GetId() == 31944 || i2->second->GetId() == 32911)    //HACK check for Doomfire DoT stacking and NPCs windfury
@@ -3763,7 +3760,7 @@ bool Unit::AddAura(Aura *Aur)
                 continue;
             }
             if (GetSpellMaxDuration(aurSpellInfo) > Aur->GetAuraMaxDuration() &&        // HACK check for spellsteal case
-                Aur->GetAuraDuration() < (*i2).second->GetAuraDuration())               // don't override longer bufs when spellstealing
+                Aur->GetAuraDuration() < i2->second->GetAuraDuration())               // don't override longer bufs when spellstealing
             {
                 delete Aur;
                 return false;

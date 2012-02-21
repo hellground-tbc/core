@@ -318,6 +318,9 @@ class TRINITY_DLL_SPEC Aura
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_PRIEST && GetSpellProto()->SpellFamilyFlags & 0x40000000000LL) // Vampiric Touch
                 return true;
 
+            if (GetSpellProto()->Id == 15286) // Vampiric Embrance
+                return true;
+
             if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && this->GetSpellProto()->SpellIconID == 1677) // Grounding Totem
                 return true;
 
