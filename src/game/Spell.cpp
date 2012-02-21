@@ -1441,7 +1441,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
         case SPELL_TARGET_TYPE_CREATURE:
         {
             Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
-            if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
+            if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || (TargetType == SPELL_TARGETS_ENTRY && !entry))
             {
                 Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
                 TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
@@ -1454,7 +1454,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
         case SPELL_TARGET_TYPE_DEAD:
         {
             Trinity::SpellNotifierDeadCreature notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
-            if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
+            if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || (TargetType == SPELL_TARGETS_ENTRY && !entry))
             {
                 Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
                 TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
@@ -1510,7 +1510,7 @@ void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const
     {
         case SPELL_TARGET_TYPE_GAMEOBJECT:
         {
-            if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || TargetType == SPELL_TARGETS_ENTRY && !entry)
+            if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY) || (TargetType == SPELL_TARGETS_ENTRY && !entry))
             {
                 Trinity::SpellNotifierGameObject notifier(*this, goList, radius, type, TargetType, entry, x, y, z);
                 Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
@@ -2032,8 +2032,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (modOwner)
             modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, radius, this);
 
-        if(radius > 333)
-            radius = 333;
+        if (radius > MAX_VISIBILITY_DISTANCE)
+            radius = MAX_VISIBILITY_DISTANCE;
 
         std::list<Unit*> unitList;
         std::list<GameObject*> goList;

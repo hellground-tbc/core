@@ -841,7 +841,10 @@ namespace Trinity
 
             for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
             {
-                if (itr->getSource()->getDeathState() != CORPSE || itr->getSource()->GetTypeId() != TYPEID_UNIT)
+                if (itr->getSource()->GetTypeId() != TYPEID_UNIT ||
+                    (itr->getSource()->getDeathState() != CORPSE &&
+                     itr->getSource()->getDeathState() != JUST_DIED &&
+                     itr->getSource()->getDeathState() != DEAD))
                     continue;
 
                 switch (i_TargetType)
