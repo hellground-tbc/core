@@ -308,10 +308,6 @@ bool DropAggro(Creature* pAttacker, Unit * target)
             return true;
     }
 
-    // maybe only fear shouldn't be in this check ? not all effects ?
-    /*if (target->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_DAMAGE) && target->hasUnitState(UNIT_STAT_LOST_CONTROL))
-        return true;*/
-
     // disorient and confuse effects
     if (target->hasUnitState(UNIT_STAT_CONFUSED))
         return true;
@@ -335,10 +331,7 @@ bool DropAggro(Creature* pAttacker, Unit * target)
         return true;
 
     // special cases
-    if (target->HasAura(38509, 1) || // Shock Blast
-        target->HasAura(32588, 1) || // Concussion Blow
-        target->HasAura(41182, 1) || // Concussive Throw
-        target->HasAura(24698, 1) || // Gouge
+    if (target->HasAura(24698, 1) || // Gouge
         target->HasAura(41086, 0) || // Ice Trap
         target->HasAura(41197,2))    // Shield Bash
         return true;
