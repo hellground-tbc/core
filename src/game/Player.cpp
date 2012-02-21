@@ -3262,9 +3262,9 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     // update free primary prof.points (if not overflow setting, can be in case GM use before .learn prof. learning)
     if (spellmgr.IsPrimaryProfessionFirstRankSpell(spell_id))
     {
-        uint32 freeProfs = GetFreePrimaryProffesionPoints()+1;
+        uint32 freeProfs = GetFreePrimaryProfessionPoints()+1;
         if (freeProfs <= sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL))
-            SetFreePrimaryProffesions(freeProfs);
+            SetFreePrimaryProfessions(freeProfs);
     }
 
     // remove dependent skill
@@ -3839,7 +3839,7 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
         return TRAINER_SPELL_GREEN;
 
     // check primary prof. limit
-    if (spellmgr.IsPrimaryProfessionFirstRankSpell(spell->Id) && GetFreePrimaryProffesionPoints() == 0)
+    if (spellmgr.IsPrimaryProfessionFirstRankSpell(spell->Id) && GetFreePrimaryProfessionPoints() == 0)
         return TRAINER_SPELL_RED;
 
     return TRAINER_SPELL_GREEN;
@@ -18433,7 +18433,7 @@ void Player::UpdateVisibilityForPlayer()
 
 void Player::InitPrimaryProffesions()
 {
-    SetFreePrimaryProffesions(sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
+    SetFreePrimaryProfessions(sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
 }
 
 void Player::SendComboPoints()

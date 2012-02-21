@@ -946,5 +946,6 @@ class TRINITY_DLL_SPEC SpellMgr
 };
 
 #define spellmgr SpellMgr::Instance()
+#define sSpellMgr SpellMgr::Instance()
 
 #endif

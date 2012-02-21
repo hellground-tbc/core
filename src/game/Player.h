@@ -1454,8 +1454,8 @@ class TRINITY_DLL_SPEC Player : public Unit
 
         uint32 CalculateTalentsPoints() const;
 
-        uint32 GetFreePrimaryProffesionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }
-        void SetFreePrimaryProffesions(uint16 profs) { SetUInt32Value(PLAYER_CHARACTER_POINTS2,profs); }
+        uint32 GetFreePrimaryProfessionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }
+        void SetFreePrimaryProfessions(uint16 profs) { SetUInt32Value(PLAYER_CHARACTER_POINTS2,profs); }
         void InitPrimaryProffesions();
 
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
