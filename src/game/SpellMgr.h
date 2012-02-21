@@ -475,9 +475,11 @@ typedef std::map<uint32, uint8> SpellElixirMap;
 // Spell script target related declarations (accessed using SpellMgr functions)
 enum SpellScriptTargetType
 {
-    SPELL_TARGET_TYPE_GAMEOBJECT = 0,
-    SPELL_TARGET_TYPE_CREATURE   = 1,
-    SPELL_TARGET_TYPE_DEAD       = 2
+    SPELL_TARGET_TYPE_GAMEOBJECT    = 0,
+    SPELL_TARGET_TYPE_CREATURE      = 1,
+    SPELL_TARGET_TYPE_DEAD          = 2,
+
+    SPELL_TARGET_TYPE_NONE
 };
 
 #define MAX_SPELL_TARGET_TYPE 3
@@ -944,5 +946,6 @@ class TRINITY_DLL_SPEC SpellMgr
 };
 
 #define spellmgr SpellMgr::Instance()
+#define sSpellMgr SpellMgr::Instance()
 
 #endif

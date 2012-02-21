@@ -235,6 +235,8 @@ void CreatureGroup::RespawnFormation(Creature *member)
     if(!member || m_Respawned)
         return;
 
+    m_Respawned = true;
+
     for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
         // Called at EnterEvadeMode, do not check self
@@ -249,7 +251,6 @@ void CreatureGroup::RespawnFormation(Creature *member)
             mem->Respawn();
         }
     }
-    m_Respawned = true;
 }
 
 void CreatureGroup::EvadeFormation(Creature *member)
@@ -257,6 +258,7 @@ void CreatureGroup::EvadeFormation(Creature *member)
     if (!member || m_Evaded)
         return;
 
+    m_Evaded = true;
     RespawnFormation(member);
 
     for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
@@ -268,8 +270,6 @@ void CreatureGroup::EvadeFormation(Creature *member)
         if (Creature *mem = member->GetMap()->GetCreature(itr->first))
             mem->AI()->EnterEvadeMode();
     }
-
-    m_Evaded = true;
 }
 
 void CreatureGroup::LeaderMoveTo(float x, float y, float z)
