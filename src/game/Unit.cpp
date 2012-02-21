@@ -2502,6 +2502,9 @@ float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
     if (spellProto->spellLevel <= 0)
         return 1.0f;
 
+    if (spellProto->Id == 28880) // Gift of Naaru, TODO: more general check for racial spells
+        return 1.0f
+
     float LvlPenalty = 0.0f;
 
     if (spellProto->spellLevel < 20)
@@ -2691,7 +2694,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     {
         uint32 missChance = uint32(MeleeSpellMissChance(pVictim, attType, fullSkillDiff, spell->Id)*100.0f);
 
-        SendCombatStats("MeleeSpellHitResult: miss chance = %d", pVictim, missChance);
+        SendCombatStats("MeleeSpellHitResult (id=%d): miss chance = %d", pVictim, spell->Id, missChance);
         // Roll miss
         tmp += missChance;
         if (roll < tmp)
@@ -2700,7 +2703,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
 
     // Chance resist mechanic
     int32 resist_chance = pVictim->GetMechanicResistChance(spell)*100;
-    SendCombatStats("MeleeSpellHitResult: mechanic resist chance = %d", pVictim, resist_chance);
+    SendCombatStats("MeleeSpellHitResult (id=%d): mechanic resist chance = %d", pVictim, spell->Id, resist_chance);
     tmp += resist_chance;
     if (roll < tmp)
         return SPELL_MISS_RESIST;
@@ -2839,7 +2842,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (HitChance <  100) HitChance =  100;
     if (HitChance > 9900) HitChance = 9900;
 
-    SendCombatStats("MagicSpellHitResult: hit chance = %d", pVictim, HitChance);
+    SendCombatStats("MagicSpellHitResult (id=%d): hit chance = %d", pVictim, spell->Id, HitChance);
     uint32 rand = urand(0,10000);
     if (rand > HitChance)
         return SPELL_MISS_RESIST;

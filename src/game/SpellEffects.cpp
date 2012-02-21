@@ -4951,7 +4951,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             if (m_spellInfo->SpellFamilyFlags & 0x00000002000000LL)
             {
                 spell_bonus += int32(0.20f*m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo)));
-                spell_bonus += int32(0.29f*m_caster->SpellBaseDamageBonusForVictim(GetSpellSchoolMask(m_spellInfo), unitTarget));
+                spell_bonus += int32(0.20f*m_caster->SpellBaseDamageBonusForVictim(GetSpellSchoolMask(m_spellInfo), unitTarget));
             }
             break;
         }
