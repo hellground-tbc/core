@@ -6458,6 +6458,10 @@ void Aura::HandleShapeshiftBoosts(bool apply)
                 ++itr;
             }
         }
+
+        if (m_target->GetCurrentSpell(CURRENT_MELEE_SPELL))
+            m_target->InterruptSpell(CURRENT_MELEE_SPELL)
+
     }
 
     /*double healthPercentage = (double)m_target->GetHealth() / (double)m_target->GetMaxHealth();
