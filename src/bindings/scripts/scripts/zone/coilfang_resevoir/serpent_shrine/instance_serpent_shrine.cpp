@@ -201,6 +201,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 return 0;
         }
     }
+
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
         switch(creature_entry)
@@ -395,12 +396,13 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 Encounters[i] = NOT_STARTED;
         OUT_LOAD_INST_DATA_COMPLETE;
     }
+
     void Update (uint32 diff)
     {
         //Lurker Fishing event
-        if(LurkerSubEvent == LURKER_FISHING)
+        if (LurkerSubEvent == LURKER_FISHING)
         {
-            if(FishingTimer < diff)
+            if (FishingTimer < diff)
             {
                 LurkerSubEvent = LURKER_HOOKED;
                 SetData(DATA_STRANGE_POOL, IN_PROGRESS);//just fished, signal Lurker script to emerge and start fight, we use IN_PROGRESS so it won't get saved and lurker will be alway invis at start if server restarted
@@ -408,10 +410,11 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             else
                 FishingTimer -= diff;
         }
+
         //Water checks
-        if(WaterCheckTimer < diff)
+        if (WaterCheckTimer < diff)
         {
-            if(TrashCount >= MIN_KILLS)
+            if (TrashCount >= MIN_KILLS)
                 Water = WATERSTATE_SCALDING;
             else
                 Water = WATERSTATE_FRENZY;
@@ -424,21 +427,21 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
                 if(Player* pPlayer = i->getSource())
-                {                    
-                    if(pPlayer->isAlive() && pPlayer->IsInWater())
+                {
+                    if (pPlayer->isAlive() && pPlayer->IsInWater())
                     {
                         PlayerInWater = true;
-                        if(Water == WATERSTATE_SCALDING)
+                        if (Water == WATERSTATE_SCALDING)
                         {
-                            if(!pPlayer->HasAura(SPELL_SCALDINGWATER,0))
+                            if (!pPlayer->HasAura(SPELL_SCALDINGWATER))
                                 pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER, true);
                         }
-                        else if(Water == WATERSTATE_FRENZY)
+                        else if (Water == WATERSTATE_FRENZY)
                         {
                             //spawn frenzy
-                            if(DoSpawnFrenzy)
+                            if (DoSpawnFrenzy)
                             {
-                                if(Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
+                                if (Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
                                 {
                                     frenzy->AddUnitMovementFlag(MOVEFLAG_SWIMMING);
                                     frenzy->SetLevitate(true);
@@ -450,7 +453,8 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                     }
                 }
             }
-            if(PlayerInWater)
+
+            if (PlayerInWater)
                 PlayerInWaterTimer = 5000;
             else
             {
@@ -460,7 +464,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                     PlayerInWaterTimer -= diff;
             }
 
-            if(PlayerInWaterTimer)
+            if (PlayerInWaterTimer)
                 WaterCheckTimer = 1;
             else
                 WaterCheckTimer = 500; //remove stress from core
@@ -468,7 +472,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         else
             WaterCheckTimer -= diff;
 
-        if(FrenzySpawnTimer < diff)
+        if (FrenzySpawnTimer < diff)
         {
             DoSpawnFrenzy = true;
             FrenzySpawnTimer = 500;

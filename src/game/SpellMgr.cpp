@@ -2970,12 +2970,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectRadiusIndex[0] = 8;
                 spellInfo->EffectRadiusIndex[0] = 8;
                 break;
-            case 37433: // just in case, where u don't get spout sometimes ?
-                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-                spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
-                spellInfo->EffectImplicitTargetB[0] = 0;
-                spellInfo->EffectImplicitTargetB[1] = 0;
-                break;
             case 42835: // set visual only
                 spellInfo->Effect[0] = 0;
                 break;

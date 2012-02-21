@@ -775,7 +775,7 @@ struct npc_anachronosAI : public ScriptedAI
 
         if (checkTimer < diff)
         {
-            if (m_creature->GetHealth()/(float)m_creature->GetMaxHealth() < 0.2)
+            if (HealthBelowPct(20))
             {
                 m_creature->Yell("A terrible and costly mistake you have made. It is not my time, mortals.", LANG_UNIVERSAL, NULL);
                 m_creature->SetVisibility(VISIBILITY_OFF);
@@ -783,6 +783,8 @@ struct npc_anachronosAI : public ScriptedAI
                 m_creature->Kill(m_creature, false);
                 return;
             }
+
+            checkTimer = 3000;
         }
         else
             checkTimer -= diff;
