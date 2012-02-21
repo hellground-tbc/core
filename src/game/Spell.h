@@ -599,8 +599,8 @@ class Spell
         void DoAllEffectOnTarget(ItemTargetInfo *target);
         bool IsAliveUnitPresentInTargetList();
         SpellCastResult CanOpenLock(uint32 effIndex, uint32 lockid, SkillType& skillid, int32& reqSkillValue, int32& skillValue);
-        void SearchAreaTarget(std::list<Unit*> &unitList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry = 0, SpellScriptTargetType spellScriptTargetType = SPELL_TARGET_TYPE_CREATURE);
-        void SearchAreaTarget(std::list<GameObject*> &goList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry = 0, SpellScriptTargetType spellScriptTargetType = SPELL_TARGET_TYPE_CREATURE);
+        void SearchAreaTarget(std::list<Unit*> &unitList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry = 0, SpellScriptTargetType spellScriptTargetType = SPELL_TARGET_TYPE_NONE);
+        void SearchAreaTarget(std::list<GameObject*> &goList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry = 0, SpellScriptTargetType spellScriptTargetType = SPELL_TARGET_TYPE_NONE);
         void SearchChainTarget(std::list<Unit*> &unitList, float radius, uint32 unMaxTargets, SpellTargets TargetType);
         WorldObject* SearchNearbyTarget(float range, SpellTargets TargetType);
         bool IsValidSingleTargetEffect(Unit const* target, Targets type) const;
@@ -843,8 +843,7 @@ namespace Trinity
             {
                 if (itr->getSource()->GetTypeId() != TYPEID_UNIT ||
                     (itr->getSource()->getDeathState() != CORPSE &&
-                     itr->getSource()->getDeathState() != JUST_DIED &&
-                     itr->getSource()->getDeathState() != DEAD))
+                     itr->getSource()->getDeathState() != JUST_DIED))
                     continue;
 
                 switch (i_TargetType)
