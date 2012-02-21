@@ -24,15 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_magtheridons_lair.h"
 
-#define SPELL_SOUL_TRANSFER         30531 // core bug, does not support target 7
-#define SPELL_BLAZE_TARGET          30541 // core bug, does not support target 7
-#define SPELL_SHADOW_CAGE_C         30205
-
-#define CHAMBER_CENTER_X            -15.14
-#define CHAMBER_CENTER_Y              1.8
-#define CHAMBER_CENTER_Z             -0.4
-
-#define ENCOUNTERS 2
+#define ENCOUNTERS 1
 
 struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
 {
@@ -44,7 +36,6 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
     uint32 Encounters[ENCOUNTERS];
 
     uint64 MagtheridonGUID;
-    uint64 STCasterGUID;
     std::set<uint64> ChannelerGUID;
     uint64 DoorGUID;
     std::set<uint64> ColumnGUID;
@@ -54,11 +45,10 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
 
     void Initialize()
     {
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
 
         MagtheridonGUID = 0;
-        STCasterGUID = 0;
         ChannelerGUID.clear();
         DoorGUID = 0;
         ColumnGUID.clear();
@@ -69,14 +59,15 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
 
     bool IsEncounterInProgress() const
     {
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
-            if(Encounters[i] == IN_PROGRESS) return true;
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounters[i] == IN_PROGRESS)
+                return true;
         return false;
     }
 
     uint32 GetEncounterForEntry(uint32 entry)
     {
-        switch(entry)
+        switch (entry)
         {
             case 17257:
                 return DATA_MAGTHERIDON_EVENT;
@@ -87,7 +78,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
 
     void OnCreatureCreate(Creature *creature, uint32 creature_entry)
     {
-        switch(creature->GetEntry())
+        switch (creature->GetEntry())
         {
             case 17257:
                 MagtheridonGUID = creature->GetGUID();
@@ -95,16 +86,13 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
             case 17256:
                 ChannelerGUID.insert(creature->GetGUID());
                 break;
-            case 666:
-                STCasterGUID = creature->GetGUID();
-                break;
         }
 
         const CreatureData * tmp = creature->GetLinkedRespawnCreatureData();
         if (!tmp)
             return;
 
-        if(GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
+        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
         {
             creature->Kill(creature, false);
             creature->RemoveCorpse();
@@ -113,157 +101,110 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
 
     void OnObjectCreate(GameObject *go)
     {
-        switch(go->GetEntry())
+        switch (go->GetEntry())
         {
-        case 181713:
-            go->SetUInt32Value(GAMEOBJECT_FLAGS, 0);
-            break;
-        case 183847:
-            DoorGUID = go->GetGUID();
-            break;
-        case 184653: // hall
-        case 184634: // six columns
-        case 184635:
-        case 184636:
-        case 184637:
-        case 184638:
-        case 184639:
-            ColumnGUID.insert(go->GetGUID());
-            break;
+            case 181713:
+                go->SetUInt32Value(GAMEOBJECT_FLAGS, 0);
+                break;
+            case 183847:
+                DoorGUID = go->GetGUID();
+                break;
+            case 184653: // hall
+            case 184634: // six columns
+            case 184635:
+            case 184636:
+            case 184637:
+            case 184638:
+            case 184639:
+                ColumnGUID.insert(go->GetGUID());
+                break;
         }
     }
 
     uint64 GetData64(uint32 type)
     {
-        switch(type)
+        switch (type)
         {
-        case DATA_MAGTHERIDON:
-            return MagtheridonGUID;
+            case DATA_MAGTHERIDON:
+                return MagtheridonGUID;
+            case DATA_DOOR_GUID:
+                return DoorGUID;
+            default:
+                return 0;
         }
-        return 0;
     }
 
     void SetData(uint32 type, uint32 data)
     {
         switch(type)
         {
-        case DATA_MAGTHERIDON_EVENT:
-            Encounters[0] = data;
-            if(data == NOT_STARTED)
-                RespawnTimer = 10000;
-            if(data != IN_PROGRESS)
-            {
-                if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                    Door->SetGoState(GO_STATE_ACTIVE);
-            }
-            break;
-        case DATA_CHANNELER_EVENT:
-            switch(data)
-            {
-            case NOT_STARTED: // Reset all channelers once one is reset.
-                if(Encounters[1] != NOT_STARTED)
+            case DATA_MAGTHERIDON_EVENT:
+                switch (data)
                 {
-                    Encounters[1] = NOT_STARTED;
-                    for(std::set<uint64>::iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
-                    {
-                        if(Creature *Channeler = instance->GetCreature(*i))
-                        {
-                            if(Channeler->isAlive())
-                                Channeler->AI()->EnterEvadeMode();
-                            else
-                                Channeler->Respawn();
-                        }
-                    }
-                    CageTimer = 0;
-                    if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                        Door->SetGoState(GO_STATE_ACTIVE);
-                }break;
-            case IN_PROGRESS: // Event start.
-                if(Encounters[1] != IN_PROGRESS)
-                {
-                    Encounters[1] = IN_PROGRESS;
-                    // Let all five channelers aggro.
-                    for(std::set<uint64>::iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
-                    {
-                        Creature *Channeler = instance->GetCreature(*i);
-                        if(Channeler && Channeler->isAlive())
-                        {
-                            Channeler->InterruptNonMeleeSpells(false);
-                            Channeler->AI()->AttackStart(Channeler->SelectNearestTarget(999));
-                            Channeler->setActive(true);
-                        }
-
-                    }
-                    // Release Magtheridon after two minutes.
-                    Creature *Magtheridon = instance->GetCreature(MagtheridonGUID);
-                    if(Magtheridon && Magtheridon->isAlive())
-                    {
-                        Magtheridon->TextEmote("'s bonds begin to weaken!", 0);
-                        CageTimer = 120000;
-                    }
-                    if(GameObject *Door = instance->GetGameObject(DoorGUID))
-                        Door->SetGoState(GO_STATE_READY);
-                }break;
-            case DONE: // Add buff and check if all channelers are dead.
-                Creature *STCaster = instance->GetCreature(STCasterGUID);
-                for(std::set<uint64>::iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
-                {
-                    Creature *Channeler = instance->GetCreature(*i);
-                    if(Channeler && Channeler->isAlive())
-                    {
-                        STCaster->CastSpell(Channeler, SPELL_SOUL_TRANSFER, true);
-                        data = IN_PROGRESS;
+                    case IN_PROGRESS:
                         break;
-                    }
-                }break;
-            }
-            Encounters[1] = data;
-            break;
-        case DATA_COLLAPSE:
-            // true - collapse / false - reset
-            for(std::set<uint64>::iterator i = ColumnGUID.begin(); i != ColumnGUID.end(); ++i)
-            {
-                if(GameObject *Column = instance->GetGameObject(*i))
-                    Column->SetGoState(GOState(!data));
-            }
-            break;
-        default:
-            break;
+                    case NOT_STARTED:
+                        RespawnTimer = 10000;
+                    default:
+                        if (GameObject *Door = instance->GetGameObject(DoorGUID))
+                            Door->SetGoState(GO_STATE_ACTIVE);
+                        break;
+                }
+
+                if (Encounters[0] != DONE)
+                    Encounters[0] = data;
+                break;
+            case DATA_COLLAPSE:
+                // true - collapse / false - reset
+                for(std::set<uint64>::iterator i = ColumnGUID.begin(); i != ColumnGUID.end(); ++i)
+                {
+                    if(GameObject *Column = instance->GetGameObject(*i))
+                        Column->SetGoState(GOState(!data));
+                }
+                break;
+            default:
+                break;
         }
-        if(data == DONE)
+
+        if (data == DONE)
             SaveToDB();
     }
 
     uint32 GetData(uint32 type)
     {
-        if(type == DATA_MAGTHERIDON_EVENT)
+        if (type == DATA_MAGTHERIDON_EVENT)
             return Encounters[0];
+
         return 0;
     }
 
     void Update(uint32 diff)
     {
-        if(CageTimer)
+        if (CageTimer)
         {
-            if(CageTimer <= diff)
+            if (CageTimer <= diff)
             {
                 Creature *Magtheridon = instance->GetCreature(MagtheridonGUID);
-                if(Magtheridon && Magtheridon->isAlive())
+                if (Magtheridon && Magtheridon->isAlive())
                 {
-                    Magtheridon->RemoveAurasDueToSpell(SPELL_SHADOW_CAGE_C);
+                    Magtheridon->RemoveAurasDueToSpell(30205); // SPELL_SHADOW_CAGE_C
+                    Magtheridon->AI()->DoZoneInCombat();
                     Magtheridon->AI()->AttackStart(Magtheridon->SelectNearestTarget(999));
                 }
+
                 CageTimer = 0;
-            }else CageTimer -= diff;
+            }
+            else
+                CageTimer -= diff;
         }
 
-        if(RespawnTimer)
+        if (RespawnTimer)
         {
-            if(RespawnTimer <= diff)
+            if (RespawnTimer <= diff)
             {
-                for(std::set<uint64>::iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
+                for (std::set<uint64>::iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
                 {
-                    if(Creature *Channeler = instance->GetCreature(*i))
+                    if (Creature *Channeler = instance->GetCreature(*i))
                     {
                         if(Channeler->isAlive())
                             Channeler->AI()->EnterEvadeMode();
@@ -271,18 +212,23 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                             Channeler->Respawn();
                     }
                 }
+
+                if (GameObject *Door = instance->GetGameObject(DoorGUID))
+                    Door->SetGoState(GO_STATE_ACTIVE);
+
                 RespawnTimer = 0;
-            }else RespawnTimer -= diff;
+            }
+            else
+                RespawnTimer -= diff;
         }
     }
 
     std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
-        
+
         std::ostringstream stream;
-        stream << Encounters[0] << " ";
-        stream << Encounters[1];
+        stream << Encounters[0];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -299,7 +245,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
 
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
-        stream >> Encounters[0] >> Encounters[1];
+        stream >> Encounters[0];
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
                 Encounters[i] = NOT_STARTED;
@@ -320,4 +266,3 @@ void AddSC_instance_magtheridons_lair()
     newscript->GetInstanceData = &GetInstanceData_instance_magtheridons_lair;
     newscript->RegisterSelf();
 }
-
