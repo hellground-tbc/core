@@ -8220,7 +8220,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         float oldCoeff = CoefficientPtc;
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_SPELL_BONUS_DAMAGE, CoefficientPtc);
         // DO IT IN BETTER WAY (read: rewrite auras system)
-        if (damagetype == DOT)
+        if (damagetype == DOT && DotFactor != 0) 
         {
             CoefficientPtc += (CoefficientPtc-oldCoeff)*(DotTicks-1);
         }
