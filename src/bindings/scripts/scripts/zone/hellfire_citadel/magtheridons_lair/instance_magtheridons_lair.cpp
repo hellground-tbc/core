@@ -145,6 +145,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                         break;
                     case NOT_STARTED:
                         RespawnTimer = 10000;
+                        data = SPECIAL;
                     default:
                         if (GameObject *Door = instance->GetGameObject(DoorGUID))
                             Door->SetGoState(GO_STATE_ACTIVE);
@@ -217,6 +218,8 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                     Door->SetGoState(GO_STATE_ACTIVE);
 
                 RespawnTimer = 0;
+                if (Encounters[0] != DONE)
+                    Encounters[0] = NOT_STARTED;
             }
             else
                 RespawnTimer -= diff;
