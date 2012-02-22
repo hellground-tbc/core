@@ -193,7 +193,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public BossAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (pInstance->GetData(DATA_STRANGE_POOL) != IN_PROGRESS)
+        if (instance->GetData(DATA_STRANGE_POOL) != IN_PROGRESS)
             return;
 
         if (me->GetVisibility() == VISIBILITY_OFF)
@@ -220,7 +220,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public BossAI
                 case LURKER_EVENT_SPOUT_EMOTE:
                 {
                     me->MonsterTextEmote(EMOTE_SPOUT, 0, true);
-                    ForceSpellCastWith(me, SPELL_SPOUT_BREATH);
+                    ForceSpellCast(me, SPELL_SPOUT_BREATH);
                     events.ScheduleEvent(LURKER_EVENT_SPOUT, 3000);
                     break;
                 }
@@ -235,9 +235,9 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public BossAI
 
                     m_rotating = true;
 
-                    events.DelayEvents(20000);
+                    events.DelayEvents(20000, 0);
                     events.ScheduleEvent(LURKER_EVENT_SPOUT_EMOTE, 45000);
-                    events.ReScheduleEvent(LURKER_EVENT_WHIRL, 21000);
+                    events.RescheduleEvent(LURKER_EVENT_WHIRL, 21000);
                     break;
                 }
                 case LURKER_EVENT_WHIRL:

@@ -2503,7 +2503,7 @@ float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
         return 1.0f;
 
     if (spellProto->Id == 28880) // Gift of Naaru, TODO: more general check for racial spells
-        return 1.0f
+        return 1.0f;
 
     float LvlPenalty = 0.0f;
 
@@ -2551,7 +2551,7 @@ uint32 Unit::GetCurrentSpellId() const
     for (int i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
         if(m_currentSpells[i])
             return m_currentSpells[i]->m_spellInfo->Id;
-         
+
     return 0;
 }
 
@@ -8217,7 +8217,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         float oldCoeff = CoefficientPtc;
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_SPELL_BONUS_DAMAGE, CoefficientPtc);
         // DO IT IN BETTER WAY (read: rewrite auras system)
-        if (damagetype == DOT && DotFactor != 0) 
+        if (damagetype == DOT && DotFactor != 0)
         {
             CoefficientPtc += (CoefficientPtc-oldCoeff)*(DotTicks-1);
         }

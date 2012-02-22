@@ -274,7 +274,7 @@ void AuthSocket::_SetVSFields(const std::string& rI)
     const char *v_hex, *s_hex;
     v_hex = v.AsHexStr();
     s_hex = s.AsHexStr();
-    LoginDatabase.PExecute("UPDATE account SET v = '%s', s = '%s' WHERE username = '%s'", v_hex, s_hex, _safelogin.c_str() );
+    LoginDatabase.DirectPExecute("UPDATE account SET v = '%s', s = '%s' WHERE username = '%s'", v_hex, s_hex, _safelogin.c_str() );
     OPENSSL_free((void*)v_hex);
     OPENSSL_free((void*)s_hex);
 }

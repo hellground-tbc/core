@@ -854,7 +854,14 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
         SendPacket(packet);
 
-        sLog.outError("WorldSocket::HandleAuthSession: Sent Auth Response(authentification failed).");
+        const char* tmpS = s.AsHexStr();                       //Must be freed by OPENSSL_free()
+        const char* tmpV = v.AsHexStr();                       //Must be freed by OPENSSL_free()
+
+        sLog.outError("WorldSocket::HandleAuthSession: Sent Auth Response(authentification failed). sha dig: %s | dig: %s | v: %s | s: %s", (char*)sha.GetDigest(), (char*)digest, tmpV, tmpS);
+
+        OPENSSL_free((void*) tmpS);
+        OPENSSL_free((void*) tmpV);
+
         return -1;
     }
 
