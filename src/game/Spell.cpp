@@ -1441,8 +1441,9 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
         case SPELL_TARGET_TYPE_NONE:
         {
             Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
-            Cell::VisitWorldObjects(x, y, m_caster->GetMap(), notifier, radius);
-            TagUnitMap.remove_if(Trinity::ObjectIsTotemCheck(true)); // totems should not be affected by AoE spells (check if no exceptions?)
+            Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
+            if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY))
+                TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
             break;
         }
         case SPELL_TARGET_TYPE_CREATURE:
@@ -1452,7 +1453,6 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
 
             Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
             Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
-            TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
             TagUnitMap.remove_if(Trinity::ObjectIsTotemCheck(true)); // totems should not be affected by AoE spells (check if no exceptions?)
             break;
         }
