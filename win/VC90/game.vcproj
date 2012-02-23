@@ -128,7 +128,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\g3dlite\include;..\..\dep\tbb\include"
+				AdditionalIncludeDirectories="..\..\src\game\movemap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\g3dlite\include;..\..\dep\tbb\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -1172,6 +1172,30 @@
 				</File>
 				<File
 					RelativePath="..\..\src\game\movement\util.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="MoveMaps"
+				>
+				<File
+					RelativePath="..\..\src\game\movemap\MoveMap.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movemap\MoveMap.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movemap\MoveMapSharedDefines.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movemap\PathFinder.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\game\movemap\PathFinder.h"
 					>
 				</File>
 			</Filter>
