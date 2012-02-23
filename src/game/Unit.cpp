@@ -2789,7 +2789,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
         if (blockChance < 0)
             blockChance = 0;
 
-        SendCombatStats("MeleeSpellHitResult (id=%d): block chance = %d", pVictim, spell->Id, parryChance);
+        SendCombatStats("MeleeSpellHitResult (id=%d): block chance = %d", pVictim, spell->Id, blockChance);
         tmp += (int32)blockChance;
         if (roll < tmp)
             return SPELL_MISS_BLOCK;
