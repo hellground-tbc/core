@@ -25,7 +25,7 @@
 #include "DBCStores.h"
 #include "GridMap.h"
 #include "VMapFactory.h"
-#include "MoveMap.h"
+#include "movemap/MoveMap.h"
 #include "World.h"
 
 #include "Policies/SingletonImp.h"

@@ -22,7 +22,7 @@
 #include "MovementGenerator.h"
 #include "FollowerReference.h"
 #include "Timer.h"
-#include "PathFinder.h"
+#include "movemap/PathFinder.h"
 #include "Unit.h"
 
 class TargetedMovementGeneratorBase
