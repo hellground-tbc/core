@@ -52,7 +52,7 @@
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
-#include "MoveMap.h"
+#include "movemap/MoveMap.h"
 #include "GameEvent.h"
 #include "PoolManager.h"
 #include "Database/DatabaseImpl.h"
