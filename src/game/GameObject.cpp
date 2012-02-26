@@ -1276,7 +1276,7 @@ void GameObject::Use(Unit* user)
             spellId = info->spellcaster.spellId;
 
             AddUse();
-            if(m_usetimes >= info->spellcaster.charges)
+            if(info->spellcaster.charges && m_usetimes >= info->spellcaster.charges)
                 m_lootState = GO_JUST_DEACTIVATED;
             break;
         }
