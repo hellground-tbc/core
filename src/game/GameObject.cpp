@@ -1230,7 +1230,7 @@ void GameObject::Use(Unit* user)
 
                 spellCaster = owner;
                 // accept only use by player from same group for caster except caster itself
-                if (((Player*)owner)==pPlayer || !((Player*)owner)->IsInSameRaidWith(pPlayer))
+                if (((Player*)owner)==pPlayer || (info->summoningRitual.castersGrouped && !((Player*)owner)->IsInSameGroupWith(pPlayer)))
                     return;
             }
             
@@ -1244,8 +1244,13 @@ void GameObject::Use(Unit* user)
 
             if(m_unique_users.size() == GetGOInfo()->summoningRitual.reqParticipants)
             {
-                if(Player* target = Player::GetPlayer(m_target))
-                    spellCaster->CastSpell(target, info->summoningRitual.spellId, true);
+                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);                
+                Player* target = Player::GetPlayer(m_target);
+                if(!target) target = pPlayer;
+                spellCaster->CastSpell(target, info->summoningRitual.spellId, true);
+
+                if(info->summoningRitual.casterTargetSpell > 1)
+                    spellCaster->CastSpell(pPlayer, info->summoningRitual.casterTargetSpell, true);
             }
 
             return;
@@ -1271,6 +1276,8 @@ void GameObject::Use(Unit* user)
             spellId = info->spellcaster.spellId;
 
             AddUse();
+            if(m_usetimes >= info->spellcaster.charges)
+                m_lootState = GO_JUST_DEACTIVATED;
             break;
         }
         case GAMEOBJECT_TYPE_MEETINGSTONE:                  //23
