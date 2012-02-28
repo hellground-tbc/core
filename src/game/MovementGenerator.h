@@ -40,9 +40,9 @@ class TRINITY_DLL_SPEC MovementGenerator
         virtual void Finalize(Unit &unit) { unit.StopMoving(); }
 
         // called before lost top position (before push new movement generator above)
-        virtual void Interrupt(Unit &) = 0;
+        virtual void Interrupt(Unit&) = 0;
         // called after return movement generator to top position (after remove above movement generator)
-        virtual void Reset(Unit &) = 0;
+        virtual void Reset(Unit&) = 0;
 
         virtual bool Update(Unit &, const uint32 &time_diff) = 0;
 

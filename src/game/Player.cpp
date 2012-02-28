@@ -2025,7 +2025,7 @@ void Player::RewardRage(uint32 damage, uint32 weaponSpeedHitFactor, bool attacke
     }
     else
     {
-        addRage = damage/rageconversion*2.5;
+        addRage = (damage/rageconversion)*2.5;
 
         // Berserker Rage effect
         if (HasAura(18499,0))
