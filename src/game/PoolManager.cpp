@@ -530,8 +530,11 @@ void PoolGroup<GameObject>::ReSpawn1Object(PoolObject* obj)
         {
             if (Map* map = const_cast<Map*>(sMapMgr.FindMap(data->mapid)))
             {
-                if (GameObject* pGameobject = map->GetGameObject(ObjectGuid(HIGHGUID_GAMEOBJECT, data->id, obj->guid)))
+                if (GameObject* pGameobject = map->GetGameObject(ObjectGuid(HIGHGUID_GAMEOBJECT, data->id, obj->guid)))    
+                {
+                    pGameobject->Reset();
                     pGameobject->GetMap()->Add(pGameobject);
+                }
             }
         }
     }

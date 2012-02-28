@@ -641,6 +641,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         void CastSpell(GameObject *target, uint32 spell);
 
         float GetDeterminativeSize() const;
+        void Reset();
 
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
@@ -666,7 +667,6 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
         uint64      m_target;
         void SwitchDoorOrButton();
         void Activate();
-        void Reset();
         void Despawn();
 
         GridReference<GameObject> m_gridRef;
