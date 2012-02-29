@@ -1538,6 +1538,8 @@ void Unit::CalculateMeleeDamage(MeleeDamageLog *damageInfo)
     damageInfo->rageDamage = damageInfo->damage;
     RollMeleeHit(damageInfo);
 
+    SendCombatStats("RollMeleeHit: rageDamage = %d", damageInfo->target, damageInfo->rageDamage);
+
     // Calculate absorb resist
     if (int32(damageInfo->damage) > 0)
     {
@@ -2424,7 +2426,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
         }
     }
 
-    if (GetTypeId() != TYPEID_PLAYER && !(((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRUSH) && !((Creature*)this)->isPet()) /*Only autoattack can be crushing blow*/
+    if (ToCreature() && !ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRUSH) && !((Creature*)this)->isPet()) /*Only autoattack can be crushing blow*/
     {
         // mobs can score crushing blows if they're 3 or more levels above victim
         // or when their weapon skill is 15 or more above victim's defense skill
@@ -2447,6 +2449,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
                 damageInfo->procEx |= PROC_EX_NORMAL_HIT;
                 // 150% normal damage
                 damageInfo->damage += (damageInfo->damage / 2);
+                damageInfo->rageDamage = damageInfo->damage;
                 return;
             }
         }
