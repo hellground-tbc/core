@@ -102,8 +102,11 @@ class TRINITY_DLL_SPEC InstanceData : public ZoneScript
         //Called when a player successfully enters the instance.
         virtual void OnPlayerEnter(Player *) {}
 
-        //Called when a player successfully enters the instance.
+        //Called when a player deaths in the instance.
         virtual void OnPlayerDeath(Player *) {}
+
+        //Called on creature death (after CreatureAI::JustDied)
+        virtual void OnCreatureDeath(Creature *) {}
 
         //Called when a gameobject is created
         void OnGameObjectCreate(GameObject *go, bool add) { if (add) OnObjectCreate(go); }

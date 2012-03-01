@@ -12091,7 +12091,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     else                                                // creature died
     {
         DEBUG_LOG("DealDamageNotPlayer");
-        Creature *cVictim = (Creature*)pVictim;
+        Creature *cVictim = pVictim->ToCreature();
 
         if (!cVictim->isPet())
         {
@@ -12108,6 +12108,9 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Call creature just died function
         if (cVictim->IsAIEnabled)
             cVictim->AI()->JustDied(this);
+
+        if (InstanceData * tmpInst = cVictim->GetInstanceData())
+            tmpInst->OnCreatureDeath(cVictim);
 
         // Dungeon specific stuff, only applies to players killing creatures
         if (cVictim->GetInstanceId())
