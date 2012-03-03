@@ -41,8 +41,7 @@ enum WaterEventState
 #define DATA_CONTROL_CONSOLE 21
 #define DATA_STRANGE_POOL 22
 #define DATA_WATER 23
-#define DATA_TRASH 24
-#define DATA_SHARKKIS_PET 25
+#define DATA_SHARKKIS_PET 24
 
 #define WATER_Z -19.9f
 #endif

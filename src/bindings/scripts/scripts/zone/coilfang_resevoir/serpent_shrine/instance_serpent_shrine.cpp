@@ -31,8 +31,6 @@ EndScriptData */
 #define TRASHMOB_COILFANG_PRIESTESS 21220  //6*2
 #define TRASHMOB_COILFANG_SHATTERER 21301  //6*3
 
-#define MIN_KILLS 30
-
 
 /* Serpentshrine cavern encounters:
 0 - Hydross The Unstable event
@@ -50,8 +48,7 @@ bool GOUse_go_bridge_console(Player *player, GameObject* go)
     if(!pInstance)
         return false;
 
-    if (pInstance)
-        pInstance->SetData(DATA_CONTROL_CONSOLE, DONE);
+    pInstance->SetData(DATA_CONTROL_CONSOLE, DONE);
 
     return true;
 }
@@ -80,7 +77,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     uint32 FrenzySpawnTimer;
     uint32 PlayerInWaterTimer;
     uint32 Water;
-    uint32 TrashCount;
+    uint32 trashCheckTimer;
 
     bool ShieldGeneratorDeactivated[4];
     uint32 Encounters[ENCOUNTERS];
@@ -116,7 +113,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         FrenzySpawnTimer = 2000;
         PlayerInWaterTimer = 0;
         DoSpawnFrenzy = false;
-        TrashCount = 0;
+        trashCheckTimer = 10000;
 
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
@@ -272,69 +269,62 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
     {
         switch(type)
         {
-        case DATA_STRANGE_POOL:
-            {
-                StrangePool = data;
-                if(data == NOT_STARTED)
-                    LurkerSubEvent = LURKER_NOT_STARTED;
-            }
-            break;
-         case DATA_TRASH :
-            {
-                if(data == 1 && TrashCount < MIN_KILLS)
-                    TrashCount++;//+1 died
-                SaveToDB();
+            case DATA_STRANGE_POOL:
+                {
+                    StrangePool = data;
+                    if(data == NOT_STARTED)
+                        LurkerSubEvent = LURKER_NOT_STARTED;
+                }
                 break;
-            }
-        case DATA_WATER : Water = data; break;
-        case DATA_CONTROL_CONSOLE:
-            if(data == DONE)
-            {
-                OpenDoor(BridgePart[0], true);
-                OpenDoor(BridgePart[1], true);
-                OpenDoor(BridgePart[2], true);
-            }
-            ControlConsole = data;
-            break;
-        case DATA_HYDROSSTHEUNSTABLEEVENT:
-            if(Encounters[0] != DONE)
-                Encounters[0] = data;
-            break;
-        case DATA_LEOTHERASTHEBLINDEVENT:
-            if(Encounters[1] != DONE)
-                Encounters[1] = data;
-            break;
-        case DATA_THELURKERBELOWEVENT:
-            if(Encounters[2] != DONE)
-                Encounters[2] = data;
-            break;
-        case DATA_KARATHRESSEVENT:
-            if(Encounters[3] != DONE)
-                Encounters[3] = data;
-            break;
-        case DATA_MOROGRIMTIDEWALKEREVENT:
-            if(Encounters[4] != DONE)
-                Encounters[4] = data;
-            break;
-            //Lady Vashj
-        case DATA_LADYVASHJEVENT:
-            if(data == NOT_STARTED)
-            {
-                ShieldGeneratorDeactivated[0] = false;
-                ShieldGeneratorDeactivated[1] = false;
-                ShieldGeneratorDeactivated[2] = false;
-                ShieldGeneratorDeactivated[3] = false;
-            }
-            //if(Encounters[5] != DONE)
-                Encounters[5] = data;
-            break;
-        case DATA_SHIELDGENERATOR1:ShieldGeneratorDeactivated[0] = (data) ? true : false;   break;
-        case DATA_SHIELDGENERATOR2:ShieldGeneratorDeactivated[1] = (data) ? true : false;   break;
-        case DATA_SHIELDGENERATOR3:ShieldGeneratorDeactivated[2] = (data) ? true : false;   break;
-        case DATA_SHIELDGENERATOR4:ShieldGeneratorDeactivated[3] = (data) ? true : false;   break;
+            case DATA_WATER : Water = data; break;
+            case DATA_CONTROL_CONSOLE:
+                if(data == DONE)
+                {
+                    OpenDoor(BridgePart[0], true);
+                    OpenDoor(BridgePart[1], true);
+                    OpenDoor(BridgePart[2], true);
+                }
+                ControlConsole = data;
+                break;
+            case DATA_HYDROSSTHEUNSTABLEEVENT:
+                if(Encounters[0] != DONE)
+                    Encounters[0] = data;
+                break;
+            case DATA_LEOTHERASTHEBLINDEVENT:
+                if(Encounters[1] != DONE)
+                    Encounters[1] = data;
+                break;
+            case DATA_THELURKERBELOWEVENT:
+                if(Encounters[2] != DONE)
+                    Encounters[2] = data;
+                break;
+            case DATA_KARATHRESSEVENT:
+                if(Encounters[3] != DONE)
+                    Encounters[3] = data;
+                break;
+            case DATA_MOROGRIMTIDEWALKEREVENT:
+                if(Encounters[4] != DONE)
+                    Encounters[4] = data;
+                break;
+                //Lady Vashj
+            case DATA_LADYVASHJEVENT:
+                if(data == NOT_STARTED)
+                {
+                    ShieldGeneratorDeactivated[0] = false;
+                    ShieldGeneratorDeactivated[1] = false;
+                    ShieldGeneratorDeactivated[2] = false;
+                    ShieldGeneratorDeactivated[3] = false;
+                }
+                //if(Encounters[5] != DONE)
+                    Encounters[5] = data;
+                break;
+            case DATA_SHIELDGENERATOR1:ShieldGeneratorDeactivated[0] = (data) ? true : false;   break;
+            case DATA_SHIELDGENERATOR2:ShieldGeneratorDeactivated[1] = (data) ? true : false;   break;
+            case DATA_SHIELDGENERATOR3:ShieldGeneratorDeactivated[2] = (data) ? true : false;   break;
+            case DATA_SHIELDGENERATOR4:ShieldGeneratorDeactivated[3] = (data) ? true : false;   break;
         }
 
-        if(data == DONE)
+        if (data == DONE)
             SaveToDB();
     }
 
@@ -354,7 +344,9 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
             case DATA_SHIELDGENERATOR3:         return ShieldGeneratorDeactivated[2];
             case DATA_SHIELDGENERATOR4:         return ShieldGeneratorDeactivated[3];
             case DATA_CANSTARTPHASE3:
-                if(ShieldGeneratorDeactivated[0] && ShieldGeneratorDeactivated[1] && ShieldGeneratorDeactivated[2] && ShieldGeneratorDeactivated[3])return 1;break;
+                if (ShieldGeneratorDeactivated[0] && ShieldGeneratorDeactivated[1] && ShieldGeneratorDeactivated[2] && ShieldGeneratorDeactivated[3])
+                    return 1;
+                break;
             case DATA_STRANGE_POOL:             return StrangePool;
             case DATA_WATER:                    return Water;
         }
@@ -371,9 +363,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         stream << Encounters[2] << " ";
         stream << Encounters[3] << " ";
         stream << Encounters[4] << " ";
-        stream << Encounters[5] << " ";
-
-        stream << TrashCount;
+        stream << Encounters[5];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -390,7 +380,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
         stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3]
-        >> Encounters[4] >> Encounters[5] >> TrashCount;
+        >> Encounters[4] >> Encounters[5];
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
                 Encounters[i] = NOT_STARTED;
@@ -411,14 +401,26 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
                 FishingTimer -= diff;
         }
 
+        if (trashCheckTimer < diff)
+        {
+            if (Encounters[2] == NOT_STARTED)   // check and change water state only if lurker event is not started
+            {
+                uint64 tmpPriestessGuid = instance->GetCreaturesGUID(TRASHMOB_COILFANG_PRIESTESS, GET_ALIVE_CREATURE_GUID);
+                uint64 tmpShattererGuid = instance->GetCreatureGUID(TRASHMOB_COILFANG_SHATTERER, GET_ALIVE_CREATURE_GUID);
+                if (!tmpPriestessGuid && !tmpShattererGuid)
+                    Water = WATERSTATE_SCALDING;
+                else
+                    Water = WATERSTATE_FRENZY;
+            }
+
+            trashCheckTimer = 10000;
+        }
+        else
+            trashCheckTimer -= diff;
+
         //Water checks
         if (WaterCheckTimer < diff)
         {
-            if (TrashCount >= MIN_KILLS)
-                Water = WATERSTATE_SCALDING;
-            else
-                Water = WATERSTATE_FRENZY;
-
             Map::PlayerList const &PlayerList = instance->GetPlayers();
             if (PlayerList.isEmpty())
                 return;

@@ -2917,6 +2917,24 @@ std::list<uint64> Map::GetCreaturesGUIDList(uint32 id, GetCreatureGuidType type 
                     tmpList.erase(itr);
                 }
                 break;
+            case GET_ALIVE_CREATURE_GUID:
+            {
+                for (std::list<uint64>::iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
+                {
+                    Creature * tmpC = GetCreature(*itr);
+                    if (tmpC && tmpC->isAlive())
+                    {
+                        returnList.push_back(*itr);
+                        ++count;
+                    }
+
+                    if (count == max)
+                        break;
+                }
+                break;
+            }
+            default:
+                break;
         }
     }
 
@@ -2939,9 +2957,26 @@ uint64 Map::GetCreatureGUID(uint32 id, GetCreatureGuidType type)
                 returnGUID = a->second.back();
                 break;
             case GET_RANDOM_CREATURE_GUID:
+            {
                 std::list<uint64>::const_iterator itr= a->second.begin();
                 std::advance(itr, urand(0, a->second.size()-1));
                 returnGUID = *itr;
+                break;
+            }
+            case GET_ALIVE_CREATURE_GUID:
+            {
+                for (std::list<uint64>::const_iterator itr = a->second.begin(), itr != a->second.end(); ++itr)
+                {
+                    Creature * tmpC = GetCreature(*itr);
+                    if (tmpC && tmpC->isAlive())
+                    {
+                        returnGUID = *itr;
+                        break;
+                    }
+                }
+                break;
+            }
+            default:
                 break;
         }
     }

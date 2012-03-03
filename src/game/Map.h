@@ -114,7 +114,8 @@ enum GetCreatureGuidType
 {
     GET_FIRST_CREATURE_GUID     = 0,
     GET_LAST_CREATURE_GUID      = 1,
-    GET_RANDOM_CREATURE_GUID    = 2
+    GET_RANDOM_CREATURE_GUID    = 2,
+    GET_ALIVE_CREATURE_GUID     = 3
 };
 
 class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>
