@@ -214,7 +214,7 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public BossAI
                 DoResetThreat();
                 break;
             case SPELL_SHADOW_GRASP_C:
-                if (instance->GetData(DATA_MAGTHERIDON_EVENT) == SPECIAL)   // after wipe check
+                if (removeStack || instance->GetData(DATA_MAGTHERIDON_EVENT) == SPECIAL)   // after wipe check
                     return;
 
                 instance->SetData(DATA_CHANNELER_EVENT, IN_PROGRESS);
