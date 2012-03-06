@@ -2653,9 +2653,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_HOT;
                     break;
                 case SPELL_AURA_MOD_ROOT:
-                    spellInfo->AttributesCu |= SPELL_ATTR_CU_AURA_CC;
-                    spellInfo->AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
-                    break;
                 case SPELL_AURA_MOD_DECREASE_SPEED:
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                     break;

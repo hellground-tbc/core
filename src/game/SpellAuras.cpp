@@ -918,7 +918,7 @@ void Aura::UpdateAuraDuration()
         SendAuraDurationForCaster((Player*)caster);
 
         Group* CasterGroup = ((Player*)caster)->GetGroup();
-        if (CasterGroup && (GetSpellProto()->AttributesCu & SPELL_ATTR_CU_AURA_CC))
+        if (CasterGroup && (GetSpellProto()->AttributesCu & (SPELL_ATTR_CU_AURA_CC | SPELL_ATTR_CU_MOVEMENT_IMPAIR)))
         {
             for (GroupReference *itr = CasterGroup->GetFirstMember(); itr != NULL; itr = itr->next())
             {
