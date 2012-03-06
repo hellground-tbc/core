@@ -1357,12 +1357,12 @@ void Unit::CalculateSpellDamageTaken(SpellDamageLog *damageInfo, int32 damage, S
 
                 // Apply SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE or SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE
                 int32 critPctDamageMod=0;
-                critPctDamageMod += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS);       
+                critPctDamageMod += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_DAMAGE_BONUS);
                 if (attackType == RANGED_ATTACK)
                     critPctDamageMod += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE);
                 else
                     critPctDamageMod += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE);
-                 
+
                 // Increase crit damage from SPELL_AURA_MOD_CRIT_PERCENT_VERSUS
                 critPctDamageMod += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_PERCENT_VERSUS, crTypeMask);
 
@@ -8088,6 +8088,11 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             else if ((spellProto->SpellFamilyFlags & 0x2LL) && spellProto->SpellIconID == 313)
             {
                 DotFactor = 0.93f;
+            }
+            // HealthStone 0%
+            else if (spellInfo->SpellFamilyFlags & 0x10000LL)
+            {
+                CastingTime = 0;
             }
             break;
         case SPELLFAMILY_PALADIN:
