@@ -5782,8 +5782,16 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (!unitTarget)
                 return;
 
+            bool dismountOnly = false;
+
+            if (unitTarget->HasAura(25863) || unitTarget->HasAura(26655))
+                dismountOnly = true;
+
             // Prevent stacking of mounts
             unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+
+            if (dismountOnly)
+                return;
 
             // Two separate mounts depending on area id (allows use both in and out of specific instance)
             uint32 areaid = unitTarget->GetTypeId() == TYPEID_PLAYER ? ((Player*)unitTarget)->GetCachedArea() : unitTarget->GetAreaId();
