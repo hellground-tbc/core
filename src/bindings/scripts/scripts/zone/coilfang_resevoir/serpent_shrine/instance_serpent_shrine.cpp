@@ -405,7 +405,7 @@ struct TRINITY_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstance
         {
             if (Encounters[2] == NOT_STARTED)   // check and change water state only if lurker event is not started
             {
-                uint64 tmpPriestessGuid = instance->GetCreaturesGUID(TRASHMOB_COILFANG_PRIESTESS, GET_ALIVE_CREATURE_GUID);
+                uint64 tmpPriestessGuid = instance->GetCreatureGUID(TRASHMOB_COILFANG_PRIESTESS, GET_ALIVE_CREATURE_GUID);
                 uint64 tmpShattererGuid = instance->GetCreatureGUID(TRASHMOB_COILFANG_SHATTERER, GET_ALIVE_CREATURE_GUID);
                 if (!tmpPriestessGuid && !tmpShattererGuid)
                     Water = WATERSTATE_SCALDING;

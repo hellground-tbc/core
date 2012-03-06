@@ -3073,7 +3073,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_AREA_ENEMY_SRC;
                 break;
             case 30207: // Magtheridon's creatures Shadow Grasp
-                spellInfo->StackAmount = 5
+                spellInfo->StackAmount = 5;
                 break;
             default:
                 break;

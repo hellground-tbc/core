@@ -2965,7 +2965,7 @@ uint64 Map::GetCreatureGUID(uint32 id, GetCreatureGuidType type)
             }
             case GET_ALIVE_CREATURE_GUID:
             {
-                for (std::list<uint64>::const_iterator itr = a->second.begin(), itr != a->second.end(); ++itr)
+                for (std::list<uint64>::const_iterator itr = a->second.begin(); itr != a->second.end(); ++itr)
                 {
                     Creature * tmpC = GetCreature(*itr);
                     if (tmpC && tmpC->isAlive())

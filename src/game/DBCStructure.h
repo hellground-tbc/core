@@ -507,7 +507,7 @@ struct LFGDungeons
     uint32      type;                                       // 20 type (1 - normal dung, 2 - raid, 4 - zone (for quests probably), 5 - hero dung)
     uint32      faction;                                    // 21 faction (-1 - all, 0 - horde, 1 - ally)
     char*       icon;                                       // 22 icon or category (for example: AQTemple)
-    uint32      expansion                                   // 23 expansion (0 pretbc, 1 tbc)
+    uint32      expansion;                                  // 23 expansion (0 pretbc, 1 tbc)
 };
 
 #define MAX_LOCK_CASE 8

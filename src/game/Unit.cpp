@@ -8090,7 +8090,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 DotFactor = 0.93f;
             }
             // HealthStone 0%
-            else if (spellInfo->SpellFamilyFlags & 0x10000LL)
+            else if (spellProto->SpellFamilyFlags & 0x10000LL)
             {
                 CastingTime = 0;
             }
