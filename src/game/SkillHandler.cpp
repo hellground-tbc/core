@@ -60,6 +60,9 @@ void WorldSession::HandleLearnTalentOpcode(WorldPacket & recv_data)
     if ((player->getClassMask() & talentTabInfo->ClassMask) == 0)
         return;
 
+    if (!player->isAlive())
+        return;
+
     // prevent skip talent ranks (cheating)
     if (requested_rank > 0 && !player->HasSpell(talentInfo->RankID[requested_rank-1]))
         return;
