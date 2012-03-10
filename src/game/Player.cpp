@@ -14466,7 +14466,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     {
         if (map->IsBattleGroundOrArena())
         {
-            if (!sBattleGroundMgr.GetBattleGround(GetInstanceId()))
+            if (!sBattleGroundMgr.GetBattleGround(GetInstanceId(), BATTLEGROUND_TYPE_NONE))
             {
                 SetMapId(GetBattleGroundEntryPointMap());
                 Relocate(GetBattleGroundEntryPointX(), GetBattleGroundEntryPointY(), GetBattleGroundEntryPointZ(), GetBattleGroundEntryPointO());
