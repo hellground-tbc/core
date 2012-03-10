@@ -4455,6 +4455,10 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_LINE_OF_SIGHT;
     }
 
+    // check if caster has at least 1 combo point for spells that require combo points
+    if (m_needComboPoints && m_caster->ToPlayer() && !m_caster->ToPlayer()->GetComboPoints())
+        return SPELL_FAILED_NO_COMBO_POINTS;
+
     // all ok
     return SPELL_CAST_OK;
 }
