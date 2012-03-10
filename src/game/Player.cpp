@@ -19784,7 +19784,59 @@ void Player::LFGSet(uint8 slot, uint32 entry, uint32 type)
     if (slot >= MAX_LOOKING_FOR_GROUP_SLOT)
         return;
 
+    // don't add GM to lfg list
+    if (GetSession()->GetSecurity() > SEC_PLAYER)
+        return;
 
+    LfgContainerType::accessor a;
+    uint64 guid = GetGUID();
+    uint32 combined;
+
+    // if not empty then clear slot
+    LfgContainerType & lfgContainer = sWorld.GetLfgContainer(GetTeam());
+    if (!m_lookingForGroup.slots[slot].Empty())
+    {
+        combined = m_lookingForGroup.slots[slot].Combine();
+
+        if (lfgContainer.find(a, combined))
+        {
+            // remove player from list
+            for (std::list<uint64>::iterator itr = a->second.begin(); itr != a->second.end();)
+            {
+                std::list<uint64>::iterator tmpItr = itr;
+                ++itr;
+
+                if ((*tmpItr) == guid)
+                    a->second.erase(tmpItr);
+            }
+        }
+
+        m_lookingForGroup.slots[slot].Clear();
+        a.release();
+    }
+
+    combined = LFG_COMBINE(entry, type);
+
+    // if he want set empty then only clean slot
+    if (!combined)
+    {
+        for (uint8 i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
+            if (!m_lookingForGroup.slots[i].Empty())
+                return;
+
+        // clear LFM (for sure, client resets presets in LFM when LFG is empty) if lfg is cleaned
+        ClearLFM(false);
+        LeaveLFGChannel();
+        return;
+    }
+
+    // if we can't find list in container or add new list
+    if (!lfgContainer.find(a, combined))
+        if (!lfgContainer.insert(a, combined))
+            return;
+
+    m_lookingForGroup.slots[slot].Set(entry, type);
+    a->second.push_back(guid);
 
     JoinLFGChannel();
 }
