@@ -14716,10 +14716,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     SetCanModifyStats(true);
     UpdateAllStats();
 
-    // restore remembered power/health values (but not more max values)
-    if (savedHealth == 0 && (HasAura(20584) || HasAura(8326)))
+    // prevent restoring wrong HP for ghosts
+    if (HasAura(20584) || HasAura(8326))
         savedHealth = 1;
 
+    // restore remembered power/health values (but not more max values)
     SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth, true);
 
     for (uint32 i = 0; i < MAX_POWERS; ++i)

@@ -10436,9 +10436,9 @@ void Unit::SetLevel(uint32 lvl)
         ((Player*)this)->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_LEVEL);
 }
 
-void Unit::SetHealth(uint32 val)
+void Unit::SetHealth(uint32 val, bool ignoreAliveCheck)
 {
-    if (!isAlive())
+    if (!ignoreAliveCheck && !isAlive())
         val = 0;
     else
     {

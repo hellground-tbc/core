@@ -943,7 +943,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         bool HealthBelowPct(uint32 pct) const { return GetHealth() *100 < GetMaxHealth() *pct; }
 
-        void SetHealth(  uint32 val);
+        void SetHealth(uint32 val, bool ignoreAliveCheck = false);
         void SetMaxHealth(uint32 val);
         int32 ModifyHealth(int32 val);
 
