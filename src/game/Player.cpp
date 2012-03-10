@@ -18093,8 +18093,15 @@ void Player::ReportedAfkBy(Player* reporter)
         // 3 players have to complain to apply debuff
         if (m_bgAfkReporter.size() >= 3)
         {
+            bool alive = isAlive();
+            if (!alive)
+                ResurrectPlayer(1.0f);
+
             // cast 'Idle' spell
             CastSpell(this, 43680, true);
+
+            if (!alive)
+                Kill(this, true);
 
             m_bgAfkReporter.clear();
         }
