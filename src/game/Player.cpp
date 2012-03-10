@@ -4098,10 +4098,7 @@ void Player::BuildPlayerRepop()
     }
     GetMap()->Add(corpse);
 
-    // convert player body to ghost
-    SetUInt32Value(UNIT_FIELD_HEALTH, 1);               // set hp to 1
-    if (GetGroup())
-        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_HP);   // update group
+    SetHealth(1, true);
 
     SetMovement(MOVE_WATER_WALK);
     if (!GetSession()->isLogingOut())
@@ -14719,12 +14716,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     SetCanModifyStats(true);
     UpdateAllStats();
 
-    // prevent setting wrong HP for ghosts
-    if (HasAura(20584) || HasAura(8326))
+    // restore remembered power/health values (but not more max values)
+    if (savedHealth == 0 && (HasAura(20584) || HasAura(8326)))
         savedHealth = 1;
 
-    // restore remembered power/health values (but not more max values)
-    SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
+    SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth, true);
 
     for (uint32 i = 0; i < MAX_POWERS; ++i)
         SetPower(Powers(i),savedPower[i] > GetMaxPower(Powers(i)) ? GetMaxPower(Powers(i)) : savedPower[i]);
