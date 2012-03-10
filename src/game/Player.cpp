@@ -14471,6 +14471,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
                 SetMapId(GetBattleGroundEntryPointMap());
                 Relocate(GetBattleGroundEntryPointX(), GetBattleGroundEntryPointY(), GetBattleGroundEntryPointZ(), GetBattleGroundEntryPointO());
 
+                RemoveFromBattleGroundRaid();
                 map = sMapMgr.CreateMap(GetMapId(), this);
             }
         }
