@@ -1090,6 +1090,9 @@ void BattleGround::AddPlayer(Player *plr)
             plr->CastSpell(plr, SPELL_PREPARATION, true);   // reduces all mana cost of spells.
     }
 
+    plr->RemoveCharmAuras();
+    plr->RemoveMovementImpairingAuras();
+
     AddOrSetPlayerToCorrectBgGroup(plr, guid, team);
 
     // Log
