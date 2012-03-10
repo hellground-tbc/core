@@ -4099,7 +4099,9 @@ void Player::BuildPlayerRepop()
     GetMap()->Add(corpse);
 
     // convert player body to ghost
-    SetHealth(1);
+    SetUInt32Value(UNIT_FIELD_HEALTH, 1);               // set hp to 1
+    if (GetGroup())
+        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_CUR_HP);   // update group
 
     SetMovement(MOVE_WATER_WALK);
     if (!GetSession()->isLogingOut())
