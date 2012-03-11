@@ -1734,7 +1734,7 @@ void Creature::setDeathState(DeathState s)
 
     if (s == JUST_ALIVED)
     {
-        SetHealth(GetMaxHealth());
+        SetHealth(GetMaxHealth(), true);
         SetLootRecipient(NULL);
         ResetPlayerDamageReq();
 

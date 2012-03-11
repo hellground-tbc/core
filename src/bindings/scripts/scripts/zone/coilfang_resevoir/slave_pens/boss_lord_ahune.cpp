@@ -71,9 +71,9 @@ struct TRINITY_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
             if(Unit *ahune = me->GetUnit(*me, Ahune))
             {
                 ahune->RemoveAurasDueToSpell(SPELL_AHUNE_SELF_STUN);
-                ahune->SetHealth(1);
+                ahune->SetHealth(1, true);
             }
-               
+
     }
 
     void SetAhuneVisibility(bool val)
@@ -106,7 +106,7 @@ struct TRINITY_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
                 AhuneGhostShow_Timer = 3000;
             } else
                 AhuneGhostShow_Timer -= diff;
-        } 
+        }
     }
 };
 
@@ -127,8 +127,8 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
     uint32 Phase_Timer;
     uint8 PhaseCounter;
     bool HeroicMode;
-   
-    uint32 IceSpear_Timer; 
+
+    uint32 IceSpear_Timer;
     uint32 Elementals_Timer;
     uint32 Hailstone_Timer;
     uint32 Death_Timer;
@@ -174,7 +174,7 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
             core->SetVisibility(VISIBILITY_OFF);
             Core = core->GetGUID();
         }
-        
+
     }
 
     void KilledUnit(Unit *victim)
@@ -232,7 +232,7 @@ struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 
         if(Phase_Timer < diff)
         {
-            
+
             if(Phase == 1)
             {
                 Phase = 2;
@@ -343,7 +343,7 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
         {
             (*i)->CastSpell((*i), SPELL_ICE_SPEAR_KNOWCKBACK, true);
         }
-        
+
     }
 
     void UpdateAI(const uint32 diff)
@@ -365,7 +365,7 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
                     iceSpear->Use(me);
             Knockback = true;
             KnockbackPlayers();
-            
+
         }
 
         if(Timer > 6000)

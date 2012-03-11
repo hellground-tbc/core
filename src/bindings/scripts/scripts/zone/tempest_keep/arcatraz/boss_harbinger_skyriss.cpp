@@ -187,8 +187,8 @@ struct TRINITY_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
                         if( Unit *mellic = Unit::GetUnit(*m_creature,pInstance->GetData64(DATA_MELLICHAR)) )
                         {
                             //should have a better way to do this. possibly spell exist.
-                            mellic->setDeathState(JUST_DIED);
                             mellic->SetHealth(0);
+                            mellic->setDeathState(JUST_DIED);
                             pInstance->SetData(TYPE_SHIELD_OPEN,IN_PROGRESS);
                         }
                         ++Intro_Phase;

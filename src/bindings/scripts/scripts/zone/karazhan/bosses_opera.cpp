@@ -970,7 +970,7 @@ void PretendToDie(Creature* _Creature)
 void Resurrect(Creature* target)
 {
     target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-    target->SetHealth(target->GetMaxHealth());
+    target->SetHealth(target->GetMaxHealth(), true);
     target->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
     target->CastSpell(target, SPELL_RES_VISUAL, true);
 
