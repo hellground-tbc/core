@@ -81,6 +81,18 @@ bool Spell_deep_wounds(Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGam
     return true;
 }
 
+bool Spell_seed_of_corruption_proc(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effect_index)
+{
+    if (effect_index != 0)
+        return true;
+
+    if (unitList.empty())
+        return true;
+
+    unitList.remove(targets.getUnitTarget());
+    return true;
+}
+
 void AddSC_spell_scripts()
 {
     Script *newscript;
@@ -93,5 +105,10 @@ void AddSC_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_deep_wounds";
     newscript->pSpellHandleEffect = &Spell_deep_wounds;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "spell_seed_of_corruption_proc";
+    newscript->pSpellTargetMap = &Spell_seed_of_corruption_proc;
     newscript->RegisterSelf();
 }
