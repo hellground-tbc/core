@@ -5868,14 +5868,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
                     if (sealAura)
                     {
-                        sealAura->SetAuraDuration(sealAura->GetAuraMaxDuration());
-
-                        if (GetTypeId() == TYPEID_PLAYER)
-                            sealAura->SendAuraDurationForCaster((Player*)this);
-
                         int32 bp0 = 120;
                         CastCustomSpell(pVictim, 42463, &bp0, 0,0, true);
-                        return true;
                     }
                     break;
                 }
