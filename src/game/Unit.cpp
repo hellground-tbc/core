@@ -5781,7 +5781,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 if (damagePoint >= 0)
                     damagePoint = SpellDamageBonus(pVictim, dummySpell, damagePoint, SPELL_DIRECT_DAMAGE);
 
-                CastCustomSpell(pVictim,spellId,&damagePoint,NULL,NULL,true,NULL, triggeredByAura);
+                CastCustomSpell(pVictim,spellId,&damagePoint,NULL,NULL,true,NULL);  // proc can't miss so we don't provide triggeredByAura
                 return true;                                // no hidden cooldown
             }
 
