@@ -3883,13 +3883,6 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
     if (apply)
     {
-        /*
-        WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
-        data<<m_target->GetGUID();
-        data<<uint8(0);
-        m_target->SendMessageToSet(&data,true);
-        */
-
         // feign death in pvp: clear target and interrupt casts
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
@@ -3929,7 +3922,6 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
             m_target->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
 
         m_target->InterruptNonMeleeSpells(true);
-        m_target->AttackStop();
         if (m_target->GetTypeId()==TYPEID_PLAYER)
             ((Player*)m_target)->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
 
@@ -3987,6 +3979,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
         if(!resisted)
         {
+            m_target->AttackStop();
             m_target->ClearInCombat();
             m_target->CombatStop();
         }
