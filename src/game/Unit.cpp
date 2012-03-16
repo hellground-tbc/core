@@ -2682,10 +2682,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     uint32 tmp = 0;
 
     bool isCasting = pVictim->IsNonMeleeSpellCasted(false);
+    bool lostControl = pVictim->hasUnitState(UNIT_STAT_LOST_CONTROL);
 
-    bool canDodge = !isCasting;
-    bool canParry = !isCasting;
-    bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3 && !isCasting;
+    bool canDodge = !isCasting && !lostControl;
+    bool canParry = !isCasting && !lostControl;
+    bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3 && !isCasting && !lostControl;
 
     // Creature has unblockable attack info
     if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
