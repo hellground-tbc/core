@@ -5875,7 +5875,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
 
                     if (sealAura)
                     {
-                        int32 bp0 = 120;
+                        Item *item = NULL;
+                        if (ToPlayer())
+                            item = ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                        float speed = (item ? item->GetProto()->Delay : BASE_ATTACK_TIME)/1000.0f;
+                        int32 bp0 = 10*speed; 
                         CastCustomSpell(pVictim, 42463, &bp0, 0,0, true);
                     }
                     break;
@@ -8122,7 +8126,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             // Seal of Vengeance - 17% per Fully Stacked Tick - 5 Applications
             else if ((spellProto->SpellFamilyFlags & 0x80000000000LL) && spellProto->SpellIconID == 2292)
             {
-                DotFactor = 0.85f;
+                DotFactor = damagetype == DOT ? 0.17f : 0.022f; 
                 CastingTime = 3500;
             }
             else if (spellProto->Id == 42463)
