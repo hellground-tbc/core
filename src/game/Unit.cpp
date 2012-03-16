@@ -10994,6 +10994,12 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
             case SPELL_AURA_PROC_TRIGGER_DAMAGE:
             {
                 sLog.outDebug("ProcDamageAndSpell: doing %u damage from spell id %u (triggered by %s aura of spell %u)", auraModifier->m_amount, spellInfo->Id, (isVictim?"a victim's":"an attacker's"), triggeredByAura->GetId());
+                SpellMissInfo missInfo = SpellHitResult(pTarget, spellInfo, false, true);
+                if (missInfo != SPELL_MISS_NONE) // yes it can miss, this will also prevent damaging immune targets
+                {
+                    SendSpellMiss(pTarget, spellInfo->Id, missInfo);
+                    break;
+                }
                 SpellDamageLog damageInfo(spellInfo->Id, this, pTarget, spellInfo->SchoolMask);
                 uint32 damage = SpellDamageBonus(pTarget, spellInfo, auraModifier->m_amount, SPELL_DIRECT_DAMAGE);
                 CalculateSpellDamageTaken(&damageInfo, damage, spellInfo);
