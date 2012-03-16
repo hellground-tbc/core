@@ -6764,8 +6764,11 @@ void Aura::PeriodicTick()
             if (!pCaster)
                 return;
 
-            if (GetSpellProto()->Effect[GetEffIndex()]==SPELL_EFFECT_PERSISTENT_AREA_AURA && pCaster->SpellHitResult(m_target,GetSpellProto(),false)!=SPELL_MISS_NONE)
-                return;
+            damageType = DOT;
+
+            // tick resisting probably in wotlk
+            //if (GetSpellProto()->Effect[GetEffIndex()]==SPELL_EFFECT_PERSISTENT_AREA_AURA && pCaster->SpellHitResult(m_target,GetSpellProto(),false)!=SPELL_MISS_NONE)
+            //    return;
 
             // Check for immune (not use charges)
             if (m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
@@ -7002,8 +7005,9 @@ void Aura::PeriodicTick()
             if (!pCaster->isAlive())
                 return;
 
-            if (GetSpellProto()->Effect[GetEffIndex()]==SPELL_EFFECT_PERSISTENT_AREA_AURA && pCaster->SpellHitResult(m_target,GetSpellProto(),false) != SPELL_MISS_NONE)
-                return;
+            // tick resisting introduced probably in wotlk
+            //if (GetSpellProto()->Effect[GetEffIndex()]==SPELL_EFFECT_PERSISTENT_AREA_AURA && pCaster->SpellHitResult(m_target,GetSpellProto(),false) != SPELL_MISS_NONE)
+            //    return;
 
             // Check for immune (not use charges)
             if (m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
@@ -7214,8 +7218,9 @@ void Aura::PeriodicTick()
             if (!pCaster->isAlive())
                 return;
 
-            if (GetSpellProto()->Effect[GetEffIndex()]==SPELL_EFFECT_PERSISTENT_AREA_AURA && pCaster->SpellHitResult(m_target,GetSpellProto(),false)!=SPELL_MISS_NONE)
-                return;
+            // tick resisting introduced probably in wotlk
+            //if (GetSpellProto()->Effect[GetEffIndex()]==SPELL_EFFECT_PERSISTENT_AREA_AURA && pCaster->SpellHitResult(m_target,GetSpellProto(),false)!=SPELL_MISS_NONE)
+            //    return;
 
             // Check for immune (not use charges)
             if (m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
