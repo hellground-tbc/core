@@ -1,0 +1,8 @@
+﻿Build started 2012-02-18 02:09:36.
+     1>Project "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj" on node 2 (build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(283,5): error MSB8013: This project doesn't contain the Configuration and Platform combination of Release|x64.
+     1>Done Building Project "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj" (build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.09
