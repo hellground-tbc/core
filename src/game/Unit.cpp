@@ -1699,8 +1699,14 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
                if (!spellProto)
                    continue;
 
-               if (pVictim->HasAura(37190,0) && spellProto->SpellFamilyName == SPELLFAMILY_PALADIN && spellProto->SpellFamilyFlags == 0x8)
-                   damage += 15;
+               SpellMissInfo missInfo = SpellHitResult(pVictim, spellProto, false, true);
+               if(missInfo != SPELL_MISS_NONE)
+               {
+                   SendSpellMiss(pVictim, spellProto->Id, missInfo);
+                   continue;
+               }
+
+               damage = SpellDamageBonus(pVictim, spellProto, damage, DIRECT_DAMAGE);
 
                WorldPacket data(SMSG_SPELLDAMAGESHIELD,(8+8+4+4+4));
                data << uint64(pVictim->GetGUID());
@@ -8212,6 +8218,9 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         default:
             break;
     }
+
+    if (spellProto->HasApplyAura(SPELL_AURA_DAMAGE_SHIELD))
+        CastingTime = 0;
 
     //if (spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS
     //    DoneTotalMod = 1.0f; or return pdamage;

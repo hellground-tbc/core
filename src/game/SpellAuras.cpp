@@ -71,7 +71,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleAuraModStun,                               // 12 SPELL_AURA_MOD_STUN
     &Aura::HandleModDamageDone,                             // 13 SPELL_AURA_MOD_DAMAGE_DONE
     &Aura::HandleNoImmediateEffect,                         // 14 SPELL_AURA_MOD_DAMAGE_TAKEN implemented in Unit::MeleeDamageBonus and Unit::SpellDamageBonus
-    &Aura::HandleNoImmediateEffect,                         // 15 SPELL_AURA_DAMAGE_SHIELD    implemented in Unit::DoAttackDamage
+    &Aura::HandleNoImmediateEffect,                         // 15 SPELL_AURA_DAMAGE_SHIELD    implemented in Unit::DealMeleeDamage
     &Aura::HandleModStealth,                                // 16 SPELL_AURA_MOD_STEALTH
     &Aura::HandleNoImmediateEffect,                         // 17 SPELL_AURA_MOD_STEALTH_DETECT
     &Aura::HandleInvisibility,                              // 18 SPELL_AURA_MOD_INVISIBILITY
@@ -6763,8 +6763,6 @@ void Aura::PeriodicTick()
             Unit *pCaster = GetCaster();
             if (!pCaster)
                 return;
-
-            damageType = DOT;
 
             // tick resisting probably in wotlk
             //if (GetSpellProto()->Effect[GetEffIndex()]==SPELL_EFFECT_PERSISTENT_AREA_AURA && pCaster->SpellHitResult(m_target,GetSpellProto(),false)!=SPELL_MISS_NONE)
