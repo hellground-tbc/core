@@ -1699,14 +1699,14 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
                if (!spellProto)
                    continue;
 
-               SpellMissInfo missInfo = SpellHitResult(pVictim, spellProto, false, true);
+               SpellMissInfo missInfo = pVictim->SpellHitResult(this, spellProto, false, true);
                if(missInfo != SPELL_MISS_NONE)
                {
-                   SendSpellMiss(pVictim, spellProto->Id, missInfo);
+                   pVictim->SendSpellMiss(this, spellProto->Id, missInfo);
                    continue;
                }
 
-               damage = SpellDamageBonus(pVictim, spellProto, damage, DIRECT_DAMAGE);
+               damage = pVictim->SpellDamageBonus(this, spellProto, damage, DIRECT_DAMAGE);
 
                WorldPacket data(SMSG_SPELLDAMAGESHIELD,(8+8+4+4+4));
                data << uint64(pVictim->GetGUID());
