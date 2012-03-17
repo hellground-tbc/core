@@ -224,7 +224,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->GetName(),_player->GetSession()->GetAccountId());
                 }
 
-                if (_player->pTrader->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
+                else
                 {
                     sLog.outSpecial("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                         _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
