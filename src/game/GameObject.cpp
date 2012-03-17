@@ -419,6 +419,20 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                             lootingGroupLeaderGUID = 0;
                         }
                     }
+
+                    if(loot.isLooted())
+                    {
+                        if ((GetUseCount() >= GetGOInfo()->chest.maxSuccessOpens) ||
+                            ((GetUseCount() >= GetGOInfo()->chest.minSuccessOpens) && (GetUseCount() >= irand(GetGOInfo()->chest.minSuccessOpens, GetGOInfo()->chest.maxSuccessOpens))))
+                        {
+                            SetLootState(GO_JUST_DEACTIVATED);
+                        }
+                        else
+                        {
+                            SetLootState(GO_READY);
+                        }
+                    }
+
                     break;
                 case GAMEOBJECT_TYPE_SUMMONING_RITUAL:
                 {
@@ -1003,7 +1017,9 @@ void GameObject::Use(Unit* user)
                 return;
 
             pPlayer->SendLoot(GetGUID(), LOOT_SKINNING);
+            //SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
             SetLootState(GO_ACTIVATED);
+            AddUse();
 
             if (GetGOInfo()->chest.eventId)
             {

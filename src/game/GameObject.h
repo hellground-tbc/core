@@ -513,6 +513,7 @@ class TRINITY_DLL_SPEC GameObject : public WorldObject
             {
                 case GAMEOBJECT_TYPE_DOOR:       return GetGOInfo()->door.noDamageImmune;
                 case GAMEOBJECT_TYPE_BUTTON:     return GetGOInfo()->button.noDamageImmune;
+                case GAMEOBJECT_TYPE_CHEST:      return GetGOInfo()->chest.consumable;
                 case GAMEOBJECT_TYPE_QUESTGIVER: return GetGOInfo()->questgiver.noDamageImmune;
                 case GAMEOBJECT_TYPE_GOOBER:     return GetGOInfo()->goober.consumable;
                 case GAMEOBJECT_TYPE_FLAGSTAND:  return GetGOInfo()->flagstand.noDamageImmune;
