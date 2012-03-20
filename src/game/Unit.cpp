@@ -3757,6 +3757,7 @@ bool Unit::AddAura(Aura *Aur)
                         if (Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                         {
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
+                            Aur->SetPeriodicTimer(Aur->GetPeriodicTimer());
                         }
                     }
                     // this will allow to stack dots and hots casted by different creatures

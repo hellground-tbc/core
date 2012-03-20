@@ -358,8 +358,10 @@ class TRINITY_DLL_SPEC Aura
         void PeriodicTick();
         void PeriodicDummyTick();
 
-        int32 GetStackAmount() {return m_stackAmount;}
-        void SetStackAmount(int32 amount) {m_stackAmount=amount;}
+        int32 GetStackAmount() const { return m_stackAmount; }
+        void SetStackAmount(int32 amount) { m_stackAmount = amount; }
+        int32 GetPeriodicTimer() const { return m_periodicTimer; }
+        void SetPeriodicTimer(int32 timer) { m_periodicTimer = timer; }
 
         // Single cast aura helpers
         void UnregisterSingleCastAura();
