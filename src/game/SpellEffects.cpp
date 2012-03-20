@@ -6389,7 +6389,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     break;
                 }
 
-                m_caster->CastSpell(unitTarget,spellId2,true);
+                m_caster->CastSpell(unitTarget,spellId2);
                 return;
             }
         }
