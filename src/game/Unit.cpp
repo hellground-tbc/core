@@ -1706,7 +1706,7 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
                    continue;
                }
 
-               damage = pVictim->SpellDamageBonus(this, spellProto, damage, DIRECT_DAMAGE);
+               damage = pVictim->SpellDamageBonus(this, spellProto, damage, SPELL_DIRECT_DAMAGE);
 
                WorldPacket data(SMSG_SPELLDAMAGESHIELD,(8+8+4+4+4));
                data << uint64(pVictim->GetGUID());
