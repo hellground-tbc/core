@@ -93,6 +93,7 @@ bool DynamicObject::Create(uint32 guidlow, Unit *caster, uint32 spellId, uint32 
     m_spellId = spellId;
     m_casterGuid = caster->GetGUID();
     m_updateTimer = 0;
+    Update(0, 0);
     return true;
 }
 
