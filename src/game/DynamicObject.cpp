@@ -122,11 +122,11 @@ void DynamicObject::Update(uint32 update_diff, uint32 p_time)
 
     if (m_effIndex < 4)
     {
-        if (m_updateTimer < p_time)
+        if (m_updateTimer <= p_time)
         {
             Trinity::DynamicObjectUpdater notifier(*this,caster);
             Cell::VisitAllObjects(this, notifier, m_radius);
-            m_updateTimer = 600; // is this official-like?
+            m_updateTimer += 600 - p_time; // is this official-like?
         }
         else
             m_updateTimer -= p_time;
