@@ -634,18 +634,6 @@ enum AttributesCu
 
 #define SPELL_FAKE_DELAY 200LL
 
-inline bool IgnoreMagnetTargetAura(SpellEntry const* spellInfo)
-{
-    switch (spellInfo->Id)
-    {
-        case 41410:     //RoS: Deaden
-        case 41426:     //RoS: Spirit Shock
-            return true;
-        default:
-            return false;
-    }
-}
-
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
 class TRINITY_DLL_SPEC SpellMgr

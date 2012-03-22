@@ -5357,7 +5357,7 @@ Unit* Spell::SelectMagnetTarget()
     if (!target)
         return NULL;
 
-    if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC && !IgnoreMagnetTargetAura(m_spellInfo))
+    if (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC)
     {
         if (m_spellInfo->Attributes & (SPELL_ATTR_ABILITY | SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) || m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_BE_REDIRECTED)
             return target;
@@ -5393,7 +5393,7 @@ Unit* Spell::SelectMagnetTarget()
             }
         }
     }
-    else
+    else if(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
     {
         if (target->HasAuraType(SPELL_AURA_ADD_CASTER_HIT_TRIGGER))
         {
