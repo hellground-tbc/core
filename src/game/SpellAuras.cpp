@@ -979,28 +979,15 @@ void Aura::_AddAura()
     // not call total regen auras at adding
     switch (m_modifier.m_auraname)
     {
-        /*case SPELL_AURA_PERIODIC_DAMAGE:
-        case SPELL_AURA_PERIODIC_LEECH:
-            if (caster)
-                m_modifier.m_amount = caster->SpellDamageBonus(m_target, m_spellProto, m_modifier.m_amount, DOT);
-            break;
-        case SPELL_AURA_PERIODIC_HEAL:
-            if (caster)
-                m_modifier.m_amount = caster->SpellHealingBonus(m_spellProto, m_modifier.m_amount, DOT, m_target);
-            break;*/
         case SPELL_AURA_OBS_MOD_HEALTH:
         case SPELL_AURA_OBS_MOD_MANA:
-        {
             m_periodicTimer = m_amplitude;//m_modifier.periodictime;
-        }
-        break;
+            break;
         case SPELL_AURA_MOD_REGEN:
         case SPELL_AURA_MOD_POWER_REGEN:
         case SPELL_AURA_MOD_MANA_REGEN_FROM_STAT:
-        {
             m_amplitude = 5000;
             m_periodicTimer = m_amplitude;
-        }
             break;
     }
 
