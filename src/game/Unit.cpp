@@ -2862,9 +2862,8 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
         return SPELL_MISS_RESIST;
 
     // binary resist spells
-    if (IsBinaryResistable(spell))
-        if (CalcBinaryResist(pVictim, schoolMask))
-            return SPELL_MISS_RESIST;
+    if (IsBinaryResistable(spell) && CalcBinaryResist(pVictim, schoolMask))
+        return SPELL_MISS_RESIST;
 
     return SPELL_MISS_NONE;
 }

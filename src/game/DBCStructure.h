@@ -786,7 +786,7 @@ struct SpellEntry
     bool HasApplyAura(uint32 aur) const
     {
         for (uint8 i = 0; i < 3; ++i)
-            if (Effect[i] == SPELL_EFFECT_APPLY_AURA && EffectApplyAuraName[i] == aur)
+            if (EffectApplyAuraName[i] == aur)
                 return true;
 
         return false;
