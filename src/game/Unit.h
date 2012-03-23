@@ -1575,6 +1575,8 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         void SetGMToSendCombatStats(uint64 guid) { m_GMToSendCombatStats = guid; }
         void SendCombatStats(const char* str, Unit *pVictim, ...) const;
         
+        bool RollPRD(float baseChance, float extraChance, uint32 spellId);
+
         // Movement info
         Movement::MoveSpline * movespline;
         MovementInfo m_movementInfo;
@@ -1677,6 +1679,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 m_procDeep;
 
         uint64 m_GMToSendCombatStats;
+        UNORDERED_MAP<uint32, uint32> m_PRDMap;
         
         void UpdateSplineMovement(uint32 t_diff);
         TimeTrackerSmall m_movesplineTimer;

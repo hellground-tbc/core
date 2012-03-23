@@ -13032,3 +13032,37 @@ void Unit::SendCombatStats(const char* format, Unit *pVictim, ...) const
 
     target->SendDirectMessage(&data);
 }
+
+// This constants can't be evaluated on runtime
+float PRDConstants[] = {
+0,       0.00016, 0.00062, 0.00139, 0.00245, 0.0038,  0.00544, 0.00736, 0.00955, 0.01202,
+0.01475, 0.01774, 0.02098, 0.02448, 0.02823, 0.03222, 0.03645, 0.04092, 0.04562, 0.05055,
+0.0557,  0.06108, 0.06668, 0.07249, 0.07851, 0.08474, 0.09118, 0.09783, 0.10467, 0.11171,
+0.11895, 0.12638, 0.134,   0.14181, 0.14981, 0.15798, 0.16633, 0.17491, 0.18362, 0.19249,
+0.20155, 0.21092, 0.22036, 0.2299,  0.23954, 0.24931, 0.25987, 0.27045, 0.28101, 0.29155,
+0.3021,  0.31268, 0.32329, 0.33412, 0.34737, 0.3604,  0.37322, 0.38584, 0.39828, 0.41054,
+0.42265, 0.4346,  0.44642, 0.4581,  0.46967, 0.48113, 0.49248, 0.50746, 0.52941, 0.55072,
+0.57143, 0.59155, 0.61111, 0.63014, 0.64865, 0.66667, 0.68421, 0.7013,  0.71795, 0.73418,
+0.75,    0.76543, 0.78049, 0.79518, 0.80952, 0.82353, 0.83721, 0.85057, 0.86364, 0.8764,  
+0.88889, 0.9011,  0.91304, 0.92473, 0.93617, 0.94737, 0.95833, 0.96907, 0.97959, 0.9899,
+1 };        
+
+// Pseudo-random distribution - each subsequent fail increases chance of success in next try
+bool Unit::RollPRD(float baseChance, float extraChance, uint32 spellId)
+{
+    uint32 indx = uint32(baseChance * 100);
+    extraChance += baseChance - indx/100.0f;
+    baseChance = indx/100.0f;
+
+    if (m_PRDMap.find(spellId) == m_PRDMap.end())
+        m_PRDMap[spellId] = 0;
+
+    ++m_PRDMap[spellId];
+    if (roll_chance_f(PRDConstants[indx] * m_PRDMap[spellId]))
+    {
+        m_PRDMap[spellId] = 0;
+        return true;
+    }
+
+    return roll_chance_f(extraChance / (1 - baseChance)); // No step reseting when rolling extra chance!
+}
