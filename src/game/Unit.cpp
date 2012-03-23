@@ -8429,6 +8429,7 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, extraChance);
 
+    SendCombatStats("isSpellCrit (id=%d): baseChance = %f extraChance = %f totalChance = %f", pVictim, spellProto->Id, baseChance, extraChance, totalChance);
     return RollPRD(baseChance, extraChance, spellProto->Id);
 }
 
@@ -13032,7 +13033,7 @@ void Unit::SendCombatStats(const char* format, Unit *pVictim, ...) const
 }
 
 // This constants can't be evaluated on runtime
-float PRDConstants[] = {
+const float PRDConstants[] = {
 0,       0.00016, 0.00062, 0.00139, 0.00245, 0.0038,  0.00544, 0.00736, 0.00955, 0.01202,
 0.01475, 0.01774, 0.02098, 0.02448, 0.02823, 0.03222, 0.03645, 0.04092, 0.04562, 0.05055,
 0.0557,  0.06108, 0.06668, 0.07249, 0.07851, 0.08474, 0.09118, 0.09783, 0.10467, 0.11171,
