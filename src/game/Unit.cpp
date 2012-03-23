@@ -8362,7 +8362,8 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     if (IS_CREATURE_GUID(GetGUID()) || spellProto->AttributesEx2 & SPELL_ATTR_EX2_CANT_CRIT)
         return false;
 
-    float crit_chance = 0.0f;
+    float baseChance = 0.0f;
+    float extraChance = 0.0f;
     switch (spellProto->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_NONE:
@@ -8371,25 +8372,25 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
             if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
-                crit_chance = 0.0f;
+                baseChance = 0.0f;
             // For other schools
             else if (GetTypeId() == TYPEID_PLAYER)
-                crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
+                baseChance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
             else
             {
-                crit_chance = m_baseSpellCritChance;
-                crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
+                baseChance = m_baseSpellCritChance;
+                baseChance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
             // taken
             if (pVictim && !IsPositiveSpell(spellProto->Id))
             {
                 // Modify critical chance by victim SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE
-                crit_chance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE, schoolMask);
+                extraChance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE, schoolMask);
                 // Modify critical chance by victim SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE
-                crit_chance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE);
+                extraChance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE);
                 // Modify by player victim resilience
                 if (pVictim->GetTypeId() == TYPEID_PLAYER)
-                    crit_chance -= ((Player*)pVictim)->GetRatingBonusValue(CR_CRIT_TAKEN_SPELL);
+                    extraChance -= ((Player*)pVictim)->GetRatingBonusValue(CR_CRIT_TAKEN_SPELL);
                 // scripted (increase crit chance ... against ... target by x%
                 if (pVictim->isFrozen()) // Shatter
                 {
@@ -8398,11 +8399,11 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                     {
                         switch ((*i)->GetModifier()->m_miscvalue)
                         {
-                            case 849: crit_chance+= 10.0f; break; //Shatter Rank 1
-                            case 910: crit_chance+= 20.0f; break; //Shatter Rank 2
-                            case 911: crit_chance+= 30.0f; break; //Shatter Rank 3
-                            case 912: crit_chance+= 40.0f; break; //Shatter Rank 4
-                            case 913: crit_chance+= 50.0f; break; //Shatter Rank 5
+                            case 849: extraChance+= 10.0f; break; //Shatter Rank 1
+                            case 910: extraChance+= 20.0f; break; //Shatter Rank 2
+                            case 911: extraChance+= 30.0f; break; //Shatter Rank 3
+                            case 912: extraChance+= 40.0f; break; //Shatter Rank 4
+                            case 913: extraChance+= 50.0f; break; //Shatter Rank 5
                         }
                     }
                 }
@@ -8414,9 +8415,9 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
         {
             if (pVictim)
             {
-                crit_chance = GetUnitCriticalChance(attackType, pVictim);
-                crit_chance+= (int32(GetMaxSkillValueForLevel(pVictim)) - int32(pVictim->GetDefenseSkillValue(this))) * 0.04f;
-                crit_chance+= GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
+                baseChance = GetUnitCriticalChance(attackType, pVictim);
+                extraChance += (int32(GetMaxSkillValueForLevel(pVictim)) - int32(pVictim->GetDefenseSkillValue(this))) * 0.04f;
+                baseChance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
             break;
         }
@@ -8426,12 +8427,9 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     // percent done
     // only players use intelligence for critical chance computations
     if (Player* modOwner = GetSpellModOwner())
-        modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
+        modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, extraChance);
 
-    crit_chance = crit_chance > 0.0f ? crit_chance : 0.0f;
-    if (roll_chance_f(crit_chance))
-        return true;
-    return false;
+    return RollPRD(baseChance, extraChance, spellProto->Id);
 }
 
 uint32 Unit::SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim)
@@ -13050,6 +13048,14 @@ float PRDConstants[] = {
 // Pseudo-random distribution - each subsequent fail increases chance of success in next try
 bool Unit::RollPRD(float baseChance, float extraChance, uint32 spellId)
 {
+    if (baseChance < 0)
+    {
+        extraChance += baseChance;
+        baseChance = 0;
+    }
+    if (baseChance > 1)
+        baseChance = 1;
+
     uint32 indx = uint32(baseChance * 100);
     extraChance += baseChance - indx/100.0f;
     baseChance = indx/100.0f;
@@ -13060,9 +13066,14 @@ bool Unit::RollPRD(float baseChance, float extraChance, uint32 spellId)
     ++m_PRDMap[spellId];
     if (roll_chance_f(PRDConstants[indx] * m_PRDMap[spellId]))
     {
-        m_PRDMap[spellId] = 0;
+        m_PRDMap[spellId] = 0; // Reset steps BEFORE rolling extra chance
+        if (extraChance < 0 && roll_chance_f(-extraChance/baseChance))
+            return false;
         return true;
     }
+    
+    if (extraChance > 0 && roll_chance_f(extraChance / (1 - baseChance))) // No step reseting when rolling extra chance!
+        return true;
 
-    return roll_chance_f(extraChance / (1 - baseChance)); // No step reseting when rolling extra chance!
+    return false; 
 }
