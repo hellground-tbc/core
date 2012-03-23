@@ -163,7 +163,7 @@
 				Name="VCLibrarianTool"
 				AdditionalDependencies=".\shared__$(PlatformName)_$(ConfigurationName)\shared.lib"
 				OutputFile=".\game__$(PlatformName)_$(ConfigurationName)\game.lib"
-				AdditionalLibraryDirectories=".\g3dlite__$(PlatformName)_$(ConfigurationName)"
+				AdditionalLibraryDirectories="&quot;.\g3dlite__$(PlatformName)_$(ConfigurationName)&quot;"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -440,6 +440,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\game\CharmInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\CharmInfo.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\game\Corpse.cpp"
 				>
 			</File>
@@ -565,14 +573,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\Player.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\PoolHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\game\PoolHandler.h"
 				>
 			</File>
 			<File
@@ -1541,6 +1541,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\game\ObjectMgr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\PoolManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\game\PoolManager.h"
 				>
 			</File>
 			<File
