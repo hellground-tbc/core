@@ -8121,10 +8121,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 2500;
             }
-            // Seal of Vengeance - 17% per Fully Stacked Tick - 5 Applications
+            // Seal of Vengeance - DOT: 17% per Application, DIRECT: 1.1% 
             else if ((spellProto->SpellFamilyFlags & 0x80000000000LL) && spellProto->SpellIconID == 2292)
             {
-                DotFactor = damagetype == DOT ? 0.17f : 0.022f; 
+                DotFactor = damagetype == DOT ? 0.17f : 0.011f; 
                 CastingTime = 3500;
             }
             else if (spellProto->Id == 42463)
