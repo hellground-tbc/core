@@ -8430,7 +8430,7 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, extraChance);
 
     SendCombatStats("isSpellCrit (id=%d): baseChance = %f extraChance = %f totalChance = %f", pVictim, spellProto->Id, baseChance, extraChance, baseChance+extraChance);
-    return RollPRD(baseChance, extraChance, spellProto->Id);
+    return RollPRD(baseChance/100, extraChance/100, spellProto->Id);
 }
 
 uint32 Unit::SpellCriticalBonus(SpellEntry const *spellProto, uint32 damage, Unit *pVictim)
