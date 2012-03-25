@@ -114,6 +114,10 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         ConflagrationTimer = 30000;
         EnrageTimer = 360000;
 
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE)
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        else
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         pInstance->SetData(DATA_SACROLASH, NOT_STARTED);
     }
@@ -122,6 +126,12 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
     {
         DoZoneInCombat();
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
+            ScriptedAI::MoveInLineOfSight(who);
     }
 
     void KilledUnit(Unit *victim)
@@ -147,16 +157,6 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
     {
         if (action == SISTER_DEATH)
             AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_ALYTHESS_DEAD);
-    }
-
-    void EnterEvadeMode()
-    {
-        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
-        {
-            if (Creature *pAlythess = pInstance->GetCreature(pInstance->GetData64(DATA_ALYTHESS)))
-                pAlythess->Respawn();
-        }
-        ScriptedAI::EnterEvadeMode();
     }
 
     void UpdateAI(const uint32 diff)
@@ -263,6 +263,10 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
         IntroDone = false;
 
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE)
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        else
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         pInstance->SetData(DATA_ALYTHESS, NOT_STARTED);
 
@@ -277,10 +281,15 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(!IntroDone && IntroStepCounter == 10 && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 30) )
+        // TODO: this should be moved to some trigger at doors
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 30))
+        {
             IntroStepCounter = 0;
-        
-        Scripted_NoMovementAI::MoveInLineOfSight(who);
+            pInstance->SetData(DATA_EREDAR_TWINS_INTRO, IN_PROGRESS);
+        }
+
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
+            Scripted_NoMovementAI::MoveInLineOfSight(who);
     }
 
     void KilledUnit(Unit *victim)
@@ -335,6 +344,9 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
                 return 3000;
             case 8:
                 DoScriptText(YELL_INTRO_ALY_8, me);
+                return 3000;
+            case 9:
+                pInstance->SetData(DATA_EREDAR_TWINS_INTRO, DONE);
                 return 900000;
             default:
                 return 10000;
@@ -347,20 +359,9 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
             AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_SACROLASH_DEAD);
     }
 
-    void EnterEvadeMode()
-    {
-        if (pInstance->GetData(DATA_SACROLASH) == DONE)
-        {
-            if (Creature *pSacrolash = pInstance->GetCreature(pInstance->GetData64(DATA_SACROLASH)))
-                pSacrolash->Respawn();
-        }
-
-        ScriptedAI::EnterEvadeMode();
-    }
-
     void UpdateAI(const uint32 diff)
     {
-        if (IntroStepCounter < 9)
+        if (IntroStepCounter < 10)
         {
             if (IntroYellTimer < diff)
             {
@@ -420,8 +421,8 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
         else
             EnrageTimer -= diff;
 
-        DoMeleeAttackIfReady();
         CastNextSpellIfAnyAndReady(diff);
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -515,3 +516,13 @@ void AddSC_boss_eredar_twins()
     newscript->GetAI = &GetAI_mob_shadow_image;
     newscript->RegisterSelf();
 }
+
+/* SQLe do wrzucenia
+
+-- formation for sacrolash and alythess
+REPLACE INTO creature_formations VALUES
+(53687, 53668, 0, 0, 2),
+(53687, 53687, 0, 0, 2);
+
+
+*/

@@ -42,8 +42,9 @@
 #define DATA_PLAYER_GUID            27
 #define DATA_KALECGOS_PHASE         28
 #define DATA_BRUTALLUS_TRIGGER      29
+#define DATA_EREDAR_TWINS_INTRO     30
 
-#define SISTER_DEATH               1
+#define SISTER_DEATH                1
 
 #endif
 

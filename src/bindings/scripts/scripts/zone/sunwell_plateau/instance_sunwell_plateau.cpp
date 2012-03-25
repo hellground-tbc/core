@@ -62,6 +62,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
     /*** Misc ***/
     uint32 KalecgosPhase;
+    uint32 EredarTwinsIntro;
 
     uint32 EredarTwinsAliveInfo[2];
 
@@ -94,6 +95,8 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
         EredarTwinsAliveInfo[0] = 0;
         EredarTwinsAliveInfo[1] = 0;
+
+        EredarTwinsIntro = NOT_STARTED;
 
         /*** Encounters ***/
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
@@ -260,6 +263,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case DATA_KALECGOS_PHASE:           return KalecgosPhase; break;
             case DATA_ALYTHESS:                 return EredarTwinsAliveInfo[0];
             case DATA_SACROLASH:                return EredarTwinsAliveInfo[1];
+            case DATA_EREDAR_TWINS_INTRO:        return EredarTwinsIntro; break;
         }
 
         return 0;
@@ -370,7 +374,6 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                 break;
             case DATA_ALYTHESS:
                 EredarTwinsAliveInfo[0] = data;
-
                 if (data == DONE && IsEncounterInProgress())
                 {
                     if (Creature *pSacrolash = GetCreature(GetData64(DATA_SACROLASH)))
@@ -385,6 +388,16 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                         pAlythess->AI()->DoAction(SISTER_DEATH);
                 }
                 return;
+            case DATA_EREDAR_TWINS_INTRO:        
+                EredarTwinsIntro = data;
+                if (data == DONE)
+                {
+                    if (Creature *pAlythess = GetCreature(GetData64(DATA_ALYTHESS)))
+                        pAlythess->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    if (Creature *pSacrolash = GetCreature(GetData64(DATA_SACROLASH)))
+                        pSacrolash->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                }
+                break;
         }
 
         if(data == DONE)
