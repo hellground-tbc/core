@@ -13047,6 +13047,7 @@ const float PRDConstants[] = {
 1 };        
 
 // Pseudo-random distribution - each subsequent fail increases chance of success in next try
+// chances are floats in range (0.0, 1.0)
 bool Unit::RollPRD(float baseChance, float extraChance, uint32 spellId)
 {
     if (baseChance < 0)
@@ -13065,15 +13066,15 @@ bool Unit::RollPRD(float baseChance, float extraChance, uint32 spellId)
         m_PRDMap[spellId] = 0;
 
     ++m_PRDMap[spellId];
-    if (roll_chance_f(PRDConstants[indx] * m_PRDMap[spellId]))
+    if (roll_chance_f(PRDConstants[indx] * m_PRDMap[spellId] * 100))
     {
         m_PRDMap[spellId] = 0; // Reset steps BEFORE rolling extra chance
-        if (extraChance < 0 && roll_chance_f(-extraChance/baseChance))
+        if (extraChance < 0 && roll_chance_f(-extraChance/baseChance * 100))
             return false;
         return true;
     }
     
-    if (extraChance > 0 && roll_chance_f(extraChance / (1 - baseChance))) // No step reseting when rolling extra chance!
+    if (extraChance > 0 && roll_chance_f(extraChance / (1 - baseChance) * 100)) // No step reseting when rolling extra chance!
         return true;
 
     return false; 
