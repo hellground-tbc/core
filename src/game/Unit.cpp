@@ -13010,9 +13010,9 @@ void Unit::SendCombatStats(const char* format, Unit *pVictim, ...) const
     va_start(ap, format);
     vsnprintf(str, 1024, format, ap);
     if (pVictim)
-        snprintf("Combat result for %s (%ld) against %s (%ld). %s", 1024, GetName(), GetGUID(), pVictim->GetName(), pVictim->GetGUID(), str);
+        snprintf(message, 1024, "Combat result for %s (%ld) against %s (%ld). %s", GetName(), GetGUID(), pVictim->GetName(), pVictim->GetGUID(), str);
     else
-        snprintf("Combat result for %s (%ld). %s", 1024, GetName(), GetGUID(), str);
+        snprintf(message, 1024, "Combat result for %s (%ld). %s", GetName(), GetGUID(), str);
 
     va_end(ap);
 

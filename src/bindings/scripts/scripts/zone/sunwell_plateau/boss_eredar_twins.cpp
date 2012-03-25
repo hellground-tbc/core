@@ -114,7 +114,7 @@ struct TRINITY_DLL_DECL boss_sacrolashAI : public ScriptedAI
         ConflagrationTimer = 30000;
         EnrageTimer = 360000;
 
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE)
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         else
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -263,7 +263,7 @@ struct TRINITY_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
 
         IntroDone = false;
 
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE)
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         else
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
