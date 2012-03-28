@@ -7773,10 +7773,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     if (!spellProto || !pVictim || damagetype==DIRECT_DAMAGE)
         return pdamage;
 
-    //if(spellProto->SchoolMask == SPELL_SCHOOL_MASK_NORMAL)
-    //    return pdamage;
-    //damage = CalcArmorReducedDamage(pVictim, damage);
-
     int32 BonusDamage = 0;
     if (GetTypeId()==TYPEID_UNIT)
     {
@@ -8658,6 +8654,8 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
             case SPELLFAMILY_WARRIOR:
             case SPELLFAMILY_ROGUE:
             case SPELLFAMILY_HUNTER:
+            case SPELLFAMILY_POTION:
+            case SPELLFAMILY_GENERIC: // not sure about generic
                 CastingTime = 0;
                 break;
         }
