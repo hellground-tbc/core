@@ -8646,6 +8646,9 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                 // Seal and Judgement of Light
                 if (spellProto->SpellFamilyFlags & 0x100040000LL)
                     CastingTime = 0;
+                // Enduring Light (proc from t6 trinket)
+                if (spellProto->Id == 40471)
+                    CastingTime = 0;
                 break;
             case SPELLFAMILY_WARLOCK:
                 if (spellProto->SpellFamilyFlags & 0x1000000LL)
