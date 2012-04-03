@@ -362,6 +362,12 @@ SessionUpdate.Threads = 1
 #        Log file of arena fights and arena team creations
 #        Default: "" - do not create arena log file
 #
+#   ArenaLogExtendedInfo
+#        Extended Info Log file of arena fights and arena team creations
+#        Default: 0 - extended arena logs off
+#                 1 - extended arena logs on
+#
+#
 #    LogColors
 #        Color for messages (format "normal_color details_color debug_color error_color")
 #        Colors: 0 - BLACK, 1 - RED, 2 - GREEN,  3 - BROWN, 4 - BLUE, 5 - MAGENTA, 6 -  CYAN, 7 - GREY,
@@ -431,6 +437,7 @@ GmLogTimestamp = 0
 GmLogPerAccount = 0
 GmLogMinLevel = 1
 ArenaLogFile = ""
+ArenaLogExtendedInfo = 1
 CheatLogFile = "cheat.log"
 ACLogFile = "AC.log"
 MailLogFile = "sendmail.log"
