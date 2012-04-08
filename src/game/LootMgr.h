@@ -299,6 +299,8 @@ struct Loot
 
     uint32 GetMaxSlotInLootFor(Player* player) const;
 
+    void RemoveQuestLoot(Player* player);
+
     private:
         void FillNotNormalLootFor(Player* player);
         QuestItemList* FillFFALoot(Player* player);

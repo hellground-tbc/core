@@ -389,7 +389,7 @@ void Loot::AddItem(LootStoreItem const & item)
 bool Loot::IsPlayerAllowedToLoot(Player *player, WorldObject *object)
 {
     return players_allowed_to_loot.empty() ?
-        player->GetDistance2d(object) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE) :    
+        player->GetDistance2d(object) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE) :
         players_allowed_to_loot.find(player->GetGUID()) != players_allowed_to_loot.end();
 }
 
@@ -568,7 +568,7 @@ void Loot::saveLootToDB(Player *owner)
 
     std::map<uint32, uint32> item_count;
     CharacterDatabase.BeginTransaction();
-    
+
     static SqlStatementID deleteCreatureLoot;
     static SqlStatementID updateItemCount;
     static SqlStatementID insertItem;
@@ -705,7 +705,9 @@ QuestItemList* Loot::FillFFALoot(Player* player)
 
 QuestItemList* Loot::FillQuestLoot(Player* player)
 {
-    if (items.size() == MAX_NR_LOOT_ITEMS) return NULL;
+    if (items.size() == MAX_NR_LOOT_ITEMS)
+        return NULL;
+
     QuestItemList *ql = new QuestItemList();
 
     for (uint8 i = 0; i < quest_items.size(); i++)
@@ -925,6 +927,26 @@ uint32 Loot::GetMaxSlotInLootFor(Player* player) const
 {
     QuestItemMap::const_iterator itr = PlayerQuestItems.find(player->GetGUIDLow());
     return items.size() + (itr != PlayerQuestItems.end() ?  itr->second->size() : 0);
+}
+
+void Loot::RemoveQuestLoot(Player* player)
+{
+    QuestItemMap::const_iterator itr = PlayerQuestItems.find(player->GetGUIDLow());
+    if (itr == PlayerQuestItems.end())
+        return;
+
+    QuestItemList * tmpList = itr->second;
+    uint32 count = tmpList->size();
+    if (unlootedCount >= count)
+        unlootedCount -= count;
+    else
+        unlootedCount = 0;
+
+    delete tmpList;
+    tmpList = NULL;
+    itr->second = NULL;
+
+    PlayerQuestItems.erase(itr);
 }
 
 ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
