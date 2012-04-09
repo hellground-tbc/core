@@ -931,7 +931,7 @@ uint32 Loot::GetMaxSlotInLootFor(Player* player) const
 
 void Loot::RemoveQuestLoot(Player* player)
 {
-    QuestItemMap::const_iterator itr = PlayerQuestItems.find(player->GetGUIDLow());
+    QuestItemMap::iterator itr = PlayerQuestItems.find(player->GetGUIDLow());
     if (itr == PlayerQuestItems.end())
         return;
 
