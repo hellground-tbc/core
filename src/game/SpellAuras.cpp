@@ -6730,6 +6730,10 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
             DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellProto());
 
             m_modifier.m_amount += (int32)DoneActualBenefit;
+
+            // apply threat equal to 1/2 healing threat for absorb value
+            if (caster->GetTypeId() == TYPEID_PLAYER)
+                m_target->getHostilRefManager().threatAssist(caster, float(m_modifier.m_amount) * 0.25f, GetSpellProto());
         }
     }
 }
