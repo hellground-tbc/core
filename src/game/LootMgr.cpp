@@ -936,7 +936,17 @@ void Loot::RemoveQuestLoot(Player* player)
         return;
 
     QuestItemList * tmpList = itr->second;
-    uint32 count = tmpList->size();
+
+    uint32 count = 0;
+
+    LootItem &item = quest_items[i];
+    for (QuestItemList::iterator qItr = tmpList.begin(); qItr != tmpList.end(); ++qItr)
+    {
+        LootItem &item = quest_items[(*qItr).index];
+        if (item.freeforall && !item.is_looted)
+            ++count;
+    }
+
     if (unlootedCount >= count)
         unlootedCount -= count;
     else
