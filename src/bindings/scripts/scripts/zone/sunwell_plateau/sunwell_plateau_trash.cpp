@@ -756,7 +756,7 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
     * Blazing Infernal
     * Felguard Slayer
     * Shadowsword Assassin
-    * Shadowsword Commander
+    * Shadowsword Commander - responsible for gauntlet
     * Shadowsword Deathbringer - gauntlet
     * Shadowsword Lifeshaper
     * Shadowsword Manafiend
@@ -776,6 +776,8 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 /****************
 * Shadowsword Assassin - id 25484
 *****************/
+
+#define GAUNTLET_PATH	2501
 
 enum ShadowswordAssassin
 {
@@ -868,8 +870,113 @@ CreatureAI* GetAI_mob_shadowsword_assassin(Creature *_Creature)
 enum ShadowswordCommander
 {
     SPELL_BATTLE_SHOUT              = 46763,
-    SPELL_SHIELD_SLAM               = 46762
+    SPELL_SHIELD_SLAM               = 46762,
+
+    MOB_VOLATILE_FIEND              = 25851,
+    MOB_SHADOWSWORD_DEATHBRINGER	= 25485
 };
+
+struct TRINITY_DLL_DECL mob_shadowsword_commanderAI : public ScriptedAI
+{
+    mob_shadowsword_commanderAI(Creature *c) : ScriptedAI(c), summons(c)
+    { 
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+        me->GetPosition(wLoc);
+    }
+
+    ScriptedInstance* pInstance;
+    WorldLocation wLoc;
+    SummonList summons;
+
+    uint32 ShieldSlam;
+    uint32 Imp_timer;
+    uint32 Deathbringer_timer;
+    uint8 i;
+
+    void Reset()
+    {
+        me->setActive(true);
+        i = 0;
+        ShieldSlam = urand(5000, 10000);
+        Imp_timer = 1000;
+        Deathbringer_timer = 6000;
+        summons.DespawnAll();
+    }
+
+    void JustRespawned()
+    {
+        pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, NOT_STARTED);
+        summons.DespawnAll();
+    }
+
+    void JustSummoned(Creature *summon)
+    {
+        summons.Summon(summon);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (CreatureGroup *formation = me->GetFormation())
+            formation->RespawnFormation(me);
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void EnterCombat(Unit* who)
+    { 
+        DoZoneInCombat(80.0f); 
+        DoCast(me, SPELL_SHIELD_SLAM);
+    }
+
+    void JustDied(Unit* killer)
+    {
+        pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, DONE);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
+        {
+            if(Imp_timer < diff)
+            {
+                me->SummonCreature(MOB_VOLATILE_FIEND, wLoc.coord_x+frand(-2.5,2.5), wLoc.coord_y+frand(-2,2), wLoc.coord_z, wLoc.orientation, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                Imp_timer = 15000;
+            }
+            else
+                Imp_timer -= diff;
+
+            if(Deathbringer_timer < diff)
+            {
+                ++i;
+                me->SummonCreature(MOB_SHADOWSWORD_DEATHBRINGER, wLoc.coord_x+frand(-2.5,2.5), wLoc.coord_y+frand(-2,2), wLoc.coord_z, wLoc.orientation, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                Deathbringer_timer = i%2?15000:45000;	// 15sec and than 60sec summon intervals
+            }
+            Deathbringer_timer -= diff;
+        }
+
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == FAIL)
+            JustRespawned();
+
+        if(!UpdateVictim())
+            return;
+
+        if(ShieldSlam < diff)
+        {
+            AddSpellToCast(SPELL_SHIELD_SLAM, CAST_TANK);
+            ShieldSlam = urand(8000, 12000);
+        }
+        else
+            ShieldSlam -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowsword_commander(Creature *_Creature)
+{
+    return new mob_shadowsword_commanderAI(_Creature);
+}
 
 /****************
 * Shadowsword Deathbringer - id 25485
@@ -883,6 +990,60 @@ enum ShadowswordDeathbringer
     SPELL_DISEASE_BUFFET            = 46481,
     SPELL_VOLATILE_DISEASE          = 46483
 };
+
+struct TRINITY_DLL_DECL mob_shadowsword_deathbringerAI : public ScriptedAI
+{
+    mob_shadowsword_deathbringerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+
+    uint32 DiseaseBuffet;
+    uint32 VolatileDisease;
+
+    void Reset()
+    {
+        me->setActive(true);
+        DiseaseBuffet = urand(5000, 10000);
+        VolatileDisease = urand(3000, 6000);
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void IsSummonedBy(Unit *summoner)
+    {
+        me->SetSpeed(MOVE_RUN, 1.5);
+        me->GetMotionMaster()->MovePath(GAUNTLET_PATH, false);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(DiseaseBuffet < diff)
+        {
+            AddSpellToCast(SPELL_DISEASE_BUFFET);
+            DiseaseBuffet = urand(10000, 14000);
+        }
+        else
+            DiseaseBuffet -= diff;
+
+        if(VolatileDisease < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 8.0f, true))
+                AddSpellToCast(target, SPELL_VOLATILE_DISEASE);
+            VolatileDisease = urand(10000, 16000);
+        }
+        else
+            VolatileDisease -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowsword_deathbringer(Creature *_Creature)
+{
+    return new mob_shadowsword_deathbringerAI(_Creature);
+}
 
 /****************
 * Shadowsword Lifeshaper - id 25506
@@ -899,8 +1060,13 @@ enum ShadowswordLifeshaper
 
 struct TRINITY_DLL_DECL mob_shadowsword_lifeshaperAI : public ScriptedAI
 {
-    mob_shadowsword_lifeshaperAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_shadowsword_lifeshaperAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData(); 
+    }
 
+    ScriptedInstance* pInstance;
     uint32 DrainLife;
     uint32 HealthFunnel;
     bool canFunnelHP;
@@ -917,10 +1083,17 @@ struct TRINITY_DLL_DECL mob_shadowsword_lifeshaperAI : public ScriptedAI
     {
         if (CreatureGroup *formation = me->GetFormation())
             formation->RespawnFormation(me);
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
         ScriptedAI::EnterEvadeMode();
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void EnterCombat(Unit*)
+    { 
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == NOT_STARTED)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, IN_PROGRESS);
+        DoZoneInCombat(80.0f); 
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -980,8 +1153,13 @@ enum ShadowswordManafiend
 
 struct TRINITY_DLL_DECL mob_shadowsword_manafiendAI : public ScriptedAI
 {
-    mob_shadowsword_manafiendAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_shadowsword_manafiendAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData(); 
+    }
 
+    ScriptedInstance* pInstance;
     uint32 ArcaneExplosion;
     uint32 DrainMana;
     uint32 CheckTimer;
@@ -999,10 +1177,17 @@ struct TRINITY_DLL_DECL mob_shadowsword_manafiendAI : public ScriptedAI
     {
         if (CreatureGroup *formation = me->GetFormation())
             formation->RespawnFormation(me);
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
         ScriptedAI::EnterEvadeMode();
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void EnterCombat(Unit*)
+    { 
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == NOT_STARTED)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, IN_PROGRESS);
+        DoZoneInCombat(80.0f);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1054,8 +1239,13 @@ enum ShadowswordSoulbinder
 
 struct TRINITY_DLL_DECL mob_shadowsword_soulbinderAI : public ScriptedAI
 {
-    mob_shadowsword_soulbinderAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_shadowsword_soulbinderAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData(); 
+    }
 
+    ScriptedInstance* pInstance;
     uint32 CurseOfExhaustion;
     uint32 Domination;
     uint32 FlashOfDarkness;
@@ -1072,10 +1262,17 @@ struct TRINITY_DLL_DECL mob_shadowsword_soulbinderAI : public ScriptedAI
     {
         if (CreatureGroup *formation = me->GetFormation())
             formation->RespawnFormation(me);
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
         ScriptedAI::EnterEvadeMode();
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void EnterCombat(Unit*)
+    {
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == NOT_STARTED)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, IN_PROGRESS);
+        DoZoneInCombat(80.0f);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1131,8 +1328,13 @@ enum ShadowswordVanquisher
 
 struct TRINITY_DLL_DECL mob_shadowsword_vanquisherAI : public ScriptedAI
 {
-    mob_shadowsword_vanquisherAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_shadowsword_vanquisherAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData(); 
+    }
 
+    ScriptedInstance* pInstance;
     uint32 Cleave;
     uint32 MeltArmor;
 
@@ -1147,10 +1349,17 @@ struct TRINITY_DLL_DECL mob_shadowsword_vanquisherAI : public ScriptedAI
     {
         if (CreatureGroup *formation = me->GetFormation())
             formation->RespawnFormation(me);
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
         ScriptedAI::EnterEvadeMode();
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void EnterCombat(Unit*)
+    {
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == NOT_STARTED)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, IN_PROGRESS);
+        DoZoneInCombat(80.0f);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -1192,10 +1401,93 @@ CreatureAI* GetAI_mob_shadowsword_vanquisher(Creature *_Creature)
 
 enum VolatileFiend
 {
-    SPELL_BURNING_WINGS             = 46308,
-    SPELL_BURNING_DESTRUCTION       = 47287,
-    SPELL_FELFIRE_FISSION           = 45779 // used in KJ fight?
+    SPELL_BURNING_WINGS					= 46308,
+    SPELL_BURNING_DESTRUCTION			= 47287,
+    SPELL_BURNING_DESTRUCTION_EXPLOSION	= 46218,
+    SPELL_FELFIRE_FISSION				= 45779 // used in KJ fight?
 };
+
+struct TRINITY_DLL_DECL mob_volatile_fiendAI : public ScriptedAI
+{
+    mob_volatile_fiendAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+
+    bool summoned, exploding;
+    uint32 explosion_timer;
+
+    void Reset()
+    {
+        summoned = false;
+        exploding = false;
+        explosion_timer = 2000;
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void DamageTaken(Unit* attacker, uint32& damage)
+    {
+        if(attacker->GetTypeId() == TYPEID_PLAYER && damage)
+        {
+            DoCast(me, SPELL_BURNING_DESTRUCTION);
+            exploding = true;
+        }
+    }
+
+    void SpellHitTarget(Unit* target, const SpellEntry* spell) 
+    {
+        if(spell->Id == SPELL_BURNING_DESTRUCTION_EXPLOSION)
+            me->Kill(me, false);
+    }
+
+    void IsSummonedBy(Unit *summoner)
+    {
+        summoned = true;
+        DoCast(me, SPELL_BURNING_WINGS);
+        me->SetSpeed(MOVE_RUN, 1.5);
+        me->GetMotionMaster()->MovePath(GAUNTLET_PATH, false);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(who->GetTypeId() != TYPEID_PLAYER || !summoned || exploding)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+
+        if(me->IsWithinDistInMap(who, 12))	// to be tested
+        {
+            DoCast(me, SPELL_BURNING_DESTRUCTION);
+            exploding = true;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(exploding)
+        {
+            if(explosion_timer < diff)
+            {
+                exploding = false;
+                explosion_timer = 2000;
+            }
+            explosion_timer -= diff;
+        }
+
+        if(!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+
+        if(!summoned)
+            return;
+
+        // AI here for normal, not gauntlet-type Fiend?
+    }
+};
+
+CreatureAI* GetAI_mob_volatile_fiend(Creature *_Creature)
+{
+    return new mob_volatile_fiendAI(_Creature);
+}
 
 /* ============================
 *
@@ -1291,6 +1583,16 @@ void AddSC_sunwell_plateau_trash()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name = "mob_shadowsword_commander";
+    newscript->GetAI = &GetAI_mob_shadowsword_commander;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_shadowsword_deathbringer";
+    newscript->GetAI = &GetAI_mob_shadowsword_deathbringer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name = "mob_shadowsword_lifeshaper";
     newscript->GetAI = &GetAI_mob_shadowsword_lifeshaper;
     newscript->RegisterSelf();
@@ -1308,5 +1610,10 @@ void AddSC_sunwell_plateau_trash()
     newscript = new Script;
     newscript->Name = "mob_shadowsword_vanquisher";
     newscript->GetAI = &GetAI_mob_shadowsword_vanquisher;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_volatile_fiend";
+    newscript->GetAI = &GetAI_mob_volatile_fiend;
     newscript->RegisterSelf();
 }

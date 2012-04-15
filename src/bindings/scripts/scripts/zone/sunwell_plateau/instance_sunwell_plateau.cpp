@@ -28,6 +28,7 @@ enum GoState
 4 - Eredar Twins (Alythess and Sacrolash)
 5 - M'uru
 6 - Kil'Jaeden
+7 - Trash gauntlet event
 */
 
 struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
@@ -62,6 +63,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
     /*** Misc ***/
     uint32 KalecgosPhase;
+    uint32 GauntletProgress;
     uint32 EredarTwinsIntro;
 
     uint32 EredarTwinsAliveInfo[2];
@@ -101,6 +103,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         /*** Encounters ***/
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
+        GauntletProgress = NOT_STARTED;
     }
 
     bool IsEncounterInProgress() const
@@ -260,6 +263,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case DATA_EREDAR_TWINS_EVENT:       return Encounters[4]; break;
             case DATA_MURU_EVENT:               return Encounters[5]; break;
             case DATA_KILJAEDEN_EVENT:          return Encounters[6]; break;
+            case DATA_TRASH_GAUNTLET_EVENT:		return GauntletProgress; break;
             case DATA_KALECGOS_PHASE:           return KalecgosPhase; break;
             case DATA_ALYTHESS:                 return EredarTwinsAliveInfo[0];
             case DATA_SACROLASH:                return EredarTwinsAliveInfo[1];
@@ -368,6 +372,9 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case DATA_KILJAEDEN_EVENT:
                 if(Encounters[6] != DONE)
                     Encounters[6] = data;
+                break;
+            case DATA_TRASH_GAUNTLET_EVENT:
+                GauntletProgress = data;
                 break;
             case DATA_KALECGOS_PHASE:
                 KalecgosPhase = data; 
