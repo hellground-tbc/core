@@ -263,7 +263,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             case DATA_EREDAR_TWINS_EVENT:       return Encounters[4]; break;
             case DATA_MURU_EVENT:               return Encounters[5]; break;
             case DATA_KILJAEDEN_EVENT:          return Encounters[6]; break;
-            case DATA_TRASH_GAUNTLET_EVENT:		return GauntletProgress; break;
+            case DATA_TRASH_GAUNTLET_EVENT:     return GauntletProgress; break;
             case DATA_KALECGOS_PHASE:           return KalecgosPhase; break;
             case DATA_ALYTHESS:                 return EredarTwinsAliveInfo[0];
             case DATA_SACROLASH:                return EredarTwinsAliveInfo[1];

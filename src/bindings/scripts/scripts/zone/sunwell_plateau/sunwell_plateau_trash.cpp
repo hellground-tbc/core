@@ -873,7 +873,9 @@ enum ShadowswordCommander
     SPELL_SHIELD_SLAM               = 46762,
 
     MOB_VOLATILE_FIEND              = 25851,
-    MOB_SHADOWSWORD_DEATHBRINGER	= 25485
+    MOB_SHADOWSWORD_DEATHBRINGER    = 25485,
+
+    YELL_GAUNTLET_START             = -1811006
 };
 
 struct TRINITY_DLL_DECL mob_shadowsword_commanderAI : public ScriptedAI
@@ -890,6 +892,7 @@ struct TRINITY_DLL_DECL mob_shadowsword_commanderAI : public ScriptedAI
     SummonList summons;
 
     uint32 ShieldSlam;
+    uint32 Yell_timer;
     uint32 Imp_timer;
     uint32 Deathbringer_timer;
     uint8 i;
@@ -899,6 +902,7 @@ struct TRINITY_DLL_DECL mob_shadowsword_commanderAI : public ScriptedAI
         me->setActive(true);
         i = 0;
         ShieldSlam = urand(5000, 10000);
+        Yell_timer = 3000;
         Imp_timer = 1000;
         Deathbringer_timer = 6000;
         summons.DespawnAll();
@@ -937,6 +941,16 @@ struct TRINITY_DLL_DECL mob_shadowsword_commanderAI : public ScriptedAI
     {
         if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
         {
+            if(Yell_timer)
+            {
+                if(Yell_timer <= diff)
+                {
+                    me->YellToZone(YELL_GAUNTLET_START, 0, me->GetGUID());
+                    Yell_timer = 0;
+                }
+                else
+                    Yell_timer -= diff;
+            }
             if(Imp_timer < diff)
             {
                 me->SummonCreature(MOB_VOLATILE_FIEND, wLoc.coord_x+frand(-2.5,2.5), wLoc.coord_y+frand(-2,2), wLoc.coord_z, wLoc.orientation, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
@@ -1156,7 +1170,7 @@ struct TRINITY_DLL_DECL mob_shadowsword_manafiendAI : public ScriptedAI
     mob_shadowsword_manafiendAI(Creature *c) : ScriptedAI(c)
     {
         me->SetAggroRange(AGGRO_RANGE);
-        pInstance = c->GetInstanceData(); 
+        pInstance = c->GetInstanceData();
     }
 
     ScriptedInstance* pInstance;
@@ -1401,10 +1415,10 @@ CreatureAI* GetAI_mob_shadowsword_vanquisher(Creature *_Creature)
 
 enum VolatileFiend
 {
-    SPELL_BURNING_WINGS					= 46308,
-    SPELL_BURNING_DESTRUCTION			= 47287,
-    SPELL_BURNING_DESTRUCTION_EXPLOSION	= 46218,
-    SPELL_FELFIRE_FISSION				= 45779 // used in KJ fight?
+    SPELL_BURNING_WINGS                 = 46308,
+    SPELL_BURNING_DESTRUCTION           = 47287,
+    SPELL_BURNING_DESTRUCTION_EXPLOSION = 46218,
+    SPELL_FELFIRE_FISSION               = 45779 // used in KJ fight?
 };
 
 struct TRINITY_DLL_DECL mob_volatile_fiendAI : public ScriptedAI
@@ -1453,7 +1467,7 @@ struct TRINITY_DLL_DECL mob_volatile_fiendAI : public ScriptedAI
 
         ScriptedAI::MoveInLineOfSight(who);
 
-        if(me->IsWithinDistInMap(who, 12))	// to be tested
+        if(me->IsWithinDistInMap(who, 12))  // to be tested
         {
             DoCast(me, SPELL_BURNING_DESTRUCTION);
             exploding = true;
