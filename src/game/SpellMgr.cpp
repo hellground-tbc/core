@@ -1089,7 +1089,7 @@ bool IsBinaryResistable(SpellEntry const* spellInfo)
 
 bool IsPartialyResistable(SpellEntry const* spellInfo)
 {
-    if (spellInfo->AttributesEx4 & SPELL_ATTR4_IGNORE_RESISTANCES)
+    if (spellInfo->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES)
         return false;
 
     // check which of them have above attribute and remove it from switch :]

@@ -648,6 +648,9 @@ void Aura::Update(uint32 diff)
 
 bool AreaAura::CheckTarget(Unit *target)
 {
+    if (GetSpellProto()->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY && target->GetTypeId() != TYPEID_PLAYER)
+        return false;
+
     if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN)
     {
         switch (GetSpellProto()->SpellIconID)

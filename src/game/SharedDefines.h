@@ -373,7 +373,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX3_DONT_DISPLAY_RANGE         0x40000000            // 30 client doesn't display range in tooltip for those spells
 #define SPELL_ATTR_EX3_UNK31                      0x80000000            // 31
 
-#define SPELL_ATTR4_IGNORE_RESISTANCES            0x00000001            // 0 spells with this attribute will completely ignore the target resistances (theese spells cant be resisted)
+#define SPELL_ATTR_EX4_IGNORE_RESISTANCES         0x00000001            // 0 spells with this attribute will completely ignore the target resistances (theese spells cant be resisted)
 #define SPELL_ATTR_EX4_UNK1                       0x00000002            // 1 proc on finishing move?
 #define SPELL_ATTR_EX4_UNK2                       0x00000004            // 2
 #define SPELL_ATTR_EX4_CANT_PROC_FROM_SELFCAST    0x00000008            // 3
