@@ -1637,8 +1637,8 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
     // Call default DealDamage
     DealDamage(damageInfo, DIRECT_DAMAGE, NULL, durabilityLoss);
 
-    // If this is a creature and it attacks from behind it has a probability to daze it's victim
-    if ((damageInfo->targetState == VICTIMSTATE_NORMAL) &&
+    // If this is a creature and it attacks from behind it has a probability to daze it's victim when dealing damage
+    if (damageInfo->damage && damageInfo->targetState == VICTIMSTATE_NORMAL &&
         GetTypeId() != TYPEID_PLAYER && !((Creature*)this)->GetCharmerOrOwnerGUID() && !pVictim->HasInArc(M_PI, this)
         && (pVictim->GetTypeId() == TYPEID_PLAYER || !((Creature*)pVictim)->isWorldBoss()))
     {
@@ -1652,13 +1652,14 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
 
         uint32 VictimDefense=pVictim->GetDefenseSkillValue();
         uint32 AttackerMeleeSkill=GetUnitMeleeSkill();
+        int32 SkillDiff = VictimDefense - AttackerMeleeSkill;   // with 125 difference as defense "capp"
 
-        Probability *= AttackerMeleeSkill/(float)VictimDefense;
+        Probability -= SkillDiff/6.25;  //linear factor here with 0% for "capp" value
 
         if (Probability > 40)
             Probability = 40;
 
-        if (roll_chance_f(Probability))
+        if (Probability > 0 && roll_chance_f(Probability))
             CastSpell(pVictim, 1604, true);
     }
 
