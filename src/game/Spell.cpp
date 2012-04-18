@@ -1453,7 +1453,6 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
 
             Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
             Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
-            TagUnitMap.remove_if(Trinity::ObjectIsTotemCheck(true)); // totems should not be affected by AoE spells (check if no exceptions?)
             break;
         }
         case SPELL_TARGET_TYPE_DEAD:
@@ -1469,6 +1468,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             sLog.outError("WTF ? Oo Wrong spell script target type for this function: %i (shouldbe %i or %i)", spellScriptTargetType, SPELL_TARGET_TYPE_CREATURE, SPELL_TARGET_TYPE_DEAD);
             break;
     }
+    TagUnitMap.remove_if(Trinity::ObjectIsTotemCheck(true)); // totems should not be affected by AoE spells (check if no exceptions?)
 }
 
 void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry, SpellScriptTargetType spellScriptTargetType)
