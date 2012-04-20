@@ -214,6 +214,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     MovementInfo movementInfo;
     recv_data >> movementInfo;
 
+    if (movementInfo.kick)
+    {
+        sLog.outSpecial("WEH NOOB? modified moveflags, packet doesn't containt required data: guid: %u", GetPlayer()->GetGUIDLow());
+        KickPlayer();
+        return;
+    }
+
     /*----------------*/
 
     if (recv_data.size() != recv_data.rpos())

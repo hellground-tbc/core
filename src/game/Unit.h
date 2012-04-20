@@ -624,7 +624,7 @@ class MovementInfo
     public:
         MovementInfo() : moveFlags(MOVEFLAG_NONE), moveFlags2(0), time(0), t_guid(0),
             t_time(0), s_pitch(0.0f), fallTime(0), j_velocity(0.0f), j_sinAngle(0.0f),
-            j_cosAngle(0.0f), j_xyspeed(0.0f), u_unk1(0.0f) {}
+            j_cosAngle(0.0f), j_xyspeed(0.0f), u_unk1(0.0f), kick(false) {}
 
         // Read/Write methods
         void Read(ByteBuffer &data);
@@ -684,6 +684,8 @@ class MovementInfo
         float   j_velocity, j_sinAngle, j_cosAngle, j_xyspeed;
         // spline
         float   u_unk1;
+
+        bool kick;
 };
 
 inline ByteBuffer& operator<< (ByteBuffer& buf, MovementInfo const& mi)
