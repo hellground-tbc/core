@@ -215,7 +215,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                 }
 
                 if (GameObject *Door = instance->GetGameObject(DoorGUID))
-                    Door->SetGoState(GO_STATE_ACTIVE);
+                    Door->SetGoState(GO_STATE_READY);
 
                 RespawnTimer = 0;
                 if (Encounters[0] != DONE)
