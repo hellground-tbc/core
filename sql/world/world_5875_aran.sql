@@ -1,0 +1,2 @@
+UPDATE creature_template SET unit_flags = unit_flags & ~ 0x02000002 WHERE entry = 17161;
+UPDATE creature_template SET flags_extra = 0x00000080 WHERE entry IN(17161, 17176, 17168, 17169, 17170, 17171, 17172, 17173, 17174, 17175);

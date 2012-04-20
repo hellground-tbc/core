@@ -1,0 +1,29 @@
+﻿Build started 2012-04-20 19:18:13.
+     1>Project "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj" on node 3 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating ".\Detour__Win32_Release\Detour.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I..\..\include /Zi /nologo /W3 /WX- /O2 /Oi /Ot /Oy- /D WIN32 /D NDEBUG /D _MBCS /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Detour__Win32_Release\\" /Fd".\Detour__Win32_Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\Source\DetourAlloc.cpp ..\..\Source\DetourCommon.cpp ..\..\Source\DetourNavMesh.cpp ..\..\Source\DetourNavMeshBuilder.cpp ..\..\Source\DetourNavMeshQuery.cpp ..\..\Source\DetourNode.cpp
+         DetourAlloc.cpp
+         DetourCommon.cpp
+         DetourNavMesh.cpp
+         DetourNavMeshBuilder.cpp
+         DetourNavMeshQuery.cpp
+         DetourNode.cpp
+         Generating Code...
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\\..\..\..\..\lib\Win32_Release\Detour.lib" /NOLOGO .\Detour__Win32_Release\DetourAlloc.obj
+         .\Detour__Win32_Release\DetourCommon.obj
+         .\Detour__Win32_Release\DetourNavMesh.obj
+         .\Detour__Win32_Release\DetourNavMeshBuilder.obj
+         .\Detour__Win32_Release\DetourNavMeshQuery.obj
+         .\Detour__Win32_Release\DetourNode.obj
+         Detour.vcxproj -> D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\\..\..\..\..\lib\Win32_Release\Detour.lib
+       FinalizeBuildStatus:
+         Deleting file ".\Detour__Win32_Release\Detour.unsuccessfulbuild".
+         Touching ".\Detour__Win32_Release\Detour.lastbuildstate".
+     1>Done Building Project "D:\Repozytoria\hellground\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:02.48
