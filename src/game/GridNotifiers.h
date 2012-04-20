@@ -701,6 +701,23 @@ namespace Trinity
             float i_range;
     };
 
+    class AnyFriendlyNonSelfUnitInObjectRangeCheck
+    {
+        public:
+            AnyFriendlyNonSelfUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
+            bool operator()(Unit* u)
+            {
+                if (u->isAlive() && u->GetGUID() != i_obj->GetGUID() && i_obj->IsWithinDistInMap(u, i_range) && i_funit->IsFriendlyTo(u))
+                    return true;
+                else
+                    return false;
+            }
+        private:
+            WorldObject const* i_obj;
+            Unit const* i_funit;
+            float i_range;
+    };
+
     class AnyUnitInObjectRangeCheck
     {
         public:
