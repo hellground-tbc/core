@@ -775,6 +775,9 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 
 /****************
 * Shadowsword Assassin - id 25484
+
+  Immunities: root, slow, fear, polymorph, disarm
+
 *****************/
 
 #define GAUNTLET_PATH	2501
@@ -929,7 +932,7 @@ struct TRINITY_DLL_DECL mob_shadowsword_commanderAI : public ScriptedAI
     void EnterCombat(Unit* who)
     { 
         DoZoneInCombat(80.0f); 
-        DoCast(me, SPELL_SHIELD_SLAM);
+        DoCast(me, SPELL_BATTLE_SHOUT);
     }
 
     void JustDied(Unit* killer)
@@ -995,7 +998,7 @@ CreatureAI* GetAI_mob_shadowsword_commander(Creature *_Creature)
 /****************
 * Shadowsword Deathbringer - id 25485
 
-  Immunities: 
+  Immunities: root, stun, polymorph, interrupt, silence
 
 *****************/
 
@@ -1062,7 +1065,7 @@ CreatureAI* GetAI_mob_shadowsword_deathbringer(Creature *_Creature)
 /****************
 * Shadowsword Lifeshaper - id 25506
 
-  Immunities: 
+  Immunities: interrupt, stun, silence
 
 *****************/
 
@@ -1183,7 +1186,7 @@ struct TRINITY_DLL_DECL mob_shadowsword_manafiendAI : public ScriptedAI
         ClearCastQueue();
         DoCast(me, SPELL_CHILLING_TOUCH_AURA);
         SetAutocast(SPELL_ARCANE_EXPLOSION_2, 2600, false, CAST_NULL);
-        DrainMana = RAND(8000, 12000);
+        DrainMana = urand(3000, 5000);
         CheckTimer = 1000;
     }
 
@@ -1222,7 +1225,7 @@ struct TRINITY_DLL_DECL mob_shadowsword_manafiendAI : public ScriptedAI
         if(DrainMana < diff)
         {
             AddSpellToCast(SPELL_DRAIN_MANA, CAST_NULL);
-            DrainMana = RAND(8000, 12000);
+            DrainMana = urand(6000, 10000);
         }
         else
             DrainMana -= diff;
@@ -1439,7 +1442,7 @@ struct TRINITY_DLL_DECL mob_volatile_fiendAI : public ScriptedAI
 
     void DamageTaken(Unit* attacker, uint32& damage)
     {
-        if(attacker->GetTypeId() == TYPEID_PLAYER && damage)
+        if(attacker->GetTypeId() == TYPEID_PLAYER && damage && !exploding)
         {
             DoCast(me, SPELL_BURNING_DESTRUCTION);
             exploding = true;
