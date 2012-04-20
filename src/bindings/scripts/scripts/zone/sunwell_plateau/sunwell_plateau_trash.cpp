@@ -866,7 +866,7 @@ CreatureAI* GetAI_mob_shadowsword_assassin(Creature *_Creature)
 /****************
 * Shadowsword Commander - id 25837
 
-  Immunities: 
+  Immunities: polymorph, stun, fear
 
 *****************/
 
@@ -1548,6 +1548,50 @@ CreatureAI* GetAI_mob_volatile_fiend(Creature *_Creature)
 * Shadowsword Guardian - id
 *****************/
 
+/****************
+* SWP gatekeeper - id 25848
+*
+*  script for not used "Gauntlet Imp Trigger" creature
+*
+*****************/
+#define EMOTE_WARNING_YELL  -1811007
+
+struct TRINITY_DLL_DECL npc_SWP_gatekeeperAI : public Scripted_NoMovementAI
+{
+    npc_SWP_gatekeeperAI(Creature *c) : Scripted_NoMovementAI(c) { }
+
+    void Reset()
+    { }
+
+    void EnterCombat(Unit*) { return;}
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if(who->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        if(((Player*)who)->isGameMaster())
+            return;
+
+        if(me->IsWithinDistInMap(who, 20))
+            ExilePlayer(((Player*)who));
+    }
+
+    void ExilePlayer(Player* player)
+    {
+        if(player->HasAura(36952))
+            player->GetSession()->KickPlayer(); // ban here?
+        me->MonsterTextEmote(EMOTE_WARNING_YELL, player->GetGUID(), true, true);
+        player->TeleportTo(580, 1784, 924, 15.6, player->GetOrientation());
+        player->CastSpell(player, 36952, true); // bad-ass curse that should persist through death, removable by GMT
+    }
+};
+
+CreatureAI* GetAI_npc_SWP_gatekeeper(Creature *_Creature)
+{
+    return new npc_SWP_gatekeeperAI(_Creature);
+}
+
 void AddSC_sunwell_plateau_trash()
 {
     Script *newscript;
@@ -1632,5 +1676,10 @@ void AddSC_sunwell_plateau_trash()
     newscript = new Script;
     newscript->Name = "mob_volatile_fiend";
     newscript->GetAI = &GetAI_mob_volatile_fiend;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_SWP_gatekeeper";
+    newscript->GetAI = &GetAI_npc_SWP_gatekeeper;
     newscript->RegisterSelf();
 }

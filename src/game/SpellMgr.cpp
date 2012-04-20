@@ -3062,6 +3062,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 37052:
                 spellInfo->rangeIndex = 6;
                 break;
+            case 36952: // (temporary) Ogre Building Bunny Curse Visual Large - penalty curse for SWP
             case 40214: // Dragonmaw illusion
                 spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_DEATH_PERSISTENT;
                 break;
