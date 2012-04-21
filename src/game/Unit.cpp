@@ -168,13 +168,6 @@ void MovementInfo::Read(ByteBuffer &data)
 
     if (HasMovementFlag(MOVEFLAG_ONTRANSPORT))
     {
-        const uint16 transportDataSize = sizeof(uint64) + 4*sizeof(float) + sizeof(uint32);
-        if (data.size() < data.rpos() + transportDataSize)
-        {
-            kick = true;
-            return;
-        }
-
         data >> t_guid;
         data >> t_pos.x;
         data >> t_pos.y;
@@ -184,25 +177,11 @@ void MovementInfo::Read(ByteBuffer &data)
     }
 
     if (HasMovementFlag(MovementFlags(MOVEFLAG_SWIMMING | MOVEFLAG_FLYING)))
-    {
-        if (data.size() < data.rpos() + sizeof(float))
-        {
-            kick = true;
-            return;
-        }
-
         data >> s_pitch;
-    }
 
     data >> fallTime;
     if (HasMovementFlag(MOVEFLAG_FALLING))
     {
-        if (data.size() < data.rpos() + 4*sizeof(float))
-        {
-            kick = true;
-            return;
-        }
-
         data >> j_velocity;
         data >> j_sinAngle;
         data >> j_cosAngle;
@@ -210,15 +189,7 @@ void MovementInfo::Read(ByteBuffer &data)
     }
 
     if (HasMovementFlag(MOVEFLAG_SPLINE_ELEVATION))
-    {
-        if (data.size() < data.rpos() + sizeof(float))
-        {
-            kick = true;
-            return;
-        }
-
         data >> u_unk1;
-    }
 }
 
 void MovementInfo::Write(ByteBuffer &data) const
