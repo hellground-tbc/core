@@ -182,45 +182,56 @@ void SpellCastTargets::Update(Unit* caster)
 
 void SpellCastTargets::read(ByteBuffer& data, Unit *caster)
 {
-    data >> m_targetMask;
-
-    if (m_targetMask == TARGET_FLAG_SELF)
-        return;
-
-    // TARGET_FLAG_UNK2 is used for non-combat pets, maybe other?
-    if (m_targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_UNK2))
-        data >> m_unitTargetGUID.ReadAsPacked();
-
-    if (m_targetMask & (TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_OBJECT_UNK))
-        data >> m_GOTargetGUID.ReadAsPacked();
-
-    if ((m_targetMask & (TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM)) && caster->GetTypeId() == TYPEID_PLAYER)
-        data >> m_itemTargetGUID.ReadAsPacked();
-
-    if (m_targetMask & TARGET_FLAG_SOURCE_LOCATION)
+    try
     {
-        data >> m_srcX >> m_srcY >> m_srcZ;
+        data >> m_targetMask;
 
-        if (!Trinity::IsValidMapCoord(m_srcX, m_srcY, m_srcZ))
-            throw ByteBufferException(false, data.rpos(), 0, data.size());
+        if (m_targetMask == TARGET_FLAG_SELF)
+            return;
+
+        // TARGET_FLAG_UNK2 is used for non-combat pets, maybe other?
+        if (m_targetMask & (TARGET_FLAG_UNIT | TARGET_FLAG_UNK2))
+            data >> m_unitTargetGUID.ReadAsPacked();
+
+        if (m_targetMask & (TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_OBJECT_UNK))
+            data >> m_GOTargetGUID.ReadAsPacked();
+
+        if ((m_targetMask & (TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM)) && caster->GetTypeId() == TYPEID_PLAYER)
+            data >> m_itemTargetGUID.ReadAsPacked();
+
+        if (m_targetMask & TARGET_FLAG_SOURCE_LOCATION)
+        {
+            data >> m_srcX >> m_srcY >> m_srcZ;
+
+            if (!Trinity::IsValidMapCoord(m_srcX, m_srcY, m_srcZ))
+                throw ByteBufferException(false, data.rpos(), 0, data.size());
+        }
+
+        if (m_targetMask & TARGET_FLAG_DEST_LOCATION)
+        {
+            data >> m_destX >> m_destY >> m_destZ;
+
+            if (!Trinity::IsValidMapCoord(m_destX, m_destY, m_destZ))
+                throw ByteBufferException(false, data.rpos(), 0, data.size());
+        }
+
+        if (m_targetMask & TARGET_FLAG_STRING)
+            data >> m_strTarget;
+
+        if (m_targetMask & (TARGET_FLAG_CORPSE | TARGET_FLAG_PVP_CORPSE))
+            data >> m_CorpseTargetGUID.ReadAsPacked();
+
+        // find real units/GOs
+        Update(caster);
     }
-
-    if (m_targetMask & TARGET_FLAG_DEST_LOCATION)
+    catch(...)
     {
-        data >> m_destX >> m_destY >> m_destZ;
-
-        if (!Trinity::IsValidMapCoord(m_destX, m_destY, m_destZ))
-            throw ByteBufferException(false, data.rpos(), 0, data.size());
+        if (caster->GetTypeId() == TYPEID_PLAYER)
+        {
+            sLog.outSpecial("WEH NOOB: %u", caster->GetGUIDLow());
+            caster->ToPlayer()->GetSession()->KickPlayer();
+        }
     }
-
-    if (m_targetMask & TARGET_FLAG_STRING)
-        data >> m_strTarget;
-
-    if (m_targetMask & (TARGET_FLAG_CORPSE | TARGET_FLAG_PVP_CORPSE))
-         data >> m_CorpseTargetGUID.ReadAsPacked();
-
-    // find real units/GOs
-    Update(caster);
 }
 
 void SpellCastTargets::write (ByteBuffer& data) const
