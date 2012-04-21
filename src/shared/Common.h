@@ -253,6 +253,8 @@ enum RunModes
 #define PAIR32_HIPART(x)   (uint16)((uint32(x) >> 16) & 0x0000FFFF)
 #define PAIR32_LOPART(x)   (uint16)(uint32(x)         & 0x0000FFFF)
 
+#define TRY_OR_DIE(x,y) { try { t; } catch(...) { sLog.outSpecial("WEH NOOB: GUID(%u), Modified packet, buffer doesn't containt enough data.", y->GetPlayer()->GetGUIDLow()); y->KickPlayer(); return; }}
+
 #ifdef MAP_UPDATE_DIFF_INFO
     #define MAP_UPDATE_DIFF(t) t;
 #else
