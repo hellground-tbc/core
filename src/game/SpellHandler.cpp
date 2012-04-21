@@ -338,7 +338,16 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     // client provided targets
     SpellCastTargets targets;
-    recvPacket >> targets.ReadForCaster(_player);
+    try
+    {
+        recvPacket >> targets.ReadForCaster(_player);
+    }
+    catch(...)
+    {
+        sLog.outSpecial("WEH NOOB: %u", GetPlayer()->GetGUIDLow());
+        KickPlayer();
+        return;
+    }
 
     // auto-selection buff level base at target level (in spellInfo)
     if (Unit* target = targets.getUnitTarget())
