@@ -311,10 +311,18 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     /// not proccess packets if socket already closed
     WorldPacket* packet;
 
-    while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
+    try
     {
-        ProcessPacket(packet);
-        delete packet;
+        while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
+        {
+            ProcessPacket(packet);
+            delete packet;
+        }
+    }
+    catch (ByteBufferException* e)
+    {
+        sLog.outSpecial("WPE NOOB: packet doesn't containt required data, %s(%u), acc: %u", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetAccountId());
+        KickPlayer();
     }
 
     bool overtime = false;

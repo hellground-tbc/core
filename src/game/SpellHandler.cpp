@@ -338,7 +338,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     // client provided targets
     SpellCastTargets targets;
-    TRY_OR_DIE(recvPacket >> targets.ReadForCaster(_player), this)
+    recvPacket >> targets.ReadForCaster(_player);
 
     // auto-selection buff level base at target level (in spellInfo)
     if (Unit* target = targets.getUnitTarget())

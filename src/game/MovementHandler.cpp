@@ -212,7 +212,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     /* extract packet */
 
     MovementInfo movementInfo;
-    TRY_OR_DIE(recv_data >> movementInfo, this)
+    recv_data >> movementInfo;
 
     /*----------------*/
 
