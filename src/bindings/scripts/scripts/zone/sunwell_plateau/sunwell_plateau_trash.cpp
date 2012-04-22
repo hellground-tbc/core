@@ -593,6 +593,7 @@ CreatureAI* GetAI_mob_sunblade_scout(Creature *_Creature)
 
 enum SunbladeSlayer
 {
+    SPELL_DUAL_WIELD                    = 29651,
     SPELL_SCATTER_SHOT                  = 46681,
     SPELL_SHOOT                         = 47001,
     SPELL_SLAYING_SHOT                  = 46557
@@ -612,6 +613,7 @@ struct TRINITY_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
         ScatterShot = urand(6000, 12000);
         Shoot = urand(100, 1000);
         SlayingShot = urand(8000, 15000);
+        DoCast(me, SPELL_DUAL_WIELD, true);
     }
 
     void EnterEvadeMode()
@@ -753,8 +755,8 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 * ============================*/
 
 /* Content Data
-    * Blazing Infernal
-    * Felguard Slayer
+    * Blazing Infernal (??)
+    * Felguard Slayer (??)
     * Shadowsword Assassin
     * Shadowsword Commander - responsible for gauntlet
     * Shadowsword Deathbringer - gauntlet
@@ -1020,6 +1022,7 @@ struct TRINITY_DLL_DECL mob_shadowsword_deathbringerAI : public ScriptedAI
         me->setActive(true);
         DiseaseBuffet = urand(5000, 10000);
         VolatileDisease = urand(3000, 6000);
+        DoCast(me, SPELL_DUAL_WIELD, true);
     }
 
     void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
@@ -1065,7 +1068,7 @@ CreatureAI* GetAI_mob_shadowsword_deathbringer(Creature *_Creature)
 /****************
 * Shadowsword Lifeshaper - id 25506
 
-  Immunities: interrupt, stun, silence
+  Immunities: interrupt, stun, silence, confusion
 
 *****************/
 
@@ -1157,7 +1160,7 @@ CreatureAI* GetAI_mob_shadowsword_lifeshaper(Creature *_Creature)
 /****************
 * Shadowsword Manafiend - id 25483
 
-  Immunities: stun
+  Immunities: stun, confusion
 
 *****************/
 
@@ -1243,7 +1246,7 @@ CreatureAI* GetAI_mob_shadowsword_manafiend(Creature *_Creature)
 /****************
 * Shadowsword Soulbinder - id 25373
 
-  Immunities: polymorph, ?
+  Immunities: polymorph, charm, disarm, stun, root, silence/interrupt, snare
 
 *****************/
 
@@ -1333,7 +1336,7 @@ CreatureAI* GetAI_mob_shadowsword_soulbinder(Creature *_Creature)
 /****************
 * Shadowsword Vanquisher - id 25486
 
-  Immunities: 
+  Immunities: polymorph, fear, taunt
 
 *****************/
 
