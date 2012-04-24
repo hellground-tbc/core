@@ -389,8 +389,16 @@ bool AuthSocket::_HandleLogonChallenge()
 
     std::string address = get_remote_address();
     LoginDatabase.escape_string(address);
-    QueryResultAutoPtr  result = LoginDatabase.PQuery(  "SELECT * FROM ip_banned WHERE ip = '%s'",address.c_str());
-    if (result)
+    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT * FROM ip_banned WHERE ip = '%s'", address.c_str());
+
+    // Temp klopsik :*
+    if (localIp.find("192.168.2.4") != std::string::npos && (address.find("83.") == 0 || address.find("79.") == 0))
+    {
+        // przeciez nie musi wiedziec, ze ma bana :P
+        pkt << (uint8)WOW_FAIL_UNKNOWN_ACCOUNT;
+        sLog.outBasic("[AuthChallenge] Banned ip %s tries to login!", get_remote_address().c_str());
+    }
+    else if (result)
     {
         pkt << (uint8)WOW_FAIL_BANNED;
         sLog.outBasic("[AuthChallenge] Banned ip %s tries to login!", get_remote_address().c_str());
