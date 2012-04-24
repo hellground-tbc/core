@@ -16133,7 +16133,7 @@ void Player::_SaveInventory()
 
                 LoginDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
                 LoginDatabase.CommitTransaction();
-                GetSession()->KickPlayer();
+                //GetSession()->KickPlayer();
             }
             else if (test != item)
             {
@@ -16366,7 +16366,7 @@ void Player::UpdateSpeakTime()
 
 bool Player::CanSpeak() const
 {
-    return  GetSession()->m_muteTime <= time (NULL);
+    return GetSession()->m_muteTime <= time (NULL);
 }
 
 /*********************************************************/
