@@ -1313,7 +1313,6 @@ class TRINITY_DLL_SPEC Player : public Unit
         static void SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,uint64 guid);
 
         bool m_mailsUpdated;
-        bool saving;
 
         void SetBindPoint(uint64 guid);
         void SendTalentWipeConfirm(uint64 guid);
@@ -2413,6 +2412,9 @@ class TRINITY_DLL_SPEC Player : public Unit
         float  m_summon_z;
 
         bool m_farsightVision;
+
+        bool _preventSave;
+        bool _preventUpdate;
 
         DeclinedName *m_declinedname;
 

@@ -449,7 +449,8 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this)
 
     m_activeBy = 0;
 
-    saving = false;
+    _preventSave = false;
+    _preventUpdate = false;
 }
 
 Player::~Player ()
@@ -1151,13 +1152,12 @@ void Player::CharmAI(bool apply)
 
 void Player::Update(uint32 update_diff, uint32 p_time)
 {
+    if (!IsInWorld() || _preventUpdate)
+        return;
+
     updateMutex.acquire();
 
-    if (!IsInWorld())
-    {
-        updateMutex.release();
-        return;
-    }
+    _preventUpdate = true;
 
     if (m_AC_timer)
     {
@@ -1426,6 +1426,7 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     if (pet && !IsWithinDistInMap(pet, GetMap()->GetVisibilityDistance()) && !pet->isPossessed())
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
 
+    _preventUpdate = false;
     updateMutex.release();
 }
 
@@ -15761,10 +15762,10 @@ bool Player::_LoadHomeBind(QueryResultAutoPtr result)
 
 void Player::SaveToDB()
 {
-    if (saving)
+    if (_preventSave)
         return;
 
-    saving = true;
+    _preventSave = true;
 
     // delay auto save at any saves (manual, in code, or autosave)
     m_nextSave = sWorld.getConfig(CONFIG_INTERVAL_SAVE);
@@ -15777,7 +15778,7 @@ void Player::SaveToDB()
     // players aren't saved on arena maps
     if (!me || me->IsBattleArena())
     {
-        saving = false;
+        _preventSave = false;
         return;
     }
 
@@ -15948,7 +15949,7 @@ void Player::SaveToDB()
     if (Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);
 
-    saving = false;
+    _preventSave = false;
 }
 
 // fast save function for item/money cheating preventing - save only inventory and money state
