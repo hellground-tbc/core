@@ -1,0 +1,1 @@
+CREATE TABLE `pattern_banned`( `ip_pattern` CHAR(20), `localip_pattern` CHAR(20), `comment` CHAR(20) ) ENGINE=MYISAM;

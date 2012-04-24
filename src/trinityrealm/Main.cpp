@@ -245,6 +245,18 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
+    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT ip_pattern, localip_pattern FROM pattern_banned");
+    if (result)
+    {
+        AuthSocket::pattern_banned.clear();
+        do
+        {
+            Field *fields = result->Fetch();
+            AuthSocket::pattern_banned.push_back(std::make_pair(boost::regex(fields[0].GetString()), boost::regex(fields[1].GetString())));
+        }
+        while (result->NextRow());
+    }
+
     // cleanup query
     // set expired bans to inactive
     LoginDatabase.BeginTransaction();

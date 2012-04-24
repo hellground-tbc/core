@@ -28,7 +28,11 @@
 #include "Auth/Sha1.h"
 #include "ByteBuffer.h"
 
+#include <boost/regex.hpp>
+
 #include "BufferedSocket.h"
+
+typedef std::list<std::pair<boost::regex, boost::regex > > PatternList; // <IP pattern, LocalIP pattern>
 
 /// Handle login commands
 class AuthSocket: public BufferedSocket
@@ -56,6 +60,8 @@ class AuthSocket: public BufferedSocket
         bool _HandleXferAccept();
 
         void _SetVSFields(const std::string& rI);
+
+        static PatternList pattern_banned;
 
     private:
 
