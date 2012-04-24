@@ -2020,6 +2020,9 @@ void Player::RewardRage(uint32 damage, uint32 weaponSpeedHitFactor, bool attacke
     {
         addRage = ((damage/rageconversion*7.5 + weaponSpeedHitFactor)/2);
 
+        if (addRage > 15*damage/rageconversion)
+            addRage = 15*damage/rageconversion;
+
         // talent who gave more rage on attack
         addRage *= 1.0f + GetTotalAuraModifier(SPELL_AURA_MOD_RAGE_FROM_DAMAGE_DEALT) / 100.0f;
     }
