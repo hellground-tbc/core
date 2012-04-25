@@ -51,6 +51,7 @@ if(UNIX)
     ${MYSQL_LIBRARY}
     ${OPENSSL_LIBRARIES}
     ${OPENSSL_EXTRA_LIBRARIES}
+    /usr/lib/libboost_regex-mt.a
   )
 endif()
 
