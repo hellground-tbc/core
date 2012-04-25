@@ -9,6 +9,8 @@ endif()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/src/shared
+  ${CMAKE_BINARY_DIR}/dep
+  ${CMAKE_BINARY_DIR}/dep/boost
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_BINARY_DIR}
   ${CMAKE_BINARY_DIR}/src/shared
