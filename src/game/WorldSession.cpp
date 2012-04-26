@@ -319,7 +319,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             delete packet;
         }
     }
-    catch (ByteBufferException*)
+    catch (...)
     {
         sLog.outSpecial("WPE NOOB: packet doesn't contains required data, %s(%u), acc: %u", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetAccountId());
         KickPlayer();
