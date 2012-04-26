@@ -2664,6 +2664,12 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             case 40251:        // Vengeful Spirit
             {
+                Map *pMap = m_target->GetMap();
+                if (((InstanceMap*)pMap)->GetInstanceData())
+                    ((InstanceMap*)pMap)->GetInstanceData()->SetData64(29, m_target->GetGUID());
+                else
+                    break;
+
                 m_target->SetHealth(m_target->GetMaxHealth());
 
                 m_target->RemoveAllAurasOnDeath();  //prevent spell immunities from cloak of shadows and others
@@ -2675,10 +2681,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 //m_target->AddAura(40282, m_target);             //Possess Spirit Immune
                 m_target->CastSpell((Unit*)NULL, 40268, false); //Possess Vengeful Spirit
                 m_target->CastSpell(m_target, 40282, true);   //Possess Spirit Immune
-
-                Map *pMap = m_target->GetMap();
-                if (((InstanceMap*)pMap)->GetInstanceData())
-                    ((InstanceMap*)pMap)->GetInstanceData()->SetData64(29, m_target->GetGUID());
                 break;
             }
             case 28059:     // Positive/Negative Charge
