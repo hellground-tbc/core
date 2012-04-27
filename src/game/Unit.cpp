@@ -850,11 +850,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
     if (damageInfo->damage || damageInfo->absorb)
     {
-        if (spellProto && spellProto->Id == 33619)                 //if it's from Reflective Shield
-        {
-            // don't break cc
-        }
-        else
+        if (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_DAMAGE_DOESNT_BREAK_AURAS))
         {
             pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto ? spellProto->Id : 0);
             pVictim->RemoveSpellbyDamageTaken(damageInfo->damage, spellProto ? spellProto->Id : 0);
