@@ -302,7 +302,6 @@ enum SpellCategory
 #define SPELL_ATTR_EX_UNK26                       0x04000000            // 26 works correctly with [target=focus] and [target=mouseover] macros?
 #define SPELL_ATTR_EX_UNK27                       0x08000000            // 27
 #define SPELL_ATTR_EX_UNK28                       0x10000000            // 28
-//in TC2: #define SPELL_ATTR_EX_IGNORE_IMMUNITY             0x10000000            // 28 ?? removed from Chains of Ice 3.3.0
 #define SPELL_ATTR_EX_CHANNEL_DISPLAY_SPELL_NAME  0x20000000            // 29 spell name is displayed in cast bar instead of 'channeling' text
 #define SPELL_ATTR_EX_ENABLE_AT_DODGE             0x40000000            // 30 overpower
 #define SPELL_ATTR_EX_UNK31                       0x80000000            // 31
@@ -358,7 +357,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX3_UNK15                      0x00008000            // 15 Auto Shoot, Shoot, Throw,  - this is autoshot flag
 #define SPELL_ATTR_EX3_CANT_TRIGGER_PROC          0x00010000            // 16 confirmed with many patchnotes
 #define SPELL_ATTR_EX3_NO_INITIAL_AGGRO           0x00020000            // 17 no initial aggro
-#define SPELL_ATTR_EX3_UNK18                      0x00040000            // 18
+#define SPELL_ATTR_EX3_CANT_MISS                  0x00040000            // 18
 #define SPELL_ATTR_EX3_DISABLE_PROC               0x00080000            // 19 during aura proc no spells can trigger (20178, 20375)
 #define SPELL_ATTR_EX3_DEATH_PERSISTENT           0x00100000            // 20 Death persistent spells
 #define SPELL_ATTR_EX3_UNK21                      0x00200000            // 21
@@ -380,7 +379,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX4_UNK4                       0x00000010            // 4
 #define SPELL_ATTR_EX4_UNK5                       0x00000020            // 5
 #define SPELL_ATTR_EX4_NOT_STEALABLE              0x00000040            // 6 although such auras might be dispellable, they cannot be stolen
-#define SPELL_ATTR_EX4_UNK7                       0x00000080            // 7
+#define SPELL_ATTR_EX4_FORCE_TRIGGERED            0x00000080            // 7
 #define SPELL_ATTR_EX4_STACK_DOT_MODIFIER         0x00000100            // 8 no effect on non DoTs?
 #define SPELL_ATTR_EX4_UNK9                       0x00000200            // 9
 #define SPELL_ATTR_EX4_SPELL_VS_EXTEND_COST       0x00000400            // 10 Rogue Shiv have this flag
@@ -415,8 +414,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX5_UNK6                       0x00000040            // 6
 #define SPELL_ATTR_EX5_UNK7                       0x00000080            // 7
 #define SPELL_ATTR_EX5_UNK8                       0x00000100            // 8
-#define SPELL_ATTR_EX5_UNK9                       0x00000200            // 9
-//in TC2 & mangos: #define SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY    0x00000200            // 9  begin periodic tick at aura apply
+#define SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY    0x00000200            // 9 begin periodic tick at aura apply
 #define SPELL_ATTR_EX5_HIDE_DURATION              0x00000400            // 10 do not send duration to client
 #define SPELL_ATTR_EX5_UNK11                      0x00000800            // 11
 #define SPELL_ATTR_EX5_UNK12                      0x00001000            // 12

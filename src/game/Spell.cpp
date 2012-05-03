@@ -332,7 +332,7 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
         m_currentBasePoints[i] = m_spellValue->EffectBasePoints[i];
 
     m_TriggerSpells.clear();
-    m_IsTriggeredSpell = triggered;
+    m_IsTriggeredSpell = m_spellInfo->AttributesEx4 & SPELL_ATTR_EX4_FORCE_TRIGGERED || triggered;
     //m_AreaAura = false;
     m_CastItem = NULL;
     m_castItemGUID = 0;
@@ -668,6 +668,13 @@ void Spell::prepareDataForTriggerSystem()
             }
             break;
     }
+
+    if (m_IsTriggeredSpell && m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_TRIGGERED_CAN_TRIGGER)
+        m_canTrigger = true;
+    
+    if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CANT_TRIGGER_PROC)
+        m_canTrigger = false;
+
     // Hunter traps spells (for Entrapment trigger)
     // Gives your Immolation Trap, Frost Trap, Explosive Trap, and Snake Trap ....
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && m_spellInfo->SpellFamilyFlags & 0x0000200000000014LL)
@@ -912,11 +919,6 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     uint32 procAttacker = m_procAttacker;
     uint32 procVictim   = m_procVictim;
     uint32 procEx       = PROC_EX_NONE;
-
-    //Spells with this flag cannot trigger if effect is casted on self
-    // Slice and Dice, relentless strikes, eviscerate
-    //bool canEffectTrigger = (m_spellInfo->AttributesEx4 & (SPELL_ATTR_EX4_CANT_PROC_FROM_SELFCAST | SPELL_ATTR_EX4_UNK4) ? m_caster!=unitTarget : true)
-    //    && m_canTrigger;
 
     if (missInfo==SPELL_MISS_NONE)                          // In case spell hit target, do all effect on that target
         DoSpellHitOnUnit(unit, mask);
