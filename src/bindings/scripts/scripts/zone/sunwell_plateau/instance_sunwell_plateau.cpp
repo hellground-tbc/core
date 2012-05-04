@@ -20,6 +20,16 @@ enum GoState
     OPEN    = 0
 };
 
+uint32 GauntletNPC[6] = 
+{
+    25484,
+    25837,
+    25506,
+    25483,
+    25373,
+    25486
+};
+
 /* Sunwell Plateau:
 0 - Kalecgos and Sathrovarr
 1 - Brutallus & Madrigosa intro
@@ -145,6 +155,22 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
         if (GameObject *go = GameObject::GetGameObject(*player,guid))
             go->SetGoState(GOState(state));
+    }
+
+    void RespawnGauntletGroups()
+    {
+        for (uint8 i = 0; i < 6; ++i)
+        {
+            std::list<uint64> GauntletList = instance->GetCreaturesGUIDList(GauntletNPC[i]);
+            if(!GauntletList.empty())
+            {
+                for(std::list<uint64>::iterator itr = GauntletList.begin(); itr != GauntletList.end(); ++itr)
+                {
+                    if(Creature* c = instance->GetCreature(*itr))
+                        c->Respawn();
+                }
+            }
+        }
     }
 
     uint32 GetEncounterForEntry(uint32 entry)
@@ -375,9 +401,14 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                 break;
             case DATA_TRASH_GAUNTLET_EVENT:
                 GauntletProgress = data;
+                if(data == FAIL)
+                {
+                    RespawnGauntletGroups();
+                    data = NOT_STARTED;
+                }
                 break;
             case DATA_KALECGOS_PHASE:
-                KalecgosPhase = data; 
+                KalecgosPhase = data;
                 break;
             case DATA_ALYTHESS:
                 EredarTwinsAliveInfo[0] = data;
@@ -395,7 +426,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                         pAlythess->AI()->DoAction(SISTER_DEATH);
                 }
                 return;
-            case DATA_EREDAR_TWINS_INTRO:        
+            case DATA_EREDAR_TWINS_INTRO:
                 EredarTwinsIntro = data;
                 if (data == DONE)
                 {
@@ -407,7 +438,7 @@ struct TRINITY_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
                 break;
         }
 
-        if(data == DONE)
+        if(data == DONE || data == FAIL)
             SaveToDB();
     }
 

@@ -794,9 +794,10 @@ enum ShadowswordAssassin
 
 struct TRINITY_DLL_DECL mob_shadowsword_assassinAI : public ScriptedAI
 {
-    mob_shadowsword_assassinAI(Creature *c) : ScriptedAI(c) { }
+    mob_shadowsword_assassinAI(Creature *c) : ScriptedAI(c) { pInstance = c->GetInstanceData(); }
 
     uint32 Shadowstep;
+    ScriptedInstance* pInstance;
 
     void Reset()
     {
@@ -805,10 +806,20 @@ struct TRINITY_DLL_DECL mob_shadowsword_assassinAI : public ScriptedAI
         DoCast(me, SPELL_GREATER_INVISIBILITY, true);
     }
 
+    void JustDied(Unit* killer)
+    {
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+            me->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        else
+            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+    }
+
     void EnterEvadeMode()
     {
         if (CreatureGroup *formation = me->GetFormation())
             formation->RespawnFormation(me);
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
         ScriptedAI::EnterEvadeMode();
     }
 
@@ -928,6 +939,8 @@ struct TRINITY_DLL_DECL mob_shadowsword_commanderAI : public ScriptedAI
     {
         if (CreatureGroup *formation = me->GetFormation())
             formation->RespawnFormation(me);
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
         ScriptedAI::EnterEvadeMode();
     }
 
@@ -1099,6 +1112,14 @@ struct TRINITY_DLL_DECL mob_shadowsword_lifeshaperAI : public ScriptedAI
         canFunnelHP = true;
     }
 
+    void JustDied(Unit* killer)
+    {
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+            me->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        else
+            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+    }
+
     void EnterEvadeMode()
     {
         if (CreatureGroup *formation = me->GetFormation())
@@ -1193,6 +1214,14 @@ struct TRINITY_DLL_DECL mob_shadowsword_manafiendAI : public ScriptedAI
         CheckTimer = 1000;
     }
 
+    void JustDied(Unit* killer)
+    {
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+            me->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        else
+            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+    }
+
     void EnterEvadeMode()
     {
         if (CreatureGroup *formation = me->GetFormation())
@@ -1276,6 +1305,14 @@ struct TRINITY_DLL_DECL mob_shadowsword_soulbinderAI : public ScriptedAI
         CurseOfExhaustion = urand(4000, 8000);
         Domination = urand(6000, 10000);
         FlashOfDarkness = urand(2000, 4000);
+    }
+
+    void JustDied(Unit* killer)
+    {
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+            me->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        else
+            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
     }
 
     void EnterEvadeMode()
@@ -1363,6 +1400,14 @@ struct TRINITY_DLL_DECL mob_shadowsword_vanquisherAI : public ScriptedAI
         ClearCastQueue();
         Cleave = urand(5000, 16000);
         MeltArmor = urand(3000, 10000);
+    }
+
+    void JustDied(Unit* killer)
+    {
+        if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+            me->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        else
+            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
     }
 
     void EnterEvadeMode()
@@ -1561,23 +1606,31 @@ CreatureAI* GetAI_mob_volatile_fiend(Creature *_Creature)
 
 struct TRINITY_DLL_DECL npc_SWP_gatekeeperAI : public Scripted_NoMovementAI
 {
-    npc_SWP_gatekeeperAI(Creature *c) : Scripted_NoMovementAI(c) { }
+    npc_SWP_gatekeeperAI(Creature *c) : Scripted_NoMovementAI(c) { me->SetAggroRange(20.0f); }
 
     void Reset()
-    { }
+    {
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    }
 
-    void EnterCombat(Unit*) { return;}
+    void EnterCombat(Unit* who)
+    {
+        Player* plr = who->GetCharmerOrOwnerPlayerOrPlayerItself();
+        if(plr)
+            ExilePlayer(plr);
+    }
 
     void MoveInLineOfSight(Unit *who)
     {
         if(who->GetTypeId() != TYPEID_PLAYER)
             return;
 
-        if(((Player*)who)->isGameMaster())
+        if(who->ToPlayer()->isGameMaster())
             return;
 
         if(me->IsWithinDistInMap(who, 20))
-            ExilePlayer(((Player*)who));
+            ExilePlayer(who->ToPlayer());
     }
 
     void ExilePlayer(Player* player)
