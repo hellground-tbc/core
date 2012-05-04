@@ -11726,7 +11726,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, 
 
     // Aura added by spell can`t trigger from self (prevent drop charges/do triggers)
     // But except periodic triggers (can triggered from self)
-    if (procSpell && procSpell->Id == spellProto->Id && !(spellProto->procFlags & PROC_FLAG_ON_TAKE_PERIODIC) && !(spellProto->procFlags & SPELL_ATTR_EX4_CANT_PROC_FROM_SELFCAST))
+    if (procSpell && procSpell->Id == spellProto->Id && !(spellProto->procFlags & PROC_FLAG_ON_TAKE_PERIODIC) && !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_CANT_PROC_FROM_SELFCAST))
         return false;
 
     // Check if current equipment allows aura to proc
