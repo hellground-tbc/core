@@ -53,6 +53,7 @@ EndContentData */
 #########*/
 
 #define QUEST_CLUCK         3861
+#define CHICKEN_HELLO_TEXT  50
 #define EMOTE_A_HELLO       "looks up at you quizzically. Maybe you should inspect it?"
 #define EMOTE_H_HELLO       "looks at you unexpectadly."
 #define CLUCK_TEXT2         "starts pecking at the feed."
@@ -70,7 +71,7 @@ struct TRINITY_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
         ResetFlagTimer = 120000;
 
         me->setFaction(FACTION_CHICKEN);
-        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+        me->RemoveFlag(UNIT_NPC_FLAGS, (UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER));
     }
 
     void EnterCombat(Unit *who) {}
@@ -109,7 +110,7 @@ bool ReceiveEmote_npc_chicken_cluck( Player *player, Creature *_Creature, uint32
             {
                 if( player->GetQuestStatus(QUEST_CLUCK) == QUEST_STATUS_NONE )
                 {
-                    _Creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+                    _Creature->SetFlag(UNIT_NPC_FLAGS, (UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER));
                     _Creature->setFaction(FACTION_FRIENDLY);
                     _Creature->MonsterTextEmote(EMOTE_A_HELLO, 0);
                 }
@@ -129,6 +130,16 @@ bool ReceiveEmote_npc_chicken_cluck( Player *player, Creature *_Creature, uint32
     return true;
 }
 
+bool GossipHello_npc_chicken_cluck(Player *player, Creature *_Creature)
+{
+    if (_Creature->isQuestGiver())
+        player->PrepareQuestMenu(_Creature->GetGUID());
+
+    player->SEND_GOSSIP_MENU(CHICKEN_HELLO_TEXT, _Creature->GetGUID());
+
+    return true;
+}
+
 bool QuestAccept_npc_chicken_cluck(Player *player, Creature *_Creature, const Quest *_Quest )
 {
     if(_Quest->GetQuestId() == QUEST_CLUCK)
@@ -140,7 +151,10 @@ bool QuestAccept_npc_chicken_cluck(Player *player, Creature *_Creature, const Qu
 bool QuestComplete_npc_chicken_cluck(Player *player, Creature *_Creature, const Quest *_Quest)
 {
     if(_Quest->GetQuestId() == QUEST_CLUCK)
+    {
+        _Creature->CastSpell(_Creature, 13563, false);  // summon chicken egg as reward
         ((npc_chicken_cluckAI*)_Creature->AI())->Reset();
+    }
 
     return true;
 }
@@ -2645,6 +2659,7 @@ void AddSC_npcs_special()
     newscript->Name = "npc_chicken_cluck";
     newscript->GetAI = &GetAI_npc_chicken_cluck;
     newscript->pReceiveEmote =  &ReceiveEmote_npc_chicken_cluck;
+    newscript->pGossipHello =  &GossipHello_npc_chicken_cluck;
     newscript->pQuestAcceptNPC =   &QuestAccept_npc_chicken_cluck;
     newscript->pQuestRewardedNPC = &QuestComplete_npc_chicken_cluck;
     newscript->RegisterSelf();
