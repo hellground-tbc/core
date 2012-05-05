@@ -4865,8 +4865,31 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
     {
         case SPELLFAMILY_WARRIOR:
         {
+            // Heroic Strike
+            if (m_spellInfo->SpellFamilyFlags & 0x40)
+            {
+                switch (m_spellInfo->Id)
+                {
+                    // Heroic Strike r10 + r11
+                    case 29707:
+                    case 30324:
+                    {
+                        Unit::AuraList const& decSpeedList = unitTarget->GetAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
+                        for (Unit::AuraList::const_iterator iter = decSpeedList.begin(); iter != decSpeedList.end(); ++iter)
+                        {
+                            if ((*iter)->GetSpellProto()->SpellIconID == 15 && (*iter)->GetSpellProto()->Dispel == 0)
+                            {
+                                fixed_bonus += (m_spellInfo->Id == 29707) ? 61 : 72;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
             // Devastate bonus and sunder armor refresh
-            if (m_spellInfo->SpellVisual == 671 && m_spellInfo->SpellIconID == 1508)
+            else if (m_spellInfo->SpellVisual == 671 && m_spellInfo->SpellIconID == 1508)
             {
                 uint32 stack = 0;
 
