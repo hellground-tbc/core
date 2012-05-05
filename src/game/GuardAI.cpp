@@ -62,7 +62,6 @@ void GuardAI::EnterEvadeMode()
     if (!m_creature->isAlive())
     {
         DEBUG_LOG("Creature stopped attacking because he's dead [guid=%u]", m_creature->GetGUIDLow());
-        m_creature->GetMotionMaster()->StopMovement();
         m_creature->GetMotionMaster()->MoveIdle();
 
         i_state = STATE_NORMAL;

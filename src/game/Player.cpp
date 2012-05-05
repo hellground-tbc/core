@@ -509,7 +509,7 @@ void Player::CleanupsBeforeDelete()
             if (gamemaster)
             {
                 gamemaster->setFollowTarget(0);
-                gamemaster->GetMotionMaster()->Clear(true);
+                gamemaster->GetUnitStateMgr().InitDefaults(true);
             }
             setGMFollow(0);
         }
@@ -19060,11 +19060,7 @@ void Player::SummonIfPossible(bool agree, uint64 summonerGUID)
         return;
 
     // stop taxi flight at summon
-    if (IsTaxiFlying())
-    {
-        GetMotionMaster()->MovementExpired();
-        CleanupAfterTaxiFlight();
-    }
+    InterruptTaxiFlying();
 
     // drop flag at summon
     if (BattleGround *bg = GetBattleGround())
@@ -20374,4 +20370,18 @@ BattleGroundBracketId Player::GetBattleGroundBracketIdFromLevel(BattleGroundType
         return BG_BRACKET_ID_LAST;
 
     return BattleGroundBracketId(bracket_id);
+}
+
+void Player::InterruptTaxiFlying()
+{
+    // stop flight if need
+    if (IsTaxiFlying())
+    {
+        GetUnitStateMgr().DropAction(UNIT_ACTION_TAXI);
+        m_taxi.ClearTaxiDestinations();
+        GetUnitStateMgr().InitDefaults(false);
+    }
+    // save only in non-flight case
+    else
+        SaveRecallPosition();
 }

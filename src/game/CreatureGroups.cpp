@@ -219,10 +219,8 @@ void CreatureGroup::FormationReset(bool dismiss)
                 if (dismiss)
                     mem->GetMotionMaster()->Initialize();
                 else
-                {
-                    mem->GetMotionMaster()->Clear(false);
                     mem->GetMotionMaster()->MoveIdle();
-                }
+
                 sLog.outDebug("Set %s movement for member GUID: %u", dismiss ? "default" : "idle", mem->GetGUIDLow());
             }
         }

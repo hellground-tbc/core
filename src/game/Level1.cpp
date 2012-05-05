@@ -998,14 +998,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             ChatHandler(target).PSendSysMessage(LANG_SUMMONED_BY, GetName());
 
         // stop flight if need
-        if (target->IsTaxiFlying())
-        {
-            target->GetMotionMaster()->MovementExpired();
-            target->CleanupAfterTaxiFlight();
-        }
-        // save only in non-flight case
-        else
-            target->SaveRecallPosition();
+        m_session->GetPlayer()->InterruptTaxiFlying();
 
         // before GM
         float x,y,z;
@@ -1127,14 +1120,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             ChatHandler(target).PSendSysMessage(LANG_APPEARING_TO, _player->GetName());
 
         // stop flight if need
-        if (_player->IsTaxiFlying())
-        {
-            _player->GetMotionMaster()->MovementExpired();
-            _player->CleanupAfterTaxiFlight();
-        }
-        // save only in non-flight case
-        else
-            _player->SaveRecallPosition();
+        _player->InterruptTaxiFlying();
 
         // to point to see at target with same orientation
         float x,y,z;
@@ -1155,14 +1141,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         if (Player::LoadPositionFromDB(map,x,y,z,o,in_flight,guid))
         {
             // stop flight if need
-            if (_player->IsTaxiFlying())
-            {
-                _player->GetMotionMaster()->MovementExpired();
-                _player->CleanupAfterTaxiFlight();
-            }
-            // save only in non-flight case
-            else
-                _player->SaveRecallPosition();
+            _player->InterruptTaxiFlying();
 
             _player->TeleportTo(map, x, y, z,_player->GetOrientation());
             return true;
@@ -1215,11 +1194,7 @@ bool ChatHandler::HandleRecallCommand(const char* args)
     }
 
     // stop flight if need
-    if (chr->IsTaxiFlying())
-    {
-        chr->GetMotionMaster()->MovementExpired();
-        chr->CleanupAfterTaxiFlight();
-    }
+    chr->InterruptTaxiFlying();
 
     chr->TeleportTo(chr->m_recallMap, chr->m_recallX, chr->m_recallY, chr->m_recallZ, chr->m_recallO);
     return true;
@@ -2262,14 +2237,7 @@ bool ChatHandler::HandleTeleCommand(const char * args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     _player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
     return true;
@@ -2565,14 +2533,7 @@ bool ChatHandler::HandleTeleNameCommand(const char * args)
             ChatHandler(chr).PSendSysMessage(LANG_TELEPORTED_TO_BY, GetName());
 
         // stop flight if need
-        if (chr->IsTaxiFlying())
-        {
-            chr->GetMotionMaster()->MovementExpired();
-            chr->CleanupAfterTaxiFlight();
-        }
-        // save only in non-flight case
-        else
-            chr->SaveRecallPosition();
+        chr->InterruptTaxiFlying();
 
         chr->TeleportTo(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation);
     }
@@ -2643,14 +2604,7 @@ bool ChatHandler::HandleTeleGroupCommand(const char * args)
             ChatHandler(pl).PSendSysMessage(LANG_TELEPORTED_TO_BY, GetName());
 
         // stop flight if need
-        if (pl->IsTaxiFlying())
-        {
-            pl->GetMotionMaster()->MovementExpired();
-            pl->CleanupAfterTaxiFlight();
-        }
-        // save only in non-flight case
-        else
-            pl->SaveRecallPosition();
+        pl->InterruptTaxiFlying();
 
         pl->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
     }
@@ -2736,14 +2690,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
             ChatHandler(pl).PSendSysMessage(LANG_SUMMONED_BY, GetName());
 
         // stop flight if need
-        if (pl->IsTaxiFlying())
-        {
-            pl->GetMotionMaster()->MovementExpired();
-            pl->CleanupAfterTaxiFlight();
-        }
-        // save only in non-flight case
-        else
-            pl->SaveRecallPosition();
+        pl->InterruptTaxiFlying();
 
         // before GM
         float x,y,z;
@@ -2784,14 +2731,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     TerrainInfo const *map = sTerrainMgr.LoadTerrain(mapid);
     float z = map->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
@@ -2834,14 +2774,7 @@ bool ChatHandler::HandleGoXYZCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
 
@@ -2907,14 +2840,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     float z = map->GetTerrain()->GetWaterOrGroundLevel(x, y, MAX_HEIGHT);
     _player->TeleportTo(zoneEntry->mapid, x, y, z, _player->GetOrientation());
@@ -2954,14 +2880,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     MapEntry const *mapEntry = sMapStore.LookupEntry(mapid);
 

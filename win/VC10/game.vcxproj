@@ -363,6 +363,7 @@
     <ClCompile Include="..\..\src\game\QuestDef.cpp" />
     <ClCompile Include="..\..\src\game\ReputationMgr.cpp" />
     <ClCompile Include="..\..\src\game\ScriptMgr.cpp" />
+    <ClCompile Include="..\..\src\game\StateMgr.cpp" />
     <ClCompile Include="..\..\src\game\UpdateData.cpp" />
     <ClCompile Include="..\..\src\game\vmap\BIH.cpp" />
     <ClCompile Include="..\..\src\game\vmap\MapTree.cpp" />
@@ -534,6 +535,8 @@
     <ClInclude Include="..\..\src\game\QuestDef.h" />
     <ClInclude Include="..\..\src\game\ReputationMgr.h" />
     <ClInclude Include="..\..\src\game\ScriptMgr.h" />
+    <ClInclude Include="..\..\src\game\StateMgr.h" />
+    <ClInclude Include="..\..\src\game\StateMgrImpl.h" />
     <ClInclude Include="..\..\src\game\UpdateData.h" />
     <ClInclude Include="..\..\src\game\vmap\BIH.h" />
     <ClInclude Include="..\..\src\game\vmap\IVMapManager.h" />

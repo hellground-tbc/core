@@ -52,7 +52,7 @@ void WorldSession::HandleBattleGroundHelloOpcode(WorldPacket & recv_data)
         return;
 
     // Stop the npc if moving
-    unit->GetMotionMaster()->StopMovement();
+    unit->StopMoving();
 
     BattleGroundTypeId bgTypeId = sBattleGroundMgr.GetBattleMasterBG(unit->GetEntry());
 
@@ -447,11 +447,7 @@ void WorldSession::HandleBattleGroundPlayerPortOpcode(WorldPacket &recv_data)
                     _player->SpawnCorpseBones();
                 }
                 // stop taxi flight at port
-                if (_player->IsTaxiFlying())
-                {
-                    _player->GetMotionMaster()->MovementExpired();
-                    _player->m_taxi.ClearTaxiDestinations();
-                }
+                _player->InterruptTaxiFlying();
 
                 queueSlot = _player->GetBattleGroundQueueIndex(bgQueueTypeId);
                 sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, _player->GetTeam(), queueSlot, STATUS_IN_PROGRESS, 0, bg->GetStartTime());

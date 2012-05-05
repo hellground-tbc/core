@@ -162,7 +162,6 @@ struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
 
         if (!m_creature->isInCombat() && !patrol && OnPath_Delay < diff)
         {
-            m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MovePath(PATH_FINAL, true);
             patrol = true;
         }

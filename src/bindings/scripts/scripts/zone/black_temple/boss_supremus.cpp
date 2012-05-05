@@ -339,7 +339,6 @@ struct TRINITY_DLL_DECL npc_volcanoAI : public Scripted_NoMovementAI
         CastTimer = 1000;
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->SetStunned(true);
     }
 
     void EnterCombat(Unit *who) {}

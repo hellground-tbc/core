@@ -2094,7 +2094,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                         target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                         target->SetHealth(1);
                         ((Player*)target)->setRegenTimer(60000);
-                        target->SetStunned(true);
+                        target->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
                     }
                 }
                 return 3000;
@@ -2132,7 +2132,7 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
                     {
                         target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                         target->SetHealth(target->GetMaxHealth());
-                        target->SetStunned(false);
+                        target->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
                     }
                 }
                 m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, NULL);
@@ -2681,7 +2681,7 @@ struct TRINITY_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovemen
 
     void EnterCombat(Unit* who)
     {
-        m_creature->SetStunned(true);
+        m_creature->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
         m_creature->CombatStart(who);
         if(Unit* Deathwail = FindCreature(22006, 100.0, m_creature))
             ((mob_shadowlord_deathwailAI*)((Creature*) Deathwail)->AI())->felfire = true;

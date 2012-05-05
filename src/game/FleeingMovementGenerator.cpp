@@ -18,160 +18,100 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "Creature.h"
-#include "MapManager.h"
 #include "FleeingMovementGenerator.h"
-#include "ObjectAccessor.h"
-#include "VMapFactory.h"
-#include "CreatureAI.h"
+
+#include "Unit.h"
+#include "CreatureAIImpl.h"
 
 #include "movement/MoveSplineInit.h"
 #include "movement/MoveSpline.h"
 
-#define MIN_QUIET_DISTANCE 28.0f
-#define MAX_QUIET_DISTANCE 43.0f
-
-template<class T>
-void FleeingMovementGenerator<T>::_setTargetLocation(T &owner)
+template<class UNIT>
+void FleeingMovementGenerator<UNIT>::_moveToNextLocation(UNIT &unit)
 {
-    // ignore in case other no reaction state
-    if (owner.hasUnitState(UNIT_STAT_CAN_NOT_REACT & ~UNIT_STAT_FLEEING))
+    Position dest;
+    if (!_getPoint(unit, dest))
         return;
 
-    float x, y, z;
-    if (!_getPoint(owner, x, y, z))
-        return;
-
-    Movement::MoveSplineInit init(owner);
-    init.MoveTo(x,y,z);
+    Movement::MoveSplineInit init(unit);
+    init.MoveTo(dest.x, dest.y, dest.z);
     init.SetWalk(false);
     init.Launch();
 
-    i_nextCheckTime.Reset(urand(500,1000));
+    _nextCheckTime.Reset(urand(500,1000));
 }
 
-template<class T>
-bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float &z)
+template<class UNIT>
+bool FleeingMovementGenerator<UNIT>::_getPoint(UNIT &unit, Position &dest)
 {
-    Position temp;
-
-    float angle = i_cur_angle;
+    // _angle is orientation for running like hell from caster in straight line :p
+    float angle = _angle;
     if (roll_chance_i(33))
-    {
-        switch (urand(1, 7))
-        {
-            case 1:
-                angle = i_cur_angle + M_PI/4.0f;
-                break;
-            case 2:
-                angle = i_cur_angle + M_PI/2.0f;
-                break;
-            case 3:
-                angle = i_cur_angle - M_PI/4.0f;
-                break;
-            case 4:
-                angle = i_cur_angle - M_PI/2.0f;
-                break;
-            case 5:
-                angle = i_cur_angle + M_PI*3/4.0f;
-                break;
-            case 6:
-                angle = i_cur_angle - M_PI*3/4.0f;
-                break;
-            case 7:
-                angle = i_cur_angle + M_PI;
-                break;
-        }
-    }
+        angle += RAND(M_PI/4.0f, M_PI/2.0f, -M_PI/4.0f, -M_PI/2.0f, M_PI*3/4.0f, -M_PI*3/4.0f, M_PI);
 
     // destination point
-    owner.GetValidPointInAngle(temp, 8.0f, angle, true, true);
-    x = temp.x;
-    y = temp.y;
-    z = temp.z;
+    unit.GetValidPointInAngle(dest, 8.0f, angle, true, true);
     return true;
 }
 
-template<class T>
-void FleeingMovementGenerator<T>::Initialize(T &owner)
+template<class UNIT>
+void FleeingMovementGenerator<UNIT>::Initialize(UNIT &unit)
 {
-    Unit * fright = owner.GetMap()->GetUnit(i_frightGUID);
-    if (!fright)
-        return;
+    if (Unit* pFright = unit.GetUnit(_frightGUID))
+        _angle = pFright->GetAngle(&unit);
+    else
+        _angle = unit.GetOrientation();
 
-    owner.addUnitState(UNIT_STAT_FLEEING);
+    _nextCheckTime.Reset(0);
 
-    _Init(owner);
-
-    i_dest_x = i_caster_x = fright->GetPositionX();
-    i_dest_y = i_caster_y = fright->GetPositionY();
-    i_dest_z = i_caster_z = fright->GetPositionZ();
-
-    i_cur_angle = fright->GetAngle(&owner);
-
-    _setTargetLocation(owner);
+    unit.StopMoving();
+    unit.addUnitState(UNIT_STAT_FLEEING);
 }
 
-template<>
-void FleeingMovementGenerator<Creature>::_Init(Creature &owner)
+template<class UNIT>
+bool FleeingMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 & time_diff)
 {
-    is_water_ok = owner.CanSwim();
-    is_land_ok  = owner.CanWalk();
-}
-
-template<>
-void FleeingMovementGenerator<Player>::_Init(Player &)
-{
-    is_water_ok = true;
-    is_land_ok  = true;
-}
-
-template<>
-void FleeingMovementGenerator<Player>::Finalize(Player &owner)
-{
-    owner.clearUnitState(UNIT_STAT_FLEEING);
-}
-
-template<>
-void FleeingMovementGenerator<Creature>::Finalize(Creature &owner)
-{
-    owner.clearUnitState(UNIT_STAT_FLEEING);
-}
-
-template<class T>
-void FleeingMovementGenerator<T>::Interrupt(T &owner)
-{
-}
-
-template<class T>
-void FleeingMovementGenerator<T>::Reset(T &owner)
-{
-    Initialize(owner);
-}
-
-template<class T>
-bool FleeingMovementGenerator<T>::Update(T &owner, const uint32 & time_diff)
-{
-    if (!&owner || !owner.isAlive())
-        return false;
-
-    // ignore in case other no reaction state
-    if (owner.hasUnitState(UNIT_STAT_CAN_NOT_REACT & ~UNIT_STAT_FLEEING))
+    // I think that with action queue that should NOT be possible // to check :P
+    if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE))
+    {
+        unit.StopMoving();
         return true;
+    }
 
-    i_nextCheckTime.Update(time_diff);
-    if (i_nextCheckTime.Passed() && owner.movespline->Finalized())
-        _setTargetLocation(owner);
+    _nextCheckTime.Update(time_diff);
+    if (_nextCheckTime.Passed() && unit.IsStopped())
+        _moveToNextLocation(unit);
 
     return true;
+}
+
+template<class UNIT>
+void FleeingMovementGenerator<UNIT>::Finalize(UNIT &unit)
+{
+    Interrupt(unit);
+
+    unit.clearUnitState(UNIT_STAT_FLEEING);
+    unit.AddEvent(new AttackResumeEvent(unit), ATTACK_DISPLAY_DELAY);
+}
+
+template<class UNIT>
+void FleeingMovementGenerator<UNIT>::Interrupt(UNIT &unit)
+{
+    unit.StopMoving();
+}
+
+template<class UNIT>
+void FleeingMovementGenerator<UNIT>::Reset(UNIT &unit)
+{
+    Initialize(unit);
 }
 
 template void FleeingMovementGenerator<Player>::Initialize(Player &);
 template void FleeingMovementGenerator<Creature>::Initialize(Creature &);
-template bool FleeingMovementGenerator<Player>::_getPoint(Player &, float &, float &, float &);
-template bool FleeingMovementGenerator<Creature>::_getPoint(Creature &, float &, float &, float &);
-template void FleeingMovementGenerator<Player>::_setTargetLocation(Player &);
-template void FleeingMovementGenerator<Creature>::_setTargetLocation(Creature &);
+template bool FleeingMovementGenerator<Player>::_getPoint(Player &, Position &);
+template bool FleeingMovementGenerator<Creature>::_getPoint(Creature &, Position &);
+template void FleeingMovementGenerator<Player>::_moveToNextLocation(Player &);
+template void FleeingMovementGenerator<Creature>::_moveToNextLocation(Creature &);
 template void FleeingMovementGenerator<Player>::Interrupt(Player &);
 template void FleeingMovementGenerator<Creature>::Interrupt(Creature &);
 template void FleeingMovementGenerator<Player>::Reset(Player &);
@@ -179,33 +119,13 @@ template void FleeingMovementGenerator<Creature>::Reset(Creature &);
 template bool FleeingMovementGenerator<Player>::Update(Player &, const uint32 &);
 template bool FleeingMovementGenerator<Creature>::Update(Creature &, const uint32 &);
 
-void TimedFleeingMovementGenerator::Finalize(Unit &owner)
+bool TimedFleeingMovementGenerator::Update(Unit & unit, const uint32 & time_diff)
 {
-    owner.clearUnitState(UNIT_STAT_FLEEING);
-    if (Unit* victim = owner.getVictim())
-    {
-        if (owner.isAlive())
-        {
-            owner.AttackStop();
-            ((Creature*)&owner)->AI()->AttackStart(victim);
-        }
-    }
-}
-
-bool TimedFleeingMovementGenerator::Update(Unit & owner, const uint32 & time_diff)
-{
-    if (!owner.isAlive())
-        return false;
-
-    // ignore in case other no reaction state
-    if (owner.hasUnitState(UNIT_STAT_CAN_NOT_REACT & ~UNIT_STAT_FLEEING))
-        return true;
-
-    i_totalFleeTime.Update(time_diff);
-    if (i_totalFleeTime.Passed())
+    _totalFleeTime.Update(time_diff);
+    if (_totalFleeTime.Passed())
         return false;
 
     // This calls grant-parent Update method hiden by FleeingMovementGenerator::Update(Creature &, const uint32 &) version
     // This is done instead of casting Unit& to Creature& and call parent method, then we can use Unit directly
-    return MovementGeneratorMedium< Creature, FleeingMovementGenerator<Creature> >::Update(owner, time_diff);
+    return MovementGeneratorMedium< Creature, FleeingMovementGenerator<Creature> >::Update(unit, time_diff);
 }

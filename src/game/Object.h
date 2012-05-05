@@ -140,8 +140,10 @@ class TRINITY_DLL_SPEC Object
             ClearUpdateMask(true);
         }
 
-        const uint64& GetGUID() const { return GetUInt64Value(0); }
         ObjectGuid const& GetObjectGuid() const { return GetGuidValue(OBJECT_FIELD_GUID); }
+        std::string GetGuidStr() const { return GetObjectGuid().GetString(); }
+
+        const uint64& GetGUID() const { return GetUInt64Value(0); }
         uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(0)); }
         uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(0)); }
         uint32 GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(0)); }

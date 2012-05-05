@@ -280,11 +280,9 @@ void WorldSession::HandleGossipHelloOpcode(WorldPacket & recv_data)
     //    GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     if (unit->isArmorer() || unit->isCivilian() || unit->isQuestGiver() || unit->isServiceProvider())
-    {
-        unit->GetMotionMaster()->StopMovement();
-    }
+        unit->StopMoving();
 
-    // If spiritguide, no need for gossip menu, just put player into resurrect queue
+    // If spirit guide, no need for gossip menu, just put player into resurrect queue
     if (unit->isSpiritGuide())
     {
         BattleGround *bg = _player->GetBattleGround();

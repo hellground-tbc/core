@@ -80,7 +80,7 @@ void PetAI::_stopAttack()
     if (!m_creature->isAlive())
     {
         DEBUG_LOG("Creature stoped attacking cuz his dead [guid=%u]", m_creature->GetGUIDLow());
-        m_creature->GetMotionMaster()->Clear(false);
+
         m_creature->GetMotionMaster()->MoveIdle();
         m_creature->CombatStop();
         m_creature->getHostilRefManager().deleteReferences();
@@ -100,10 +100,7 @@ void PetAI::UpdateMotionMaster()
         m_creature->GetMotionMaster()->MoveFollow(m_owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
     }
     else
-    {
-        m_creature->GetMotionMaster()->Clear(false, true);
         m_creature->GetMotionMaster()->MoveIdle();
-    }
 }
 
 void PetAI::PrepareSpellForAutocast(uint32 spellID)
@@ -213,8 +210,6 @@ void PetAI::AutocastPreparedSpells()
 
         if (m_creature->isPet())
             ((Pet*)m_creature)->CheckLearning(spell->m_spellInfo->Id);
-
-        //m_creature->GetMotionMaster()->StopMovement();
 
         spell->prepare(&targets);
     }
@@ -337,8 +332,6 @@ void ImpAI::AttackStart(Unit *victim)
 
     if (me->Attack(victim, true))
     {
-        me->GetMotionMaster()->Clear(false);
-        //DEBUG_LOG("Creature %s tagged a victim to kill [guid=%u]", me->GetName(), victim->GetGUIDLow());
         me->GetMotionMaster()->MoveChase(victim, 0, 0);
         m_chasing = true;
     }
@@ -377,13 +370,11 @@ void ImpAI::UpdateAI(const uint32 diff)
         if (dist < 30 && m_chasing)
         {
             m_creature->clearUnitState(UNIT_STAT_FOLLOW);
-            m_creature->GetMotionMaster()->Clear(false);
             m_creature->GetMotionMaster()->MoveIdle();
             m_chasing = false;
         }
         if (dist > 30 && !m_chasing)
         {
-            me->GetMotionMaster()->Clear(false);
             m_creature->GetMotionMaster()->MoveChase(target);
             m_chasing = true;
         }

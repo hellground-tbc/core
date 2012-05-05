@@ -2216,8 +2216,8 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         m_caster->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
         if (m_caster->GetTypeId() == TYPEID_UNIT)
         {
-            m_caster->GetMotionMaster()->StopMovement();
-            //m_caster->DisableSpline();
+            m_caster->StopMoving();
+            m_caster->DisableSpline();
         }
     }
 

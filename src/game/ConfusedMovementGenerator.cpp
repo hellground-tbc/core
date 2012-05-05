@@ -18,96 +18,84 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include "ConfusedMovementGenerator.h"
+
 #include "Creature.h"
 #include "Player.h"
-#include "MapManager.h"
-#include "Opcodes.h"
-#include "ConfusedMovementGenerator.h"
-#include "VMapFactory.h"
 
 #include "movement/MoveSplineInit.h"
 #include "movement/MoveSpline.h"
 
-template<class T>
-void ConfusedMovementGenerator<T>::Initialize(T &unit)
+template<class UNIT>
+void ConfusedMovementGenerator<UNIT>::Initialize(UNIT &unit)
 {
-    i_nextMove = 0;
-
-    GenerateMovement(unit);
+    _generateMovement(unit);
 
     unit.StopMoving();
     unit.addUnitState(UNIT_STAT_CONFUSED);
 }
 
-template<class T>
-void ConfusedMovementGenerator<T>::Interrupt(T &unit)
+
+template<class UNIT>
+void ConfusedMovementGenerator<UNIT>::Reset(UNIT &u)
 {
+    Initialize(u);
 }
 
-template<class T>
-void ConfusedMovementGenerator<T>::GenerateMovement(T &unit)
+template<class UNIT>
+void ConfusedMovementGenerator<UNIT>::Interrupt(UNIT &unit)
 {
-    for (uint8 idx = 0; idx <= MAX_RANDOM_POINTS; ++idx)
-        unit.GetValidPointInAngle(randomPosition[idx], WANDER_DISTANCE, frand(0, 2*M_PI), true, true);
-}
-
-template<class T>
-void ConfusedMovementGenerator<T>::Reset(T &unit)
-{
-    i_nextMove = 1;
-    i_nextMoveTime.Reset(0);
-
     unit.StopMoving();
-    unit.addUnitState(UNIT_STAT_CONFUSED);
 }
 
-template<class T>
-bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
+template<class UNIT>
+void ConfusedMovementGenerator<UNIT>::_generateMovement(UNIT &unit)
 {
-    // ignore in case other no reaction state
-    if (unit.hasUnitState(UNIT_STAT_CAN_NOT_REACT & ~UNIT_STAT_CONFUSED))
+    for (uint8 idx = 0; idx < MAX_RANDOM_POINTS; ++idx)
+        unit.GetValidPointInAngle(_randomPosition[idx], WANDER_DISTANCE, frand(0, 2*M_PI), true, true);
+}
+
+template<class UNIT>
+bool ConfusedMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
+{
+    // I think that with action queue that should NOT be possible // to check :P
+    if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE))
+    {
+        unit.StopMoving();
         return true;
-
-    if (i_nextMoveTime.Passed())
-    {
-        if (unit.movespline->Finalized())
-        {
-            i_nextMove = urand(0, MAX_RANDOM_POINTS);
-            i_nextMoveTime.Reset(urand(0, 1500));     // TODO: check the minimum reset time, should be probably higher
-        }
-    }
-    else
-    {
-        i_nextMoveTime.Update(diff);
-        if (i_nextMoveTime.Passed())
-        {
-            Movement::MoveSplineInit init(unit);
-            init.MoveTo(randomPosition[i_nextMove].x, randomPosition[i_nextMove].y, randomPosition[i_nextMove].z);
-            init.SetWalk(true);
-            init.Launch();
-        }
     }
 
+    _nextMoveTime.Update(diff);
+    if (_nextMoveTime.Passed())
+    {
+        uint32 nextMove = urand(0, MAX_RANDOM_POINTS-1);
+
+        Movement::MoveSplineInit init(unit);
+        init.MoveTo(_randomPosition[nextMove].x, _randomPosition[nextMove].y, _randomPosition[nextMove].z);
+        init.SetWalk(true);
+        init.Launch();
+
+        _nextMoveTime.Reset(urand(0, 2000));
+    }
     return true;
 }
 
-template<>
-void ConfusedMovementGenerator<Player>::Finalize(Player &unit)
+template<class UNIT>
+void ConfusedMovementGenerator<UNIT>::Finalize(UNIT &unit)
 {
+    Interrupt(unit);
+
     unit.clearUnitState(UNIT_STAT_CONFUSED);
+    unit.AddEvent(new AttackResumeEvent(unit), ATTACK_DISPLAY_DELAY);
 }
 
-template<>
-void ConfusedMovementGenerator<Creature>::Finalize(Creature &unit)
-{
-    unit.clearUnitState(UNIT_STAT_CONFUSED);
-}
-
-template void ConfusedMovementGenerator<Player>::Initialize(Player &player);
-template void ConfusedMovementGenerator<Creature>::Initialize(Creature &creature);
-template void ConfusedMovementGenerator<Player>::Interrupt(Player &player);
-template void ConfusedMovementGenerator<Creature>::Interrupt(Creature &creature);
-template void ConfusedMovementGenerator<Player>::Reset(Player &player);
-template void ConfusedMovementGenerator<Creature>::Reset(Creature &creature);
-template bool ConfusedMovementGenerator<Player>::Update(Player &player, const uint32 &diff);
-template bool ConfusedMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff);
+template void ConfusedMovementGenerator<Player>::Initialize(Player &);
+template void ConfusedMovementGenerator<Creature>::Initialize(Creature &);
+template void ConfusedMovementGenerator<Player>::Interrupt(Player &);
+template void ConfusedMovementGenerator<Creature>::Interrupt(Creature &);
+template void ConfusedMovementGenerator<Player>::Reset(Player &);
+template void ConfusedMovementGenerator<Creature>::Reset(Creature &);
+template bool ConfusedMovementGenerator<Player>::Update(Player &, const uint32 &);
+template bool ConfusedMovementGenerator<Creature>::Update(Creature &, const uint32 &);
+template void ConfusedMovementGenerator<Player>::Finalize(Player &);
+template void ConfusedMovementGenerator<Creature>::Finalize(Creature &);

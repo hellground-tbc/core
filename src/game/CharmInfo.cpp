@@ -241,10 +241,6 @@ void CharmInfo::HandleStayCommand()
     m_unit->AttackStop();
     m_unit->InterruptNonMeleeSpells(false);
 
-    m_unit->GetMotionMaster()->StopMovement();
-
-    // We are already in follow mode, just interrupt
-    m_unit->GetMotionMaster()->Clear(false, true);
     m_unit->GetMotionMaster()->MoveIdle();
 }
 
@@ -255,9 +251,6 @@ void CharmInfo::HandleFollowCommand()
     m_unit->AttackStop();
     m_unit->InterruptNonMeleeSpells(false);
 
-    m_unit->GetMotionMaster()->StopMovement();
-
-    // it will clear all movement generators
     m_unit->GetMotionMaster()->MoveFollow(m_unit->GetCharmerOrOwner(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 }
 
@@ -280,9 +273,6 @@ void CharmInfo::HandleAttackCommand(uint64 targetGUID)
     if (sWorld.getConfig(CONFIG_PET_LOS) && !m_unit->IsWithinLOSInMap(pTarget))
         return;
 
-    if (m_unit->hasUnitState(UNIT_STAT_FOLLOW))
-        m_unit->GetMotionMaster()->MovementExpired(false);
-
     if (Creature* pCharm = m_unit->ToCreature())
     {
         pCharm->AI()->AttackStart(pTarget);
@@ -302,6 +292,7 @@ void CharmInfo::HandleAttackCommand(uint64 targetGUID)
 
         m_unit->Attack(pTarget, true);
     }
+
     m_unit->SendPetAIReaction(targetGUID);
 }
 

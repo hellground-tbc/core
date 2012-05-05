@@ -813,7 +813,6 @@ void Spell::EffectDummy(uint32 i)
                     float x, y, z;
                     unitTarget->GetClosePoint(x,y,z, 0.0f, 0.0f, unitTarget->GetAngle(m_caster));
 
-                    m_caster->GetMotionMaster()->Clear(false, true);
                     m_caster->GetMotionMaster()->MovePoint(666, x, y, z);
                     break;
                 }
@@ -1573,11 +1572,10 @@ void Spell::EffectDummy(uint32 i)
                         plr->GetSession()->SendPacket(&data);
                         return;
                     }
+
                     if(unitTarget->GetTypeId() == TYPEID_UNIT)
-                    {
-                        unitTarget->GetMotionMaster()->Clear();
                         unitTarget->GetMotionMaster()->MovePoint(1, ok->GetPositionX(), ok->GetPositionY(), ok->GetPositionZ());
-                    }
+
                     return;
                 }
                 case 44997:                                 // Converting Sentry remove corpse
@@ -7098,7 +7096,7 @@ void Spell::EffectCharge2(uint32 /*i*/)
         z = m_targets.m_destZ;
 
         if (unitTarget && unitTarget->GetTypeId() != TYPEID_PLAYER)
-            unitTarget->GetMotionMaster()->StopMovement();
+            unitTarget->StopMoving();
     }
     else if (unitTarget && unitTarget != m_caster)
         unitTarget->GetContactPoint(m_caster, x, y, z, 3.666666f);

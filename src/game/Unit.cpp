@@ -260,7 +260,7 @@ bool CastSpellEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 Unit::Unit() :
     WorldObject(), i_motionMaster(this), movespline(new Movement::MoveSpline()),
-    m_ThreatManager(this), m_HostilRefManager(this),
+    m_ThreatManager(this), m_HostilRefManager(this), m_stateMgr(this),
     IsAIEnabled(false), NeedChangeAI(false), i_AI(NULL), i_disabledAI(NULL),
     m_procDeep(0), m_AI_locked(false), m_removedAurasCount(0)
 {
@@ -400,13 +400,43 @@ Unit::~Unit()
     assert(m_sharedVision.empty());
 }
 
+EventProcessor* Unit::GetEvents()
+{
+    return &m_Events;
+}
+
+void Unit::KillAllEvents(bool force)
+{
+    //MAPLOCK_WRITE(this, MAP_LOCK_TYPE_DEFAULT);
+    GetEvents()->KillAllEvents(force);
+}
+
+void Unit::AddEvent(BasicEvent* Event, uint64 e_time, bool set_addtime)
+{
+    //MAPLOCK_WRITE(this, MAP_LOCK_TYPE_DEFAULT);
+    if (set_addtime)
+        GetEvents()->AddEvent(Event, GetEvents()->CalculateTime(e_time), set_addtime);
+    else
+        GetEvents()->AddEvent(Event, e_time, set_addtime);
+}
+
+void Unit::UpdateEvents(uint32 update_diff, uint32 time)
+{
+    /*{
+        MAPLOCK_READ(this, MAP_LOCK_TYPE_DEFAULT);
+        GetEvents()->RenewEvents();
+    }*/
+
+    GetEvents()->Update(update_diff);
+}
+
 void Unit::Update(uint32 update_diff, uint32 p_time)
 {
     // WARNING! Order of execution here is important, do not change.
     // Spells must be processed with event system BEFORE they go to _UpdateSpells.
     // Or else we may have some SPELL_STATE_FINISHED spells stalled in pointers, that is bad.
 
-    m_Events.Update(update_diff);
+    UpdateEvents(update_diff, p_time);
 
     if (!IsInWorld())
         return;
@@ -440,7 +470,7 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
     ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, GetHealth() < GetMaxHealth()*0.35f);
 
     UpdateSplineMovement(p_time);
-    i_motionMaster.UpdateMotion(p_time);
+    GetUnitStateMgr().Update(p_time);
 }
 
 bool Unit::haveOffhandWeapon() const
@@ -9761,21 +9791,25 @@ void Unit::setDeathState(DeathState s)
         ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, false);
         ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, false);
 
-        // remove aurastates allowing special moves
+        // remove aura states allowing special moves
         ClearAllReactives();
         ClearDiminishings();
 
-        i_motionMaster.Clear(false,true);
-        i_motionMaster.MoveIdle();
+        GetUnitStateMgr().InitDefaults(false);
+
         StopMoving();
 
         //without this when removing IncreaseMaxHealth aura player may stuck with 1 hp
-        //do not why since in IncreaseMaxHealth currenthealth is checked
+        //do not why since in IncreaseMaxHealth current health is checked
         SetHealth(0);
     }
     else if (s == JUST_ALIVED)
     {
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)
+    }
+    else if (s == DEAD || s == CORPSE)
+    {
+        GetUnitStateMgr().DropAllStates();
     }
 
     if (m_deathState != ALIVE && s == ALIVE)
@@ -10671,21 +10705,22 @@ void Unit::CleanupsBeforeDelete()
 
     if (m_uint32Values)
     {
-        //A unit may be in removelist and not in world, but it is still in grid
+        //A unit may be in remove list and not in world, but it is still in grid
         //and may have some references during delete
         if (isAlive() && HasAuraType(SPELL_AURA_AOE_CHARM))
             Kill(this,true);
 
         RemoveAllAuras();
         InterruptNonMeleeSpells(true);
-        m_Events.KillAllEvents(false);                      // non-delatable (currently casted spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
+        KillAllEvents(false);                      // non-delatable (currently casted spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
         CombatStop();
         ClearComboPointHolders();
         DeleteThreatList();
         getHostilRefManager().setOnlineOfflineState(false);
         RemoveAllGameObjects();
         RemoveAllDynObjects();
-        GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
+
+        GetUnitStateMgr().InitDefaults(false);
     }
 }
 
@@ -11312,7 +11347,7 @@ void Unit::SetStandState(uint8 state)
 
 bool Unit::IsPolymorphed() const
 {
-    return GetSpellSpecific(getTransForm())==SPELL_MAGE_POLYMORPH;
+    return GetSpellSpecific(getTransForm()) == SPELL_MAGE_POLYMORPH;
 }
 
 void Unit::SetDisplayId(uint32 modelId)
@@ -11920,17 +11955,8 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
         pThis->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
     else
     {
-        Creature *c = ToCreature();
-        if (!c->GetMotionMaster()->empty())
-            if (MovementGenerator *movgen = c->GetMotionMaster()->top())
-                movgen->Interrupt(*c);
-
         Relocate(x, y, z);
         SendHeartBeat();
-
-        if (!c->GetMotionMaster()->empty())
-            if (MovementGenerator *movgen = c->GetMotionMaster()->top())
-                movgen->Reset(*c);
     }
 }
 
@@ -12217,139 +12243,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     }
 }
 
-void Unit::SetControlled(bool apply, UnitState state)
-{
-    if (apply)
-    {
-        if (hasUnitState(state))
-            return;
-
-        addUnitState(state);
-    }
-    else
-        clearUnitState(state);
-
-    switch (state)
-    {
-        case UNIT_STAT_STUNNED:
-            SetStunned(apply);
-            break;
-        case UNIT_STAT_ROOT:
-            SetRooted(apply);
-            break;
-        case UNIT_STAT_CONFUSED:
-            SetConfused(apply);
-            break;
-        case UNIT_STAT_FLEEING:
-            if (apply && HasAuraType(SPELL_AURA_MOD_CONFUSE))
-            {
-                clearUnitState(UNIT_STAT_FLEEING);
-                break;
-            }
-
-            SetFeared(apply);
-            break;
-        default:
-            break;
-    }
-
-    if (apply)
-        return;
-
-    if (HasAuraType(SPELL_AURA_MOD_FEAR) && !hasUnitState(UNIT_STAT_FLEEING | UNIT_STAT_CONFUSED))
-        SetFeared(true);
-
-    if (HasAuraType(SPELL_AURA_MOD_CONFUSE) && !hasUnitState(UNIT_STAT_CONFUSED))
-        SetConfused(true);
-
-    if (HasAuraType(SPELL_AURA_MOD_STUN) && !hasUnitState(UNIT_STAT_STUNNED))
-        SetStunned(true);
-
-    if (HasAuraType(SPELL_AURA_MOD_ROOT) && !hasUnitState(UNIT_STAT_ROOT | UNIT_STAT_STUNNED))
-        SetRooted(true);
-}
-
-void Unit::SetStunned(bool apply)
-{
-    if (apply)
-    {
-        SetUInt64Value(UNIT_FIELD_TARGET, 0);
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
-        CastStop();
-
-        // Creature specific
-        if (GetTypeId() != TYPEID_PLAYER)
-        {
-            StopMoving();
-            DisableSpline();
-        }
-        else
-            SetUnitMovementFlags(MOVEFLAG_NONE);    //Clear movement flags
-
-        SetStandState(UNIT_STAND_STATE_STAND);
-
-        WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8);
-        data << GetPackGUID();
-        data << uint32(0);
-        SendMessageToSet(&data,true);
-    }
-    else
-    {
-        if (isAlive() && getVictim())
-            SetUInt64Value(UNIT_FIELD_TARGET, getVictimGUID());
-
-        // don't remove UNIT_FLAG_DISABLE_ROTATE for pet when owner is mounted (disabled pet's interface)
-        Unit *pOwner = GetOwner();
-        if (!pOwner || (pOwner->GetTypeId() == TYPEID_PLAYER && !((Player *)pOwner)->IsMounted()))
-            RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
-
-        if (!hasUnitState(UNIT_STAT_ROOT))         // prevent allow move if have also root effect
-        {
-            WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 8+4);
-            data << GetPackGUID();
-            data << uint32(0);
-            SendMessageToSet(&data,true);
-        }
-    }
-}
-
-void Unit::SetRooted(bool apply)
-{
-    uint32 apply_stat = UNIT_STAT_ROOT;
-    if (apply)
-    {
-        //SetFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
-        if (GetTypeId() == TYPEID_PLAYER)
-        {
-            SetUnitMovementFlags(MOVEFLAG_NONE);
-
-            WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
-            data << GetPackGUID();
-            data << (uint32)2;
-            SendMessageToSet(&data,true);
-        }
-        else
-        {
-            StopMoving();
-            DisableSpline();
-        }
-    }
-    else
-    {
-        //RemoveFlag(UNIT_FIELD_FLAGS,(apply_stat<<16)); // probably wrong
-        if (!hasUnitState(UNIT_STAT_STUNNED))      // prevent allow move if have also stun effect
-        {
-            if (GetTypeId() == TYPEID_PLAYER)
-            {
-                WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 10);
-                data << GetPackGUID();
-                data << (uint32)2;
-                SendMessageToSet(&data,true);
-            }
-        }
-    }
-}
-
 void Unit::SendHeartBeat()
 {
     m_movementInfo.UpdateTime(WorldTimer::getMSTime());
@@ -12357,50 +12250,6 @@ void Unit::SendHeartBeat()
     data << GetPackGUID();
     data << m_movementInfo;
     SendMessageToSet(&data, true);
-}
-
-void Unit::SetFeared(bool apply)
-{
-    if (apply)
-    {
-        if (HasAuraType(SPELL_AURA_PREVENTS_FLEEING))
-            return;
-
-        CastStop();
-
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-
-        GetMotionMaster()->MovementExpired(false);
-
-        Unit *caster = NULL;
-        Unit::AuraList const& fearAuras = GetAurasByType(SPELL_AURA_MOD_FEAR);
-        if (!fearAuras.empty())
-            caster = GetMap()->GetUnit(fearAuras.front()->GetCasterGUID());
-
-        if (!caster)
-            caster = getAttackerForHelper();
-
-        GetMotionMaster()->MoveFleeing(caster, fearAuras.empty() ? sWorld.getConfig(CONFIG_CREATURE_FAMILY_FLEE_DELAY) : 0);
-    }
-    else
-    {
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-
-        GetMotionMaster()->MovementExpired(false);
-
-        if (GetTypeId() != TYPEID_PLAYER && isAlive())
-        {
-            Creature* c = ToCreature();
-            // restore appropriate movement generator
-            if (getVictim())
-                GetMotionMaster()->MoveChase(getVictim());
-            else
-                GetMotionMaster()->Initialize();
-        }
-    }
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SetClientControl(this, !apply);
 }
 
 void Unit::SetFlying(bool apply)
@@ -12428,36 +12277,6 @@ void Unit::SetFlying(bool apply)
         data << uint32(0);
         pPlayer->SendMessageToSet(&data, true);
     }
-}
-
-void Unit::SetConfused(bool apply)
-{
-    if (apply)
-    {
-        CastStop();
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
-
-        GetMotionMaster()->MovementExpired(false);
-        GetMotionMaster()->MoveConfused();
-    }
-    else
-    {
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
-
-        GetMotionMaster()->MovementExpired(false);
-
-        if (GetTypeId() != TYPEID_PLAYER && isAlive())
-        {
-            // restore appropriate movement generator
-            if (getVictim())
-                GetMotionMaster()->MoveChase(getVictim());
-            else
-                GetMotionMaster()->Initialize();
-        }
-    }
-
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SetClientControl(this, !apply);
 }
 
 void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
@@ -12505,7 +12324,6 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     if (GetTypeId() == TYPEID_UNIT)
     {
         ((Creature*)this)->AI()->OnCharmed(true);
-        GetMotionMaster()->Clear(false);
         GetMotionMaster()->MoveIdle();
     }
     else
@@ -12580,7 +12398,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     DeleteThreatList();
     SetCharmerGUID(0);
     RestoreFaction();
-    GetMotionMaster()->Initialize();
+    GetUnitStateMgr().InitDefaults(false);
 
     if (possess)
     {
@@ -13078,4 +12896,42 @@ bool Unit::RollPRD(float baseChance, float extraChance, uint32 spellId)
         return true;
 
     return false; 
+}
+
+void Unit::SetFeared(bool apply, Unit* target, uint32 time)
+{
+    if (apply)
+        GetMotionMaster()->MoveFleeing(target, time);
+    else
+        GetUnitStateMgr().DropAction(UNIT_ACTION_FEARED);
+}
+
+void Unit::SetConfused(bool apply)
+{
+    if (apply)
+    {
+        addUnitState(UNIT_STAT_CONFUSED);
+        GetMotionMaster()->MoveConfused();
+    }
+    else
+    {
+        clearUnitState(UNIT_STAT_CONFUSED);
+        GetUnitStateMgr().DropAction(UNIT_ACTION_CONFUSED);
+    }
+}
+
+void Unit::SetStunned(bool apply)
+{
+    if (apply)
+        GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
+    else
+        GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
+}
+
+void Unit::SetRooted(bool apply)
+{
+    if (apply)
+        GetUnitStateMgr().PushAction(UNIT_ACTION_ROOT);
+    else
+        GetUnitStateMgr().DropAction(UNIT_ACTION_ROOT);
 }

@@ -2188,6 +2188,8 @@ class TRINITY_DLL_SPEC Player : public Unit
         uint32 GetCachedZone() const { return m_zoneUpdateId; }
         uint32 GetCachedArea() const { return m_areaUpdateId; }
 
+        void InterruptTaxiFlying();
+
     protected:
 
         /*********************************************************/

@@ -556,6 +556,9 @@
     <ClCompile Include="..\..\src\game\movemap\PathFinder.cpp">
       <Filter>MoveMaps</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\StateMgr.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -1050,6 +1053,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\movemap\MoveMapSharedDefines.h">
       <Filter>MoveMaps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\StateMgr.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\StateMgrImpl.h">
+      <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

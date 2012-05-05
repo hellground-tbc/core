@@ -224,7 +224,7 @@ struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovemen
     void EnterCombat(Unit* who)
     {
         AttackerGUID = ((Player*)who)->GetGUID();
-        m_creature->SetStunned(true);
+        m_creature->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN, UNIT_ACTION_PRIORITY_END);
     }
 
     void DamageTaken(Unit *attacker, uint32 &damage)

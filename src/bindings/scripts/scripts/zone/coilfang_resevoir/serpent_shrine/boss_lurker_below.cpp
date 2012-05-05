@@ -229,7 +229,7 @@ struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public BossAI
                     me->SetReactState(REACT_PASSIVE);
 
                     me->SetSelection(0);
-                    me->GetMotionMaster()->MoveRotate(20000, RAND(ROTATE_DIRECTION_LEFT, ROTATE_DIRECTION_RIGHT));
+                   // me->GetMotionMaster()->MoveRotate(20000, RAND(ROTATE_DIRECTION_LEFT, ROTATE_DIRECTION_RIGHT));
 
                     ForceSpellCast(me, SPELL_SPOUT_VISUAL, INTERRUPT_AND_CAST_INSTANTLY);
 
@@ -325,7 +325,7 @@ struct TRINITY_DLL_DECL mob_coilfang_guardianAI : public ScriptedAI
 
         if (m_harmstringTimer < diff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_HARMSTRING);
+            AddSpellToCast(SPELL_HARMSTRING);
             m_harmstringTimer = 10500;
         }
         else
@@ -333,7 +333,7 @@ struct TRINITY_DLL_DECL mob_coilfang_guardianAI : public ScriptedAI
 
         if (m_arcingTimer < diff)
         {
-            AddSpellToCast(me->getVictim(), SPELL_ARCING_SMASH);
+            AddSpellToCast(SPELL_ARCING_SMASH);
             m_arcingTimer = urand(10000, 20000);
         }
         else

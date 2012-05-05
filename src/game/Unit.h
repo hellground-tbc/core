@@ -33,6 +33,7 @@
 #include "FollowerReference.h"
 #include "FollowerRefManager.h"
 #include "Utilities/EventProcessor.h"
+#include "StateMgr.h"
 #include "MotionMaster.h"
 #include "DBCStructure.h"
 #include <list>
@@ -861,6 +862,9 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         virtual void Update(uint32 update_diff, uint32 p_time);
 
+        void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); }
+        uint64 GetSelection() { return GetUInt64Value(UNIT_FIELD_TARGET); }
+
         void setAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
         void resetAttackTimer(WeaponAttackType type = BASE_ATTACK);
         uint32 getAttackTimer(WeaponAttackType type) const { return m_attackTimer[type]; }
@@ -1324,6 +1328,10 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
 
         // Event handler
         EventProcessor m_Events;
+        EventProcessor* GetEvents();
+        void UpdateEvents(uint32 update_diff, uint32 time);
+        void KillAllEvents(bool force);
+        void AddEvent(BasicEvent* Event, uint64 e_time, bool set_addtime = true);
 
         // stat system
         bool HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, float amount, bool apply);
@@ -1501,6 +1509,12 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         Player* GetPlayerByName(const char *name);
 
         MotionMaster* GetMotionMaster() { return &i_motionMaster; }
+        UnitStateMgr& GetUnitStateMgr() { return m_stateMgr; }
+
+        void SetFeared(bool apply,  Unit*, uint32 = 0);
+        void SetConfused(bool apply);
+        void SetStunned(bool apply);
+        void SetRooted(bool apply);
 
         bool IsStopped() const;
 
@@ -1513,12 +1527,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         uint32 HasUnitMovementFlag(uint32 f) const { return m_movementInfo.HasMovementFlag(MovementFlags(f)); }
         uint32 GetUnitMovementFlags() const { return m_movementInfo.GetMovementFlags(); }
         void SetUnitMovementFlags(uint32 f) { m_movementInfo.SetMovementFlags(MovementFlags(f)); }
-
-        void SetControlled(bool apply, UnitState state);
-        void SetFeared(bool apply/*, uint64 casterGUID = 0, uint32 spellID = 0*/);
-        void SetConfused(bool apply/*, uint64 casterGUID = 0, uint32 spellID = 0*/);
-        void SetStunned(bool apply);
-        void SetRooted(bool apply);
 
         void AddComboPointHolder(uint32 lowguid) { m_ComboPointHolders.insert(lowguid); }
         void RemoveComboPointHolder(uint32 lowguid) { m_ComboPointHolders.erase(lowguid); }
@@ -1625,7 +1633,6 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         float m_auraModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_END];
         float m_weaponDamage[MAX_ATTACK][2];
         bool m_canModifyStats;
-        //std::list< spellEffectPair > AuraSpells[TOTAL_AURAS];  // TODO: use this if ok for mem
 
         float m_speed_rate[MAX_MOVE_TYPE];                      // current speed
         float m_max_speed_rate[MAX_MOVE_TYPE];                  // max possible speed
@@ -1637,6 +1644,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
         MotionMaster i_motionMaster;
+        UnitStateMgr m_stateMgr;
 
         uint32 m_reactiveTimer[MAX_REACTIVE];
         uint32 m_regenTimer;

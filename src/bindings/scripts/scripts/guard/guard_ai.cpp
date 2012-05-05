@@ -146,15 +146,12 @@ void guardAI::UpdateAI(const uint32 diff)
             if (info) Healing = true;
             else info = SelectSpell(m_creature->getVictim(), -1, -1, SELECT_TARGET_ANY_ENEMY, 0, 0, NOMINAL_MELEE_RANGE, 0, SELECT_EFFECT_DONTCARE);
 
-            //Found a spell, check if we arn't on cooldown
+            //Found a spell, check if we aren't on cooldown
             if (info && !GlobalCooldown)
             {
                 //If we are currently moving stop us and set the movement generator
                 if ((*m_creature).GetMotionMaster()->GetCurrentMovementGeneratorType()!=IDLE_MOTION_TYPE)
-                {
-                    (*m_creature).GetMotionMaster()->Clear(false);
                     (*m_creature).GetMotionMaster()->MoveIdle();
-                }
 
                 //Cast spell
                 if (Healing) DoCastSpell(m_creature,info);
@@ -168,7 +165,6 @@ void guardAI::UpdateAI(const uint32 diff)
             {
                 //Cancel our current spell and then mutate new movement generator
                 m_creature->InterruptNonMeleeSpells(false);
-                (*m_creature).GetMotionMaster()->Clear(false);
                 (*m_creature).GetMotionMaster()->MoveChase(m_creature->getVictim());
             }
         }

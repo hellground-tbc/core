@@ -451,7 +451,6 @@ void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool trigger
     if (/*!who || */m_creature->IsNonMeleeSpellCasted(false))
         return;
 
-    //m_creature->GetMotionMaster()->StopMovement();
     m_creature->CastSpell(who, spellInfo, triggered);
 }
 

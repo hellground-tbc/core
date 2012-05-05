@@ -284,7 +284,6 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
         }
         //else spawndist will be 15, so creatures move maximum=10
         //creature->SetDefaultMovementType(RANDOM_MOTION_TYPE);
-        creature->GetMotionMaster()->Initialize();
         creature->setDeathState(JUST_DIED);
         creature->Respawn();
         //TODO: find a way to add a motionmaster without killing the creature (i

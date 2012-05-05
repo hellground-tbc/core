@@ -1101,7 +1101,6 @@ struct TRINITY_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
         // Follow if not in combat
         if (!me->hasUnitState(UNIT_STAT_FOLLOW) && !me->isInCombat())
         {
-            me->GetMotionMaster()->Clear();
             me->GetMotionMaster()->MoveFollow(pOwner, PET_FOLLOW_DIST, frand(0.0f, PET_FOLLOW_ANGLE));
         }
 
@@ -1477,7 +1476,6 @@ struct TRINITY_DLL_DECL npc_mojoAI : public ScriptedAI
     {
         heartsResetTimer = 15000;
         hearts = false;
-        me->GetMotionMaster()->Clear();
         me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
     }
 
@@ -1500,7 +1498,6 @@ struct TRINITY_DLL_DECL npc_mojoAI : public ScriptedAI
             {
                 me->RemoveAurasDueToSpell(SPELL_HEARTS);
                 hearts = false;
-                me->GetMotionMaster()->Clear(true);
                 me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
                 me->SetSelection(NULL);
             }
@@ -1522,8 +1519,7 @@ bool ReceiveEmote_npc_mojo( Player *player, Creature *_Creature, uint32 emote )
                 player->CastSpell(player, SPELL_FEELING_FROGGY, false);
                 _Creature->CastSpell(_Creature, SPELL_HEARTS, false);
                 _Creature->SetSelection(player->GetGUID());
-                _Creature->GetMotionMaster()->StopMovement();
-                _Creature->GetMotionMaster()->Clear();
+
                 _Creature->GetMotionMaster()->MoveFollow(player, 1.0, 0);
 
                 char * text;
@@ -1993,8 +1989,7 @@ struct TRINITY_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
         electricalTimer = urand(5000, 35000);
         checkTimer = 3000;
         me->SetDefaultMovementType(RANDOM_MOTION_TYPE);
-        me->GetMotionMaster()->Initialize();
-        me->GetMotionMaster()->Clear();
+
         me->GetMotionMaster()->MoveRandom(10.0);
         moveTimer = urand(1000, 10000);
         despawnTimer = 180000;
@@ -2191,7 +2186,6 @@ struct TRINITY_DLL_DECL pet_AleMugDrinkerAI : public ScriptedAI
     {
         wait = 0;
         aleMug_drink = false;
-        me->GetMotionMaster()->Clear();
         me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
     }
 

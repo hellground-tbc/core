@@ -64,13 +64,14 @@ void PossessedAI::KilledUnit(Unit* victim)
 void CritterAI::DamageTaken(Unit *done_by, uint32 &)
 {
     if (!me->hasUnitState(UNIT_STAT_FLEEING))
-        me->SetControlled(true, UNIT_STAT_FLEEING);
+        me->SetFeared(true, done_by, 10000);
 }
 
 void CritterAI::EnterEvadeMode()
 {
     if (me->hasUnitState(UNIT_STAT_FLEEING))
-        me->SetControlled(false, UNIT_STAT_FLEEING);
+        me->SetFeared(false, NULL);
+
     CreatureAI::EnterEvadeMode();
 }
 

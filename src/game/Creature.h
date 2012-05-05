@@ -541,8 +541,6 @@ class TRINITY_DLL_SPEC Creature : public Unit
         float GetSpellDamageMod(int32 Rank);
 
         void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
-        void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); }
-        uint64 GetSelection() { return GetUInt64Value(UNIT_FIELD_TARGET); }
 
         VendorItemData const* GetVendorItems() const;
         uint32 GetVendorItemCurrentCount(VendorItem const* vItem);
@@ -817,5 +815,17 @@ class ForcedDespawnDelayEvent : public BasicEvent
         Creature& m_owner;
 };
 
-#endif
+class AttackResumeEvent : public BasicEvent
+{
+    public:
+        AttackResumeEvent(Unit& owner) : m_owner(owner), b_force(false) {};
+        AttackResumeEvent(Unit& owner, bool force) : m_owner(owner), b_force(force) {};
+        bool Execute(uint64 e_time, uint32 p_time);
 
+    private:
+        AttackResumeEvent();
+        Unit& m_owner;
+        bool  b_force;
+};
+
+#endif

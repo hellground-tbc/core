@@ -40,7 +40,9 @@ class TRINITY_DLL_SPEC HomeMovementGenerator<Creature> : public MovementGenerato
         void Interrupt(Creature &) {}
         void Reset(Creature &);
         bool Update(Creature &, const uint32 &);
-        MovementGeneratorType GetMovementGeneratorType() { return HOME_MOTION_TYPE; }
+
+        const char* Name() const { return "<Home>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return HOME_MOTION_TYPE; }
 
     private:
         void _setTargetLocation(Creature &);

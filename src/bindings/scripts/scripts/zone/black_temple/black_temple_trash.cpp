@@ -960,9 +960,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat(80.0f);
-        me->GetMotionMaster()->StopMovement();
-        me->GetMotionMaster()->Clear();
-        me->GetMotionMaster()->MoveChase(who, 15);
+        me->GetMotionMaster()->MoveChase(who, 15.0f);
     }
 
     Unit * GetNewTarget()

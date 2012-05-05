@@ -981,7 +981,6 @@ bool Map::CreatureRespawnRelocation(Creature *c)
     Cell resp_cell(resp_val);
 
     c->CombatStop();
-    c->GetMotionMaster()->Clear();
 
     #ifdef TRINITY_DEBUG
     if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
@@ -992,7 +991,7 @@ bool Map::CreatureRespawnRelocation(Creature *c)
     if (CreatureCellRelocation(c,resp_cell))
     {
         c->Relocate(resp_x, resp_y, resp_z, resp_o);
-        c->GetMotionMaster()->Initialize();                 // prevent possible problems with default move generators
+        c->GetUnitStateMgr().InitDefaults(true);
         //CreatureRelocationNotify(c,resp_cell,resp_cell.cellPair());
         c->UpdateObjectVisibility(false);
         return true;

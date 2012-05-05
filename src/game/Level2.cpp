@@ -451,14 +451,7 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     _player->TeleportTo(mapid, x, y, z, ort);
     return true;
@@ -494,13 +487,7 @@ bool ChatHandler::HandleGoTicketCommand(const char * args)
     mapid = ticket->map;
 
     Player* _player = m_session->GetPlayer();
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-     else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     _player->TeleportTo(mapid, x, y, z, 1, 0);
     return true;
@@ -538,14 +525,7 @@ bool ChatHandler::HandleGoTriggerCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     _player->TeleportTo(at->mapid, at->x, at->y, at->z, _player->GetOrientation());
     return true;
@@ -583,14 +563,7 @@ bool ChatHandler::HandleGoGraveyardCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     _player->TeleportTo(gy->map_id, gy->x, gy->y, gy->z, _player->GetOrientation());
     return true;
@@ -688,14 +661,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     }
 
     // stop flight if need
-    if (_player->IsTaxiFlying())
-    {
-        _player->GetMotionMaster()->MovementExpired();
-        _player->CleanupAfterTaxiFlight();
-    }
-    // save only in non-flight case
-    else
-        _player->SaveRecallPosition();
+    _player->InterruptTaxiFlying();
 
     _player->TeleportTo(mapid, x, y, z, ort);
     return true;
@@ -3745,7 +3711,7 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
     }
 
     // reset movement
-    creature->GetMotionMaster()->MovementExpired(true);
+    creature->GetUnitStateMgr().InitDefaults(false);
 
     PSendSysMessage(LANG_CREATURE_NOT_FOLLOW_YOU_NOW, creature->GetName());
     return true;

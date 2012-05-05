@@ -45,9 +45,6 @@ void npc_escortAI::AttackStart(Unit* pWho)
         if(HasEscortState(STATE_ESCORT_ESCORTING))
             m_creature->SetHomePosition(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
 
-        if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-            m_creature->GetMotionMaster()->MovementExpired();
-
         if (IsCombatMovement())
             m_creature->GetMotionMaster()->MoveChase(pWho);
     }
@@ -361,25 +358,6 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
     }
 }
 
-/*
-void npc_escortAI::OnPossess(bool apply)
-{
-    // We got possessed in the middle of being escorted, store the point
-    // where we left off to come back to when possess is removed
-    if (HasEscortState(STATE_ESCORT_ESCORTING))
-    {
-        if (apply)
-            m_creature->GetPosition(LastPos.x, LastPos.y, LastPos.z);
-        else
-        {
-            Returning = true;
-            m_creature->GetMotionMaster()->MovementExpired();
-            m_creature->GetMotionMaster()->MovePoint(WP_LAST_POINT, LastPos.x, LastPos.y, LastPos.z);
-        }
-    }
-}
-+*/
-
 void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 WaitTimeMs)
 {
     Escort_Waypoint t(id, x, y, z, WaitTimeMs);
@@ -479,7 +457,6 @@ void npc_escortAI::Start(bool bIsActiveAttacker, bool bRun, uint64 uiPlayerGUID,
 
     if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE)
     {
-        m_creature->GetMotionMaster()->MovementExpired();
         m_creature->GetMotionMaster()->MoveIdle();
         debug_log("TSCR: EscortAI start with WAYPOINT_MOTION_TYPE, changed to MoveIdle.");
     }

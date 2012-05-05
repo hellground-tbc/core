@@ -36,6 +36,7 @@
 #include "LootMgr.h"
 #include "MapManager.h"
 #include "CreatureAI.h"
+#include "PlayerAI.h"
 #include "CreatureAISelector.h"
 #include "Formulas.h"
 #include "SpellAuras.h"
@@ -1747,7 +1748,7 @@ void Creature::setDeathState(DeathState s)
 
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
         clearUnitState(UNIT_STAT_ALL_STATE);
-        i_motionMaster.Initialize();
+        GetUnitStateMgr().InitDefaults(true);
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);
     }
@@ -1784,7 +1785,7 @@ void Creature::Respawn()
         {
             setDeathState(JUST_DIED);
             SetHealth(0);
-            i_motionMaster.Clear();
+            GetUnitStateMgr().InitDefaults(true);
             clearUnitState(UNIT_STAT_ALL_STATE);
             LoadCreaturesAddon(true);
         }
@@ -1996,7 +1997,7 @@ void Creature::DoFleeToGetAssistance()
         UpdateSpeed(MOVE_RUN, false);
 
         if (!pCreature)
-            SetControlled(true, UNIT_STAT_FLEEING);
+            SetFeared(true, getVictim(), sWorld.getConfig(CONFIG_CREATURE_FAMILY_FLEE_DELAY));
         else
             GetMotionMaster()->MoveSeekAssistance(pCreature->GetPositionX(), pCreature->GetPositionY(), pCreature->GetPositionZ());
     }
@@ -2584,4 +2585,49 @@ bool Creature::CanReactToPlayerOnTaxi()
         default:
             return false;
     }
+}
+
+bool AttackResumeEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
+{
+    if (!m_owner.isAlive())
+        return true;
+
+    if (m_owner.hasUnitState(UNIT_STAT_CAN_NOT_REACT) || m_owner.HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED))
+        return true;
+
+    Unit* victim = m_owner.getVictim();
+
+    if (!victim || !victim->IsInMap(&m_owner))
+        return true;
+
+    switch(m_owner.GetObjectGuid().GetHigh())
+    {
+        case HIGHGUID_UNIT:
+        {
+            m_owner.AttackStop(/*!b_force*/);
+            CreatureAI* ai = m_owner.ToCreature()->AI();
+            if (ai)
+            {
+                // Reset EventAI now unsafe, temp disabled (require correct writing EventAI scripts)
+                //    if (CreatureEventAI* eventai = (CreatureEventAI*)ai)
+                //        eventai->Reset();
+                ai->AttackStart(victim);
+            }
+            break;
+        }
+        case HIGHGUID_PET:
+        {
+            m_owner.AttackStop(/*!b_force*/);
+            m_owner.ToPet()->AI()->AttackStart(victim);
+            break;
+        }
+        case HIGHGUID_PLAYER:
+            if (m_owner.IsAIEnabled)
+                m_owner.ToPlayer()->AI()->AttackStart(victim);
+            break;
+        default:
+            sLog.outError("AttackResumeEvent::Execute try execute for unsupported owner %s!", m_owner.GetObjectGuid().GetString().c_str());
+            break;
+    }
+    return true;
 }

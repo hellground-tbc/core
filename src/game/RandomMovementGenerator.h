@@ -36,7 +36,9 @@ class TRINITY_DLL_SPEC RandomMovementGenerator : public MovementGeneratorMedium<
         void Interrupt(T &);
         void Reset(T &);
         bool Update(T &, const uint32 &);
-        MovementGeneratorType GetMovementGeneratorType() { return RANDOM_MOTION_TYPE; }
+
+        const char* Name() const { return "<Random>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return RANDOM_MOTION_TYPE; }
 
         bool GetResetPosition(T&, float& x, float& y, float& z);
 

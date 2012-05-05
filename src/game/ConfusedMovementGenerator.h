@@ -22,31 +22,33 @@
 #define TRINITY_CONFUSEDGENERATOR_H
 
 #include "MovementGenerator.h"
+
+#include "Object.h"
 #include "Timer.h"
 
 #define WANDER_DISTANCE    2.5f
 #define MAX_RANDOM_POINTS  6
 
-template<class T>
-class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMovementGenerator<T> >
+template<class UNIT>
+class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMedium< UNIT, ConfusedMovementGenerator<UNIT> >
 {
     public:
-        explicit ConfusedMovementGenerator() : i_nextMoveTime(0) {}
+        explicit ConfusedMovementGenerator() : _nextMoveTime(0) {}
 
-        void Initialize(T &);
-        void Finalize(T &);
-        void Interrupt(T &);
-        void Reset(T &);
-        bool Update(T &, const uint32 &);
+        void Initialize(UNIT &);
+        void Finalize(UNIT &);
+        void Interrupt(UNIT &);
+        void Reset(UNIT &u);
+        bool Update(UNIT &, const uint32 &);
 
-        void GenerateMovement(T &unit);
-
-        MovementGeneratorType GetMovementGeneratorType() { return CONFUSED_MOTION_TYPE; }
+        const char* Name() const { return "<Confused>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return CONFUSED_MOTION_TYPE; }
 
     private:
-        TimeTrackerSmall i_nextMoveTime;
-        Position randomPosition[MAX_RANDOM_POINTS+1];
-        uint32 i_nextMove;
+        void _generateMovement(UNIT &unit);
+
+        TimeTrackerSmall _nextMoveTime;
+        Position _randomPosition[MAX_RANDOM_POINTS+1];
 };
 
 #endif

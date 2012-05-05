@@ -1217,7 +1217,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
                             case 2:
                                 //Summon Nether Vapor clouds NPC's and cast Nether Vapor aura on self
                                 DoCast(m_creature, SPELL_NETHER_VAPOR);
-                                m_creature->GetMotionMaster()->Clear();
+
                                 m_creature->GetMotionMaster()->MoveIdle();
 
                                 for(uint8 i = 0; i < 4; i++)
@@ -1236,7 +1236,7 @@ struct TRINITY_DLL_DECL boss_kaelthasAI : public ScriptedAI
 
                             case 3:
                                 m_creature->RemoveAurasDueToSpell(SPELL_NETHER_VAPOR);
-                                m_creature->SetStunned(false);
+                                m_creature->GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
                                 summons.AuraOnEntry(PHOENIX,SPELL_BANISH,false);
                                 if(pInstance)
                                     pInstance->SetData(DATA_KAELTHASEVENT, 4);    // after Gravity Lapse set back state 4 of KaelthasPhaseEvent

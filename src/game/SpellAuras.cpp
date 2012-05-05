@@ -3861,7 +3861,10 @@ void Aura::HandleModConfuse(bool apply, bool Real)
     if (!Real)
         return;
 
-    m_target->SetControlled(apply, UNIT_STAT_CONFUSED);
+    if (!apply && GetTarget()->HasAuraType(GetModifier()->m_auraname))
+        return;
+
+    m_target->SetConfused(apply);
 }
 
 void Aura::HandleModFear(bool apply, bool Real)
@@ -3869,7 +3872,10 @@ void Aura::HandleModFear(bool apply, bool Real)
     if (!Real)
         return;
 
-    m_target->SetControlled(apply, UNIT_STAT_FLEEING);
+    if (!apply && GetTarget()->HasAuraType(GetModifier()->m_auraname))
+        return;
+
+    m_target->SetFeared(apply, GetCaster());
 }
 
 void Aura::HandleFeignDeath(bool apply, bool Real)
@@ -3877,8 +3883,13 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
     if (!Real)
         return;
 
-    if (m_target->GetTypeId() != TYPEID_PLAYER)
+    if (!apply && GetTarget()->HasAuraType(GetModifier()->m_auraname))
         return;
+
+    //if (apply)
+    //    m_target->GetUnitStateMgr().PushAction(UNIT_ACTION_FEIGNDEATH);
+    //else
+    //    m_target->GetUnitStateMgr().DropAction(UNIT_ACTION_FEIGNDEATH);
 
     if (apply)
     {
@@ -3964,14 +3975,6 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
             else // miss
             {
                 resisted = true;
-                // Send resist info to combat log
-                // FIXME: client doesn't show miss info in combat log when sending SMSG_FEIGN_DEATH_RESISTED, sends SMSG_SPELLLOGMISS instead
-                /*
-                WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
-                data<<m_target->GetGUID();
-                data<<uint8(0);
-                m_target->SendMessageToSet(&data,true);
-                */
                 m_target->SendSpellMiss(target, m_spellProto->Id, SPELL_MISS_RESIST);
             }
         }
@@ -3987,13 +3990,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
     }
     else
     {
-        /*
-        WorldPacket data(SMSG_FEIGN_DEATH_RESISTED, 9);
-        data<<m_target->GetGUID();
-        data<<uint8(1);
-        m_target->SendMessageToSet(&data,true);
-        */
-                                                            // blizz like 2.0.x
+                                                           // blizz like 2.0.x
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNKNOWN6);
                                                             // blizz like 2.0.x
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
@@ -4044,7 +4041,7 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
     if (!Real)
         return;
 
-    m_target->SetControlled(apply, UNIT_STAT_STUNNED);
+    m_target->SetStunned(apply);
 }
 
 void Aura::HandleModStealth(bool apply, bool Real)
@@ -4219,7 +4216,10 @@ void Aura::HandleAuraModRoot(bool apply, bool Real)
     if (!Real)
         return;
 
-    m_target->SetControlled(apply, UNIT_STAT_ROOT);
+    if (apply)
+        m_target->GetUnitStateMgr().PushAction(UNIT_ACTION_ROOT);
+    else
+        m_target->GetUnitStateMgr().DropAction(UNIT_ACTION_ROOT);
 }
 
 void Aura::HandleAuraModSilence(bool apply, bool Real)
@@ -7843,10 +7843,6 @@ void Aura::HandlePreventFleeing(bool apply, bool Real)
 {
     if (!Real)
         return;
-
-    Unit::AuraList const& fearAuras = m_target->GetAurasByType(SPELL_AURA_MOD_FEAR);
-    if (!fearAuras.empty())
-        m_target->SetFeared(!apply);
 }
 
 void Aura::HandleManaShield(bool apply, bool Real)

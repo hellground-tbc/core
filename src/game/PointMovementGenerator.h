@@ -40,8 +40,10 @@ class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< 
         bool Update(T &, const uint32 &);
 
         void MovementInform(T &);
+        void GetDestination(float &x, float &y, float &z) { x = i_x; y = i_y; z = i_z; }
 
-        MovementGeneratorType GetMovementGeneratorType() { return POINT_MOTION_TYPE; }
+        const char* Name() const { return "<Point>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return POINT_MOTION_TYPE; }
 
     private:
         float i_x,i_y,i_z;
@@ -57,7 +59,8 @@ class TRINITY_DLL_SPEC AssistanceMovementGenerator : public PointMovementGenerat
         AssistanceMovementGenerator(float _x, float _y, float _z) :
             PointMovementGenerator<Creature>(0, _x, _y, _z, false) {}
 
-        MovementGeneratorType GetMovementGeneratorType() { return ASSISTANCE_MOTION_TYPE; }
+        const char* Name() const { return "<Assistance>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return ASSISTANCE_MOTION_TYPE; }
         void Finalize(Unit &);
 };
 
@@ -71,7 +74,9 @@ class TRINITY_DLL_SPEC EffectMovementGenerator : public MovementGenerator
         void Interrupt(Unit &) {}
         void Reset(Unit &) {}
         bool Update(Unit &u, const uint32 &);
-        MovementGeneratorType GetMovementGeneratorType() { return EFFECT_MOTION_TYPE; }
+
+        const char* Name() const { return "<Effect>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return EFFECT_MOTION_TYPE; }
 
     private:
         uint32 m_Id;

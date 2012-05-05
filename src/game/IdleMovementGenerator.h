@@ -31,7 +31,7 @@ class TRINITY_DLL_SPEC IdleMovementGenerator : public MovementGenerator
         void Interrupt(Unit &) {}
         void Reset(Unit &);
         bool Update(Unit &, const uint32 &) { return true; }
-        MovementGeneratorType GetMovementGeneratorType() { return IDLE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const { return IDLE_MOTION_TYPE; }
 };
 
 extern IdleMovementGenerator si_idleMovement;
@@ -46,7 +46,9 @@ class TRINITY_DLL_SPEC RotateMovementGenerator : public MovementGenerator
         void Interrupt(Unit& );
         void Reset(Unit& owner) { Initialize(owner); }
         bool Update(Unit& owner, const uint32& time_diff);
-        MovementGeneratorType GetMovementGeneratorType() { return ROTATE_MOTION_TYPE; }
+
+        const char* Name() const { return "<Rotate>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return ROTATE_MOTION_TYPE; }
 
     private:
         uint32 m_duration, m_maxDuration;
@@ -63,7 +65,9 @@ class TRINITY_DLL_SPEC DistractMovementGenerator : public MovementGenerator
         void Interrupt(Unit& );
         void Reset(Unit& );
         bool Update(Unit& owner, const uint32& time_diff);
-        MovementGeneratorType GetMovementGeneratorType() { return DISTRACT_MOTION_TYPE; }
+
+        const char* Name() const { return "<Distract>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return DISTRACT_MOTION_TYPE; }
 
     private:
         uint32 m_timer;
@@ -75,7 +79,8 @@ class TRINITY_DLL_SPEC AssistanceDistractMovementGenerator : public DistractMove
         AssistanceDistractMovementGenerator(uint32 timer) :
             DistractMovementGenerator(timer) {}
 
-        MovementGeneratorType GetMovementGeneratorType() { return ASSISTANCE_DISTRACT_MOTION_TYPE; }
+        const char* Name() const { return "<AssistanceDistract>"; }
+        MovementGeneratorType GetMovementGeneratorType() const { return ASSISTANCE_DISTRACT_MOTION_TYPE; }
         void Finalize(Unit& unit);
 };
 
