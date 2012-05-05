@@ -9448,8 +9448,9 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
         for (Unit::AuraList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
             if (invLevel < (*itr)->GetModifier()->m_amount)
                 invLevel = (*itr)->GetModifier()->m_amount;
+
         // creatures with greater visibility can see other creatures
-        if(invLevel >= 300)
+        if(GetTypeId() == TYPEID_UNIT && invLevel >= 300)
             return true;
     }
 
