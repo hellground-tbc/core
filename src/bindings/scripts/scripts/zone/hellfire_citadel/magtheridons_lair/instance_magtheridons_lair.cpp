@@ -142,13 +142,13 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                 switch (data)
                 {
                     case IN_PROGRESS:
+                        CageTimer = 120000;
+                        HandleGameObject(DoorGUID, false);
                         break;
                     case NOT_STARTED:
                         RespawnTimer = 10000;
-                        data = SPECIAL;
                     default:
-                        if (GameObject *Door = instance->GetGameObject(DoorGUID))
-                            Door->SetGoState(GO_STATE_ACTIVE);
+                        HandleGameObject(DoorGUID, true);
                         break;
                 }
 
@@ -214,8 +214,7 @@ struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
                     }
                 }
 
-                if (GameObject *Door = instance->GetGameObject(DoorGUID))
-                    Door->SetGoState(GO_STATE_READY);
+                HandleGameObject(DoorGUID, true);
 
                 RespawnTimer = 0;
                 if (Encounters[0] != DONE)

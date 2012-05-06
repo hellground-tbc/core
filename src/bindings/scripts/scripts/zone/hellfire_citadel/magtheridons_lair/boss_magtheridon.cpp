@@ -169,40 +169,36 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public BossAI
 
         clickersCount = 0;
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->CastSpell(m_creature, SPELL_SHADOW_CAGE_C, true);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+        me->CastSpell(me, SPELL_SHADOW_CAGE_C, true);
     }
 
     void KilledUnit(Unit* victim)
     {
-        DoScriptText(MAGT_SAY_PLAYER_KILLED, m_creature);
+        DoScriptText(MAGT_SAY_PLAYER_KILLED, me);
     }
 
     void JustDied(Unit* Killer)
     {
         instance->SetData(DATA_MAGTHERIDON_EVENT, DONE);
 
-        DoScriptText(MAGT_SAY_DEATH, m_creature);
+        DoScriptText(MAGT_SAY_DEATH, me);
     }
 
     void MoveInLineOfSight(Unit*) {}
 
     void AttackStart(Unit *who)
     {
-        if (!m_creature->HasAura(SPELL_SHADOW_CAGE_C, 0))
+        if (!me->HasAura(SPELL_SHADOW_CAGE_C, 0))
             ScriptedAI::AttackStart(who);
     }
 
     void EnterCombat(Unit *who)
     {
         instance->SetData(DATA_MAGTHERIDON_EVENT, IN_PROGRESS);
-
         DoZoneInCombat();
-
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
-
-        DoScriptText(MAGT_SAY_FREED, m_creature);
+        DoScriptText(MAGTHERIDON_EMOTE_BEGIN, me, me, true);
    }
 
     void OnAuraRemove(Aura* aur, bool removeStack)
@@ -212,15 +208,9 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public BossAI
             case SPELL_SHADOW_CAGE_C:
                 m_creature->SetHealth(m_creature->GetMaxHealth());
                 DoResetThreat();
-                break;
-            case SPELL_SHADOW_GRASP_C:
-                if (removeStack || instance->GetData(DATA_MAGTHERIDON_EVENT) == SPECIAL)   // after wipe check
-                    return;
-
-                instance->SetData(DATA_CHANNELER_EVENT, IN_PROGRESS);
-                DoScriptText(MAGTHERIDON_EMOTE_BEGIN, me, me, true);
-                if (GameObject * doors = me->GetMap()->GetGameObject(instance->GetData64(DATA_DOOR_GUID)))
-                    doors->SetGoState(GO_STATE_READY);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+                DoScriptText(MAGT_SAY_FREED, me);
                 break;
             case SPELL_SHADOW_GRASP:
                 if (--clickersCount < 5 && me->HasAura(SPELL_SHADOW_CAGE))
@@ -330,6 +320,7 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
     mob_hellfire_channelerAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = m_creature->GetInstanceData();
+        m_creature->setActive(true);
     }
 
     ScriptedInstance* pInstance;
@@ -348,10 +339,6 @@ struct TRINITY_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         Infernal_Timer = urand(10000, 50000);
 
         Check_Timer = 5000;
-
-        pInstance->SetData(DATA_CHANNELER_EVENT, NOT_STARTED);
-
-        m_creature->setActive(true);
     }
 
     void EnterCombat(Unit *who)

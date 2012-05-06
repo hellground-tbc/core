@@ -6,9 +6,8 @@
 #define DEF_MAGTHERIDONS_LAIR_H
 
 #define DATA_MAGTHERIDON_EVENT          1
-#define DATA_CHANNELER_EVENT            2
-#define DATA_MAGTHERIDON                3
-#define DATA_DOOR_GUID                  4
-#define DATA_COLLAPSE                   6
+#define DATA_MAGTHERIDON                2
+#define DATA_DOOR_GUID                  3
+#define DATA_COLLAPSE                   5
 #endif
 
