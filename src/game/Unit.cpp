@@ -2905,6 +2905,10 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
 //   Resist
 SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool CanReflect, bool canMiss)
 {
+    if (ToCreature() && ToCreature()->isTotem())
+        if (Unit *owner = GetOwner())
+            return owner->SpellHitResult(pVictim, spell, CanReflect, canMiss);
+
     // Return evade for units in evade mode
     if (pVictim->GetTypeId()==TYPEID_UNIT && ((Creature*)pVictim)->IsInEvadeMode() && this != pVictim)
         return SPELL_MISS_EVADE;
@@ -8381,6 +8385,10 @@ int32 Unit::SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVic
 
 bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType)
 {
+    if (ToCreature() && ToCreature()->isTotem())
+        if (Unit* owner = GetOwner())
+            return owner->isSpellCrit(pVictim, spellProto, schoolMask, attackType);
+
     // not critting spell
     if (IS_CREATURE_GUID(GetGUID()) || spellProto->AttributesEx2 & SPELL_ATTR_EX2_CANT_CRIT)
         return false;
