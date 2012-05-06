@@ -3566,6 +3566,8 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
                 return DIMINISHING_FEAR;
             break;
         }
+        case SPELLFAMILY_POTION:
+            return DIMINISHING_NONE;
         default:
         {
             if (spellproto->Id == 12494) // frostbite
