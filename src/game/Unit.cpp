@@ -8047,8 +8047,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             // Fireball - 100% of Fire Damage, DoT - 0% of Fire Damage
             else if ((spellProto->SpellFamilyFlags & 0x1LL) && spellProto->SpellIconID == 185)
             {
-                CastingTime = 3500;
-                DotFactor = damagetype == DOT ? 0.0f : 1.0f;
+                CastingTime = damagetype == DOT ? 0 : 3500;
             }
             // Molten armor
             else if (spellProto->SpellFamilyFlags & 0x0000000800000000LL)
