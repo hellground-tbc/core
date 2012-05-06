@@ -30,8 +30,8 @@ template<class UNIT>
 class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMovementGenerator<UNIT> >
 {
     public:
-        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _speed = 0.0f, bool _generatePath = false) : id(_id),
-            i_x(_x), i_y(_y), i_z(_z), speed(_speed), m_generatePath(_generatePath), _arrived(false) {}
+        PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath = false) : _id(id),
+            _x(x), _y(y), _z(z), _generatePath(generatePath) {}
 
         void Initialize(UNIT &);
         void Finalize(UNIT &);
@@ -39,17 +39,15 @@ class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< 
         void Reset(UNIT &);
         bool Update(UNIT &, const uint32 &);
 
-        void GetDestination(float &x, float &y, float &z) { x = i_x; y = i_y; z = i_z; }
+        void GetDestination(float &x, float &y, float &z) { x = _x; y = _y; z = _z; }
 
         const char* Name() const { return "<Point>"; }
         MovementGeneratorType GetMovementGeneratorType() const { return POINT_MOTION_TYPE; }
 
     private:
-        float i_x,i_y,i_z;
-        uint32 id;
-        float speed;
-        bool m_generatePath;
-        bool _arrived;
+        uint32 _id;
+        float _x, _y, _z;
+        bool _generatePath;
 };
 
 class TRINITY_DLL_SPEC AssistanceMovementGenerator : public PointMovementGenerator<Creature>

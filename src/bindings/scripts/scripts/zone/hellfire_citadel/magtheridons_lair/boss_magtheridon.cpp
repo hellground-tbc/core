@@ -154,7 +154,6 @@ struct TRINITY_DLL_DECL boss_magtheridonAI : public BossAI
         ClearCastQueue();
 
         instance->SetData(DATA_COLLAPSE, false);
-        instance->SetData(DATA_CHANNELER_EVENT, NOT_STARTED);
         instance->SetData(DATA_MAGTHERIDON_EVENT, NOT_STARTED);
 
         events.ScheduleEvent(MAGTHERIDON_EVENT_BERSERK, 1320000);

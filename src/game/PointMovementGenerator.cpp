@@ -45,10 +45,7 @@ void PointMovementGenerator<UNIT>::Initialize(UNIT &unit)
             init.SetWalk(true);
     }
 
-    if (speed > 0.0f)
-        init.SetVelocity(speed);
-
-    init.MoveTo(i_x, i_y, i_z, m_generatePath);
+    init.MoveTo(_x, _y, _z, _generatePath);
     init.Launch();
 }
 
@@ -70,10 +67,7 @@ bool PointMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
 {
     // need do that as state :]
     if (unit.hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
-    {
-        unit.StopMoving();
         return true;
-    }
 
     return !unit.IsStopped();
 }
@@ -84,7 +78,7 @@ void PointMovementGenerator<UNIT>::Finalize(UNIT &unit)
     if (Creature *creature = unit.ToCreature())
     {
         if (creature->AI())
-            creature->AI()->MovementInform(POINT_MOTION_TYPE, id);
+            creature->AI()->MovementInform(POINT_MOTION_TYPE, _id);
 
         if (creature->GetFormation() && creature->GetFormation()->getLeader() && creature->GetFormation()->getLeader()->GetGUID() != creature->GetGUID())
         {
