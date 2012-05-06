@@ -26,20 +26,19 @@
 
 class Creature;
 
-template<class T>
-class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
+template<class UNIT>
+class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMovementGenerator<UNIT> >
 {
     public:
         PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _speed = 0.0f, bool _generatePath = false) : id(_id),
             i_x(_x), i_y(_y), i_z(_z), speed(_speed), m_generatePath(_generatePath), _arrived(false) {}
 
-        void Initialize(T &);
-        void Finalize(T &);
-        void Interrupt(T &);
-        void Reset(T &);
-        bool Update(T &, const uint32 &);
+        void Initialize(UNIT &);
+        void Finalize(UNIT &);
+        void Interrupt(UNIT &);
+        void Reset(UNIT &);
+        bool Update(UNIT &, const uint32 &);
 
-        void MovementInform(T &);
         void GetDestination(float &x, float &y, float &z) { x = i_x; y = i_y; z = i_z; }
 
         const char* Name() const { return "<Point>"; }
@@ -70,10 +69,10 @@ class TRINITY_DLL_SPEC EffectMovementGenerator : public MovementGenerator
     public:
         explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) {}
         void Initialize(Unit &) {}
-        void Finalize(Unit &unit);
+        void Finalize(Unit &);
         void Interrupt(Unit &) {}
         void Reset(Unit &) {}
-        bool Update(Unit &u, const uint32 &);
+        bool Update(Unit &, const uint32 &);
 
         const char* Name() const { return "<Effect>"; }
         MovementGeneratorType GetMovementGeneratorType() const { return EFFECT_MOTION_TYPE; }

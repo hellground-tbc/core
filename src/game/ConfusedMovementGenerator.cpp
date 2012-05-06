@@ -83,7 +83,7 @@ bool ConfusedMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
 template<class UNIT>
 void ConfusedMovementGenerator<UNIT>::Finalize(UNIT &unit)
 {
-    Interrupt(unit);
+    unit.StopMoving();
 
     unit.clearUnitState(UNIT_STAT_CONFUSED);
     unit.AddEvent(new AttackResumeEvent(unit), ATTACK_DISPLAY_DELAY);

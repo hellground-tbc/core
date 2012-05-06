@@ -30,82 +30,71 @@
 #include "movement/MoveSpline.h"
 
 //----- Point Movement Generator
-template<class T>
-void PointMovementGenerator<T>::Initialize(T &unit)
+template<class UNIT>
+void PointMovementGenerator<UNIT>::Initialize(UNIT &unit)
 {
     unit.StopMoving();
 
     unit.addUnitState(UNIT_STAT_ROAMING);
+
     Movement::MoveSplineInit init(unit);
-    init.MoveTo(i_x, i_y, i_z, m_generatePath);
+
+    if (Creature *creature = unit.ToCreature())
+    {
+        if (creature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK)
+            init.SetWalk(true);
+    }
+
     if (speed > 0.0f)
         init.SetVelocity(speed);
 
+    init.MoveTo(i_x, i_y, i_z, m_generatePath);
     init.Launch();
 }
 
-template<class T>
-void PointMovementGenerator<T>::Interrupt(T &unit)
+template<class UNIT>
+void PointMovementGenerator<UNIT>::Interrupt(UNIT &unit)
 {
     unit.StopMoving();
     unit.clearUnitState(UNIT_STAT_ROAMING);
 }
 
-template<class T>
-void PointMovementGenerator<T>::Reset(T &unit)
+template<class UNIT>
+void PointMovementGenerator<UNIT>::Reset(UNIT &unit)
 {
     Initialize(unit);
 }
 
-template<class T>
-bool PointMovementGenerator<T>::Update(T &unit, const uint32 &diff)
+template<class UNIT>
+bool PointMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
 {
-    if (!_arrived && unit.IsWithinDist3d(i_x, i_y, i_z, 0.05f))
-    {
-        MovementInform(unit);
-        return true;
-    }
-
-    if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE | UNIT_STAT_CASTING_NOT_MOVE))
+    // need do that as state :]
+    if (unit.hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
     {
         unit.StopMoving();
-        return true;
-    }
-    else if (unit.IsStopped() && !_arrived)
-    {
-        Reset(unit);
         return true;
     }
 
     return !unit.IsStopped();
 }
 
-template<class T>
-void PointMovementGenerator<T>::Finalize(T &unit)
+template<class UNIT>
+void PointMovementGenerator<UNIT>::Finalize(UNIT &unit)
 {
-    Interrupt(unit);
-    unit.AddEvent(new AttackResumeEvent(unit), ATTACK_DISPLAY_DELAY);
-}
-
-template<>
-void PointMovementGenerator<Player>::MovementInform(Player&)
-{
-    _arrived = true;
-}
-
-template <>
-void PointMovementGenerator<Creature>::MovementInform(Creature &unit)
-{
-    _arrived = true;
-
-    if (unit.AI())
-        unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
-
-    if (unit.GetFormation() && unit.GetFormation()->getLeader() && unit.GetFormation()->getLeader()->GetGUID() != unit.GetGUID())
+    if (Creature *creature = unit.ToCreature())
     {
-        unit.GetFormation()->ReachedWaypoint();
-        unit.SetOrientation(unit.GetFormation()->getLeader()->GetOrientation());
+        if (creature->AI())
+            creature->AI()->MovementInform(POINT_MOTION_TYPE, id);
+
+        if (creature->GetFormation() && creature->GetFormation()->getLeader() && creature->GetFormation()->getLeader()->GetGUID() != creature->GetGUID())
+        {
+            creature->GetFormation()->ReachedWaypoint();
+            creature->SetOrientation(creature->GetFormation()->getLeader()->GetOrientation());
+        }
     }
+
+    unit.clearUnitState(UNIT_STAT_ROAMING);
+    unit.AddEvent(new AttackResumeEvent(unit), ATTACK_DISPLAY_DELAY);
 }
 
 template void PointMovementGenerator<Player>::Initialize(Player&);
