@@ -12272,18 +12272,15 @@ void Unit::SetFlying(bool apply)
         RemoveUnitMovementFlag(MOVEFLAG_FLYING | MOVEFLAG_LEVITATING);
     }
 
-    if (Player *pPlayer = ToPlayer())
-    {
-        WorldPacket data;
-        if (apply)
-            data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
-        else
-            data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
+    WorldPacket data;
+    if (apply)
+        data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
+    else
+        data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
 
-        data << GetPackGUID();
-        data << uint32(0);
-        pPlayer->SendMessageToSet(&data, true);
-    }
+    data << GetPackGUID();
+    data << uint32(0);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
