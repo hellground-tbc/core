@@ -9491,6 +9491,26 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
             return true;
     }
 
+    if(u->m_invisibilityMask == 1) // normal invisibility of target
+    {
+        uint32 invLevel = 0;
+        int32 invLevelPenalty = 0;  //some auras reduce invisibility level
+        Unit::AuraList const& iAuras = u->GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
+        for (Unit::AuraList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
+        {
+            if ((*itr)->GetModifier()->m_amount < invLevelPenalty)
+            {
+                invLevelPenalty = (*itr)->GetModifier()->m_amount;
+                continue;
+            }
+            if (invLevel < (*itr)->GetModifier()->m_amount)
+                invLevel = (*itr)->GetModifier()->m_amount;
+        }
+        // we can see creatures with invisibility mask when invisibility level gets below 0
+        if (abs(invLevelPenalty) > invLevel)
+            return true;
+    }
+
     AuraList const& auras = u->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
     for (AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
         if ((*iter)->GetCasterGUID()==GetGUID())
