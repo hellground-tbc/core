@@ -17,17 +17,214 @@
 /* ScriptData
 SDName: Undercity
 SD%Complete: 95
-SDComment: Quest support: 6628, 9180(post-event).
+SDComment: Quest support: 1960, 6628, 9180(post-event).
 SDCategory: Undercity
 EndScriptData */
 
 /* ContentData
+mob_rift_spawn
 npc_lady_sylvanas_windrunner
 npc_highborne_lamenter
 npc_parqual_fintallas
 EndContentData */
 
 #include "precompiled.h"
+
+/*######
+## mob_rift_spawn - for mage q "Investigate the Alchemist Shop"
+######*/
+
+#define RIFT_EMOTE_AGGRO    "is angered and attacks!"
+#define RIFT_EMOTE_EVADE    "escapes into the void."
+#define RIFT_EMOTE_SUCKED    "is sucked into the coffer!"
+
+enum RiftSpawn
+{
+    MOB_RIFT_SPAWN                          = 6492,
+    SPELL_SELF_STUN_30SEC                   = 9032,
+    SPELL_RIFT_SPAWN_INVISIBILITY           = 9093,
+    SPELL_CANTATION_OF_MANIFESTATION        = 9095,
+    SPELL_RIFT_SPAWN_MANIFESTATION          = 9096,
+    SPELL_CREATE_FILLED_CONTAINMENT_COFFER  = 9010,
+    GO_CONTAINMENT_COFFER                 = 122088,
+
+    BEING_SUCKED                            =    1
+};
+
+struct TRINITY_DLL_DECL mob_rift_spawnAI : public ScriptedAI
+{
+    mob_rift_spawnAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 delay_timer;
+    uint32 manifestation_timer;
+    uint64 casterGUID;
+    bool Sucked;
+
+    void Reset()
+    {
+        me->CastSpell(me, SPELL_RIFT_SPAWN_INVISIBILITY, true);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        manifestation_timer = 0;
+        delay_timer = 0;
+        casterGUID = 0;
+        Sucked = false;
+    }
+
+    void AttackStart(Unit* who)
+    {
+        if(manifestation_timer)
+            return;
+        ScriptedAI::AttackStart(who);
+    }
+
+    void JustReachedHome()
+    {
+        Reset();
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        if(!manifestation_timer)
+            me->MonsterTextEmote(RIFT_EMOTE_AGGRO, who->GetGUID());
+    }
+
+    void DamageTaken(Unit* pDone_by, uint32& damage)
+    {
+        // temporary workaround not to let UC guards to kill spawns instead of players
+        if(damage && !pDone_by->GetCharmerOrOwnerPlayerOrPlayerItself())
+        {
+            damage = 0;
+            if(pDone_by->ToCreature())
+                pDone_by->ToCreature()->AI()->EnterEvadeMode();
+        }
+        if(damage && damage > me->GetHealth())
+        {
+            damage = 0;
+            me->CombatStop();
+            me->getThreatManager().clearReferences();
+            me->RemoveAllAuras();
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->SetHealth(me->GetMaxHealth());
+            me->CastSpell(me, SPELL_SELF_STUN_30SEC, true);
+        }
+    }
+
+    void OnAuraApply(Aura* aur, Unit* caster, bool /*stackApply*/)
+    {
+        if(aur->GetId() == SPELL_CANTATION_OF_MANIFESTATION)
+        {
+            if(caster->GetTypeId() == TYPEID_PLAYER)
+                casterGUID = caster->GetGUID();
+            manifestation_timer = 1500;
+        }
+    }
+
+    void OnAuraRemove(Aura* aur, bool)
+    {
+        if(aur->GetId() == SPELL_SELF_STUN_30SEC && !Sucked)
+            EscapeIntoVoid(false);
+    }
+
+    void EscapeIntoVoid(bool sucked)
+    {
+        if(sucked)
+        {
+            if(GameObject* container = GetClosestGameObjectWithEntry(me, GO_CONTAINMENT_COFFER, 5.0))
+            {
+                container->Delete();
+                Creature *trigger = me->SummonTrigger(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, 60000);
+                if (trigger)
+                {
+                    trigger->SetVisibility(VISIBILITY_OFF);
+                    trigger->CastSpell(trigger, SPELL_CREATE_FILLED_CONTAINMENT_COFFER, false);
+                }
+            }
+            me->CastSpell(me, SPELL_RIFT_SPAWN_INVISIBILITY, true);
+            me->Kill(me, false);
+            return;
+        }
+        else
+            me->MonsterTextEmote(RIFT_EMOTE_EVADE, 0);
+
+        me->GetMotionMaster()->MoveTargetedHome();
+        me->CastSpell(me, SPELL_RIFT_SPAWN_INVISIBILITY, true);
+    }
+
+    void SetData(uint32 type, uint32 /*data*/)
+    {
+        if(type == BEING_SUCKED)
+        {
+            Sucked = true;
+            delay_timer = 6000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(delay_timer)
+        {
+            if(delay_timer <= diff)
+            {
+                EscapeIntoVoid(Sucked);
+                delay_timer = 0;
+            }
+            else
+                delay_timer -= diff;
+        }
+
+        if(manifestation_timer)
+        {
+            if(manifestation_timer <= diff)
+            {
+                manifestation_timer = 0;
+                me->CastSpell(me, SPELL_RIFT_SPAWN_MANIFESTATION, false);
+                if(roll_chance_i(20))
+                    me->MonsterTextEmote(RIFT_EMOTE_AGGRO, 0);
+                if(casterGUID && me->GetPlayer(casterGUID))
+                    AttackStart(me->GetPlayer(casterGUID));
+                else
+                    EscapeIntoVoid(Sucked);
+            }
+            else
+                manifestation_timer -= diff;
+        }
+
+        // evade if too far from Mana Rift Disturbance
+        if(me->isInCombat() && me->GetMapId() == 0 && !me->IsWithinDist2d(1409, 353.5, 55.0))
+        {
+            me->CombatStop();
+            me->getThreatManager().clearReferences();
+            me->RemoveAllAuras();
+            me->SetHealth(me->GetMaxHealth());
+            EscapeIntoVoid(Sucked);
+        }
+
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_rift_spawn(Creature *_Creature)
+{
+    return new mob_rift_spawnAI (_Creature);
+}
+
+bool GossipHello_go_containment_coffer(Player *player, GameObject* go)
+{
+    Creature* spawn = GetClosestCreatureWithEntry(go, MOB_RIFT_SPAWN, 5.0, true);
+    if(spawn && spawn->HasAura(SPELL_SELF_STUN_30SEC))
+    {
+        spawn->AI()->SetData(BEING_SUCKED, 0);
+        go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+        go->UseDoorOrButton();
+        spawn->MonsterTextEmote(RIFT_EMOTE_SUCKED, player->GetGUID());
+    }
+    return true;
+}
 
 /*######
 ## npc_lady_sylvanas_windrunner
@@ -243,6 +440,17 @@ bool GossipSelect_npc_parqual_fintallas(Player *player, Creature *_Creature, uin
 void AddSC_undercity()
 {
     Script *newscript;
+
+
+    newscript = new Script;
+    newscript->Name="mob_rift_spawn";
+    newscript->GetAI = &GetAI_mob_rift_spawn;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="go_containment_coffer";
+    newscript->pGOUse  = &GossipHello_go_containment_coffer;
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="npc_lady_sylvanas_windrunner";

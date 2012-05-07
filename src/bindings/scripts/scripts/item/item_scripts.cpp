@@ -476,6 +476,38 @@ bool ItemUse_item_rood_rofl(Player *player, Item* _Item, SpellCastTargets const&
     return false;
 }
 
+/*#####
+# item_chest_of_containment_coffers
+#####*/
+
+#define MOB_RIFT_SPAWN          6492
+#define SPELL_SELF_STUN_30SEC   9032
+
+bool ItemUse_item_chest_of_containment_coffers(Player *player, Item* _Item, SpellCastTargets const& targets)
+{
+    std::list<Creature*> SpawnList;
+    Trinity::AllCreaturesOfEntryInRange u_check(player, MOB_RIFT_SPAWN, 20.0);
+    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(SpawnList, u_check);
+    Cell::VisitAllObjects(player, searcher, 20.0);
+
+    if(!SpawnList.empty())
+    {
+        for(std::list<Creature*>::iterator i = SpawnList.begin(); i != SpawnList.end(); ++i)
+        {
+            if((*i)->HasAura(SPELL_SELF_STUN_30SEC))
+                return false;
+        }
+    }
+
+    WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
+    data << uint32(_Item->GetEntry());                      // itemId
+    data << uint8(SPELL_FAILED_BAD_TARGETS);                // reason
+    player->GetSession()->SendPacket(&data);                // send message: Invalid target
+
+    player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);      // break spell
+    return true;
+}
+
 void AddSC_item_scripts()
 {
     Script *newscript;
@@ -534,6 +566,11 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name="item_rood_rofl";
     newscript->pItemUse = &ItemUse_item_rood_rofl;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="item_chest_of_containment_coffers";
+    newscript->pItemUse = &ItemUse_item_chest_of_containment_coffers;
     newscript->RegisterSelf();
 }
 
