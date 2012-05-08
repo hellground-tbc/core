@@ -76,7 +76,7 @@ EndScriptData */
 #define CREATURE_PHOENIX_EGG          24675
 #define CREATURE_ARCANE_SPHERE        24708
 
-struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
 {
     boss_felblood_kaelthasAI(Creature* c) : ScriptedAI(c), summons(c)
     {
@@ -412,7 +412,7 @@ struct TRINITY_DLL_DECL boss_felblood_kaelthasAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_felkael_flamestrikeAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_felkael_flamestrikeAI : public Scripted_NoMovementAI
 {
     mob_felkael_flamestrikeAI(Creature *c) : Scripted_NoMovementAI(c) { }
 
@@ -435,7 +435,7 @@ struct TRINITY_DLL_DECL mob_felkael_flamestrikeAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
 {
     mob_felkael_phoenix_eggAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -474,7 +474,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenix_eggAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
 {
     mob_felkael_phoenixAI(Creature *c) : ScriptedAI(c)
     {
@@ -538,7 +538,7 @@ struct TRINITY_DLL_DECL mob_felkael_phoenixAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_arcane_sphereAI : public ScriptedAI
 {
     mob_arcane_sphereAI(Creature *c) : ScriptedAI(c)
     {

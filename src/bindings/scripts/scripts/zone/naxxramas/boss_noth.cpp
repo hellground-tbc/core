@@ -54,7 +54,7 @@ enum NothEvents
     EVENT_SKELETONS         = 3
 };
 
-struct TRINITY_DLL_DECL boss_nothAI : public BossAI
+struct HELLGROUND_DLL_DECL boss_nothAI : public BossAI
 {
     boss_nothAI(Creature *c) : BossAI(c, DATA_NOTH_THE_PLAGUEBRINGER) { }
 

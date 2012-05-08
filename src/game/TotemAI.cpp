@@ -87,8 +87,8 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
     {
         victim = NULL;
 
-        Trinity::NearestAttackableUnitInObjectRangeCheck u_check(&i_totem, &i_totem, max_range);
-        Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> checker(victim, u_check);
+        Hellground::NearestAttackableUnitInObjectRangeCheck u_check(&i_totem, &i_totem, max_range);
+        Hellground::UnitLastSearcher<Hellground::NearestAttackableUnitInObjectRangeCheck> checker(victim, u_check);
 
         Cell::VisitAllObjects(m_creature, checker, max_range);
     }

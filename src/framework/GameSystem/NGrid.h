@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_NGRID_H
-#define TRINITY_NGRID_H
+#ifndef HELLGROUND_NGRID_H
+#define HELLGROUND_NGRID_H
 
 /** NGrid is nothing more than a wrapper of the Grid with an NxN cells
  */
@@ -75,9 +75,9 @@ unsigned int N,
 class ACTIVE_OBJECT,
 class WORLD_OBJECT_TYPES,
 class GRID_OBJECT_TYPES,
-class ThreadModel = Trinity::SingleThreaded<ACTIVE_OBJECT>
+class ThreadModel = Hellground::SingleThreaded<ACTIVE_OBJECT>
 >
-class TRINITY_DLL_DECL NGrid
+class HELLGROUND_DLL_DECL NGrid
 {
     public:
 

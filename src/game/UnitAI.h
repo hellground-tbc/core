@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_UNITAI_H
-#define TRINITY_UNITAI_H
+#ifndef HELLGROUND_UNITAI_H
+#define HELLGROUND_UNITAI_H
 
 #include "Platform/Define.h"
 #include <list>
@@ -41,7 +41,7 @@ enum SelectAggroTarget
     SELECT_TARGET_HIGHEST_HP,
 };
 
-class TRINITY_DLL_SPEC UnitAI
+class HELLGROUND_DLL_SPEC UnitAI
 {
     protected:
         Unit * const me;

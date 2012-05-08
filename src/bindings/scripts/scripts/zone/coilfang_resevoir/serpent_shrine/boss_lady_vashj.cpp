@@ -137,7 +137,7 @@ float ShieldGeneratorChannelPos[4][4] =
 };
 
 //Lady Vashj AI
-struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 {
     boss_lady_vashjAI (Creature *c) : ScriptedAI(c)
     {
@@ -608,7 +608,7 @@ struct TRINITY_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         }
     }
 };
-class TRINITY_DLL_DECL VashjSurgeAura : public Aura
+class HELLGROUND_DLL_DECL VashjSurgeAura : public Aura
 {
     public:
         VashjSurgeAura(SpellEntry *spell, uint32 eff, int32 *bp, Unit *target, Unit *caster) : Aura(spell, eff, bp, target, caster, NULL)
@@ -616,7 +616,7 @@ class TRINITY_DLL_DECL VashjSurgeAura : public Aura
 };
 //Enchanted Elemental
 //If one of them reaches Vashj he will increase her damage done by 5%.
-struct TRINITY_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
 {
     mob_enchanted_elementalAI(Creature *c) : ScriptedAI(c)
     {
@@ -721,7 +721,7 @@ struct TRINITY_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
 
 //Tainted Elemental
 //This mob has 7,900 life, doesn't move, and shoots Poison Bolts at one person anywhere in the area, doing 3,000 nature damage and placing a posion doing 2,000 damage every 2 seconds. He will switch targets often, or sometimes just hang on a single player, but there is nothing you can do about it except heal the damage and kill the Tainted Elemental
-struct TRINITY_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
 {
     mob_tainted_elementalAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -781,7 +781,7 @@ struct TRINITY_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementAI
 
 //Toxic Sporebat
 //Toxic Spores: Used in Phase 3 by the Spore Bats, it creates a contaminated green patch of ground, dealing about 2775-3225 nature damage every second to anyone who stands in it.
-struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
 {
     mob_toxic_sporebatAI(Creature *c) : ScriptedAI(c)
     {
@@ -876,7 +876,7 @@ struct TRINITY_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 {
     mob_coilfang_eliteAI(Creature *c) : ScriptedAI(c)
     {
@@ -992,7 +992,7 @@ struct TRINITY_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
     }
 };
 //Coilfang Strider
-struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
 {
     mob_coilfang_striderAI(Creature *c) : ScriptedAI(c)
     {
@@ -1109,7 +1109,7 @@ struct TRINITY_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-struct TRINITY_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
 {
     mob_shield_generator_channelAI(Creature *c) : ScriptedAI(c)
     {

@@ -223,7 +223,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         return;
     }
 
-    if (!Trinity::IsValidMapCoord(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o))
+    if (!Hellground::IsValidMapCoord(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o))
         return;
 
     Player * pPlayer = GetPlayer();
@@ -268,7 +268,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
         if (movementInfo.GetTransportPos()->x > 50 || movementInfo.GetTransportPos()->y > 50 || movementInfo.GetTransportPos()->z > 50)
             return;
 
-        if (!Trinity::IsValidMapCoord(
+        if (!Hellground::IsValidMapCoord(
             movementInfo.GetPos()->x + movementInfo.GetTransportPos()->x,
             movementInfo.GetPos()->y + movementInfo.GetTransportPos()->y,
             movementInfo.GetPos()->z + movementInfo.GetTransportPos()->z,

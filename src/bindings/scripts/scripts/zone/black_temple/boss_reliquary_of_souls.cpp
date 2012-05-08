@@ -92,7 +92,7 @@ struct cPosition
     float x,y;
 };
 
-struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
 {
     npc_enslaved_soulAI(Creature *c) : ScriptedAI(c)
     {
@@ -155,7 +155,7 @@ struct TRINITY_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 {
     boss_reliquary_of_soulsAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -430,7 +430,7 @@ struct TRINITY_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_ros_triggerAI : public ScriptedAI
 {
     npc_ros_triggerAI(Creature *c) : ScriptedAI(c)
     {
@@ -477,7 +477,7 @@ struct TRINITY_DLL_DECL npc_ros_triggerAI : public ScriptedAI
     void UpdateAI(const uint32 diff){}
 };
 
-struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 {
     boss_essence_of_sufferingAI(Creature *c) : ScriptedAI(c)
     {
@@ -567,7 +567,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if(targets.empty())
             return; // No targets added for some reason. No point continuing.
 
-        targets.sort(Trinity::ObjectDistanceOrder(m_creature)); // Sort players by distance.
+        targets.sort(Hellground::ObjectDistanceOrder(m_creature)); // Sort players by distance.
         targets.resize(1); // Only need closest target.
 
         Unit* target = targets.front();
@@ -634,7 +634,7 @@ struct TRINITY_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 {
     boss_essence_of_desireAI(Creature *c) : ScriptedAI(c) {}
 
@@ -764,7 +764,7 @@ struct TRINITY_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 {
     boss_essence_of_angerAI(Creature *c) : ScriptedAI(c) {}
 

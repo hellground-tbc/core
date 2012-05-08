@@ -96,11 +96,11 @@ void ScriptText(int32 textEntry, Unit* pSource, Unit* target = NULL);
 #endif
 
 #ifdef WIN32
-  #define TRINITY_DLL_EXPORT extern "C" __declspec(dllexport)
+  #define HELLGROUND_DLL_EXPORT extern "C" __declspec(dllexport)
 #elif defined( __GNUC__ )
-#define TRINITY_DLL_EXPORT extern "C"
+#define HELLGROUND_DLL_EXPORT extern "C"
 #else
-#define TRINITY_DLL_EXPORT extern "C" export
+#define HELLGROUND_DLL_EXPORT extern "C" export
 #endif
 
 #endif

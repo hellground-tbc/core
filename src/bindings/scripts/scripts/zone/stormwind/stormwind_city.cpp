@@ -66,7 +66,7 @@ bool GossipSelect_npc_archmage_malin(Player *player, Creature *_Creature, uint32
 ## npc_bartleby
 ######*/
 
-struct TRINITY_DLL_DECL npc_bartlebyAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_bartlebyAI : public ScriptedAI
 {
     npc_bartlebyAI(Creature *c) : ScriptedAI(c) {}
 
@@ -125,7 +125,7 @@ CreatureAI* GetAI_npc_bartleby(Creature *_creature)
 ## npc_dashel_stonefist
 ######*/
 
-struct TRINITY_DLL_DECL npc_dashel_stonefistAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_dashel_stonefistAI : public ScriptedAI
 {
     npc_dashel_stonefistAI(Creature *c) : ScriptedAI(c) {}
 
@@ -653,7 +653,7 @@ bool QuestAccept_npc_tyrion(Player* pPlayer, Creature* pCreature, Quest const *p
 
 #define REGINALD_SPAWN_COORDS       -9179.8, 308.65, 78.92
 
-struct TRINITY_DLL_DECL npc_squire_roweAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_squire_roweAI : public npc_escortAI
 {
     npc_squire_roweAI(Creature *c) : npc_escortAI(c)
     {
@@ -807,7 +807,7 @@ float StormwindEliteGuardMoveCoords[6][4] =
     {-8962.0, 502.6, 96.7, 2.24}
 };
 
-struct TRINITY_DLL_DECL npc_stormwind_elite_guardAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_stormwind_elite_guardAI : public ScriptedAI
 {
     npc_stormwind_elite_guardAI(Creature *c) : ScriptedAI(c) {}
 
@@ -944,7 +944,7 @@ float StormwindGuardsCoords[7][4] =
     {-8960.7, 503.6, 96.7, 3.78}
 };
 
-struct TRINITY_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
 {
     npc_reginald_windsorAI(Creature *c) : npc_escortAI(c) {}
 

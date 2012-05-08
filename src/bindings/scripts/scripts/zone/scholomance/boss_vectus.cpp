@@ -27,7 +27,7 @@ EndScriptData */
 #define SPELL_BLASTWAVE         13021
 #define SPELL_FRENZY            28371
 
-struct TRINITY_DLL_DECL boss_vectusAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_vectusAI : public ScriptedAI
 {
     boss_vectusAI(Creature *c) : ScriptedAI(c) {}
 

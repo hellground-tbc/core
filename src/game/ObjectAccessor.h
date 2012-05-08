@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_OBJECTACCESSOR_H
-#define TRINITY_OBJECTACCESSOR_H
+#ifndef HELLGROUND_OBJECTACCESSOR_H
+#define HELLGROUND_OBJECTACCESSOR_H
 
 #include "Platform/Define.h"
 #include "Policies/Singleton.h"
@@ -52,7 +52,7 @@ class HashMapHolder
 
         typedef tbb::concurrent_hash_map<uint64, T*>  MapType;
         typedef ACE_Thread_Mutex LockType;
-        typedef Trinity::GeneralLock<LockType> Guard;
+        typedef Hellground::GeneralLock<LockType> Guard;
 
         static bool Insert(T* o)
         {
@@ -98,10 +98,10 @@ class HashMapHolder
         static MapType  m_objectMap;
 };
 
-class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassLevelLockable<ObjectAccessor, ACE_Thread_Mutex> >
+class ObjectAccessor : public Hellground::Singleton<ObjectAccessor, Hellground::ClassLevelLockable<ObjectAccessor, ACE_Thread_Mutex> >
 {
 
-    friend class Trinity::OperatorNew<ObjectAccessor>;
+    friend class Hellground::OperatorNew<ObjectAccessor>;
     ObjectAccessor(){}
     ~ObjectAccessor(){}
     ObjectAccessor(const ObjectAccessor &);
@@ -145,7 +145,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         void RemoveOldCorpses();
 
         typedef ACE_Thread_Mutex LockType;
-        typedef Trinity::GeneralLock<LockType> Guard;
+        typedef Hellground::GeneralLock<LockType> Guard;
         std::list<Player*> playersToDelete;
     private:
 

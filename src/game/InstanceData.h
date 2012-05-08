@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_INSTANCE_DATA_H
-#define TRINITY_INSTANCE_DATA_H
+#ifndef HELLGROUND_INSTANCE_DATA_H
+#define HELLGROUND_INSTANCE_DATA_H
 
 #include "ZoneScript.h"
 //#include "GameObject.h"
@@ -73,7 +73,7 @@ struct DoorData
     DoorType type;
 };
 
-class TRINITY_DLL_SPEC InstanceData : public ZoneScript
+class HELLGROUND_DLL_SPEC InstanceData : public ZoneScript
 {
     public:
 

@@ -50,7 +50,7 @@ enum FaerlinaEvents
     EVENT_ENRAGE                = 3
 };
 
-struct TRINITY_DLL_DECL boss_faerlinaAI : public BossAI
+struct HELLGROUND_DLL_DECL boss_faerlinaAI : public BossAI
 {
     boss_faerlinaAI(Creature *c) : BossAI(c, DATA_GRAND_WIDOW_FAERLINA) { }
 

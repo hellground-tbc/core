@@ -45,6 +45,6 @@ class Master
         void clearOnlineAccounts();
 };
 
-#define sMaster Trinity::Singleton<Master>::Instance()
+#define sMaster Hellground::Singleton<Master>::Instance()
 #endif
 /// @}

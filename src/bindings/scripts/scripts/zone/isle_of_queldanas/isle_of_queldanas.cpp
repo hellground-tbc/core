@@ -134,7 +134,7 @@ const char* WretchedQuotes[3] =
 #define SPELL_NETHER_SHOCK          35334
 // do not regenerates mana OOC - creature extra flag (dec value 16777216)
 
-struct TRINITY_DLL_DECL npc_wretched_devourerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_wretched_devourerAI : public ScriptedAI
 {
     npc_wretched_devourerAI(Creature* c) : ScriptedAI(c) {}
 
@@ -201,7 +201,7 @@ CreatureAI* GetAI_npc_wretched_devourer(Creature* _Creature)
 #define SPELL_SLEEPING_SLEEP        42648
 // do not regenerates mana OOC - creature extra flag (dec value 16777216)
 
-struct TRINITY_DLL_DECL npc_wretched_fiendAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_wretched_fiendAI : public ScriptedAI
 {
     npc_wretched_fiendAI(Creature* c) : ScriptedAI(c) {}
 
@@ -264,7 +264,7 @@ CreatureAI* GetAI_npc_wretched_fiend(Creature* _Creature)
 #define SPELL_CRYSTAL_STRIKE        33688
 // do not regenerates health OOC, but self repairs when at or below 50%- creature extra flag (dec value 33554432)
 
-struct TRINITY_DLL_DECL npc_erratic_sentryAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_erratic_sentryAI : public ScriptedAI
 {
     npc_erratic_sentryAI(Creature* c) : ScriptedAI(c) {}
 
@@ -373,7 +373,7 @@ const char* LookoutYell[3] =
     "Dragonhawk incoming from the west! Shoot that $c down!"
 };
 
-struct TRINITY_DLL_DECL npc_sunblade_lookoutAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_sunblade_lookoutAI : public Scripted_NoMovementAI
 {
     npc_sunblade_lookoutAI(Creature* c) : Scripted_NoMovementAI(c) {}
     void MoveInLineOfSight(Unit *who)
@@ -405,7 +405,7 @@ CreatureAI* GetAI_npc_sunblade_lookout(Creature* _Creature)
 #define MOB_RAVAGER                 25028
 #define MOB_GHOUL                   25027
 
-struct TRINITY_DLL_DECL npc_wrath_enforcerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_wrath_enforcerAI : public ScriptedAI
 {
     npc_wrath_enforcerAI(Creature* c) : ScriptedAI(c) {}
 
@@ -464,7 +464,7 @@ CreatureAI* GetAI_npc_wrath_enforcer(Creature* _Creature)
 
 #define SPELL_BURN          33802
 
-struct TRINITY_DLL_DECL npc_flame_waveAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_flame_waveAI : public ScriptedAI
 {
     npc_flame_waveAI(Creature* c) : ScriptedAI(c) {}
 
@@ -506,7 +506,7 @@ CreatureAI* GetAI_npc_flame_wave(Creature* _Creature)
 #define SPELL_CONE_OF_FIRE          19630
 #define SPELL_DEATH_COIL            32709
 
-struct TRINITY_DLL_DECL npc_pit_overlordAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_pit_overlordAI : public ScriptedAI
 {
     npc_pit_overlordAI(Creature* c) : ScriptedAI(c) {}
 
@@ -584,7 +584,7 @@ CreatureAI* GetAI_npc_pit_overlord(Creature* _Creature)
 
 #define SPELL_FLAMES_OF_DOOM        45046
 
-struct TRINITY_DLL_DECL npc_eredar_sorcererAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_eredar_sorcererAI : public Scripted_NoMovementAI
 {
     npc_eredar_sorcererAI(Creature* c) : Scripted_NoMovementAI(c) {}
 
@@ -640,7 +640,7 @@ const char* BombardierYell[6] =
     "We've got your back, $n"
 };
 
-struct TRINITY_DLL_DECL npc_shattered_sun_bombardierAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_shattered_sun_bombardierAI : public ScriptedAI
 {
     npc_shattered_sun_bombardierAI(Creature* c) : ScriptedAI(c) {}
 
@@ -748,7 +748,7 @@ bool GossipSelect_npc_unrestrained_dragonhawk(Player *player, Creature *_Creatur
 #define DM      25060
 #define SIREN   25073
 
-struct TRINITY_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_greengill_slaveAI : public ScriptedAI
 {
     npc_greengill_slaveAI(Creature* c) : ScriptedAI(c) {}
 
@@ -850,7 +850,7 @@ const char* BrutalYell[10] =
 ## npc_ioqd_brutallus
 ######*/
 
-struct TRINITY_DLL_DECL npc_ioqd_brutallusAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_ioqd_brutallusAI : public ScriptedAI
 {
     npc_ioqd_brutallusAI(Creature* c) : ScriptedAI(c) {}
 
@@ -896,7 +896,7 @@ CreatureAI* GetAI_npc_ioqd_brutallus(Creature* _Creature)
 ## npc_ioqd_madrigosa
 ######*/
 
-struct TRINITY_DLL_DECL npc_ioqd_madrigosaAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_ioqd_madrigosaAI : public ScriptedAI
 {
     npc_ioqd_madrigosaAI(Creature* c) : ScriptedAI(c) {}
 

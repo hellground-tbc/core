@@ -22,8 +22,8 @@
 /// @{
 /// \file
 
-#ifndef TRINITY_WORLDLOG_H
-#define TRINITY_WORLDLOG_H
+#ifndef HELLGROUND_WORLDLOG_H
+#define HELLGROUND_WORLDLOG_H
 
 #include "Common.h"
 #include "Policies/Singleton.h"
@@ -32,13 +32,13 @@
 #include <stdarg.h>
 
 /// %Log packets to a file
-class TRINITY_DLL_DECL WorldLog : public Trinity::Singleton<WorldLog, Trinity::ClassLevelLockable<WorldLog, ACE_Thread_Mutex> >
+class HELLGROUND_DLL_DECL WorldLog : public Hellground::Singleton<WorldLog, Hellground::ClassLevelLockable<WorldLog, ACE_Thread_Mutex> >
 {
-    friend class Trinity::OperatorNew<WorldLog>;
+    friend class Hellground::OperatorNew<WorldLog>;
     WorldLog() : i_file(NULL) { Initialize(); }
     WorldLog(const WorldLog &);
     WorldLog& operator=(const WorldLog &);
-    typedef Trinity::ClassLevelLockable<WorldLog, ACE_Thread_Mutex>::Lock Guard;
+    typedef Hellground::ClassLevelLockable<WorldLog, ACE_Thread_Mutex>::Lock Guard;
 
     /// Close the file in destructor
     ~WorldLog()

@@ -66,7 +66,7 @@ float PortalLocations[2][2]=
     {-11242.1160, -1713.33325},
 };
 
-struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_kilrekAI : public ScriptedAI
 {
     mob_kilrekAI(Creature *c) : ScriptedAI(c)
     {
@@ -134,7 +134,7 @@ struct TRINITY_DLL_DECL mob_kilrekAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_demon_chainAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_demon_chainAI : public Scripted_NoMovementAI
 {
     mob_demon_chainAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
@@ -159,7 +159,7 @@ struct TRINITY_DLL_DECL mob_demon_chainAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_terestianAI : public ScriptedAI
 {
     boss_terestianAI(Creature *c) : ScriptedAI(c)
     {
@@ -357,7 +357,7 @@ struct TRINITY_DLL_DECL boss_terestianAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL mob_fiendish_impAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_fiendish_impAI : public ScriptedAI
 {
     mob_fiendish_impAI(Creature *c) : ScriptedAI(c) {}
 

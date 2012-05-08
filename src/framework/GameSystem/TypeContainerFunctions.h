@@ -31,7 +31,7 @@
 #include "Utilities/TypeList.h"
 #include <map>
 
-namespace Trinity
+namespace Hellground
 {
     /* ContainerMapList Helpers */
     // count functions

@@ -55,7 +55,7 @@ uint32 KaelTrashDBguid[6]=
 #define SPELL_FEL_CRYSTAL_COSMETIC      44374
 #define SPELL_FEL_ENERGY_COSMETIC       44574
 
-struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 {
     mob_sunwell_mage_guardAI(Creature *c) : ScriptedAI(c)
     {
@@ -158,7 +158,7 @@ struct TRINITY_DLL_DECL mob_sunwell_mage_guardAI : public ScriptedAI
 #define SPELL_ENCHANTMENT_OF_SPELL_HASTE    44604
 #define SPELL_SPELL_HASTE                   44605
 
-struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 {
     mob_sunblade_magisterAI(Creature *c) : ScriptedAI(c)
     {
@@ -267,7 +267,7 @@ struct TRINITY_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
 #define SPELL_IMMOLATE                      (HeroicMode?46042:44518)
 #define SPELL_INCINERATE                    (HeroicMode?46043:44519)
 
-struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 {
     mob_sunblade_warlockAI(Creature *c) : ScriptedAI(c)
     {
@@ -403,7 +403,7 @@ struct TRINITY_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
 
 #define SPELL_FIREBALL                      (HeroicMode?46044:44577)
 
-struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sunblade_impAI : public ScriptedAI
 {
     mob_sunblade_impAI(Creature *c) : ScriptedAI(c) { }
 
@@ -428,7 +428,7 @@ struct TRINITY_DLL_DECL mob_sunblade_impAI : public ScriptedAI
 #define SPELL_INJECT_POISON                 (HeroicMode?46046:44599)
 #define SPELL_PRAYER_OF_MENDING             (HeroicMode?46045:44583)
 
-struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 {
     mob_sunblade_physicianAI(Creature *c) : ScriptedAI(c)
     {
@@ -547,7 +547,7 @@ struct TRINITY_DLL_DECL mob_sunblade_physicianAI : public ScriptedAI
 #define SPELL_JUDGEMENT_OF_WRATH            (HeroicMode?46033:44482)
 #define SPELL_HOLY_LIGHT                    (HeroicMode?46029:44479)
 
-struct TRINITY_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sunblade_blood_knightAI : public ScriptedAI
 {
     mob_sunblade_blood_knightAI(Creature *c) : ScriptedAI(c)
     {
@@ -678,7 +678,7 @@ const char* SAY_AGGRO3   = "You wish to steal the power! Die!";
 #define SPELL_WRETCHED_STAB                 44533
 #define SPELL_DUAL_WIELD                    29651
 
-struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
 {
     mob_wretched_skulkerAI(Creature *c) : ScriptedAI(c) {}
 
@@ -753,7 +753,7 @@ struct TRINITY_DLL_DECL mob_wretched_skulkerAI : public ScriptedAI
 
 #define SPELL_WRETCHED_STRIKE               44534
 
-struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
 {
     mob_wretched_bruiserAI(Creature *c) : ScriptedAI(c) {}
 
@@ -828,7 +828,7 @@ struct TRINITY_DLL_DECL mob_wretched_bruiserAI : public ScriptedAI
 #define SPELL_WRETCHED_FIREBALL               44503
 #define SPELL_WRETCHED_FROSTBOLT              44504
 
-struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_wretched_huskAI : public ScriptedAI
 {
     mob_wretched_huskAI(Creature *c) : ScriptedAI(c) {}
 
@@ -911,7 +911,7 @@ struct TRINITY_DLL_DECL mob_wretched_huskAI : public ScriptedAI
 
 #define SPELL_ENERGY_INFUSION                 44406
 
-struct TRINITY_DLL_DECL mob_brightscale_wyrmAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_brightscale_wyrmAI : public ScriptedAI
 {
     mob_brightscale_wyrmAI(Creature *c) : ScriptedAI(c) {}
     //TODO: make Nether Energy Feeding cosmetics when Sunblade Keeper implemented?
@@ -935,7 +935,7 @@ struct TRINITY_DLL_DECL mob_brightscale_wyrmAI : public ScriptedAI
 #define SPELL_LASH_OF_PAIN              44640
 #define SPELL_DEADLY_EMRACE             44547
 
-struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
 {
     mob_sister_of_tormentAI(Creature *c) : ScriptedAI(c)
     {
@@ -1035,7 +1035,7 @@ struct TRINITY_DLL_DECL mob_sister_of_tormentAI : public ScriptedAI
 
 #define SPELL_FEL_LIGHTNING_AURA        (HeroicMode?46048:44537)
 
-struct TRINITY_DLL_DECL mob_sunblade_sentinelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sunblade_sentinelAI : public ScriptedAI
 {
     mob_sunblade_sentinelAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1057,7 +1057,7 @@ struct TRINITY_DLL_DECL mob_sunblade_sentinelAI : public ScriptedAI
 #define SPELL_FROST_ARROW               44639
 #define SPELL_FORKED_LIGHTNING          (HeroicMode?46150:20299)
 
-struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
 {
     mob_coilskar_witchAI(Creature *c) : ScriptedAI(c)
     {
@@ -1193,7 +1193,7 @@ struct TRINITY_DLL_DECL mob_coilskar_witchAI : public ScriptedAI
 
 #define SPELL_ARCANE_EXPLOSION          44538
 
-struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
 {
     mob_ethereum_smugglerAI(Creature *c) : ScriptedAI(c)
     {
@@ -1309,7 +1309,7 @@ struct TRINITY_DLL_DECL mob_ethereum_smugglerAI : public ScriptedAI
 #define NPC_MGT_KALECGOS                 24844
 #define NPC_MGT_KALEC                    24848
 
-struct TRINITY_DLL_DECL mob_mgt_kalecgosAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_mgt_kalecgosAI : public ScriptedAI
 {
     mob_mgt_kalecgosAI(Creature *c) : ScriptedAI(c) { }
 

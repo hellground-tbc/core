@@ -41,7 +41,7 @@ EndScriptData */
 #define CREATURE_VOLCANO            23085
 #define CREATURE_STALKER            23095
 
-struct TRINITY_DLL_DECL molten_flameAI : public NullCreatureAI
+struct HELLGROUND_DLL_DECL molten_flameAI : public NullCreatureAI
 {
     molten_flameAI(Creature *c) : NullCreatureAI(c)
     {
@@ -75,7 +75,7 @@ struct TRINITY_DLL_DECL molten_flameAI : public NullCreatureAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_supremusAI : public ScriptedAI
 {
     boss_supremusAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
@@ -328,7 +328,7 @@ struct TRINITY_DLL_DECL boss_supremusAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL npc_volcanoAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_volcanoAI : public Scripted_NoMovementAI
 {
     npc_volcanoAI(Creature *c) : Scripted_NoMovementAI(c) { }
 

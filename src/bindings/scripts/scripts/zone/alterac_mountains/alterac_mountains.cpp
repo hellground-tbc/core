@@ -31,7 +31,7 @@ EndContentData */
 ## npc_ravenholdt
 ######*/
 
-struct TRINITY_DLL_DECL npc_ravenholdtAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_ravenholdtAI : public ScriptedAI
 {
     npc_ravenholdtAI(Creature *c) : ScriptedAI(c) {}
 

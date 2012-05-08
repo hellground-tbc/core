@@ -63,7 +63,7 @@ enum LurkerEvents
     LURKER_EVENT_REEMERGE       = 6
 };
 
-struct TRINITY_DLL_DECL boss_the_lurker_belowAI : public BossAI
+struct HELLGROUND_DLL_DECL boss_the_lurker_belowAI : public BossAI
 {
     boss_the_lurker_belowAI(Creature *c) : BossAI(c, DATA_THELURKERBELOW) { }
 
@@ -298,7 +298,7 @@ enum guardianSpells
     SPELL_ARCING_SMASH = 28168
 };
 
-struct TRINITY_DLL_DECL mob_coilfang_guardianAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilfang_guardianAI : public ScriptedAI
 {
     mob_coilfang_guardianAI(Creature *c) : ScriptedAI(c) { }
 
@@ -350,7 +350,7 @@ enum ambusherSpells
     SPELL_NORMAL_SHOT = 37770
 };
 
-struct TRINITY_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_coilfang_ambusherAI : public Scripted_NoMovementAI
 {
     mob_coilfang_ambusherAI(Creature *c) : Scripted_NoMovementAI(c) { }
 

@@ -95,7 +95,7 @@ bool Corpse::Create(uint32 guidlow, Player *owner)
     SetFloatValue(CORPSE_FIELD_FACING, GetOrientation());
     SetUInt64Value(CORPSE_FIELD_OWNER, owner->GetGUID());
 
-    m_grid = Trinity::ComputeGridPair(GetPositionX(), GetPositionY());
+    m_grid = Hellground::ComputeGridPair(GetPositionX(), GetPositionY());
 
     return true;
 }
@@ -215,7 +215,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
         return false;
     }
 
-    m_grid = Trinity::ComputeGridPair(GetPositionX(), GetPositionY());
+    m_grid = Hellground::ComputeGridPair(GetPositionX(), GetPositionY());
 
     return true;
 }

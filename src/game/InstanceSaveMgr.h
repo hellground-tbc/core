@@ -113,7 +113,7 @@ class InstanceSave
         bool m_canReset;
 };
 
-class TRINITY_DLL_DECL InstanceSaveManager : public Trinity::Singleton<InstanceSaveManager, Trinity::ClassLevelLockable<InstanceSaveManager, ACE_Thread_Mutex> >
+class HELLGROUND_DLL_DECL InstanceSaveManager : public Hellground::Singleton<InstanceSaveManager, Hellground::ClassLevelLockable<InstanceSaveManager, ACE_Thread_Mutex> >
 {
     friend class InstanceSave;
     public:
@@ -173,5 +173,5 @@ class TRINITY_DLL_DECL InstanceSaveManager : public Trinity::Singleton<InstanceS
         ResetTimeQueue m_resetTimeQueue;
 };
 
-#define sInstanceSaveManager Trinity::Singleton<InstanceSaveManager>::Instance()
+#define sInstanceSaveManager Hellground::Singleton<InstanceSaveManager>::Instance()
 #endif

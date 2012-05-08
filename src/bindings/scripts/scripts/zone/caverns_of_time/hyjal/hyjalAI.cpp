@@ -996,8 +996,8 @@ void hyjalAI::HideNearPos(float x, float y)
 {
     // First get all creatures.
     std::list<Creature*> creatures;
-    Trinity::AllFriendlyCreaturesInGrid creature_check(m_creature);
-    Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
+    Hellground::AllFriendlyCreaturesInGrid creature_check(m_creature);
+    Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
     Cell::VisitGridObjects(x, y, me->GetMap(), creature_searcher, me->GetMap()->GetVisibilityDistance());
 
     if(!creatures.empty())
@@ -1012,8 +1012,8 @@ void hyjalAI::HideNearPos(float x, float y)
 
 void hyjalAI::RespawnNearPos(float x, float y)
 {
-    Trinity::RespawnDo u_do;
-    Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(u_do);
+    Hellground::RespawnDo u_do;
+    Hellground::WorldObjectWorker<Hellground::RespawnDo> worker(u_do);
     Cell::VisitGridObjects(x, y, me->GetMap(), worker, me->GetMap()->GetVisibilityDistance());
 }
 
@@ -1039,8 +1039,8 @@ void hyjalAI::WaypointReached(uint32 i)
         }
         // First get all creatures.
         std::list<Creature*> creatures;
-        Trinity::AllFriendlyCreaturesInGrid creature_check(m_creature);
-        Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
+        Hellground::AllFriendlyCreaturesInGrid creature_check(m_creature);
+        Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
         Cell::VisitGridObjects(me, creature_searcher, me->GetMap()->GetVisibilityDistance());
 
         if(!creatures.empty())
@@ -1072,8 +1072,8 @@ void hyjalAI::DoOverrun(uint32 faction, const uint32 diff)
         if(TeleportTimer < diff)
         {
             std::list<Creature*> creatures;
-            Trinity::AllFriendlyCreaturesInGrid creature_check(m_creature);
-            Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
+            Hellground::AllFriendlyCreaturesInGrid creature_check(m_creature);
+            Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> creature_searcher(creatures, creature_check);
             Cell::VisitGridObjects(me, creature_searcher, me->GetMap()->GetVisibilityDistance());
 
             if(!creatures.empty())

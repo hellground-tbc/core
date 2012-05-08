@@ -68,7 +68,7 @@ EndScriptData */
 #define SPELL_SWEEPING_SLAM         25322       //Major Pakkon 15388
 #define SPELL_ENLARGE               25462       //Colonel Zerran 15385
 
-struct TRINITY_DLL_DECL boss_rajaxxAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_rajaxxAI : public ScriptedAI
 {
     boss_rajaxxAI(Creature *c) : ScriptedAI(c)
     {
@@ -139,7 +139,7 @@ CreatureAI* GetAI_boss_rajaxx(Creature *_Creature)
     return new boss_rajaxxAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL lieutenant_general_andorovAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL lieutenant_general_andorovAI : public ScriptedAI
 {
     lieutenant_general_andorovAI(Creature *c) : ScriptedAI(c) {}
 
@@ -165,7 +165,7 @@ CreatureAI* GetAI_lieutenant_general_andorov(Creature *_Creature)
     return new lieutenant_general_andorovAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL rajaxx_officerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL rajaxx_officerAI : public ScriptedAI
 {
     rajaxx_officerAI(Creature *c) : ScriptedAI(c) {}
 

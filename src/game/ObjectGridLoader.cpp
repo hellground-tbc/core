@@ -29,7 +29,7 @@
 #include "CellImpl.h"
 #include "CreatureAI.h"
 
-class TRINITY_DLL_DECL ObjectGridRespawnMover
+class HELLGROUND_DLL_DECL ObjectGridRespawnMover
 {
     public:
         ObjectGridRespawnMover() {}
@@ -64,7 +64,7 @@ ObjectGridRespawnMover::Visit(CreatureMapType &m)
 
         float resp_x, resp_y, resp_z;
         c->GetRespawnCoord(resp_x, resp_y, resp_z);
-        CellPair resp_val = Trinity::ComputeCellPair(resp_x, resp_y);
+        CellPair resp_val = Hellground::ComputeCellPair(resp_x, resp_y);
         Cell resp_cell(resp_val);
 
         if (cur_cell.DiffGrid(resp_cell))

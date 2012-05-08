@@ -37,7 +37,7 @@ EndScriptData */
 
 #define GO_ICE_SPEAR                188077
 
-struct TRINITY_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
 {
     boss_lord_ahune_coreAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
@@ -116,7 +116,7 @@ CreatureAI* GetAI_boss_lord_ahune_core(Creature *_Creature)
 }
 
 
-struct TRINITY_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
 {
     ScriptedInstance* pInstance;
     SummonList Summons;
@@ -312,7 +312,7 @@ CreatureAI* GetAI_boss_lord_ahune(Creature *_Creature)
     return new boss_lord_ahuneAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
 {
     npc_ice_spear_bunnyAI(Creature *c) : Scripted_NoMovementAI(c)  {}
 
@@ -335,8 +335,8 @@ struct TRINITY_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
     {
         std::list<Unit*> PlayerList;
         uint32 knockbackRadius = 3;
-        Trinity::AnyUnitInObjectRangeCheck  check(me, knockbackRadius);
-        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
+        Hellground::AnyUnitInObjectRangeCheck  check(me, knockbackRadius);
+        Hellground::UnitListSearcher<Hellground::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
         Cell::VisitWorldObjects(me, searcher, knockbackRadius);
 
         for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)

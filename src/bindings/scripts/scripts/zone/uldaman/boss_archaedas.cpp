@@ -47,7 +47,7 @@ EndScriptData */
 #define SPELL_AWAKEN_VAULT_WALKER     10258
 #define SPELL_AWAKEN_EARTHEN_GUARDIAN 10252
 
-struct TRINITY_DLL_DECL boss_archaedasAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_archaedasAI : public ScriptedAI
 {
     boss_archaedasAI(Creature *c) : ScriptedAI(c)
     {
@@ -205,7 +205,7 @@ EndScriptData */
 
 #define SPELL_ARCHAEDAS_AWAKEN        10347
 
-struct TRINITY_DLL_DECL mob_archaedas_minionsAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_archaedas_minionsAI : public ScriptedAI
 {
     mob_archaedas_minionsAI(Creature *c) : ScriptedAI(c)
     {
@@ -358,7 +358,7 @@ EndScriptData */
 
 #define SPELL_SELF_DESTRUCT           9874
 
-struct TRINITY_DLL_DECL mob_stonekeepersAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_stonekeepersAI : public ScriptedAI
 {
     mob_stonekeepersAI(Creature *c) : ScriptedAI(c)
     {

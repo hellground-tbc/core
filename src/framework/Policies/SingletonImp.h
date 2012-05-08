@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_SINGLETONIMPL_H
-#define TRINITY_SINGLETONIMPL_H
+#ifndef HELLGROUND_SINGLETONIMPL_H
+#define HELLGROUND_SINGLETONIMPL_H
 
 #include "Singleton.h"
 
@@ -34,7 +34,7 @@ class CreatePolicy,
 class LifeTimePolicy
 >
 T&
-Trinity::Singleton<T, ThreadingModel, CreatePolicy, LifeTimePolicy >::Instance()
+Hellground::Singleton<T, ThreadingModel, CreatePolicy, LifeTimePolicy >::Instance()
 {
     if( !si_instance )
     {
@@ -63,7 +63,7 @@ class CreatePolicy,
 class LifeTimePolicy
 >
 void
-Trinity::Singleton<T, ThreadingModel, CreatePolicy, LifeTimePolicy>::DestroySingleton()
+Hellground::Singleton<T, ThreadingModel, CreatePolicy, LifeTimePolicy>::DestroySingleton()
 {
     CreatePolicy::Destroy(si_instance);
     si_instance = NULL;
@@ -71,23 +71,23 @@ Trinity::Singleton<T, ThreadingModel, CreatePolicy, LifeTimePolicy>::DestroySing
 }
 
 #define INSTANTIATE_SINGLETON_1(TYPE) \
-    template class TRINITY_DLL_DECL Trinity::Singleton<TYPE, Trinity::SingleThreaded<TYPE>, Trinity::OperatorNew<TYPE>, Trinity::ObjectLifeTime<TYPE> >; \
-    template<> TYPE* Trinity::Singleton<TYPE, Trinity::SingleThreaded<TYPE>, Trinity::OperatorNew<TYPE>, Trinity::ObjectLifeTime<TYPE> >::si_instance = 0; \
-    template<> bool Trinity::Singleton<TYPE, Trinity::SingleThreaded<TYPE>, Trinity::OperatorNew<TYPE>, Trinity::ObjectLifeTime<TYPE> >::si_destroyed = false
+    template class HELLGROUND_DLL_DECL Hellground::Singleton<TYPE, Hellground::SingleThreaded<TYPE>, Hellground::OperatorNew<TYPE>, Hellground::ObjectLifeTime<TYPE> >; \
+    template<> TYPE* Hellground::Singleton<TYPE, Hellground::SingleThreaded<TYPE>, Hellground::OperatorNew<TYPE>, Hellground::ObjectLifeTime<TYPE> >::si_instance = 0; \
+    template<> bool Hellground::Singleton<TYPE, Hellground::SingleThreaded<TYPE>, Hellground::OperatorNew<TYPE>, Hellground::ObjectLifeTime<TYPE> >::si_destroyed = false
 
 #define INSTANTIATE_SINGLETON_2(TYPE, THREADINGMODEL) \
-    template class TRINITY_DLL_DECL Trinity::Singleton<TYPE, THREADINGMODEL, Trinity::OperatorNew<TYPE>, Trinity::ObjectLifeTime<TYPE> >; \
-    template<> TYPE* Trinity::Singleton<TYPE, THREADINGMODEL, Trinity::OperatorNew<TYPE>, Trinity::ObjectLifeTime<TYPE> >::si_instance = 0; \
-    template<> bool Trinity::Singleton<TYPE, THREADINGMODEL, Trinity::OperatorNew<TYPE>, Trinity::ObjectLifeTime<TYPE> >::si_destroyed = false
+    template class HELLGROUND_DLL_DECL Hellground::Singleton<TYPE, THREADINGMODEL, Hellground::OperatorNew<TYPE>, Hellground::ObjectLifeTime<TYPE> >; \
+    template<> TYPE* Hellground::Singleton<TYPE, THREADINGMODEL, Hellground::OperatorNew<TYPE>, Hellground::ObjectLifeTime<TYPE> >::si_instance = 0; \
+    template<> bool Hellground::Singleton<TYPE, THREADINGMODEL, Hellground::OperatorNew<TYPE>, Hellground::ObjectLifeTime<TYPE> >::si_destroyed = false
 
 #define INSTANTIATE_SINGLETON_3(TYPE, THREADINGMODEL, CREATIONPOLICY ) \
-    template class TRINITY_DLL_DECL Trinity::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, Trinity::ObjectLifeTime<TYPE> >; \
-    template<> TYPE* Trinity::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, Trinity::ObjectLifeTime<TYPE> >::si_instance = 0; \
-    template<> bool Trinity::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, Trinity::ObjectLifeType<TYPE> >::si_destroyed = false
+    template class HELLGROUND_DLL_DECL Hellground::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, Hellground::ObjectLifeTime<TYPE> >; \
+    template<> TYPE* Hellground::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, Hellground::ObjectLifeTime<TYPE> >::si_instance = 0; \
+    template<> bool Hellground::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, Hellground::ObjectLifeType<TYPE> >::si_destroyed = false
 
 #define INSTANTIATE_SINGLETON_4(TYPE, THREADINGMODEL, CREATIONPOLICY, OBJECTLIFETIME) \
-    template class TRINITY_DLL_DECL Trinity::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, OBJECTLIFETIME >; \
-    template<> TYPE* Trinity::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, OBJECTLIFETIME >::si_instance = 0; \
-    template<> bool Trinity::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, OBJECTLIFETIME >::si_destroyed = false
+    template class HELLGROUND_DLL_DECL Hellground::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, OBJECTLIFETIME >; \
+    template<> TYPE* Hellground::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, OBJECTLIFETIME >::si_instance = 0; \
+    template<> bool Hellground::Singleton<TYPE, THREADINGMODEL, CREATIONPOLICY, OBJECTLIFETIME >::si_destroyed = false
 #endif
 

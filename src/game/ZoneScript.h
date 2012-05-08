@@ -26,7 +26,7 @@
 class Creature;
 class GameObject;
 
-class TRINITY_DLL_SPEC ZoneScript
+class HELLGROUND_DLL_SPEC ZoneScript
 {
     public:
         explicit ZoneScript() {}

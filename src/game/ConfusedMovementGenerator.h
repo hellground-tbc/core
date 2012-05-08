@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_CONFUSEDGENERATOR_H
-#define TRINITY_CONFUSEDGENERATOR_H
+#ifndef HELLGROUND_CONFUSEDGENERATOR_H
+#define HELLGROUND_CONFUSEDGENERATOR_H
 
 #include "MovementGenerator.h"
 
@@ -30,7 +30,7 @@
 #define MAX_RANDOM_POINTS  6
 
 template<class UNIT>
-class TRINITY_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMedium< UNIT, ConfusedMovementGenerator<UNIT> >
+class HELLGROUND_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMedium< UNIT, ConfusedMovementGenerator<UNIT> >
 {
     public:
         explicit ConfusedMovementGenerator() : _nextMoveTime(0) {}

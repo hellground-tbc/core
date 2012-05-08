@@ -77,6 +77,6 @@ class TicketMgr
 };
 
 #endif
-#define ticketmgr Trinity::Singleton<TicketMgr>::Instance()
+#define ticketmgr Hellground::Singleton<TicketMgr>::Instance()
 
 

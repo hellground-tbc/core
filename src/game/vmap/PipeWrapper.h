@@ -8,7 +8,7 @@
 #include <ace/FIFO_Send.h>
 #include <ace/FIFO_Recv.h>
 
-#define sMLog Trinity::Singleton<VMAP::MultiProcessLog>::Instance()
+#define sMLog Hellground::Singleton<VMAP::MultiProcessLog>::Instance()
 
 class ByteBuffer;
 

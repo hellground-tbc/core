@@ -54,7 +54,7 @@ enum npc
     NPC_HOLLEE = 24455,
 };
 
-struct TRINITY_DLL_DECL npc_forest_frogAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_forest_frogAI : public ScriptedAI
 {
     npc_forest_frogAI(Creature* c) : ScriptedAI(c)
     {
@@ -133,7 +133,7 @@ CreatureAI* GetAI_npc_forest_frog(Creature *_Creature)
 #define YELL_ASHLI_VASE2        -1800524
 #define YELL_ASHLI_VASE3        -1800525
 
-struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_hostageAI : public ScriptedAI
 {
     npc_hostageAI(Creature *c) : ScriptedAI(c)
     {
@@ -199,7 +199,7 @@ struct TRINITY_DLL_DECL npc_hostageAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL npc_tanzarAI : public npc_hostageAI
+struct HELLGROUND_DLL_DECL npc_tanzarAI : public npc_hostageAI
 {
     npc_tanzarAI(Creature *c) : npc_hostageAI(c)
     {
@@ -219,7 +219,7 @@ CreatureAI* GetAI_npc_tanzar(Creature *_Creature)
     return new npc_tanzarAI(_Creature);
 }
 
-struct TRINITY_DLL_DECL npc_harkorAI : public npc_hostageAI
+struct HELLGROUND_DLL_DECL npc_harkorAI : public npc_hostageAI
 {
     npc_harkorAI(Creature *c) : npc_hostageAI(c)
     {
@@ -244,7 +244,7 @@ CreatureAI* GetAI_npc_harkor(Creature *_Creature)
     return new npc_harkorAI(_Creature);
 }
 
-struct TRINITY_DLL_DECL npc_krazAI : public npc_hostageAI
+struct HELLGROUND_DLL_DECL npc_krazAI : public npc_hostageAI
 {
     npc_krazAI(Creature *c) : npc_hostageAI(c)
     {
@@ -327,7 +327,7 @@ float AshliWP[][3] = {
     {374, 1087, 7}
 };
 
-struct TRINITY_DLL_DECL npc_ashliAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_ashliAI : public ScriptedAI
 {
     npc_ashliAI(Creature *c) : ScriptedAI(c)
     {
@@ -649,7 +649,7 @@ SOUND_CELEBRATE = 12135
 
 #define GOSSIP_ITEM_BEGIN "Thanks for the concern, but we intend to explore Zul'Aman."
 
-struct TRINITY_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
 {
     npc_harrison_jones_zaAI(Creature* pCreature) : npc_escortAI(pCreature)
     {
@@ -806,7 +806,7 @@ bool GOUse_go_strange_gong(Player* pPlayer, GameObject* pGo)
     return false;
 }
 
-struct TRINITY_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMovementAI
 {
     npc_zulaman_door_triggerAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -914,7 +914,7 @@ int32 GauntletWP[][3] =
     { 301, 1385, 58 },
 };
 
-struct TRINITY_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 {
     npc_amanishi_lookoutAI(Creature *c) : ScriptedAI(c), Summons(c)
     {
@@ -1077,7 +1077,7 @@ CreatureAI* GetAI_npc_amanishi_lookout(Creature *_Creature)
     return new npc_amanishi_lookoutAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL npc_amanishi_warriorAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_amanishi_warriorAI : public npc_escortAI
 {
     npc_amanishi_warriorAI(Creature *c) : npc_escortAI(c)
     {
@@ -1136,7 +1136,7 @@ CreatureAI* GetAI_npc_amanishi_warrior(Creature *_Creature)
     return ai;
 }
 
-struct TRINITY_DLL_DECL npc_amani_eagleAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_amani_eagleAI : public npc_escortAI
 {
     npc_amani_eagleAI(Creature *c) : npc_escortAI(c)
     {
@@ -1189,7 +1189,7 @@ CreatureAI* GetAI_npc_amani_eagle(Creature *_Creature)
 #define SPELL_SUMMON_SENTRIES       42183
 #define MOB_SENTRY                  23587
 
-struct TRINITY_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
 {
     npc_amanishi_scoutAI(Creature *c) : ScriptedAI(c)
     {

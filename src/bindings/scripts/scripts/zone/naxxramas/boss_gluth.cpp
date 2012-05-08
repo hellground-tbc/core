@@ -59,7 +59,7 @@ float GluthAddPos[9][3] = {
         {3303.046, -3180.682, 297.423},
         {3313.283, -3180.766, 297.423}};
 
-struct TRINITY_DLL_DECL boss_gluthAI : public BossAI
+struct HELLGROUND_DLL_DECL boss_gluthAI : public BossAI
 {
     boss_gluthAI(Creature *c) : BossAI(c, DATA_GLUTH) { }
 

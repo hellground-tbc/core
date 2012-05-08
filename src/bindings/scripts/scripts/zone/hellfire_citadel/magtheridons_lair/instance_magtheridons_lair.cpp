@@ -26,7 +26,7 @@ EndScriptData */
 
 #define ENCOUNTERS 1
 
-struct TRINITY_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_magtheridons_lair : public ScriptedInstance
 {
     instance_magtheridons_lair(Map *Map) : ScriptedInstance(Map)
     {

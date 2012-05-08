@@ -18,19 +18,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_CREATIONPOLICY_H
-#define TRINITY_CREATIONPOLICY_H
+#ifndef HELLGROUND_CREATIONPOLICY_H
+#define HELLGROUND_CREATIONPOLICY_H
 
 #include <stdlib.h>
 #include "Platform/Define.h"
 
-namespace Trinity
+namespace Hellground
 {
     /**
      * OperatorNew policy creates an object on the heap using new.
      */
     template <class T>
-        class TRINITY_DLL_DECL OperatorNew
+        class HELLGROUND_DLL_DECL OperatorNew
     {
         public:
             static T* Create(void) { return (new T); }
@@ -42,7 +42,7 @@ namespace Trinity
      * the first time call Create.
      */
     template <class T>
-        class TRINITY_DLL_DECL LocalStaticCreation
+        class HELLGROUND_DLL_DECL LocalStaticCreation
     {
         union MaxAlign
         {
@@ -71,7 +71,7 @@ namespace Trinity
      * CreateUsingMalloc by pass the memory manger.
      */
     template<class T>
-        class TRINITY_DLL_DECL CreateUsingMalloc
+        class HELLGROUND_DLL_DECL CreateUsingMalloc
     {
         public:
             static T* Create()
@@ -92,7 +92,7 @@ namespace Trinity
      * CreateOnCallBack creates the object base on the call back.
      */
     template<class T, class CALL_BACK>
-        class TRINITY_DLL_DECL CreateOnCallBack
+        class HELLGROUND_DLL_DECL CreateOnCallBack
     {
         public:
             static T* Create()

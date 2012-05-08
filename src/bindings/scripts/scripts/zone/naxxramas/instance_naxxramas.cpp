@@ -13,7 +13,7 @@ EndScriptData */
 // This spawns 5 corpse scarabs ontop of us (most likely the player casts this on death)
 #define SPELL_SELF_SPAWN_5  29105
 
-struct TRINITY_DLL_DECL instance_naxxramas : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
 {
     instance_naxxramas(Map *map) : ScriptedInstance(map) { Initialize(); };
 

@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_MAPMANAGER_H
-#define TRINITY_MAPMANAGER_H
+#ifndef HELLGROUND_MAPMANAGER_H
+#define HELLGROUND_MAPMANAGER_H
 
 #include "Platform/Define.h"
 #include "Policies/Singleton.h"
@@ -31,7 +31,7 @@
 
 class Transport;
 
-struct TRINITY_DLL_DECL MapID
+struct HELLGROUND_DLL_DECL MapID
 {
     explicit MapID(uint32 id) : nMapId(id), nInstanceId(0) {}
     MapID(uint32 id, uint32 instid) : nMapId(id), nInstanceId(instid) {}
@@ -50,13 +50,13 @@ struct TRINITY_DLL_DECL MapID
     uint32 nInstanceId;
 };
 
-class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinity::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex> >
+class HELLGROUND_DLL_DECL MapManager : public Hellground::Singleton<MapManager, Hellground::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex> >
 {
 
-    friend class Trinity::OperatorNew<MapManager>;
+    friend class Hellground::OperatorNew<MapManager>;
     typedef ACE_Recursive_Thread_Mutex LOCK_TYPE;
     typedef ACE_Guard<LOCK_TYPE> LOCK_TYPE_GUARD;
-    typedef Trinity::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex>::Lock Guard;
+    typedef Hellground::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex>::Lock Guard;
 
     public:
         typedef std::map<MapID, Map* > MapMapType;
@@ -96,12 +96,12 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
 
         static bool IsValidMapCoord(uint32 mapid, float x,float y)
         {
-            return IsValidMAP(mapid) && Trinity::IsValidMapCoord(x,y);
+            return IsValidMAP(mapid) && Hellground::IsValidMapCoord(x,y);
         }
 
         static bool IsValidMapCoord(uint32 mapid, float x,float y,float z)
         {
-            return IsValidMAP(mapid) && Trinity::IsValidMapCoord(x,y,z);
+            return IsValidMAP(mapid) && Hellground::IsValidMapCoord(x,y,z);
         }
 
         static bool IsValidMapCoord(WorldLocation const& loc)
@@ -111,7 +111,7 @@ class TRINITY_DLL_DECL MapManager : public Trinity::Singleton<MapManager, Trinit
 
         static bool IsValidMapCoord(uint32 mapid, float x,float y,float z,float o)
         {
-            return IsValidMAP(mapid) && Trinity::IsValidMapCoord(x,y,z,o);
+            return IsValidMAP(mapid) && Hellground::IsValidMapCoord(x,y,z,o);
         }
 
         // modulos a radian orientation to the range of 0..2PI

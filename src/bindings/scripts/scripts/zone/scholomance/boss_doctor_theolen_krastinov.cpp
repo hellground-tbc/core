@@ -28,7 +28,7 @@ EndScriptData */
 #define SPELL_BLACKHAND         18103
 #define SPELL_FRENZY            28371
 
-struct TRINITY_DLL_DECL boss_theolenkrastinovAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_theolenkrastinovAI : public ScriptedAI
 {
     boss_theolenkrastinovAI(Creature *c) : ScriptedAI(c) {}
 

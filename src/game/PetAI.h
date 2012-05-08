@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_PETAI_H
-#define TRINITY_PETAI_H
+#ifndef HELLGROUND_PETAI_H
+#define HELLGROUND_PETAI_H
 
 #include "CreatureAI.h"
 #include "Timer.h"
@@ -27,7 +27,7 @@
 class Creature;
 class Spell;
 
-class TRINITY_DLL_DECL PetAI : public CreatureAI
+class HELLGROUND_DLL_DECL PetAI : public CreatureAI
 {
     public:
 
@@ -72,7 +72,7 @@ class TRINITY_DLL_DECL PetAI : public CreatureAI
         Unit* m_owner;              // pointer updated every UpdateAI call
 };
 
-class TRINITY_DLL_DECL ImpAI : public PetAI
+class HELLGROUND_DLL_DECL ImpAI : public PetAI
 {
     public:
         ImpAI(Creature *c) : PetAI(c), m_chasing(false) {}
@@ -83,7 +83,7 @@ class TRINITY_DLL_DECL ImpAI : public PetAI
         bool m_chasing;
 };
 
-class TRINITY_DLL_DECL FelhunterAI : public PetAI
+class HELLGROUND_DLL_DECL FelhunterAI : public PetAI
 {
     public:
         FelhunterAI(Creature *c) : PetAI(c) {}

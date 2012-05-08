@@ -35,7 +35,7 @@ EndContentData */
 ## mobs_mana_tapped
 ######*/
 
-struct TRINITY_DLL_DECL mobs_mana_tappedAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mobs_mana_tappedAI : public ScriptedAI
 {
     mobs_mana_tappedAI(Creature *c) : ScriptedAI(c) {}
 
@@ -68,7 +68,7 @@ CreatureAI* GetAI_mobs_mana_tapped(Creature *_Creature)
 
 #define QUEST_THE_DWARVEN_SPY 8483
 
-struct TRINITY_DLL_DECL npc_prospector_anvilwardAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_prospector_anvilwardAI : public npc_escortAI
 {
     // CreatureAI functions
     npc_prospector_anvilwardAI(Creature *c) : npc_escortAI(c) {}
@@ -200,7 +200,7 @@ static uint32 PaladinEntry[]= {CHAMPION_BLOODWRATH, CHAMPION_LIGHTREND, CHAMPION
 ## npc_second_trial_paladin
 ######*/
 
-struct TRINITY_DLL_DECL npc_secondTrialAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_secondTrialAI : public ScriptedAI
 {
     npc_secondTrialAI(Creature *c) : ScriptedAI(c) {}
 
@@ -334,7 +334,7 @@ struct TRINITY_DLL_DECL npc_secondTrialAI : public ScriptedAI
 ## npc_second_trial_controller
 ######*/
 
-struct TRINITY_DLL_DECL master_kelerun_bloodmournAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL master_kelerun_bloodmournAI : public ScriptedAI
 {
     master_kelerun_bloodmournAI(Creature *c) : ScriptedAI(c) {}
 
@@ -550,8 +550,8 @@ bool GOUse_go_second_trial(Player *player, GameObject* _GO)
 {
     // find spawn :: master_kelerun_bloodmourn
     Creature* event_controller = NULL;
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*_GO, MASTER_KELERUN_BLOODMOURN, true, 30);
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(event_controller, u_check);
+    Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*_GO, MASTER_KELERUN_BLOODMOURN, true, 30);
+    Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(event_controller, u_check);
     Cell::VisitGridObjects(player, searcher,30.0);
 
     if ( event_controller )
@@ -571,7 +571,7 @@ bool GOUse_go_second_trial(Player *player, GameObject* _GO)
 #define MOB_GHARZUL     15958
 #define MOB_ANGERSHADE  15656
 
-struct TRINITY_DLL_DECL npc_apprentice_mirvedaAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_apprentice_mirvedaAI : public ScriptedAI
 {
     npc_apprentice_mirvedaAI(Creature* c) : ScriptedAI(c), Summons(m_creature) {}
 
@@ -672,7 +672,7 @@ static Location SpawnLocations[]=
     {8267.97, -7239.17, 139.517}
 };
 
-struct TRINITY_DLL_DECL npc_infused_crystalAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_infused_crystalAI : public Scripted_NoMovementAI
 {
     npc_infused_crystalAI(Creature* c) : Scripted_NoMovementAI(c) {}
 

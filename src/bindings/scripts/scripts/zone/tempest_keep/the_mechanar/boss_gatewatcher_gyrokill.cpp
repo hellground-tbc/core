@@ -37,7 +37,7 @@ EndScriptData */
 #define SPELL_SHADOW_POWER              35322
 #define H_SPELL_SHADOW_POWER            39193
 
-struct TRINITY_DLL_DECL boss_gatewatcher_gyro_killAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_gatewatcher_gyro_killAI : public ScriptedAI
 {
     boss_gatewatcher_gyro_killAI(Creature *c) : ScriptedAI(c)
     {

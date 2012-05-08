@@ -39,7 +39,7 @@ EndScriptData */
 #define SPELL_BURNINGADRENALINE     23620
 #define SPELL_CLEAVE                20684                   //Chain cleave is most likely named something different and contains a dummy effect
 
-struct TRINITY_DLL_DECL boss_vaelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_vaelAI : public ScriptedAI
 {
     boss_vaelAI(Creature *c) : ScriptedAI(c)
     {

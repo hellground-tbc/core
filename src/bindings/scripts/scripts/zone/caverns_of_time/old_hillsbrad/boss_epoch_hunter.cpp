@@ -40,7 +40,7 @@ EndScriptData */
 #define SPELL_MAGIC_DISRUPTION_AURA 33834
 #define SPELL_WING_BUFFET           HeroicMode ? 31475:38593
 
-struct TRINITY_DLL_DECL boss_epoch_hunterAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_epoch_hunterAI : public ScriptedAI
 {
     boss_epoch_hunterAI(Creature *c) : ScriptedAI(c)
     {

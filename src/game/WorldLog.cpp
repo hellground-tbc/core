@@ -26,7 +26,7 @@
 #include "Policies/SingletonImp.h"
 #include "Config/Config.h"
 
-#define CLASS_LOCK Trinity::ClassLevelLockable<WorldLog, ACE_Thread_Mutex>
+#define CLASS_LOCK Hellground::ClassLevelLockable<WorldLog, ACE_Thread_Mutex>
 INSTANTIATE_SINGLETON_2(WorldLog, CLASS_LOCK);
 INSTANTIATE_CLASS_MUTEX(WorldLog, ACE_Thread_Mutex);
 

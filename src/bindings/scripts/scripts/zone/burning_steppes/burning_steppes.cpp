@@ -44,7 +44,7 @@ EndContentData */
 #define GOSSIP_SELECT10 "Ahh... Ironfoe"
 #define GOSSIP_SELECT11 "Thanks, Ragged John. Your story was very uplifting and informative"
 
-struct TRINITY_DLL_DECL npc_ragged_johnAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_ragged_johnAI : public ScriptedAI
 {
     npc_ragged_johnAI(Creature *c) : ScriptedAI(c) {}
 
@@ -164,7 +164,7 @@ bool GOUse_go_proudtuskremains(Player *player, GameObject* _GO)
 #define SPELL_CREATE_BROODLING_ESSENCE  16027
 #define SPELL_FIREBALL					13375
 
-struct TRINITY_DLL_DECL mob_broodlingessenceAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_broodlingessenceAI : public ScriptedAI
 {
 
     mob_broodlingessenceAI(Creature *c) : ScriptedAI(c) {}

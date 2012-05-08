@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_OBJECTGRIDLOADER_H
-#define TRINITY_OBJECTGRIDLOADER_H
+#ifndef HELLGROUND_OBJECTGRIDLOADER_H
+#define HELLGROUND_OBJECTGRIDLOADER_H
 
 #include "Utilities/TypeList.h"
 #include "Platform/Define.h"
@@ -29,7 +29,7 @@
 
 class ObjectWorldLoader;
 
-class TRINITY_DLL_DECL ObjectGridLoader
+class HELLGROUND_DLL_DECL ObjectGridLoader
 {
     friend class ObjectWorldLoader;
 
@@ -56,7 +56,7 @@ class TRINITY_DLL_DECL ObjectGridLoader
         uint32 i_corpses;
 };
 
-class TRINITY_DLL_DECL ObjectGridUnloader
+class HELLGROUND_DLL_DECL ObjectGridUnloader
 {
     public:
         ObjectGridUnloader(NGridType &grid) : i_grid(grid) {}
@@ -80,7 +80,7 @@ class TRINITY_DLL_DECL ObjectGridUnloader
         NGridType &i_grid;
 };
 
-class TRINITY_DLL_DECL ObjectGridStoper
+class HELLGROUND_DLL_DECL ObjectGridStoper
 {
     public:
         ObjectGridStoper(NGridType &grid) : i_grid(grid) {}
@@ -105,7 +105,7 @@ class TRINITY_DLL_DECL ObjectGridStoper
         NGridType &i_grid;
 };
 
-class TRINITY_DLL_DECL ObjectGridCleaner
+class HELLGROUND_DLL_DECL ObjectGridCleaner
 {
     public:
         ObjectGridCleaner(NGridType &grid) : i_grid(grid) {}

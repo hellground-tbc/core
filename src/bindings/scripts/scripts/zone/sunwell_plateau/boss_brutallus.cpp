@@ -81,7 +81,7 @@ enum Spells
 #define MOB_DEATH_CLOUD 25703
 #define FELMYST 25038
 
-struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_brutallusAI : public ScriptedAI
 {
     boss_brutallusAI(Creature *c) : ScriptedAI(c)
     {
@@ -431,7 +431,7 @@ struct TRINITY_DLL_DECL boss_brutallusAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_death_cloudAI : public ScriptedAI
 {
     npc_death_cloudAI(Creature *c) : ScriptedAI(c)
     {
@@ -536,7 +536,7 @@ struct TRINITY_DLL_DECL npc_death_cloudAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL brutallus_intro_triggerAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL brutallus_intro_triggerAI : public Scripted_NoMovementAI
 {
     brutallus_intro_triggerAI(Creature *c) : Scripted_NoMovementAI(c)
     {

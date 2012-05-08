@@ -79,7 +79,7 @@ void usage(const char *prog)
 extern int main(int argc, char **argv)
 {
     ///- Command line parsing
-    char const* cfg_file = _TRINITY_CORE_CONFIG;
+    char const* cfg_file = _HELLGROUND_CORE_CONFIG;
 
     char const *options = ":a:c:s:p:i:";
 
@@ -215,7 +215,7 @@ extern int main(int argc, char **argv)
     sLog.outString("Using configuration file %s.", cfg_file);
 
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
-    if (confVersion < _TRINITY_CORE_CONFVER)
+    if (confVersion < _HELLGROUND_CORE_CONFVER)
     {
         sLog.outError("*****************************************************************************");
         sLog.outError(" WARNING: Your trinitycore.conf version indicates your conf file is out of date!");

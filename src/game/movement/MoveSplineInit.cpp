@@ -27,7 +27,7 @@ namespace Movement
     {
         if (moveFlags & (MOVEFLAG_FLYING | MOVEFLAG_LEVITATING))
         {
-            if ( moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/ )
+            if (moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/)
                 return MOVE_FLIGHT_BACK;
             else
                 return MOVE_FLIGHT;

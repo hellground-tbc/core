@@ -3,7 +3,7 @@
 
 #define SPELL_CLEAVE 15496
 
-struct TRINITY_DLL_DECL boss_blood_guard_porungAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_blood_guard_porungAI : public ScriptedAI
 {
     boss_blood_guard_porungAI(Creature *c) : ScriptedAI(c)
     {

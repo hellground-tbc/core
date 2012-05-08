@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include "Platform/Define.h"
 
-class TRINITY_DLL_SPEC BarGoLink
+class HELLGROUND_DLL_SPEC BarGoLink
 {
     public:
         BarGoLink(int);

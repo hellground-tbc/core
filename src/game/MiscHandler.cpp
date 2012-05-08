@@ -1433,13 +1433,13 @@ void WorldSession::HandleFarSightOpcode(WorldPacket & recv_data)
     {
         case 0:
             _player->SetFarsightVision(false);
-            pair = Trinity::ComputeCellPair(_player->GetPositionX(), _player->GetPositionY());
+            pair = Hellground::ComputeCellPair(_player->GetPositionX(), _player->GetPositionY());
             sLog.outDebug("Player %u set vision to himself", _player->GetGUIDLow());
             break;
         case 1:
             _player->SetFarsightVision(true);
             if (WorldObject* obj = _player->GetFarsightTarget())
-                pair = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
+                pair = Hellground::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
             else
                 return;
             sLog.outDebug("Added FarSight " I64FMT " to player %u", _player->GetFarSight(), _player->GetGUIDLow());

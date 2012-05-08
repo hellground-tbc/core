@@ -46,7 +46,7 @@ EndContentData */
 #define QUEST_SUNKEN_TREASURE   665
 #define MOB_VENGEFUL_SURGE  2776
 
-struct TRINITY_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
 {
     npc_professor_phizzlethorpeAI(Creature *c) : npc_escortAI(c) {}
   

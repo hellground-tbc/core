@@ -55,7 +55,7 @@ update `instance_template` set `script`='instance_blackrock_depths' where `map`=
 #define GO_GOLEM_ROOM_S         170574
 #define GO_THONE_ROOM           170575
 
-struct TRINITY_DLL_DECL instance_blackrock_depths : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_blackrock_depths : public ScriptedInstance
 {
     instance_blackrock_depths(Map *map) : ScriptedInstance(map) {Initialize();};
 

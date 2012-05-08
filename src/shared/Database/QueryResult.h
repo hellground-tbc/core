@@ -26,7 +26,7 @@
 #include "Errors.h"
 #include "Field.h"
 
-class TRINITY_DLL_SPEC QueryResult
+class HELLGROUND_DLL_SPEC QueryResult
 {
     public:
         QueryResult(uint64 rowCount, uint32 fieldCount)
@@ -52,7 +52,7 @@ class TRINITY_DLL_SPEC QueryResult
 typedef ACE_Refcounted_Auto_Ptr <QueryResult, ACE_Null_Mutex> QueryResultAutoPtr;
 typedef std::vector<std::string> QueryFieldNames;
 
-class TRINITY_DLL_SPEC QueryNamedResult
+class HELLGROUND_DLL_SPEC QueryNamedResult
 {
     public:
         explicit QueryNamedResult(QueryResultAutoPtr query, QueryFieldNames const& names) : mQuery(query), mFieldNames(names) {}

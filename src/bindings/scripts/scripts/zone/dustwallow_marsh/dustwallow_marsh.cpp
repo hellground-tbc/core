@@ -46,7 +46,7 @@ EndContentData */
 #define SPELL_CONSUME_FLESH                 37933           //Risen Husk
 #define SPELL_INTANGIBLE_PRESENCE           43127           //Risen Spirit
 
-struct TRINITY_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
 {
     mobs_risen_husk_spiritAI(Creature *c) : ScriptedAI(c) {}
 
@@ -111,7 +111,7 @@ bool GossipHello_npc_restless_apparition(Player *player, Creature *_Creature)
 ## npc_deserter_agitator
 ######*/
 
-struct TRINITY_DLL_DECL npc_deserter_agitatorAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_deserter_agitatorAI : public ScriptedAI
 {
     npc_deserter_agitatorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -200,7 +200,7 @@ bool GossipSelect_npc_nat_pagle(Player *player, Creature *_Creature, uint32 send
 ## npc_theramore_combat_dummy
 ######*/
 
-struct TRINITY_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovementAI
 {
     npc_theramore_combat_dummyAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -263,7 +263,7 @@ CreatureAI* GetAI_npc_theramore_combat_dummy(Creature *_Creature)
 ## mob_mottled_drywallow_crocolisks
 ######*/
 
-struct TRINITY_DLL_DECL mob_mottled_drywallow_crocolisksAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_mottled_drywallow_crocolisksAI : public ScriptedAI
 {
    mob_mottled_drywallow_crocolisksAI(Creature *c) : ScriptedAI(c) {}
 

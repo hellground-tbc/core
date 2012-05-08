@@ -26,7 +26,7 @@ EndScriptData */
 #define SPELL_GROUNDTREMOR          6524
 #define SPELL_FRENZY                28371
 
-struct TRINITY_DLL_DECL boss_grizzleAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_grizzleAI : public ScriptedAI
 {
     boss_grizzleAI(Creature *c) : ScriptedAI(c) {}
 

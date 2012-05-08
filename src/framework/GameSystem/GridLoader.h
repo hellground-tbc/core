@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_GRIDLOADER_H
-#define TRINITY_GRIDLOADER_H
+#ifndef HELLGROUND_GRIDLOADER_H
+#define HELLGROUND_GRIDLOADER_H
 
 /**
   @class GridLoader
@@ -42,7 +42,7 @@ class ACTIVE_OBJECT,
 class WORLD_OBJECT_TYPES,
 class GRID_OBJECT_TYPES
 >
-class TRINITY_DLL_DECL GridLoader
+class HELLGROUND_DLL_DECL GridLoader
 {
     public:
 

@@ -166,7 +166,7 @@ class PoolManager
         SpawnedPoolData mSpawnedData;
 };
 
-#define sPoolMgr Trinity::Singleton<PoolManager>::Instance()
+#define sPoolMgr Hellground::Singleton<PoolManager>::Instance()
 
 // Method that tell if the creature is part of a pool and return the pool id if yes
 template<>

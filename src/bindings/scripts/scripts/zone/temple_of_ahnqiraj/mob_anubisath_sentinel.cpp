@@ -68,8 +68,8 @@ class NearbyAQSentinel
         Unit const* i_obj;
 };
 
-struct TRINITY_DLL_DECL aqsentinelAI;
-class TRINITY_DLL_DECL SentinelAbilityAura : public Aura
+struct HELLGROUND_DLL_DECL aqsentinelAI;
+class HELLGROUND_DLL_DECL SentinelAbilityAura : public Aura
 {
     public:
         ~SentinelAbilityAura();
@@ -81,7 +81,7 @@ class TRINITY_DLL_DECL SentinelAbilityAura : public Aura
         uint32 abilityId;
 };
 
-struct TRINITY_DLL_DECL aqsentinelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL aqsentinelAI : public ScriptedAI
 {
     uint32 ability;
     int abselected;
@@ -169,7 +169,7 @@ struct TRINITY_DLL_DECL aqsentinelAI : public ScriptedAI
         std::list<Creature*> assistList;
 
         NearbyAQSentinel u_check(nears);
-        Trinity::CreatureListSearcher<NearbyAQSentinel> searcher(assistList, u_check);
+        Hellground::CreatureListSearcher<NearbyAQSentinel> searcher(assistList, u_check);
         Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
 
         for(std::list<Creature*>::iterator iter = assistList.begin(); iter != assistList.end(); ++iter)

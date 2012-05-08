@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_THREADINGMODEL_H
-#define TRINITY_THREADINGMODEL_H
+#ifndef HELLGROUND_THREADINGMODEL_H
+#define HELLGROUND_THREADINGMODEL_H
 
 /**
  * @class ThreadingModel<T>
@@ -28,11 +28,11 @@
 
 #include "Platform/Define.h"
 
-namespace Trinity
+namespace Hellground
 {
     inline void Guard(void *) {}
 
-    template<typename MUTEX> class TRINITY_DLL_DECL GeneralLock
+    template<typename MUTEX> class HELLGROUND_DLL_DECL GeneralLock
     {
         public:
             GeneralLock(MUTEX &m) : i_mutex(m)
@@ -51,7 +51,7 @@ namespace Trinity
     };
 
     template <class T>
-        class TRINITY_DLL_DECL SingleThreaded
+        class HELLGROUND_DLL_DECL SingleThreaded
     {
         public:
 
@@ -69,7 +69,7 @@ namespace Trinity
 
     // object level lockable
     template<class T, class MUTEX>
-        class TRINITY_DLL_DECL ObjectLevelLockable
+        class HELLGROUND_DLL_DECL ObjectLevelLockable
     {
         public:
             ObjectLevelLockable() : i_mtx() {}
@@ -98,7 +98,7 @@ namespace Trinity
     };
 
     template<class T, class MUTEX>
-        class TRINITY_DLL_DECL ClassLevelLockable
+        class HELLGROUND_DLL_DECL ClassLevelLockable
     {
         public:
             class Lock;
@@ -122,8 +122,8 @@ namespace Trinity
 
 }
 
-template<class T, class MUTEX> MUTEX Trinity::ClassLevelLockable<T, MUTEX>::si_mtx;
+template<class T, class MUTEX> MUTEX Hellground::ClassLevelLockable<T, MUTEX>::si_mtx;
 
 #define INSTANTIATE_CLASS_MUTEX(CTYPE,MUTEX) \
-    template class TRINITY_DLL_DECL Trinity::ClassLevelLockable<CTYPE, MUTEX >
+    template class HELLGROUND_DLL_DECL Hellground::ClassLevelLockable<CTYPE, MUTEX >
 #endif

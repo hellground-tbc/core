@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_GRID_H
-#define TRINITY_GRID_H
+#ifndef HELLGROUND_GRID_H
+#define HELLGROUND_GRID_H
 
 /*
   @class Grid
@@ -45,9 +45,9 @@ template
 class ACTIVE_OBJECT,
 class WORLD_OBJECT_TYPES,
 class GRID_OBJECT_TYPES,
-class ThreadModel = Trinity::SingleThreaded<ACTIVE_OBJECT>
+class ThreadModel = Hellground::SingleThreaded<ACTIVE_OBJECT>
 >
-class TRINITY_DLL_DECL Grid
+class HELLGROUND_DLL_DECL Grid
 {
     // allows the GridLoader to access its internals
     template<class A, class T, class O> friend class GridLoader;

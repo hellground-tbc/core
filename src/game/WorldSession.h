@@ -135,7 +135,7 @@ public:
 };
 
 /// Player session in the World
-class TRINITY_DLL_SPEC WorldSession
+class HELLGROUND_DLL_SPEC WorldSession
 {
     friend class CharacterHandler;
     public:

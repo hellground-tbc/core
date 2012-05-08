@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_PLAYERAI_H
-#define TRINITY_PLAYERAI_H
+#ifndef HELLGROUND_PLAYERAI_H
+#define HELLGROUND_PLAYERAI_H
 
 #include "UnitAI.h"
 #include "Player.h"

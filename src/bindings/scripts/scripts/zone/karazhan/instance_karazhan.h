@@ -24,7 +24,7 @@
 14 - Chess Event damage done
 */
 
-struct TRINITY_DLL_DECL instance_karazhan : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_karazhan : public ScriptedInstance
 {
     instance_karazhan(Map* map);
 

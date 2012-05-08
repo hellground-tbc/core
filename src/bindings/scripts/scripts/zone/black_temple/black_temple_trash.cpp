@@ -47,7 +47,7 @@ enum AqueousLord
     NPC_AQUEOUS_SPAWN   = 22883
 };
 
-struct TRINITY_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_aqueous_lordAI : public ScriptedAI
 {
     mob_aqueous_lordAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -121,7 +121,7 @@ enum AqeousSpawn
     NPC_AQUEOUS_LORD    = 22878
 };
 
-struct TRINITY_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_aqueous_spawnAI : public ScriptedAI
 {
     mob_aqueous_spawnAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -197,7 +197,7 @@ enum CoilscarGeneral
     SPELL_CLEAVE             = 40504    // guessed
 };
 
-struct TRINITY_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilskar_generalAI : public ScriptedAI
 {
     mob_coilskar_generalAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -287,7 +287,7 @@ enum CoilscarHarpooner
     SPELL_SPEAR_THROW            = 40083
 };
 
-struct TRINITY_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilskar_harpoonerAI : public ScriptedAI
 {
     mob_coilskar_harpoonerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -371,7 +371,7 @@ enum CoilscarSeaCaller
     SPELL_SUMMON_GEYSER          = 40091
 };
 
-struct TRINITY_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilskar_seacallerAI : public ScriptedAI
 {
     mob_coilskar_seacallerAI(Creature *c) : ScriptedAI(c)
     {
@@ -441,7 +441,7 @@ enum CoilscarGeyser
     MOB_COILSCAR_SEACALLER       = 22875
 };
 
-struct TRINITY_DLL_DECL mob_coilskar_geyserAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_coilskar_geyserAI : public Scripted_NoMovementAI
 {
     mob_coilskar_geyserAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
@@ -474,7 +474,7 @@ enum CoilscarSoothsayer
     SPELL_RESTORATION            = 40097
 };
 
-struct TRINITY_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilskar_soothsayerAI : public ScriptedAI
 {
     mob_coilskar_soothsayerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -531,7 +531,7 @@ enum CoilscarWrangler
     MOB_LEVIATHAN                = 22884
 };
 
-struct TRINITY_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilskar_wranglerAI : public ScriptedAI
 {
     mob_coilskar_wranglerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -594,7 +594,7 @@ enum DragonTurtle
     SPELL_WATER_SPIT             = 40086
 };
 
-struct TRINITY_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_dragon_turtleAI : public ScriptedAI
 {
     mob_dragon_turtleAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -673,7 +673,7 @@ enum Leviathan
     SPELL_TAIL_SWEEP             = 40077
 };
 
-struct TRINITY_DLL_DECL mob_leviathanAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_leviathanAI : public ScriptedAI
 {
     mob_leviathanAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -827,7 +827,7 @@ CreatureAI* GetAI_mob_leviathan(Creature *_Creature)
 ##  mob Bonechewer Taskmaster - id 23028
 ###########*/
 
-struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 {
     mob_bonechewer_taskmasterAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -879,7 +879,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_taskmasterAI : public ScriptedAI
 ##  mob Bonechewer Worker - id 22963
 ###########*/
 
-struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 {
     mob_bonechewer_workerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -941,7 +941,7 @@ struct TRINITY_DLL_DECL mob_bonechewer_workerAI : public ScriptedAI
 ##  mob Dragonmaw Sky Stalker - id 23030
 ###########*/
 
-struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 {
     mob_dragonmaw_skystalkerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1051,7 +1051,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_skystalkerAI : public ScriptedAI
 ##  mob Dragonmaw Wind Reaver - id 23330
 ###########*/
 
-struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 {
     mob_dragonmaw_windreaverAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1198,7 +1198,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 ##  mob Dragonmaw Wyrmcaller - id 22960
 ###########*/
 
-struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
 {
     mob_dragonmaw_wyrmcallerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1279,7 +1279,7 @@ struct TRINITY_DLL_DECL mob_dragonmaw_wyrmcallerAI : public ScriptedAI
 ##  mob Illidari Fearbringer - id 22954
 ###########*/
 
-struct TRINITY_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_fearbringerAI : public ScriptedAI
 {
     mob_illidari_fearbringerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1420,7 +1420,7 @@ CreatureAI* GetAI_mob_illidari_fearbringer(Creature *_Creature)
 #define SPELL_CONCUSSION_THROW  41182
 #define SPELL_FRENZY            34970
 
-struct TRINITY_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_ashtongue_battlelordAI : public ScriptedAI
 {
     mob_ashtongue_battlelordAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1500,7 +1500,7 @@ CreatureAI* GetAI_mob_ashtongue_battlelord(Creature *_Creature)
 
 #define NPC_ASHTONGUE_PRIMALIST 22847
 
-struct TRINITY_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_ashtongue_feral_spiritAI : public ScriptedAI
 {
     mob_ashtongue_feral_spiritAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(65.0f); }
 
@@ -1569,7 +1569,7 @@ CreatureAI* GetAI_mob_ashtongue_feral_spirit(Creature *_Creature)
 #define SPELL_WINDFURY_WEAPON       32911   //rank 3 AoE aura
 #define AURA_WINDFURY               32912
 
-struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
 {
     totem_ashtongue_mysticAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
@@ -1608,8 +1608,8 @@ struct TRINITY_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovementAI
         if(me->GetEntry() == NPC_SUMMONED_WINDFURY_TOTEM)
         {
             std::list<Creature*> pList;
-            Trinity::AllFriendlyCreaturesInGrid u_check(me);
-            Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+            Hellground::AllFriendlyCreaturesInGrid u_check(me);
+            Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
             Cell::VisitAllObjects(me, searcher, 60.0);  // range than of aura, in case mobs moved too far from totem when killed
 
             if(!pList.empty())
@@ -1654,7 +1654,7 @@ CreatureAI* GetAI_totem_ashtongue_mystic(Creature *_Creature)
     return new totem_ashtongue_mysticAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_ashtongue_mysticAI : public ScriptedAI
 {
     mob_ashtongue_mysticAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1767,7 +1767,7 @@ CreatureAI* GetAI_mob_ashtongue_mystic(Creature *_Creature)
 #define SPELL_WYVERN_STING          41186
 #define SPELL_SWEEPING_WING_CLIP    39584
 
-struct TRINITY_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_ashtongue_primalistAI : public ScriptedAI
 {
     mob_ashtongue_primalistAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1873,7 +1873,7 @@ CreatureAI* GetAI_mob_ashtongue_primalist(Creature *_Creature)
 #define SPELL_STEALTH               34189
 #define SPELL_DUAL_WIELD            29651
 
-struct TRINITY_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_ashtongue_stalkerAI : public ScriptedAI
 {
     mob_ashtongue_stalkerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1953,7 +1953,7 @@ CreatureAI* GetAI_mob_ashtongue_stalker(Creature *_Creature)
 #define SPELL_LIGHTNING_BOLT            41184
 #define SPELL_LIGHTNING_SHIELD          41151
 
-struct TRINITY_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_ashtongue_stormcallerAI : public ScriptedAI
 {
     mob_ashtongue_stormcallerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2026,7 +2026,7 @@ CreatureAI* GetAI_mob_ashtongue_stormcaller(Creature *_Creature)
 #define SPELL_SHADOWSTEP                    41176
 #define SPELL_WOUND_POISON                  39665
 
-struct TRINITY_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_boneslicerAI : public ScriptedAI
 {
     mob_illidari_boneslicerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2108,7 +2108,7 @@ CreatureAI* GetAI_mob_illidari_boneslicer(Creature *_Creature)
 
 #define SPELL_SONIC_STRIKE          41168
 
-struct TRINITY_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_centurionAI : public ScriptedAI
 {
     mob_illidari_centurionAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2164,7 +2164,7 @@ CreatureAI* GetAI_mob_illidari_centurion(Creature *_Creature)
 #define SPELL_BANISH                        39674
 #define SPELL_RAIN_OF_CHAOS                 39671
 
-struct TRINITY_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_defilerAI : public ScriptedAI
 {
     mob_illidari_defilerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2242,7 +2242,7 @@ CreatureAI* GetAI_mob_illidari_defiler(Creature *_Creature)
 #define SPELL_SKELETON_SHOT             41171
 #define SPELL_CURSE_OF_THE_BLEAKHEART   6946  //41170 proper spell blocks 6947 proc
 
-struct TRINITY_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_heartseekerAI : public ScriptedAI
 {
     mob_illidari_heartseekerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2344,7 +2344,7 @@ CreatureAI* GetAI_mob_illidari_heartseeker(Creature *_Creature)
 #define SPELL_SHADOW_INFERNO            39645
 #define SPELL_SUMMON_SHADOWFIENDS       39649
 
-struct TRINITY_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_nightlordAI : public ScriptedAI
 {
     mob_illidari_nightlordAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2424,7 +2424,7 @@ CreatureAI* GetAI_mob_illidari_nightlord(Creature *_Creature)
 
 #define SPELL_STORM_BLINK           39581
 
-struct TRINITY_DLL_DECL mob_storm_furyAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_storm_furyAI : public ScriptedAI
 {
     mob_storm_furyAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2487,7 +2487,7 @@ CreatureAI* GetAI_mob_storm_fury(Creature *_Creature)
 
 #define SPELL_ENRAGE                38166
 
-struct TRINITY_DLL_DECL mob_hand_of_gorefiendAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_hand_of_gorefiendAI : public ScriptedAI
 {
     mob_hand_of_gorefiendAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2532,7 +2532,7 @@ CreatureAI* GetAI_mob_hand_of_gorefiend(Creature *_Creature)
 #define SPELL_GREEN_BEAM        38909
 #define MOB_SKELETON            22953
 
-struct TRINITY_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_blood_mageAI: public ScriptedAI
 {
     mob_shadowmoon_blood_mageAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2610,7 +2610,7 @@ CreatureAI* GetAI_mob_shadowmoon_blood_mage(Creature *_Creature)
 
 #define MOB_WHIRLING_BLADE                  23369
 
-struct TRINITY_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_championAI: public ScriptedAI
 {
     mob_shadowmoon_championAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2659,7 +2659,7 @@ CreatureAI* GetAI_mob_shadowmoon_champion(Creature *_Creature)
     return new mob_shadowmoon_championAI(_Creature);
 }
 
-struct TRINITY_DLL_DECL mob_whirling_bladeAI: public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_whirling_bladeAI: public Scripted_NoMovementAI
 {
     mob_whirling_bladeAI(Creature *c) : Scripted_NoMovementAI(c) { }
 
@@ -2712,7 +2712,7 @@ CreatureAI* GetAI_mob_whirling_blade(Creature *_Creature)
 #define SPELL_RAISE_DEAD                41071
 #define SPELL_SHADOWBOLT                41069
 
-struct TRINITY_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
 {
     mob_shadowmoon_deathshaperAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2861,7 +2861,7 @@ CreatureAI* GetAI_mob_shadowmoon_deathshaper(Creature *_Creature)
 * Shadowmoon Grunt - id 23147
 *****************/
 
-struct TRINITY_DLL_DECL mob_shadowmoon_gruntAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_gruntAI : public ScriptedAI
 {
     mob_shadowmoon_gruntAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -2895,7 +2895,7 @@ CreatureAI* GetAI_mob_shadowmoon_grunt(Creature *_Creature)
 
 #define MOB_SHADOWMOON_RIDING_HOUND         23083
 
-struct TRINITY_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_houndmasterAI: public ScriptedAI
 {
     mob_shadowmoon_houndmasterAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3027,7 +3027,7 @@ CreatureAI* GetAI_mob_shadowmoon_houndmaster(Creature *_Creature)
 #define SPELL_SPELL_ABSORPTION              41034
 #define SPELL_SHADOW_RESONANCE              41047
 
-struct TRINITY_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_reaverAI : public ScriptedAI
 {
     mob_shadowmoon_reaverAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3083,7 +3083,7 @@ CreatureAI* GetAI_mob_shadowmoon_reaver(Creature *_Creature)
 #define SPELL_CHARGE                        25821
 #define SPELL_ENRAGE_1                       8599
 
-struct TRINITY_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_riding_houndAI: public ScriptedAI
 {
     mob_shadowmoon_riding_houndAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3154,7 +3154,7 @@ CreatureAI* GetAI_mob_shadowmoon_riding_hound(Creature *_Creature)
 
 #define SPELL_STRIKE                43298
 
-struct TRINITY_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_soldierAI: public ScriptedAI
 {
     mob_shadowmoon_soldierAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3251,7 +3251,7 @@ enum Stances
     BATTLE
 };
 
-struct TRINITY_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_weapon_masterAI: public ScriptedAI
 {
     mob_shadowmoon_weapon_masterAI(Creature *c) : ScriptedAI(c)
     {
@@ -3516,7 +3516,7 @@ CreatureAI* GetAI_mob_shadowmoon_weapon_master(Creature *_Creature)
 #define SPELL_CLEAVE_2                      15496
 #define SPELL_IGNORED                       39544
 
-struct TRINITY_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_wrathbone_flayerAI: public ScriptedAI
 {
     mob_wrathbone_flayerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3597,7 +3597,7 @@ enum Type
     RANGED_TYPE
 };
 
-struct TRINITY_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_behemothAI: public ScriptedAI
 {
     mob_bonechewer_behemothAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3704,7 +3704,7 @@ CreatureAI* GetAI_mob_bonechewer_behemoth(Creature *_Creature)
 
 #define MOB_BONECHEWER_BLADE_FURY       23235
 
-struct TRINITY_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_shield_discipleAI: public ScriptedAI
 {
     mob_bonechewer_shield_discipleAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3797,7 +3797,7 @@ uint32 CCMechanics[8] =
     MECHANIC_HORROR
 };
 
-struct TRINITY_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_blade_furyAI: public ScriptedAI
 {
     mob_bonechewer_blade_furyAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3880,7 +3880,7 @@ CreatureAI* GetAI_mob_bonechewer_blade_fury(Creature *_Creature)
 #define SPELL_PROPHECY_OF_BLOOD_PL      41230
 #define SPELL_PROPHECY_OF_BLOOD_MOB     41231
 
-struct TRINITY_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_blood_prophetAI: public ScriptedAI
 {
     mob_bonechewer_blood_prophetAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -3966,7 +3966,7 @@ CreatureAI* GetAI_mob_bonechewer_blood_prophet(Creature *_Creature)
 #define SPELL_CLOUD_OF_DISEASE          41193
 
 
-struct TRINITY_DLL_DECL mob_mutated_war_houndAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_mutated_war_houndAI: public ScriptedAI
 {
     mob_mutated_war_houndAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4003,7 +4003,7 @@ CreatureAI* GetAI_mob_mutated_war_hound(Creature *_Creature)
 
 #define SPELL_ENRAGE_2              41254
 
-struct TRINITY_DLL_DECL mob_bonechewer_brawlerAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_brawlerAI: public ScriptedAI
 {
     mob_bonechewer_brawlerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4056,7 +4056,7 @@ CreatureAI* GetAI_mob_bonechewer_brawler(Creature *_Creature)
 
 #define SPELL_COMBAT_RAGE               41251
 
-struct TRINITY_DLL_DECL mob_bonechewer_combatantAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_combatantAI: public ScriptedAI
 {
     mob_bonechewer_combatantAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4113,7 +4113,7 @@ CreatureAI* GetAI_mob_bonechewer_combatant(Creature *_Creature)
 #define SPELL_STRIKE_1                  13446
 #define SPELL_SUNDER_ARMOR              13444
 
-struct TRINITY_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_bonechewer_spectatorAI: public ScriptedAI
 {
     mob_bonechewer_spectatorAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4218,7 +4218,7 @@ CreatureAI* GetAI_mob_bonechewer_spectator(Creature *_Creature)
 
 #define SPELL_ANGER     41986
 
-struct TRINITY_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_angered_soul_fragmentAI: public ScriptedAI
 {
     mob_angered_soul_fragmentAI(Creature *c) : ScriptedAI(c) {}
 
@@ -4270,7 +4270,7 @@ CreatureAI* GetAI_mob_angered_soul_fragment(Creature *_Creature)
 
 #define SPELL_CONSUMING_STRIKES     41248
 
-struct TRINITY_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_hungering_soul_fragmentAI: public ScriptedAI
 {
     mob_hungering_soul_fragmentAI(Creature *c) : ScriptedAI(c) {}
 
@@ -4309,7 +4309,7 @@ CreatureAI* GetAI_mob_hungering_soul_fragment(Creature *_Creature)
 
 #define SPELL_SOUL_BLAST        41245
 
-struct TRINITY_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_suffering_soul_fragmentAI: public ScriptedAI
 {
     mob_suffering_soul_fragmentAI(Creature *c) : ScriptedAI(c) {}
 
@@ -4385,7 +4385,7 @@ enum PristessOfDementia
     SPELL_WHIRLWIND_3       = 41399
 };
 
-struct TRINITY_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_pristess_of_dementiaAI: public ScriptedAI
 {
     mob_pristess_of_dementiaAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4454,7 +4454,7 @@ CreatureAI* GetAI_mob_pristess_of_dementia(Creature *_Creature)
     return new mob_pristess_of_dementiaAI(_Creature);
 }
 
-struct TRINITY_DLL_DECL mob_image_of_dementiaAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_image_of_dementiaAI: public ScriptedAI
 {
     mob_image_of_dementiaAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4501,7 +4501,7 @@ enum PristessOfDelight
     SPELL_POLYMORPH         = 41334
 };
 
-struct TRINITY_DLL_DECL mob_pristess_of_delightAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_pristess_of_delightAI: public ScriptedAI
 {
     mob_pristess_of_delightAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4572,7 +4572,7 @@ enum SisterOfPain
 
 #define YELL_SISTER_OF_PAIN "Pain is inevitable, but the suffering is optional."
 
-struct TRINITY_DLL_DECL mob_sister_of_painAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sister_of_painAI: public ScriptedAI
 {
     mob_sister_of_painAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4671,7 +4671,7 @@ enum SisterOfPleasure
 
 #define YELL_SISTER_OF_PLEASURE "When it comes to the needs of Illidan's troops, Mother Shahraz knows best."
 
-struct TRINITY_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_sister_of_pleasureAI: public ScriptedAI
 {
     mob_sister_of_pleasureAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4768,7 +4768,7 @@ enum CharmingCourtesan
 
 #define YELL_CHARMING_COURTESAN "That which you desire lies this way, hero."
 
-struct TRINITY_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_charming_courtesanAI: public ScriptedAI
 {
     mob_charming_courtesanAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4833,7 +4833,7 @@ enum SpellboundAttendent
     SPELL_SLEEP         = 41396
 };
 
-struct TRINITY_DLL_DECL mob_spellbound_attendentAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_spellbound_attendentAI: public ScriptedAI
 {
     mob_spellbound_attendentAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4903,7 +4903,7 @@ enum EnslavedSevrant
     SPELL_KIDNEY_SHOT       = 41389
 };
 
-struct TRINITY_DLL_DECL mob_enslaved_servantAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_enslaved_servantAI: public ScriptedAI
 {
     mob_enslaved_servantAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -4965,7 +4965,7 @@ enum TempleConcubine
 
 #define YELL_TEMPLE_CONCUBINE "Business… or pleasure?"
 
-struct TRINITY_DLL_DECL mob_temple_concubineAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_temple_concubineAI: public ScriptedAI
 {
     mob_temple_concubineAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -5054,7 +5054,7 @@ enum IllidariArchon
     SHADOW_TYPE             = 101
 };
 
-struct TRINITY_DLL_DECL mob_illidari_archonAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_archonAI: public ScriptedAI
 {
     mob_illidari_archonAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -5200,7 +5200,7 @@ enum IllidariAssassin
     SPELL_AMBUSH                = 41390
 };
 
-struct TRINITY_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_assassinAI: public ScriptedAI
 {
     mob_illidari_assassinAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -5295,7 +5295,7 @@ enum IllidariBattlemage
     SPELL_FROSTBOLT         = 41384
 };
 
-struct TRINITY_DLL_DECL mob_illidari_battle_mageAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_battle_mageAI: public ScriptedAI
 {
     mob_illidari_battle_mageAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -5374,7 +5374,7 @@ enum IllidariBloodLord
 
 #define YELL_ILLIDARI_BLOOD_LORD    "This world belongs to the Illidari"
 
-struct TRINITY_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_blood_lordAI: public ScriptedAI
 {
     mob_illidari_blood_lordAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -5450,7 +5450,7 @@ enum PromenadeSentinel
 
 #define YELL_PROMENADE_SENTINEL    "Unauthorized entry detected. Engaging annihilation protocols."
 
-struct TRINITY_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_promenade_sentinelAI: public ScriptedAI
 {
     mob_promenade_sentinelAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -5505,7 +5505,7 @@ CreatureAI* GetAI_mob_promenade_sentinel(Creature *_Creature)
     return new mob_promenade_sentinelAI(_Creature);
 }
 
-struct TRINITY_DLL_DECL mob_arcane_chargeAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_arcane_chargeAI : public Scripted_NoMovementAI
 {
     mob_arcane_chargeAI(Creature *c) : Scripted_NoMovementAI(c) {}
 

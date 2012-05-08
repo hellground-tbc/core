@@ -77,9 +77,9 @@ enum logFiles
 
 const int Color_count = int(WHITE)+1;
 
-class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_Thread_Mutex> >
+class Log : public Hellground::Singleton<Log, Hellground::ClassLevelLockable<Log, ACE_Thread_Mutex> >
 {
-    friend class Trinity::OperatorNew<Log>;
+    friend class Hellground::OperatorNew<Log>;
     Log();
 
     ~Log()
@@ -175,19 +175,19 @@ class Log : public Trinity::Singleton<Log, Trinity::ClassLevelLockable<Log, ACE_
         std::string m_whisplog_filename_format;
 };
 
-#define sLog Trinity::Singleton<Log>::Instance()
+#define sLog Hellground::Singleton<Log>::Instance()
 
-#ifdef TRINITY_DEBUG
-#define DEBUG_LOG Trinity::Singleton<Log>::Instance().outDebug
+#ifdef HELLGROUND_DEBUG
+#define DEBUG_LOG Hellground::Singleton<Log>::Instance().outDebug
 #else
 #define DEBUG_LOG
 #endif
 
 // primary for script library
-void TRINITY_DLL_SPEC outstring_log(const char * str, ...) ATTR_PRINTF(1,2);
-void TRINITY_DLL_SPEC detail_log(const char * str, ...) ATTR_PRINTF(1,2);
-void TRINITY_DLL_SPEC debug_log(const char * str, ...) ATTR_PRINTF(1,2);
-void TRINITY_DLL_SPEC error_log(const char * str, ...) ATTR_PRINTF(1,2);
-void TRINITY_DLL_SPEC error_db_log(const char * str, ...) ATTR_PRINTF(1,2);
+void HELLGROUND_DLL_SPEC outstring_log(const char * str, ...) ATTR_PRINTF(1,2);
+void HELLGROUND_DLL_SPEC detail_log(const char * str, ...) ATTR_PRINTF(1,2);
+void HELLGROUND_DLL_SPEC debug_log(const char * str, ...) ATTR_PRINTF(1,2);
+void HELLGROUND_DLL_SPEC error_log(const char * str, ...) ATTR_PRINTF(1,2);
+void HELLGROUND_DLL_SPEC error_db_log(const char * str, ...) ATTR_PRINTF(1,2);
 #endif
 

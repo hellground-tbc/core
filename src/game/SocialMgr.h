@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef __TRINITY_SOCIALMGR_H
-#define __TRINITY_SOCIALMGR_H
+#ifndef __HELLGROUND_SOCIALMGR_H
+#define __HELLGROUND_SOCIALMGR_H
 
 #include "Policies/Singleton.h"
 #include "Database/DatabaseEnv.h"
@@ -155,6 +155,6 @@ class SocialMgr
         SocialMap m_socialMap;
 };
 
-#define sSocialMgr Trinity::Singleton<SocialMgr>::Instance()
+#define sSocialMgr Hellground::Singleton<SocialMgr>::Instance()
 #endif
 

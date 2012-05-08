@@ -31,7 +31,7 @@ EndScriptData */
 #define SPELL_SHIELDBLOCK           12169
 #define SPELL_STRIKE                15580
 
-struct TRINITY_DLL_DECL boss_angerrelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_angerrelAI : public ScriptedAI
 {
     boss_angerrelAI(Creature *c) : ScriptedAI(c) {}
 
@@ -95,7 +95,7 @@ CreatureAI* GetAI_boss_angerrel(Creature *_Creature)
 #define SPELL_BACKSTAB              15582
 #define SPELL_GOUGE                 13579
 
-struct TRINITY_DLL_DECL boss_doperelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_doperelAI : public ScriptedAI
 {
     boss_doperelAI(Creature *c) : ScriptedAI(c) {}
 
@@ -159,7 +159,7 @@ CreatureAI* GetAI_boss_doperel(Creature *_Creature)
 #define SPELL_MANABURN          10876
 #define SPELL_SHADOWSHIELD      22417
 
-struct TRINITY_DLL_DECL boss_haterelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_haterelAI : public ScriptedAI
 {
     boss_haterelAI(Creature *c) : ScriptedAI(c) {}
 
@@ -239,7 +239,7 @@ CreatureAI* GetAI_boss_haterel(Creature *_Creature)
 #define SPELL_PRAYEROFHEALING       15585
 #define SPELL_SHIELD                10901
 
-struct TRINITY_DLL_DECL boss_vilerelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_vilerelAI : public ScriptedAI
 {
     boss_vilerelAI(Creature *c) : ScriptedAI(c) {}
 
@@ -316,7 +316,7 @@ CreatureAI* GetAI_boss_vilerel(Creature *_Creature)
 #define SPELL_FROSTNOVA         15063
 #define SPELL_FROSTWARD         15004
 
-struct TRINITY_DLL_DECL boss_seethrelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_seethrelAI : public ScriptedAI
 {
     boss_seethrelAI(Creature *c) : ScriptedAI(c) {}
 
@@ -406,7 +406,7 @@ CreatureAI* GetAI_boss_seethrel(Creature *_Creature)
 #define SPELL_CLEAVE                15579
 #define SPELL_MORTALSTRIKE          15708
 
-struct TRINITY_DLL_DECL boss_gloomrelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_gloomrelAI : public ScriptedAI
 {
     boss_gloomrelAI(Creature *c) : ScriptedAI(c) {}
 
@@ -518,7 +518,7 @@ bool GossipSelect_boss_gloomrel(Player *player, Creature *_Creature, uint32 send
 #define SPELL_CURSEOFWEAKNESS                17227
 #define SPELL_DEMONARMOR                     11735
 
-struct TRINITY_DLL_DECL boss_doomrelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_doomrelAI : public ScriptedAI
 {
     boss_doomrelAI(Creature *c) : ScriptedAI(c) {}
 

@@ -18,15 +18,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_GUARDAI_H
-#define TRINITY_GUARDAI_H
+#ifndef HELLGROUND_GUARDAI_H
+#define HELLGROUND_GUARDAI_H
 
 #include "CreatureAI.h"
 #include "Timer.h"
 
 class Creature;
 
-class TRINITY_DLL_DECL GuardAI : public CreatureAI
+class HELLGROUND_DLL_DECL GuardAI : public CreatureAI
 {
     enum GuardState
     {

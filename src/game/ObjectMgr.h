@@ -97,8 +97,8 @@ typedef UNORDERED_MAP<uint64/*(instance,guid) pair*/,time_t> RespawnTimes;
 typedef UNORDERED_MAP<uint32,time_t> GuildCooldowns;
 
 // trinity string ranges
-#define MIN_TRINITY_STRING_ID           1                    // 'TRINITY_string'
-#define MAX_TRINITY_STRING_ID           2000000000
+#define MIN_HELLGROUND_STRING_ID           1                    // 'HELLGROUND_string'
+#define MAX_HELLGROUND_STRING_ID           2000000000
 
 #define MIN_CREATURE_AI_TEXT_STRING_ID (-1)                 // 'creature_ai_texts'
 #define MAX_CREATURE_AI_TEXT_STRING_ID (-1000000)
@@ -197,7 +197,7 @@ enum ConditionType
     CONDITION_SKILL                 = 7,                    // skill_id     skill_value
     CONDITION_QUESTREWARDED         = 8,                    // quest_id     0
     CONDITION_QUESTTAKEN            = 9,                    // quest_id     0,      for condition true while quest active.
-    CONDITION_AD_COMMISSION_AURA    = 10,                   // 0            0,      for condition true while one from AD ñommission aura active
+    CONDITION_AD_COMMISSION_AURA    = 10,                   // 0            0,      for condition true while one from AD ï¿½ommission aura active
     CONDITION_NO_AURA               = 11,                   // spell_id     effindex
     CONDITION_ACTIVE_EVENT          = 12,                   // event_id
     CONDITION_INSTANCE_DATA         = 13,                   // entry        data
@@ -246,7 +246,7 @@ SkillRangeType GetSkillRangeType(SkillLineEntry const *pSkill, bool racial);
 
 bool normalizePlayerName(std::string& name);
 
-struct TRINITY_DLL_SPEC LanguageDesc
+struct HELLGROUND_DLL_SPEC LanguageDesc
 {
     Language lang_id;
     uint32   spell_id;
@@ -254,9 +254,9 @@ struct TRINITY_DLL_SPEC LanguageDesc
 };
 
 extern LanguageDesc lang_description[LANGUAGES_COUNT];
-TRINITY_DLL_SPEC LanguageDesc const* GetLanguageDescByID(uint32 lang);
+HELLGROUND_DLL_SPEC LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
-class TRINITY_DLL_DECL ObjectMgr
+class HELLGROUND_DLL_DECL ObjectMgr
 {
     public:
         ObjectMgr();
@@ -469,7 +469,7 @@ class TRINITY_DLL_DECL ObjectMgr
         void LoadTransportEvents();
 
         bool LoadTrinityStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value);
-        bool LoadTrinityStrings() { return LoadTrinityStrings(WorldDatabase,"trinity_string",MIN_TRINITY_STRING_ID,MAX_TRINITY_STRING_ID); }
+        bool LoadTrinityStrings() { return LoadTrinityStrings(WorldDatabase,"HELLGROUND_string",MIN_HELLGROUND_STRING_ID,MAX_HELLGROUND_STRING_ID); }
 
         void LoadPetCreateSpells();
         void LoadCreatureLocales();
@@ -887,15 +887,15 @@ class TRINITY_DLL_DECL ObjectMgr
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 };
 
-#define objmgr Trinity::Singleton<ObjectMgr>::Instance()
-#define sObjectMgr Trinity::Singleton<ObjectMgr>::Instance()
+#define objmgr Hellground::Singleton<ObjectMgr>::Instance()
+#define sObjectMgr Hellground::Singleton<ObjectMgr>::Instance()
 
 // scripting access functions
-TRINITY_DLL_SPEC bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value = MAX_CREATURE_AI_TEXT_STRING_ID, int32 end_value = std::numeric_limits<int32>::min());
-TRINITY_DLL_SPEC GameObjectInfo const *GetGameObjectInfo(uint32 id);
-TRINITY_DLL_SPEC CreatureInfo const *GetCreatureInfo(uint32 id);
-TRINITY_DLL_SPEC CreatureInfo const* GetCreatureTemplateStore(uint32 entry);
-TRINITY_DLL_SPEC Quest const* GetQuestTemplateStore(uint32 entry);
+HELLGROUND_DLL_SPEC bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value = MAX_CREATURE_AI_TEXT_STRING_ID, int32 end_value = std::numeric_limits<int32>::min());
+HELLGROUND_DLL_SPEC GameObjectInfo const *GetGameObjectInfo(uint32 id);
+HELLGROUND_DLL_SPEC CreatureInfo const *GetCreatureInfo(uint32 id);
+HELLGROUND_DLL_SPEC CreatureInfo const* GetCreatureTemplateStore(uint32 entry);
+HELLGROUND_DLL_SPEC Quest const* GetQuestTemplateStore(uint32 entry);
 
 #endif
 

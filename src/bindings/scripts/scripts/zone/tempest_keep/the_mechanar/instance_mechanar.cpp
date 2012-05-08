@@ -33,7 +33,7 @@ EndScriptData */
 #define NPC_IRONHAND            19710
 #define NPC_GYROKILL            19218
 
-struct TRINITY_DLL_DECL instance_mechanar : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_mechanar : public ScriptedInstance
 {
     instance_mechanar(Map *map) : ScriptedInstance(map) {Initialize();};
 

@@ -40,7 +40,7 @@ EndContentData */
 #define SAY_prospector_AGGRO_3 -1581013
 #define SAY_prospector_COMP    -1581010
 
-struct TRINITY_DLL_DECL npc_prospector_remtravel : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_prospector_remtravel : public npc_escortAI
 {
     npc_prospector_remtravel(Creature *c) : npc_escortAI(c) {}
 
@@ -176,7 +176,7 @@ bool QuestAccept_npc_prospector_remtravel(Player* player, Creature* creature, Qu
 #define SAY_therylune_ACC     -1581014
 #define SAY_therylune_COMP    -1581015
 
-struct TRINITY_DLL_DECL npc_therylune : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_therylune : public npc_escortAI
 {
     npc_therylune(Creature *c) : npc_escortAI(c) {}
 

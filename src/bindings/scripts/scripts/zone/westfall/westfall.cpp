@@ -56,7 +56,7 @@ EndContentData */
 #define SAY_END "We've done it, we won!"
 #define SAY_MOVE_BACK "Meet me at the orchad--I just need to put my gun away."
 
-struct TRINITY_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
 {
     npc_daphne_stilwellAI(Creature *c) : npc_escortAI(c)
     {
@@ -283,7 +283,7 @@ CreatureAI* GetAI_npc_daphne_stilwell(Creature *_Creature)
 
 #define QUEST_DEFIAS_BROTHERHOOD    155
 
-struct TRINITY_DLL_DECL npc_defias_traitorAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_defias_traitorAI : public npc_escortAI
 {
     npc_defias_traitorAI(Creature *c) : npc_escortAI(c) {}
 
@@ -409,8 +409,8 @@ bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* qu
         float x, y, z;
         creature->GetPosition(x, y, z);
 
-        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*creature, 4962, true, 10);
-        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
+        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*creature, 4962, true, 10);
+        Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
 
         Cell::VisitGridObjects(creature, searcher, 10.0);
 

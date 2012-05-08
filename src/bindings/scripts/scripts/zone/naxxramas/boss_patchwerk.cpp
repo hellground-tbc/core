@@ -50,7 +50,7 @@ enum PatchwerkEvents
     EVENT_SLIMEBOLT         = 3
 };
 
-struct TRINITY_DLL_DECL boss_patchwerkAI : public BossAI
+struct HELLGROUND_DLL_DECL boss_patchwerkAI : public BossAI
 {
     boss_patchwerkAI(Creature* c) : BossAI(c, DATA_PATCHWERK) { }
 

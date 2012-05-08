@@ -18,18 +18,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_HOMEMOVEMENTGENERATOR_H
-#define TRINITY_HOMEMOVEMENTGENERATOR_H
+#ifndef HELLGROUND_HOMEMOVEMENTGENERATOR_H
+#define HELLGROUND_HOMEMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
 
 class Creature;
 
 template <class T>
-class TRINITY_DLL_SPEC HomeMovementGenerator;
+class HELLGROUND_DLL_SPEC HomeMovementGenerator;
 
 template <>
-class TRINITY_DLL_SPEC HomeMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, HomeMovementGenerator<Creature> >
+class HELLGROUND_DLL_SPEC HomeMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, HomeMovementGenerator<Creature> >
 {
     public:
         HomeMovementGenerator() : arrived(false) {}

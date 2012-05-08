@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_SINGLETON_H
-#define TRINITY_SINGLETON_H
+#ifndef HELLGROUND_SINGLETON_H
+#define HELLGROUND_SINGLETON_H
 
 /**
  * @brief class Singleton
@@ -29,16 +29,16 @@
 #include "ThreadingModel.h"
 #include "ObjectLifeTime.h"
 
-namespace Trinity
+namespace Hellground
 {
     template
         <
         typename T,
-        class ThreadingModel = Trinity::SingleThreaded<T>,
-        class CreatePolicy = Trinity::OperatorNew<T>,
-        class LifeTimePolicy = Trinity::ObjectLifeTime<T>
+        class ThreadingModel = Hellground::SingleThreaded<T>,
+        class CreatePolicy = Hellground::OperatorNew<T>,
+        class LifeTimePolicy = Hellground::ObjectLifeTime<T>
         >
-        class TRINITY_DLL_DECL Singleton
+        class HELLGROUND_DLL_DECL Singleton
     {
         public:
             static T& Instance();

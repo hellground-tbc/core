@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_CREATUREAISELECTOR_H
-#define TRINITY_CREATUREAISELECTOR_H
+#ifndef HELLGROUND_CREATUREAISELECTOR_H
+#define HELLGROUND_CREATUREAISELECTOR_H
 
 class CreatureAI;
 class Creature;

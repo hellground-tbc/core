@@ -61,7 +61,7 @@ static CellPosition CellLocation[]=
     { },
 }; */
 
-struct TRINITY_DLL_DECL boss_broggokAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_broggokAI : public ScriptedAI
 {
     boss_broggokAI(Creature *c) : ScriptedAI(c), summons(c) { pInstance = c->GetInstanceData(); }
 

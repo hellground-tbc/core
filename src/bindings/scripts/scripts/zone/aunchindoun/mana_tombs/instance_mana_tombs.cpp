@@ -3,7 +3,7 @@
 
 #define ENCOUNTERS 3
 
-struct TRINITY_DLL_DECL instance_mana_tombs : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_mana_tombs : public ScriptedInstance
 {
     instance_mana_tombs(Map *map) : ScriptedInstance(map) {Initialize();};
 

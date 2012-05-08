@@ -83,7 +83,7 @@ enum SpellNotifyPushType
 
 bool IsQuestTameSpell(uint32 spellId);
 
-namespace Trinity
+namespace Hellground
 {
     struct SpellNotifierCreatureAndPlayer;
 }
@@ -244,7 +244,7 @@ enum SpellTargets
 
 class Spell
 {
-    friend struct Trinity::SpellNotifierCreatureAndPlayer;
+    friend struct Hellground::SpellNotifierCreatureAndPlayer;
     public:
 
         void EffectNULL(uint32);
@@ -632,9 +632,9 @@ class Spell
         bool m_skipCheck;
 };
 
-namespace Trinity
+namespace Hellground
 {
-    struct TRINITY_DLL_DECL SpellNotifierGameObject
+    struct HELLGROUND_DLL_DECL SpellNotifierGameObject
     {
         std::list<GameObject*> *i_data;
         Spell &i_spell;
@@ -707,7 +707,7 @@ namespace Trinity
         #endif
     };
 
-    struct TRINITY_DLL_DECL SpellNotifierCreatureAndPlayer
+    struct HELLGROUND_DLL_DECL SpellNotifierCreatureAndPlayer
     {
         std::list<Unit*> *i_data;
         Spell &i_spell;
@@ -813,7 +813,7 @@ namespace Trinity
     };
 
 
-    struct TRINITY_DLL_DECL SpellNotifierDeadCreature
+    struct HELLGROUND_DLL_DECL SpellNotifierDeadCreature
     {
         std::list<Unit*> *i_data;
         Spell &i_spell;

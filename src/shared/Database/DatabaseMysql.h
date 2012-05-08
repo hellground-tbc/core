@@ -35,7 +35,7 @@
 #endif
 
 //MySQL prepared statement class
-class TRINITY_DLL_SPEC MySqlPreparedStatement : public SqlPreparedStatement
+class HELLGROUND_DLL_SPEC MySqlPreparedStatement : public SqlPreparedStatement
 {
 public:
     MySqlPreparedStatement(const std::string& fmt, SqlConnection& conn, MYSQL * mysql);
@@ -66,7 +66,7 @@ private:
     MYSQL_RES *m_pResultMetadata;
 };
 
-class TRINITY_DLL_SPEC MySQLConnection : public SqlConnection
+class HELLGROUND_DLL_SPEC MySQLConnection : public SqlConnection
 {
     public:
         MySQLConnection(Database& db) : SqlConnection(db), mMysql(NULL) {}
@@ -94,9 +94,9 @@ class TRINITY_DLL_SPEC MySQLConnection : public SqlConnection
         MYSQL *mMysql;
 };
 
-class TRINITY_DLL_SPEC DatabaseMysql : public Database
+class HELLGROUND_DLL_SPEC DatabaseMysql : public Database
 {
-    friend class Trinity::OperatorNew<DatabaseMysql>;
+    friend class Hellground::OperatorNew<DatabaseMysql>;
 
     public:
         DatabaseMysql();

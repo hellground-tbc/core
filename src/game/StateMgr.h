@@ -72,7 +72,7 @@ struct ActionInfo
 //typedef std::map<UnitActionPriority, ActionInfo> UnitActionStorage;
 typedef ACE_Based::LockedVector<ActionInfo> UnitActionStorage;
 
-class TRINITY_DLL_SPEC UnitStateMgr
+class HELLGROUND_DLL_SPEC UnitStateMgr
 {
 
 protected:

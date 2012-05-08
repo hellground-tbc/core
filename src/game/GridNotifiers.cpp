@@ -31,7 +31,7 @@
 #include "CellImpl.h"
 #include "SpellAuras.h"
 
-using namespace Trinity;
+using namespace Hellground;
 
 void VisibleNotifier::SendToSelf()
 {
@@ -220,7 +220,7 @@ void DelayedUnitRelocation::Visit(PlayerMapType &m)
         if (player != viewPoint && !viewPoint->IsPositionValid())
             continue;
 
-        CellPair pair2(Trinity::ComputeCellPair(viewPoint->GetPositionX(), viewPoint->GetPositionY()));
+        CellPair pair2(Hellground::ComputeCellPair(viewPoint->GetPositionX(), viewPoint->GetPositionY()));
         Cell cell2(pair2);
 
         PlayerRelocationNotifier relocate(*player);

@@ -201,6 +201,6 @@ class AuctionHouseMgr
         ItemMap             mAitems;
 };
 
-#define sAuctionMgr Trinity::Singleton<AuctionHouseMgr>::Instance()
+#define sAuctionMgr Hellground::Singleton<AuctionHouseMgr>::Instance()
 
 #endif

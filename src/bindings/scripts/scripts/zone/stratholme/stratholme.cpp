@@ -77,7 +77,7 @@ bool GOUse_go_gauntlet_gate(Player *player, GameObject* _GO)
 #define SAY_ZAPPED2 "Who you gonna call?"
 #define SAY_ZAPPED3 "Don't cross those beams!"
 
-struct TRINITY_DLL_DECL mob_freed_soulAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_freed_soulAI : public ScriptedAI
 {
     mob_freed_soulAI(Creature *c) : ScriptedAI(c) {}
 
@@ -108,7 +108,7 @@ CreatureAI* GetAI_mob_freed_soul(Creature *_Creature)
 #define ENTRY_RESTLESS      11122
 #define ENTRY_FREED         11136
 
-struct TRINITY_DLL_DECL mob_restless_soulAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_restless_soulAI : public ScriptedAI
 {
     mob_restless_soulAI(Creature *c) : ScriptedAI(c) {}
 
@@ -170,7 +170,7 @@ CreatureAI* GetAI_mob_restless_soul(Creature *_Creature)
 
 #define SPELL_HAUNTING_PHANTOM  16336
 
-struct TRINITY_DLL_DECL mobs_spectral_ghostly_citizenAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mobs_spectral_ghostly_citizenAI : public ScriptedAI
 {
     mobs_spectral_ghostly_citizenAI(Creature *c) : ScriptedAI(c) {}
 

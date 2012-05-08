@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_CELLIMPL_H
-#define TRINITY_CELLIMPL_H
+#ifndef HELLGROUND_CELLIMPL_H
+#define HELLGROUND_CELLIMPL_H
 
 #include "Common.h"
 #include "Cell.h"
@@ -39,14 +39,14 @@ inline CellArea Cell::CalculateCellArea(float x, float y, float radius)
 {
     if (radius <= 0.0f)
     {
-        CellPair center = Trinity::ComputeCellPair(x, y).normalize();
+        CellPair center = Hellground::ComputeCellPair(x, y).normalize();
         return CellArea(center, center);
     }
 
     return CellArea
     (
-        Trinity::ComputeCellPair(x - radius, y - radius).normalize(),
-        Trinity::ComputeCellPair(x + radius, y + radius).normalize()
+        Hellground::ComputeCellPair(x - radius, y - radius).normalize(),
+        Hellground::ComputeCellPair(x + radius, y + radius).normalize()
    );
 }
 
@@ -176,7 +176,7 @@ Cell::VisitCircle(TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const Cel
 template<class T>
 inline void Cell::VisitGridObjects(const WorldObject *center_obj, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(Trinity::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
+    CellPair p(Hellground::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -187,7 +187,7 @@ inline void Cell::VisitGridObjects(const WorldObject *center_obj, T &visitor, fl
 template<class T>
 inline void Cell::VisitWorldObjects(const WorldObject *center_obj, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(Trinity::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
+    CellPair p(Hellground::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -198,7 +198,7 @@ inline void Cell::VisitWorldObjects(const WorldObject *center_obj, T &visitor, f
 template<class T>
 inline void Cell::VisitAllObjects(const WorldObject *center_obj, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(Trinity::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
+    CellPair p(Hellground::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -211,7 +211,7 @@ inline void Cell::VisitAllObjects(const WorldObject *center_obj, T &visitor, flo
 template<class T>
 inline void Cell::VisitGridObjects(float x, float y, Map *map, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(Trinity::ComputeCellPair(x, y));
+    CellPair p(Hellground::ComputeCellPair(x, y));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -222,7 +222,7 @@ inline void Cell::VisitGridObjects(float x, float y, Map *map, T &visitor, float
 template<class T>
 inline void Cell::VisitWorldObjects(float x, float y, Map *map, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(Trinity::ComputeCellPair(x, y));
+    CellPair p(Hellground::ComputeCellPair(x, y));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();
@@ -233,7 +233,7 @@ inline void Cell::VisitWorldObjects(float x, float y, Map *map, T &visitor, floa
 template<class T>
 inline void Cell::VisitAllObjects(float x, float y, Map *map, T &visitor, float radius, bool dont_load)
 {
-    CellPair p(Trinity::ComputeCellPair(x, y));
+    CellPair p(Hellground::ComputeCellPair(x, y));
     Cell cell(p);
     if (dont_load)
         cell.SetNoCreate();

@@ -56,7 +56,7 @@ class AccountMgr
         static bool normilizeString(std::string& utf8str);
 };
 
-#define accmgr Trinity::Singleton<AccountMgr>::Instance()
-#define sAccountMgr Trinity::Singleton<AccountMgr>::Instance()
+#define accmgr Hellground::Singleton<AccountMgr>::Instance()
+#define sAccountMgr Hellground::Singleton<AccountMgr>::Instance()
 #endif
 

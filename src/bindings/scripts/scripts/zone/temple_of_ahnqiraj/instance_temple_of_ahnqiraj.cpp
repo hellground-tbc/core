@@ -26,7 +26,7 @@ EndScriptData */
 
 #define ENCOUNTERS 9
 
-struct TRINITY_DLL_DECL instance_temple_of_ahnqiraj : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_temple_of_ahnqiraj : public ScriptedInstance
 {
     instance_temple_of_ahnqiraj(Map *map) : ScriptedInstance(map) {Initialize();};
 

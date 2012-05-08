@@ -37,7 +37,7 @@ enum OnyxiaLair
     CREATURE_WHELP    = 11262
 };
 
-struct TRINITY_DLL_DECL instance_onyxia_lair : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_onyxia_lair : public ScriptedInstance
 {
      instance_onyxia_lair(Map *map) : ScriptedInstance(map) {Initialize();};
 

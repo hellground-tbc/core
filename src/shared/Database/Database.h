@@ -38,7 +38,7 @@ class Database;
 #define MAX_QUERY_LEN   32*1024
 
 //
-class TRINITY_DLL_SPEC SqlConnection
+class HELLGROUND_DLL_SPEC SqlConnection
 {
     public:
         virtual ~SqlConnection() {}
@@ -100,7 +100,7 @@ class TRINITY_DLL_SPEC SqlConnection
         StmtHolder m_holder;
 };
 
-class TRINITY_DLL_SPEC Database
+class HELLGROUND_DLL_SPEC Database
 {
     public:
         virtual ~Database();
@@ -234,7 +234,7 @@ class TRINITY_DLL_SPEC Database
         //factory method to create SqlDelayThread objects
         virtual SqlDelayThread * CreateDelayThread();
 
-        class TRINITY_DLL_SPEC TransHelper
+        class HELLGROUND_DLL_SPEC TransHelper
         {
             public:
                 TransHelper() : m_pTrans(NULL) {}

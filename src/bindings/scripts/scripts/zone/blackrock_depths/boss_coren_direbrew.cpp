@@ -19,7 +19,7 @@
 //////////////////////
 //Coren Direbrew
 //////////////////////
-struct TRINITY_DLL_DECL boss_coren_direbrewAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_coren_direbrewAI : public ScriptedAI
 {
     boss_coren_direbrewAI(Creature *c) : ScriptedAI(c) { }
 
@@ -39,8 +39,8 @@ struct TRINITY_DLL_DECL boss_coren_direbrewAI : public ScriptedAI
         //me->setFaction(35);
 
         std::list<Creature*> antagonistList;
-        Trinity::AllCreaturesOfEntryInRange check(me, NPC_DARK_IRON_ANTAGONIST, 100);
-        Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(antagonistList, check);
+        Hellground::AllCreaturesOfEntryInRange check(me, NPC_DARK_IRON_ANTAGONIST, 100);
+        Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(antagonistList, check);
 
         Cell::VisitGridObjects(me, searcher, 100);
 
@@ -142,7 +142,7 @@ CreatureAI* GetAI_boss_coren_direbrew(Creature *_Creature)
 //////////////////////
 //Trigger
 //////////////////////
-struct TRINITY_DLL_DECL direbrew_starter_triggerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL direbrew_starter_triggerAI : public ScriptedAI
 {
     direbrew_starter_triggerAI(Creature *c) : ScriptedAI(c) { }
 
@@ -164,8 +164,8 @@ struct TRINITY_DLL_DECL direbrew_starter_triggerAI : public ScriptedAI
                 Coren->setFaction(54);
 
                 std::list<Creature*> antagonistList;
-                Trinity::AllCreaturesOfEntryInRange check(me, NPC_DARK_IRON_ANTAGONIST, 100);
-                Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(antagonistList, check);
+                Hellground::AllCreaturesOfEntryInRange check(me, NPC_DARK_IRON_ANTAGONIST, 100);
+                Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(antagonistList, check);
 
                 Cell::VisitGridObjects(me, searcher, 100);
 

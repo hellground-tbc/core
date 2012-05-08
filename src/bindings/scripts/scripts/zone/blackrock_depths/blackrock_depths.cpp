@@ -97,7 +97,7 @@ bool AreaTrigger_at_ring_of_law(Player *player, AreaTriggerEntry const* at)
 ######*/
 
 //TODO: implement quest part of event (different end boss)
-struct TRINITY_DLL_DECL npc_grimstoneAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_grimstoneAI : public npc_escortAI
 {
     npc_grimstoneAI(Creature *c) : npc_escortAI(c)
     {
@@ -342,7 +342,7 @@ CreatureAI* GetAI_npc_grimstone(Creature *_Creature)
 #define SPELL_FIREBALLVOLLEY    22425
 #define SPELL_MIGHTYBLOW        14099
 
-struct TRINITY_DLL_DECL mob_phalanxAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_phalanxAI : public ScriptedAI
 {
     mob_phalanxAI(Creature *c) : ScriptedAI(c) {}
 
@@ -547,7 +547,7 @@ bool GossipSelect_npc_lokhtos_darkbargainer(Player *player, Creature *_Creature,
 #define SAY_DUGHAL_FREE         "Thank you, $N! I'm free!!!"
 #define GOSSIP_DUGHAL           "You're free, Dughal! Get out of here!"
 
-struct TRINITY_DLL_DECL npc_dughal_stormwingAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_dughal_stormwingAI : public npc_escortAI
 {
     npc_dughal_stormwingAI(Creature *c) : npc_escortAI(c)
     {
@@ -681,7 +681,7 @@ enum WaitEvent
     TOBIAS
 };
 
-struct TRINITY_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_marshal_windsorAI : public npc_escortAI
 {
     npc_marshal_windsorAI(Creature *c) : npc_escortAI(c)
     {
@@ -877,7 +877,7 @@ bool QuestAccept_npc_marshal_windsor(Player *player, Creature *creature, Quest c
 #define SAY_REGINALD_WINDSOR_20_1   "We made it!"
 #define SAY_REGINALD_WINDSOR_20_2   "Meet me at Maxwell's encampment. We'll go over the next stages of the plan there and figure out a way to decode my tablets without the decryption ring."
 
-struct TRINITY_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_marshal_reginald_windsorAI : public npc_escortAI
 {
     npc_marshal_reginald_windsorAI(Creature *c) : npc_escortAI(c)
     {
@@ -1127,7 +1127,7 @@ CreatureAI* GetAI_npc_marshal_reginald_windsor(Creature *_Creature)
 
 #define SAY_TOBIAS_FREE         "Thank you! I will run for safety immediately!"
 
-struct TRINITY_DLL_DECL npc_tobias_seecherAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_tobias_seecherAI : public npc_escortAI
 {
     npc_tobias_seecherAI(Creature *c) :npc_escortAI(c)
     {
@@ -1275,7 +1275,7 @@ uint32 BarWpWait[8]=
     0
 };
 
-struct TRINITY_DLL_DECL npc_rocknotAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_rocknotAI : public npc_escortAI
 {
     npc_rocknotAI(Creature *c) : npc_escortAI(c)
     {

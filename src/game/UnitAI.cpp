@@ -204,7 +204,7 @@ Unit* UnitAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float ma
     if (targetList.empty())
         return NULL;
 
-    targetList.remove_if(Trinity::UnitPowerTypeCheck(power, false));
+    targetList.remove_if(Hellground::UnitPowerTypeCheck(power, false));
 
     return ReturnTargetHelper(targetType, position, targetList);
 }
@@ -216,16 +216,16 @@ void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggr
         targetList.push_back((*itr)->getTarget());
 
     if (playerOnly)
-        targetList.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false));
+        targetList.remove_if(Hellground::ObjectTypeIdCheck(TYPEID_PLAYER, false));
 
     if (excludeGUID)
-        targetList.remove_if(Trinity::ObjectGUIDCheck(excludeGUID));
+        targetList.remove_if(Hellground::ObjectGUIDCheck(excludeGUID));
 
     if (min_dist)
-        targetList.remove_if(Trinity::ObjectDistanceCheck(me, min_dist, false));
+        targetList.remove_if(Hellground::ObjectDistanceCheck(me, min_dist, false));
 
     if (max_dist)
-        targetList.remove_if(Trinity::ObjectDistanceCheck(me, max_dist, true));
+        targetList.remove_if(Hellground::ObjectDistanceCheck(me, max_dist, true));
 
     if (num == 0)
         num = targetList.size();
@@ -236,10 +236,10 @@ void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggr
     switch (targetType)
     {
         case SELECT_TARGET_NEAREST:
-            targetList.sort(Trinity::ObjectDistanceOrder(me));
+            targetList.sort(Hellground::ObjectDistanceOrder(me));
             break;
         case SELECT_TARGET_FARTHEST:
-            targetList.sort(Trinity::ObjectDistanceOrder(me));
+            targetList.sort(Hellground::ObjectDistanceOrder(me));
         case SELECT_TARGET_BOTTOMAGGRO:
         {
             targetList.reverse();
@@ -270,8 +270,8 @@ void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggr
 Unit* UnitAI::SelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {
     Unit* pUnit = NULL;
-    Trinity::MostHPMissingInRange u_check(me, range, MinHPDiff);
-    Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(pUnit, u_check);
+    Hellground::MostHPMissingInRange u_check(me, range, MinHPDiff);
+    Hellground::UnitLastSearcher<Hellground::MostHPMissingInRange> searcher(pUnit, u_check);
 
     Cell::VisitAllObjects(me, searcher, range);
     return pUnit;
@@ -280,8 +280,8 @@ Unit* UnitAI::SelectLowestHpFriendly(float range, uint32 MinHPDiff)
 std::list<Creature*> UnitAI::FindAllCreaturesWithEntry(uint32 entry, float range)
 {
     std::list<Creature*> pList;
-    Trinity::AllCreaturesOfEntryInRange u_check(me, entry, range);
-    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(pList, u_check);
+    Hellground::AllCreaturesOfEntryInRange u_check(me, entry, range);
+    Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(pList, u_check);
     Cell::VisitAllObjects(me, searcher, range);
     return pList;
 }
@@ -291,8 +291,8 @@ std::list<Player*> UnitAI::FindAllPlayersInRange(float range, Unit * finder)
     if (!finder)
         finder = me;
     std::list<Player*> pList;
-    Trinity::AnyPlayerInObjectRangeCheck checker(finder, range);
-    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(finder, pList, checker);
+    Hellground::AnyPlayerInObjectRangeCheck checker(finder, range);
+    Hellground::PlayerListSearcher<Hellground::AnyPlayerInObjectRangeCheck> searcher(finder, pList, checker);
     Cell::VisitWorldObjects(finder, searcher, range);
     return pList;
 }
@@ -300,8 +300,8 @@ std::list<Player*> UnitAI::FindAllPlayersInRange(float range, Unit * finder)
 std::list<Creature*> UnitAI::FindAllFriendlyInGrid(float range)
 {
     std::list<Creature*> pList;
-    Trinity::AllFriendlyCreaturesInGrid u_check(me);
-    Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+    Hellground::AllFriendlyCreaturesInGrid u_check(me);
+    Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
     Cell::VisitGridObjects(me, searcher, range);
     return pList;
 }
@@ -309,8 +309,8 @@ std::list<Creature*> UnitAI::FindAllFriendlyInGrid(float range)
 std::list<Creature*> UnitAI::FindFriendlyCC(float range)
 {
     std::list<Creature*> pList;
-    Trinity::FriendlyCCedInRange u_check(me, range);
-    Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(pList, u_check);
+    Hellground::FriendlyCCedInRange u_check(me, range);
+    Hellground::CreatureListSearcher<Hellground::FriendlyCCedInRange> searcher(pList, u_check);
 
     Cell::VisitAllObjects(me, searcher, range);
     return pList;
@@ -319,8 +319,8 @@ std::list<Creature*> UnitAI::FindFriendlyCC(float range)
 std::list<Creature*> UnitAI::FindFriendlyMissingBuff(float range, uint32 spellid)
 {
     std::list<Creature*> pList;
-    Trinity::FriendlyMissingBuffInRange u_check(me, range, spellid);
-    Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(pList, u_check);
+    Hellground::FriendlyMissingBuffInRange u_check(me, range, spellid);
+    Hellground::CreatureListSearcher<Hellground::FriendlyMissingBuffInRange> searcher(pList, u_check);
 
     Cell::VisitAllObjects(me, searcher, range);
     return pList;
@@ -329,8 +329,8 @@ std::list<Creature*> UnitAI::FindFriendlyMissingBuff(float range, uint32 spellid
 std::list<Unit*> UnitAI::FindAllDeadInRange(float range)
 {
     std::list<Unit*> pList;
-    Trinity::AllDeadUnitsInRange u_check(me, range);
-    Trinity::UnitListSearcher<Trinity::AllDeadUnitsInRange> searcher(pList, u_check);
+    Hellground::AllDeadUnitsInRange u_check(me, range);
+    Hellground::UnitListSearcher<Hellground::AllDeadUnitsInRange> searcher(pList, u_check);
 
     Cell::VisitAllObjects(me, searcher, range);
     return pList;

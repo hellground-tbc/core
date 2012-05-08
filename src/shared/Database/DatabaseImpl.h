@@ -50,7 +50,7 @@ bool
 Database::AsyncQuery(Class *object, void (Class::*method)(QueryResultAutoPtr), const char *sql)
 {
     ASYNC_QUERY_BODY(sql)
-    return m_threadBody->Delay(new SqlQuery(sql, new Trinity::QueryCallback<Class>(object, method), m_pResultQueue));
+    return m_threadBody->Delay(new SqlQuery(sql, new Hellground::QueryCallback<Class>(object, method), m_pResultQueue));
 }
 
 template<class Class, typename ParamType1>
@@ -58,7 +58,7 @@ bool
 Database::AsyncQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1), ParamType1 param1, const char *sql)
 {
     ASYNC_QUERY_BODY(sql)
-    return m_threadBody->Delay(new SqlQuery(sql, new Trinity::QueryCallback<Class, ParamType1>(object, method, (QueryResultAutoPtr)NULL, param1), m_pResultQueue));
+    return m_threadBody->Delay(new SqlQuery(sql, new Hellground::QueryCallback<Class, ParamType1>(object, method, (QueryResultAutoPtr)NULL, param1), m_pResultQueue));
 }
 
 template<class Class, typename ParamType1, typename ParamType2>
@@ -66,7 +66,7 @@ bool
 Database::AsyncQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *sql)
 {
     ASYNC_QUERY_BODY(sql)
-    return m_threadBody->Delay(new SqlQuery(sql, new Trinity::QueryCallback<Class, ParamType1, ParamType2>(object, method, (QueryResultAutoPtr)NULL, param1, param2), m_pResultQueue));
+    return m_threadBody->Delay(new SqlQuery(sql, new Hellground::QueryCallback<Class, ParamType1, ParamType2>(object, method, (QueryResultAutoPtr)NULL, param1, param2), m_pResultQueue));
 }
 
 template<class Class, typename ParamType1, typename ParamType2, typename ParamType3>
@@ -74,7 +74,7 @@ bool
 Database::AsyncQuery(Class *object, void (Class::*method)(QueryResultAutoPtr, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *sql)
 {
     ASYNC_QUERY_BODY(sql)
-    return m_threadBody->Delay(new SqlQuery(sql, new Trinity::QueryCallback<Class, ParamType1, ParamType2, ParamType3>(object, method, (QueryResultAutoPtr)NULL, param1, param2, param3), m_pResultQueue));
+    return m_threadBody->Delay(new SqlQuery(sql, new Hellground::QueryCallback<Class, ParamType1, ParamType2, ParamType3>(object, method, (QueryResultAutoPtr)NULL, param1, param2, param3), m_pResultQueue));
 }
 
 // -- Query / static --
@@ -84,7 +84,7 @@ bool
 Database::AsyncQuery(void (*method)(QueryResultAutoPtr, ParamType1), ParamType1 param1, const char *sql)
 {
     ASYNC_QUERY_BODY(sql)
-    return m_threadBody->Delay(new SqlQuery(sql, new Trinity::SQueryCallback<ParamType1>(method, (QueryResultAutoPtr)NULL, param1), m_pResultQueue));
+    return m_threadBody->Delay(new SqlQuery(sql, new Hellground::SQueryCallback<ParamType1>(method, (QueryResultAutoPtr)NULL, param1), m_pResultQueue));
 }
 
 template<typename ParamType1, typename ParamType2>
@@ -92,7 +92,7 @@ bool
 Database::AsyncQuery(void (*method)(QueryResultAutoPtr, ParamType1, ParamType2), ParamType1 param1, ParamType2 param2, const char *sql)
 {
     ASYNC_QUERY_BODY(sql)
-    return m_threadBody->Delay(new SqlQuery(sql, new Trinity::SQueryCallback<ParamType1, ParamType2>(method, (QueryResultAutoPtr)NULL, param1, param2), m_pResultQueue));
+    return m_threadBody->Delay(new SqlQuery(sql, new Hellground::SQueryCallback<ParamType1, ParamType2>(method, (QueryResultAutoPtr)NULL, param1, param2), m_pResultQueue));
 }
 
 template<typename ParamType1, typename ParamType2, typename ParamType3>
@@ -100,7 +100,7 @@ bool
 Database::AsyncQuery(void (*method)(QueryResultAutoPtr, ParamType1, ParamType2, ParamType3), ParamType1 param1, ParamType2 param2, ParamType3 param3, const char *sql)
 {
     ASYNC_QUERY_BODY(sql)
-    return m_threadBody->Delay(new SqlQuery(sql, new Trinity::SQueryCallback<ParamType1, ParamType2, ParamType3>(method, (QueryResultAutoPtr)NULL, param1, param2, param3), m_pResultQueue));
+    return m_threadBody->Delay(new SqlQuery(sql, new Hellground::SQueryCallback<ParamType1, ParamType2, ParamType3>(method, (QueryResultAutoPtr)NULL, param1, param2, param3), m_pResultQueue));
 }
 
 // -- PQuery / member --
@@ -170,7 +170,7 @@ bool
 Database::DelayQueryHolder(Class *object, void (Class::*method)(QueryResultAutoPtr, SqlQueryHolder*), SqlQueryHolder *holder)
 {
     ASYNC_DELAYHOLDER_BODY(holder)
-    return holder->Execute(new Trinity::QueryCallback<Class, SqlQueryHolder*>(object, method, (QueryResultAutoPtr)NULL, holder), m_threadBody, m_pResultQueue);
+    return holder->Execute(new Hellground::QueryCallback<Class, SqlQueryHolder*>(object, method, (QueryResultAutoPtr)NULL, holder), m_threadBody, m_pResultQueue);
 }
 
 template<class Class, typename ParamType1>
@@ -178,7 +178,7 @@ bool
 Database::DelayQueryHolder(Class *object, void (Class::*method)(QueryResultAutoPtr, SqlQueryHolder*, ParamType1), SqlQueryHolder *holder, ParamType1 param1)
 {
     ASYNC_DELAYHOLDER_BODY(holder)
-    return holder->Execute(new Trinity::QueryCallback<Class, SqlQueryHolder*, ParamType1>(object, method, (QueryResultAutoPtr)NULL, holder, param1), m_threadBody, m_pResultQueue);
+    return holder->Execute(new Hellground::QueryCallback<Class, SqlQueryHolder*, ParamType1>(object, method, (QueryResultAutoPtr)NULL, holder, param1), m_threadBody, m_pResultQueue);
 }
 
 #undef ASYNC_QUERY_BODY

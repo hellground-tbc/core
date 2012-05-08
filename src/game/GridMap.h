@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_GRIDMAP_H
-#define TRINITY_GRIDMAP_H
+#ifndef HELLGROUND_GRIDMAP_H
+#define HELLGROUND_GRIDMAP_H
 
 #include "Platform/Define.h"
 #include "Policies/Singleton.h"
@@ -64,7 +64,7 @@ struct GridMapAreaHeader
 };
 
 template<typename Countable>
-class TRINITY_DLL_SPEC Referencable
+class HELLGROUND_DLL_SPEC Referencable
 {
     public:
         Referencable() { m_count = 0; }
@@ -196,7 +196,7 @@ class GridMap
 
 
 //class for sharing and managin GridMap objects
-class TRINITY_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
+class HELLGROUND_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
 {
     public:
         TerrainInfo(uint32 mapid);
@@ -264,10 +264,10 @@ class TRINITY_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
 };
 
 //class for managing TerrainData object and all sort of geometry querying operations
-class TRINITY_DLL_DECL TerrainManager : public Trinity::Singleton<TerrainManager, Trinity::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex> >
+class HELLGROUND_DLL_DECL TerrainManager : public Hellground::Singleton<TerrainManager, Hellground::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex> >
 {
     typedef UNORDERED_MAP<uint32, TerrainInfo *> TerrainDataMap;
-    friend class Trinity::OperatorNew<TerrainManager>;
+    friend class Hellground::OperatorNew<TerrainManager>;
 
     public:
         TerrainInfo * LoadTerrain(const uint32 mapId);
@@ -305,7 +305,7 @@ class TRINITY_DLL_DECL TerrainManager : public Trinity::Singleton<TerrainManager
         TerrainManager(const TerrainManager &);
         TerrainManager& operator=(const TerrainManager &);
 
-        typedef Trinity::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex>::Lock Guard;
+        typedef Hellground::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex>::Lock Guard;
         TerrainDataMap i_TerrainMap;
 };
 

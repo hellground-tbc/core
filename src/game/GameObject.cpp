@@ -324,8 +324,8 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 // search unfriendly creature
                 if (owner && NeedDespawn)                    // hunter trap
                 {
-                    Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(this, owner, radius);
-                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> checker(ok, u_check);
+                    Hellground::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(this, owner, radius);
+                    Hellground::UnitSearcher<Hellground::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> checker(ok, u_check);
 
                     Cell::VisitGridObjects(this, checker, radius);
 
@@ -336,8 +336,8 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 {
                     // affect only players
                     Player* p_ok = NULL;
-                    Trinity::AnyPlayerInObjectRangeCheck p_check(this, radius);
-                    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck>  checker(p_ok, p_check);
+                    Hellground::AnyPlayerInObjectRangeCheck p_check(this, radius);
+                    Hellground::PlayerSearcher<Hellground::AnyPlayerInObjectRangeCheck>  checker(p_ok, p_check);
 
                     Cell::VisitWorldObjects(this,checker, radius);
 
@@ -918,8 +918,8 @@ void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, Unit* target)
     GameObject* trapGO = NULL;
     {
         // using original GO distance
-        Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*target, trapEntry, range);
-        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(trapGO, go_check);
+        Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*target, trapEntry, range);
+        Hellground::GameObjectLastSearcher<Hellground::NearestGameObjectEntryInObjectRangeCheck> checker(trapGO, go_check);
 
         Cell::VisitGridObjects(this, checker, range);
     }
@@ -934,8 +934,8 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
 {
     GameObject* ok = NULL;
 
-    Trinity::NearestGameObjectFishingHole u_check(*this, range);
-    Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(ok, u_check);
+    Hellground::NearestGameObjectFishingHole u_check(*this, range);
+    Hellground::GameObjectSearcher<Hellground::NearestGameObjectFishingHole> checker(ok, u_check);
 
     Cell::VisitGridObjects(this, checker, range);
     return ok;

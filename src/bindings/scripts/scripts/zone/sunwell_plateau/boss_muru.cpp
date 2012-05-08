@@ -114,7 +114,7 @@ float Humanoides[6][5] =
 };
 
 uint32 EnrageTimer = 600000;
-struct TRINITY_DLL_DECL boss_entropiusAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_entropiusAI : public ScriptedAI
 {
     boss_entropiusAI(Creature *c) : ScriptedAI(c), Summons(m_creature)
     {
@@ -234,7 +234,7 @@ CreatureAI* GetAI_boss_entropius(Creature *_Creature)
     return new boss_entropiusAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
 {
     boss_muruAI(Creature *c) : Scripted_NoMovementAI(c), Summons(m_creature)
     {
@@ -425,7 +425,7 @@ CreatureAI* GetAI_boss_muru(Creature *_Creature)
     return new boss_muruAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL npc_muru_portalAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_muru_portalAI : public Scripted_NoMovementAI
 {
     npc_muru_portalAI(Creature *c) : Scripted_NoMovementAI(c), Summons(m_creature)
     {
@@ -504,7 +504,7 @@ CreatureAI* GetAI_npc_muru_portal(Creature *_Creature)
     return new npc_muru_portalAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL npc_dark_fiendAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_dark_fiendAI : public ScriptedAI
 {
     npc_dark_fiendAI(Creature *c) : ScriptedAI(c)
     {
@@ -577,7 +577,7 @@ CreatureAI* GetAI_npc_dark_fiend(Creature *_Creature)
     return new npc_dark_fiendAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL npc_void_sentinelAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_void_sentinelAI : public ScriptedAI
 {
     npc_void_sentinelAI(Creature *c) : ScriptedAI(c)
     {
@@ -638,7 +638,7 @@ CreatureAI* GetAI_npc_void_sentinel(Creature *_Creature)
     return new npc_void_sentinelAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL npc_blackholeAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_blackholeAI : public ScriptedAI
 {
     npc_blackholeAI(Creature *c) : ScriptedAI(c)
     {

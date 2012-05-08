@@ -59,7 +59,7 @@ EndContentData */
 #define SPELL_MANA_BURN             38884
 #define SPELL_INTANGIBLE_PRESENCE   36513
 
-struct TRINITY_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
 {
     mobs_nether_drakeAI(Creature *c) : ScriptedAI(c) {}
 
@@ -220,7 +220,7 @@ CreatureAI* GetAI_mobs_nether_drake(Creature *_Creature)
 
 #define SAY_DARANELLE -1000401
 
-struct TRINITY_DLL_DECL npc_daranelleAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_daranelleAI : public ScriptedAI
 {
     npc_daranelleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -427,7 +427,7 @@ CreatureAI* GetAI_npc_ogre_brute(Creature* pCreature)
 #define PENTAGRAM_TRIGGER 23040
 #define MAIN_SPAWN 22911
 
-struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
 {
     npc_vim_bunnyAI(Creature *c) : ScriptedAI(c){}
 
@@ -441,8 +441,8 @@ struct TRINITY_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
     bool GetPlayer()
     {
         Player *pPlayer = NULL;
-        Trinity::AnyPlayerInObjectRangeCheck p_check(m_creature, 3.0f);
-        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
+        Hellground::AnyPlayerInObjectRangeCheck p_check(m_creature, 3.0f);
+        Hellground::PlayerSearcher<Hellground::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
 
         Cell::VisitAllObjects(m_creature, searcher, 3.0f);
         return pPlayer;
@@ -501,7 +501,7 @@ CreatureAI* GetAI_npc_vim_bunny(Creature *_Creature)
 #define SPELL_SUMMON_WRANGLED   40917
 #define SPELL_CHANNEL           40626
 
-struct TRINITY_DLL_DECL mob_aetherrayAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_aetherrayAI : public ScriptedAI
 {
 
     mob_aetherrayAI(Creature *c) : ScriptedAI(c) {}
@@ -647,7 +647,7 @@ return true;
 # npc_prophecy_trigger
 #########*/
 
-struct TRINITY_DLL_DECL npc_prophecy_triggerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_prophecy_triggerAI : public ScriptedAI
 {
     npc_prophecy_triggerAI(Creature *c) : ScriptedAI(c)
     {
@@ -942,8 +942,8 @@ struct npc_simon_bunnyAI : public ScriptedAI
         me->SetFloatValue(OBJECT_FIELD_SCALE_X, large ? 2 : 1);
 
         std::list<GameObject*> ClusterList;
-        Trinity::AllGameObjectsInRange objects(me, searchDistance);
-        Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(ClusterList, objects);
+        Hellground::AllGameObjectsInRange objects(me, searchDistance);
+        Hellground::GameObjectListSearcher<Hellground::AllGameObjectsInRange> searcher(ClusterList, objects);
         Cell::VisitGridObjects(me, searcher, searchDistance);
 
         for (std::list<GameObject*>::const_iterator i = ClusterList.begin(); i != ClusterList.end(); ++i)

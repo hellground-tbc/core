@@ -64,7 +64,7 @@ enum
 
     EVENT_ENRAGE        = 7
 };
-struct TRINITY_DLL_DECL boss_doomlordkazzakAI : public BossAI
+struct HELLGROUND_DLL_DECL boss_doomlordkazzakAI : public BossAI
 {
     boss_doomlordkazzakAI(Creature *c) : BossAI(c, EVENT_KAZZAK) {}
 

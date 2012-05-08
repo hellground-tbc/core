@@ -71,7 +71,7 @@ float AddLocations[8][4]=
     {736.539,	-1199.47,	-118.334,   1.69143}
 };
 
-struct TRINITY_DLL_DECL boss_majordomoAI : public BossAI
+struct HELLGROUND_DLL_DECL boss_majordomoAI : public BossAI
 {
     boss_majordomoAI(Creature *c) : BossAI(c, 1)
     {
@@ -333,7 +333,7 @@ CreatureAI* GetAI_boss_majordomo(Creature *_Creature)
     return new boss_majordomoAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL MCflamewakerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL MCflamewakerAI : public ScriptedAI
 {
     MCflamewakerAI(Creature *c) : ScriptedAI(c)
     {
@@ -377,7 +377,7 @@ CreatureAI* GetAI_MCflamewaker(Creature *_Creature)
 }
 
 
-struct TRINITY_DLL_DECL flamewaker_healerAI : public MCflamewakerAI
+struct HELLGROUND_DLL_DECL flamewaker_healerAI : public MCflamewakerAI
 {
     flamewaker_healerAI(Creature *c) : MCflamewakerAI(c)
     {}
@@ -425,7 +425,7 @@ CreatureAI* GetAI_flamewaker_healer(Creature *_Creature)
 }
 
 
-struct TRINITY_DLL_DECL flamewaker_eliteAI : public MCflamewakerAI
+struct HELLGROUND_DLL_DECL flamewaker_eliteAI : public MCflamewakerAI
 {
     flamewaker_eliteAI(Creature *c) : MCflamewakerAI(c)
     {}

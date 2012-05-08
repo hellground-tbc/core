@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_CELL_H
-#define TRINITY_CELL_H
+#ifndef HELLGROUND_CELL_H
+#define HELLGROUND_CELL_H
 
 #include "GameSystem/TypeContainer.h"
 #include "GameSystem/TypeContainerVisitor.h"
@@ -27,7 +27,7 @@
 class Map;
 class WorldObject;
 
-struct TRINITY_DLL_DECL CellArea
+struct HELLGROUND_DLL_DECL CellArea
 {
     CellArea() {}
     CellArea(CellPair low, CellPair high) : low_bound(low), high_bound(high) {}
@@ -44,7 +44,7 @@ struct TRINITY_DLL_DECL CellArea
     CellPair high_bound;
 };
 
-struct TRINITY_DLL_DECL Cell
+struct HELLGROUND_DLL_DECL Cell
 {
     Cell() { data.All = 0; }
     Cell(const Cell &cell) { data.All = cell.data.All; }

@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_REFERENCEIMPL_H
-#define TRINITY_REFERENCEIMPL_H
+#ifndef HELLGROUND_REFERENCEIMPL_H
+#define HELLGROUND_REFERENCEIMPL_H
 
 #include "Reference.h"
 

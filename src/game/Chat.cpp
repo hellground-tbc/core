@@ -360,7 +360,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "spell_target_position",       SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadSpellTargetPositionCommand,       "", NULL },
         { "spell_threats",               SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadSpellThreatsCommand,              "", NULL },
         { "spell_disabled",              SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadSpellDisabledCommand,             "", NULL },
-        { "trinity_string",              SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadTrinityStringCommand,             "", NULL },
+        { "HELLGROUND_string",              SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadTrinityStringCommand,             "", NULL },
         { "unqueue_account",             SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadUnqueuedAccountListCommand,       "", NULL },
         { "waypoint_scripts",            SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadWpScriptsCommand,                 "", NULL },
 
@@ -1352,8 +1352,8 @@ GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid
     if (!obj && objmgr.GetGOData(lowguid))                   // guid is DB guid of object
     {
         // search near player then
-        Trinity::GameObjectWithDbGUIDCheck go_check(*pl,lowguid);
-        Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(obj,go_check);
+        Hellground::GameObjectWithDbGUIDCheck go_check(*pl,lowguid);
+        Hellground::GameObjectSearcher<Hellground::GameObjectWithDbGUIDCheck> checker(obj,go_check);
 
         Cell::VisitGridObjects(pl,checker, pl->GetMap()->GetVisibilityDistance());
     }

@@ -98,7 +98,7 @@ bool SqlQuery::Execute(SqlConnection *conn)
 void SqlResultQueue::Update()
 {
     /// execute the callbacks waiting in the synchronization queue
-    Trinity::IQueryCallback* callback = NULL;
+    Hellground::IQueryCallback* callback = NULL;
     while (next(callback))
     {
         callback->Execute();
@@ -106,7 +106,7 @@ void SqlResultQueue::Update()
     }
 }
 
-bool SqlQueryHolder::Execute(Trinity::IQueryCallback * callback, SqlDelayThread *thread, SqlResultQueue *queue)
+bool SqlQueryHolder::Execute(Hellground::IQueryCallback * callback, SqlDelayThread *thread, SqlResultQueue *queue)
 {
     if(!callback || !thread || !queue)
         return false;

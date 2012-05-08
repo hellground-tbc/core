@@ -40,7 +40,7 @@ class WorldObject;
 
 struct SpellEntry;
 
-#define MIN_DB_SCRIPT_STRING_ID        MAX_TRINITY_STRING_ID // 'db_script_string'
+#define MIN_DB_SCRIPT_STRING_ID        MAX_HELLGROUND_STRING_ID // 'db_script_string'
 #define MAX_DB_SCRIPT_STRING_ID        2000010000
 
 struct ScriptInfo
@@ -137,7 +137,7 @@ class ScriptMgr
         template<class T>
         void GetScriptHookPtr(T& ptr, const char* name)
         {
-            ptr = (T)TRINITY_GET_PROC_ADDR(m_hScriptLib, name);
+            ptr = (T)HELLGROUND_GET_PROC_ADDR(m_hScriptLib, name);
         }
 
         typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptMap;
@@ -152,50 +152,50 @@ class ScriptMgr
 
         ScriptNameMap           m_scriptNames;
 
-        TRINITY_LIBRARY_HANDLE   m_hScriptLib;
+        HELLGROUND_LIBRARY_HANDLE   m_hScriptLib;
 
-        void (TRINITY_IMPORT* m_pOnInitScriptLibrary)(char const*);
-        void (TRINITY_IMPORT* m_pOnFreeScriptLibrary)();
-        const char* (TRINITY_IMPORT* m_pGetScriptLibraryVersion)();
+        void (HELLGROUND_IMPORT* m_pOnInitScriptLibrary)(char const*);
+        void (HELLGROUND_IMPORT* m_pOnFreeScriptLibrary)();
+        const char* (HELLGROUND_IMPORT* m_pGetScriptLibraryVersion)();
 
-        CreatureAI* (TRINITY_IMPORT* m_pGetCreatureAI) (Creature*);
-        InstanceData* (TRINITY_IMPORT* m_pCreateInstanceData) (Map*);
+        CreatureAI* (HELLGROUND_IMPORT* m_pGetCreatureAI) (Creature*);
+        InstanceData* (HELLGROUND_IMPORT* m_pCreateInstanceData) (Map*);
 
-        bool (TRINITY_IMPORT* m_pOnGossipHello) (Player*, Creature*);
-        bool (TRINITY_IMPORT* m_pOnGossipSelect) (Player*, Creature*, uint32, uint32);
-        bool (TRINITY_IMPORT* m_pOnGOGossipSelect) (Player*, GameObject*, uint32, uint32);
-        bool (TRINITY_IMPORT* m_pOnGossipSelectWithCode) (Player*, Creature*, uint32, uint32, const char*);
-        bool (TRINITY_IMPORT* m_pOnGOGossipSelectWithCode) (Player*, GameObject*, uint32, uint32, const char*);
-        bool (TRINITY_IMPORT* m_pOnQuestAccept) (Player*, Creature*, Quest const*);
-        bool (TRINITY_IMPORT* m_pOnGOQuestAccept) (Player*, GameObject*, Quest const*);
-        bool (TRINITY_IMPORT* m_pOnItemQuestAccept) (Player*, Item*, Quest const*);
-        bool (TRINITY_IMPORT* m_pOnQuestRewarded) (Player*, Creature*, Quest const*);
-        bool (TRINITY_IMPORT* m_pOnGOQuestRewarded) (Player*, GameObject*, Quest const*);
-        uint32 (TRINITY_IMPORT* m_pGetNPCDialogStatus) (Player*, Creature*);
-        uint32 (TRINITY_IMPORT* m_pGetGODialogStatus) (Player*, GameObject*);
-        bool (TRINITY_IMPORT* m_pOnGOUse) (Player*, GameObject*);
-        bool (TRINITY_IMPORT* m_pOnItemUse) (Player*, Item*, SpellCastTargets const&);
-        bool (TRINITY_IMPORT* m_pOnAreaTrigger) (Player*, AreaTriggerEntry const*);
-        bool (TRINITY_IMPORT* m_pOnCompletedCinematic) (Player*, CinematicSequencesEntry const*);
-        bool (TRINITY_IMPORT* m_pOnProcessEvent) (uint32, Object*, Object*, bool);
-        bool (TRINITY_IMPORT* m_pOnEffectDummyCreature) (Unit*, uint32, uint32, Creature*);
-        bool (TRINITY_IMPORT* m_pOnEffectDummyGO) (Unit*, uint32, uint32, GameObject*);
-        bool (TRINITY_IMPORT* m_pOnEffectDummyItem) (Unit*, uint32, uint32, Item*);
-        bool (TRINITY_IMPORT* m_pOnAuraDummy) (Aura const*, bool);
+        bool (HELLGROUND_IMPORT* m_pOnGossipHello) (Player*, Creature*);
+        bool (HELLGROUND_IMPORT* m_pOnGossipSelect) (Player*, Creature*, uint32, uint32);
+        bool (HELLGROUND_IMPORT* m_pOnGOGossipSelect) (Player*, GameObject*, uint32, uint32);
+        bool (HELLGROUND_IMPORT* m_pOnGossipSelectWithCode) (Player*, Creature*, uint32, uint32, const char*);
+        bool (HELLGROUND_IMPORT* m_pOnGOGossipSelectWithCode) (Player*, GameObject*, uint32, uint32, const char*);
+        bool (HELLGROUND_IMPORT* m_pOnQuestAccept) (Player*, Creature*, Quest const*);
+        bool (HELLGROUND_IMPORT* m_pOnGOQuestAccept) (Player*, GameObject*, Quest const*);
+        bool (HELLGROUND_IMPORT* m_pOnItemQuestAccept) (Player*, Item*, Quest const*);
+        bool (HELLGROUND_IMPORT* m_pOnQuestRewarded) (Player*, Creature*, Quest const*);
+        bool (HELLGROUND_IMPORT* m_pOnGOQuestRewarded) (Player*, GameObject*, Quest const*);
+        uint32 (HELLGROUND_IMPORT* m_pGetNPCDialogStatus) (Player*, Creature*);
+        uint32 (HELLGROUND_IMPORT* m_pGetGODialogStatus) (Player*, GameObject*);
+        bool (HELLGROUND_IMPORT* m_pOnGOUse) (Player*, GameObject*);
+        bool (HELLGROUND_IMPORT* m_pOnItemUse) (Player*, Item*, SpellCastTargets const&);
+        bool (HELLGROUND_IMPORT* m_pOnAreaTrigger) (Player*, AreaTriggerEntry const*);
+        bool (HELLGROUND_IMPORT* m_pOnCompletedCinematic) (Player*, CinematicSequencesEntry const*);
+        bool (HELLGROUND_IMPORT* m_pOnProcessEvent) (uint32, Object*, Object*, bool);
+        bool (HELLGROUND_IMPORT* m_pOnEffectDummyCreature) (Unit*, uint32, uint32, Creature*);
+        bool (HELLGROUND_IMPORT* m_pOnEffectDummyGO) (Unit*, uint32, uint32, GameObject*);
+        bool (HELLGROUND_IMPORT* m_pOnEffectDummyItem) (Unit*, uint32, uint32, Item*);
+        bool (HELLGROUND_IMPORT* m_pOnAuraDummy) (Aura const*, bool);
 
-        bool (TRINITY_IMPORT* m_pOnReceiveEmote) (Player *pPlayer, Creature *pCreature, uint32 emote);
+        bool (HELLGROUND_IMPORT* m_pOnReceiveEmote) (Player *pPlayer, Creature *pCreature, uint32 emote);
 
         // spell scripts
-        bool (TRINITY_IMPORT* m_pOnSpellSetTargetMap) (Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const&, SpellEntry const *pSpell, uint32 effectIndex);
-        bool (TRINITY_IMPORT* m_pOnSpellHandleEffect) (Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex);
+        bool (HELLGROUND_IMPORT* m_pOnSpellSetTargetMap) (Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const&, SpellEntry const *pSpell, uint32 effectIndex);
+        bool (HELLGROUND_IMPORT* m_pOnSpellHandleEffect) (Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex);
 };
 
-#define sScriptMgr Trinity::Singleton<ScriptMgr>::Instance()
+#define sScriptMgr Hellground::Singleton<ScriptMgr>::Instance()
 
-TRINITY_DLL_SPEC uint32 GetAreaTriggerScriptId(uint32 triggerId);
-TRINITY_DLL_SPEC uint32 GetCompletedCinematicScriptId(uint32 triggerId);
-TRINITY_DLL_SPEC uint32 GetScriptId(const char *name);
-TRINITY_DLL_SPEC uint32 GetEventIdScriptId(uint32 eventId);
-TRINITY_DLL_SPEC uint32 GetSpellIdScriptId(uint32 eventId);
+HELLGROUND_DLL_SPEC uint32 GetAreaTriggerScriptId(uint32 triggerId);
+HELLGROUND_DLL_SPEC uint32 GetCompletedCinematicScriptId(uint32 triggerId);
+HELLGROUND_DLL_SPEC uint32 GetScriptId(const char *name);
+HELLGROUND_DLL_SPEC uint32 GetEventIdScriptId(uint32 eventId);
+HELLGROUND_DLL_SPEC uint32 GetSpellIdScriptId(uint32 eventId);
 
 #endif

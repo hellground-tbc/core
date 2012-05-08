@@ -31,7 +31,7 @@ EndContentData */
 #define SPELL_COUNTERCHARGE     35035
 #define SPELL_KNOCKAWAY         22893
 
-struct TRINITY_DLL_DECL mob_crystalcore_devastatorAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_crystalcore_devastatorAI : public ScriptedAI
 {
     mob_crystalcore_devastatorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -92,7 +92,7 @@ CreatureAI* GetAI_mob_crystalcore_devastator(Creature *_Creature)
 #define SPELL_RECHARGE          37121
 #define SPELL_SAWBLADE          37123
 
-struct TRINITY_DLL_DECL mob_crystalcore_mechanicAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_crystalcore_mechanicAI : public ScriptedAI
 {
     mob_crystalcore_mechanicAI(Creature *c) : ScriptedAI(c) {}
 
@@ -166,7 +166,7 @@ CreatureAI* GetAI_mob_crystalcore_mechanic(Creature *_Creature)
 #define SPELL_SILENCE          37160
 #define SPELL_WINGBUFFET       37319
 
-struct TRINITY_DLL_DECL mob_phoenixhawk_hatchlingAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_phoenixhawk_hatchlingAI : public ScriptedAI
 {
     mob_phoenixhawk_hatchlingAI(Creature *c) : ScriptedAI(c) {}
 
@@ -219,7 +219,7 @@ CreatureAI* GetAI_mob_phoenixhawk_hatchling(Creature *_Creature)
 #define SPELL_MANABURNE        37159
 #define SPELL_DIVE             37156
 
-struct TRINITY_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
 {
     mob_phoenix_hawkAI(Creature *c) : ScriptedAI(c) {}
 
@@ -278,7 +278,7 @@ CreatureAI* GetAI_mob_phoenix_hawk(Creature *_Creature)
 #define SPELL_KNOCKBACK           37317
 #define SPELL_SHOOT               39079
 
-struct TRINITY_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
 {
     mob_tempest_falconerAI(Creature *c) : ScriptedAI(c) {}
 
@@ -356,7 +356,7 @@ CreatureAI* GetAI_mob_tempest_falconer(Creature *_Creature)
 #define SPELL_HAMMEROFWRATH    37259
 #define SPELL_RENEW            37260
 
-struct TRINITY_DLL_DECL mob_crimson_hand_blood_knightAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_crimson_hand_blood_knightAI : public ScriptedAI
 {
     mob_crimson_hand_blood_knightAI(Creature *c) : ScriptedAI(c) {}
 
@@ -470,7 +470,7 @@ CreatureAI* GetAI_mob_crimson_hand_blood_knight(Creature *_Creature)
 #define SPELL_HAMMEROFJUSTICE  39077
 #define SPELL_HAMMEROFWRATH    37255
 
-struct TRINITY_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
 {
     mob_Bloodwarder_SquireAI(Creature *c) : ScriptedAI(c) {}
 
@@ -572,7 +572,7 @@ CreatureAI* GetAI_mob_Bloodwarder_Squire(Creature *_Creature)
 #define SPELL_HAMMEROFJUSTICE  13005
 #define SPELL_HAMMEROFWRATH    37251
 
-struct TRINITY_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
 {
     mob_Bloodwarder_VindicatorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -673,7 +673,7 @@ CreatureAI* GetAI_mob_Bloodwarder_Vindicator(Creature *_Creature)
 #define SPELL_POWERUP                     37112
 #define SPELL_SHELLSHOCK                  37118
 
-struct TRINITY_DLL_DECL mob_tempest_smithAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_tempest_smithAI : public ScriptedAI
 {
     mob_tempest_smithAI(Creature *c) : ScriptedAI(c) {}
 
@@ -770,7 +770,7 @@ CreatureAI* GetAI_mob_tempest_smith(Creature *_Creature)
 #define SPELL_FIREBALL                    37111
 #define SPELL_RAINOFFIRE                  37279
 
-struct TRINITY_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
 {
     mob_novice_astromancerAI(Creature *c) : ScriptedAI(c) {}
 

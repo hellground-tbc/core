@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_CREATURE_EAI_MGR_H
-#define TRINITY_CREATURE_EAI_MGR_H
+#ifndef HELLGROUND_CREATURE_EAI_MGR_H
+#define HELLGROUND_CREATURE_EAI_MGR_H
 
 #include "Common.h"
 #include "CreatureEventAI.h"
@@ -48,5 +48,5 @@ class CreatureEventAIMgr
         CreatureEventAI_TextMap    m_CreatureEventAI_TextMap;
 };
 
-#define CreatureEAI_Mgr Trinity::Singleton<CreatureEventAIMgr>::Instance()
+#define CreatureEAI_Mgr Hellground::Singleton<CreatureEventAIMgr>::Instance()
 #endif

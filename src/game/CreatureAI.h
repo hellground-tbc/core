@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_CREATUREAI_H
-#define TRINITY_CREATUREAI_H
+#ifndef HELLGROUND_CREATUREAI_H
+#define HELLGROUND_CREATUREAI_H
 
 #include "UnitAI.h"
 #include "Common.h"
@@ -66,7 +66,7 @@ enum SCEquip
     EQUIP_UNEQUIP   = 0
 };
 
-class TRINITY_DLL_SPEC CreatureAI : public UnitAI
+class HELLGROUND_DLL_SPEC CreatureAI : public UnitAI
 {
     protected:
         Creature * const me;

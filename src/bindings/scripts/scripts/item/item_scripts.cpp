@@ -127,8 +127,8 @@ bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTarg
     {
         GameObject* pGo = NULL;
 
-        Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*player, 181616, 10);
-        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
+        Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*player, 181616, 10);
+        Hellground::GameObjectLastSearcher<Hellground::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
 
         Cell::VisitGridObjects(player, searcher, 10.0f);
 

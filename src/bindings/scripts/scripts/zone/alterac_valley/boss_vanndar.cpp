@@ -42,7 +42,7 @@ EndScriptData */
 #define SPELL_STORMBOLT         20685 // not sure
 
 
-struct TRINITY_DLL_DECL boss_vanndarAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_vanndarAI : public ScriptedAI
 {
     boss_vanndarAI(Creature *c) : ScriptedAI(c)
     {

@@ -26,7 +26,7 @@
 class Group;
 class Player;
 
-class TRINITY_DLL_SPEC GroupReference : public Reference<Group, Player>
+class HELLGROUND_DLL_SPEC GroupReference : public Reference<Group, Player>
 {
     protected:
         uint8 iSubGroup;

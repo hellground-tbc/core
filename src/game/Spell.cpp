@@ -201,7 +201,7 @@ void SpellCastTargets::read(ByteBuffer& data, Unit *caster)
     {
         data >> m_srcX >> m_srcY >> m_srcZ;
 
-        if (!Trinity::IsValidMapCoord(m_srcX, m_srcY, m_srcZ))
+        if (!Hellground::IsValidMapCoord(m_srcX, m_srcY, m_srcZ))
             throw ByteBufferException(false, data.rpos(), 0, data.size());
     }
 
@@ -209,7 +209,7 @@ void SpellCastTargets::read(ByteBuffer& data, Unit *caster)
     {
         data >> m_destX >> m_destY >> m_destZ;
 
-        if (!Trinity::IsValidMapCoord(m_destX, m_destY, m_destZ))
+        if (!Hellground::IsValidMapCoord(m_destX, m_destY, m_destZ))
             throw ByteBufferException(false, data.rpos(), 0, data.size());
     }
 
@@ -423,8 +423,8 @@ void Spell::FillTargetMap()
                             float max_range = GetSpellMaxRange(srange);
                             WorldObject* result = NULL;
 
-                            Trinity::CannibalizeObjectCheck u_check(m_caster, max_range);
-                            Trinity::WorldObjectSearcher<Trinity::CannibalizeObjectCheck > searcher(result, u_check);
+                            Hellground::CannibalizeObjectCheck u_check(m_caster, max_range);
+                            Hellground::WorldObjectSearcher<Hellground::CannibalizeObjectCheck > searcher(result, u_check);
 
                             Cell::VisitGridObjects(m_caster, searcher, max_range);
 
@@ -1378,7 +1378,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
         }
         else
         {
-            tempUnitMap.sort(Trinity::ObjectDistanceOrder(cur));
+            tempUnitMap.sort(Hellground::ObjectDistanceOrder(cur));
             next = tempUnitMap.begin();
 
             if (cur->GetDistance(*next) > CHAIN_SPELL_JUMP_RADIUS)
@@ -1442,10 +1442,10 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
     {
         case SPELL_TARGET_TYPE_NONE:
         {
-            Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
+            Hellground::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
             Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             if ((m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY))
-                TagUnitMap.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
+                TagUnitMap.remove_if(Hellground::ObjectTypeIdCheck(TYPEID_PLAYER, false)); // above line will select also pets and totems, remove them
             break;
         }
         case SPELL_TARGET_TYPE_CREATURE:
@@ -1453,7 +1453,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             if (!entry)
                 break;
 
-            Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
+            Hellground::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
             Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             break;
         }
@@ -1462,7 +1462,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             if (!entry)
                 break;
 
-            Trinity::SpellNotifierDeadCreature notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
+            Hellground::SpellNotifierDeadCreature notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
             Cell::VisitAllObjects(x, y, m_caster->GetMap(), notifier, radius);
             break;
         }
@@ -1470,7 +1470,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
             sLog.outError("WTF ? Oo Wrong spell script target type for this function: %i (shouldbe %i or %i)", spellScriptTargetType, SPELL_TARGET_TYPE_CREATURE, SPELL_TARGET_TYPE_DEAD);
             break;
     }
-    TagUnitMap.remove_if(Trinity::ObjectIsTotemCheck(true)); // totems should not be affected by AoE spells (check if no exceptions?)
+    TagUnitMap.remove_if(Hellground::ObjectIsTotemCheck(true)); // totems should not be affected by AoE spells (check if no exceptions?)
 }
 
 void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const uint32 type, SpellTargets TargetType, uint32 entry, SpellScriptTargetType spellScriptTargetType)
@@ -1517,8 +1517,8 @@ void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const
             if (!entry)
                 break;
 
-            Trinity::AllGameObjectsWithEntryInGrid go_check(entry);
-            Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid> go_search(goList, go_check);
+            Hellground::AllGameObjectsWithEntryInGrid go_check(entry);
+            Hellground::GameObjectListSearcher<Hellground::AllGameObjectsWithEntryInGrid> go_search(goList, go_check);
             Cell::VisitGridObjects(x, y, m_caster->GetMap(), go_search, radius);
             break;
         }
@@ -1558,8 +1558,8 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
 
                         if (i_spellST->second.targetEntry)
                         {
-                            Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster,i_spellST->second.targetEntry,range);
-                            Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(p_GameObject,go_check);
+                            Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster,i_spellST->second.targetEntry,range);
+                            Hellground::GameObjectLastSearcher<Hellground::NearestGameObjectEntryInObjectRangeCheck> checker(p_GameObject,go_check);
 
                             Cell::VisitGridObjects(m_caster, checker, range);
 
@@ -1589,8 +1589,8 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
                     {
                         Creature *p_Creature = NULL;
 
-                        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range);
-                        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(p_Creature, u_check);
+                        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range);
+                        Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(p_Creature, u_check);
                         Cell::VisitAllObjects(m_caster, searcher, range);
 
                         if (p_Creature)
@@ -1613,8 +1613,8 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
         case SPELL_TARGETS_ENEMY:
         {
             Unit *target = NULL;
-            Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
-            Trinity::UnitLastSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(target, u_check);
+            Hellground::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
+            Hellground::UnitLastSearcher<Hellground::AnyUnfriendlyUnitInObjectRangeCheck> searcher(target, u_check);
 
             Cell::VisitAllObjects(m_caster, searcher, range);
             return target;
@@ -1622,8 +1622,8 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
         case SPELL_TARGETS_ALLY:
         {
             Unit *target = NULL;
-            Trinity::AnyFriendlyNonSelfUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
-            Trinity::UnitLastSearcher<Trinity::AnyFriendlyNonSelfUnitInObjectRangeCheck> searcher(target, u_check);
+            Hellground::AnyFriendlyNonSelfUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
+            Hellground::UnitLastSearcher<Hellground::AnyFriendlyNonSelfUnitInObjectRangeCheck> searcher(target, u_check);
 
             Cell::VisitAllObjects(m_caster, searcher, range);
             return target;
@@ -2139,48 +2139,48 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (!unitList.empty())
         {
             if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF)
-                unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->GetGUID()));
+                unitList.remove_if(Hellground::ObjectGUIDCheck(m_caster->GetGUID()));
 
             switch (m_spellInfo->Id)
             {
                 case 40869:     // Fatal Attraction
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 43690));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 43690));
                     break;
                 case 43657:
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 44007));
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 43648));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 44007));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 43648));
                     break;
                 case 28062:     // Positive Charge
                 case 39090:
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 28059));
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 39088));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 28059));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 39088));
                     break;
                 case 28085:     // Negative Charge
                 case 39093:
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 28084));
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 39091));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 28084));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 39091));
                     break;
                 case 44869:     // Spectral Blast
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 44867));
-                    unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
-                    //unitList.remove_if(Trinity::ObjectTypeIdCheck(TYPEID_UNIT, true));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 44867));
+                    unitList.remove_if(Hellground::ObjectGUIDCheck(m_caster->getVictimGUID()));
+                    //unitList.remove_if(Hellground::ObjectTypeIdCheck(TYPEID_UNIT, true));
                 case 45032:     // Curse of Boundless Agony
                 case 45034:
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 45032));
-                    unitList.remove_if(Trinity::UnitAuraCheck(true, 45034));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 45032));
+                    unitList.remove_if(Hellground::UnitAuraCheck(true, 45034));
                     break;
                 case 41376:     // Spite
-                    unitList.remove_if(Trinity::ObjectGUIDCheck(m_caster->getVictimGUID()));
+                    unitList.remove_if(Hellground::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
                 case 42472:     // Protective Ward
-                    unitList.remove_if(Trinity::ObjectIsTotemCheck(true));
+                    unitList.remove_if(Hellground::ObjectIsTotemCheck(true));
                     break;
                 default:
                     break;
             }
 
             if (m_spellValue->MaxAffectedTargets)
-                Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
+                Hellground::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
 
             for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
@@ -2189,7 +2189,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         if (!goList.empty())
         {
             if (m_spellValue->MaxAffectedTargets)
-                Trinity::RandomResizeList(goList, m_spellValue->MaxAffectedTargets);
+                Hellground::RandomResizeList(goList, m_spellValue->MaxAffectedTargets);
 
             for (std::list<GameObject*>::iterator itr = goList.begin(); itr != goList.end(); ++itr)
                 AddGOTarget(*itr, i);
@@ -4848,8 +4848,8 @@ SpellCastResult Spell::CheckItems()
     if (m_spellInfo->RequiresSpellFocus)
     {
         GameObject* ok = NULL;
-        Trinity::GameObjectFocusCheck go_check(m_caster,m_spellInfo->RequiresSpellFocus);
-        Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(ok,go_check);
+        Hellground::GameObjectFocusCheck go_check(m_caster,m_spellInfo->RequiresSpellFocus);
+        Hellground::GameObjectSearcher<Hellground::GameObjectFocusCheck> checker(ok,go_check);
 
         Cell::VisitGridObjects(m_caster, checker, m_caster->GetMap()->GetVisibilityDistance());
 

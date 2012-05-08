@@ -16,7 +16,7 @@
 #define WAIT(pid) while(true) { if(kill(pid, 0)==-1) if(ACE_OS::last_error() == ESRCH) break; ACE_OS::sleep(1); }
 #endif
 
-#define sLoSProxy Trinity::Singleton<VMAP::LoSProxy>::Instance()
+#define sLoSProxy Hellground::Singleton<VMAP::LoSProxy>::Instance()
 
 namespace VMAP
 {
@@ -57,7 +57,7 @@ namespace VMAP
         LockType m_lock;
     };
 
-    class TRINITY_DLL_DECL VMapClusterManager
+    class HELLGROUND_DLL_DECL VMapClusterManager
     {
     public:
         explicit VMapClusterManager(uint32 processNumber);
@@ -89,7 +89,7 @@ namespace VMAP
 
     typedef UNORDERED_MAP<uint32, bool*> GridLoadedMap;
 
-    class TRINITY_DLL_DECL VMapClusterProcess
+    class HELLGROUND_DLL_DECL VMapClusterProcess
     {
     public:
         explicit VMapClusterProcess(uint32 processId);

@@ -28,7 +28,7 @@ EndScriptData */
 
 #define DOOR_NETHEKURSE     1
 
-struct TRINITY_DLL_DECL instance_shattered_halls : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_shattered_halls : public ScriptedInstance
 {
     instance_shattered_halls(Map *map) : ScriptedInstance(map) {Initialize();};
 

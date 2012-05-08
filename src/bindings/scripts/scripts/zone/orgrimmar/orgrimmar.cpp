@@ -72,7 +72,7 @@ bool GossipSelect_npc_neeru_fireblade(Player *player, Creature *_Creature, uint3
 
 #define QUEST_2460  2460
 
-struct TRINITY_DLL_DECL npc_shenthulAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_shenthulAI : public ScriptedAI
 {
     npc_shenthulAI(Creature* c) : ScriptedAI(c) {}
 
@@ -159,7 +159,7 @@ bool ReciveEmote_npc_shenthul(Player *player, Creature *_Creature, uint32 emote)
 #define GOSSIP_STW6 "Of course, Warchief!"
 
 //TODO: verify abilities/timers
-struct TRINITY_DLL_DECL npc_thrall_warchiefAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_thrall_warchiefAI : public ScriptedAI
 {
     npc_thrall_warchiefAI(Creature* c) : ScriptedAI(c) {}
 

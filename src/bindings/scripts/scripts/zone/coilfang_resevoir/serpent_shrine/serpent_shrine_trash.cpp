@@ -8,7 +8,7 @@
 #define SPELL_EXECUTE               38959
 #define SPELL_MORTAL_CLEAVE         38572
 
-struct TRINITY_DLL_DECL mob_vashjir_honor_guardAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_vashjir_honor_guardAI : public ScriptedAI
 {
     mob_vashjir_honor_guardAI(Creature *c) : ScriptedAI(c) {}
 
@@ -183,7 +183,7 @@ CreatureAI* GetAI_mob_vashjir_honor_guard(Creature *_Creature)
 #define NPC_COLOSSUS_RAGER                          22352
 
 
-struct TRINITY_DLL_DECL mob_underbog_colossusAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_underbog_colossusAI : public ScriptedAI
 {
     mob_underbog_colossusAI(Creature *c) : ScriptedAI(c)
     {
@@ -326,7 +326,7 @@ CreatureAI* GetAI_mob_underbog_colossus(Creature *_Creature)
 
 #define SPELL_SERPENTSHRINE_PARASITE    39053
 
-struct TRINITY_DLL_DECL mob_serpentshrine_parasiteAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_serpentshrine_parasiteAI : public ScriptedAI
 {
     mob_serpentshrine_parasiteAI(Creature *c) : ScriptedAI(c) {}
 
@@ -383,7 +383,7 @@ CreatureAI* GetAI_mob_serpentshrine_parasite(Creature *_Creature)
 }
 
 
-struct TRINITY_DLL_DECL mob_coilfang_frenzyAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_coilfang_frenzyAI : public ScriptedAI
 {
     mob_coilfang_frenzyAI(Creature *c) : ScriptedAI(c) {}
 

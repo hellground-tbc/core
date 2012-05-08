@@ -52,7 +52,7 @@ bool GOUse_go_main_chambers_access_panel(Player *player, GameObject* _GO)
     return true;
 }
 
-struct TRINITY_DLL_DECL instance_steam_vault : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_steam_vault : public ScriptedInstance
 {
     instance_steam_vault(Map *map) : ScriptedInstance(map) {Initialize();};
 

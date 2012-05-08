@@ -826,7 +826,7 @@ enum ReactiveType
 
 struct SpellProcEventEntry;                                 // used only privately
 
-class TRINITY_DLL_SPEC Unit : public WorldObject
+class HELLGROUND_DLL_SPEC Unit : public WorldObject
 {
     public:
         typedef std::set<Unit*> AttackerSet;
@@ -1693,7 +1693,7 @@ class TRINITY_DLL_SPEC Unit : public WorldObject
         TimeTrackerSmall m_movesplineTimer;
 };
 
-namespace Trinity
+namespace Hellground
 {
     template<class T>
     void RandomResizeList(std::list<T> &_list, uint32 _size)

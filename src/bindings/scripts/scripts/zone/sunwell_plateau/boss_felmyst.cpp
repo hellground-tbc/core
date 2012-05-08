@@ -169,7 +169,7 @@ float FogCoords[25][3][3] =
      //right side
 };
 
-struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
 {
     boss_felmystAI(Creature *c) : ScriptedAI(c), summons(c)
     {
@@ -676,7 +676,7 @@ struct TRINITY_DLL_DECL boss_felmystAI : public ScriptedAI
 
 
 // AI for invisible mob that is following player while Felmyst is casting Demonic Vapor on him
-struct TRINITY_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
 {
     mob_felmyst_vaporAI(Creature *c) : ScriptedAI(c)
     {
@@ -702,7 +702,7 @@ struct TRINITY_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
 };
 
 // AI for invisible mob leaving on felmyst vapor trail (summoned by SPELL_VAPOR_FORCE)
-struct TRINITY_DLL_DECL mob_felmyst_trailAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_felmyst_trailAI : public Scripted_NoMovementAI
 {
     mob_felmyst_trailAI(Creature *c) : Scripted_NoMovementAI(c)
     {

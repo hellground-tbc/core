@@ -89,7 +89,7 @@ class SqlResultQueue;                                       /// queue for thread
 class SqlQueryHolder;                                       /// groups several async quries
 class SqlQueryHolderEx;                                     /// points to a holder, added to the delay thread
 
-class SqlResultQueue : public ACE_Based::LockedQueue<Trinity::IQueryCallback* , ACE_Thread_Mutex>
+class SqlResultQueue : public ACE_Based::LockedQueue<Hellground::IQueryCallback* , ACE_Thread_Mutex>
 {
     public:
         SqlResultQueue() {}
@@ -100,10 +100,10 @@ class SqlQuery : public SqlOperation
 {
     private:
         const char *m_sql;
-        Trinity::IQueryCallback * m_callback;
+        Hellground::IQueryCallback * m_callback;
         SqlResultQueue * m_queue;
     public:
-        SqlQuery(const char *sql, Trinity::IQueryCallback * callback, SqlResultQueue * queue)
+        SqlQuery(const char *sql, Hellground::IQueryCallback * callback, SqlResultQueue * queue)
             : m_sql(mangos_strdup(sql)), m_callback(callback), m_queue(queue) {}
         ~SqlQuery() { char* tofree = const_cast<char*>(m_sql); delete [] tofree; }
         bool Execute(SqlConnection *conn);
@@ -123,17 +123,17 @@ class SqlQueryHolder
         void SetSize(size_t size);
         QueryResultAutoPtr GetResult(size_t index);
         void SetResult(size_t index, QueryResultAutoPtr result);
-        bool Execute(Trinity::IQueryCallback * callback, SqlDelayThread *thread, SqlResultQueue *queue);
+        bool Execute(Hellground::IQueryCallback * callback, SqlDelayThread *thread, SqlResultQueue *queue);
 };
 
 class SqlQueryHolderEx : public SqlOperation
 {
     private:
         SqlQueryHolder * m_holder;
-        Trinity::IQueryCallback * m_callback;
+        Hellground::IQueryCallback * m_callback;
         SqlResultQueue * m_queue;
     public:
-        SqlQueryHolderEx(SqlQueryHolder *holder, Trinity::IQueryCallback * callback, SqlResultQueue * queue)
+        SqlQueryHolderEx(SqlQueryHolder *holder, Hellground::IQueryCallback * callback, SqlResultQueue * queue)
             : m_holder(holder), m_callback(callback), m_queue(queue) {}
         bool Execute(SqlConnection *conn);
 };

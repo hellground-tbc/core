@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_GAMEEVENT_H
-#define TRINITY_GAMEEVENT_H
+#ifndef HELLGROUND_GAMEEVENT_H
+#define HELLGROUND_GAMEEVENT_H
 
 #include "Common.h"
 #include "SharedDefines.h"
@@ -164,8 +164,8 @@ class GameEvent
         bool isSystemInit;
 };
 
-#define gameeventmgr Trinity::Singleton<GameEvent>::Instance()
+#define gameeventmgr Hellground::Singleton<GameEvent>::Instance()
 #endif
 
-TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id);
-TRINITY_DLL_SPEC void HandleWorldEventGossip(Player*, Creature*);
+HELLGROUND_DLL_SPEC bool isGameEventActive(uint16 event_id);
+HELLGROUND_DLL_SPEC void HandleWorldEventGossip(Player*, Creature*);

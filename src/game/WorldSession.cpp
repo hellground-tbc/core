@@ -163,7 +163,7 @@ void WorldSession::SendPacket(WorldPacket const* packet)
     if (!m_Socket)
         return;
 
-    #ifdef TRINITY_DEBUG
+    #ifdef HELLGROUND_DEBUG
 
     // Code for network use statistic
     static uint64 sendPacketCount = 0;
@@ -197,7 +197,7 @@ void WorldSession::SendPacket(WorldPacket const* packet)
         sendLastPacketBytes = packet->wpos();               // wpos is real written size
     }
 
-    #endif                                                  // !TRINITY_DEBUG
+    #endif                                                  // !HELLGROUND_DEBUG
 
     if (m_Socket->SendPacket(*packet) == -1)
         m_Socket->CloseSocket();

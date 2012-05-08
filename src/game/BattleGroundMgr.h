@@ -261,5 +261,5 @@ class BattleGroundMgr
         bool   m_ApAnnounce;
 };
 
-#define sBattleGroundMgr Trinity::Singleton<BattleGroundMgr>::Instance()
+#define sBattleGroundMgr Hellground::Singleton<BattleGroundMgr>::Instance()
 #endif

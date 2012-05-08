@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_WAYPOINTMOVEMENTGENERATOR_H
-#define TRINITY_WAYPOINTMOVEMENTGENERATOR_H
+#ifndef HELLGROUND_WAYPOINTMOVEMENTGENERATOR_H
+#define HELLGROUND_WAYPOINTMOVEMENTGENERATOR_H
 
 /** @page PathMovementGenerator is used to generate movements
  * of way points and flight paths.  Each serves the purpose
@@ -41,7 +41,7 @@
 #define TIMEDIFF_NEXT_WP      250
 
 template<class T, class P>
-class TRINITY_DLL_SPEC PathMovementBase
+class HELLGROUND_DLL_SPEC PathMovementBase
 {
     public:
         PathMovementBase() : i_currentNode(0), i_path(NULL) {}
@@ -110,7 +110,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
 /** FlightPathMovementGenerator generates movement of the player for the paths
  * and hence generates ground and activities for the player.
  */
-class TRINITY_DLL_SPEC FlightPathMovementGenerator
+class HELLGROUND_DLL_SPEC FlightPathMovementGenerator
 : public MovementGeneratorMedium< Player, FlightPathMovementGenerator >,
 public PathMovementBase<Player,TaxiPathNodeList const*>
 {

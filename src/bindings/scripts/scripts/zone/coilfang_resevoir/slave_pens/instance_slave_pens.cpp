@@ -20,7 +20,7 @@ EndScriptData */
 
 #define DATA_AHUNEEVENT     1
 
-struct TRINITY_DLL_DECL instance_slave_pens : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_slave_pens : public ScriptedInstance
 {
     instance_slave_pens(Map* map) : ScriptedInstance(map)
     {

@@ -57,7 +57,7 @@ EndContentData */
 #define TIME_TO_BANISH                 60000
 #define SPELL_VISUAL_BANISH            38722
 
-struct TRINITY_DLL_DECL mob_azalothAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_azalothAI : public ScriptedAI
 {
     mob_azalothAI(Creature* c) : ScriptedAI(c)   {}
 
@@ -169,7 +169,7 @@ CreatureAI* GetAI_mob_azaloth(Creature *_creature)
 
 #define SAY_JUST_EATEN                  -1000222
 
-struct TRINITY_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
 {
     mob_mature_netherwing_drakeAI(Creature* c) : ScriptedAI(c)
     {
@@ -291,7 +291,7 @@ CreatureAI* GetAI_mob_mature_netherwing_drake(Creature *_creature)
 #define CREATURE_DRAGONMAW_SUBJUGATOR   21718
 #define CREATURE_ESCAPE_DUMMY           22317
 
-struct TRINITY_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
 {
     mob_enslaved_netherwing_drakeAI(Creature* c) : ScriptedAI(c)
     {
@@ -416,7 +416,7 @@ CreatureAI* GetAI_mob_enslaved_netherwing_drake(Creature* _Creature)
 # mob_dragonmaw_peon
 #####*/
 
-struct TRINITY_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_dragonmaw_peonAI : public ScriptedAI
 {
     mob_dragonmaw_peonAI(Creature* c) : ScriptedAI(c) {}
 
@@ -834,7 +834,7 @@ bool QuestAccept_npc_karynaku(Player* player, Creature* creature, Quest const* q
 
 #define YARZILL_THE_MERC_SAY -1000221
 
-struct TRINITY_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_overlord_morghorAI : public ScriptedAI
 {
     npc_overlord_morghorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1039,7 +1039,7 @@ bool QuestAccept_npc_overlord_morghor(Player *player, Creature *_Creature, const
 #define QUEST_ESCAPE_FROM_COILSKAR_CISTERN 10451
 #define NPC_COILSKAR_ASSASSIN 21044
 
-struct TRINITY_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_earthmender_wildaAI : public npc_escortAI
 {
     npc_earthmender_wildaAI(Creature *c) : npc_escortAI(c) {}
 
@@ -1305,7 +1305,7 @@ static SpawnSpells SpawnCast[]=
 # mob_illidari_spawn
 ######*/
 
-struct TRINITY_DLL_DECL mob_illidari_spawnAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_spawnAI : public ScriptedAI
 {
     mob_illidari_spawnAI(Creature* c) : ScriptedAI(c) {}
 
@@ -1406,7 +1406,7 @@ struct TRINITY_DLL_DECL mob_illidari_spawnAI : public ScriptedAI
 # mob_torloth_the_magnificent
 #####*/
 
-struct TRINITY_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
 {
     mob_torloth_the_magnificentAI(Creature* c) : ScriptedAI(c) {}
 
@@ -1553,7 +1553,7 @@ struct TRINITY_DLL_DECL mob_torloth_the_magnificentAI : public ScriptedAI
 # npc_lord_illidan_stormrage
 #####*/
 
-struct TRINITY_DLL_DECL npc_lord_illidan_stormrageAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_lord_illidan_stormrageAI : public ScriptedAI
 {
     npc_lord_illidan_stormrageAI(Creature* c) : ScriptedAI(c) {}
 
@@ -1837,7 +1837,7 @@ CreatureAI* GetAI_mob_torloth_the_magnificent(Creature* c)
 #define ENRAGED_SOUL_FRIENDLY 35
 #define ENRAGED_SOUL_HOSTILE 14
 
-struct TRINITY_DLL_DECL npc_enraged_spiritAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_enraged_spiritAI : public ScriptedAI
 {
     npc_enraged_spiritAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1975,7 +1975,7 @@ static float AkamaNewPos[4] = {-3718.33,1030.27,55.95,2.77};
 
 
 
-struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_AkamaAI : public ScriptedAI
 {
     npc_AkamaAI(Creature* c) : ScriptedAI(c) {}
 
@@ -2020,8 +2020,8 @@ struct TRINITY_DLL_DECL npc_AkamaAI : public ScriptedAI
     {
         float range = 20.0f;
         std::list<Unit*> tempTargets;
-        Trinity::AnyUnitInObjectRangeCheck check(m_creature, range);
-        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(tempTargets, check);
+        Hellground::AnyUnitInObjectRangeCheck check(m_creature, range);
+        Hellground::UnitListSearcher<Hellground::AnyUnitInObjectRangeCheck> searcher(tempTargets, check);
         Cell::VisitAllObjects(me, searcher, range);
         for (std::list<Unit*>::iterator iter = tempTargets.begin(); iter != tempTargets.end(); ++iter)
             if ((*iter)->GetTypeId() == TYPEID_PLAYER)
@@ -2358,7 +2358,7 @@ EndContentData */
 # npc_shadowlord_trigger
 ######*/
 
-struct TRINITY_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_shadowlord_triggerAI : public Scripted_NoMovementAI
 {
     npc_shadowlord_triggerAI(Creature* c) : Scripted_NoMovementAI(c)
     {
@@ -2488,7 +2488,7 @@ CreatureAI* GetAI_npc_shadowlord_trigger(Creature *_Creature)
 #define SPELL_FEAR                  27641
 #define SPELL_FEL_FIREBALL          38312
 
-struct TRINITY_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_shadowlord_deathwailAI : public ScriptedAI
 {
     mob_shadowlord_deathwailAI(Creature* c) : ScriptedAI(c) {}
 
@@ -2655,7 +2655,7 @@ CreatureAI* GetAI_mob_shadowlord_deathwail(Creature *_Creature)
 # mob_shadowmoon_soulstealer
 ######*/
 
-struct TRINITY_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_shadowmoon_soulstealerAI : public Scripted_NoMovementAI
 {
     mob_shadowmoon_soulstealerAI(Creature* c) : Scripted_NoMovementAI(c) {}
 
@@ -2705,7 +2705,7 @@ CreatureAI* GetAI_mob_shadowmoon_soulstealer(Creature *_Creature)
 # felfire_summoner
 ######*/
 
-struct TRINITY_DLL_DECL felfire_summonerAI : public NullCreatureAI
+struct HELLGROUND_DLL_DECL felfire_summonerAI : public NullCreatureAI
 {
     felfire_summonerAI(Creature *c) : NullCreatureAI(c) {}
 };
@@ -2857,7 +2857,7 @@ static float ShadowlordPos[6][4] =
 # npc_maiev_BT_attu
 ######*/
 
-struct TRINITY_DLL_DECL npc_maiev_BT_attuAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_maiev_BT_attuAI : public npc_escortAI
 {
     npc_maiev_BT_attuAI(Creature* c) : npc_escortAI(c) {}
 
@@ -2925,7 +2925,7 @@ CreatureAI* GetAI_npc_maiev_BT_attu(Creature *_Creature)
 # npc_akama_BT_attu
 ######*/
 
-struct TRINITY_DLL_DECL npc_akama_BT_attuAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_akama_BT_attuAI : public npc_escortAI
 {
     npc_akama_BT_attuAI(Creature* c) : npc_escortAI(c) {}
 
@@ -3032,7 +3032,7 @@ CreatureAI* GetAI_npc_akama_BT_attu(Creature *_Creature)
 # npc_ashtongue_deathsworn
 ######*/
 
-struct TRINITY_DLL_DECL npc_ashtongue_deathswornAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_ashtongue_deathswornAI : public npc_escortAI
 {
     npc_ashtongue_deathswornAI(Creature* c) : npc_escortAI(c) {}
 
@@ -3086,7 +3086,7 @@ CreatureAI* GetAI_npc_ashtongue_deathsworn(Creature *_Creature)
 # mob_vagath
 ######*/
 
-struct TRINITY_DLL_DECL mob_vagathAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_vagathAI : public ScriptedAI
 {
     mob_vagathAI(Creature* c) : ScriptedAI(c) {}
 
@@ -3121,7 +3121,7 @@ CreatureAI* GetAI_mob_vagath(Creature* _Creature)
 # mob_illidari_shadowlord
 ######*/
 
-struct TRINITY_DLL_DECL mob_illidari_shadowlordAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_illidari_shadowlordAI : public ScriptedAI
 {
     mob_illidari_shadowlordAI(Creature* c) : ScriptedAI(c) {}
 
@@ -3179,7 +3179,7 @@ CreatureAI* GetAI_mob_illidari_shadowlord(Creature* _Creature)
 # npc_xiri
 ######*/
 
-struct TRINITY_DLL_DECL npc_xiriAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_xiriAI : public Scripted_NoMovementAI
 {
     npc_xiriAI(Creature* c) : Scripted_NoMovementAI(c) {}
 
@@ -3318,7 +3318,7 @@ float deathbringer_joovanWP[2][3] = {
 
 float imageOfWarbringerSP[4] = { -3300, 2927, 173.4, 2.40 };
 
-struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
 {
     bool EventStarted;
     bool ContinueMove;
@@ -3432,8 +3432,8 @@ struct TRINITY_DLL_DECL mob_deathbringer_joovanAI : public ScriptedAI
                         WarbringerSay(WARBRINGER_SAY4);
 
                         std::list<Unit*> pList;
-                        Trinity::AnyUnitInObjectRangeCheck u_check(me, 20.0f);
-                        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(pList, u_check);
+                        Hellground::AnyUnitInObjectRangeCheck u_check(me, 20.0f);
+                        Hellground::UnitListSearcher<Hellground::AnyUnitInObjectRangeCheck> searcher(pList, u_check);
 
                         Cell::VisitAllObjects(me, searcher, 20.0f);
 

@@ -35,7 +35,7 @@ EndContentData */
 //id8531 - gibbering ghoul
 //id8532 - diseased flayer
 
-struct TRINITY_DLL_DECL mobs_ghoul_flayerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mobs_ghoul_flayerAI : public ScriptedAI
 {
     mobs_ghoul_flayerAI(Creature *c) : ScriptedAI(c) {}
 
@@ -82,7 +82,7 @@ bool GossipSelect_npc_augustus_the_touched(Player *player, Creature *_Creature, 
 
 #define SPELL_SPIRIT_SPAWNIN    17321
 
-struct TRINITY_DLL_DECL npc_darrowshire_spiritAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_darrowshire_spiritAI : public ScriptedAI
 {
     npc_darrowshire_spiritAI(Creature *c) : ScriptedAI(c) {}
 
@@ -158,7 +158,7 @@ bool GossipSelect_npc_tirion_fordring(Player *player, Creature *_Creature, uint3
 #define NPC_THE_CLEANER         14503
 #define QUEST_THE_BALANCE_OF_LIGHT_AND_SHADOW   7622
 
-struct TRINITY_DLL_DECL mobs_scourge_archerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mobs_scourge_archerAI : public ScriptedAI
 {
     mobs_scourge_archerAI(Creature *c) : ScriptedAI(c) 
     {}
@@ -198,7 +198,7 @@ CreatureAI* GetAI_mobs_scourge_archer(Creature *_Creature)
     return new mobs_scourge_archerAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL trigger_epic_staffAI : public TriggerAI
+struct HELLGROUND_DLL_DECL trigger_epic_staffAI : public TriggerAI
 {
     trigger_epic_staffAI(Creature *c) : TriggerAI(c) { }
 
@@ -311,7 +311,7 @@ CreatureAI* GetAI_trigger_epic_staff(Creature *_Creature)
     return new trigger_epic_staffAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL mobs_Scourge_FootsoldierAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mobs_Scourge_FootsoldierAI : public ScriptedAI
 {
     mobs_Scourge_FootsoldierAI(Creature *c) : ScriptedAI(c) 
     {}
@@ -346,7 +346,7 @@ CreatureAI* GetAI_mobs_Scourge_Footsoldier(Creature *_Creature)
     return new mobs_Scourge_FootsoldierAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL mobs_peasantsAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mobs_peasantsAI : public ScriptedAI
 {
     mobs_peasantsAI(Creature *c) : ScriptedAI(c) 
     {
@@ -397,7 +397,7 @@ CreatureAI* GetAI_mobs_peasants(Creature *_Creature)
     return new mobs_peasantsAI(_Creature);   
 }
 
-struct TRINITY_DLL_DECL mobs_plagued_peasantAI : public mobs_peasantsAI
+struct HELLGROUND_DLL_DECL mobs_plagued_peasantAI : public mobs_peasantsAI
 {
     mobs_plagued_peasantAI(Creature *c) : mobs_peasantsAI(c) { }
 

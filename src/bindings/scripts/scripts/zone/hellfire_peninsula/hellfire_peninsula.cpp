@@ -54,7 +54,7 @@ EndContentData */
 
 #define C_AERANAS                       17085
 
-struct TRINITY_DLL_DECL npc_aeranasAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_aeranasAI : public ScriptedAI
 {
     npc_aeranasAI(Creature* c) : ScriptedAI(c) {}
 
@@ -275,7 +275,7 @@ bool GossipSelect_npc_wing_commander_brack(Player *player, Creature *_Creature, 
 
 #define QUEST_ROAD_TO_FALCON_WATCH  9375
 
-struct TRINITY_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
 {
     npc_wounded_blood_elfAI(Creature *c) : npc_escortAI(c) {}
 
@@ -386,7 +386,7 @@ bool QuestAccept_npc_wounded_blood_elf(Player* player, Creature* pCreature, Ques
 
 #define FINISHED_WHISPER "Thank you for allowing me to visit, $N. You have a very colorful soul, but it's a little brighter than I prefer... or I might have stayed longer!"
 
-struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
 {
     npc_demoniac_scryerAI(Creature *c) :  Scripted_NoMovementAI(c) {}
 
@@ -406,8 +406,8 @@ struct TRINITY_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
 
         std::list<Unit*> PlayerList;
         uint32 questDist = 60;                      // sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE);
-        Trinity::AnyUnitInObjectRangeCheck  check(me, questDist);
-        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
+        Hellground::AnyUnitInObjectRangeCheck  check(me, questDist);
+        Hellground::UnitListSearcher<Hellground::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
         Cell::VisitAllObjects(me, searcher, questDist);
 
         for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)
@@ -487,7 +487,7 @@ enum AncestralSpiritWolf
     SPELL_ANCESTRAL_SPIRIT_WOLF_BUFF_TIMER  = 29981,
 };
 
-struct TRINITY_DLL_DECL npc_earthcaller_rygaAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_earthcaller_rygaAI : public npc_escortAI
 {
     npc_earthcaller_rygaAI(Creature *c) : npc_escortAI(c) {}
 
@@ -510,7 +510,7 @@ CreatureAI* GetAI_npc_earthcaller_ryga(Creature *_Creature)
     return newAI;
 }
 
-struct TRINITY_DLL_DECL npc_ancestral_spirit_wolfAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_ancestral_spirit_wolfAI : public npc_escortAI
 {
     npc_ancestral_spirit_wolfAI(Creature *c) : npc_escortAI(c) {}
 
@@ -593,7 +593,7 @@ float FirePos[3][3] =
     {826.5, 2513.4, 291.7}
 };
 
-struct TRINITY_DLL_DECL npc_living_flareAI : public FollowerAI
+struct HELLGROUND_DLL_DECL npc_living_flareAI : public FollowerAI
 {
     npc_living_flareAI(Creature *c) : FollowerAI(c) {}
 
@@ -678,7 +678,7 @@ CreatureAI* GetAI_npc_living_flare(Creature *_Creature)
     return newAI;
 }
 
-struct TRINITY_DLL_DECL npc_abyssal_shelf_questAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_abyssal_shelf_questAI : public ScriptedAI
 {
     npc_abyssal_shelf_questAI(Creature* c) : ScriptedAI(c) {}
 
@@ -702,7 +702,7 @@ CreatureAI* GetAI_npc_abyssal_shelf_quest(Creature *_Creature)
     return newAI;
 }
 
-struct TRINITY_DLL_DECL npc_shattered_hand_berserkerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_shattered_hand_berserkerAI : public ScriptedAI
 {
     npc_shattered_hand_berserkerAI(Creature* c) : ScriptedAI(c) {}
 
@@ -785,7 +785,7 @@ const char* YellSiphon[4] =
     "Your life force is my nourishment, demon... Kil'jaeden's gift to us!"
 };
 
-struct TRINITY_DLL_DECL npc_felblood_initiateAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_felblood_initiateAI : public ScriptedAI
 {
     npc_felblood_initiateAI(Creature *c) : ScriptedAI(c) { }
 

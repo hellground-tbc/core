@@ -18,12 +18,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_IDLEMOVEMENTGENERATOR_H
-#define TRINITY_IDLEMOVEMENTGENERATOR_H
+#ifndef HELLGROUND_IDLEMOVEMENTGENERATOR_H
+#define HELLGROUND_IDLEMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
 
-class TRINITY_DLL_SPEC IdleMovementGenerator : public MovementGenerator
+class HELLGROUND_DLL_SPEC IdleMovementGenerator : public MovementGenerator
 {
     public:
         void Initialize(Unit &) {}
@@ -36,7 +36,7 @@ class TRINITY_DLL_SPEC IdleMovementGenerator : public MovementGenerator
 
 extern IdleMovementGenerator si_idleMovement;
 
-class TRINITY_DLL_SPEC RotateMovementGenerator : public MovementGenerator
+class HELLGROUND_DLL_SPEC RotateMovementGenerator : public MovementGenerator
 {
     public:
         explicit RotateMovementGenerator(uint32 time, RotateDirection direction) : m_duration(time), m_maxDuration(time), m_direction(direction) {}
@@ -55,7 +55,7 @@ class TRINITY_DLL_SPEC RotateMovementGenerator : public MovementGenerator
         RotateDirection m_direction;
 };
 
-class TRINITY_DLL_SPEC DistractMovementGenerator : public MovementGenerator
+class HELLGROUND_DLL_SPEC DistractMovementGenerator : public MovementGenerator
 {
     public:
         explicit DistractMovementGenerator(uint32 timer) : m_timer(timer) {}
@@ -73,7 +73,7 @@ class TRINITY_DLL_SPEC DistractMovementGenerator : public MovementGenerator
         uint32 m_timer;
 };
 
-class TRINITY_DLL_SPEC AssistanceDistractMovementGenerator : public DistractMovementGenerator
+class HELLGROUND_DLL_SPEC AssistanceDistractMovementGenerator : public DistractMovementGenerator
 {
     public:
         AssistanceDistractMovementGenerator(uint32 timer) :

@@ -9586,8 +9586,8 @@ void Unit::DestroyForNearbyPlayers()
         return;
 
     std::list<Unit*> targets;
-    Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
-    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
+    Hellground::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
+    Hellground::UnitListSearcher<Hellground::AnyUnitInObjectRangeCheck> searcher(targets, check);
     Cell::VisitWorldObjects(this, searcher, GetMap()->GetVisibilityDistance());
 
     for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
@@ -11300,7 +11300,7 @@ void Unit::SendPetAIReaction(uint64 guid)
 bool Unit::SetPosition(float x, float y, float z, float orientation, bool teleport)
 {
     // prevent crash when a bad coord is sent by the client
-    if (!Trinity::IsValidMapCoord(x,y,z,orientation))
+    if (!Hellground::IsValidMapCoord(x,y,z,orientation))
     {
         sLog.outDebug("Unit::SetPosition(%f, %f, %f) .. bad coordinates!",x,y,z);
         return false;
@@ -11474,8 +11474,8 @@ void Unit::UpdateReactives(uint32 p_time)
 Unit* Unit::SelectNearbyTarget(float dist) const
 {
     std::list<Unit *> targets;
-    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
-    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
+    Hellground::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
+    Hellground::UnitListSearcher<Hellground::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
 
     Cell::VisitAllObjects(this, searcher, dist);
 
@@ -12018,7 +12018,7 @@ void Unit::UpdateObjectVisibility(bool forced)
     {
         WorldObject::UpdateObjectVisibility(true);
         // call MoveInLineOfSight for nearby creatures
-        Trinity::AIRelocationNotifier notifier(*this);
+        Hellground::AIRelocationNotifier notifier(*this);
         Cell::VisitAllObjects(this, notifier, GetMap()->GetVisibilityDistance());
     }
 }
@@ -12632,8 +12632,8 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry
         {
             // for Creatures, grid search friendly units in radius
             std::list<Creature*> pList;
-            Trinity::AllFriendlyCreaturesInGrid u_check(owner);
-            Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+            Hellground::AllFriendlyCreaturesInGrid u_check(owner);
+            Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
             Cell::VisitAllObjects(owner, searcher, radius);
 
             for (std::list<Creature*>::iterator i = pList.begin(); i != pList.end(); ++i)

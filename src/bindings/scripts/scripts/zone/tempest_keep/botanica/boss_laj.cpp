@@ -43,7 +43,7 @@ EndScriptData */
 #define MODEL_FROST                 14112
 #define MODEL_NATURE                14214
 
-struct TRINITY_DLL_DECL boss_lajAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_lajAI : public ScriptedAI
 {
     boss_lajAI(Creature *c) : ScriptedAI(c) {}
 

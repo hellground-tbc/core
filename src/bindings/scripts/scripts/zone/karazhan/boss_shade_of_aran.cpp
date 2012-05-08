@@ -103,7 +103,7 @@ float shadowOfAranSpawnPoints[2][8] = {
     {-1914.26, -1928.2,  -1933.8,  -1925.05, -1909.7,  -1895.7, -1895.4,  -1899}    // Y coord
 };
 
-struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_aranAI : public ScriptedAI
 {
     boss_aranAI(Creature *c) : ScriptedAI(c)
     {
@@ -475,7 +475,7 @@ struct TRINITY_DLL_DECL boss_aranAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL water_elementalAI : public ScriptedAI
 {
     water_elementalAI(Creature *c) : ScriptedAI(c) {}
 
@@ -512,7 +512,7 @@ struct TRINITY_DLL_DECL water_elementalAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL shadow_of_aranAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL shadow_of_aranAI : public ScriptedAI
 {
     shadow_of_aranAI(Creature *c) : ScriptedAI(c) {}
 
@@ -546,7 +546,7 @@ struct TRINITY_DLL_DECL shadow_of_aranAI : public ScriptedAI
     }
 };
 
-struct TRINITY_DLL_DECL circular_blizzardAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL circular_blizzardAI : public ScriptedAI
 {
     circular_blizzardAI(Creature *c) : ScriptedAI(c)
     {

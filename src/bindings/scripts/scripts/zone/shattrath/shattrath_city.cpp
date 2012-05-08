@@ -46,7 +46,7 @@ EndContentData */
 
 #define SPELL_UPPERCUT          10966
 
-struct TRINITY_DLL_DECL npc_raliq_the_drunkAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_raliq_the_drunkAI : public ScriptedAI
 {
     npc_raliq_the_drunkAI(Creature* c) : ScriptedAI(c) {}
 
@@ -109,7 +109,7 @@ bool GossipSelect_npc_raliq_the_drunk(Player *player, Creature *_Creature, uint3
 
 #define SPELL_MAGNETIC_PULL             31705
 
-struct TRINITY_DLL_DECL npc_salsalabimAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_salsalabimAI : public ScriptedAI
 {
     npc_salsalabimAI(Creature* c) : ScriptedAI(c) {}
 
@@ -272,7 +272,7 @@ bool GossipSelect_npc_zephyr(Player *player, Creature *_Creature, uint32 sender,
 #define WHISP20    -1000326
 #define WHISP21    -1000327
 
-struct TRINITY_DLL_DECL npc_kservantAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_kservantAI : public npc_escortAI
 {
 public:
     npc_kservantAI(Creature *c) : npc_escortAI(c) {}
@@ -405,7 +405,7 @@ CreatureAI* GetAI_npc_kservantAI(Creature *_Creature)
 #define NPC_CREEPJACK   19726
 #define NPC_MALONE      19725
 
-struct TRINITY_DLL_DECL npc_dirty_larryAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_dirty_larryAI : public ScriptedAI
 {
     npc_dirty_larryAI(Creature* c) : ScriptedAI(c)
     {
@@ -715,7 +715,7 @@ bool GossipSelect_npc_khadgar(Player *player, Creature *creature, uint32 sender,
 
 
 
-struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
 {
     npc_kaelthas_imageAI(Creature* c) : ScriptedAI(c) {}
 
@@ -756,8 +756,8 @@ struct TRINITY_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
         {
             std::list<Unit*> PlayerList;
             uint32 shattrathRadius = 1000;
-            Trinity::AnyUnitInObjectRangeCheck  check(me, shattrathRadius);
-            Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
+            Hellground::AnyUnitInObjectRangeCheck  check(me, shattrathRadius);
+            Hellground::UnitListSearcher<Hellground::AnyUnitInObjectRangeCheck > searcher(PlayerList, check);
             Cell::VisitWorldObjects(me, searcher, shattrathRadius);
 
             for(std::list<Unit*>::iterator i = PlayerList.begin(); i != PlayerList.end(); i++)

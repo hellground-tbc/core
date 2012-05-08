@@ -18,13 +18,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_RANDOMMOTIONGENERATOR_H
-#define TRINITY_RANDOMMOTIONGENERATOR_H
+#ifndef HELLGROUND_RANDOMMOTIONGENERATOR_H
+#define HELLGROUND_RANDOMMOTIONGENERATOR_H
 
 #include "MovementGenerator.h"
 
 template<class T>
-class TRINITY_DLL_SPEC RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovementGenerator<T> >
+class HELLGROUND_DLL_SPEC RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovementGenerator<T> >
 {
     public:
         explicit RandomMovementGenerator(const Unit &) : i_nextMoveTime(0) {}

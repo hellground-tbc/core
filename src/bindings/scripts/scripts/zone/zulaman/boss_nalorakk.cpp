@@ -75,7 +75,7 @@ float NalorakkWay[8][3] =
 #define SPELL_DEAFENINGROAR     42398
 
 
-struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_nalorakkAI : public ScriptedAI
 {
     boss_nalorakkAI(Creature *c) : ScriptedAI(c)
     {
@@ -154,8 +154,8 @@ struct TRINITY_DLL_DECL boss_nalorakkAI : public ScriptedAI
         float x, y, z;
         m_creature->GetPosition(x, y, z);
         {
-            Trinity::AllFriendlyCreaturesInGrid check(m_creature);
-            Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid> searcher(templist, check);
+            Hellground::AllFriendlyCreaturesInGrid check(m_creature);
+            Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> searcher(templist, check);
 
             Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         }

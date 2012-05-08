@@ -998,7 +998,7 @@ void WorldObject::SetOrientation(float orientation)
 
 uint32 WorldObject::GetZoneId() const
 {
-    if (!Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ))
+    if (!Hellground::IsValidMapCoord(m_positionX, m_positionY, m_positionZ))
     {
         sLog.outDebug("Unit::GetZoneId()(%f, %f, %f) .. bad coordinates!",m_positionX, m_positionY, m_positionZ);
         return 0;
@@ -1009,7 +1009,7 @@ uint32 WorldObject::GetZoneId() const
 
 uint32 WorldObject::GetAreaId() const
 {
-    if (!Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ))
+    if (!Hellground::IsValidMapCoord(m_positionX, m_positionY, m_positionZ))
     {
         sLog.outDebug("Unit::GetAreaId()(%f, %f, %f) .. bad coordinates!",m_positionX, m_positionY, m_positionZ);
         return 0;
@@ -1305,8 +1305,8 @@ void WorldObject::GetRandomPoint(float x, float y, float z, float distance, floa
     rand_y = y + new_dist * sin(angle);
     rand_z = z;
 
-    Trinity::NormalizeMapCoord(rand_x);
-    Trinity::NormalizeMapCoord(rand_y);
+    Hellground::NormalizeMapCoord(rand_x);
+    Hellground::NormalizeMapCoord(rand_y);
     UpdateGroundPositionZ(rand_x, rand_y, rand_z);          // update to LOS height if available
 }
 
@@ -1363,8 +1363,8 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
         }
     }
 
-    Trinity::NormalizeMapCoord(pos.x);
-    Trinity::NormalizeMapCoord(pos.y);
+    Hellground::NormalizeMapCoord(pos.x);
+    Hellground::NormalizeMapCoord(pos.y);
     pos.z = 0.666f + GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
 
     // we do NOT love micromovement :p
@@ -1445,7 +1445,7 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
 
 bool WorldObject::IsPositionValid() const
 {
-    return Trinity::IsValidMapCoord(m_positionX,m_positionY,m_positionZ,m_orientation);
+    return Hellground::IsValidMapCoord(m_positionX,m_positionY,m_positionZ,m_orientation);
 }
 
 void WorldObject::MonsterSay(const char* text, uint32 language, uint64 TargetGuid)
@@ -1504,7 +1504,7 @@ void Object::ForceValuesUpdateAtIndex(uint32 i)
     }
 }
 
-namespace Trinity
+namespace Hellground
 {
     class MonsterChatBuilder
     {
@@ -1526,15 +1526,15 @@ namespace Trinity
             uint64 i_targetGUID;
             bool i_withoutPrename;
     };
-}                                                           // namespace Trinity
+}                                                           // namespace Hellground
 
 void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
 {
     float range = sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY);
-    Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_SAY, textId, language, TargetGuid);
-    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
-    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, range, say_do);
-    TypeContainerVisitor<Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
+    Hellground::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_SAY, textId, language, TargetGuid);
+    Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
+    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
+    TypeContainerVisitor<Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
     //cell_lock->Visit(cell_lock, message, *GetMap());
     Cell::VisitWorldObjects(this, say_worker, range);
 }
@@ -1542,16 +1542,16 @@ void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
 void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
 {
     float range = sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL);
-    Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
-    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
-    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, range, say_do);
+    Hellground::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
+    Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
+    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
     Cell::VisitWorldObjects(this, say_worker, range);
 }
 
 void WorldObject::MonsterYellToZone(int32 textId, uint32 language, uint64 TargetGuid)
 {
-    Trinity::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
-    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
+    Hellground::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
+    Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
 
     uint32 zoneid = GetZoneId();
 
@@ -1564,16 +1564,16 @@ void WorldObject::MonsterYellToZone(int32 textId, uint32 language, uint64 Target
 void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote, bool withoutPrename)
 {
     float range = sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE);
-    Trinity::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid, withoutPrename);
-    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
-    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> > say_worker(this, range, say_do);
+    Hellground::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid, withoutPrename);
+    Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
+    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
     Cell::VisitWorldObjects(this, say_worker, range);
 }
 
 void WorldObject::MonsterTextEmoteToZone(int32 textId, uint64 TargetGuid, bool IsBossEmote, bool withoutPrename)
 {
-    Trinity::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid, withoutPrename);
-    Trinity::LocalizedPacketDo<Trinity::MonsterChatBuilder> say_do(say_build);
+    Hellground::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid, withoutPrename);
+    Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
 
     uint32 zoneid = GetZoneId();
 
@@ -1899,8 +1899,8 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
     x = GetPositionX() + (GetObjectSize() + distance2d) * cos(absAngle);
     y = GetPositionY() + (GetObjectSize() + distance2d) * sin(absAngle);
 
-    Trinity::NormalizeMapCoord(x);
-    Trinity::NormalizeMapCoord(y);
+    Hellground::NormalizeMapCoord(x);
+    Hellground::NormalizeMapCoord(y);
 }
 
 void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_bounding_radius, float distance2d, float absAngle) const
@@ -1920,15 +1920,15 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     angle += GetOrientation();
     x += dist * cos(angle);
     y += dist * sin(angle);
-    Trinity::NormalizeMapCoord(x);
-    Trinity::NormalizeMapCoord(y);
+    Hellground::NormalizeMapCoord(x);
+    Hellground::NormalizeMapCoord(y);
     UpdateGroundPositionZ(x, y, z);
 }
 
 void WorldObject::UpdateObjectVisibility(bool /*forced*/)
 {
     //updates object's visibility for nearby players
-    Trinity::VisibleChangesNotifier notifier(*this);
+    Hellground::VisibleChangesNotifier notifier(*this);
     Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance());
 }
 

@@ -481,7 +481,7 @@ struct AISpellInfoType
     float maxRange;
 };
 
-TRINITY_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i);
+HELLGROUND_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i);
 
 
 inline void CreatureAI::SetGazeOn(Unit *target)

@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_DEFINE_H
-#define TRINITY_DEFINE_H
+#ifndef HELLGROUND_DEFINE_H
+#define HELLGROUND_DEFINE_H
 
 #include <sys/types.h>
 
@@ -30,76 +30,76 @@
 
 #include "Platform/CompilerDefs.h"
 
-#define TRINITY_LITTLEENDIAN 0
-#define TRINITY_BIGENDIAN    1
+#define HELLGROUND_LITTLEENDIAN 0
+#define HELLGROUND_BIGENDIAN    1
 
-#if !defined(TRINITY_ENDIAN)
+#if !defined(HELLGROUND_ENDIAN)
 #  if defined (ACE_BIG_ENDIAN)
-#    define TRINITY_ENDIAN TRINITY_BIGENDIAN
+#    define HELLGROUND_ENDIAN HELLGROUND_BIGENDIAN
 #  else //ACE_BYTE_ORDER != ACE_BIG_ENDIAN
-#    define TRINITY_ENDIAN TRINITY_LITTLEENDIAN
+#    define HELLGROUND_ENDIAN HELLGROUND_LITTLEENDIAN
 #  endif //ACE_BYTE_ORDER
-#endif //TRINITY_ENDIAN
+#endif //HELLGROUND_ENDIAN
 
-typedef ACE_SHLIB_HANDLE TRINITY_LIBRARY_HANDLE;
+typedef ACE_SHLIB_HANDLE HELLGROUND_LIBRARY_HANDLE;
 
-#define TRINITY_SCRIPT_NAME "trinityscript"
-#define TRINITY_SCRIPT_SUFFIX ACE_DLL_SUFFIX
-#define TRINITY_SCRIPT_PREFIX ACE_DLL_PREFIX
-#define TRINITY_LOAD_LIBRARY(libname)    ACE_OS::dlopen(libname)
-#define TRINITY_CLOSE_LIBRARY(hlib)      ACE_OS::dlclose(hlib)
-#define TRINITY_GET_PROC_ADDR(hlib,name) ACE_OS::dlsym(hlib,name)
+#define HELLGROUND_SCRIPT_NAME "trinityscript"
+#define HELLGROUND_SCRIPT_SUFFIX ACE_DLL_SUFFIX
+#define HELLGROUND_SCRIPT_PREFIX ACE_DLL_PREFIX
+#define HELLGROUND_LOAD_LIBRARY(libname)    ACE_OS::dlopen(libname)
+#define HELLGROUND_CLOSE_LIBRARY(hlib)      ACE_OS::dlclose(hlib)
+#define HELLGROUND_GET_PROC_ADDR(hlib,name) ACE_OS::dlsym(hlib,name)
 
 #if PLATFORM == PLATFORM_WINDOWS
-#  define TRINITY_EXPORT __declspec(dllexport)
-#  define TRINITY_IMPORT __cdecl
-#  define TRINITY_PATH_MAX MAX_PATH
+#  define HELLGROUND_EXPORT __declspec(dllexport)
+#  define HELLGROUND_IMPORT __cdecl
+#  define HELLGROUND_PATH_MAX MAX_PATH
 #else //PLATFORM != PLATFORM_WINDOWS
-#  define TRINITY_EXPORT export
+#  define HELLGROUND_EXPORT export
 #  if defined(__APPLE_CC__) && defined(BIG_ENDIAN)
-#    define TRINITY_IMPORT __attribute__ ((longcall))
+#    define HELLGROUND_IMPORT __attribute__ ((longcall))
 #  else
-#    define TRINITY_IMPORT __attribute__ ((cdecl))
+#    define HELLGROUND_IMPORT __attribute__ ((cdecl))
 #  endif //__APPLE_CC__ && BIG_ENDIAN
-#  define TRINITY_PATH_MAX PATH_MAX
+#  define HELLGROUND_PATH_MAX PATH_MAX
 #endif //PLATFORM
 
 #if PLATFORM == PLATFORM_WINDOWS
-#  ifdef TRINITY_WIN32_DLL_IMPORT
-#    define TRINITY_DLL_DECL __declspec(dllimport)
-#  else //!TRINITY_WIN32_DLL_IMPORT
-#    ifdef TRINITY_WIND_DLL_EXPORT
-#      define TRINITY_DLL_DECL __declspec(dllexport)
-#    else //!TRINITY_WIND_DLL_EXPORT
-#      define TRINITY_DLL_DECL
-#    endif //TRINITY_WIND_DLL_EXPORT
-#  endif //TRINITY_WIN32_DLL_IMPORT
+#  ifdef HELLGROUND_WIN32_DLL_IMPORT
+#    define HELLGROUND_DLL_DECL __declspec(dllimport)
+#  else //!HELLGROUND_WIN32_DLL_IMPORT
+#    ifdef HELLGROUND_WIND_DLL_EXPORT
+#      define HELLGROUND_DLL_DECL __declspec(dllexport)
+#    else //!HELLGROUND_WIND_DLL_EXPORT
+#      define HELLGROUND_DLL_DECL
+#    endif //HELLGROUND_WIND_DLL_EXPORT
+#  endif //HELLGROUND_WIN32_DLL_IMPORT
 #else //PLATFORM != PLATFORM_WINDOWS
-#  define TRINITY_DLL_DECL
+#  define HELLGROUND_DLL_DECL
 #endif //PLATFORM
 
 #if PLATFORM == PLATFORM_WINDOWS
-#  define TRINITY_DLL_SPEC __declspec(dllexport)
+#  define HELLGROUND_DLL_SPEC __declspec(dllexport)
 #  ifndef DECLSPEC_NORETURN
 #    define DECLSPEC_NORETURN __declspec(noreturn)
 #  endif //DECLSPEC_NORETURN
 #else //PLATFORM != PLATFORM_WINDOWS
-#  define TRINITY_DLL_SPEC
+#  define HELLGROUND_DLL_SPEC
 #  define DECLSPEC_NORETURN
 #endif //PLATFORM
 
 // provide trinity<>mangoscode
-#define MANGOS_DLL_SPEC TRINITY_DLL_SPEC
+#define MANGOS_DLL_SPEC HELLGROUND_DLL_SPEC
 #define MaNGOS Trinity
 #define MANGOS_ASSERT ASSERT
 
 #if !defined(DEBUG)
-#  define TRINITY_INLINE inline
+#  define HELLGROUND_INLINE inline
 #else //DEBUG
-#  if !defined(TRINITY_DEBUG)
-#    define TRINITY_DEBUG
-#  endif //TRINITY_DEBUG
-#  define TRINITY_INLINE
+#  if !defined(HELLGROUND_DEBUG)
+#    define HELLGROUND_DEBUG
+#  endif //HELLGROUND_DEBUG
+#  define HELLGROUND_INLINE
 #endif //!DEBUG
 
 #if COMPILER == COMPILER_GNU
@@ -126,5 +126,5 @@ typedef uint32      DWORD;
 
 typedef uint64 OBJECT_HANDLE;
 
-#endif //TRINITY_DEFINE_H
+#endif //HELLGROUND_DEFINE_H
 

@@ -841,7 +841,7 @@ struct AccessRequirement
     std::string missingAuraText;
 };
 
-class TRINITY_DLL_SPEC PlayerTaxi
+class HELLGROUND_DLL_SPEC PlayerTaxi
 {
     public:
         PlayerTaxi();
@@ -893,7 +893,7 @@ class TRINITY_DLL_SPEC PlayerTaxi
         std::deque<uint32> m_TaxiDestinations;
 };
 
-class TRINITY_DLL_SPEC Player : public Unit
+class HELLGROUND_DLL_SPEC Player : public Unit
 {
     friend class WorldSession;
     friend void Item::AddToUpdateQueueOf(Player *player);

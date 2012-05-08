@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_FACTORY_HOLDER
-#define TRINITY_FACTORY_HOLDER
+#ifndef HELLGROUND_FACTORY_HOLDER
+#define HELLGROUND_FACTORY_HOLDER
 
 #include "Platform/Define.h"
 #include "Utilities/TypeList.h"
@@ -29,11 +29,11 @@
 /** FactoryHolder holds a factory object of a specific type
  */
 template<class T, class Key = std::string>
-class TRINITY_DLL_DECL FactoryHolder
+class HELLGROUND_DLL_DECL FactoryHolder
 {
     public:
         typedef ObjectRegistry<FactoryHolder<T, Key >, Key > FactoryHolderRegistry;
-        typedef Trinity::Singleton<FactoryHolderRegistry > FactoryHolderRepository;
+        typedef Hellground::Singleton<FactoryHolderRegistry > FactoryHolderRepository;
 
         FactoryHolder(Key k) : i_key(k) {}
         virtual ~FactoryHolder() {}

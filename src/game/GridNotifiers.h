@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_GRIDNOTIFIERS_H
-#define TRINITY_GRIDNOTIFIERS_H
+#ifndef HELLGROUND_GRIDNOTIFIERS_H
+#define HELLGROUND_GRIDNOTIFIERS_H
 
 #include "ObjectGridLoader.h"
 #include "ByteBuffer.h"
@@ -37,7 +37,7 @@
 class Player;
 //class Map;
 
-namespace Trinity
+namespace Hellground
 {
     struct VisibleNotifier
     {
@@ -52,7 +52,7 @@ namespace Trinity
         void SendToSelf(void);
     };
 
-    struct TRINITY_DLL_DECL VisibleChangesNotifier
+    struct HELLGROUND_DLL_DECL VisibleChangesNotifier
     {
         WorldObject &i_object;
 
@@ -103,7 +103,7 @@ namespace Trinity
        void Visit(CreatureMapType &);
     };
 
-    struct TRINITY_DLL_DECL GridUpdater
+    struct HELLGROUND_DLL_DECL GridUpdater
     {
         GridType &i_grid;
         uint32 i_timeDiff;
@@ -125,7 +125,7 @@ namespace Trinity
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
     };
 
-    struct TRINITY_DLL_DECL Deliverer
+    struct HELLGROUND_DLL_DECL Deliverer
     {
         WorldObject &i_source;
         WorldPacket *i_message;
@@ -142,32 +142,32 @@ namespace Trinity
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
     };
 
-    struct TRINITY_DLL_DECL MessageDeliverer : public Deliverer
+    struct HELLGROUND_DLL_DECL MessageDeliverer : public Deliverer
     {
         MessageDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, bool to_self) : Deliverer(pl, msg, to_possessor, to_self) {}
         void VisitObject(Player* plr);
     };
 
-    struct TRINITY_DLL_DECL ObjectMessageDeliverer : public Deliverer
+    struct HELLGROUND_DLL_DECL ObjectMessageDeliverer : public Deliverer
     {
         explicit ObjectMessageDeliverer(WorldObject &src, WorldPacket *msg, bool to_possessor) : Deliverer(src, msg, to_possessor, false) {}
         void VisitObject(Player* plr) { SendPacket(plr); }
     };
 
-    struct TRINITY_DLL_DECL MessageDistDeliverer : public Deliverer
+    struct HELLGROUND_DLL_DECL MessageDistDeliverer : public Deliverer
     {
         bool i_ownTeamOnly;
         MessageDistDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, float dist, bool to_self, bool ownTeamOnly) : Deliverer(pl, msg, to_possessor, to_self, dist), i_ownTeamOnly(ownTeamOnly) {}
         void VisitObject(Player* plr);
     };
 
-    struct TRINITY_DLL_DECL ObjectMessageDistDeliverer : public Deliverer
+    struct HELLGROUND_DLL_DECL ObjectMessageDistDeliverer : public Deliverer
     {
         ObjectMessageDistDeliverer(WorldObject &obj, WorldPacket *msg, bool to_possessor, float dist) : Deliverer(obj, msg, to_possessor, false, dist) {}
         void VisitObject(Player* plr) { SendPacket(plr); }
     };
 
-    struct TRINITY_DLL_DECL ObjectUpdater
+    struct HELLGROUND_DLL_DECL ObjectUpdater
     {
         uint32 i_timeDiff;
         explicit ObjectUpdater(const uint32 &diff) : i_timeDiff(diff) {}
@@ -177,7 +177,7 @@ namespace Trinity
         void Visit(CreatureMapType &);
     };
 
-    struct TRINITY_DLL_DECL DynamicObjectUpdater
+    struct HELLGROUND_DLL_DECL DynamicObjectUpdater
     {
         DynamicObject &i_dynobject;
         Unit* i_check;
@@ -201,7 +201,7 @@ namespace Trinity
     // WorldObject searchers & workers
 
     template<class Check>
-        struct TRINITY_DLL_DECL WorldObjectSearcher
+        struct HELLGROUND_DLL_DECL WorldObjectSearcher
     {
         WorldObject* &i_object;
         Check &i_check;
@@ -218,7 +218,7 @@ namespace Trinity
     };
 
     template<class Check>
-        struct TRINITY_DLL_DECL WorldObjectListSearcher
+        struct HELLGROUND_DLL_DECL WorldObjectListSearcher
     {
         std::list<WorldObject*> &i_objects;
         Check& i_check;
@@ -235,7 +235,7 @@ namespace Trinity
     };
 
     template<class Do>
-        struct TRINITY_DLL_DECL WorldObjectWorker
+        struct HELLGROUND_DLL_DECL WorldObjectWorker
     {
         Do const& i_do;
 
@@ -276,7 +276,7 @@ namespace Trinity
     // Gameobject searchers
 
     template<class Check>
-        struct TRINITY_DLL_DECL GameObjectSearcher
+        struct HELLGROUND_DLL_DECL GameObjectSearcher
     {
         GameObject* &i_object;
         Check &i_check;
@@ -290,7 +290,7 @@ namespace Trinity
 
     // Last accepted by Check GO if any (Check can change requirements at each call)
     template<class Check>
-        struct TRINITY_DLL_DECL GameObjectLastSearcher
+        struct HELLGROUND_DLL_DECL GameObjectLastSearcher
     {
         GameObject* &i_object;
         Check& i_check;
@@ -303,7 +303,7 @@ namespace Trinity
     };
 
     template<class Check>
-        struct TRINITY_DLL_DECL GameObjectListSearcher
+        struct HELLGROUND_DLL_DECL GameObjectListSearcher
     {
         std::list<GameObject*> &i_objects;
         Check& i_check;
@@ -319,7 +319,7 @@ namespace Trinity
 
     // First accepted by Check Unit if any
     template<class Check>
-        struct TRINITY_DLL_DECL UnitSearcher
+        struct HELLGROUND_DLL_DECL UnitSearcher
     {
         Unit* &i_object;
         Check & i_check;
@@ -334,7 +334,7 @@ namespace Trinity
 
     // Last accepted by Check Unit if any (Check can change requirements at each call)
     template<class Check>
-        struct TRINITY_DLL_DECL UnitLastSearcher
+        struct HELLGROUND_DLL_DECL UnitLastSearcher
     {
         Unit* &i_object;
         Check & i_check;
@@ -349,7 +349,7 @@ namespace Trinity
 
     // All accepted by Check units if any
     template<class Check>
-        struct TRINITY_DLL_DECL UnitListSearcher
+        struct HELLGROUND_DLL_DECL UnitListSearcher
     {
         std::list<Unit*> &i_objects;
         Check& i_check;
@@ -365,7 +365,7 @@ namespace Trinity
     // Creature searchers
 
     template<class Check>
-        struct TRINITY_DLL_DECL CreatureSearcher
+        struct HELLGROUND_DLL_DECL CreatureSearcher
     {
         Creature* &i_object;
         Check & i_check;
@@ -379,7 +379,7 @@ namespace Trinity
 
     // Last accepted by Check Creature if any (Check can change requirements at each call)
     template<class Check>
-        struct TRINITY_DLL_DECL CreatureLastSearcher
+        struct HELLGROUND_DLL_DECL CreatureLastSearcher
     {
         Creature* &i_object;
         Check & i_check;
@@ -392,7 +392,7 @@ namespace Trinity
     };
 
     template<class Check>
-    struct TRINITY_DLL_DECL CreatureListSearcher
+    struct HELLGROUND_DLL_DECL CreatureListSearcher
     {
         std::list<Creature*> &i_objects;
         Check& i_check;
@@ -405,7 +405,7 @@ namespace Trinity
     };
 
     template<class Do>
-    struct TRINITY_DLL_DECL CreatureWorker
+    struct HELLGROUND_DLL_DECL CreatureWorker
     {
         Do& i_do;
 
@@ -424,7 +424,7 @@ namespace Trinity
     // Player searchers
 
     template<class Check>
-    struct TRINITY_DLL_DECL PlayerSearcher
+    struct HELLGROUND_DLL_DECL PlayerSearcher
     {
         Player* &i_object;
         Check & i_check;
@@ -437,7 +437,7 @@ namespace Trinity
     };
 
     template<class Check>
-    struct TRINITY_DLL_DECL PlayerListSearcher
+    struct HELLGROUND_DLL_DECL PlayerListSearcher
     {
         uint32 i_phaseMask;
         std::list<Player*> &i_objects;
@@ -452,7 +452,7 @@ namespace Trinity
     };
 
     template<class Do>
-    struct TRINITY_DLL_DECL PlayerWorker
+    struct HELLGROUND_DLL_DECL PlayerWorker
     {
         Do& i_do;
 
@@ -468,7 +468,7 @@ namespace Trinity
     };
 
     template<class Do>
-    struct TRINITY_DLL_DECL PlayerDistWorker
+    struct HELLGROUND_DLL_DECL PlayerDistWorker
     {
         WorldObject const* i_searcher;
         float i_dist;

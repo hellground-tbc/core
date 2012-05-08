@@ -31,7 +31,7 @@ EndContentData */
 ## mob_yenniku
 ######*/
 
-struct TRINITY_DLL_DECL mob_yennikuAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_yennikuAI : public ScriptedAI
 {
     mob_yennikuAI(Creature *c) : ScriptedAI(c)
     {

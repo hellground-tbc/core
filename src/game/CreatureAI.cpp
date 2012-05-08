@@ -34,7 +34,7 @@ void CreatureAI::OnCharmed(bool apply)
 }
 
 AISpellInfoType * UnitAI::AISpellInfo;
-TRINITY_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i) { return &CreatureAI::AISpellInfo[i]; }
+HELLGROUND_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i) { return &CreatureAI::AISpellInfo[i]; }
 
 void CreatureAI::DoZoneInCombat(float max_dist)
 {

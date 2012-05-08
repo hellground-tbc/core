@@ -75,7 +75,7 @@ struct ObjectDistanceOrderReversed : public std::binary_function<const WorldObje
     }
 };
 
-struct TRINITY_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 {
     boss_gurtogg_bloodboilAI(Creature *c) : ScriptedAI(c)
     {

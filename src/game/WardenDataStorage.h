@@ -62,6 +62,6 @@ private:
     void Cleanup();
 };
 
-#define sWardenDataStorage Trinity::Singleton<WardenDataStorage>::Instance()
+#define sWardenDataStorage Hellground::Singleton<WardenDataStorage>::Instance()
 
 #endif

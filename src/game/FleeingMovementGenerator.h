@@ -18,15 +18,15 @@
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
-#ifndef TRINITY_FLEEINGMOVEMENTGENERATOR_H
-#define TRINITY_FLEEINGMOVEMENTGENERATOR_H
+#ifndef HELLGROUND_FLEEINGMOVEMENTGENERATOR_H
+#define HELLGROUND_FLEEINGMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
 
 #include "Object.h"
 
 template<class UNIT>
-class TRINITY_DLL_SPEC FleeingMovementGenerator : public MovementGeneratorMedium< UNIT, FleeingMovementGenerator<UNIT> >
+class HELLGROUND_DLL_SPEC FleeingMovementGenerator : public MovementGeneratorMedium< UNIT, FleeingMovementGenerator<UNIT> >
 {
     public:
         FleeingMovementGenerator(uint64 frightGUID) : _nextCheckTime(0), _frightGUID(frightGUID) {}
@@ -51,7 +51,7 @@ class TRINITY_DLL_SPEC FleeingMovementGenerator : public MovementGeneratorMedium
 
 class Creature;
 
-class TRINITY_DLL_SPEC TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
+class HELLGROUND_DLL_SPEC TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
 {
     public:
         TimedFleeingMovementGenerator(uint64 fright, uint32 time) : FleeingMovementGenerator<Creature>(fright), _totalFleeTime(time) {}

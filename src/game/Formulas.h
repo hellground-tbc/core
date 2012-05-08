@@ -18,13 +18,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_FORMULAS_H
-#define TRINITY_FORMULAS_H
+#ifndef HELLGROUND_FORMULAS_H
+#define HELLGROUND_FORMULAS_H
 
 #include "World.h"
 #include "DBCStores.h"
 
-namespace Trinity
+namespace Hellground
 {
     namespace Honor
     {

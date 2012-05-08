@@ -18,20 +18,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_OBJECTLIFETIME_H
-#define TRINITY_OBJECTLIFETIME_H
+#ifndef HELLGROUND_OBJECTLIFETIME_H
+#define HELLGROUND_OBJECTLIFETIME_H
 
 #include <stdexcept>
 #include "Platform/Define.h"
 
 typedef void (* Destroyer)(void);
 
-namespace Trinity
+namespace Hellground
 {
-    void TRINITY_DLL_SPEC at_exit( void (*func)() );
+    void HELLGROUND_DLL_SPEC at_exit( void (*func)() );
 
     template <class T>
-        class TRINITY_DLL_DECL ObjectLifeTime
+        class HELLGROUND_DLL_DECL ObjectLifeTime
     {
         public:
             inline static void ScheduleCall(void (*destroyer)() )

@@ -297,8 +297,8 @@ FILE* Log::openGmlogPerAccount(uint32 account)
     if(m_gmlog_filename_format.empty())
         return NULL;
 
-    char namebuf[TRINITY_PATH_MAX];
-    snprintf(namebuf,TRINITY_PATH_MAX,m_gmlog_filename_format.c_str(),account);
+    char namebuf[HELLGROUND_PATH_MAX];
+    snprintf(namebuf,HELLGROUND_PATH_MAX,m_gmlog_filename_format.c_str(),account);
     return fopen(namebuf, "a");
 }
 
@@ -307,8 +307,8 @@ FILE* Log::openWhisplogPerAccount(uint32 account)
     if(m_whisplog_filename_format.empty())
         return NULL;
 
-    char namebuf[TRINITY_PATH_MAX];
-    snprintf(namebuf,TRINITY_PATH_MAX,m_whisplog_filename_format.c_str(),account);
+    char namebuf[HELLGROUND_PATH_MAX];
+    snprintf(namebuf,HELLGROUND_PATH_MAX,m_whisplog_filename_format.c_str(),account);
     return fopen(namebuf, "a");
 }
 
@@ -960,7 +960,7 @@ void outstring_log(const char * str, ...)
     vsnprintf(buf,256, str, ap);
     va_end(ap);
 
-    Trinity::Singleton<Log>::Instance().outString(buf);
+    Hellground::Singleton<Log>::Instance().outString(buf);
 }
 
 void detail_log(const char * str, ...)
@@ -974,7 +974,7 @@ void detail_log(const char * str, ...)
     vsnprintf(buf,256, str, ap);
     va_end(ap);
 
-    Trinity::Singleton<Log>::Instance().outDetail(buf);
+    Hellground::Singleton<Log>::Instance().outDetail(buf);
 }
 
 void debug_log(const char * str, ...)
@@ -988,7 +988,7 @@ void debug_log(const char * str, ...)
     vsnprintf(buf,256, str, ap);
     va_end(ap);
 
-    Trinity::Singleton<Log>::Instance().outDebug(buf);
+    Hellground::Singleton<Log>::Instance().outDebug(buf);
 }
 
 void error_log(const char * str, ...)
@@ -1002,7 +1002,7 @@ void error_log(const char * str, ...)
     vsnprintf(buf,256, str, ap);
     va_end(ap);
 
-    Trinity::Singleton<Log>::Instance().outError(buf);
+    Hellground::Singleton<Log>::Instance().outError(buf);
 }
 
 void error_db_log(const char * str, ...)
@@ -1016,5 +1016,5 @@ void error_db_log(const char * str, ...)
     vsnprintf(buf,256, str, ap);
     va_end(ap);
 
-    Trinity::Singleton<Log>::Instance().outErrorDb(buf);
+    Hellground::Singleton<Log>::Instance().outErrorDb(buf);
 }

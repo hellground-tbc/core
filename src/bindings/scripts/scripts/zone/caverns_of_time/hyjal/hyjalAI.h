@@ -162,7 +162,7 @@ typedef struct spells
     uint32 TargetType;
 }spells;
 
-struct TRINITY_DLL_DECL hyjalAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL hyjalAI : public npc_escortAI
 {
     hyjalAI(Creature *c);
 

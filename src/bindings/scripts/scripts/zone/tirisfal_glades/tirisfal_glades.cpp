@@ -37,7 +37,7 @@ EndContentData */
 #define FACTION_FRIENDLY    68
 #define FACTION_HOSTILE     16
 
-struct TRINITY_DLL_DECL npc_calvin_montagueAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_calvin_montagueAI : public ScriptedAI
 {
     npc_calvin_montagueAI(Creature* c) : ScriptedAI(c) {}
 
@@ -94,8 +94,8 @@ GameObject* SearchMausoleumGo(Unit *source, uint32 entry, float range)
 {
     GameObject* pGo = NULL;
 
-    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*source, entry, range);
-    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
+    Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*source, entry, range);
+    Hellground::GameObjectLastSearcher<Hellground::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
 
     Cell::VisitGridObjects(source, searcher, range);
 

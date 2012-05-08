@@ -21,14 +21,14 @@
 #include <cstdlib>
 #include "ObjectLifeTime.h"
 
-namespace Trinity
+namespace Hellground
 {
     extern "C" void external_wrapper(void *p)
     {
         std::atexit( (void (*)())p );
     }
 
-    void TRINITY_DLL_SPEC at_exit( void (*func)() )
+    void HELLGROUND_DLL_SPEC at_exit( void (*func)() )
     {
         external_wrapper((void*)func);
     }

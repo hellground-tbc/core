@@ -384,9 +384,9 @@ bool ChatHandler::HandleReloadLootTemplatesSkinningCommand(const char*)
 
 bool ChatHandler::HandleReloadTrinityStringCommand(const char*)
 {
-    sLog.outString("Re-Loading trinity_string Table!");
+    sLog.outString("Re-Loading HELLGROUND_string Table!");
     objmgr.LoadTrinityStrings();
-    SendGlobalGMSysMessage("DB table `trinity_string` reloaded.");
+    SendGlobalGMSysMessage("DB table `HELLGROUND_string` reloaded.");
     return true;
 }
 
@@ -5753,8 +5753,8 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
         return true;
     }
 
-    Trinity::RespawnDo u_do;
-    Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(u_do);
+    Hellground::RespawnDo u_do;
+    Hellground::WorldObjectWorker<Hellground::RespawnDo> worker(u_do);
 
     Cell::VisitGridObjects(pl, worker, pl->GetMap()->GetVisibilityDistance());
     return true;
@@ -7166,8 +7166,8 @@ bool ChatHandler::HandleUnbindSightCommand(const char* /*args*/)
 bool ChatHandler::HandleGameObjectGridCommand(const char* /*args*/)
 {
     std::list<GameObject*> tmpL;
-    Trinity::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
-    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(tmpL, go_check);
+    Hellground::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
+    Hellground::GameObjectListSearcher<Hellground::AllGameObjectsInRange> searcher(tmpL, go_check);
 
     Cell::VisitGridObjects(m_session->GetPlayer(), searcher, 20.0f);
 
@@ -7380,8 +7380,8 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
 
     std::list<Creature*> creatureList;
 
-    Trinity::AnyUnitInObjectRangeCheck go_check(m_session->GetPlayer(), radius);
-    Trinity::CreatureListSearcher<Trinity::AnyUnitInObjectRangeCheck> go_search(creatureList, go_check);
+    Hellground::AnyUnitInObjectRangeCheck go_check(m_session->GetPlayer(), radius);
+    Hellground::CreatureListSearcher<Hellground::AnyUnitInObjectRangeCheck> go_search(creatureList, go_check);
     // Get Creatures
     Cell::VisitGridObjects(m_session->GetPlayer(), go_search, radius);
 

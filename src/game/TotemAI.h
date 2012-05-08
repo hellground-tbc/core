@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_TOTEMAI_H
-#define TRINITY_TOTEMAI_H
+#ifndef HELLGROUND_TOTEMAI_H
+#define HELLGROUND_TOTEMAI_H
 
 #include "CreatureAI.h"
 #include "Timer.h"
@@ -27,7 +27,7 @@
 class Creature;
 class Totem;
 
-class TRINITY_DLL_DECL TotemAI : public CreatureAI
+class HELLGROUND_DLL_DECL TotemAI : public CreatureAI
 {
     public:
 

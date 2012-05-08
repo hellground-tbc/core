@@ -49,7 +49,7 @@ EndContentData */
 #define ENTRY_SILVERWING_SENTINEL   12896
 #define ENTRY_SILVERWING_WARRIOR    12897
 
-struct TRINITY_DLL_DECL npc_torekAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_torekAI : public npc_escortAI
 {
     npc_torekAI(Creature *c) : npc_escortAI(c) {}
 
@@ -181,7 +181,7 @@ CreatureAI* GetAI_npc_torek(Creature *_Creature)
 #define QUEST_FREEDOM_TO_RUUL    6482
 #define GO_CAGE                  178147
 
-struct TRINITY_DLL_DECL npc_ruul_snowhoofAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_ruul_snowhoofAI : public npc_escortAI
 {
     npc_ruul_snowhoofAI(Creature *c) : npc_escortAI(c) {}
 
@@ -318,7 +318,7 @@ static float m_afSecondNagaCoord[3][3]=
 
 static float m_fVorshaCoord[]={3633.056885, 1172.924072, -5.388};
 
-struct TRINITY_DLL_DECL npc_muglashAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_muglashAI : public npc_escortAI
 {
     npc_muglashAI(Creature* pCreature) : npc_escortAI(pCreature) { }
 
@@ -543,7 +543,7 @@ bool ItemUse_item_Totemic_Beacon(Player *player, Item* _Item, SpellCastTargets c
 
 #define NPC_ICECALLERBRIATHA        25949
 
-struct TRINITY_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_Heretic_EmisaryAI : public ScriptedAI
 {
     npc_Heretic_EmisaryAI(Creature* c) : ScriptedAI(c) {}
 

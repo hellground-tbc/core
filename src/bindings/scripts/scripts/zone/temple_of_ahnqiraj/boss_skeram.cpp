@@ -53,7 +53,7 @@ class ov_mycoordinates
         }
 };
 
-struct TRINITY_DLL_DECL boss_skeramAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_skeramAI : public ScriptedAI
 {
     boss_skeramAI(Creature *c) : ScriptedAI(c)
     {

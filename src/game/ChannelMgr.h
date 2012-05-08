@@ -107,12 +107,12 @@ inline ChannelMgr* channelMgr(uint32 team)
 {
     if (sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
                                                             //For Test,No Seprate Faction
-        return &Trinity::Singleton<AllianceChannelMgr>::Instance();
+        return &Hellground::Singleton<AllianceChannelMgr>::Instance();
 
     if (team==ALLIANCE)
-        return &Trinity::Singleton<AllianceChannelMgr>::Instance();
+        return &Hellground::Singleton<AllianceChannelMgr>::Instance();
     if (team==HORDE)
-        return &Trinity::Singleton<HordeChannelMgr>::Instance();
+        return &Hellground::Singleton<HordeChannelMgr>::Instance();
     return NULL;
 }
 #endif

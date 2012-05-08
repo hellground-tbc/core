@@ -835,7 +835,7 @@ class World
 
 extern uint32 realmID;
 
-#define sWorld Trinity::Singleton<World>::Instance()
+#define sWorld Hellground::Singleton<World>::Instance()
 
 class SessionsUpdater
 {

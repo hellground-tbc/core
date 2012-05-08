@@ -34,6 +34,6 @@ class AddonHandler
                                                             //built addon packet
         bool BuildAddonPacket(WorldPacket* Source, WorldPacket* Target);
 };
-#define sAddOnHandler Trinity::Singleton<AddonHandler>::Instance()
+#define sAddOnHandler Hellground::Singleton<AddonHandler>::Instance()
 #endif
 

@@ -63,7 +63,7 @@ EndContentData */
 #define SPELL_INTERRUPT_2       35176                       //ACID mobs should cast this (Manaforge Ara-version)
 #define SPELL_SLEEP_VISUAL      34664                        // Used by in Creatures of Eco-Drome
 
-struct TRINITY_DLL_DECL npc_manaforge_control_consoleAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_manaforge_control_consoleAI : public ScriptedAI
 {
     npc_manaforge_control_consoleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -365,7 +365,7 @@ int CreatureEntry[3][1] =
     {21504}                                                 // Pathaleon
 };
 
-struct TRINITY_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
 {
     npc_commander_dawnforgeAI(Creature *c) : ScriptedAI(c) { Reset (); }
 
@@ -402,8 +402,8 @@ struct TRINITY_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
     {
         Creature* pCreature = NULL;
 
-        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
-        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
+        Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
         Cell::VisitGridObjects(me, searcher, range);
 
@@ -629,8 +629,8 @@ Creature* SearchDawnforge(Player *source, uint32 entry, float range)
 {
     Creature* pCreature = NULL;
 
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*source, entry, true, range);
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+    Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*source, entry, true, range);
+    Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
     Cell::VisitGridObjects(source, searcher, range);
 
@@ -775,7 +775,7 @@ bool GossipSelect_npc_veronia(Player *player, Creature *_Creature, uint32 sender
 #define SPELL_MATERIALIZE       34804
 #define SPELL_DE_MATERIALIZE    34804
 
-struct TRINITY_DLL_DECL mob_phase_hunterAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_phase_hunterAI : public ScriptedAI
 {
 
     mob_phase_hunterAI(Creature *c) : ScriptedAI(c) {}
@@ -893,7 +893,7 @@ CreatureAI* GetAI_mob_phase_hunter(Creature *_Creature)
 #define SAY_THADELL_1   -1000304
 #define SAY_THADELL_2   -1000305
 
-struct TRINITY_DLL_DECL npc_bessyAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_bessyAI : public npc_escortAI
 {
 
     npc_bessyAI(Creature *c) : npc_escortAI(c) {}
@@ -994,7 +994,7 @@ CreatureAI* GetAI_npc_bessy(Creature *_Creature)
 /***
 Script for Quest: Creatures of the Eco-Domes (10427)
 ***/
-struct TRINITY_DLL_DECL mob_talbukAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_talbukAI : public ScriptedAI
 {
     mob_talbukAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1037,7 +1037,7 @@ CreatureAI* GetAI_mob_talbuk(Creature *_Creature)
 /***
 Script for Quest: The Flesh Lies... (10345)
 ***/
-struct TRINITY_DLL_DECL npc_withered_corpseAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_withered_corpseAI : public ScriptedAI
 {
     npc_withered_corpseAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1119,7 +1119,7 @@ bool GOUse_go_ethereum_prison(Player *player, GameObject* _GO)
 Script for Quest: Bloody Imp-ossible! (10924)
 ***/
 
-struct TRINITY_DLL_DECL npc_warp_chaserAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_warp_chaserAI : public ScriptedAI
 {
     npc_warp_chaserAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1165,7 +1165,7 @@ CreatureAI* GetAI_npc_warp_chaser(Creature *_Creature)
 #define SPELL_SUMMON_SHARD      35310
 #define ENTRY_RUMBLER           18881
 
-struct TRINITY_DLL_DECL mob_epextractionAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_epextractionAI : public ScriptedAI
 {
 
     mob_epextractionAI(Creature *c) : ScriptedAI(c) {}
@@ -1205,7 +1205,7 @@ CreatureAI* GetAI_mob_epextraction(Creature *_Creature)
 #define BOOM_BOT_TARGET 20392
 #define BOOM_BOT 19692
 
-struct TRINITY_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
 {
     mob_dr_boomAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
@@ -1267,7 +1267,7 @@ CreatureAI* GetAI_mob_dr_boom(Creature *_Creature)
     return new mob_dr_boomAI (_Creature);
 }
 
-struct TRINITY_DLL_DECL mob_boom_botAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_boom_botAI : public ScriptedAI
 {
     mob_boom_botAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1330,7 +1330,7 @@ enum
     SAY_ALLEY_FINISH            = -1000578
 };
 
-struct TRINITY_DLL_DECL npc_maxx_a_million_escortAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_maxx_a_million_escortAI : public npc_escortAI
 {
     npc_maxx_a_million_escortAI(Creature* pCreature) : npc_escortAI(pCreature) {Reset();}
 

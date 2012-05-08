@@ -26,7 +26,7 @@ EndScriptData */
 #define SPELL_SHADOWBOLTVOLLEY      20741
 #define SPELL_BONESHIELD            27688
 
-struct TRINITY_DLL_DECL boss_kormokAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_kormokAI : public ScriptedAI
 {
     boss_kormokAI(Creature *c) : ScriptedAI(c) {}
 

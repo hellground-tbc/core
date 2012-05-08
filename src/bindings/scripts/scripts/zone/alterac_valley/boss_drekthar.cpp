@@ -44,7 +44,7 @@ EndScriptData */
 #define SPELL_STORMPIKE        51876 // not sure
 
 
-struct TRINITY_DLL_DECL boss_drektharAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_drektharAI : public ScriptedAI
 {
     boss_drektharAI(Creature *c) : ScriptedAI(c)
     {

@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_OBJECT_GUID_H
-#define TRINITY_OBJECT_GUID_H
+#ifndef HELLGROUND_OBJECT_GUID_H
+#define HELLGROUND_OBJECT_GUID_H
 
 #include "Common.h"
 #include "ByteBuffer.h"
@@ -129,7 +129,7 @@ struct PackedGuidReader
     ObjectGuid* m_guidPtr;
 };
 
-class TRINITY_DLL_SPEC ObjectGuid
+class HELLGROUND_DLL_SPEC ObjectGuid
 {
     public:                                                 // constructors
         ObjectGuid() : m_guid(0) {}

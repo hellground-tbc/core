@@ -45,7 +45,7 @@ EndScriptData */
 #define PATH_PATROL              2100
 #define PATH_FINAL               2101
 
-struct TRINITY_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_ambassador_hellmawAI : public ScriptedAI
 {
     boss_ambassador_hellmawAI(Creature *c) : ScriptedAI(c)
     {

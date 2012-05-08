@@ -40,7 +40,7 @@ EndScriptData */
 #define SPELL_DARK_SHELL                32358
 #define H_SPELL_DARK_SHELL              38759
 
-struct TRINITY_DLL_DECL boss_pandemoniusAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_pandemoniusAI : public ScriptedAI
 {
     boss_pandemoniusAI(Creature *c) : ScriptedAI(c)
     {

@@ -111,7 +111,7 @@ struct WorldLocation
         : mapid(loc.mapid), coord_x(loc.coord_x), coord_y(loc.coord_y), coord_z(loc.coord_z), orientation(loc.orientation) {}
 };
 
-class TRINITY_DLL_SPEC Object
+class HELLGROUND_DLL_SPEC Object
 {
     public:
         virtual ~Object ();
@@ -379,7 +379,7 @@ class WorldUpdateCounter
        uint32 m_tmStart;
 };
 
-class TRINITY_DLL_SPEC WorldObject : public Object//, public WorldLocation
+class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
 {
     friend struct WorldObjectChangeAccumulator;
 

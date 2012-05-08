@@ -25,7 +25,7 @@
 
 class ACE_Configuration_Heap;
 
-class TRINITY_DLL_SPEC Config
+class HELLGROUND_DLL_SPEC Config
 {
     public:
 
@@ -48,6 +48,6 @@ class TRINITY_DLL_SPEC Config
         ACE_Configuration_Heap *mConf;
 };
 
-#define sConfig Trinity::Singleton<Config>::Instance()
+#define sConfig Hellground::Singleton<Config>::Instance()
 
 #endif

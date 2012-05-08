@@ -57,7 +57,7 @@ EndContentData */
 #define SPELL_IRRIDATION    35046
 #define SPELL_STUNNED       28630
 
-struct TRINITY_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_draenei_survivorAI : public ScriptedAI
 {
     npc_draenei_survivorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -179,7 +179,7 @@ CreatureAI* GetAI_npc_draenei_survivor(Creature *_Creature)
 
 #define EMOTE_SOUND_DIE                  -1069090
 
-struct TRINITY_DLL_DECL npc_sethir_the_ancientAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_sethir_the_ancientAI : public ScriptedAI
 {
     npc_sethir_the_ancientAI(Creature *c) : ScriptedAI(c) {}
 
@@ -268,7 +268,7 @@ CreatureAI* GetAI_npc_sethir_the_ancient(Creature *_Creature)
 
 #define SPELL_DYNAMITE  7978
 
-struct TRINITY_DLL_DECL npc_engineer_spark_overgrindAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_engineer_spark_overgrindAI : public ScriptedAI
 {
     npc_engineer_spark_overgrindAI(Creature *c) : ScriptedAI(c) {}
 
@@ -343,7 +343,7 @@ bool GossipSelect_npc_engineer_spark_overgrind(Player *player, Creature *_Creatu
 ## npc_injured_draenei
 ######*/
 
-struct TRINITY_DLL_DECL npc_injured_draeneiAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_injured_draeneiAI : public ScriptedAI
 {
     npc_injured_draeneiAI(Creature *c) : ScriptedAI(c) {}
 
@@ -389,7 +389,7 @@ enum eMagwin
     QUEST_A_CRY_FOR_SAY_HELP    = 9528
 };
 
-struct TRINITY_DLL_DECL npc_magwinAI : public npc_escortAI
+struct HELLGROUND_DLL_DECL npc_magwinAI : public npc_escortAI
 {
     npc_magwinAI(Creature *c) : npc_escortAI(c) {}
 
@@ -530,7 +530,7 @@ bool GossipSelect_npc_susurrus(Player *player, Creature *_Creature, uint32 sende
 
 static float SparkPos[3] = {-5030.95, -11291.99, 7.97};
 
-struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_geezleAI : public ScriptedAI
 {
     npc_geezleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -607,8 +607,8 @@ struct TRINITY_DLL_DECL npc_geezleAI : public ScriptedAI
 
     void DespawnNagaFlag(bool despawn)
     {
-        Trinity::AllGameObjectsWithEntryInGrid go_check(GO_NAGA_FLAG);
-        Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInGrid> go_search(FlagList, go_check);
+        Hellground::AllGameObjectsWithEntryInGrid go_check(GO_NAGA_FLAG);
+        Hellground::GameObjectListSearcher<Hellground::AllGameObjectsWithEntryInGrid> go_search(FlagList, go_check);
         Cell::VisitGridObjects(me, go_search, me->GetMap()->GetVisibilityDistance());
 
         Player* player = NULL;
@@ -653,7 +653,7 @@ CreatureAI* GetAI_npc_geezleAI(Creature *_Creature)
 #define INOCULATION_CHANNEL 29528
 #define INOCULATED_OWLKIN   16534
 
-struct TRINITY_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_nestlewood_owlkinAI : public ScriptedAI
 {
     mob_nestlewood_owlkinAI(Creature *c) : ScriptedAI(c) {}
 
@@ -707,7 +707,7 @@ CreatureAI* GetAI_mob_nestlewood_owlkinAI(Creature *_Creature)
 ## mob_siltfin_murloc
 ######*/
 
-struct TRINITY_DLL_DECL mob_siltfin_murlocAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_siltfin_murlocAI : public ScriptedAI
 {
     mob_siltfin_murlocAI(Creature *c) : ScriptedAI(c) {}
 

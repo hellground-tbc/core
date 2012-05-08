@@ -36,7 +36,7 @@ SHostageInfo HostageInfo[] =
 };
 
 
-struct TRINITY_DLL_DECL instance_zulaman : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_zulaman : public ScriptedInstance
 {
     instance_zulaman(Map *map) : ScriptedInstance(map) {Initialize();};
 

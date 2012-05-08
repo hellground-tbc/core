@@ -438,7 +438,7 @@ extern std::map<uint32, uint32> CreatureAIReInitialize;
 
 #define MAX_VENDOR_ITEMS 255                                // Limitation in item count field size in SMSG_LIST_INVENTORY
 
-class TRINITY_DLL_SPEC Creature : public Unit
+class HELLGROUND_DLL_SPEC Creature : public Unit
 {
     public:
 

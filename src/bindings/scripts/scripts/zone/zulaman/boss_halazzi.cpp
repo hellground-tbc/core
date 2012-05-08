@@ -66,7 +66,7 @@ enum PhaseHalazzi
     PHASE_ENRAGE = 5
 };
 
-struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_halazziAI : public ScriptedAI
 {
     boss_halazziAI(Creature *c) : ScriptedAI(c)
     {
@@ -334,7 +334,7 @@ struct TRINITY_DLL_DECL boss_halazziAI : public ScriptedAI
 
 // Spirits Lynx AI
 
-struct TRINITY_DLL_DECL boss_spiritlynxAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_spiritlynxAI : public ScriptedAI
 {
     boss_spiritlynxAI(Creature *c) : ScriptedAI(c) {}
 

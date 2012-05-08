@@ -29,7 +29,7 @@ EndScriptData */
 #define SPELL_DEMONARMOR            11735
 #define SPELL_ENVELOPINGWEB         15471
 
-struct TRINITY_DLL_DECL boss_anubshiahAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_anubshiahAI : public ScriptedAI
 {
     boss_anubshiahAI(Creature *c) : ScriptedAI(c) {}
 

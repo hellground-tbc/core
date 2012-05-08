@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_MAP_H
-#define TRINITY_MAP_H
+#ifndef HELLGROUND_MAP_H
+#define HELLGROUND_MAP_H
 
 #include "Platform/Define.h"
 #include "Policies/ThreadingModel.h"
@@ -118,7 +118,7 @@ enum GetCreatureGuidType
     GET_ALIVE_CREATURE_GUID     = 3
 };
 
-class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>
+class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellground::ObjectLevelLockable<Map, ACE_Thread_Mutex>
 {
     friend class MapReference;
     public:
@@ -164,13 +164,13 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
 
         bool IsRemovalGrid(float x, float y) const
         {
-            GridPair p = Trinity::ComputeGridPair(x, y);
+            GridPair p = Hellground::ComputeGridPair(x, y);
             return(!getNGrid(p.x_coord, p.y_coord) || getNGrid(p.x_coord, p.y_coord)->GetGridState() == GRID_STATE_REMOVAL);
         }
 
         bool IsLoaded(float x, float y) const
         {
-            GridPair p = Trinity::ComputeGridPair(x, y);
+            GridPair p = Hellground::ComputeGridPair(x, y);
             return loaded(p);
         }
 
@@ -350,7 +350,7 @@ class TRINITY_DLL_SPEC Map : public GridRefManager<NGridType>, public Trinity::O
         bool m_broken;
 
     protected:
-        typedef Trinity::ObjectLevelLockable<Map, ACE_Thread_Mutex>::Lock Guard;
+        typedef Hellground::ObjectLevelLockable<Map, ACE_Thread_Mutex>::Lock Guard;
 
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;
@@ -438,7 +438,7 @@ enum InstanceResetMethod
     INSTANCE_RESET_RESPAWN_DELAY
 };
 
-class TRINITY_DLL_SPEC InstanceMap : public Map
+class HELLGROUND_DLL_SPEC InstanceMap : public Map
 {
     public:
         InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
@@ -468,7 +468,7 @@ class TRINITY_DLL_SPEC InstanceMap : public Map
         uint32 i_script_id;
 };
 
-class TRINITY_DLL_SPEC BattleGroundMap : public Map
+class HELLGROUND_DLL_SPEC BattleGroundMap : public Map
 {
     public:
         BattleGroundMap(uint32 id, time_t, uint32 InstanceId, BattleGround *bg);

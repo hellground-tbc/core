@@ -21,7 +21,7 @@ EndScriptData */
 Map: 509
 */
 
-struct TRINITY_DLL_DECL instance_ruins_of_ahnqiraj : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_ruins_of_ahnqiraj : public ScriptedInstance
 {
     instance_ruins_of_ahnqiraj(Map *map) : ScriptedInstance(map) {Initialize();};
 

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITY_CALLBACK_H
-#define TRINITY_CALLBACK_H
+#ifndef HELLGROUND_CALLBACK_H
+#define HELLGROUND_CALLBACK_H
 
 //defines to simplify multi param templates code and readablity
 #define TYPENAMES_1 typename T1
@@ -47,7 +47,7 @@ struct null { null() {} };
 
 /// ------------ BASE CLASSES ------------
 
-namespace Trinity
+namespace Hellground
 {
     template<class Class, typename ParamType1 = void, typename ParamType2 = void, typename ParamType3 = void, typename ParamType4 = void>
     class _Callback
@@ -308,7 +308,7 @@ namespace Trinity
 
 /// --------- GENERIC CALLBACKS ----------
 
-namespace Trinity
+namespace Hellground
 {
     class ICallback
     {
@@ -407,7 +407,7 @@ namespace Trinity
 #include "QueryResult.h"
 class QueryResult;
 
-namespace Trinity
+namespace Hellground
 {
     class IQueryCallback
     {

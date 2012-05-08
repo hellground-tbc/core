@@ -18,13 +18,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_PASSIVEAI_H
-#define TRINITY_PASSIVEAI_H
+#ifndef HELLGROUND_PASSIVEAI_H
+#define HELLGROUND_PASSIVEAI_H
 
 #include "CreatureAI.h"
 //#include "CreatureAIImpl.h"
 
-class TRINITY_DLL_SPEC PassiveAI : public CreatureAI
+class HELLGROUND_DLL_SPEC PassiveAI : public CreatureAI
 {
     public:
         explicit PassiveAI(Creature *c);
@@ -36,7 +36,7 @@ class TRINITY_DLL_SPEC PassiveAI : public CreatureAI
         static int Permissible(const Creature *) { return PERMIT_BASE_IDLE;  }
 };
 
-class TRINITY_DLL_DECL PossessedAI : public CreatureAI
+class HELLGROUND_DLL_DECL PossessedAI : public CreatureAI
 {
     public:
         explicit PossessedAI(Creature *c);
@@ -52,7 +52,7 @@ class TRINITY_DLL_DECL PossessedAI : public CreatureAI
         static int Permissible(const Creature *) { return PERMIT_BASE_IDLE;  }
 };
 
-class TRINITY_DLL_SPEC NullCreatureAI : public CreatureAI
+class HELLGROUND_DLL_SPEC NullCreatureAI : public CreatureAI
 {
     public:
         explicit NullCreatureAI(Creature *c);
@@ -66,7 +66,7 @@ class TRINITY_DLL_SPEC NullCreatureAI : public CreatureAI
         static int Permissible(const Creature *) { return PERMIT_BASE_IDLE;  }
 };
 
-class TRINITY_DLL_DECL CritterAI : public PassiveAI
+class HELLGROUND_DLL_DECL CritterAI : public PassiveAI
 {
     public:
         explicit CritterAI(Creature *c) : PassiveAI(c) {}
@@ -75,7 +75,7 @@ class TRINITY_DLL_DECL CritterAI : public PassiveAI
         void EnterEvadeMode();
 };
 
-class TRINITY_DLL_SPEC TriggerAI : public NullCreatureAI
+class HELLGROUND_DLL_SPEC TriggerAI : public NullCreatureAI
 {
     public:
         explicit TriggerAI(Creature *c) : NullCreatureAI(c) {}

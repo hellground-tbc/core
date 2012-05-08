@@ -18,15 +18,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_COMBATAI_H
-#define TRINITY_COMBATAI_H
+#ifndef HELLGROUND_COMBATAI_H
+#define HELLGROUND_COMBATAI_H
 
 #include "CreatureAI.h"
 #include "CreatureAIImpl.h"
 
 class Creature;
 
-class TRINITY_DLL_DECL AggressorAI : public CreatureAI
+class HELLGROUND_DLL_DECL AggressorAI : public CreatureAI
 {
     public:
         explicit AggressorAI(Creature *c) : CreatureAI(c) {}
@@ -37,7 +37,7 @@ class TRINITY_DLL_DECL AggressorAI : public CreatureAI
 
 typedef std::vector<uint32> SpellVct;
 
-class TRINITY_DLL_SPEC CombatAI : public CreatureAI
+class HELLGROUND_DLL_SPEC CombatAI : public CreatureAI
 {
     public:
         explicit CombatAI(Creature *c) : CreatureAI(c) {}
@@ -53,7 +53,7 @@ class TRINITY_DLL_SPEC CombatAI : public CreatureAI
         SpellVct spells;
 };
 
-class TRINITY_DLL_SPEC CasterAI : public CombatAI
+class HELLGROUND_DLL_SPEC CasterAI : public CombatAI
 {
     public:
         explicit CasterAI(Creature *c) : CombatAI(c) { m_attackDist = MELEE_RANGE; }

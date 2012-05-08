@@ -18,14 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_REACTORAI_H
-#define TRINITY_REACTORAI_H
+#ifndef HELLGROUND_REACTORAI_H
+#define HELLGROUND_REACTORAI_H
 
 #include "CreatureAI.h"
 
 class Unit;
 
-class TRINITY_DLL_DECL ReactorAI : public CreatureAI
+class HELLGROUND_DLL_DECL ReactorAI : public CreatureAI
 {
     public:
 

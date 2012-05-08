@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef  TRINITY_REFERENCE_H
-#define  TRINITY_REFERENCE_H
+#ifndef  HELLGROUND_REFERENCE_H
+#define  HELLGROUND_REFERENCE_H
 
 /**
  * Referencer<T>
@@ -40,9 +40,9 @@
 template
 <
 typename T,
-class THREADING_MODEL = Trinity::SingleThreaded<T>
+class THREADING_MODEL = Hellground::SingleThreaded<T>
 >
-class TRINITY_DLL_DECL Referencer
+class HELLGROUND_DLL_DECL Referencer
 {
     typedef typename THREADING_MODEL::Lock Lock;
     typedef ReferenceHolder<T, THREADING_MODEL> ReferenceeHolder;

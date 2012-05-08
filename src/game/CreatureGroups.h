@@ -72,10 +72,10 @@ class CreatureGroup
         void RemoveMember(Creature *member);
         void FormationReset(bool dismiss);
         // as for now, used in scripts to respawn whole group when one member enters evade mode
-        TRINITY_DLL_SPEC void RespawnFormation(Creature *member);
+        HELLGROUND_DLL_SPEC void RespawnFormation(Creature *member);
 
         // used to respawn and evade whole formation
-        TRINITY_DLL_SPEC void EvadeFormation(Creature *member);
+        HELLGROUND_DLL_SPEC void EvadeFormation(Creature *member);
 
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);
@@ -84,6 +84,6 @@ class CreatureGroup
         bool AllUnitsReachedWaypoint() const { return !m_movingUnits; }
 };
 
-#define formation_mgr Trinity::Singleton<CreatureGroupManager>::Instance()
+#define formation_mgr Hellground::Singleton<CreatureGroupManager>::Instance()
 
 #endif

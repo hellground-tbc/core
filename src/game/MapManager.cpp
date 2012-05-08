@@ -35,7 +35,7 @@
 
 #include "BattleGround.h"
 
-#define CLASS_LOCK Trinity::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex>
+#define CLASS_LOCK Hellground::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex>
 INSTANTIATE_SINGLETON_2(MapManager, CLASS_LOCK);
 INSTANTIATE_CLASS_MUTEX(MapManager, ACE_Recursive_Thread_Mutex);
 
@@ -277,7 +277,7 @@ void MapManager::Update(uint32 diff)
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
 {
-    GridPair p = Trinity::ComputeGridPair(x,y);
+    GridPair p = Hellground::ComputeGridPair(x,y);
 
     int gx=63-p.x_coord;
     int gy=63-p.y_coord;

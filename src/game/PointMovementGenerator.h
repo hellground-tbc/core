@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_POINTMOVEMENTGENERATOR_H
-#define TRINITY_POINTMOVEMENTGENERATOR_H
+#ifndef HELLGROUND_POINTMOVEMENTGENERATOR_H
+#define HELLGROUND_POINTMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
 #include "FollowerReference.h"
@@ -27,7 +27,7 @@
 class Creature;
 
 template<class UNIT>
-class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMovementGenerator<UNIT> >
+class HELLGROUND_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMovementGenerator<UNIT> >
 {
     public:
         PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath = false) : _id(id),
@@ -50,7 +50,7 @@ class TRINITY_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< 
         bool _generatePath;
 };
 
-class TRINITY_DLL_SPEC AssistanceMovementGenerator : public PointMovementGenerator<Creature>
+class HELLGROUND_DLL_SPEC AssistanceMovementGenerator : public PointMovementGenerator<Creature>
 {
     public:
         AssistanceMovementGenerator(float _x, float _y, float _z) :
@@ -62,7 +62,7 @@ class TRINITY_DLL_SPEC AssistanceMovementGenerator : public PointMovementGenerat
 };
 
 // Does almost nothing - just doesn't allows previous movegen interrupt current effect.
-class TRINITY_DLL_SPEC EffectMovementGenerator : public MovementGenerator
+class HELLGROUND_DLL_SPEC EffectMovementGenerator : public MovementGenerator
 {
     public:
         explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) {}

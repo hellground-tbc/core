@@ -54,7 +54,7 @@ enum AnubEvents
     EVENT_SUMMON    = 3,
 };
 
-struct TRINITY_DLL_DECL boss_anubrekhanAI : public BossAI
+struct HELLGROUND_DLL_DECL boss_anubrekhanAI : public BossAI
 {
     boss_anubrekhanAI(Creature *c) : BossAI(c, DATA_ANUB_REKHAN) { }
 

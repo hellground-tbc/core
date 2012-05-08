@@ -262,7 +262,7 @@ namespace VMAP
         else
             grid = it->second;
 
-        GridPair p = Trinity::ComputeGridPair(x, y);
+        GridPair p = Hellground::ComputeGridPair(x, y);
         if (!grid[p.y_coord*MAX_NUMBER_OF_GRIDS+p.x_coord])
         {
             int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;

@@ -142,7 +142,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId);
 // Different spell properties
 inline float GetSpellRadiusForHostile(SpellRadiusEntry const *radius) { return (radius ? radius->radiusHostile : 0); }
 inline float GetSpellRadiusForFriend(SpellRadiusEntry const *radius) { return (radius ? radius->radiusFriend : 0); }
-TRINITY_DLL_SPEC uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
+HELLGROUND_DLL_SPEC uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
 uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo);
 inline float GetSpellMinRange(SpellRangeEntry const *range) { return (range ? range->minRange : 0); }
 inline float GetSpellMaxRange(SpellRangeEntry const *range) { return (range ? range->maxRange : 0); }
@@ -347,7 +347,7 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
 
 bool IsBinaryResistable(SpellEntry const* spellInfo);
 bool IsPartialyResistable(SpellEntry const* spellInfo);
-TRINITY_DLL_SPEC bool SpellIgnoreLOS(SpellEntry const* spellInfo, uint8 effIdx);
+HELLGROUND_DLL_SPEC bool SpellIgnoreLOS(SpellEntry const* spellInfo, uint8 effIdx);
 
 // Spell affects related declarations (accessed using SpellMgr functions)
 typedef std::map<uint32, uint64> SpellAffectMap;
@@ -636,7 +636,7 @@ enum AttributesCu
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
-class TRINITY_DLL_SPEC SpellMgr
+class HELLGROUND_DLL_SPEC SpellMgr
 {
     // Constructors
     public:

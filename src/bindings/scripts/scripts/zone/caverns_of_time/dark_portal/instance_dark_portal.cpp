@@ -67,7 +67,7 @@ Wave RiftWaves[]=
     {C_AEONUS}
 };
 
-struct TRINITY_DLL_DECL instance_dark_portal : public ScriptedInstance
+struct HELLGROUND_DLL_DECL instance_dark_portal : public ScriptedInstance
 {
     instance_dark_portal(Map *map) : ScriptedInstance(map)
     {

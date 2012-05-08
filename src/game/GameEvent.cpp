@@ -1600,7 +1600,7 @@ void GameEvent::SendWorldStateUpdate(Player * plr, uint16 event_id)
     }
 }
 
-TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id)
+HELLGROUND_DLL_SPEC bool isGameEventActive(uint16 event_id)
 {
     GameEvent::ActiveEvents const& ae = gameeventmgr.GetActiveEventList();
 
@@ -1611,7 +1611,7 @@ TRINITY_DLL_SPEC bool isGameEventActive(uint16 event_id)
     return false;
 }
 
-TRINITY_DLL_SPEC void HandleWorldEventGossip(Player* p, Creature* c)
+HELLGROUND_DLL_SPEC void HandleWorldEventGossip(Player* p, Creature* c)
 {
     gameeventmgr.HandleWorldEventGossip(p, c);
 }

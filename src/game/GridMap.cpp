@@ -1078,7 +1078,7 @@ bool TerrainInfo::IsLineOfSightEnabled() const
 
 //////////////////////////////////////////////////////////////////////////
 
-#define CLASS_LOCK Trinity::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex>
+#define CLASS_LOCK Hellground::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex>
 INSTANTIATE_SINGLETON_2(TerrainManager, CLASS_LOCK);
 INSTANTIATE_CLASS_MUTEX(TerrainManager, ACE_Thread_Mutex);
 

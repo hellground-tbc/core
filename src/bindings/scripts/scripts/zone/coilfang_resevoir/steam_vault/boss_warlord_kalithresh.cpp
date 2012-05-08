@@ -40,7 +40,7 @@ EndScriptData */
 
 #define SPELL_WARLORDS_RAGE_PROC    36453
 
-struct TRINITY_DLL_DECL mob_naga_distillerAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_naga_distillerAI : public Scripted_NoMovementAI
 {
     mob_naga_distillerAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -90,7 +90,7 @@ struct TRINITY_DLL_DECL mob_naga_distillerAI : public Scripted_NoMovementAI
     }
 };
 
-struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
 {
     boss_warlord_kalithreshAI(Creature *c) : ScriptedAI(c)
     {
@@ -151,8 +151,8 @@ struct TRINITY_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
     {
         Creature* pCreature = NULL;
 
-        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
-        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
+        Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
         Cell::VisitGridObjects(me, searcher, range);
 
