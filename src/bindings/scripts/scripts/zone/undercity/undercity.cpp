@@ -51,7 +51,7 @@ enum RiftSpawn
     BEING_SUCKED                            =    1
 };
 
-struct TRINITY_DLL_DECL mob_rift_spawnAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL mob_rift_spawnAI : public ScriptedAI
 {
     mob_rift_spawnAI(Creature *c) : ScriptedAI(c) {}
 
