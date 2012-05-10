@@ -853,20 +853,30 @@ void PersistentAreaAura::Update(uint32 diff)
     Unit *caster = GetCaster();
     if (caster)
     {
-        DynamicObject *dynObj = NULL;
-        if (m_dynamicObjectGUID)
-            //dynObj = ObjectAccessor::GetDynamicObject(*caster, m_dynamicObjectGUID); // try to get linked dynamic object
-            dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID); //prev version commented, delete one
-        else
-            dynObj = caster->GetDynObject(GetId(), GetEffIndex()); // old way - do we need it?
+		// at last consecration tick dynobj is null,
+		// this is fixing function
+		if(m_spellProto->SpellFamilyFlags & 0x0000000000000020LL)
+		{
+			if(m_duration < 0)
+				m_duration = 0;
+		}
+		else
+		{
+			DynamicObject *dynObj = NULL;
+			if (m_dynamicObjectGUID)
+				//dynObj = ObjectAccessor::GetDynamicObject(*caster, m_dynamicObjectGUID); // try to get linked dynamic object
+				dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID); //prev version commented, delete one
+			else
+				dynObj = caster->GetDynObject(GetId(), GetEffIndex()); // old way - do we need it?
 
-        if (dynObj)
-        {
-            if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
-                remove = true;
-        }
-        else
-            m_duration = 0;     // will be removed BY_EXPIRE in Unit::_UpdateSpells
+			if (dynObj)
+			{
+				if (!m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
+					remove = true;
+			}
+			else
+				m_duration = 0;     // will be removed BY_EXPIRE in Unit::_UpdateSpells
+		}
     }
     else
         remove = true;
@@ -5319,6 +5329,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     if (Unit* caster = GetCaster())
                     {
                         Unit::AuraList const& classScripts = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+						m_periodicTimer = 300;
                         for (Unit::AuraList::const_iterator k = classScripts.begin(); k != classScripts.end(); ++k)
                         {
                             int32 tickcount = GetSpellDuration(m_spellProto) / m_spellProto->EffectAmplitude[m_effIndex];
