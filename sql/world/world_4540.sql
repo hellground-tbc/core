@@ -1,2 +1,0 @@
-UPDATE trinity_string SET content_default = 'GM %s disabled %s's chat for %u minutes. Reason: %s.' WHERE entry = 301;
-UPDATE trinity_string SET content_default = 'GM %s enabled %s's chat.' WHERE entry = 304;
