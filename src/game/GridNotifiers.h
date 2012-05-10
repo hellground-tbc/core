@@ -660,7 +660,7 @@ namespace Hellground
                 if (u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isTotem())
                     return false;
 
-                if (u->hasUnitState(UNIT_STAT_ISOLATED) || u->HasFlag(UNIT_FIELD_FLAGS, (UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE)))
+                if (/*u->hasUnitState(UNIT_STAT_ISOLATED) || */u->HasFlag(UNIT_FIELD_FLAGS, (UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE)))
                     return false;
 
                 return i_obj->IsWithinDistInMap(u, i_range) && !i_funit->IsFriendlyTo(u);
