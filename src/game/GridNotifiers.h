@@ -871,7 +871,7 @@ namespace Hellground
             }
             bool operator()(Unit* u)
             {
-                // TODO: addthreat for every enemy in range?
+                // TODO: add threat for every enemy in range?
                 if (!m_creature->IsWithinDistInMap(u, m_range))
                     return false;
 

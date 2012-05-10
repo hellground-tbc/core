@@ -23,7 +23,7 @@
 
 #include "MovementGenerator.h"
 
-#include "Object.h"
+#include "Creature.h"
 
 template<class UNIT>
 class HELLGROUND_DLL_SPEC FleeingMovementGenerator : public MovementGeneratorMedium< UNIT, FleeingMovementGenerator<UNIT> >
@@ -48,8 +48,6 @@ class HELLGROUND_DLL_SPEC FleeingMovementGenerator : public MovementGeneratorMed
         uint64 _frightGUID;
         TimeTracker _nextCheckTime;
 };
-
-class Creature;
 
 class HELLGROUND_DLL_SPEC TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
 {
