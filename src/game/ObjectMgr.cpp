@@ -6871,7 +6871,7 @@ void ObjectMgr::LoadItemTexts()
 
 bool LoadHellgroundStrings(DatabaseType& db, char const* table,int32 start_value, int32 end_value)
 {
-    return objmgr.LoadTrinityStrings(db,table,start_value,end_value);
+    return objmgr.LoadHellgroundStrings(db,table,start_value,end_value);
 }
 
 GameObjectInfo const *GetGameObjectInfo(uint32 id)
