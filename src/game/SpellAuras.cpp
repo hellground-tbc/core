@@ -2739,6 +2739,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->CastCustomSpell(m_target, 39042, &bp, &bp, 0, true, 0, this);
                 }
                 return;
+            case 42385:                                     // Alcaz Survey Aura
+                if (m_target->ToPlayer() && m_target->ToPlayer()->GetQuestStatus(11142) == QUEST_STATUS_INCOMPLETE)
+                {
+                    if (Unit* caster = GetCaster())
+                        m_target->CastSpell(m_target, 42316, true, 0, 0, caster->GetGUID());   // cast Alcaz Survey Credit
+                }
+                return;
         }
     }
 
