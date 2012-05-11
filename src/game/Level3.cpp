@@ -87,7 +87,7 @@ bool ChatHandler::HandleReloadAllCommand(const char*)
 
     HandleReloadCommandCommand("");
     HandleReloadReservedNameCommand("");
-    HandleReloadTrinityStringCommand("");
+    HandleReloadHellgroundStringCommand("");
     HandleReloadGameTeleCommand("");
     HandleReloadUnqueuedAccountListCommand("");
     HandleReloadAutobroadcastCommand("");
@@ -382,11 +382,11 @@ bool ChatHandler::HandleReloadLootTemplatesSkinningCommand(const char*)
     return true;
 }
 
-bool ChatHandler::HandleReloadTrinityStringCommand(const char*)
+bool ChatHandler::HandleReloadHellgroundStringCommand(const char*)
 {
-    sLog.outString("Re-Loading HELLGROUND_string Table!");
-    objmgr.LoadTrinityStrings();
-    SendGlobalGMSysMessage("DB table `HELLGROUND_string` reloaded.");
+    sLog.outString("Re-Loading hellground_string Table!");
+    objmgr.LoadHellgroundStrings();
+    SendGlobalGMSysMessage("DB table `hellground_string` reloaded.");
     return true;
 }
 

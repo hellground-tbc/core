@@ -58,7 +58,7 @@ void SystemMgr::LoadVersion()
 void SystemMgr::LoadScriptTexts()
 {
     outstring_log("TSCR: Loading Script Texts...");
-    LoadTrinityStrings(TScriptDB,"script_texts",TEXT_SOURCE_RANGE,1+(TEXT_SOURCE_RANGE*2));
+    LoadHellgroundStrings(TScriptDB,"script_texts",TEXT_SOURCE_RANGE,1+(TEXT_SOURCE_RANGE*2));
 
     QueryResultAutoPtr pResult = TScriptDB.PQuery("SELECT entry, sound, type, language, emote FROM script_texts");
 
@@ -124,7 +124,7 @@ void SystemMgr::LoadScriptTexts()
 void SystemMgr::LoadScriptTextsCustom()
 {
     outstring_log("TSCR: Loading Custom Texts...");
-    LoadTrinityStrings(TScriptDB,"custom_texts",TEXT_SOURCE_RANGE*2,1+(TEXT_SOURCE_RANGE*3));
+    LoadHellgroundStrings(TScriptDB,"custom_texts",TEXT_SOURCE_RANGE*2,1+(TEXT_SOURCE_RANGE*3));
 
     QueryResultAutoPtr pResult = TScriptDB.PQuery("SELECT entry, sound, type, language, emote FROM custom_texts");
 

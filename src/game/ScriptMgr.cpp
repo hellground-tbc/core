@@ -588,7 +588,7 @@ void ScriptMgr::LoadWaypointScripts()
 
 void ScriptMgr::LoadDbScriptStrings()
 {
-    LoadTrinityStrings(WorldDatabase,"db_script_string",MIN_DB_SCRIPT_STRING_ID,MAX_DB_SCRIPT_STRING_ID);
+    LoadHellgroundStrings(WorldDatabase,"db_script_string",MIN_DB_SCRIPT_STRING_ID,MAX_DB_SCRIPT_STRING_ID);
 
     std::set<int32> ids;
 

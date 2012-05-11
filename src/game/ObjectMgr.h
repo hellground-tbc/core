@@ -117,7 +117,7 @@ typedef UNORDERED_MAP<uint32,ItemLocale> ItemLocaleMap;
 typedef UNORDERED_MAP<uint32,QuestLocale> QuestLocaleMap;
 typedef UNORDERED_MAP<uint32,NpcTextLocale> NpcTextLocaleMap;
 typedef UNORDERED_MAP<uint32,PageTextLocale> PageTextLocaleMap;
-typedef UNORDERED_MAP<uint32,TrinityStringLocale> TrinityStringLocaleMap;
+typedef UNORDERED_MAP<uint32,TrinityStringLocale> HellgroundStringLocaleMap;
 typedef UNORDERED_MAP<uint32,NpcOptionLocale> NpcOptionLocaleMap;
 
 typedef std::multimap<uint32,uint32> QuestRelations;
@@ -468,8 +468,8 @@ class HELLGROUND_DLL_DECL ObjectMgr
 
         void LoadTransportEvents();
 
-        bool LoadTrinityStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value);
-        bool LoadTrinityStrings() { return LoadTrinityStrings(WorldDatabase,"HELLGROUND_string",MIN_HELLGROUND_STRING_ID,MAX_HELLGROUND_STRING_ID); }
+        bool LoadHellgroundStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value);
+        bool LoadHellgroundStrings() { return LoadHellgroundStrings(WorldDatabase,"hellground_string",MIN_HELLGROUND_STRING_ID,MAX_HELLGROUND_STRING_ID); }
 
         void LoadPetCreateSpells();
         void LoadCreatureLocales();
@@ -662,8 +662,8 @@ class HELLGROUND_DLL_DECL ObjectMgr
 
         TrinityStringLocale const* GetTrinityStringLocale(int32 entry) const
         {
-            TrinityStringLocaleMap::const_iterator itr = mTrinityStringLocaleMap.find(entry);
-            if (itr==mTrinityStringLocaleMap.end()) return NULL;
+            HellgroundStringLocaleMap::const_iterator itr = mHellgroundStringLocaleMap.find(entry);
+            if (itr==mHellgroundStringLocaleMap.end()) return NULL;
             return &itr->second;
         }
         const char *GetTrinityString(int32 entry, int locale_idx) const;
@@ -867,7 +867,7 @@ class HELLGROUND_DLL_DECL ObjectMgr
         QuestLocaleMap mQuestLocaleMap;
         NpcTextLocaleMap mNpcTextLocaleMap;
         PageTextLocaleMap mPageTextLocaleMap;
-        TrinityStringLocaleMap mTrinityStringLocaleMap;
+        HellgroundStringLocaleMap mHellgroundStringLocaleMap;
         NpcOptionLocaleMap mNpcOptionLocaleMap;
         RespawnTimes mCreatureRespawnTimes;
         RespawnTimes mGORespawnTimes;
@@ -891,7 +891,7 @@ class HELLGROUND_DLL_DECL ObjectMgr
 #define sObjectMgr Hellground::Singleton<ObjectMgr>::Instance()
 
 // scripting access functions
-HELLGROUND_DLL_SPEC bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value = MAX_CREATURE_AI_TEXT_STRING_ID, int32 end_value = std::numeric_limits<int32>::min());
+HELLGROUND_DLL_SPEC bool LoadHellgroundStrings(DatabaseType& db, char const* table,int32 start_value = MAX_CREATURE_AI_TEXT_STRING_ID, int32 end_value = std::numeric_limits<int32>::min());
 HELLGROUND_DLL_SPEC GameObjectInfo const *GetGameObjectInfo(uint32 id);
 HELLGROUND_DLL_SPEC CreatureInfo const *GetCreatureInfo(uint32 id);
 HELLGROUND_DLL_SPEC CreatureInfo const* GetCreatureTemplateStore(uint32 entry);

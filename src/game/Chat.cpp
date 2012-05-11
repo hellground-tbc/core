@@ -360,7 +360,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "spell_target_position",       SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadSpellTargetPositionCommand,       "", NULL },
         { "spell_threats",               SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadSpellThreatsCommand,              "", NULL },
         { "spell_disabled",              SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadSpellDisabledCommand,             "", NULL },
-        { "HELLGROUND_string",              SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadTrinityStringCommand,             "", NULL },
+        { "hellground_string",           SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadHellgroundStringCommand,             "", NULL },
         { "unqueue_account",             SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadUnqueuedAccountListCommand,       "", NULL },
         { "waypoint_scripts",            SEC_ADMINISTRATOR, true,   &ChatHandler::HandleReloadWpScriptsCommand,                 "", NULL },
 

@@ -5865,7 +5865,7 @@ int ObjectMgr::GetOrNewIndexForLocale(LocaleConstant loc)
     return m_LocalForIndex.size()-1;
 }
 
-bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value)
+bool ObjectMgr::LoadHellgroundStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value)
 {
     int32 start_value = min_value;
     int32 end_value   = max_value;
@@ -5893,10 +5893,10 @@ bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 mi
     }
 
     // cleanup affected map part for reloading case
-    for (TrinityStringLocaleMap::iterator itr = mTrinityStringLocaleMap.begin(); itr != mTrinityStringLocaleMap.end();)
+    for (HellgroundStringLocaleMap::iterator itr = mHellgroundStringLocaleMap.begin(); itr != mHellgroundStringLocaleMap.end();)
     {
         if (itr->first >= start_value && itr->first < end_value)
-            mTrinityStringLocaleMap.erase(itr++);
+            mHellgroundStringLocaleMap.erase(itr++);
         else
             ++itr;
     }
@@ -5939,7 +5939,7 @@ bool ObjectMgr::LoadTrinityStrings(DatabaseType& db, char const* table, int32 mi
             continue;
         }
 
-        TrinityStringLocale& data = mTrinityStringLocaleMap[entry];
+        TrinityStringLocale& data = mHellgroundStringLocaleMap[entry];
 
         if (data.Content.size() > 0)
         {
@@ -6869,7 +6869,7 @@ void ObjectMgr::LoadItemTexts()
     sLog.outString(">> Loaded %u item texts", count);
 }
 
-bool LoadTrinityStrings(DatabaseType& db, char const* table,int32 start_value, int32 end_value)
+bool LoadHellgroundStrings(DatabaseType& db, char const* table,int32 start_value, int32 end_value)
 {
     return objmgr.LoadTrinityStrings(db,table,start_value,end_value);
 }
