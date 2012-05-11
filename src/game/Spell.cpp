@@ -479,6 +479,7 @@ void Spell::FillTargetMap()
                     else
                         AddUnitTarget(m_caster, i);
                     break;
+                case SPELL_EFFECT_SEND_TAXI:
                 case SPELL_EFFECT_SUMMON_PLAYER:
                     if (m_targets.getUnitTarget())
                         AddUnitTarget(m_targets.getUnitTarget(), i);
