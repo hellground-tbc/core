@@ -93,7 +93,6 @@ bool DynamicObject::Create(uint32 guidlow, Unit *caster, uint32 spellId, uint32 
     m_spellId = spellId;
     m_casterGuid = caster->GetGUID();
     m_updateTimer = 0;
-    Update(0, 0);
     return true;
 }
 
@@ -115,7 +114,7 @@ void DynamicObject::Update(uint32 update_diff, uint32 p_time)
 
     bool deleteThis = false;
 
-    if (m_aliveDuration > int32(p_time))
+    if (m_aliveDuration > int32(p_time) && m_updateTimer != 0)
         m_aliveDuration -= p_time;
     else
         deleteThis = true;
