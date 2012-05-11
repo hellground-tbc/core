@@ -236,6 +236,100 @@ bool GossipSelect_npc_lady_katrana_prestor(Player *player, Creature *_Creature, 
     }
     return true;
 }
+
+/*######
+## npc_highlord_bolvar_fordragon - TODO: should also have own scripted AI when horde attacks him
+######*/
+
+#define NPC_LADY_KATRANA_PRESTOR    1749
+
+struct HELLGROUND_DLL_DECL npc_highlord_bolvar_fordragonAI : public ScriptedAI
+{
+    npc_highlord_bolvar_fordragonAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 speechTimer;
+    uint8 step;
+
+    void Reset()
+    {
+        speechTimer = 0;
+        step = 0;
+    }
+
+    void WarnBolvar_questEpilog()
+    {
+        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+        speechTimer = 1000;
+        step = 1;
+    }
+
+    uint32 DoSpeech(uint8 step)
+    {
+        switch(step)
+        {
+            case 1:
+                me->Say("Lady Jaina would not send a messenger with such haste if she did not believe her information reliable.", 0, 0);
+                return 5000;
+            case 2:
+                me->Say("With their newfound patronage and apparent role in the king's disappearance, I see no choice but to plan a renewed offensive against the Defias.", 0, 0);
+                return 7000;
+            case 3:
+                me->Say("Convey my thanks to Lady Jaina and let her know that we will pursue the Defias and their backers until our liege is safely returned.", 0, 0);
+                return 3500;
+            case 4:
+                if(Unit* Prestor = FindCreature(NPC_LADY_KATRANA_PRESTOR, 10.0, me))
+                    Prestor->ToCreature()->Say("Don't be such a fool, Bolvar!", 0, 0);
+                return 4500;
+            case 5:
+                if(Unit* Prestor = FindCreature(NPC_LADY_KATRANA_PRESTOR, 10.0, me))
+                    Prestor->ToCreature()->Say("The Defias are little more than a band of thugs. We should be busy combatting Stormwind's real enemies instead of chasing baseless speculation!", 0, 0);
+                return 6000;
+            case 6:
+                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+                return 0;
+            default:
+                return 0;
+        }
+    }
+
+    void EnterCombat(Unit *who) {}
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(speechTimer)
+        {
+            if(speechTimer <= diff)
+            {
+                speechTimer = DoSpeech(step);
+                step++;
+            }
+            else speechTimer -= diff;
+        }
+
+        if(!UpdateVictim())
+            return;
+
+        /*
+        Some AI TODO here
+        */
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+bool QuestComplete_npc_highlord_bolvar_fordragon(Player *player, Creature *_Creature, const Quest *_Quest)
+{
+    if( _Quest->GetQuestId() == 11222 ) // Warn Bolvar!
+        ((npc_highlord_bolvar_fordragonAI*)_Creature->AI())->WarnBolvar_questEpilog();
+
+    return true;
+}
+
+CreatureAI* GetAI_npc_highlord_bolvar_fordragon(Creature *_creature)
+{
+    return new npc_highlord_bolvar_fordragonAI(_creature);
+}
+
 /*######
 ## npc_marzon_silent_blade
 ######*/
@@ -1794,6 +1888,12 @@ void AddSC_stormwind_city()
     newscript = new Script;
     newscript->Name = "npc_marzon_silent_blade";
     newscript->GetAI = &GetAI_npc_marzon_silent_blade;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_highlord_bolvar_fordragon";
+    newscript->GetAI = &GetAI_npc_highlord_bolvar_fordragon;
+    newscript->pQuestRewardedNPC = &QuestComplete_npc_highlord_bolvar_fordragon;
     newscript->RegisterSelf();
 
     newscript = new Script;

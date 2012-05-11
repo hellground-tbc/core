@@ -2730,8 +2730,10 @@ void Spell::EffectTeleportUnits(uint32 i)
     float x = m_targets.m_destX;
     float y = m_targets.m_destY;
     float z = m_targets.m_destZ;
+    float orientation = m_targets.m_orientation;
 
-    float orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
+    if(orientation < 0)
+        orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
     sLog.outDebug("Spell::EffectTeleportUnits - teleport unit to %u %f %f %f\n", mapid, x, y, z);
     // Teleport
 
@@ -7241,20 +7243,23 @@ void Spell::EffectSendTaxi(uint32 i)
     uint32 mountid = 0;
     switch (m_spellInfo->Id)
     {
-        case 31606:       //Stormcrow Amulet
+        case 31606:       // Stormcrow Amulet
             mountid = 17447;
             break;
-        case 45071:      //Quest - Sunwell Daily - Dead Scar Bombing Run
-        case 45113:      //Quest - Sunwell Daily - Ship Bombing Run
-        case 45353:      //Quest - Sunwell Daily - Ship Bombing Run Return
+        case 45071:      // Quest - Sunwell Daily - Dead Scar Bombing Run
+        case 45113:      // Quest - Sunwell Daily - Ship Bombing Run
+        case 45353:      // Quest - Sunwell Daily - Ship Bombing Run Return
             mountid = 22840;
             break;
         case 34905:      //Stealth Flight
             mountid = 6851;
             break;
-        case 41533:      //Fly of the Netherwing
-        case 41540:      //Fly of the Netherwing
+        case 41533:      // Fly of the Netherwing
+        case 41540:      // Fly of the Netherwing
             mountid = 23468;
+            break;
+        case 42295:     // Alcaz Island Survey
+            mountid = 17697;
             break;
     }
 

@@ -22,10 +22,11 @@ SDCategory: Dustwallow Marsh
 EndScriptData */
 
 /* ContentData
+npc_cassa_crimsonwing
 mobs_risen_husk_spirit
 npc_restless_apparition
 npc_deserter_agitator
-npc_lady_jaina_proudmoore
+npc_dustwallow_lady_jaina_proudmoore
 npc_nat_pagle
 npc_theramore_combat_dummy
 mob_mottled_drywallow_crocolisks
@@ -37,6 +38,33 @@ EndContentData */
 
 #include "precompiled.h"
 #include "escort_ai.h"
+
+/*######
+## npc_cassa_crimsonwing
+######*/
+
+#define GOSSIP_SURVEY_ALCAZ_ISLAND "Lady Jaina told me to speak to you about using a Gryphon to survey Alcaz Island."
+
+bool GossipHello_npc_cassa_crimsonwing(Player *player, Creature *_Creature)
+{
+    if( player->GetQuestStatus(11142) == QUEST_STATUS_INCOMPLETE)
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_SURVEY_ALCAZ_ISLAND, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    }
+
+    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(),_Creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_cassa_crimsonwing(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        player->CLOSE_GOSSIP_MENU();
+        _Creature->CastSpell(player,42295,false);               //TaxiPath 724
+    }
+    return true;
+}
 
 /*######
 ## mobs_risen_husk_spirit
@@ -140,32 +168,68 @@ bool GossipHello_npc_deserter_agitator(Player *player, Creature *_Creature)
 }
 
 /*######
-## npc_lady_jaina_proudmoore
+## npc_dustwallow_lady_jaina_proudmoore - TODO: should also have own scripted AI when horde attacks her
 ######*/
 
 #define GOSSIP_ITEM_JAINA "I know this is rather silly but i have a young ward who is a bit shy and would like your autograph."
+#define GOSSIP_TELE_TO_STORMWIND "I'm ready to travel to Stormwind."
 
-bool GossipHello_npc_lady_jaina_proudmoore(Player *player, Creature *_Creature)
+struct HELLGROUND_DLL_DECL npc_dustwallow_lady_jaina_proudmooreAI : public ScriptedAI
+{
+    npc_dustwallow_lady_jaina_proudmooreAI(Creature *c) : ScriptedAI(c) {}
+
+    void Reset() { }
+
+    void EnterCombat(Unit *who) {}
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        /*
+        Some AI TODO here
+        */
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+bool GossipHello_npc_dustwallow_lady_jaina_proudmoore(Player *player, Creature *_Creature)
 {
     if (_Creature->isQuestGiver())
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
-    if( player->GetQuestStatus(558) == QUEST_STATUS_INCOMPLETE )
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_JAINA, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
+    if (player->GetQuestStatus(558) == QUEST_STATUS_INCOMPLETE )
+        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_JAINA, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO);
+
+    if (player->GetQuestStatus(11222) == QUEST_STATUS_COMPLETE && !player->GetQuestRewardStatus(11222))   // Warn Bolvar!
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_TELE_TO_STORMWIND, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_lady_jaina_proudmoore(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_dustwallow_lady_jaina_proudmoore(Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
-    if( action == GOSSIP_SENDER_INFO )
+    if (action == GOSSIP_SENDER_INFO)
     {
         player->SEND_GOSSIP_MENU( 7012, _Creature->GetGUID() );
         player->CastSpell( player, 23122, false);
     }
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        player->CLOSE_GOSSIP_MENU();
+        // teleport to Highlord Bolvar
+        _Creature->CastSpell(player, 42710, true);
+    }
     return true;
+}
+
+CreatureAI* GetAI_npc_dustwallow_lady_jaina_proudmoore(Creature *_creature)
+{
+    return new npc_dustwallow_lady_jaina_proudmooreAI(_creature);
 }
 
 /*######
@@ -1061,6 +1125,12 @@ void AddSC_dustwallow_marsh()
     Script *newscript;
 
     newscript = new Script;
+    newscript->Name="npc_cassa_crimsonwing";
+    newscript->pGossipHello = &GossipHello_npc_cassa_crimsonwing;
+    newscript->pGossipSelect = &GossipSelect_npc_cassa_crimsonwing;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name="mobs_risen_husk_spirit";
     newscript->GetAI = &GetAI_mobs_risen_husk_spirit;
     newscript->RegisterSelf();
@@ -1077,9 +1147,10 @@ void AddSC_dustwallow_marsh()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_lady_jaina_proudmoore";
-    newscript->pGossipHello = &GossipHello_npc_lady_jaina_proudmoore;
-    newscript->pGossipSelect = &GossipSelect_npc_lady_jaina_proudmoore;
+    newscript->Name="npc_dustwallow_lady_jaina_proudmoore";
+    newscript->GetAI = &GetAI_npc_dustwallow_lady_jaina_proudmoore;
+    newscript->pGossipHello = &GossipHello_npc_dustwallow_lady_jaina_proudmoore;
+    newscript->pGossipSelect = &GossipSelect_npc_dustwallow_lady_jaina_proudmoore;
     newscript->RegisterSelf();
 
     newscript = new Script;
