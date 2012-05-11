@@ -79,6 +79,7 @@ SpellCastTargets::SpellCastTargets()
     m_itemTargetEntry  = 0;
 
     m_srcX = m_srcY = m_srcZ = m_destX = m_destY = m_destZ = 0;
+    m_orientation = -1;
     m_strTarget = "";
     m_targetMask = 0;
 }
@@ -114,7 +115,7 @@ void SpellCastTargets::setSrc(WorldObject *target)
     m_targetMask |= TARGET_FLAG_SOURCE_LOCATION;
 }
 
-void SpellCastTargets::setDestination(float x, float y, float z, int32 mapId)
+void SpellCastTargets::setDestination(float x, float y, float z, float orientation, int32 mapId)
 {
     m_destX = x;
     m_destY = y;
@@ -122,6 +123,8 @@ void SpellCastTargets::setDestination(float x, float y, float z, int32 mapId)
     m_targetMask |= TARGET_FLAG_DEST_LOCATION;
     if (mapId >= 0)
         m_mapId = mapId;
+    if (orientation >= 0)
+        m_orientation = orientation;
 }
 
 void SpellCastTargets::setDestination(WorldObject *target)
@@ -1899,7 +1902,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                         if (m_spellInfo->Effect[0] == SPELL_EFFECT_TELEPORT_UNITS
                             || m_spellInfo->Effect[1] == SPELL_EFFECT_TELEPORT_UNITS
                             || m_spellInfo->Effect[2] == SPELL_EFFECT_TELEPORT_UNITS)
-                            m_targets.setDestination(st->target_X, st->target_Y, st->target_Z, (int32)st->target_mapId);
+                            m_targets.setDestination(st->target_X, st->target_Y, st->target_Z, st->target_Orientation, (int32)st->target_mapId);
                         else if (st->target_mapId == m_caster->GetMapId())
                             m_targets.setDestination(st->target_X, st->target_Y, st->target_Z);
                     }
@@ -1908,7 +1911,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     break;
                 case TARGET_DST_HOME:
                     if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                        m_targets.setDestination(((Player*)m_caster)->m_homebindX,((Player*)m_caster)->m_homebindY,((Player*)m_caster)->m_homebindZ, ((Player*)m_caster)->m_homebindMapId);
+                        m_targets.setDestination(((Player*)m_caster)->m_homebindX,((Player*)m_caster)->m_homebindY,((Player*)m_caster)->m_homebindZ, ((Player*)m_caster)->GetOrientation(), ((Player*)m_caster)->m_homebindMapId);
                     break;
                 case TARGET_DST_NEARBY_ENTRY:
                 {

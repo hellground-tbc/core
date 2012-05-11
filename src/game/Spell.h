@@ -144,7 +144,7 @@ class SpellCastTargets
         void setUnitTarget(Unit *target);
         void setSrc(float x, float y, float z);
         void setSrc(WorldObject *target);
-        void setDestination(float x, float y, float z, int32 mapId = -1);
+        void setDestination(float x, float y, float z, float orientation = -1, int32 mapId = -1);
         void setDestination(WorldObject *target);
 
         uint64 getGOTargetGUID() const { return m_GOTargetGUID.GetRawValue(); }
@@ -173,7 +173,7 @@ class SpellCastTargets
         void Update(Unit* caster);
 
         float m_srcX, m_srcY, m_srcZ;
-        float m_destX, m_destY, m_destZ;
+        float m_destX, m_destY, m_destZ, m_orientation;
         int32 m_mapId;
         std::string m_strTarget;
 
