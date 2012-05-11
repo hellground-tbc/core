@@ -114,8 +114,11 @@ void DynamicObject::Update(uint32 update_diff, uint32 p_time)
 
     bool deleteThis = false;
 
-    if (m_aliveDuration > int32(p_time) && m_updateTimer != 0)
-        m_aliveDuration -= p_time;
+    if (m_aliveDuration > int32(p_time))
+    {
+        if(m_updateTimer != 0)
+            m_aliveDuration -= p_time;
+    }
     else
         deleteThis = true;
 
