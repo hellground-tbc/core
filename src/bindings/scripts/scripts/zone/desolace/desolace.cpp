@@ -192,21 +192,30 @@ struct npc_dalindaAI : public npc_escortAI
         switch (i)
         {
             case 1:
-                m_creature->IsStandState();
+                me->SetStandState(PLAYER_STATE_NONE);
                 break;
             case 15:
                 if (pPlayer)
                 pPlayer->GroupEventHappens(QUEST_RETURN_TO_VAHLARRIEL, m_creature);
+                break;
+            case 16:
+                me->Kill(me, false);
+                me->Respawn();
                 break;
         }
     }
 
     void EnterCombat(Unit* pWho) { }
 
-    void Reset() {}
+    void Reset()
+    {
+        me->SetStandState(PLAYER_STATE_KNEEL);
+    }
 
     void JustDied(Unit* pKiller)
     {
+        if(pKiller->GetGUID() == me->GetGUID())
+            return;
         Player* pPlayer = GetPlayerForEscort();
         if (pPlayer)
             pPlayer->FailQuest(QUEST_RETURN_TO_VAHLARRIEL);
