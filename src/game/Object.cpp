@@ -889,10 +889,6 @@ WorldObject::WorldObject()
     , m_activeBy(0), IsTempWorldObject(false)
     , m_notifyflags(0), m_executed_notifies(0)
 {
-
-    m_groupLootTimer    = 0;
-    lootingGroupLeaderGUID = 0;
-
     mSemaphoreTeleport  = false;
 }
 

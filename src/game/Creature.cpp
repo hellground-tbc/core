@@ -470,21 +470,6 @@ void Creature::Update(uint32 update_diff, uint32 diff)
             else
             {
                 m_deathTimer -= update_diff;
-                if (m_groupLootTimer && lootingGroupLeaderGUID)
-                {
-                    if (update_diff <= m_groupLootTimer)
-                    {
-                        m_groupLootTimer -= update_diff;
-                    }
-                    else
-                    {
-                        Group* group = objmgr.GetGroupByLeader(lootingGroupLeaderGUID);
-                        if (group)
-                            group->EndRoll();
-                        m_groupLootTimer = 0;
-                        lootingGroupLeaderGUID = 0;
-                    }
-                }
             }
 
             break;

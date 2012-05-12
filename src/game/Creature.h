@@ -720,6 +720,8 @@ class HELLGROUND_DLL_SPEC Creature : public Unit
 
         bool IsTempSummon() { return m_tempSummon; }
 
+        void UpdateDeathTimer(uint32 timer) { if(m_deathTimer < timer) m_deathTimer = timer; }
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);

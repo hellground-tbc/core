@@ -612,8 +612,11 @@ void Group::SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r)
     }
 }
 
-void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
+void Group::PrepareLootRolls(const uint64& playerGUID, Loot *loot, WorldObject* object)
 {
+    if (m_lootMethod != GROUP_LOOT && m_lootMethod != NEED_BEFORE_GREED)
+        return;
+
     std::vector<LootItem>::iterator i;
     ItemPrototype const *item;
     uint8 itemSlot = 0;
@@ -641,76 +644,32 @@ void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
                 Player *member = itr->getSource();
                 if (!member || !member->GetSession())
                     continue;
-                if (i->AllowedForPlayer(member) && loot->IsPlayerAllowedToLoot(member, object))
+
+
+                if (i->AllowedForPlayer(member) && loot->IsPlayerAllowedToLoot(member, object)
+                    && (m_lootMethod != NEED_BEFORE_GREED || member->CanUseItem(item)))
                 {        
                     r->playerVote[member->GetGUID()] = NOT_EMITED_YET;
                     ++r->totalPlayersRolling;   
                 }
             }
 
-            r->setLoot(loot);
-            r->itemSlot = itemSlot;
-
-            group->SendLootStartRoll(60000, *r);
-
-            loot->items[itemSlot].is_blocked = true;
-            object->m_groupLootTimer = 60000;
-            object->lootingGroupLeaderGUID = GetLeaderGUID();
-
-            RollId.push_back(r);
-            i->is_underthreshold=0;
-        }
-    }
-}
-
-void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* object)
-{
-    ItemPrototype const *item;
-    Player *player = objmgr.GetPlayer(playerGUID);
-    Group *group = player->GetGroup();
-
-    uint8 itemSlot = 0;
-    for (std::vector<LootItem>::iterator i=loot->items.begin(); i != loot->items.end(); ++i, ++itemSlot)
-    {
-        item = ObjectMgr::GetItemPrototype(i->itemid);
-
-        //only roll for one-player items, not for ones everyone can get
-        if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
-        {
-            uint64 newitemGUID = MAKE_NEW_GUID(objmgr.GenerateLowGuid(HIGHGUID_ITEM),0,HIGHGUID_ITEM);
-            Roll* r=new Roll(newitemGUID,*i);
-
-            for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
-            {
-                Player *playerToRoll = itr->getSource();
-                if (!playerToRoll || !playerToRoll->GetSession())
-                    continue;
-
-                if (playerToRoll->CanUseItem(item) && i->AllowedForPlayer(playerToRoll) && loot->IsPlayerAllowedToLoot(playerToRoll, object))
-                {
-                    r->playerVote[playerToRoll->GetGUID()] = NOT_EMITED_YET;
-                    ++r->totalPlayersRolling;
-                }
-            }
-
             if (r->totalPlayersRolling > 0)
             {
-                r->setLoot(loot);
                 r->itemSlot = itemSlot;
-
+                r->rollTimer = 60000;
+                if (object->ToCreature())
+                    object->ToCreature()->UpdateDeathTimer(70000);
                 group->SendLootStartRoll(60000, *r);
-
-                loot->items[itemSlot].is_blocked = true;
+                i->is_blocked = true;
 
                 RollId.push_back(r);
             }
             else
-            {
                 delete r;
-            }
+
+            r->setLoot(loot);
         }
-        else
-            i->is_underthreshold=1;
     }
 }
 
@@ -1054,6 +1013,17 @@ void Group::Update(uint32 diff)
             ChangeLeaderToFirstOnlineMember();
             m_leaderLogoutTime = 0;
         }
+    }
+
+    Rolls::iterator next;
+    for (Rolls::iterator itr = RollId.begin(); itr != RollId.end();)
+    {
+        next = ++itr;
+        Roll *roll = *itr;
+        if (roll->rollTimer <= diff)
+            CountTheRoll(itr, GetMembersCount());  // itr may be erased from RollId here
+        else
+            roll->rollTimer -= diff;
     }
 }
 

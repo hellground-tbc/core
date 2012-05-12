@@ -404,22 +404,6 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     }
                     break;
                 case GAMEOBJECT_TYPE_CHEST:
-                    if (m_groupLootTimer && lootingGroupLeaderGUID)
-                    {
-                        if (update_diff <= m_groupLootTimer)
-                        {
-                            m_groupLootTimer -= update_diff;
-                        }
-                        else
-                        {
-                            Group* group = objmgr.GetGroupByLeader(lootingGroupLeaderGUID);
-                            if (group)
-                                group->EndRoll();
-                            m_groupLootTimer = 0;
-                            lootingGroupLeaderGUID = 0;
-                        }
-                    }
-
                     if(loot.isLooted())
                     {
                         if ((GetUseCount() >= GetGOInfo()->chest.maxSuccessOpens) ||

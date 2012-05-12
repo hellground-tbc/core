@@ -98,7 +98,6 @@ struct LootItem
     bool    is_looted         : 1;
     bool    is_blocked        : 1;
     bool    freeforall        : 1;                          // free for all
-    bool    is_underthreshold : 1;
     bool    is_counted        : 1;
     bool    needs_quest       : 1;                          // quest drop
 

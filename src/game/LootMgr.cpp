@@ -303,7 +303,6 @@ LootItem::LootItem(uint32 id)
     randomPropertyId = Item::GenerateItemRandomPropertyId(itemid);
     is_looted = 0;
     is_blocked = 0;
-    is_underthreshold = 1;
     is_counted = 0;
 }
 
@@ -323,7 +322,6 @@ LootItem::LootItem(LootStoreItem const& li)
     randomPropertyId = Item::GenerateItemRandomPropertyId(itemid);
     is_looted = 0;
     is_blocked = 0;
-    is_underthreshold = 1;
     is_counted = 0;
 }
 
@@ -631,10 +629,6 @@ void Loot::saveLootToDB(Player *owner)
 // Calls processor of corresponding LootTemplate (which handles everything including references)
 void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, bool personal)
 {
-    // Must be provided
-    if (!loot_owner)
-        return;
-
     LootTemplate const* tab = store.GetLootfor(loot_id);
 
     if (!tab)
@@ -647,20 +641,23 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, 
     quest_items.reserve(MAX_NR_QUEST_ITEMS);
     tab->Process(*this, store);                             // Processing is done there, callback via Loot::AddItem()
 
-    // Setting access rights for group loot case
-    Group * pGroup=loot_owner->GetGroup();
-    if (!personal && pGroup)
+    if (loot_owner) // loot_owner not provided for creatures with no loot recipient on death
     {
-        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
-            if (Player* pl = itr->getSource())
-                FillNotNormalLootFor(pl);
-    }
-    // ... for personal loot
-    else
-        FillNotNormalLootFor(loot_owner);
+        // Setting access rights for group loot case
+        Group * pGroup=loot_owner->GetGroup();
+        if (!personal && pGroup)
+        {
+            for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+                if (Player* pl = itr->getSource())
+                    FillNotNormalLootFor(pl);
+        }
+        // ... for personal loot
+        else
+            FillNotNormalLootFor(loot_owner);
 
-    if (m_creatureGUID)
-        saveLootToDB(loot_owner);
+        if (m_creatureGUID)
+            saveLootToDB(loot_owner);
+    }
 }
 
 void Loot::FillNotNormalLootFor(Player* pl)
@@ -1000,7 +997,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             else if (lv.permission == MASTER_PERMISSION)
                 slot_type = 2;
             else if (lv.permission == GROUP_LOOTER_PERMISSION)
-                slot_type = (l.items[i].is_blocked || l.items[i].is_underthreshold) ? 0 : 1;
+                slot_type = l.items[i].is_blocked ? 1 : 0;
             else if (lv.permission == GROUP_NONE_PERMISSION)
                 slot_type = 1;
             b << uint8(i) << l.items[i];            //only send one-player loot items now, free for all will be sent later

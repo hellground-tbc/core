@@ -118,6 +118,7 @@ class Roll : public LootValidatorRef
         uint8 totalGreed;
         uint8 totalPass;
         uint8 itemSlot;
+        uint32 rollTimer;
 };
 
 struct InstanceGroupBind
@@ -309,8 +310,7 @@ class HELLGROUND_DLL_SPEC Group
         void SendLootRoll(const uint64& SourceGuid, const uint64& TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
         void SendLootRollWon(const uint64& SourceGuid, const uint64& TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
         void SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r);
-        void GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object);
-        void NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* object);
+        void PrepareLootRolls(const uint64& playerGUID, Loot *loot, WorldObject* object);
         void MasterLoot(const uint64& playerGUID, Loot *loot, WorldObject* object);
         Rolls::iterator GetRoll(uint64 Guid)
         {

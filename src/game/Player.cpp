@@ -7469,21 +7469,10 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     {
                         group->UpdateLooterGuid((WorldObject*)go, true);
 
-                        switch (group->GetLootMethod())
-                        {
-                            case GROUP_LOOT:
-                                // we dont use a recipient, because any char at the correct distance can open a chest
-                                group->GroupLoot(this->GetGUID(), loot, (WorldObject*) go);
-                                break;
-                            case NEED_BEFORE_GREED:
-                                group->NeedBeforeGreed(this->GetGUID(), loot, (WorldObject*) go);
-                                break;
-                            case MASTER_LOOT:
-                                group->MasterLoot(this->GetGUID(), loot, (WorldObject*) go);
-                                break;
-                            default:
-                                break;
-                        }
+                        group->PrepareLootRolls(this->GetGUID(), loot, (WorldObject*) go);
+                        if (group->GetLootMethod() == MASTER_LOOT)
+                            group->MasterLoot(this->GetGUID(), loot, (WorldObject*) go);
+                            
                     }
                 }
             }
@@ -7617,21 +7606,9 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 creature->lootForBody = true;
                 if (Group* group = recipient->GetGroup())
                 {
-                    switch (group->GetLootMethod())
-                    {
-                        case GROUP_LOOT:
-                            // GroupLoot delete items over threshold (threshold even not implemented), and roll them. Items with quality<threshold, round robin
-                            group->GroupLoot(recipient->GetGUID(), loot, creature);
-                            break;
-                        case NEED_BEFORE_GREED:
-                            group->NeedBeforeGreed(recipient->GetGUID(), loot, creature);
-                            break;
-                        case MASTER_LOOT:
-                            group->MasterLoot(recipient->GetGUID(), loot, creature);
-                            break;
-                        default:
-                            break;
-                    }
+                    group->PrepareLootRolls(recipient->GetGUID(), loot, creature);
+                    if (group->GetLootMethod() == MASTER_LOOT)
+                        group->MasterLoot(recipient->GetGUID(), loot, creature);
                 }
             }
 
@@ -7671,7 +7648,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                             case NEED_BEFORE_GREED:
                             case ROUND_ROBIN:
                                 if (!loot->looterGUID || loot->looterGUID == GetGUID())
-                                    permission = GROUP_LOOTER_PERMISSION;   // can take items below treshold
+                                    permission = GROUP_LOOTER_PERMISSION;   // can take items below threshold
                                 else
                                     permission = GROUP_NONE_PERMISSION;     // only see items, cant take
                                 break;
