@@ -7612,33 +7612,11 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 recipient = this;
             }
 
-            if (creature->lootForPickPocketed)
-            {
-                creature->lootForPickPocketed = false;
-                loot->clear();
-            }
-
             if (!creature->lootForBody)
             {
                 creature->lootForBody = true;
-
-                if (!loot->LootLoadedFromDB())
-                {
-                    loot->clear();
-
-                    if (uint32 lootid = creature->GetCreatureInfo()->lootid)
-                    {
-                        loot->setCreatureGUID(creature);
-                        loot->FillLoot(lootid, LootTemplates_Creature, recipient, false);
-                    }
-
-                    loot->generateMoneyLoot(creature->GetCreatureInfo()->mingold,creature->GetCreatureInfo()->maxgold);
-                }
-
                 if (Group* group = recipient->GetGroup())
                 {
-                    group->UpdateLooterGuid(creature, true);
-
                     switch (group->GetLootMethod())
                     {
                         case GROUP_LOOT:
@@ -7667,25 +7645,40 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             else
             {
                 if (Group* group = GetGroup())
-                {
+                {     
+                    if (loot->looterGUID)
+                    {
+                        Unit *looter = GetUnit(loot->looterGUID);
+                        if (!looter || !looter->IsWithinDist(creature, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false))
+                            loot->looterGUID = 0;
+                    }
+
+                    permission = NONE_PERMISSION;
                     if (group == recipient->GetGroup() && creature->IsPlayerAllowedToLoot(this))
                     {
-                        if (group->GetLootMethod() == FREE_FOR_ALL)
-                            permission = ALL_PERMISSION;
-                        else if (group->GetLooterGuid() == GetGUID())
+                        switch(group->GetLootMethod())
                         {
-                            if (group->GetLootMethod() == MASTER_LOOT)
-                                permission = MASTER_PERMISSION;
-                            else
+                            case FREE_FOR_ALL:
                                 permission = ALL_PERMISSION;
+                                break;
+                            case MASTER_LOOT:
+                                if (group->GetLooterGuid() == GetGUID())
+                                    permission = MASTER_PERMISSION;
+                                else
+                                    permission = GROUP_NONE_PERMISSION;
+                                break;
+                            case GROUP_LOOT:
+                            case NEED_BEFORE_GREED:
+                            case ROUND_ROBIN:
+                                if (!loot->looterGUID || loot->looterGUID == GetGUID())
+                                    permission = GROUP_LOOTER_PERMISSION;   // can take items below treshold
+                                else
+                                    permission = GROUP_NONE_PERMISSION;     // only see items, cant take
+                                break;
                         }
-                        else
-                            permission = GROUP_PERMISSION;
                     }
-                    else
-                        permission = NONE_PERMISSION;
                 }
-                else if (recipient == this)
+                else if (recipient == this) // not in group
                     permission = ALL_PERMISSION;
                 else
                     permission = NONE_PERMISSION;

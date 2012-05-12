@@ -1730,6 +1730,36 @@ void Creature::setDeathState(DeathState s)
         if (CanFly())
             i_motionMaster.MoveFall();
 
+        
+        // roll loot
+        if (lootForPickPocketed)
+        {
+            lootForPickPocketed = false;
+            loot.clear();
+        }
+
+        if (!loot.LootLoadedFromDB())
+        {
+            loot.clear();
+
+            if (uint32 lootid = GetCreatureInfo()->lootid)
+            {
+                loot.setCreatureGUID(this);
+                loot.FillLoot(lootid, LootTemplates_Creature, GetLootRecipient(), false);
+            }
+
+            loot.generateMoneyLoot(GetCreatureInfo()->mingold, GetCreatureInfo()->maxgold);
+        }
+
+        // set looterGUID for round robin loot
+        if (GetLootRecipient() && GetLootRecipient()->GetGroup())
+        {
+            Group *group = GetLootRecipient()->GetGroup();
+            group->UpdateLooterGuid(this, true);            // select next looter if one is out of xp range
+            loot.looterGUID = group->GetLooterGuid();
+            group->UpdateLooterGuid(this, false);           // select next looter
+        }
+
         Unit::setDeathState(CORPSE);
     }
 

@@ -303,7 +303,7 @@ LootItem::LootItem(uint32 id)
     randomPropertyId = Item::GenerateItemRandomPropertyId(itemid);
     is_looted = 0;
     is_blocked = 0;
-    is_underthreshold = 0;
+    is_underthreshold = 1;
     is_counted = 0;
 }
 
@@ -323,7 +323,7 @@ LootItem::LootItem(LootStoreItem const& li)
     randomPropertyId = Item::GenerateItemRandomPropertyId(itemid);
     is_looted = 0;
     is_blocked = 0;
-    is_underthreshold = 0;
+    is_underthreshold = 1;
     is_counted = 0;
 }
 
@@ -389,7 +389,7 @@ void Loot::AddItem(LootStoreItem const & item)
 bool Loot::IsPlayerAllowedToLoot(Player *player, WorldObject *object)
 {
     return players_allowed_to_loot.empty() ?
-        player->GetDistance2d(object) < sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE) :
+        player->IsWithinDist(object, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false) :
         players_allowed_to_loot.find(player->GetGUID()) != players_allowed_to_loot.end();
 }
 
@@ -990,42 +990,23 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     size_t count_pos = b.wpos();                            // pos of item count byte
     b << uint8(0);                                          // item count placeholder
 
-    switch (lv.permission)
+    uint8 slot_type = 0; // 0 - get, 1 - look only, 2 - master selection
+    for (uint8 i = 0; i < l.items.size(); ++i)
     {
-        case GROUP_PERMISSION:
+        if (!l.items[i].is_looted && !l.items[i].freeforall && !l.items[i].conditionId && l.items[i].AllowedForPlayer(lv.viewer))
         {
-            // You are not the items proprietary, so you can only see
-            // blocked rolled items and quest items, and !ffa items
-            for (uint8 i = 0; i < l.items.size(); ++i)
-            {
-                if (!l.items[i].is_looted && !l.items[i].freeforall && !l.items[i].conditionId && l.items[i].AllowedForPlayer(lv.viewer))
-                {
-                    uint8 slot_type = (l.items[i].is_blocked || l.items[i].is_underthreshold) ? 0 : 1;
-
-                    b << uint8(i) << l.items[i];            //send the index and the item if it's not looted, and blocked or under threshold, free for all items will be sent later, only one-player loots here
-                    b << uint8(slot_type);                  // 0 - get 1 - look only
-                    ++itemsShown;
-                }
-            }
-            break;
+            if (lv.permission == ALL_PERMISSION) 
+                slot_type = 0;
+            else if (lv.permission == MASTER_PERMISSION)
+                slot_type = 2;
+            else if (lv.permission == GROUP_LOOTER_PERMISSION)
+                slot_type = (l.items[i].is_blocked || l.items[i].is_underthreshold) ? 0 : 1;
+            else if (lv.permission == GROUP_NONE_PERMISSION)
+                slot_type = 1;
+            b << uint8(i) << l.items[i];            //only send one-player loot items now, free for all will be sent later
+            b << uint8(slot_type);                  
+            ++itemsShown;
         }
-        case ALL_PERMISSION:
-        case MASTER_PERMISSION:
-        {
-            uint8 slot_type = (lv.permission==MASTER_PERMISSION) ? 2 : 0;
-            for (uint8 i = 0; i < l.items.size(); ++i)
-            {
-                if (!l.items[i].is_looted && !l.items[i].freeforall && !l.items[i].conditionId && l.items[i].AllowedForPlayer(lv.viewer))
-                {
-                    b << uint8(i) << l.items[i];            //only send one-player loot items now, free for all will be sent later
-                    b << uint8(slot_type);                  // 0 - get 2 - master selection
-                    ++itemsShown;
-                }
-            }
-            break;
-        }
-        default:
-            return b;                                       // nothing output more
     }
 
     QuestItemMap const& lootPlayerQuestItems = l.GetPlayerQuestItems();

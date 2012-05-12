@@ -55,10 +55,11 @@ enum LootMethod
 
 enum PermissionTypes
 {
-    ALL_PERMISSION    = 0,
-    GROUP_PERMISSION  = 1,
-    MASTER_PERMISSION = 2,
-    NONE_PERMISSION   = 3
+    ALL_PERMISSION           = 0,
+    GROUP_LOOTER_PERMISSION  = 1,
+    GROUP_NONE_PERMISSION    = 2,
+    MASTER_PERMISSION        = 3,
+    NONE_PERMISSION          = 4
 };
 
 class WorldObject;
@@ -233,8 +234,9 @@ struct Loot
     std::set<uint64> players_allowed_to_loot;
     uint32 gold;
     uint8 unlootedCount;
+    uint64 looterGUID;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false), m_creatureGUID(0), m_mapID(0,0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false), m_creatureGUID(0), m_mapID(0,0), looterGUID(0){}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -263,6 +265,7 @@ struct Loot
         unique_items.clear();
         gold = 0;
         unlootedCount = 0;
+        looterGUID = 0;
         i_LootValidatorRefManager.clearReferences();
     }
 
