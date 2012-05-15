@@ -95,7 +95,7 @@ void Totem::Summon(Unit* owner)
         case TOTEM_PASSIVE:
             if (GetSpell(1))
                 CastSpell(this, GetSpell(1), true);
-            CastSpell(this, GetSpell(), true);
+            CastSpell(this, GetSpell(), false;
             break;
         case TOTEM_STATUE:  CastSpell(GetOwner(), GetSpell(), true); break;
         default: break;
