@@ -12928,6 +12928,9 @@ void Unit::SetFeared(bool apply, Unit* target, uint32 time)
         GetMotionMaster()->MoveFleeing(target, time);
     else
         GetUnitStateMgr().DropAction(UNIT_ACTION_FEARED);
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SetClientControl(this, !apply);
 }
 
 void Unit::SetConfused(bool apply)
@@ -12942,6 +12945,9 @@ void Unit::SetConfused(bool apply)
         clearUnitState(UNIT_STAT_CONFUSED);
         GetUnitStateMgr().DropAction(UNIT_ACTION_CONFUSED);
     }
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SetClientControl(this, !apply);
 }
 
 void Unit::SetStunned(bool apply)
