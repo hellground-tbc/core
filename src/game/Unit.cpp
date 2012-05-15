@@ -9985,18 +9985,18 @@ Unit* Creature::SelectVictim()
         return target;
     }
 
+    for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
+    {
+        if ((*itr) && !IsOutOfThreatArea(*itr))
+            return *itr;
+    }
+
     // search nearby enemy before enter evade mode
     if (HasReactState(REACT_AGGRESSIVE))
     {
         target = SelectNearestTarget();
         if (target && !IsOutOfThreatArea(target))
             return target;
-    }
-
-    for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
-    {
-        if ((*itr) && !IsOutOfThreatArea(*itr))
-            return *itr;
     }
 
     if (m_invisibilityMask)
