@@ -37,9 +37,6 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     if (!_target.isValid() || !_target->IsInWorld())
         return;
 
-    if (owner.hasUnitState(UNIT_STAT_NOT_MOVE | UNIT_STAT_CASTING_NOT_MOVE))
-        return;
-
     float x, y, z;
 
     if (_offset && _target->IsWithinDistInMap(&owner,2*_offset))
@@ -119,14 +116,11 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     if (!owner.isAlive())
         return true;
 
-    if (owner.hasUnitState(UNIT_STAT_NOT_MOVE | UNIT_STAT_CASTING_NOT_MOVE))
+    if (owner.hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
     {
         owner.StopMoving();
         return true;
     }
-
-    //if (!_target->isAlive())
-    //    return false;
 
     // prevent crash after creature killed pet
     if (static_cast<D*>(this)->_lostTarget(owner))
@@ -140,8 +134,7 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
         float allowed_dist = owner.GetObjectBoundingRadius() + sWorld.getConfig(CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE);
         G3D::Vector3 dest = owner.movespline->FinalDestination();
 
-        bool targetMoved = false;
-        targetMoved = !_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
+        bool targetMoved = !_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
 
         if (targetMoved)
             _setTargetLocation(owner);

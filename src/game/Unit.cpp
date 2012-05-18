@@ -11331,7 +11331,12 @@ bool Unit::SetPosition(float x, float y, float z, float orientation, bool telepo
 void Unit::StopMoving()
 {
     if (!IsInWorld() || IsStopped())
+    {
+        if (m_movementInfo.HasMovementFlag(MovementFlags(MOVEFLAG_SPLINE_ENABLED|MOVEFLAG_FORWARD)))
+            m_movementInfo.RemoveMovementFlag(MovementFlags(MOVEFLAG_SPLINE_ENABLED|MOVEFLAG_FORWARD));
+
         return;
+    }
 
     Movement::MoveSplineInit init(*this);
     init.SetFacing(GetOrientation());
