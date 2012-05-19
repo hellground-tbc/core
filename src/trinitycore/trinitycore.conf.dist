@@ -1189,6 +1189,33 @@ Visibility.Distance.ActiveObjectUpdate.Instances = 132
 Movement.RecalculateRange = 1
 
 ###################################################################################################################
+# COREBALANCER
+#
+#    CoreBalancer.Enable
+#        Allows or not core to improve performance by disabling features
+#        Default: 0 - disabled
+#                 1 - enabled
+#
+#    CoreBalancer.PlayableDiff
+#        When server average diff is higher than this value balancing will be performed
+#        Default: 200
+#
+#    CoreBalancer.BalanceInterval
+#        Interval after which average diff will be checked against playable diff and balance if needed performed
+#        Default: 5000 (ms)
+#
+#    CoreBalancer.VisibilityPenalty
+#        Penalty to all visibilities on specific treshold
+#        Default: 25 (yards)
+#
+###################################################################################################################
+
+CoreBalancer.Enable = 0
+CoreBalancer.PlayableDiff = 200
+CoreBalancer.BalanceInterval = 5000
+CoreBalancer.VisibilityPenalty = 25
+
+###################################################################################################################
 # SERVER RATES
 #
 #    Rate.Health
