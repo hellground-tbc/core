@@ -33,7 +33,7 @@ PathFinder::PathFinder(const Unit* owner) :
     //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathFinder::PathInfo for %u \n", m_sourceUnit->GetGUIDLow());
 
     uint32 mapId = m_sourceUnit->GetMapId();
-    if (MMAP::MMapFactory::IsPathfindingEnabled(mapId))
+    if (m_sourceUnit->GetTerrain()->IsPathFindingEnabled())
     {
         MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
         m_navMesh = mmap->GetNavMesh(mapId);
