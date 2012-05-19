@@ -1202,7 +1202,7 @@ Movement.RecalculateRange = 1
 #
 #    CoreBalancer.BalanceInterval
 #        Interval after which average diff will be checked against playable diff and balance if needed performed
-#        Default: 5000 (ms)
+#        Default: 300000 (ms)
 #
 #    CoreBalancer.VisibilityPenalty
 #        Penalty to all visibilities on specific treshold
@@ -1212,7 +1212,7 @@ Movement.RecalculateRange = 1
 
 CoreBalancer.Enable = 0
 CoreBalancer.PlayableDiff = 200
-CoreBalancer.BalanceInterval = 5000
+CoreBalancer.BalanceInterval = 300000
 CoreBalancer.VisibilityPenalty = 25
 
 ###################################################################################################################

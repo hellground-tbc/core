@@ -3216,15 +3216,19 @@ void Map::ForcedUnload()
 
 float Map::GetVisibilityDistance(WorldObject* obj) const
 {
+    float penalty = 0.0f;
+    if (sWorld.GetCoreBalancerTreshold() >= CB_VISIBILITY_PENALTY)
+        penalty = sWorld.getConfig(CONFIG_COREBALANCER_VISIBILITY_PENALTY);
+
     if (obj)
     {
         if (obj->GetObjectGuid().IsGameObject())
-            return (m_VisibleDistance + ((GameObject*)obj)->GetDeterminativeSize());    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
+            return (m_VisibleDistance + ((GameObject*)obj)->GetDeterminativeSize() - penalty);    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
         else if(obj->GetObjectGuid().IsCreature())
-            return (m_VisibleDistance + ((Creature*)obj)->GetDeterminativeSize());
+            return (m_VisibleDistance + ((Creature*)obj)->GetDeterminativeSize() - penalty);
     }
 
-    return m_VisibleDistance;
+    return m_VisibleDistance - penalty;
 }
 
 bool Map::WaypointMovementAutoActive() const

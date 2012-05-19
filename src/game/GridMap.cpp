@@ -620,9 +620,12 @@ TerrainInfo::TerrainInfo(uint32 mapid) : m_mapId(mapid)
          }
      }
 
+     m_pathFindingPriority = F_ALWAYS_ENABLED;
+     m_losPriority = F_ALWAYS_ENABLED;
+
      //clean up GridMap objects every minute
      const uint32 iCleanUpInterval = 60;
-     //schedule start randlomly
+     //schedule start randomly
      const uint32 iRandomStart = urand(20, 40);
 
      i_timer.SetInterval(iCleanUpInterval * 1000);
@@ -1073,7 +1076,18 @@ float TerrainInfo::GetWaterLevel(float x, float y, float z, float* pGround /*= N
 
 bool TerrainInfo::IsLineOfSightEnabled() const
 {
+    if (m_losPriority <= sWorld.GetCoreBalancerTreshold())
+        return false;
+
     return VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled(m_mapId);
+}
+
+bool TerrainInfo::IsPathFindingEnabled() const
+{
+    if (m_pathFindingPriority <= sWorld.GetCoreBalancerTreshold())
+        return false;
+
+    return MMAP::MMapFactory::IsPathfindingEnabled(m_mapId);
 }
 
 //////////////////////////////////////////////////////////////////////////

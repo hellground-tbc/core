@@ -526,6 +526,8 @@ class CoreBalancer
         void IncreaseTreshold();
         void DecreaseTreshold();
 
+        CBTresholds GetTreshold() const { return _treshold; }
+
     private:
         uint32 _diffSum;
         CBTresholds _treshold;
@@ -763,6 +765,8 @@ class World
         // LFG container, lfg instance id to player guid list. Should be less lockable than prev implementation
         LfgContainerType lfgHordeContainer;
         LfgContainerType lfgAllyContainer;
+
+        CBTresholds GetCoreBalancerTreshold();
 
         MAP_UPDATE_DIFF(MapUpdateDiffInfo& MapUpdateDiff() { return m_mapUpdateDiffInfo; })
 

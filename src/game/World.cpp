@@ -1208,7 +1208,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_COREBALANCER_ENABLED] = sConfig.GetBoolDefault("CoreBalancer.Enable", false);
     m_configs[CONFIG_COREBALANCER_PLAYABLE_DIFF] = sConfig.GetIntDefault("CoreBalancer.PlayableDiff", 200);
-    m_configs[CONFIG_COREBALANCER_INTERVAL] = sConfig.GetIntDefault("CoreBalancer.BalanceInterval", 5000);
+    m_configs[CONFIG_COREBALANCER_INTERVAL] = sConfig.GetIntDefault("CoreBalancer.BalanceInterval", 300000);
     m_configs[CONFIG_COREBALANCER_VISIBILITY_PENALTY] = sConfig.GetIntDefault("CoreBalancer.VisibilityPenalty", 25);
 }
 
@@ -2916,15 +2916,19 @@ void World::CleanupDeletedChars()
     }
 }
 
+CBTresholds World::GetCoreBalancerTreshold()
+{
+    return _coreBalancer.GetTreshold();
+}
+
+
 CoreBalancer::CoreBalancer() : _diffSum(0), _balanceTimer(0)
 {
-
+    _treshold = CB_DISABLE_NONE;
 }
 
 void CoreBalancer::Initialize()
 {
-    _treshold = CB_DISABLE_NONE;
-
     _balanceTimer.Reset(sWorld.getConfig(CONFIG_COREBALANCER_INTERVAL));
 }
 

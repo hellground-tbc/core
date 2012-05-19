@@ -194,8 +194,16 @@ class GridMap
 #define DEFAULT_HEIGHT_SEARCH     10.0f                     // default search distance to find height at nearby locations
 #define DEFAULT_WATER_SEARCH      50.0f                     // default search distance to case detection water level
 
+enum FeaturePriority
+{
+    F_LOW_PRIORITY  = 1,
+    F_MID_PRIORITY  = 2,
+    F_HIGH_PRIORITY = 3,
 
-//class for sharing and managin GridMap objects
+    F_ALWAYS_ENABLED = 6//CB_TRESHOLD_MAX +1,
+};
+
+//class for sharing and managing GridMap objects
 class HELLGROUND_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
 {
     public:
@@ -232,6 +240,7 @@ class HELLGROUND_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
         void CleanUpGrids(const uint32 diff);
 
         bool IsLineOfSightEnabled() const;
+        bool IsPathFindingEnabled() const;
 
     protected:
         friend class Map;
@@ -250,6 +259,9 @@ class HELLGROUND_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
         int UnrefGrid(const uint32& x, const uint32& y);
 
         const uint32 m_mapId;
+
+        FeaturePriority m_pathFindingPriority;
+        FeaturePriority m_losPriority;
 
         GridMap *m_GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         int16 m_GridRef[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
