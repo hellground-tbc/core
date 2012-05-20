@@ -1091,13 +1091,15 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_COMBAT_ACTIVE_IN_INSTANCES] = sConfig.GetBoolDefault("AutoActive.Combat.Instances", true);
     m_configs[CONFIG_COMBAT_ACTIVE_FOR_PLAYERS_ONLY] = sConfig.GetBoolDefault("AutoActive.Combat.PlayersOnly", false);
 
-    m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] = sConfig.GetIntDefault("Movement.RecalculateRange", 2);
+    m_configs[CONFIG_TARGET_POS_RECALCULATION_RANGE] = sConfig.GetIntDefault("Movement.RecalculateRange", 2);
 
-    if (m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] < 0)
-        m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] = 0;
+    if (m_configs[CONFIG_TARGET_POS_RECALCULATION_RANGE] < 0)
+        m_configs[CONFIG_TARGET_POS_RECALCULATION_RANGE] = 0;
 
-    if (m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] > 5)
-        m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] = 5;
+    if (m_configs[CONFIG_TARGET_POS_RECALCULATION_RANGE] > 5)
+        m_configs[CONFIG_TARGET_POS_RECALCULATION_RANGE] = 5;
+
+    m_configs[CONFIG_TARGET_POS_RECHECK_TIMER] = sConfig.GetIntDefault("Movement.RecheckTimer", 100);
 
     ///- Read the "Data" directory from the config file
     std::string dataPath = sConfig.GetStringDefault("DataDir","./");
@@ -1208,6 +1210,11 @@ void World::LoadConfigSettings(bool reload)
     std::string ignoreMapIds = sConfig.GetStringDefault("mmap.ignoreMapIds", "");
     MMAP::MMapFactory::preventPathfindingOnMaps(ignoreMapIds.c_str());
     sLog.outString("WORLD: mmap pathfinding %sabled", getConfig(CONFIG_MMAP_ENABLED) ? "en" : "dis");
+
+    m_configs[CONFIG_COREBALANCER_ENABLED] = sConfig.GetBoolDefault("CoreBalancer.Enable", false);
+    m_configs[CONFIG_COREBALANCER_PLAYABLE_DIFF] = sConfig.GetIntDefault("CoreBalancer.PlayableDiff", 200);
+    m_configs[CONFIG_COREBALANCER_INTERVAL] = sConfig.GetIntDefault("CoreBalancer.BalanceInterval", 300000);
+    m_configs[CONFIG_COREBALANCER_VISIBILITY_PENALTY] = sConfig.GetIntDefault("CoreBalancer.VisibilityPenalty", 25);
 }
 
 /// Initialize the World
@@ -1623,8 +1630,11 @@ void World::SetInitialWorldSettings()
     CleanupDeletedChars();
 
     sLog.outString("Activating AntiCheat");
-    if (sWorld.getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && m_ac.activate() == -1)
+    if (getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && m_ac.activate() == -1)
         sLog.outString("Couldn't activate AntiCheat");
+
+    if (getConfig(CONFIG_COREBALANCER_ENABLED))
+        _coreBalancer.Initialize();
 
     sLog.outString("WORLD: World initialized");
 }
@@ -1759,8 +1769,11 @@ void World::Update(uint32 diff)
 {
     m_updateTime = uint32(diff);
 
+    if (getConfig(CONFIG_COREBALANCER_ENABLED))
+        _coreBalancer.Update(diff);
+
     bool accumulateMapDiff = false;
-    if (m_configs[CONFIG_INTERVAL_LOG_UPDATE])
+    if (getConfig(CONFIG_INTERVAL_LOG_UPDATE))
     {
         if (m_updateTimeSum > m_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
@@ -2906,4 +2919,59 @@ void World::CleanupDeletedChars()
         }
         while (result->NextRow());
     }
+}
+
+CBTresholds World::GetCoreBalancerTreshold()
+{
+    return _coreBalancer.GetTreshold();
+}
+
+
+CoreBalancer::CoreBalancer() : _diffSum(0), _balanceTimer(0)
+{
+    _treshold = CB_DISABLE_NONE;
+}
+
+void CoreBalancer::Initialize()
+{
+    _balanceTimer.Reset(sWorld.getConfig(CONFIG_COREBALANCER_INTERVAL));
+}
+
+void CoreBalancer::Update(const uint32 diff)
+{
+    _diffSum += diff;
+
+    _balanceTimer.Update(diff);
+    if (_balanceTimer.Passed())
+    {
+        uint32 diffAvg = _diffSum / sWorld.getConfig(CONFIG_COREBALANCER_INTERVAL);
+        if (diffAvg > sWorld.getConfig(CONFIG_COREBALANCER_PLAYABLE_DIFF))
+            IncreaseTreshold();
+        else
+        {
+            if (diffAvg +20 < sWorld.getConfig(CONFIG_COREBALANCER_PLAYABLE_DIFF))
+                DecreaseTreshold();
+        }
+
+        _diffSum = 0;
+        _balanceTimer.Reset(sWorld.getConfig(CONFIG_COREBALANCER_INTERVAL));
+    }
+}
+
+void CoreBalancer::IncreaseTreshold()
+{
+    uint32 t = _treshold;
+    if (t >= CB_TRESHOLD_MAX)
+        return;
+
+    _treshold = CBTresholds(++t);
+}
+
+void CoreBalancer::DecreaseTreshold()
+{
+    uint32 t = _treshold;
+    if (t <= CB_DISABLE_NONE)
+        return;
+
+    _treshold = CBTresholds(--t);
 }

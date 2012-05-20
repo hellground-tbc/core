@@ -183,6 +183,7 @@ inline float GetSpellMaxRange(uint32 id)
     return GetSpellMaxRange(spellInfo);
 }
 
+inline bool IsSplashBuffAura(SpellEntry const* spellInfo);
 //bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
 
 inline bool IsSealSpell(SpellEntry const *spellInfo)
@@ -800,8 +801,6 @@ class HELLGROUND_DLL_SPEC SpellMgr
         bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
         bool IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
         bool IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
-
-        bool IsSplashBuffAura(SpellEntry const* spellInfo);
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 

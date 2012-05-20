@@ -284,11 +284,18 @@ enum WorldConfigs
     CONFIG_COMBAT_ACTIVE_IN_INSTANCES,
     CONFIG_COMBAT_ACTIVE_FOR_PLAYERS_ONLY,
 
-    CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE,
+    CONFIG_TARGET_POS_RECALCULATION_RANGE,
+    CONFIG_TARGET_POS_RECHECK_TIMER,
+
 
     CONFIG_PRIVATE_CHANNEL_LIMIT,
 
     CONFIG_MMAP_ENABLED,
+
+    CONFIG_COREBALANCER_ENABLED,
+    CONFIG_COREBALANCER_PLAYABLE_DIFF,
+    CONFIG_COREBALANCER_INTERVAL,
+    CONFIG_COREBALANCER_VISIBILITY_PENALTY,
 
     CONFIG_VALUE_COUNT
 };
@@ -502,6 +509,35 @@ struct MapUpdateDiffInfo
     typedef std::map<uint32, atomic_uint*> CumulativeDiffMap;
 
     CumulativeDiffMap _cumulativeDiffInfo;
+};
+
+enum CBTresholds
+{
+    CB_DISABLE_NONE           = 0,
+    CB_DISABLE_LOW_PRIORITY   = 1,
+    CB_DISABLE_MID_PRIORITY   = 2,
+    CB_DISABLE_HIGH_PRIORITY  = 3,
+    CB_VISIBILITY_PENALTY     = 4,
+
+    CB_TRESHOLD_MAX,
+};
+
+class CoreBalancer
+{
+    public:
+        CoreBalancer();
+
+        void Initialize();
+        void Update(const uint32);
+        void IncreaseTreshold();
+        void DecreaseTreshold();
+
+        CBTresholds GetTreshold() const { return _treshold; }
+
+    private:
+        uint32 _diffSum;
+        CBTresholds _treshold;
+        TimeTrackerSmall _balanceTimer;
 };
 
 /// The World
@@ -736,6 +772,8 @@ class World
         LfgContainerType lfgHordeContainer;
         LfgContainerType lfgAllyContainer;
 
+        CBTresholds GetCoreBalancerTreshold();
+
         MAP_UPDATE_DIFF(MapUpdateDiffInfo& MapUpdateDiff() { return m_mapUpdateDiffInfo; })
 
     protected:
@@ -771,6 +809,8 @@ class World
 
         MAP_UPDATE_DIFF(MapUpdateDiffInfo m_mapUpdateDiffInfo)
         uint64 m_serverUpdateTimeSum, m_serverUpdateTimeCount;
+
+        CoreBalancer _coreBalancer;
 
         typedef UNORDERED_MAP<uint32, Weather*> WeatherMap;
         WeatherMap m_weathers;

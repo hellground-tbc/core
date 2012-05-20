@@ -1982,12 +1982,22 @@ bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
     return IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
 }
 
-bool SpellMgr::IsSplashBuffAura(SpellEntry const* spellInfo)
+bool IsSplashBuffAura(SpellEntry const* spellInfo)
 {
     for (uint8 i = 0; i < 3; i++)
     {
-        if (IsPositiveEffect(spellInfo->Id, i) && spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
-           return true;
+        if (IsPositiveEffect(spellInfo->Id, i))
+        {
+            if (spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
+               return true;
+
+            if (spellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_PARTY_CASTER)
+                return true;
+
+            if (spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_PARTY_SRC)
+                return true;
+        }
+
     }
     return false;
 }
@@ -3664,6 +3674,9 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
 bool SpellIgnoreLOS(SpellEntry const* spellproto, uint8 effIdx)
 {
     if (spellproto->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS)
+        return true;
+
+    if (IsSplashBuffAura(spellproto))
         return true;
 
     // Most QuestItems should ommit los ;]

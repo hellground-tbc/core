@@ -1218,7 +1218,9 @@ void Player::Update(uint32 update_diff, uint32 p_time)
             else
             {
                 q_status.m_timer -= update_diff;
-                if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
+                if (q_status.uState != QUEST_NEW)
+                    q_status.uState = QUEST_CHANGED;
+
                 ++iter;
             }
         }
@@ -1228,9 +1230,6 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     {
         if (Unit *pVictim = getVictim())
         {
-            // default combat reach 10
-            // TODO add weapon,skill check
-
             if (isAttackReady(BASE_ATTACK))
             {
                 if (!IsWithinMeleeRange(pVictim))

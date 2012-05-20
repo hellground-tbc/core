@@ -75,6 +75,8 @@ class HELLGROUND_DLL_SPEC EffectMovementGenerator : public MovementGenerator
         const char* Name() const { return "<Effect>"; }
         MovementGeneratorType GetMovementGeneratorType() const { return EFFECT_MOTION_TYPE; }
 
+        uint32 EffectId() const { return m_Id; }
+
     private:
         uint32 m_Id;
 };

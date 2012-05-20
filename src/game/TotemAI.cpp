@@ -44,8 +44,7 @@ TotemAI::TotemAI(Creature *c) : CreatureAI(c), i_totem(static_cast<Totem&>(*c)),
 {
 }
 
-void
-TotemAI::MoveInLineOfSight(Unit *)
+void TotemAI::MoveInLineOfSight(Unit *)
 {
 }
 
@@ -54,8 +53,7 @@ void TotemAI::EnterEvadeMode()
     i_totem.CombatStop();
 }
 
-void
-TotemAI::UpdateAI(const uint32 /*diff*/)
+void TotemAI::UpdateAI(const uint32 /*diff*/)
 {
     if (i_totem.GetTotemType() != TOTEM_ACTIVE)
         return;
@@ -81,7 +79,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
         victim = &i_totem;
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
-    if (!victim ||
+    if (!victim || (!SpellIgnoreLOS(spellInfo, 0) && !i_totem.IsWithinLOSInMap(victim)) ||
         !victim->isTargetableForAttack() || !i_totem.IsWithinDistInMap(victim, max_range) ||
         (i_totem.IsFriendlyTo(victim) && victim != &i_totem) || !victim->isVisibleForOrDetect(&i_totem,false))
     {
@@ -107,14 +105,12 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
         i_victimGuid = 0;
 }
 
-bool
-TotemAI::IsVisible(Unit *) const
+bool TotemAI::IsVisible(Unit *) const
 {
     return false;
 }
 
-void
-TotemAI::AttackStart(Unit *)
+void TotemAI::AttackStart(Unit *)
 {
     // Sentry totem sends ping on attack
     if (i_totem.GetEntry() == SENTRY_TOTEM_ENTRY && i_totem.GetOwner()->GetTypeId() == TYPEID_PLAYER)

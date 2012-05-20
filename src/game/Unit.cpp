@@ -42,6 +42,7 @@
 #include "Totem.h"
 #include "BattleGround.h"
 #include "OutdoorPvP.h"
+#include "PointMovementGenerator.h"
 #include "InstanceSaveMgr.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
@@ -456,12 +457,27 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
         }
     }
 
-    if (uint32 base_att = getAttackTimer(BASE_ATTACK))
-        setAttackTimer(BASE_ATTACK, (update_diff >= base_att ? 0 : base_att - update_diff));
+    bool timerPaused = IsNonMeleeSpellCasted(false) || hasUnitState(UNIT_STAT_LOST_CONTROL);
+    if (!timerPaused)
+    {
+        if (UnitAction* action = GetUnitStateMgr().CurrentAction())
+        {
+            if (action->GetMovementGeneratorType() == EFFECT_MOTION_TYPE && ((EffectMovementGenerator*)action)->EffectId() == EVENT_CHARGE)
+                timerPaused = true;
+        }
+    }
+
+    if (!timerPaused)
+    {
+        if (uint32 base_att = getAttackTimer(BASE_ATTACK))
+            setAttackTimer(BASE_ATTACK, (update_diff >= base_att ? 0 : base_att - update_diff));
+
+        if (uint32 off_att = getAttackTimer(OFF_ATTACK))
+            setAttackTimer(OFF_ATTACK, (update_diff >= off_att ? 0 : off_att - update_diff));
+    }
+
     if (uint32 ranged_att = getAttackTimer(RANGED_ATTACK))
         setAttackTimer(RANGED_ATTACK, (update_diff >= ranged_att ? 0 : ranged_att - update_diff));
-    if (uint32 off_att = getAttackTimer(OFF_ATTACK))
-        setAttackTimer(OFF_ATTACK, (update_diff >= off_att ? 0 : off_att - update_diff));
 
     // update abilities available only for fraction of time
     UpdateReactives(update_diff);
@@ -2721,7 +2737,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     bool canParry = !isCasting && !lostControl;
     bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3 && !isCasting && !lostControl;
 
-    // Creature has unblockable attack info
+    // Creature has un-blockable attack info
     if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
         canBlock = false;
 
@@ -10002,18 +10018,18 @@ Unit* Creature::SelectVictim()
         return target;
     }
 
+    for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
+    {
+        if ((*itr) && !IsOutOfThreatArea(*itr))
+            return *itr;
+    }
+
     // search nearby enemy before enter evade mode
     if (HasReactState(REACT_AGGRESSIVE))
     {
         target = SelectNearestTarget();
         if (target && !IsOutOfThreatArea(target))
             return target;
-    }
-
-    for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
-    {
-        if ((*itr) && !IsOutOfThreatArea(*itr))
-            return *itr;
     }
 
     if (m_invisibilityMask)
@@ -11349,6 +11365,8 @@ void Unit::StopMoving()
 {
     if (!IsInWorld() || IsStopped())
         return;
+
+    DisableSpline();
 
     Movement::MoveSplineInit init(*this);
     init.SetFacing(GetOrientation());
@@ -12945,6 +12963,9 @@ void Unit::SetFeared(bool apply, Unit* target, uint32 time)
         GetMotionMaster()->MoveFleeing(target, time);
     else
         GetUnitStateMgr().DropAction(UNIT_ACTION_FEARED);
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SetClientControl(this, !apply);
 }
 
 void Unit::SetConfused(bool apply)
@@ -12959,6 +12980,9 @@ void Unit::SetConfused(bool apply)
         clearUnitState(UNIT_STAT_CONFUSED);
         GetUnitStateMgr().DropAction(UNIT_ACTION_CONFUSED);
     }
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        ToPlayer()->SetClientControl(this, !apply);
 }
 
 void Unit::SetStunned(bool apply)

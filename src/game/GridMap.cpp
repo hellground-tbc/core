@@ -611,22 +611,49 @@ bool GridMap::ExistVMap(uint32 mapid,int gx,int gy)
 //////////////////////////////////////////////////////////////////////////
 TerrainInfo::TerrainInfo(uint32 mapid) : m_mapId(mapid)
 {
-     for (int k = 0; k < MAX_NUMBER_OF_GRIDS; ++k)
-     {
-         for (int i = 0; i < MAX_NUMBER_OF_GRIDS; ++i)
-         {
-             m_GridMaps[i][k] = NULL;
-             m_GridRef[i][k] = 0;
-         }
-     }
+    for (int k = 0; k < MAX_NUMBER_OF_GRIDS; ++k)
+    {
+        for (int i = 0; i < MAX_NUMBER_OF_GRIDS; ++i)
+        {
+            m_GridMaps[i][k] = NULL;
+            m_GridRef[i][k] = 0;
+        }
+    }
 
-     //clean up GridMap objects every minute
-     const uint32 iCleanUpInterval = 60;
-     //schedule start randlomly
-     const uint32 iRandomStart = urand(20, 40);
+    MapEntry const* mapEntry = sMapStore.LookupEntry(mapid);
+    switch (mapEntry->map_type)
+    {
+        case MAP_INSTANCE:
+        {
+            m_pathFindingPriority = mapEntry->Expansion() ? F_MID_PRIORITY : F_LOW_PRIORITY;
+            break;
+        }
+        case MAP_RAID:
+        {
+            m_pathFindingPriority = mapEntry->Expansion() ? F_HIGH_PRIORITY : F_LOW_PRIORITY;
+            break;
+        }
+        case MAP_BATTLEGROUND:
+        case MAP_ARENA:
+        default:
+        {
+            if (mapEntry->IsContinent())
+                m_pathFindingPriority = F_LOW_PRIORITY;
+            else
+                m_pathFindingPriority = F_ALWAYS_ENABLED;
+            break;
+        }
+    }
 
-     i_timer.SetInterval(iCleanUpInterval * 1000);
-     i_timer.SetCurrent(iRandomStart * 1000);
+    m_losPriority = F_ALWAYS_ENABLED;
+
+    //clean up GridMap objects every minute
+    const uint32 iCleanUpInterval = 60;
+    //schedule start randomly
+    const uint32 iRandomStart = urand(20, 40);
+
+    i_timer.SetInterval(iCleanUpInterval * 1000);
+    i_timer.SetCurrent(iRandomStart * 1000);
 }
 
 TerrainInfo::~TerrainInfo()
@@ -1073,7 +1100,18 @@ float TerrainInfo::GetWaterLevel(float x, float y, float z, float* pGround /*= N
 
 bool TerrainInfo::IsLineOfSightEnabled() const
 {
+    if (m_losPriority <= sWorld.GetCoreBalancerTreshold())
+        return false;
+
     return VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled(m_mapId);
+}
+
+bool TerrainInfo::IsPathFindingEnabled() const
+{
+    if (m_pathFindingPriority <= sWorld.GetCoreBalancerTreshold())
+        return false;
+
+    return MMAP::MMapFactory::IsPathfindingEnabled(m_mapId);
 }
 
 //////////////////////////////////////////////////////////////////////////
