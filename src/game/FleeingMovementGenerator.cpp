@@ -64,6 +64,8 @@ void FleeingMovementGenerator<UNIT>::Initialize(UNIT &unit)
 
     _nextCheckTime.Reset(0);
 
+    unit.InterruptNonMeleeSpells(false);
+
     unit.StopMoving();
     unit.addUnitState(UNIT_STAT_FLEEING);
 }

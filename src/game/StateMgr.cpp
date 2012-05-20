@@ -66,6 +66,8 @@ public:
         if (!target)
             return;
 
+        target->InterruptNonMeleeSpells(false);
+
         target->addUnitState(UNIT_STAT_STUNNED);
         target->SetSelection(0);
 
