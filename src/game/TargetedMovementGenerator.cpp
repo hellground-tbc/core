@@ -60,7 +60,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
             dist = 0.5f;
 
         // to nearest random contact position
-        _target->GetContactPoint(&owner, x, y, z, 0, dist;);
+        _target->GetContactPoint(&owner, x, y, z, dist);
     }
     else
     {
@@ -68,7 +68,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
             return;
 
         // to at _offset distance from target and _angle from target facing
-        _target->GetClosePoint(x, y, z, owner.GetObjectBoundingRadius(), _offset, _angle, &owner);
+        _target->GetClosePoint(x, y, z, owner.GetObjectBoundingRadius(), _offset, _angle);
     }
 
     if (!_path)
@@ -134,8 +134,8 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     if (static_cast<D*>(this)->_lostTarget(owner))
         return true;
 
-    if (!_target->>isInAccessiblePlacefor(&owner))
-        return true;
+    //if (!_target->isInAccessiblePlacefor(&owner))
+    //    return true;
 
     _recheckDistance.Update(time_diff);
     if (_recheckDistance.Passed())
@@ -145,9 +145,11 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
         float allowed_dist = 0.0f;
         bool targetIsVictim = owner.getVictimGUID() == _target->GetGUID();
         if (targetIsVictim)
-            allowed_dist = GetObjectBoundingRadius() + owner.GetCombatReach() + _target->owner.GetCombatReach();
+            allowed_dist = owner.GetObjectBoundingRadius() + owner.GetCombatReach() + _target->GetCombatReach();
         else
-            allowed_dist = _target->GetObjectBoundingRadius() + owner.GetObjectBoundingRadius() + sWorld.getConfig(CONFIG_TARGET_POS_RECALCULATION_RANGE);
+            allowed_dist = _target->GetObjectBoundingRadius() + owner.GetObjectBoundingRadius();
+        
+        allowed_dist += sWorld.getConfig(CONFIG_TARGET_POS_RECALCULATION_RANGE);
 
         if (allowed_dist < owner.GetObjectBoundingRadius())
             allowed_dist = owner.GetObjectBoundingRadius();
@@ -155,7 +157,7 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
         G3D::Vector3 dest = owner.movespline->FinalDestination();
         bool targetMoved = !_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
 
-        if (targetIsVictim && owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->IsPet())
+        if (targetIsVictim && owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->isPet())
         {
             if ((!owner.getVictim() || !owner.getVictim()->isAlive()) && owner.IsStopped())
                 return false;
