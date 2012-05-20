@@ -37,9 +37,13 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     if (!_target.isValid() || !_target->IsInWorld())
         return;
 
-    float x, y, z;
+    if (owner.hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
+        return;
 
-    if (_offset && _target->IsWithinDistInMap(&owner,2*_offset))
+    float x, y, z;
+    bool targetIsVictim = owner.getVictimGUID() == _target->GetGUID();
+
+    if (_offset && _target->IsWithinDistInMap(&owner, 2*_offset))
     {
         if (!owner.IsStopped())
             return;
@@ -48,11 +52,15 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     }
     else if (!_offset)
     {
-        if (_target->IsWithinMeleeRange(&owner))
-            return;
+        float dist = 0.0f;
+        if (targetIsVictim)
+            dist = owner.GetCombatReach() + _target->GetCombatReach() - _target->GetObjectBoundingRadius() - owner.GetObjectBoundingRadius() - 1.0f;
+
+        if (dist < 0.5f)
+            dist = 0.5f;
 
         // to nearest random contact position
-        _target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
+        _target->GetContactPoint(&owner, x, y, z, 0, dist;);
     }
     else
     {
@@ -60,7 +68,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
             return;
 
         // to at _offset distance from target and _angle from target facing
-        _target->GetClosePoint(x, y, z, owner.GetObjectSize(), _offset, _angle);
+        _target->GetClosePoint(x, y, z, owner.GetObjectBoundingRadius(), _offset, _angle, &owner);
     }
 
     if (!_path)
@@ -126,15 +134,35 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     if (static_cast<D*>(this)->_lostTarget(owner))
         return true;
 
+    if (!_target->>isInAccessiblePlacefor(&owner))
+        return true;
+
     _recheckDistance.Update(time_diff);
     if (_recheckDistance.Passed())
     {
-        _recheckDistance.Reset(100);
+        _recheckDistance.Reset(sWorld.getConfig(CONFIG_TARGET_POS_RECHECK_TIMER));
 
-        float allowed_dist = owner.GetObjectBoundingRadius() + sWorld.getConfig(CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE);
+        float allowed_dist = 0.0f;
+        bool targetIsVictim = owner.getVictimGUID() == _target->GetGUID();
+        if (targetIsVictim)
+            allowed_dist = GetObjectBoundingRadius() + owner.GetCombatReach() + _target->owner.GetCombatReach();
+        else
+            allowed_dist = _target->GetObjectBoundingRadius() + owner.GetObjectBoundingRadius() + sWorld.getConfig(CONFIG_TARGET_POS_RECALCULATION_RANGE);
+
+        if (allowed_dist < owner.GetObjectBoundingRadius())
+            allowed_dist = owner.GetObjectBoundingRadius();
+
         G3D::Vector3 dest = owner.movespline->FinalDestination();
-
         bool targetMoved = !_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
+
+        if (targetIsVictim && owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->IsPet())
+        {
+            if ((!owner.getVictim() || !owner.getVictim()->isAlive()) && owner.IsStopped())
+                return false;
+
+            if (!_offset && owner.IsStopped() && !owner.IsWithinMeleeRange(owner.getVictim()))
+                targetMoved = true;
+        }
 
         if (targetMoved)
             _setTargetLocation(owner);
@@ -188,6 +216,15 @@ template<class T>
 void ChaseMovementGenerator<T>::Finalize(T &owner)
 {
     Interrupt(owner);
+
+    if (Creature* creature = owner.ToCreature())
+    {
+        if (creature->isPet())
+            return;
+
+        if (!creature->isInCombat() || (_target.getTarget() && !_target.getTarget()->isInAccessiblePlacefor(creature)))
+            creature->GetMotionMaster()->MoveTargetedHome();
+    }
 }
 
 template<class T>

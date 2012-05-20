@@ -1184,9 +1184,14 @@ Visibility.Distance.ActiveObjectUpdate.Instances = 132
 #        Default: 1 (yards)
 #          Range: 0-5 (yards)
 #
+#    Movement.RecheckTimer
+#        How often perform check, if target moved and wee need to updte our destination
+#        Default: 100 (ms)
+#
 ###################################################################################################################
 
 Movement.RecalculateRange = 1
+Movement.RecheckTimer = 100
 
 ###################################################################################################################
 # COREBALANCER
