@@ -61,6 +61,7 @@ message(
     LARGE_CELL      : Use large cell size
     ADD_COMPILE_F   : Add additional compile flags (default)
     ADD_MATH_F      : Add additional compile math flags
+    MAP_UPDATE_DIFF_INFO: Used for gathering info about execution time for specific parts of Map::Update
 
   To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.
   For example: cmake .. -DDEBUG=1 -DPREFIX=/opt/mangos\n"
@@ -91,6 +92,7 @@ option(ACE_USE_EXTERNAL "Use external ACE" 1)
 option(LARGE_CELL "Use large cell size" 0)
 option(ADD_COMPILE_F "Add additional compile flags" 1)
 option(ADD_MATH_F "Add additional compile math flags" 0)
+option(MAP_UPDATE_DIFF_INFO "Used for gathering info about execution time for specific parts of Map::Update" 0)
 
 # Set up the install-prefix
 if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
