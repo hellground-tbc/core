@@ -69,7 +69,8 @@ enum ActiveObject
     ACTIVE_BY_NONE                  = 0x00,
     ACTIVE_BY_MANUAL                = 0x01,
     ACTIVE_BY_WAYPOINT_MOVEMENT     = 0x02,
-    ACTIVE_BY_ALL                   = 0x03
+    ACTIVE_BY_COMBAT                = 0x04,
+    ACTIVE_BY_ALL                   = 0x07
 };
 
 class WorldPacket;
@@ -603,7 +604,7 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 
-        bool isActiveObject() const { return m_activeBy; }
+        uint32 isActiveObject() const { return m_activeBy; }
         void setActive(bool isActiveObject, ActiveObject activeBy = ACTIVE_BY_MANUAL);
         void SetWorldObject(bool apply);
 

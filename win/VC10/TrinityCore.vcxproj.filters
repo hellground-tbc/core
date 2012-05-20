@@ -27,6 +27,7 @@
     <None Include="..\..\Thanks">
       <Filter>doc</Filter>
     </None>
+    <None Include="..\..\src\trinitycore\trinitycore.conf.dist" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\trinitycore\CliRunnable.cpp" />

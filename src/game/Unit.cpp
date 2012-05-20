@@ -7469,6 +7469,22 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     //Set our target
     SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+    if (Creature *me = ToCreature())
+    {
+        bool activeWhenInCombat  = false;
+        if (GetMap()->Instanceable())
+            activeWhenInCombat = sWorld.getConfig(CONFIG_COMBAT_ACTIVE_IN_INSTANCES);
+        else
+            activeWhenInCombat = sWorld.getConfig(CONFIG_COMBAT_ACTIVE_ON_CONTINENTS);
+
+        if (activeWhenInCombat)
+        {
+            if (victim->ToPlayer() || !sWorld.getConfig(CONFIG_COMBAT_ACTIVE_FOR_PLAYERS_ONLY))
+                setActive(true, ACTIVE_BY_COMBAT);
+            else
+                setActive(false, ACTIVE_BY_COMBAT);
+        }
+    }
 
     if (meleeAttack)
         addUnitState(UNIT_STAT_MELEE_ATTACKING);
@@ -9279,12 +9295,12 @@ void Unit::ClearInCombat()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
 
     // Player's state will be cleared in Player::UpdateContestedPvP
-    if (GetTypeId()!=TYPEID_PLAYER)
+    if (Creature *creature = ToCreature())
     {
-        Creature* creature = (Creature*)this;
         if (creature->GetCreatureInfo() && creature->GetCreatureInfo()->unit_flags & UNIT_FLAG_NOT_ATTACKABLE_2)
             SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
 
+        creature->setActive(false, ACTIVE_BY_COMBAT);
         clearUnitState(UNIT_STAT_ATTACK_PLAYER);
     }
 
@@ -9298,6 +9314,7 @@ void Unit::ClearInCombat()
     }
     else if (!isCharmed())
         return;
+
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }

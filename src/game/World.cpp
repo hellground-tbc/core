@@ -1085,8 +1085,11 @@ void World::LoadConfigSettings(bool reload)
 
     m_activeObjectUpdateDistanceOnContinents = sConfig.GetIntDefault("Visibility.Distance.ActiveObjectUpdate.Continents", DEFAULT_VISIBILITY_DISTANCE);
     m_activeObjectUpdateDistanceInInstances = sConfig.GetIntDefault("Visibility.Distance.ActiveObjectUpdate.Instances", DEFAULT_VISIBILITY_DISTANCE);
-    m_configs[CONFIG_WAYPOINT_MOVEMENT_ACTIVE_ON_CONTINENTS] = sConfig.GetBoolDefault("WaypointMovementAutoActive.Continents", true);
-    m_configs[CONFIG_WAYPOINT_MOVEMENT_ACTIVE_IN_INSTANCES] = sConfig.GetBoolDefault("WaypointMovementAutoActive.Instances", true);
+    m_configs[CONFIG_WAYPOINT_MOVEMENT_ACTIVE_ON_CONTINENTS] = sConfig.GetBoolDefault("AutoActive.WaypointMovement.Continents", true);
+    m_configs[CONFIG_WAYPOINT_MOVEMENT_ACTIVE_IN_INSTANCES] = sConfig.GetBoolDefault("AutoActive.WaypointMovement.Instances", true);
+    m_configs[CONFIG_COMBAT_ACTIVE_ON_CONTINENTS] = sConfig.GetBoolDefault("AutoActive.Combat.Continents", true);
+    m_configs[CONFIG_COMBAT_ACTIVE_IN_INSTANCES] = sConfig.GetBoolDefault("AutoActive.Combat.Instances", true);
+    m_configs[CONFIG_COMBAT_ACTIVE_FOR_PLAYERS_ONLY] = sConfig.GetBoolDefault("AutoActive.Combat.PlayersOnly", false);
 
     m_configs[CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE] = sConfig.GetIntDefault("Movement.RecalculateRange", 2);
 

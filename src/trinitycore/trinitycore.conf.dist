@@ -2,7 +2,7 @@
 # Trinity Core worldd configuration file #
 ##########################################
 [CoreConf]
-ConfVersion=2012013001
+ConfVersion=2012052001
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -942,10 +942,20 @@ DisablePVP = 0
 #        Distance from player to listen text that creature (or other world object) yell
 #        Default: 300
 #
-#	 WaypointMovementAutoActive.Continents
-#	 WaypointMovementAutoActive.Instances
+#	 AutoActive.WaypointMovement.Continents
+#	 AutoActive.WaypointMovement.Instances
 #		 Set to 0 if you don't want to creatures using waypoint movemet become automaticly active
 #		 Default: 1
+#
+#	 AutoActive.Combat.Continents
+#	 AutoActive.Combat.Instances
+#		 Set to 0 if you don't want to creatures in combat to become automaticly active
+#		 Default: 1
+#
+#	 AutoActive.Combat.PlayersOnly
+#		 Set to 1 if you wan't to creatures in combat to become automaticly active only when they have player on target
+#		 Have no effect when both AutoActive.Combat.Continents and AutoActive.Combat.Instances are set to 0
+#		 Default: 0
 #
 #
 ###################################################################################################################
@@ -979,8 +989,11 @@ Rate.Creature.Elite.RARE.HP = 1
 ListenRange.Say = 40
 ListenRange.TextEmote = 40
 ListenRange.Yell = 300
-WaypointMovementAutoActive.Continents = 1
-WaypointMovementAutoActive.Instances = 1
+AutoActive.WaypointMovement.Continents = 1
+AutoActive.WaypointMovement.Instances = 1
+AutoActive.Combat.Continents = 1
+AutoActive.Combat.Instances = 1
+AutoActive.Combat.PlayersOnly = 0
 
 ###################################################################################################################
 # CHAT SETTINGS

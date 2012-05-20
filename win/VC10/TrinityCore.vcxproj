@@ -447,6 +447,7 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
     <None Include="..\..\Install" />
     <None Include="..\..\News" />
     <None Include="..\..\Readme" />
+    <None Include="..\..\src\trinitycore\trinitycore.conf.dist" />
     <None Include="..\..\Thanks" />
   </ItemGroup>
   <ItemGroup>
