@@ -48,6 +48,9 @@ Hellground::ObjectUpdater::Visit(CreatureMapType &m)
         {
             WorldObject::UpdateHelper helper(iter->getSource());
             helper.Update(i_timeDiff);
+
+            if (i_activeSet)
+                i_activeSet->erase(iter->getSource());
         }
 }
 

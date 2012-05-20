@@ -34,6 +34,8 @@
 #include "Unit.h"
 #include "CreatureAI.h"
 
+#include "Map.h"
+
 class Player;
 //class Map;
 
@@ -170,7 +172,9 @@ namespace Hellground
     struct HELLGROUND_DLL_DECL ObjectUpdater
     {
         uint32 i_timeDiff;
-        explicit ObjectUpdater(const uint32 &diff) : i_timeDiff(diff) {}
+        Map::ActiveNonPlayers *i_activeSet;
+
+        explicit ObjectUpdater(const uint32 &diff, Map::ActiveNonPlayers *p = NULL) : i_timeDiff(diff), i_activeSet(p) {}
         template<class T> void Visit(GridRefManager<T> &m);
         void Visit(PlayerMapType &) {}
         void Visit(CorpseMapType &) {}
