@@ -302,8 +302,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellgro
 
         bool WaypointMovementAutoActive() const;
 
-        typedef std::set<WorldObject*> ActiveNonPlayers;
-
     private:
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
         //uint64 CalculateGridMask(const uint32 &y) const;
@@ -367,6 +365,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellgro
 
         int32 m_VisibilityNotifyPeriod;
 
+        typedef std::set<WorldObject*> ActiveNonPlayers;
         ActiveNonPlayers m_activeNonPlayers;
         ActiveNonPlayers::iterator m_activeNonPlayersIter;
 

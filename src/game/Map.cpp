@@ -489,9 +489,7 @@ void Map::Update(const uint32 &t_diff)
 
     resetMarkedCells();
 
-    ActiveNonPlayers tempActive = m_activeNonPlayers;
-    Hellground::ObjectUpdater updater(t_diff, m_activeNonPlayers.empty() ? NULL : &tempActive);
-
+    Hellground::ObjectUpdater updater(t_diff);
     // for creature
     TypeContainerVisitor<Hellground::ObjectUpdater, GridTypeMapContainer> grid_object_update(updater);
 
@@ -536,9 +534,9 @@ void Map::Update(const uint32 &t_diff)
     MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PLAYER_GRID_VISIT, RecordTimeDiff(), GetId()))
 
     // non-player active objects
-    if (!tempActive.empty())
+    if (!m_activeNonPlayers.empty())
     {
-        for (m_activeNonPlayersIter = tempActive.begin(); m_activeNonPlayersIter != tempActive.end();)
+        for (m_activeNonPlayersIter = m_activeNonPlayers.begin(); m_activeNonPlayersIter != m_activeNonPlayers.end();)
         {
             // skip not in world
             WorldObject* obj = *m_activeNonPlayersIter;
@@ -594,7 +592,7 @@ void Map::Update(const uint32 &t_diff)
 
     MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MOVE_CREATURES_IN_LIST, RecordTimeDiff(), GetId()))
 
-    if(!m_mapRefManager.isEmpty() || !tempActive.empty())
+    if(!m_mapRefManager.isEmpty() || !m_activeNonPlayers.empty())
         ProcessRelocationNotifies(t_diff);
 
     MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PROCESS_RELOCATION, RecordTimeDiff(), GetId()))
