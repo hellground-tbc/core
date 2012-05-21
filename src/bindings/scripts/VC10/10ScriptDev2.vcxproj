@@ -211,7 +211,6 @@
       <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC10\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -220,7 +219,10 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)trinityscript.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityScripts.pdb</ProgramDatabaseFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>..\..\..\..\bin\$(Platform)_$(Configuration)\TrinityScript.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>..\..\..\..\bin\$(Platform)_$(Configuration)\TrinityScript.map</MapFileName>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
