@@ -1,9 +1,3 @@
-/*
-SQLyog Trial v9.63 
-MySQL - 5.5.23 : Database - characters
-*********************************************************************
-*/
-
 /*!40101 SET NAMES utf8 */;
 
 /*!40101 SET SQL_MODE=''*/;
@@ -12,9 +6,6 @@ MySQL - 5.5.23 : Database - characters
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`characters` /*!40100 DEFAULT CHARACTER SET latin1 */;
-
-USE `characters`;
 
 /*Table structure for table `arena_team` */
 
@@ -77,156 +68,6 @@ CREATE TABLE `armory_character_stats` (
   PRIMARY KEY (`guid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='World of Warcraft Armory table';
 
-/*Table structure for table `at` */
-
-DROP TABLE IF EXISTS `at`;
-
-CREATE TABLE `at` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `name` char(255) NOT NULL,
-  `captainguid` int(10) unsigned NOT NULL DEFAULT '0',
-  `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `BackgroundColor` int(10) unsigned NOT NULL DEFAULT '0',
-  `EmblemStyle` int(10) unsigned NOT NULL DEFAULT '0',
-  `EmblemColor` int(10) unsigned NOT NULL DEFAULT '0',
-  `BorderStyle` int(10) unsigned NOT NULL DEFAULT '0',
-  `BorderColor` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `at2` */
-
-DROP TABLE IF EXISTS `at2`;
-
-CREATE TABLE `at2` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `name` char(255) NOT NULL,
-  `captainguid` int(10) unsigned NOT NULL DEFAULT '0',
-  `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `BackgroundColor` int(10) unsigned NOT NULL DEFAULT '0',
-  `EmblemStyle` int(10) unsigned NOT NULL DEFAULT '0',
-  `EmblemColor` int(10) unsigned NOT NULL DEFAULT '0',
-  `BorderStyle` int(10) unsigned NOT NULL DEFAULT '0',
-  `BorderColor` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `atbck` */
-
-DROP TABLE IF EXISTS `atbck`;
-
-CREATE TABLE `atbck` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `name` char(255) NOT NULL,
-  `captainguid` int(10) unsigned NOT NULL DEFAULT '0',
-  `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `BackgroundColor` int(10) unsigned NOT NULL DEFAULT '0',
-  `EmblemStyle` int(10) unsigned NOT NULL DEFAULT '0',
-  `EmblemColor` int(10) unsigned NOT NULL DEFAULT '0',
-  `BorderStyle` int(10) unsigned NOT NULL DEFAULT '0',
-  `BorderColor` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `atm` */
-
-DROP TABLE IF EXISTS `atm`;
-
-CREATE TABLE `atm` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `guid` int(10) unsigned NOT NULL DEFAULT '0',
-  `played_week` int(10) unsigned NOT NULL DEFAULT '0',
-  `wons_week` int(10) unsigned NOT NULL DEFAULT '0',
-  `played_season` int(10) unsigned NOT NULL DEFAULT '0',
-  `wons_season` int(10) unsigned NOT NULL DEFAULT '0',
-  `personal_rating` int(10) unsigned NOT NULL DEFAULT '0',
-  KEY `arenateamid_2` (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`,`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `atm2` */
-
-DROP TABLE IF EXISTS `atm2`;
-
-CREATE TABLE `atm2` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `guid` int(10) unsigned NOT NULL DEFAULT '0',
-  `played_week` int(10) unsigned NOT NULL DEFAULT '0',
-  `wons_week` int(10) unsigned NOT NULL DEFAULT '0',
-  `played_season` int(10) unsigned NOT NULL DEFAULT '0',
-  `wons_season` int(10) unsigned NOT NULL DEFAULT '0',
-  `personal_rating` int(10) unsigned NOT NULL DEFAULT '0',
-  KEY `arenateamid_2` (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`,`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `atmbck` */
-
-DROP TABLE IF EXISTS `atmbck`;
-
-CREATE TABLE `atmbck` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `guid` int(10) unsigned NOT NULL DEFAULT '0',
-  `played_week` int(10) unsigned NOT NULL DEFAULT '0',
-  `wons_week` int(10) unsigned NOT NULL DEFAULT '0',
-  `played_season` int(10) unsigned NOT NULL DEFAULT '0',
-  `wons_season` int(10) unsigned NOT NULL DEFAULT '0',
-  `personal_rating` int(10) unsigned NOT NULL DEFAULT '0',
-  KEY `arenateamid_2` (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`,`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `ats` */
-
-DROP TABLE IF EXISTS `ats`;
-
-CREATE TABLE `ats` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `rating` int(10) unsigned NOT NULL DEFAULT '0',
-  `games` int(10) unsigned NOT NULL DEFAULT '0',
-  `wins` int(10) unsigned NOT NULL DEFAULT '0',
-  `played` int(10) unsigned NOT NULL DEFAULT '0',
-  `wins2` int(10) unsigned NOT NULL DEFAULT '0',
-  `rank` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
-
-/*Table structure for table `ats2` */
-
-DROP TABLE IF EXISTS `ats2`;
-
-CREATE TABLE `ats2` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `rating` int(10) unsigned NOT NULL DEFAULT '0',
-  `games` int(10) unsigned NOT NULL DEFAULT '0',
-  `wins` int(10) unsigned NOT NULL DEFAULT '0',
-  `played` int(10) unsigned NOT NULL DEFAULT '0',
-  `wins2` int(10) unsigned NOT NULL DEFAULT '0',
-  `rank` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
-
-/*Table structure for table `atsbck` */
-
-DROP TABLE IF EXISTS `atsbck`;
-
-CREATE TABLE `atsbck` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  `rating` int(10) unsigned NOT NULL DEFAULT '0',
-  `games` int(10) unsigned NOT NULL DEFAULT '0',
-  `wins` int(10) unsigned NOT NULL DEFAULT '0',
-  `played` int(10) unsigned NOT NULL DEFAULT '0',
-  `wins2` int(10) unsigned NOT NULL DEFAULT '0',
-  `rank` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
-
 /*Table structure for table `auctionhouse` */
 
 DROP TABLE IF EXISTS `auctionhouse`;
@@ -247,78 +88,6 @@ CREATE TABLE `auctionhouse` (
   `deposit` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `auctionhousebot` */
-
-DROP TABLE IF EXISTS `auctionhousebot`;
-
-CREATE TABLE `auctionhousebot` (
-  `auctionhouse` int(11) NOT NULL DEFAULT '0' COMMENT 'mapID of the auctionhouse.',
-  `name` char(25) DEFAULT NULL COMMENT 'Text name of the auctionhouse.',
-  `minitems` int(11) DEFAULT '0' COMMENT 'This is the minimum number of items you want to keep in the auction house. a 0 here will make it the same as the maximum.',
-  `maxitems` int(11) DEFAULT '0' COMMENT 'This is the number of items you want to keep in the auction house.',
-  `mintime` int(11) DEFAULT '8' COMMENT 'Sets the minimum number of hours for an auction.',
-  `maxtime` int(11) DEFAULT '24' COMMENT 'Sets the maximum number of hours for an auction.',
-  `percentgreytradegoods` int(11) DEFAULT '0' COMMENT 'Sets the percentage of the Grey Trade Goods auction items',
-  `percentwhitetradegoods` int(11) DEFAULT '27' COMMENT 'Sets the percentage of the White Trade Goods auction items',
-  `percentgreentradegoods` int(11) DEFAULT '12' COMMENT 'Sets the percentage of the Green Trade Goods auction items',
-  `percentbluetradegoods` int(11) DEFAULT '10' COMMENT 'Sets the percentage of the Blue Trade Goods auction items',
-  `percentpurpletradegoods` int(11) DEFAULT '1' COMMENT 'Sets the percentage of the Purple Trade Goods auction items',
-  `percentorangetradegoods` int(11) DEFAULT '0' COMMENT 'Sets the percentage of the Orange Trade Goods auction items',
-  `percentyellowtradegoods` int(11) DEFAULT '0' COMMENT 'Sets the percentage of the Yellow Trade Goods auction items',
-  `percentgreyitems` int(11) DEFAULT '0' COMMENT 'Sets the percentage of the non trade Grey auction items',
-  `percentwhiteitems` int(11) DEFAULT '10' COMMENT 'Sets the percentage of the non trade White auction items',
-  `percentgreenitems` int(11) DEFAULT '30' COMMENT 'Sets the percentage of the non trade Green auction items',
-  `percentblueitems` int(11) DEFAULT '8' COMMENT 'Sets the percentage of the non trade Blue auction items',
-  `percentpurpleitems` int(11) DEFAULT '2' COMMENT 'Sets the percentage of the non trade Purple auction items',
-  `percentorangeitems` int(11) DEFAULT '0' COMMENT 'Sets the percentage of the non trade Orange auction items',
-  `percentyellowitems` int(11) DEFAULT '0' COMMENT 'Sets the percentage of the non trade Yellow auction items',
-  `minpricegrey` int(11) DEFAULT '100' COMMENT 'Minimum price of Grey items (percentage).',
-  `maxpricegrey` int(11) DEFAULT '150' COMMENT 'Maximum price of Grey items (percentage).',
-  `minpricewhite` int(11) DEFAULT '150' COMMENT 'Minimum price of White items (percentage).',
-  `maxpricewhite` int(11) DEFAULT '250' COMMENT 'Maximum price of White items (percentage).',
-  `minpricegreen` int(11) DEFAULT '800' COMMENT 'Minimum price of Green items (percentage).',
-  `maxpricegreen` int(11) DEFAULT '1400' COMMENT 'Maximum price of Green items (percentage).',
-  `minpriceblue` int(11) DEFAULT '1250' COMMENT 'Minimum price of Blue items (percentage).',
-  `maxpriceblue` int(11) DEFAULT '1750' COMMENT 'Maximum price of Blue items (percentage).',
-  `minpricepurple` int(11) DEFAULT '2250' COMMENT 'Minimum price of Purple items (percentage).',
-  `maxpricepurple` int(11) DEFAULT '4550' COMMENT 'Maximum price of Purple items (percentage).',
-  `minpriceorange` int(11) DEFAULT '3250' COMMENT 'Minimum price of Orange items (percentage).',
-  `maxpriceorange` int(11) DEFAULT '5550' COMMENT 'Maximum price of Orange items (percentage).',
-  `minpriceyellow` int(11) DEFAULT '5250' COMMENT 'Minimum price of Yellow items (percentage).',
-  `maxpriceyellow` int(11) DEFAULT '6550' COMMENT 'Maximum price of Yellow items (percentage).',
-  `minbidpricegrey` int(11) DEFAULT '70' COMMENT 'Starting bid price of Grey items as a percentage of the randomly chosen buyout price. Default: 70',
-  `maxbidpricegrey` int(11) DEFAULT '100' COMMENT 'Starting bid price of Grey items as a percentage of the randomly chosen buyout price. Default: 100',
-  `minbidpricewhite` int(11) DEFAULT '70' COMMENT 'Starting bid price of White items as a percentage of the randomly chosen buyout price. Default: 100 (Bid and buyout price the same)',
-  `maxbidpricewhite` int(11) DEFAULT '100' COMMENT 'Starting bid price of White items as a percentage of the randomly chosen buyout price. Default: 100 (Bid and buyout price the same)',
-  `minbidpricegreen` int(11) DEFAULT '80' COMMENT 'Starting bid price of Green items as a percentage of the randomly chosen buyout price. Default: 100 (Bid and buyout price the same)',
-  `maxbidpricegreen` int(11) DEFAULT '100' COMMENT 'Starting bid price of Green items as a percentage of the randomly chosen buyout price. Default: 100 (Bid and buyout price the same)',
-  `minbidpriceblue` int(11) DEFAULT '75' COMMENT 'Starting bid price of Blue items as a percentage of the randomly chosen buyout price. Default: 100 (Bid and buyout price the same)',
-  `maxbidpriceblue` int(11) DEFAULT '100' COMMENT 'Starting bid price of Blue items as a percentage of the randomly chosen buyout price. Default: 100 (Bid and buyout price the same)',
-  `minbidpricepurple` int(11) DEFAULT '80' COMMENT 'Starting bid price of Purple items as a percentage of the randomly chosen buyout price. Default: 100 (Bid and buyout price the same)',
-  `maxbidpricepurple` int(11) DEFAULT '100' COMMENT 'Starting bid price of Purple items as a percentage of the randomly chosen buyout price. Default: 100 (Bid and buyout price the same)',
-  `minbidpriceorange` int(11) DEFAULT '80' COMMENT 'Starting bid price of Orange items as a percentage of the randomly chosen buyout price. Default: 80',
-  `maxbidpriceorange` int(11) DEFAULT '100' COMMENT 'Starting bid price of Orange items as a percentage of the randomly chosen buyout price. Default: 100',
-  `minbidpriceyellow` int(11) DEFAULT '80' COMMENT 'Starting bid price of Yellow items as a percentage of the randomly chosen buyout price. Default: 80',
-  `maxbidpriceyellow` int(11) DEFAULT '100' COMMENT 'Starting bid price of Yellow items as a percentage of the randomly chosen buyout price. Default: 100',
-  `maxstackgrey` int(11) DEFAULT '0' COMMENT 'Stack size limits for item qualities - a value of 0 will disable a maximum stack size for that quality, which will allow the bot to create items in stack as large as the item allows.',
-  `maxstackwhite` int(11) DEFAULT '0' COMMENT 'Stack size limits for item qualities - a value of 0 will disable a maximum stack size for that quality, which will allow the bot to create items in stack as large as the item allows.',
-  `maxstackgreen` int(11) DEFAULT '3' COMMENT 'Stack size limits for item qualities - a value of 0 will disable a maximum stack size for that quality, which will allow the bot to create items in stack as large as the item allows.',
-  `maxstackblue` int(11) DEFAULT '2' COMMENT 'Stack size limits for item qualities - a value of 0 will disable a maximum stack size for that quality, which will allow the bot to create items in stack as large as the item allows.',
-  `maxstackpurple` int(11) DEFAULT '1' COMMENT 'Stack size limits for item qualities - a value of 0 will disable a maximum stack size for that quality, which will allow the bot to create items in stack as large as the item allows.',
-  `maxstackorange` int(11) DEFAULT '1' COMMENT 'Stack size limits for item qualities - a value of 0 will disable a maximum stack size for that quality, which will allow the bot to create items in stack as large as the item allows.',
-  `maxstackyellow` int(11) DEFAULT '1' COMMENT 'Stack size limits for item qualities - a value of 0 will disable a maximum stack size for that quality, which will allow the bot to create items in stack as large as the item allows.',
-  `buyerpricegrey` int(11) DEFAULT '1' COMMENT 'Multiplier to vendorprice when buying grey items from auctionhouse',
-  `buyerpricewhite` int(11) DEFAULT '1' COMMENT 'Multiplier to vendorprice when buying white items from auctionhouse',
-  `buyerpricegreen` int(11) DEFAULT '5' COMMENT 'Multiplier to vendorprice when buying green items from auctionhouse',
-  `buyerpriceblue` int(11) DEFAULT '12' COMMENT 'Multiplier to vendorprice when buying blue items from auctionhouse',
-  `buyerpricepurple` int(11) DEFAULT '15' COMMENT 'Multiplier to vendorprice when buying purple items from auctionhouse',
-  `buyerpriceorange` int(11) DEFAULT '20' COMMENT 'Multiplier to vendorprice when buying orange items from auctionhouse',
-  `buyerpriceyellow` int(11) DEFAULT '22' COMMENT 'Multiplier to vendorprice when buying yellow items from auctionhouse',
-  `buyerbiddinginterval` int(11) DEFAULT '1' COMMENT 'Interval how frequently AHB bids on each AH. Time in minutes',
-  `buyerbidsperinterval` int(11) DEFAULT '1' COMMENT 'number of bids to put in per bidding interval',
-  PRIMARY KEY (`auctionhouse`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `bugreport` */
@@ -664,29 +433,6 @@ CREATE TABLE `characters` (
   KEY `idx_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
 
-/*Table structure for table `cheaters` */
-
-DROP TABLE IF EXISTS `cheaters`;
-
-CREATE TABLE `cheaters` (
-  `entry` bigint(20) NOT NULL AUTO_INCREMENT,
-  `player` varchar(255) NOT NULL,
-  `acctid` int(11) NOT NULL,
-  `reason` varchar(255) NOT NULL DEFAULT 'unknown',
-  `speed` float NOT NULL DEFAULT '0',
-  `Val1` float NOT NULL DEFAULT '0',
-  `Val2` int(10) unsigned NOT NULL DEFAULT '0',
-  `count` int(11) NOT NULL DEFAULT '0',
-  `Map` smallint(5) NOT NULL DEFAULT '-1',
-  `Pos` varchar(255) NOT NULL DEFAULT '0',
-  `Level` mediumint(9) NOT NULL DEFAULT '0',
-  `first_date` datetime NOT NULL,
-  `last_date` datetime NOT NULL,
-  `Op` varchar(255) NOT NULL DEFAULT 'unknown',
-  PRIMARY KEY (`entry`),
-  KEY `idx_Count` (`count`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 /*Table structure for table `corpse` */
 
 DROP TABLE IF EXISTS `corpse`;
@@ -975,18 +721,6 @@ CREATE TABLE `guild_rank` (
   KEY `Idx_rid` (`rid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Guild System';
 
-/*Table structure for table `hid_rat` */
-
-DROP TABLE IF EXISTS `hid_rat`;
-
-CREATE TABLE `hid_rat` (
-  `guid` int(11) unsigned NOT NULL,
-  `rating2` int(10) unsigned NOT NULL DEFAULT '1500',
-  `rating3` int(10) unsigned NOT NULL DEFAULT '1500',
-  `rating5` int(10) unsigned NOT NULL DEFAULT '1500',
-  PRIMARY KEY (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 /*Table structure for table `hidden_rating` */
 
 DROP TABLE IF EXISTS `hidden_rating`;
@@ -1162,60 +896,13 @@ CREATE TABLE `saved_variables` (
   `PVPHorde` int(5) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Variable Saves';
 
-/*Table structure for table `tempat` */
-
-DROP TABLE IF EXISTS `tempat`;
-
-CREATE TABLE `tempat` (
-  `arenateamid` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `topki` */
-
-DROP TABLE IF EXISTS `topki`;
-
-CREATE TABLE `topki` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `url` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-/*Table structure for table `tp_history` */
-
-DROP TABLE IF EXISTS `tp_history`;
-
-CREATE TABLE `tp_history` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `tid` int(100) NOT NULL,
-  `login` varchar(32) NOT NULL,
-  `time` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-/* Trigger structure for table `characters` */
-
-DELIMITER $$
-
-/*!50003 DROP TRIGGER*//*!50032 IF EXISTS */ /*!50003 `accchange_upd_check` */$$
-
-/*!50003 CREATE */ /*!50017 DEFINER = 'other'@'83.12.219.58' */ /*!50003 TRIGGER `accchange_upd_check` BEFORE UPDATE ON `characters` FOR EACH ROW BEGIN
-	IF NEW.account != OLD.account THEN
-		INSERT INTO realmdt.accchange_log VALUES ('XXX', OLD.account, NEW.account, NOW(), NEW.guid);
-	END IF;
-  END */$$
-
-
-DELIMITER ;
-
 /* Procedure structure for procedure `PreventCharDelete` */
 
 /*!50003 DROP PROCEDURE IF EXISTS  `PreventCharDelete` */;
 
 DELIMITER $$
 
-/*!50003 CREATE DEFINER=`root`@`localhost` PROCEDURE `PreventCharDelete`(IN charguid INT UNSIGNED)
+/*!50003 CREATE PROCEDURE `PreventCharDelete`(IN charguid INT UNSIGNED)
 BEGIN
     INSERT INTO deleted_chars VALUES ('XXX', charguid, (SELECT name FROM characters WHERE guid = charguid), (SELECT account FROM characters WHERE guid = charguid), CAST(NOW() AS DATETIME));
     UPDATE characters SET account = 1 WHERE guid = charguid;

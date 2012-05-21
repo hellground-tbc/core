@@ -1,9 +1,3 @@
-/*
-SQLyog Trial v9.63 
-MySQL - 5.3.3-MariaDB-rc-mariadb108~squeeze-log : Database - world
-*********************************************************************
-*/
-
 /*!40101 SET NAMES utf8 */;
 
 /*!40101 SET SQL_MODE=''*/;
@@ -12,9 +6,6 @@ MySQL - 5.3.3-MariaDB-rc-mariadb108~squeeze-log : Database - world
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`world` /*!40100 DEFAULT CHARACTER SET latin1 */;
-
-USE `world`;
 
 /*Table structure for table `access_requirement` */
 
@@ -2444,7 +2435,7 @@ CREATE TABLE `transports` (
 
 DROP TABLE IF EXISTS `trinity_string`;
 
-CREATE TABLE `trinity_string` (
+CREATE TABLE `hellground_string` (
   `entry` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `content_default` text NOT NULL,
   `content_loc1` text,
