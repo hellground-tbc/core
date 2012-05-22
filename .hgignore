@@ -17,6 +17,9 @@ win/VC100/*/
 *.opensdf
 *.suo
 dep/lib/*/
+dep/ACE_wrappers/lib/*/
+dep/ACE_wrappers/ace/Release*/*/
+dep/ACE_wrappers/ace/Debug*/*/
 src/bindings/scripts/VC90/*/
 src/bindings/scripts/VC10/*/
 src/mangosd/
