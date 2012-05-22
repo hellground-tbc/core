@@ -648,9 +648,9 @@ void Group::PrepareLootRolls(const uint64& playerGUID, Loot *loot, WorldObject* 
 
                 if (i->AllowedForPlayer(member) && loot->IsPlayerAllowedToLoot(member, object)
                     && (m_lootMethod != NEED_BEFORE_GREED || member->CanUseItem(item)))
-                {        
+                {
                     r->playerVote[member->GetGUID()] = NOT_EMITED_YET;
-                    ++r->totalPlayersRolling;   
+                    ++r->totalPlayersRolling;
                 }
             }
 
@@ -1014,13 +1014,14 @@ void Group::Update(uint32 diff)
         }
     }
 
-    Rolls::iterator next;
+    Rolls::iterator act;
     for (Rolls::iterator itr = RollId.begin(); itr != RollId.end();)
     {
-        next = ++itr;
-        Roll *roll = *itr;
+        act = itr;
+        ++itr;
+        Roll *roll = *act;
         if (roll->rollTimer <= diff)
-            CountTheRoll(itr, GetMembersCount());  // itr may be erased from RollId here
+            CountTheRoll(act, GetMembersCount());  // itr may be erased from RollId here
         else
             roll->rollTimer -= diff;
     }
