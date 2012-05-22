@@ -12960,9 +12960,15 @@ bool Unit::RollPRD(float baseChance, float extraChance, uint32 spellId)
 void Unit::SetFeared(bool apply, Unit* target, uint32 time)
 {
     if (apply)
+    {
+        addUnitState(UNIT_STAT_FLEEING);
         GetMotionMaster()->MoveFleeing(target, time);
+    }
     else
+    {
+        clearUnitState(UNIT_STAT_FLEEING);
         GetUnitStateMgr().DropAction(UNIT_ACTION_FEARED);
+    }
 
     if (GetTypeId() == TYPEID_PLAYER)
         ToPlayer()->SetClientControl(this, !apply);
