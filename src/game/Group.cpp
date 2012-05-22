@@ -1014,17 +1014,18 @@ void Group::Update(uint32 diff)
         }
     }
 
-    Rolls::iterator act;
-    for (Rolls::iterator itr = RollId.begin(); itr != RollId.end();)
+    // first roll all expired rolls (will remove them from RollId)
+    for (Rolls::iterator itr = RollId.begin(); itr != RollId.end(); ++itr)
     {
-        act = itr;
-        ++itr;
-        Roll *roll = *act;
-        if (roll->rollTimer <= diff)
-            CountTheRoll(act, GetMembersCount());  // itr may be erased from RollId here
-        else
-            roll->rollTimer -= diff;
+        if ((*itr)->rollTimer <= diff)
+        {
+            CountTheRoll(itr, GetMembersCount());
+            itr = RollId.begin();
+        }    
     }
+    // then update timers of remaining rolls
+    for (Rolls::iterator itr = RollId.begin(); itr != RollId.end(); ++itr)
+        (*itr)->rollTimer -= diff;
 }
 
 void Group::UpdatePlayerOutOfRange(Player* pPlayer)
