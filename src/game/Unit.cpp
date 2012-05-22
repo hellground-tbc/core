@@ -12962,7 +12962,6 @@ void Unit::SetFeared(bool apply, Unit* target, uint32 time)
     if (apply)
     {
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-        addUnitState(UNIT_STAT_FLEEING);
         GetMotionMaster()->MoveFleeing(target, time);
     }
     else
