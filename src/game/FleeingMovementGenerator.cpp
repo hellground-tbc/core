@@ -67,7 +67,6 @@ void FleeingMovementGenerator<UNIT>::Initialize(UNIT &unit)
     unit.InterruptNonMeleeSpells(false);
 
     unit.StopMoving();
-    unit.addUnitState(UNIT_STAT_FLEEING);
 }
 
 template<class UNIT>
@@ -92,7 +91,6 @@ void FleeingMovementGenerator<UNIT>::Finalize(UNIT &unit)
 {
     Interrupt(unit);
 
-    unit.clearUnitState(UNIT_STAT_FLEEING);
     unit.AddEvent(new AttackResumeEvent(unit), ATTACK_DISPLAY_DELAY);
 }
 
