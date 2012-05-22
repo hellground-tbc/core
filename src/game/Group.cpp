@@ -1014,18 +1014,23 @@ void Group::Update(uint32 diff)
         }
     }
 
-    // first roll all expired rolls (will remove them from RollId)
-    for (Rolls::iterator itr = RollId.begin(); itr != RollId.end(); ++itr)
+
+    for (Rolls::iterator itr = RollId.begin(); itr != RollId.end(); )
     {
         if ((*itr)->rollTimer <= diff)
         {
             CountTheRoll(itr, GetMembersCount());
-            itr = RollId.begin();
-        }    
+            // rolls to count are always at beginning, so no chance to decrease timer of other roll multiple times
+            itr = RollId.begin();                       
+        }
+        else
+        {
+            (*itr)->rollTimer -= diff;
+            ++itr;
+        }
     }
-    // then update timers of remaining rolls
-    for (Rolls::iterator itr = RollId.begin(); itr != RollId.end(); ++itr)
-        (*itr)->rollTimer -= diff;
+
+        
 }
 
 void Group::UpdatePlayerOutOfRange(Player* pPlayer)
@@ -1262,7 +1267,7 @@ void Group::_setLeader(const uint64 &guid)
 
 void Group::_removeRolls(const uint64 &guid)
 {
-    for (Rolls::iterator it = RollId.begin(); it < RollId.end(); ++it)
+    for (Rolls::iterator it = RollId.begin(); it != RollId.end(); ++it)
     {
         Roll* roll = *it;
         Roll::PlayerVote::iterator itr2 = roll->playerVote.find(guid);

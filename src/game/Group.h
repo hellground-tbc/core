@@ -152,7 +152,7 @@ class HELLGROUND_DLL_SPEC Group
         typedef MemberSlotList::iterator member_witerator;
         typedef std::set<Player*> InvitesList;
 
-        typedef std::vector<Roll*> Rolls;
+        typedef std::list<Roll*> Rolls;
 
     public:
         Group();
