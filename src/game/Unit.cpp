@@ -12961,12 +12961,13 @@ void Unit::SetFeared(bool apply, Unit* target, uint32 time)
 {
     if (apply)
     {
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
         addUnitState(UNIT_STAT_FLEEING);
         GetMotionMaster()->MoveFleeing(target, time);
     }
     else
     {
-        clearUnitState(UNIT_STAT_FLEEING);
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
         GetUnitStateMgr().DropAction(UNIT_ACTION_FEARED);
     }
 
@@ -12978,12 +12979,12 @@ void Unit::SetConfused(bool apply)
 {
     if (apply)
     {
-        addUnitState(UNIT_STAT_CONFUSED);
+        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
         GetMotionMaster()->MoveConfused();
     }
     else
     {
-        clearUnitState(UNIT_STAT_CONFUSED);
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
         GetUnitStateMgr().DropAction(UNIT_ACTION_CONFUSED);
     }
 
