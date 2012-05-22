@@ -4,7 +4,7 @@
 /**
  *  @file   CDR_Base.h
  *
- *  $Id: CDR_Base.h 82088 2008-06-19 16:22:16Z shuston $
+ *  $Id: CDR_Base.h 91685 2010-09-09 09:35:14Z johnnyw $
  *
  * ACE Common Data Representation (CDR) basic types.
  *
@@ -177,10 +177,14 @@ public:
    */
   static int grow (ACE_Message_Block *mb, size_t minsize);
 
-  /// Copy a message block chain into a single message block,
-  /// preserving the alignment of the first message block of the
-  /// original stream, not the following message blocks.
-  static void consolidate (ACE_Message_Block *dst,
+  /**
+   * Copy a message block chain into a single message block,
+   * preserving the alignment of the first message block of the
+   * original stream, not the following message blocks.
+   * @retval -1 Failure
+   * @retval 0 Success.
+   */
+  static int consolidate (ACE_Message_Block *dst,
                           const ACE_Message_Block *src);
 
   static size_t total_length (const ACE_Message_Block *begin,
@@ -205,7 +209,7 @@ public:
 
 #   if (defined (_MSC_VER)) || (defined (__BORLANDC__))
       typedef __int64 LongLong;
-#   elif ACE_SIZEOF_LONG == 8 && !defined(_CRAYMPP)
+#   elif ACE_SIZEOF_LONG == 8
       typedef long LongLong;
 #   elif defined(__TANDEM)
       typedef long long LongLong;
@@ -216,7 +220,6 @@ public:
               // complain about no ANSI C++ long long.
               typedef   longlong_t LongLong;
 #     else
-              // LynxOS 2.5.0   and Linux don't have u_longlong_t.
               typedef   long long LongLong;
 #     endif /* sun */
 #   else  /* no native 64 bit integer type */
@@ -260,12 +263,6 @@ public:
 #       else  /* ACE_SIZEOF_INT != 4 */
           // Applications will probably have trouble with this.
           char f[4];
-#         if defined(_UNICOS) && !defined(_CRAYMPP)
-            Float (void);
-            Float (const float &init);
-            Float & operator= (const float &rhs);
-            bool operator!= (const Float &rhs) const;
-#         endif /* _UNICOS */
 #       endif /* ACE_SIZEOF_INT != 4 */
       };
 #   endif /* ACE_SIZEOF_FLOAT != 4 */
@@ -377,4 +374,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #include /**/ "ace/post.h"
 
 #endif /* ACE_CDR_BASE_H */
-

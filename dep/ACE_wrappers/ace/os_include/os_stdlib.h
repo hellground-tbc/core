@@ -6,7 +6,7 @@
  *
  *  standard library definitions
  *
- *  $Id: os_stdlib.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: os_stdlib.h 91683 2010-09-09 09:07:49Z johnnyw $
  *
  *  @author Don Hinton <dhinton@dresystems.com>
  *  @author This code was originally in various places including ace/OS.h.
@@ -53,10 +53,6 @@ extern "C"
 #else
 #endif /* ACE_HAS_BROKEN_RANDR */
 
-#if defined (DIGITAL_UNIX)
-  extern int _Prand_r (unsigned int *seedptr);
-#endif /* DIGITAL_UNIX */
-
 #if defined (ACE_LACKS_PUTENV_PROTOTYPE)
   int putenv (char *);
 #endif /* ACE_LACKS_PUTENV_PROTOTYPE */
@@ -66,8 +62,16 @@ extern "C"
 #endif /* ACE_LACKS_MKTEMP_PROTOTYPE */
 
 #if defined (ACE_LACKS_MKSTEMP_PROTOTYPE)
-  int mkstemp(char *);
+  int mkstemp (char *);
 #endif /* ACE_LACKS_MKSTEMP_PROTOTYPE */
+
+#if defined (ACE_LACKS_STRTOLL_PROTOTYPE)
+  long long strtoll (const char *, char **, int);
+#endif /* ACE_LACKS_STRTOLL_PROTOTYPE */
+
+#if defined (ACE_LACKS_STRTOULL_PROTOTYPE)
+  unsigned long long strtoull (const char *, char **, int);
+#endif /* ACE_LACKS_STRTOULL_PROTOTYPE */
 
 #ifdef __cplusplus
 }
@@ -75,4 +79,3 @@ extern "C"
 
 #include /**/ "ace/post.h"
 #endif /* ACE_OS_INCLUDE_OS_STDLIB_H */
-

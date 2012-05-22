@@ -1,4 +1,4 @@
-// $Id: POSIX_Proactor.cpp 81697 2008-05-14 18:33:11Z johnnyw $
+// $Id: POSIX_Proactor.cpp 92069 2010-09-28 11:38:59Z johnnyw $
 
 #include "ace/POSIX_Proactor.h"
 
@@ -81,10 +81,6 @@ ACE_POSIX_Proactor::ACE_POSIX_Proactor (void)
 #elif defined(HPUX)
 
   os_id_ = ACE_OS_HPUX;   // set family
-
-#elif defined(__sgi)
-
-  os_id_ = ACE_OS_IRIX;   // set family
 
 #elif defined(__OpenBSD)
 
@@ -520,39 +516,6 @@ ACE_POSIX_Proactor::create_asynch_timer
   return implementation;
 }
 
-#if 0
-int
-ACE_POSIX_Proactor::handle_signal (int, siginfo_t *, ucontext_t *)
-{
-  // Perform a non-blocking "poll" for all the I/O events that have
-  // completed in the I/O completion queue.
-
-  ACE_Time_Value timeout (0, 0);
-  int result = 0;
-
-  for (;;)
-    {
-      result = this->handle_events (timeout);
-      if (result != 0 || errno == ETIME)
-        break;
-    }
-
-  // If our handle_events failed, we'll report a failure to the
-  // Reactor.
-  return result == -1 ? -1 : 0;
-}
-
-int
-ACE_POSIX_Proactor::handle_close (ACE_HANDLE handle,
-                                  ACE_Reactor_Mask close_mask)
-{
-  ACE_UNUSED_ARG (close_mask);
-  ACE_UNUSED_ARG (handle);
-
-  return this->close ();
-}
-#endif /* 0 */
-
 void
 ACE_POSIX_Proactor::application_specific_code (ACE_POSIX_Asynch_Result *asynch_result,
                                                size_t bytes_transferred,
@@ -685,9 +648,9 @@ ACE_AIOCB_Notify_Pipe_Manager::ACE_AIOCB_Notify_Pipe_Manager (ACE_POSIX_AIOCB_Pr
                                0) // Proactor
       == -1)
     ACE_ERROR ((LM_ERROR,
-                "%N:%l:%p\n",
-                "ACE_AIOCB_Notify_Pipe_Manager::ACE_AIOCB_Notify_Pipe_Manager:"
-                "Open on Read Stream failed"));
+                ACE_TEXT("%N:%l:%p\n"),
+                ACE_TEXT("ACE_AIOCB_Notify_Pipe_Manager::ACE_AIOCB_Notify_Pipe_Manager:")
+                ACE_TEXT("Open on Read Stream failed")));
 
   // Issue an asynch_read on the read_stream of the notify pipe.
   if (this->read_stream_.read (this->message_block_,
@@ -696,9 +659,9 @@ ACE_AIOCB_Notify_Pipe_Manager::ACE_AIOCB_Notify_Pipe_Manager (ACE_POSIX_AIOCB_Pr
                                0) // Priority
       == -1)
     ACE_ERROR ((LM_ERROR,
-                "%N:%l:%p\n",
-                "ACE_AIOCB_Notify_Pipe_Manager::ACE_AIOCB_Notify_Pipe_Manager:"
-                "Read from pipe failed"));
+                ACE_TEXT("%N:%l:%p\n"),
+                ACE_TEXT("ACE_AIOCB_Notify_Pipe_Manager::ACE_AIOCB_Notify_Pipe_Manager:")
+                ACE_TEXT("Read from pipe failed")));
 }
 
 ACE_AIOCB_Notify_Pipe_Manager::~ACE_AIOCB_Notify_Pipe_Manager (void)
@@ -1126,8 +1089,8 @@ ACE_POSIX_Asynch_Result * ACE_POSIX_AIOCB_Proactor::getq_result (void)
 //  don't waste time if queue is empty - it is normal
 //  or check queue size before dequeue_head
 //    ACE_ERROR_RETURN ((LM_ERROR,
-//                       "%N:%l:(%P | %t):%p\n",
-//                       "ACE_POSIX_AIOCB_Proactor::getq_result failed"),
+//                       ACE_TEXT("%N:%l:(%P | %t):%p\n"),
+//                       ACE_TEXT("ACE_POSIX_AIOCB_Proactor::getq_result failed")),
 //                      0);
 
   return result;
@@ -1239,11 +1202,14 @@ ACE_POSIX_AIOCB_Proactor::get_result_status (ACE_POSIX_Asynch_Result *asynch_res
   transfer_count = 0;
 
   // Get the error status of the aio_ operation.
-  error_status  = aio_error (asynch_result);
+  // The following aio_ptr anathema is required to work around a bug in an over-aggressive
+  // optimizer in GCC 4.1.2.
+  aiocb *aio_ptr (asynch_result);
+  error_status  = aio_error (aio_ptr);
   if (error_status == EINPROGRESS)
     return 0;  // not completed
 
-  ssize_t op_return = aio_return (asynch_result);
+  ssize_t op_return = aio_return (aio_ptr);
   if (op_return > 0)
     transfer_count = static_cast<size_t> (op_return);
   // else transfer_count is already 0, error_status reports the error.
@@ -1425,16 +1391,18 @@ ACE_POSIX_AIOCB_Proactor::start_aio_i (ACE_POSIX_Asynch_Result *result)
   const ACE_TCHAR *ptype = 0;
 
   // Start IO
-
+  // The following aio_ptr anathema is required to work around a bug in
+  // the optimizer for GCC 4.1.2
+  aiocb * aio_ptr (result);
   switch (result->aio_lio_opcode )
     {
     case LIO_READ :
       ptype = ACE_TEXT ("read ");
-      ret_val = aio_read (result);
+      ret_val = aio_read (aio_ptr);
       break;
     case LIO_WRITE :
       ptype = ACE_TEXT ("write");
-      ret_val = aio_write (result);
+      ret_val = aio_write (aio_ptr);
       break;
     default:
       ptype = ACE_TEXT ("?????");
@@ -1656,8 +1624,8 @@ ACE_POSIX_SIG_Proactor::ACE_POSIX_SIG_Proactor (const sigset_t signal_set,
   // Empty the signal set first.
   if (sigemptyset (&this->RT_completion_signals_) == -1)
     ACE_ERROR ((LM_ERROR,
-                "Error:(%P | %t):%p\n",
-                "sigemptyset failed"));
+                ACE_TEXT("Error:(%P | %t):%p\n"),
+                ACE_TEXT("sigemptyset failed")));
 
   // For each signal number present in the <signal_set>, add it to
   // the signal set we use, and also set up its process signal action
@@ -1669,9 +1637,9 @@ ACE_POSIX_SIG_Proactor::ACE_POSIX_SIG_Proactor (const sigset_t signal_set,
                             si);
       if (member == -1)
         ACE_ERROR ((LM_ERROR,
-                    "%N:%l:(%P | %t)::%p\n",
-                    "ACE_POSIX_SIG_Proactor::ACE_POSIX_SIG_Proactor:"
-                    "sigismember failed"));
+                    ACE_TEXT("%N:%l:(%P | %t)::%p\n"),
+                    ACE_TEXT("ACE_POSIX_SIG_Proactor::ACE_POSIX_SIG_Proactor:")
+                    ACE_TEXT("sigismember failed")));
       else if (member == 1)
         {
           sigaddset (&this->RT_completion_signals_, si);
@@ -1724,8 +1692,8 @@ ACE_POSIX_SIG_Proactor::notify_completion (int sig_num)
   pid_t const pid = ACE_OS::getpid ();
   if (pid == (pid_t) -1)
     ACE_ERROR_RETURN ((LM_ERROR,
-                       "Error:%N:%l(%P | %t):%p",
-                       "<getpid> failed"),
+                       ACE_TEXT("Error:%N:%l(%P | %t):%p"),
+                       ACE_TEXT("<getpid> failed")),
                       -1);
 
   // Set the signal information.
@@ -1742,8 +1710,8 @@ ACE_POSIX_SIG_Proactor::notify_completion (int sig_num)
 
   if (errno != EAGAIN)
     ACE_ERROR_RETURN ((LM_ERROR,
-                       "Error:%N:%l:(%P | %t):%p\n",
-                       "<sigqueue> failed"),
+                       ACE_TEXT("Error:%N:%l:(%P | %t):%p\n"),
+                       ACE_TEXT("<sigqueue> failed")),
                       -1);
   return -1;
 }
@@ -1834,8 +1802,8 @@ ACE_POSIX_SIG_Proactor::setup_signal_handler (int signal_number) const
                                             0);
   if (sigaction_return == -1)
     ACE_ERROR_RETURN ((LM_ERROR,
-                       "Error:%p\n",
-                       "Proactor couldnt do sigaction for the RT SIGNAL"),
+                       ACE_TEXT("Error:%p\n"),
+                       ACE_TEXT("Proactor couldnt do sigaction for the RT SIGNAL")),
                       -1);
 #else
   ACE_UNUSED_ARG(signal_number);
@@ -2062,4 +2030,3 @@ ACE_POSIX_Wakeup_Completion::complete (size_t       /* bytes_transferred */,
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_HAS_AIO_CALLS */
-

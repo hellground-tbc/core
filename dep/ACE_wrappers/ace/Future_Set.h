@@ -4,7 +4,7 @@
 /**
  *  @file    Future_Set.h
  *
- *  $Id: Future_Set.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Future_Set.h 91626 2010-09-07 10:59:20Z johnnyw $
  *
  *  @author John Tucker <jtucker@infoglide.com>
  */
@@ -31,17 +31,18 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 /**
  * @class ACE_Future_Set
  *
- * @brief This class implements a mechanism which allows the values of
+ * @brief This class implements a mechanism that allows the values of
  * a collection of ACE_Future objects to be accessed by reader threads
  * as they become available.  The caller(s) provide the ACE_Future_Set
  * (i.e. the observer...) with the collection of ACE_Future objects
- * (i.e. the subjects...) that are to be observed using the
- * the ACE_Future_Set::insert() method.  The caller(s) may then iterate
- * over the collection in the order in which they become readable using
- * the ACE_Future_Set::next_readable() method.
+ * (i.e. the subjects...) that are to be observed using the the
+ * ACE_Future_Set::insert() method.  The caller(s) may then iterate
+ * over the collection in the order in which they become readable
+ * using the ACE_Future_Set::next_readable() method.
  */
 template <class T>
-class ACE_Future_Set : public ACE_Future_Observer<T>
+class ACE_Future_Set : public ACE_Future_Observer<T>,
+                       private ACE_Copy_Disabled
 {
 public:
   // = Initialization and termination methods.
@@ -99,10 +100,6 @@ public:
   ACE_ALLOC_HOOK_DECLARE;
 
 private:
-  // = Disallow these operations.
-  ACE_UNIMPLEMENTED_FUNC (void operator= (const ACE_Future_Set<T> &))
-  ACE_UNIMPLEMENTED_FUNC (ACE_Future_Set (const ACE_Future_Set<T> &))
-
   typedef ACE_Future<T> FUTURE;
 
   typedef ACE_Future_Rep<T> FUTURE_REP;
@@ -144,4 +141,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #endif /* ACE_HAS_THREADS */
 #include /**/ "ace/post.h"
 #endif /* ACE_FUTURE_SET_H */
-

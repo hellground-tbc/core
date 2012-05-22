@@ -4,7 +4,7 @@
 /**
  *  @file    Handle_Set.h
  *
- *  $Id: Handle_Set.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Handle_Set.h 92298 2010-10-21 11:15:17Z johnnyw $
  *
  *  @author Douglas C. Schmidt <schmidt@cs.wustl.edu>
  */
@@ -22,10 +22,6 @@
 
 #include "ace/os_include/sys/os_select.h"
 #include "ace/os_include/os_limits.h"
-
-#if defined (__QNX__)
-   typedef long fd_mask;
-#endif /* __QNX__ */
 
 // Default size of the ACE Reactor.
 #if defined (FD_SETSIZE)
@@ -200,10 +196,10 @@ public:
   ACE_ALLOC_HOOK_DECLARE;
 
 private:
-  /// The <Handle_Set> we are iterating through.
+  /// The Handle_Set we are iterating through.
   const ACE_Handle_Set &handles_;
 
-  /// Index of the bit we're examining in the current <word_num_> word.
+  /// Index of the bit we're examining in the current word_num_() word.
 #if defined (ACE_WIN32)
   u_int handle_index_;
 #elif !defined (ACE_HAS_BIG_FD_SET)
@@ -238,4 +234,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #include /**/ "ace/post.h"
 #endif /* ACE_HANDLE_SET */
-

@@ -1,4 +1,4 @@
-// $Id: Proactor.cpp 81535 2008-04-29 20:08:52Z shuston $
+// $Id: Proactor.cpp 91368 2010-08-16 13:03:34Z mhengstmengel $
 
 #include "ace/config-lite.h"
 #include "ace/Proactor.h"
@@ -15,11 +15,6 @@
 #if !defined (ACE_HAS_WINCE) && !defined (ACE_LACKS_ACE_SVCCONF)
 #    include "ace/Service_Config.h"
 #endif /* !ACE_HAS_WINCE && !ACE_LACKS_ACE_SVCCONF */
-
-
-ACE_RCSID (ace,
-           Proactor,
-           "$Id: Proactor.cpp 81535 2008-04-29 20:08:52Z shuston $")
 
 
 #include "ace/Task_T.h"
@@ -1174,4 +1169,3 @@ ACE_Proactor::event_loop_done (void)
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_HAS_WIN32_OVERLAPPED_IO || ACE_HAS_AIO_CALLS */
-

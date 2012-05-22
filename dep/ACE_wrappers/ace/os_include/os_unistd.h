@@ -6,7 +6,7 @@
  *
  *  standard symbolic constants and types
  *
- *  $Id: os_unistd.h 81697 2008-05-14 18:33:11Z johnnyw $
+ *  $Id: os_unistd.h 92183 2010-10-08 08:44:15Z olli $
  *
  *  @author Don Hinton <dhinton@dresystems.com>
  *  @author This code was originally in various places including ace/OS.h.
@@ -27,14 +27,13 @@
 #include "ace/os_include/sys/os_types.h"
 #include "ace/os_include/os_inttypes.h"
 
-#if defined (__BORLANDC__)
-#  include "ace/os_include/os_fcntl.h"
-#endif /* __BORLANDC */
-
-#if defined (ACE_WIN32) && !defined (ACE_HAS_WINCE)
+#if defined (ACE_HAS_PROCESS_H)
 #  include /**/ <process.h>
+#endif /* ACE_HAS_PROCESS_H */
+
+#if defined (ACE_HAS_IO_H)
 #  include /**/ <io.h>
-#endif /* ACE_WIN32 && !ACE_HAS_WINCE */
+#endif /* ACE_HAS_IO_H */
 
 #if defined (ACE_HAS_SYS_SYSTEMINFO_H)
 #  include /**/ <sys/systeminfo.h>
@@ -64,7 +63,7 @@ extern "C"
 // The following are #defines and #includes that are specific to
 // WIN32.
 #  if defined (ACE_HAS_WINCE)
-#    define ACE_STDIN  _fileno (stdin)
+#    define ACE_STDIN _fileno (stdin)
 #    define ACE_STDOUT _fileno (stdout)
 #    define ACE_STDERR _fileno (stderr)
 #  else
@@ -131,21 +130,6 @@ extern "C"
    u_int ualarm (u_int usecs, u_int interval);
 #endif /* ACE_LACKS_UALARM_PROTOTYPE */
 
-#if defined (ACE_LACKS_PREAD_PROTOTYPE) && (_XOPEN_SOURCE - 0) < 500
-   // _XOPEN_SOURCE == 500    Single Unix conformance
-   // It seems that _XOPEN_SOURCE == 500 means that the prototypes are
-   // already defined in the system headers.
-   ssize_t pread (int fd,
-                  void *buf,
-                  size_t nbytes,
-                  ACE_OFF_T offset);
-
-   ssize_t pwrite (int fd,
-                   const void *buf,
-                   size_t n,
-                   ACE_OFF_T offset);
-#endif  /* ACE_LACKS_PREAD_PROTOTYPE && (_XOPEN_SOURCE - 0) < 500 */
-
 #if defined (ACE_LACKS_GETPGID_PROTOTYPE) && \
     !defined (_XOPEN_SOURCE) && !defined (_XOPEN_SOURCE_EXTENDED)
    pid_t getpgid (pid_t pid);
@@ -164,12 +148,6 @@ extern "C"
 #endif  /* _LARGEFILE64_SOURCE */
 
 #if defined (__BORLANDC__)
-#  if (__BORLANDC__ <= 0x540)
-#    define _getcwd getcwd
-#    define _chdir chdir
-#    undef _access
-#    define _access access
-#  endif
 #  define _isatty isatty
 #endif /* __BORLANDC__ */
 
@@ -201,4 +179,3 @@ extern "C"
 
 #include /**/ "ace/post.h"
 #endif /* ACE_OS_INCLUDE_OS_UNISTD_H */
-

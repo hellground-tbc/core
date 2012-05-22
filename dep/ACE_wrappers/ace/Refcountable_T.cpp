@@ -1,13 +1,9 @@
-// $Id: Refcountable_T.cpp 81407 2008-04-24 05:59:30Z johnnyw $
+// $Id: Refcountable_T.cpp 91368 2010-08-16 13:03:34Z mhengstmengel $
 
 #ifndef ACE_REFCOUNTABLE_T_CPP
 #define ACE_REFCOUNTABLE_T_CPP
 
 #include "ace/Refcountable_T.h"
-
-ACE_RCSID (ace,
-           Refcountable_T,
-           "$Id: Refcountable_T.cpp 81407 2008-04-24 05:59:30Z johnnyw $")
 
 #if !defined (__ACE_INLINE__)
 #include "ace/Refcountable_T.inl"
@@ -23,4 +19,3 @@ ACE_Refcountable_T<ACE_LOCK>::~ACE_Refcountable_T (void)
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif  /* !ACE_REFCOUNTABLE_T_CPP */
-

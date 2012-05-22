@@ -1,7 +1,7 @@
 /**
  * @file Thread_Semaphore.cpp
  *
- * $Id: Thread_Semaphore.cpp 80826 2008-03-04 14:51:23Z wotte $
+ * $Id: Thread_Semaphore.cpp 91286 2010-08-05 09:04:31Z johnnyw $
  *
  * Originally in Synch.cpp
  *
@@ -18,7 +18,7 @@
 
 #include "ace/ACE.h"
 
-ACE_RCSID(ace, Thread_Semaphore, "$Id: Thread_Semaphore.cpp 80826 2008-03-04 14:51:23Z wotte $")
+
 
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
@@ -60,4 +60,3 @@ ACE_Malloc_Lock_Adapter_T<ACE_Thread_Semaphore>::operator () (const ACE_TCHAR *n
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_HAS_THREADS */
-

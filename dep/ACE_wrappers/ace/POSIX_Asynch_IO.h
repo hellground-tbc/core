@@ -4,7 +4,7 @@
 /**
  *  @file    POSIX_Asynch_IO.h
  *
- *  $Id: POSIX_Asynch_IO.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: POSIX_Asynch_IO.h 91688 2010-09-09 11:21:50Z johnnyw $
  *
  *  The implementation classes for POSIX implementation of Asynch
  *  Operations are defined here in this file.
@@ -893,10 +893,6 @@ private:
   typedef ACE_Map_Manager<ACE_HANDLE, ACE_POSIX_Asynch_Connect_Result *, ACE_SYNCH_NULL_MUTEX>
           MAP_MANAGER;
 
-  /// @deprecated (Two) Deprecated typedefs.  Use the map traits instead.
-  typedef MAP_MANAGER::ITERATOR MAP_ITERATOR;
-  typedef MAP_MANAGER::ENTRY MAP_ENTRY;
-
   /// Map of Result pointers that correspond to all the pending connects.
   MAP_MANAGER result_map_;
 
@@ -1300,4 +1296,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_HAS_AIO_CALLS */
 #endif /* ACE_POSIX_ASYNCH_IO_H */
-

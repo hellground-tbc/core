@@ -3,7 +3,7 @@
 /**
  *  @file   Stack_Trace.h
  *
- *  $Id: Stack_Trace.h 81926 2008-06-12 14:43:09Z mitza $
+ *  $Id: Stack_Trace.h 91743 2010-09-13 18:24:51Z johnnyw $
  *
  *  @author Chris Cleeland (cleeland.ociweb.com)
  */
@@ -104,5 +104,4 @@ private:
 
 #include /**/ "ace/post.h"
 #endif /* ACE_STACK_TRACE_H */
-
 

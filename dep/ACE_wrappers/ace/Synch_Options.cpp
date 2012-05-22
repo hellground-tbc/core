@@ -1,11 +1,9 @@
+// $Id: Synch_Options.cpp 91287 2010-08-05 10:30:49Z johnnyw $
+
 #include "ace/Synch_Options.h"
 
 #include "ace/Global_Macros.h"
 #include "ace/config-all.h"
-
-ACE_RCSID (ace,
-           Synch_Options,
-           "$Id: Synch_Options.cpp 80826 2008-03-04 14:51:23Z wotte $")
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -108,4 +106,3 @@ ACE_Synch_Options::arg (const void *a)
 }
 
 ACE_END_VERSIONED_NAMESPACE_DECL
-

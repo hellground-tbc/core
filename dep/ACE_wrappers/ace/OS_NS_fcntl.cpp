@@ -1,8 +1,6 @@
-// $Id: OS_NS_fcntl.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: OS_NS_fcntl.cpp 91781 2010-09-15 12:49:15Z johnnyw $
 
 #include "ace/OS_NS_fcntl.h"
-
-ACE_RCSID(ace, OS_NS_fcntl, "$Id: OS_NS_fcntl.cpp 80826 2008-03-04 14:51:23Z wotte $")
 
 #if !defined (ACE_HAS_INLINED_OSCALLS)
 # include "ace/OS_NS_fcntl.inl"
@@ -243,4 +241,3 @@ ACE_OS::open (const wchar_t *filename,
 #endif /* ACE_HAS_WCHAR */
 
 ACE_END_VERSIONED_NAMESPACE_DECL
-

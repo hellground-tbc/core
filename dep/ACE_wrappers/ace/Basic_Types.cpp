@@ -1,13 +1,10 @@
+// $Id: Basic_Types.cpp 91366 2010-08-16 12:42:35Z mhengstmengel $
+
 #include "ace/Basic_Types.h"
 
 #if !defined (__ACE_INLINE__)
 # include "ace/Basic_Types.inl"
 #endif /* ! __ACE_INLINE__ */
-
-
-ACE_RCSID (ace,
-           Basic_Types,
-           "$Id: Basic_Types.cpp 80826 2008-03-04 14:51:23Z wotte $")
 
 
 #if defined (ACE_LACKS_LONGLONG_T) && !defined (ACE_LACKS_UNSIGNEDLONGLONG_T)
@@ -136,5 +133,4 @@ operator<< (ostream& os, const ACE_U_LongLong& ll)
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_LACKS_LONGLONG_T */
-
 

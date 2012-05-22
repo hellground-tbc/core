@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="ACE"
-	ProjectGUID="{AD537C9A-FECA-1BAD-6757-8A6348EA12C8}"
+	ProjectGUID="{AD537C9A-FECA-1BAD-6757-8A6300006755}"
 	RootNamespace="ACE"
 	Keyword="Win32Proj"
 	SignManifests="true"
@@ -25,6 +25,7 @@
 			IntermediateDirectory="Debug\ACE_vc8\I386"
 			ConfigurationType="2"
 			CharacterSet="0"
+
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -51,7 +52,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".."
-				PreprocessorDefinitions="ACE_BUILD_DLL;_DEBUG;WIN32;_WINDOWS;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="ACE_BUILD_DLL;_DEBUG;WIN32;_WINDOWS;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MPC_LIB_MODIFIER=\&quot;d\&quot;"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -59,7 +60,8 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4355"
+				DisableSpecificWarnings="4355;4355;4244;4267;4748"
+				AdditionalOptions="/MP"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -107,6 +109,7 @@
 			IntermediateDirectory="Release\ACE_vc8\I386"
 			ConfigurationType="2"
 			CharacterSet="0"
+
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -138,7 +141,8 @@
 				RuntimeTypeInfo="true"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
-				DisableSpecificWarnings="4355"
+				DisableSpecificWarnings="4355;4355;4244;4267;4748"
+				AdditionalOptions="/MP"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -159,7 +163,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=".;..\lib"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -188,6 +192,7 @@
 			IntermediateDirectory="Debug\ACE_vc8\AMD64"
 			ConfigurationType="2"
 			CharacterSet="0"
+
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -214,7 +219,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".."
-				PreprocessorDefinitions="ACE_BUILD_DLL;_DEBUG;WIN32;_WINDOWS;_CRT_NONSTDC_NO_WARNINGS;_AMD64_;_WIN64;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
+				PreprocessorDefinitions="ACE_BUILD_DLL;_DEBUG;WIN32;_WINDOWS;_CRT_NONSTDC_NO_WARNINGS;_AMD64_;_WIN64;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;MPC_LIB_MODIFIER=\&quot;d\&quot;"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -222,7 +227,8 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4355"
+				DisableSpecificWarnings="4355;4355;4244;4267;4748"
+				AdditionalOptions="/MP"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -271,6 +277,7 @@
 			IntermediateDirectory="Release\ACE_vc8\AMD64"
 			ConfigurationType="2"
 			CharacterSet="0"
+
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -302,7 +309,8 @@
 				RuntimeTypeInfo="true"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
-				DisableSpecificWarnings="4355"
+				DisableSpecificWarnings="4355;4355;4244;4267;4748"
+				AdditionalOptions="/MP"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -324,7 +332,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=".;..\lib"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -353,7 +361,7 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;cxx;cc;C;c">
+			Filter="cpp;cxx;cc;c;C">
 			<File
 				RelativePath="ACE.cpp">
 			</File>
@@ -901,6 +909,9 @@
 				RelativePath="OS_NS_wchar.cpp">
 			</File>
 			<File
+				RelativePath="OS_NS_wctype.cpp">
+			</File>
+			<File
 				RelativePath="OS_QoS.cpp">
 			</File>
 			<File
@@ -1310,9 +1321,6 @@
 				RelativePath="Argv_Type_Converter.h">
 			</File>
 			<File
-				RelativePath="Array.h">
-			</File>
-			<File
 				RelativePath="Array_Base.h">
 			</File>
 			<File
@@ -1356,6 +1364,9 @@
 			</File>
 			<File
 				RelativePath="Atomic_Op.h">
+			</File>
+			<File
+				RelativePath="Atomic_Op_GCC_T.h">
 			</File>
 			<File
 				RelativePath="Atomic_Op_Sparc.h">
@@ -1460,15 +1471,6 @@
 				RelativePath="config-all.h">
 			</File>
 			<File
-				RelativePath="config-borland-common.h">
-			</File>
-			<File
-				RelativePath="config-cray.h">
-			</File>
-			<File
-				RelativePath="config-cxx-common.h">
-			</File>
-			<File
 				RelativePath="config-cygwin32.h">
 			</File>
 			<File
@@ -1493,16 +1495,7 @@
 				RelativePath="config-integritySCA.h">
 			</File>
 			<File
-				RelativePath="config-irix6.5.x-sgic++.h">
-			</File>
-			<File
-				RelativePath="config-irix6.x-common.h">
-			</File>
-			<File
-				RelativePath="config-irix6.x-g++.h">
-			</File>
-			<File
-				RelativePath="config-irix6.x-sgic++.h">
+				RelativePath="config-kfreebsd.h">
 			</File>
 			<File
 				RelativePath="config-linux-common.h">
@@ -1517,10 +1510,19 @@
 				RelativePath="config-lynxos.h">
 			</File>
 			<File
+				RelativePath="config-macosx-iphone-hardware.h">
+			</File>
+			<File
+				RelativePath="config-macosx-iphone-simulator.h">
+			</File>
+			<File
 				RelativePath="config-macosx-leopard.h">
 			</File>
 			<File
 				RelativePath="config-macosx-panther.h">
+			</File>
+			<File
+				RelativePath="config-macosx-snowleopard.h">
 			</File>
 			<File
 				RelativePath="config-macosx-tiger.h">
@@ -1574,12 +1576,6 @@
 				RelativePath="config-rtems.h">
 			</File>
 			<File
-				RelativePath="config-sco-5.0.0-nothread.h">
-			</File>
-			<File
-				RelativePath="config-sco-5.0.0.h">
-			</File>
-			<File
 				RelativePath="config-suncc-common.h">
 			</File>
 			<File
@@ -1619,28 +1615,10 @@
 				RelativePath="config-tandem.h">
 			</File>
 			<File
-				RelativePath="config-tru64.h">
-			</File>
-			<File
-				RelativePath="config-unixware-7.1.0.h">
-			</File>
-			<File
-				RelativePath="config-unixware-7.1.0.udk.h">
-			</File>
-			<File
 				RelativePath="config-visualage.h">
 			</File>
 			<File
 				RelativePath="config-vxworks.h">
-			</File>
-			<File
-				RelativePath="config-vxworks5.x.h">
-			</File>
-			<File
-				RelativePath="config-vxworks6.2.h">
-			</File>
-			<File
-				RelativePath="config-vxworks6.3.h">
 			</File>
 			<File
 				RelativePath="config-vxworks6.4.h">
@@ -1652,7 +1630,16 @@
 				RelativePath="config-vxworks6.6.h">
 			</File>
 			<File
+				RelativePath="config-vxworks6.7.h">
+			</File>
+			<File
+				RelativePath="config-vxworks6.8.h">
+			</File>
+			<File
 				RelativePath="config-win32-borland.h">
+			</File>
+			<File
+				RelativePath="config-win32-cegcc.h">
 			</File>
 			<File
 				RelativePath="config-win32-common.h">
@@ -1661,13 +1648,13 @@
 				RelativePath="config-win32-dmc.h">
 			</File>
 			<File
-				RelativePath="config-win32-ghs.h">
-			</File>
-			<File
 				RelativePath="config-win32-interix.h">
 			</File>
 			<File
 				RelativePath="config-win32-mingw.h">
+			</File>
+			<File
+				RelativePath="config-win32-msvc-10.h">
 			</File>
 			<File
 				RelativePath="config-win32-msvc-7.h">
@@ -1788,9 +1775,6 @@
 			</File>
 			<File
 				RelativePath="Event_Handler_T.h">
-			</File>
-			<File
-				RelativePath="Exception_Macros.h">
 			</File>
 			<File
 				RelativePath="FIFO.h">
@@ -2018,9 +2002,6 @@
 				RelativePath="Manual_Event.h">
 			</File>
 			<File
-				RelativePath="Map.h">
-			</File>
-			<File
 				RelativePath="Map_Manager.h">
 			</File>
 			<File
@@ -2067,9 +2048,6 @@
 			</File>
 			<File
 				RelativePath="Message_Queue_Vx.h">
-			</File>
-			<File
-				RelativePath="Method_Object.h">
 			</File>
 			<File
 				RelativePath="Method_Request.h">
@@ -2175,12 +2153,6 @@
 			</File>
 			<File
 				RelativePath="Obstack_T.h">
-			</File>
-			<File
-				RelativePath="OS.h">
-			</File>
-			<File
-				RelativePath="OS_Dirent.h">
 			</File>
 			<File
 				RelativePath="OS_Errno.h">
@@ -2373,6 +2345,9 @@
 			</File>
 			<File
 				RelativePath="os_include\os_trace.h">
+			</File>
+			<File
+				RelativePath="os_include\os_typeinfo.h">
 			</File>
 			<File
 				RelativePath="os_include\os_ucontext.h">
@@ -2576,10 +2551,10 @@
 				RelativePath="OS_NS_wchar.h">
 			</File>
 			<File
-				RelativePath="OS_QoS.h">
+				RelativePath="OS_NS_wctype.h">
 			</File>
 			<File
-				RelativePath="OS_String.h">
+				RelativePath="OS_QoS.h">
 			</File>
 			<File
 				RelativePath="OS_Thread_Adapter.h">
@@ -2589,9 +2564,6 @@
 			</File>
 			<File
 				RelativePath="Pagefile_Memory_Pool.h">
-			</File>
-			<File
-				RelativePath="Pair.h">
 			</File>
 			<File
 				RelativePath="Pair_T.h">
@@ -2675,9 +2647,6 @@
 				RelativePath="Recyclable.h">
 			</File>
 			<File
-				RelativePath="Refcountable.h">
-			</File>
-			<File
 				RelativePath="Refcountable_T.h">
 			</File>
 			<File
@@ -2742,9 +2711,6 @@
 			</File>
 			<File
 				RelativePath="Service_Repository.h">
-			</File>
-			<File
-				RelativePath="Service_Templates.h">
 			</File>
 			<File
 				RelativePath="Service_Types.h">
@@ -2915,9 +2881,6 @@
 				RelativePath="Synch_Options.h">
 			</File>
 			<File
-				RelativePath="Synch_T.h">
-			</File>
-			<File
 				RelativePath="Synch_Traits.h">
 			</File>
 			<File
@@ -3033,6 +2996,9 @@
 			</File>
 			<File
 				RelativePath="Token_Request_Reply.h">
+			</File>
+			<File
+				RelativePath="Tokenizer_T.h">
 			</File>
 			<File
 				RelativePath="TP_Reactor.h">
@@ -3172,145 +3138,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ace_flreactor.mpc">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="ace_for_tao.mpc">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="ace_foxreactor.mpc">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="ace_qt3reactor.mpc">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="ace_qt4reactor.mpc">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="ace_tkreactor.mpc">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true"
-				>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="ace_xtreactor.mpc">
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
@@ -3425,6 +3253,29 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="svcconfgen.mpc">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="token.mpb">
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3472,8 +3323,357 @@
 			</File>
 		</Filter>
 		<Filter
+			Name="Installdata Files"
+			Filter="">
+			<File
+				RelativePath="..\AUTHORS">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\bin\add_rel_link.sh">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\bin\DependencyGenerator">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\bin\depgen.pl">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\bin\MakeProjectCreator">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\bin\mpc.pl">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\bin\mwc.pl">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\COPYING">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\docs">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\include\makeinclude">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\NEWS">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\PROBLEM-REPORT-FORM">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\README">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\THANKS">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\VERSION">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+				>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
 			Name="Pkgconfig Files"
-			Filter="in">
+			Filter="pcin">
 			<File
 				RelativePath="ACE.pc.in">
 				<FileConfiguration
@@ -3500,7 +3700,7 @@
 		</Filter>
 		<Filter
 			Name="Inline Files"
-			Filter="i;inl">
+			Filter="i;ipp;inl">
 			<File
 				RelativePath="ACE.inl">
 			</File>
@@ -3554,6 +3754,9 @@
 			</File>
 			<File
 				RelativePath="Atomic_Op.inl">
+			</File>
+			<File
+				RelativePath="Atomic_Op_GCC_T.inl">
 			</File>
 			<File
 				RelativePath="Atomic_Op_T.inl">
@@ -3626,6 +3829,9 @@
 			</File>
 			<File
 				RelativePath="Containers_T.inl">
+			</File>
+			<File
+				RelativePath="Countdown_Time.inl">
 			</File>
 			<File
 				RelativePath="Date_Time.inl">
@@ -3904,9 +4110,6 @@
 				RelativePath="Obstack_T.inl">
 			</File>
 			<File
-				RelativePath="OS.inl">
-			</File>
-			<File
 				RelativePath="OS_Errno.inl">
 			</File>
 			<File
@@ -4007,6 +4210,9 @@
 			</File>
 			<File
 				RelativePath="OS_NS_wchar.inl">
+			</File>
+			<File
+				RelativePath="OS_NS_wctype.inl">
 			</File>
 			<File
 				RelativePath="OS_TLI.inl">
@@ -4518,6 +4724,33 @@
 			</File>
 			<File
 				RelativePath="Asynch_Connector.cpp">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="Atomic_Op_GCC_T.cpp">
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true">
@@ -6083,33 +6316,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Synch_T.cpp">
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					ExcludedFromBuild="true">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="Task_Ex_T.cpp">
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -6354,6 +6560,33 @@
 			</File>
 			<File
 				RelativePath="Timer_Wheel_T.cpp">
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="Tokenizer_T.cpp">
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true">

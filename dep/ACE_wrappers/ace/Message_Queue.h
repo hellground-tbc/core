@@ -4,7 +4,7 @@
 /**
  *  @file    Message_Queue.h
  *
- *  $Id: Message_Queue.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Message_Queue.h 91688 2010-09-09 11:21:50Z johnnyw $
  *
  *  @author Douglas C. Schmidt <schmidt@cs.wustl.edu>
  */
@@ -21,10 +21,6 @@
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 
 #include "ace/IO_Cntl_Msg.h"
-#if defined (ACE_HAS_WIN32_OVERLAPPED_IO)
-# include "ace/Synch_Traits.h"   /* Needed in ACE_Message_Queue_NT */
-# include "ace/Thread_Mutex.h"   /* Needed in ACE_Message_Queue_NT */
-#endif
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -68,13 +64,9 @@ public:
     // and WAS_INACTIVE are defined to match previous semantics for
     // applications that don't use the PULSED state.
 
-    /// @deprecated Use ACTIVATED instead.
-    WAS_ACTIVE = 1,
     /// Message queue is active and processing normally
     ACTIVATED = 1,
 
-    /// @deprecated Use DEACTIVATED instead.
-    WAS_INACTIVE = 2,
     /// Queue is deactivated; no enqueue or dequeue operations allowed.
     DEACTIVATED = 2,
 
@@ -235,4 +227,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #include /**/ "ace/post.h"
 #endif /* ACE_MESSAGE_QUEUE_H */
-

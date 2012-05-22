@@ -4,7 +4,7 @@
 /**
  *  @file Intrusive_List.h
  *
- *  $Id: Intrusive_List.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Intrusive_List.h 91688 2010-09-09 11:21:50Z johnnyw $
  *
  *  @author Carlos O'Ryan <coryan@uci.edu>
  */
@@ -14,7 +14,7 @@
 #define ACE_INTRUSIVE_LIST_H
 #include /**/ "ace/pre.h"
 
-#include /**/ "ace/config-all.h"
+#include /**/ "ace/config-lite.h"
 
 #if !defined (ACE_LACKS_PRAGMA_ONCE)
 # pragma once
@@ -68,12 +68,8 @@ public:
 
   // = Check boundary conditions.
 
-  /// Returns 1 if the container is empty, otherwise returns 0.
-  int is_empty (void) const;
-
-  /// Returns 1 if the container is empty, otherwise returns 0.
-  /// @deprecated Use is_empty() instead.
-  int empty (void) const;
+  /// Returns true if the container is empty, otherwise returns false.
+  bool is_empty (void) const;
 
   /// Insert an element at the beginning of the list
   void push_front (T *node);
@@ -142,4 +138,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #include /**/ "ace/post.h"
 #endif /* ACE_INTRUSIVE_LIST_H */
-

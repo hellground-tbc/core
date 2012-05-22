@@ -223,6 +223,7 @@
       <ProgramDatabaseFile>..\..\..\..\bin\$(Platform)_$(Configuration)\TrinityScript.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>..\..\..\..\bin\$(Platform)_$(Configuration)\TrinityScript.map</MapFileName>
+      <AdditionalOptions>/Zm 200 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

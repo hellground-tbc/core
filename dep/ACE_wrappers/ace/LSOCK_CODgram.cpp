@@ -1,11 +1,11 @@
-// $Id: LSOCK_CODgram.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: LSOCK_CODgram.cpp 91286 2010-08-05 09:04:31Z johnnyw $
 
 #include "ace/LSOCK_CODgram.h"
 #if !defined (ACE_LACKS_UNIX_DOMAIN_SOCKETS)
 
 #include "ace/Log_Msg.h"
 
-ACE_RCSID(ace, LSOCK_CODgram, "$Id: LSOCK_CODgram.cpp 80826 2008-03-04 14:51:23Z wotte $")
+
 
 #if !defined (__ACE_INLINE__)
 #include "ace/LSOCK_CODgram.inl"
@@ -60,4 +60,3 @@ ACE_LSOCK_CODgram::ACE_LSOCK_CODgram (const ACE_Addr &remote,
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_LACKS_UNIX_DOMAIN_SOCKETS */
-

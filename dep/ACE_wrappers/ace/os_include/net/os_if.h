@@ -6,7 +6,7 @@
  *
  *  sockets local interfaces
  *
- *  $Id: os_if.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: os_if.h 91688 2010-09-09 11:21:50Z johnnyw $
  *
  *  @author Don Hinton <dhinton@dresystems.com>
  *  @author This code was originally in various places including ace/OS.h.
@@ -25,17 +25,10 @@
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 
 #if !defined (ACE_LACKS_NET_IF_H)
-   // This part if to avoid STL name conflict with the map structure
-   // in net/if.h.
-#  if defined (ACE_HAS_STL_MAP_CONFLICT)
-#    define map _Resource_Allocation_Map_
-#  endif /* ACE_HAS_STL_MAP_CONFLICT */
-   extern "C" {
 #  include /**/ <net/if.h>
-   }
-#  if defined (ACE_HAS_STL_MAP_CONFLICT)
-#    undef map
-#  endif /* ACE_HAS_STL_MAP_CONFLICT */
+#  if defined (ACE_HAS_NET_IF_DL_H)
+#    include /**/ <net/if_dl.h>
+#  endif /* ACE_HAS_NET_IF_DL_H */
 #  if defined (HPUX) && defined (IOR)
    /* HP-UX 11.11 defines IOR in /usr/include/pa/inline.h
       and we don't want that definition.  See IOP_IORC.h.
@@ -53,10 +46,6 @@
 extern "C"
 {
 #endif /* __cplusplus */
-
-#if defined (ACE_HAS_BROKEN_IF_HEADER)
-   struct ifafilt;
-#endif /* ACE_HAS_BROKEN_IF_HEADER */
 
 #if defined (ACE_LACKS_IFREQ)
 struct  ifreq {
@@ -117,4 +106,3 @@ struct  ifconf {
 
 #include /**/ "ace/post.h"
 #endif /* ACE_OS_INCLUDE_NET_OS_IF_H */
-

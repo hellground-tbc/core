@@ -462,10 +462,6 @@
     <ClInclude Include="..\..\src\shared\Threading.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="ACE_vc9.vcxproj">
-      <Project>{bd537c9a-feca-1bad-6757-8a6348ea12c8}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="framework.vcxproj">
       <Project>{bf6f5d0e-33a5-4e23-9e7d-dd481b7b5b9e}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

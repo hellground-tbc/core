@@ -1,4 +1,4 @@
-// $Id: POSIX_CB_Proactor.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: POSIX_CB_Proactor.cpp 91683 2010-09-09 09:07:49Z johnnyw $
 
 #include "ace/POSIX_CB_Proactor.h"
 
@@ -8,10 +8,6 @@
 #include "ace/Log_Msg.h"
 #include "ace/Object_Manager.h"
 #include "ace/OS_NS_sys_time.h"
-
-ACE_RCSID (ace,
-           POSIX_CB_Proactor,
-           "$Id: POSIX_CB_Proactor.cpp 80826 2008-03-04 14:51:23Z wotte $")
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -87,10 +83,6 @@ ACE_POSIX_CB_Proactor::allocate_aio_slot (ACE_POSIX_Asynch_Result *result)
   // @@ TODO: This gets the completion method back to this proactor to
   // find the completed aiocb. It would be so much better to not only get
   // the proactor, but the aiocb as well.
-#if defined(__sgi)
-  result->aio_sigevent.sigev_notify = SIGEV_CALLBACK;
-  result->aio_sigevent.sigev_func   = aio_completion_func ;
-#else
   result->aio_sigevent.sigev_notify = SIGEV_THREAD;
 #  if defined (ACE_HAS_SIG_C_FUNC)
   result->aio_sigevent.sigev_notify_function =
@@ -99,7 +91,6 @@ ACE_POSIX_CB_Proactor::allocate_aio_slot (ACE_POSIX_Asynch_Result *result)
   result->aio_sigevent.sigev_notify_function = aio_completion_func;
 #  endif /* ACE_HAS_SIG_C_FUNC */
   result->aio_sigevent.sigev_notify_attributes = 0;
-#endif /* __sgi */
 
   result->aio_sigevent.sigev_value.sival_ptr = this ;
 
@@ -135,9 +126,9 @@ ACE_POSIX_CB_Proactor::handle_events_i (u_long milli_seconds)
       if (lerror != ETIME &&   // timeout
           lerror != EINTR )    // interrupted system call
         ACE_ERROR ((LM_ERROR,
-                    "%N:%l:(%P | %t)::%p\n",
-                    "ACE_POSIX_CB_Proactor::handle_events:"
-                    "semaphore acquire failed"
+                    ACE_TEXT("%N:%l:(%P | %t)::%p\n"),
+                    ACE_TEXT("ACE_POSIX_CB_Proactor::handle_events:")
+                    ACE_TEXT("semaphore acquire failed")
                   ));
     }
 
@@ -183,4 +174,3 @@ ACE_POSIX_CB_Proactor::handle_events_i (u_long milli_seconds)
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_HAS_AIO_CALLS && !ACE_HAS_BROKEN_SIGEVENT_STRUCT */
-

@@ -4,7 +4,7 @@
 /**
  *  @file    Asynch_Acceptor.h
  *
- *  $Id: Asynch_Acceptor.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Asynch_Acceptor.h 91693 2010-09-09 12:57:54Z johnnyw $
  *
  *  @author Irfan Pyarali (irfan@cs.wustl.edu)
  */
@@ -211,11 +211,6 @@ public:
   /// Set bytes to be read with the <accept> call.
   virtual void bytes_to_read (size_t new_value);
 
-  /// @deprecated address_size() assumes IPv4 use, so is not always valid.
-  /// This method will be removed after ACE 5.5. Internal uses have been
-  /// changes to base needed sizes on the addr_family_ member.
-  static size_t address_size (void);
-
 protected:
 
   /// This is called when an outstanding accept completes.
@@ -279,4 +274,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #endif /* ACE_HAS_WIN32_OVERLAPPED_IO || ACE_HAS_AIO_CALLS */
 #include /**/ "ace/post.h"
 #endif /* ACE_ASYNCH_ACCEPTOR_H */
-

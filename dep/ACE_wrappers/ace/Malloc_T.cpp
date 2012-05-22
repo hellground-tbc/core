@@ -1,4 +1,4 @@
-// $Id: Malloc_T.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: Malloc_T.cpp 91809 2010-09-17 07:20:41Z johnnyw $
 
 #ifndef ACE_MALLOC_T_CPP
 #define ACE_MALLOC_T_CPP
@@ -299,10 +299,34 @@ ACE_Allocator_Adapter<MALLOC>::ACE_Allocator_Adapter (const char *pool_name)
   ACE_TRACE ("ACE_Allocator_Adapter<MALLOC>::ACE_Allocator_Adapter");
 }
 
+template <class MALLOC>
+ACE_Allocator_Adapter<MALLOC>::ACE_Allocator_Adapter (
+  const char *pool_name,
+  const char *lock_name,
+  MEMORY_POOL_OPTIONS options)
+    : allocator_ (ACE_TEXT_CHAR_TO_TCHAR (pool_name),
+                  ACE_TEXT_CHAR_TO_TCHAR (lock_name),
+                  options)
+{
+  ACE_TRACE ("ACE_Allocator_Adapter<MALLOC>::ACE_Allocator_Adapter");
+}
+
 #if defined (ACE_HAS_WCHAR)
 template <class MALLOC>
 ACE_Allocator_Adapter<MALLOC>::ACE_Allocator_Adapter (const wchar_t *pool_name)
   : allocator_ (ACE_TEXT_WCHAR_TO_TCHAR (pool_name))
+{
+  ACE_TRACE ("ACE_Allocator_Adapter<MALLOC>::ACE_Allocator_Adapter");
+}
+
+template <class MALLOC>
+ACE_Allocator_Adapter<MALLOC>::ACE_Allocator_Adapter (
+  const wchar_t *pool_name,
+  const wchar_t *lock_name,
+  MEMORY_POOL_OPTIONS options)
+    : allocator_ (ACE_TEXT_WCHAR_TO_TCHAR (pool_name),
+                  ACE_TEXT_WCHAR_TO_TCHAR (lock_name),
+                  options)
 {
   ACE_TRACE ("ACE_Allocator_Adapter<MALLOC>::ACE_Allocator_Adapter");
 }
@@ -543,32 +567,6 @@ ACE_Malloc_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::ACE_Malloc_T (const ACE_TCHAR *p
                 ACE_TEXT ("%p\n"),
                 ACE_TEXT ("ACE_Malloc_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::ACE_Malloc_T")));
 }
-
-#if !defined (ACE_HAS_TEMPLATE_TYPEDEFS)
-template <ACE_MEM_POOL_1, class ACE_LOCK, class ACE_CB>
-ACE_Malloc_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::ACE_Malloc_T (const ACE_TCHAR *pool_name,
-                                                          const ACE_TCHAR *lock_name,
-                                                          const void *options)
-  : cb_ptr_ (0),
-    memory_pool_ (pool_name,
-                  (const ACE_MEM_POOL_OPTIONS *) options),
-    bad_flag_ (0)
-{
-  ACE_TRACE ("ACE_Malloc_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::ACE_Malloc_T");
-
-  this->lock_ = ACE_Malloc_Lock_Adapter_T<ACE_LOCK> ()(lock_name);
-  if (this->lock_ == 0)
-    return;
-
-  this->delete_lock_ = true;
-  this->bad_flag_ = this->open ();
-  if (this->bad_flag_ == -1)
-    ACE_ERROR ((LM_ERROR,
-                ACE_TEXT ("%p\n"),
-                ACE_TEXT ("ACE_Malloc_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::ACE_Malloc_T")));
-}
-#endif /* ACE_HAS_TEMPLATE_TYPEDEFS */
-
 
 template <ACE_MEM_POOL_1, class ACE_LOCK, class ACE_CB>
 ACE_Malloc_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::~ACE_Malloc_T (void)
@@ -1055,8 +1053,7 @@ ACE_Malloc_LIFO_Iterator_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::dump (void) const
   ACE_DEBUG ((LM_DEBUG, ACE_BEGIN_DUMP, this));
   this->curr_->dump ();
   this->guard_.dump ();
-  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("name_ = %s"), this->name_));
-  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("\n")));
+  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("name_ = %C\n"), this->name_));
   ACE_DEBUG ((LM_DEBUG, ACE_END_DUMP));
 #endif /* ACE_HAS_DUMP */
 }
@@ -1150,8 +1147,7 @@ ACE_Malloc_FIFO_Iterator_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::dump (void) const
   ACE_DEBUG ((LM_DEBUG, ACE_BEGIN_DUMP, this));
   this->curr_->dump ();
   this->guard_.dump ();
-  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("name_ = %s"), this->name_));
-  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("\n")));
+  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("name_ = %s\n"), this->name_));
   ACE_DEBUG ((LM_DEBUG, ACE_END_DUMP));
 #endif /* ACE_HAS_DUMP */
 }
@@ -1260,4 +1256,3 @@ ACE_Malloc_FIFO_Iterator_T<ACE_MEM_POOL_2, ACE_LOCK, ACE_CB>::start (void)
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_MALLOC_T_CPP */
-

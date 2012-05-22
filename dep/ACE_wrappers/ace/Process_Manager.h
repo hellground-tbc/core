@@ -4,7 +4,7 @@
 /**
  *  @file    Process_Manager.h
  *
- *  $Id: Process_Manager.h 81014 2008-03-19 11:41:31Z johnnyw $
+ *  $Id: Process_Manager.h 91688 2010-09-09 11:21:50Z johnnyw $
  *
  *  @author Douglas C. Schmidt <schmidt@cs.wustl.edu>
  */
@@ -269,17 +269,6 @@ public:
    */
   pid_t wait (pid_t pid,
               ACE_exitcode *status = 0);
-
-  /**
-   * @deprecated
-   * Reap the result of a single process by calling ACE_OS::waitpid(),
-   * therefore, this method is not portable to Windows.  If the child is
-   * successfully reaped, remove() is called automatically.
-   * Use one of the wait() methods instead of this method.
-   */
-  int reap (pid_t pid = -1,
-            ACE_exitcode *stat_loc = 0,
-            int options = WNOHANG);
   //@}
 
   /**
@@ -337,9 +326,9 @@ public:
   //@}
 
 protected:
-  // = These methods allow a <Process_Manager> to be an <Event_Handler>.
+  // = These methods allow a <Process_Manager> to be an Event_Handler.
 
-  // As an <Event_Handler>, the <Process_Manager> automagically
+  // As an Event_Handler, the <Process_Manager> automagically
   // detects child Processes exiting and calls notify_proc_handler()
   // and remove().  This means that you don't have to (shouldn't!)
   // call the wait(...)  methods yourself.
@@ -475,4 +464,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #include /**/ "ace/post.h"
 #endif /* ACE_PROCESS_MANAGER_H */
-

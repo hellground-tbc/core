@@ -1,11 +1,9 @@
+// $Id: Codecs.cpp 91813 2010-09-17 07:52:52Z johnnyw $
+
 #include "ace/Codecs.h"
 #include "ace/Log_Msg.h"
 #include "ace/OS_Memory.h"
 #include "ace/OS_NS_ctype.h"
-
-ACE_RCSID (ace,
-           Codecs,
-           "$Id: Codecs.cpp 80826 2008-03-04 14:51:23Z wotte $")
 
 namespace
 {
@@ -232,4 +230,3 @@ ACE_Base64::init ()
 }
 
 ACE_END_VERSIONED_NAMESPACE_DECL
-

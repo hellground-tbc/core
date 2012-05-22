@@ -1,6 +1,6 @@
 /* -*- C++ -*- */
 // Testing TANDEM
-// $Id: config-tandem.h 81697 2008-05-14 18:33:11Z johnnyw $
+// $Id: config-tandem.h 91781 2010-09-15 12:49:15Z johnnyw $
 
 // The following configuration file is designed to work for Tandems NonStop-UX
 // 4.2MP  platforms using the NCC 3.20 compiler.
@@ -41,7 +41,7 @@
 
 //Platform supports system configuration information
 #define ACE_HAS_SYS_SYSTEMINFO_H
-#define ACE_HAS_SYSINFO
+#define ACE_HAS_SYSV_SYSINFO
 
 //Platform supports the POSIX regular expression library
 #define ACE_HAS_REGEX
@@ -111,9 +111,6 @@
 #define ACE_HAS_STREAM_PIPES
 //Platform supports STREAM pipes
 
-//Compiler/platform supports strerror ()
-#define ACE_HAS_STRERROR
-
 //Compiler/platform supports struct strbuf
 #define ACE_HAS_STRBUF_T
 
@@ -157,7 +154,6 @@
 
 // Compiler/platform has threadspecific storage
 #define ACE_HAS_THREAD_SPECIFIC_STORAGE
-//Platform supports thr_keydelete  (e.g,. UNIXWARE)
 
 #define ACE_HAS_THR_MINSTACK            // Tandem uses thr_minstack instead of thr_min_stack
 #define ACE_LACKS_PRI_T                 // Tandem lacks pri_t
@@ -172,6 +168,7 @@
 //Platform uses non-const char * in calls to gethostbyaddr, gethostbyname,
 // getservbyname
 #define ACE_HAS_NONCONST_GETBY
+#define ACE_HAS_NONCONST_INET_ADDR
 // Platform's select() uses non-const timeval* (only found on Linux right now)
 #define ACE_HAS_NONCONST_SELECT_TIMEVAL
 // And on Tandem :-)
@@ -183,7 +180,6 @@
 #define ACE_HAS_STANDARD_CPP_LIBRARY
 //Platform lacks madvise() (e.g., Linux)
 #define ACE_LACKS_MADVISE
-//Compiler/platform lacks strcasecmp() (e.g., DG/UX, UNIXWARE, VXWORKS)
 #define ACE_LACKS_STRCASECMP
 
 // Defines the page size of the system.
@@ -191,4 +187,3 @@
 
 #include /**/ "ace/post.h"
 #endif /* ACE_CONFIG_H */
-

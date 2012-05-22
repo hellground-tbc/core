@@ -1,4 +1,4 @@
-// $Id: Service_Manager.cpp 82513 2008-08-05 18:52:53Z parsons $
+// $Id: Service_Manager.cpp 91286 2010-08-05 09:04:31Z johnnyw $
 
 #include "ace/Service_Manager.h"
 
@@ -11,10 +11,6 @@
 #include "ace/WFMO_Reactor.h"
 #include "ace/OS_NS_stdio.h"
 #include "ace/OS_NS_string.h"
-
-ACE_RCSID (ace,
-           Service_Manager,
-           "$Id: Service_Manager.cpp 82513 2008-08-05 18:52:53Z parsons $")
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -315,7 +311,7 @@ ACE_Service_Manager::handle_input (ACE_HANDLE)
   // created handle. This is because the newly created handle will
   // inherit the properties of the listen handle, including its event
   // associations.
-  int reset_new_handle =
+  bool reset_new_handle =
     ACE_Reactor::instance ()->uses_event_associations ();
 
   if (this->acceptor_.accept (this->client_stream_, // stream
@@ -435,4 +431,3 @@ ACE_Service_Manager::handle_input (ACE_HANDLE)
 }
 
 ACE_END_VERSIONED_NAMESPACE_DECL
-

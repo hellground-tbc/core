@@ -1,4 +1,4 @@
-// $Id: Timer_Heap_T.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: Timer_Heap_T.cpp 92069 2010-09-28 11:38:59Z johnnyw $
 
 #ifndef ACE_TIMER_HEAP_T_CPP
 #define ACE_TIMER_HEAP_T_CPP
@@ -349,7 +349,7 @@ ACE_Timer_Heap_T<TYPE, FUNCTOR, ACE_LOCK>::dump (void) const
   ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("\nmin_free_ = %d"),
               this->timer_ids_min_free_));
 
-  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("\nheap_ = \n")));
+  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("\nheap_ =\n")));
 
   for (size_t i = 0; i < this->cur_size_; ++i)
     {
@@ -359,7 +359,7 @@ ACE_Timer_Heap_T<TYPE, FUNCTOR, ACE_LOCK>::dump (void) const
       this->heap_[i]->dump ();
     }
 
-  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("\ntimer_ids_ = \n")));
+  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("\ntimer_ids_ =\n")));
 
   for (size_t j = 0; j < this->max_size_; ++j)
     ACE_DEBUG ((LM_DEBUG,
@@ -522,21 +522,7 @@ ACE_Timer_Heap_T<TYPE, FUNCTOR, ACE_LOCK>::grow_heap (void)
   // All the containers will double in size from max_size_.
   size_t new_size = this->max_size_ * 2;
 
-#if 0
-  // Yikes - there's no way to flag a failure of going out of range of
-  // a 'long' - this is a problem that should be addressed at some point.
-  if (new_size > ACE_Numeric_Limits<long>::max ())
-    new_size = ACE_Numeric_Limits<long>::max ();
-
-  if (new_size <= this->max_size_)   // We are already at the limit
-    {
-      errno = ENOMEM;
-      return -1;
-    }
-#endif /* 0 */
-
-   // First grow the heap itself.
-
+  // First grow the heap itself.
   ACE_Timer_Node_T<TYPE> **new_heap = 0;
 
   ACE_NEW (new_heap,
@@ -688,7 +674,7 @@ ACE_Timer_Heap_T<TYPE, FUNCTOR, ACE_LOCK>::schedule_i (
   if ((this->cur_size_ + this->cur_limbo_) < this->max_size_)
     {
       // Obtain the next unique sequence number.
-      long timer_id = this->timer_id ();
+      long const timer_id = this->timer_id ();
 
       // Obtain the memory to the new node.
       ACE_Timer_Node_T<TYPE> *temp = 0;
@@ -887,4 +873,3 @@ ACE_Timer_Heap_T<TYPE, FUNCTOR, ACE_LOCK>::get_first (void)
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_TIMER_HEAP_T_CPP */
-

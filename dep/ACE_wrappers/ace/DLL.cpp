@@ -1,4 +1,4 @@
-// $Id: DLL.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: DLL.cpp 91286 2010-08-05 09:04:31Z johnnyw $
 
 #include "ace/DLL.h"
 
@@ -11,7 +11,7 @@
 
 #include <algorithm>
 
-ACE_RCSID(ace, DLL, "$Id: DLL.cpp 80826 2008-03-04 14:51:23Z wotte $")
+
 
   ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -265,4 +265,3 @@ ACE_DLL::set_handle (ACE_SHLIB_HANDLE handle,
 }
 
 ACE_END_VERSIONED_NAMESPACE_DECL
-

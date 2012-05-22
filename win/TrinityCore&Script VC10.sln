@@ -16,8 +16,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityRealm", "VC10\Trinit
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "trinityscript", "..\src\bindings\scripts\VC10\10ScriptDev2.vcxproj", "{4295C8A9-79B7-4354-8064-F05FB9CA0C96}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACE_Wrappers", "VC10\ACE_vc9.vcxproj", "{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genrevision", "VC10\genrevision.vcxproj", "{803F488E-4C5A-4866-8D5C-1E6C03C007C2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tbb", "VC10\tbb.vcxproj", "{F62787DD-1327-448B-9818-030062BCFAA5}"
@@ -25,6 +23,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tbbmalloc", "VC10\tbbmalloc.vcxproj", "{B15F131E-328A-4D42-ADC2-9FF4CA6306D8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Detour", "..\dep\recastnavigation\Detour\win\VC100\Detour.vcxproj", "{72BDF975-4D4A-42C7-B2C4-F9ED90A2ABB6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACE", "..\dep\ACE_wrappers\ace\ACE_vc10.vcxproj", "{47BC56ED-FECA-1BAD-6757-8A6300006755}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -132,18 +132,6 @@ Global
 		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Release|Win32.Build.0 = Release|Win32
 		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Release|x64.ActiveCfg = Release|x64
 		{4295C8A9-79B7-4354-8064-F05FB9CA0C96}.Release|x64.Build.0 = Release|x64
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Debug|Win32.ActiveCfg = Debug|Win32
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Debug|Win32.Build.0 = Debug|Win32
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Debug|x64.ActiveCfg = Debug|x64
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Debug|x64.Build.0 = Debug|x64
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release_PCH|Win32.ActiveCfg = Release_PCH|Win32
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release_PCH|Win32.Build.0 = Release_PCH|Win32
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release_PCH|x64.ActiveCfg = Release_PCH|x64
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release_PCH|x64.Build.0 = Release_PCH|x64
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release|Win32.ActiveCfg = Release|Win32
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release|Win32.Build.0 = Release|Win32
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release|x64.ActiveCfg = Release|x64
-		{BD537C9A-FECA-1BAD-6757-8A6348EA12C8}.Release|x64.Build.0 = Release|x64
 		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Debug|Win32.ActiveCfg = Debug|Win32
 		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Debug|Win32.Build.0 = Debug|Win32
 		{803F488E-4C5A-4866-8D5C-1E6C03C007C2}.Debug|x64.ActiveCfg = Debug|x64
@@ -190,6 +178,18 @@ Global
 		{72BDF975-4D4A-42C7-B2C4-F9ED90A2ABB6}.Release|Win32.Build.0 = Release|Win32
 		{72BDF975-4D4A-42C7-B2C4-F9ED90A2ABB6}.Release|x64.ActiveCfg = Release|x64
 		{72BDF975-4D4A-42C7-B2C4-F9ED90A2ABB6}.Release|x64.Build.0 = Release|x64
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Debug|Win32.ActiveCfg = Debug|Win32
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Debug|Win32.Build.0 = Debug|Win32
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Debug|x64.ActiveCfg = Debug|x64
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Debug|x64.Build.0 = Debug|x64
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|Win32.ActiveCfg = Release|Win32
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|Win32.Build.0 = Release|Win32
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|x64.ActiveCfg = Release|x64
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|x64.Build.0 = Release|x64
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release|Win32.ActiveCfg = Release|Win32
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release|Win32.Build.0 = Release|Win32
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release|x64.ActiveCfg = Release|x64
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

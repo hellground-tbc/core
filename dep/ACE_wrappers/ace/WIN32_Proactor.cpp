@@ -1,6 +1,6 @@
-// $Id: WIN32_Proactor.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: WIN32_Proactor.cpp 91286 2010-08-05 09:04:31Z johnnyw $
 
-// ACE_RCSID(ace, Proactor, "$Id: WIN32_Proactor.cpp 80826 2008-03-04 14:51:23Z wotte $")
+//
 
 #include "ace/WIN32_Proactor.h"
 
@@ -802,4 +802,3 @@ ACE_WIN32_Wakeup_Completion::complete (size_t       /* bytes_transferred */,
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_WIN32 */
-

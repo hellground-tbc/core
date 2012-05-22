@@ -4,7 +4,7 @@
 /**
  *  @file    Malloc_Base.h
  *
- *  $Id: Malloc_Base.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Malloc_Base.h 92085 2010-09-29 12:23:13Z johnnyw $
  *
  *  @author Doug Schmidt and Irfan Pyarali
  */
@@ -73,7 +73,7 @@ public:
                         size_type elem_size,
                         char initial_value = '\0') = 0;
 
-  /// Free <ptr> (must have been allocated by <ACE_Allocator::malloc>).
+  /// Free @a ptr (must have been allocated by ACE_Allocator::malloc()).
   virtual void free (void *ptr) = 0;
 
   /// Remove any resources associated with this memory manager.
@@ -85,7 +85,7 @@ public:
    * Associate @a name with @a pointer.  If @a duplicates == 0 then do
    * not allow duplicate @a name/@a pointer associations, else if
    * @a duplicates != 0 then allow duplicate @a name/@a pointer
-   * assocations.  Returns 0 if successfully binds (1) a previously
+   * associations.  Returns 0 if successfully binds (1) a previously
    * unbound @a name or (2) @a duplicates != 0, returns 1 if trying to
    * bind a previously bound @a name and @a duplicates == 0, else
    * returns -1 if a resource failure occurs.
@@ -166,4 +166,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #include /**/ "ace/post.h"
 #endif /* ACE_MALLOC_BASE_H */
-

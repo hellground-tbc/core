@@ -4,7 +4,7 @@
 /**
  *  @file    Free_List.h
  *
- *  $Id: Free_List.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Free_List.h 92298 2010-10-21 11:15:17Z johnnyw $
  *
  *  @author Darrell Brunsch (brunsch@cs.wustl.edu)
  */
@@ -61,7 +61,7 @@ public:
  * @brief Implements a free list.
  *
  * This class maintains a free list of nodes of type T.  It
- * depends on the type T having a <get_next> and <set_next>
+ * depends on the type T having a get_next() and set_next()
  * method.  It maintains a mutex so the freelist can be used in
  * a multithreaded program .
  */
@@ -73,8 +73,8 @@ public:
   /**
    * Constructor takes a @a mode (i.e., ACE_FREE_LIST_WITH_POOL or
    * ACE_PURE_FREE_LIST), a count of the number of nodes to
-   * <prealloc>, a low and high water mark (<lwm> and <hwm>) that
-   * indicate when to allocate more nodes, an increment value (<inc>)
+   * @a prealloc, a low and high water mark (@a lwm and @a hwm) that
+   * indicate when to allocate more nodes, an increment value (@a inc)
    * that indicates how many nodes to allocate when the list must
    * grow.
    */
@@ -148,4 +148,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #include /**/ "ace/post.h"
 #endif /* ACE_FREE_LIST_H */
-

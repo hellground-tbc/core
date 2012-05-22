@@ -1,10 +1,6 @@
-// $Id: ACE_crc_ccitt.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: ACE_crc_ccitt.cpp 91286 2010-08-05 09:04:31Z johnnyw $
 
 #include "ace/ACE.h"
-
-ACE_RCSID (ace,
-           ACE_crc_ccitt,
-           "$Id: ACE_crc_ccitt.cpp 80826 2008-03-04 14:51:23Z wotte $")
 
 namespace
 {
@@ -126,4 +122,3 @@ ACE::crc_ccitt (const iovec *iov, int len, ACE_UINT16 crc)
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #undef COMPUTE
-

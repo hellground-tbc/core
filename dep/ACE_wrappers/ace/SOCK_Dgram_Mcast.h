@@ -4,7 +4,7 @@
 /**
  *  @file    SOCK_Dgram_Mcast.h
  *
- *  $Id: SOCK_Dgram_Mcast.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: SOCK_Dgram_Mcast.h 91626 2010-09-07 10:59:20Z johnnyw $
  *
  *  @author Irfan Pyrali <irfan@cs.wustl.edu>
  *  @author Tim Harrison <harrison@cs.wustl.edu>
@@ -89,7 +89,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
  *   Some platforms, such as pSoS, support only cardinal numbers as network
  *   interface specifications; for these platforms, just give these numbers in
  *   alphanumeric form and <subscribe> will convert them into numbers via
- *   <ACE_OS::atoi>.
+ *   ACE_OS::atoi().
  */
 class ACE_Export ACE_SOCK_Dgram_Mcast : public ACE_SOCK_Dgram
 {
@@ -201,14 +201,14 @@ public:
   /**
    * This method is optional; if not explicitly invoked, it is invoked by
    * the first <subscribe>, using the subscribed address/port# and network
-   * interface paramters.
-   * The <mcast_addr> parameter defines the default send address/port# and
+   * interface parameters.
+   * The @a mcast_addr parameter defines the default send address/port# and
    * also the port# and, if the OPT_BINDADDR_YES option is used,
    * the multicast address that is bound to this socket.
    * If the <send_net_if> parameter != 0, it defines the network interface
    * used for all sends by this instance, otherwise the system "default"
    * interface is used. (The <send_net_if> parameter is ignored if this
-   * feature is not supported by the envriornment.)
+   * feature is not supported by the environment.)
    * The port# in <mcast_addr> may be 0, in which case a system-assigned
    * (ephemeral) port# is used for sending and receiving.
    * If @a reuse_addr != 0, the SO_REUSEADDR option and, if it is supported,
@@ -327,7 +327,7 @@ private:
                      int reuse_addr);
 
   /// Do subscription processing w/out updating the subscription list.
-  // (Layered method for <subscribe> processing).
+  /// (Layered method for <subscribe> processing).
   int subscribe_i (const ACE_INET_Addr &mcast_addr,
                    int reuse_addr = 1,
                    const ACE_TCHAR *net_if = 0);
@@ -337,7 +337,7 @@ private:
                        const ACE_TCHAR *net_if = 0);
 
   /// Do unsubscription processing w/out udpating subscription list.
-  //  (Layered method for <unsubscribe> processing).
+  ///  (Layered method for <unsubscribe> processing).
   int unsubscribe_i (const ACE_INET_Addr &mcast_addr,
                      const ACE_TCHAR *net_if = 0);
 
@@ -353,7 +353,6 @@ protected:
   int clear_subs_list (void);
 
 private:
-
   /// Per-instance options..
   int opts_;
 
@@ -382,4 +381,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #include /**/ "ace/post.h"
 #endif /* ACE_SOCK_DGRAM_MCAST_H */
-

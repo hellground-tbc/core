@@ -1,3 +1,5 @@
+// $Id: Atomic_Op_T.cpp 92052 2010-09-27 14:20:22Z vzykov $
+
 #ifndef ACE_ATOMIC_OP_T_CPP
 #define ACE_ATOMIC_OP_T_CPP
 
@@ -19,8 +21,6 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_ALLOC_HOOK_DEFINE(ACE_Atomic_Op_Ex)
 ACE_ALLOC_HOOK_DEFINE(ACE_Atomic_Op)
-
-ACE_RCSID(ace, Atomic_Op_T, "$Id: Atomic_Op_T.cpp 80826 2008-03-04 14:51:23Z wotte $")
 
 // *************************************************
 template <class ACE_LOCK, class TYPE> ACE_LOCK &
@@ -80,4 +80,3 @@ ACE_Atomic_Op<ACE_LOCK, TYPE>::ACE_Atomic_Op (
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_ATOMIC_OP_T_CPP */
-

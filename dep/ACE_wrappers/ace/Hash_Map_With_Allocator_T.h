@@ -4,7 +4,7 @@
 /**
  *  @file   Hash_Map_With_Allocator_T.h
  *
- *  $Id: Hash_Map_With_Allocator_T.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Hash_Map_With_Allocator_T.h 91743 2010-09-13 18:24:51Z johnnyw $
  *
  *  @author Marina Spivak <marina@cs.wustl.edu>
  *  @author Irfan Pyarali <irfan@cs.wustl.edu>
@@ -110,4 +110,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #include /**/ "ace/post.h"
 #endif /* ACE_HASH_MAP_WITH_ALLOCATOR_T_H */
-

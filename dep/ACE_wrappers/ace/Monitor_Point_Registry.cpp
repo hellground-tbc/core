@@ -1,4 +1,4 @@
-// $Id: Monitor_Point_Registry.cpp 81833 2008-06-04 14:44:53Z parsons $
+// $Id: Monitor_Point_Registry.cpp 91813 2010-09-17 07:52:52Z johnnyw $
 
 #include "ace/Monitor_Point_Registry.h"
 
@@ -169,5 +169,4 @@ namespace ACE
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_HAS_MONITOR_FRAMEWORK==1 */
-
 

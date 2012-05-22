@@ -1,4 +1,4 @@
-// $Id: Timer_Queue_T.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: Timer_Queue_T.cpp 92285 2010-10-20 16:34:57Z shuston $
 
 #ifndef ACE_TIMER_QUEUE_T_CPP
 #define ACE_TIMER_QUEUE_T_CPP
@@ -18,6 +18,7 @@
 #include "ace/Guard_T.h"
 #include "ace/Log_Msg.h"
 #include "ace/Reactor_Timer_Interface.h"
+#include "ace/Reverse_Lock_T.h"
 #include "ace/Null_Mutex.h"
 #include "ace/OS_NS_sys_time.h"
 
@@ -166,7 +167,7 @@ ACE_Timer_Queue_T<TYPE, FUNCTOR, ACE_LOCK>::dump (void) const
 
 template <class TYPE, class FUNCTOR, class ACE_LOCK>
 ACE_Timer_Queue_T<TYPE, FUNCTOR, ACE_LOCK>::ACE_Timer_Queue_T (FUNCTOR *upcall_functor,
-                                                           ACE_Free_List<ACE_Timer_Node_T <TYPE> > *freelist)
+                                                               ACE_Free_List<ACE_Timer_Node_T <TYPE> > *freelist)
   : gettimeofday_ (ACE_OS::gettimeofday),
     delete_upcall_functor_ (upcall_functor == 0),
     delete_free_list_ (freelist == 0),
@@ -267,6 +268,9 @@ ACE_Timer_Queue_T<TYPE, FUNCTOR, ACE_LOCK>::expire (const ACE_Time_Value &cur_ti
 
   while ((result = this->dispatch_info_i (cur_time, info)) != 0)
     {
+      ACE_MT (ACE_Reverse_Lock<ACE_LOCK> rev_lk(this->mutex_));
+      ACE_MT (ACE_GUARD_RETURN (ACE_Reverse_Lock<ACE_LOCK>, rmon, rev_lk, -1));
+
       const void *upcall_act = 0;
 
       this->preinvoke (info, cur_time, upcall_act);
@@ -281,6 +285,66 @@ ACE_Timer_Queue_T<TYPE, FUNCTOR, ACE_LOCK>::expire (const ACE_Time_Value &cur_ti
 
   ACE_UNUSED_ARG (result);
   return number_of_timers_expired;
+}
+
+template <class TYPE, class FUNCTOR, class ACE_LOCK> void
+ACE_Timer_Queue_T<TYPE, FUNCTOR, ACE_LOCK>::recompute_next_abs_interval_time
+    (ACE_Timer_Node_T<TYPE> *expired,
+     const ACE_Time_Value &cur_time)
+{
+  if ( expired->get_timer_value () <= cur_time )
+    {
+      /*
+       * Somehow the current time is past when this time was
+       * supposed to expire (e.g., timer took too long,
+       * somebody changed system time, etc.).  There used to
+       * be a simple loop here that skipped ahead one timer
+       * interval at a time, but that was horribly inefficient
+       * (an O(n) algorithm) when the timer duration was small
+       * relative to the amount of time skipped.
+       *
+       * So, we replace the loop with a simple computation,
+       * which also happens to be O(1).  All times get
+       * normalized in the computation to microseconds.
+       *
+       * For reference, the loop looked like this:
+       *
+       *   do
+       *     expired->set_timer_value (expired->get_timer_value () +
+       *                               expired->get_interval ());
+       *   while (expired->get_timer_value () <= cur_time);
+       *
+       */
+
+      // Compute the duration of the timer's interval
+      ACE_UINT64 interval_usec;
+      expired->get_interval ().to_usec (interval_usec);
+
+      // Compute the span between the current time and when
+      // the timer would have expired in the past (and
+      // normalize to microseconds).
+      ACE_Time_Value old_diff = cur_time - expired->get_timer_value ();
+      ACE_UINT64 old_diff_usec;
+      old_diff.to_usec (old_diff_usec);
+
+      // Compute the delta time in the future when the timer
+      // should fire as if it had advanced incrementally.  The
+      // modulo arithmetic accomodates the likely case that
+      // the current time doesn't fall precisely on a timer
+      // firing interval.
+      ACE_UINT64 new_timer_usec =
+        interval_usec - (old_diff_usec % interval_usec);
+
+      // Compute the absolute time in the future when this
+      // interval timer should expire.
+      ACE_Time_Value new_timer_value
+        (cur_time.sec ()
+         + static_cast<time_t>(new_timer_usec / ACE_ONE_SECOND_IN_USECS),
+         cur_time.usec ()
+         + static_cast<suseconds_t>(new_timer_usec % ACE_ONE_SECOND_IN_USECS));
+
+      expired->set_timer_value (new_timer_value);
+    }
 }
 
 template <class TYPE, class FUNCTOR, class ACE_LOCK> int
@@ -306,10 +370,7 @@ ACE_Timer_Queue_T<TYPE, FUNCTOR, ACE_LOCK>::dispatch_info_i (const ACE_Time_Valu
         {
           // Make sure that we skip past values that have already
           // "expired".
-          do
-            expired->set_timer_value (expired->get_timer_value () +
-                                      expired->get_interval ());
-          while (expired->get_timer_value () <= cur_time);
+          this->recompute_next_abs_interval_time (expired, cur_time);
 
           // Since this is an interval timer, we need to reschedule
           // it.
@@ -479,4 +540,3 @@ ACE_Event_Handler_Handle_Timeout_Upcall<ACE_LOCK>::deletion (TIMER_QUEUE &timer_
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_TIMER_QUEUE_T_CPP */
-

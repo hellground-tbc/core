@@ -3,7 +3,7 @@
 /**
  *  @file   config-win32-msvc-7.h
  *
- *  $Id: config-win32-msvc-7.h 81935 2008-06-12 22:01:53Z jtc $
+ *  $Id: config-win32-msvc-7.h 91685 2010-09-09 09:35:14Z johnnyw $
  *
  *  @brief  Microsoft Visual C++ 7.0 configuration file.
  *
@@ -46,11 +46,6 @@
 #define ACE_STRNCASECMP_EQUIVALENT ::_strnicmp
 #define ACE_WCSDUP_EQUIVALENT ::_wcsdup
 
-#if !defined (ACE_HAS_WINCE) && !defined (ACE_HAS_EXCEPTIONS)
-#define ACE_HAS_EXCEPTIONS
-#endif /* ACE_HAS_WINCE */
-
-#define ACE_HAS_STRERROR
 #define ACE_LACKS_STRPTIME
 
 #define ACE_HAS_SIG_ATOMIC_T
@@ -58,7 +53,6 @@
 #define ACE_LACKS_STRRECVFD
 #define ACE_HAS_CPLUSPLUS_HEADERS
 
-#define ACE_HAS_TEMPLATE_TYPEDEFS
 #define ACE_TEMPLATES_REQUIRE_SOURCE
 
 // Platform provides ACE_TLI function prototypes.
@@ -112,7 +106,7 @@
 #pragma warning(disable:4231)
 
 // 'function' : unreferenced local function has been removed
-# pragma warning(disable:4505)
+#pragma warning(disable:4505)
 
 // A template can not be exported. Only an instantiation may be exported.
 #define ACE_HAS_EXPLICIT_TEMPLATE_INSTANTIATION_EXPORT
@@ -123,4 +117,3 @@
 
 #include /**/ "ace/post.h"
 #endif /* ACE_CONFIG_WIN32_MSVC_7_H */
-

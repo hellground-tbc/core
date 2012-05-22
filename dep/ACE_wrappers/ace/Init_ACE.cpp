@@ -1,11 +1,7 @@
+// $Id: Init_ACE.cpp 91368 2010-08-16 13:03:34Z mhengstmengel $
 #include "ace/Init_ACE.h"
 
 #include "ace/Object_Manager.h"
-
-ACE_RCSID (ace,
-           Init_ACE,
-           "$Id: Init_ACE.cpp 80826 2008-03-04 14:51:23Z wotte $")
-
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -43,4 +39,3 @@ ACE::fini (void)
 }
 
 ACE_END_VERSIONED_NAMESPACE_DECL
-

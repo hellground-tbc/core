@@ -1,17 +1,10 @@
 // -*- C++ -*-
-//
-// $Id: Obstack_T.inl 80826 2008-03-04 14:51:23Z wotte $
+// $Id: Obstack_T.inl 91688 2010-09-09 11:21:50Z johnnyw $
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
-template <class CHAR> ACE_INLINE size_t
-ACE_Obstack_T<CHAR>::length () const
-{
-  return this->size_ / sizeof (CHAR);
-}
-
-template <class CHAR> ACE_INLINE size_t
-ACE_Obstack_T<CHAR>::size () const
+template <class ACE_CHAR_T> ACE_INLINE size_t
+ACE_Obstack_T<ACE_CHAR_T>::size () const
 {
   return this->size_;
 }

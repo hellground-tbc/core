@@ -1,4 +1,4 @@
-// $Id: Asynch_Connector.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: Asynch_Connector.cpp 92069 2010-09-28 11:38:59Z johnnyw $
 
 #ifndef ACE_ASYNCH_CONNECTOR_CPP
 #define ACE_ASYNCH_CONNECTOR_CPP
@@ -221,32 +221,6 @@ ACE_Asynch_Connector<HANDLER>::parse_address (const ACE_Asynch_Connect::Result &
   remote_address.set (reinterpret_cast<sockaddr_in *> (&remote_addr),
                       remote_size);
 
-#if 0
-  // @@ Just debugging.
-  char local_address_buf  [BUFSIZ];
-  char remote_address_buf [BUFSIZ];
-
-  if (local_address.addr_to_string (local_address_buf,
-                                    sizeof local_address_buf) == -1)
-    ACE_ERROR ((LM_ERROR,
-                "Error:%m:can't obtain local_address's address string"));
-
-  ACE_DEBUG ((LM_DEBUG,
-              "ACE_Asynch_Connector<HANDLER>::parse_address : "
-              "Local address %s\n",
-              local_address_buf));
-
-  if (remote_address.addr_to_string (remote_address_buf,
-                                     sizeof remote_address_buf) == -1)
-    ACE_ERROR ((LM_ERROR,
-                "Error:%m:can't obtain remote_address's address string"));
-
-  ACE_DEBUG ((LM_DEBUG,
-              "ACE_Asynch_Connector<HANDLER>::parse_address : "
-              "Remote address %s\n",
-              remote_address_buf));
-#endif /* 0 */
-
   return;
 }
 
@@ -294,4 +268,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_WIN32 || ACE_HAS_AIO_CALLS */
 #endif /* ACE_ASYNCH_CONNECTOR_CPP */
-

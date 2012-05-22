@@ -1,8 +1,8 @@
-// $Id: Msg_WFMO_Reactor.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: Msg_WFMO_Reactor.cpp 91286 2010-08-05 09:04:31Z johnnyw $
 
 #include "ace/Msg_WFMO_Reactor.h"
 
-ACE_RCSID(ace, Msg_WFMO_Reactor, "$Id: Msg_WFMO_Reactor.cpp 80826 2008-03-04 14:51:23Z wotte $")
+
 
 #if defined (ACE_WIN32) && !defined (ACE_LACKS_MSG_WFMO)
 
@@ -83,4 +83,3 @@ ACE_Msg_WFMO_Reactor::poll_remaining_handles (DWORD slot)
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_WIN32 && !ACE_LACKS_MSG_WFMO */
-

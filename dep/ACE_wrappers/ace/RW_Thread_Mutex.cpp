@@ -1,7 +1,7 @@
 /**
  * @file RW_Thread_Mutex.cpp
  *
- * $Id: RW_Thread_Mutex.cpp 80826 2008-03-04 14:51:23Z wotte $
+ * $Id: RW_Thread_Mutex.cpp 91286 2010-08-05 09:04:31Z johnnyw $
  *
  * Originally in Synch.cpp
  *
@@ -18,7 +18,7 @@
 
 #include "ace/Guard_T.h"
 
-ACE_RCSID(ace, RW_Thread_Mutex, "$Id: RW_Thread_Mutex.cpp 80826 2008-03-04 14:51:23Z wotte $")
+
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -43,4 +43,3 @@ ACE_RW_Thread_Mutex::dump (void) const
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_HAS_THREADS */
-

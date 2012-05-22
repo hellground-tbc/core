@@ -1,4 +1,4 @@
-// $Id: MEM_SAP.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: MEM_SAP.cpp 91286 2010-08-05 09:04:31Z johnnyw $
 
 #include "ace/MEM_SAP.h"
 
@@ -8,7 +8,7 @@
 #include "ace/MEM_SAP.inl"
 #endif /* __ACE_INLINE__ */
 
-ACE_RCSID(ace, MEM_SAP, "$Id: MEM_SAP.cpp 80826 2008-03-04 14:51:23Z wotte $")
+
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -95,4 +95,3 @@ ACE_MEM_SAP::close_shm_malloc (void)
 #endif /* ACE_HAS_POSITION_INDEPENDENT_POINTERS == 1 */
 
 ACE_END_VERSIONED_NAMESPACE_DECL
-

@@ -4,7 +4,7 @@
 /**
  *  @file    Local_Tokens.h
  *
- *  $Id: Local_Tokens.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: Local_Tokens.h 91626 2010-09-07 10:59:20Z johnnyw $
  *
  *  @author Karl-Heinz Dorn <kdorn@erlh.siemens.de>
  *  @author Douglas C. Schmidt <schmidt@cs.wustl.edu>
@@ -34,7 +34,7 @@
  *  mechanisms, such as mutexes or semaphores.  Instead, you should
  *  use the ACE_Recursive_Thread_Mutex, ACE_Thread_Mutex,
  *  ACE_Thread_Semaphore, etc., that are defined in
- *  $ACE_ROOT/ace/Synch.h and $ACE_ROOT/ace/Synch_T.h or the
+ *  $ACE_ROOT/ace/Synch.h or the
  *  ACE_Token that's defined in $ACE_ROOT/ace/Token.h.
  *
  *
@@ -79,6 +79,7 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
  * this class is necessary to fight the compiler with order of
  * declaration errors.
  */
+// FUZZ: disable check_for_ACE_Guard
 namespace ACE_TOKEN_CONST
 {
 #if defined (ACE_MT_SAFE) && (ACE_MT_SAFE != 0)
@@ -92,6 +93,7 @@ namespace ACE_TOKEN_CONST
   typedef ACE_Guard<ACE_Null_Mutex> GUARD;
 #endif /* ACE_HAS_THREADS */
 }
+// FUZZ: enable check_for_ACE_Guard
 
 // Forward decl.
 class ACE_Token_Proxy;
@@ -223,7 +225,7 @@ public:
   /// Allows us to pass args to the construction of the TSS object.
   virtual ACE_TPQ_Entry *make_TSS_TYPE (void) const;
 
-  /// Operator overloading and inheritence don't mix.
+  /// Operator overloading and inheritance don't mix.
   operator ACE_TPQ_Entry *(void);
 
   /// Dump the state of the class.
@@ -270,7 +272,7 @@ public:
   /// Destructor.
   ~ACE_TPQ_Iterator (void);
 
-  /// Pass back the <next_item>.
+  /// Pass back the @a next_item.
   int next (ACE_TPQ_Entry *&next_item);
 
   /// Returns 1 when all items have been seen, else 0.
@@ -1119,4 +1121,3 @@ ACE_END_VERSIONED_NAMESPACE_DECL
 #endif /* __ACE_INLINE__ */
 #include /**/ "ace/post.h"
 #endif /* ACE_LOCAL_MUTEX_H */
-

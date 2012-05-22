@@ -1,9 +1,11 @@
 // -*- C++ -*-
 //
-// $Id: Metrics_Cache_T.inl 80826 2008-03-04 14:51:23Z wotte $
+// $Id: Metrics_Cache_T.inl 92090 2010-09-29 14:10:45Z johnnyw $
 
 #ifndef ACE_METRICS_CACHE_T_INL
 #define ACE_METRICS_CACHE_T_INL
+
+#if defined (ACE_COMPILE_TIMEPROBES)
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
@@ -27,7 +29,7 @@ ACE_Metrics_Cache<ACE_LOCK, ALLOCATOR>::report_enqueue_start (u_long i)
           this->interval_initialized_ = 1;
           ACE_hrtime_t hrtime_now = ACE_OS::gethrtime ();
           ACE_High_Res_Timer::hrtime_to_tv (this->interval_start_,
-                                                    hrtime_now);
+                                            hrtime_now);
           this->interval_end_.set (this->interval_start_.sec(),
                                    this->interval_start_.usec());
         }
@@ -236,5 +238,7 @@ ACE_Metrics_Cache<ACE_LOCK, ALLOCATOR>::metrics_enabled(void) const
 }
 
 ACE_END_VERSIONED_NAMESPACE_DECL
+
+#endif
 
 #endif /* ACE_METRICS_CACHE_T_INL */

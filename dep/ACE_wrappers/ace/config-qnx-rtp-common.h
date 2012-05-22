@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: config-qnx-rtp-common.h 80826 2008-03-04 14:51:23Z wotte $
+// $Id: config-qnx-rtp-common.h 92120 2010-10-01 12:00:01Z johnnyw $
 // several macros common to various qnx neutrino version.
 
 #ifndef ACE_CONFIG_QNX_RTP_COMMON_H
@@ -23,8 +23,6 @@
 # endif /* __X86__ */
 #endif /* __OPTIMIZE__ */
 
-#include "ace/config-g++-common.h"
-
 // The following defines the Neutrino compiler.
 // gcc should know to call g++ as necessary
 #ifdef __GNUC__
@@ -32,6 +30,8 @@
 #else
 # define ACE_CC_NAME ACE_TEXT ("QNX-RTP compiler ??")
 #endif
+
+#include "ace/config-g++-common.h"
 
 // /usr/nto/include/float.h defines
 //  FLT_MAX_EXP 127
@@ -42,6 +42,9 @@
 #define ACE_SIZEOF_DOUBLE   8
 #define ACE_SIZEOF_FLOAT    4
 
+// At least qnx 6.3.2 uses a void return for unsetenv
+// This assumes that older versions do too.
+#define ACE_HAS_VOID_UNSETENV
+
 #include /**/ "ace/post.h"
 #endif /* ACE_CONFIG_QNX_RTP_COMMON_H */
-

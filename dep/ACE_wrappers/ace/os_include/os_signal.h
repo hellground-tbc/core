@@ -6,7 +6,7 @@
  *
  *  signals
  *
- *  $Id: os_signal.h 80826 2008-03-04 14:51:23Z wotte $
+ *  $Id: os_signal.h 91781 2010-09-15 12:49:15Z johnnyw $
  *
  *  @author Don Hinton <dhinton@dresystems.com>
  *  @author This code was originally in various places including ace/OS.h.
@@ -32,12 +32,6 @@
    }
 #endif /* !ACE_LACKS_SIGNAL_H */
 
-// This must come after signal.h is #included.
-#if defined (SCO)
-#  define SIGIO SIGPOLL
-#  include /**/ <sys/regset.h>
-#endif /* SCO */
-
 #if defined (ACE_HAS_SIGINFO_T)
 #  if !defined (ACE_LACKS_SIGINFO_H)
 #    if defined (__QNX__) || defined (__OpenBSD__) || defined (__INTERIX)
@@ -58,25 +52,9 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-#if defined (ACE_LACKS_SIGSET)
+#if defined (ACE_LACKS_SIGSET) && !defined (__MINGW32__)
   typedef u_int sigset_t;
-#endif /* ACE_LACKS_SIGSET */
-
-#if defined (ACE_HAS_SIG_MACROS)
-#  undef sigemptyset
-#  undef sigfillset
-#  undef sigaddset
-#  undef sigdelset
-#  undef sigismember
-#endif /* ACE_HAS_SIG_MACROS */
-
-// This must come after signal.h is #included.  It's to counteract
-// the sigemptyset and sigfillset #defines, which only happen
-// when __OPTIMIZE__ is #defined (really!) on Linux.
-#if defined (linux) && defined (__OPTIMIZE__)
-#  undef sigemptyset
-#  undef sigfillset
-#endif /* linux && __OPTIMIZE__ */
+#endif /* ACE_LACKS_SIGSET && !sigset_t */
 
 #if !defined (ACE_HAS_SIG_ATOMIC_T)
    typedef int sig_atomic_t;
@@ -134,6 +112,14 @@ extern "C"
 #  define SIGALRM 0
 #endif /* SIGALRM */
 
+#if !defined (SIGABRT)
+#  define SIGABRT 0
+#endif /* SIGABRT */
+
+#if !defined (SIGTERM)
+#  define SIGTERM 0
+#endif /* SIGTERM */
+
 #if !defined (SIG_DFL)
 #  define SIG_DFL ((__sighandler_t) 0)
 #endif /* SIG_DFL */
@@ -163,13 +149,17 @@ extern "C"
    // All other platforms set NSIG to one greater than the
    // highest-numbered signal.
 #  define ACE_NSIG NSIG
-#endif /* __Lynx__ */
+#endif /* ACE_VXWORKS */
+
+#if defined (ACE_HAS_WINCE)
+  typedef void (__cdecl * __sighandler_t)(int);
+#endif
 
 #if defined (ACE_HAS_CONSISTENT_SIGNAL_PROTOTYPES)
-   // Prototypes for both signal() and struct sigaction are consistent..
+  // Prototypes for both signal() and struct sigaction are consistent..
   typedef void (*ACE_SignalHandler)(int);
   typedef void (*ACE_SignalHandlerV)(int);
-#elif defined (ACE_HAS_LYNXOS_SIGNALS) || defined (ACE_HAS_TANDEM_SIGNALS)
+#elif defined (ACE_HAS_LYNXOS4_SIGNALS) || defined (ACE_HAS_TANDEM_SIGNALS)
    typedef void (*ACE_SignalHandler)(...);
    typedef void (*ACE_SignalHandlerV)(...);
 #elif defined (ACE_HAS_SVR4_SIGNAL_T)
@@ -179,9 +169,6 @@ extern "C"
 #elif defined (ACE_WIN32)
    typedef void (__cdecl *ACE_SignalHandler)(int);
    typedef void (__cdecl *ACE_SignalHandlerV)(int);
-#elif defined (ACE_HAS_UNIXWARE_SVR4_SIGNAL_T)
-   typedef void (*ACE_SignalHandler)(int);
-   typedef void (*ACE_SignalHandlerV)(...);
 #elif defined (INTEGRITY)
    typedef void (*ACE_SignalHandler)();
    typedef void (*ACE_SignalHandlerV)(int);
@@ -219,26 +206,6 @@ extern "C"
 #  endif /* ACE_SIGRTMAX */
 #endif /* ACE_HAS_POSIX_REALTIME_SIGNALS */
 
-#if defined (DIGITAL_UNIX)
-   // sigwait is yet another macro on Digital UNIX 4.0, just causing
-   // trouble when introducing member functions with the same name.
-   // Thanks to Thilo Kielmann" <kielmann@informatik.uni-siegen.de> for
-   // this fix.
-#  if defined  (__DECCXX_VER)
-#    undef sigwait
-     // cxx on Digital Unix 4.0 needs this declaration.  With it,
-     // <::_Psigwait> works with cxx -pthread.  g++ does _not_ need
-     // it.
-     int _Psigwait __((const sigset_t *set, int *sig));
-#  endif /* __DECCXX_VER */
-#elif !defined (ACE_HAS_SIGWAIT)
-#  if defined(ACE_HAS_RTEMS)
-     int sigwait (const sigset_t *set, int *sig);
-#  else
-     int sigwait (sigset_t *set);
-#  endif /* ACE_HAS_RTEMS */
-#endif /* ! DIGITAL_UNIX && ! ACE_HAS_SIGWAIT */
-
 #if !defined (ACE_HAS_PTHREAD_SIGMASK_PROTOTYPE)
   int pthread_sigmask(int, const sigset_t *, sigset_t *);
 #endif /*!ACE_HAS_PTHREAD_SIGMASK_PROTOTYPE */
@@ -251,4 +218,3 @@ extern "C"
 
 #include /**/ "ace/post.h"
 #endif /* ACE_OS_INCLUDE_OS_SIGNAL_H */
-

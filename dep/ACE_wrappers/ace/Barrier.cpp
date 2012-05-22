@@ -1,4 +1,4 @@
-// $Id: Barrier.cpp 80826 2008-03-04 14:51:23Z wotte $
+// $Id: Barrier.cpp 92069 2010-09-28 11:38:59Z johnnyw $
 
 #include "ace/Barrier.h"
 
@@ -15,10 +15,6 @@
 #  include "ace/Log_Msg.h"
 #endif /* ACE_HAS_DUMP */
 
-ACE_RCSID (ace,
-           Barrier,
-           "$Id: Barrier.cpp 80826 2008-03-04 14:51:23Z wotte $")
-
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 ACE_ALLOC_HOOK_DEFINE(ACE_Sub_Barrier)
@@ -31,8 +27,7 @@ ACE_Sub_Barrier::dump (void) const
 
   ACE_DEBUG ((LM_DEBUG, ACE_BEGIN_DUMP, this));
   this->barrier_finished_.dump ();
-  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("running_threads_ = %d"), this->running_threads_));
-  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("\n")));
+  ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("running_threads_ = %d\n"), this->running_threads_));
   ACE_DEBUG ((LM_DEBUG, ACE_END_DUMP));
 #endif /* ACE_HAS_DUMP */
 }
@@ -172,27 +167,6 @@ ACE_Thread_Barrier::dump (void) const
 #endif /* ACE_HAS_DUMP */
 }
 
-#if 0
-ACE_ALLOC_HOOK_DEFINE(ACE_Process_Barrier)
-
-ACE_Process_Barrier::ACE_Process_Barrier (u_int count,
-                                          const ACE_TCHAR *name)
-  : ACE_Barrier (count, USYNC_PROCESS, name)
-{
-// ACE_TRACE ("ACE_Process_Barrier::ACE_Process_Barrier");
-}
-
-void
-ACE_Process_Barrier::dump (void) const
-{
-#if defined (ACE_HAS_DUMP)
-// ACE_TRACE ("ACE_Process_Barrier::dump");
-  ACE_Barrier::dump ();
-#endif /* ACE_HAS_DUMP */
-}
-#endif /* 0 */
-
 ACE_END_VERSIONED_NAMESPACE_DECL
 
 #endif /* ACE_HAS_THREADS */
-
