@@ -9,6 +9,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "framework", "VC10\framework.vcxproj", "{BF6F5D0E-33A5-4E23-9E7D-DD481B7B5B9E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "g3dlite", "VC10\g3dlite.vcxproj", "{8072769E-CF10-48BF-B9E1-12752A5DAC6E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{47BC56ED-FECA-1BAD-6757-8A6300006755} = {47BC56ED-FECA-1BAD-6757-8A6300006755}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityCore", "VC10\TrinityCore.vcxproj", "{A3A04E47-43A2-4C08-90B3-029CEF558594}"
 EndProject

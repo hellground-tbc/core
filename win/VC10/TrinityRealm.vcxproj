@@ -160,7 +160,7 @@
       <AdditionalDependencies>ACE.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;..\..\dep\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>VCOMP.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
@@ -208,7 +208,7 @@
       <AdditionalDependencies>ACE.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;..\..\dep\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>VCOMP.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
@@ -255,7 +255,7 @@
       <AdditionalDependencies>ACEd.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -303,7 +303,7 @@
       <AdditionalDependencies>zthread.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -347,7 +347,7 @@
       <AdditionalDependencies>zthread.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -390,7 +390,7 @@
       <AdditionalDependencies>zthread.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>

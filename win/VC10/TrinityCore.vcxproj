@@ -160,7 +160,7 @@
       <AdditionalDependencies>ACE.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;framework.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>VCOMP.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
@@ -215,7 +215,7 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
       <AdditionalDependencies>ACE.lib;Detour.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;framework.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\lib\$(Platform)_Release;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_Release;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>VCOMP.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
@@ -322,7 +322,7 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
       <AdditionalDependencies>libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;framework.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -372,7 +372,7 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
       <AdditionalDependencies>libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;framework.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -423,7 +423,7 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
       <Version>
       </Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>

@@ -144,7 +144,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)MaNGOSScript.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -176,7 +176,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC10\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC10\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -194,7 +194,7 @@
       </Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/MP /Zm200 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\..\..\..\dep\include\;..\scripts\npc;..\..\..\shared\;..\..\..\shared\Database;..\..\..\framework\;..\..\..\game\;..\include\;..\scripts\npc\;..\..\..\..\dep\ACE_wrappers;..\system;..\..\..\..\dep\tbb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -210,7 +210,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC10\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC10\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -223,7 +223,6 @@
       <ProgramDatabaseFile>..\..\..\..\bin\$(Platform)_$(Configuration)\TrinityScript.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>..\..\..\..\bin\$(Platform)_$(Configuration)\TrinityScript.map</MapFileName>
-      <AdditionalOptions>/Zm 200 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -249,7 +248,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)MaNGOSScript.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -282,7 +281,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -316,7 +315,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
