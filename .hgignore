@@ -1,35 +1,32 @@
 # use glob syntax.
 syntax: glob
 
-src/shared/revision.h
 build/
 bin/
 .directory
+.git/
+*~
 *.orig
 *.rej
-*~
-.git/
-win/VC90/*/
-win/VC10/*/
-win/VC100/*/
 *.ncb
 *.sdf
 *.opensdf
 *.suo
-dep/lib/*/
-dep/ACE_wrappers/lib/*/
-dep/ACE_wrappers/ace/Release*/*/
-dep/ACE_wrappers/ace/Debug*/*/
-src/bindings/scripts/VC90/*/
-src/bindings/scripts/VC10/*/
-src/mangosd/
-src/realmd/
-*.*-*
+*.ipch
+*.user
+*.gitignore
+dep/lib/*/ACE*
+dep/lib/*/Detour*
+dep/lib/*/tbb*
+dep/ACE_wrappers/lib/*
+dep/ACE_wrappers/ace/Release*/*/*
+dep/ACE_wrappers/ace/Debug*/*/*
+src/bindings/scripts/VC90/*/*
+src/bindings/scripts/VC10/*/*
+win/VC90/*/*
+win/VC10/*/*
+win/VC100/*/*
+win/_*/
 
-# use regexp syntax.
+src/shared/revision.h
 sql/dbc_spell/dbc_spell.sql
-
-syntax: regexp
-
-^src/shared/revision\.h
-glob:*.ipch
