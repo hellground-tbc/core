@@ -311,7 +311,8 @@ class HELLGROUND_DLL_SPEC Group
         void SendLootRollWon(const uint64& SourceGuid, const uint64& TargetGuid, uint8 RollNumber, uint8 RollType, const Roll &r);
         void SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r);
         void PrepareLootRolls(const uint64& playerGUID, Loot *loot, WorldObject* object);
-        void MasterLoot(const uint64& playerGUID, Loot *loot, WorldObject* object);
+        void SendMasterLoot(Loot *loot, WorldObject* object);
+        void SendRoundRobin(Loot *loot, WorldObject* object);
         Rolls::iterator GetRoll(uint64 Guid)
         {
             Rolls::iterator iter;

@@ -7470,7 +7470,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
                         group->PrepareLootRolls(this->GetGUID(), loot, (WorldObject*) go);
                         if (group->GetLootMethod() == MASTER_LOOT)
-                            group->MasterLoot(this->GetGUID(), loot, (WorldObject*) go);
+                            group->SendMasterLoot(loot, (WorldObject*) go);
                             
                     }
                 }
@@ -7607,7 +7607,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 {
                     group->PrepareLootRolls(recipient->GetGUID(), loot, creature);
                     if (group->GetLootMethod() == MASTER_LOOT)
-                        group->MasterLoot(recipient->GetGUID(), loot, creature);
+                        group->SendMasterLoot(loot, creature);
                 }
             }
 
@@ -7626,7 +7626,10 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     {
                         Unit *looter = GetUnit(loot->looterGUID);
                         if (!looter || !looter->IsWithinDist(creature, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false))
+                        {
                             loot->looterGUID = 0;
+                            group->SendRoundRobin(loot, creature);
+                        }
                     }
 
                     permission = NONE_PERMISSION;
