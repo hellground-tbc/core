@@ -4228,7 +4228,7 @@ void Aura::HandleAuraModRoot(bool apply, bool Real)
 
     if (apply)
         m_target->GetUnitStateMgr().PushAction(UNIT_ACTION_ROOT);
-    else
+    else if (!GetTarget()->HasAuraType(GetModifier()->m_auraname))
         m_target->GetUnitStateMgr().DropAction(UNIT_ACTION_ROOT);
 }
 
