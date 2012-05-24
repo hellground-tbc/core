@@ -4048,6 +4048,9 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
     if (!Real)
         return;
 
+    if (!apply && GetTarget()->HasAuraType(GetModifier()->m_auraname))
+        return;
+
     m_target->SetStunned(apply);
 }
 

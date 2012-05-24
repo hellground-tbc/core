@@ -70,7 +70,7 @@ enum ActiveObject
     ACTIVE_BY_MANUAL                = 0x01,
     ACTIVE_BY_WAYPOINT_MOVEMENT     = 0x02,
     ACTIVE_BY_COMBAT                = 0x04,
-    ACTIVE_BY_ALL                   = 0x07
+    ACTIVE_BY_ALL                   = 0xFF
 };
 
 class WorldPacket;
