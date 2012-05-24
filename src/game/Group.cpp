@@ -672,14 +672,25 @@ void Group::PrepareLootRolls(const uint64& playerGUID, Loot *loot, WorldObject* 
     }
 }
 
-void Group::MasterLoot(const uint64& playerGUID, Loot* loot, WorldObject* object)
+void Group::SendRoundRobin(Loot* loot, WorldObject* object)
 {
-    Player *player = objmgr.GetPlayer(playerGUID);
-    if (!player)
+    if (m_lootMethod != GROUP_LOOT && m_lootMethod != ROUND_ROBIN)
         return;
 
-    sLog.outDebug("Group::MasterLoot (SMSG_LOOT_MASTER_LIST, 330) player = [%s].", player->GetName());
+    WorldPacket data(SMSG_LOOT_LIST, (8+8));
+    data << uint64(object->GetGUID());
+    data << uint8(0); // unk1
 
+    if (Unit* looter = object->GetMap()->GetUnit(loot->looterGUID))
+        data << looter->GetPackGUID();
+    else
+        data << uint8(0);	
+
+    BroadcastPacket(&data, false);
+}
+
+void Group::SendMasterLoot(Loot* loot, WorldObject* object)
+{
     uint32 real_count = 0;
 
     WorldPacket data(SMSG_LOOT_MASTER_LIST, 330);
