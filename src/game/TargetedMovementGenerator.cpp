@@ -60,7 +60,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
             dist = 0.5f;
 
         // to nearest random contact position
-        _target->GetContactPoint(&owner, x, y, z, dist);
+        _target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
     }
     else
     {
@@ -142,7 +142,7 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     {
         _recheckDistance.Reset(sWorld.getConfig(CONFIG_TARGET_POS_RECHECK_TIMER));
 
-        float allowed_dist = 0.0f;
+        /*float allowed_dist = 0.0f;
         bool targetIsVictim = owner.getVictimGUID() == _target->GetGUID();
         if (targetIsVictim)
             allowed_dist = owner.GetObjectBoundingRadius() + owner.GetCombatReach() + _target->GetCombatReach();
@@ -153,7 +153,8 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
 
         if (allowed_dist < owner.GetObjectBoundingRadius())
             allowed_dist = owner.GetObjectBoundingRadius();
-
+        */
+		float allowed_dist = owner.GetObjectBoundingRadius() + sWorld.getConfig(CONFIG_RATE_TARGET_POS_RECALCULATION_RANGE);	
         G3D::Vector3 dest = owner.movespline->FinalDestination();
         bool targetMoved = !_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
 
