@@ -6666,7 +6666,7 @@ void Spell::EffectSummonTotem(uint32 i)
     float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
 
     Position dest;
-    m_caster->GetValidPointInAngle(dest, 2.0f, angle, true);
+    m_caster->GetValidPointInAngle(dest, 5.0f, angle, true);
 
     Totem* pTotem = new Totem;
     if (!pTotem->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team, dest.x, dest.y, dest.z, m_caster->GetOrientation()))
