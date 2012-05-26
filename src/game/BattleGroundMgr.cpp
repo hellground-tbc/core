@@ -749,6 +749,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
     else if (bg_template->isArena())
     {
         bool hiddenEnabled = sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING);
+
         // found out the minimum and maximum ratings the newly added team should battle against
         // arenaRating is the rating of the latest joined team, or 0
         // 0 is on (automatic update call) and we must set it to team's with longest wait time

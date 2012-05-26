@@ -1451,6 +1451,12 @@ Death.Bones.BattlegroundOrArena = 1
 # EnableMMR: MMR (Matchmaking rating) should be enabled ?
 #             Default: 0 (disabled)
 #
+# EnableMMRPenalty: MMRPenalty check should be enabled ?
+#             Default: 0 (disabled)
+#
+# EnableMMRPenalty: MMR Penalty applied to MMR if MMR > teamRating + penalty
+#             Default: 0 (disabled)
+#
 # EnableFakeWho: Enables/Disables fake who list to fake real position of players in arena
 #             Default: 0 (disabled)
 #
@@ -1460,7 +1466,11 @@ Arena.MaxRatingDifference = 0
 Arena.RatingDiscardTimer = 60000
 Arena.AutoDistributePoints = 0
 Arena.AutoDistributeInterval = 7
+
 Arena.EnableMMR = 0
+Arena.EnableMMRPenalty = 0
+Arena.MMRPenalty = 150
+
 Arena.EnableFakeWho = 0
 
 ###################################################################################################################

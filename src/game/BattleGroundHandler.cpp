@@ -748,6 +748,9 @@ void WorldSession::HandleBattleGroundArenaJoin(WorldPacket & recv_data)
 
                 avg_pers_rating += at_member->matchmaker_rating;
             }
+
+            if (sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING_PENALTY) && hiddenRating > (arenaRating + sWorld.getConfig(CONFIG_HIDDEN_RATING_PENALTY)))
+                hiddenRating -= sWorld.getConfig(CONFIG_HIDDEN_RATING_PENALTY);
         }
         else
         {
