@@ -606,6 +606,14 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHid
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, againstRating);
             int32 mod = (int32)ceil(32.0f * (0.0f - chance));
+
+            // NEED to check hiddenRatingbeforePenalty
+            if (sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING) && sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING_LOWER_LOSS))
+            {
+                if (againstRating + 150 < againstHiddenRating)
+                    mod /= 2;
+            }
+
             itr->ModifyPersonalRating(plr, mod, GetSlot());
 
             // update matchmaker rating

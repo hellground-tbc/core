@@ -541,6 +541,12 @@ void BattleGround::EndBattleGround(uint32 winner)
             int32 winner_change = winner_arena_team->WonAgainst(loser_rating);
             int32 loser_change = loser_arena_team->LostAgainst(winner_rating);
 
+            if (hiddenEnabled && sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING_LOWER_LOSS))
+            {
+                if (winner_rating + 150 < winner_hidden_rating)
+                    loser_change /= 2;
+            }
+
             sLog.outDebug("--- Winner rating: %u, Loser rating: %u, Winner change: %u, Losser change: %u ---", winner_rating, loser_rating, winner_change, loser_change);
 
             if (winner == ALLIANCE)

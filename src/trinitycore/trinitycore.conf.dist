@@ -1470,6 +1470,7 @@ Arena.AutoDistributeInterval = 7
 Arena.EnableMMR = 0
 Arena.EnableMMRPenalty = 0
 Arena.MMRPenalty = 150
+Arena.MMRSpecialLossCalc = 0
 
 Arena.EnableFakeWho = 0
 

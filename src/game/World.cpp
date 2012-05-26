@@ -1187,6 +1187,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ENABLE_HIDDEN_RATING] = sConfig.GetBoolDefault("Arena.EnableMMR", false);
     m_configs[CONFIG_ENABLE_HIDDEN_RATING_PENALTY] = sConfig.GetBoolDefault("Arena.EnableMMRPenalty", false);
     m_configs[CONFIG_HIDDEN_RATING_PENALTY] = sConfig.GetIntDefault("Arena.MMRPenalty", 150);
+    m_configs[CONFIG_ENABLE_HIDDEN_RATING_LOWER_LOSS] = sConfig.GetBoolDefault("Arena.MMRSpecialLossCalc", false);
 
     m_configs[CONFIG_ENABLE_FAKE_WHO_ON_ARENA] = sConfig.GetBoolDefault("Arena.EnableFakeWho", false);
 
