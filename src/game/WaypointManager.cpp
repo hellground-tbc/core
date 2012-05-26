@@ -43,7 +43,7 @@ void WaypointStore::Load()
 
     records = (*result)[0].GetUInt32();
 
-    result = WorldDatabase.PQuery("SELECT `id`,`point`,`position_x`,`position_y`,`position_z`,`move_flag`,`delay`,`action`,`action_chance` FROM `waypoint_data` ORDER BY `id`, `point`");
+    result = WorldDatabase.PQuery("SELECT `id`,`point`,`position_x`,`position_y`,`position_z`,`move_type`,`delay`,`action`,`action_chance` FROM `waypoint_data` ORDER BY `id`, `point`");
     if (!result)
     {
         sLog.outErrorDb("The table `creature_addon` is empty or corrupted");
@@ -79,7 +79,7 @@ void WaypointStore::Load()
         wp->x = x;
         wp->y = y;
         wp->z = z;
-        wp->run = fields[5].GetBool();
+        wp->moveType = WaypointMoveType(fields[5].GetUInt8());
         wp->delay = fields[6].GetUInt32();
         wp->event_id = fields[7].GetUInt32();
         wp->event_chance = fields[8].GetUInt8();
@@ -100,7 +100,7 @@ void WaypointStore::UpdatePath(uint32 id)
     if (waypoint_map.find(id)!= waypoint_map.end())
         waypoint_map[id]->clear();
 
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT `id`,`point`,`position_x`,`position_y`,`position_z`,`move_flag`,`delay`,`action`,`action_chance` FROM `waypoint_data` WHERE id = %u ORDER BY `point`", id);
+    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT `id`,`point`,`position_x`,`position_y`,`position_z`,`move_type`,`delay`,`action`,`action_chance` FROM `waypoint_data` WHERE id = %u ORDER BY `point`", id);
 
     if (!result)
         return;
@@ -130,7 +130,7 @@ void WaypointStore::UpdatePath(uint32 id)
         wp->x = x;
         wp->y = y;
         wp->z = z;
-        wp->run = fields[5].GetBool();
+        wp->moveType = WaypointMoveType(fields[5].GetUInt8());
         wp->delay = fields[6].GetUInt32();
         wp->event_id = fields[7].GetUInt32();
         wp->event_chance = fields[8].GetUInt8();

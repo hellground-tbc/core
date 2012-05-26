@@ -71,5 +71,5 @@ class Weather
         IntervalTimer m_timer;
         WeatherZoneChances const* m_weatherChances;
 };
-#endif
 
+#endif

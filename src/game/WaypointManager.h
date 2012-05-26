@@ -25,11 +25,18 @@
 #include "Utilities/UnorderedMap.h"
 #include "Policies/Singleton.h"
 
+enum WaypointMoveType
+{
+    M_WALK = 0,
+    M_RUN  = 1,
+    M_FLY  = 2
+};
+
 struct WaypointData
 {
     uint32 id;
     float x,y,z;
-    bool run;
+    WaypointMoveType moveType;
     uint32 delay;
     uint32 event_id;
     uint8 event_chance;

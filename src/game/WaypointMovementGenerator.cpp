@@ -121,7 +121,11 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature &creature)
     Movement::MoveSplineInit init(creature);
     init.MoveTo(node->x, node->y, node->z);
 
-    init.SetWalk(!node->run);
+    if (node->moveType == M_FLY)
+        init.SetFly();
+    else
+        init.SetWalk(node->moveType != M_RUN);
+
     init.Launch();
 
     //Call for creature group update
