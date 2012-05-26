@@ -282,7 +282,13 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
 
         // 0x08000000
         if (unit->m_movementInfo.GetMovementFlags() & MOVEFLAG_SPLINE_ENABLED)
-            Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
+        {
+            // How it is ever possible ? spline done but still MOVEFLAG_SPLINE_ENABLED present
+            if (unit->IsStopped())
+                unit->m_movementInfo.RemoveMovementFlag(MOVEFLAG_SPLINE_ENABLED);
+            else
+                Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
+        }
     }
     // 0x40
     else if (updateFlags & UPDATEFLAG_HAS_POSITION)
