@@ -2268,12 +2268,12 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
     int32 victimDefenseSkill = pVictim->GetDefenseSkillValue(this);
 
     // bonus from skills is 0.04% against players and 0.1% against mobs
-    int32    skillDiff  = attackerWeaponSkill - victimMaxSkillValueForLevel;
-    int32    skillBonus = pVictim->GetTypeId() == TYPEID_PLAYER ? skillDiff * 4  : skillDiff * 10;
-    int32    skillParryBonus = pVictim->GetTypeId() == TYPEID_PLAYER ? skillDiff * 4 : (skillBonus > 10 ? skillBonus * 60 : skillBonus * 10);
-    int32    skillCritBonus = (attackerMaxSkillValueForLevel - victimDefenseSkill) * 4;
-    int32    sum = 0;
-    int32    roll = urand (0, 10000);
+    int32 skillDiff  = attackerWeaponSkill - victimMaxSkillValueForLevel;
+    int32 skillBonus = pVictim->GetTypeId() == TYPEID_PLAYER ? skillDiff * 4  : skillDiff * 10;
+    int32 skillParryBonus = pVictim->GetTypeId() == TYPEID_PLAYER ? skillDiff * 4 : (skillBonus > 10 ? skillBonus * 60 : skillBonus * 10);
+    int32 skillCritBonus = (attackerMaxSkillValueForLevel - victimDefenseSkill) * 4;
+    int32 sum = 0;
+    int32 roll = urand (0, 10000);
 
     DEBUG_LOG ("RollMeleeOutcomeAgainst: skill bonus of %d for attacker", skillBonus);
     DEBUG_LOG ("RollMeleeOutcomeAgainst: rolled %d, miss %d, dodge %d, parry %d, block %d, crit %d",

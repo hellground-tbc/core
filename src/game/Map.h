@@ -174,8 +174,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellgro
             return loaded(p);
         }
 
-        bool GetUnloadLock(const GridPair &p) const { return getNGrid(p.x_coord, p.y_coord)->getUnloadLock(); }
-        void SetUnloadLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadExplicitLock(on); }
         void LoadGrid(float x, float y);
         bool UnloadGrid(const uint32 &x, const uint32 &y, bool pForce);
         virtual void UnloadAll();
@@ -230,8 +228,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellgro
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);
         virtual void DelayedUpdate(const uint32 diff);
-
-        virtual bool RemoveBones(uint64 guid, float x, float y);
 
         void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair);
         void UpdatePlayerVisibility( Player* player, Cell cell, CellPair cellpair );
@@ -323,9 +319,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellgro
 
         void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(this); }
 
-        template<class T> void AddType(T *obj);
-        template<class T> void RemoveType(T *obj, bool);
-
         NGridType* getNGrid(uint32 x, uint32 y) const
         {
             return i_grids[x][y];
@@ -338,7 +331,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellgro
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
 
         void SendObjectUpdates();
-        void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
 
         std::set<Object *> i_objectsToClientUpdate;
 
@@ -396,13 +388,13 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellgro
 
         // Type specific code for add/remove to/from grid
         template<class T>
-            void AddToGrid(T*, NGridType *, Cell const&);
+        void AddToGrid(T*, NGridType *, Cell const&);
 
         template<class T>
-            void RemoveFromGrid(T*, NGridType *, Cell const&);
+        void RemoveFromGrid(T*, NGridType *, Cell const&);
 
         template<class T>
-            void DeleteFromWorld(T*);
+        void DeleteFromWorld(T*);
 
         template<class T>
         void AddToActiveHelper(T* obj)
@@ -487,8 +479,7 @@ class HELLGROUND_DLL_SPEC BattleGroundMap : public Map
 };
 
 template<class T, class CONTAINER>
-inline void
-Map::Visit(const Cell& cell, TypeContainerVisitor<T, CONTAINER> &visitor)
+inline void Map::Visit(const Cell& cell, TypeContainerVisitor<T, CONTAINER> &visitor)
 {
     const uint32 x = cell.GridX();
     const uint32 y = cell.GridY();
@@ -501,5 +492,5 @@ Map::Visit(const Cell& cell, TypeContainerVisitor<T, CONTAINER> &visitor)
         getNGrid(x, y)->Visit(cell_x, cell_y, visitor);
     }
 }
-#endif
 
+#endif

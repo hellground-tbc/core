@@ -754,19 +754,6 @@ void Map::Remove(Player *player, bool remove)
         DeleteFromWorld(player);
 }
 
-bool Map::RemoveBones(uint64 guid, float x, float y)
-{
-    if (IsRemovalGrid(x, y))
-    {
-        Corpse * corpse = ObjectAccessor::GetCorpse(this->GetId() ,x, y, guid);
-        if (corpse && corpse->GetTypeId() == TYPEID_CORPSE && corpse->GetType() == CORPSE_BONES)
-            corpse->DeleteBonesFromWorld();
-        else
-            return false;
-    }
-    return true;
-}
-
 template<class T>
 void Map::Remove(T *obj, bool remove)
 {
@@ -829,7 +816,7 @@ void Map::PlayerRelocation(Player *player, float x, float y, float z, float orie
         AddToGrid(player, newGrid,new_cell);
     }
 
-    player->UpdateObjectVisibility(player->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE);
+    player->UpdateObjectVisibility(false);
 }
 
 void Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
