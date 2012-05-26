@@ -334,8 +334,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     if (pPlayer->isTurning())
         pPlayer->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING | AURA_INTERRUPT_FLAG_NOT_SEATED);
 
-    if (movementInfo.GetPos()->z < -500.0f)
-        pPlayer->HandleFallUnderMap();
+    pPlayer->HandleFallUnderMap(movementInfo.GetPos()->z);
 }
 
 void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo)
@@ -388,7 +387,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
         if (movementInfo.GetPos()->z < -500.0f)
         {
             GetPlayer()->Uncharm();
-            plr->HandleFallUnderMap();
+            plr->HandleFallUnderMap(movementInfo.GetPos()->z);
         }
     }
     else // Possessed unit is a creature

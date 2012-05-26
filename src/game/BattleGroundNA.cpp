@@ -163,8 +163,11 @@ void BattleGroundNA::HandleKillPlayer(Player *player, Player *killer)
     }
 }
 
-bool BattleGroundNA::HandlePlayerUnderMap(Player *player)
+bool BattleGroundNA::HandlePlayerUnderMap(Player *player, float z)
 {
+    if (z > 3.0f)
+        return false;
+
     player->TeleportTo(GetMapId(),4055.504395,2919.660645,13.611241,player->GetOrientation(),false);
     return true;
 }
@@ -180,9 +183,6 @@ void BattleGroundNA::HandleAreaTrigger(Player *Source, uint32 Trigger)
     {
         case 4536:                                          // buff trigger?
         case 4537:                                          // buff trigger?
-            break;
-        case 4944:
-            HandlePlayerUnderMap(Source);
             break;
         default:
             sLog.outError("WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);

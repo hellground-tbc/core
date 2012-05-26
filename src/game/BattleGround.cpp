@@ -1578,8 +1578,11 @@ const char *BattleGround::GetTrinityString(int32 entry)
     return objmgr.GetTrinityStringForDBCLocale(entry);
 }
 
-bool BattleGround::HandlePlayerUnderMap(Player * plr)
+bool BattleGround::HandlePlayerUnderMap(Player * plr, float z)
 {
+    if (z > - 500.0f)
+        return false;
+
     WorldSafeLocsEntry const *graveyard = GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetTeam());
     if (graveyard)
     {

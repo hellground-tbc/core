@@ -2030,7 +2030,7 @@ class HELLGROUND_DLL_SPEC Player : public Unit
 
         void HandleDrowning(uint32 time_diff);
         void HandleFallDamage(MovementInfo& movementInfo);
-        void HandleFallUnderMap();
+        void HandleFallUnderMap(float);
 
         void SetClientControl(Unit* target, uint8 allowMove);
 

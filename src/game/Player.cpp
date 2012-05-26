@@ -20129,16 +20129,15 @@ void Player::HandleFallDamage(MovementInfo& movementInfo)
     }
 }
 
-void Player::HandleFallUnderMap()
+void Player::HandleFallUnderMap(float z)
 {
-    if (InBattleGround()
-        && GetBattleGround()
-        && GetBattleGround()->HandlePlayerUnderMap(this))
-    {
-        // do nothing, the handle already did if returned true
-    }
+    if (InBattleGround() && GetBattleGround())
+        GetBattleGround()->HandlePlayerUnderMap(this, z);
     else
     {
+        if (z > -500.0f)
+            return;
+
         // NOTE: this is actually called many times while falling
         // even after the player has been teleported away
         // TODO: discard movement packets after the player is rooted
