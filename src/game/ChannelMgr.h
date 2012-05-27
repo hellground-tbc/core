@@ -20,8 +20,9 @@
 #ifndef TRINITYCORE_CHANNELMGR_H
 #define TRINITYCORE_CHANNELMGR_H
 
+#include "ace/Singleton.h"
+
 #include "Channel.h"
-#include "Policies/Singleton.h"
 #include "World.h"
 
 #include <map>
@@ -107,13 +108,13 @@ inline ChannelMgr* channelMgr(uint32 team)
 {
     if (sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
                                                             //For Test,No Seprate Faction
-        return &Hellground::Singleton<AllianceChannelMgr>::Instance();
+        return &(*ACE_Singleton<AllianceChannelMgr, ACE_Null_Mutex>::instance());
 
     if (team==ALLIANCE)
-        return &Hellground::Singleton<AllianceChannelMgr>::Instance();
+        return &(*ACE_Singleton<AllianceChannelMgr, ACE_Null_Mutex>::instance());
     if (team==HORDE)
-        return &Hellground::Singleton<HordeChannelMgr>::Instance();
+        return &(*ACE_Singleton<HordeChannelMgr, ACE_Null_Mutex>::instance());
     return NULL;
 }
-#endif
 
+#endif

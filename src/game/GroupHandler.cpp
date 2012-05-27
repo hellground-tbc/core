@@ -68,7 +68,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
         return;
     }
 
-    Player *player = objmgr.GetPlayer(membername.c_str());
+    Player *player = sObjectMgr.GetPlayer(membername.c_str());
 
     // no player
     if (!player)
@@ -191,7 +191,7 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket & /*recv_data*/)
         return;
     }
 
-    Player* leader = objmgr.GetPlayer(group->GetLeaderGUID());
+    Player* leader = sObjectMgr.GetPlayer(group->GetLeaderGUID());
 
     // forming a new group, create it
     if (!group->IsCreated())
@@ -199,7 +199,7 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket & /*recv_data*/)
         if (leader)
             group->RemoveInvite(leader);
         group->Create(group->GetLeaderGUID(), group->GetLeaderName());
-        objmgr.AddGroup(group);
+        sObjectMgr.AddGroup(group);
     }
 
     // everything's fine, do it
@@ -219,7 +219,7 @@ void WorldSession::HandleGroupDeclineOpcode(WorldPacket & /*recv_data*/)
     if (!group)
         return;
 
-    Player *leader = objmgr.GetPlayer(group->GetLeaderGUID());
+    Player *leader = sObjectMgr.GetPlayer(group->GetLeaderGUID());
 
     GetPlayer()->UninviteFromGroup();
 
@@ -334,7 +334,7 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket & recv_data)
     uint64 guid;
     recv_data >> guid;
 
-    Player *player = objmgr.GetPlayer(guid);
+    Player *player = sObjectMgr.GetPlayer(guid);
 
     /** error handling **/
     if (!player || !group->IsLeader(GetPlayer()->GetGUID()) || player->GetGroup() != group)
@@ -550,9 +550,9 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket & recv_data)
     /********************/
 
     // everything's fine, do it
-    if (Player* player = objmgr.GetPlayer(name.c_str()))
+    if (Player* player = sObjectMgr.GetPlayer(name.c_str()))
         group->ChangeMembersGroup(player, groupNr);
-    else if (uint64 guid = objmgr.GetPlayerGUIDByName(name.c_str()))
+    else if (uint64 guid = sObjectMgr.GetPlayerGUIDByName(name.c_str()))
         group->ChangeMembersGroup(guid, groupNr);
 }
 

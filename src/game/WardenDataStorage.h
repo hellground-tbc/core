@@ -19,9 +19,10 @@
 #ifndef _WARDEN_DATA_STORAGE_H
 #define _WARDEN_DATA_STORAGE_H
 
+#include "ace/Singleton.h"
+
 #include <map>
 #include "Auth/BigNumber.h"
-#include "Policies/Singleton.h"
 
 struct WardenData
 {
@@ -39,29 +40,30 @@ struct WardenDataResult
 
 class WardenDataStorage
 {
-public:
+    friend class ACE_Singleton<WardenDataStorage, ACE_Null_Mutex>;
     WardenDataStorage();
-    ~WardenDataStorage();
 
-private:
-    std::map<uint32, WardenData*> data_map;
-    std::map<uint32, WardenDataResult*> result_map;
-    uint32 internalDataID;
-    std::vector<uint32> memCheckIds;
+    public:
+        ~WardenDataStorage();
 
-public:
-    WardenData * GetWardenDataById(uint32 Id) const;
-    WardenDataResult * GetWardenResultById(uint32 Id) const;
-    uint32 GetInternalDataId() { return internalDataID; }
-    std::vector<uint32> GetMemCheckIds() { return memCheckIds; }
-    void Init();
-    void LoadWardenDataResult(bool reload = false);
+    private:
+        std::map<uint32, WardenData*> data_map;
+        std::map<uint32, WardenDataResult*> result_map;
+        uint32 internalDataID;
+        std::vector<uint32> memCheckIds;
 
-private:
-    uint32 GenerateInternalDataID() { return internalDataID++; }
-    void Cleanup();
+    public:
+        WardenData * GetWardenDataById(uint32 Id) const;
+        WardenDataResult * GetWardenResultById(uint32 Id) const;
+        uint32 GetInternalDataId() { return internalDataID; }
+        std::vector<uint32> GetMemCheckIds() { return memCheckIds; }
+        void Init();
+        void LoadWardenDataResult(bool reload = false);
+
+    private:
+        uint32 GenerateInternalDataID() { return internalDataID++; }
+        void Cleanup();
 };
 
-#define sWardenDataStorage Hellground::Singleton<WardenDataStorage>::Instance()
-
+#define sWardenDataStorage (*ACE_Singleton<WardenDataStorage, ACE_Null_Mutex>::instance())
 #endif

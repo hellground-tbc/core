@@ -1637,7 +1637,6 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         float m_speed_rate[MAX_MOVE_TYPE];                      // current speed
         float m_max_speed_rate[MAX_MOVE_TYPE];                  // max possible speed
 
-
         CharmInfo *m_charmInfo;
         SharedVisionList m_sharedVision;
 

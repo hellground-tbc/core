@@ -19,14 +19,12 @@
  */
 
 #include "TicketMgr.h"
-#include "Policies/SingletonImp.h"
 #include "World.h"
 #include "ObjectMgr.h"
 #include "Language.h"
 #include "Player.h"
 #include "Common.h"
 #include "ObjectAccessor.h"
-INSTANTIATE_SINGLETON_1(TicketMgr);
 
 GM_Ticket* TicketMgr::GetGMTicket(uint64 ticketGuid)
 {
@@ -60,7 +58,7 @@ GM_Ticket* TicketMgr::GetGMTicketByName(const char* name)
     if (!normalizePlayerName(pname))
         return NULL;
 
-    uint64 playerGuid = objmgr.GetPlayerGUIDByName(pname.c_str());
+    uint64 playerGuid = sObjectMgr.GetPlayerGUIDByName(pname.c_str());
     if (!playerGuid)
         return NULL;
 
@@ -84,7 +82,7 @@ GmTicketList TicketMgr::GetGMTicketsByName(const char* name)
     if (!normalizePlayerName(pname))
         return tmpL;
 
-    uint64 playerGuid = objmgr.GetPlayerGUIDByName(pname.c_str());
+    uint64 playerGuid = sObjectMgr.GetPlayerGUIDByName(pname.c_str());
     if (!playerGuid)
         return tmpL;
 
@@ -129,7 +127,7 @@ void TicketMgr::LoadGMTickets()
 
     if (!result)
         {
-        ticketmgr.InitTicketID();
+        sTicketMgr.InitTicketID();
         sWorld.SendGMText(LANG_GM_TICKETS_TABLE_EMPTY);
         //sLog.outString(">> GM Tickets table is empty, no tickets were loaded.");
         return;
@@ -228,4 +226,3 @@ uint64 TicketMgr::GenerateTicketID()
 {
     return ++m_ticketid;
 }
-

@@ -19,9 +19,10 @@
 #ifndef MANGOS_POOLHANDLER_H
 #define MANGOS_POOLHANDLER_H
 
+#include "ace/Singleton.h"
+
 #include "Common.h"
 #include "Platform/Define.h"
-#include "Policies/Singleton.h"
 #include "Creature.h"
 #include "GameObject.h"
 
@@ -98,8 +99,10 @@ class PoolGroup
 
 class PoolManager
 {
+    friend class ACE_Singleton<PoolManager, ACE_Null_Mutex>;
+    PoolManager();
+
     public:
-        PoolManager();
         ~PoolManager() {};
 
         void LoadFromDB();
@@ -166,7 +169,7 @@ class PoolManager
         SpawnedPoolData mSpawnedData;
 };
 
-#define sPoolMgr Hellground::Singleton<PoolManager>::Instance()
+#define sPoolMgr (*ACE_Singleton<PoolManager, ACE_Null_Mutex>::instance())
 
 // Method that tell if the creature is part of a pool and return the pool id if yes
 template<>

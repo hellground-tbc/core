@@ -23,7 +23,6 @@
 
 #include "Platform/Define.h"
 #include "Utilities/UnorderedMap.h"
-#include "Policies/Singleton.h"
 
 #include <string>
 #include <vector>
@@ -94,11 +93,6 @@ class HELLGROUND_DLL_DECL ObjectRegistry
             return i_registeredObjects;
         }
 
-    private:
-        RegistryMapType i_registeredObjects;
-        friend class Hellground::OperatorNew<ObjectRegistry<T, Key> >;
-
-        // protected for friend use since it should be a singleton
         ObjectRegistry() {}
         ~ObjectRegistry()
         {
@@ -106,6 +100,10 @@ class HELLGROUND_DLL_DECL ObjectRegistry
                 delete iter->second;
             i_registeredObjects.clear();
         }
-};
-#endif
 
+    private:
+        RegistryMapType i_registeredObjects;
+
+};
+
+#endif

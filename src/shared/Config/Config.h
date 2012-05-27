@@ -19,17 +19,20 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "ace/Singleton.h"
+#include "ace/Null_Mutex.h"
+
 #include "Common.h"
-#include <Policies/Singleton.h>
 #include "Platform/Define.h"
 
 class ACE_Configuration_Heap;
 
 class HELLGROUND_DLL_SPEC Config
 {
-    public:
+    friend class ACE_Singleton<Config, ACE_Null_Mutex>;
+    Config();
 
-        Config();
+    public:
         ~Config();
 
         bool SetSource(const char *file);
@@ -48,6 +51,5 @@ class HELLGROUND_DLL_SPEC Config
         ACE_Configuration_Heap *mConf;
 };
 
-#define sConfig Hellground::Singleton<Config>::Instance()
-
+#define sConfig (*ACE_Singleton<Config, ACE_Null_Mutex>::instance())
 #endif

@@ -19,7 +19,6 @@
  */
 
 #include "Database/DatabaseEnv.h"
-#include "Policies/SingletonImp.h"
 
 #include "AccountMgr.h"
 #include "ObjectAccessor.h"
@@ -27,14 +26,6 @@
 #include "Util.h"
 
 extern DatabaseType LoginDatabase;
-
-INSTANTIATE_SINGLETON_1(AccountMgr);
-
-AccountMgr::AccountMgr()
-{}
-
-AccountMgr::~AccountMgr()
-{}
 
 AccountOpResult AccountMgr::CreateAccount(std::string username, std::string password)
 {

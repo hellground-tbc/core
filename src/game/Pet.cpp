@@ -106,7 +106,7 @@ void Pet::AddToWorld()
     ///- Register the pet for guid lookup
     if (!IsInWorld())
     {
-        ObjectAccessor::Instance().AddPet(this);
+        sObjectAccessor.AddPet(this);
         Unit::AddToWorld();
         AIM_Initialize();
     }
@@ -118,7 +118,7 @@ void Pet::RemoveFromWorld()
     if (IsInWorld())
     {
         Unit::RemoveFromWorld();
-        ObjectAccessor::Instance().RemovePet(this);
+        sObjectAccessor.RemovePet(this);
     }
 }
 
@@ -165,7 +165,7 @@ bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool cur
         return false;
 
     Map *map = owner->GetMap();
-    uint32 guid = objmgr.GenerateLowGuid(HIGHGUID_PET);
+    uint32 guid = sObjectMgr.GenerateLowGuid(HIGHGUID_PET);
     uint32 pet_number = fields[0].GetUInt32();
     if (!Create(guid, map, petentry, pet_number))
         return false;
@@ -948,13 +948,13 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
         sLog.outError("CRITICAL ERROR: NULL pointer parsed into CreateBaseAtCreature()");
         return false;
     }
-    uint32 guid=objmgr.GenerateLowGuid(HIGHGUID_PET);
+    uint32 guid=sObjectMgr.GenerateLowGuid(HIGHGUID_PET);
 
     sLog.outDebug("SetInstanceID()");
     SetInstanceId(creature->GetInstanceId());
 
     sLog.outDebug("Create pet");
-    uint32 pet_number = objmgr.GeneratePetNumber();
+    uint32 pet_number = sObjectMgr.GeneratePetNumber();
     if (!Create(guid, creature->GetMap(), creature->GetEntry(), pet_number))
         return false;
 
@@ -1102,7 +1102,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
 
             //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
 
-            PetLevelInfo const* pInfo = objmgr.GetPetLevelInfo(creature_ID, petlevel);
+            PetLevelInfo const* pInfo = sObjectMgr.GetPetLevelInfo(creature_ID, petlevel);
             if (pInfo)                                       // exist in DB
             {
                 SetCreateHealth(pInfo->health);
@@ -1144,7 +1144,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
             //damage is increased afterwards as strength and pet scaling modify attack power
 
             //stored standard pet stats are entry 1 in pet_levelinfo
-            PetLevelInfo const* pInfo = objmgr.GetPetLevelInfo(creature_ID, petlevel);
+            PetLevelInfo const* pInfo = sObjectMgr.GetPetLevelInfo(creature_ID, petlevel);
             if (pInfo)                                       // exist in DB
             {
                 SetCreateHealth(pInfo->health);
@@ -1678,7 +1678,7 @@ void Pet::InitPetCreateSpells()
     m_spells.clear();
 
     int32 usedtrainpoints = 0, petspellid;
-    PetCreateSpellEntry const* CreateSpells = objmgr.GetPetCreateSpellEntry(GetEntry());
+    PetCreateSpellEntry const* CreateSpells = sObjectMgr.GetPetCreateSpellEntry(GetEntry());
     if (CreateSpells)
     {
         Unit* owner = GetOwner();

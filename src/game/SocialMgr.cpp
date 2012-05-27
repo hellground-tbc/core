@@ -19,7 +19,6 @@
  */
 
 #include "SocialMgr.h"
-#include "Policies/SingletonImp.h"
 #include "Database/DatabaseEnv.h"
 #include "Opcodes.h"
 #include "WorldPacket.h"
@@ -30,8 +29,6 @@
 #include "Util.h"
 
 #include "MapManager.h"
-
-INSTANTIATE_SINGLETON_1(SocialMgr);
 
 PlayerSocial::PlayerSocial()
 {
@@ -125,7 +122,7 @@ void PlayerSocial::SetFriendNote(uint32 friend_guid, std::string note)
 
 void PlayerSocial::SendSocialList()
 {
-    Player *plr = objmgr.GetPlayer(GetPlayerGUID());
+    Player *plr = sObjectMgr.GetPlayer(GetPlayerGUID());
     if (!plr)
         return;
 

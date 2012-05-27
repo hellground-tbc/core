@@ -13,9 +13,6 @@
     <Filter Include="Utilities">
       <UniqueIdentifier>{0c0c43dc-afd1-4c7b-90b6-5f378e5df497}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utilities\CountedReference">
-      <UniqueIdentifier>{a6f2daca-058f-4177-a4ff-ea7b8e640be2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utilities\LinkedReference">
       <UniqueIdentifier>{48355845-199f-4c2d-95b9-587c1093496d}</UniqueIdentifier>
     </Filter>
@@ -54,21 +51,6 @@
     <ClInclude Include="..\..\src\framework\Platform\Define.h">
       <Filter>Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\framework\Policies\CreationPolicy.h">
-      <Filter>Policies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework\Policies\ObjectLifeTime.h">
-      <Filter>Policies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework\Policies\Singleton.h">
-      <Filter>Policies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework\Policies\SingletonImp.h">
-      <Filter>Policies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework\Policies\ThreadingModel.h">
-      <Filter>Policies</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\framework\Utilities\ByteConverter.h">
       <Filter>Utilities</Filter>
     </ClInclude>
@@ -86,15 +68,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\framework\Utilities\UnorderedMap.h">
       <Filter>Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework\Utilities\CountedReference\Reference.h">
-      <Filter>Utilities\CountedReference</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework\Utilities\CountedReference\ReferenceHolder.h">
-      <Filter>Utilities\CountedReference</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework\Utilities\CountedReference\ReferenceImpl.h">
-      <Filter>Utilities\CountedReference</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\framework\Utilities\LinkedReference\Reference.h">
       <Filter>Utilities\LinkedReference</Filter>
@@ -114,9 +87,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\framework\Policies\MemoryManagement.cpp">
-      <Filter>Policies</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\framework\Policies\ObjectLifeTime.cpp">
       <Filter>Policies</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\framework\Utilities\EventProcessor.cpp">

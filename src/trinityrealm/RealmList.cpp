@@ -24,10 +24,7 @@
 #include "RealmList.h"
 #include "AuthCodes.h"
 #include "Util.h"                                           // for Tokens typedef
-#include "Policies/SingletonImp.h"
 #include "Database/DatabaseEnv.h"
-
-INSTANTIATE_SINGLETON_1( RealmList );
 
 extern DatabaseType LoginDatabase;
 

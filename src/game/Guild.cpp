@@ -57,9 +57,9 @@ bool Guild::create(uint64 lGuid, std::string gname)
     std::string rname;
     std::string lName;
 
-    if (!objmgr.GetPlayerNameByGUID(lGuid, lName))
+    if (!sObjectMgr.GetPlayerNameByGUID(lGuid, lName))
         return false;
-    if (objmgr.GetGuildByName(gname))
+    if (sObjectMgr.GetGuildByName(gname))
         return false;
 
     sLog.outSpecial("GUILD: creating guild %s to leader: %u", gname.c_str(), GUID_LOPART(lGuid));
@@ -71,7 +71,7 @@ bool Guild::create(uint64 lGuid, std::string gname)
     guildbank_money = 0;
     purchased_tabs = 0;
 
-    Id = objmgr.GenerateGuildId();
+    Id = sObjectMgr.GenerateGuildId();
 
     // gname already assigned to Guild::name, use it to encode string for DB
     CharacterDatabase.escape_string(gname);
@@ -106,7 +106,7 @@ bool Guild::create(uint64 lGuid, std::string gname)
 
 bool Guild::AddMember(uint64 plGuid, uint32 plRank)
 {
-    Player* pl = objmgr.GetPlayer(plGuid);
+    Player* pl = sObjectMgr.GetPlayer(plGuid);
     if (pl)
     {
         if (pl->GetGuildId() != 0)
@@ -222,7 +222,7 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
     CreatedYear  = (dTime/10000)%10000;
 
     // If the leader does not exist attempt to promote another member
-    if (!objmgr.GetPlayerAccountIdByGUID(leaderGuid))
+    if (!sObjectMgr.GetPlayerAccountIdByGUID(leaderGuid))
     {
         DelMember(leaderGuid);
 
@@ -346,7 +346,7 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     uint32 plClass;
     uint32 plZone;
 
-    Player* pl = objmgr.GetPlayer(guid);
+    Player* pl = sObjectMgr.GetPlayer(guid);
     if (pl)
     {
         plName  = pl->GetName();
@@ -451,7 +451,7 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
         SetLeader(newLeaderGUID);
 
         // If player not online data in data field will be loaded from guild tabs no need to update it !!
-        if (Player *newLeader = objmgr.GetPlayer(newLeaderGUID))
+        if (Player *newLeader = sObjectMgr.GetPlayer(newLeaderGUID))
             newLeader->SetRank(GR_GUILDMASTER);
 
         // when leader non-exist (at guild load with deleted leader only) not send broadcasts
@@ -476,7 +476,7 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
 
     members.erase(GUID_LOPART(guid));
 
-    Player *player = objmgr.GetPlayer(guid);
+    Player *player = sObjectMgr.GetPlayer(guid);
     // If player not online data in data field will be loaded from guild tabs no need to update it !!
     if (player)
     {
@@ -493,7 +493,7 @@ void Guild::ChangeRank(uint64 guid, uint32 newRank)
     if (itr != members.end())
         itr->second.RankId = newRank;
 
-    Player *player = objmgr.GetPlayer(guid);
+    Player *player = sObjectMgr.GetPlayer(guid);
     // If player not online data in data field will be loaded from guild tabs no need to update it !!
     if (player)
         player->SetRank(newRank);
@@ -686,7 +686,7 @@ void Guild::Disband()
     CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE guildid = '%u'",Id);
     CharacterDatabase.PExecute("DELETE FROM guild_eventlog WHERE guildid = '%u'",Id);
     CharacterDatabase.CommitTransaction();
-    objmgr.RemoveGuild(Id);
+    sObjectMgr.RemoveGuild(Id);
 }
 
 void Guild::Roster(WorldSession *session)

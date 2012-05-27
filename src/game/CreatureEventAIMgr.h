@@ -21,13 +21,17 @@
 #ifndef HELLGROUND_CREATURE_EAI_MGR_H
 #define HELLGROUND_CREATURE_EAI_MGR_H
 
+#include "ace/Singleton.h"
+
 #include "Common.h"
 #include "CreatureEventAI.h"
 
 class CreatureEventAIMgr
 {
+    friend class ACE_Singleton<CreatureEventAIMgr, ACE_Null_Mutex>;
+    CreatureEventAIMgr(){};
+
     public:
-        CreatureEventAIMgr(){};
         ~CreatureEventAIMgr(){};
 
         void LoadCreatureEventAI_Texts(bool check_entry_use);
@@ -48,5 +52,5 @@ class CreatureEventAIMgr
         CreatureEventAI_TextMap    m_CreatureEventAI_TextMap;
 };
 
-#define CreatureEAI_Mgr Hellground::Singleton<CreatureEventAIMgr>::Instance()
+#define sCreatureEAIMgr (*ACE_Singleton<CreatureEventAIMgr, ACE_Null_Mutex>::instance())
 #endif

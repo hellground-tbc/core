@@ -28,7 +28,6 @@
 #include "movemap/MoveMap.h"
 #include "World.h"
 
-#include "Policies/SingletonImp.h"
 #include "Util.h"
 
 char const* MAP_MAGIC         = "MAPS";
@@ -1116,10 +1115,6 @@ bool TerrainInfo::IsPathFindingEnabled() const
 
 //////////////////////////////////////////////////////////////////////////
 
-#define CLASS_LOCK Hellground::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex>
-INSTANTIATE_SINGLETON_2(TerrainManager, CLASS_LOCK);
-INSTANTIATE_CLASS_MUTEX(TerrainManager, ACE_Thread_Mutex);
-
 TerrainManager::TerrainManager()
 {
 }
@@ -1132,7 +1127,7 @@ TerrainManager::~TerrainManager()
 
 TerrainInfo * TerrainManager::LoadTerrain(const uint32 mapId)
 {
-    Guard _guard(*this);
+    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
 
     TerrainInfo * ptr = NULL;
     TerrainDataMap::const_iterator iter = i_TerrainMap.find(mapId);
@@ -1149,10 +1144,10 @@ TerrainInfo * TerrainManager::LoadTerrain(const uint32 mapId)
 
 void TerrainManager::UnloadTerrain(const uint32 mapId)
 {
-    if(sWorld.getConfig(CONFIG_GRID_UNLOAD) == 0)
+    if (sWorld.getConfig(CONFIG_GRID_UNLOAD) == 0)
         return;
 
-    Guard _guard(*this);
+    ACE_GUARD(ACE_Thread_Mutex, Guard, Lock);
 
     TerrainDataMap::iterator iter = i_TerrainMap.find(mapId);
     if(iter != i_TerrainMap.end())

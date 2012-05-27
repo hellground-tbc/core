@@ -1473,7 +1473,7 @@ void WorldObject::MonsterTextEmote(const char* text, uint64 TargetGuid, bool IsB
 
 void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper)
 {
-    Player *player = objmgr.GetPlayer(receiver);
+    Player *player = sObjectMgr.GetPlayer(receiver);
     if (!player || !player->GetSession())
         return;
 
@@ -1515,7 +1515,7 @@ namespace Hellground
                 : i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language), i_targetGUID(targetGUID), i_withoutPrename(withoutPrename) {}
             void operator()(WorldPacket& data, int32 loc_idx)
             {
-                char const* text = objmgr.GetTrinityString(i_textId, loc_idx);
+                char const* text = sObjectMgr.GetTrinityString(i_textId, loc_idx);
                 // TODO: i_object.GetName() also must be localized?
                 i_object.BuildMonsterChat(&data, i_msgtype, text, i_language, i_object.GetNameForLocaleIdx(loc_idx), i_targetGUID, i_withoutPrename);
             }
@@ -1587,12 +1587,12 @@ void WorldObject::MonsterTextEmoteToZone(int32 textId, uint64 TargetGuid, bool I
 
 void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisper)
 {
-    Player *player = objmgr.GetPlayer(receiver);
+    Player *player = sObjectMgr.GetPlayer(receiver);
     if (!player || !player->GetSession())
         return;
 
     uint32 loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
-    char const* text = objmgr.GetTrinityString(textId, loc_idx);
+    char const* text = sObjectMgr.GetTrinityString(textId, loc_idx);
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, text, LANG_UNIVERSAL, GetNameForLocaleIdx(loc_idx), receiver);
@@ -1606,9 +1606,9 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, int32 iText
     if(GetTypeId() == TYPEID_PLAYER)
     {
         uint32 loc_idx = ((Player*)this)->GetSession()->GetSessionDbLocaleIndex();
-        text = objmgr.GetTrinityString(iTextEntry,loc_idx);
+        text = sObjectMgr.GetTrinityString(iTextEntry,loc_idx);
     } else
-        text = objmgr.GetTrinityStringForDBCLocale(iTextEntry);
+        text = sObjectMgr.GetTrinityStringForDBCLocale(iTextEntry);
     BuildMonsterChat(data, msgtype, text, language, name, targetGuid, withoutPrename);
     if(GetTypeId() == TYPEID_PLAYER)
         data->put(5, (uint64)0);  // BAD HACK
@@ -1687,7 +1687,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if (GetTypeId()==TYPEID_PLAYER)
         team = ((Player*)this)->GetTeam();
 
-    if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), GetMap(), id, team, x, y, z, ang))
+    if (!pCreature->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), GetMap(), id, team, x, y, z, ang))
     {
         delete pCreature;
         return NULL;
@@ -1770,8 +1770,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     }
 
     Map *map = GetMap();
-    uint32 pet_number = objmgr.GeneratePetNumber();
-    if (!pet->Create(objmgr.GenerateLowGuid(HIGHGUID_PET), map, entry, pet_number))
+    uint32 pet_number = sObjectMgr.GeneratePetNumber();
+    if (!pet->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_PET), map, entry, pet_number))
     {
         sLog.outError("no such creature entry %u", entry);
         delete pet;
@@ -1862,7 +1862,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
     }
     Map *map = GetMap();
     GameObject *go = new GameObject();
-    if (!go->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100, GO_STATE_READY))
+    if (!go->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100, GO_STATE_READY))
     {
         delete go;
         return NULL;

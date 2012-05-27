@@ -21,8 +21,9 @@
 #ifndef __BATTLEGROUNDMGR_H
 #define __BATTLEGROUNDMGR_H
 
+#include "ace/Singleton.h"
+
 #include "Common.h"
-#include "Policies/Singleton.h"
 #include "BattleGround.h"
 
 typedef std::map<uint32, BattleGround*> BattleGroundSet;
@@ -172,9 +173,10 @@ class BGQueueRemoveEvent : public BasicEvent
 
 class BattleGroundMgr
 {
+    friend class ACE_Singleton<BattleGroundMgr, ACE_Null_Mutex>;
+    BattleGroundMgr();
+
     public:
-        /* Construction */
-        BattleGroundMgr();
         ~BattleGroundMgr();
 
         void Update(uint32 diff);
@@ -261,5 +263,5 @@ class BattleGroundMgr
         bool   m_ApAnnounce;
 };
 
-#define sBattleGroundMgr Hellground::Singleton<BattleGroundMgr>::Instance()
+#define sBattleGroundMgr (*ACE_Singleton<BattleGroundMgr, ACE_Null_Mutex>::instance())
 #endif

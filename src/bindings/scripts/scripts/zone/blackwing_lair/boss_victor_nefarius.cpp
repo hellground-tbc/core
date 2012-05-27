@@ -188,15 +188,6 @@ struct HELLGROUND_DLL_DECL boss_victor_nefariusAI : public ScriptedAI
     {
         DoScriptText(SAY_GAMESBEGIN_2, m_creature);
 
-        //Hellground::Singleton<MapManager>::Instance().GetMap(m_creature->GetMapId(), m_creature)->GetPlayers().begin();
-        /*
-        list <Player*>::iterator i = MapManager::Instance().GetMap(m_creature->GetMapId(), m_creature)->GetPlayers().begin();
-
-        for (i = MapManager::Instance().GetMap(m_creature->GetMapId(), m_creature)->GetPlayers().begin(); i != MapManager::Instance().GetMap(m_creature->GetMapId(), m_creature)->GetPlayers().end(); ++i)
-        {
-        AttackStart((*i));
-        }
-        */
         m_creature->SetUInt32Value(UNIT_NPC_FLAGS,0);
         m_creature->setFaction(103);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -293,7 +284,7 @@ struct HELLGROUND_DLL_DECL boss_victor_nefariusAI : public ScriptedAI
                 if (SpawnedAdds >= 42)
                 {
                     //Teleport Victor Nefarius way out of the map
-                    //MapManager::Instance().GetMap(m_creature->GetMapId(), m_creature)->CreatureRelocation(m_creature,0,0,-5000,0);
+                    //sMapMgr.GetMap(m_creature->GetMapId(), m_creature)->CreatureRelocation(m_creature,0,0,-5000,0);
 
                     //Inturrupt any spell casting
                     m_creature->InterruptNonMeleeSpells(false);

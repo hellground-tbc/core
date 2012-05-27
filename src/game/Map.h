@@ -22,7 +22,6 @@
 #define HELLGROUND_MAP_H
 
 #include "Platform/Define.h"
-#include "Policies/ThreadingModel.h"
 #include "ace/RW_Thread_Mutex.h"
 #include "ace/Thread_Mutex.h"
 
@@ -118,7 +117,7 @@ enum GetCreatureGuidType
     GET_ALIVE_CREATURE_GUID     = 3
 };
 
-class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellground::ObjectLevelLockable<Map, ACE_Thread_Mutex>
+class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
@@ -342,7 +341,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>, public Hellgro
         bool m_broken;
 
     protected:
-        typedef Hellground::ObjectLevelLockable<Map, ACE_Thread_Mutex>::Lock Guard;
+        ACE_Thread_Mutex Lock;
 
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;

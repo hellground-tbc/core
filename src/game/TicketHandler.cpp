@@ -28,7 +28,6 @@
 #include "World.h"
 #include "Chat.h"
 
-
 void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
 {
     // always do a packet check
@@ -55,7 +54,7 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
 
     // assign values
     ticket->name = GetPlayer()->GetName();
-    ticket->guid = ticketmgr.GenerateTicketID();
+    ticket->guid = sTicketMgr.GenerateTicketID();
     ticket->playerGuid = GetPlayer()->GetGUID();
     ticket->message = ticketText;
     ticket->createtime = time(NULL);
@@ -69,10 +68,10 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
     ticket->comment = "";
 
     // remove ticket by player, shouldn't happen
-    ticketmgr.RemoveGMTicketByPlayer(GetPlayer()->GetGUID(), GetPlayer()->GetGUID());
+    sTicketMgr.RemoveGMTicketByPlayer(GetPlayer()->GetGUID(), GetPlayer()->GetGUID());
 
     // add ticket
-    ticketmgr.AddGMTicket(ticket, false);
+    sTicketMgr.AddGMTicket(ticket, false);
 
     // Response - no errors
     data << uint32(2);
@@ -97,7 +96,7 @@ void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recv_data)
     recv_data >> message;
 
     // Update Ticket
-    GM_Ticket *ticket = ticketmgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
+    GM_Ticket *ticket = sTicketMgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
 
     // Check if player has a GM Ticket yet
     if (!ticket)
@@ -113,7 +112,7 @@ void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recv_data)
     ticket->message = message;
     ticket->timestamp = (uint32)t;
 
-    ticketmgr.UpdateGMTicket(ticket);
+    sTicketMgr.UpdateGMTicket(ticket);
 
     // Response - no errors
     data << uint32(2);
@@ -129,7 +128,7 @@ void WorldSession::HandleGMTicketDeleteOpcode(WorldPacket & /*recv_data*/)
 {
     // NO recv_data, NO packet check size
 
-    GM_Ticket* ticket = ticketmgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
+    GM_Ticket* ticket = sTicketMgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
 
     // CHeck for Ticket
     if (ticket)
@@ -143,7 +142,7 @@ void WorldSession::HandleGMTicketDeleteOpcode(WorldPacket & /*recv_data*/)
         SendPacket(&data);
 
         sWorld.SendGMText(LANG_COMMAND_TICKETPLAYERABANDON, GetPlayer()->GetName(), ticket->guid);
-        ticketmgr.RemoveGMTicketByPlayer(GetPlayer()->GetGUID(), GetPlayer()->GetGUID());
+        sTicketMgr.RemoveGMTicketByPlayer(GetPlayer()->GetGUID(), GetPlayer()->GetGUID());
     }
 }
 
@@ -154,7 +153,7 @@ void WorldSession::HandleGMTicketGetTicketOpcode(WorldPacket & /*recv_data*/)
     WorldPacket data(SMSG_GMTICKET_GETTICKET, 400);
 
     // get Current Ticket
-    GM_Ticket *ticket = ticketmgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
+    GM_Ticket *ticket = sTicketMgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
 
     // check for existing ticket
     if (!ticket)

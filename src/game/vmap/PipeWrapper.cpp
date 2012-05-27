@@ -1,9 +1,6 @@
 #include "PipeWrapper.h"
 #include "Config/Config.h"
 #include "Log.h"
-#include "Policies/SingletonImp.h"
-
-INSTANTIATE_SINGLETON_1(VMAP::MultiProcessLog);
 
 namespace VMAP
 {

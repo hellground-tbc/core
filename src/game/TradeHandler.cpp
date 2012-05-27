@@ -313,7 +313,7 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
                 SendTradeStatus(TRADE_STATUS_TRADE_CANCELED);
 
                 std::string accountname;
-                if (accmgr.GetName(_player->GetSession()->GetAccountId(), accountname))
+                if (AccountMgr::GetName(_player->GetSession()->GetAccountId(), accountname))
                 {
                     std::string duration = "-1";
                     std::string reason = "GM INFO - trade hack/exploit";
@@ -340,7 +340,7 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
                 SendTradeStatus(TRADE_STATUS_TRADE_CANCELED);
 
                 std::string accountname;
-                if (accmgr.GetName(_player->GetSession()->GetAccountId(), accountname))
+                if (AccountMgr::GetName(_player->GetSession()->GetAccountId(), accountname))
                 {
                     std::string duration = "-1";
                     std::string reason = "GM INFO - trade hack/exploit";

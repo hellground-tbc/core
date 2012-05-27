@@ -980,7 +980,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!creatureTarget || !pGameObj)
                         return;
 
-                    if (!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), 181574, creatureTarget->GetMap(),
+                    if (!pGameObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), 181574, creatureTarget->GetMap(),
                         creatureTarget->GetPositionX(), creatureTarget->GetPositionY(), creatureTarget->GetPositionZ(),
                         creatureTarget->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 100, GO_STATE_READY))
                     {
@@ -3459,7 +3459,7 @@ void Spell::EffectPersistentAA(uint32 i)
     Unit *caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
     int32 duration = GetSpellDuration(m_spellInfo);
     DynamicObject* dynObj = new DynamicObject;
-    if (!dynObj->Create(objmgr.GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, i, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
+    if (!dynObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, i, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
     {
         delete dynObj;
         return;
@@ -4165,7 +4165,7 @@ void Spell::EffectAddFarsight(uint32 i)
     float radius = GetSpellRadius(m_spellInfo,i,false);
     int32 duration = GetSpellDuration(m_spellInfo);
     DynamicObject* dynObj = new DynamicObject;
-    if (!dynObj->Create(objmgr.GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), m_caster, m_spellInfo->Id, 4, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
+    if (!dynObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), m_caster, m_spellInfo->Id, 4, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
     {
         delete dynObj;
         return;
@@ -4762,7 +4762,7 @@ void Spell::EffectSummonPet(uint32 i)
     pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
 
     // generate new name for summon pet
-    std::string new_name=objmgr.GeneratePetName(petentry);
+    std::string new_name=sObjectMgr.GeneratePetName(petentry);
     if (!new_name.empty())
         pet->SetName(new_name);
 }
@@ -5213,7 +5213,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
 
     Map *map = target->GetMap();
 
-    if (!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id, map,
+    if (!pGameObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id, map,
         x, y, z, target->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 100, GO_STATE_READY))
     {
         delete pGameObj;
@@ -5266,7 +5266,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
     if (uint32 linkedEntry = pGameObj->GetLinkedGameObjectEntry())
     {
         GameObject* linkedGO = new GameObject;
-        if (linkedGO->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), linkedEntry, map,
+        if (linkedGO->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), linkedEntry, map,
             x, y, z, target->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 100, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
@@ -6509,7 +6509,7 @@ void Spell::EffectDuel(uint32 i)
     uint32 gameobject_id = m_spellInfo->EffectMiscValue[i];
 
     Map *map = m_caster->GetMap();
-    if (!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id, map,
+    if (!pGameObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id, map,
         m_caster->GetPositionX()+(unitTarget->GetPositionX()-m_caster->GetPositionX())/2 ,
         m_caster->GetPositionY()+(unitTarget->GetPositionY()-m_caster->GetPositionY())/2 ,
         m_caster->GetPositionZ(),
@@ -6579,7 +6579,7 @@ void Spell::EffectStuck(uint32 /*i*/)
         if (!pTarget->GetSpellCooldownDelay(8690) && pTarget->HasItemCount(6948, 1))
             pTarget->CastSpell(pTarget, 8690, true);
         else
-            if (PlayerInfo const * tmpPlInfo = objmgr.GetPlayerInfo(pTarget->getRace(), pTarget->getClass()))
+            if (PlayerInfo const * tmpPlInfo = sObjectMgr.GetPlayerInfo(pTarget->getRace(), pTarget->getClass()))
                 pTarget->TeleportTo(tmpPlInfo->mapId, tmpPlInfo->positionX, tmpPlInfo->positionY, tmpPlInfo->positionZ, 0.0f);
     }
     else
@@ -6669,7 +6669,7 @@ void Spell::EffectSummonTotem(uint32 i)
     m_caster->GetValidPointInAngle(dest, 5.0f, angle, true);
 
     Totem* pTotem = new Totem;
-    if (!pTotem->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team, dest.x, dest.y, dest.z, m_caster->GetOrientation()))
+    if (!pTotem->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team, dest.x, dest.y, dest.z, m_caster->GetOrientation()))
     {
         delete pTotem;
         return;
@@ -6865,7 +6865,7 @@ void Spell::EffectSummonObject(uint32 i)
         m_caster->GetClosePoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
 
     Map *map = m_caster->GetMap();
-    if (!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map, x, y, z, m_caster->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
+    if (!pGameObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map, x, y, z, m_caster->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -7162,8 +7162,8 @@ void Spell::EffectSummonCritter(uint32 i)
     Pet* critter = new Pet(MINI_PET);
 
     Map *map = m_caster->GetMap();
-    uint32 pet_number = objmgr.GeneratePetNumber();
-    if (!critter->Create(objmgr.GenerateLowGuid(HIGHGUID_PET),
+    uint32 pet_number = sObjectMgr.GeneratePetNumber();
+    if (!critter->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_PET),
         map, pet_entry, pet_number))
     {
         sLog.outError("Spell::EffectSummonCritter, spellid %u: no such creature entry %u", m_spellInfo->Id, pet_entry);
@@ -7553,7 +7553,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
     GameObject* pGameObj = new GameObject;
 
-    if (!pGameObj->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), name_id, cMap,
+    if (!pGameObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), name_id, cMap,
         fx, fy, fz, m_caster->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 100, GO_STATE_READY))
     {
         delete pGameObj;
@@ -7622,7 +7622,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     if (uint32 linkedEntry = pGameObj->GetLinkedGameObjectEntry())
     {
         GameObject* linkedGO = new GameObject;
-        if (linkedGO->Create(objmgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), linkedEntry, cMap,
+        if (linkedGO->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), linkedEntry, cMap,
             fx, fy, fz, m_caster->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 100, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
@@ -7683,7 +7683,7 @@ void Spell::EffectSummonDemon(uint32 i)
     Charmed->SetLevel(m_caster->getLevel());
 
     // Add damage/mana/hp according to level
-    //PetLevelInfo const* pInfo = objmgr.GetPetLevelInfo(creature_ID, m_caster->getLevel());
+    //PetLevelInfo const* pInfo = sObjectMgr.GetPetLevelInfo(creature_ID, m_caster->getLevel());
     if (creature_ID == 89 || creature_ID == 11859)
     {
         int lvldiff = (m_caster->getLevel() - 52);

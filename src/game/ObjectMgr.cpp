@@ -22,7 +22,6 @@
 #include "Database/DatabaseEnv.h"
 #include "Database/SQLStorage.h"
 #include "Database/SQLStorageImpl.h"
-#include "Policies/SingletonImp.h"
 
 #include "Log.h"
 #include "MapManager.h"
@@ -47,8 +46,6 @@
 #include "Util.h"
 #include "WaypointManager.h"
 #include "InstanceData.h" //for condition_instance_data
-
-INSTANTIATE_SINGLETON_1(ObjectMgr);
 
 bool normalizePlayerName(std::string& name)
 {
@@ -5155,7 +5152,7 @@ void ObjectMgr::LoadCorpses()
             continue;
         }
 
-        ObjectAccessor::Instance().AddCorpse(corpse);
+        sObjectAccessor.AddCorpse(corpse);
 
         ++count;
     }
@@ -6170,7 +6167,7 @@ bool PlayerCondition::Meets(Player const * player) const
         case CONDITION_NO_AURA:
             return !player->HasAura(value1, value2);
         case CONDITION_ACTIVE_EVENT:
-            return gameeventmgr.IsActiveEvent(value1);
+            return sGameEventMgr.IsActiveEvent(value1);
         case CONDITION_INSTANCE_DATA:
         {
             Map *map = player->GetMap();
@@ -6279,7 +6276,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         case CONDITION_QUESTREWARDED:
         case CONDITION_QUESTTAKEN:
         {
-            Quest const *Quest = objmgr.GetQuestTemplate(value1);
+            Quest const *Quest = sObjectMgr.GetQuestTemplate(value1);
             if (!Quest)
             {
                 sLog.outErrorDb("Quest condition specifies non-existing quest (%u), skipped", value1);
@@ -6313,7 +6310,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         }
         case CONDITION_ACTIVE_EVENT:
         {
-            GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
+            GameEventMgr::GameEventDataMap const& events = sGameEventMgr.GetEventMap();
             if (value1 >=events.size() || !events[value1].isValid())
             {
                 sLog.outErrorDb("Active event condition requires existed event id (%u), skipped", value1);
@@ -6871,7 +6868,7 @@ void ObjectMgr::LoadItemTexts()
 
 bool LoadHellgroundStrings(DatabaseType& db, char const* table,int32 start_value, int32 end_value)
 {
-    return objmgr.LoadHellgroundStrings(db,table,start_value,end_value);
+    return sObjectMgr.LoadHellgroundStrings(db,table,start_value,end_value);
 }
 
 GameObjectInfo const *GetGameObjectInfo(uint32 id)
@@ -6891,7 +6888,7 @@ CreatureInfo const* GetCreatureTemplateStore(uint32 entry)
 
 Quest const* GetQuestTemplateStore(uint32 entry)
 {
-    return objmgr.GetQuestTemplate(entry);
+    return sObjectMgr.GetQuestTemplate(entry);
 }
 
 void ObjectMgr::LoadTransportEvents()

@@ -21,9 +21,10 @@
 #ifndef HELLGROUND_MAPMANAGER_H
 #define HELLGROUND_MAPMANAGER_H
 
+#include "ace/Singleton.h"
+#include "ace/Thread_Mutex.h"
+
 #include "Platform/Define.h"
-#include "Policies/Singleton.h"
-#include "ace/Recursive_Thread_Mutex.h"
 #include "Common.h"
 #include "Map.h"
 #include "GridStates.h"
@@ -50,14 +51,9 @@ struct HELLGROUND_DLL_DECL MapID
     uint32 nInstanceId;
 };
 
-class HELLGROUND_DLL_DECL MapManager : public Hellground::Singleton<MapManager, Hellground::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex> >
+class HELLGROUND_DLL_DECL MapManager
 {
-
-    friend class Hellground::OperatorNew<MapManager>;
-    typedef ACE_Recursive_Thread_Mutex LOCK_TYPE;
-    typedef ACE_Guard<LOCK_TYPE> LOCK_TYPE_GUARD;
-    typedef Hellground::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex>::Lock Guard;
-
+    friend class ACE_Singleton<MapManager, ACE_Thread_Mutex>;
     public:
         typedef std::map<MapID, Map* > MapMapType;
 
@@ -173,8 +169,9 @@ class HELLGROUND_DLL_DECL MapManager : public Hellground::Singleton<MapManager, 
 
         MapUpdater m_updater;
         uint32 i_MaxInstanceId;
+
+        ACE_Thread_Mutex Lock;
 };
 
-#define sMapMgr MapManager::Instance()
-
+#define sMapMgr (*ACE_Singleton<MapManager, ACE_Thread_Mutex>::instance())
 #endif

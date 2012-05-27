@@ -229,8 +229,8 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
     data << clientcount;                                    // clientcount place holder
     data << clientcount;                                    // clientcount place holder
 
-    ObjectAccessor::Guard guard(*HashMapHolder<Player>::GetLock());
-    HashMapHolder<Player>::MapType& m = ObjectAccessor::Instance().GetPlayers();
+    ACE_GUARD(ACE_Thread_Mutex, guard, *HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType& m = sObjectAccessor.GetPlayers();
     for (HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (security == SEC_PLAYER)
@@ -302,7 +302,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
         if (!(wplayer_name.empty() || wpname.find(wplayer_name) != std::wstring::npos))
             continue;
 
-        std::string gname = objmgr.GetGuildNameById(itr->second->GetGuildId());
+        std::string gname = sObjectMgr.GetGuildNameById(itr->second->GetGuildId());
         std::wstring wgname;
         if (!Utf8toWStr(gname,wgname))
             continue;
@@ -590,7 +590,7 @@ void WorldSession::HandleAddFriendOpcodeCallBack(QueryResultAutoPtr result, uint
         team = Player::TeamForRace((*result)[1].GetUInt8());
         friendAcctid = (*result)[2].GetUInt32();
 
-        if (session->GetSecurity() >= SEC_MODERATOR || sWorld.getConfig(CONFIG_ALLOW_GM_FRIEND) || accmgr.GetSecurity(friendAcctid) < SEC_MODERATOR)
+        if (session->GetSecurity() >= SEC_MODERATOR || sWorld.getConfig(CONFIG_ALLOW_GM_FRIEND) || AccountMgr::GetSecurity(friendAcctid) < SEC_MODERATOR)
             if (friendGuid)
             {
                 if (friendGuid==session->GetPlayer()->GetGUID())
@@ -894,10 +894,10 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
     if (sScriptMgr.OnAreaTrigger(GetPlayer(), atEntry))
         return;
 
-    uint32 quest_id = objmgr.GetQuestForAreaTrigger(Trigger_ID);
+    uint32 quest_id = sObjectMgr.GetQuestForAreaTrigger(Trigger_ID);
     if (quest_id && GetPlayer()->isAlive() && GetPlayer()->IsActiveQuest(quest_id))
     {
-        Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
+        Quest const* pQuest = sObjectMgr.GetQuestTemplate(quest_id);
         if (pQuest)
         {
             if (GetPlayer()->GetQuestStatus(quest_id) == QUEST_STATUS_INCOMPLETE)
@@ -905,7 +905,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
         }
     }
 
-    if (objmgr.IsTavernAreaTrigger(Trigger_ID))
+    if (sObjectMgr.IsTavernAreaTrigger(Trigger_ID))
     {
         // set resting flag we are in the inn
         GetPlayer()->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
@@ -935,11 +935,11 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
     }
 
     // NULL if all values default (non teleport trigger)
-    AreaTrigger const* at = objmgr.GetAreaTrigger(Trigger_ID);
+    AreaTrigger const* at = sObjectMgr.GetAreaTrigger(Trigger_ID);
     if (!at)
         return;
 
-    if (!GetPlayer()->Satisfy(objmgr.GetAccessRequirement(at->access_id), at->target_mapId, true))
+    if (!GetPlayer()->Satisfy(sObjectMgr.GetAccessRequirement(at->access_id), at->target_mapId, true))
         return;
 
     GetPlayer()->TeleportTo(at->target_mapId,at->target_X,at->target_Y,at->target_Z,at->target_Orientation,TELE_TO_NOT_LEAVE_TRANSPORT);
@@ -1152,7 +1152,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
 
     _player->SetSelection(guid);
 
-    Player *plr = objmgr.GetPlayer(guid);
+    Player *plr = sObjectMgr.GetPlayer(guid);
     if (!plr)                                                // wrong player
         return;
 
@@ -1238,7 +1238,7 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recv_data)
     uint64 guid;
     recv_data >> guid;
 
-    Player *player = objmgr.GetPlayer(guid);
+    Player *player = sObjectMgr.GetPlayer(guid);
 
     if (!player)
     {
@@ -1314,7 +1314,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recv_data)
         return;
     }
 
-    Player *plr = objmgr.GetPlayer(charname.c_str());
+    Player *plr = sObjectMgr.GetPlayer(charname.c_str());
 
     if (!plr)
     {
@@ -1506,7 +1506,7 @@ void WorldSession::HandleResetInstancesOpcode(WorldPacket & /*recv_data*/)
         std::list<GroupMemberSlot> memberSlotList = pGroup->GetMemberSlots();
         for (std::list<GroupMemberSlot>::const_iterator citr = memberSlotList.begin(); citr != memberSlotList.end(); ++citr)
         {
-            if (Player *pl = objmgr.GetPlayer(citr->guid))
+            if (Player *pl = sObjectMgr.GetPlayer(citr->guid))
             {
                 const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
                 if (mapEntry->IsDungeon() || mapEntry->IsRaid())
@@ -1572,7 +1572,7 @@ void WorldSession::HandleDungeonDifficultyOpcode(WorldPacket & recv_data)
 
         for (std::list<GroupMemberSlot>::const_iterator citr = memberSlotList.begin(); citr != memberSlotList.end(); ++citr)
         {
-            Player * pl = objmgr.GetPlayer(citr->guid);
+            Player * pl = sObjectMgr.GetPlayer(citr->guid);
             if (pl)
             {
                 const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());

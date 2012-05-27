@@ -22,12 +22,9 @@
 #include "CreatureGroups.h"
 #include "ObjectMgr.h"
 #include "ProgressBar.h"
-#include "Policies/SingletonImp.h"
 #include "CreatureAI.h"
 
 #define MAX_DESYNC 5.0f
-
-INSTANTIATE_SINGLETON_1(CreatureGroupManager);
 
 CreatureGroupInfoType   CreatureGroupMap;
 
@@ -119,8 +116,8 @@ void CreatureGroupManager::LoadCreatureFormations()
         }
 
         // check data correctness
-        const CreatureData* leader = objmgr.GetCreatureData(group_member->leaderGUID);
-        const CreatureData* member = objmgr.GetCreatureData(memberGUID);
+        const CreatureData* leader = sObjectMgr.GetCreatureData(group_member->leaderGUID);
+        const CreatureData* member = sObjectMgr.GetCreatureData(memberGUID);
         if (!leader || !member || leader->mapid != member->mapid)
         {
             sLog.outErrorDb("Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);

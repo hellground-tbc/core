@@ -22,9 +22,9 @@
 #define HELLGROUND_OBJECTACCESSOR_H
 
 #include "Platform/Define.h"
-#include "Policies/Singleton.h"
-#include "ace/Thread_Mutex.h"
-#include "Policies/ThreadingModel.h"
+
+#include <ace/Singleton.h>
+#include <ace/Thread_Mutex.h>
 
 #include "ByteBuffer.h"
 #include "UpdateData.h"
@@ -52,7 +52,6 @@ class HashMapHolder
 
         typedef tbb::concurrent_hash_map<uint64, T*>  MapType;
         typedef ACE_Thread_Mutex LockType;
-        typedef Hellground::GeneralLock<LockType> Guard;
 
         static bool Insert(T* o)
         {
@@ -98,11 +97,12 @@ class HashMapHolder
         static MapType  m_objectMap;
 };
 
-class ObjectAccessor : public Hellground::Singleton<ObjectAccessor, Hellground::ClassLevelLockable<ObjectAccessor, ACE_Thread_Mutex> >
+class ObjectAccessor
 {
-
-    friend class Hellground::OperatorNew<ObjectAccessor>;
+    friend class ACE_Singleton<ObjectAccessor, ACE_Thread_Mutex>;
     ObjectAccessor(){}
+
+    public:
     ~ObjectAccessor(){}
     ObjectAccessor(const ObjectAccessor &);
     ObjectAccessor& operator=(const ObjectAccessor &);
@@ -145,10 +145,9 @@ class ObjectAccessor : public Hellground::Singleton<ObjectAccessor, Hellground::
         void RemoveOldCorpses();
 
         typedef ACE_Thread_Mutex LockType;
-        typedef Hellground::GeneralLock<LockType> Guard;
         std::list<Player*> playersToDelete;
-    private:
 
+    private:
         Player2CorpsesMapType       i_player2corpse;
         PlayerName2PlayerMapType    i_playerName2Player;
 
@@ -157,4 +156,5 @@ class ObjectAccessor : public Hellground::Singleton<ObjectAccessor, Hellground::
         LockType i_corpseGuard;
 };
 
+#define sObjectAccessor (*ACE_Singleton<ObjectAccessor, ACE_Thread_Mutex>::instance())
 #endif

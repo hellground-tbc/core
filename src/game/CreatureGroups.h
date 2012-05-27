@@ -33,17 +33,16 @@ struct FormationInfo
     uint8 groupAI;
 };
 
-class CreatureGroupManager
+namespace CreatureGroupManager
 {
-    public:
-        void AddCreatureToGroup(uint32 group_id, Creature *creature);
-        void RemoveCreatureFromGroup(CreatureGroup *group, Creature *creature);
-        void LoadCreatureFormations();
+    void AddCreatureToGroup(uint32 group_id, Creature *creature);
+    void RemoveCreatureFromGroup(CreatureGroup *group, Creature *creature);
+    void LoadCreatureFormations();
 };
 
-typedef UNORDERED_MAP<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
+typedef UNORDERED_MAP<uint32/*memberDBGUID*/, FormationInfo*> CreatureGroupInfoType;
 
-extern CreatureGroupInfoType    CreatureGroupMap;
+extern CreatureGroupInfoType CreatureGroupMap;
 
 class CreatureGroup
 {
@@ -83,7 +82,5 @@ class CreatureGroup
         void ReachedWaypoint() {  if( m_movingUnits > 0 ) m_movingUnits--; }
         bool AllUnitsReachedWaypoint() const { return !m_movingUnits; }
 };
-
-#define formation_mgr Hellground::Singleton<CreatureGroupManager>::Instance()
 
 #endif

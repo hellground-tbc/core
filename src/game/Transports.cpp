@@ -505,10 +505,10 @@ bool Transport::RemovePassenger(Player* passenger)
 void Transport::CheckForEvent(uint32 entry, uint32 wp_id)
 {
     uint32 key = entry*100+wp_id;
-    if (objmgr.TransportEventMap.find(key) != objmgr.TransportEventMap.end())
+    if (sObjectMgr.TransportEventMap.find(key) != sObjectMgr.TransportEventMap.end())
     {
-        if (!sScriptMgr.OnProcessEvent(objmgr.TransportEventMap[key], this, this, true))
-            GetMap()->ScriptsStart(sEventScripts, objmgr.TransportEventMap[key], this, NULL);
+        if (!sScriptMgr.OnProcessEvent(sObjectMgr.TransportEventMap[key], this, this, true))
+            GetMap()->ScriptsStart(sEventScripts, sObjectMgr.TransportEventMap[key], this, NULL);
     }
 }
 

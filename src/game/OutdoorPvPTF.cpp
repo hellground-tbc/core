@@ -251,14 +251,14 @@ void OPvPCapturePointTF::ChangeState()
     {
         if (((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled)
             ((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled--;
-        sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_A));
+        sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_A));
     }
     // if changing from controlling horde to alliance
     else if (m_OldState == OBJECTIVESTATE_HORDE)
     {
         if (((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled)
             ((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled--;
-        sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_H));
+        sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_H));
     }
 
     uint32 artkit = 21;
@@ -270,14 +270,14 @@ void OPvPCapturePointTF::ChangeState()
         artkit = 2;
         if (((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled<TF_TOWER_NUM)
             ((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled++;
-        sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_A));
+        sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_A));
         break;
     case OBJECTIVESTATE_HORDE:
         m_TowerState = TF_TOWERSTATE_H;
         artkit = 1;
         if (((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled<TF_TOWER_NUM)
             ((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled++;
-        sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],objmgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_H));
+        sWorld.SendZoneText(OutdoorPvPTFBuffZones[0],sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_H));
         break;
     case OBJECTIVESTATE_NEUTRAL:
     case OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE:

@@ -279,7 +279,7 @@ Creature* BattleGroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
         if (!isStatic && ((cinfoid>=AV_NPC_A_GRAVEDEFENSE0 && cinfoid<=AV_NPC_A_GRAVEDEFENSE3)
             || (cinfoid>=AV_NPC_H_GRAVEDEFENSE0 && cinfoid<=AV_NPC_H_GRAVEDEFENSE3)))
         {
-            CreatureData &data = objmgr.NewOrExistCreatureData(creature->GetDBTableGUIDLow());
+            CreatureData &data = sObjectMgr.NewOrExistCreatureData(creature->GetDBTableGUIDLow());
             data.spawndist      = 5;
         }
         //else spawndist will be 15, so creatures move maximum=10
@@ -412,7 +412,7 @@ void BattleGroundAV::Update(uint32 diff)
 
 
             for (BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if (Player* plr = objmgr.GetPlayer(itr->first))
+                if (Player* plr = sObjectMgr.GetPlayer(itr->first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
     }
@@ -1061,7 +1061,7 @@ void BattleGroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
                 WorldSafeLocsEntry const *ClosestGrave = NULL;
                 for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
                 {
-                    plr = objmgr.GetPlayer(*itr);
+                    plr = sObjectMgr.GetPlayer(*itr);
                     if (!plr)
                         continue;
                     if (!ClosestGrave)

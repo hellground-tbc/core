@@ -18,10 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _TICKETMGR_H
-#define _TICKETMGR_H
+#ifndef _sTicketMgr_H
+#define _sTicketMgr_H
 
-#include "Policies/Singleton.h"
+#include "ace/Singleton.h"
+
 #include "Database/DatabaseEnv.h"
 #include "Util.h"
 #include <map>
@@ -44,12 +45,14 @@ struct GM_Ticket
 };
 
 // Map Typedef
-typedef std::list<GM_Ticket*>                                       GmTicketList;
+typedef std::list<GM_Ticket*> GmTicketList;
 
 class TicketMgr
 {
+    friend class ACE_Singleton<TicketMgr, ACE_Null_Mutex>;
+    TicketMgr(){ InitTicketID();}    //constructor
+
     public:
-        TicketMgr(){ InitTicketID();}    //constructor
         ~TicketMgr(){}  //destructor
 
         // Object Holder
@@ -76,7 +79,5 @@ class TicketMgr
         uint64 m_ticketid;
 };
 
+#define sTicketMgr (*ACE_Singleton<TicketMgr, ACE_Null_Mutex>::instance())
 #endif
-#define ticketmgr Hellground::Singleton<TicketMgr>::Instance()
-
-

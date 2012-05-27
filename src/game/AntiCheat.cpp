@@ -23,7 +23,7 @@
 
 int ACRequest::call()
 {
-    Player *pPlayer = objmgr.GetPlayer(m_ownerGUID);
+    Player *pPlayer = sObjectMgr.GetPlayer(m_ownerGUID);
     if (!pPlayer)
         return -1;
 

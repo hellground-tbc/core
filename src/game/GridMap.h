@@ -19,8 +19,9 @@
 #ifndef HELLGROUND_GRIDMAP_H
 #define HELLGROUND_GRIDMAP_H
 
+#include "ace/Singleton.h"
+
 #include "Platform/Define.h"
-#include "Policies/Singleton.h"
 #include "DBCStructure.h"
 #include "GridDefines.h"
 #include "Object.h"
@@ -276,10 +277,12 @@ class HELLGROUND_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
 };
 
 //class for managing TerrainData object and all sort of geometry querying operations
-class HELLGROUND_DLL_DECL TerrainManager : public Hellground::Singleton<TerrainManager, Hellground::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex> >
+class HELLGROUND_DLL_DECL TerrainManager
 {
+    friend class ACE_Singleton<TerrainManager, ACE_Thread_Mutex>;
+    TerrainManager();
+
     typedef UNORDERED_MAP<uint32, TerrainInfo *> TerrainDataMap;
-    friend class Hellground::OperatorNew<TerrainManager>;
 
     public:
         TerrainInfo * LoadTerrain(const uint32 mapId);
@@ -311,16 +314,14 @@ class HELLGROUND_DLL_DECL TerrainManager : public Hellground::Singleton<TerrainM
         static void GetZoneAndAreaIdByAreaFlag(uint32& zoneid, uint32& areaid, uint16 areaflag,uint32 map_id);
 
     private:
-        TerrainManager();
         ~TerrainManager();
 
         TerrainManager(const TerrainManager &);
         TerrainManager& operator=(const TerrainManager &);
 
-        typedef Hellground::ClassLevelLockable<TerrainManager, ACE_Thread_Mutex>::Lock Guard;
+        ACE_Thread_Mutex Lock;
         TerrainDataMap i_TerrainMap;
 };
 
-#define sTerrainMgr TerrainManager::Instance()
-
+#define sTerrainMgr (*ACE_Singleton<TerrainManager, ACE_Thread_Mutex>::instance())
 #endif

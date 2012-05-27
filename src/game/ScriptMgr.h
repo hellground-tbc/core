@@ -19,8 +19,9 @@
 #ifndef _SCRIPTMGR_H
 #define _SCRIPTMGR_H
 
+#include "ace/Singleton.h"
+
 #include "Common.h"
-#include "Policies/Singleton.h"
 
 struct AreaTriggerEntry;
 struct CinematicSequencesEntry;
@@ -68,9 +69,12 @@ extern ScriptMapMap sWaypointScripts;
 
 class ScriptMgr
 {
-        typedef std::vector<std::string> ScriptNameMap;
+    friend class ACE_Singleton<ScriptMgr, ACE_Null_Mutex>;
+    ScriptMgr();
+
+    typedef std::vector<std::string> ScriptNameMap;
+
     public:
-        ScriptMgr();
         ~ScriptMgr();
 
         void LoadGameObjectScripts();
@@ -190,7 +194,7 @@ class ScriptMgr
         bool (HELLGROUND_IMPORT* m_pOnSpellHandleEffect) (Unit *pCaster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex);
 };
 
-#define sScriptMgr Hellground::Singleton<ScriptMgr>::Instance()
+#define sScriptMgr (*ACE_Singleton<ScriptMgr, ACE_Null_Mutex>::instance())
 
 HELLGROUND_DLL_SPEC uint32 GetAreaTriggerScriptId(uint32 triggerId);
 HELLGROUND_DLL_SPEC uint32 GetCompletedCinematicScriptId(uint32 triggerId);

@@ -20,7 +20,6 @@
 
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "Policies/SingletonImp.h"
 #include "Player.h"
 #include "WorldSession.h"
 #include "WorldPacket.h"
@@ -36,12 +35,6 @@
 #include "World.h"
 
 #include <cmath>
-
-#define CLASS_LOCK Hellground::ClassLevelLockable<ObjectAccessor, ACE_Thread_Mutex>
-INSTANTIATE_SINGLETON_2(ObjectAccessor, CLASS_LOCK);
-INSTANTIATE_CLASS_MUTEX(ObjectAccessor, ACE_Thread_Mutex);
-
-//ACE_Thread_Mutex ObjectAccessor::m_Lock;
 
 Pet * ObjectAccessor::GetPet(uint64 guid)
 {
@@ -183,10 +176,10 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     CellPair cell_pair = Hellground::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
     uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-    objmgr.DeleteCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID());
+    sObjectMgr.DeleteCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID());
     corpse->RemoveFromWorld();
 
-    Guard guard(i_corpseGuard);
+    ACE_GUARD(LockType, g, i_corpseGuard);
     i_player2corpse.erase(corpse->GetOwnerGUID());
 }
 
@@ -198,7 +191,7 @@ void ObjectAccessor::AddCorpse(Corpse *corpse)
     assert(!i_player2corpse.find(a, corpse->GetOwnerGUID()));
     a.release();
 
-    Guard guard(i_corpseGuard);
+    ACE_GUARD(LockType, g, i_corpseGuard);
     i_player2corpse.insert(a, corpse->GetOwnerGUID());
     a->second = corpse;
 
@@ -206,13 +199,13 @@ void ObjectAccessor::AddCorpse(Corpse *corpse)
     CellPair cell_pair = Hellground::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
     uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-    objmgr.AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
+    sObjectMgr.AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
 }
 
 
 void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
 {
-    Guard guard(i_corpseGuard);
+    ACE_GUARD(LockType, g, i_corpseGuard);
     for (Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
         if (iter->second->GetGrid()==gridpair)
     {

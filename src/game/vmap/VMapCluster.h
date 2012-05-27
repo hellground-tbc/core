@@ -16,7 +16,7 @@
 #define WAIT(pid) while(true) { if(kill(pid, 0)==-1) if(ACE_OS::last_error() == ESRCH) break; ACE_OS::sleep(1); }
 #endif
 
-#define sLoSProxy Hellground::Singleton<VMAP::LoSProxy>::Instance()
+#define sLoSProxy (*ACE_Singleton<VMAP::LoSProxy, ACE_Null_Mutex>::instance())
 
 namespace VMAP
 {

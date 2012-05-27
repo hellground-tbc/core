@@ -21,8 +21,10 @@
 #ifndef TRINITYCORE_LOG_H
 #define TRINITYCORE_LOG_H
 
+#include "ace/Singleton.h"
+#include "ace/Thread_Mutex.h"
+
 #include "Common.h"
-#include "Policies/Singleton.h"
 
 class Config;
 
@@ -77,9 +79,9 @@ enum logFiles
 
 const int Color_count = int(WHITE)+1;
 
-class Log : public Hellground::Singleton<Log, Hellground::ClassLevelLockable<Log, ACE_Thread_Mutex> >
+class Log
 {
-    friend class Hellground::OperatorNew<Log>;
+    friend class ACE_Singleton<Log, ACE_Thread_Mutex>;
     Log();
 
     ~Log()
@@ -175,10 +177,10 @@ class Log : public Hellground::Singleton<Log, Hellground::ClassLevelLockable<Log
         std::string m_whisplog_filename_format;
 };
 
-#define sLog Hellground::Singleton<Log>::Instance()
+#define sLog (*ACE_Singleton<Log, ACE_Thread_Mutex>::instance())
 
 #ifdef HELLGROUND_DEBUG
-#define DEBUG_LOG Hellground::Singleton<Log>::Instance().outDebug
+#define DEBUG_LOG sLog.outDebug
 #else
 #define DEBUG_LOG
 #endif
@@ -189,5 +191,5 @@ void HELLGROUND_DLL_SPEC detail_log(const char * str, ...) ATTR_PRINTF(1,2);
 void HELLGROUND_DLL_SPEC debug_log(const char * str, ...) ATTR_PRINTF(1,2);
 void HELLGROUND_DLL_SPEC error_log(const char * str, ...) ATTR_PRINTF(1,2);
 void HELLGROUND_DLL_SPEC error_db_log(const char * str, ...) ATTR_PRINTF(1,2);
-#endif
 
+#endif

@@ -283,7 +283,7 @@ void Map::EnsureGridCreated(const GridPair &p)
 {
     if (!getNGrid(p.x_coord, p.y_coord))
     {
-        Guard guard(*this);
+        ACE_GUARD(ACE_Thread_Mutex, Guard, Lock);
         if (!getNGrid(p.x_coord, p.y_coord))
         {
             sLog.outDebug("Loading grid[%u,%u] for map %u", p.x_coord, p.y_coord, i_id);
@@ -335,7 +335,7 @@ bool Map::EnsureGridLoaded(const Cell &cell)
         loader.LoadN();
 
         // Add resurrectable corpses to world object list in grid
-        ObjectAccessor::Instance().AddCorpsesToGrid(GridPair(cell.GridX(),cell.GridY()),(*grid)(cell.CellX(), cell.CellY()), this);
+        sObjectAccessor.AddCorpsesToGrid(GridPair(cell.GridX(),cell.GridY()),(*grid)(cell.CellX(), cell.CellY()), this);
 
         setGridObjectDataLoaded(true,cell.GridX(), cell.GridY());
         return true;
@@ -1270,7 +1270,7 @@ void Map::RemoveAllObjectsInRemoveList()
         {
             case TYPEID_CORPSE:
             {
-                Corpse* corpse = ObjectAccessor::Instance().GetCorpse(obj->GetGUID());
+                Corpse* corpse = sObjectAccessor.GetCorpse(obj->GetGUID());
                 if (!corpse)
                     sLog.outError("Try delete corpse/bones %u that not in map", obj->GetGUIDLow());
                 else
@@ -2085,7 +2085,7 @@ void Map::ScriptsProcess()
                 }
                 else //check hashmap holders
                 {
-                    if (CreatureData const* data = objmgr.GetCreatureData(step.script->datalong))
+                    if (CreatureData const* data = sObjectMgr.GetCreatureData(step.script->datalong))
                         target = GetCreature(MAKE_NEW_GUID(step.script->datalong, data->id, HIGHGUID_UNIT), data->posX, data->posY);
                 }
                 //sLog.outDebug("attempting to pass target...");
@@ -2316,7 +2316,7 @@ bool InstanceMap::Add(Player *player)
     // Is it needed?
 
     {
-        Guard guard(*this);
+        ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, Lock, false);
         if (!CanEnter(player))
             return false;
 
@@ -2576,7 +2576,7 @@ void InstanceMap::UnloadAll()
     }
 
     if (m_resetAfterUnload == true)
-        objmgr.DeleteRespawnTimeForInstance(GetInstanceId());
+        sObjectMgr.DeleteRespawnTimeForInstance(GetInstanceId());
 
     Map::UnloadAll();
 }
@@ -2618,7 +2618,7 @@ void InstanceMap::SummonUnlootedCreatures()
             float pos_z = fields[3].GetFloat();
 
             TemporarySummon* pCreature = new TemporarySummon();
-            if (!pCreature->Create(objmgr.GenerateLowGuid(HIGHGUID_UNIT), this, creatureId, 0, pos_x, pos_y, pos_z, 0))
+            if (!pCreature->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), this, creatureId, 0, pos_x, pos_y, pos_z, 0))
             {
                 delete pCreature;
                 continue;
@@ -2632,7 +2632,7 @@ void InstanceMap::SummonUnlootedCreatures()
 
 uint32 InstanceMap::GetMaxPlayers() const
 {
-    InstanceTemplate const* iTemplate = objmgr.GetInstanceTemplate(GetId());
+    InstanceTemplate const* iTemplate = sObjectMgr.GetInstanceTemplate(GetId());
     if(!iTemplate)
         return 0;
     return iTemplate->maxPlayers;
@@ -2696,7 +2696,7 @@ void BattleGroundMap::Update(const uint32& t_diff)
 bool BattleGroundMap::Add(Player * player)
 {
     {
-        Guard guard(*this);
+        ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, Lock, false);
         if (!CanEnter(player))
             return false;
         // reset instance validity, battleground maps do not homebind
@@ -3041,15 +3041,15 @@ void Map::InsertIntoObjMap(Object * obj)
                 break;
             }
         case HIGHGUID_PET:
-            ObjectAccessor::Instance().AddPet((Pet*)obj);
+            sObjectAccessor.AddPet((Pet*)obj);
             break;
 
         case HIGHGUID_PLAYER:
-            ObjectAccessor::Instance().AddPlayer((Player*)obj);
+            sObjectAccessor.AddPlayer((Player*)obj);
             break;
 
         case HIGHGUID_CORPSE:
-            ObjectAccessor::Instance().AddCorpse((Corpse*)obj);
+            sObjectAccessor.AddCorpse((Corpse*)obj);
             break;
         default:
             break;
@@ -3078,11 +3078,11 @@ void Map::RemoveFromObjMap(uint64 guid)
             break;
 
         case HIGHGUID_PET:
-            ObjectAccessor::Instance().RemovePet(guid);
+            sObjectAccessor.RemovePet(guid);
             break;
 
         case HIGHGUID_PLAYER:
-            ObjectAccessor::Instance().RemovePlayer(guid);
+            sObjectAccessor.RemovePlayer(guid);
             break;
 
         case HIGHGUID_CORPSE:
@@ -3116,11 +3116,11 @@ void Map::RemoveFromObjMap(Object * obj)
             break;
 
         case HIGHGUID_PET:
-            ObjectAccessor::Instance().RemovePet(objGuid.GetRawValue());
+            sObjectAccessor.RemovePet(objGuid.GetRawValue());
             break;
 
         case HIGHGUID_PLAYER:
-            ObjectAccessor::Instance().RemovePlayer(objGuid.GetRawValue());
+            sObjectAccessor.RemovePlayer(objGuid.GetRawValue());
             break;
 
         case HIGHGUID_CORPSE:

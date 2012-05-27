@@ -8,12 +8,9 @@
 #include <ace/Process.h>
 #include <ace/Thread.h>
 
-#include "Policies/SingletonImp.h"
 #include "Log.h"
 #include "Util.h"
 #include "GridDefines.h"
-
-INSTANTIATE_SINGLETON_1(VMAP::LoSProxy);
 
 namespace VMAP
 {

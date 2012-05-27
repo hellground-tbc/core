@@ -24,11 +24,8 @@
 #include "OutdoorPvPSI.h"
 #include "OutdoorPvPEP.h"
 #include "Player.h"
-#include "Policies/SingletonImp.h"
 
 #include "MapManager.h"
-
-INSTANTIATE_SINGLETON_1(OutdoorPvPMgr);
 
 OutdoorPvPMgr::OutdoorPvPMgr()
 {

@@ -20,7 +20,6 @@
 
 #include "MapManager.h"
 #include "InstanceSaveMgr.h"
-#include "Policies/SingletonImp.h"
 #include "Database/DatabaseEnv.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
@@ -34,10 +33,6 @@
 #include "GridMap.h"
 
 #include "BattleGround.h"
-
-#define CLASS_LOCK Hellground::ClassLevelLockable<MapManager, ACE_Recursive_Thread_Mutex>
-INSTANTIATE_SINGLETON_2(MapManager, CLASS_LOCK);
-INSTANTIATE_CLASS_MUTEX(MapManager, ACE_Recursive_Thread_Mutex);
 
 MapManager::MapManager() : i_gridCleanUpDelay(sWorld.getConfig(CONFIG_INTERVAL_GRIDCLEAN))
 {
@@ -78,7 +73,7 @@ void MapManager::InitializeVisibilityDistanceInfo()
 
 Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
 {
-    Guard _guard(*this);
+    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
 
     Map * m = NULL;
 
@@ -112,13 +107,13 @@ Map* MapManager::CreateBgMap(uint32 mapid, uint32 instanceID, BattleGround* bg)
 {
     TerrainInfo * pData = sTerrainMgr.LoadTerrain(mapid);
 
-    Guard _guard(*this);
+    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
     return CreateBattleGroundMap(mapid, instanceID, bg);
 }
 
 Map* MapManager::FindMap(uint32 mapid, uint32 instanceId) const
 {
-    Guard guard(*this);
+    //ACE_GUARD_RETURN(ACE_Thread_Mutex, _guard, Lock, NULL);
 
     MapMapType::const_iterator iter = i_maps.find(MapID(mapid, instanceId));
     if (iter == i_maps.end())
@@ -208,7 +203,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
         if (!instance)
             return false;
 
-        return player->Satisfy(objmgr.GetAccessRequirement(instance->access_id), mapid, true);
+        return player->Satisfy(sObjectMgr.GetAccessRequirement(instance->access_id), mapid, true);
     }
     else
         return true;
@@ -216,8 +211,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
 
 void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
 {
-    Guard _guard(*this);
-
+    ACE_GUARD(ACE_Thread_Mutex, Guard, Lock);
     MapMapType::iterator iter = i_maps.find(MapID(mapid, instanceId));
     if(iter != i_maps.end())
     {
@@ -303,7 +297,7 @@ void MapManager::UnloadAll()
         delete temp;
     }
 
-    TerrainManager::Instance().UnloadAll();
+    sTerrainMgr.UnloadAll();
 
     m_updater.deactivate();
 }
@@ -319,7 +313,7 @@ void MapManager::InitMaxInstanceId()
 
 uint32 MapManager::GetNumInstances()
 {
-    Guard guard(*this);
+    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
@@ -335,7 +329,7 @@ uint32 MapManager::GetNumInstances()
 
 uint32 MapManager::GetNumPlayersInInstances()
 {
-    Guard guard(*this);
+    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {

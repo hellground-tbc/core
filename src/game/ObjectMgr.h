@@ -20,6 +20,8 @@
 #ifndef _OBJECTMGR_H
 #define _OBJECTMGR_H
 
+#include "ace/Singleton.h"
+
 #include "Log.h"
 #include "Object.h"
 #include "Bag.h"
@@ -36,7 +38,6 @@
 #include "Map.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
-#include "Policies/Singleton.h"
 #include "Database/SQLStorage.h"
 
 #include <string>
@@ -258,8 +259,10 @@ HELLGROUND_DLL_SPEC LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
 class HELLGROUND_DLL_DECL ObjectMgr
 {
+    friend class ACE_Singleton<ObjectMgr, ACE_Null_Mutex>;
+    ObjectMgr();
+
     public:
-        ObjectMgr();
         ~ObjectMgr();
 
         typedef UNORDERED_MAP<uint32, Item*> ItemMap;
@@ -281,7 +284,7 @@ class HELLGROUND_DLL_DECL ObjectMgr
 
         UNORDERED_MAP<uint32, uint32> TransportEventMap;
 
-        Player* GetPlayer(const char* name) const { return ObjectAccessor::Instance().GetPlayerByName(name);}
+        Player* GetPlayer(const char* name) const { return sObjectAccessor.GetPlayerByName(name);}
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
 
         static GameObjectInfo const *GetGameObjectInfo(uint32 id) { return sGOStorage.LookupEntry<GameObjectInfo>(id); }
@@ -887,8 +890,7 @@ class HELLGROUND_DLL_DECL ObjectMgr
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 };
 
-#define objmgr Hellground::Singleton<ObjectMgr>::Instance()
-#define sObjectMgr Hellground::Singleton<ObjectMgr>::Instance()
+#define sObjectMgr (*ACE_Singleton<ObjectMgr, ACE_Null_Mutex>::instance())
 
 // scripting access functions
 HELLGROUND_DLL_SPEC bool LoadHellgroundStrings(DatabaseType& db, char const* table,int32 start_value = MAX_CREATURE_AI_TEXT_STRING_ID, int32 end_value = std::numeric_limits<int32>::min());
@@ -898,4 +900,3 @@ HELLGROUND_DLL_SPEC CreatureInfo const* GetCreatureTemplateStore(uint32 entry);
 HELLGROUND_DLL_SPEC Quest const* GetQuestTemplateStore(uint32 entry);
 
 #endif
-

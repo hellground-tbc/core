@@ -123,7 +123,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
         return false;
     }
 
-    uint32 account_id = accmgr.GetId(account_name);
+    uint32 account_id = AccountMgr::GetId(account_name);
     if(!account_id)
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
@@ -134,7 +134,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     /// Commands not recommended call from chat, but support anyway
     if(m_session)
     {
-        uint32 targetSecurity = accmgr.GetSecurity(account_id);
+        uint32 targetSecurity = AccountMgr::GetSecurity(account_id);
 
         /// can delete only for account with less security
         /// This is also reject self apply in fact
@@ -146,7 +146,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
         }
     }
 
-    AccountOpResult result = accmgr.DeleteAccount(account_id);
+    AccountOpResult result = AccountMgr::DeleteAccount(account_id);
     switch(result)
     {
         case AOR_OK:
@@ -185,7 +185,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     uint64 character_guid;
     uint32 account_id;
 
-    Player *player = objmgr.GetPlayer(character_name.c_str());
+    Player *player = sObjectMgr.GetPlayer(character_name.c_str());
     if(player)
     {
         character_guid = player->GetGUID();
@@ -194,7 +194,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     }
     else
     {
-        character_guid = objmgr.GetPlayerGUIDByName(character_name);
+        character_guid = sObjectMgr.GetPlayerGUIDByName(character_name);
         if(!character_guid)
         {
             PSendSysMessage(LANG_NO_PLAYER,character_name.c_str());
@@ -202,11 +202,11 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
             return false;
         }
 
-        account_id = objmgr.GetPlayerAccountIdByGUID(character_guid);
+        account_id = sObjectMgr.GetPlayerAccountIdByGUID(character_guid);
     }
 
     std::string account_name;
-    accmgr.GetName (account_id,account_name);
+    AccountMgr::GetName (account_id,account_name);
 
     Player::DeleteFromDB(character_guid, account_id, true);
     PSendSysMessage(LANG_CHARACTER_DELETED,character_name.c_str(),GUID_LOPART(character_guid),account_name.c_str(), account_id);
@@ -273,11 +273,11 @@ bool ChatHandler::HandleAccountCreateCommand(const char* args)
     if(!szAcc || !szPassword)
         return false;
 
-    // normilized in accmgr.CreateAccount
+    // normilized in AccountMgr::CreateAccount
     std::string account_name = szAcc;
     std::string password = szPassword;
 
-    AccountOpResult result = accmgr.CreateAccount(account_name, password);
+    AccountOpResult result = AccountMgr::CreateAccount(account_name, password);
     switch(result)
     {
         case AOR_OK:
@@ -309,7 +309,7 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
     if(!*args)
         return false;
 
-    if(uint32 account_id = accmgr.GetId(args))
+    if(uint32 account_id = AccountMgr::GetId(args))
     {
         QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
         if (!result)
@@ -385,7 +385,7 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
     if(!*args)
         return false;
 
-    if (uint32 account_id = accmgr.GetId(args))
+    if (uint32 account_id = AccountMgr::GetId(args))
     {
         QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
         if (!result)

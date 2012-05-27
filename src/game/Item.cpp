@@ -476,7 +476,7 @@ ItemPrototype const *Item::GetProto() const
 
 Player* Item::GetOwner()const
 {
-    return objmgr.GetPlayer(GetOwnerGUID());
+    return sObjectMgr.GetPlayer(GetOwnerGUID());
 }
 
 uint32 Item::GetSkill()
@@ -934,7 +934,7 @@ Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)
         assert(count !=0 && "pProto->Stackable==0 but checked at loading already");
 
         Item *pItem = NewItemOrBag(pProto);
-        if (pItem->Create(objmgr.GenerateLowGuid(HIGHGUID_ITEM), item, player))
+        if (pItem->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_ITEM), item, player))
         {
             pItem->SetCount(count);
             return pItem;

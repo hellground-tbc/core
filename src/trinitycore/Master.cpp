@@ -34,7 +34,6 @@
 #include "Log.h"
 #include "MapManager.h"
 #include "Timer.h"
-#include "Policies/SingletonImp.h"
 #include "SystemConfig.h"
 #include "Config/Config.h"
 #include "Database/DatabaseEnv.h"
@@ -54,8 +53,6 @@ extern RunModes runMode;
 
 /// \todo Warning disabling not useful under VC++2005. Can somebody say on which compiler it is useful?
 #pragma warning(disable:4305)
-
-INSTANTIATE_SINGLETON_1( Master );
 
 volatile uint32 Master::m_masterLoopCounter = 0;
 

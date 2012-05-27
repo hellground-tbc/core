@@ -127,7 +127,7 @@ void LootStore::LoadLootTable()
             }
 
             // (condition + cond_value1/2) are converted into single conditionId
-            uint16 conditionId = objmgr.GetConditionId(condition, cond_value1, cond_value2);
+            uint16 conditionId = sObjectMgr.GetConditionId(condition, cond_value1, cond_value2);
 
             LootStoreItem storeitem = LootStoreItem(item, chanceOrQuestChance, group, conditionId, mincountOrRef, maxcount);
 
@@ -329,7 +329,7 @@ LootItem::LootItem(LootStoreItem const& li)
 bool LootItem::AllowedForPlayer(Player const * player) const
 {
     // DB conditions check
-    if (!objmgr.IsPlayerMeetToCondition(player,conditionId))
+    if (!sObjectMgr.IsPlayerMeetToCondition(player,conditionId))
         return false;
 
     if (needs_quest)
@@ -1530,7 +1530,7 @@ void LoadLootTemplates_QuestMail()
     LootTemplates_QuestMail.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    ObjectMgr::QuestMap const& questMap = objmgr.GetQuestTemplates();
+    ObjectMgr::QuestMap const& questMap = sObjectMgr.GetQuestTemplates();
     for (ObjectMgr::QuestMap::const_iterator itr = questMap.begin(); itr != questMap.end(); ++itr)
         if (ids_set.count(itr->first))
             ids_set.erase(itr->first);

@@ -25,20 +25,22 @@
 #ifndef HELLGROUND_WORLDLOG_H
 #define HELLGROUND_WORLDLOG_H
 
+#include "ace/Singleton.h"
+
 #include "Common.h"
-#include "Policies/Singleton.h"
 #include "Errors.h"
 
 #include <stdarg.h>
 
 /// %Log packets to a file
-class HELLGROUND_DLL_DECL WorldLog : public Hellground::Singleton<WorldLog, Hellground::ClassLevelLockable<WorldLog, ACE_Thread_Mutex> >
+class HELLGROUND_DLL_DECL WorldLog
 {
-    friend class Hellground::OperatorNew<WorldLog>;
+    friend class ACE_Singleton<WorldLog, ACE_Thread_Mutex>;
     WorldLog() : i_file(NULL) { Initialize(); }
     WorldLog(const WorldLog &);
     WorldLog& operator=(const WorldLog &);
-    typedef Hellground::ClassLevelLockable<WorldLog, ACE_Thread_Mutex>::Lock Guard;
+
+    ACE_Thread_Mutex Lock;
 
     /// Close the file in destructor
     ~WorldLog()
@@ -57,7 +59,7 @@ class HELLGROUND_DLL_DECL WorldLog : public Hellground::Singleton<WorldLog, Hell
         {
             if (LogWorld())
             {
-                Guard guard(*this);
+                ACE_GUARD(ACE_Thread_Mutex, Guard, Lock);
                 ASSERT(i_file);
 
                 va_list args;
@@ -73,7 +75,7 @@ class HELLGROUND_DLL_DECL WorldLog : public Hellground::Singleton<WorldLog, Hell
         FILE *i_file;
 };
 
-#define sWorldLog WorldLog::Instance()
+#define sWorldLog (*ACE_Singleton<WorldLog, ACE_Thread_Mutex>::instance())
+
 #endif
 /// @}
-

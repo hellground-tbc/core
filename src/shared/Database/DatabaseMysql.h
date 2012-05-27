@@ -23,7 +23,6 @@
 
 //#include "Common.h"
 #include "Database.h"
-#include "Policies/Singleton.h"
 #include "ace/Thread_Mutex.h"
 #include "ace/Guard_T.h"
 
@@ -96,8 +95,6 @@ class HELLGROUND_DLL_SPEC MySQLConnection : public SqlConnection
 
 class HELLGROUND_DLL_SPEC DatabaseMysql : public Database
 {
-    friend class Hellground::OperatorNew<DatabaseMysql>;
-
     public:
         DatabaseMysql();
         ~DatabaseMysql();

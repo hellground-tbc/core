@@ -139,7 +139,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket & recv_data)
         return;
     }
 
-    Quest const* qInfo = objmgr.GetQuestTemplate(quest);
+    Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest);
     if (qInfo)
     {
         // prevent cheating
@@ -250,7 +250,7 @@ void WorldSession::HandleQuestgiverQuestQueryOpcode(WorldPacket & recv_data)
         return;
     }
 
-    Quest const* pQuest = objmgr.GetQuestTemplate(quest);
+    Quest const* pQuest = sObjectMgr.GetQuestTemplate(quest);
     if (pQuest)
     {
         _player->PlayerTalkClass->SendQuestGiverQuestDetails(pQuest, pObject->GetGUID(), true);
@@ -265,7 +265,7 @@ void WorldSession::HandleQuestQueryOpcode(WorldPacket & recv_data)
     recv_data >> quest;
     sLog.outDebug("WORLD: Received CMSG_QUEST_QUERY quest = %u",quest);
 
-    Quest const *pQuest = objmgr.GetQuestTemplate(quest);
+    Quest const *pQuest = sObjectMgr.GetQuestTemplate(quest);
     if (pQuest)
     {
         _player->PlayerTalkClass->SendQuestQueryResponse(pQuest);
@@ -298,7 +298,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recv_data)
     if (!pObject->hasInvolvedQuest(quest))
         return;
 
-    Quest const *pQuest = objmgr.GetQuestTemplate(quest);
+    Quest const *pQuest = sObjectMgr.GetQuestTemplate(quest);
     if (pQuest)
     {
         if (_player->CanRewardQuest(pQuest, reward, true))
@@ -347,7 +347,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket & recv_data)
     if (_player->GetQuestStatus(quest) != QUEST_STATUS_COMPLETE)
         return;
 
-    if (Quest const *pQuest = objmgr.GetQuestTemplate(quest))
+    if (Quest const *pQuest = sObjectMgr.GetQuestTemplate(quest))
         _player->PlayerTalkClass->SendQuestGiverOfferReward(pQuest, guid, true);
 }
 
@@ -403,7 +403,7 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recv_data)
 
     sLog.outDebug("WORLD: Received CMSG_QUEST_CONFIRM_ACCEPT quest = %u", quest);
 
-    if (const Quest* pQuest = objmgr.GetQuestTemplate(quest))
+    if (const Quest* pQuest = sObjectMgr.GetQuestTemplate(quest))
     {
         if (!pQuest->HasFlag(QUEST_FLAGS_PARTY_ACCEPT))
             return;
@@ -442,7 +442,7 @@ void WorldSession::HandleQuestComplete(WorldPacket& recv_data)
 
     sLog.outDebug("WORLD: Received CMSG_QUESTGIVER_COMPLETE_QUEST npc = %u, quest = %u",uint32(GUID_LOPART(guid)),quest);
 
-    Quest const *pQuest = objmgr.GetQuestTemplate(quest);
+    Quest const *pQuest = sObjectMgr.GetQuestTemplate(quest);
     if (pQuest)
     {
         // TODO: need a virtual function
@@ -477,7 +477,7 @@ void WorldSession::HandleQuestPushToParty(WorldPacket& recvPacket)
 
     sLog.outDebug("WORLD: Received CMSG_PUSHQUESTTOPARTY quest = %u", quest);
 
-    Quest const *pQuest = objmgr.GetQuestTemplate(quest);
+    Quest const *pQuest = sObjectMgr.GetQuestTemplate(quest);
     if (pQuest)
     {
         if (_player->GetGroup())
@@ -572,14 +572,14 @@ uint32 WorldSession::getDialogStatus(Player *pPlayer, Object* questgiver, uint32
     {
         case TYPEID_GAMEOBJECT:
         {
-            qir = &objmgr.mGOQuestInvolvedRelations;
-            qr  = &objmgr.mGOQuestRelations;
+            qir = &sObjectMgr.mGOQuestInvolvedRelations;
+            qr  = &sObjectMgr.mGOQuestRelations;
             break;
         }
         case TYPEID_UNIT:
         {
-            qir = &objmgr.mCreatureQuestInvolvedRelations;
-            qr  = &objmgr.mCreatureQuestRelations;
+            qir = &sObjectMgr.mCreatureQuestInvolvedRelations;
+            qr  = &sObjectMgr.mCreatureQuestRelations;
             break;
         }
         default:
@@ -592,7 +592,7 @@ uint32 WorldSession::getDialogStatus(Player *pPlayer, Object* questgiver, uint32
     {
         uint32 result2 = 0;
         uint32 quest_id = i->second;
-        Quest const *pQuest = objmgr.GetQuestTemplate(quest_id);
+        Quest const *pQuest = sObjectMgr.GetQuestTemplate(quest_id);
         if (!pQuest) continue;
 
         QuestStatus status = pPlayer->GetQuestStatus(quest_id);
@@ -615,7 +615,7 @@ uint32 WorldSession::getDialogStatus(Player *pPlayer, Object* questgiver, uint32
     {
         uint32 result2 = 0;
         uint32 quest_id = i->second;
-        Quest const *pQuest = objmgr.GetQuestTemplate(quest_id);
+        Quest const *pQuest = sObjectMgr.GetQuestTemplate(quest_id);
         if (!pQuest)
             continue;
 

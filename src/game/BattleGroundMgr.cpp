@@ -40,10 +40,6 @@
 #include "ProgressBar.h"
 #include "GameEvent.h"
 
-#include "Policies/SingletonImp.h"
-
-INSTANTIATE_SINGLETON_1(BattleGroundMgr);
-
 /*********************************************************/
 /***            BATTLEGROUND QUEUE SYSTEM              ***/
 /*********************************************************/
@@ -178,7 +174,7 @@ void BattleGroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
 //remove player from queue and from group info, if group info is empty then remove it too
 void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCount)
 {
-    //Player *plr = objmgr.GetPlayer(guid);
+    //Player *plr = sObjectMgr.GetPlayer(guid);
 
     int32 bracket_id = -1;                                     // signed for proper for-loop finish
     QueuedPlayersMap::iterator itr;
@@ -1654,7 +1650,7 @@ void BattleGroundMgr::DistributeArenaPoints()
     std::map<uint32, uint32> PlayerPoints;
 
     //at first update all points for all team members
-    for (ObjectMgr::ArenaTeamMap::iterator team_itr = objmgr.GetArenaTeamMapBegin(); team_itr != objmgr.GetArenaTeamMapEnd(); ++team_itr)
+    for (ObjectMgr::ArenaTeamMap::iterator team_itr = sObjectMgr.GetArenaTeamMapBegin(); team_itr != sObjectMgr.GetArenaTeamMapEnd(); ++team_itr)
     {
         if (ArenaTeam * at = team_itr->second)
         {
@@ -1668,7 +1664,7 @@ void BattleGroundMgr::DistributeArenaPoints()
         //update to database
         CharacterDatabase.PExecute("UPDATE characters SET arena_pending_points = '%u' WHERE `guid` = '%u'", plr_itr->second, plr_itr->first);
         //add points if player is online
-        Player* pl = objmgr.GetPlayer(plr_itr->first);
+        Player* pl = sObjectMgr.GetPlayer(plr_itr->first);
         if (pl)
             pl->ModifyArenaPoints(plr_itr->second);
     }
@@ -1678,7 +1674,7 @@ void BattleGroundMgr::DistributeArenaPoints()
     sWorld.SendGlobalText("Finished setting arena points for online players.", NULL);
 
     sWorld.SendGlobalText("Modifying played count, arena points etc. for loaded arena teams, sending updated stats to online players...", NULL);
-    for (ObjectMgr::ArenaTeamMap::iterator titr = objmgr.GetArenaTeamMapBegin(); titr != objmgr.GetArenaTeamMapEnd(); ++titr)
+    for (ObjectMgr::ArenaTeamMap::iterator titr = sObjectMgr.GetArenaTeamMapBegin(); titr != sObjectMgr.GetArenaTeamMapEnd(); ++titr)
     {
         if (ArenaTeam * at = titr->second)
         {
@@ -1884,7 +1880,7 @@ bool BattleGroundMgr::IsBGWeekend(BattleGroundTypeId bgTypeId)
         default:
             break;
     }
-    return gameeventmgr.IsActiveEvent(eventId);
+    return sGameEventMgr.IsActiveEvent(eventId);
 }
 void BattleGroundMgr::LoadBattleMastersEntry()
 {

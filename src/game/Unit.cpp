@@ -11433,7 +11433,7 @@ void Unit::ClearComboPointHolders()
     {
         uint32 lowguid = *m_ComboPointHolders.begin();
 
-        Player* plr = objmgr.GetPlayer(MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER));
+        Player* plr = sObjectMgr.GetPlayer(MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER));
         if (plr && plr->GetComboTarget()==GetGUID())         // recheck for safe
             plr->ClearComboPoints();                        // remove also guid from m_ComboPointHolders;
         else
@@ -11783,7 +11783,7 @@ Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget,uint32 spell_id)
         return NULL;
     }
 
-    pet->GetCharmInfo()->SetPetNumber(objmgr.GeneratePetNumber(), true);
+    pet->GetCharmInfo()->SetPetNumber(sObjectMgr.GeneratePetNumber(), true);
     // this enables pet details window (Shift+P)
 
     pet->InitPetCreateSpells();
@@ -12426,7 +12426,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
 
             //just to enable stat window
             if (GetCharmInfo())
-                GetCharmInfo()->SetPetNumber(objmgr.GeneratePetNumber(), true);
+                GetCharmInfo()->SetPetNumber(sObjectMgr.GeneratePetNumber(), true);
 
             //if charmed two demons the same session, the 2nd gets the 1st one's name
             SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));

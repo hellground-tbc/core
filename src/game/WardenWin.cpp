@@ -534,7 +534,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     if (found && sWorld.getConfig(CONFIG_WARDEN_BAN))
     {
         std::string accountname;
-        if (accmgr.GetName(Client->GetAccountId(), accountname))
+        if (AccountMgr::GetName(Client->GetAccountId(), accountname))
             sWorld.BanAccount(BAN_ACCOUNT, accountname.c_str(), "-1", "Cheat", "CONSOLE");
     }
 }

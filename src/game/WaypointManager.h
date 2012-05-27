@@ -23,7 +23,6 @@
 
 #include <vector>
 #include "Utilities/UnorderedMap.h"
-#include "Policies/Singleton.h"
 
 enum WaypointMoveType
 {
@@ -47,7 +46,7 @@ extern UNORDERED_MAP<uint32, WaypointPath*> waypoint_map;
 
 class WaypointStore
 {
-    private :
+    private:
         uint32  records;
 
     public:
@@ -68,4 +67,3 @@ class WaypointStore
 extern WaypointStore WaypointMgr;
 
 #endif
-

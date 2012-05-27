@@ -213,7 +213,7 @@ bool PlayerTaxi::LoadTaxiDestinationsFromString(const std::string& values)
     {
         uint32 cost;
         uint32 path;
-        objmgr.GetTaxiPath(m_TaxiDestinations[i-1],m_TaxiDestinations[i],path,cost);
+        sObjectMgr.GetTaxiPath(m_TaxiDestinations[i-1],m_TaxiDestinations[i],path,cost);
         if (!path)
             return false;
     }
@@ -242,7 +242,7 @@ uint32 PlayerTaxi::GetCurrentTaxiPath() const
     uint32 path;
     uint32 cost;
 
-    objmgr.GetTaxiPath(m_TaxiDestinations[0],m_TaxiDestinations[1],path,cost);
+    sObjectMgr.GetTaxiPath(m_TaxiDestinations[0],m_TaxiDestinations[1],path,cost);
 
     return path;
 }
@@ -532,7 +532,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
 
     m_name = name;
 
-    PlayerInfo const* info = objmgr.GetPlayerInfo(race, class_);
+    PlayerInfo const* info = sObjectMgr.GetPlayerInfo(race, class_);
     if (!info)
     {
         sLog.outError("Player have incorrect race/class pair. Can't be loaded.");
@@ -2385,7 +2385,7 @@ void Player::UninviteFromGroup()
         if (group->IsCreated())
         {
             group->Disband(true);
-            objmgr.RemoveGroup(group);
+            sObjectMgr.RemoveGroup(group);
         }
         else
             group->RemoveAllInvites();
@@ -2401,7 +2401,7 @@ void Player::RemoveFromGroup(Group* group, uint64 guid)
         if (group->RemoveMember(guid, 0) <= 1)
         {
             // group->Disband(); already disbanded in RemoveMember
-            objmgr.RemoveGroup(group);
+            sObjectMgr.RemoveGroup(group);
             delete group;
             // removemember sets the player's group pointer to NULL
         }
@@ -2473,10 +2473,10 @@ void Player::GiveLevel(uint32 level)
         return;
 
     PlayerLevelInfo info;
-    objmgr.GetPlayerLevelInfo(getRace(),getClass(),level,&info);
+    sObjectMgr.GetPlayerLevelInfo(getRace(),getClass(),level,&info);
 
     PlayerClassLevelInfo classInfo;
-    objmgr.GetPlayerClassLevelInfo(getClass(),level,&classInfo);
+    sObjectMgr.GetPlayerClassLevelInfo(getClass(),level,&classInfo);
 
     // send levelup info to client
     WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_POWERS*4+MAX_STATS*4));
@@ -2574,10 +2574,10 @@ void Player::InitStatsForLevel(bool reapplyMods)
         _RemoveAllStatBonuses();
 
     PlayerClassLevelInfo classInfo;
-    objmgr.GetPlayerClassLevelInfo(getClass(),getLevel(),&classInfo);
+    sObjectMgr.GetPlayerClassLevelInfo(getClass(),getLevel(),&classInfo);
 
     PlayerLevelInfo info;
-    objmgr.GetPlayerLevelInfo(getRace(),getClass(),getLevel(),&info);
+    sObjectMgr.GetPlayerLevelInfo(getRace(),getClass(),getLevel(),&info);
 
     SetUInt32Value(PLAYER_FIELD_MAX_LEVEL, sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
     SetUInt32Value(PLAYER_NEXT_LEVEL_XP, Hellground::XP::xp_to_level(getLevel()));
@@ -3898,13 +3898,13 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 
     // convert corpse to bones if exist (to prevent exiting Corpse in World without DB entry)
     // bones will be deleted by corpse/bones deleting thread shortly
-    ObjectAccessor::Instance().ConvertCorpseForPlayer(playerguid);
+    sObjectAccessor.ConvertCorpseForPlayer(playerguid);
 
     // remove from guild
     uint32 guildId = GetGuildIdFromDB(playerguid);
     if (guildId != 0)
     {
-        Guild* guild = objmgr.GetGuildById(guildId);
+        Guild* guild = sObjectMgr.GetGuildById(guildId);
         if (guild)
             guild->DelMember(guid);
     }
@@ -3913,21 +3913,21 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     uint32 at_id = GetArenaTeamIdFromDB(playerguid,ARENA_TEAM_2v2);
     if (at_id != 0)
     {
-        ArenaTeam * at = objmgr.GetArenaTeamById(at_id);
+        ArenaTeam * at = sObjectMgr.GetArenaTeamById(at_id);
         if (at)
             at->DelMember(playerguid);
     }
     at_id = GetArenaTeamIdFromDB(playerguid,ARENA_TEAM_3v3);
     if (at_id != 0)
     {
-        ArenaTeam * at = objmgr.GetArenaTeamById(at_id);
+        ArenaTeam * at = sObjectMgr.GetArenaTeamById(at_id);
         if (at)
             at->DelMember(playerguid);
     }
     at_id = GetArenaTeamIdFromDB(playerguid,ARENA_TEAM_5v5);
     if (at_id != 0)
     {
-        ArenaTeam * at = objmgr.GetArenaTeamById(at_id);
+        ArenaTeam * at = sObjectMgr.GetArenaTeamById(at_id);
         if (at)
             at->DelMember(playerguid);
     }
@@ -3937,7 +3937,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     if (resultGroup)
     {
         uint64 leaderGuid = MAKE_NEW_GUID((*resultGroup)[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-        Group* group = objmgr.GetGroupByLeader(leaderGuid);
+        Group* group = sObjectMgr.GetGroupByLeader(leaderGuid);
         if (group)
         {
             RemoveFromGroup(group, playerguid);
@@ -4017,7 +4017,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 
             CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", mail_id);
 
-            uint32 pl_account = objmgr.GetPlayerAccountIdByGUID(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
+            uint32 pl_account = sObjectMgr.GetPlayerAccountIdByGUID(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 
             draft.SetMoney(money).SendReturnToSender(pl_account, ObjectGuid(playerguid), ObjectGuid(HIGHGUID_PLAYER, sender));
         }
@@ -4244,7 +4244,7 @@ void Player::CreateCorpse()
     Corpse *corpse = new Corpse((m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH) ? CORPSE_RESURRECTABLE_PVP : CORPSE_RESURRECTABLE_PVE);
     SetPvPDeath(false);
 
-    if (!corpse->Create(objmgr.GenerateLowGuid(HIGHGUID_CORPSE), this))
+    if (!corpse->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_CORPSE), this))
     {
         delete corpse;
         return;
@@ -4302,12 +4302,12 @@ void Player::CreateCorpse()
         corpse->SaveToDB();
 
     // register for player, but not show
-    ObjectAccessor::Instance().AddCorpse(corpse);
+    sObjectAccessor.AddCorpse(corpse);
 }
 
 void Player::SpawnCorpseBones()
 {
-    if (ObjectAccessor::Instance().ConvertCorpseForPlayer(GetGUID()))
+    if (sObjectAccessor.ConvertCorpseForPlayer(GetGUID()))
     {
         if (!GetSession()->PlayerLogoutWithSave())
             SaveToDB();                                         // prevent loading as ghost without corpse
@@ -4316,7 +4316,7 @@ void Player::SpawnCorpseBones()
 
 Corpse* Player::GetCorpse() const
 {
-    return ObjectAccessor::Instance().GetCorpseForPlayerGUID(GetGUID());
+    return sObjectAccessor.GetCorpseForPlayerGUID(GetGUID());
 }
 
 void Player::DurabilityLossAll(double percent, bool inventory)
@@ -4490,7 +4490,7 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
                     return TotalCost;
                 }
 
-                Guild *pGuild = objmgr.GetGuildById(GetGuildId());
+                Guild *pGuild = sObjectMgr.GetGuildById(GetGuildId());
                 if (!pGuild)
                     return TotalCost;
 
@@ -4566,13 +4566,13 @@ void Player::TeleportToNearestGraveyard()
                 ClosestGrave = bg->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetTeam());
                 break;
             default:
-                ClosestGrave = objmgr.GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
+                ClosestGrave = sObjectMgr.GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
                 break;
 
         }
     }
     else
-        ClosestGrave = objmgr.GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
+        ClosestGrave = sObjectMgr.GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
 
     // stop countdown until repop
     m_deathTimer = 0;
@@ -5775,7 +5775,7 @@ void Player::CheckAreaExploreAndOutdoor()
                 uint32 XP = 0;
                 if (diff < -5)
                 {
-                    XP = uint32(objmgr.GetBaseXP(getLevel()+5)*GetXPRate(RATE_XP_EXPLORE));
+                    XP = uint32(sObjectMgr.GetBaseXP(getLevel()+5)*GetXPRate(RATE_XP_EXPLORE));
                 }
                 else if (diff > 5)
                 {
@@ -5785,11 +5785,11 @@ void Player::CheckAreaExploreAndOutdoor()
                     else if (exploration_percent < 0)
                         exploration_percent = 0;
 
-                    XP = uint32(objmgr.GetBaseXP(p->area_level)*exploration_percent/100*GetXPRate(RATE_XP_EXPLORE));
+                    XP = uint32(sObjectMgr.GetBaseXP(p->area_level)*exploration_percent/100*GetXPRate(RATE_XP_EXPLORE));
                 }
                 else
                 {
-                    XP = uint32(objmgr.GetBaseXP(p->area_level)*GetXPRate(RATE_XP_EXPLORE));
+                    XP = uint32(sObjectMgr.GetBaseXP(p->area_level)*GetXPRate(RATE_XP_EXPLORE));
                 }
 
                 GiveXP(XP, NULL);
@@ -5912,7 +5912,7 @@ void Player::RewardReputation(Unit *pVictim, float rate)
     if (((Creature*)pVictim)->IsReputationGainDisabled())
         return;
 
-    ReputationOnKillEntry const* Rep = objmgr.GetReputationOnKillEntry(((Creature*)pVictim)->GetCreatureInfo()->Entry);
+    ReputationOnKillEntry const* Rep = sObjectMgr.GetReputationOnKillEntry(((Creature*)pVictim)->GetCreatureInfo()->Entry);
 
     if (!Rep)
         return;
@@ -7389,7 +7389,7 @@ void Player::RemovedInsignia(Player* looterPlr)
 
     // We have to convert player corpse to bones, not to be able to resurrect there
     // SpawnCorpseBones isn't handy, 'cos it saves player while he in BG
-    Corpse *bones = ObjectAccessor::Instance().ConvertCorpseForPlayer(GetGUID(),true);
+    Corpse *bones = sObjectAccessor.ConvertCorpseForPlayer(GetGUID(),true);
     if (!bones)
         return;
 
@@ -12293,21 +12293,21 @@ void Player::PrepareQuestMenu(uint64 guid)
     if (pCreature)
     {
         pObject = (Object*)pCreature;
-        pObjectQR  = &objmgr.mCreatureQuestRelations;
-        pObjectQIR = &objmgr.mCreatureQuestInvolvedRelations;
+        pObjectQR  = &sObjectMgr.mCreatureQuestRelations;
+        pObjectQIR = &sObjectMgr.mCreatureQuestInvolvedRelations;
     }
     else
     {
         //we should obtain map pointer from GetMap() in 99% of cases. Special case
         //only for quests which cast teleport spells on player
-        Map * _map = IsInWorld() ? GetMap() : MapManager::Instance().FindMap(GetMapId(), GetInstanceId());
+        Map * _map = IsInWorld() ? GetMap() : sMapMgr.FindMap(GetMapId(), GetInstanceId());
         ASSERT(_map);
         GameObject *pGameObject = _map->GetGameObject(guid);
         if (pGameObject)
         {
             pObject = (Object*)pGameObject;
-            pObjectQR  = &objmgr.mGOQuestRelations;
-            pObjectQIR = &objmgr.mGOQuestInvolvedRelations;
+            pObjectQR  = &sObjectMgr.mGOQuestRelations;
+            pObjectQIR = &sObjectMgr.mGOQuestInvolvedRelations;
         }
         else
             return;
@@ -12331,7 +12331,7 @@ void Player::PrepareQuestMenu(uint64 guid)
     for (QuestRelations::const_iterator i = pObjectQR->lower_bound(pObject->GetEntry()); i != pObjectQR->upper_bound(pObject->GetEntry()); ++i)
     {
         uint32 quest_id = i->second;
-        Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
+        Quest const* pQuest = sObjectMgr.GetQuestTemplate(quest_id);
         if (!pQuest) continue;
 
         QuestStatus status = GetQuestStatus(quest_id);
@@ -12358,7 +12358,7 @@ void Player::SendPreparedQuest(uint64 guid)
     {
         // Auto open -- maybe also should verify there is no greeting
         uint32 quest_id = qmi0.m_qId;
-        Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
+        Quest const* pQuest = sObjectMgr.GetQuestTemplate(quest_id);
         if (pQuest)
         {
             if (status == DIALOG_STATUS_REWARD_REP && !GetQuestRewardStatus(quest_id))
@@ -12383,7 +12383,7 @@ void Player::SendPreparedQuest(uint64 guid)
         if (pCreature)
         {
             uint32 textid = pCreature->GetNpcTextId();
-            GossipText const * gossiptext = objmgr.GetGossipText(textid);
+            GossipText const * gossiptext = sObjectMgr.GetGossipText(textid);
             if (!gossiptext)
             {
                 qe._Delay = 0;                              //TEXTEMOTE_MESSAGE;              //zyg: player emote
@@ -12424,8 +12424,8 @@ Quest const * Player::GetNextQuest(uint64 guid, Quest const *pQuest)
     if (pCreature)
     {
         pObject = (Object*)pCreature;
-        pObjectQR  = &objmgr.mCreatureQuestRelations;
-        pObjectQIR = &objmgr.mCreatureQuestInvolvedRelations;
+        pObjectQR  = &sObjectMgr.mCreatureQuestRelations;
+        pObjectQIR = &sObjectMgr.mCreatureQuestInvolvedRelations;
     }
     else
     {
@@ -12437,8 +12437,8 @@ Quest const * Player::GetNextQuest(uint64 guid, Quest const *pQuest)
         if (pGameObject)
         {
             pObject = (Object*)pGameObject;
-            pObjectQR  = &objmgr.mGOQuestRelations;
-            pObjectQIR = &objmgr.mGOQuestInvolvedRelations;
+            pObjectQR  = &sObjectMgr.mGOQuestRelations;
+            pObjectQIR = &sObjectMgr.mGOQuestInvolvedRelations;
         }
         else
             return NULL;
@@ -12448,7 +12448,7 @@ Quest const * Player::GetNextQuest(uint64 guid, Quest const *pQuest)
     for (QuestRelations::const_iterator itr = pObjectQR->lower_bound(pObject->GetEntry()); itr != pObjectQR->upper_bound(pObject->GetEntry()); ++itr)
     {
         if (itr->second == nextQuestID)
-            return objmgr.GetQuestTemplate(nextQuestID);
+            return sObjectMgr.GetQuestTemplate(nextQuestID);
     }
 
     return NULL;
@@ -12509,7 +12509,7 @@ bool Player::CanCompleteQuest(uint32 quest_id)
         if (q_status.m_status == QUEST_STATUS_COMPLETE)
             return false;                                   // not allow re-complete quest
 
-        Quest const* qInfo = objmgr.GetQuestTemplate(quest_id);
+        Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id);
 
         if (!qInfo)
             return false;
@@ -12730,7 +12730,7 @@ void Player::CompleteQuest(uint32 quest_id)
         if (log_slot < MAX_QUEST_LOG_SIZE)
             SetQuestSlotState(log_slot,QUEST_STATE_COMPLETE);
 
-        if (Quest const* qInfo = objmgr.GetQuestTemplate(quest_id))
+        if (Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id))
         {
             if (qInfo->HasFlag(QUEST_FLAGS_AUTO_REWARDED))
                 RewardQuest(qInfo,0,this,false);
@@ -13019,7 +13019,7 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
         uint32 prevId = abs(*iter);
 
         QuestStatusMap::iterator i_prevstatus = mQuestStatus.find(prevId);
-        Quest const* qPrevInfo = objmgr.GetQuestTemplate(prevId);
+        Quest const* qPrevInfo = sObjectMgr.GetQuestTemplate(prevId);
 
         if (qPrevInfo && i_prevstatus != mQuestStatus.end())
         {
@@ -13032,8 +13032,8 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
 
                 // each-from-all exclusive group (< 0)
                 // can be start if only all quests in prev quest exclusive group completed and rewarded
-                ObjectMgr::ExclusiveQuestGroups::iterator iter2 = objmgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
-                ObjectMgr::ExclusiveQuestGroups::iterator end  = objmgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
+                ObjectMgr::ExclusiveQuestGroups::iterator iter2 = sObjectMgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
+                ObjectMgr::ExclusiveQuestGroups::iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
 
                 assert(iter2!=end);                          // always must be found if qPrevInfo->ExclusiveGroup != 0
 
@@ -13067,8 +13067,8 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
 
                 // each-from-all exclusive group (< 0)
                 // can be start if only all quests in prev quest exclusive group active
-                ObjectMgr::ExclusiveQuestGroups::iterator iter2 = objmgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
-                ObjectMgr::ExclusiveQuestGroups::iterator end  = objmgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
+                ObjectMgr::ExclusiveQuestGroups::iterator iter2 = sObjectMgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
+                ObjectMgr::ExclusiveQuestGroups::iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
 
                 assert(iter2!=end);                          // always must be found if qPrevInfo->ExclusiveGroup != 0
 
@@ -13169,8 +13169,8 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
     if (qInfo->GetExclusiveGroup() <= 0)
         return true;
 
-    ObjectMgr::ExclusiveQuestGroups::iterator iter = objmgr.mExclusiveQuestGroups.lower_bound(qInfo->GetExclusiveGroup());
-    ObjectMgr::ExclusiveQuestGroups::iterator end  = objmgr.mExclusiveQuestGroups.upper_bound(qInfo->GetExclusiveGroup());
+    ObjectMgr::ExclusiveQuestGroups::iterator iter = sObjectMgr.mExclusiveQuestGroups.lower_bound(qInfo->GetExclusiveGroup());
+    ObjectMgr::ExclusiveQuestGroups::iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qInfo->GetExclusiveGroup());
 
     assert(iter!=end);                                      // always must be found if qInfo->ExclusiveGroup != 0
 
@@ -13183,7 +13183,7 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
             continue;
 
         // not allow have daily quest if daily quest from exclusive group already recently completed
-        Quest const* Nquest = objmgr.GetQuestTemplate(exclude_Id);
+        Quest const* Nquest = sObjectMgr.GetQuestTemplate(exclude_Id);
         if (!SatisfyQuestDay(Nquest, false))
         {
             if (msg)
@@ -13316,7 +13316,7 @@ bool Player::GiveQuestSourceItem(Quest const *pQuest)
 
 bool Player::TakeQuestSourceItem(uint32 quest_id, bool msg)
 {
-    Quest const* qInfo = objmgr.GetQuestTemplate(quest_id);
+    Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id);
     if (qInfo)
     {
         uint32 srcitem = qInfo->GetSrcItemId();
@@ -13344,7 +13344,7 @@ bool Player::TakeQuestSourceItem(uint32 quest_id, bool msg)
 
 bool Player::GetQuestRewardStatus(uint32 quest_id) const
 {
-    Quest const* qInfo = objmgr.GetQuestTemplate(quest_id);
+    Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id);
     if (qInfo)
     {
         // for repeatable quests: rewarded field is set after first reward only to prevent getting XP more than once
@@ -13371,7 +13371,7 @@ QuestStatus Player::GetQuestStatus(uint32 quest_id) const
 
 bool Player::CanShareQuest(uint32 quest_id) const
 {
-    Quest const* qInfo = objmgr.GetQuestTemplate(quest_id);
+    Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id);
     if (qInfo && qInfo->HasFlag(QUEST_FLAGS_SHARABLE))
     {
         QuestStatusMap::const_iterator itr = mQuestStatus.find(quest_id);
@@ -13383,7 +13383,7 @@ bool Player::CanShareQuest(uint32 quest_id) const
 
 void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
 {
-    Quest const* qInfo = objmgr.GetQuestTemplate(quest_id);
+    Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id);
     if (qInfo)
     {
         if (status == QUEST_STATUS_NONE || status == QUEST_STATUS_INCOMPLETE || status == QUEST_STATUS_COMPLETE)
@@ -13404,7 +13404,7 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
 // not used in TrinIty, but used in scripting code
 uint32 Player::GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry)
 {
-    Quest const* qInfo = objmgr.GetQuestTemplate(quest_id);
+    Quest const* qInfo = sObjectMgr.GetQuestTemplate(quest_id);
     if (!qInfo)
         return 0;
 
@@ -13499,7 +13499,7 @@ void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)
         if (q_status.m_status != QUEST_STATUS_INCOMPLETE)
             continue;
 
-        Quest const* qInfo = objmgr.GetQuestTemplate(questid);
+        Quest const* qInfo = sObjectMgr.GetQuestTemplate(questid);
         if (!qInfo || !qInfo->HasFlag(QUEST_HELLGROUND_FLAGS_DELIVER))
             continue;
 
@@ -13534,7 +13534,7 @@ void Player::ItemRemovedQuestCheck(uint32 entry, uint32 count)
         uint32 questid = GetQuestSlotQuestId(i);
         if (!questid)
             continue;
-        Quest const* qInfo = objmgr.GetQuestTemplate(questid);
+        Quest const* qInfo = sObjectMgr.GetQuestTemplate(questid);
         if (!qInfo)
             continue;
         if (!qInfo->HasFlag(QUEST_HELLGROUND_FLAGS_DELIVER))
@@ -13577,7 +13577,7 @@ void Player::KilledMonster(uint32 entry, uint64 guid)
         if (!questid)
             continue;
 
-        Quest const* qInfo = objmgr.GetQuestTemplate(questid);
+        Quest const* qInfo = sObjectMgr.GetQuestTemplate(questid);
         if (!qInfo)
             continue;
         // just if !ingroup || !noraidgroup || raidgroup
@@ -13632,7 +13632,7 @@ void Player::CastedCreatureOrGO(uint32 entry, uint64 guid, uint32 spell_id)
         if (!questid)
             continue;
 
-        Quest const* qInfo = objmgr.GetQuestTemplate(questid);
+        Quest const* qInfo = sObjectMgr.GetQuestTemplate(questid);
         if (!qInfo )
             continue;
 
@@ -13699,7 +13699,7 @@ void Player::TalkedToCreature(uint32 entry, uint64 guid)
         if (!questid)
             continue;
 
-        Quest const* qInfo = objmgr.GetQuestTemplate(questid);
+        Quest const* qInfo = sObjectMgr.GetQuestTemplate(questid);
         if (!qInfo)
             continue;
 
@@ -13754,7 +13754,7 @@ void Player::MoneyChanged(uint32 count)
         if (!questid)
             continue;
 
-        Quest const* qInfo = objmgr.GetQuestTemplate(questid);
+        Quest const* qInfo = sObjectMgr.GetQuestTemplate(questid);
         if (qInfo && qInfo->GetRewOrReqMoney() < 0)
         {
             QuestStatusData& q_status = mQuestStatus[questid];
@@ -13782,7 +13782,7 @@ void Player::ReputationChanged(FactionEntry const* factionEntry )
     {
         if (uint32 questid = GetQuestSlotQuestId(i))
         {
-            if (Quest const* qInfo = objmgr.GetQuestTemplate(questid))
+            if (Quest const* qInfo = sObjectMgr.GetQuestTemplate(questid))
             {
                 if (qInfo->GetRepObjectiveFaction() == factionEntry->ID)
                 {
@@ -13820,7 +13820,7 @@ bool Player::HasQuestForItem(uint32 itemid) const
 
         if (q_status.m_status == QUEST_STATUS_INCOMPLETE)
         {
-            Quest const* qinfo = objmgr.GetQuestTemplate(questid);
+            Quest const* qinfo = sObjectMgr.GetQuestTemplate(questid);
             if (!qinfo)
                 continue;
 
@@ -13884,7 +13884,7 @@ void Player::SendQuestReward(Quest const *pQuest, uint32 XP, Object * questGiver
 {
     uint32 questid = pQuest->GetQuestId();
     sLog.outDebug("WORLD: Sent SMSG_QUESTGIVER_QUEST_COMPLETE quest = %u", questid);
-    gameeventmgr.HandleQuestComplete(questid);
+    sGameEventMgr.HandleQuestComplete(questid);
     WorldPacket data(SMSG_QUESTGIVER_QUEST_COMPLETE, (4+4+4+4+4+4+pQuest->GetRewItemsCount()*8));
     data << questid;
     data << uint32(0x03);
@@ -14083,7 +14083,7 @@ void Player::_LoadArenaTeamInfo(QueryResultAutoPtr result)
         uint32 played_season   = fields[2].GetUInt32();
         uint32 personal_rating = fields[3].GetUInt32();
 
-        ArenaTeam* aTeam = objmgr.GetArenaTeamById(arenateamid);
+        ArenaTeam* aTeam = sObjectMgr.GetArenaTeamById(arenateamid);
         if (!aTeam)
         {
             sLog.outError("FATAL: couldn't load arenateam %u", arenateamid);
@@ -14196,7 +14196,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     m_name = fields[3].GetCppString();
 
     // check name limitations
-    if (!ObjectMgr::IsValidName(m_name) || GetSession()->GetSecurity() == SEC_PLAYER && objmgr.IsReservedName(m_name))
+    if (!ObjectMgr::IsValidName(m_name) || GetSession()->GetSecurity() == SEC_PLAYER && sObjectMgr.IsReservedName(m_name))
     {
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE guid ='%u'", uint32(AT_LOGIN_RENAME),guid);
         return false;
@@ -14268,7 +14268,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         if (!arena_team_id)
             continue;
 
-        if (ArenaTeam * at = objmgr.GetArenaTeamById(arena_team_id))
+        if (ArenaTeam * at = sObjectMgr.GetArenaTeamById(arena_team_id))
             if (at->HaveMember(GetGUID()))
                 continue;
 
@@ -14404,7 +14404,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     Map *map = GetMap();
     if (!map)
     {
-        AreaTrigger const* at = objmgr.GetGoBackTrigger(GetMapId());
+        AreaTrigger const* at = sObjectMgr.GetGoBackTrigger(GetMapId());
         if (at)
         {
             SetMapId(at->target_mapId);
@@ -14452,7 +14452,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         }
         else if (!sInstanceSaveManager.GetInstanceSave(GetInstanceId()))
         {
-            PlayerInfo const * tmpPlInfo = objmgr.GetPlayerInfo(getRace(), getClass());
+            PlayerInfo const * tmpPlInfo = sObjectMgr.GetPlayerInfo(getRace(), getClass());
             if (tmpPlInfo)
             {
                 SetMapId(tmpPlInfo->mapId);
@@ -14917,7 +14917,7 @@ void Player::LoadCorpse()
 {
     if (isAlive())
     {
-        ObjectAccessor::Instance().ConvertCorpseForPlayer(GetGUID());
+        sObjectAccessor.ConvertCorpseForPlayer(GetGUID());
     }
     else
     {
@@ -15202,7 +15202,7 @@ void Player::_LoadQuestStatus(QueryResultAutoPtr result)
 
             uint32 quest_id = fields[0].GetUInt32();
                                                             // used to be new, no delete?
-            Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
+            Quest const* pQuest = sObjectMgr.GetQuestTemplate(quest_id);
             if (pQuest)
             {
                 // find or create
@@ -15313,7 +15313,7 @@ void Player::_LoadDailyQuestStatus(QueryResultAutoPtr result)
             // save _any_ from daily quest times (it must be after last reset anyway)
             m_lastDailyQuestTime = (time_t)fields[1].GetUInt64();
 
-            Quest const* pQuest = objmgr.GetQuestTemplate(quest_id);
+            Quest const* pQuest = sObjectMgr.GetQuestTemplate(quest_id);
             if (!pQuest)
                 continue;
 
@@ -15371,7 +15371,7 @@ void Player::_LoadGroup(QueryResultAutoPtr result)
     if (result)
     {
         uint64 leaderGuid = MAKE_NEW_GUID((*result)[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-        Group* group = objmgr.GetGroupByLeader(leaderGuid);
+        Group* group = sObjectMgr.GetGroupByLeader(leaderGuid);
         if (group)
         {
             uint8 subgroup = group->GetMemberGroup(GetGUID());
@@ -15682,7 +15682,7 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
 
 bool Player::_LoadHomeBind(QueryResultAutoPtr result)
 {
-    PlayerInfo const *info = objmgr.GetPlayerInfo(getRace(), getClass());
+    PlayerInfo const *info = sObjectMgr.GetPlayerInfo(getRace(), getClass());
     if (!info)
     {
         sLog.outError("Player have incorrect race/class pair. Can't be loaded.");
@@ -16795,7 +16795,7 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
     if (language != LANG_ADDON)                             // if not addon data
         language = LANG_UNIVERSAL;                          // whispers should always be readable
 
-    Player *rPlayer = objmgr.GetPlayer(receiver);
+    Player *rPlayer = sObjectMgr.GetPlayer(receiver);
 
     std::string tmpText = text;
 
@@ -17172,7 +17172,7 @@ void Player::RemovePetitionsAndSigns(uint64 guid, uint32 type)
             uint64 petitionguid = MAKE_NEW_GUID(fields[1].GetUInt32(), 0, HIGHGUID_ITEM);
 
             // send update if charter owner in game
-            Player* owner = objmgr.GetPlayer(ownerguid);
+            Player* owner = sObjectMgr.GetPlayer(ownerguid);
             if (owner)
                 owner->GetSession()->SendPetitionQueryOpcode(petitionguid);
 
@@ -17351,7 +17351,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
         uint32 path, cost;
 
         lastnode = nodes[i];
-        objmgr.GetTaxiPath(prevnode, lastnode, path, cost);
+        sObjectMgr.GetTaxiPath(prevnode, lastnode, path, cost);
 
         if (!path)
         {
@@ -17370,7 +17370,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     }
 
     if (!mount_id)                                           // if not provide then attempt use default.
-        mount_id = objmgr.GetTaxiMount(sourcenode, GetTeam());
+        mount_id = sObjectMgr.GetTaxiMount(sourcenode, GetTeam());
 
     if (mount_id == 0 || sourcepath == 0)
     {
@@ -17744,7 +17744,7 @@ uint32 Player::GetMaxPersonalArenaRatingRequirement()
     uint32 max_personal_rating = 0;
     for (int i = 0; i < MAX_ARENA_SLOT; ++i)
     {
-        if (ArenaTeam * at = objmgr.GetArenaTeamById(GetArenaTeamId(i)))
+        if (ArenaTeam * at = sObjectMgr.GetArenaTeamById(GetArenaTeamId(i)))
         {
             uint32 p_rating = GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (i * 6) + 5);
             uint32 t_rating = at->GetRating();
@@ -18684,7 +18684,7 @@ void Player::resetSpells()
 void Player::learnDefaultSpells(bool loading)
 {
     // learn default race/class spells
-    PlayerInfo const *info = objmgr.GetPlayerInfo(getRace(),getClass());
+    PlayerInfo const *info = sObjectMgr.GetPlayerInfo(getRace(),getClass());
     std::list<CreateSpellPair>::const_iterator spell_itr;
     for (spell_itr = info->spell.begin(); spell_itr!=info->spell.end(); ++spell_itr)
     {
@@ -18780,7 +18780,7 @@ void Player::learnQuestRewardedSpells()
         if (!itr->second.m_rewarded)
             continue;
 
-        Quest const* quest = objmgr.GetQuestTemplate(itr->first);
+        Quest const* quest = sObjectMgr.GetQuestTemplate(itr->first);
         if (!quest)
             continue;
 
@@ -18970,7 +18970,7 @@ bool Player::HasQuestForGO(int32 GOId) const
 
         if (qs.m_status == QUEST_STATUS_INCOMPLETE)
         {
-            Quest const* qinfo = objmgr.GetQuestTemplate(questid);
+            Quest const* qinfo = sObjectMgr.GetQuestTemplate(questid);
             if (!qinfo)
                 continue;
 
@@ -19639,7 +19639,7 @@ void Player::LFGAttemptJoin()
                     continue;
                 }
 
-                objmgr.AddGroup(group);
+                sObjectMgr.AddGroup(group);
             }
 
             // stop at success join
@@ -19723,7 +19723,7 @@ void Player::LFMAttemptAddMore()
                 return;                                     // can't create group (??)
             }
 
-            objmgr.AddGroup(group);
+            sObjectMgr.AddGroup(group);
         }
 
         // stop at join fail (full)

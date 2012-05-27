@@ -22,18 +22,7 @@
 #include "Database/DatabaseEnv.h"
 #include "Opcodes.h"
 #include "Log.h"
-#include "Policies/SingletonImp.h"
 #include "zlib/zlib.h"
-
-INSTANTIATE_SINGLETON_1(AddonHandler);
-
-AddonHandler::AddonHandler()
-{
-}
-
-AddonHandler::~AddonHandler()
-{
-}
 
 bool AddonHandler::BuildAddonPacket(WorldPacket *Source, WorldPacket *Target)
 {

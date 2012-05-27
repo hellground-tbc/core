@@ -21,10 +21,11 @@
 #ifndef HELLGROUND_GAMEEVENT_H
 #define HELLGROUND_GAMEEVENT_H
 
+#include "ace/Singleton.h"
+
 #include "Common.h"
 #include "SharedDefines.h"
 #include "Platform/Define.h"
-#include "Policies/Singleton.h"
 
 #define max_ge_check_delay 86400                            // 1 day in seconds
 
@@ -88,12 +89,14 @@ struct NPCVendorEntry
 class Player;
 class Creature;
 
-class GameEvent
+class GameEventMgr
 {
+    friend class ACE_Singleton<GameEventMgr, ACE_Null_Mutex>;
+    GameEventMgr();
+
     public:
         const char *getActiveEventsString();
-        GameEvent();
-        ~GameEvent() {};
+        ~GameEventMgr() {};
         typedef std::set<uint16> ActiveEvents;
         typedef std::vector<GameEventData> GameEventDataMap;
         ActiveEvents const& GetActiveEventList() const { return m_ActiveEvents; }
@@ -164,7 +167,7 @@ class GameEvent
         bool isSystemInit;
 };
 
-#define gameeventmgr Hellground::Singleton<GameEvent>::Instance()
+#define sGameEventMgr (*ACE_Singleton<GameEventMgr, ACE_Null_Mutex>::instance())
 #endif
 
 HELLGROUND_DLL_SPEC bool isGameEventActive(uint16 event_id);

@@ -25,9 +25,10 @@
 #ifndef __WORLD_H
 #define __WORLD_H
 
+#include "ace/Singleton.h"
+
 #include "Common.h"
 #include "Timer.h"
-#include "Policies/Singleton.h"
 #include "SharedDefines.h"
 #include "ace/Atomic_Op.h"
 #include "DelayExecutor.h"
@@ -547,6 +548,9 @@ class CoreBalancer
 /// The World
 class World
 {
+    friend class ACE_Singleton<World, ACE_Null_Mutex>;
+    World();
+
     public:
         DelayExecutor m_ac;
 
@@ -554,7 +558,6 @@ class World
 
         static volatile uint32 m_worldLoopCounter;
 
-        World();
         ~World();
 
         WorldSession* FindSession(uint32 id) const;
@@ -883,7 +886,7 @@ class World
 
 extern uint32 realmID;
 
-#define sWorld Hellground::Singleton<World>::Instance()
+#define sWorld (*ACE_Singleton<World, ACE_Null_Mutex>::instance())
 
 class SessionsUpdater
 {

@@ -23,7 +23,7 @@
 #define __InstanceSaveMgr_H
 
 #include "Platform/Define.h"
-#include "Policies/Singleton.h"
+#include "ace/Singleton.h"
 #include "ace/Thread_Mutex.h"
 #include <list>
 #include <map>
@@ -113,11 +113,13 @@ class InstanceSave
         bool m_canReset;
 };
 
-class HELLGROUND_DLL_DECL InstanceSaveManager : public Hellground::Singleton<InstanceSaveManager, Hellground::ClassLevelLockable<InstanceSaveManager, ACE_Thread_Mutex> >
+class HELLGROUND_DLL_DECL InstanceSaveManager
 {
+    friend class ACE_Singleton<InstanceSaveManager, ACE_Thread_Mutex>;
+    InstanceSaveManager();
+
     friend class InstanceSave;
     public:
-        InstanceSaveManager();
         ~InstanceSaveManager();
 
         void UnbindBeforeDelete();
@@ -173,5 +175,5 @@ class HELLGROUND_DLL_DECL InstanceSaveManager : public Hellground::Singleton<Ins
         ResetTimeQueue m_resetTimeQueue;
 };
 
-#define sInstanceSaveManager Hellground::Singleton<InstanceSaveManager>::Instance()
+#define sInstanceSaveManager (*ACE_Singleton<InstanceSaveManager, ACE_Thread_Mutex>::instance())
 #endif

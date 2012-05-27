@@ -22,15 +22,13 @@
 int num_sc_scripts;
 Script *m_scripts[MAX_SCRIPTS];
 
-Config TScriptConfig;
-
 void FillSpellSummary();
 
 // -------------------
 void LoadDatabase()
 {
     //Get db string from file
-    std::string dbstring = TScriptConfig.GetStringDefault("WorldDatabaseInfo", "");
+    std::string dbstring = sConfig.GetStringDefault("WorldDatabaseInfo", "");
     if (dbstring.empty())
     {
         error_log("TSCR: Missing world database info from configuration file. Load database aborted.");
@@ -88,14 +86,6 @@ void InitScriptLibrary(char const* cfg_file)
     outstring_log("  |_||_|  |_|_| |_|_|\\__|\\__, |____/ \\___|_|  |_| .__/ \\__|");
     outstring_log("                         |___/                  |_|        ");
     outstring_log("Trinity Script initializing %s", _FULLVERSION);
-    outstring_log("");
-
-    //Get configuration file
-    if (!TScriptConfig.SetSource(cfg_file))
-        error_log("TSCR: Unable to open configuration file. Database will be unaccessible. Configuration values will use default.");
-    else
-        outstring_log("TSCR: Using configuration file %s",cfg_file);
-
     outstring_log("");
 
     //Load database (must be called after TScriptConfig.SetSource). In case it failed, no need to even try load.

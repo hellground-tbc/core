@@ -198,7 +198,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
         return;
     }
 
-    Player *receive = objmgr.GetPlayer(rc);
+    Player *receive = sObjectMgr.GetPlayer(rc);
 
     uint32 rc_team = 0;
     uint8 mails_count = 0;                                  //do not allow to send to one player more than 100 mails
@@ -210,7 +210,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
     }
     else
     {
-        rc_team = objmgr.GetPlayerTeamByGUID(rc);
+        rc_team = sObjectMgr.GetPlayerTeamByGUID(rc);
         QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT COUNT(*) FROM mail WHERE receiver = '%u'", GUID_LOPART(rc));
         if (result)
         {
@@ -299,7 +299,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
         if (receive)
             rc_account = receive->GetSession()->GetAccountId();
         else
-            rc_account = objmgr.GetPlayerAccountIdByGUID(rc);
+            rc_account = sObjectMgr.GetPlayerAccountIdByGUID(rc);
 
         if (items_count > 0)
         {
@@ -591,7 +591,7 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
                 }
             }
             else if (!sender)
-                sender_accId = objmgr.GetPlayerAccountIdByGUID(sender_guid);
+                sender_accId = sObjectMgr.GetPlayerAccountIdByGUID(sender_guid);
 
             // check player existence
             if (sender || sender_accId)
@@ -797,7 +797,7 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recv_data)
 
     WorldPacket data(SMSG_ITEM_TEXT_QUERY_RESPONSE, (4+10));// guess size
     data << itemTextId;
-    data << objmgr.GetItemText(itemTextId);
+    data << sObjectMgr.GetItemText(itemTextId);
     SendPacket(&data);
 }
 
@@ -848,7 +848,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recv_data)
     }
 
     Item *bodyItem = new Item;                              // This is not bag and then can be used new Item.
-    if (!bodyItem->Create(objmgr.GenerateLowGuid(HIGHGUID_ITEM), MAIL_BODY_ITEM_TEMPLATE, pl))
+    if (!bodyItem->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_ITEM), MAIL_BODY_ITEM_TEMPLATE, pl))
     {
         delete bodyItem;
         return;

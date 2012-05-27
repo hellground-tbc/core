@@ -305,20 +305,12 @@
     <ClInclude Include="..\..\src\framework\GameSystem\TypeContainerVisitor.h" />
     <ClInclude Include="..\..\src\framework\Platform\CompilerDefs.h" />
     <ClInclude Include="..\..\src\framework\Platform\Define.h" />
-    <ClInclude Include="..\..\src\framework\Policies\CreationPolicy.h" />
-    <ClInclude Include="..\..\src\framework\Policies\ObjectLifeTime.h" />
-    <ClInclude Include="..\..\src\framework\Policies\Singleton.h" />
-    <ClInclude Include="..\..\src\framework\Policies\SingletonImp.h" />
-    <ClInclude Include="..\..\src\framework\Policies\ThreadingModel.h" />
     <ClInclude Include="..\..\src\framework\Utilities\ByteConverter.h" />
     <ClInclude Include="..\..\src\framework\Utilities\Callback.h" />
     <ClInclude Include="..\..\src\framework\Utilities\EventProcessor.h" />
     <ClInclude Include="..\..\src\framework\Utilities\LinkedList.h" />
     <ClInclude Include="..\..\src\framework\Utilities\TypeList.h" />
     <ClInclude Include="..\..\src\framework\Utilities\UnorderedMap.h" />
-    <ClInclude Include="..\..\src\framework\Utilities\CountedReference\Reference.h" />
-    <ClInclude Include="..\..\src\framework\Utilities\CountedReference\ReferenceHolder.h" />
-    <ClInclude Include="..\..\src\framework\Utilities\CountedReference\ReferenceImpl.h" />
     <ClInclude Include="..\..\src\framework\Utilities\LinkedReference\Reference.h" />
     <ClInclude Include="..\..\src\framework\Utilities\LinkedReference\RefManager.h" />
     <ClInclude Include="..\..\src\framework\Dynamic\FactoryHolder.h" />
@@ -327,7 +319,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\framework\Policies\MemoryManagement.cpp" />
-    <ClCompile Include="..\..\src\framework\Policies\ObjectLifeTime.cpp" />
     <ClCompile Include="..\..\src\framework\Utilities\EventProcessor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

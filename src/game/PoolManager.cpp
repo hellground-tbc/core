@@ -23,9 +23,6 @@
 #include "Log.h"
 #include "MapManager.h"
 #include "World.h"
-#include "Policies/SingletonImp.h"
-
-INSTANTIATE_SINGLETON_1(PoolManager);
 
 ////////////////////////////////////////////////////////////
 // template class SpawnedPoolData
@@ -425,7 +422,7 @@ void PoolGroup<Creature>::Spawn1Object(PoolObject* obj, bool instantly)
             // for not loaded grid just update respawn time (avoid work for instances until implemented support)
             else if(!instantly)
             {
-                objmgr.SaveCreatureRespawnTime(obj->guid, 0, time(NULL) + data->spawntimesecs);
+                sObjectMgr.SaveCreatureRespawnTime(obj->guid, 0, time(NULL) + data->spawntimesecs);
             }
         }
     }
@@ -478,7 +475,7 @@ void PoolGroup<GameObject>::Spawn1Object(PoolObject* obj, bool instantly)
             {
                 // for spawned by default object only
                 if (data->spawntimesecs >= 0)
-                    objmgr.SaveGORespawnTime(obj->guid, 0, time(NULL) + data->spawntimesecs);
+                    sObjectMgr.SaveGORespawnTime(obj->guid, 0, time(NULL) + data->spawntimesecs);
             }
         }
     }

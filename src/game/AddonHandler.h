@@ -22,18 +22,11 @@
 #define __ADDONHANDLER_H
 
 #include "Common.h"
-#include "Policies/Singleton.h"
 #include "WorldPacket.h"
 
-class AddonHandler
+namespace AddonHandler
 {
-    public:
-        /* Construction */
-        AddonHandler();
-        ~AddonHandler();
-                                                            //built addon packet
-        bool BuildAddonPacket(WorldPacket* Source, WorldPacket* Target);
+    bool BuildAddonPacket(WorldPacket* Source, WorldPacket* Target);
 };
-#define sAddOnHandler Hellground::Singleton<AddonHandler>::Instance()
-#endif
 
+#endif

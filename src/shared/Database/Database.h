@@ -23,7 +23,6 @@
 #include "Utilities/UnorderedMap.h"
 #include "Database/SqlDelayThread.h"
 #include <ace/Recursive_Thread_Mutex.h>
-#include "Policies/ThreadingModel.h"
 #include <ace/TSS_T.h>
 #include <ace/Atomic_Op.h>
 #include "SqlPreparedStatement.h"
@@ -306,4 +305,5 @@ class HELLGROUND_DLL_SPEC Database
         std::string m_logsDir;
         uint32 m_pingIntervallms;
 };
+
 #endif

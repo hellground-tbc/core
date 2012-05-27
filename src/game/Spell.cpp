@@ -42,7 +42,6 @@
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "CellImpl.h"
-#include "Policies/SingletonImp.h"
 #include "SharedDefines.h"
 #include "Tools.h"
 #include "LootMgr.h"
@@ -2238,7 +2237,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (objmgr.IsPlayerSpellDisabled(m_spellInfo->Id))
+        if (sObjectMgr.IsPlayerSpellDisabled(m_spellInfo->Id))
         {
             SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
             finish(false);
@@ -2247,7 +2246,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     }
     else if (m_caster->GetTypeId() == TYPEID_UNIT && ((Creature*)m_caster)->isPet())
     {
-        if (objmgr.IsPetSpellDisabled(m_spellInfo->Id))
+        if (sObjectMgr.IsPetSpellDisabled(m_spellInfo->Id))
         {
             SendCastResult(SPELL_FAILED_SPELL_UNAVAILABLE);
             finish(false);
@@ -2256,7 +2255,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     }
     else
     {
-        if (objmgr.IsCreatureSpellDisabled(m_spellInfo->Id))
+        if (sObjectMgr.IsCreatureSpellDisabled(m_spellInfo->Id))
         {
             finish(false);
             return;
@@ -4264,7 +4263,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(m_caster->GetMapId());
                     if (!instance)
                         return SPELL_FAILED_TARGET_NOT_IN_INSTANCE;
-                    if (!target->Satisfy(objmgr.GetAccessRequirement(instance->access_id), m_caster->GetMapId()))
+                    if (!target->Satisfy(sObjectMgr.GetAccessRequirement(instance->access_id), m_caster->GetMapId()))
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 break;

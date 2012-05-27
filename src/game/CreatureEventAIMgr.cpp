@@ -23,11 +23,8 @@
 #include "CreatureEventAIMgr.h"
 #include "ObjectMgr.h"
 #include "ProgressBar.h"
-#include "Policies/SingletonImp.h"
 #include "ObjectGuid.h"
 #include "GridDefines.h"
-
-INSTANTIATE_SINGLETON_1(CreatureEventAIMgr);
 
 // -------------------
 void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
@@ -36,7 +33,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
     m_CreatureEventAI_TextMap.clear();
 
     // Load EventAI Text
-    objmgr.LoadHellgroundStrings(WorldDatabase,"creature_ai_texts",MIN_CREATURE_AI_TEXT_STRING_ID,MAX_CREATURE_AI_TEXT_STRING_ID);
+    sObjectMgr.LoadHellgroundStrings(WorldDatabase,"creature_ai_texts",MIN_CREATURE_AI_TEXT_STRING_ID,MAX_CREATURE_AI_TEXT_STRING_ID);
 
     // Gather Additional data from EventAI Texts
     QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, sound, type, language, emote FROM creature_ai_texts");
@@ -67,7 +64,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
             }
 
             // range negative (don't must be happen, loaded from same table)
-            if (!objmgr.GetTrinityStringLocale(i))
+            if (!sObjectMgr.GetTrinityStringLocale(i))
             {
                 sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` not found",i);
                 continue;
@@ -292,7 +289,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             }
             else
             {
-                if (!objmgr.GetCreatureData(-entryOrGUID))
+                if (!sObjectMgr.GetCreatureData(-entryOrGUID))
                 {
                     sLog.outErrorDb("CreatureEventAI:  Event %u has script for non-existing creature GUID ("SI64FMTD"), skipping.", i, entryOrGUID);
                     continue;
@@ -422,7 +419,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                     break;
                 case EVENT_T_QUEST_ACCEPT:
                 case EVENT_T_QUEST_COMPLETE:
-                    if (!objmgr.GetQuestTemplate(temp.quest.questId))
+                    if (!sObjectMgr.GetQuestTemplate(temp.quest.questId))
                         sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with not existed qyest id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.quest.questId);
                     sLog.outErrorDb("CreatureEventAI: Creature %u using not implemented event (%u) in event %u.", temp.entryOrGUID, temp.event_id, i);
                     continue;
@@ -617,7 +614,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
 
                         action.castguid.targetGUID = param2_64;
 
-                        if (!action.castguid.targetGUID || !objmgr.GetCreatureData(action.castguid.targetGUID))
+                        if (!action.castguid.targetGUID || !sObjectMgr.GetCreatureData(action.castguid.targetGUID))
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
                         break;
                     }
@@ -639,7 +636,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_all_pct.percent);
                         break;
                     case ACTION_T_QUEST_EVENT:
-                        if (Quest const* qid = objmgr.GetQuestTemplate(action.quest_event.questId))
+                        if (Quest const* qid = sObjectMgr.GetQuestTemplate(action.quest_event.questId))
                         {
                             if (!qid->HasFlag(QUEST_HELLGROUND_FLAGS_EXPLORATION_OR_EVENT))
                                 sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event.questId);
@@ -681,7 +678,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u is change phase by too large for any use %i.", i, j+1, action.set_inc_phase.step);
                         break;
                     case ACTION_T_QUEST_EVENT_ALL:
-                        if (Quest const* qid = objmgr.GetQuestTemplate(action.quest_event_all.questId))
+                        if (Quest const* qid = sObjectMgr.GetQuestTemplate(action.quest_event_all.questId))
                         {
                             if (!qid->HasFlag(QUEST_HELLGROUND_FLAGS_EXPLORATION_OR_EVENT))
                                 sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event_all.questId);
@@ -811,7 +808,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
 
             if (entryOrGUID < 0)
             {
-                if (CreatureData const* data = objmgr.GetCreatureData(temp.entryOrGUID))
+                if (CreatureData const* data = sObjectMgr.GetCreatureData(temp.entryOrGUID))
                     entry = data->id;
             }
 
@@ -1022,7 +1019,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                     break;
                 case EVENT_T_QUEST_ACCEPT:
                 case EVENT_T_QUEST_COMPLETE:
-                    if (!objmgr.GetQuestTemplate(temp.quest.questId))
+                    if (!sObjectMgr.GetQuestTemplate(temp.quest.questId))
                         sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with not existed qyest id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.quest.questId);
                     sLog.outErrorDb("CreatureEventAI: Creature %u using not implemented event (%u) in event %u.", temp.entryOrGUID, temp.event_id, i);
                     continue;
@@ -1211,7 +1208,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                         if (action.castguid.castFlags & CAST_FORCE_TARGET_SELF)
                             action.castguid.castFlags |= CAST_TRIGGERED;
 
-                        if (!action.castguid.targetGUID || !objmgr.GetCreatureData(action.castguid.targetGUID))
+                        if (!action.castguid.targetGUID || !sObjectMgr.GetCreatureData(action.castguid.targetGUID))
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
                         break;
                     }
@@ -1233,7 +1230,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_all_pct.percent);
                         break;
                     case ACTION_T_QUEST_EVENT:
-                        if (Quest const* qid = objmgr.GetQuestTemplate(action.quest_event.questId))
+                        if (Quest const* qid = sObjectMgr.GetQuestTemplate(action.quest_event.questId))
                         {
                             if (!qid->HasFlag(QUEST_HELLGROUND_FLAGS_EXPLORATION_OR_EVENT))
                                 sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event.questId);
@@ -1275,7 +1272,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                             sLog.outErrorDb("CreatureEventAI:  Event %u Action %u is change phase by too large for any use %i.", i, j+1, action.set_inc_phase.step);
                         break;
                     case ACTION_T_QUEST_EVENT_ALL:
-                        if (Quest const* qid = objmgr.GetQuestTemplate(action.quest_event_all.questId))
+                        if (Quest const* qid = sObjectMgr.GetQuestTemplate(action.quest_event_all.questId))
                         {
                             if (!qid->HasFlag(QUEST_HELLGROUND_FLAGS_EXPLORATION_OR_EVENT))
                                 sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event_all.questId);

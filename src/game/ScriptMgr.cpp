@@ -17,7 +17,6 @@
  */
 
 #include "ScriptMgr.h"
-#include "Policies/SingletonImp.h"
 #include "Log.h"
 #include "ProgressBar.h"
 #include "ObjectMgr.h"
@@ -33,8 +32,6 @@ ScriptMapMap sGameObjectScripts;
 ScriptMapMap sEventScripts;
 ScriptMapMap sGossipScripts;
 ScriptMapMap sWaypointScripts;
-
-INSTANTIATE_SINGLETON_1(ScriptMgr);
 
 ScriptMgr::ScriptMgr() :
     m_hScriptLib(NULL),

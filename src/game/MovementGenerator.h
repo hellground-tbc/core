@@ -19,15 +19,16 @@
 #ifndef MANGOS_MOVEMENTGENERATOR_H
 #define MANGOS_MOVEMENTGENERATOR_H
 
+#include "ace/Singleton.h"
+
 #include "Common.h"
 #include "Platform/Define.h"
-#include "Policies/Singleton.h"
 #include "Dynamic/ObjectRegistry.h"
 #include "Dynamic/FactoryHolder.h"
 #include "MotionMaster.h"
 #include "StateMgr.h"
 
-class MANGOS_DLL_SPEC MovementGenerator : public UnitAction
+class HELLGROUND_DLL_SPEC MovementGenerator : public UnitAction
 {
     public:
         virtual ~MovementGenerator();
@@ -62,7 +63,7 @@ class MANGOS_DLL_SPEC MovementGenerator : public UnitAction
 };
 
 template<class T, class D>
-class MANGOS_DLL_SPEC MovementGeneratorMedium : public MovementGenerator
+class HELLGROUND_DLL_SPEC MovementGeneratorMedium : public MovementGenerator
 {
     public:
         void Initialize(Unit &u)

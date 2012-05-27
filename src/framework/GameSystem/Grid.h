@@ -33,7 +33,6 @@
 */
 
 #include "Platform/Define.h"
-#include "Policies/ThreadingModel.h"
 #include "TypeContainer.h"
 #include "TypeContainerVisitor.h"
 
@@ -44,9 +43,9 @@ template
 <
 class ACTIVE_OBJECT,
 class WORLD_OBJECT_TYPES,
-class GRID_OBJECT_TYPES,
-class ThreadModel = Hellground::SingleThreaded<ACTIVE_OBJECT>
+class GRID_OBJECT_TYPES
 >
+
 class HELLGROUND_DLL_DECL Grid
 {
     // allows the GridLoader to access its internals
@@ -112,7 +111,7 @@ class HELLGROUND_DLL_DECL Grid
                 assert(false);
         }
 
-        /** Removes a containter type object from the grid
+        /** Removes a container type object from the grid
          */
         template<class SPECIFIC_OBJECT> void RemoveGridObject(SPECIFIC_OBJECT *obj)
         {
@@ -122,13 +121,10 @@ class HELLGROUND_DLL_DECL Grid
 
     private:
 
-        typedef typename ThreadModel::Lock Guard;
-        typedef typename ThreadModel::VolatileType VolatileType;
-
         TypeMapContainer<GRID_OBJECT_TYPES> i_container;
         TypeMapContainer<WORLD_OBJECT_TYPES> i_objects;
         //typedef std::set<void*> ActiveGridObjects;
         //ActiveGridObjects m_activeGridObjects;
 };
-#endif
 
+#endif
