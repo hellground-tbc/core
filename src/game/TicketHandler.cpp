@@ -79,7 +79,8 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
     // Send ticket creation
     SendPacket(&data);
 
-    sWorld.SendGMText(LANG_COMMAND_TICKETNEW, ticket->name.c_str(), ticket->name.c_str(), ticket->guid);
+    std::string NameLink = "|Hplayer:"+ticket->name+"|h["+ticket->name+"]|h";
+    sWorld.SendGMText(LANG_COMMAND_TICKETNEW, NameLink.c_str(), ticket->guid);
 }
 
 void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recv_data)

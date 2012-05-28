@@ -573,6 +573,8 @@ class ChatHandler
 
         GameObject* GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid,uint32 entry);
 
+        std::string NameLink(std::string Name);
+
         // Utility methods for commands
         bool LookupPlayerSearchCommand(QueryResultAutoPtr result, int32 limit);
         bool HandleBanListHelper(QueryResultAutoPtr result);
