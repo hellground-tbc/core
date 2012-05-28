@@ -457,7 +457,7 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
         }
     }
 
-    bool timerPaused = IsNonMeleeSpellCasted(false) || hasUnitState(UNIT_STAT_LOST_CONTROL);
+    bool timerPaused = hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING);
     if (!timerPaused)
     {
         if (UnitAction* action = GetUnitStateMgr().CurrentAction())
