@@ -1883,30 +1883,36 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     }
 
     std::string username = GetTrinityString(LANG_ERROR);
+    std::string email = GetTrinityString(LANG_ERROR);
     std::string last_ip = GetTrinityString(LANG_ERROR);
     uint32 security = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
 
-    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT username,gmlevel,last_ip,last_login FROM account WHERE id = '%u'",accId);
+    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT username,gmlevel,email,last_ip,last_login FROM account WHERE id = '%u'",accId);
     if (result)
     {
         Field* fields = result->Fetch();
         username = fields[0].GetCppString();
         security = fields[1].GetUInt32();
 
+        if (email.empty())
+            email = "-";
+
         if (!m_session || m_session->GetSecurity() >= security)
         {
-            last_ip = fields[2].GetCppString();
-            last_login = fields[3].GetCppString();
+            email = fields[2].GetCppString();
+            last_ip = fields[3].GetCppString();
+            last_login = fields[4].GetCppString();
         }
         else
         {
+            email = "-";
             last_ip = "-";
             last_login = "-";
         }
     }
 
-    PSendSysMessage(LANG_PINFO_ACCOUNT, (target?"":GetTrinityString(LANG_OFFLINE)), name.c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, security, last_ip.c_str(), last_login.c_str(), latency);
+    PSendSysMessage(LANG_PINFO_ACCOUNT, (target?"":GetTrinityString(LANG_OFFLINE)), name.c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), security, last_ip.c_str(), last_login.c_str(), latency);
 
     std::string race_s, Class_s;
         switch(race)
@@ -1939,7 +1945,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 gold = money /GOLD;
     uint32 silv = (money % GOLD) / SILVER;
     uint32 copp = (money % GOLD) % SILVER;
-    PSendSysMessage(LANG_PINFO_LEVEL,  race_s.c_str(), Class_s.c_str(), timeStr.c_str(), level, gold,silv,copp);
+    PSendSysMessage(LANG_PINFO_LEVEL,  race_s.c_str(), Class_s.c_str(), timeStr.c_str(), level, gold, silv, copp);
 
     if (py && strncmp(py, "rep", 3) == 0)
     {
