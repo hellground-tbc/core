@@ -776,6 +776,14 @@ enum EnviromentalDamage
     DAMAGE_FALL_TO_VOID = 6                                 // custom case for fall without durability loss
 };
 
+enum PlayedTimeIndex
+{
+    PLAYED_TIME_TOTAL = 0,
+    PLAYED_TIME_LEVEL = 1
+};
+
+#define MAX_PLAYED_TIME_INDEX 2
+
 // used at player loading query list preparing, and later result selection
 enum PlayerLoginQueryIndex
 {
@@ -945,7 +953,7 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         bool inDelete;
         void Update(uint32 update_diff, uint32 diff);
 
-        void BuildEnumData(QueryResultAutoPtr result,  WorldPacket * p_data);
+        static bool BuildEnumData(QueryResultAutoPtr result,  WorldPacket * p_data);
 
         void SetInWater(bool apply);
 
@@ -1040,8 +1048,6 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         void TextEmote(const std::string& text);
         void Whisper(const std::string& text, const uint32 language,uint64 receiver);
         void BuildPlayerChat(WorldPacket *data, uint8 msgtype, const std::string& text, uint32 language) const;
-
-        uint8 GetClass(){ return m_class; }
 
         /*********************************************************/
         /***                    STORAGE SYSTEM                 ***/
@@ -1296,6 +1302,7 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         static uint32 GetUInt32ValueFromDB(uint16 index, uint64 guid);
         static float  GetFloatValueFromDB(uint16 index, uint64 guid);
         static uint32 GetZoneIdFromDB(uint64 guid);
+        static uint32 GetLevelFromDB(uint64 guid);
         static bool   LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float& o, bool& in_flight, uint64 guid);
 
         /*********************************************************/
@@ -1304,6 +1311,7 @@ class HELLGROUND_DLL_SPEC Player : public Unit
 
         void SaveToDB();
         void SaveInventoryAndGoldToDB();                    // fast save function for item/money cheating preventing
+        void SaveGoldToDB();
         void SaveDataFieldToDB();
         static bool SaveValuesArrayInDB(Tokens const& data,uint64 guid);
         static void SetUInt32ValueInArray(Tokens& data,uint16 index, uint32 value);
@@ -2285,8 +2293,6 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         bool _removeSpell(uint16 spell_id);
         uint64 m_lootGuid;
 
-        uint32 m_race;
-        uint32 m_class;
         uint32 m_team;
         uint32 m_nextSave;
         time_t m_speakTime;

@@ -2123,9 +2123,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             if (Pet *pet = Target->GetPet())
                                 if (targetPlayer->IsWithinDistInMap(pet, radius) && !m_caster->IsHostileTo(pet))
                                 {
-                                    if (targetPlayer->GetClass() == CLASS_WARRIOR && (Target->GetClass() == CLASS_HUNTER || pet->GetEntry() == 17252))
+                                    if (targetPlayer->getClass() == CLASS_WARRIOR && (Target->getClass() == CLASS_HUNTER || pet->GetEntry() == 17252))
                                         AddUnitTarget(pet, i);
-                                    else if (targetPlayer->GetClass() == CLASS_WARLOCK && Target->GetClass() == CLASS_WARLOCK && pet->GetEntry() != 17252)
+                                    else if (targetPlayer->getClass() == CLASS_WARLOCK && Target->getClass() == CLASS_WARLOCK && pet->GetEntry() != 17252)
                                         AddUnitTarget(pet, i);
                                 }
                         }
@@ -3529,7 +3529,7 @@ void Spell::TakePower()
                     {
                         if (ihit->missCondition != SPELL_MISS_NONE && ihit->missCondition != SPELL_MISS_MISS/* && ihit->targetGUID!=m_caster->GetGUID()*/)
                             hit = false;
-                        else if (((Player*)m_caster)->GetClass() == CLASS_DRUID && ihit->missCondition == SPELL_MISS_MISS && m_spellInfo->powerType == POWER_ENERGY) // not sure if it's limited only to druid/energy
+                        else if (((Player*)m_caster)->getClass() == CLASS_DRUID && ihit->missCondition == SPELL_MISS_MISS && m_spellInfo->powerType == POWER_ENERGY) // not sure if it's limited only to druid/energy
                             hit = false;
                         break;
                     }
@@ -3557,7 +3557,7 @@ void Spell::TakePower()
 
     Powers powerType = Powers(m_spellInfo->powerType);
 
-    if (hit || (NeedsComboPoints(m_spellInfo) && m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->GetClass() == CLASS_DRUID) )  // not sure if it's limited only to druid
+    if (hit || (NeedsComboPoints(m_spellInfo) && m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->getClass() == CLASS_DRUID) )  // not sure if it's limited only to druid
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
         m_caster->ModifyPower(powerType, -irand(0, m_powerCost/4));
