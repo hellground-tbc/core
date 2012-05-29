@@ -411,6 +411,8 @@ void Loot::setCreatureGUID(Creature *pCreature)
 void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
 {
     clear();
+    //set variable to true even if we don't load anything so new loot won't be generated
+    m_lootLoadedFromDB = true;
 
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount, playerGuids FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
     if (result)
@@ -494,9 +496,6 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
         pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
         pCreature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
     }
-
-    //set variable to true even if we don't load anything so new loot won't be generated
-    m_lootLoadedFromDB = true;
 }
 
 void Loot::removeItemFromSavedLoot(LootItem *item)
