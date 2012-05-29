@@ -365,7 +365,11 @@ void WorldSession::DoLootRelease(uint64 lguid)
         loot = &pCreature->loot;
 
         if (player->GetGUID() == loot->looterGUID)
+        {
             loot->looterGUID = 0;
+            if (Group *group = player->GetGroup())
+                group->SendRoundRobin(loot, pCreature);
+        }
 
         if (loot->isLooted())
         {
