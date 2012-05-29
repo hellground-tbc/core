@@ -12,7 +12,7 @@
 DROP TABLE IF EXISTS `account`;
 
 CREATE TABLE `account` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Identifier',
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(32) NOT NULL,
   `sha_pass_hash` varchar(40) NOT NULL DEFAULT '',
   `gmlevel` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -35,61 +35,49 @@ CREATE TABLE `account` (
   `operatingSystem` tinyint(4) DEFAULT NULL,
   `vote` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_username` (`username`),
-  KEY `idx_gmlevel` (`gmlevel`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Account System';
+  UNIQUE KEY `username` (`username`),
+  KEY `gmlevel` (`gmlevel`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `account_banned` */
 
 DROP TABLE IF EXISTS `account_banned`;
 
 CREATE TABLE `account_banned` (
-  `id` int(11) NOT NULL DEFAULT '0' COMMENT 'Account id',
+  `id` int(11) NOT NULL DEFAULT '0',
   `bandate` bigint(40) NOT NULL DEFAULT '0',
   `unbandate` bigint(40) NOT NULL DEFAULT '0',
   `bannedby` varchar(50) NOT NULL,
   `banreason` varchar(255) NOT NULL,
   `active` tinyint(4) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`,`bandate`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Ban List';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `account_login` */
 
 DROP TABLE IF EXISTS `account_login`;
 
 CREATE TABLE `account_login` (
-  `id` int(11) NOT NULL DEFAULT '0' COMMENT 'Account id',
+  `id` int(11) NOT NULL DEFAULT '0',
   `logindate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ip` varchar(30) NOT NULL,
   `local_ip` varchar(30) NOT NULL,
   PRIMARY KEY (`id`,`logindate`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Account login history';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `account_mute` */
 
 DROP TABLE IF EXISTS `account_mute`;
 
 CREATE TABLE `account_mute` (
-  `id` int(11) NOT NULL DEFAULT '0' COMMENT 'Account id',
+  `id` int(11) NOT NULL DEFAULT '0',
   `mutedate` bigint(40) NOT NULL DEFAULT '0',
   `unmutedate` bigint(40) NOT NULL DEFAULT '0',
   `mutedby` varchar(50) NOT NULL,
   `mutereason` varchar(255) NOT NULL,
   `active` tinyint(4) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`,`mutedate`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Mute List';
-
-/*Table structure for table `blocked_ips` */
-
-DROP TABLE IF EXISTS `blocked_ips`;
-
-CREATE TABLE `blocked_ips` (
-  `ip` varchar(20) COLLATE utf8_bin NOT NULL,
-  `recorded` bigint(20) unsigned NOT NULL,
-  `rec_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `cnt` int(11) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`ip`,`recorded`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `email_banned` */
 
@@ -101,7 +89,7 @@ CREATE TABLE `email_banned` (
   `bannedby` varchar(50) NOT NULL DEFAULT '[Console]',
   `banreason` varchar(50) NOT NULL DEFAULT 'no reason',
   PRIMARY KEY (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Banned Emails';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `ip_banned` */
 
@@ -114,31 +102,17 @@ CREATE TABLE `ip_banned` (
   `bannedby` varchar(50) NOT NULL DEFAULT '[Console]',
   `banreason` varchar(50) NOT NULL DEFAULT 'no reason',
   PRIMARY KEY (`ip`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Banned IPs';
-
-/*Table structure for table `online` */
-
-DROP TABLE IF EXISTS `online`;
-
-CREATE TABLE `online` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) NOT NULL DEFAULT '0',
-  `user_name` varchar(200) NOT NULL DEFAULT 'Guest',
-  `user_ip` varchar(15) NOT NULL DEFAULT '0.0.0.0',
-  `logged` int(10) NOT NULL DEFAULT '0',
-  `currenturl` varchar(255) NOT NULL DEFAULT './',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `pattern_banned` */
 
 DROP TABLE IF EXISTS `pattern_banned`;
 
 CREATE TABLE `pattern_banned` (
-  `ip_pattern` char(20) DEFAULT NULL,
-  `localip_pattern` char(20) DEFAULT NULL,
-  `comment` char(20) DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+  `ip_pattern` varchar(20) DEFAULT NULL,
+  `localip_pattern` varchar(20) DEFAULT NULL,
+  `comment` varchar(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `realmcharacters` */
 
@@ -149,8 +123,8 @@ CREATE TABLE `realmcharacters` (
   `acctid` bigint(20) unsigned NOT NULL,
   `numchars` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`realmid`,`acctid`),
-  KEY `idx_acctid` (`acctid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Realm Character Tracker';
+  KEY `acctid` (`acctid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `realmlist` */
 
@@ -173,8 +147,8 @@ CREATE TABLE `realmlist` (
   `ra_user` varchar(355) NOT NULL DEFAULT 'username',
   `ra_pass` varchar(355) NOT NULL DEFAULT 'password',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Realm System';
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

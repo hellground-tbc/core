@@ -21,8 +21,7 @@ CREATE TABLE `arena_team` (
   `EmblemColor` int(10) unsigned NOT NULL DEFAULT '0',
   `BorderStyle` int(10) unsigned NOT NULL DEFAULT '0',
   `BorderColor` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
+  PRIMARY KEY (`arenateamid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `arena_team_member` */
@@ -37,8 +36,8 @@ CREATE TABLE `arena_team_member` (
   `played_season` int(10) unsigned NOT NULL DEFAULT '0',
   `wons_season` int(10) unsigned NOT NULL DEFAULT '0',
   `personal_rating` int(10) unsigned NOT NULL DEFAULT '0',
-  KEY `arenateamid_2` (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`,`guid`)
+  PRIMARY KEY (`arenateamid`,`guid`),
+  KEY `arenateamid` (`arenateamid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `arena_team_stats` */
@@ -53,20 +52,8 @@ CREATE TABLE `arena_team_stats` (
   `played` int(10) unsigned NOT NULL DEFAULT '0',
   `wins2` int(10) unsigned NOT NULL DEFAULT '0',
   `rank` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`arenateamid`),
-  KEY `arenateamid` (`arenateamid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
-
-/*Table structure for table `armory_character_stats` */
-
-DROP TABLE IF EXISTS `armory_character_stats`;
-
-CREATE TABLE `armory_character_stats` (
-  `guid` int(11) NOT NULL,
-  `data` longtext NOT NULL,
-  `save_date` int(11) DEFAULT NULL,
-  PRIMARY KEY (`guid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='World of Warcraft Armory table';
+  PRIMARY KEY (`arenateamid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `auctionhouse` */
 
@@ -76,7 +63,7 @@ CREATE TABLE `auctionhouse` (
   `id` int(11) unsigned NOT NULL DEFAULT '0',
   `houseid` int(11) unsigned NOT NULL DEFAULT '0',
   `itemguid` int(11) unsigned NOT NULL DEFAULT '0',
-  `item_template` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Item Identifier',
+  `item_template` int(11) unsigned NOT NULL DEFAULT '0',
   `item_count` int(11) unsigned NOT NULL DEFAULT '0',
   `item_randompropertyid` int(11) NOT NULL DEFAULT '0',
   `itemowner` int(11) unsigned NOT NULL DEFAULT '0',
@@ -86,8 +73,7 @@ CREATE TABLE `auctionhouse` (
   `lastbid` int(11) NOT NULL DEFAULT '0',
   `startbid` int(11) NOT NULL DEFAULT '0',
   `deposit` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `id` (`id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `bugreport` */
@@ -95,33 +81,33 @@ CREATE TABLE `auctionhouse` (
 DROP TABLE IF EXISTS `bugreport`;
 
 CREATE TABLE `bugreport` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identifier',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(255) NOT NULL DEFAULT '',
   `content` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Debug System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_action` */
 
 DROP TABLE IF EXISTS `character_action`;
 
 CREATE TABLE `character_action` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
   `button` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `action` smallint(5) unsigned NOT NULL DEFAULT '0',
   `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `misc` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`button`),
   KEY `guid` (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_aura` */
 
 DROP TABLE IF EXISTS `character_aura`;
 
 CREATE TABLE `character_aura` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `caster_guid` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'Full Global Unique Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `caster_guid` bigint(20) unsigned NOT NULL DEFAULT '0',
   `spell` int(11) unsigned NOT NULL DEFAULT '0',
   `effect_index` int(11) unsigned NOT NULL DEFAULT '0',
   `stackcount` int(11) NOT NULL DEFAULT '1',
@@ -131,14 +117,14 @@ CREATE TABLE `character_aura` (
   `remaincharges` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`spell`,`effect_index`),
   KEY `guid` (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_bgcoord` */
 
 DROP TABLE IF EXISTS `character_bgcoord`;
 
 CREATE TABLE `character_bgcoord` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
   `bgid` int(10) unsigned NOT NULL DEFAULT '0',
   `bgteam` int(10) unsigned NOT NULL DEFAULT '0',
   `bgmap` int(10) unsigned NOT NULL DEFAULT '0',
@@ -146,23 +132,22 @@ CREATE TABLE `character_bgcoord` (
   `bgy` float NOT NULL DEFAULT '0',
   `bgz` float NOT NULL DEFAULT '0',
   `bgo` float NOT NULL DEFAULT '0',
-  PRIMARY KEY (`guid`),
-  KEY `guid` (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Saving char in bg System';
+  PRIMARY KEY (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_declinedname` */
 
 DROP TABLE IF EXISTS `character_declinedname`;
 
 CREATE TABLE `character_declinedname` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
   `genitive` varchar(15) NOT NULL DEFAULT '',
   `dative` varchar(15) NOT NULL DEFAULT '',
   `accusative` varchar(15) NOT NULL DEFAULT '',
   `instrumental` varchar(15) NOT NULL DEFAULT '',
   `prepositional` varchar(15) NOT NULL DEFAULT '',
   PRIMARY KEY (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_gifts` */
 
@@ -174,24 +159,22 @@ CREATE TABLE `character_gifts` (
   `entry` int(20) unsigned NOT NULL DEFAULT '0',
   `flags` int(20) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`item_guid`),
-  KEY `idx_guid` (`guid`),
-  KEY `item_guid` (`item_guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+  KEY `guid` (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_homebind` */
 
 DROP TABLE IF EXISTS `character_homebind`;
 
 CREATE TABLE `character_homebind` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `map` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Map Identifier',
-  `zone` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Zone Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `map` int(11) unsigned NOT NULL DEFAULT '0',
+  `zone` int(11) unsigned NOT NULL DEFAULT '0',
   `position_x` float NOT NULL DEFAULT '0',
   `position_y` float NOT NULL DEFAULT '0',
   `position_z` float NOT NULL DEFAULT '0',
-  PRIMARY KEY (`guid`),
-  KEY `guid` (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+  PRIMARY KEY (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_instance` */
 
@@ -204,22 +187,21 @@ CREATE TABLE `character_instance` (
   PRIMARY KEY (`guid`,`instance`),
   KEY `instance` (`instance`),
   KEY `guid` (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_inventory` */
 
 DROP TABLE IF EXISTS `character_inventory`;
 
 CREATE TABLE `character_inventory` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
   `bag` int(11) unsigned NOT NULL DEFAULT '0',
   `slot` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `item` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Item Global Unique Identifier',
-  `item_template` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Item Identifier',
+  `item` int(11) unsigned NOT NULL DEFAULT '0',
+  `item_template` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`item`),
-  KEY `idx_guid` (`guid`),
-  KEY `item` (`item`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+  KEY `guid` (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_pet` */
 
@@ -250,9 +232,8 @@ CREATE TABLE `character_pet` (
   `abdata` longtext,
   `teachspelldata` longtext,
   PRIMARY KEY (`id`),
-  KEY `owner` (`owner`),
-  KEY `owner_2` (`owner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Pet System';
+  KEY `owner` (`owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_pet_declinedname` */
 
@@ -267,16 +248,16 @@ CREATE TABLE `character_pet_declinedname` (
   `instrumental` varchar(12) NOT NULL DEFAULT '',
   `prepositional` varchar(12) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
-  KEY `owner_key` (`owner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+  KEY `owner` (`owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_queststatus` */
 
 DROP TABLE IF EXISTS `character_queststatus`;
 
 CREATE TABLE `character_queststatus` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `quest` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Quest Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `quest` int(11) unsigned NOT NULL DEFAULT '0',
   `status` int(11) unsigned NOT NULL DEFAULT '0',
   `rewarded` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `explored` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -290,19 +271,19 @@ CREATE TABLE `character_queststatus` (
   `itemcount3` int(11) unsigned NOT NULL DEFAULT '0',
   `itemcount4` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`quest`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_queststatus_daily` */
 
 DROP TABLE IF EXISTS `character_queststatus_daily`;
 
 CREATE TABLE `character_queststatus_daily` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `quest` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Quest Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `quest` int(11) unsigned NOT NULL DEFAULT '0',
   `time` bigint(20) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`quest`),
-  KEY `idx_guid` (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+  KEY `guid` (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_reputation` */
 
@@ -313,66 +294,57 @@ CREATE TABLE `character_reputation` (
   `faction` bigint(10) DEFAULT NULL,
   `standing` bigint(10) DEFAULT NULL,
   `flags` bigint(10) DEFAULT NULL,
-  UNIQUE KEY `NewIndex1` (`guid`,`faction`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`guid`,`faction`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_social` */
 
 DROP TABLE IF EXISTS `character_social`;
 
 CREATE TABLE `character_social` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Character Global Unique Identifier',
-  `friend` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Friend Global Unique Identifier',
-  `flags` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT 'Friend Flags',
-  `note` varchar(48) NOT NULL DEFAULT '' COMMENT 'Friend Note',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `friend` int(11) unsigned NOT NULL DEFAULT '0',
+  `flags` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `note` varchar(48) NOT NULL DEFAULT '',
   PRIMARY KEY (`guid`,`friend`,`flags`),
   KEY `guid` (`guid`),
   KEY `friend` (`friend`),
   KEY `guid_flags` (`guid`,`flags`),
   KEY `friend_flags` (`friend`,`flags`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_spell` */
 
 DROP TABLE IF EXISTS `character_spell`;
 
 CREATE TABLE `character_spell` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `spell` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Spell Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `spell` int(11) unsigned NOT NULL DEFAULT '0',
   `slot` int(11) unsigned NOT NULL DEFAULT '0',
   `active` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `disabled` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`spell`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `character_spell_cooldown` */
 
 DROP TABLE IF EXISTS `character_spell_cooldown`;
 
 CREATE TABLE `character_spell_cooldown` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier, Low part',
-  `spell` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Spell Identifier',
-  `item` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Item Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `spell` int(11) unsigned NOT NULL DEFAULT '0',
+  `item` int(11) unsigned NOT NULL DEFAULT '0',
   `time` bigint(20) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`spell`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `character_ticket` */
-
-DROP TABLE IF EXISTS `character_ticket`;
-
-CREATE TABLE `character_ticket` (
-  `sad` tinyint(1) DEFAULT NULL,
-  `guid` bit(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 /*Table structure for table `character_tutorial` */
 
 DROP TABLE IF EXISTS `character_tutorial`;
 
 CREATE TABLE `character_tutorial` (
-  `account` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Account Identifier',
-  `realmid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Realm Identifier',
+  `account` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `realmid` int(11) unsigned NOT NULL DEFAULT '0',
   `tut0` int(11) unsigned NOT NULL DEFAULT '0',
   `tut1` int(11) unsigned NOT NULL DEFAULT '0',
   `tut2` int(11) unsigned NOT NULL DEFAULT '0',
@@ -382,16 +354,16 @@ CREATE TABLE `character_tutorial` (
   `tut6` int(11) unsigned NOT NULL DEFAULT '0',
   `tut7` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`account`,`realmid`),
-  KEY `acc_key` (`account`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+  KEY `account` (`account`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `characters` */
 
 DROP TABLE IF EXISTS `characters`;
 
 CREATE TABLE `characters` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `account` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Account Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `account` int(11) unsigned NOT NULL DEFAULT '0',
   `data` longtext,
   `name` varchar(12) NOT NULL DEFAULT '',
   `race` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -400,7 +372,7 @@ CREATE TABLE `characters` (
   `position_x` float NOT NULL DEFAULT '0',
   `position_y` float NOT NULL DEFAULT '0',
   `position_z` float NOT NULL DEFAULT '0',
-  `map` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Map Identifier',
+  `map` int(11) unsigned NOT NULL DEFAULT '0',
   `instance_id` int(11) unsigned NOT NULL DEFAULT '0',
   `dungeon_difficulty` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `orientation` float NOT NULL DEFAULT '0',
@@ -428,32 +400,32 @@ CREATE TABLE `characters` (
   `arena_pending_points` int(10) unsigned NOT NULL DEFAULT '0',
   `latency` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`),
-  KEY `idx_account` (`account`),
-  KEY `idx_online` (`online`),
-  KEY `idx_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+  KEY `account` (`account`),
+  KEY `online` (`online`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `corpse` */
 
 DROP TABLE IF EXISTS `corpse`;
 
 CREATE TABLE `corpse` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `player` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Character Global Unique Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `player` int(11) unsigned NOT NULL DEFAULT '0',
   `position_x` float NOT NULL DEFAULT '0',
   `position_y` float NOT NULL DEFAULT '0',
   `position_z` float NOT NULL DEFAULT '0',
   `orientation` float NOT NULL DEFAULT '0',
-  `zone` int(11) unsigned NOT NULL DEFAULT '38' COMMENT 'Zone Identifier',
-  `map` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Map Identifier',
+  `zone` int(11) unsigned NOT NULL DEFAULT '38',
+  `map` int(11) unsigned NOT NULL DEFAULT '0',
   `data` longtext,
   `time` bigint(20) unsigned NOT NULL DEFAULT '0',
   `corpse_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `instance` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`),
-  KEY `idx_type` (`corpse_type`),
+  KEY `corpse_type` (`corpse_type`),
   KEY `instance` (`instance`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Death System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `deleted_chars` */
 
@@ -477,7 +449,7 @@ CREATE TABLE `game_event_condition_save` (
   `condition_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `done` float DEFAULT '0',
   PRIMARY KEY (`event_id`,`condition_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `game_event_save` */
 
@@ -488,7 +460,7 @@ CREATE TABLE `game_event_save` (
   `state` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `next_start` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`event_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `gm_tickets` */
 
@@ -509,7 +481,7 @@ CREATE TABLE `gm_tickets` (
   `closed` int(10) NOT NULL DEFAULT '0',
   `comment` text NOT NULL,
   PRIMARY KEY (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `group_instance` */
 
@@ -521,7 +493,7 @@ CREATE TABLE `group_instance` (
   `permanent` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`leaderGuid`,`instance`),
   KEY `instance` (`instance`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `group_member` */
 
@@ -533,8 +505,8 @@ CREATE TABLE `group_member` (
   `assistant` tinyint(1) unsigned NOT NULL,
   `subgroup` smallint(6) unsigned NOT NULL,
   PRIMARY KEY (`leaderGuid`,`memberGuid`),
-  KEY `Idx_memberGuid` (`memberGuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=FIXED COMMENT='Groups';
+  KEY `memberGuid` (`memberGuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `group_saved_loot` */
 
@@ -551,7 +523,7 @@ CREATE TABLE `group_saved_loot` (
   `position_z` float DEFAULT NULL,
   `playerGuids` varchar(1024) DEFAULT NULL,
   PRIMARY KEY (`creatureId`,`instanceId`,`itemId`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `groups` */
 
@@ -575,7 +547,7 @@ CREATE TABLE `groups` (
   `isRaid` tinyint(1) unsigned NOT NULL,
   `difficulty` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`leaderGuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=FIXED COMMENT='Groups';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `guild` */
 
@@ -594,9 +566,8 @@ CREATE TABLE `guild` (
   `motd` varchar(255) NOT NULL DEFAULT '',
   `createdate` datetime DEFAULT NULL,
   `BankMoney` bigint(20) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`guildid`),
-  KEY `guildid` (`guildid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Guild System';
+  PRIMARY KEY (`guildid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `guild_bank_eventlog` */
 
@@ -613,9 +584,9 @@ CREATE TABLE `guild_bank_eventlog` (
   `DestTabId` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `TimeStamp` bigint(20) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guildid`,`LogGuid`),
-  KEY `Idx_PlayerGuid` (`PlayerGuid`),
-  KEY `Idx_LogGuid` (`LogGuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+  KEY `PlayerGuid` (`PlayerGuid`),
+  KEY `LogGuid` (`LogGuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `guild_bank_item` */
 
@@ -628,9 +599,9 @@ CREATE TABLE `guild_bank_item` (
   `item_guid` int(11) unsigned NOT NULL DEFAULT '0',
   `item_entry` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guildid`,`TabId`,`SlotId`),
-  KEY `guildid_key` (`guildid`),
-  KEY `Idx_item_guid` (`item_guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+  KEY `guildid` (`guildid`),
+  KEY `item_guid` (`item_guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `guild_bank_right` */
 
@@ -643,8 +614,8 @@ CREATE TABLE `guild_bank_right` (
   `gbright` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `SlotPerDay` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guildid`,`TabId`,`rid`),
-  KEY `guildid_key` (`guildid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+  KEY `guildid` (`guildid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `guild_bank_tab` */
 
@@ -657,26 +628,26 @@ CREATE TABLE `guild_bank_tab` (
   `TabIcon` varchar(100) NOT NULL DEFAULT '',
   `TabText` text,
   PRIMARY KEY (`guildid`,`TabId`),
-  KEY `guildid_key` (`guildid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+  KEY `guildid` (`guildid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `guild_eventlog` */
 
 DROP TABLE IF EXISTS `guild_eventlog`;
 
 CREATE TABLE `guild_eventlog` (
-  `guildid` int(11) NOT NULL COMMENT 'Guild Identificator',
-  `LogGuid` int(11) NOT NULL COMMENT 'Log entry identificator',
-  `EventType` tinyint(1) NOT NULL COMMENT 'Event type',
-  `PlayerGuid1` int(11) NOT NULL COMMENT 'Player 1',
-  `PlayerGuid2` int(11) NOT NULL COMMENT 'Player 2',
-  `NewRank` tinyint(2) NOT NULL COMMENT 'New rank(in case promotion/demotion)',
-  `TimeStamp` bigint(20) NOT NULL COMMENT 'Event UNIX time',
+  `guildid` int(11) NOT NULL,
+  `LogGuid` int(11) NOT NULL,
+  `EventType` tinyint(1) NOT NULL,
+  `PlayerGuid1` int(11) NOT NULL,
+  `PlayerGuid2` int(11) NOT NULL,
+  `NewRank` tinyint(2) NOT NULL,
+  `TimeStamp` bigint(20) NOT NULL,
   PRIMARY KEY (`guildid`,`LogGuid`),
-  KEY `Idx_PlayerGuid1` (`PlayerGuid1`),
-  KEY `Idx_PlayerGuid2` (`PlayerGuid2`),
-  KEY `Idx_LogGuid` (`LogGuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Guild Eventlog';
+  KEY `PlayerGuid1` (`PlayerGuid1`),
+  KEY `PlayerGuid2` (`PlayerGuid2`),
+  KEY `LogGuid` (`LogGuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `guild_member` */
 
@@ -702,10 +673,10 @@ CREATE TABLE `guild_member` (
   `BankRemSlotsTab4` int(11) unsigned NOT NULL DEFAULT '0',
   `BankResetTimeTab5` int(11) unsigned NOT NULL DEFAULT '0',
   `BankRemSlotsTab5` int(11) unsigned NOT NULL DEFAULT '0',
-  UNIQUE KEY `guid_key` (`guid`),
-  KEY `guildid_key` (`guildid`),
-  KEY `guildid_rank_key` (`guildid`,`rank`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=FIXED COMMENT='Guild System';
+  PRIMARY KEY (`guid`),
+  KEY `guildid` (`guildid`),
+  KEY `guildid_rank` (`guildid`,`rank`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `guild_rank` */
 
@@ -718,8 +689,8 @@ CREATE TABLE `guild_rank` (
   `rights` int(3) unsigned NOT NULL DEFAULT '0',
   `BankMoneyPerDay` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guildid`,`rid`),
-  KEY `Idx_rid` (`rid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Guild System';
+  KEY `rid` (`rid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `hidden_rating` */
 
@@ -731,7 +702,7 @@ CREATE TABLE `hidden_rating` (
   `rating3` int(10) unsigned NOT NULL DEFAULT '1500',
   `rating5` int(10) unsigned NOT NULL DEFAULT '1500',
   PRIMARY KEY (`guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `instance` */
 
@@ -746,7 +717,7 @@ CREATE TABLE `instance` (
   PRIMARY KEY (`id`),
   KEY `map` (`map`),
   KEY `resettime` (`resettime`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `instance_reset` */
 
@@ -756,7 +727,7 @@ CREATE TABLE `instance_reset` (
   `mapid` int(11) unsigned NOT NULL DEFAULT '0',
   `resettime` bigint(40) NOT NULL DEFAULT '0',
   PRIMARY KEY (`mapid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `item_instance` */
 
@@ -767,8 +738,8 @@ CREATE TABLE `item_instance` (
   `owner_guid` int(11) unsigned NOT NULL DEFAULT '0',
   `data` longtext,
   PRIMARY KEY (`guid`),
-  KEY `idx_owner_guid` (`owner_guid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Item System';
+  KEY `owner_guid` (`owner_guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `item_text` */
 
@@ -778,19 +749,19 @@ CREATE TABLE `item_text` (
   `id` int(11) unsigned NOT NULL DEFAULT '0',
   `text` longtext,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=FIXED COMMENT='Item System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `mail` */
 
 DROP TABLE IF EXISTS `mail`;
 
 CREATE TABLE `mail` (
-  `id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Identifier',
+  `id` int(11) unsigned NOT NULL DEFAULT '0',
   `messageType` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `stationery` tinyint(3) NOT NULL DEFAULT '41',
   `mailTemplateId` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  `sender` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Character Global Unique Identifier',
-  `receiver` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Character Global Unique Identifier',
+  `sender` int(11) unsigned NOT NULL DEFAULT '0',
+  `receiver` int(11) unsigned NOT NULL DEFAULT '0',
   `subject` longtext,
   `itemTextId` int(11) unsigned NOT NULL DEFAULT '0',
   `has_items` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -800,8 +771,8 @@ CREATE TABLE `mail` (
   `cod` int(11) unsigned NOT NULL DEFAULT '0',
   `checked` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `idx_receiver` (`receiver`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Mail System';
+  KEY `receiver` (`receiver`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `mail_items` */
 
@@ -811,18 +782,18 @@ CREATE TABLE `mail_items` (
   `mail_id` int(11) NOT NULL DEFAULT '0',
   `item_guid` int(11) NOT NULL DEFAULT '0',
   `item_template` int(11) NOT NULL DEFAULT '0',
-  `receiver` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Character Global Unique Identifier',
+  `receiver` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`mail_id`,`item_guid`),
-  KEY `idx_receiver` (`receiver`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+  KEY `receiver` (`receiver`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `pet_aura` */
 
 DROP TABLE IF EXISTS `pet_aura`;
 
 CREATE TABLE `pet_aura` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `caster_guid` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT 'Full Global Unique Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `caster_guid` bigint(20) unsigned NOT NULL DEFAULT '0',
   `spell` int(11) unsigned NOT NULL DEFAULT '0',
   `effect_index` int(11) unsigned NOT NULL DEFAULT '0',
   `stackcount` int(11) NOT NULL DEFAULT '1',
@@ -831,30 +802,30 @@ CREATE TABLE `pet_aura` (
   `remaintime` int(11) NOT NULL DEFAULT '0',
   `remaincharges` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`spell`,`effect_index`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Pet System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `pet_spell` */
 
 DROP TABLE IF EXISTS `pet_spell`;
 
 CREATE TABLE `pet_spell` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `spell` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Spell Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `spell` int(11) unsigned NOT NULL DEFAULT '0',
   `slot` int(11) unsigned NOT NULL DEFAULT '0',
   `active` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`spell`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Pet System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `pet_spell_cooldown` */
 
 DROP TABLE IF EXISTS `pet_spell_cooldown`;
 
 CREATE TABLE `pet_spell_cooldown` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier, Low part',
-  `spell` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Spell Identifier',
+  `guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `spell` int(11) unsigned NOT NULL DEFAULT '0',
   `time` bigint(20) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`guid`,`spell`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `petition` */
 
@@ -866,8 +837,8 @@ CREATE TABLE `petition` (
   `name` varchar(255) NOT NULL DEFAULT '',
   `type` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ownerguid`,`type`),
-  UNIQUE KEY `index_ownerguid_petitionguid` (`ownerguid`,`petitionguid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Guild System';
+  UNIQUE KEY `ownerguid_petitionguid` (`ownerguid`,`petitionguid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `petition_sign` */
 
@@ -880,7 +851,7 @@ CREATE TABLE `petition_sign` (
   `player_account` int(11) unsigned NOT NULL DEFAULT '0',
   `type` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`petitionguid`,`playerguid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC COMMENT='Guild System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `saved_variables` */
 
@@ -894,7 +865,7 @@ CREATE TABLE `saved_variables` (
   `FishingQuest` int(5) unsigned NOT NULL DEFAULT '0',
   `PVPAlliance` int(5) unsigned NOT NULL DEFAULT '0',
   `PVPHorde` int(5) unsigned NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Variable Saves';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /* Procedure structure for procedure `PreventCharDelete` */
 
