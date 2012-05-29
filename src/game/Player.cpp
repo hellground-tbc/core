@@ -7616,7 +7616,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 if (Group* group = GetGroup())
                 {     
-                    if (loot->looterGUID)
+                    if (loot->looterGUID && group->IsRoundRobinLootType())
                     {
                         Unit *looter = GetUnit(loot->looterGUID);
                         if (!looter || !looter->IsWithinDist(creature, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false))

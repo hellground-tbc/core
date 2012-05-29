@@ -313,6 +313,8 @@ class HELLGROUND_DLL_SPEC Group
         void PrepareLootRolls(const uint64& playerGUID, Loot *loot, WorldObject* object);
         void SendMasterLoot(Loot *loot, WorldObject* object);
         void SendRoundRobin(Loot *loot, WorldObject* object);
+        bool IsRoundRobinLootType() { return m_lootMethod == GROUP_LOOT || m_lootMethod == NEED_BEFORE_GREED || m_lootMethod == ROUND_ROBIN; }
+        bool IsRollLootType() { return m_lootMethod == GROUP_LOOT || m_lootMethod == NEED_BEFORE_GREED; }
         Rolls::iterator GetRoll(uint64 Guid)
         {
             Rolls::iterator iter;

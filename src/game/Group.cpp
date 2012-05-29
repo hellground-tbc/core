@@ -614,7 +614,7 @@ void Group::SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r)
 
 void Group::PrepareLootRolls(const uint64& playerGUID, Loot *loot, WorldObject* object)
 {
-    if (m_lootMethod != GROUP_LOOT && m_lootMethod != NEED_BEFORE_GREED)
+    if (!IsRollLootType())
         return;
 
     std::vector<LootItem>::iterator i;
@@ -674,7 +674,7 @@ void Group::PrepareLootRolls(const uint64& playerGUID, Loot *loot, WorldObject* 
 
 void Group::SendRoundRobin(Loot* loot, WorldObject* object)
 {
-    if (m_lootMethod != GROUP_LOOT && m_lootMethod != ROUND_ROBIN)
+    if (!IsRoundRobinLootType())
         return;
 
     WorldPacket data(SMSG_LOOT_LIST, (8+8));
@@ -765,7 +765,8 @@ void Group::CountRollVote(const uint64& playerGUID, const uint64& Guid, uint32 N
     }
 }
 
-//called when roll timer expires
+// used to be called when roll timer expires
+/* 
 void Group::EndRoll()
 {
     Rolls::iterator itr;
@@ -776,6 +777,7 @@ void Group::EndRoll()
         CountTheRoll(itr, GetMembersCount());               //i don't have to edit player votes, who didn't vote ... he will pass
     }
 }
+*/
 
 void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
 {
@@ -1292,6 +1294,7 @@ void Group::_removeRolls(const uint64 &guid)
 
         roll->playerVote.erase(itr2);
 
+
         CountRollVote(guid, roll->itemGUID, GetMembersCount()-1, 3);
     }
 }
@@ -1407,16 +1410,8 @@ void Group::ChangeMembersGroup(Player *player, const uint8 &group)
 
 void Group::UpdateLooterGuid(WorldObject* object, bool ifneed)
 {
-    switch (GetLootMethod())
-    {
-        case MASTER_LOOT:
-        case FREE_FOR_ALL:
-            return;
-        default:
-            // round robin style looting applies for all low
-            // quality items in each loot method except free for all and master loot
-            break;
-    }
+    if(!IsRoundRobinLootType())
+        return;
 
     member_citerator guid_itr = _getMemberCSlot(GetLooterGuid());
     if (guid_itr != m_memberSlots.end())
