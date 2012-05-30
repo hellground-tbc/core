@@ -7042,11 +7042,13 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
     {
         // If usable, try to cast item spell
         if (Item * item = ((Player*)this)->GetItemByPos(INVENTORY_SLOT_BAG_0,i))
+        {
             if (!item->IsBroken())
+            {
                 if (ItemPrototype const *proto = item->GetProto())
                 {
                     // Additional check for weapons
-                    if (proto->Class==ITEM_CLASS_WEAPON)
+                    if (proto->Class == ITEM_CLASS_WEAPON)
                     {
                         // offhand item cannot proc from main hand hit etc
                         EquipmentSlots slot;
@@ -7062,17 +7064,16 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                             continue;
 
                         // Check if item is useable (forms or disarm)
-                        if (attType == BASE_ATTACK)
-                        {
-                            if (!((Player*)this)->IsUseEquipedWeapon(true))
-                                continue;
-                        }
+                        if (attType == BASE_ATTACK && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED))
+                            continue;
 
-                        if (((Player*)this)->IsInFeralForm(true))
+                        if (IsInFeralForm(true))
                             continue;
                     }
                     ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
                 }
+            }
+        }
     }
 }
 
