@@ -234,6 +234,7 @@ struct Loot
     uint32 gold;
     uint8 unlootedCount;
     uint64 looterGUID;
+    uint64 looterTimer;
 
     Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false), m_creatureGUID(0), m_mapID(0,0), looterGUID(0){}
     ~Loot() { clear(); }

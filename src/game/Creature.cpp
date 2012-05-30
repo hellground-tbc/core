@@ -1747,6 +1747,7 @@ void Creature::setDeathState(DeathState s)
             Group *group = GetLootRecipient()->GetGroup();
             group->UpdateLooterGuid(this, true);            // select next looter if one is out of xp range
             loot.looterGUID = group->GetLooterGuid();
+            loot.looterTimer = time(NULL) + (m_deathTimer * 3 / 4 / IN_MILISECONDS);
             group->UpdateLooterGuid(this, false);           // select next looter
             group->SendRoundRobin(&loot, this);
         }

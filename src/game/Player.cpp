@@ -7620,7 +7620,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                     if (loot->looterGUID && group->IsRoundRobinLootType())
                     {
                         Unit *looter = GetUnit(loot->looterGUID);
-                        if (!looter || !looter->IsWithinDist(creature, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false))
+                        if (!looter || !looter->IsWithinDist(creature, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false || loot->looterTimer < time(NULL))
                         {
                             loot->looterGUID = 0;
                             group->SendRoundRobin(loot, creature);
