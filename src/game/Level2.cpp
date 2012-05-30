@@ -1900,7 +1900,9 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
 
         if (!m_session || m_session->GetSecurity() >= security)
         {
-            email = fields[2].GetCppString();
+            if (sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL) <= GetSecurity())
+              email = fields[2].GetCppString();
+
             last_ip = fields[3].GetCppString();
             last_login = fields[4].GetCppString();
         }

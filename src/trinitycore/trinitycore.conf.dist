@@ -1113,6 +1113,10 @@ Channel.PrivateLimitCount = 20
 #        Are players allowed to add GMs to their friend list
 #        Default: 0 (false)
 #                 1 (true)
+#
+#    GM.TrustedLevel
+#        On which security level give access to additional player data
+#        Default: 3 (rootgm)
 ###################################################################################################################
 
 GM.LoginState     = 2
@@ -1125,6 +1129,7 @@ GM.LogTrade       = 1
 GM.StartLevel     = 70
 GM.AllowInvite    = 0
 GM.AllowFriend    = 0
+GM.TrustedLevel   = 3
 
 ###################################################################################################################
 # VISIBILITY AND RADIUSES
