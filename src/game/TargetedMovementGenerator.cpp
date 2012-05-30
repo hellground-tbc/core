@@ -52,15 +52,12 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     }
     else if (!_offset)
     {
-        float dist = 0.0f;
-        if (targetIsVictim)
-            dist = owner.GetCombatReach() + _target->GetCombatReach() - _target->GetObjectBoundingRadius() - owner.GetObjectBoundingRadius() - 1.0f;
-
-        if (dist < 0.5f)
-            dist = 0.5f;
-
-        // to nearest random contact position
-        _target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
+        // this should prevent weird behavior on tight spaces like lines between columns and bridge on BEM
+        if (Pet* pet = owner.ToPet())
+            _target->GetPosition(x, y, z);
+        else
+            // to nearest random contact position
+            _target->GetRandomContactPoint(&owner, x, y, z, 0, MELEE_RANGE - 0.5f);
     }
     else
     {
