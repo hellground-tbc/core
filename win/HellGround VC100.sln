@@ -17,7 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityCore", "VC100\Trinit
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityRealm", "VC100\TrinityRealm.vcxproj", "{563E9905-3657-460C-AE63-0AC39D162E23}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "trinityscript", "..\src\bindings\scripts\VC10\10ScriptDev2.vcxproj", "{4295C8A9-79B7-4354-8064-F05FB9CA0C96}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityScript", "..\src\bindings\scripts\VC100\ScriptDev2.vcxproj", "{4295C8A9-79B7-4354-8064-F05FB9CA0C96}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genrevision", "VC100\genrevision.vcxproj", "{803F488E-4C5A-4866-8D5C-1E6C03C007C2}"
 EndProject

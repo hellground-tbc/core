@@ -21,10 +21,7 @@ dep/lib/*/tbb*
 dep/ACE_wrappers/lib/*
 dep/ACE_wrappers/ace/Release*/*/*
 dep/ACE_wrappers/ace/Debug*/*/*
-src/bindings/scripts/VC90/*/*
-src/bindings/scripts/VC10/*/*
-win/VC90/*/*
-win/VC10/*/*
+src/bindings/scripts/VC100/*/*
 win/VC100/*/*
 win/_*/
 
