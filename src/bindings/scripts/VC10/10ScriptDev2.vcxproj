@@ -210,7 +210,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC10\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC100\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC100\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
