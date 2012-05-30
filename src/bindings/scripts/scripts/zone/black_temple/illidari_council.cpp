@@ -594,7 +594,7 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
                 me->GetMotionMaster()->MoveChase(me->getVictim(), 40);
 
             // On front stairs, do not let boss to go into textures;
-            CheckStairsPos();
+            //CheckStairsPos();
 
             uint32 damage = 0;
             SharedRule(damage);

@@ -694,6 +694,10 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
+        // just in case
+        pInstance->SetData(EVENT_SHADEOFAKAMA, NOT_STARTED);
+        m_summons.DespawnAll();
+
         if(!_EnterEvadeMode())
             return;
 
