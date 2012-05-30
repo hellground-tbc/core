@@ -259,6 +259,8 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void ChangePhase(IllidanPhase phase)
     {
+        StopAutocast();
+
         ClearCastQueue();
         events.CancelEventsByGCD(m_phase);
 
@@ -289,7 +291,6 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
                 SetWarglaivesEquipped(true);
 
-                StopAutocast();
                 DoResetThreat();
 
                 if (m_phase == PHASE_ONE)
@@ -348,6 +349,7 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
                     pMaiev->AI()->DoAction(4); // SET RANGE ATTACK TYPE
 
                 SetAutocast(SPELL_ILLIDAN_SHADOW_BLAST, 3000, false, CAST_TANK);
+
                 events.ScheduleEvent(EVENT_ILLIDAN_TRANSFORM_NO1, 0, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_FLAME_BURST, 20000, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_SHADOW_DEMON, 30000, m_phase);
@@ -756,6 +758,11 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
         }
     }
 
+    void JustDied(Unit* killer)
+    {
+        summons.DespawnAll();
+    }
+
     void KilledUnit(Unit *pWho)
     {
         if (pWho == me)
@@ -801,6 +808,8 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void EnterEvadeMode()
     {
+        summons.DespawnAll();
+
         me->SetReactState(REACT_PASSIVE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         instance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
