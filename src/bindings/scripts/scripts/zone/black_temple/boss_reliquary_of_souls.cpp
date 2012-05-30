@@ -109,7 +109,7 @@ struct HELLGROUND_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        DoCast(m_creature, ENSLAVED_SOUL_PASSIVE, true);
+        ForceSpellCast(ENSLAVED_SOUL_PASSIVE, CAST_SELF);
     }
 
     void JustRespawned()
@@ -128,7 +128,7 @@ struct HELLGROUND_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_ENSLAVED_SOUL, 1);
 
-        DoCast(m_creature, SPELL_SOUL_RELEASE, true);
+        ForceSpellCast(SPELL_SOUL_RELEASE, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
     }
 
     void UpdateAI(const uint32 diff)
@@ -138,10 +138,10 @@ struct HELLGROUND_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
             if (pInstance)
             {
                 if (pInstance->GetData(EVENT_RELIQUARYOFSOULS) != IN_PROGRESS)
-                    m_creature->Kill(m_creature, false);
+                    me->Kill(me, false);
             }
             else
-                m_creature->Kill(m_creature, false);
+                me->Kill(me, false);
 
             checkTimer = 3000;
         }
@@ -151,6 +151,7 @@ struct HELLGROUND_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -161,7 +162,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
     {
         pInstance = (c->GetInstanceData());
         EssenceGUID = 0;
-        m_creature->setActive(true);
+        me->setActive(true);
     }
 
     ScriptedInstance* pInstance;
@@ -185,7 +186,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
 
         if(EssenceGUID)
         {
-            if(Unit* Essence = Unit::GetUnit(*m_creature, EssenceGUID))
+            if(Unit* Essence = Unit::GetUnit(*me, EssenceGUID))
             {
                 Essence->SetVisibility(VISIBILITY_OFF);
                 Essence->setDeathState(DEAD);
@@ -198,18 +199,18 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
         CheckTimer = 2000;
         DelayTimer = 0;
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
-        m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
+        me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
     }
 
     void StartEvent(Unit *who)
     {
-        if(!m_creature->isInCombat())
+        if(!me->isInCombat())
         {
-            if (m_creature->IsWithinDistInMap(who, 100))
+            if (me->IsWithinDistInMap(who, 100))
             {
-                m_creature->AddThreat(who, 10000.0f);
+                me->AddThreat(who, 10000.0f);
                 DoZoneInCombat();
 
                 if(pInstance)
@@ -225,7 +226,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
 
     void EnterCombat(Unit* who)
     {
-        m_creature->SetSelection(NULL);
+        me->SetSelection(NULL);
     }
 
     void SummonSouls()
@@ -254,14 +255,14 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
 
     bool FindPlayers()
     {
-        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+        std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
         if(m_threatlist.empty())
             return false;
 
         for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
         {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if(pUnit && pUnit->isAlive() && pUnit->isInCombat() && m_creature->canAttack(pUnit) && pUnit->IsWithinDistInMap(m_creature, 100.0f))
+            Unit* pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
+            if(pUnit && pUnit->isAlive() && pUnit->isInCombat() && me->canAttack(pUnit) && pUnit->IsWithinDistInMap(me, 100.0f))
                 return true;
         }
         return false;
@@ -288,7 +289,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
             {
                 if(EssenceGUID)
                 {
-                    if(Creature *Essence = Unit::GetCreature(*m_creature, EssenceGUID))
+                    if(Creature *Essence = Unit::GetCreature(*me, EssenceGUID))
                     {
                         Essence->Kill(Essence, false);
                         Essence->RemoveCorpse();
@@ -299,7 +300,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
                 return;
             }
 
-            m_creature->SetSelection(NULL);
+            me->SetSelection(NULL);
 
             CheckTimer = 2000;
         }
@@ -309,7 +310,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
 
         if(EssenceGUID)
         {
-            Creature* Essence = Unit::GetCreature(*m_creature, EssenceGUID);
+            Creature* Essence = Unit::GetCreature(*me, EssenceGUID);
             if(!Essence)
             {
                 EnterEvadeMode();
@@ -322,12 +323,12 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
             switch(Counter)
             {
             case 0:
-                m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY2H);  // I R ANNNGRRRY!
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY2H);  // I R ANNNGRRRY!
                 Timer = 3000;
                 break;
             case 1:
                 Timer = 2800;
-                DoCast(m_creature,SPELL_SUBMERGE);
+                DoCast(me,SPELL_SUBMERGE);
                 break;
             case 2:
             {
@@ -349,7 +350,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
             }
             case 3:
             {
-                Creature* Essence = Unit::GetCreature(*m_creature, EssenceGUID);
+                Creature* Essence = Unit::GetCreature(*me, EssenceGUID);
                 if(!Essence)
                     return;
 
@@ -357,14 +358,14 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
                 if(Phase == 3)
                 {
                     if(!Essence->isAlive())
-                        DoCast(m_creature, 7, true);
+                        DoCast(me, 7, true);
                     else
                         return;
                 }
                 else
                 {
                     if(Essence->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
-                        Essence->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(),m_creature->GetPositionY(), m_creature->GetPositionZ());
+                        Essence->GetMotionMaster()->MovePoint(0, me->GetPositionX(),me->GetPositionY(), me->GetPositionZ());
                     else
                         return;
                 }
@@ -372,23 +373,23 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
             }
             case 4:
             {
-                Creature* Essence = Unit::GetCreature(*m_creature, EssenceGUID);
+                Creature* Essence = Unit::GetCreature(*me, EssenceGUID);
                 if(!Essence)
                     return;
 
                 Timer = 1500;
-                if(Essence->IsWithinDistInMap(m_creature, 3))
-                    m_creature->RemoveAurasDueToSpell(SPELL_SUBMERGE);
+                if(Essence->IsWithinDistInMap(me, 3))
+                    me->RemoveAurasDueToSpell(SPELL_SUBMERGE);
                 else
                 {
-                    Essence->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(),m_creature->GetPositionY(), m_creature->GetPositionZ());
+                    Essence->GetMotionMaster()->MovePoint(0, me->GetPositionX(),me->GetPositionY(), me->GetPositionZ());
                     return;
                 }
                 break;
             }
             case 5:
             {
-                Creature* Essence = Unit::GetCreature(*m_creature, EssenceGUID);
+                Creature* Essence = Unit::GetCreature(*me, EssenceGUID);
                 if(!Essence)
                     return;
 
@@ -400,7 +401,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
                 Essence->SetVisibility(VISIBILITY_OFF);
                 Essence->DestroyForNearbyPlayers();
                 Essence->setDeathState(DEAD);
-                m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,0);
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE,0);
 
                 EssenceGUID = 0;
                 SoulCount = 0;
@@ -460,11 +461,11 @@ struct HELLGROUND_DLL_DECL npc_ros_triggerAI : public ScriptedAI
             RosGUID = pInstance->GetData64(EVENT_RELIQUARYOFSOULS);
 
         if (!pInstance)
-             pInstance = (ScriptedInstance*)m_creature->GetInstanceData();
+             pInstance = (ScriptedInstance*)me->GetInstanceData();
 
         if (pInstance && pInstance->GetData(EVENT_RELIQUARYOFSOULS) == NOT_STARTED && who->GetTypeId() == TYPEID_PLAYER)
         {
-            Creature * ros = Unit::GetCreature(*m_creature, RosGUID);
+            Creature * ros = Unit::GetCreature(*me, RosGUID);
             if (ros && !((Player*)who)->isGameMaster())
             {
                 ((boss_reliquary_of_soulsAI*)(ros->AI()))->StartEvent(who);
@@ -517,14 +518,14 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(damage >= m_creature->GetHealth())
+        if(damage >= me->GetHealth())
         {
             damage = 0;
             backToCage = true;
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             if(!emoteDone)
             {
-                DoScriptText(SUFF_SAY_RECAP, m_creature);
+                DoScriptText(SUFF_SAY_RECAP, me);
                 emoteDone = true;
             }
         }
@@ -533,10 +534,10 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-        DoScriptText(SUFF_SAY_FREED, m_creature);
-        DoCast(m_creature, AURA_OF_SUFFERING, true);
-        DoCast(m_creature, ESSENCE_OF_SUFFERING_PASSIVE, true);
-        DoCast(m_creature, ESSENCE_OF_SUFFERING_PASSIVE2, true);
+        DoScriptText(SUFF_SAY_FREED, me);
+        ForceSpellCast(AURA_OF_SUFFERING, CAST_SELF, DONT_INTERRUPT, true);
+        ForceSpellCast(ESSENCE_OF_SUFFERING_PASSIVE, CAST_SELF, DONT_INTERRUPT, true);
+        ForceSpellCast(ESSENCE_OF_SUFFERING_PASSIVE2, CAST_SELF, DONT_INTERRUPT, true);
     }
 
     void KilledUnit(Unit *victim)
@@ -544,13 +545,13 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if(victim->GetGUID() == FixateVictimGUID)
             FixateTimer = 0;
 
-        DoScriptText(RAND(SUFF_SAY_SLAY1, SUFF_SAY_SLAY2, SUFF_SAY_SLAY3), m_creature);
+        DoScriptText(RAND(SUFF_SAY_SLAY1, SUFF_SAY_SLAY2, SUFF_SAY_SLAY3), me);
     }
 
     void CastFixate()
     {
         std::list<Unit *> targets;
-        Map *map = m_creature->GetMap();
+        Map *map = me->GetMap();
         if(map->IsDungeon())
         {
             InstanceMap::PlayerList const &PlayerList = ((InstanceMap*)map)->GetPlayers();
@@ -567,7 +568,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if(targets.empty())
             return; // No targets added for some reason. No point continuing.
 
-        targets.sort(Hellground::ObjectDistanceOrder(m_creature)); // Sort players by distance.
+        targets.sort(Hellground::ObjectDistanceOrder(me)); // Sort players by distance.
         targets.resize(1); // Only need closest target.
 
         Unit* target = targets.front();
@@ -576,22 +577,22 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
             FixateVictimGUID = target->GetGUID();
             DoResetThreat();
 
-            target->CastSpell(m_creature, SPELL_FIXATE_TAUNT, true);
-            m_creature->AddAura(SPELL_FIXATE_TARGET, target);
-            m_creature->AddThreat(target, 1000000.0f);
+            target->CastSpell(me, SPELL_FIXATE_TAUNT, true);
+            me->AddAura(SPELL_FIXATE_TARGET, target);
+            me->AddThreat(target, 1000000.0f);
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(m_creature->isInCombat())
+        if(me->isInCombat())
         {
             //Supposed to be cast on nearest target
             if(FixateTimer < diff)
             {
                 CastFixate();
-                if(urand(0,16) == 0)
-                    DoScriptText(SUFF_SAY_AGGRO, m_creature);
+                if (urand(0,16) == 0)
+                    DoScriptText(SUFF_SAY_AGGRO, me);
 
                 FixateTimer = 5000;
             }
@@ -605,7 +606,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         if (checkTimer <= diff)
         {
-            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            me->SetSpeed(MOVE_RUN, 2.5);
             checkTimer = 3000;
         }
         else
@@ -613,8 +614,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         if(EnrageTimer < diff)
         {
-            DoCast(m_creature, SPELL_ENRAGE, true);
-            DoScriptText(SUFF_EMOTE_ENRAGE, m_creature);
+            ForceSpellCastWithScriptText(SPELL_ENRAGE, CAST_SELF, SUFF_EMOTE_ENRAGE);
             EnrageTimer = 44000 +rand()%3000;
         }
         else
@@ -622,15 +622,17 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         if(SoulDrainTimer < diff)
         {
-            DoCast(m_creature, SPELL_SOUL_DRAIN);
-
+            ForceSpellCast(SPELL_SOUL_DRAIN, CAST_SELF);
             SoulDrainTimer = 20000 +rand()%5000;
         }
         else
             SoulDrainTimer -= diff;
 
         if(!backToCage)
+        {
+            CastNextSpellIfAnyAndReady();
             DoMeleeAttackIfReady();
+        }
     }
 };
 
@@ -654,7 +656,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         DeadenTimer = 30000;
         SoulShockTimer = 5000;
         checkTimer = 3000;
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
 
         emoteDone = false;
         backToCage = false;
@@ -662,36 +664,36 @@ struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(damage >= m_creature->GetHealth())
+        if(damage >= me->GetHealth())
         {
             damage = 0;
             backToCage = true;
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             if(!emoteDone)
             {
-                DoScriptText(DESI_SAY_RECAP, m_creature);
+                DoScriptText(DESI_SAY_RECAP, me);
                 emoteDone = true;
             }
         }
         else
         {
             int32 bp0 = damage / 2;
-            m_creature->CastCustomSpell(done_by, AURA_OF_DESIRE_DAMAGE, &bp0, NULL, NULL, true);
+            me->CastCustomSpell(done_by, AURA_OF_DESIRE_DAMAGE, &bp0, NULL, NULL, true);
         }
     }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
-        if(m_creature->m_currentSpells[CURRENT_GENERIC_SPELL])
+        if(me->m_currentSpells[CURRENT_GENERIC_SPELL])
         {
             for(uint8 i = 0; i < 3; ++i)
             {
                 if(spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
                 {
-                    SpellEntry const *temp = m_creature->m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo;
+                    SpellEntry const *temp = me->m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo;
                     if(temp->Id == SPELL_SOUL_SHOCK || temp->Id == SPELL_DEADEN)
                     {
-                        m_creature->InterruptSpell(CURRENT_GENERIC_SPELL, false);
+                        me->InterruptSpell(CURRENT_GENERIC_SPELL, false);
                         return;
                     }
                 }
@@ -701,17 +703,18 @@ struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+        if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
              return;
 
         DoZoneInCombat();
-        DoCast(m_creature, AURA_OF_DESIRE, true);
-        DoScriptText(DESI_SAY_FREED, m_creature);
+
+        ForceSpellCast(AURA_OF_DESIRE, CAST_SELF);
+        DoScriptText(DESI_SAY_FREED, me);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(DESI_SAY_SLAY1, DESI_SAY_SLAY2, DESI_SAY_SLAY3), m_creature);
+        DoScriptText(RAND(DESI_SAY_SLAY1, DESI_SAY_SLAY2, DESI_SAY_SLAY3), me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -721,7 +724,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
         if (checkTimer <= diff)
         {
-            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            me->SetSpeed(MOVE_RUN, 2.5);
             checkTimer = 3000;
         }
         else
@@ -729,8 +732,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
         if(RuneShieldTimer < diff)
         {
-            ForceSpellCast(m_creature, SPELL_RUNE_SHIELD);
-
+            ForceSpellCast(SPELL_RUNE_SHIELD, CAST_SELF);
             RuneShieldTimer = 15000;
         }
         else
@@ -738,7 +740,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
         if(SoulShockTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_SOUL_SHOCK);
+            AddSpellToCast(SPELL_SOUL_SHOCK);
             SoulShockTimer = 5000;
         }
         else
@@ -747,9 +749,9 @@ struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         if(DeadenTimer < diff)
         {
             if(urand(0,1))
-                AddSpellToCastWithScriptText(m_creature->getVictim(), SPELL_DEADEN, DESI_SAY_SPEC);
+                AddSpellToCastWithScriptText(SPELL_DEADEN, CAST_TANK, DESI_SAY_SPEC);
             else
-                AddSpellToCast(m_creature->getVictim(), SPELL_DEADEN);
+                AddSpellToCast(SPELL_DEADEN);
 
             DeadenTimer = 30000;
         }
@@ -793,20 +795,20 @@ struct HELLGROUND_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(RAND(ANGER_SAY_FREED, ANGER_SAY_FREED2), m_creature);
+        DoScriptText(RAND(ANGER_SAY_FREED, ANGER_SAY_FREED2), me);
 
         DoZoneInCombat();
-        DoCast(m_creature, AURA_OF_ANGER, true);
+        ForceSpellCast(AURA_OF_ANGER, CAST_SELF, DONT_INTERRUPT, true);
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(ANGER_SAY_DEATH, m_creature);
+        DoScriptText(ANGER_SAY_DEATH, me);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(ANGER_SAY_SLAY1, ANGER_SAY_SLAY2), m_creature);
+        DoScriptText(RAND(ANGER_SAY_SLAY1, ANGER_SAY_SLAY2), me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -817,20 +819,20 @@ struct HELLGROUND_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
         if(!CheckedAggro)
         {
-            AggroTargetGUID = m_creature->getVictimGUID();
+            AggroTargetGUID = me->getVictimGUID();
             CheckedAggro = true;
         }
 
         if(CheckTankTimer < diff)
         {
-            if(m_creature->getVictimGUID() != AggroTargetGUID)
+            if(me->getVictimGUID() != AggroTargetGUID)
             {
-                DoScriptText(ANGER_SAY_BEFORE, m_creature);
-                DoCast(m_creature, SPELL_SELF_SEETHE, true);
-                AggroTargetGUID = m_creature->getVictimGUID();
+                DoScriptText(ANGER_SAY_BEFORE, me);
+                ForceSpellCast(SPELL_SELF_SEETHE, CAST_SELF, DONT_INTERRUPT, true);
+                AggroTargetGUID = me->getVictimGUID();
             }
 
-            m_creature->SetSpeed(MOVE_RUN, 2.5);
+            me->SetSpeed(MOVE_RUN, 2.5);
 
             CheckTankTimer = 2000;
         }
@@ -839,10 +841,10 @@ struct HELLGROUND_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
         if(SoulScreamTimer < diff)
         {
-            DoCast(m_creature, SPELL_SOUL_SCREAM);
+            AddSpellToCast(SPELL_SOUL_SCREAM, CAST_NULL);
 
             if(!urand(0,2))
-                DoScriptText(ANGER_SAY_SPEC, m_creature);
+                DoScriptText(ANGER_SAY_SPEC, me);
 
             SoulScreamTimer = 10000;
         }
@@ -851,13 +853,14 @@ struct HELLGROUND_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
         if(SpiteTimer < diff)
         {
-            DoCast(m_creature, SPELL_SPITE_TARGET);
-            DoScriptText(ANGER_SAY_SPEC, m_creature);
+            AddSpellToCast(SPELL_SPITE_TARGET, CAST_NULL);
+            DoScriptText(ANGER_SAY_SPEC, me);
             SpiteTimer = 30000;
         }
         else
             SpiteTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
