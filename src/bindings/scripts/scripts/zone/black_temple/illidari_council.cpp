@@ -169,7 +169,7 @@ struct HELLGROUND_DLL_DECL mob_blood_elf_council_voice_triggerAI : public Script
             }
 
             m_counter += 1;
-            if(m_counter > 3)
+            if (m_counter > 3)
                 m_counter = 0;                            // Reuse for Enrage Yells
         }
         else
@@ -206,11 +206,11 @@ struct HELLGROUND_DLL_DECL mob_illidari_councilAI : public ScriptedAI
     {
         pInstance->SetData(EVENT_ILLIDARICOUNCIL, NOT_STARTED);
 
-        if(Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
+        if (Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
             pTrigger->AI()->EnterEvadeMode();
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->SetDisplayId(11686);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetDisplayId(11686);
     }
 
     void StartEvent(Unit *pTarget)
@@ -276,10 +276,10 @@ struct HELLGROUND_DLL_DECL illidari_council_baseAI : public ScriptedAI
 
         DoZoneInCombat();
 
-        if(me->GetEntry() == 22950)  // Zerevor
+        if (me->GetEntry() == 22950)  // Zerevor
         {
             ClearCastQueue();
-            ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
+            ForceSpellCast(me, SPELL_DAMPEN_MAGIC);
             AddSpellToCast(pWho, SPELL_ARCANE_BOLT);
             StartAutocast();
         }
@@ -298,10 +298,10 @@ struct HELLGROUND_DLL_DECL illidari_council_baseAI : public ScriptedAI
     {
         switch (me->GetEntry())
         {
-            case 22949: DoScriptText(SAY_GATH_SLAY, m_creature); break; // Gathios
-            case 22950: DoScriptText(SAY_ZERE_SLAY, m_creature); break; // Zerevor
-            case 22951: DoScriptText(SAY_MALA_SLAY, m_creature); break; // Melande
-            case 22952: DoScriptText(SAY_VERA_SLAY, m_creature); break; // Veras
+            case 22949: DoScriptText(SAY_GATH_SLAY, me); break; // Gathios
+            case 22950: DoScriptText(SAY_ZERE_SLAY, me); break; // Zerevor
+            case 22951: DoScriptText(SAY_MALA_SLAY, me); break; // Melande
+            case 22952: DoScriptText(SAY_VERA_SLAY, me); break; // Veras
         }
     }
 
@@ -309,25 +309,25 @@ struct HELLGROUND_DLL_DECL illidari_council_baseAI : public ScriptedAI
     {
         switch (me->GetEntry())
         {
-            case 22949: DoScriptText(SAY_GATH_DEATH, m_creature); break; // Gathios
-            case 22950: DoScriptText(SAY_ZERE_DEATH, m_creature); break; // Zerevor
-            case 22951: DoScriptText(SAY_MALA_DEATH, m_creature); break; // Melande
-            case 22952: DoScriptText(SAY_VERA_DEATH, m_creature); break; // Veras
+            case 22949: DoScriptText(SAY_GATH_DEATH, me); break; // Gathios
+            case 22950: DoScriptText(SAY_ZERE_DEATH, me); break; // Zerevor
+            case 22951: DoScriptText(SAY_MALA_DEATH, me); break; // Melande
+            case 22952: DoScriptText(SAY_VERA_DEATH, me); break; // Veras
         }
         if (Creature *pCouncil = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDARICOUNCIL)))
         {
-            if(pCouncil->isAlive())
+            if (pCouncil->isAlive())
                 pCouncil->Kill(pCouncil, false);
         }
     }
 
     void EnterEvadeMode()
     {
-        if(!pInstance)
+        if (!pInstance)
             return;
         pInstance->SetData(EVENT_ILLIDARICOUNCIL, NOT_STARTED);
 
-        if(Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
+        if (Creature *pTrigger = pInstance->GetCreature(pInstance->GetData64(DATA_BLOOD_ELF_COUNCIL_VOICE)))
             pTrigger->AI()->EnterEvadeMode();
         ScriptedAI::EnterEvadeMode();
     }
@@ -341,7 +341,7 @@ struct HELLGROUND_DLL_DECL illidari_council_baseAI : public ScriptedAI
         {
             if (Creature *pUnit = pInstance->GetCreature(m_council[i]))
             {
-                if(pUnit->GetHealth() == 0)
+                if (pUnit->GetHealth() == 0)
                     canKill = true;
                 HP += pUnit->GetHealth();
                 pUnit->LowerPlayerDamageReq(damage);
@@ -354,19 +354,19 @@ struct HELLGROUND_DLL_DECL illidari_council_baseAI : public ScriptedAI
             {
                 if (pUnit->isAlive())
                 {
-                    if(HP)
+                    if (HP)
                         pUnit->SetHealth(HP/4);
                 }
             }
         }
         // if one dies, they die all
-        if(!canKill)
+        if (!canKill)
             return;
         for (uint8 i = 0; i < 4; ++i)
         {
             if (Creature *pUnit = pInstance->GetCreature(m_council[i]))
             {
-                if(pUnit->isAlive())
+                if (pUnit->isAlive())
                     pUnit->Kill(pUnit, false);
             }
         }
@@ -374,7 +374,7 @@ struct HELLGROUND_DLL_DECL illidari_council_baseAI : public ScriptedAI
 
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
-        if(done_by == m_creature)
+        if (done_by == me)
             return;
         SharedRule(damage);
     }
@@ -415,7 +415,7 @@ struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_counci
 
     Unit* SelectCouncil()
     {
-        if(urand(0, 8)) // 8/9 chances to select Malande
+        if (urand(0, 8)) // 8/9 chances to select Malande
         {
             if (Unit *pMelande = pInstance->GetCreature(m_council[0]))
             {
@@ -447,7 +447,7 @@ struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_counci
 
         if (m_checkTimer < diff)
         {
-            if (m_creature->IsWithinDistInMap(&wLoc, 100.0f))
+            if (me->IsWithinDistInMap(&wLoc, 100.0f))
                 DoZoneInCombat();
             else
             {
@@ -455,7 +455,7 @@ struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_counci
                 return;
             }
 
-            m_creature->SetSpeed(MOVE_RUN, 2.0);
+            me->SetSpeed(MOVE_RUN, 2.0);
             uint32 damage = 0;
             SharedRule(damage);
             m_checkTimer = 1000;
@@ -465,7 +465,7 @@ struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_counci
 
         if (m_blessingTimer < diff)
         {
-            if(Unit *pUnit = SelectCouncil())
+            if (Unit *pUnit = SelectCouncil())
             {
                 AddSpellToCast(pUnit, RAND(SPELL_BLESS_SPELLWARD, SPELL_BLESS_PROTECTION));
                 m_blessingTimer = RAND(urand(15000, 20000), urand(25000, 35000));
@@ -476,7 +476,7 @@ struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_counci
 
         if (m_consecrationTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CONSECRATION);
+            AddSpellToCast(me, SPELL_CONSECRATION);
             m_consecrationTimer = urand(30000, 35000);
         }
         else
@@ -484,7 +484,7 @@ struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_counci
 
         if (m_hammerTimer < diff)
         {
-            if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true, 0, 10.0f))
+            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 40, true, 0, 10.0f))
             {
                 AddSpellToCast(pTarget, SPELL_HAMMER_OF_JUSTICE);
                 m_hammerTimer = urand(10000, 20000);
@@ -495,7 +495,7 @@ struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_counci
 
         if (m_sealTimer < diff)
         {
-            AddSpellToCast(m_creature, RAND(SPELL_SEAL_OF_COMMAND, SPELL_SEAL_OF_BLOOD));
+            AddSpellToCast(me, RAND(SPELL_SEAL_OF_COMMAND, SPELL_SEAL_OF_BLOOD));
             m_sealTimer = urand(17000, 20000);
         }
         else
@@ -561,15 +561,15 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
         x = me->GetPositionX();
         y = me->GetPositionY();
         z = me->GetPositionZ();
-        if(y > 286 && y < 324 && x > 676.2)
+        if (y > 286 && y < 324 && x > 676.2)
         {
-            if(top_x > x)
+            if (top_x > x)
                 good_z = 0.452*(top_x-x);
             else
                 good_z = top_z;
 
-            if(z < good_z)
-                m_creature->GetMap()->CreatureRelocation(m_creature, x, y, good_z+0.15, m_creature->GetAngle(m_creature->getVictim()));
+            if (z < good_z)
+                me->GetMap()->CreatureRelocation(me, x, y, good_z+0.15, me->GetAngle(me->getVictim()));
         }
     }
 
@@ -580,7 +580,7 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
 
         if (m_checkTimer < diff)
         {
-            if (m_creature->IsWithinDistInMap(&wLoc, 100.0f))
+            if (me->IsWithinDistInMap(&wLoc, 100.0f))
                 DoZoneInCombat();
             else
             {
@@ -598,7 +598,7 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
 
             uint32 damage = 0;
             SharedRule(damage);
-            m_creature->SetSpeed(MOVE_RUN, 2.0);
+            me->SetSpeed(MOVE_RUN, 2.0);
             m_checkTimer = 1000;
         }
         else
@@ -606,7 +606,7 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
 
         if (m_immunityTimer < diff)
         {
-            m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, false);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, false);
             m_immunityTimer = 60000;
         }
         else
@@ -614,7 +614,7 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
 
         if (m_dampenTimer < diff)
         {
-            ForceSpellCast(m_creature, SPELL_DAMPEN_MAGIC);
+            ForceSpellCast(me, SPELL_DAMPEN_MAGIC);
             m_dampenTimer = 67200;                      // almost 1,12 minutes (??)
         }
         else
@@ -622,7 +622,7 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
 
         if (m_blizzardTimer < diff)
         {
-            if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
                 AddSpellToCast(pTarget, SPELL_BLIZZARD, true);
                 m_blizzardTimer = urand(11000, 17000);
@@ -633,9 +633,9 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
 
         if (m_flamestrikeTimer < diff)
         {
-            if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
+            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
             {
-                m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, true);
+                me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, true);
                 ForceSpellCast(pTarget, SPELL_FLAMESTRIKE);
                 m_flamestrikeTimer = urand(9000, 12000);
                 m_immunityTimer = 3000;
@@ -646,10 +646,10 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
 
         if (m_aexpTimer < diff)
         {
-            std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+            std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
             for (std::list<HostilReference*>::iterator i = m_threatlist.begin(); i!= m_threatlist.end();++i)
             {
-                if (Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid()))
+                if (Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid()))
                 {
                     if (pUnit->IsWithinDistInMap(me, 5) && pUnit->GetTypeId() == TYPEID_PLAYER && pUnit->isAlive() && !pUnit->IsImmunedToDamage(SPELL_SCHOOL_MASK_ARCANE))
                     {
@@ -703,7 +703,7 @@ struct HELLGROUND_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
         if (m_checkTimer < diff)
         {
-            if (m_creature->IsWithinDistInMap(&wLoc, 100.0f))
+            if (me->IsWithinDistInMap(&wLoc, 100.0f))
                 DoZoneInCombat();
             else
             {
@@ -713,7 +713,7 @@ struct HELLGROUND_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
             uint32 damage = 0;
             SharedRule(damage);
-            m_creature->SetSpeed(MOVE_RUN, 2.0);
+            me->SetSpeed(MOVE_RUN, 2.0);
             m_checkTimer = 1000;
         }
         else
@@ -721,7 +721,7 @@ struct HELLGROUND_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
         if (m_smiteTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_EMPOWERED_SMITE, false, true);
+            AddSpellToCast(me->getVictim(), SPELL_EMPOWERED_SMITE, false, true);
             m_smiteTimer = urand(5000, 9000);
         }
         else
@@ -729,7 +729,7 @@ struct HELLGROUND_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
         if (m_cohTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CIRCLE_OF_HEALING);
+            AddSpellToCast(me, SPELL_CIRCLE_OF_HEALING);
             m_cohTimer = urand(19000, 23000);
         }
         else
@@ -737,7 +737,7 @@ struct HELLGROUND_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
         if (m_wrathTimer < diff)
         {
-            if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
                 AddSpellToCast(pTarget, SPELL_DIVINE_WRATH, false, true);
                 m_wrathTimer = urand(15000, 30000);
@@ -748,7 +748,7 @@ struct HELLGROUND_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 
         if (m_shieldTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_REFLECTIVE_SHIELD);
+            AddSpellToCast(me, SPELL_REFLECTIVE_SHIELD);
             m_shieldTimer = urand(40000, 55000);
         }
         else
@@ -781,9 +781,9 @@ struct HELLGROUND_DLL_DECL boss_veras_darkshadowAI : public illidari_council_bas
 
     void OnAuraRemove(Aura* aur, bool stackRemove)
     {
-        if(aur->GetId() == SPELL_VANISH)
+        if (aur->GetId() == SPELL_VANISH)
         {
-            m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, false);
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, false);
             DoResetThreat();
             DoStartMovement(me->getVictim());
         }
@@ -796,7 +796,7 @@ struct HELLGROUND_DLL_DECL boss_veras_darkshadowAI : public illidari_council_bas
 
         if (m_checkTimer < diff)
         {
-            if (m_creature->IsWithinDistInMap(&wLoc, 100.0f))
+            if (me->IsWithinDistInMap(&wLoc, 100.0f))
                 DoZoneInCombat();
             else
             {
@@ -806,9 +806,9 @@ struct HELLGROUND_DLL_DECL boss_veras_darkshadowAI : public illidari_council_bas
 
             uint32 damage = 0;
             SharedRule(damage);
-            m_creature->SetSpeed(MOVE_RUN, 2.0);
+            me->SetSpeed(MOVE_RUN, 2.0);
             // move always after stun recovery
-            if(!me->hasUnitState(UNIT_STAT_STUNNED) && !me->HasAura(SPELL_VANISH, 1))
+            if (!me->hasUnitState(UNIT_STAT_STUNNED) && !me->HasAura(SPELL_VANISH, 1))
                 DoStartMovement(me->getVictim());
             m_checkTimer = 1000;
         }
@@ -817,34 +817,34 @@ struct HELLGROUND_DLL_DECL boss_veras_darkshadowAI : public illidari_council_bas
 
         if (m_vanishTimer < diff)
         {
-            float x, y, z;
-            if(me->HasAuraType(SPELL_AURA_MOD_STUN))    // remove stun
-                m_creature->RemoveSpellsCausingAura(SPELL_AURA_MOD_STUN);
-            if(me->HasAuraType(SPELL_AURA_MOD_STALKED)) // remove Hunter's Marks and similar trackers
-                m_creature->RemoveSpellsCausingAura(SPELL_AURA_MOD_STALKED);
+            if (me->HasAuraType(SPELL_AURA_MOD_STUN))    // remove stun
+                me->RemoveSpellsCausingAura(SPELL_AURA_MOD_STUN);
 
-            m_creature->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
+            if (me->HasAuraType(SPELL_AURA_MOD_STALKED)) // remove Hunter's Marks and similar trackers
+                me->RemoveSpellsCausingAura(SPELL_AURA_MOD_STALKED);
+
+            me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_STUN, true);
 
             ForceSpellCast(me, SPELL_VANISH, INTERRUPT_AND_CAST_INSTANTLY);
             ForceSpellCast(me, SPELL_DEADLY_POISON, INTERRUPT_AND_CAST_INSTANTLY);
-            if(Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1, 35, true))
-            {
-                pTarget->GetGroundPointAroundUnit(x, y, z, 5.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
-                DoTeleportTo(x, y, z);
-                m_creature->GetMotionMaster()->MoveIdle();
-            }
+
+            Position dest;
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 35.0f, true))
+                target->GetValidPointInAngle(dest, 5.0f, frand(0.0f, 2*M_PI), true);
             else
-            {
-                me->GetGroundPointAroundUnit(x, y, z, 30.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
-                DoTeleportTo(x, y, z);
-                m_creature->GetMotionMaster()->MoveIdle();
-            }
+                me->GetValidPointInAngle(dest, 30.0f, frand(0.0f, 2*M_PI), true);
+
+            DoTeleportTo(dest.x, dest.y, dest.z);
+
+            // drop movement :P
+            me->GetMotionMaster()->MoveIdle();
+
             m_vanishTimer = 60000;
         }
         else
                 m_vanishTimer -= diff;
 
-        if(me->HasAura(SPELL_VANISH, 1))
+        if (me->HasAura(SPELL_VANISH, 1))
             return;
 
         DoMeleeAttackIfReady();
