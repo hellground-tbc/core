@@ -16,9 +16,6 @@
     <Filter Include="Config">
       <UniqueIdentifier>{f5d4e913-746f-4207-adf4-e34db0a711a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Config\dotconfpp">
-      <UniqueIdentifier>{2a7c3701-3a88-4fca-abe6-a8444f03b840}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Auth">
       <UniqueIdentifier>{ae1511e0-8411-4d86-85f9-20ad5597b57d}</UniqueIdentifier>
     </Filter>
@@ -106,9 +103,6 @@
       <Filter>Database</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\shared\Database\Field.h">
-      <Filter>Database</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shared\Database\MySQLDelayThread.h">
       <Filter>Database</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\shared\Database\QueryResult.h">

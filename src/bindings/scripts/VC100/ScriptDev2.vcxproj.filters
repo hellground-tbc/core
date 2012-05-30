@@ -13,14 +13,8 @@
     <Filter Include="Scripts\guard">
       <UniqueIdentifier>{8235419d-15a1-4d8f-ab50-017a84ad9a85}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scripts\honor">
-      <UniqueIdentifier>{d625c852-72b1-4caa-8c22-2fd38c645daf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scripts\npc">
       <UniqueIdentifier>{d31f4491-ffb2-4a87-8d78-db3ac8559b99}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scripts\servers">
-      <UniqueIdentifier>{fc123f37-efd5-4f85-9dc5-1fbd1e80ca2d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Scripts\custom">
       <UniqueIdentifier>{63252f50-9425-4105-8a1e-5db528d535e6}</UniqueIdentifier>
@@ -1656,18 +1650,13 @@
     <ClInclude Include="..\include\sc_instance.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\sc_item.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\system\ScriptLoader.h">
       <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="..\system\system.h">
       <Filter>System</Filter>
     </ClInclude>
-    <ClInclude Include="..\config.h" />
     <ClInclude Include="..\ScriptMgr.h" />
-    <ClInclude Include="..\svn_revision.h" />
     <ClInclude Include="..\scripts\zone\karazhan\chess_event.h">
       <Filter>Scripts\zone\Karazhan</Filter>
     </ClInclude>
