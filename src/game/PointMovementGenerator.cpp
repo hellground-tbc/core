@@ -75,6 +75,11 @@ bool PointMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
 template<class UNIT>
 void PointMovementGenerator<UNIT>::Finalize(UNIT &unit)
 {
+    unit.clearUnitState(UNIT_STAT_ROAMING);
+
+    if (!unit.isAlive())
+        return;
+
     if (Creature *creature = unit.ToCreature())
     {
         if (creature->AI())
@@ -87,7 +92,6 @@ void PointMovementGenerator<UNIT>::Finalize(UNIT &unit)
         }
     }
 
-    unit.clearUnitState(UNIT_STAT_ROAMING);
     unit.AddEvent(new AttackResumeEvent(unit), ATTACK_DISPLAY_DELAY);
 }
 
