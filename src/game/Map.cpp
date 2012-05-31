@@ -2274,8 +2274,11 @@ void InstanceMap::InitVisibilityDistance()
 bool InstanceMap::EncounterInProgress(Player *player)
 {
     bool inProgress = GetInstanceData() && GetInstanceData()->IsEncounterInProgress();
-    if (inProgress && player && !player->isGameMaster())
+    if (player && inProgress)
     {
+        if (player->isGameMaster())
+            return false;
+
         sLog.outDebug("InstanceMap: Player '%s' can't enter instance '%s' while an encounter is in progress.", player->GetName(),GetMapName());
         player->SendTransferAborted(GetId(),TRANSFER_ABORT_ZONE_IN_COMBAT);
     }
