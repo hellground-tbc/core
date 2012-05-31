@@ -37,9 +37,6 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     if (!_target.isValid() || !_target->IsInWorld())
         return;
 
-    if (owner.hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
-        return;
-
     float x, y, z;
     bool targetIsVictim = owner.getVictimGUID() == _target->GetGUID();
 
@@ -120,12 +117,6 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
 
     if (!owner.isAlive())
         return true;
-
-    if (owner.hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
-    {
-        owner.StopMoving();
-        return true;
-    }
 
     // prevent crash after creature killed pet
     if (static_cast<D*>(this)->_lostTarget(owner))
