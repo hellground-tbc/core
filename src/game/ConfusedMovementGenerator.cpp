@@ -60,13 +60,6 @@ void ConfusedMovementGenerator<UNIT>::_generateMovement(UNIT &unit)
 template<class UNIT>
 bool ConfusedMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
 {
-    // I think that with action queue that should NOT be possible // to check :P
-    if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE))
-    {
-        unit.StopMoving();
-        return true;
-    }
-
     _nextMoveTime.Update(diff);
     if (_nextMoveTime.Passed())
     {

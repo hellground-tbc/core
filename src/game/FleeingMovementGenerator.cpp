@@ -73,13 +73,6 @@ void FleeingMovementGenerator<UNIT>::Initialize(UNIT &unit)
 template<class UNIT>
 bool FleeingMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 & time_diff)
 {
-    // I think that with action queue that should NOT be possible // to check :P
-    if (unit.hasUnitState(UNIT_STAT_CAN_NOT_MOVE))
-    {
-        unit.StopMoving();
-        return true;
-    }
-
     _nextCheckTime.Update(time_diff);
     if (_nextCheckTime.Passed() && unit.IsStopped())
         _moveToNextLocation(unit);

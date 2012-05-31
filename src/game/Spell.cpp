@@ -2217,8 +2217,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     if ((!m_IsTriggeredSpell && !IsChanneledSpell(m_spellInfo) ? m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT))
     {
         m_caster->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
-        if (m_caster->GetTypeId() == TYPEID_UNIT)
-            m_caster->StopMoving();
+        m_caster->GetUnitStateMgr().PushAction(UNIT_ACTION_IDLE, UNIT_ACTION_PRIORITY_CONTROLLED);
     }
 
     m_caster->GetPosition(m_cast);
@@ -2956,7 +2955,10 @@ void Spell::finish(bool ok)
         m_caster->UpdateInterruptMask();
 
     if (!m_caster->IsNonMeleeSpellCasted(false, false, true))
+    {
         m_caster->clearUnitState(UNIT_STAT_CASTING | UNIT_STAT_CASTING_NOT_MOVE);
+        m_caster->GetUnitStateMgr().DropAction(UNIT_ACTION_IDLE, UNIT_ACTION_PRIORITY_CONTROLLED);
+    }
 
     if (!ok)
     {
