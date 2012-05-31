@@ -437,7 +437,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
             if (m_respawnTime <= time(NULL))
             {
                 // encounter in progress - don't respawn
-                if (GetMap()->GetActiveObjectUpdateDistance() && ((InstanceMap*)GetMap())->GetInstanceData() && ((InstanceMap*)GetMap())->GetInstanceData()->IsEncounterInProgress())
+                if (GetMap()->EncounterInProgress(NULL))
                 {
                     SetRespawnTime(MINUTE);
                     SaveRespawnTime();

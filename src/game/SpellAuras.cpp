@@ -5132,12 +5132,11 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     caster->CastSpell(m_target, 41487, true, 0, this);
             }
             // Curse of Boundless Agony jump
-            if( (m_spellProto->Id == 45032 || m_spellProto->Id == 45034) && !apply)
+            if ((m_spellProto->Id == 45032 || m_spellProto->Id == 45034) && !apply)
             {
-                InstanceMap *instance = dynamic_cast<InstanceMap*>(m_target->GetMap());
-                if(instance && instance->GetInstanceData() && instance->GetInstanceData()->IsEncounterInProgress())
+                if (m_target->GetMap() && m_target->GetMap()->EncounterInProgress(NULL))
                 {
-                    if(uint64 SathGUID = m_target->GetMap()->GetCreatureGUID(24892))
+                    if (uint64 SathGUID = m_target->GetMap()->GetCreatureGUID(24892))
                         m_target->CastSpell(m_target, 45034, true, 0, 0, SathGUID);
                 }
             }
