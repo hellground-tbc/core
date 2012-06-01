@@ -2216,8 +2216,9 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
 
     if ((!m_IsTriggeredSpell && !IsChanneledSpell(m_spellInfo) ? m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT))
     {
+        // controlled state is delivered from idle movement so should be sufficient
         m_caster->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
-        m_caster->GetUnitStateMgr().PushAction(UNIT_ACTION_IDLE, UNIT_ACTION_PRIORITY_CONTROLLED);
+        m_caster->GetUnitStateMgr().PushAction(UNIT_ACTION_CONTROLLED);
     }
 
     m_caster->GetPosition(m_cast);
@@ -2956,8 +2957,10 @@ void Spell::finish(bool ok)
 
     if (!m_caster->IsNonMeleeSpellCasted(false, false, true))
     {
+        if (m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
+            m_caster->GetUnitStateMgr().DropAction(UNIT_ACTION_CONTROLLED);
+
         m_caster->clearUnitState(UNIT_STAT_CASTING | UNIT_STAT_CASTING_NOT_MOVE);
-        m_caster->GetUnitStateMgr().DropAction(UNIT_ACTION_IDLE, UNIT_ACTION_PRIORITY_CONTROLLED);
     }
 
     if (!ok)
