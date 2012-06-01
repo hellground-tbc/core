@@ -2618,7 +2618,6 @@ bool AttackResumeEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
         return true;
 
     Unit* victim = m_owner.getVictim();
-
     if (!victim || !victim->IsInMap(&m_owner))
         return true;
 
