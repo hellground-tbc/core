@@ -2956,8 +2956,10 @@ void Spell::finish(bool ok)
 
     if (!m_caster->IsNonMeleeSpellCasted(false, false, true))
     {
+        if (m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
+            m_caster->GetUnitStateMgr().DropAction(UNIT_ACTION_IDLE, UNIT_ACTION_PRIORITY_CONTROLLED);
+
         m_caster->clearUnitState(UNIT_STAT_CASTING | UNIT_STAT_CASTING_NOT_MOVE);
-        m_caster->GetUnitStateMgr().DropAction(UNIT_ACTION_IDLE, UNIT_ACTION_PRIORITY_CONTROLLED);
     }
 
     if (!ok)
