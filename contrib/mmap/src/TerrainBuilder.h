@@ -21,7 +21,7 @@
 
 #include "MMapCommon.h"
 #include "MangosMap.h"
-#include "../../src/game/MoveMapSharedDefines.h"
+#include "../../src/game/movemap/MoveMapSharedDefines.h"
 
 #include "WorldModel.h"
 
