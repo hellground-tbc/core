@@ -43,7 +43,7 @@ void UnitAI::AttackStartCaster(Unit *victim, float dist)
 
 void UnitAI::DoMeleeAttackIfReady()
 {
-    if (me->hasUnitState(UNIT_STAT_CASTING))
+    if (me->hasUnitState(UNIT_STAT_CANNOT_AUTOATTACK))
         return;
 
     // set selection back to attacked victim if not selected (after spell casting)

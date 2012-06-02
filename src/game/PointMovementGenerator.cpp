@@ -119,6 +119,9 @@ bool EffectMovementGenerator::Update(Unit &unit, const uint32 &)
 
 void EffectMovementGenerator::Finalize(Unit &unit)
 {
+    if (EffectId() == EVENT_CHARGE)
+        unit.clearUnitState(UNIT_STAT_CHARGING);
+
     if (unit.GetTypeId() != TYPEID_UNIT)
         return;
 
@@ -126,4 +129,10 @@ void EffectMovementGenerator::Finalize(Unit &unit)
         ((Creature&)unit).AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
 
     unit.AddEvent(new AttackResumeEvent(unit), ATTACK_DISPLAY_DELAY);
+}
+
+void EffectMovementGenerator::Initialize(Unit &unit)
+{
+    if (EffectId() == EVENT_CHARGE)
+        unit.addUnitState(UNIT_STAT_CHARGING);
 }

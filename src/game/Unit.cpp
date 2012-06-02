@@ -457,17 +457,7 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
         }
     }
 
-    bool timerPaused = hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING);
-    if (!timerPaused)
-    {
-        if (UnitAction* action = GetUnitStateMgr().CurrentAction())
-        {
-            if (action->GetMovementGeneratorType() == EFFECT_MOTION_TYPE && ((EffectMovementGenerator*)action)->EffectId() == EVENT_CHARGE)
-                timerPaused = true;
-        }
-    }
-
-    if (!timerPaused)
+    if (!hasUnitState(UNIT_STAT_CANNOT_AUTOATTACK))
     {
         if (uint32 base_att = getAttackTimer(BASE_ATTACK))
             setAttackTimer(BASE_ATTACK, (update_diff >= base_att ? 0 : base_att - update_diff));
