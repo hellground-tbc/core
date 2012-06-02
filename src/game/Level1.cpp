@@ -352,7 +352,7 @@ bool ChatHandler::HandleGMTicketListCommand(const char* args)
         std::stringstream ss;
         std::string NameLink = "|Hplayer:"+(*itr)->name+"|h["+(*itr)->name+"]|h";
         ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, (*itr)->guid);
-        ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, NameLink.c_str(), (*itr)->name.c_str());
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, NameLink.c_str());
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - (*itr)->createtime, true, false)).c_str());
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - (*itr)->timestamp, true, false)).c_str());
         if (sObjectMgr.GetPlayerNameByGUID((*itr)->assignedToGM, gmname))
