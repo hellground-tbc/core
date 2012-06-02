@@ -1,0 +1,29 @@
+# use glob syntax.
+syntax: glob
+
+build/
+bin/
+.directory
+.git/
+*~
+*.orig
+*.rej
+*.ncb
+*.sdf
+*.opensdf
+*.suo
+*.ipch
+*.user
+*.gitignore
+dep/lib/*/ACE*
+dep/lib/*/Detour*
+dep/lib/*/tbb*
+dep/ACE_wrappers/lib/*
+dep/ACE_wrappers/ace/Release*/*/*
+dep/ACE_wrappers/ace/Debug*/*/*
+src/bindings/scripts/VC100/*/*
+win/VC100/*/*
+win/_*/
+
+src/shared/revision.h
+sql/dbc_spell/dbc_spell.sql
