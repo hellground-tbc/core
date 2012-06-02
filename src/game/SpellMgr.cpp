@@ -329,7 +329,25 @@ void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
         threat = 1.0f;
 
     else if (spellInfo->Id == 33619) // Reflective shield
-        threat = 1.0f;
+        threat = 0.0f;
+
+	else if (spellInfo->Id == 31616) // Nature's Guardian - shaman talent
+        threat = 0.9f;
+
+	else if (spellInfo->Id == 33763) // Lifebloom HOT, Last instant heal counts as zero threat (at least should count as zero)
+        threat = 0.47f;
+
+	else if (spellInfo->Id == 32546) // Binging heal
+        threat = 0.5f;
+	
+	else if (spellInfo->Id == 20647) // Execute
+        threat = 1.25f;
+
+	else if (spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && spellInfo->SpellFamilyFlags & 0x1000000000LL) // Chastise
+		threat = 0.5f;
+
+	else if (spellInfo->Id == 37661) // Lightning Capacitor
+		threat = 0.5f;
 
     else if (spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellFamilyFlags & 0x80LL) // Thunder Clap
         threat *= 1.75f;
