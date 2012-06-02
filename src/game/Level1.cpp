@@ -1198,7 +1198,11 @@ bool ChatHandler::HandleRecallCommand(const char* args)
     // stop flight if need
     chr->InterruptTaxiFlying();
 
-    chr->TeleportTo(chr->m_recallMap, chr->m_recallX, chr->m_recallY, chr->m_recallZ, chr->m_recallO);
+    if (!chr->TeleportTo(chr->m_recallMap, chr->m_recallX, chr->m_recallY, chr->m_recallZ, chr->m_recallO))
+        PSendSysMessage("Error on recall");
+    else
+        PSendSysMessage("Recalled successfully");
+
     return true;
 }
 

@@ -224,13 +224,10 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->GetName(),_player->GetSession()->GetAccountId());
                 }
 
-                else
-                {
-                    sLog.outSpecial("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
-                        _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
-                        hisItems[i]->GetProto()->Name1,hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
-                        _player->GetName(),_player->GetSession()->GetAccountId());
-                }
+                sLog.outMail("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
+                    _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
+                    hisItems[i]->GetProto()->Name1,hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
+                    _player->GetName(),_player->GetSession()->GetAccountId());
 
                 // store
                 _player->MoveItemToInventory(playerDst, hisItems[i], true, true);
