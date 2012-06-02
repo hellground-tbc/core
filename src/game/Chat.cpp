@@ -1496,8 +1496,8 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, G
     return true;
 }
 
-std::string ChatHandler::NameLink(std::string Name)
+std::string ChatHandler::GetNameLink(std::string & name);
 {
-    std::string NameLink = "|Hplayer:"+Name+"|h["+Name+"]|h";
+    std::string NameLink = "|Hplayer:" + name + "|h[" + name + "]|h";
     return NameLink;
 }
