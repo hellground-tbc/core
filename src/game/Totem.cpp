@@ -203,4 +203,3 @@ bool Totem::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
     }*/
     return Creature::IsImmunedToSpell(spellInfo, useCharges);
 }
-
