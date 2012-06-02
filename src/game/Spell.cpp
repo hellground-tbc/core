@@ -700,12 +700,12 @@ void Spell::CleanupTargetList()
     m_delayMoment = 0;
 }
 
-void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
+void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex, bool redirected)
 {
     if (m_spellInfo->Effect[effIndex]==0)
         return;
 
-    if (!CheckTarget(pVictim, effIndex))
+    if (!redirected && !CheckTarget(pVictim, effIndex))
         return;
 
     uint64 targetGUID = pVictim->GetGUID();
@@ -5387,7 +5387,7 @@ Unit* Spell::SelectMagnetTarget()
                         (*itr)->SetAuraProcCharges((*itr)->m_procCharges-1);
                         target = magnet;
                         m_targets.setUnitTarget(target);
-                        AddUnitTarget(target, 0);
+                        AddUnitTarget(target, 0, true);
                         uint64 targetGUID = target->GetGUID();
                         for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
                         {
@@ -5424,7 +5424,7 @@ Unit* Spell::SelectMagnetTarget()
                     }
                     target = hitTarget;
                     m_targets.setUnitTarget(target);
-                    AddUnitTarget(target, 0);
+                    AddUnitTarget(target, 0, true);
                     break;
                 }
             }
