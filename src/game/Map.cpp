@@ -3103,32 +3103,48 @@ void Map::RemoveFromObjMap(Object * obj)
     switch (objGuid.GetHigh())
     {
         case HIGHGUID_UNIT:
+        {
+            typename CreaturesMapType::accessor a;
             RemoveFromCreatureGUIDList((Creature*)obj);
-            if (!creaturesMap.erase(objGuid.GetRawValue()))
-                error_log("Map::RemoveFromCreatureMap: Creature GUID %u not in map", objGuid.GetRawValue());
+            if (creaturesMap.find(a, objGuid.GetRawValue()))
+                creaturesMap.erase(a);
+            else
+                sLog.outError("Map::RemoveFromCreatureMap: Creature GUID Low %u not in map", objGuid.GetCounter());
             break;
-
+        }
         case HIGHGUID_GAMEOBJECT:
-            if (!gameObjectsMap.erase(objGuid.GetRawValue()))
-                error_log("Map::RemoveFromGameObjectMap: Game Object GUID %u not in map", objGuid.GetRawValue());
+        {
+            typename GObjectMapType::accessor a;
+            if (gameObjectsMap.find(a, objGuid.GetRawValue()))
+                gameObjectsMap.erase(a);
+            else
+                sLog.outError("Map::RemoveFromGameObjectMap: Game Object GUID Low %u not in map", objGuid.GetCounter());
             break;
-
+        }
         case HIGHGUID_DYNAMICOBJECT:
-            if (!dynamicObjectsMap.erase(objGuid.GetRawValue()))
-                error_log("Map::RemoveFromDynamicObjectMap: Dynamic Object GUID %u not in map", objGuid.GetRawValue());
+        {
+            typename DObjectMapType::accessor a;
+            if (dynamicObjectsMap.find(a, objGuid.GetRawValue()))
+                dynamicObjectsMap.erase(a);
+            else
+                sLog.outError("Map::RemoveFromDynamicObjectMap: Dynamic Object GUID Low %u not in map", objGuid.GetCounter());
             break;
-
+        }
         case HIGHGUID_PET:
+        {
             sObjectAccessor.RemovePet(objGuid.GetRawValue());
             break;
-
+        }
         case HIGHGUID_PLAYER:
+        {
             sObjectAccessor.RemovePlayer(objGuid.GetRawValue());
             break;
-
+        }
         case HIGHGUID_CORPSE:
+        {
             HashMapHolder<Corpse>::Remove(objGuid.GetRawValue());
             break;
+        }
         default:
             break;
     }

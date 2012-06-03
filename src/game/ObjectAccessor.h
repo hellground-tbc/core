@@ -67,12 +67,22 @@ class HashMapHolder
 
         static bool Remove(T* o)
         {
-            return m_objectMap.erase(o->GetGUID());
+            typename MapType::accessor a;
+
+            if (m_objectMap.find(a, o->GetGUID()))
+                return m_objectMap.erase(a);
+
+            return false;
         }
 
         static bool Remove(uint64 guid)
         {
-            return m_objectMap.erase(guid);
+            typename MapType::accessor a;
+
+            if (m_objectMap.find(a, guid))
+                return m_objectMap.erase(a);
+
+            return false;
         }
 
         static T* Find(uint64 guid)
