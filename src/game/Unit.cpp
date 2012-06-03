@@ -12612,14 +12612,12 @@ void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)
     }
 }
 
-void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry const *spellInfo)
+void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
 {
     Unit *owner = GetCharmerOrOwnerOrSelf();
     Group *pGroup = NULL;
     if (owner->GetTypeId() == TYPEID_PLAYER)
         pGroup = ((Player*)owner)->GetGroup();
-
-    bool ignoreLOS = spellInfo && SpellIgnoreLOS(spellInfo, 0);
 
     if (pGroup)
     {
@@ -12633,18 +12631,12 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry
             if (Target && Target->GetSubGroup()==subgroup && !IsHostileTo(Target))
             {
                 if (Target->isAlive() && IsWithinDistInMap(Target, radius))
-                {
-                    if (ignoreLOS || IsWithinLOSInMap(Target))
-                        TagUnitMap.push_back(Target);
-                }
+                    TagUnitMap.push_back(Target);
 
                 if (Pet* pet = Target->GetPet())
                 {
                     if (pet->isAlive() && IsWithinDistInMap(pet, radius))
-                    {
-                        if (ignoreLOS || IsWithinLOSInMap(pet))
-                            TagUnitMap.push_back(pet);
-                    }
+                        TagUnitMap.push_back(pet);
                 }
             }
         }
@@ -12652,21 +12644,16 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry
     else
     {
         if (owner->isAlive() && (owner == this || IsWithinDistInMap(owner, radius)))
-        {
-            if (ignoreLOS || IsWithinLOSInMap(owner))
-                TagUnitMap.push_back(owner);
-        }
+            TagUnitMap.push_back(owner);
 
         if (Pet* pet = owner->GetPet())
         {
-            if (pet->isAlive() && (pet == this && IsWithinDistInMap(pet, radius)))
-            {
-                if (ignoreLOS || IsWithinLOSInMap(pet))
-                    TagUnitMap.push_back(pet);
-            }
+            if (pet->isAlive() && IsWithinDistInMap(pet, radius))
+                TagUnitMap.push_back(pet);
         }
+
         // Player cannot be in party with NPC's :)
-        if (owner->GetTypeId() == TYPEID_UNIT)
+        if (owner->GetTypeId() == TYPEID_UNIT && !owner->ToCreature()->isPet())
         {
             // for Creatures, grid search friendly units in radius
             std::list<Creature*> pList;
@@ -12679,8 +12666,7 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius, SpellEntry
                 if ((*i)->GetGUID() == owner->GetGUID() || (*i)->GetGUID() == owner->GetPetGUID())
                     continue;
 
-                if (ignoreLOS || IsWithinLOSInMap(*i))
-                    TagUnitMap.push_back(*i);
+                TagUnitMap.push_back(*i);
             }
         }
     }

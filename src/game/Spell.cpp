@@ -2175,9 +2175,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 41376:     // Spite
                     unitList.remove_if(Hellground::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
-                case 42472:     // Protective Ward
-                    unitList.remove_if(Hellground::ObjectIsTotemCheck(true));
-                    break;
                 default:
                     break;
             }

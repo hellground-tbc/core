@@ -976,7 +976,7 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         bool IsNeutralToAll() const;
         bool IsInPartyWith(Unit const* unit) const;
         bool IsInRaidWith(Unit const* unit) const;
-        void GetPartyMember(std::list<Unit*> &units, float dist, SpellEntry const *spellInfo = NULL);
+        void GetPartyMember(std::list<Unit*> &units, float dist);
         void GetRaidMember(std::list<Unit*> &units, float dist);
         Unit* GetNextRandomRaidMember(float radius);
         bool IsContestedGuard() const
