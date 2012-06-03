@@ -3104,7 +3104,7 @@ void Map::RemoveFromObjMap(Object * obj)
     {
         case HIGHGUID_UNIT:
         {
-            typename CreaturesMapType::accessor a;
+            CreaturesMapType::accessor a;
             RemoveFromCreatureGUIDList((Creature*)obj);
             if (creaturesMap.find(a, objGuid.GetRawValue()))
                 creaturesMap.erase(a);
@@ -3114,7 +3114,7 @@ void Map::RemoveFromObjMap(Object * obj)
         }
         case HIGHGUID_GAMEOBJECT:
         {
-            typename GObjectMapType::accessor a;
+            GObjectMapType::accessor a;
             if (gameObjectsMap.find(a, objGuid.GetRawValue()))
                 gameObjectsMap.erase(a);
             else
@@ -3123,7 +3123,7 @@ void Map::RemoveFromObjMap(Object * obj)
         }
         case HIGHGUID_DYNAMICOBJECT:
         {
-            typename DObjectMapType::accessor a;
+            DObjectMapType::accessor a;
             if (dynamicObjectsMap.find(a, objGuid.GetRawValue()))
                 dynamicObjectsMap.erase(a);
             else
