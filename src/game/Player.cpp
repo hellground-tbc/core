@@ -6960,29 +6960,18 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
 
         if (form_change)                                     // check aura active state from other form
         {
-            bool found = false;
-            for (int k=0; k < 3; ++k)
+            for (int k = 0; k < 3; ++k)
             {
                 spellEffectPair spair = spellEffectPair(spellInfo->Id, k);
                 for (AuraMap::iterator iter = m_Auras.lower_bound(spair); iter != m_Auras.upper_bound(spair); ++iter)
-                {
                     if (!item || iter->second->GetCastItemGUID() == item->GetGUID())
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found)
-                    break;
+                        return;     // and skip re-cast already active aura at form change
             }
-
-            if (found)                                       // and skip re-cast already active aura at form change
-                return;
         }
 
         DEBUG_LOG("WORLD: cast %s Equip spellId - %i", (item ? "item" : "itemset"), spellInfo->Id);
 
-        CastSpell(this,spellInfo,true,item);
+        CastSpell(this, spellInfo, true, item);
     }
     else
     {
@@ -7466,7 +7455,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                         group->PrepareLootRolls(this->GetGUID(), loot, (WorldObject*) go);
                         if (group->GetLootMethod() == MASTER_LOOT)
                             group->SendMasterLoot(loot, (WorldObject*) go);
-                            
+
                     }
                 }
             }
@@ -7616,7 +7605,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             else
             {
                 if (Group* group = GetGroup())
-                {     
+                {
                     if (loot->looterGUID && group->IsRoundRobinLootType())
                     {
                         Unit *looter = GetUnit(loot->looterGUID);
@@ -19437,15 +19426,6 @@ void Player::UpdateAreaDependentAuras(uint32 newArea)
         // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
         if (!IsSpellAllowedInLocation(iter->second->GetSpellProto(),GetMapId(),m_zoneUpdateId,newArea))
         {
-            if (iter->second->GetId() == 38157)
-            {
-                if (newArea == 3522 || newArea == 3785)
-                {
-                    iter++;
-                    continue;
-                }
-            }
-
             for (uint8 i = 0; i < 3; ++i)
             {
                 if (iter->second->GetSpellProto()->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL && HasAura(iter->second->GetSpellProto()->EffectTriggerSpell[i],0))
