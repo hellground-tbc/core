@@ -1,0 +1,17 @@
+ALTER TABLE characters
+ADD gender TINYINT UNSIGNED NOT NULL default '0' AFTER class,
+ADD xp INT UNSIGNED NOT NULL default '0' AFTER gender,
+ADD money INT UNSIGNED NOT NULL default '0' AFTER xp,
+ADD playerBytes INT UNSIGNED NOT NULL default '0' AFTER money,
+ADD playerBytes2 INT UNSIGNED NOT NULL default '0' AFTER playerBytes,
+ADD playerFlags INT UNSIGNED NOT NULL default '0' AFTER playerBytes2;
+
+UPDATE characters SET
+gender = (CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 37), ' ', -1) AS UNSIGNED) & 0xFF0000) >> 16,
+xp = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 927), ' ', -1) AS UNSIGNED),
+money = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 1462), ' ', -1) AS UNSIGNED),
+playerBytes = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 240), ' ', -1) AS UNSIGNED),
+playerBytes2 = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 241), ' ', -1) AS UNSIGNED),
+playerFlags = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(data, ' ', 237), ' ', -1) AS UNSIGNED)
+
+WHERE LENGTH(SUBSTRING_INDEX(data, ' ', 1592)) < LENGTH(data) && LENGTH(data) <= LENGTH(SUBSTRING_INDEX(data, ' ', 1593));
