@@ -4247,7 +4247,7 @@ void Unit::RemoveAurasWithDispelType(DispelType type)
     }
 }
 
-void RemoveAurasDueToRaidTeleport()
+void Unit::RemoveAurasDueToRaidTeleport()
 {
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
