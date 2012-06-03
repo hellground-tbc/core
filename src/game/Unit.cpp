@@ -4247,6 +4247,18 @@ void Unit::RemoveAurasWithDispelType(DispelType type)
     }
 }
 
+void RemoveAurasDueToRaidTeleport()
+{
+    for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
+    {
+        SpellEntry const *spell = iter->second->GetSpellProto();
+        if (spell->AttributesEx6 & SPELL_ATTR_EX6_NOT_IN_RAID_INSTANCE)
+            RemoveAura(iter);
+        else
+            ++iter;
+    }
+}
+
 void Unit::RemoveSingleAuraFromStackByDispel(uint32 spellId)
 {
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
