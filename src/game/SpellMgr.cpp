@@ -3344,6 +3344,11 @@ bool SpellMgr::IsSpellValid(SpellEntry const* spellInfo, Player* pl, bool msg)
 
 bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 zone_id,uint32 area_id)
 {
+    // hack moved from Player::UpdateAreaDependentAuras <--- is still needed ? Oo i don't think so ...
+    if (spellInfo->Id == 38157)
+        if (area_id == 3522 || area_id == 3785)
+            return true;
+
     // normal case
     if (spellInfo->AreaId && spellInfo->AreaId != zone_id && spellInfo->AreaId != area_id)
         return false;

@@ -3741,6 +3741,13 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_ONLY_INDOORS;
     }
 
+    if (m_spellInfo->AttributesEx6 & SPELL_ATTR_EX6_NOT_IN_RAID_INSTANCE && m_caster->GetInstanceId())
+    {
+        if (Map *PlrMap = m_caster->GetMap())
+            if (PlrMap->IsRaid())
+                return SPELL_FAILED_NOT_HERE;
+    }
+
     if (Unit *target = m_targets.getUnitTarget())
     {
         // target state requirements (not allowed state), apply to self also

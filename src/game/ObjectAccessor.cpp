@@ -170,7 +170,6 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     Player2CorpsesMapType::const_accessor a;
     if (!i_player2corpse.find(a, corpse->GetOwnerGUID()))
         return;
-    a.release();
 
     // build mapid*cellid -> guid_set map
     CellPair cell_pair = Hellground::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
@@ -180,7 +179,7 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     corpse->RemoveFromWorld();
 
     ACE_GUARD(LockType, g, i_corpseGuard);
-    i_player2corpse.erase(corpse->GetOwnerGUID());
+    i_player2corpse.erase(a);
 }
 
 void ObjectAccessor::AddCorpse(Corpse *corpse)
@@ -238,13 +237,14 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia
 
     // remove resurrectble corpse from grid object registry (loaded state checked into call)
     // do not load the map if it's not loaded
-    Map *map =sMapMgr.FindMap(corpse->GetMapId(), corpse->GetInstanceId());
-    if (map) map->Remove(corpse,false);
+    Map *map = sMapMgr.FindMap(corpse->GetMapId(), corpse->GetInstanceId());
+    if (map)
+        map->Remove(corpse, false);
 
     // remove corpse from DB
     corpse->DeleteFromDB();
 
-    Corpse *bones = NULL;
+    Corpse * bones = NULL;
     // create the bones only if the map and the grid is loaded at the corpse's location
     // ignore bones creating option in case insignia
     if (map && (insignia ||

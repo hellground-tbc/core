@@ -449,7 +449,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX6_CANT_TARGET_CCD            0x00000100            // 8 do not target crowd controlled
 #define SPELL_ATTR_EX6_UNK9                       0x00000200            // 9 not set in 2.4.2
 #define SPELL_ATTR_EX6_UNK10                      0x00000400            // 10
-#define SPELL_ATTR_EX6_UNK11                      0x00000800            // 11
+#define SPELL_ATTR_EX6_NOT_IN_RAID_INSTANCE       0x00000800            // 11 Not in raid instance
 #define SPELL_ATTR_EX6_UNK12                      0x00001000            // 12 not set in 2.4.2
 #define SPELL_ATTR_EX6_CAN_TARGET_INVISIBLE       0x00002000            // NYI only Bash'ir Phasing Device in 2.4.3
 #define SPELL_ATTR_EX6_UNK14                      0x00004000            // 14 not set in 2.4.2

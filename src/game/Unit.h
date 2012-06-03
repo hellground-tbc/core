@@ -1252,6 +1252,7 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         void RemoveAurasWithAttribute(uint32 flags, bool notPassiveOnly = false);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0);
         void RemoveAurasWithDispelType(DispelType type);
+        void RemoveAurasDueToRaidTeleport();
         void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();
