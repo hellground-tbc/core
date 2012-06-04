@@ -4026,6 +4026,9 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!pet->HasTPForSpell(learn_spellproto->Id))
                     return SPELL_FAILED_TRAINING_POINTS;
 
+                if (!pet->IsRightSpellIdForPet(m_spellInfo->EffectTriggerSpell[i]))
+                    return SPELL_FAILED_NO_PET; // Don't know what to put here, anyway this will happen only in trying to bug/cheat
+
                 break;
             }
             case SPELL_EFFECT_TRANS_DOOR:
@@ -4057,6 +4060,9 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 if (!pet->HasTPForSpell(learn_spellproto->Id))
                     return SPELL_FAILED_TRAINING_POINTS;
+
+                if (!pet->IsRightSpellIdForPet(m_spellInfo->EffectTriggerSpell[i]))
+                    return SPELL_FAILED_NO_PET; // Don't know what to put here, anyway this will happen only in trying to bug/cheat
 
                 break;
             }

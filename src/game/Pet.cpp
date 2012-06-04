@@ -1952,3 +1952,64 @@ void Pet::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
     }
     owner->GetSession()->SendPacket(&data);
 }
+
+bool Pet::IsRightSpellIdForPet(uint32 spellid)
+{
+    CreatureInfo const *cinfo = GetCreatureInfo();
+    uint32 RightSkillId = 0;
+    bool ThereIsInfo = false;
+    switch (cinfo->family)
+    {
+        case CREATURE_FAMILY_WOLF: RightSkillId = SKILL_PET_WOLF; break;
+        case CREATURE_FAMILY_CAT: RightSkillId = SKILL_PET_CAT; break;
+        case CREATURE_FAMILY_SPIDER: RightSkillId = SKILL_PET_SPIDER; break;
+        case CREATURE_FAMILY_BEAR: RightSkillId = SKILL_PET_BEAR; break;
+        case CREATURE_FAMILY_BOAR: RightSkillId = SKILL_PET_BOAR; break;
+        case CREATURE_FAMILY_CROCOLISK: RightSkillId = SKILL_PET_CROCILISK; break;
+        case CREATURE_FAMILY_CARRION_BIRD: RightSkillId = SKILL_PET_CARRION_BIRD; break;
+        case CREATURE_FAMILY_CRAB: RightSkillId = SKILL_PET_CRAB; break;
+        case CREATURE_FAMILY_GORILLA: RightSkillId = SKILL_PET_GORILLA; break;
+        case CREATURE_FAMILY_RAPTOR: RightSkillId = SKILL_PET_RAPTOR; break;
+        case CREATURE_FAMILY_TALLSTRIDER: RightSkillId = SKILL_PET_TALLSTRIDER; break;
+        case CREATURE_FAMILY_FELHUNTER: RightSkillId = SKILL_PET_FELHUNTER; break;
+        case CREATURE_FAMILY_VOIDWALKER: RightSkillId = SKILL_PET_VOIDWALKER; break;
+        case CREATURE_FAMILY_SUCCUBUS: RightSkillId = SKILL_PET_SUCCUBUS; break;
+        case CREATURE_FAMILY_SCORPID: RightSkillId = SKILL_PET_SCORPID; break;
+        case CREATURE_FAMILY_TURTLE: RightSkillId = SKILL_PET_TURTLE; break;
+        case CREATURE_FAMILY_IMP: RightSkillId = SKILL_PET_IMP; break;
+        case CREATURE_FAMILY_BAT: RightSkillId = SKILL_PET_BAT; break;
+        case CREATURE_FAMILY_HYENA: RightSkillId = SKILL_PET_HYENA; break;
+        case CREATURE_FAMILY_OWL: RightSkillId = SKILL_PET_OWL; break;
+        case CREATURE_FAMILY_WIND_SERPENT: RightSkillId = SKILL_PET_WIND_SERPENT; break;
+        case CREATURE_FAMILY_FELGUARD: RightSkillId = SKILL_PET_FELGUARD; break;
+        case CREATURE_FAMILY_DRAGONHAWK: RightSkillId = SKILL_PET_DRAGONHAWK; break;
+        case CREATURE_FAMILY_RAVAGER: RightSkillId = SKILL_PET_RAVAGER; break;
+        case CREATURE_FAMILY_WARP_STALKER: RightSkillId = SKILL_PET_WARP_STALKER; break;
+        case CREATURE_FAMILY_SPOREBAT: RightSkillId = SKILL_PET_SPOREBAT; break;
+        case CREATURE_FAMILY_NETHER_RAY: RightSkillId = SKILL_PET_NETHER_RAY; break;
+        case CREATURE_FAMILY_SERPENT: RightSkillId = SKILL_PET_SERPENT; break;
+        default:
+            sLog.outError("Unhandled case for IsRightSkillIdForPet for creaturefamily %u", cinfo->family);
+            break;
+    }
+
+    for (uint32 j=0; j<sSkillLineAbilityStore.GetNumRows(); ++j)
+    {
+        SkillLineAbilityEntry const *pAbility = sSkillLineAbilityStore.LookupEntry(j);
+        if (!pAbility)
+            continue;
+
+        if (pAbility->spellId == spellid)
+        {
+            if (RightSkillId == pAbility->skillId || pAbility->skillId == SKILL_PET_TALENTS)
+                return true;
+            else
+            ThereIsInfo = true;
+        }
+    }
+
+    if (!ThereIsInfo)
+        return true;
+    else
+        return false;
+}
