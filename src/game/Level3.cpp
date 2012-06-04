@@ -5244,6 +5244,9 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
                 SetSentErrorMessage(true);
                 return false;
             }
+            else if (Player *bannedPlayer = sObjectAccessor.GetPlayerByName(nameIPOrMail))
+                if (bannedPlayer->HasAura(9454, 0))
+                    bannedPlayer->RemoveAura(9454, 0);
             break;
         case BAN_IP:
             if (!IsIPAddress(nameIPOrMail.c_str()))
