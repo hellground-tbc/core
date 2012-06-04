@@ -8054,7 +8054,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 if (pVictim->isFrozen())                     // and compensate this for frozen target.
                     TakenTotalMod *= 3.0f;
             }
-            else if (spellProto->Id == 12723) // Sweeping Strikes
+            else if (spellProto->Id == 12723 || spellProto->Id == 22482) // Sweeping Strikes and Blade Flurry
             {
                 DoneTotalMod = 1.0f;
             }
@@ -8265,7 +8265,13 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 500;
             }
-            break;
+            // Shadow Word: Death back damage - 0%
+            else if (spellProto->Id == 32409)
+            {
+                DoneTotalMod = 1.0f; // Fix shadow word death sometimes had more damage then even target gets
+                CastingTime = 0;
+            }
+			break;
         case SPELLFAMILY_DRUID:
             // Hurricane triggered spell
             if ((spellProto->SpellFamilyFlags & 0x400000LL) && spellProto->SpellIconID == 220)
