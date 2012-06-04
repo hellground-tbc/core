@@ -20,6 +20,7 @@
 #include "sc_instance.h"
 #include "CombatAI.h"
 #include "PassiveAI.h"
+#include "Config/Config.h"
 
 #ifdef WIN32
 #include <windows.h>

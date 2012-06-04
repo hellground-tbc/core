@@ -39,7 +39,7 @@ bool AreaTrigger_at_twilight_grove(Player* pPlayer, AreaTriggerEntry const* at)
         if(TCorrupter)
         {
             TCorrupter->setFaction(14);
-            TCorrupter->SetMaxHealth(832750 * sWorld.getRate(RATE_CREATURE_ELITE_WORLDBOSS_HP));
+            TCorrupter->SetMaxHealth(832750 * sConfig.GetFloatDefault("Rate.Creature.Elite.WORLDBOSS.HP", 1.0f));
             CorrupterSummoned = true;
         }
         Unit* CorrupterSpeaker = pPlayer->SummonCreature(1,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ()-1,0,TEMPSUMMON_TIMED_DESPAWN,15000);

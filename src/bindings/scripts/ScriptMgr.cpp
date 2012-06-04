@@ -3,7 +3,6 @@
  * Please see the included DOCS/LICENSE.TXT for more information */
 
 #include "precompiled.h"
-#include "Config/Config.h"
 #include "Database/DatabaseEnv.h"
 #include "DBCStores.h"
 #include "ObjectMgr.h"
