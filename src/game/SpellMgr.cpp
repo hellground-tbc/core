@@ -747,7 +747,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     {
         case SPELLFAMILY_MAGE:
             // Amplify Magic, Dampen Magic
-            if (spellproto->SpellFamilyFlags == 0x20000000000)
+            if (spellproto->SpellFamilyFlags & 0x20000000000)
                 return true;
             break;
         case SPELLFAMILY_HUNTER:
@@ -851,7 +851,10 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                     return false;
                 case SPELL_AURA_PERIODIC_DAMAGE:            // used in positive spells also.
                     // part of negative spell if casted at self (prevent cancel)
-                    if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_CASTER)
+                    if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_TARGET_ANY)
+                        return false;
+                    // part of negative spell if casted at self (prevent cancel)
+                    else if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_CASTER)
                         return false;
                     break;
                 case SPELL_AURA_MOD_DECREASE_SPEED:         // used in positive spells also
@@ -3111,11 +3114,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 30207: // Magtheridon's creatures Shadow Grasp
                 spellInfo->StackAmount = 5;
-                break;
-            case 24135: // Wyvern Sting rank 3
-            case 24134: // Wyvern Sting rank 2
-            case 24131: // Wyvern Sting rank 1
-                spellInfo->EffectImplicitTargetA[0] = 6;
                 break;
             default:
                 break;
