@@ -550,16 +550,16 @@ class CoreBalancer
 class World
 {
     friend class ACE_Singleton<World, ACE_Null_Mutex>;
-    World();
 
     public:
+        World();
+        ~World();
+
         DelayExecutor m_ac;
 
         uint32 m_honorRanks[MAX_PVP_RANKS];
 
         static volatile uint32 m_worldLoopCounter;
-
-        ~World();
 
         WorldSession* FindSession(uint32 id) const;
         void AddSession(WorldSession *s);
