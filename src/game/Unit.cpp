@@ -8271,7 +8271,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 DoneTotalMod = 1.0f; // Fix shadow word death sometimes had more damage then even target gets
                 CastingTime = 0;
             }
-			break;
+            break;
         case SPELLFAMILY_DRUID:
             // Hurricane triggered spell
             if ((spellProto->SpellFamilyFlags & 0x400000LL) && spellProto->SpellIconID == 220)

@@ -684,7 +684,7 @@ void Group::SendRoundRobin(Loot* loot, WorldObject* object)
     if (Unit* looter = object->GetMap()->GetUnit(loot->looterGUID))
         data << looter->GetPackGUID();
     else
-        data << uint8(0);	
+        data << uint8(0);    
 
     BroadcastPacket(&data, false);
 }
