@@ -31,6 +31,7 @@ EndScriptData */
 #define SAY_KILLTARGET      -1469030
 
 #define GOSSIP_ITEM         "Start Event <Needs Gossip Text>"
+#define GOSSIP_ITEM_2       "<Nefarius's Corruption>"
 
 #define SPELL_ESSENCEOFTHERED       23513
 #define SPELL_FLAMEBREATH           23461
@@ -38,6 +39,9 @@ EndScriptData */
 #define SPELL_TAILSWIPE             15847
 #define SPELL_BURNINGADRENALINE     23620
 #define SPELL_CLEAVE                20684                   //Chain cleave is most likely named something different and contains a dummy effect
+
+#define QUEST_NEFARIUS_CORRUPTION	8730
+#define QUEST_THE_CHARGE_OF_THE_DRAGONFLIGHTS	8555
 
 struct HELLGROUND_DLL_DECL boss_vaelAI : public ScriptedAI
 {
@@ -114,6 +118,7 @@ struct HELLGROUND_DLL_DECL boss_vaelAI : public ScriptedAI
         DoCast(m_creature,SPELL_ESSENCEOFTHERED);
         DoZoneInCombat();
         m_creature->SetHealth(int(m_creature->GetMaxHealth()*.3));
+        m_creature->ResetPlayerDamageReq();
 
         if (pInstance)
             pInstance->SetData(DATA_VAELASTRASZ_THE_CORRUPT_EVENT, IN_PROGRESS);
@@ -239,6 +244,11 @@ void SendDefaultMenu_boss_vael(Player *player, Creature *_Creature, uint32 actio
         player->CLOSE_GOSSIP_MENU();
         ((boss_vaelAI*)_Creature->AI())->BeginSpeach((Unit*)player);
     }
+    else if (action == GOSSIP_ACTION_INFO_DEF + 2)
+    {
+        player->PrepareQuestMenu(_Creature->GetGUID());
+        player->SendPreparedQuest(_Creature->GetGUID());
+    }
 }
 
 bool GossipSelect_boss_vael(Player *player, Creature *_Creature, uint32 sender, uint32 action )
@@ -252,6 +262,8 @@ bool GossipSelect_boss_vael(Player *player, Creature *_Creature, uint32 sender, 
 bool GossipHello_boss_vael(Player *player, Creature *_Creature)
 {
     player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM        , GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    if ((player->GetQuestStatus(QUEST_THE_CHARGE_OF_THE_DRAGONFLIGHTS) == QUEST_STATUS_COMPLETE) && (player->GetQuestStatus(QUEST_NEFARIUS_CORRUPTION) == QUEST_STATUS_NONE))
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
     player->SEND_GOSSIP_MENU(907,_Creature->GetGUID());
 
     return true;
