@@ -3112,11 +3112,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 30207: // Magtheridon's creatures Shadow Grasp
                 spellInfo->StackAmount = 5;
                 break;
-            case 24135: // Wyvern Sting rank 3
-            case 24134: // Wyvern Sting rank 2
-            case 24131: // Wyvern Sting rank 1
-                spellInfo->EffectImplicitTargetA[0] = 6;
-                break;
             default:
                 break;
         }
