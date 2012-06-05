@@ -4064,12 +4064,7 @@ void Aura::HandleModStealth(bool apply, bool Real)
         {
             // drop flag at stealth in bg
             m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
-
-            // remove player from the objective's active player count at stealth
-            /*
-            if (OutdoorPvP * pvp = ((Player*)m_target)->GetOutdoorPvP())
-                pvp->HandlePlayerActivityChanged((Player*)m_target);
-            */
+            m_target->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
         }
 
         // only at real aura add

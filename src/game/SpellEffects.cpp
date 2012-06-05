@@ -943,15 +943,6 @@ void Spell::EffectDummy(uint32 i)
 
                     return;
                 }
-                // Shadowmeld
-                case 20580:                                 
-                {
-                    m_caster->InterruptSpell(CURRENT_AUTOREPEAT_SPELL); // break Auto Shot and autohit
-                    m_caster->InterruptSpell(CURRENT_CHANNELED_SPELL);  // break channeled spells
-                    m_caster->AttackStop();
-                    m_caster->ToPlayer()->SendAttackSwingCancelAttack();
-                    return;
-                }
                  // Demon Broiled Surprise
                 case 43723:
                 {
