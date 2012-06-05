@@ -183,7 +183,7 @@ struct HELLGROUND_DLL_DECL instance_mount_hyjal : public ScriptedInstance
         // to prevent respawning bosses if loot is loaded from db
         if (GetData(GetEncounterForEntry(creature_entry)) == DONE)
         {
-            creature->setDeathState(CORPSE);
+            creature->setDeathState(JUST_DIED);
             creature->RemoveCorpse();
         }
     }

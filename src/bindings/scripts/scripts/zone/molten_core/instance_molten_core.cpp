@@ -254,7 +254,7 @@ struct HELLGROUND_DLL_DECL instance_molten_core : public ScriptedInstance
 
         if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
         {
-            creature->setDeathState(CORPSE);
+            creature->setDeathState(JUST_DIED);
             creature->RemoveCorpse();
         }
     }

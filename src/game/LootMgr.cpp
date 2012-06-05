@@ -487,7 +487,7 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
         sLog.outBoss(ss.str().c_str());
 
         // make body visible to loot
-        pCreature->setDeathState(CORPSE);
+        pCreature->setDeathState(JUST_DIED);
         pCreature->SetCorpseDelay(3600);
 
         pCreature->LowerPlayerDamageReq(pCreature->GetMaxHealth());

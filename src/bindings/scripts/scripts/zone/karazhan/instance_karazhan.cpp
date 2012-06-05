@@ -166,7 +166,7 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
 
     if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
     {
-        creature->setDeathState(CORPSE);
+        creature->setDeathState(JUST_DIED);
         creature->RemoveCorpse();
     }
 }

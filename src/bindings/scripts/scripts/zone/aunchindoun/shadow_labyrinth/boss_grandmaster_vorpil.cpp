@@ -109,7 +109,7 @@ struct HELLGROUND_DLL_DECL mob_voidtravelerAI : public ScriptedAI
                 Vorpil->CastSpell(Vorpil, HeroicMode?H_SPELL_EMPOWERING_SHADOWS:SPELL_EMPOWERING_SHADOWS, true);
                 DoCast(m_creature, SPELL_SHADOW_NOVA, true);
                 //m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                m_creature->setDeathState(CORPSE);
+                m_creature->setDeathState(JUST_DIED);
                 m_creature->RemoveCorpse();
                 return;
             }

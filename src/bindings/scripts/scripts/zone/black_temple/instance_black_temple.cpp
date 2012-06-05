@@ -280,7 +280,7 @@ struct HELLGROUND_DLL_DECL instance_black_temple : public ScriptedInstance
                 pCreature->setFaction(1820);
             else
             {
-                pCreature->setDeathState(CORPSE);
+                pCreature->setDeathState(JUST_DIED);
                 pCreature->RemoveCorpse();
             }
         }
