@@ -840,6 +840,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_GROUP_VISIBILITY] = sConfig.GetIntDefault("Visibility.GroupMode",0);
 
     m_configs[CONFIG_MAIL_DELIVERY_DELAY] = sConfig.GetIntDefault("MailDeliveryDelay",HOUR);
+    m_configs[CONFIG_GM_MAIL]             = sConfig.GetBoolDefault("MailGmInstantSend",1);
 
     m_configs[CONFIG_UPTIME_UPDATE] = sConfig.GetIntDefault("UpdateUptimeInterval", 10);
     if (m_configs[CONFIG_UPTIME_UPDATE]<=0)

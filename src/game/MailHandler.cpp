@@ -355,6 +355,10 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
     // If theres is an item, there is a one hour delivery delay if sent to another account's character.
     uint32 deliver_delay = needItemDelay ? sWorld.getConfig(CONFIG_MAIL_DELIVERY_DELAY) : 0;
 
+    // If GM sends mail to player - deliver_delay must be zero 
+    if (deliver_delay && GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_MAIL))
+        deliver_delay = 0;
+
     // will delete item or place to receiver mail list
     draft
         .SetMoney(money)
