@@ -254,7 +254,10 @@ struct HELLGROUND_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             return;
 
         if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-            creature->Kill(creature, false);
+        {
+            creature->setDeathState(CORPSE);
+            creature->RemoveCorpse();
+        }
     }
 
     void OnObjectCreate(GameObject* gobj)

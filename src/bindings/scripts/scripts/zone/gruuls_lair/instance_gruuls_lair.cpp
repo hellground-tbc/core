@@ -111,7 +111,7 @@ struct HELLGROUND_DLL_DECL instance_gruuls_lair : public ScriptedInstance
 
         if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
         {
-            creature->Kill(creature, false);
+            creature->setDeathState(CORPSE);
             creature->RemoveCorpse();
         }
     }

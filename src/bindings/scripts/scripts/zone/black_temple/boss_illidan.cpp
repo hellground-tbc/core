@@ -1795,7 +1795,6 @@ struct HELLGROUND_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
     ScriptedInstance *pInstance;
 
     uint64 m_targetGUID;
-
     uint32 m_checkTimer;
 
     void Reset()
@@ -1808,7 +1807,7 @@ struct HELLGROUND_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
 
     void MovementInform(uint32 type, uint32 data)
     {
-        if (type != POINT_MOTION_TYPE || data != 666)
+        if (type != POINT_MOTION_TYPE)
             return;
 
         if (Unit *pTarget = me->GetUnit(m_targetGUID))
