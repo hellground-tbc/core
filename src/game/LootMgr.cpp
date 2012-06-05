@@ -411,8 +411,6 @@ void Loot::setCreatureGUID(Creature *pCreature)
 void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
 {
     clear();
-    //set variable to true even if we don't load anything so new loot won't be generated
-    m_lootLoadedFromDB = true;
 
     QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount, playerGuids FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
     if (result)
@@ -483,10 +481,13 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
         else
             return;
 
+        //set variable to true even if we don't load anything so new loot won't be generated
+        m_lootLoadedFromDB = true;
+
         sLog.outBoss(ss.str().c_str());
 
         // make body visible to loot
-        pCreature->setDeathState(JUST_DIED);
+        pCreature->setDeathState(CORPSE);
         pCreature->SetCorpseDelay(3600);
 
         pCreature->LowerPlayerDamageReq(pCreature->GetMaxHealth());

@@ -1720,7 +1720,6 @@ void Creature::setDeathState(DeathState s)
         if (CanFly())
             i_motionMaster.MoveFall();
 
-        
         // roll loot
         if (lootForPickPocketed)
         {
