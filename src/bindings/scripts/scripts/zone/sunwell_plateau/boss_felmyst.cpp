@@ -206,10 +206,10 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
         path = 0;
         counter = 0;
 
-        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
-        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
-        m_creature->setActive(true);
-        m_creature->SetWalk(false);
+        me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
+        me->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
+        me->setActive(true);
+        me->SetWalk(false);
         DespawnSummons();   // for unyielding dead summoned by trigger
 
         if(pInstance)
@@ -279,20 +279,20 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
     void KilledUnit(Unit* victim)
     {
         if(roll_chance_i(15))
-            DoScriptText(RAND(YELL_KILL1, YELL_KILL2), m_creature);
+            DoScriptText(RAND(YELL_KILL1, YELL_KILL2), me);
     }
 
     void JustRespawned()
     {
         Phase = PHASE_RESPAWNING;
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetStandState(PLAYER_STATE_SLEEP);
+        me->SetStandState(PLAYER_STATE_SLEEP);
         IntroTimer = 4000;
     }
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(YELL_DEATH, m_creature);
+        DoScriptText(YELL_DEATH, me);
         pInstance->SetData(DATA_FELMYST_EVENT, DONE);
         me->SummonCreature(MOB_KALECGOS, 1555, 737, 88, 0, TEMPSUMMON_TIMED_DESPAWN, 300000);
     }
@@ -377,25 +377,25 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
         switch(IntroPhase)
         {
             case 0:
-                DoScriptText(YELL_BIRTH, m_creature);
+                DoScriptText(YELL_BIRTH, me);
                 IntroTimer = 1000;
                 break;
             case 1:
-                m_creature->SetStandState(PLAYER_STATE_NONE);
+                me->SetStandState(PLAYER_STATE_NONE);
                 IntroTimer = 2000;
                 break;
             case 2:
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+                me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
                 IntroTimer = 2500;
                 break;
             case 3:
-                m_creature->SetLevitate(true);
-                m_creature->GetMotionMaster()->MovePoint(6, me->GetPositionX()-0.5, me->GetPositionY()-0.5, me->GetPositionZ()+20);
+                me->SetLevitate(true);
+                me->GetMotionMaster()->MovePoint(6, me->GetPositionX()-0.5, me->GetPositionY()-0.5, me->GetPositionZ()+20);
                 IntroTimer = 0;
                 break;
             case 4:
                 me->SetSpeed(MOVE_FLIGHT, 1.7, false);
-                m_creature->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
+                me->GetMotionMaster()->MovePath(FELMYST_OOC_PATH, true);
                 IntroTimer = 10000;
                 break;
             case 5:
@@ -406,18 +406,21 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
             case 6:
                 Phase = PHASE_GROUND;
                 if (!me->HasAura(AURA_NOXIOUS_FUMES))
-                    me->CastSpell(m_creature, AURA_NOXIOUS_FUMES, true);
-                AttackStart(m_creature->getVictim());
+                    me->CastSpell(me, AURA_NOXIOUS_FUMES, true);
+                AttackStart(me->getVictim());
                 break;
         }
         IntroPhase++;
     }
+    
+    void JustReachedHome()
+    {
+        me->SetLevitate(true);
+    }
 
     void MovementInform(uint32 Type, uint32 Id)
     {
-        if(Type == HOME_MOTION_TYPE)
-            m_creature->SetLevitate(true);
-        else if(Type == POINT_MOTION_TYPE)
+        if(Type == POINT_MOTION_TYPE)
         {
             // stop moving on each waypoint
             me->GetMotionMaster()->MoveIdle();
@@ -448,7 +451,7 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
                 case 4: // on path stop node
                     me->setHover(true);
                     me->SetSpeed(MOVE_FLIGHT, 1.7, false);
-                    m_creature->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
+                    me->RemoveAurasDueToSpell(SPELL_FOG_BREATH);
                     side = side?LEFT_SIDE:RIGHT_SIDE;
                     BreathCount++;
                     if(BreathCount < 3)
@@ -458,7 +461,7 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
                     Timer[EVENT_FLIGHT_SEQUENCE] = 3000;
                     break;
                 case 5: // on landing after phase 2
-                    m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
+                    me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     Timer[EVENT_FLIGHT_SEQUENCE] = 1500;
                     break;
                 case 6:
@@ -476,14 +479,14 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
         {
         case 0: // fly up
             BreathCount = 0;
-            m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            m_creature->SetLevitate(true);
+            me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
+            me->SetLevitate(true);
             me->setHover(true);
-            DoScriptText(YELL_TAKEOFF, m_creature);
+            DoScriptText(YELL_TAKEOFF, me);
             Timer[EVENT_FLIGHT_SEQUENCE] = 2000;
             break;
         case 1:
-            m_creature->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()+10, m_creature->GetPositionY(), m_creature->GetPositionZ()+20);
+            me->GetMotionMaster()->MovePoint(1, me->GetPositionX()+10, me->GetPositionY(), me->GetPositionZ()+20);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
         case 2: // summon vapor on player 2 times
@@ -502,7 +505,7 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
             }
         case 4: // go to side left/right marker
             me->SetSpeed(MOVE_FLIGHT, 1.7, false);
-            m_creature->GetMotionMaster()->MovePoint(2, FlightSide[side][0], FlightSide[side][1], FlightSide[side][2]);
+            me->GetMotionMaster()->MovePoint(2, FlightSide[side][0], FlightSide[side][1], FlightSide[side][2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
         case 5: // decide path to go breathing
@@ -510,16 +513,16 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
             path = urand(0,2);
             float *pos = FlightMarker[path][side];
             counter = side ? (path ? (path%2 ? 7 : 24) : 6) : 0;
-            m_creature->GetMotionMaster()->MovePoint(3, pos[0], pos[1], pos[2]);
+            me->GetMotionMaster()->MovePoint(3, pos[0], pos[1], pos[2]);
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
             }
         case 6: // start fog breath
             {
             float *pos = FlightMarker[path][side?LEFT_SIDE:RIGHT_SIDE];
-            m_creature->GetMotionMaster()->MovePoint(4, pos[0], pos[1], pos[2]);
-            DoScriptText(EMOTE_BREATH, m_creature);
-            AddSpellToCast(m_creature, SPELL_FOG_BREATH);
+            me->GetMotionMaster()->MovePoint(4, pos[0], pos[1], pos[2]);
+            DoScriptText(EMOTE_BREATH, me);
+            AddSpellToCast(me, SPELL_FOG_BREATH);
             Timer[EVENT_SUMMON_FOG] = 50;
             Timer[EVENT_FLIGHT_SEQUENCE] = 0;
             break;
@@ -529,7 +532,7 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
             {
                 float x, y, z;
                 target->GetPosition(x, y, z);
-                m_creature->GetMotionMaster()->MovePoint(5, x, y, z);
+                me->GetMotionMaster()->MovePoint(5, x, y, z);
             }
             else
             {
@@ -540,12 +543,12 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
             break;
         case 9: // ..and go for phase 1
             me->SetSpeed(MOVE_RUN, 2.0, false);
-            m_creature->SetLevitate(false);
-            m_creature->SetWalk(false);
+            me->SetLevitate(false);
+            me->SetWalk(false);
             me->setHover(false);
-            m_creature->SendHeartBeat();
+            me->SendHeartBeat();
             EnterPhase(PHASE_GROUND);
-            AttackStart(m_creature->getVictim());
+            AttackStart(me->getVictim());
             DoStartMovement(me->getVictim());
             break;
         default:
@@ -559,8 +562,8 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
         switch(Event)
         {
             case EVENT_BERSERK:
-                DoScriptText(YELL_BERSERK, m_creature);
-                ForceSpellCast(m_creature, SPELL_BERSERK, INTERRUPT_AND_CAST_INSTANTLY);
+                DoScriptText(YELL_BERSERK, me);
+                ForceSpellCast(me, SPELL_BERSERK, INTERRUPT_AND_CAST_INSTANTLY);
                 Timer[EVENT_BERSERK] = 300000;   // 5 min just in case :)
                 break;
             case EVENT_CHECK:
@@ -569,15 +572,15 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
                 Timer[EVENT_CHECK]=1000;
                 break;
             case EVENT_CLEAVE:
-                AddSpellToCast(m_creature->getVictim(), SPELL_CLEAVE);
+                AddSpellToCast(me->getVictim(), SPELL_CLEAVE);
                 Timer[EVENT_CLEAVE] = urand(5000, 10000);
                 break;
             case EVENT_CORROSION:
-                AddSpellToCast(m_creature->getVictim(), SPELL_CORROSION);
+                AddSpellToCast(me->getVictim(), SPELL_CORROSION);
                 Timer[EVENT_CORROSION] = urand(20000, 30000);
                 break;
             case EVENT_GAS_NOVA:
-                AddSpellToCastWithScriptText(m_creature, SPELL_GAS_NOVA, YELL_BREATH);
+                AddSpellToCastWithScriptText(me, SPELL_GAS_NOVA, YELL_BREATH);
                 // gas nova should only be used 2 times in phase 1
                 Timer[EVENT_GAS_NOVA] =(Timer[EVENT_FLIGHT] <= 20000)?40000:urand(20000, 25000);
                 break;
@@ -600,7 +603,7 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
                 break;
             case EVENT_SUMMON_FOG:
                 float *posFog = FogCoords[counter][path];
-                if(Creature *Fog = m_creature->SummonCreature(MOB_FOG_OF_CORRUPTION, posFog[0], posFog[1], posFog[2], 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
+                if(Creature *Fog = me->SummonCreature(MOB_FOG_OF_CORRUPTION, posFog[0], posFog[1], posFog[2], 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
                     Fog->CastSpell(Fog, SPELL_FOG_TRIGGER, true);
                 if((side && !counter) || (!side && counter == (path ? (path%2 ? 7 : 24) : 6)))
                     Timer[EVENT_SUMMON_FOG] = 0;
@@ -680,9 +683,9 @@ struct HELLGROUND_DLL_DECL mob_felmyst_vaporAI : public ScriptedAI
 {
     mob_felmyst_vaporAI(Creature *c) : ScriptedAI(c)
     {
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->SetSpeed(MOVE_RUN, 1.0);
-        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 0.01);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetSpeed(MOVE_RUN, 1.0);
+        me->SetFloatValue(UNIT_FIELD_COMBATREACH, 0.01);
     }
     void Reset() {}
     void JustRespawned()
@@ -706,8 +709,8 @@ struct HELLGROUND_DLL_DECL mob_felmyst_trailAI : public Scripted_NoMovementAI
 {
     mob_felmyst_trailAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        m_creature->CastSpell(m_creature, SPELL_TRAIL_TRIGGER, true);
-        m_creature->setFaction(1771);
+        me->CastSpell(me, SPELL_TRAIL_TRIGGER, true);
+        me->setFaction(1771);
         Delay = 6000;
         Despawn = 20000;
     }

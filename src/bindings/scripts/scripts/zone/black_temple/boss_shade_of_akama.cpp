@@ -127,7 +127,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->RemoveAurasDueToSpell(SPELL_SHADE_SOUL_CHANNEL);
+        me->RemoveAurasDueToSpell(SPELL_SHADE_SOUL_CHANNEL);
         m_channel = true;
     }
 
@@ -143,10 +143,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
 
         if (ShadeGUID)
         {
-            if (!m_creature->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            if (!me->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
             {
-                m_creature->RemoveAurasDueToSpell(SPELL_SHADE_SOUL_CHANNEL);
-                if (Unit *shade = m_creature->GetUnit(*m_creature, ShadeGUID))
+                me->RemoveAurasDueToSpell(SPELL_SHADE_SOUL_CHANNEL);
+                if (Unit *shade = me->GetUnit(*me, ShadeGUID))
                 {
                     if (shade->isAlive())
                         DoCast(shade, SPELL_SHADE_SOUL_CHANNEL);
@@ -178,8 +178,8 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
     {
         ClearCastQueue();
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, false);
 
         m_debilStrikeTimer = 10000;
         m_shieldBashTimer = 1000;
@@ -218,7 +218,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
         if (m_debilStrikeTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_DEBILITATIG_STRIKE);
+            AddSpellToCast(me->getVictim(), SPELL_DEBILITATIG_STRIKE);
             m_debilStrikeTimer = 20000;
         }
         else
@@ -226,9 +226,9 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
         if (m_shieldBashTimer < diff)
         {
-            if (m_creature->getVictim() && m_creature->getVictim()->hasUnitState(UNIT_STAT_CASTING))
+            if (me->getVictim() && me->getVictim()->hasUnitState(UNIT_STAT_CASTING))
             {
-                AddSpellToCast(m_creature->getVictim(), SPELL_SHIELD_BASH);
+                AddSpellToCast(me->getVictim(), SPELL_SHIELD_BASH);
                 m_shieldBashTimer = 10000;
             }
         }
@@ -240,12 +240,12 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
             if(!pInstance)
                 return;
 
-            if(Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if(Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if(!pAkama->isAlive())
                 {
-                    m_creature->Kill(m_creature, false);
-                    m_creature->RemoveCorpse();
+                    me->Kill(me, false);
+                    me->RemoveCorpse();
                 }
             }
             m_checkTimer = 5000;
@@ -303,7 +303,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_AKAMA_SHADE)))
+        if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_AKAMA_SHADE)))
             AttackStart(pAkama);
     }
 
@@ -356,7 +356,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 
         if (m_chainHealTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_CHAIN_HEAL, false);
+            AddSpellToCast(me, SPELL_CHAIN_HEAL, false);
             m_chainHealTimer = 20000;
         }
         else
@@ -364,7 +364,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 
         if (m_spiritMendTimer < diff)
         {
-            AddSpellToCast(m_creature, SPELL_SPIRIT_MEND, false);
+            AddSpellToCast(me, SPELL_SPIRIT_MEND, false);
             m_spiritMendTimer = 20000;
         }
         else
@@ -388,12 +388,12 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
             if(!pInstance)
                 return;
 
-            if(Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if(Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if(!pAkama->isAlive())
                 {
-                    m_creature->Kill(m_creature, false);
-                    m_creature->RemoveCorpse();
+                    me->Kill(me, false);
+                    me->RemoveCorpse();
                 }
             }
             m_checkTimer = 5000;
@@ -448,7 +448,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_AKAMA_SHADE)))
+        if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_AKAMA_SHADE)))
             AttackStart(pAkama);
     }
 
@@ -459,7 +459,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
 
         if (m_lightningBoltTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_LIGHTNING_BOLT, false);
+            AddSpellToCast(me->getVictim(), SPELL_LIGHTNING_BOLT, false);
             m_lightningBoltTimer = 10000;
         }
         else
@@ -482,12 +482,12 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
             if (!pInstance)
                 return;
 
-            if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if (!pAkama->isAlive())
                 {
-                    m_creature->Kill(m_creature, false);
-                    m_creature->RemoveCorpse();
+                    me->Kill(me, false);
+                    me->RemoveCorpse();
                 }
             }
             m_checkTimer = 5000;
@@ -545,7 +545,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_AKAMA_SHADE)))
+        if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_AKAMA_SHADE)))
             AttackStart(pAkama);
     }
 
@@ -556,7 +556,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
 
         if (m_debilPoisonTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_DEBILITATING_POISON, false);
+            AddSpellToCast(me->getVictim(), SPELL_DEBILITATING_POISON, false);
             m_debilPoisonTimer = 15000;
         }
         else
@@ -564,7 +564,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
 
         if (m_eviscerateTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_EVISCERATE, false);
+            AddSpellToCast(me->getVictim(), SPELL_EVISCERATE, false);
             m_eviscerateTimer = 10000;
         }
         else
@@ -575,12 +575,12 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
             if (!pInstance)
                 return;
 
-            if (Creature *pAkama = m_creature->GetCreature(*m_creature, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if(!pAkama->isAlive())
                 {
-                    m_creature->Kill(m_creature, false);
-                    m_creature->RemoveCorpse();
+                    me->Kill(me, false);
+                    me->RemoveCorpse();
                 }
             }
             m_checkTimer = 5000;
@@ -619,7 +619,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
     {
         if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL)
         {
-            if (Unit *pShade = m_creature->GetUnit(*m_creature, m_shadeGUID))
+            if (Unit *pShade = me->GetUnit(*me, m_shadeGUID))
                 pShade->RemoveSingleAuraFromStack(SPELL_SHADE_SOUL_CHANNEL_2, 0);
         }
     }
@@ -629,7 +629,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        if (Unit *pShade = m_creature->GetUnit(*m_creature, m_shadeGUID))
+        if (Unit *pShade = me->GetUnit(*me, m_shadeGUID))
         {
             me->SetSelection(m_shadeGUID);
             DoCast(pShade, SPELL_SHADE_SOUL_CHANNEL);
@@ -650,7 +650,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
         {
             if (!me->IsNonMeleeSpellCasted(true, false, true)) // that shouldn't happen
             {
-                if (Unit *pShade = m_creature->GetUnit(*m_creature, m_shadeGUID))
+                if (Unit *pShade = me->GetUnit(*me, m_shadeGUID))
                 {
                     if (pShade->isAlive())
                     {
@@ -681,15 +681,15 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 {
     boss_shade_of_akamaAI(Creature* c) : ScriptedAI(c), m_summons(c)
     {
-        m_creature->setActive(true);
+        me->setActive(true);
         pInstance = (ScriptedInstance*)c->GetInstanceData();
         AkamaGUID = pInstance ? pInstance->GetData64(DATA_AKAMA_SHADE) : 0;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-        m_creature->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+        me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
 
-        m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STUN);
-        m_creature->GetPosition(wLoc);
+        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STUN);
+        me->GetPosition(wLoc);
     }
 
     void EnterEvadeMode()
@@ -707,7 +707,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if(Unit *owner = me->GetCharmerOrOwner())
         {
             me->GetMotionMaster()->Clear(false);
-            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, m_creature->GetFollowAngle());
+            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
             Reset();
         }
         else
@@ -745,10 +745,10 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         m_summons.DespawnAll();
         SpawnChannelers();
 
-        m_creature->SetSpeed(MOVE_WALK, 1);
-        m_creature->SetSpeed(MOVE_RUN, 1);
+        me->SetSpeed(MOVE_WALK, 1);
+        me->SetSpeed(MOVE_RUN, 1);
 
-        if (Creature *akama = m_creature->GetCreature(*m_creature, AkamaGUID))
+        if (Creature *akama = me->GetCreature(*me, AkamaGUID))
         {
             if (akama->isDead())
                 akama->Respawn();
@@ -772,12 +772,12 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if (m_waveTimer < diff)
         {
-            Creature *akama = m_creature->GetCreature(*m_creature, AkamaGUID);
+            Creature *akama = me->GetCreature(*me, AkamaGUID);
             for (int i = 0; i < 2; ++i)
             {
                 for (int j = 0; j < 3; ++j)
                 {
-                    if (Creature *pAttacker = m_creature->SummonCreature(spawnEntries[j], SpawnLocations[i][0], SpawnLocations[i][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
+                    if (Creature *pAttacker = me->SummonCreature(spawnEntries[j], SpawnLocations[i][0], SpawnLocations[i][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
                     {
                         m_summons.Summon(pAttacker);
                         pAttacker->GetMotionMaster()->MovePoint(0, 486.90f, 401.33f, SPAWN_Z);
@@ -791,10 +791,10 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
         if (m_guardTimer < diff)
         {
-            if (Creature *pDefender = m_creature->SummonCreature(CREATURE_DEFENDER, SpawnLocations[0][0], SpawnLocations[0][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
+            if (Creature *pDefender = me->SummonCreature(CREATURE_DEFENDER, SpawnLocations[0][0], SpawnLocations[0][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
             {
                 m_summons.Summon(pDefender);
-                if(Creature *pAkama = m_creature->GetCreature(*m_creature, AkamaGUID))
+                if(Creature *pAkama = me->GetCreature(*me, AkamaGUID))
                 {
                     pDefender->AddThreat(pAkama, 100000.0f);
                     pDefender->AI()->AttackStart(pAkama);
@@ -813,7 +813,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 return;
             }
 
-            if (Creature *pSorcerer = m_creature->SummonCreature(CREATURE_SORCERER, SpawnLocations[1][0], SpawnLocations[1][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
+            if (Creature *pSorcerer = me->SummonCreature(CREATURE_SORCERER, SpawnLocations[1][0], SpawnLocations[1][1], SPAWN_Z, 0.0f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
             {
                 m_sorcerers.push_back(pSorcerer->GetGUID());
 
@@ -845,7 +845,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         if (!who || event_phase != AKAMA_FIGHT)
             return;
 
-        if (m_creature->Attack(who, true))
+        if (me->Attack(who, true))
             DoStartMovement(who);
     }
 
@@ -883,7 +883,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         for (std::list<uint64>::const_iterator itr = m_channelers.begin(); itr != m_channelers.end(); ++itr)
         {
-            if (Creature *channeler = m_creature->GetCreature(*m_creature, *itr))
+            if (Creature *channeler = me->GetCreature(*me, *itr))
             {
                 ((mob_ashtongue_channelerAI *)channeler->AI())->m_channel = false;
                 channeler->InterruptNonMeleeSpells(false);
@@ -892,7 +892,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
         for (std::list<uint64>::const_iterator itr = m_sorcerers.begin(); itr != m_sorcerers.end(); ++itr)
         {
-            if (Creature *pSorc = m_creature->GetCreature(*m_creature, *itr))
+            if (Creature *pSorc = me->GetCreature(*me, *itr))
             {
                 pSorc->Kill(pSorc, false);
                 pSorc->RemoveCorpse();
@@ -911,19 +911,18 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                 TurnOffChanneling();
 
                 target->InterruptNonMeleeSpells(false);
-                ((Creature *)target)->AI()->AttackStart(m_creature);
+                ((Creature *)target)->AI()->AttackStart(me);
             }
         }
     }
 
+    void JustReachedHome()
+    {
+        Reset();
+    }
+
     void MovementInform(uint32 type, uint32 id)
     {
-        if (type == HOME_MOTION_TYPE)
-        {
-            Reset();
-            return;
-        }
-
         if (type != POINT_MOTION_TYPE)
             return;
 
@@ -944,10 +943,10 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             case 2:
             {
                 event_phase = AKAMA_FIGHT;
-                if (Creature *pAkama = m_creature->GetCreature(*m_creature, AkamaGUID))
+                if (Creature *pAkama = me->GetCreature(*me, AkamaGUID))
                 {
-                    m_creature->AddThreat(pAkama, 1000000.0f);
-                    m_creature->AI()->AttackStart(pAkama);
+                    me->AddThreat(pAkama, 1000000.0f);
+                    me->AI()->AttackStart(pAkama);
                 }
                 break;
             }
@@ -957,16 +956,16 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     void SetBanish(bool set)
     {
         if (set)
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         else
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void DespawnChannelersAndSorcerers()
     {
         for (std::list<uint64>::const_iterator itr = m_channelers.begin(); itr != m_channelers.end(); ++itr)
         {
-            Creature *channeler = m_creature->GetCreature(*m_creature, *itr);
+            Creature *channeler = me->GetCreature(*me, *itr);
             if (channeler)
             {
                 channeler->setDeathState(JUST_DIED);
@@ -977,7 +976,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
         for (std::list<uint64>::const_iterator itr = m_sorcerers.begin(); itr != m_sorcerers.end(); ++itr)
         {
-            Creature *sorc = m_creature->GetCreature(*m_creature, *itr);
+            Creature *sorc = me->GetCreature(*me, *itr);
             if (sorc)
             {
                 sorc->setDeathState(JUST_DIED);
@@ -991,13 +990,13 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if (m_channelers.empty())
         {
-            float pos_x = m_creature->GetPositionX();
-            float pos_y = m_creature->GetPositionY();
+            float pos_x = me->GetPositionX();
+            float pos_y = me->GetPositionY();
             for (int i = 0; i < CHANNELERS_COUNT; ++i)
             {
                 float x = pos_x + 15.0f * cos(M_PI/3 * i);
                 float y = pos_y + 15.0f * sin(M_PI/3 * i);
-                Creature *channeler = m_creature->SummonCreature(CREATURE_CHANNELER, x, y, CHANNELERS_Z, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
+                Creature *channeler = me->SummonCreature(CREATURE_CHANNELER, x, y, CHANNELERS_Z, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0);
                 if (channeler)
                 {
                     m_channelers.push_back(channeler->GetGUID());
@@ -1010,10 +1009,10 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         {
             for (std::list<uint64>::const_iterator itr = m_channelers.begin(); itr != m_channelers.end(); ++itr)
             {
-                Creature *channeler = m_creature->GetCreature(*m_creature, *itr);
+                Creature *channeler = me->GetCreature(*me, *itr);
                 if (channeler)
                 {
-                    m_creature->DealDamage(channeler, channeler->GetMaxHealth());
+                    me->DealDamage(channeler, channeler->GetMaxHealth());
                     channeler->Respawn();
                     channeler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
@@ -1023,7 +1022,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
         // despawn sorcerers here
         for (std::list<uint64>::const_iterator itr = m_sorcerers.begin(); itr != m_sorcerers.end(); ++itr)
         {
-            Creature *sorc = m_creature->GetCreature(*m_creature, *itr);
+            Creature *sorc = me->GetCreature(*me, *itr);
             if (sorc)
             {
                 sorc->setDeathState(JUST_DIED);
@@ -1048,7 +1047,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
             {
                 for (std::list<uint64>::const_iterator itr = m_channelers.begin(); itr != m_channelers.end(); ++itr)
                 {
-                    if (Creature *channeler = m_creature->GetCreature(*m_creature, *itr))
+                    if (Creature *channeler = me->GetCreature(*me, *itr))
                         channeler->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
 
@@ -1091,12 +1090,12 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     m_updateSpeed = false;
                 }
 
-                if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+                if(me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
                     ProcessSpawning(diff);
 
                 if (m_checkTimer < diff)
                 {
-                    if (!m_creature->IsWithinDistInMap(&wLoc, 100))
+                    if (!me->IsWithinDistInMap(&wLoc, 100))
                         EnterEvadeMode();
                     else
                         DoZoneInCombat();
@@ -1112,14 +1111,14 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
                     {
                         if (AkamaGUID)
                         {
-                            Creature *akama = m_creature->GetCreature(*m_creature, AkamaGUID);
+                            Creature *akama = me->GetCreature(*me, AkamaGUID);
                             if (akama && akama->isAlive())
                             {
                                 int damage = akama->GetMaxHealth()/12;
                                 if (event_phase == AKAMA_DEATH) // after 60s deal damage equal to hp
                                     damage = akama->GetHealth();
 
-                                m_creature->DealDamage(akama, damage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                                me->DealDamage(akama, damage, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                                 m_damageTimer = 10000;
                                 ++event_phase;
                             }
@@ -1140,23 +1139,23 @@ void mob_ashtongue_channelerAI::OnAuraRemove(Aura *aura, bool stackRemove)
 {
     if (aura->GetSpellProto()->Id == SPELL_SHADE_SOUL_CHANNEL)
     {
-        if (Unit *shade = m_creature->GetUnit(*m_creature, ShadeGUID))
+        if (Unit *shade = me->GetUnit(*me, ShadeGUID))
             shade->RemoveSingleAuraFromStack(SPELL_SHADE_SOUL_CHANNEL_2, 0);
     }
 }
 
 struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
 {
-    npc_akamaAI(Creature* c) : ScriptedAI(c), m_summons(m_creature)
+    npc_akamaAI(Creature* c) : ScriptedAI(c), m_summons(me)
     {
         pInstance = (ScriptedInstance *)c->GetInstanceData();
         ShadeGUID = pInstance ? pInstance->GetData64(DATA_SHADEOFAKAMA) : 0;
-        m_creature->setActive(true);
+        me->setActive(true);
     }
 
     void ShadeKilled()
     {
-        m_creature->InterruptNonMeleeSpells(false);
+        me->InterruptNonMeleeSpells(false);
         m_talk = 0;
         m_talkTimer = 3000;
         if (pInstance)
@@ -1192,10 +1191,10 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
         {
             if (pInstance->GetData(EVENT_SHADEOFAKAMA) == NOT_STARTED)
             {
-                DoCast(m_creature, SPELL_STEALTH);
-                m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 0);
-                m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET);
+                DoCast(me, SPELL_STEALTH);
+                me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
+                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_PL_SPELL_TARGET);
             }
         }
         m_summons.DespawnAll();
@@ -1209,9 +1208,9 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
     void BeginEvent(Player* pl)
     {
         pInstance->SetData(EVENT_SHADEOFAKAMA, IN_PROGRESS);
-        m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        m_creature->RemoveAurasDueToSpell(SPELL_STEALTH);
-        m_creature->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
+        me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        me->RemoveAurasDueToSpell(SPELL_STEALTH);
+        me->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
     }
 
     void MovementInform(uint32 type, uint32 id)
@@ -1236,11 +1235,11 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
                     return;
                 }
 
-                Creature *shade = m_creature->GetCreature(*m_creature, ShadeGUID);
+                Creature *shade = me->GetCreature(*me, ShadeGUID);
                 if (shade)
                 {
                     DoCast(shade, SPELL_AKAMA_SOUL_CHANNEL);
-                    m_creature->SetSelection(ShadeGUID);
+                    me->SetSelection(ShadeGUID);
                 }
             }
             break;
@@ -1274,8 +1273,8 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
-        Creature *shade = m_creature->GetCreature(*m_creature, ShadeGUID);
+        DoScriptText(SAY_DEATH, me);
+        Creature *shade = me->GetCreature(*me, ShadeGUID);
         if (shade && shade->isAlive())
             shade->AI()->EnterEvadeMode();
 
@@ -1289,7 +1288,7 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
             if (!me->isInCombat())
                 return false;
 
-            if (Creature *pShade = m_creature->GetCreature(*m_creature, ShadeGUID))
+            if (Creature *pShade = me->GetCreature(*me, ShadeGUID))
             {
                 AttackStart(pShade);
                 return me->getVictim();
@@ -1311,36 +1310,36 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
                 switch (m_talk)
                 {
                     case 0:
-                        m_creature->GetMotionMaster()->MovePoint(1, moveTo[1][0], moveTo[1][1], moveTo[1][2]);
+                        me->GetMotionMaster()->MovePoint(1, moveTo[1][0], moveTo[1][1], moveTo[1][2]);
                     break;
                     case 1:
-                        m_creature->GetMotionMaster()->MovePoint(2, moveTo[0][0], moveTo[0][1], moveTo[0][2]);
+                        me->GetMotionMaster()->MovePoint(2, moveTo[0][0], moveTo[0][1], moveTo[0][2]);
                     break;
                     case 2:
-                        m_creature->GetMotionMaster()->MovePoint(3, moveTo[0][0]-5.0f, moveTo[0][1], moveTo[0][2]);
+                        me->GetMotionMaster()->MovePoint(3, moveTo[0][0]-5.0f, moveTo[0][1], moveTo[0][2]);
                     break;
                     case 3:
-                        m_creature->GetMotionMaster()->MovePoint(4, moveTo[0][0]-4.0f, moveTo[0][1], moveTo[0][2]);
+                        me->GetMotionMaster()->MovePoint(4, moveTo[0][0]-4.0f, moveTo[0][1], moveTo[0][2]);
                     break;
                     case 4:
                     {
-                        m_creature->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+                        me->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
                         ++m_talk;
                         m_talkTimer = 1500;
                     }
                     break;
                     case 5:
                     {
-                        DoScriptText(SAY_FREE, m_creature);
-                        DoCast(m_creature, 40927, true);
-                        if (Creature *shade = m_creature->GetCreature(*m_creature, ShadeGUID))
+                        DoScriptText(SAY_FREE, me);
+                        DoCast(me, 40927, true);
+                        if (Creature *shade = me->GetCreature(*me, ShadeGUID))
                             DoCast(shade, SPELL_AKAMA_SOUL_RETRIEVE);
 
                         ++m_talk;
                         m_talkTimer = 60000;
                         for (int i = 0; i < MAX_BROKEN; ++i)
                         {
-                            Creature *broken = m_creature->SummonCreature(CREATURE_BROKEN, BrokenPositions[i][0], BrokenPositions[i][1], AKAMA_Z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 45000);
+                            Creature *broken = me->SummonCreature(CREATURE_BROKEN, BrokenPositions[i][0], BrokenPositions[i][1], AKAMA_Z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 45000);
                             if (broken)
                             {
                                 m_summons.Summon(broken);
@@ -1352,7 +1351,7 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
                     }
                     break;
                     default:
-                        m_creature->AI()->EnterEvadeMode();
+                        me->AI()->EnterEvadeMode();
                     break;
                 }
             }
@@ -1363,9 +1362,9 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
         if (pInstance->GetData(EVENT_SHADEOFAKAMA) != IN_PROGRESS)
             return;
 
-        if (!m_yell && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 15)
+        if (!m_yell && (me->GetHealth()*100 / me->GetMaxHealth()) < 15)
         {
-            DoScriptText(SAY_LOW_HEALTH, m_creature);
+            DoScriptText(SAY_LOW_HEALTH, me);
             m_yell = true;
         }
 
@@ -1377,7 +1376,7 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
 
         if (m_destructiveTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_DESTRUCTIVE_POISON, true);
+            AddSpellToCast(me->getVictim(), SPELL_DESTRUCTIVE_POISON, true);
             m_destructiveTimer = 5000;
         }
         else
@@ -1385,7 +1384,7 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
 
         if (m_lightningBoltTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_CHAIN_LIGHTNING);
+            AddSpellToCast(me->getVictim(), SPELL_CHAIN_LIGHTNING);
             m_lightningBoltTimer = 8000;
         }
         else
@@ -1400,7 +1399,7 @@ void boss_shade_of_akamaAI::JustDied(Unit *)
 {
     DespawnChannelersAndSorcerers();
     m_summons.DespawnAll();
-    if (Creature *akama = m_creature->GetCreature(*m_creature, AkamaGUID))
+    if (Creature *akama = me->GetCreature(*me, AkamaGUID))
         ((npc_akamaAI *)akama->AI())->ShadeKilled();
 
     if (pInstance)
