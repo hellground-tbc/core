@@ -930,6 +930,19 @@ void Spell::EffectDummy(uint32 i)
                         m_caster->CastSpell(unitTarget,spell_id,true);
                 return;
                 }
+                // Salvage Wreckage
+                case 42287:
+                {
+                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if (roll_chance_i(66))
+                        m_caster->CastSpell(m_caster, 42289, true, m_CastItem);
+                    else
+                        m_caster->CastSpell(m_caster, 42288, true);
+
+                    return;
+                }
                  // Demon Broiled Surprise
                 case 43723:
                 {
