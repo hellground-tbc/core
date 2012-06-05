@@ -1145,14 +1145,6 @@ GM.TrustedLevel   = 3
 #                 1 (raid members 100% auto detect invisible player from same raid)
 #                 2 (players from same team can 100% auto detect invisible player)
 #
-#    Visibility.Distance.Creature
-#    Visibility.Distance.Player
-#        Visibility distance for different in game object
-#        Max limited by active player zone: ~ 333
-#        Min limit dependent from objects
-#        Default: 132 (cell size)
-#        Min limit is max aggro radius (45) * Rate.Creature.Aggro
-#
 #    Visibility.Distance.Object
 #        Visible distance for gameobject, dynobject, bodies, corpses, bones
 #        Min limit is iteraction distance (5)
@@ -1180,12 +1172,6 @@ GM.TrustedLevel   = 3
 ###################################################################################################################
 
 Visibility.GroupMode = 0
-
-Visibility.Distance.Special       = 132
-Visibility.Distance.Continents    = 132
-Visibility.Distance.Instances     = 132
-Visibility.Distance.Arenas        = 132
-Visibility.Distance.BG            = 132
 
 Visibility.Distance.Object        = 132
 Visibility.Distance.InFlight      = 132

@@ -46,14 +46,10 @@ namespace VMAP
     class IVMapManager
     {
         private:
-            bool iEnableLineOfSightCalc;
             bool iEnableClusterComputing;
 
-        protected:
-            G3D::Table<unsigned int , bool> mapsWithLOS;
-
         public:
-            IVMapManager() : iEnableLineOfSightCalc(true), iEnableClusterComputing(false) {}
+            IVMapManager() : iEnableClusterComputing(false) {}
 
             virtual ~IVMapManager(void) {}
 
@@ -77,29 +73,12 @@ namespace VMAP
             */
             virtual bool processCommand(char *pCommand)= 0;
 
-            /**
-            Enable/disable LOS calculation
-            It is enabled by default. If it is enabled in mid game the maps have to loaded manualy
-            */
-            void setEnableLineOfSightCalc(bool pVal) { iEnableLineOfSightCalc = pVal; }
-            /**
-            Enable/disable model height calculation
-            It is enabled by default. If it is enabled in mid game the maps have to loaded manualy
-            */
-
             void setEnableClusterComputing(bool pVal) { iEnableClusterComputing = pVal; }
 
-            bool isLineOfSightCalcEnabled(unsigned int pMapId) const { return(iEnableLineOfSightCalc && mapsWithLOS.containsKey(pMapId)); }
             bool isClusterComputingEnabled() const { return iEnableClusterComputing; }
 
             virtual std::string getDirFileName(unsigned int pMapId, int x, int y) const =0;
-            /**
-            Block maps from being used.
-            parameter: String of map ids. Delimiter = ","
-            e.g.: "0,1,530"
-            */
-            //virtual void preventMapsFromBeingUsed(const char* pMapIdString) =0;
-            virtual void setLOSonmaps(const char* pMapIdString) =0;
+
             /**
             Query world model area info.
             \param z gets adjusted to the ground height for which this are info is valid

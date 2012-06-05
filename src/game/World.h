@@ -297,6 +297,7 @@ enum WorldConfigs
 
     CONFIG_PRIVATE_CHANNEL_LIMIT,
 
+    CONFIG_VMAP_LOS_ENABLED,
     CONFIG_MMAP_ENABLED,
 
     CONFIG_COREBALANCER_ENABLED,
@@ -700,12 +701,6 @@ class World
 
         bool IsAllowedMap(uint32 mapid) { return m_forbiddenMapIds.count(mapid) == 0 ;}
 
-        // for max speed access
-        static float GetMaxVisibleDistanceOnContinents()    { return m_MaxVisibleDistanceOnContinents; }
-        static float GetMaxSpecialVisibleDistance()         { return m_MaxSpecialVisibleDistance; }
-        static float GetMaxVisibleDistanceInInstances()     { return m_MaxVisibleDistanceInInstances;  }
-        static float GetMaxVisibleDistanceInArenas()        { return m_MaxVisibleDistanceInArenas;   }
-        static float GetMaxVisibleDistanceInBG()            { return m_MaxVisibleDistanceInBG;   }
         static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject; }
 
         static float GetMaxVisibleDistanceInFlight()        { return m_MaxVisibleDistanceInFlight;    }
@@ -846,13 +841,6 @@ class World
         uint64 m_massMuteTime;
         std::string m_massMuteReason;
 
-        // for max speed access
-        static float m_MaxVisibleDistance;
-        static float m_MaxVisibleDistanceOnContinents;
-        static float m_MaxVisibleDistanceInInstances;
-        static float m_MaxSpecialVisibleDistance;
-        static float m_MaxVisibleDistanceInArenas;
-        static float m_MaxVisibleDistanceInBG;
         static float m_MaxVisibleDistanceForObject;
         static float m_MaxVisibleDistanceInFlight;
         static float m_VisibleUnitGreyDistance;

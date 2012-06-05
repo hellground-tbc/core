@@ -197,18 +197,35 @@ class GridMap
 
 enum FeaturePriority
 {
-    F_LOW_PRIORITY  = 1,
-    F_MID_PRIORITY  = 2,
-    F_HIGH_PRIORITY = 3,
+    F_ALWAYS_DISABLED = 0,
+    F_LOW_PRIORITY    = 1,
+    F_MID_PRIORITY    = 2,
+    F_HIGH_PRIORITY   = 3,
 
     F_ALWAYS_ENABLED = 6//CB_TRESHOLD_MAX +1,
 };
+
+typedef struct ts
+{
+    ts()
+    {
+        visibility = DEFAULT_VISIBILITY_DISTANCE;
+        pathfinding = F_ALWAYS_ENABLED;
+        lineofsight = F_ALWAYS_ENABLED;
+    }
+
+    float visibility;
+
+    FeaturePriority pathfinding;
+    FeaturePriority lineofsight;
+
+} TerrainSpecifics;
 
 //class for sharing and managing GridMap objects
 class HELLGROUND_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
 {
     public:
-        TerrainInfo(uint32 mapid);
+        TerrainInfo(uint32 mapid, TerrainSpecifics terrainspecifics);
         ~TerrainInfo();
 
         uint32 GetMapId() const { return m_mapId; }
@@ -233,12 +250,15 @@ class HELLGROUND_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
         bool IsOutdoors(float x, float y, float z) const;
 
+        TerrainSpecifics const* GetSpecifics() const { return &(TerrainSpecifics const)specifics; }
 
         //this method should be used only by TerrainManager
         //to cleanup unreferenced GridMap objects - they are too heavy
         //to destroy them dynamically, especially on highly populated servers
         //THIS METHOD IS NOT THREAD-SAFE!!!! AND IT SHOULDN'T BE THREAD-SAFE!!!!
         void CleanUpGrids(const uint32 diff);
+
+        float GetVisibilityDistance();
 
         bool IsLineOfSightEnabled() const;
         bool IsPathFindingEnabled() const;
@@ -261,8 +281,7 @@ class HELLGROUND_DLL_SPEC TerrainInfo : public Referencable<AtomicLong>
 
         const uint32 m_mapId;
 
-        FeaturePriority m_pathFindingPriority;
-        FeaturePriority m_losPriority;
+        TerrainSpecifics specifics;
 
         GridMap *m_GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         int16 m_GridRef[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
@@ -283,9 +302,12 @@ class HELLGROUND_DLL_DECL TerrainManager
     TerrainManager();
 
     typedef UNORDERED_MAP<uint32, TerrainInfo *> TerrainDataMap;
+    typedef UNORDERED_MAP<uint32, TerrainSpecifics > TerrainsSpecificsMap;
 
     public:
-        TerrainInfo * LoadTerrain(const uint32 mapId);
+        void LoadTerrainSpecifics();
+
+        TerrainInfo* LoadTerrain(const uint32 mapId);
         void UnloadTerrain(const uint32 mapId);
 
         void Update(const uint32 diff);
@@ -321,6 +343,7 @@ class HELLGROUND_DLL_DECL TerrainManager
 
         ACE_Thread_Mutex Lock;
         TerrainDataMap i_TerrainMap;
+        TerrainsSpecificsMap i_TerrainSpecifics;
 };
 
 #define sTerrainMgr (*ACE_Singleton<TerrainManager, ACE_Thread_Mutex>::instance())

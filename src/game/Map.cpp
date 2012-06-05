@@ -101,7 +101,7 @@ void Map::DeleteStateMachine()
 Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
    : i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
      i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), i_gridExpiry(expiry), m_TerrainData(sTerrainMgr.LoadTerrain(id)),
-     m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE), m_activeNonPlayersIter(m_activeNonPlayers.end()), i_scriptLock(true),
+     m_activeNonPlayersIter(m_activeNonPlayers.end()), i_scriptLock(true),
      m_VisibilityNotifyPeriod(DEFAULT_VISIBILITY_NOTIFY_PERIOD)
 {
     for (unsigned int j=0; j < MAX_NUMBER_OF_GRIDS; ++j)
@@ -128,7 +128,6 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
 void Map::InitVisibilityDistance()
 {
     //init visibility for continents
-    m_VisibleDistance = sWorld.GetMaxVisibleDistanceOnContinents();
     m_ActiveObjectUpdateDistance = sWorld.GetActiveObjectUpdateDistanceOnContinents();
 }
 
@@ -2249,22 +2248,6 @@ InstanceMap::~InstanceMap()
 
 void InstanceMap::InitVisibilityDistance()
 {
-    //init visibility distance for instances
-    switch (i_mapEntry->MapID)
-    {
-        case 550:   //The Eye
-        case 534:   //Hyjal Summit
-        case 564:   //Black Temple
-            m_VisibleDistance = sWorld.GetMaxSpecialVisibleDistance();
-            break;
-        case 580:   //Sunwell Plateau (for Ice Barrier visibility)
-            m_VisibleDistance = 400.0f;
-            break;
-        default:
-            m_VisibleDistance = sWorld.GetMaxVisibleDistanceInInstances();
-            break;
-    }
-
     m_ActiveObjectUpdateDistance = sWorld.GetActiveObjectUpdateDistanceInInstances();
 }
 
@@ -2658,12 +2641,6 @@ BattleGroundMap::~BattleGroundMap()
 
 void BattleGroundMap::InitVisibilityDistance()
 {
-    //init visibility distance for BG/Arenas
-    if (IsBattleArena())
-       m_VisibleDistance = sWorld.GetMaxVisibleDistanceInArenas();
-    else
-        m_VisibleDistance = sWorld.GetMaxVisibleDistanceInBG();
-
     m_ActiveObjectUpdateDistance = sWorld.GetActiveObjectUpdateDistanceInInstances();
 }
 
@@ -3222,19 +3199,16 @@ void Map::ForcedUnload()
 
 float Map::GetVisibilityDistance(WorldObject* obj) const
 {
-    float penalty = 0.0f;
-    if (sWorld.GetCoreBalancerTreshold() >= CB_VISIBILITY_PENALTY)
-        penalty = sWorld.getConfig(CONFIG_COREBALANCER_VISIBILITY_PENALTY);
-
+    float dist = m_TerrainData->GetVisibilityDistance();
     if (obj)
     {
         if (obj->GetObjectGuid().IsGameObject())
-            return (m_VisibleDistance + ((GameObject*)obj)->GetDeterminativeSize() - penalty);    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
+            return (dist + ((GameObject*)obj)->GetDeterminativeSize());    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
         else if(obj->GetObjectGuid().IsCreature())
-            return (m_VisibleDistance + ((Creature*)obj)->GetDeterminativeSize() - penalty);
+            return (dist + ((Creature*)obj)->GetDeterminativeSize());
     }
 
-    return m_VisibleDistance - penalty;
+    return dist;
 }
 
 bool Map::WaypointMovementAutoActive() const

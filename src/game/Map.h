@@ -348,7 +348,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         uint32 i_id;
         uint32 i_InstanceId;
         uint32 m_unloadTimer;
-        float m_VisibleDistance;
+
         float m_ActiveObjectUpdateDistance;
 
         MapRefManager m_mapRefManager;

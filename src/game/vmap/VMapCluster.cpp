@@ -322,7 +322,6 @@ namespace VMAP
 
             char buff[20];
             sprintf(buff, "%d", mapId);
-            vMapManager->setLOSonmaps(buff);
 
             EnsureVMapLoaded(mapId, x1, y1);
             EnsureVMapLoaded(mapId, x2, y2);

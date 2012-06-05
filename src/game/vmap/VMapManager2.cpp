@@ -96,25 +96,6 @@ namespace VMAP
     e.g.: "0,1,590"
     */
 
-    void VMapManager2::setLOSonmaps(const char* pMapIdString)
-    {
-        mapsWithLOS.clear();
-        if (pMapIdString != NULL)
-        {
-            std::string map_str;
-            std::stringstream map_ss;
-            map_ss.str(std::string(pMapIdString));
-            while (std::getline(map_ss, map_str, ','))
-            {
-                std::stringstream ss2(map_str);
-                int map_num = -1;
-                ss2 >> map_num;
-                if (map_num >= 0)
-                    mapsWithLOS.set(map_num, true);
-            }
-        }
-    }
-
     //=========================================================
 
     VMAPLoadResult VMapManager2::loadMap(const char* pBasePath, unsigned int pMapId, int x, int y)
@@ -181,9 +162,6 @@ namespace VMAP
 
     bool VMapManager2::isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2)
     {
-        if (!isLineOfSightCalcEnabled(pMapId))
-            return true;
-
         if(isClusterComputingEnabled())
             return sLoSProxy.isInLineOfSight(pMapId, x1, y1, z1, x2, y2, z2);
         else
@@ -218,20 +196,17 @@ namespace VMAP
         rx=x2;
         ry=y2;
         rz=z2;
-        if (isLineOfSightCalcEnabled(pMapId))
+        InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(pMapId);
+        if (instanceTree != iInstanceMapTrees.end())
         {
-            InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(pMapId);
-            if (instanceTree != iInstanceMapTrees.end())
-            {
-                Vector3 pos1 = convertPositionToInternalRep(x1,y1,z1);
-                Vector3 pos2 = convertPositionToInternalRep(x2,y2,z2);
-                Vector3 resultPos;
-                result = instanceTree->second->getObjectHitPos(pos1, pos2, resultPos, pModifyDist);
-                resultPos = convertPositionToMangosRep(resultPos.x,resultPos.y,resultPos.z);
-                rx = resultPos.x;
-                ry = resultPos.y;
-                rz = resultPos.z;
-            }
+            Vector3 pos1 = convertPositionToInternalRep(x1,y1,z1);
+            Vector3 pos2 = convertPositionToInternalRep(x2,y2,z2);
+            Vector3 resultPos;
+            result = instanceTree->second->getObjectHitPos(pos1, pos2, resultPos, pModifyDist);
+            resultPos = convertPositionToMangosRep(resultPos.x,resultPos.y,resultPos.z);
+            rx = resultPos.x;
+            ry = resultPos.y;
+            rz = resultPos.z;
         }
         return result;
     }

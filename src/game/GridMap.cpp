@@ -17,6 +17,7 @@
  */
 
 #include "MapManager.h"
+#include "ProgressBar.h"
 #include "Log.h"
 #include "GridStates.h"
 #include "CellImpl.h"
@@ -608,7 +609,7 @@ bool GridMap::ExistVMap(uint32 mapid,int gx,int gy)
 }
 
 //////////////////////////////////////////////////////////////////////////
-TerrainInfo::TerrainInfo(uint32 mapid) : m_mapId(mapid)
+TerrainInfo::TerrainInfo(uint32 mapid, TerrainSpecifics terrainspecifics) : m_mapId(mapid), specifics(terrainspecifics)
 {
     for (int k = 0; k < MAX_NUMBER_OF_GRIDS; ++k)
     {
@@ -618,33 +619,6 @@ TerrainInfo::TerrainInfo(uint32 mapid) : m_mapId(mapid)
             m_GridRef[i][k] = 0;
         }
     }
-
-    MapEntry const* mapEntry = sMapStore.LookupEntry(mapid);
-    switch (mapEntry->map_type)
-    {
-        case MAP_INSTANCE:
-        {
-            m_pathFindingPriority = mapEntry->Expansion() ? F_MID_PRIORITY : F_LOW_PRIORITY;
-            break;
-        }
-        case MAP_RAID:
-        {
-            m_pathFindingPriority = mapEntry->Expansion() ? F_HIGH_PRIORITY : F_LOW_PRIORITY;
-            break;
-        }
-        case MAP_BATTLEGROUND:
-        case MAP_ARENA:
-        default:
-        {
-            if (mapEntry->IsContinent())
-                m_pathFindingPriority = F_LOW_PRIORITY;
-            else
-                m_pathFindingPriority = F_ALWAYS_ENABLED;
-            break;
-        }
-    }
-
-    m_losPriority = F_ALWAYS_ENABLED;
 
     //clean up GridMap objects every minute
     const uint32 iCleanUpInterval = 60;
@@ -1099,18 +1073,26 @@ float TerrainInfo::GetWaterLevel(float x, float y, float z, float* pGround /*= N
 
 bool TerrainInfo::IsLineOfSightEnabled() const
 {
-    if (m_losPriority <= sWorld.GetCoreBalancerTreshold())
+    if (GetSpecifics()->lineofsight <= sWorld.GetCoreBalancerTreshold())
         return false;
 
-    return VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled(m_mapId);
+    return sWorld.getConfig(CONFIG_VMAP_LOS_ENABLED);
 }
 
 bool TerrainInfo::IsPathFindingEnabled() const
 {
-    if (m_pathFindingPriority <= sWorld.GetCoreBalancerTreshold())
+    if (GetSpecifics()->pathfinding <= sWorld.GetCoreBalancerTreshold())
         return false;
 
-    return MMAP::MMapFactory::IsPathfindingEnabled(m_mapId);
+    return sWorld.getConfig(CONFIG_MMAP_ENABLED);
+}
+
+float TerrainInfo::GetVisibilityDistance()
+{
+    if (sWorld.GetCoreBalancerTreshold() >= CB_VISIBILITY_PENALTY)
+        return GetSpecifics()->visibility - sWorld.getConfig(CONFIG_COREBALANCER_VISIBILITY_PENALTY);
+
+    return GetSpecifics()->visibility;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1125,6 +1107,44 @@ TerrainManager::~TerrainManager()
         delete it->second;
 }
 
+void TerrainManager::LoadTerrainSpecifics()
+{
+    i_TerrainSpecifics.clear();
+
+    QueryResultAutoPtr result = WorldDatabase.Query("SELECT `entry`, `visibility`, `pathfinding`, `lineofsight` FROM `map_specifics`");
+    if (!result)
+    {
+        BarGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString("");
+        sLog.outString(">> Loaded 0 map specific data. DB table `map_specifics` is empty.");
+        return;
+    }
+
+    BarGoLink bar(result->GetRowCount());
+
+    do
+    {
+        Field *fields = result->Fetch();
+        bar.step();
+
+        uint32 mapid = fields[0].GetUInt32();
+
+        TerrainSpecifics& info = i_TerrainSpecifics[mapid];
+
+        info.visibility = fields[1].GetFloat();
+        info.pathfinding = FeaturePriority(fields[2].GetUInt8());
+        info.lineofsight = FeaturePriority(fields[3].GetUInt8());
+
+    }
+    while (result->NextRow());
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u map specific data.", i_TerrainSpecifics.size());
+}
+
 TerrainInfo * TerrainManager::LoadTerrain(const uint32 mapId)
 {
     ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
@@ -1133,7 +1153,7 @@ TerrainInfo * TerrainManager::LoadTerrain(const uint32 mapId)
     TerrainDataMap::const_iterator iter = i_TerrainMap.find(mapId);
     if(iter == i_TerrainMap.end())
     {
-        ptr = new TerrainInfo(mapId);
+        ptr = new TerrainInfo(mapId, i_TerrainSpecifics[mapId]);
         i_TerrainMap[mapId] = ptr;
     }
     else

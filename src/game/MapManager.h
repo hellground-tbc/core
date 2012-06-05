@@ -77,7 +77,7 @@ class HELLGROUND_DLL_DECL MapManager
 
         void SetMapUpdateInterval(uint32 t)
         {
-            if (t > MIN_MAP_UPDATE_DELAY)
+            if (t < MIN_MAP_UPDATE_DELAY)
                 t = MIN_MAP_UPDATE_DELAY;
 
             i_timer.SetInterval(t);
@@ -137,6 +137,7 @@ class HELLGROUND_DLL_DECL MapManager
 
         bool CanPlayerEnter(uint32 mapid, Player* player);
         uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
+
         void InitMaxInstanceId();
         void InitializeVisibilityDistanceInfo();
 
