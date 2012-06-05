@@ -28,6 +28,7 @@
 #include "VMapFactory.h"
 #include "movemap/MoveMap.h"
 #include "World.h"
+#include "Database/DatabaseEnv.h"
 
 #include "Util.h"
 
