@@ -2211,13 +2211,6 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     if (triggeredByAura)
         m_triggeredByAuraSpell = triggeredByAura->GetSpellProto();
 
-    if ((!m_IsTriggeredSpell && !IsChanneledSpell(m_spellInfo) ? m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT))
-    {
-        // controlled state is delivered from idle movement so should be sufficient
-        m_caster->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
-        m_caster->GetUnitStateMgr().PushAction(UNIT_ACTION_CONTROLLED);
-    }
-
     m_caster->GetPosition(m_cast);
 
     // create and add update event for this spell
@@ -2286,6 +2279,13 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     {
         if(m_targets.getGOTarget()&& m_targets.getGOTarget()->GetEntry() == 187055)
             m_casttime = 0;
+    }
+
+    if (m_casttime && !m_IsTriggeredSpell && !IsChanneledSpell(m_spellInfo) ? m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
+    {
+        // controlled state is delivered from idle movement so should be sufficient
+        m_caster->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
+        m_caster->GetUnitStateMgr().PushAction(UNIT_ACTION_CONTROLLED);
     }
 
     // set timer base at cast time
