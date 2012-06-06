@@ -2435,7 +2435,7 @@ CREATE TABLE `transports` (
 
 DROP TABLE IF EXISTS `trinity_string`;
 
-CREATE TABLE `hellground_string` (
+CREATE TABLE `trinity_string` (
   `entry` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `content_default` text NOT NULL,
   `content_loc1` text,
