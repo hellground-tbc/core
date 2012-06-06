@@ -68,7 +68,7 @@ class HELLGROUND_DLL_SPEC EffectMovementGenerator : public MovementGenerator
         explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) {}
         void Initialize(Unit &);
         void Finalize(Unit &);
-        void Interrupt(Unit &) { Finalize(u); }
+        void Interrupt(Unit &u) { Finalize(u); }
         void Reset(Unit &) {}
         bool Update(Unit &, const uint32 &);
 
