@@ -141,7 +141,7 @@ struct HELLGROUND_DLL_DECL instance_zulaman : public ScriptedInstance
         WorldLocation wLoc;
         hostage->GetPosition(wLoc);
         Creature *corpse = hostage->SummonCreature(HostageInfo[index].deadnpc, wLoc.coord_x, wLoc.coord_y, wLoc.coord_z, wLoc.orientation, TEMPSUMMON_MANUAL_DESPAWN, 0);
-        if(JUST_DIED)
+        if(corpse)
         {
             corpse->SetStandState(UNIT_STAND_STATE_DEAD);
             // TODO: add some burn effect
