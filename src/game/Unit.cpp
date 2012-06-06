@@ -12230,7 +12230,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         if (InstanceData * tmpInst = cVictim->GetInstanceData())
             tmpInst->OnCreatureDeath(cVictim);
 
-        // roll loot
+        // roll loot, some additional work is done in Creature::setDeathState(JUST_DIED)
         if (cVictim->lootForPickPocketed)
         {
             cVictim->lootForPickPocketed = false;
@@ -12258,7 +12258,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             cVictim->loot.looterGUID = group->GetLooterGuid();
             // loot.looterTimer set in Creature::setDeathState
             group->UpdateLooterGuid(this, false);           // select next looter
-            group->SendRoundRobin(&cVictim->loot, this);
         }
 
         // Dungeon specific stuff, only applies to players killing creatures
