@@ -679,7 +679,7 @@ void Group::SendRoundRobin(Loot* loot, WorldObject* object)
 
     WorldPacket data(SMSG_LOOT_LIST, (8+8));
     data << uint64(object->GetGUID());
-    data << uint8(0); // unk1
+    data << uint8(0); // 0 - owner, 1 - master looter (not used yet) 
 
     if (Unit* looter = object->GetMap()->GetUnit(loot->looterGUID))
         data << looter->GetPackGUID();

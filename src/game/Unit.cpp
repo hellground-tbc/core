@@ -472,8 +472,8 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
     // update abilities available only for fraction of time
     UpdateReactives(update_diff);
 
-    ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, GetHealth() < GetMaxHealth()*0.20f);
-    ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, GetHealth() < GetMaxHealth()*0.35f);
+    ModifyAuraState(AURA_STATE_HEALTHLESS_20_PERCENT, GetHealth()*100 < GetMaxHealth()*20);
+    ModifyAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, GetHealth()*100 < GetMaxHealth()*35);
 
     UpdateSplineMovement(p_time);
     GetUnitStateMgr().Update(p_time);
