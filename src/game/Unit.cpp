@@ -457,7 +457,7 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
         }
     }
 
-    if (!hasUnitState(UNIT_STAT_CHARGING))
+    //if (!hasUnitState(UNIT_STAT_CHARGING))
     {
         if (uint32 base_att = getAttackTimer(BASE_ATTACK))
             setAttackTimer(BASE_ATTACK, (update_diff >= base_att ? 0 : base_att - update_diff));
