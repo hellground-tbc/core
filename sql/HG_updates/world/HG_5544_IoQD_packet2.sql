@@ -169,14 +169,14 @@ REPLACE INTO creature_formations (leaderGUID, memberGUID, groupAI) VALUES
 (54827, 54830, 2),
 (54827, 42870, 2),
 (54827, 42585, 2);
-INSERT INTO creature_addon (guid, emote) VALUES 
+REPLACE INTO creature_addon (guid, emote) VALUES 
 (96837, 13),
 (96828, 13),
 (96832, 13),
 (96827, 13);
 UPDATE creature_template SET mindmg = 200, maxdmg = 600 WHERE entry = 24891;
 UPDATE creature_template SET faction_A = 35, faction_H = 35 WHERE entry = 24808;
-INSERT INTO spell_script_target VALUES (44574, 1, 24808);
+REPLACE INTO spell_script_target VALUES (44574, 1, 24808);
 UPDATE gameobject SET spawnMask = 3 WHERE id IN (187578, 188173);
 UPDATE creature_template SET faction_A = 35, faction_H = 35, unit_flags = 570721088 WHERE entry IN (24808, 25546);
 UPDATE creature_template SET faction_A = 16, faction_H = 16 WHERE entry IN

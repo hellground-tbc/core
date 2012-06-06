@@ -70,7 +70,7 @@ UPDATE creature_template SET minmana = 169350, maxmana = 169350 WHERE entry = 24
 UPDATE creature_template SET ScriptName = "brutallus_intro_trigger", modelid_A = 18783, modelid_H = 15435, flags_extra = 2 WHERE entry = 19871;
 UPDATE creature_template SET ScriptName = "npc_captain_selana" WHERE entry = 25638;
 
-INSERT INTO npc_text (ID, text0_0, prob0, em0_1)  VALUES
+REPLACE INTO npc_text (ID, text0_0, prob0, em0_1)  VALUES
 (12588, "I'm glad you are here, $c. The military situation in the Sunwell Plateau is rather grim.", 1,396),
 (12589, "The Shattered Sun Offensive has made great progress in the outer areas of the Isle of Quel'Danas. Kil'jaeden's forces are being pushed back, and in the chaos I was able to lead a small scouting force here inside the Sunwell Plateau. My troops proceeded through Parhelion Plaza, spotted a group of Sunblade blood elves, and we than engaged the enemy. That fight quickly turned into disaster.", 1,1),
 (12590, "Kil'jaeden's defenders here on the Sunwell Plateau are much stronger than anything we faced outside on the Island. The Legion have even twisted our Arcane Guardian technology with fel energy to create something much more sinister. Just one of those Sunblade Protectors decimated my troops, and I ordered a swift retreat. I expected my squad to be pushed completely off the plateau, but the enemy surprised me by calling off the pursuit.", 1,1),

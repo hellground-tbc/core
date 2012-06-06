@@ -2,6 +2,7 @@ UPDATE creature_template SET ScriptName = "mob_shadowsword_commander" WHERE entr
 UPDATE creature_template SET ScriptName = "mob_shadowsword_deathbringer" WHERE entry = 25485;
 UPDATE creature_template SET ScriptName = "mob_volatile_fiend" WHERE entry = 25851;
 
+DELETE FROM waypoint_data where id = 2501;
 INSERT INTO waypoint_data (`id`, `point`, `position_x`, `position_y`, `position_z`, `move_flag`) VALUES
 (2501, 1, 1605.6, 598.9, 85.0, 1),
 (2501, 2, 1602.9, 581.4, 85.0, 1),
