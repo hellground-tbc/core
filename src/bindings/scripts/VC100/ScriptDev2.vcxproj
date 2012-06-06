@@ -176,7 +176,7 @@
     <Link>
       <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC10\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC10\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\dep\ACE_wrappers\lib;..\..\..\..\dep\lib\$(Platform)_$(Configuration);..\..\..\..\win\VC100\trinitycore__$(Platform)_$(Configuration);..\..\..\..\win\VC100\tbb__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -766,7 +766,7 @@
     <ResourceCompile Include="..\trinityscripts.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\win\VC10\TrinityCore.vcxproj">
+    <ProjectReference Include="..\..\..\..\win\VC100\TrinityCore.vcxproj">
       <Project>{a3a04e47-43a2-4c08-90b3-029cef558594}</Project>
     </ProjectReference>
   </ItemGroup>
