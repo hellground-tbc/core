@@ -12171,6 +12171,38 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
     }
 
+    // roll loot, some additional work is done in Creature::setDeathState(JUST_DIED), must be before calling setDeathState
+    if (Creature *cVictim = pVictim->ToCreature())
+    {   
+        if (cVictim->lootForPickPocketed)
+        {
+            cVictim->lootForPickPocketed = false;
+            cVictim->loot.clear();
+        }
+
+        if (!cVictim->loot.LootLoadedFromDB())
+        {
+            cVictim->loot.clear();
+
+            if (uint32 lootid = cVictim->GetCreatureInfo()->lootid)
+            {
+                cVictim->loot.setCreatureGUID(cVictim);
+                cVictim->loot.FillLoot(lootid, LootTemplates_Creature, cVictim->GetLootRecipient(), false);
+            }
+
+            cVictim->loot.generateMoneyLoot(cVictim->GetCreatureInfo()->mingold, cVictim->GetCreatureInfo()->maxgold);
+        }
+
+        // set looterGUID for round robin loot
+        if (cVictim->GetLootRecipient() && cVictim->GetLootRecipient()->GetGroup())
+        {
+            Group *group = cVictim->GetLootRecipient()->GetGroup();
+            group->UpdateLooterGuid(this, true);            // select next looter if one is out of xp range
+            cVictim->loot.looterGUID = group->GetLooterGuid();
+            group->UpdateLooterGuid(this, false);           // select next looter
+        }
+    }
+
     if (!SpiritOfRedemption && !VengeanceSpirit)
     {
         DEBUG_LOG("SET JUST_DIED");
@@ -12229,36 +12261,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
         if (InstanceData * tmpInst = cVictim->GetInstanceData())
             tmpInst->OnCreatureDeath(cVictim);
-
-        // roll loot, some additional work is done in Creature::setDeathState(JUST_DIED)
-        if (cVictim->lootForPickPocketed)
-        {
-            cVictim->lootForPickPocketed = false;
-            cVictim->loot.clear();
-        }
-
-        if (!cVictim->loot.LootLoadedFromDB())
-        {
-            cVictim->loot.clear();
-
-            if (uint32 lootid = cVictim->GetCreatureInfo()->lootid)
-            {
-                cVictim->loot.setCreatureGUID(cVictim);
-                cVictim->loot.FillLoot(lootid, LootTemplates_Creature, cVictim->GetLootRecipient(), false);
-            }
-
-            cVictim->loot.generateMoneyLoot(cVictim->GetCreatureInfo()->mingold, cVictim->GetCreatureInfo()->maxgold);
-        }
-
-        // set looterGUID for round robin loot
-        if (cVictim->GetLootRecipient() && cVictim->GetLootRecipient()->GetGroup())
-        {
-            Group *group = cVictim->GetLootRecipient()->GetGroup();
-            group->UpdateLooterGuid(this, true);            // select next looter if one is out of xp range
-            cVictim->loot.looterGUID = group->GetLooterGuid();
-            // loot.looterTimer set in Creature::setDeathState
-            group->UpdateLooterGuid(this, false);           // select next looter
-        }
 
         // Dungeon specific stuff, only applies to players killing creatures
         if (cVictim->GetInstanceId())

@@ -1723,7 +1723,7 @@ void Creature::setDeathState(DeathState s)
         // Loot is filled in Unit:Kill, here we just do some additional work
         loot.looterTimer = time(NULL) + (m_deathTimer * 3 / 4 / IN_MILISECONDS);
         if (GetLootRecipient() && GetLootRecipient()->GetGroup())
-            GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this);
+            GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this); 
 
         Unit::setDeathState(CORPSE);
     }
