@@ -17,7 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityCore", "VC100\Trinit
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityRealm", "VC100\TrinityRealm.vcxproj", "{563E9905-3657-460C-AE63-0AC39D162E23}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityScript", "..\src\bindings\scripts\VC100\ScriptDev2.vcxproj", "{4295C8A9-79B7-4354-8064-F05FB9CA0C96}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "trinityscript", "..\src\bindings\scripts\VC100\ScriptDev2.vcxproj", "{4295C8A9-79B7-4354-8064-F05FB9CA0C96}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genrevision", "VC100\genrevision.vcxproj", "{803F488E-4C5A-4866-8D5C-1E6C03C007C2}"
 EndProject
@@ -185,8 +185,8 @@ Global
 		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Debug|Win32.Build.0 = Debug|Win32
 		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Debug|x64.ActiveCfg = Debug|x64
 		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Debug|x64.Build.0 = Debug|x64
-		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|Win32.ActiveCfg = Release|Win32
-		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|Win32.Build.0 = Release|Win32
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|Win32.ActiveCfg = Release_PCH|Win32
+		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|Win32.Build.0 = Release_PCH|Win32
 		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|x64.ActiveCfg = Release|x64
 		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release_PCH|x64.Build.0 = Release|x64
 		{47BC56ED-FECA-1BAD-6757-8A6300006755}.Release|Win32.ActiveCfg = Release|Win32
