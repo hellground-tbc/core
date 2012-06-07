@@ -360,12 +360,19 @@ void Loot::AddItem(LootStoreItem const & item)
     {
         if (quest_items.size() < MAX_NR_QUEST_ITEMS)
             quest_items.push_back(LootItem(item));
+        everyone_can_open = true;
     }
     else if (items.size() < MAX_NR_LOOT_ITEMS)              // Non-quest drop
     {
         items.push_back(LootItem(item));
 
         ItemPrototype const* proto = ObjectMgr::GetItemPrototype(item.itemid);
+
+        if (max_quality < proto->Quality)
+            max_quality = (ItemQualities)proto->Quality;
+
+        if(proto->Flags & ITEM_FLAGS_PARTY_LOOT || item.conditionId)
+            everyone_can_open = true;
 
         // items with quality >= RARE are unique in loot, except for epic junk (-> tier tokens)
         if (proto->Quality >= ITEM_QUALITY_RARE &&
@@ -380,7 +387,7 @@ void Loot::AddItem(LootStoreItem const & item)
             ItemPrototype const* proto = ObjectMgr::GetItemPrototype(item.itemid);
             if (!proto || (proto->Flags & ITEM_FLAGS_PARTY_LOOT)==0)
                 ++unlootedCount;
-        }
+        }            
     }
 }
 

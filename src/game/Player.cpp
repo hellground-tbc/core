@@ -7608,16 +7608,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 if (Group* group = GetGroup())
                 {
-                    if (loot->looterGUID && group->IsRoundRobinLootType())
-                    {
-                        Unit *looter = GetUnit(loot->looterGUID);
-                        if (!looter || !looter->IsWithinDist(creature, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false) || loot->looterTimer < time(NULL))
-                        {
-                            loot->looterGUID = 0;
-                            group->SendRoundRobin(loot, creature);
-                        }
-                    }
-
                     permission = NONE_PERMISSION;
                     if (group == recipient->GetGroup() && creature->IsPlayerAllowedToLoot(this))
                     {
@@ -14771,22 +14761,43 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 bool Player::isAllowedToLoot(Creature* creature)
 {
     if (creature->isDead() && !creature->IsDamageEnoughForLootingAndReward())
-       return false;
-
+        return false;
+    
     if (Player* recipient = creature->GetLootRecipient())
     {
-        if (recipient == this)
-            return true;
-
         if (Group* otherGroup = recipient->GetGroup())
         {
             Group* thisGroup = GetGroup();
+
             if (!thisGroup)
                 return false;
 
-            return thisGroup == otherGroup && creature->IsPlayerAllowedToLoot(this);
+            if (thisGroup != otherGroup)
+                return false;
+            
+            if (!creature->IsPlayerAllowedToLoot(this))
+                return false;
+
+            if (creature->isAlive())
+                return true;
+
+            if (!thisGroup->IsRoundRobinLootType())
+                return true;
+
+            // round robin rules
+            if (!creature->loot.looterGUID)
+                return true;
+
+            ItemQualities threshold = thisGroup->GetLootMethod() == ROUND_ROBIN ? ITEM_QUALITY_ARTIFACT : thisGroup->GetLootThreshold();
+            if (creature->loot.everyone_can_open || creature->loot.max_quality >= threshold)
+                return true;
+
+            return GetGUID() == creature->loot.looterGUID;
         }
-        return false;
+        else if (recipient == this)
+            return true;
+        else
+            return false;
     }
     else
     {

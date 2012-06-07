@@ -687,6 +687,8 @@ void Group::SendRoundRobin(Loot* loot, WorldObject* object)
         data << uint8(0);    
 
     BroadcastPacket(&data, false);
+
+    object->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
 }
 
 void Group::SendMasterLoot(Loot* loot, WorldObject* object)

@@ -1495,7 +1495,7 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
 
 void Object::ForceValuesUpdateAtIndex(uint32 i)
 {
-    m_uint32Values_mirror[i] = GetUInt32Value(i) + 1; // makes server think the field changed
+    m_uint32Values_mirror[i] = ~GetUInt32Value(i); // makes server think the field changed
     if (m_inWorld)
     {
         if (!m_objectUpdated)

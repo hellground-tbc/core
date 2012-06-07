@@ -476,6 +476,27 @@ void Creature::Update(uint32 update_diff, uint32 diff)
             {
                 m_deathTimer -= update_diff;
             }
+            
+            if (loot.looterTimer && loot.looterTimer < time(NULL))
+            {
+                loot.looterTimer = 0;
+                loot.looterGUID = 0;
+                if (GetLootRecipient() && GetLootRecipient()->GetGroup())
+                    GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this);
+            }
+            if (loot.looterGUID && loot.looterCheckTimer < time(NULL))
+            {
+                Player* player = GetPlayer(loot.looterGUID);
+                if (!player || !IsWithinDist(player, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false))
+                {
+                    loot.looterTimer = 0;
+                    loot.looterGUID = 0;
+                    if (GetLootRecipient() && GetLootRecipient()->GetGroup())
+                        GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this);
+                } 
+                else
+                    loot.looterCheckTimer = time(NULL) + 1; // 1 second
+            }
 
             break;
         }
@@ -1720,10 +1741,14 @@ void Creature::setDeathState(DeathState s)
         if (CanFly())
             i_motionMaster.MoveFall();
 
-        // Loot is filled in Unit:Kill, here we just do some additional work
-        loot.looterTimer = time(NULL) + (m_deathTimer * 3 / 4 / IN_MILISECONDS);
-        if (GetLootRecipient() && GetLootRecipient()->GetGroup())
-            GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this); 
+        if (!loot.empty())
+        {
+            // Loot is filled in Unit:Kill, here we just do some additional work
+            loot.looterTimer = time(NULL) + (m_deathTimer * 3 / 4 / IN_MILISECONDS);
+            loot.looterCheckTimer = time(NULL) + 1;
+            if (GetLootRecipient() && GetLootRecipient()->GetGroup())
+                GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this); 
+        }
 
         Unit::setDeathState(CORPSE);
     }

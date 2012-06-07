@@ -231,12 +231,19 @@ struct Loot
     std::vector<LootItem> quest_items;
     std::set<uint32> unique_items;
     std::set<uint64> players_allowed_to_loot;
+
+    // required by round robin to see who can open loot
+    ItemQualities max_quality;
+    bool everyone_can_open;
+
     uint32 gold;
     uint8 unlootedCount;
     uint64 looterGUID;
     uint64 looterTimer;
+    uint64 looterCheckTimer;
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false), m_creatureGUID(0), m_mapID(0,0), looterGUID(0){}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), m_lootLoadedFromDB(false), m_creatureGUID(0), m_mapID(0,0), looterGUID(0), max_quality(ITEM_QUALITY_POOR), everyone_can_open(false),
+                            looterTimer(0), looterCheckTimer(0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
