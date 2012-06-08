@@ -146,6 +146,7 @@ class ChatHandler
         bool HandleDebugSetValue(const char* args);
         bool HandleDebugShowCombatStats(const char* args);
         bool HandleDebugThreatList(const char * args);
+        bool HandleDebugUnitState(const char * args);
         bool HandleDebugUpdate(const char* args);
         bool HandleDebugUpdateWorldStateCommand(const char* args);
         bool HandleDebugWPCommand(const char* args);

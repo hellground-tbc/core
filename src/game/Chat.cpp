@@ -256,6 +256,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "setvalue",       SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugSetValue,                  "", NULL },
         { "showcombatstats",SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugShowCombatStats,           "", NULL },
         { "threatlist",     SEC_GAMEMASTER,     false,  &ChatHandler::HandleDebugThreatList,                "", NULL },
+        { "printstate",     SEC_PLAYER,         false,  &ChatHandler::HandleDebugUnitState,                 "", NULL },
         { "update",         SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugUpdate,                    "", NULL },
         { "uws",            SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleDebugUpdateWorldStateCommand,   "", NULL },
         { NULL,             0,                  false,  NULL,                                               "", NULL }

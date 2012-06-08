@@ -668,6 +668,12 @@ bool ChatHandler::HandleDebugBattleGroundCommand(const char * /*args*/)
     sBattleGroundMgr.ToggleTesting();
     return true;
 }
+bool ChatHandler::HandleDebugUnitState(const char * /*args*/)
+{
+    Player* player = m_session->GetPlayer();
+    PSendSysMessage("You have state: %u", player->m_state);
+    return true;
+}
 
 bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
 {
