@@ -37,7 +37,7 @@ class HELLGROUND_DLL_SPEC WorldEvent
 class HELLGROUND_DLL_SPEC WorldEventProcessor
 {
     friend class ACE_Singleton<WorldEventProcessor, ACE_Thread_Mutex>;
-    WorldEventProcessor() : _killInProgress(false) {}
+    WorldEventProcessor() {}
 
     typedef std::multimap<uint64, WorldEvent*> EventList;
 
@@ -48,7 +48,6 @@ class HELLGROUND_DLL_SPEC WorldEventProcessor
         void ExecuteEvents();
 
     private:
-        bool _killInProgress;
         EventList _events;
 
         ACE_Thread_Mutex Lock;

@@ -159,6 +159,9 @@ World::~World()
         delete temp;
     }
 
+    // Here event list SHOULD be already empty, but who knows what can happen :p
+    sWorldEventProcessor.DestroyEvents();
+
     ///- Empty the WeatherMap
     for (WeatherMap::iterator itr = m_weathers.begin(); itr != m_weathers.end(); ++itr)
         delete itr->second;

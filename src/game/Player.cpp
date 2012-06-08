@@ -64,6 +64,7 @@
 #include "SocialMgr.h"
 #include "GameEvent.h"
 #include "GridMap.h"
+#include "WorldEventProcessor.h"
 
 #include "PlayerAI.h"
 
@@ -492,6 +493,8 @@ Player::~Player ()
             itr->second.save->RemovePlayer(this);
 
     delete m_declinedname;
+
+    sWorldEventProcessor.DestroyEvents(GetGUID());
 
     DeleteCharmAI();
 }
