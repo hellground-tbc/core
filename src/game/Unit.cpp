@@ -3344,7 +3344,6 @@ void Unit::SetCurrentCastedSpell(Spell* spell)
             m_AutoRepeatFirstCast = true;
             break;
         }
-
         default:
             break;
     }
@@ -3362,7 +3361,7 @@ void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
 {
     assert(spellType < CURRENT_MAX_SPELL);
 
-    Spell *spell = m_currentSpells[spellType];
+    Spell* spell = GetCurrentSpell(CurrentSpellTypes(spellType));
     if (spell
         && (withDelayed || spell->getState() != SPELL_STATE_DELAYED)
         && (withInstant || spell->GetCastTime() > 0))
@@ -3372,11 +3371,8 @@ void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
             return;
 
         // send autorepeat cancel message for autorepeat spells
-        if (spellType == CURRENT_AUTOREPEAT_SPELL)
-        {
-            if (GetTypeId()==TYPEID_PLAYER)
-                ((Player*)this)->SendAutoRepeatCancel();
-        }
+        if (spellType == CURRENT_AUTOREPEAT_SPELL && GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->SendAutoRepeatCancel();
 
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
@@ -3388,7 +3384,7 @@ void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
 
 void Unit::FinishSpell(CurrentSpellTypes spellType, bool ok /*= true*/)
 {
-    Spell* spell = m_currentSpells[spellType];
+    Spell* spell = GetCurrentSpell(spellType);
     if (!spell)
         return;
 
@@ -3404,21 +3400,26 @@ bool Unit::IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled, bool skip
     // Maybe later some special spells will be excluded too.
 
     // generic spells are casted when they are not finished and not delayed
-    if (m_currentSpells[CURRENT_GENERIC_SPELL] &&
-        (m_currentSpells[CURRENT_GENERIC_SPELL]->getState() != SPELL_STATE_FINISHED) &&
-        (withDelayed || m_currentSpells[CURRENT_GENERIC_SPELL]->getState() != SPELL_STATE_DELAYED))
-        return(true);
-
+    if (Spell* current = GetCurrentSpell(CURRENT_GENERIC_SPELL))
+    {
+        if (current->getState() != SPELL_STATE_FINISHED && (withDelayed || current->getState() != SPELL_STATE_DELAYED))
+            return true;
+    }
     // channeled spells may be delayed, but they are still considered casted
-    else if (!skipChanneled && m_currentSpells[CURRENT_CHANNELED_SPELL] &&
-        (m_currentSpells[CURRENT_CHANNELED_SPELL]->getState() != SPELL_STATE_FINISHED))
-        return(true);
+    else if (!skipChanneled)
+    {
+        if (Spell* current = GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        {
+            if (current->getState() != SPELL_STATE_FINISHED)
+                return true;
+        }
+    }
 
     // autorepeat spells may be finished or delayed, but they are still considered casted
-    else if (!skipAutorepeat && m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
-        return(true);
+    else if (!skipAutorepeat && GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
+        return true;
 
-    return(false);
+    return false;
 }
 
 void Unit::InterruptNonMeleeSpells(bool withDelayed, uint32 spell_id, bool withInstant)
