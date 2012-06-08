@@ -3277,19 +3277,19 @@ void Unit::_UpdateAutoRepeatSpell()
     }
 }
 
-void Unit::SetCurrentCastedSpell(Spell * pSpell)
+void Unit::SetCurrentCastedSpell(Spell* spell)
 {
-    assert(pSpell);                                         // NULL may be never passed here, use InterruptSpell or InterruptNonMeleeSpells
+    assert(spell);                                         // NULL may be never passed here, use InterruptSpell or InterruptNonMeleeSpells
 
-    CurrentSpellTypes CSpellType = pSpell->GetCurrentContainer();
-
-    if (pSpell == m_currentSpells[CSpellType]) return;      // avoid breaking self
+    CurrentSpellTypes SpellType = spell->GetCurrentContainer();
+    if (spell == GetCurrentSpell(SpellType))
+        return;
 
     // break same type spell if it is not delayed
-    InterruptSpell(CSpellType,false);
+    InterruptSpell(SpellType, false);
 
     // special breakage effects:
-    switch (CSpellType)
+    switch (SpellType)
     {
         case CURRENT_GENERIC_SPELL:
         {
@@ -3297,57 +3297,65 @@ void Unit::SetCurrentCastedSpell(Spell * pSpell)
             InterruptSpell(CURRENT_CHANNELED_SPELL,false);
 
             // autorepeat breaking
-            if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
+            if (Spell* current = GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
             {
                 // break autorepeat if not Auto Shot
-                if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351)
+                if (current->m_spellInfo->Category == 351)
                     InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+
                 m_AutoRepeatFirstCast = true;
             }
 
-            addUnitState(UNIT_STAT_CASTING);
-        } break;
+            if (spell->GetCastTime())
+                addUnitState(UNIT_STAT_CASTING);
 
+            break;
+        }
         case CURRENT_CHANNELED_SPELL:
         {
             // channel spells always break generic non-delayed and any channeled spells
-            InterruptSpell(CURRENT_GENERIC_SPELL,false);
+            InterruptSpell(CURRENT_GENERIC_SPELL, false);
             InterruptSpell(CURRENT_CHANNELED_SPELL);
 
             // it also does break autorepeat if not Auto Shot
-            if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
-                m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351)
-                InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+            if (Spell* current = GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
+            {
+                // break autorepeat if not Auto Shot
+                if (current->m_spellInfo->Category == 351)
+                    InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+            }
 
-            addUnitState(UNIT_STAT_CASTING);
-        } break;
+            if (spell->GetCastTime())
+                addUnitState(UNIT_STAT_CASTING);
 
+            break;
+        }
         case CURRENT_AUTOREPEAT_SPELL:
         {
             // only Auto Shoot does not break anything
-            if (pSpell->m_spellInfo->Category == 351)
+            if (spell->m_spellInfo->Category == 351)
             {
                 // generic autorepeats break generic non-delayed and channeled non-delayed spells
                 InterruptSpell(CURRENT_GENERIC_SPELL,false);
                 InterruptSpell(CURRENT_CHANNELED_SPELL,false);
             }
+
             // special action: set first cast flag
             m_AutoRepeatFirstCast = true;
-        } break;
+            break;
+        }
 
         default:
-        {
-            // other spell types don't break anything now
-        } break;
+            break;
     }
 
     // current spell (if it is still here) may be safely deleted now
-    if (m_currentSpells[CSpellType])
-        m_currentSpells[CSpellType]->SetReferencedFromCurrent(false);
+    if (Spell* current = GetCurrentSpell(SpellType))
+        current->SetReferencedFromCurrent(false);
 
     // set new current spell
-    m_currentSpells[CSpellType] = pSpell;
-    pSpell->SetReferencedFromCurrent(true);
+    m_currentSpells[SpellType] = spell;
+    spell->SetReferencedFromCurrent(true);
 }
 
 void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
@@ -4391,13 +4399,6 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
     if (this->GetTypeId() == TYPEID_UNIT && this->IsAIEnabled)
         ((Creature *)this)->AI()->OnAuraRemove(Aur, false);
-
-    // HACK: teleport players that leave Incite Chaos 2yds up to prevent falling into textures
-    if (Aur->GetId() == 33684)
-    {
-        if (this->GetTypeId() == TYPEID_PLAYER)
-            ((Player*)this)->TeleportTo(this->GetMapId(), this->GetPositionX(), this->GetPositionY(), (this->GetPositionZ() + 2.0), this->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
-    }
 
     // if unit currently update aura list then make safe update iterator shift to next
     if (m_AurasUpdateIterator == i)

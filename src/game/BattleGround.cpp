@@ -1586,7 +1586,7 @@ bool BattleGround::HandlePlayerUnderMap(Player * plr, float z)
     WorldSafeLocsEntry const *graveyard = GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetTeam());
     if (graveyard)
     {
-        plr->TeleportTo(graveyard->map_id, graveyard->x, graveyard->y, graveyard->z, plr->GetOrientation());
+        plr->NearTeleportTo(graveyard->x, graveyard->y, graveyard->z, plr->GetOrientation());
         if (plr->isDead())                                        // not send if alive, because it used in TeleportTo()
         {
             WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);  // show spirit healer position on minimap

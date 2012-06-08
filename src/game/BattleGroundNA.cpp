@@ -168,7 +168,7 @@ bool BattleGroundNA::HandlePlayerUnderMap(Player *player, float z)
     if (z > 3.0f)
         return false;
 
-    player->TeleportTo(GetMapId(),4055.504395,2919.660645,13.611241,player->GetOrientation(),false);
+    player->NearTeleportTo(4055.504395,2919.660645,13.611241,player->GetOrientation(),false);
     return true;
 }
 
