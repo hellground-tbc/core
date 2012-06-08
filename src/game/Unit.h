@@ -1655,6 +1655,7 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
 
     public:
         void DisableSpline();
+        uint32 m_state;                                     // Even derived shouldn't modify
 
     private:
         bool IsTriggeredAtSpellProcEvent(Aura* aura, SpellEntry const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const*& spellProcEvent);
@@ -1665,7 +1666,6 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         bool HandleMendingAuraProc(Aura* triggeredByAura);
         bool HandleMendingNPCAuraProc(Aura* triggeredByAura);
 
-        uint32 m_state;                                     // Even derived shouldn't modify
         uint32 m_CombatTimer;
         uint32 m_lastManaUse;                               // msecs
 
