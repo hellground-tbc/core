@@ -18,6 +18,8 @@
 
 #include "WorldEventProcessor.h"
 
+#include "Player.h"
+
 void WorldEventProcessor::DestroyEvents(uint64 playerGUID/*= 0*/)
 {
     ACE_GUARD(ACE_Thread_Mutex, Guard, Lock);

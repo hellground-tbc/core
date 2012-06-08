@@ -19,7 +19,11 @@
 #ifndef WORLDEVENTPROCESSOR_H
 #define WORLDEVENTPROCESSOR_H
 
+#include <map>
+
 #include <ace/Singleton.h>
+
+#include "Platform/Define.h"
 
 class Player;
 
