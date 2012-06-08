@@ -334,7 +334,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data)
 
     // checked at loading
     m_defaultMovementType = MovementGeneratorType(cinfo->MovementType);
-    if (!m_respawnradius && m_defaultMovementType==RANDOM_MOTION_TYPE)
+    if (!m_respawnradius && m_defaultMovementType == RANDOM_MOTION_TYPE)
         m_defaultMovementType = IDLE_MOTION_TYPE;
 
     m_spells[0] = GetCreatureInfo()->spell1;
@@ -657,7 +657,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     UnitAI * oldAI = i_AI;
 
-    i_motionMaster.Initialize();
+    GetMotionMaster()->Initialize();
     i_AI = FactorySelector::selectAI(this);
 
     if (oldAI)
@@ -1276,14 +1276,13 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.orientation = GetOrientation();
     data.spawntimesecs = m_respawnDelay;
     // prevent add data integrity problems
-    data.spawndist = GetDefaultMovementType()==IDLE_MOTION_TYPE ? 0 : m_respawnradius;
+    data.spawndist = GetDefaultMovementType() == IDLE_MOTION_TYPE ? 0 : m_respawnradius;
     data.currentwaypoint = 0;
     data.curhealth = GetHealth();
     data.curmana = GetPower(POWER_MANA);
     data.is_dead = m_isDeadByDefault;
     // prevent add data integrity problems
-    data.movementType = !m_respawnradius && GetDefaultMovementType()==RANDOM_MOTION_TYPE
-        ? IDLE_MOTION_TYPE : GetDefaultMovementType();
+    data.movementType = !m_respawnradius && GetDefaultMovementType() == RANDOM_MOTION_TYPE ? IDLE_MOTION_TYPE : GetDefaultMovementType();
     data.spawnMask = spawnMask;
 
     // updated in DB
@@ -1767,8 +1766,10 @@ void Creature::setDeathState(DeathState s)
         SetWalk(true);
 
         SetUInt32Value(UNIT_NPC_FLAGS, cinfo->npcflag);
+
         clearUnitState(UNIT_STAT_ALL_STATE);
-        GetUnitStateMgr().InitDefaults(true);
+        GetMotionMaster()->Initialize();
+
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);
     }

@@ -43,9 +43,9 @@ void MotionMaster::Initialize()
     m_owner->StopMoving();
 
     // set new default movement generator
-    if (m_owner->GetTypeId() == TYPEID_UNIT)
+    if (Creature* creature = m_owner->ToCreature())
     {
-        MovementGenerator* movement = FactorySelector::selectMovementGenerator((Creature*)m_owner);
+        MovementGenerator* movement = FactorySelector::selectMovementGenerator(creature);
         if (movement)
             Mutate(movement, UNIT_ACTION_DOWAYPOINTS);
     }

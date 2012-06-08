@@ -121,29 +121,7 @@ namespace FactorySelector
     MovementGenerator* selectMovementGenerator(Creature *creature)
     {
         MovementGeneratorRegistry &mv_registry(*MovementGeneratorRepository::instance());
-        assert(creature->GetCreatureInfo() != NULL);
         const MovementGeneratorCreator *mv_factory = mv_registry.GetRegistryItem(creature->GetDefaultMovementType());
-
-        /* if (mv_factory == NULL )
-        {
-            int best_val = -1;
-            std::vector<std::string> l;
-            mv_registry.GetRegisteredItems(l);
-            for (std::vector<std::string>::iterator iter = l.begin(); iter != l.end(); ++iter)
-            {
-            const MovementGeneratorCreator *factory = mv_registry.GetRegistryItem((*iter).c_str());
-            const SelectableMovement *p = dynamic_cast<const SelectableMovement *>(factory);
-            assert(p != NULL);
-            int val = p->Permit(creature);
-            if (val > best_val)
-            {
-                best_val = val;
-                mv_factory = p;
-            }
-            }
-        }*/
-
         return (mv_factory == NULL ? NULL : mv_factory->Create(creature));
-
     }
 }

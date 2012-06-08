@@ -531,15 +531,6 @@ void UnitStateMgr::PushAction(UnitActionId actionId, UnitActionPtr state, UnitAc
 
     m_actions.insert(itr,UnitActionStorage::size_type(1),ActionInfo(actionId, state, priority, restoreable));
     IncreaseCounter(actionId);
-
-/*
-    ActionInfo* newInfo = CurrentState();
-    if (newInfo && newInfo != oldInfo)
-    {
-        if (!newInfo->HasFlag(ACTION_STATE_INITIALIZED))
-            newInfo->Initialize(this);
-    }
-*/
 }
 
 ActionInfo* UnitStateMgr::GetAction(UnitActionPriority priority)
