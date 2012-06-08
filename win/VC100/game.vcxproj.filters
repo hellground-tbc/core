@@ -559,6 +559,9 @@
     <ClCompile Include="..\..\src\game\StateMgr.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\WorldEventProcessor.cpp">
+      <Filter>World/Others</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -1059,6 +1062,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\StateMgrImpl.h">
       <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\WorldEventProcessor.h">
+      <Filter>World/Others</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

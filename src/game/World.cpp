@@ -65,6 +65,7 @@
 #include "Transports.h"
 #include "CreatureEventAIMgr.h"
 #include "WardenDataStorage.h"
+#include "WorldEventProcessor.h"
 
 #include <tbb/parallel_for.h>
 
@@ -1797,6 +1798,8 @@ void World::Update(uint32 diff)
 
         RecordTimeDiff("UpdateGroups");
     }
+
+    sWorldEventProcessor.ExecuteEvents();
 
     /// <li> Handle weather updates when the timer has passed
     if (m_timers[WUPDATE_WEATHERS].Passed())

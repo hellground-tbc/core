@@ -69,5 +69,5 @@ class HELLGROUND_DLL_SPEC EventProcessor
         EventList m_events;
         bool m_aborting;
 };
-#endif
 
+#endif

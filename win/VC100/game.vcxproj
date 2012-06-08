@@ -399,6 +399,7 @@
     <ClCompile Include="..\..\src\game\Totem.cpp" />
     <ClCompile Include="..\..\src\game\Unit.cpp" />
     <ClCompile Include="..\..\src\game\Opcodes.cpp" />
+    <ClCompile Include="..\..\src\game\WorldEventProcessor.cpp" />
     <ClCompile Include="..\..\src\game\WorldLog.cpp" />
     <ClCompile Include="..\..\src\game\WorldSession.cpp" />
     <ClCompile Include="..\..\src\game\WorldSocket.cpp" />
@@ -585,6 +586,7 @@
     <ClInclude Include="..\..\src\game\AntiCheat.h" />
     <ClInclude Include="..\..\src\game\Opcodes.h" />
     <ClInclude Include="..\..\src\game\SharedDefines.h" />
+    <ClInclude Include="..\..\src\game\WorldEventProcessor.h" />
     <ClInclude Include="..\..\src\game\WorldLog.h" />
     <ClInclude Include="..\..\src\game\WorldSession.h" />
     <ClInclude Include="..\..\src\game\WorldSocket.h" />
