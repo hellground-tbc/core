@@ -69,20 +69,20 @@ struct HELLGROUND_DLL_DECL npc_forest_frogAI : public ScriptedAI
 
     void DoSpawnRandom()
     {
-        if( pInstance )
+        if (pInstance )
         {
             uint32 cEntry = RAND(NPC_MANNUTH, NPC_DEEZ, NPC_GALATHRYN, NPC_ADARRAH, NPC_FUDGERICK, NPC_DARWEN, NPC_MITZI, NPC_CHRISTIAN, NPC_BRENNAN, NPC_HOLLEE);
 
-            if( !pInstance->GetData(TYPE_RAND_VENDOR_1) )
+            if (!pInstance->GetData(TYPE_RAND_VENDOR_1) )
                 if(rand()%10 == 1) cEntry = 24408;      //Gunter
-            if( !pInstance->GetData(TYPE_RAND_VENDOR_2) )
+            if (!pInstance->GetData(TYPE_RAND_VENDOR_2) )
                 if(rand()%10 == 1) cEntry = 24409;      //Kyren
 
-            if( cEntry ) m_creature->UpdateEntry(cEntry);
+            if (cEntry ) me->UpdateEntry(cEntry);
 
-            if( cEntry == 24408)
+            if (cEntry == 24408)
                 pInstance->SetData(TYPE_RAND_VENDOR_1,DONE);
-            else if( cEntry == 24409)
+            else if (cEntry == 24409)
                 pInstance->SetData(TYPE_RAND_VENDOR_2,DONE);
             else
                 DoCast(me, RAND(SPELL_SUMMON_MONEY_BAG, SPELL_SUMMON_AMANI_CHARM_CHEST, SPELL_SUMMON_AMANI_CHARM_CHEST, SPELL_SUMMON_AMANI_CHARM_CHEST));
@@ -91,10 +91,10 @@ struct HELLGROUND_DLL_DECL npc_forest_frogAI : public ScriptedAI
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
-        if( spell->Id == SPELL_REMOVE_AMANI_CURSE && caster->GetTypeId() == TYPEID_PLAYER && m_creature->GetEntry() == ENTRY_FOREST_FROG )
+        if (spell->Id == SPELL_REMOVE_AMANI_CURSE && caster->GetTypeId() == TYPEID_PLAYER && me->GetEntry() == ENTRY_FOREST_FROG )
         {
             //increase or decrease chance of mojo?
-            if( rand()%99 == 50 ) DoCast(caster,SPELL_PUSH_MOJO,true);
+            if (rand()%99 == 50 ) DoCast(caster,SPELL_PUSH_MOJO,true);
             else DoSpawnRandom();
         }
     }
@@ -164,7 +164,7 @@ struct HELLGROUND_DLL_DECL npc_hostageAI : public ScriptedAI
         if(Id == 1)
         {
             uint8 i = GetHostageIndex(me->GetEntry());
-            GameObject *target = m_creature->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_0 + i));
+            GameObject *target = me->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_0 + i));
             if(target && RewardReached(target))
             {
                 me->SetFacingToObject(target);
@@ -183,7 +183,7 @@ struct HELLGROUND_DLL_DECL npc_hostageAI : public ScriptedAI
                 uint8 i = GetHostageIndex(me->GetEntry());
                 if(pInstance->GetData(DATA_HOSTAGE_0_STATE + i) & HOSTAGE_FREED)
                 {
-                    GameObject *target = m_creature->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_0 + i));
+                    GameObject *target = me->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_0 + i));
                     if(target)
                     {
                         float x, y;
@@ -291,7 +291,7 @@ struct HELLGROUND_DLL_DECL npc_krazAI : public npc_hostageAI
             }
             ExplosionChargeGUID = 0;
 
-            go = m_creature->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_KRAZ));
+            go = me->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_KRAZ));
             if(go)
             {
                 go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
@@ -304,7 +304,7 @@ struct HELLGROUND_DLL_DECL npc_krazAI : public npc_hostageAI
     {
         if(Move)
         {
-            m_creature->GetMotionMaster()->MovePoint(2, HostageInfo[2].x, HostageInfo[2].y, HostageInfo[2].z);
+            me->GetMotionMaster()->MovePoint(2, HostageInfo[2].x, HostageInfo[2].y, HostageInfo[2].z);
             Move = false;
         }
         npc_hostageAI::UpdateAI(diff);
@@ -432,7 +432,7 @@ struct HELLGROUND_DLL_DECL npc_ashliAI : public ScriptedAI
                 CheckTimer -= diff;
         }
 
-        if(Fire && !m_creature->hasUnitState(UNIT_STAT_CASTING))
+        if(Fire && !me->hasUnitState(UNIT_STAT_CASTING))
         {
             Unit *target = NULL;
             if(!targets.empty())
@@ -456,7 +456,7 @@ struct HELLGROUND_DLL_DECL npc_ashliAI : public ScriptedAI
                 MovePoint++;
                 if(MovePoint == 6)
                 {
-                    GameObject *target = m_creature->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_ASHLI));
+                    GameObject *target = me->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_ASHLI));
                     if(target)
                     {
                         target->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
@@ -665,7 +665,7 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
         // if hitted by Amani'shi Guardian, killed immediately
         if(done_by->GetTypeId() == TYPEID_UNIT && damage)
         {
-            damage = m_creature->GetMaxHealth();
+            damage = me->GetMaxHealth();
             done_by->GetMotionMaster()->MoveChase(GetPlayerForEscort());
         }
     }
@@ -678,20 +678,20 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
         switch(uiPointId)
         {
             case 2:
-                DoScriptText(SAY_AT_GONG, m_creature);
+                DoScriptText(SAY_AT_GONG, me);
 
                 if (GameObject* pEntranceDoor = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_GONG)))
                     pEntranceDoor->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOTSELECTABLE);
 
                 //Start bang gong for 10min
-                m_creature->CastSpell(m_creature, SPELL_BANGING_THE_GONG, false);
+                me->CastSpell(me, SPELL_BANGING_THE_GONG, false);
                 SetEscortPaused(true);
                 break;
             case 3:
-                DoScriptText(SAY_OPENING_ENTRANCE, m_creature);
+                DoScriptText(SAY_OPENING_ENTRANCE, me);
                 break;
             case 4:
-                DoScriptText(SAY_OPEN_GATE, m_creature);
+                DoScriptText(SAY_OPEN_GATE, me);
                 break;
             case 5:
                 m_pInstance->SetData(TYPE_EVENT_RUN,SPECIAL);
@@ -721,13 +721,13 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
     void Reset()
     {
         ResetTimer = 600000;    // 10min for players to make an event
-        m_creature->RemoveAllAuras();
-        m_creature->setActive(true);    // very important due to grid issues
+        me->RemoveAllAuras();
+        me->setActive(true);    // very important due to grid issues
     }
 
     void StartEvent(Player* pPlayer)
     {
-        DoScriptText(SAY_START, m_creature);
+        DoScriptText(SAY_START, me);
         Start(true, false, pPlayer->GetGUID(), 0, false, true);
     }
 
@@ -735,11 +735,12 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
     {
         SetEscortPaused(bOnHold);
 
+        me->InterruptNonMeleeSpells(false);
         //Stop banging gong if still
-        if (m_creature->HasAura(SPELL_BANGING_THE_GONG, 0))
+        if (me->HasAura(SPELL_BANGING_THE_GONG, 0))
         {
-            m_creature->RemoveAurasDueToSpell(SPELL_BANGING_THE_GONG);
-            DoPlaySoundToSet(m_creature, SOUND_CELEBRATE);
+            me->RemoveAurasDueToSpell(SPELL_BANGING_THE_GONG);
+            DoPlaySoundToSet(me, SOUND_CELEBRATE);
         }
     }
 
@@ -919,7 +920,7 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
     npc_amanishi_lookoutAI(Creature *c) : ScriptedAI(c), Summons(c)
     {
         pInstance = c->GetInstanceData();
-        m_creature->setActive(true);
+        me->setActive(true);
     }
 
     ScriptedInstance *pInstance;
@@ -934,11 +935,11 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void Reset()
     {
-        //m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetReactState(REACT_AGGRESSIVE);
-        m_creature->SetVisibility(VISIBILITY_ON);
-        m_creature->setActive(true);
+        //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetReactState(REACT_AGGRESSIVE);
+        me->SetVisibility(VISIBILITY_ON);
+        me->setActive(true);
         EventStarted = false;
         warriorsTimer = 40000;
         eaglesTimer = 1000;
@@ -950,7 +951,7 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void StartEvent()
     {
-        m_creature->GetMotionMaster()->MovePoint(0, 226, 1461, 26);
+        me->GetMotionMaster()->MovePoint(0, 226, 1461, 26);
         EventStarted = true;
         DoZoneInCombat();
         if(pInstance && pInstance->GetData(DATA_AKILZONEVENT) != DONE)
@@ -963,10 +964,10 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        if(Killer != m_creature)
+        if(Killer != me)
         {
-            m_creature->Respawn();
-            m_creature->AI()->EnterEvadeMode();
+            me->Respawn();
+            me->AI()->EnterEvadeMode();
         }
     }
 
@@ -1005,8 +1006,8 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
         {
             if(id > 3)
             {
-                m_creature->SetVisibility(VISIBILITY_OFF);
-                m_creature->SetReactState(REACT_PASSIVE);
+                me->SetVisibility(VISIBILITY_OFF);
+                me->SetReactState(REACT_PASSIVE);
             }
             else
             {
@@ -1018,7 +1019,7 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
     void AttackStart(Unit *pWho)
     {
-        m_creature->Attack(pWho, true);
+        me->Attack(pWho, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -1031,7 +1032,7 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
 
         if(Move)
         {
-            m_creature->GetMotionMaster()->MovePoint(MovePoint, GauntletWP[MovePoint][0], GauntletWP[MovePoint][1], GauntletWP[MovePoint][2]);
+            me->GetMotionMaster()->MovePoint(MovePoint, GauntletWP[MovePoint][0], GauntletWP[MovePoint][1], GauntletWP[MovePoint][2]);
             Move = false;
         }
 
@@ -1040,7 +1041,7 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
             if(warriorsTimer < diff)
             {
                 for(uint8 i = 0; i < 2; i++)
-                    m_creature->SummonCreature(NPC_AMANISHI_WARRIOR, GauntletWP[0][0] + 2*i, GauntletWP[0][1] + 2*i, GauntletWP[0][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    me->SummonCreature(NPC_AMANISHI_WARRIOR, GauntletWP[0][0] + 2*i, GauntletWP[0][1] + 2*i, GauntletWP[0][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                 warriorsTimer = 40000;
             }
             else
@@ -1050,7 +1051,7 @@ struct HELLGROUND_DLL_DECL npc_amanishi_lookoutAI : public ScriptedAI
             {
                 uint8 maxEagles = RAND(5, 6);
                 for(uint8 i = 0; i < maxEagles; i++)
-                    m_creature->SummonCreature(NPC_AMANISHI_EAGLE, GauntletWP[4][0] + 2*(i%2)-4, GauntletWP[4][1] + 2*(i/2) - 4, GauntletWP[4][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                    me->SummonCreature(NPC_AMANISHI_EAGLE, GauntletWP[4][0] + 2*(i%2)-4, GauntletWP[4][1] + 2*(i/2) - 4, GauntletWP[4][2], 3.1415f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                 eaglesTimer = 25000;
             }
             else
@@ -1082,7 +1083,7 @@ struct HELLGROUND_DLL_DECL npc_amanishi_warriorAI : public npc_escortAI
     npc_amanishi_warriorAI(Creature *c) : npc_escortAI(c)
     {
         pInstance = c->GetInstanceData();
-        m_creature->setActive(true);
+        me->setActive(true);
         SetDespawnAtEnd(false);
         Reset();
     }
@@ -1106,14 +1107,14 @@ struct HELLGROUND_DLL_DECL npc_amanishi_warriorAI : public npc_escortAI
 
         if(KickTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_KICK);
+            DoCast(me->getVictim(), SPELL_KICK);
             KickTimer = 9000;
         } else
             KickTimer -= diff;
 
         if(ChargeTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_CHARGE);
+            DoCast(me->getVictim(), SPELL_CHARGE);
             ChargeTimer = 5000;
         } else
             ChargeTimer -= diff;
@@ -1141,7 +1142,7 @@ struct HELLGROUND_DLL_DECL npc_amani_eagleAI : public npc_escortAI
     npc_amani_eagleAI(Creature *c) : npc_escortAI(c)
     {
         pInstance = c->GetInstanceData();
-        m_creature->setActive(true);
+        me->setActive(true);
         SetDespawnAtEnd(false);
         Reset();
     }
@@ -1162,7 +1163,7 @@ struct HELLGROUND_DLL_DECL npc_amani_eagleAI : public npc_escortAI
 
         if(TalonTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_TALON);
+            DoCast(me->getVictim(), SPELL_TALON);
             TalonTimer = 10000;
         } else
             TalonTimer -= diff;
@@ -1206,12 +1207,12 @@ struct HELLGROUND_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
 
     void AttackStart(Unit *pWho)
     {
-        m_creature->Attack(pWho, true);
+        me->Attack(pWho, true);
     }
 
     void JustSummoned(Creature *c)
     {
-        c->AI()->AttackStart(m_creature->getVictim());
+        c->AI()->AttackStart(me->getVictim());
     }
 
     void MovementInform(uint32 type, uint32 id)
@@ -1249,9 +1250,9 @@ struct HELLGROUND_DLL_DECL npc_amanishi_scoutAI : public ScriptedAI
                 //DoCast(me, SPELL_SUMMON_SENTRIES, true);
                 //DoCast(me, SPELL_SUMMON_SENTRIES, true);
                 float x,y,z;
-                m_creature->GetPosition(x, y, z);
-                m_creature->SummonCreature(MOB_SENTRY, x+1, y+1, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
-                m_creature->SummonCreature(MOB_SENTRY, x-1, y-1, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                me->GetPosition(x, y, z);
+                me->SummonCreature(MOB_SENTRY, x+1, y+1, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                me->SummonCreature(MOB_SENTRY, x-1, y-1, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
                 SummonTimer = 5000;
             } else
                 SummonTimer -= diff;
