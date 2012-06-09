@@ -4919,7 +4919,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 13877:
                 case 33735:
                 {
-                    target = SelectNearbyTarget(8.0f, false);
+                    target = SelectNearbyTarget(8.0f);
                     if (!target)
                         return false;
                     basepoints0 = damage;
@@ -5005,7 +5005,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (procSpell && procSpell->Id == 12723)
                         return false;
 
-                    target = SelectNearbyTarget(8.0f, false);
+                    target = SelectNearbyTarget(8.0f, target);
                     if (!target)
                         return false;
 
@@ -11517,7 +11517,7 @@ void Unit::UpdateReactives(uint32 p_time)
     }
 }
 
-Unit* Unit::SelectNearbyTarget(float dist, bool ignoreVictim) const
+Unit* Unit::SelectNearbyTarget(float dist, Unit* erase) const
 {
     std::list<Unit *> targets;
     Hellground::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
@@ -11526,8 +11526,10 @@ Unit* Unit::SelectNearbyTarget(float dist, bool ignoreVictim) const
     Cell::VisitAllObjects(this, searcher, dist);
 
     // remove current target
-    if (ignoreVictim && getVictim())
+    if (!erase && getVictim())
         targets.remove(getVictim());
+    else if (erase)
+        targets.remove(erase);
 
     // remove not LoS targets
     for (std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end();)

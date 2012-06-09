@@ -912,7 +912,7 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         uint64 getVictimGUID() const { return m_attacking ? m_attacking->GetGUID() : 0; }
         void CombatStop(bool cast = false);
         void CombatStopWithPets(bool cast = false);
-        Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE, bool ignoreVictim= true) const;
+        Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE, Unit* target = NULL) const;
         void SendMeleeAttackStop(Unit* victim);
         void SendMeleeAttackStart(Unit* pVictim);
 
