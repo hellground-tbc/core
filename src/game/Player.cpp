@@ -3533,8 +3533,13 @@ bool Player::resetTalents(bool no_cost)
                 // unlearn if first rank is talent or learned by talent
                 if (itrFirstId == talentInfo->RankID[j] || spellmgr.IsSpellLearnToSpell(talentInfo->RankID[j],itrFirstId))
                 {
-                    if (itrFirstId == 11129 && HasAura(28682))
-                        RemoveAurasDueToSpell(28682);
+                    SpellEntry const * spellInfo = sSpellStore.LookupEntry(itrFirstId);
+                    if (spellInfo)
+                        for (uint8 i = 0; i < 3; ++i)
+                        {
+                            if (spellInfo->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL && HasAura(spellInfo->EffectTriggerSpell[i]))
+                                RemoveAurasDueToSpell(spellInfo->EffectTriggerSpell[i]);
+                        }
                     removeSpell(itr->first,!IsPassiveSpell(itr->first));
                     itr = GetSpellMap().begin();
                     continue;
