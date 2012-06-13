@@ -2526,7 +2526,11 @@ void Spell::EffectTriggerSpell(uint32 i)
                 if ((spell->DmgClass == SPELL_DAMAGE_CLASS_MAGIC // only affect magic spells
                     || ((1<<spell->Dispel) & dispelMask))
                     // ignore positive and passive auras
-                    && !iter->second->IsPositive() && !iter->second->IsPassive())
+                    && !iter->second->IsPositive() && !iter->second->IsPassive()
+                    && spell->Id != 1160 && spell->Id != 6190 && spell->Id != 11554 && spell->Id != 11555
+                    && spell->Id != 11556 && spell->Id != 25202 && spell->Id != 25203 && spell->Id != 99
+                    && spell->Id != 1735 && spell->Id != 9490 && spell->Id != 9747 && spell->Id != 9898
+                    && spell->Id != 26998 && spell->Id != 12323) // FIXME - should find other better way. But for now this is ok - only usable by rogues once per minute :D
                 {
                     m_caster->RemoveAurasDueToSpell(spell->Id);
                     iter = Auras.begin();
