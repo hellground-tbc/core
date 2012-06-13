@@ -48,6 +48,7 @@ template<class UNIT>
 void ConfusedMovementGenerator<UNIT>::Interrupt(UNIT &unit)
 {
     unit.StopMoving();
+    unit.clearUnitState(UNIT_STAT_CONFUSED);
 }
 
 template<class UNIT>
