@@ -256,9 +256,6 @@ void DynamicObjectUpdater::VisitHelper(Unit* target)
     if (!i_dynobject.IsWithinDistInMap(target, i_dynobject.GetRadius()))
         return;
 
-    if (!i_dynobject.IsWithinLOSInMap(target))
-        return;
-
     //Check targets for not_selectable unit flag and remove
     if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE))
         return;
@@ -276,7 +273,7 @@ void DynamicObjectUpdater::VisitHelper(Unit* target)
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(i_dynobject.GetSpellId());
 
-    if (!spellInfo->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS && !i_dynobject.IsWithinLOSInMap(target)) // combined with same in spellauras.cpp
+    if (!SpellIgnoreLOS(spellInfo, i_dynobject.GetEffIndex()) && !i_dynobject.IsWithinLOSInMap(target))
         return;
 
     uint32 eff_index  = i_dynobject.GetEffIndex();
