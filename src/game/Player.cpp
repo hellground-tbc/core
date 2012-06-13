@@ -18204,8 +18204,8 @@ bool Player::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool
                 return true;
         }
 
-        if (u->canDetectInvisibilityOf(this))
-            return true;
+        //if (u->canDetectInvisibilityOf(this))
+        //    return true;
 
         // player see other player with stealth/invisibility only if he in same group or raid or same team (raid/team case dependent from conf setting)
         if (!canDetectInvisibilityOf(u))
