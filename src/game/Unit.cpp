@@ -4268,6 +4268,19 @@ void Unit::RemoveAurasDueToRaidTeleport()
     }
 }
 
+void Unit::RemoveAllAurasButPermanent()    // warlock pet summon with current pet - removing all auras
+{
+    for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
+    {
+        SpellEntry const *spell = iter->second->GetSpellProto();
+        int32 duration = GetSpellDuration(spell);
+        if (duration > 0) // Master Demonologist counts as not passive, so duration check will be right, though soul link is not passive and is not removed too. Anyway i think it's better like that
+            RemoveAura(iter);
+        else
+            ++iter;
+    }
+}
+
 void Unit::RemoveSingleAuraFromStackByDispel(uint32 spellId)
 {
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)

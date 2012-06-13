@@ -1253,6 +1253,7 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0);
         void RemoveAurasWithDispelType(DispelType type);
         void RemoveAurasDueToRaidTeleport();
+        void RemoveAllAurasButPermanent();    // WARLOCK PET unbuff after resummon with current PET
         void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();
