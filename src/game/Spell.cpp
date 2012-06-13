@@ -3743,6 +3743,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_NOT_HERE;
     }
 
+    // can't cast while seated
+    if (m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->IsSitState() && !m_IsTriggeredSpell && !(m_spellInfo->Attributes & SPELL_ATTR_CASTABLE_WHILE_SITTING))
+    {
+       ((Player*)m_caster)->SetStandState(UNIT_STAND_STATE_STAND);
+    }
+
     if (Unit *target = m_targets.getUnitTarget())
     {
         // target state requirements (not allowed state), apply to self also
