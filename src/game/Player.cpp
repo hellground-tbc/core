@@ -6517,6 +6517,9 @@ void Player::CheckDuelDistance(time_t currTime)
         }
         else if (currTime >= (duel->outOfBound+10))
         {
+            CombatStopWithPets(true);
+            if (duel->opponent)
+                duel->opponent->CombatStopWithPets(true);
             DuelComplete(DUEL_FLED);
         }
     }
