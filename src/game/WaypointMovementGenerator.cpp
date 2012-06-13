@@ -89,7 +89,7 @@ bool WaypointMovementGenerator<Creature>::OnArrived(Creature& creature)
     MovementInform(creature);
     //Stop(node->delay);    this causes creature to stop and never move again if delay > 0
 
-    if ((i_currentNode == i_path->size() - 1) && !repeating) // If that's our last waypoint
+    if ((i_currentNode == i_path->size() - 1) && repeating) // If that's our last waypoint (changing this to !repeating stops every waypoint in the world - most waypoints should repeat themselves)
     {
         creature.SetHomePosition(node->x, node->y, node->z, creature.GetOrientation());
         creature.GetMotionMaster()->Initialize();
