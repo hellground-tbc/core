@@ -8504,6 +8504,8 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                 baseChance = GetUnitCriticalChance(attackType, pVictim);
                 extraChance += (int32(GetMaxSkillValueForLevel(pVictim)) - int32(pVictim->GetDefenseSkillValue(this))) * 0.04f;
                 baseChance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
+                if (baseChance > 0 && !pVictim->IsStandState()) //Always crit against a sitting targets (except 0 crit chance)
+                    return true;
             }
             break;
         }
