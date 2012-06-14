@@ -28,11 +28,22 @@
 #include "Auth/Sha1.h"
 #include "ByteBuffer.h"
 
-#include <boost/regex.hpp>
+#if COMPILER == COMPILER_GNU && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 6) //use c++11 library for GCC >= 4.6
+#include <regex>
+#define REGEX_NAMESPACE std
+#elif COMPILER == COMPILER_GNU //use tr1 library for old gcc
+#include <tr1/regex>
+#define REGEX_NAMESPACE std::tr1
+#elif COMPILER == COMPILER_MICROSOFT //use c++11 library for >= VS2010
+#include <regex>
+#define REGEX_NAMESPACE std
+#endif
 
 #include "BufferedSocket.h"
 
-typedef std::list<std::pair<boost::regex, boost::regex > > PatternList; // <IP pattern, LocalIP pattern>
+#ifdef REGEX_NAMESPACE
+typedef std::list<std::pair<REGEX_NAMESPACE::regex, REGEX_NAMESPACE::regex > > PatternList; // <IP pattern, LocalIP pattern>
+#endif
 
 /// Handle login commands
 class AuthSocket: public BufferedSocket

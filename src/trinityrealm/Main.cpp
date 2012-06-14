@@ -245,6 +245,7 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
+#ifdef REGEX_NAMESPACE
     QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT ip_pattern, localip_pattern FROM pattern_banned");
     if (result)
     {
@@ -252,10 +253,13 @@ extern int main(int argc, char **argv)
         do
         {
             Field *fields = result->Fetch();
-            AuthSocket::pattern_banned.push_back(std::make_pair(boost::regex(fields[0].GetString()), boost::regex(fields[1].GetString())));
+            AuthSocket::pattern_banned.push_back(std::make_pair(REGEX_NAMESPACE::regex(fields[0].GetString()), REGEX_NAMESPACE::regex(fields[1].GetString())));
         }
         while (result->NextRow());
     }
+#else
+        sLog.outError("No Valid Regex Library for your Compiler, the pattern_banned feature will be disabled");
+#endif
 
     // cleanup query
     // set expired bans to inactive

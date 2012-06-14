@@ -386,15 +386,18 @@ bool AuthSocket::_HandleLogonChallenge()
     pkt << (uint8) 0x00;
 
     std::string address = get_remote_address();
+
+#ifdef REGEX_NAMESPACE
     for (PatternList::const_iterator i = pattern_banned.begin(); i != pattern_banned.end(); ++i)
     {
-        if (boost::regex_match(address.c_str(), i->first) && boost::regex_match(localIp.c_str(), i->second))
+        if (REGEX_NAMESPACE::regex_match(address.c_str(), i->first) && REGEX_NAMESPACE::regex_match(localIp.c_str(), i->second))
         {
             pkt<< (uint8) WOW_FAIL_UNKNOWN_ACCOUNT;
             send((char const*)pkt.contents(), pkt.size());
             return true;
         }
     }
+#endif
 
     ///- Verify that this IP is not in the ip_banned table
     // No SQL injection possible (paste the IP address as passed by the socket)
