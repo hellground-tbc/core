@@ -3530,8 +3530,8 @@ bool Player::resetTalents(bool no_cost)
                 // remove learned spells (all ranks)
                 uint32 itrFirstId = spellmgr.GetFirstSpellInChain(itr->first);
 
-                // unlearn if first rank is talent or learned by talent
-                if (itrFirstId == talentInfo->RankID[j] || spellmgr.IsSpellLearnToSpell(talentInfo->RankID[j],itrFirstId))
+                // unlearn if first rank is talent or learned by talent or spell itself is learned by talent
+                if (itrFirstId == talentInfo->RankID[j] || spellmgr.IsSpellLearnToSpell(talentInfo->RankID[j],itrFirstId) || spellmgr.IsSpellLearnToSpell(talentInfo->RankID[j],itr->first))
                 {
                     SpellEntry const * spellInfo = sSpellStore.LookupEntry(itrFirstId);
                     if (spellInfo)
