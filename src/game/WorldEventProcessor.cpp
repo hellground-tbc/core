@@ -39,7 +39,7 @@ void WorldEventProcessor::DestroyEvents(uint64 playerGUID/*= 0*/)
 void WorldEventProcessor::ScheduleEvent(Player* player, WorldEvent* event)
 {
     ACE_GUARD(ACE_Thread_Mutex, Guard, Lock);
-    _events.insert(std::make_pair<uint64, WorldEvent*>(player->GetGUID(), event));
+    _events.insert(std::make_pair/*<uint64, WorldEvent*>*/(player->GetGUID(), event));
 }
 
 void WorldEventProcessor::ExecuteEvents()

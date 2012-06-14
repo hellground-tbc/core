@@ -134,7 +134,7 @@ void PetAI::PrepareSpellForAutocast(uint32 spellID)
 
     if (inCombat && !m_creature->hasUnitState(UNIT_STAT_FOLLOW) && spell->CanAutoCast(m_creature->getVictim()))
     {
-        m_targetSpellStore.push_back(std::make_pair<Unit*, Spell*>(m_creature->getVictim(), spell));
+        m_targetSpellStore.push_back(std::make_pair/*<Unit*, Spell*>*/(m_creature->getVictim(), spell));
         return;
     }
     else
@@ -151,7 +151,7 @@ void PetAI::PrepareSpellForAutocast(uint32 spellID)
 
             if (spell->CanAutoCast(Target))
             {
-                m_targetSpellStore.push_back(std::make_pair<Unit*, Spell*>(Target, spell));
+                m_targetSpellStore.push_back(std::make_pair/*<Unit*, Spell*>*/(Target, spell));
                 spellUsed = true;
                 break;
             }
@@ -176,7 +176,7 @@ void PetAI::AddSpellForAutocast(uint32 spellID, Unit* target)
 
     Spell *spell = new Spell(m_creature, spellInfo, false, 0);
     if (spell->CanAutoCast(target))
-        m_targetSpellStore.push_back(std::make_pair<Unit*, Spell*>(target, spell));
+        m_targetSpellStore.push_back(std::make_pair/*<Unit*, Spell*>*/(target, spell));
     else
         delete spell;
 }

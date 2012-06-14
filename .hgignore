@@ -21,9 +21,8 @@ dep/lib/*/tbb*
 dep/ACE_wrappers/lib/*
 dep/ACE_wrappers/ace/Release*/*/*
 dep/ACE_wrappers/ace/Debug*/*/*
-src/bindings/scripts/VC100/*/*
-win/VC100/*/*
+src/bindings/scripts/VC1*0/*/*
+win/VC1*0/*/*
 win/_*/
 
 src/shared/revision.h
-sql/dbc_spell/dbc_spell.sql

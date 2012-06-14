@@ -1,0 +1,362 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_PCH|Win32">
+      <Configuration>Release_PCH</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_PCH|x64">
+      <Configuration>Release_PCH</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8072769E-CF10-48BF-B9E1-12752A5DAC6E}</ProjectGuid>
+    <RootNamespace>sockets</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\g3dlite__$(Platform)_$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\g3dlite__$(Platform)_$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\g3dlite__$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">.\g3dlite__$(Platform)_$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\g3dlite__$(Platform)_$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">.\g3dlite__$(Platform)_$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\g3dlite__$(Platform)_$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\g3dlite__$(Platform)_$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\g3dlite__$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\g3dlite__$(Platform)_$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\g3dlite__$(Platform)_$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\g3dlite__$(Platform)_$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\dep\include\g3dlite;..\..\dep\include\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerListingLocation>.\g3dlite__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\g3dlite__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\g3dlite__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)g3dlite.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..\dep\g3dlite\include;..\..\dep\include\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerListingLocation>.\g3dlite__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\g3dlite__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\g3dlite__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)g3dlite.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..\dep\g3dlite\include;..\..\dep\include\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerListingLocation>.\g3dlite__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\g3dlite__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\g3dlite__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)g3dlite.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\dep\include\g3dlite;..\..\dep\include\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerListingLocation>.\g3dlite__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\g3dlite__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\g3dlite__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)g3dlite.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..\dep\include\g3dlite;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerListingLocation>.\g3dlite__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\g3dlite__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\g3dlite__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)g3dlite.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..\dep\include\g3dlite;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerListingLocation>.\g3dlite__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\g3dlite__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\g3dlite__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)g3dlite.lib</OutputFile>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\AABox.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Any.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\AtomicInt32.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\BinaryFormat.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\BinaryInput.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\BinaryOutput.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Box.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Capsule.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\CollisionDetection.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\CoordinateFrame.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Crypto.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\debug.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\debugAssert.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\FileSystem.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\fileutils.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\format.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\g3dfnmatch.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\g3dmath.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Intersect.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Line.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\LineSegment.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Log.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Matrix3.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Matrix4.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\MemoryManager.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\PhysicsFrame.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Plane.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\prompt.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Quat.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Random.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Ray.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Rect2D.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\ReferenceCount.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\RegistryUtil.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\serialize.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Set.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Sphere.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\stringutils.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\System.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Table.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\TextInput.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\TextOutput.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Triangle.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\uint128.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\UprightFrame.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Vector2.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Vector3.h" />
+    <ClInclude Include="..\..\dep\g3dlite\include\G3D\Vector4.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\dep\g3dlite\source\AABox.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Any.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\BinaryFormat.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\BinaryInput.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\BinaryOutput.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Box.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Capsule.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\CollisionDetection.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\CoordinateFrame.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Crypto.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Cylinder.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\debugAssert.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\FileSystem.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\fileutils.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\format.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\g3dfnmatch.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\g3dmath.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Intersect.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Line.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\LineSegment.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Log.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Matrix3.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Matrix4.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\MemoryManager.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\PhysicsFrame.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Plane.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\prompt.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Quat.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Random.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Ray.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\ReferenceCount.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\RegistryUtil.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Sphere.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\stringutils.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\System.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\TextInput.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\TextOutput.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Triangle.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\uint128.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\UprightFrame.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Vector2.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Vector3.cpp" />
+    <ClCompile Include="..\..\dep\g3dlite\source\Vector4.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
