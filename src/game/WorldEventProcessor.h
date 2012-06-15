@@ -31,10 +31,11 @@ class HELLGROUND_DLL_SPEC WorldEvent
 {
     public:
         WorldEvent(Player* player) : _owner(player) {}
+        virtual ~WorldEvent() {}
 
         virtual bool Execute() = 0;
 
-    private:
+    protected:
         Player* _owner;
 };
 

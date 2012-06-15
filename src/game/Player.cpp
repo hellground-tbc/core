@@ -6374,6 +6374,24 @@ void Player::UpdateArea(uint32 newArea)
     UpdateAreaDependentAuras(newArea);
 }
 
+class LocalChannelUpdate : WorldEvent
+{
+    public:
+        LocalChannelUpdate(Player* player, uint32 zone) : WorldEvent(player), _zone(zone) {}
+
+        bool Execute() override
+        {
+            if (!_owner->IsInWorld())
+                return false;
+
+            _owner->UpdateLocalChannels(_zone);
+            return true;
+        }
+
+    private:
+        uint32 _zone;
+};
+
 void Player::UpdateZone(uint32 newZone)
 {
     uint32 oldZoneId  = m_zoneUpdateId;
@@ -6481,7 +6499,7 @@ void Player::UpdateZone(uint32 newZone)
         DestroyZoneLimitedItem(true, newZone);
 
     // recent client version not send leave/join channel packets for built-in local channels
-    UpdateLocalChannels(newZone);
+    sWorldEventProcessor.ScheduleEvent(this, new LocalChannelUpdate(this, newZone));
 
     // group update
     if (GetGroup())
