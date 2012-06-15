@@ -10240,6 +10240,9 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
     // test pet/charm masters instead pets/charmedsz
     Unit const* targetOwner = GetCharmerOrOwner();
     Unit const* casterOwner = caster->GetCharmerOrOwner();
+    
+    if (target->GetTypeId() == TYPEID_UNIT && targetOwner == casterOwner)
+        return;
 
     // Duration of crowd control abilities on pvp target is limited by 10 sec. (2.2.0)
     if (duration > 10000 && IsDiminishingReturnsGroupDurationLimited(group))
