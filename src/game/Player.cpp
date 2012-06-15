@@ -6374,7 +6374,7 @@ void Player::UpdateArea(uint32 newArea)
     UpdateAreaDependentAuras(newArea);
 }
 
-class LocalChannelUpdate : WorldEvent
+class LocalChannelUpdate : public WorldEvent
 {
     public:
         LocalChannelUpdate(Player* player, uint32 zone) : WorldEvent(player), _zone(zone) {}
