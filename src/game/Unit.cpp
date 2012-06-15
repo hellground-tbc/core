@@ -10232,7 +10232,7 @@ void Unit::IncrDiminishing(DiminishingGroup group)
         m_Diminishing.push_back(DiminishingReturn(group,WorldTimer::getMSTime(),DIMINISHING_LEVEL_2));
 }
 
-void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Unit* caster,DiminishingLevels Level, SpellEntry const *tSpell)
+void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Unit* caster,DiminishingLevels Level, SpellEntry const *spellInfo)
 {
     if (duration == -1 || group == DIMINISHING_NONE)/*(caster->IsFriendlyTo(this) && caster != this)*/
         return;
@@ -10241,24 +10241,24 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
     Unit const* targetOwner = GetCharmerOrOwner();
     Unit const* casterOwner = caster->GetCharmerOrOwner();
     
-    if (target->GetTypeId() == TYPEID_UNIT && targetOwner == casterOwner)
-        return;
-
     // Duration of crowd control abilities on pvp target is limited by 10 sec. (2.2.0)
     if (duration > 10000 && IsDiminishingReturnsGroupDurationLimited(group))
     {
         Unit const* target = targetOwner ? targetOwner : this;
         Unit const* source = casterOwner ? casterOwner : caster;
 
+        if (target == source && IsChanneledSpell(spellInfo))
+            return;
+		
         if (target->GetTypeId() == TYPEID_PLAYER && source->GetTypeId() == TYPEID_PLAYER)
         {
             duration = 10000;
-            if (tSpell)
+            if (spellInfo)
             {
-                if(tSpell->SpellFamilyName == SPELLFAMILY_WARLOCK && tSpell->SpellFamilyFlags & 0x80000000LL) // Curse of Tongues
+                if (spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && spellInfo->SpellFamilyFlags & 0x80000000LL) // Curse of Tongues
                     duration = 12000;
 
-                ((Player*)source)->ApplySpellMod(tSpell->Id, SPELLMOD_DURATION, duration);
+                ((Player*)source)->ApplySpellMod(spellInfo->Id, SPELLMOD_DURATION, duration);
             }
         }
     }
