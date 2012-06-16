@@ -9675,7 +9675,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
         case MOVE_RUN:
         case MOVE_WALK:
         case MOVE_SWIM:
-            if (GetTypeId() == TYPEID_UNIT && ToCreature()->isPet() && hasUnitState(UNIT_STAT_FOLLOW))
+            if (GetTypeId() == TYPEID_UNIT && ToCreature()->isPet() && hasUnitState(UNIT_STAT_FOLLOW) && !isInCombat())
             {
                 if (Unit* owner = GetOwner())
                 {
