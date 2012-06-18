@@ -295,7 +295,11 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
             return;
 
         if (pWho->GetTypeId() == TYPEID_PLAYER)
+        {
+            // drop PointMovement since it has higher priority than chase :P
+            me->GetMotionMaster()->MovementExpired();
             AttackStart(pWho);
+        }
     }
 
     void MovementInform(uint32 type, uint32 id)
@@ -440,7 +444,11 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
             return;
 
         if (pWho->GetTypeId() == TYPEID_PLAYER)
+        {
+            // drop PointMovement since it has higher priority than chase :P
+            me->GetMotionMaster()->MovementExpired();
             AttackStart(pWho);
+        }
     }
 
     void MovementInform(uint32 type, uint32 id)
@@ -537,7 +545,11 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
             return;
 
         if (pWho->GetTypeId() == TYPEID_PLAYER)
+        {
+            // drop PointMovement since it has higher priority than chase :P
+            me->GetMotionMaster()->MovementExpired();
             AttackStart(pWho);
+        }
     }
 
     void MovementInform(uint32 type, uint32 id)

@@ -798,7 +798,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
         DoScriptText(RAND(ANGER_SAY_FREED, ANGER_SAY_FREED2), me);
 
         DoZoneInCombat();
-        ForceSpellCast(AURA_OF_ANGER, CAST_SELF, DONT_INTERRUPT, true);
+        me->CastSpell(me, AURA_OF_ANGER, true);
     }
 
     void JustDied(Unit *victim)
