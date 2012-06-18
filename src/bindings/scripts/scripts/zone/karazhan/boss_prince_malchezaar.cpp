@@ -96,43 +96,50 @@ static InfernalPoint InfernalPoints[] =
 #define AXE_EQUIP_INFO           33448898
 
 //---------Infernal code first
-struct HELLGROUND_DLL_DECL netherspite_infernalAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL netherspite_infernalAI : public Scripted_NoMovementAI
 {
-    netherspite_infernalAI(Creature *c) : ScriptedAI(c) ,
-        malchezaar(0), HellfireTimer(0), CleanupTimer(0), point(NULL) {}
+    netherspite_infernalAI(Creature *c) : Scripted_NoMovementAI(c) ,
+        malchezaarGUID(0), HellfireTimer(0), CleanupTimer(0), point(NULL) {}
 
     uint32 HellfireTimer;
     uint32 CleanupTimer;
-    uint32 malchezaar;
+    uint64 malchezaarGUID;
     InfernalPoint *point;
 
     void Reset() {}
-    void EnterCombat(Unit *who) {}
-    void MoveInLineOfSight(Unit *who) {}
+    void EnterCombat(Unit*) {}
+    void MoveInLineOfSight(Unit*) {}
+    void AttackStart(Unit*) {}
 
     void UpdateAI(const uint32 diff)
     {
         if(HellfireTimer)
+        {
             if(HellfireTimer <= diff)
-        {
-            DoCast(m_creature, SPELL_HELLFIRE);
-            HellfireTimer = 0;
+            {
+                DoCast(m_creature, SPELL_HELLFIRE);
+                HellfireTimer = 0;
+            }
+            else
+               HellfireTimer -= diff;
         }
-        else HellfireTimer -= diff;
 
-        if(CleanupTimer)
-            if(CleanupTimer <= diff)
+        if (CleanupTimer)
         {
-            Cleanup();
-            CleanupTimer = 0;
-        } else CleanupTimer -= diff;
+            if (CleanupTimer <= diff)
+            {
+                Cleanup();
+                CleanupTimer = 0;
+            }
+            else
+                CleanupTimer -= diff;
+        }
     }
 
     void KilledUnit(Unit *who)
     {
-        Unit *pMalchezaar = Unit::GetUnit(*m_creature, malchezaar);
-        if(pMalchezaar)
-            ((Creature*)pMalchezaar)->AI()->KilledUnit(who);
+        if ( Creature *malchezaar = Unit::GetCreature(*m_creature, malchezaarGUID))
+            malchezaar->AI()->KilledUnit(who);
     }
 
     void SpellHit(Unit *who, const SpellEntry *spell)
@@ -148,11 +155,11 @@ struct HELLGROUND_DLL_DECL netherspite_infernalAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if(done_by->GetGUID() != malchezaar)
+        if (done_by->GetGUID() != malchezaarGUID)
             damage = 0;
     }
 
-    void Cleanup();                                         //below ...
+    void Cleanup();
 };
 
 struct HELLGROUND_DLL_DECL boss_malchezaarAI : public ScriptedAI
@@ -398,7 +405,7 @@ struct HELLGROUND_DLL_DECL boss_malchezaarAI : public ScriptedAI
             Infernal->setFaction(m_creature->getFaction());
             if(point)
                 ((netherspite_infernalAI*)Infernal->AI())->point=point;
-            ((netherspite_infernalAI*)Infernal->AI())->malchezaar=m_creature->GetGUID();
+            ((netherspite_infernalAI*)Infernal->AI())->malchezaarGUID=m_creature->GetGUID();
 
             infernals.push_back(Infernal->GetGUID());
             DoCast(Infernal, SPELL_INFERNAL_RELAY);
@@ -676,7 +683,7 @@ struct HELLGROUND_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
 void netherspite_infernalAI::Cleanup()
 {
-    Unit *pMalchezaar = Unit::GetUnit(*m_creature, malchezaar);
+    Unit *pMalchezaar = Unit::GetUnit(*m_creature, malchezaarGUID);
 
     if(pMalchezaar && pMalchezaar->isAlive())
         ((boss_malchezaarAI*)((Creature*)pMalchezaar)->AI())->Cleanup(m_creature, point);
