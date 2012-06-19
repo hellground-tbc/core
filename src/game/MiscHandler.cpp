@@ -1576,9 +1576,9 @@ void WorldSession::HandleDungeonDifficultyOpcode(WorldPacket & recv_data)
             if (pl)
             {
                 const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
-                if (mapEntry->IsRaid())
+                if (mapEntry->IsDungeon())
                 {
-                    sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
+                    sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d inside the instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
                     ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_INSIDE);
                     return;
                 }
