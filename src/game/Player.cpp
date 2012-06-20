@@ -6379,7 +6379,7 @@ class LocalChannelUpdate : public WorldEvent
     public:
         LocalChannelUpdate(Player* player, uint32 zone) : WorldEvent(player), _zone(zone) {}
 
-        bool Execute() override
+        bool Execute()/* override*/
         {
             if (!_owner->IsInWorld())
                 return false;
