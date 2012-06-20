@@ -69,7 +69,6 @@ public:
         target->InterruptNonMeleeSpells(false);
 
         target->addUnitState(UNIT_STAT_STUNNED);
-        target->SetSelection(0);
 
         target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
 
@@ -78,6 +77,7 @@ public:
         target->m_movementInfo.AddMovementFlag(MOVEFLAG_ROOT);
 
         target->StopMoving();
+        target->SetSelection(0);
 
         if (target->GetTypeId() == TYPEID_PLAYER)
             target->SetStandState(UNIT_STAND_STATE_STAND);

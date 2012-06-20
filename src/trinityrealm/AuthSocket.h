@@ -27,13 +27,16 @@
 #include "Auth/BigNumber.h"
 #include "Auth/Sha1.h"
 #include "ByteBuffer.h"
-
-#if COMPILER == COMPILER_GNU && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 6) //use c++11 library for GCC >= 4.6
+// gcc 4.6+ will set __GXX_EXPERIMENTAL_CXX0X__ to 1 if compiled with -std=c++0x
+#if COMPILER == COMPILER_GNU/* && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 6) && __GXX_EXPERIMENTAL_CXX0X__ //use c++11 library for GCC >= 4.6
 #include <regex>
 #define REGEX_NAMESPACE std
-#elif COMPILER == COMPILER_GNU //use tr1 library for old gcc
+// tr1::regex were added with gcc 4.3.0
+#elif COMPILER == COMPILER_GNU && (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)//use tr1 library for old gcc
 #include <tr1/regex>
-#define REGEX_NAMESPACE std::tr1
+#define REGEX_NAMESPACE std::tr1*/
+#include <boost/regex.h>
+#define REGEX_NAMESPACE boost
 #elif COMPILER == COMPILER_MICROSOFT //use c++11 library for >= VS2010
 #include <regex>
 #define REGEX_NAMESPACE std

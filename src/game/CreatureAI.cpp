@@ -77,6 +77,7 @@ void CreatureAI::MoveInLineOfSight_Safe(Unit *who)
 {
     if (m_MoveInLineOfSight_locked == true)
         return;
+
     m_MoveInLineOfSight_locked = true;
     MoveInLineOfSight(who);
     m_MoveInLineOfSight_locked = false;
@@ -92,10 +93,6 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
         AttackStart(who);
         who->CombatStart(me);
     }
-    //else if (who->getVictim() && me->IsFriendlyTo(who)
-    //    && me->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
-    //    && me->canAttack(who->getVictim()))
-    //    AttackStart(who->getVictim());
 }
 
 void CreatureAI::SelectNearestTarget(Unit *who)
@@ -125,9 +122,3 @@ void CreatureAI::EnterEvadeMode()
 
     Reset();
 }
-
-/*void CreatureAI::AttackedBy(Unit* attacker)
- {
-    if (!m_creature->getVictim())
-        AttackStart(attacker);
-}*/

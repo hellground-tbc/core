@@ -1226,7 +1226,7 @@ void Player::Update(uint32 update_diff, uint32 p_time)
         }
     }
 
-    if (hasUnitState(UNIT_STAT_MELEE_ATTACKING) && !hasUnitState(UNIT_STAT_CASTING))
+    if (hasUnitState(UNIT_STAT_MELEE_ATTACKING) && !hasUnitState(UNIT_STAT_CANNOT_AUTOATTACK))
     {
         if (Unit *pVictim = getVictim())
         {

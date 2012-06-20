@@ -146,15 +146,7 @@ void ScriptedAI::UpdateAI(const uint32 uiDiff)
     if (!UpdateVictim())
         return;
 
-    if (m_creature->isAttackReady())
-    {
-        //If we are within range melee the target
-        if (m_creature->IsWithinMeleeRange(m_creature->getVictim()))
-        {
-            m_creature->AttackerStateUpdate(m_creature->getVictim());
-            m_creature->resetAttackTimer();
-        }
-    }
+    DoMeleeAttackIfReady();
 }
 
 void ScriptedAI::DoStartMovement(Unit* pVictim, float fDistance, float fAngle)

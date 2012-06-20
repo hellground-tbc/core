@@ -10819,7 +10819,8 @@ void Unit::UpdateCharmAI()
     {
         if (!isCharmed() || GetEntry() == 24922)    // allow Razorthorn Ravager to switch to ScriptedAI when charmed
         {
-            if (i_AI) delete i_AI;
+            delete i_AI;
+
             i_AI = i_disabledAI;
             i_disabledAI = NULL;
         }
@@ -10831,9 +10832,9 @@ void Unit::UpdateCharmAI()
             i_disabledAI = i_AI;
 
             if (isPossessed())
-                i_AI = new PossessedAI((Creature*)this);
+                i_AI = new PossessedAI(ToCreature());
             else
-                i_AI = new PetAI((Creature*)this);
+                i_AI = new PetAI(ToCreature());
         }
     }
 }

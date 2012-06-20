@@ -51,5 +51,5 @@ class HELLGROUND_DLL_DECL GuardAI : public CreatureAI
         GuardState i_state;
         TimeTracker i_tracker;
 };
-#endif
 
+#endif
