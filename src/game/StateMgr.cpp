@@ -77,7 +77,6 @@ public:
         target->m_movementInfo.AddMovementFlag(MOVEFLAG_ROOT);
 
         target->StopMoving();
-        target->SetSelection(0);
 
         if (target->GetTypeId() == TYPEID_PLAYER)
             target->SetStandState(UNIT_STAND_STATE_STAND);
@@ -88,6 +87,12 @@ public:
         data << target->GetPackGUID();
         data << uint32(0);
         target->SendMessageToSet(&data, true);
+    }
+
+    bool Update(Unit &unit, const uint32 &)
+    {
+        unit.SetSelection(0);
+        return true;
     }
 
     void Finalize(Unit &u)
@@ -101,13 +106,12 @@ public:
         if (!target->GetOwner() || !target->GetOwner()->IsMounted())
             target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_ROTATE);
 
-        target->SetSelection(target->getVictimGUID());
-
         WorldPacket data(SMSG_FORCE_MOVE_UNROOT, target->GetPackGUID().size() + 4);
         data << target->GetPackGUID();
         data << uint32(0);
         target->SendMessageToSet(&data, true);
         target->m_movementInfo.RemoveMovementFlag(MOVEFLAG_ROOT);
+
         target->AddEvent(new AttackResumeEvent(*target), ATTACK_DISPLAY_DELAY);
     }
 

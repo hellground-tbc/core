@@ -66,7 +66,6 @@ void FleeingMovementGenerator<UNIT>::Initialize(UNIT &unit)
 
     unit.InterruptNonMeleeSpells(false);
 
-    unit.SetSelection(0);
     unit.StopMoving();
     unit.addUnitState(UNIT_STAT_FLEEING);
 }
@@ -74,6 +73,8 @@ void FleeingMovementGenerator<UNIT>::Initialize(UNIT &unit)
 template<class UNIT>
 bool FleeingMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 & time_diff)
 {
+    unit.SetSelection(0);
+
     _nextCheckTime.Update(time_diff);
     if (_nextCheckTime.Passed() && unit.IsStopped())
         _moveToNextLocation(unit);
