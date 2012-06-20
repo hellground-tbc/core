@@ -32,6 +32,7 @@ void ConfusedMovementGenerator<UNIT>::Initialize(UNIT &unit)
     _generateMovement(unit);
 
     unit.InterruptNonMeleeSpells(false);
+    unit.SetSelection(0);
 
     unit.StopMoving();
     unit.addUnitState(UNIT_STAT_CONFUSED);

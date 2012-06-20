@@ -66,8 +66,9 @@ void FleeingMovementGenerator<UNIT>::Initialize(UNIT &unit)
 
     unit.InterruptNonMeleeSpells(false);
 
-    unit.addUnitState(UNIT_STAT_FLEEING);
+    unit.SetSelection(0);
     unit.StopMoving();
+    unit.addUnitState(UNIT_STAT_FLEEING);
 }
 
 template<class UNIT>
