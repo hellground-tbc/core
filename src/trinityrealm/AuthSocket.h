@@ -35,7 +35,7 @@
 #elif COMPILER == COMPILER_GNU && (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)//use tr1 library for old gcc
 #include <tr1/regex>
 #define REGEX_NAMESPACE std::tr1*/
-#include <boost/regex.h>
+#include <boost/regex.hpp>
 #define REGEX_NAMESPACE boost
 #elif COMPILER == COMPILER_MICROSOFT //use c++11 library for >= VS2010
 #include <regex>
