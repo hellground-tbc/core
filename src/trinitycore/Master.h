@@ -33,19 +33,18 @@
 class Master
 {
     friend class ACE_Singleton<Master, ACE_Null_Mutex>;
-    Master();
 
     public:
+        Master();
         ~Master();
         int Run();
         static volatile uint32 m_masterLoopCounter;
 
     private:
         bool _StartDB();
-
         static void _OnSignal(int s);
-
         void clearOnlineAccounts();
+
 };
 
 #define sMaster (*ACE_Singleton<Master, ACE_Null_Mutex>::instance())

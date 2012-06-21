@@ -111,14 +111,14 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
         return false;
 
     ///- Get the account name from the command line
-    char *account_name_str=strtok ((char*)args," ");
+    char *account_name_str = strtok((char*)args," ");
     if (!account_name_str)
         return false;
 
     std::string account_name = account_name_str;
     if(!AccountMgr::normilizeString(account_name))
     {
-        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, account_name.c_str());
         SetSentErrorMessage(true);
         return false;
     }
@@ -126,7 +126,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     uint32 account_id = AccountMgr::GetId(account_name);
     if(!account_id)
     {
-        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, account_name.c_str());
         SetSentErrorMessage(true);
         return false;
     }
@@ -150,18 +150,18 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     switch(result)
     {
         case AOR_OK:
-            PSendSysMessage(LANG_ACCOUNT_DELETED,account_name.c_str());
+            PSendSysMessage(LANG_ACCOUNT_DELETED, account_name.c_str());
             break;
         case AOR_NAME_NOT_EXIST:
-            PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
+            PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, account_name.c_str());
             SetSentErrorMessage(true);
             return false;
         case AOR_DB_INTERNAL_ERROR:
-            PSendSysMessage(LANG_ACCOUNT_NOT_DELETED_SQL_ERROR,account_name.c_str());
+            PSendSysMessage(LANG_ACCOUNT_NOT_DELETED_SQL_ERROR, account_name.c_str());
             SetSentErrorMessage(true);
             return false;
         default:
-            PSendSysMessage(LANG_ACCOUNT_NOT_DELETED,account_name.c_str());
+            PSendSysMessage(LANG_ACCOUNT_NOT_DELETED, account_name.c_str());
             SetSentErrorMessage(true);
             return false;
     }
@@ -197,7 +197,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
         character_guid = sObjectMgr.GetPlayerGUIDByName(character_name);
         if(!character_guid)
         {
-            PSendSysMessage(LANG_NO_PLAYER,character_name.c_str());
+            PSendSysMessage(LANG_NO_PLAYER, character_name.c_str());
             SetSentErrorMessage(true);
             return false;
         }
@@ -206,10 +206,10 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     }
 
     std::string account_name;
-    AccountMgr::GetName (account_id,account_name);
+    AccountMgr::GetName (account_id, account_name);
 
     Player::DeleteFromDB(character_guid, account_id, true);
-    PSendSysMessage(LANG_CHARACTER_DELETED,character_name.c_str(),GUID_LOPART(character_guid),account_name.c_str(), account_id);
+    PSendSysMessage(LANG_CHARACTER_DELETED, character_name.c_str(), GUID_LOPART(character_guid), account_name.c_str(), account_id);
     return true;
 }
 
@@ -225,7 +225,7 @@ bool ChatHandler::HandleServerExitCommand(const char* args)
 bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
 {
     ///- Get the list of accounts ID logged to the realm
-    QueryResultAutoPtr resultDB = CharacterDatabase.Query("SELECT name,account FROM characters WHERE online > 0");
+    QueryResultAutoPtr resultDB = CharacterDatabase.Query("SELECT name, account FROM characters WHERE online > 0");
     if (!resultDB)
         return true;
 
@@ -244,7 +244,7 @@ bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
         ///- Get the username, last IP and GM level of each account
         // No SQL injection. account is uint32.
         //                                                      0         1        2        3
-        QueryResultAutoPtr resultLogin = LoginDatabase.PQuery("SELECT username, last_ip, gmlevel, expansion FROM account WHERE id = '%u'",account);
+        QueryResultAutoPtr resultLogin = LoginDatabase.PQuery("SELECT username, last_ip, gmlevel, expansion FROM account WHERE id = '%u'", account);
 
         if(resultLogin)
         {
@@ -253,9 +253,10 @@ bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
                 fieldsLogin[0].GetString(),name.c_str(),fieldsLogin[1].GetString(),fieldsLogin[2].GetUInt32(),fieldsLogin[3].GetUInt32());
         }
         else
-            PSendSysMessage(LANG_ACCOUNT_LIST_ERROR,name.c_str());
+            PSendSysMessage(LANG_ACCOUNT_LIST_ERROR, name.c_str());
 
-    }while(resultDB->NextRow());
+    }
+    while(resultDB->NextRow());
 
     SendSysMessage("=====================================================================");
     return true;
@@ -281,7 +282,7 @@ bool ChatHandler::HandleAccountCreateCommand(const char* args)
     switch(result)
     {
         case AOR_OK:
-            PSendSysMessage(LANG_ACCOUNT_CREATED,account_name.c_str());
+            PSendSysMessage(LANG_ACCOUNT_CREATED, account_name.c_str());
             break;
         case AOR_NAME_TOO_LONG:
             SendSysMessage(LANG_ACCOUNT_TOO_LONG);
@@ -292,11 +293,11 @@ bool ChatHandler::HandleAccountCreateCommand(const char* args)
             SetSentErrorMessage(true);
             return false;
         case AOR_DB_INTERNAL_ERROR:
-            PSendSysMessage(LANG_ACCOUNT_NOT_CREATED_SQL_ERROR,account_name.c_str());
+            PSendSysMessage(LANG_ACCOUNT_NOT_CREATED_SQL_ERROR, account_name.c_str());
             SetSentErrorMessage(true);
             return false;
         default:
-            PSendSysMessage(LANG_ACCOUNT_NOT_CREATED,account_name.c_str());
+            PSendSysMessage(LANG_ACCOUNT_NOT_CREATED, account_name.c_str());
             SetSentErrorMessage(true);
             return false;
     }
@@ -319,12 +320,12 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
 
         uint64 accFlags = fields[0].GetUInt64();
 
-        if (WorldSession *s = sWorld.FindSession(account_id))
+        if (WorldSession *session = sWorld.FindSession(account_id))
         {
-            if (s->IsAccountFlagged(ACC_SPECIAL_LOG))
-                s->RemoveAccountFlag(ACC_SPECIAL_LOG);
+            if (session->IsAccountFlagged(ACC_SPECIAL_LOG))
+                session->RemoveAccountFlag(ACC_SPECIAL_LOG);
             else
-                s->AddAccountFlag(ACC_SPECIAL_LOG);
+                session->AddAccountFlag(ACC_SPECIAL_LOG);
         }
 
         if (accFlags & ACC_SPECIAL_LOG)
@@ -352,18 +353,18 @@ bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
 {
     if (uint32 account_id = m_session->GetAccountId())
     {
-        if (WorldSession *s = sWorld.FindSession(account_id))
+        if (WorldSession *session = sWorld.FindSession(account_id))
         {
-            if (s->IsAccountFlagged(ACC_DISABLED_GANN))
+            if (session->IsAccountFlagged(ACC_DISABLED_GANN))
             {
-                s->RemoveAccountFlag(ACC_DISABLED_GANN);
+                session->RemoveAccountFlag(ACC_DISABLED_GANN);
 
                 LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("Guild announces have been enabled for this account.");
             }
             else
             {
-                s->AddAccountFlag(ACC_DISABLED_GANN);
+                session->AddAccountFlag(ACC_DISABLED_GANN);
 
                 LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("Guild announces have been disabled for this account.");
@@ -395,12 +396,12 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
 
         uint64 accFlags = fields[0].GetUInt64();
 
-        if (WorldSession *s = sWorld.FindSession(account_id))
+        if (WorldSession *session = sWorld.FindSession(account_id))
         {
             if (accFlags & ACC_WHISPER_LOG)
-                s->RemoveAccountFlag(ACC_WHISPER_LOG);
+                session->RemoveAccountFlag(ACC_WHISPER_LOG);
             else
-                s->AddAccountFlag(ACC_WHISPER_LOG);
+                session->AddAccountFlag(ACC_WHISPER_LOG);
         }
 
         if (accFlags & ACC_WHISPER_LOG)
@@ -448,12 +449,12 @@ bool ChatHandler::HandleServerSetDiffTimeCommand(const char *args)
     if(!NewTimeStr)
         return false;
 
-    int32 NewTime =atoi(NewTimeStr);
+    int32 NewTime = atoi(NewTimeStr);
     if(NewTime < 0)
         return false;
 
     sWorld.SetRecordDiffInterval(NewTime);
-    printf( "Record diff every %u ms\n", NewTime);
+    printf("Record diff every %u ms\n", NewTime);
     return true;
 }
 
@@ -534,8 +535,7 @@ void CliRunnable::run()
             #if PLATFORM != WINDOWS
             add_history(command.c_str());
             #endif
-
-    }
+        }
         else if (feof(stdin))
         {
             World::StopNow(SHUTDOWN_EXIT_CODE);

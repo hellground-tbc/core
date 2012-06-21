@@ -50,10 +50,6 @@
 #endif
 
 extern RunModes runMode;
-
-/// \todo Warning disabling not useful under VC++2005. Can somebody say on which compiler it is useful?
-#pragma warning(disable:4305)
-
 volatile uint32 Master::m_masterLoopCounter = 0;
 
 class FreezeDetectorRunnable : public ACE_Based::Runnable
@@ -69,12 +65,14 @@ public:
     {
         if(!_delaytime)
             return;
-        sLog.outString("Starting up anti-freeze thread (%u seconds max stuck time)...",_delaytime/1000);
+
         m_loops = 0;
         w_loops = 0;
         m_lastchange = 0;
         w_lastchange = 0;
+
         freezeCheckPeriod = sWorld.getConfig(CONFIG_VMSS_FREEZECHECKPERIOD);
+        sLog.outString("Starting up anti-freeze thread (%u seconds max stuck time)...", _delaytime / 1000);
 
         while(!World::IsStopped())
         {
@@ -116,31 +114,31 @@ Master::~Master()
 /// Main function
 int Master::Run()
 {
-    sLog.outString( "%s (core-daemon)", _FULLVERSION );
-    sLog.outString( "<Ctrl-C> to stop.\n" );
+    sLog.outString("%s (core-daemon)", _FULLVERSION);
+    sLog.outString("<Ctrl-C> to stop.\n");
 
-    sLog.outTitle( " ______                       __");
-    sLog.outTitle( "/\\__  _\\       __          __/\\ \\__");
-    sLog.outTitle( "\\/_/\\ \\/ _ __ /\\_\\    ___ /\\_\\ \\ ,_\\  __  __");
-    sLog.outTitle( "   \\ \\ \\/\\`'__\\/\\ \\ /' _ `\\/\\ \\ \\ \\/ /\\ \\/\\ \\");
-    sLog.outTitle( "    \\ \\ \\ \\ \\/ \\ \\ \\/\\ \\/\\ \\ \\ \\ \\ \\_\\ \\ \\_\\ \\");
-    sLog.outTitle( "     \\ \\_\\ \\_\\  \\ \\_\\ \\_\\ \\_\\ \\_\\ \\__\\\\/`____ \\");
-    sLog.outTitle( "      \\/_/\\/_/   \\/_/\\/_/\\/_/\\/_/\\/__/ `/___/> \\");
-    sLog.outTitle( "                                 C O R E  /\\___/");
-    sLog.outTitle( "http://TrinityCore.org                    \\/__/\n");
+    sLog.outTitle(" ______                       __");
+    sLog.outTitle("/\\__  _\\       __          __/\\ \\__");
+    sLog.outTitle("\\/_/\\ \\/ _ __ /\\_\\    ___ /\\_\\ \\ ,_\\  __  __");
+    sLog.outTitle("   \\ \\ \\/\\`'__\\/\\ \\ /' _ `\\/\\ \\ \\ \\/ /\\ \\/\\ \\");
+    sLog.outTitle("    \\ \\ \\ \\ \\/ \\ \\ \\/\\ \\/\\ \\ \\ \\ \\ \\_\\ \\ \\_\\ \\");
+    sLog.outTitle("     \\ \\_\\ \\_\\  \\ \\_\\ \\_\\ \\_\\ \\_\\ \\__\\\\/`____ \\");
+    sLog.outTitle("      \\/_/\\/_/   \\/_/\\/_/\\/_/\\/_/\\/__/ `/___/> \\");
+    sLog.outTitle("                                 C O R E  /\\___/");
+    sLog.outTitle("http://TrinityCore.org                    \\/__/\n");
 
     /// worldd PID file creation
     std::string pidfile = sConfig.GetStringDefault("PidFile", "");
     if(!pidfile.empty())
     {
         uint32 pid = CreatePIDFile(pidfile);
-        if( !pid )
+        if(!pid)
         {
-            sLog.outError( "Cannot create PID file %s.\n", pidfile.c_str() );
+            sLog.outError("Cannot create PID file %s.\n", pidfile.c_str());
             return 1;
         }
 
-        sLog.outString( "Daemon PID: %u\n", pid );
+        sLog.outString("Daemon PID: %u\n", pid);
     }
 
 #ifndef WIN32
@@ -153,6 +151,7 @@ int Master::Run()
 
     ///- Initialize the World
     sWorld.SetInitialWorldSettings();
+
     //server loaded successfully => enable async DB requests
     //this is done to forbid any async transactions during server startup!
     CharacterDatabase.AllowAsyncTransactions();
@@ -215,16 +214,16 @@ int Master::Run()
             {
                 ULONG_PTR curAff = Aff & appAff;            // remove non accessible processors
 
-                if(!curAff )
+                if(!curAff)
                 {
-                    sLog.outError("Processors marked in UseProcessors bitmask (hex) %x not accessible for Trinityd. Accessible processors bitmask (hex): %x",Aff,appAff);
+                    sLog.outError("Processors marked in UseProcessors bitmask (hex) %x not accessible for Trinityd. Accessible processors bitmask (hex): %x", Aff, appAff);
                 }
                 else
                 {
                     if(SetProcessAffinityMask(hProcess,curAff))
                         sLog.outString("Using processors (bitmask, hex): %x", curAff);
                     else
-                        sLog.outError("Can't set used processors (hex): %x",curAff);
+                        sLog.outError("Can't set used processors (hex): %x", curAff);
                 }
             }
             sLog.outString();
@@ -232,10 +231,10 @@ int Master::Run()
 
         bool Prio = sConfig.GetBoolDefault("ProcessPriority", false);
 
-//        if(Prio && (m_ServiceStatus == -1)/* need set to default process priority class in service mode*/)
+        //if(Prio && (m_ServiceStatus == -1)/* need set to default process priority class in service mode*/)
         if(Prio)
         {
-            if(SetPriorityClass(hProcess,HIGH_PRIORITY_CLASS))
+            if(SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
                 sLog.outString("TrinityCore process priority class set to HIGH");
             else
                 sLog.outError("ERROR: Can't set Trinityd process priority class.");
@@ -253,7 +252,7 @@ int Master::Run()
     LoginDatabase.AllowAsyncTransactions();
 
     // maximum counter for next ping
-    uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / socketSelecttime));
+    uint32 numLoops = (sConfig.GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000000 / socketSelecttime));
     uint32 loopCounter = 0;
 
     ///- Start up freeze catcher thread
@@ -269,16 +268,16 @@ int Master::Run()
 
     ///- Launch the world listener socket
     uint16 wsport = sWorld.getConfig(CONFIG_PORT_WORLD);
-    std::string bind_ip = sConfig.GetStringDefault ("BindIP", "0.0.0.0");
+    std::string bind_ip = sConfig.GetStringDefault("BindIP", "0.0.0.0");
 
     if (sWorldSocketMgr->StartNetwork(wsport, bind_ip) == -1)
     {
-        sLog.outError ("Failed to start network");
+        sLog.outError("Failed to start network");
         World::StopNow(ERROR_EXIT_CODE);
         // go down and shutdown the server
     }
 
-    sWorldSocketMgr->Wait ();
+    sWorldSocketMgr->Wait();
 
     ///- Set server offline in realmlist
     LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
@@ -290,7 +289,7 @@ int Master::Run()
     ///- Clean database before leaving
     clearOnlineAccounts();
 
-    sLog.outString( "Halting process..." );
+    sLog.outString("Halting process...");
 
     #ifdef WIN32
     if (sConfig.GetBoolDefault("Console.Enable", true))
@@ -347,20 +346,20 @@ int Master::Run()
 bool Master::_StartDB()
 {
     ///- Get world database info from configuration file
-    std::string dbstring;
-    dbstring = sConfig.GetStringDefault("WorldDatabaseInfo", "");
+    std::string dbstring = sConfig.GetStringDefault("WorldDatabaseInfo", "");
     if(dbstring.empty())
     {
         sLog.outError("Database not specified in configuration file");
         return false;
     }
+
     int nConnections = sConfig.GetIntDefault("WorldDatabaseConnections", 1);
     sLog.outString("World Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
 
     ///- Initialise the world database
     if(!WorldDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outError("Cannot connect to world database %s",dbstring.c_str());
+        sLog.outError("Cannot connect to world database %s", dbstring.c_str());
         return false;
     }
 
@@ -392,7 +391,7 @@ bool Master::_StartDB()
     sLog.outString("Login Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
     if(!LoginDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outError("Cannot connect to login database %s",dbstring.c_str());
+        sLog.outError("Cannot connect to login database %s", dbstring.c_str());
         return false;
     }
 
@@ -440,13 +439,13 @@ void Master::_OnSignal(int s)
         case SIGABRT:
         {
             ACE_thread_t const threadId = ACE_OS::thr_self();
-            if (MapUpdateInfo const* m = sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
+            if (MapUpdateInfo const* mapUpdateInfo = sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
             {
                 ACE_Stack_Trace stackTrace;
-                sLog.outCrash("CRASH[%i]: mapid: %u, instanceid: %u", s, m->GetId(), m->GetInstanceId());
+                sLog.outCrash("CRASH[%i]: mapid: %u, instanceid: %u", s, mapUpdateInfo->GetId(), mapUpdateInfo->GetInstanceId());
                 sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
 
-                if (Map *map = sMapMgr.FindMap(m->GetId(), m->GetInstanceId()))
+                if (Map *map = sMapMgr.FindMap(mapUpdateInfo->GetId(), mapUpdateInfo->GetInstanceId()))
                     map->SetBroken(true);
 
                 sMapMgr.GetMapUpdater()->unregister_thread(ACE_OS::thr_self());

@@ -39,12 +39,11 @@
 void WorldRunnable::run()
 {
     ///- Init new SQL thread for the world database
-    WorldDatabase.ThreadStart();                                // let thread do safe mySQL requests (one connection call enough)
+    WorldDatabase.ThreadStart();                            // let thread do safe mySQL requests (one connection call enough)
     sWorld.InitResultQueue();
 
     uint32 realCurrTime = 0;
     uint32 realPrevTime = WorldTimer::tick();
-
     uint32 prevSleepTime = 0;                               // used for balanced full tick time length near WORLD_SLEEP_CONST
 
     ///- While we have not World::m_stopEvent, update the world
@@ -55,7 +54,7 @@ void WorldRunnable::run()
 
         uint32 diff = WorldTimer::tick();
 
-        sWorld.Update( diff );
+        sWorld.Update(diff);
         realPrevTime = realCurrTime;
 
         // diff (D0) include time of previous sleep (d0) + tick time (t0)
@@ -64,26 +63,22 @@ void WorldRunnable::run()
         // d1 = WORLD_SLEEP_CONST - t0 = WORLD_SLEEP_CONST - (D0 - d0) = WORLD_SLEEP_CONST + d0 - D0
         if (diff <= WORLD_SLEEP_CONST+prevSleepTime)
         {
-            prevSleepTime = WORLD_SLEEP_CONST+prevSleepTime-diff;
+            prevSleepTime = WORLD_SLEEP_CONST + prevSleepTime - diff;
             ACE_Based::Thread::Sleep(prevSleepTime);
         }
         else
             prevSleepTime = 0;
     }
 
-    sWorld.m_ac.deactivate();
+    sWorld.m_ac.deactivate();                               // Stop Anticheat Delay Executor
     sWorld.KickAll();                                       // save and kick all players
-    uint32 tmp = 1;
-    sWorld.UpdateSessions(tmp);                             // real players unload required UpdateSessions call
+    sWorld.UpdateSessions(uint32(1));                       // real players unload required UpdateSessions call
 
     // unload battleground templates before different singletons destroyed
     sBattleGroundMgr.DeleteAllBattleGrounds();
-
     sWorldSocketMgr->StopNetwork();
-
-    sMapMgr.UnloadAll();                     // unload all grids (including locked in memory)
+    sMapMgr.UnloadAll();                                    // unload all grids (including locked in memory)
 
     ///- End the database thread
-    WorldDatabase.ThreadEnd();                                  // free mySQL thread resources
+    WorldDatabase.ThreadEnd();                              // free mySQL thread resources
 }
-
