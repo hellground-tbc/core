@@ -183,8 +183,8 @@ int Master::Run()
     }
 
     ///- Launch WorldRunnable thread
-    ACE_Based::Thread t(new WorldRunnable);
-    t.setPriority(ACE_Based::Highest);
+    ACE_Based::Thread world_thread(new WorldRunnable);
+    world_thread.setPriority(ACE_Based::Highest);
 
     // set realmbuilds depend on mangosd expected builds, and set server online
     {
@@ -197,7 +197,7 @@ int Master::Run()
     if (sConfig.GetBoolDefault("Console.Enable", true) && (runMode == MODE_NORMAL))
     {
         ///- Launch CliRunnable thread
-        ACE_Based::Thread td1(new CliRunnable);
+        ACE_Based::Thread cli_thread(new CliRunnable);
     }
 
     ///- Handle affinity for multiple processors and process priority on Windows
@@ -257,13 +257,14 @@ int Master::Run()
     uint32 loopCounter = 0;
 
     ///- Start up freeze catcher thread
+    ACE_Based::Thread* freeze_thread = NULL;
     uint32 freeze_delay = sConfig.GetIntDefault("MaxCoreStuckTime", 0);
     if(freeze_delay)
     {
         FreezeDetectorRunnable *fdr = new FreezeDetectorRunnable();
         fdr->SetDelayTime(freeze_delay*1000);
-        ACE_Based::Thread t(fdr);
-        t.setPriority(ACE_Based::Highest);
+        freeze_thread = new ACE_Based::Thread(fdr);
+        freeze_thread->setPriority(ACE_Based::Highest);
     }
 
     ///- Launch the world listener socket
@@ -284,7 +285,7 @@ int Master::Run()
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
-    t.wait();
+    world_thread.wait();
 
     ///- Clean database before leaving
     clearOnlineAccounts();
