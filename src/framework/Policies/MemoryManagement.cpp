@@ -27,6 +27,8 @@
 
 #ifndef USE_STANDARD_MALLOC
 
+#undef VERSION
+
 #include <tbb/scalable_allocator.h>
 
 void* operator new(size_t sz)
