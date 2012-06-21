@@ -49,13 +49,13 @@
 # define SYSCONFDIR ""
 #endif
 
-#define _HELLGROUND_CORE_CONFIG  SYSCONFDIR"trinitycore.conf"
-#define _HELLGROUND_REALM_CONFIG  SYSCONFDIR"trinityrealm.conf"
+#define _HELLGROUND_CORE_CONFIG SYSCONFDIR "trinitycore.conf"
+#define _HELLGROUND_REALM_CONFIG SYSCONFDIR "trinityrealm.conf"
 
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
 #ifndef _HELLGROUND_CORE_CONFVER
-# define _HELLGROUND_CORE_CONFVER 2011092901
+# define _HELLGROUND_CORE_CONFVER 2012062101
 #endif //_HELLGROUND_CORE_CONFVER
 
 // Format is YYYYMMDDRR where RR is the change in the conf file

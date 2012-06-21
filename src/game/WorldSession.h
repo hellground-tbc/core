@@ -240,6 +240,9 @@ class HELLGROUND_DLL_SPEC WorldSession
 
         bool SendItemInfo(uint32 itemid, WorldPacket data);
 
+        // External Mail
+        static void SendExternalMails();
+
         //auction
         void SendAuctionHello(Unit *unit);
         void SendAuctionCommandResult(AuctionEntry *auc, AuctionAction Action, AuctionError ErrorCode, InventoryResult invError = EQUIP_ERR_OK);

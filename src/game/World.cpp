@@ -835,10 +835,10 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_START_GM_LEVEL] = MAX_LEVEL;
     }
 
-    m_configs[CONFIG_GROUP_VISIBILITY] = sConfig.GetIntDefault("Visibility.GroupMode",0);
-
-    m_configs[CONFIG_MAIL_DELIVERY_DELAY] = sConfig.GetIntDefault("MailDeliveryDelay",HOUR);
-    m_configs[CONFIG_GM_MAIL]             = sConfig.GetBoolDefault("MailGmInstantSend",1);
+    m_configs[CONFIG_MAIL_DELIVERY_DELAY]    = sConfig.GetIntDefault("MailDeliveryDelay", HOUR);
+    m_configs[CONFIG_EXTERNAL_MAIL]          = sConfig.GetIntDefault("ExternalMail", 0);
+    m_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] = sConfig.GetIntDefault("ExternalMailInterval", 1); 
+    m_configs[CONFIG_GM_MAIL]                = sConfig.GetBoolDefault("MailGmInstantSend", 1);
 
     m_configs[CONFIG_UPTIME_UPDATE] = sConfig.GetIntDefault("UpdateUptimeInterval", 10);
     if (m_configs[CONFIG_UPTIME_UPDATE]<=0)
@@ -1505,6 +1505,7 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_GUILD_ANNOUNCES].SetInterval(getConfig(CONFIG_GUILD_ANN_INTERVAL));
     m_timers[WUPDATE_DELETECHARS].SetInterval(DAY*IN_MILISECONDS); // check for chars to delete every day
     m_timers[WUPDATE_OLDMAILS].SetInterval(getConfig(CONFIG_RETURNOLDMAILS_INTERVAL)*1000);
+    m_timers[WUPDATE_EXTERNALMAILS].SetInterval(m_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] * MINUTE * 1000); 
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -1747,6 +1748,15 @@ void World::Update(uint32 diff)
     {
         ResetDailyQuests();
         m_NextDailyQuestReset += DAY;
+    }
+
+    /// Handle external mail
+    if (m_configs[CONFIG_EXTERNAL_MAIL] != 0 && m_timers[WUPDATE_EXTERNALMAILS].Passed())
+    {
+        m_timers[WUPDATE_EXTERNALMAILS].Reset();
+        RecordTimeDiff(NULL);
+        WorldSession::SendExternalMails();
+        RecordTimeDiff("SendExternalMails");
     }
 
     /// <ul><li> Handle auctions when the timer has passed
