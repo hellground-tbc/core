@@ -441,7 +441,7 @@ void WorldSession::SendExternalMails()
                 {
                     Item* ToMailItem = Item::CreateItem(ItemID, ItemCount, receiver);
                     ToMailItem -> SaveToDB();
-                    
+
                     MailDraft(subject, itemTextId)
                         .AddItem(ToMailItem)
                         .SetMoney(money)
