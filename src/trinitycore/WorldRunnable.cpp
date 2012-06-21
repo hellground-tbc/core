@@ -71,6 +71,7 @@ void WorldRunnable::run()
             prevSleepTime = 0;
     }
 
+    sWorld.m_ac.deactivate();
     sWorld.KickAll();                                       // save and kick all players
     uint32 tmp = 1;
     sWorld.UpdateSessions(tmp);                             // real players unload required UpdateSessions call
