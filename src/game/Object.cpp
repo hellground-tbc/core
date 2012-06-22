@@ -1340,8 +1340,8 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     if (result)
     {
         // move back a bit
-        dest.x -= 1.0f * cos(angle);
-        dest.y -= 1.0f * sin(angle);
+        dest.x -= 0.5f * cos(angle);
+        dest.y -= 0.5f * sin(angle);
         dist = sqrt((pos.x - dest.x)*(pos.x - dest.x) + (pos.y - dest.y)*(pos.y - dest.y));
     }
 
@@ -1349,7 +1349,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     for (int j = 0; j < 10; ++j)
     {
         // do not allow too big z changes
-        if (fabs(pos.z - dest.z) > 5.0f)
+        if (fabs(pos.z - dest.z) > 4.3f)
         {
             dest.x -= step * cos(angle);
             dest.y -= step * sin(angle);
@@ -1367,11 +1367,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
 
     Hellground::NormalizeMapCoord(pos.x);
     Hellground::NormalizeMapCoord(pos.y);
-    pos.z = 0.666f + GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
-
-    // we do NOT love micromovement :p but not for Players :p
-    if (IsInRange2d(pos.x, pos.y, 0.0f, 1.5f) && GetTypeId() != TYPEID_PLAYER)
-        GetPosition(pos);
+    pos.z = GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true) + 0.5f;
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
