@@ -158,7 +158,7 @@ bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool cur
     uint32 summon_spell_id = fields[21].GetUInt32();
     SpellEntry const* spellInfo = sSpellStore.LookupEntry(summon_spell_id);
 
-    bool is_temporary_summoned = spellInfo && GetSpellDuration(spellInfo) > 0;
+    bool is_temporary_summoned = spellInfo && SpellMgr::GetSpellDuration(spellInfo) > 0;
 
     // check temporary summoned pets like mage water elemental
     if (current && is_temporary_summoned)
@@ -744,17 +744,17 @@ bool Pet::CanTakeMoreActiveSpells(uint32 spellid)
     uint8  activecount = 1;
     uint32 chainstartstore[ACTIVE_SPELLS_MAX];
 
-    if (IsPassiveSpell(spellid))
+    if (SpellMgr::IsPassiveSpell(spellid))
         return true;
 
-    chainstartstore[0] = spellmgr.GetFirstSpellInChain(spellid);
+    chainstartstore[0] = sSpellMgr.GetFirstSpellInChain(spellid);
 
     for (PetSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
-        if (IsPassiveSpell(itr->first))
+        if (SpellMgr::IsPassiveSpell(itr->first))
             continue;
 
-        uint32 chainstart = spellmgr.GetFirstSpellInChain(itr->first);
+        uint32 chainstart = sSpellMgr.GetFirstSpellInChain(itr->first);
 
         uint8 x;
 
@@ -787,8 +787,8 @@ int32 Pet::GetTPForSpell(uint32 spellid)
 {
     uint32 basetrainp = 0;
 
-    SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(spellid);
-    SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(spellid);
+    SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(spellid);
+    SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(spellid);
     for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
     {
         if (!_spell_idx->second->reqtrainpoints)
@@ -799,17 +799,17 @@ int32 Pet::GetTPForSpell(uint32 spellid)
     }
 
     uint32 spenttrainp = 0;
-    uint32 chainstart = spellmgr.GetFirstSpellInChain(spellid);
+    uint32 chainstart = sSpellMgr.GetFirstSpellInChain(spellid);
 
     for (PetSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
         if (itr->second->state == PETSPELL_REMOVED)
             continue;
 
-        if (spellmgr.GetFirstSpellInChain(itr->first) == chainstart)
+        if (sSpellMgr.GetFirstSpellInChain(itr->first) == chainstart)
         {
-            SkillLineAbilityMap::const_iterator _lower = spellmgr.GetBeginSkillLineAbilityMap(itr->first);
-            SkillLineAbilityMap::const_iterator _upper = spellmgr.GetEndSkillLineAbilityMap(itr->first);
+            SkillLineAbilityMap::const_iterator _lower = sSpellMgr.GetBeginSkillLineAbilityMap(itr->first);
+            SkillLineAbilityMap::const_iterator _upper = sSpellMgr.GetEndSkillLineAbilityMap(itr->first);
 
             for (SkillLineAbilityMap::const_iterator _spell_idx2 = _lower; _spell_idx2 != _upper; ++_spell_idx2)
             {
@@ -1420,7 +1420,7 @@ void Pet::_LoadAuras(uint32 timediff)
             }
 
             // negative effects should continue counting down after logout
-            if (remaintime != -1 && !IsPositiveEffect(spellid, effindex))
+            if (remaintime != -1 && !SpellMgr::IsPositiveEffect(spellid, effindex))
             {
                 if (remaintime/IN_MILISECONDS <= int32(timediff))
                     continue;
@@ -1438,7 +1438,7 @@ void Pet::_LoadAuras(uint32 timediff)
                 remaincharges = -1;
 
             /// do not load single target auras (unless they were cast by the player)
-            if (caster_guid != GetGUID() && IsSingleTargetSpell(spellproto))
+            if (caster_guid != GetGUID() && SpellMgr::IsSingleTargetSpell(spellproto))
                 continue;
 
             for (uint32 i=0; i<stackcount; i++)
@@ -1475,7 +1475,7 @@ void Pet::_SaveAuras()
             itr2--;
             SpellEntry const *spellInfo = itr2->second->GetSpellProto();
             /// do not save single target auras (unless they were cast by the player)
-            if (!(itr2->second->GetCasterGUID() != GetGUID() && IsSingleTargetSpell(spellInfo)))
+            if (!(itr2->second->GetCasterGUID() != GetGUID() && SpellMgr::IsSingleTargetSpell(spellInfo)))
             {
                 if (!itr2->second->IsPassive())
                 {
@@ -1568,7 +1568,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
 
     if (active == ACT_DECIDE)                                //active was not used before, so we save it's autocast/passive state here
     {
-        if (IsPassiveSpell(spell_id))
+        if (SpellMgr::IsPassiveSpell(spell_id))
             newspell->active = ACT_PASSIVE;
         else
             newspell->active = ACT_DISABLED;
@@ -1576,13 +1576,13 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     else
         newspell->active = active;
 
-    uint32 chainstart = spellmgr.GetFirstSpellInChain(spell_id);
+    uint32 chainstart = sSpellMgr.GetFirstSpellInChain(spell_id);
 
     for (PetSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
         if (itr->second->state == PETSPELL_REMOVED) continue;
 
-        if (spellmgr.GetFirstSpellInChain(itr->first) == chainstart)
+        if (sSpellMgr.GetFirstSpellInChain(itr->first) == chainstart)
         {
             slot_id = itr->second->slotId;
             newspell->active = itr->second->active;
@@ -1612,7 +1612,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     newspell->slotId = tmpslot;
     m_spells[spell_id] = newspell;
 
-    if (IsPassiveSpell(spell_id))
+    if (SpellMgr::IsPassiveSpell(spell_id))
         CastSpell(this, spell_id, true);
     else if (state == PETSPELL_NEW)
         m_charmInfo->AddSpellToActionBar(oldspell_id, spell_id, (ActiveStates)active);
@@ -1699,7 +1699,7 @@ void Pet::InitPetCreateSpells()
 
                 if (p_owner && !p_owner->HasSpell(learn_spellproto->Id))
                 {
-                    if (IsPassiveSpell(petspellid))          //learn passive skills when tamed, not sure if thats right
+                    if (SpellMgr::IsPassiveSpell(petspellid))          //learn passive skills when tamed, not sure if thats right
                         p_owner->learnSpell(learn_spellproto->Id);
                     else
                         AddTeachSpell(learn_spellproto->EffectTriggerSpell[0], learn_spellproto->Id);
@@ -1710,8 +1710,8 @@ void Pet::InitPetCreateSpells()
 
             addSpell(petspellid);
 
-            SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(learn_spellproto->EffectTriggerSpell[0]);
-            SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(learn_spellproto->EffectTriggerSpell[0]);
+            SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(learn_spellproto->EffectTriggerSpell[0]);
+            SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(learn_spellproto->EffectTriggerSpell[0]);
 
             for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
             {
@@ -1770,7 +1770,7 @@ uint32 Pet::resetTalentsCost() const
 
 void Pet::ToggleAutocast(uint32 spellid, bool apply)
 {
-    if (IsPassiveSpell(spellid))
+    if (SpellMgr::IsPassiveSpell(spellid))
         return;
 
     //if(const SpellEntry *tempSpell = GetSpellStore()->LookupEntry(spellid))
@@ -1943,7 +1943,7 @@ void Pet::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
         if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
             continue;
 
-        if ((idSchoolMask & GetSpellSchoolMask(spellInfo)))// && owner->GetSpellCooldownDelay(unSpellId) < unTimeMs)
+        if ((idSchoolMask & SpellMgr::GetSpellSchoolMask(spellInfo)))// && owner->GetSpellCooldownDelay(unSpellId) < unTimeMs)
         {
             data << unSpellId;
             data << unTimeMs;                               // in m.secs

@@ -95,7 +95,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         {
             if (SpellEntry const *spellInfo = sSpellStore.LookupEntry(proto->Spells[i].SpellId))
             {
-                if (IsNonCombatSpell(spellInfo))
+                if (SpellMgr::IsNonCombatSpell(spellInfo))
                 {
                     pUser->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT,pItem,NULL);
                     return;
@@ -326,7 +326,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // not have spell or spell passive and not casted by client
-    if (!_player->HasSpell (spellId) || IsPassiveSpell(spellId))
+    if (!_player->HasSpell (spellId) || SpellMgr::IsPassiveSpell(spellId))
     {
         //cheater? kick? ban?
         return;
@@ -344,7 +344,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     if (Unit* target = targets.getUnitTarget())
     {
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
-        if (SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(spellInfo, target->getLevel()))
+        if (SpellEntry const *actualSpellInfo = sSpellMgr.SelectAuraRankForPlayerLevel(spellInfo, target->getLevel()))
             spellInfo = actualSpellInfo;
     }
 
@@ -383,7 +383,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     if (spellInfo->Attributes & SPELL_ATTR_CANT_CANCEL)
         return;
 
-    if (!IsPositiveSpell(spellId))
+    if (!SpellMgr::IsPositiveSpell(spellId))
     {
         // ignore for remote control state
         if (_player->GetFarsightTarget())
@@ -409,7 +409,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     }
 
     // channeled spell case (it currently casted then)
-    if (IsChanneledSpell(spellInfo))
+    if (SpellMgr::IsChanneledSpell(spellInfo))
     {
         if (_player->m_currentSpells[CURRENT_CHANNELED_SPELL] &&
             _player->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->Id==spellId)

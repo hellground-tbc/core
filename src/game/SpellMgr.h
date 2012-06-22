@@ -23,6 +23,8 @@
 
 // For static or at-server-startup loaded spell data
 // For more high level function for sSpellStore data
+#include <ace/Singleton.h>
+#include <ace/Null_Mutex.h>
 
 #include "SharedDefines.h"
 #include "DBCStructure.h"
@@ -136,219 +138,6 @@ enum SpellLinkedType
     SPELL_LINK_PRECAST  = 3 * 200000,
     SPELL_LINK_REMOVE   = 0,
 };
-
-SpellSpecific GetSpellSpecific(uint32 spellId);
-
-// Different spell properties
-inline float GetSpellRadiusForHostile(SpellRadiusEntry const *radius) { return (radius ? radius->radiusHostile : 0); }
-inline float GetSpellRadiusForFriend(SpellRadiusEntry const *radius) { return (radius ? radius->radiusFriend : 0); }
-HELLGROUND_DLL_SPEC uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
-uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo);
-inline float GetSpellMinRange(SpellRangeEntry const *range) { return (range ? range->minRange : 0); }
-inline float GetSpellMaxRange(SpellRangeEntry const *range) { return (range ? range->maxRange : 0); }
-inline uint32 GetSpellRangeType(SpellRangeEntry const *range) { return (range ? range->type : 0); }
-inline uint32 GetSpellRecoveryTime(SpellEntry const *spellInfo) { return spellInfo->RecoveryTime > spellInfo->CategoryRecoveryTime ? spellInfo->RecoveryTime : spellInfo->CategoryRecoveryTime; }
-int32 GetSpellDuration(SpellEntry const *spellInfo);
-int32 GetSpellMaxDuration(SpellEntry const *spellInfo);
-void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat);
-
-inline float GetSpellRadius(SpellEntry const *spellInfo, uint32 effectIdx, bool positive)
-{
-    return positive
-        ? GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(spellInfo->EffectRadiusIndex[effectIdx]))
-        : GetSpellRadiusForHostile(sSpellRadiusStore.LookupEntry(spellInfo->EffectRadiusIndex[effectIdx]));
-}
-
-inline float GetSpellMaxRange(SpellEntry const *spellInfo)
-{
-    return GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellInfo->rangeIndex));
-}
-
-inline float GetSpellMinRange(SpellEntry const *spellInfo)
-{
-    return GetSpellMinRange(sSpellRangeStore.LookupEntry(spellInfo->rangeIndex));
-}
-
-inline float GetSpellMinRange(uint32 id)
-{
-    SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
-    if (!spellInfo) return 0;
-    return GetSpellMinRange(spellInfo);
-}
-
-inline float GetSpellMaxRange(uint32 id)
-{
-    SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
-    if (!spellInfo) return 0;
-    return GetSpellMaxRange(spellInfo);
-}
-
-inline bool IsSplashBuffAura(SpellEntry const* spellInfo);
-//bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
-
-inline bool IsSealSpell(SpellEntry const *spellInfo)
-{
-    // Seal of Command should meet requirements, but mysteriously is not
-    if (spellInfo->Id == 41469)
-        return true;
-    //Collection of all the seal family flags. No other paladin spell has any of those.
-    return spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN &&
-        (spellInfo->SpellFamilyFlags & 0x4000A000200LL);
-}
-
-inline bool IsElementalShield(SpellEntry const *spellInfo)
-{
-    // family flags 10 (Lightning), 42 (Earth), 37 (Water), proc shield from T2 8 pieces bonus
-    return (spellInfo->SpellFamilyFlags & 0x42000000400LL) || spellInfo->Id == 23552;
-}
-
-uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask);
-int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
-bool IsSingleFromSpellSpecificPerCaster(SpellSpecific spellSpec1, SpellSpecific spellSpec2);
-bool IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific spellSpec2);
-bool IsSingleFromSpellSpecificRanksPerTarget(SpellSpecific spellId_spec, SpellSpecific i_spellId_spec);
-
-bool IsPassiveSpell(uint32 spellId);
-bool IsPassiveSpell(SpellEntry const* spellProto);
-
-inline bool IsPassiveSpellStackableWithRanks(SpellEntry const* spellProto)
-{
-    if (!IsPassiveSpell(spellProto))
-        return false;
-
-    return !spellProto->HasEffect(SPELL_EFFECT_APPLY_AURA);
-}
-
-inline bool IsDeathOnlySpell(SpellEntry const *spellInfo)
-{
-    return spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CAST_ON_DEAD
-        || spellInfo->Id == 2584;
-}
-
-inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
-{
-    if (!spellInfo)
-        return false;
-
-    return spellInfo->AttributesEx3 & SPELL_ATTR_EX3_DEATH_PERSISTENT;
-}
-
-inline bool IsNonCombatSpell(SpellEntry const *spellInfo)
-{
-    return (spellInfo->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT) != 0;
-}
-
-bool IsPositiveSpell(uint32 spellId);
-bool IsPositiveEffect(uint32 spellId, uint32 effIndex);
-bool IsPositiveTarget(uint32 targetA, uint32 targetB);
-
-bool IsSingleTargetSpell(SpellEntry const *spellInfo);
-bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellInfo2);
-
-bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId);
-
-bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 zone_id,uint32 area_id);
-
-extern bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
-inline bool IsAreaOfEffectSpell(SpellEntry const *spellInfo)
-{
-    if (IsAreaEffectTarget[spellInfo->EffectImplicitTargetA[0]] || IsAreaEffectTarget[spellInfo->EffectImplicitTargetB[0]])
-        return true;
-    if (IsAreaEffectTarget[spellInfo->EffectImplicitTargetA[1]] || IsAreaEffectTarget[spellInfo->EffectImplicitTargetB[1]])
-        return true;
-    if (IsAreaEffectTarget[spellInfo->EffectImplicitTargetA[2]] || IsAreaEffectTarget[spellInfo->EffectImplicitTargetB[2]])
-        return true;
-    return false;
-}
-
-inline bool IsAreaAuraEffect(uint32 effect)
-{
-    if (effect == SPELL_EFFECT_APPLY_AREA_AURA_PARTY    ||
-        effect == SPELL_EFFECT_APPLY_AREA_AURA_FRIEND   ||
-        effect == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY    ||
-        effect == SPELL_EFFECT_APPLY_AREA_AURA_PET      ||
-        effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER)
-        return true;
-    return false;
-}
-inline bool IsDispel(SpellEntry const *spellInfo)
-{
-    //spellsteal is also dispel
-    if (spellInfo->Effect[0] == SPELL_EFFECT_DISPEL ||
-        spellInfo->Effect[1] == SPELL_EFFECT_DISPEL ||
-        spellInfo->Effect[2] == SPELL_EFFECT_DISPEL)
-        return true;
-    return false;
-}
-inline bool IsDispelSpell(SpellEntry const *spellInfo)
-{
-    //spellsteal is also dispel
-    if (spellInfo->Effect[0] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF ||
-        spellInfo->Effect[1] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF ||
-        spellInfo->Effect[2] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF
-        ||IsDispel(spellInfo))
-        return true;
-    return false;
-}
-
-inline bool isSpellBreakStealth(SpellEntry const* spellInfo)
-{
-    return !(spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH);
-}
-
-SpellCastResult GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form);
-
-inline bool IsChanneledSpell(SpellEntry const* spellInfo)
-{
-    return (spellInfo->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2));
-}
-
-inline bool NeedsComboPoints(SpellEntry const* spellInfo)
-{
-    return (spellInfo->AttributesEx & (SPELL_ATTR_EX_REQ_COMBO_POINTS1 | SPELL_ATTR_EX_REQ_COMBO_POINTS2));
-}
-
-inline SpellSchoolMask GetSpellSchoolMask(SpellEntry const* spellInfo)
-{
-    return SpellSchoolMask(spellInfo->SchoolMask);
-}
-
-inline uint32 GetSpellMechanicMask(SpellEntry const* spellInfo, int32 effect)
-{
-    uint32 mask = 0;
-    if (spellInfo->Mechanic)
-        mask |= 1<<spellInfo->Mechanic;
-    if (spellInfo->EffectMechanic[effect])
-        mask |= 1<<spellInfo->EffectMechanic[effect];
-    return mask;
-}
-
-inline Mechanics GetEffectMechanic(SpellEntry const* spellInfo, int32 effect)
-{
-    if (spellInfo->EffectMechanic[effect])
-        return Mechanics(spellInfo->EffectMechanic[effect]);
-    if (spellInfo->Mechanic)
-        return Mechanics(spellInfo->Mechanic);
-    return MECHANIC_NONE;
-}
-
-inline uint32 GetDispellMask(DispelType dispel)
-{
-    // If dispel all
-    if (dispel == DISPEL_ALL)
-        return DISPEL_ALL_MASK;
-    else
-        return (1 << dispel);
-}
-
-// Diminishing Returns interaction with spells
-DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered);
-bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
-DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
-
-bool IsBinaryResistable(SpellEntry const* spellInfo);
-bool IsPartialyResistable(SpellEntry const* spellInfo);
-HELLGROUND_DLL_SPEC bool SpellIgnoreLOS(SpellEntry const* spellInfo, uint8 effIdx);
 
 // Spell affects related declarations (accessed using SpellMgr functions)
 typedef std::map<uint32, uint64> SpellAffectMap;
@@ -595,23 +384,6 @@ typedef std::multimap<uint32, SpellLearnSpellNode> SpellLearnSpellMap;
 
 typedef std::multimap<uint32, SkillLineAbilityEntry const*> SkillLineAbilityMap;
 
-inline bool IsPrimaryProfessionSkill(uint32 skill)
-{
-    SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(skill);
-    if (!pSkill)
-        return false;
-
-    if (pSkill->categoryId != SKILL_CATEGORY_PROFESSION)
-        return false;
-
-    return true;
-}
-
-inline bool IsProfessionSkill(uint32 skill)
-{
-    return  IsPrimaryProfessionSkill(skill) || skill == SKILL_FISHING || skill == SKILL_COOKING || skill == SKILL_FIRST_AID;
-}
-
 enum AttributesCu
 {
     SPELL_ATTR_CU_IGNORE_ARMOR    = 0x00000001,
@@ -637,8 +409,12 @@ enum AttributesCu
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
+extern bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
+
 class HELLGROUND_DLL_SPEC SpellMgr
 {
+    friend class ACE_Singleton<SpellMgr, ACE_Null_Mutex >;
+
     // Constructors
     public:
         SpellMgr();
@@ -657,7 +433,7 @@ class HELLGROUND_DLL_SPEC SpellMgr
 
         bool IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const;
 
-        inline bool IsPositionTarget(uint32 target)
+        bool IsPositionTarget(uint32 target)
         {
             switch (SpellTargetType[target])
             {
@@ -891,11 +667,96 @@ class HELLGROUND_DLL_SPEC SpellMgr
         SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
         SpellSelectTargetTypes SpellTargetType[TOTAL_SPELL_TARGETS];
 
+        static void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat);
+
+        // Different spell properties
+        static uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell = NULL);
+        static SpellSpecific GetSpellSpecific(uint32);
+
+        static float GetSpellRadiusForHostile(SpellRadiusEntry const*);
+        static float GetSpellRadiusForFriend(SpellRadiusEntry const*);
+        static float GetSpellMaxRange(SpellEntry const*);
+        static float GetSpellMinRange(SpellEntry const*);
+        static float GetSpellMinRange(uint32);
+        static float GetSpellMaxRange(uint32);
+        static float GetSpellMinRange(SpellRangeEntry const *range);
+        static float GetSpellMaxRange(SpellRangeEntry const *range);
+        static uint32 GetSpellRangeType(SpellRangeEntry const *range);
+
+        static uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo);
+        static uint32 GetSpellRecoveryTime(SpellEntry const *spellInfo);
+        static int32 GetSpellDuration(SpellEntry const *spellInfo);
+        static int32 GetSpellMaxDuration(SpellEntry const *spellInfo);
+
+        static float GetSpellRadius(SpellEntry const *spellInfo, uint32 effectIdx, bool positive);
+
+        static bool IsSplashBuffAura(SpellEntry const* spellInfo);
+
+        static bool IsSealSpell(SpellEntry const *spellInfo);
+
+        static bool IsElementalShield(SpellEntry const *spellInfo);
+
+        static uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask);
+        static int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2);
+        static bool IsSingleFromSpellSpecificPerCaster(SpellSpecific spellSpec1, SpellSpecific spellSpec2);
+        static bool IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific spellSpec2);
+        static bool IsSingleFromSpellSpecificRanksPerTarget(SpellSpecific spellId_spec, SpellSpecific i_spellId_spec);
+
+        static bool IsPassiveSpell(uint32 spellId);
+        static bool IsPassiveSpell(SpellEntry const* spellProto);
+        static bool IsPassiveSpellStackableWithRanks(SpellEntry const* spellProto);
+
+        static bool IsDeathOnlySpell(SpellEntry const *spellInfo);
+        static bool IsDeathPersistentSpell(SpellEntry const *spellInfo);
+
+        static bool IsNonCombatSpell(SpellEntry const *spellInfo);
+
+        static bool IsPositiveSpell(uint32 spellId);
+        static bool IsPositiveEffect(uint32 spellId, uint32 effIndex);
+        static bool IsPositiveTarget(uint32 targetA, uint32 targetB);
+
+        static bool IsSingleTargetSpell(SpellEntry const *spellInfo);
+        static bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellInfo2);
+
+        static bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId);
+
+        static bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 zone_id,uint32 area_id);
+
+        static bool IsAreaOfEffectSpell(SpellEntry const *spellInfo);
+        static bool IsAreaAuraEffect(uint32 effect);
+
+        static bool IsDispel(SpellEntry const *spellInfo);
+        static bool IsDispelSpell(SpellEntry const *spellInfo);
+        static uint32 GetDispellMask(DispelType dispel);
+
+        static SpellCastResult GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form);
+
+        static bool IsChanneledSpell(SpellEntry const* spellInfo);
+
+        static bool NeedsComboPoints(SpellEntry const* spellInfo);
+
+        static SpellSchoolMask GetSpellSchoolMask(SpellEntry const* spellInfo);
+
+        static uint32 GetSpellMechanicMask(SpellEntry const* spellInfo, int32 effect);
+        static Mechanics GetEffectMechanic(SpellEntry const* spellInfo, int32 effect);
+
+        // Diminishing Returns interaction with spells
+        static DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered);
+        static bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
+        static DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
+
+        static bool IsBinaryResistable(SpellEntry const* spellInfo);
+        static bool IsPartialyResistable(SpellEntry const* spellInfo);
+        static bool SpellIgnoreLOS(SpellEntry const* spellInfo, uint8 effIdx);
+        static bool isSpellBreakStealth(SpellEntry const* spellInfo);
+
+        static bool IsPrimaryProfessionSkill(uint32 skill);
+        static bool IsProfessionSkill(uint32 skill);
+
         static SpellEntry const *GetHighestSpellRankForPlayer(uint32, Player*);
 
         // Modifiers
     public:
-        static SpellMgr& Instance();
 
         // Loading data at server startup
         void LoadSpellChains();
@@ -934,7 +795,5 @@ class HELLGROUND_DLL_SPEC SpellMgr
         SpellBonusDataMap    mSpellBonusDataMap;
 };
 
-#define spellmgr SpellMgr::Instance()
-#define sSpellMgr SpellMgr::Instance()
-
+#define sSpellMgr (*ACE_Singleton<SpellMgr, ACE_Null_Mutex >::instance())
 #endif

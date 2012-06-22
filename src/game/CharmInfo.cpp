@@ -5,6 +5,7 @@
 #include "Creature.h"
 #include "CreatureAI.h"
 #include "Spell.h"
+#include "SpellMgr.h"
 
 #include "MovementGenerator.h"
 
@@ -122,7 +123,7 @@ void CharmInfo::InitPossessCreateSpells()
         for (uint32 i = 0; i < CREATURE_MAX_SPELLS; ++i)
         {
             uint32 spellid = ((Creature*)m_unit)->m_spells[i];
-            if (IsPassiveSpell(spellid))
+            if (SpellMgr::IsPassiveSpell(spellid))
                 m_unit->CastSpell(m_unit, spellid, true);
             else
             {
@@ -153,7 +154,7 @@ void CharmInfo::InitCharmCreateSpells()
         if (!spellId)
             continue;
 
-        if (IsPassiveSpell(spellId))
+        if (SpellMgr::IsPassiveSpell(spellId))
         {
             m_unit->CastSpell(m_unit, spellId, true);
             m_charmspells[x].active = ACT_PASSIVE;
@@ -178,7 +179,7 @@ void CharmInfo::InitCharmCreateSpells()
             else
                 onlyselfcast = false;
 
-            if (onlyselfcast || !IsPositiveSpell(spellId))   //only self cast and spells versus enemies are autocastable
+            if (onlyselfcast || !SpellMgr::IsPositiveSpell(spellId))   //only self cast and spells versus enemies are autocastable
                 newstate = ACT_DISABLED;
             else
                 newstate = ACT_CAST;
@@ -213,7 +214,7 @@ bool CharmInfo::AddSpellToActionBar(uint32 oldid, uint32 newid, ActiveStates new
 
 void CharmInfo::ToggleCreatureAutocast(uint32 spellid, bool apply)
 {
-    if (IsPassiveSpell(spellid))
+    if (SpellMgr::IsPassiveSpell(spellid))
         return;
 
     for (uint32 x = 0; x < CREATURE_MAX_SPELLS; ++x)
@@ -312,7 +313,7 @@ void CharmInfo::HandleSpellActCommand(uint64 targetGUID, uint32 spellId)
              return;
 
     // do not cast not learned spells
-    if (!m_unit->HasSpell(spellId) || IsPassiveSpell(spellId))
+    if (!m_unit->HasSpell(spellId) || SpellMgr::IsPassiveSpell(spellId))
         return;
 
     uint64 charmerGUID = m_unit->GetCharmerGUID();

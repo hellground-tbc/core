@@ -117,12 +117,12 @@ void PetAI::PrepareSpellForAutocast(uint32 spellID)
     // ignore some combinations of combat state and combat/noncombat spells
     if (!inCombat)
     {
-        if (!IsPositiveSpell(spellInfo->Id))
+        if (!SpellMgr::IsPositiveSpell(spellInfo->Id))
             return;
     }
     else
     {
-        if (IsNonCombatSpell(spellInfo))
+        if (SpellMgr::IsNonCombatSpell(spellInfo))
             return;
     }
 /*
@@ -418,7 +418,7 @@ void FelhunterAI::PrepareSpellForAutocast(uint32 spellID)
     if (!spellID)
         return;
 
-    if (spellmgr.GetFirstSpellInChain(spellID) == 19505) // Devour Magic
+    if (sSpellMgr.GetFirstSpellInChain(spellID) == 19505) // Devour Magic
     {
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellID);
         Unit *target = m_creature->getVictim();

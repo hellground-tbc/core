@@ -358,7 +358,7 @@ struct ShamanAI: public PlayerAI
 
     void Reset()
     {
-        if (Totem = SpellMgr::GetHighestSpellRankForPlayer(30706))
+        if (Totem = SpellMgr::GetHighestSpellRankForPlayer(30706, me))
             ShieldSpell = SpellMgr::GetHighestSpellRankForPlayer(WATER_SHIELD_R1, me);
         else if (ShieldSpell = SpellMgr::GetHighestSpellRankForPlayer(EARTH_SHIELD_R1, me))
             heal = true;

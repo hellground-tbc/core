@@ -348,12 +348,12 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
             damage = m_currentBasePoints + 1;
     }
 
-    m_isPassive = IsPassiveSpell(GetId());
-    m_positive = IsPositiveEffect(GetId(), m_effIndex);
+    m_isPassive = SpellMgr::IsPassiveSpell(GetId());
+    m_positive = SpellMgr::IsPositiveEffect(GetId(), m_effIndex);
 
     m_applyTime = time(NULL);
 
-    m_isSingleTargetAura = IsSingleTargetSpell(m_spellProto);
+    m_isSingleTargetAura = SpellMgr::IsSingleTargetSpell(m_spellProto);
 
     if (!caster)
     {
@@ -422,7 +422,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     m_effIndex = eff;
     SetModifier(AuraType(m_spellProto->EffectApplyAuraName[eff]), damage, m_spellProto->EffectAmplitude[eff], m_spellProto->EffectMiscValue[eff]);
 
-    m_isDeathPersist = IsDeathPersistentSpell(m_spellProto);
+    m_isDeathPersist = SpellMgr::IsDeathPersistentSpell(m_spellProto);
 
     if (m_spellProto->procCharges)
     {
@@ -434,7 +434,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
         m_procCharges = -1;
 
     m_amplitude = m_modifier.periodictime;
-    if (IsChanneledSpell(m_spellProto) && caster)
+    if (SpellMgr::IsChanneledSpell(m_spellProto) && caster)
         caster->ModSpellCastTime(m_spellProto, m_amplitude, NULL);
 
     m_isRemovedOnShapeLost = (m_caster_guid==m_target->GetGUID() && m_spellProto->Stances &&
@@ -454,9 +454,9 @@ Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target,
     Unit* caster_ptr = caster ? caster : target;
 
     if (spellproto->Effect[eff] == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY)
-        m_radius = GetSpellRadius(spellproto,m_effIndex,false);
+        m_radius = SpellMgr::GetSpellRadius(spellproto,m_effIndex,false);
     else
-        m_radius = GetSpellRadius(spellproto,m_effIndex,true);
+        m_radius = SpellMgr::GetSpellRadius(spellproto,m_effIndex,true);
 
     if (Player* modOwner = caster_ptr->GetSpellModOwner())
         modOwner->ApplySpellMod(GetId(), SPELLMOD_RADIUS, m_radius);
@@ -517,7 +517,7 @@ PersistentAreaAura::~PersistentAreaAura()
 
 Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem)
 {
-    if (IsAreaAuraEffect(spellproto->Effect[eff]))
+    if (SpellMgr::IsAreaAuraEffect(spellproto->Effect[eff]))
         return new AreaAura(spellproto, eff, currentBasePoints, target, caster, castItem);
 
     return new Aura(spellproto, eff, currentBasePoints, target, caster, castItem);
@@ -584,11 +584,11 @@ void Aura::Update(uint32 diff)
     // Channeled aura required check distance from caster except in possessed cases
     Unit *pRealTarget = (GetSpellProto()->EffectApplyAuraName[m_effIndex] == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
                          sSpellStore.LookupEntry(GetSpellProto()->EffectTriggerSpell[m_effIndex]) &&
-                         !IsAreaOfEffectSpell(sSpellStore.LookupEntry(GetSpellProto()->EffectTriggerSpell[m_effIndex])) &&
+                         !SpellMgr::IsAreaOfEffectSpell(sSpellStore.LookupEntry(GetSpellProto()->EffectTriggerSpell[m_effIndex])) &&
                          GetTriggerTarget()) ? GetTriggerTarget() : m_target;
 
 
-    if (IsChanneledSpell(m_spellProto))
+    if (SpellMgr::IsChanneledSpell(m_spellProto))
     {
         Unit* caster = GetCaster();
 
@@ -604,7 +604,7 @@ void Aura::Update(uint32 diff)
             }
             if (caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT) == m_target->GetGUID())
             {
-                float max_range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
+                float max_range = SpellMgr::GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellProto->rangeIndex));
 
                 if (Player* modOwner = caster->GetSpellModOwner())
                     modOwner->ApplySpellMod(GetId(), SPELLMOD_RANGE, max_range, NULL);
@@ -791,7 +791,7 @@ void AreaAura::Update(uint32 diff)
                 if (!CheckTarget(*tIter))
                     continue;
 
-                if (SpellEntry const *actualSpellInfo = spellmgr.SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel()))
+                if (SpellEntry const *actualSpellInfo = sSpellMgr.SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->getLevel()))
                 {
                     AreaAura *aur;
                     if (actualSpellInfo == GetSpellProto())
@@ -1059,7 +1059,7 @@ void Aura::_AddAura()
         UpdateSlotCounterAndDuration();
 
         // Update Seals information
-        if (IsSealSpell(GetSpellProto()))
+        if (SpellMgr::IsSealSpell(GetSpellProto()))
             m_target->ModifyAuraState(AURA_STATE_JUDGEMENT, true);
 
         // Conflagrate aura state
@@ -1132,7 +1132,7 @@ void Aura::_RemoveAura()
         // update for out of range group members
         m_target->UpdateAuraForGroup(slot);
 
-        if (IsSealSpell(GetSpellProto()))
+        if (SpellMgr::IsSealSpell(GetSpellProto()))
             m_target->ModifyAuraState(AURA_STATE_JUDGEMENT,false);
 
         // Conflagrate aura state
@@ -1246,7 +1246,7 @@ void Aura::UpdateSlotCounterAndDuration()
 bool Aura::isWeaponBuffCoexistableWith(Aura *ref)
 {
      // Exclude Debuffs
-    if (!ref || !IsPositiveSpell(GetId()))
+    if (!ref || !SpellMgr::IsPositiveSpell(GetId()))
         return false;
 
     // Exclude Non-generic Buffs
@@ -1309,7 +1309,7 @@ void Aura::HandleAddModifier(bool apply, bool Real)
         mod->effectId = m_effIndex;
         mod->lastAffected = NULL;
 
-        uint64 spellAffectMask = spellmgr.GetSpellAffectMask(GetId(), m_effIndex);
+        uint64 spellAffectMask = sSpellMgr.GetSpellAffectMask(GetId(), m_effIndex);
 
         if (spellAffectMask)
             mod->mask = spellAffectMask;
@@ -2389,7 +2389,7 @@ void Aura::TriggerSpell()
                 break;
         }
     }
-    if (!GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
+    if (!SpellMgr::GetSpellMaxRange(sSpellRangeStore.LookupEntry(triggeredSpellInfo->rangeIndex)))
         target = m_target;    //for druid dispel poison
 
     m_target->CastSpell(target, triggeredSpellInfo, true, 0, this, originalCasterGUID);
@@ -3075,7 +3075,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     }
 
     // pet auras
-    if (PetAura const* petSpell = spellmgr.GetPetAura(GetId()))
+    if (PetAura const* petSpell = sSpellMgr.GetPetAura(GetId()))
     {
         if (apply)
             m_target->AddPetAura(petSpell);
@@ -3632,7 +3632,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
             for (Unit::AuraList::const_iterator i = otherTransforms.begin();i != otherTransforms.end(); ++i)
             {
                 // negative auras are preferred
-                if (!IsPositiveSpell((*i)->GetSpellProto()->Id))
+                if (!SpellMgr::IsPositiveSpell((*i)->GetSpellProto()->Id))
                 {
                     handledAura = *i;
                     break;
@@ -4538,7 +4538,7 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
                 if (!iter->second->IsPositive() && spell->Id != 40081)
                 {
                     //check for mechanic mask
-                    if (GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
+                    if (SpellMgr::GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
                     {
                         m_target->RemoveAurasDueToSpell(spell->Id);
                         if (Auras.empty())
@@ -4648,7 +4648,7 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
                 && spell->Id != GetId())
             {
                 //check for mechanic mask
-                if (GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
+                if (SpellMgr::GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
                 {
                     m_target->RemoveAurasDueToSpell(spell->Id);
                     if (Auras.empty())
@@ -4805,7 +4805,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
 
     if (Real && apply && GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
     {
-        if (IsPositiveSpell(GetId()))                        //Only positive immunity removes auras
+        if (SpellMgr::IsPositiveSpell(GetId()))                        //Only positive immunity removes auras
         {
             uint32 school_mask = m_modifier.m_miscvalue;
             Unit::AuraMap& Auras = m_target->GetAuras();
@@ -4814,7 +4814,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
                 next = iter;
                 ++next;
                 SpellEntry const *spell = iter->second->GetSpellProto();
-                if ((GetSpellSchoolMask(spell) & school_mask)//Check for school mask
+                if ((SpellMgr::GetSpellSchoolMask(spell) & school_mask)//Check for school mask
                     && !(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)   //Spells unaffected by invulnerability
                     && !iter->second->IsPositive()          //Don't remove positive spells
                     && spell->Id != GetId())               //Don't remove self
@@ -5056,7 +5056,7 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
                         Unit::AuraList const& classScripts = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                         for (Unit::AuraList::const_iterator k = classScripts.begin(); k != classScripts.end(); ++k)
                         {
-                            int32 tickcount = GetSpellDuration(m_spellProto) / m_spellProto->EffectAmplitude[m_effIndex];
+                            int32 tickcount = SpellMgr::GetSpellDuration(m_spellProto) / m_spellProto->EffectAmplitude[m_effIndex];
                             switch ((*k)->GetModifier()->m_miscvalue)
                             {
                                 case 4953:                          // Increased Rejuvenation Healing - Harold's Rejuvenating Broach Aura
@@ -5329,7 +5329,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                         Unit::AuraList const& classScripts = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                         for (Unit::AuraList::const_iterator k = classScripts.begin(); k != classScripts.end(); ++k)
                         {
-                            int32 tickcount = GetSpellDuration(m_spellProto) / m_spellProto->EffectAmplitude[m_effIndex];
+                            int32 tickcount = SpellMgr::GetSpellDuration(m_spellProto) / m_spellProto->EffectAmplitude[m_effIndex];
                             switch ((*k)->GetModifier()->m_miscvalue)
                             {
                                 case 5147:                  // Improved Consecration - Libram of the Eternal Rest
@@ -6671,7 +6671,7 @@ void Aura::HandleAuraAoeCharm(bool apply, bool Real)
 
 void Aura::CleanupTriggeredSpells()
 {
-    if (spellmgr.GetSpellElixirMask(m_spellProto->Id) & ELIXIR_SHATTRATH_MASK)
+    if (sSpellMgr.GetSpellElixirMask(m_spellProto->Id) & ELIXIR_SHATTRATH_MASK)
     {
         m_target->RemoveAurasDueToSpell(m_spellProto->EffectTriggerSpell[1]);  // remove triggered effect of shattrath flask, when removing it
         return;
@@ -6685,12 +6685,12 @@ void Aura::CleanupTriggeredSpells()
     if (!tProto)
         return;
 
-    if (GetSpellDuration(tProto) != -1)
+    if (SpellMgr::GetSpellDuration(tProto) != -1)
         return;
 
     // needed for spell 43680, 44320 maybe others
     // TODO: is there a spell flag, which can solve this in a more sophisticated way?
-    if (m_spellProto->Id == 44320 || (m_spellProto->EffectApplyAuraName[GetEffIndex()] == SPELL_AURA_PERIODIC_TRIGGER_SPELL && GetSpellDuration(m_spellProto) == m_spellProto->EffectAmplitude[GetEffIndex()]))
+    if (m_spellProto->Id == 44320 || (m_spellProto->EffectApplyAuraName[GetEffIndex()] == SPELL_AURA_PERIODIC_TRIGGER_SPELL && SpellMgr::GetSpellDuration(m_spellProto) == m_spellProto->EffectAmplitude[GetEffIndex()]))
         return;
 
     m_target->RemoveAurasDueToSpell(tSpellId);
@@ -6721,7 +6721,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
                     if (m_spellProto->SpellFamilyFlags == 0x1) //PW:S
                     {
                         //+30% from +healing bonus
-                        DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellProto)) * 0.3f;
+                        DoneActualBenefit = caster->SpellBaseHealingBonus(SpellMgr::GetSpellSchoolMask(m_spellProto)) * 0.3f;
                         break;
                     }
                     break;
@@ -6730,7 +6730,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
                     {
                         //frost ward, fire ward, ice barrier
                         //+10% from +spd bonus
-                        DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.1f;
+                        DoneActualBenefit = caster->SpellBaseDamageBonus(SpellMgr::GetSpellSchoolMask(m_spellProto)) * 0.1f;
                         break;
                     }
                     break;
@@ -6739,7 +6739,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
                     {
                         //warlock's shadow ward
                         //+30% from +spd bonus
-                        DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.3f;
+                        DoneActualBenefit = caster->SpellBaseDamageBonus(SpellMgr::GetSpellSchoolMask(m_spellProto)) * 0.3f;
                         break;
                     }
                     break;
@@ -6780,7 +6780,7 @@ void Aura::PeriodicTick()
             //    return;
 
             // Check for immune (not use charges)
-            if (m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            if (m_target->IsImmunedToDamage(SpellMgr::GetSpellSchoolMask(GetSpellProto())))
                 return;
 
             // some auras remove at specific health level or more
@@ -6915,7 +6915,7 @@ void Aura::PeriodicTick()
 
                 // Calculate armor mitigation if it is a physical spell
                 // But not for bleed mechanic spells
-                if (GetSpellSchoolMask(GetSpellProto()) & SPELL_SCHOOL_MASK_NORMAL && GetEffectMechanic(GetSpellProto(), m_effIndex) != MECHANIC_BLEED)
+                if (SpellMgr::GetSpellSchoolMask(GetSpellProto()) & SPELL_SCHOOL_MASK_NORMAL && SpellMgr::GetEffectMechanic(GetSpellProto(), m_effIndex) != MECHANIC_BLEED)
                 {
                     damageInfo.damage = pCaster->CalcArmorReducedDamage(m_target, damageInfo.damage);
                 }
@@ -6958,14 +6958,14 @@ void Aura::PeriodicTick()
 
             damageInfo.rageDamage = damageInfo.damage;
 
-            if (IsPartialyResistable(GetSpellProto()))
+            if (SpellMgr::IsPartialyResistable(GetSpellProto()))
             {
-                pCaster->CalcAbsorbResist(m_target, GetSpellSchoolMask(GetSpellProto()), DOT, damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
+                pCaster->CalcAbsorbResist(m_target, SpellMgr::GetSpellSchoolMask(GetSpellProto()), DOT, damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
             }
             else
             {
                 damageInfo.resist = 0;
-                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
+                pCaster->CalcAbsorb(m_target, SpellMgr::GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
             }
 
             damageInfo.rageDamage = damageInfo.rageDamage <= damageInfo.absorb ? 0 : damageInfo.rageDamage - damageInfo.absorb;
@@ -6981,7 +6981,7 @@ void Aura::PeriodicTick()
             data << uint32(1);
             data << uint32(m_modifier.m_auraname);
             data << (uint32)damageInfo.damage;
-            data << (uint32)GetSpellSchoolMask(GetSpellProto()); // will be mask in 2.4.x
+            data << (uint32)SpellMgr::GetSpellSchoolMask(GetSpellProto()); // will be mask in 2.4.x
             data << (uint32)damageInfo.absorb;
             data << (uint32)damageInfo.resist;
             m_target->SendMessageToSet(&data,true);
@@ -7019,7 +7019,7 @@ void Aura::PeriodicTick()
             //    return;
 
             // Check for immune (not use charges)
-            if (m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            if (m_target->IsImmunedToDamage(SpellMgr::GetSpellSchoolMask(GetSpellProto())))
                 return;
 
             SpellDamageLog damageInfo(GetId(), GetCaster(), GetTarget(), GetSpellProto()->SchoolMask, 1);
@@ -7030,7 +7030,7 @@ void Aura::PeriodicTick()
             damageInfo.damage = pCaster->SpellDamageBonus(m_target, GetSpellProto(), damageInfo.damage,DOT, &m_casterModifiers);
 
             //Calculate armor mitigation if it is a physical spell
-            if (GetSpellSchoolMask(GetSpellProto()) & SPELL_SCHOOL_MASK_NORMAL)
+            if (SpellMgr::GetSpellSchoolMask(GetSpellProto()) & SPELL_SCHOOL_MASK_NORMAL)
                 damageInfo.damage = pCaster->CalcArmorReducedDamage(m_target, damageInfo.damage);
 
             //pdamage = pCaster->SpellDamageBonus(m_target,GetSpellProto(),pdamage,DOT);
@@ -7066,8 +7066,8 @@ void Aura::PeriodicTick()
                             if (m_spell->SpellFamilyName != SPELLFAMILY_WARLOCK)
                                 continue;
 
-                            SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(m_spell->Id);
-                            SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(m_spell->Id);
+                            SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(m_spell->Id);
+                            SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(m_spell->Id);
 
                             for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
                             {
@@ -7095,14 +7095,14 @@ void Aura::PeriodicTick()
 
             damageInfo.damage *= GetStackAmount();
 
-            if (IsPartialyResistable(GetSpellProto()))
+            if (SpellMgr::IsPartialyResistable(GetSpellProto()))
             {
-                pCaster->CalcAbsorbResist(m_target, GetSpellSchoolMask(GetSpellProto()), DOT, damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
+                pCaster->CalcAbsorbResist(m_target, SpellMgr::GetSpellSchoolMask(GetSpellProto()), DOT, damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
             }
             else
             {
                 damageInfo.resist = 0;
-                pCaster->CalcAbsorb(m_target, GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
+                pCaster->CalcAbsorb(m_target, SpellMgr::GetSpellSchoolMask(GetSpellProto()), damageInfo.damage, &damageInfo.absorb, &damageInfo.resist);
             }
 
             if (m_target->GetHealth() < damageInfo.damage)
@@ -7232,7 +7232,7 @@ void Aura::PeriodicTick()
             //    return;
 
             // Check for immune (not use charges)
-            if (m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            if (m_target->IsImmunedToDamage(SpellMgr::GetSpellSchoolMask(GetSpellProto())))
                 return;
 
             // ignore non positive values (can be result apply spellmods to aura damage
@@ -7284,7 +7284,7 @@ void Aura::PeriodicTick()
             if (gain_amount)
             {
                 int32 gain = pCaster->ModifyPower(power,gain_amount);
-                m_target->AddThreat(pCaster, float(gain) * 0.5f, GetSpellSchoolMask(GetSpellProto()), GetSpellProto());
+                m_target->AddThreat(pCaster, float(gain) * 0.5f, SpellMgr::GetSpellSchoolMask(GetSpellProto()), GetSpellProto());
             }
 
             // Mark of Kaz'rogal
@@ -7391,7 +7391,7 @@ void Aura::PeriodicTick()
                 return;
 
             // Check for immune (not use charges)
-            if (m_target->IsImmunedToDamage(GetSpellSchoolMask(GetSpellProto())))
+            if (m_target->IsImmunedToDamage(SpellMgr::GetSpellSchoolMask(GetSpellProto())))
                 return;
 
             int32 pdamage = GetModifierValue() > 0 ? GetModifierValue() : 0;
@@ -7871,7 +7871,7 @@ void Aura::HandleManaShield(bool apply, bool Real)
                     {
                         // Mana Shield
                         // +50% from +spd bonus
-                        DoneActualBenefit = caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.5f;
+                        DoneActualBenefit = caster->SpellBaseDamageBonus(SpellMgr::GetSpellSchoolMask(m_spellProto)) * 0.5f;
                         break;
                     }
                     break;

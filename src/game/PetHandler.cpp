@@ -445,7 +445,7 @@ void WorldSession::HandlePetSpellAutocastOpcode(WorldPacket& recvPacket)
     }
 
     // do not add not learned spells/ passive spells
-    if (!pet->HasSpell(spellid) || IsPassiveSpell(spellid))
+    if (!pet->HasSpell(spellid) || SpellMgr::IsPassiveSpell(spellid))
         return;
 
     CharmInfo *charmInfo = pet->GetCharmInfo();
@@ -498,7 +498,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // do not cast not learned spells
-    if (!caster->HasSpell(spellid) || IsPassiveSpell(spellid))
+    if (!caster->HasSpell(spellid) || SpellMgr::IsPassiveSpell(spellid))
         return;
 
     if (spellInfo->StartRecoveryCategory > 0) //Check if spell is affected by GCD

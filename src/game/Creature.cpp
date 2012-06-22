@@ -1937,8 +1937,8 @@ SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
         if (spellInfo->manaCost > GetPower(POWER_MANA))
             continue;
         SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-        float range = GetSpellMaxRange(srange);
-        float minrange = GetSpellMinRange(srange);
+        float range = SpellMgr::GetSpellMaxRange(srange);
+        float minrange = SpellMgr::GetSpellMinRange(srange);
 
         float dist = GetCombatDistance(pVictim);
 
@@ -1983,8 +1983,8 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
         if (spellInfo->manaCost > GetPower(POWER_MANA))
             continue;
         SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-        float range = GetSpellMaxRange(srange);
-        float minrange = GetSpellMinRange(srange);
+        float range = SpellMgr::GetSpellMaxRange(srange);
+        float minrange = SpellMgr::GetSpellMinRange(srange);
 
         float dist = GetCombatDistance(pVictim);
 
@@ -2335,7 +2335,7 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
     if (!spellInfo)
         return;
 
-    uint32 cooldown = GetSpellRecoveryTime(spellInfo);
+    uint32 cooldown = SpellMgr::GetSpellRecoveryTime(spellInfo);
     if (cooldown)
         _AddCreatureSpellCooldown(spellid, time(NULL) + cooldown/1000);
 

@@ -2950,7 +2950,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             }
         }
         // non talent spell: learn low ranks (recursive call)
-        else if (uint32 prev_spell = spellmgr.GetPrevSpellInChain(spell_id))
+        else if (uint32 prev_spell = sSpellMgr.GetPrevSpellInChain(spell_id))
         {
             if (loading)                                     // at spells loading, no output, but allow save
                 addSpell(prev_spell,active,true,loading,SPELL_WITHOUT_SLOT_ID,disabled);
@@ -2964,7 +2964,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         newspell.disabled = disabled;
 
         // replace spells in action bars and spellbook to bigger rank if only one spell rank must be accessible
-        if (newspell.active && !newspell.disabled && !SpellMgr::canStackSpellRanks(spellInfo) && spellmgr.GetSpellRank(spellInfo->Id) != 0)
+        if (newspell.active && !newspell.disabled && !SpellMgr::canStackSpellRanks(spellInfo) && sSpellMgr.GetSpellRank(spellInfo->Id) != 0)
         {
             for (PlayerSpellMap::iterator itr2 = m_spells.begin(); itr2 != m_spells.end(); ++itr2)
             {
@@ -2973,11 +2973,11 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                 if (!i_spellInfo)
                     continue;
 
-                if (spellmgr.IsRankSpellDueToSpell(spellInfo, itr2->first))
+                if (sSpellMgr.IsRankSpellDueToSpell(spellInfo, itr2->first))
                 {
                     if (itr2->second.active)
                     {
-                        if (spellmgr.IsHighRankOfSpell(spell_id, itr2->first))
+                        if (sSpellMgr.IsHighRankOfSpell(spell_id, itr2->first))
                         {
                             if (!loading)                    // not send spell (re-/over-)learn packets at loading
                             {
@@ -2992,7 +2992,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                             itr2->second.state = PLAYERSPELL_CHANGED;
                             superceded_old = true;          // new spell replace old in action bars and spell book.
                         }
-                        else if (spellmgr.IsHighRankOfSpell(itr2->first, spell_id))
+                        else if (sSpellMgr.IsHighRankOfSpell(itr2->first, spell_id))
                         {
                             if (!loading)                    // not send spell (re-/over-)learn packets at loading
                             {
@@ -3057,7 +3057,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         CastSpell(this, spell_id, true);
     }
     // also cast passive spells (including all talents without SPELL_EFFECT_LEARN_SPELL) with additional checks
-    else if (IsPassiveSpell(spell_id))
+    else if (SpellMgr::IsPassiveSpell(spell_id))
     {
         // if spell doesn't require a stance or the player is in the required stance
         if ((!spellInfo->Stances &&
@@ -3086,7 +3086,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
     // add dependent skills
     uint16 maxskill     = GetMaxSkillValueForLevel();
 
-    SpellLearnSkillNode const* spellLearnSkill = spellmgr.GetSpellLearnSkill(spell_id);
+    SpellLearnSkillNode const* spellLearnSkill = sSpellMgr.GetSpellLearnSkill(spell_id);
 
     if (spellLearnSkill)
     {
@@ -3106,8 +3106,8 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
     else
     {
         // not ranked skills
-        SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(spell_id);
-        SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(spell_id);
+        SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(spell_id);
+        SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(spell_id);
 
         for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
         {
@@ -3143,8 +3143,8 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
     }
 
     // learn dependent spells
-    SpellLearnSpellMap::const_iterator spell_begin = spellmgr.GetBeginSpellLearnSpell(spell_id);
-    SpellLearnSpellMap::const_iterator spell_end   = spellmgr.GetEndSpellLearnSpell(spell_id);
+    SpellLearnSpellMap::const_iterator spell_begin = sSpellMgr.GetBeginSpellLearnSpell(spell_id);
+    SpellLearnSpellMap::const_iterator spell_end   = sSpellMgr.GetEndSpellLearnSpell(spell_id);
 
     for (SpellLearnSpellMap::const_iterator itr2 = spell_begin; itr2 != spell_end; ++itr2)
     {
@@ -3171,7 +3171,7 @@ void Player::learnSpell(uint32 spell_id)
     bool learning = addSpell(spell_id,active);
 
     // learn all disabled higher ranks (recursive)
-    SpellChainNode const* node = spellmgr.GetSpellChainNode(spell_id);
+    SpellChainNode const* node = sSpellMgr.GetSpellChainNode(spell_id);
     if (node)
     {
         PlayerSpellMap::iterator iter = m_spells.find(node->next);
@@ -3198,14 +3198,14 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
         return;
 
     // unlearn non talent higher ranks (recursive)
-    SpellChainNode const* node = spellmgr.GetSpellChainNode(spell_id);
+    SpellChainNode const* node = sSpellMgr.GetSpellChainNode(spell_id);
     if (node)
     {
         if (HasSpell(node->next) && !GetTalentSpellPos(node->next))
         removeSpell(node->next,disabled);
     }
     //unlearn spells dependent from recently removed spells
-    SpellsRequiringSpellMap const& reqMap = spellmgr.GetSpellsRequiringSpell();
+    SpellsRequiringSpellMap const& reqMap = sSpellMgr.GetSpellsRequiringSpell();
     SpellsRequiringSpellMap::const_iterator itr2 = reqMap.find(spell_id);
     for (uint32 i=reqMap.count(spell_id);i>0;i--,itr2++)
         removeSpell(itr2->second,disabled);
@@ -3232,7 +3232,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     RemoveAurasDueToSpell(spell_id);
 
     // remove pet auras
-    if (PetAura const* petSpell = spellmgr.GetPetAura(spell_id))
+    if (PetAura const* petSpell = sSpellMgr.GetPetAura(spell_id))
         RemovePetAura(petSpell);
 
     TalentSpellPos const* talentPos = GetTalentSpellPos(spell_id);
@@ -3250,7 +3250,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     }
 
     // update free primary prof.points (if not overflow setting, can be in case GM use before .learn prof. learning)
-    if (spellmgr.IsPrimaryProfessionFirstRankSpell(spell_id))
+    if (sSpellMgr.IsPrimaryProfessionFirstRankSpell(spell_id))
     {
         uint32 freeProfs = GetFreePrimaryProfessionPoints()+1;
         if (freeProfs <= sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL))
@@ -3258,20 +3258,20 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     }
 
     // remove dependent skill
-    SpellLearnSkillNode const* spellLearnSkill = spellmgr.GetSpellLearnSkill(spell_id);
+    SpellLearnSkillNode const* spellLearnSkill = sSpellMgr.GetSpellLearnSkill(spell_id);
     if (spellLearnSkill)
     {
-        uint32 prev_spell = spellmgr.GetPrevSpellInChain(spell_id);
+        uint32 prev_spell = sSpellMgr.GetPrevSpellInChain(spell_id);
         if (!prev_spell)                                     // first rank, remove skill
             SetSkill(spellLearnSkill->skill,0,0);
         else
         {
             // search prev. skill setting by spell ranks chain
-            SpellLearnSkillNode const* prevSkill = spellmgr.GetSpellLearnSkill(prev_spell);
+            SpellLearnSkillNode const* prevSkill = sSpellMgr.GetSpellLearnSkill(prev_spell);
             while (!prevSkill && prev_spell)
             {
-                prev_spell = spellmgr.GetPrevSpellInChain(prev_spell);
-                prevSkill = spellmgr.GetSpellLearnSkill(spellmgr.GetFirstSpellInChain(prev_spell));
+                prev_spell = sSpellMgr.GetPrevSpellInChain(prev_spell);
+                prevSkill = sSpellMgr.GetSpellLearnSkill(sSpellMgr.GetFirstSpellInChain(prev_spell));
             }
 
             if (!prevSkill)                                  // not found prev skill setting, remove skill
@@ -3297,8 +3297,8 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     else
     {
         // not ranked skills
-        SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(spell_id);
-        SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(spell_id);
+        SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(spell_id);
+        SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(spell_id);
 
         for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
         {
@@ -3314,7 +3314,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
             {
                 // not reset skills for professions and racial abilities
                 if ((pSkill->categoryId==SKILL_CATEGORY_SECONDARY || pSkill->categoryId==SKILL_CATEGORY_PROFESSION) &&
-                    (IsProfessionSkill(pSkill->id) || _spell_idx->second->racemask!=0))
+                    (SpellMgr::IsProfessionSkill(pSkill->id) || _spell_idx->second->racemask!=0))
                     continue;
 
                 SetSkill(pSkill->id, 0, 0);
@@ -3323,8 +3323,8 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     }
 
     // remove dependent spells
-    SpellLearnSpellMap::const_iterator spell_begin = spellmgr.GetBeginSpellLearnSpell(spell_id);
-    SpellLearnSpellMap::const_iterator spell_end   = spellmgr.GetEndSpellLearnSpell(spell_id);
+    SpellLearnSpellMap::const_iterator spell_begin = sSpellMgr.GetBeginSpellLearnSpell(spell_id);
+    SpellLearnSpellMap::const_iterator spell_end   = sSpellMgr.GetEndSpellLearnSpell(spell_id);
 
     for (SpellLearnSpellMap::const_iterator itr2 = spell_begin; itr2 != spell_end; ++itr2)
         removeSpell(itr2->second.spell, disabled);
@@ -3528,10 +3528,10 @@ bool Player::resetTalents(bool no_cost)
                 }
 
                 // remove learned spells (all ranks)
-                uint32 itrFirstId = spellmgr.GetFirstSpellInChain(itr->first);
+                uint32 itrFirstId = sSpellMgr.GetFirstSpellInChain(itr->first);
 
                 // unlearn if first rank is talent or learned by talent or spell itself is learned by talent
-                if (itrFirstId == talentInfo->RankID[j] || spellmgr.IsSpellLearnToSpell(talentInfo->RankID[j],itrFirstId) || spellmgr.IsSpellLearnToSpell(talentInfo->RankID[j],itr->first))
+                if (itrFirstId == talentInfo->RankID[j] || sSpellMgr.IsSpellLearnToSpell(talentInfo->RankID[j],itrFirstId) || sSpellMgr.IsSpellLearnToSpell(talentInfo->RankID[j],itr->first))
                 {
                     SpellEntry const * spellInfo = sSpellStore.LookupEntry(itrFirstId);
                     if (spellInfo)
@@ -3540,7 +3540,7 @@ bool Player::resetTalents(bool no_cost)
                             if (spellInfo->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL && HasAura(spellInfo->EffectTriggerSpell[i]))
                                 RemoveAurasDueToSpell(spellInfo->EffectTriggerSpell[i]);
                         }
-                    removeSpell(itr->first,!IsPassiveSpell(itr->first));
+                    removeSpell(itr->first,!SpellMgr::IsPassiveSpell(itr->first));
                     itr = GetSpellMap().begin();
                     continue;
                 }
@@ -3808,14 +3808,14 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     if (getLevel() < trainer_spell->reqLevel)
         return TRAINER_SPELL_RED;
 
-    if (SpellChainNode const* spell_chain = spellmgr.GetSpellChainNode(trainer_spell->spell))
+    if (SpellChainNode const* spell_chain = sSpellMgr.GetSpellChainNode(trainer_spell->spell))
     {
         // check prev.rank requirement
         if (spell_chain->prev && !HasSpell(spell_chain->prev))
             return TRAINER_SPELL_RED;
     }
 
-    if (uint32 spell_req = spellmgr.GetSpellRequired(trainer_spell->spell))
+    if (uint32 spell_req = sSpellMgr.GetSpellRequired(trainer_spell->spell))
     {
         // check additional spell requirement
         if (!HasSpell(spell_req))
@@ -3832,11 +3832,11 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     // secondary prof. or not prof. spell
     uint32 skill = spell->EffectMiscValue[1];
 
-    if (spell->Effect[1] != SPELL_EFFECT_SKILL || !IsPrimaryProfessionSkill(skill))
+    if (spell->Effect[1] != SPELL_EFFECT_SKILL || !SpellMgr::IsPrimaryProfessionSkill(skill))
         return TRAINER_SPELL_GREEN;
 
     // check primary prof. limit
-    if (spellmgr.IsPrimaryProfessionFirstRankSpell(spell->Id) && GetFreePrimaryProfessionPoints() == 0)
+    if (sSpellMgr.IsPrimaryProfessionFirstRankSpell(spell->Id) && GetFreePrimaryProfessionPoints() == 0)
         return TRAINER_SPELL_RED;
 
     return TRAINER_SPELL_GREEN;
@@ -5126,8 +5126,8 @@ bool Player::UpdateCraftSkill(uint32 spellid)
 {
     sLog.outDebug("UpdateCraftSkill spellid %d", spellid);
 
-    SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(spellid);
-    SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(spellid);
+    SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(spellid);
+    SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(spellid);
 
     for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
     {
@@ -5371,7 +5371,7 @@ void Player::UpdateSkillsToMaxSkillsForLevel()
         if (GetUInt32Value(PLAYER_SKILL_INDEX(i)))
     {
         uint32 pskill = GetUInt32Value(PLAYER_SKILL_INDEX(i)) & 0x0000FFFF;
-        if (IsProfessionSkill(pskill) || pskill == SKILL_RIDING)
+        if (SpellMgr::IsProfessionSkill(pskill) || pskill == SKILL_RIDING)
             continue;
         uint32 data = GetUInt32Value(PLAYER_SKILL_VALUE_INDEX(i));
 
@@ -5414,8 +5414,8 @@ void Player::SetSkill(uint32 id, uint16 currVal, uint16 maxVal)
                 if (itr->second.state == PLAYERSPELL_REMOVED)
                     continue;
 
-                SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(itr->first);
-                SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(itr->first);
+                SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(itr->first);
+                SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(itr->first);
 
                 for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
                 {
@@ -6988,7 +6988,7 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
     if (apply)
     {
         // Cannot be used in this stance/form
-        if (GetErrorAtShapeshiftedCast(spellInfo, m_form) != SPELL_CAST_OK)
+        if (SpellMgr::GetErrorAtShapeshiftedCast(spellInfo, m_form) != SPELL_CAST_OK)
             return;
 
         if (form_change)                                     // check aura active state from other form
@@ -7011,7 +7011,7 @@ void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply
         if (form_change)                                     // check aura compatibility
         {
             // Cannot be used in this stance/form
-            if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
+            if (SpellMgr::GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
                 return;                                     // and remove only not compatible at form change
         }
 
@@ -7170,7 +7170,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 }
             }
 
-            SpellEnchantProcEntry const* entry = spellmgr.GetSpellEnchantProcEvent(enchant_id);
+            SpellEnchantProcEntry const* entry = sSpellMgr.GetSpellEnchantProcEvent(enchant_id);
             if (entry && (entry->procEx || entry->procFlags))
             {
                 if (entry->procFlags)
@@ -7222,7 +7222,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
 
             if (roll_chance_f(chance))
             {
-                if (IsPositiveSpell(spell_id))
+                if (SpellMgr::IsPositiveSpell(spell_id))
                     CastSpell(this, spell_id, true, item);
                 else
                     CastSpell(target, spell_id, true, item);
@@ -14910,7 +14910,7 @@ void Player::_LoadAuras(QueryResultAutoPtr result, uint32 timediff)
             }
 
             // negative effects should continue counting down after logout
-            if (remaintime != -1 && !IsPositiveEffect(spellid, effindex))
+            if (remaintime != -1 && !SpellMgr::IsPositiveEffect(spellid, effindex))
             {
                 if (remaintime/IN_MILISECONDS <= int32(timediff))
                     continue;
@@ -17111,7 +17111,7 @@ bool Player::IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mo
             return false;
     }
 
-    return spellmgr.IsAffectedBySpell(spellInfo,mod->spellId,mod->effectId,mod->mask);
+    return sSpellMgr.IsAffectedBySpell(spellInfo,mod->spellId,mod->effectId,mod->mask);
 }
 
 void Player::AddSpellMod(SpellModifier* mod, bool apply)
@@ -17495,7 +17495,7 @@ void Player::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
         if (spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
             continue;
 
-        if ((idSchoolMask & GetSpellSchoolMask(spellInfo)) && GetSpellCooldownDelay(unSpellId) < unTimeMs)
+        if ((idSchoolMask & SpellMgr::GetSpellSchoolMask(spellInfo)) && GetSpellCooldownDelay(unSpellId) < unTimeMs)
         {
             data << unSpellId;
             data << unTimeMs;                               // in m.secs
@@ -17891,7 +17891,7 @@ void Player::SendCooldownEvent(SpellEntry const *spellInfo)
         return;
 
     // Get spell cooldown
-    int32 cooldown = GetSpellRecoveryTime(spellInfo);
+    int32 cooldown = SpellMgr::GetSpellRecoveryTime(spellInfo);
     // Apply spellmods
     ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, cooldown);
     if (cooldown < 0)
@@ -18779,10 +18779,10 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
 
     // prevent learn non first rank unknown profession and second specialization for same profession)
     uint32 learned_0 = spellInfo->EffectTriggerSpell[0];
-    if (spellmgr.GetSpellRank(learned_0) > 1 && !HasSpell(learned_0))
+    if (sSpellMgr.GetSpellRank(learned_0) > 1 && !HasSpell(learned_0))
     {
         // not have first rank learned (unlearned prof?)
-        uint32 first_spell = spellmgr.GetFirstSpellInChain(learned_0);
+        uint32 first_spell = sSpellMgr.GetFirstSpellInChain(learned_0);
         if (!HasSpell(first_spell))
             return;
 
@@ -18808,11 +18808,11 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
                     continue;
 
                 // compare same chain spells
-                if (spellmgr.GetFirstSpellInChain(itr->first) != first_spell)
+                if (sSpellMgr.GetFirstSpellInChain(itr->first) != first_spell)
                     continue;
 
                 // now we have 2 specialization, learn possible only if found is lesser specialization rank
-                if (!spellmgr.IsHighRankOfSpell(learned_0,itr->first))
+                if (!sSpellMgr.IsHighRankOfSpell(learned_0,itr->first))
                     return;
             }
         }
@@ -18988,8 +18988,8 @@ bool Player::IsSpellFitByClassAndRace(uint32 spell_id) const
     uint32 racemask  = getRaceMask();
     uint32 classmask = getClassMask();
 
-    SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(spell_id);
-    SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(spell_id);
+    SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(spell_id);
+    SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(spell_id);
 
     for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
     {
@@ -19474,14 +19474,14 @@ void Player::UpdateAreaDependentAuras(uint32 newArea)
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
         // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
-        if (!IsSpellAllowedInLocation(iter->second->GetSpellProto(),GetMapId(),m_zoneUpdateId,newArea))
+        if (!SpellMgr::IsSpellAllowedInLocation(iter->second->GetSpellProto(),GetMapId(),m_zoneUpdateId,newArea))
         {
             for (uint8 i = 0; i < 3; ++i)
             {
                 if (iter->second->GetSpellProto()->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL && HasAura(iter->second->GetSpellProto()->EffectTriggerSpell[i],0))
                     RemoveAurasDueToSpell(iter->second->GetSpellProto()->EffectTriggerSpell[i]);
             }
-            if (spellmgr.GetSpellElixirMask(iter->second->GetSpellProto()->Id) & ELIXIR_SHATTRATH_MASK)        // for shattrath flasks we want only to remove it's triggered effect, not flask itself.
+            if (sSpellMgr.GetSpellElixirMask(iter->second->GetSpellProto()->Id) & ELIXIR_SHATTRATH_MASK)        // for shattrath flasks we want only to remove it's triggered effect, not flask itself.
                 iter++;
             else
                 RemoveAura(iter);
@@ -19489,7 +19489,7 @@ void Player::UpdateAreaDependentAuras(uint32 newArea)
         else
         {
             // reapply bonus for shattrath flask if we are back in allowed location
-            if (spellmgr.GetSpellElixirMask(iter->second->GetSpellProto()->Id) & ELIXIR_SHATTRATH_MASK)
+            if (sSpellMgr.GetSpellElixirMask(iter->second->GetSpellProto()->Id) & ELIXIR_SHATTRATH_MASK)
             {
                 if (iter->second->GetSpellProto()->Effect[1] == SPELL_EFFECT_TRIGGER_SPELL &&  // always true for shattrath flasks, check it anyway
                         !HasAura(iter->second->GetSpellProto()->EffectTriggerSpell[1],0))

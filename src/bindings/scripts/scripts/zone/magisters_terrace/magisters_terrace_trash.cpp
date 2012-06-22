@@ -242,7 +242,7 @@ struct HELLGROUND_DLL_DECL mob_sunblade_magisterAI : public ScriptedAI
       if(Frostbolt_Timer < diff)
       {
           AddSpellToCast(me->getVictim(), SPELL_FROSTBOLT);
-          Frostbolt_Timer = GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT))-(diff+100);
+          Frostbolt_Timer = SpellMgr::GetSpellCastTime(GetSpellStore()->LookupEntry(SPELL_FROSTBOLT))-(diff+100);
       }
       else
           Frostbolt_Timer -= diff;

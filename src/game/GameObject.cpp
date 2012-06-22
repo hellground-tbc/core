@@ -303,7 +303,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     {
                         // try to read radius from trap spell
                         if (const SpellEntry *spellEntry = sSpellStore.LookupEntry(goInfo->trap.spellId))
-                            radius = GetSpellRadius(spellEntry,0,false);
+                            radius = SpellMgr::GetSpellRadius(spellEntry,0,false);
 
                         if (!radius)
                             break;
@@ -896,7 +896,7 @@ void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, Unit* target)
     if (!trapSpell)                                          // checked at load already
         return;
 
-    float range = GetSpellMaxRange(sSpellRangeStore.LookupEntry(trapSpell->rangeIndex));
+    float range = SpellMgr::GetSpellMaxRange(sSpellRangeStore.LookupEntry(trapSpell->rangeIndex));
 
     // search nearest linked GO
     GameObject* trapGO = NULL;

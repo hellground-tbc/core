@@ -381,7 +381,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                         SpellEntry const *m_spellInfo = GetSpellStore()->LookupEntry(autocastId);
 
                         // while (!victim or not in los) and i < threatlist size
-                        while ((!victim || (!SpellIgnoreLOS(m_spellInfo, 0) && !m_creature->IsWithinLOSInMap(victim))) && i < m_creature->getThreatManager().getThreatList().size())
+                        while ((!victim || (!SpellMgr::SpellIgnoreLOS(m_spellInfo, 0) && !m_creature->IsWithinLOSInMap(victim))) && i < m_creature->getThreatManager().getThreatList().size())
                         {
                             ++i;
                             victim = SelectUnit(SELECT_TARGET_TOPAGGRO, i, GetSpellMaxRange(autocastId), true);

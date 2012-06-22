@@ -1200,7 +1200,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadInstanceTemplate();
 
     sLog.outString("Loading SkillLineAbilityMultiMap Data...");
-    spellmgr.LoadSkillLineAbilityMap();
+    sSpellMgr.LoadSkillLineAbilityMap();
 
     ///- Clean up and pack instances
     sLog.outString("Cleaning up instances...");
@@ -1226,25 +1226,25 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadGameobjectInfo();
 
     sLog.outString("Loading Spell Chain Data...");
-    spellmgr.LoadSpellChains();
+    sSpellMgr.LoadSpellChains();
 
     sLog.outString("Loading Spell Required Data...");
-    spellmgr.LoadSpellRequired();
+    sSpellMgr.LoadSpellRequired();
 
     sLog.outString("Loading Spell Elixir types...");
-    spellmgr.LoadSpellElixirs();
+    sSpellMgr.LoadSpellElixirs();
 
     sLog.outString("Loading Spell Learn Skills...");
-    spellmgr.LoadSpellLearnSkills();                        // must be after LoadSpellChains
+    sSpellMgr.LoadSpellLearnSkills();                        // must be after LoadSpellChains
 
     sLog.outString("Loading Spell Learn Spells...");
-    spellmgr.LoadSpellLearnSpells();
+    sSpellMgr.LoadSpellLearnSpells();
 
     sLog.outString("Loading Spell Proc Event conditions...");
-    spellmgr.LoadSpellProcEvents();
+    sSpellMgr.LoadSpellProcEvents();
 
     sLog.outString("Loading Aggro Spells Definitions...");
-    spellmgr.LoadSpellThreats();
+    sSpellMgr.LoadSpellThreats();
 
     sLog.outString("Loading Unqueued Account List...");
     sObjectMgr.LoadUnqueuedAccountList();
@@ -1253,7 +1253,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadGossipText();
 
     sLog.outString("Loading Enchant Spells Proc datas...");
-    spellmgr.LoadSpellEnchantProcData();
+    sSpellMgr.LoadSpellEnchantProcData();
 
     sLog.outString("Loading Item Random Enchantments Table...");
     LoadRandomEnchantmentsTable();
@@ -1274,7 +1274,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadCreatureTemplates();
 
     sLog.outString("Loading SpellsScriptTarget...");
-    spellmgr.LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameobjectInfo
+    sSpellMgr.LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameobjectInfo
 
     sLog.outString( "Loading Reputation Reward Rates...");
     sObjectMgr.LoadReputationRewardRate();
@@ -1349,19 +1349,19 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadGraveyardZones();
 
     sLog.outString("Loading Spell target coordinates...");
-    spellmgr.LoadSpellTargetPositions();
+    sSpellMgr.LoadSpellTargetPositions();
 
     sLog.outString("Loading SpellAffect definitions...");
-    spellmgr.LoadSpellAffects();
+    sSpellMgr.LoadSpellAffects();
 
     sLog.outString("Loading spell pet auras...");
-    spellmgr.LoadSpellPetAuras();
+    sSpellMgr.LoadSpellPetAuras();
 
     sLog.outString("Loading spell extra attributes...(TODO)");
-    spellmgr.LoadSpellCustomAttr();
+    sSpellMgr.LoadSpellCustomAttr();
 
     sLog.outString("Loading linked spells...");
-    spellmgr.LoadSpellLinked();
+    sSpellMgr.LoadSpellLinked();
 
     sLog.outString("Loading player Create Info & Level Stats...");
     sObjectMgr.LoadPlayerInfo();

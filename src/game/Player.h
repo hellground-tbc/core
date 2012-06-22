@@ -2493,7 +2493,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 
             // special case (skip > 10sec spell casts for instant cast setting)
             if (mod->op == SPELLMOD_CASTING_TIME)
-                if (GetSpellBaseCastTime(spellInfo) >= T(10000))
+                if (SpellMgr::GetSpellBaseCastTime(spellInfo) >= T(10000))
                     continue;
             totalpct += mod->value;
         }

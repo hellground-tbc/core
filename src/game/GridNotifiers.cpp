@@ -273,7 +273,7 @@ void DynamicObjectUpdater::VisitHelper(Unit* target)
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(i_dynobject.GetSpellId());
 
-    if (!SpellIgnoreLOS(spellInfo, i_dynobject.GetEffIndex()) && !i_dynobject.IsWithinLOSInMap(target))
+    if (!SpellMgr::SpellIgnoreLOS(spellInfo, i_dynobject.GetEffIndex()) && !i_dynobject.IsWithinLOSInMap(target))
         return;
 
     uint32 eff_index  = i_dynobject.GetEffIndex();

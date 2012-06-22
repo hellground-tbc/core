@@ -473,7 +473,7 @@ bool ChatHandler::HandleReloadSkillFishingBaseLevelCommand(const char* /*args*/)
 bool ChatHandler::HandleReloadSpellAffectCommand(const char*)
 {
     sLog.outString("Re-Loading SpellAffect definitions...");
-    spellmgr.LoadSpellAffects();
+    sSpellMgr.LoadSpellAffects();
     SendGlobalGMSysMessage("DB table `spell_affect` (spell mods apply requirements) reloaded.");
     return true;
 }
@@ -481,7 +481,7 @@ bool ChatHandler::HandleReloadSpellAffectCommand(const char*)
 bool ChatHandler::HandleReloadSpellRequiredCommand(const char*)
 {
     sLog.outString("Re-Loading Spell Required Data... ");
-    spellmgr.LoadSpellRequired();
+    sSpellMgr.LoadSpellRequired();
     SendGlobalGMSysMessage("DB table `spell_required` reloaded.");
     return true;
 }
@@ -489,7 +489,7 @@ bool ChatHandler::HandleReloadSpellRequiredCommand(const char*)
 bool ChatHandler::HandleReloadSpellElixirCommand(const char*)
 {
     sLog.outString("Re-Loading Spell Elixir types...");
-    spellmgr.LoadSpellElixirs();
+    sSpellMgr.LoadSpellElixirs();
     SendGlobalGMSysMessage("DB table `spell_elixir` (spell elixir types) reloaded.");
     return true;
 }
@@ -497,7 +497,7 @@ bool ChatHandler::HandleReloadSpellElixirCommand(const char*)
 bool ChatHandler::HandleReloadSpellLearnSpellCommand(const char*)
 {
     sLog.outString("Re-Loading Spell Learn Spells...");
-    spellmgr.LoadSpellLearnSpells();
+    sSpellMgr.LoadSpellLearnSpells();
     SendGlobalGMSysMessage("DB table `spell_learn_spell` reloaded.");
     return true;
 }
@@ -505,7 +505,7 @@ bool ChatHandler::HandleReloadSpellLearnSpellCommand(const char*)
 bool ChatHandler::HandleReloadSpellLinkedSpellCommand(const char*)
 {
     sLog.outString("Re-Loading Spell Linked Spells...");
-    spellmgr.LoadSpellLinked();
+    sSpellMgr.LoadSpellLinked();
     SendGlobalGMSysMessage("DB table `spell_linked_spell` reloaded.");
     return true;
 }
@@ -513,7 +513,7 @@ bool ChatHandler::HandleReloadSpellLinkedSpellCommand(const char*)
 bool ChatHandler::HandleReloadSpellProcEventCommand(const char*)
 {
     sLog.outString("Re-Loading Spell Proc Event conditions...");
-    spellmgr.LoadSpellProcEvents();
+    sSpellMgr.LoadSpellProcEvents();
     SendGlobalGMSysMessage("DB table `spell_proc_event` (spell proc trigger requirements) reloaded.");
     return true;
 }
@@ -521,7 +521,7 @@ bool ChatHandler::HandleReloadSpellProcEventCommand(const char*)
 bool ChatHandler::HandleReloadSpellEnchantDataCommand(const char*)
 {
     sLog.outString("Re-Loading Spell Enchant Proc Data conditions...");
-    spellmgr.LoadSpellEnchantProcData();
+    sSpellMgr.LoadSpellEnchantProcData();
     SendGlobalGMSysMessage("DB table `spell_enchant_proc_data` (spell enchant proc trigger requirements) reloaded.");
     return true;
 }
@@ -529,7 +529,7 @@ bool ChatHandler::HandleReloadSpellEnchantDataCommand(const char*)
 bool ChatHandler::HandleReloadSpellScriptTargetCommand(const char*)
 {
     sLog.outString("Re-Loading SpellsScriptTarget...");
-    spellmgr.LoadSpellScriptTarget();
+    sSpellMgr.LoadSpellScriptTarget();
     SendGlobalGMSysMessage("DB table `spell_script_target` (spell targets selection in case specific creature/GO requirements) reloaded.");
     return true;
 }
@@ -545,7 +545,7 @@ bool ChatHandler::HandleReloadEventAIScriptsCommand(const char*)
 bool ChatHandler::HandleReloadSpellTargetPositionCommand(const char*)
 {
     sLog.outString("Re-Loading Spell target coordinates...");
-    spellmgr.LoadSpellTargetPositions();
+    sSpellMgr.LoadSpellTargetPositions();
     SendGlobalGMSysMessage("DB table `spell_target_position` (destination coordinates for spell targets) reloaded.");
     return true;
 }
@@ -553,7 +553,7 @@ bool ChatHandler::HandleReloadSpellTargetPositionCommand(const char*)
 bool ChatHandler::HandleReloadSpellThreatsCommand(const char*)
 {
     sLog.outString("Re-Loading Aggro Spells Definitions...");
-    spellmgr.LoadSpellThreats();
+    sSpellMgr.LoadSpellThreats();
     SendGlobalGMSysMessage("DB table `spell_threat` (spell aggro definitions) reloaded.");
     return true;
 }
@@ -561,7 +561,7 @@ bool ChatHandler::HandleReloadSpellThreatsCommand(const char*)
 bool ChatHandler::HandleReloadSpellPetAurasCommand(const char*)
 {
     sLog.outString("Re-Loading Spell pet auras...");
-    spellmgr.LoadSpellPetAuras();
+    sSpellMgr.LoadSpellPetAuras();
     SendGlobalGMSysMessage("DB table `spell_pet_auras` reloaded.");
     return true;
 }
@@ -1846,7 +1846,7 @@ bool ChatHandler::HandleLearnAllMySpellsCommand(const char* /*args*/)
             continue;
 
         // skip spells with first rank learned as talent (and all talents then also)
-        uint32 first_rank = spellmgr.GetFirstSpellInChain(spellInfo->Id);
+        uint32 first_rank = sSpellMgr.GetFirstSpellInChain(spellInfo->Id);
         if (GetTalentSpellCost(first_rank) > 0)
             continue;
 
@@ -1866,7 +1866,7 @@ static void learnAllHighRanks(Player* player, uint32 spellid)
     SpellChainNode const* node;
     do
     {
-        node = spellmgr.GetSpellChainNode(spellid);
+        node = sSpellMgr.GetSpellChainNode(spellid);
         player->learnSpell(spellid);
         if (!node)
             break;
@@ -2849,12 +2849,12 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
                 uint32 talentCost = GetTalentSpellCost(id);
 
                 bool talent = (talentCost > 0);
-                bool passive = IsPassiveSpell(id);
+                bool passive = SpellMgr::IsPassiveSpell(id);
                 bool active = target && target->HasAura(id);
 
                 // unit32 used to prevent interpreting uint8 as char at output
                 // find rank of learned spell for learning spell, or talent rank
-                uint32 rank = talentCost ? talentCost : spellmgr.GetSpellRank(learn ? spellInfo->EffectTriggerSpell[0] : id);
+                uint32 rank = talentCost ? talentCost : sSpellMgr.GetSpellRank(learn ? spellInfo->EffectTriggerSpell[0] : id);
 
                 // send spell in "id - [name, rank N] [talent] [passive] [learn] [known]" format
                 std::ostringstream ss;
@@ -3601,7 +3601,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
             uint8 eff = spellInfo->Effect[i];
             if (eff>=TOTAL_SPELL_EFFECTS)
                 continue;
-            if (IsAreaAuraEffect(eff)           ||
+            if (SpellMgr::IsAreaAuraEffect(eff)           ||
                 eff == SPELL_EFFECT_APPLY_AURA  ||
                 eff == SPELL_EFFECT_PERSISTENT_AREA_AURA)
             {

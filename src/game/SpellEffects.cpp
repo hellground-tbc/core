@@ -292,9 +292,9 @@ void Spell::EffectEnvirinmentalDMG(uint32 i)
     // currently each enemy selected explicitly and self cast damage, we prevent apply self casted spell bonuses/etc
     damage = m_spellInfo->CalculateSimpleValue(i);
 
-    m_caster->CalcAbsorbResist(m_caster,GetSpellSchoolMask(m_spellInfo), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist);
+    m_caster->CalcAbsorbResist(m_caster,SpellMgr::GetSpellSchoolMask(m_spellInfo), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist);
 
-    m_caster->SendSpellNonMeleeDamageLog(m_caster, m_spellInfo->Id, damage, GetSpellSchoolMask(m_spellInfo), absorb, resist, false, 0, false);
+    m_caster->SendSpellNonMeleeDamageLog(m_caster, m_spellInfo->Id, damage, SpellMgr::GetSpellSchoolMask(m_spellInfo), absorb, resist, false, 0, false);
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         ((Player*)m_caster)->EnvironmentalDamage(DAMAGE_FIRE,damage);
 }
@@ -394,7 +394,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if (unitTarget->GetGUID() == m_caster->GetGUID() || unitTarget->GetTypeId() != TYPEID_PLAYER)
                             return;
 
-                        float radius = GetSpellRadius(m_spellInfo,0,false);
+                        float radius = SpellMgr::GetSpellRadius(m_spellInfo,0,false);
                         if (!radius) return;
                         float distance = m_caster->GetDistance2d(unitTarget);
                         damage = (distance > radius) ? 0 : (int32)(m_spellInfo->EffectBasePoints[0]*((radius - distance)/radius));
@@ -1767,8 +1767,8 @@ void Spell::EffectDummy(uint32 i)
                         SpellEntry const *spellInfo = sSpellStore.LookupEntry(classspell);
 
                         if (spellInfo->SpellFamilyName == SPELLFAMILY_MAGE &&
-                            (GetSpellSchoolMask(spellInfo) & SPELL_SCHOOL_MASK_FROST) &&
-                            spellInfo->Id != 11958 && GetSpellRecoveryTime(spellInfo) > 0)
+                            (SpellMgr::GetSpellSchoolMask(spellInfo) & SPELL_SCHOOL_MASK_FROST) &&
+                            spellInfo->Id != 11958 && SpellMgr::GetSpellRecoveryTime(spellInfo) > 0)
                         {
                             ((Player*)m_caster)->RemoveSpellCooldown(classspell, true);
                         }
@@ -2084,7 +2084,7 @@ void Spell::EffectDummy(uint32 i)
                         uint32 classspell = itr->first;
                         SpellEntry const *spellInfo = sSpellStore.LookupEntry(classspell);
 
-                        if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && GetSpellRecoveryTime(spellInfo) > 0)
+                        if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && SpellMgr::GetSpellRecoveryTime(spellInfo) > 0)
                             ((Player*)m_caster)->RemoveSpellCooldown(classspell, true);
                     }
                     return;
@@ -2344,7 +2344,7 @@ void Spell::EffectDummy(uint32 i)
     }
 
     // pet auras
-    if (PetAura const* petSpell = spellmgr.GetPetAura(m_spellInfo->Id))
+    if (PetAura const* petSpell = sSpellMgr.GetPetAura(m_spellInfo->Id))
     {
         m_caster->AddPetAura(petSpell);
         return;
@@ -2517,7 +2517,7 @@ void Spell::EffectTriggerSpell(uint32 i)
         // Cloak of Shadows
         case 35729 :
         {
-            uint32 dispelMask = GetDispellMask(DISPEL_ALL);
+            uint32 dispelMask = SpellMgr::GetDispellMask(DISPEL_ALL);
             Unit::AuraMap& Auras = m_caster->GetAuras();
             for (Unit::AuraMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
             {
@@ -2886,9 +2886,9 @@ void Spell::EffectApplyAura(uint32 i)
 
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
-    if (!IsPositiveSpell(m_spellInfo->Id))
+    if (!SpellMgr::IsPositiveSpell(m_spellInfo->Id))
     {
-        if (unitTarget != caster || !IsChanneledSpell(m_spellInfo))
+        if (unitTarget != caster || !SpellMgr::IsChanneledSpell(m_spellInfo))
         {
             unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel, m_spellInfo);
             Aur->setDiminishGroup(m_diminishGroup);
@@ -2896,7 +2896,7 @@ void Spell::EffectApplyAura(uint32 i)
     }
 
     //mod duration of channeled aura by spell haste
-    if (IsChanneledSpell(m_spellInfo))
+    if (SpellMgr::IsChanneledSpell(m_spellInfo))
     {
         caster->ModSpellCastTime(m_spellInfo, duration, this);
         SendChannelStart(duration);
@@ -3468,12 +3468,12 @@ void Spell::EffectCreateItem(uint32 i)
 
 void Spell::EffectPersistentAA(uint32 i)
 {
-   float radius = GetSpellRadius(m_spellInfo,i,false);
+   float radius = SpellMgr::GetSpellRadius(m_spellInfo,i,false);
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RADIUS, radius);
 
     Unit *caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
     DynamicObject* dynObj = new DynamicObject;
@@ -3574,7 +3574,7 @@ void Spell::EffectEnergize(uint32 i)
         for (Unit::AuraMap::iterator itr = Auras.begin(); itr != Auras.end(); ++itr)
         {
             uint32 spell_id = itr->second->GetId();
-            if (uint32 mask = spellmgr.GetSpellElixirMask(spell_id))
+            if (uint32 mask = sSpellMgr.GetSpellElixirMask(spell_id))
                 elixir_mask |= mask;
         }
 
@@ -3583,7 +3583,7 @@ void Spell::EffectEnergize(uint32 i)
 
         // get all available elixirs by mask and spell level
         std::vector<uint32> elixirs;
-        SpellElixirMap const& m_spellElixirs = spellmgr.GetSpellElixirMap();
+        SpellElixirMap const& m_spellElixirs = sSpellMgr.GetSpellElixirMap();
         for (SpellElixirMap::const_iterator itr = m_spellElixirs.begin(); itr != m_spellElixirs.end(); ++itr)
         {
             if (itr->second & elixir_mask)
@@ -3933,7 +3933,7 @@ void Spell::EffectSummon(uint32 i)
     else
         m_caster->GetClosePoint(x,y,z,owner->GetObjectSize());
 
-    Pet *spawnCreature = owner->SummonPet(pet_entry, x, y, z, m_caster->GetOrientation(), SUMMON_PET, GetSpellDuration(m_spellInfo));
+    Pet *spawnCreature = owner->SummonPet(pet_entry, x, y, z, m_caster->GetOrientation(), SUMMON_PET, SpellMgr::GetSpellDuration(m_spellInfo));
     if (!spawnCreature)
         return;
 
@@ -3985,7 +3985,7 @@ void Spell::EffectDispel(uint32 i)
 
     // Create dispel mask by dispel type
     uint32 dispel_type = m_spellInfo->EffectMiscValue[i];
-    uint32 dispelMask  = GetDispellMask(DispelType(dispel_type));
+    uint32 dispelMask  = SpellMgr::GetDispellMask(DispelType(dispel_type));
     Unit::AuraMap const& auras = unitTarget->GetAuras();
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {
@@ -4180,8 +4180,8 @@ void Spell::EffectAddFarsight(uint32 i)
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    float radius = GetSpellRadius(m_spellInfo,i,false);
-    int32 duration = GetSpellDuration(m_spellInfo);
+    float radius = SpellMgr::GetSpellRadius(m_spellInfo,i,false);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
     DynamicObject* dynObj = new DynamicObject;
     if (!dynObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), m_caster, m_spellInfo->Id, 4, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
     {
@@ -4230,7 +4230,7 @@ void Spell::EffectSummonWild(uint32 i)
     float center_y = m_targets.m_destY;
     float center_z = m_targets.m_destZ;
 
-    float radius = GetSpellRadius(m_spellInfo,i,false);
+    float radius = SpellMgr::GetSpellRadius(m_spellInfo,i,false);
 
     int32 amount = damage > 0 ? damage : 1;
 
@@ -4255,7 +4255,7 @@ void Spell::EffectSummonWild(uint32 i)
         else
             m_caster->GetClosePoint(px,py,pz,3.0f);
 
-        int32 duration = GetSpellDuration(m_spellInfo);
+        int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
 
         TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
 
@@ -4280,7 +4280,7 @@ void Spell::EffectSummonGuardian(uint32 i)
     }
 
     // set timer for unsummon
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
 
     Player *caster = NULL;
     if (m_originalCaster)
@@ -4318,7 +4318,7 @@ void Spell::EffectSummonGuardian(uint32 i)
     // Search old Guardian only for players (if casted spell not have duration or cooldown)
     // FIXME: some guardians have control spell applied and controlled by player and anyway player can't summon in this time
     //        so this code hack in fact
-    if (duration <= 0 || GetSpellRecoveryTime(m_spellInfo)==0)
+    if (duration <= 0 || SpellMgr::GetSpellRecoveryTime(m_spellInfo)==0)
         if (caster->HasGuardianWithEntry(pet_entry))
             return;                                         // find old guardian, ignore summon
 
@@ -4344,7 +4344,7 @@ void Spell::EffectSummonGuardian(uint32 i)
     float center_y = m_targets.m_destY;
     float center_z = m_targets.m_destZ;
 
-    float radius = GetSpellRadius(m_spellInfo,i,false);
+    float radius = SpellMgr::GetSpellRadius(m_spellInfo,i,false);
 
     int32 amount = damage > 0 ? damage : 1;
 
@@ -4393,7 +4393,7 @@ void Spell::EffectSummonPossessed(uint32 i)
     float x, y, z;
     m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
 
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
 
     Pet* pet = ((Player*)m_caster)->SummonPet(entry, x, y, z + 0.5f, m_caster->GetOrientation(), POSSESSED_PET, duration);
     if (!pet)
@@ -4415,7 +4415,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
 
     if(!m_targets.HasDst())
     {
-        float dis = GetSpellRadius(m_spellInfo,i,false);
+        float dis = SpellMgr::GetSpellRadius(m_spellInfo,i,false);
 
         float fx,fy,fz;
         m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
@@ -4929,7 +4929,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                     if (proto->SpellFamilyName == SPELLFAMILY_WARRIOR
                         && proto->SpellFamilyFlags == SPELLFAMILYFLAG_WARRIOR_SUNDERARMOR)
                     {
-                        int32 duration = GetSpellDuration(proto);
+                        int32 duration = SpellMgr::GetSpellDuration(proto);
                         (*itr)->SetAuraDuration(duration);
                         (*itr)->UpdateAuraDuration();
                         stack = (*itr)->GetStackAmount();
@@ -5000,8 +5000,8 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
             // Seal of Command - receive benefit from Spell Damage and Healing
             if (m_spellInfo->SpellFamilyFlags & 0x00000002000000LL)
             {
-                spell_bonus += int32(0.20f*m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo)));
-                spell_bonus += int32(0.20f*m_caster->SpellBaseDamageBonusForVictim(GetSpellSchoolMask(m_spellInfo), unitTarget));
+                spell_bonus += int32(0.20f*m_caster->SpellBaseDamageBonus(SpellMgr::GetSpellSchoolMask(m_spellInfo)));
+                spell_bonus += int32(0.20f*m_caster->SpellBaseDamageBonusForVictim(SpellMgr::GetSpellSchoolMask(m_spellInfo), unitTarget));
             }
             break;
         }
@@ -5210,7 +5210,7 @@ void Spell::EffectInterruptCast(uint32 i)
                 if (m_originalCaster)
                 {
                     int32 duration = m_originalCaster->CalculateSpellDuration(m_spellInfo, i, unitTarget);
-                    unitTarget->ProhibitSpellScholl(GetSpellSchoolMask(unitTarget->m_currentSpells[k]->m_spellInfo), duration/*GetSpellDuration(m_spellInfo)*/);
+                    unitTarget->ProhibitSpellScholl(SpellMgr::GetSpellSchoolMask(unitTarget->m_currentSpells[k]->m_spellInfo), duration/*GetSpellDuration(m_spellInfo)*/);
                 }
                 unitTarget->InterruptSpell(k,false);
             }
@@ -5247,7 +5247,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
         return;
     }
 
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
     pGameObj->SetRespawnTime(duration > 0 ? duration/1000 : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
 
@@ -5921,7 +5921,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if (!aur->IsPositive())             //only remove negative spells
                 {
                     // check for mechanic mask
-                    if (GetSpellMechanicMask(aur->GetSpellProto(), aur->GetEffIndex()) & mechanic_mask)
+                    if (SpellMgr::GetSpellMechanicMask(aur->GetSpellProto(), aur->GetEffIndex()) & mechanic_mask)
                     {
                         unitTarget->RemoveAurasDueToSpell(aur->GetId());
                         if (Auras.empty())
@@ -6228,7 +6228,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 45141: case 45151:
         {
             //Workaround for Range ... should be global for every ScriptEffect
-            float radius = GetSpellRadius(m_spellInfo, effIndex, false);
+            float radius = SpellMgr::GetSpellRadius(m_spellInfo, effIndex, false);
             //if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER && unitTarget->GetDistance(m_caster) <= radius && !unitTarget->HasAura(46394,0) && unitTarget != m_caster)
             if(!unitTarget->HasAura(46394, 0) && unitTarget != m_caster)
                 unitTarget->CastSpell(unitTarget,46394,true, 0, 0, m_originalCasterGUID);
@@ -6407,7 +6407,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     SpellEntry const *spellInfo = (*itr)->GetSpellProto();
 
                     // search seal (all seals have judgement's aura dummy spell id in 2 effect
-                    if (!spellInfo || !IsSealSpell((*itr)->GetSpellProto()) || (*itr)->GetEffIndex() != 2)
+                    if (!spellInfo || !SpellMgr::IsSealSpell((*itr)->GetSpellProto()) || (*itr)->GetEffIndex() != 2)
                         continue;
 
                     // must be calculated base at raw base points in spell proto, GetModifier()->m_value for S.Righteousness modified by SPELLMOD_DAMAGE
@@ -6428,7 +6428,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                             int32 chance = (*i)->GetModifier()->m_amount;
                             if (roll_chance_i(chance))
                             {
-                                int32 mana = CalculatePowerCost(spellInfo, m_caster, SPELL_SCHOOL_MASK_NONE);
+                                int32 mana = SpellMgr::CalculatePowerCost(spellInfo, m_caster, SPELL_SCHOOL_MASK_NONE);
                                 mana = int32(mana* 0.8f);
                                 m_caster->CastCustomSpell(m_caster,31930,&mana,NULL,NULL,true,NULL,*i);
                             }
@@ -6548,7 +6548,7 @@ void Spell::EffectDuel(uint32 i)
 
     pGameObj->SetUInt32Value(GAMEOBJECT_FACTION, m_caster->getFaction());
     pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->getLevel()+1);
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
     pGameObj->SetRespawnTime(duration > 0 ? duration/1000 : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
 
@@ -6708,7 +6708,7 @@ void Spell::EffectSummonTotem(uint32 i)
     pTotem->SetOwner(m_caster->GetGUID());
     pTotem->SetTypeBySummonSpell(m_spellInfo);              // must be after Create call where m_spells initilized
 
-    int32 duration=GetSpellDuration(m_spellInfo);
+    int32 duration=SpellMgr::GetSpellDuration(m_spellInfo);
     if (Player* modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id,SPELLMOD_DURATION, duration);
 
@@ -6758,7 +6758,7 @@ void Spell::EffectEnchantHeldItem(uint32 i)
     if (m_spellInfo->EffectMiscValue[i])
     {
         uint32 enchant_id = m_spellInfo->EffectMiscValue[i];
-        int32 duration = GetSpellDuration(m_spellInfo);          //Try duration index first ..
+        int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);          //Try duration index first ..
         if (!duration)
             duration = damage;//+1;            //Base points after ..
         if (!duration)
@@ -6899,7 +6899,7 @@ void Spell::EffectSummonObject(uint32 i)
     }
 
     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL,m_caster->getLevel());
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
     pGameObj->SetRespawnTime(duration > 0 ? duration/1000 : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
     m_caster->AddGameObject(pGameObj);
@@ -7007,7 +7007,7 @@ void Spell::EffectLeapForward(uint32 i)
     if (m_spellInfo->rangeIndex == 1)                        //self range
     {
         Position dest;
-        unitTarget->GetValidPointInAngle(dest, GetSpellRadius(m_spellInfo,i,false), 0.0f, true);
+        unitTarget->GetValidPointInAngle(dest, SpellMgr::GetSpellRadius(m_spellInfo,i,false), 0.0f, true);
 
         unitTarget->NearTeleportTo(dest.x, dest.y, dest.z, unitTarget->GetOrientation(), unitTarget == m_caster);
     }
@@ -7134,7 +7134,7 @@ void Spell::EffectCharge(uint32 /*i*/)
     m_caster->GetMotionMaster()->MoveCharge(dest.x, dest.y, dest.z);
 
     // not all charge effects used in negative spells
-    if (!IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (!SpellMgr::IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->Attack(target, true);
 }
 
@@ -7158,7 +7158,7 @@ void Spell::EffectCharge2(uint32 /*i*/)
     m_caster->MonsterMoveWithSpeed(x, y, z, SPEED_CHARGE);
 
     // not all charge effects used in negative spells
-    if (unitTarget && unitTarget != m_caster && !IsPositiveSpell(m_spellInfo->Id))
+    if (unitTarget && unitTarget != m_caster && !SpellMgr::IsPositiveSpell(m_spellInfo->Id))
         m_caster->Attack(unitTarget, true);
 }
 
@@ -7232,7 +7232,7 @@ void Spell::EffectSummonCritter(uint32 i)
     critter->SetUInt32Value(UNIT_NPC_FLAGS, critter->GetCreatureInfo()->npcflag); // some mini-pets have quests
 
     // set timer for unsummon
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
     if (duration > 0)
         critter->SetDuration(duration);
 
@@ -7536,13 +7536,13 @@ void Spell::EffectTransmitted(uint32 effIndex)
     //FIXME: this can be better check for most objects but still hack
     else if (m_spellInfo->EffectRadiusIndex[effIndex] && m_spellInfo->speed==0)
     {
-        float dis = GetSpellRadius(m_spellInfo,effIndex,false);
+        float dis = SpellMgr::GetSpellRadius(m_spellInfo,effIndex,false);
         m_caster->GetClosePoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
     }
     else
     {
-        float min_dis = GetSpellMinRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
-        float max_dis = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+        float min_dis = SpellMgr::GetSpellMinRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+        float max_dis = SpellMgr::GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
         float dis = rand_norm() * (max_dis - min_dis) + min_dis;
 
         m_caster->GetClosePoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
@@ -7587,7 +7587,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
         return;
     }
 
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = SpellMgr::GetSpellDuration(m_spellInfo);
 
     switch (goinfo->type)
     {
@@ -7784,7 +7784,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
 
     std::vector <Aura *> steal_list;
     // Create dispel mask by dispel type
-    uint32 dispelMask  = GetDispellMask(DispelType(m_spellInfo->EffectMiscValue[i]));
+    uint32 dispelMask  = SpellMgr::GetDispellMask(DispelType(m_spellInfo->EffectMiscValue[i]));
     Unit::AuraMap const& auras = unitTarget->GetAuras();
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {

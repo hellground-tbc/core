@@ -233,13 +233,7 @@ SpellMgr::~SpellMgr()
 {
 }
 
-SpellMgr& SpellMgr::Instance()
-{
-    static SpellMgr spellMgr;
-    return spellMgr;
-}
-
-int32 GetSpellDuration(SpellEntry const *spellInfo)
+int32 SpellMgr::GetSpellDuration(SpellEntry const *spellInfo)
 {
     if (!spellInfo)
         return 0;
@@ -249,7 +243,7 @@ int32 GetSpellDuration(SpellEntry const *spellInfo)
     return (du->Duration[0] == -1) ? -1 : abs(du->Duration[0]);
 }
 
-int32 GetSpellMaxDuration(SpellEntry const *spellInfo)
+int32 SpellMgr::GetSpellMaxDuration(SpellEntry const *spellInfo)
 {
     if (!spellInfo)
         return 0;
@@ -259,7 +253,7 @@ int32 GetSpellMaxDuration(SpellEntry const *spellInfo)
     return (du->Duration[2] == -1) ? -1 : abs(du->Duration[2]);
 }
 
-uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo)
+uint32 SpellMgr::GetSpellBaseCastTime(SpellEntry const *spellInfo)
 {
     SpellCastTimesEntry const *spellCastTimeEntry = sSpellCastTimesStore.LookupEntry(spellInfo->CastingTimeIndex);
     if (!spellCastTimeEntry)
@@ -267,9 +261,9 @@ uint32 GetSpellBaseCastTime(SpellEntry const *spellInfo)
     return spellCastTimeEntry->CastTime;
 }
 
-uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
+uint32 SpellMgr::GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
 {
-    int32 castTime = GetSpellBaseCastTime(spellInfo);
+    int32 castTime = SpellMgr::GetSpellBaseCastTime(spellInfo);
 
     // if castTime == 0 no sense to apply modifiers
     if (!castTime)
@@ -295,7 +289,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
     return (castTime > 0) ? uint32(castTime) : 0;
 }
 
-bool IsPassiveSpell(uint32 spellId)
+bool SpellMgr::IsPassiveSpell(uint32 spellId)
 {
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo)
@@ -303,12 +297,12 @@ bool IsPassiveSpell(uint32 spellId)
     return (spellInfo->Attributes & SPELL_ATTR_PASSIVE) != 0;
 }
 
-bool IsPassiveSpell(SpellEntry const *spellInfo)
+bool SpellMgr::IsPassiveSpell(SpellEntry const *spellInfo)
 {
     return (spellInfo->Attributes & SPELL_ATTR_PASSIVE) != 0;
 }
 
-void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
+void SpellMgr::ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
 {
     if (!spellInfo)
         return;
@@ -353,7 +347,7 @@ void ApplySpellThreatModifiers(SpellEntry const *spellInfo, float &threat)
         threat *= 1.75f;
 }
 
-uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask)
+uint32 SpellMgr::CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, SpellSchoolMask schoolMask)
 {
     // Spell drain all exist power on cast (Only paladin lay of Hands)
     if (spellInfo->AttributesEx & SPELL_ATTR_EX_DRAIN_ALL_POWER)
@@ -430,7 +424,7 @@ uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, Spe
     return true;
 }*/
 
-int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
+int32 SpellMgr::CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
 {
     SpellEntry const*spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
     SpellEntry const*spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
@@ -442,7 +436,7 @@ int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, ui
     else return diff;
 }
 
-SpellSpecific GetSpellSpecific(uint32 spellId)
+SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
 {
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo)
@@ -549,7 +543,7 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
         }
 
         case SPELLFAMILY_POTION:
-            return spellmgr.GetSpellElixirSpecific(spellInfo->Id);
+            return sSpellMgr.GetSpellElixirSpecific(spellInfo->Id);
     }
 
     // only warlock armor/skin have this (in additional to family cases)
@@ -584,13 +578,13 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
     }
 
     // elixirs can have different families, but potion most ofc.
-    if (SpellSpecific sp = spellmgr.GetSpellElixirSpecific(spellInfo->Id))
+    if (SpellSpecific sp = sSpellMgr.GetSpellElixirSpecific(spellInfo->Id))
         return sp;
 
     return SPELL_NORMAL;
 }
 
-bool IsSingleFromSpellSpecificPerCaster(SpellSpecific spellSpec1,SpellSpecific spellSpec2)
+bool SpellMgr::IsSingleFromSpellSpecificPerCaster(SpellSpecific spellSpec1,SpellSpecific spellSpec2)
 {
     switch (spellSpec1)
     {
@@ -609,7 +603,7 @@ bool IsSingleFromSpellSpecificPerCaster(SpellSpecific spellSpec1,SpellSpecific s
     }
 }
 
-bool IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific spellSpec2)
+bool SpellMgr::IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific spellSpec2)
 {
     switch (spellSpec1)
     {
@@ -639,7 +633,7 @@ bool IsSingleFromSpellSpecificPerTarget(SpellSpecific spellSpec1, SpellSpecific 
     }
 }
 
-bool IsSingleFromSpellSpecificRanksPerTarget(SpellSpecific spellId_spec, SpellSpecific i_spellId_spec)
+bool SpellMgr::IsSingleFromSpellSpecificRanksPerTarget(SpellSpecific spellId_spec, SpellSpecific i_spellId_spec)
 {
     switch (spellId_spec)
     {
@@ -652,7 +646,7 @@ bool IsSingleFromSpellSpecificRanksPerTarget(SpellSpecific spellId_spec, SpellSp
     }
 }
 
-bool IsPositiveTarget(uint32 targetA, uint32 targetB)
+bool SpellMgr::IsPositiveTarget(uint32 targetA, uint32 targetB)
 {
     // non-positive targets
     switch (targetA)
@@ -671,18 +665,18 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB)
             break;
     }
     if (targetB)
-        return IsPositiveTarget(targetB, 0);
+        return SpellMgr::IsPositiveTarget(targetB, 0);
     return true;
 }
 
-bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
+bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
 {
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
     if (!spellproto)
         return false;
 
     // talents
-    if (IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
+    if (SpellMgr::IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
         return true;
 
     /*
@@ -824,7 +818,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                             {
                                 // if non-positive trigger cast targeted to positive target this main cast is non-positive
                                 // this will place this spell auras as debuffs
-                                if (IsPositiveTarget(spellTriggeredProto->EffectImplicitTargetA[effIndex],spellTriggeredProto->EffectImplicitTargetB[effIndex]) && !IsPositiveEffect(spellTriggeredId,i))
+                                if (SpellMgr::IsPositiveTarget(spellTriggeredProto->EffectImplicitTargetA[effIndex],spellTriggeredProto->EffectImplicitTargetB[effIndex]) && !IsPositiveEffect(spellTriggeredId,i))
                                     return false;
                             }
                         }
@@ -935,41 +929,41 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     }
 
     // non-positive targets
-    if (!IsPositiveTarget(spellproto->EffectImplicitTargetA[effIndex],spellproto->EffectImplicitTargetB[effIndex]))
+    if (!SpellMgr::IsPositiveTarget(spellproto->EffectImplicitTargetA[effIndex],spellproto->EffectImplicitTargetB[effIndex]))
         return false;
 
     // ok, positive
     return true;
 }
 
-bool IsPositiveSpell(uint32 spellId)
+bool SpellMgr::IsPositiveSpell(uint32 spellId)
 {
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
     if (!spellproto) return false;
 
     // talents
-    if (IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
+    if (SpellMgr::IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
         return true;
 
     // spells with at least one negative effect are considered negative
     // some self-applied spells have negative effects but in self casting case negative check ignored.
     for (int i = 0; i < 3; i++)
     {
-        if (!IsPositiveEffect(spellId, i))
+        if (!SpellMgr::IsPositiveEffect(spellId, i))
             return false;
     }
 
     return true;
 }
 
-bool IsSingleTargetSpell(SpellEntry const *spellInfo)
+bool SpellMgr::IsSingleTargetSpell(SpellEntry const *spellInfo)
 {
     // all other single target spells have if it has AttributesEx5
     if (spellInfo->AttributesEx5 & SPELL_ATTR_EX5_SINGLE_TARGET_SPELL)
         return true;
 
     // TODO - need found Judgements rule
-    switch (GetSpellSpecific(spellInfo->Id))
+    switch (SpellMgr::GetSpellSpecific(spellInfo->Id))
     {
         case SPELL_JUDGEMENT:
             return true;
@@ -984,7 +978,7 @@ bool IsSingleTargetSpell(SpellEntry const *spellInfo)
     return false;
 }
 
-bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellInfo2)
+bool SpellMgr::IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellInfo2)
 {
     // TODO - need better check
     // Equal icon and spellfamily
@@ -993,13 +987,13 @@ bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellI
         return true;
 
     // TODO - need found Judgements rule
-    SpellSpecific spec1 = GetSpellSpecific(spellInfo1->Id);
+    SpellSpecific spec1 = SpellMgr::GetSpellSpecific(spellInfo1->Id);
     // spell with single target specific types
     switch (spec1)
     {
         case SPELL_JUDGEMENT:
         case SPELL_MAGE_POLYMORPH:
-            if (GetSpellSpecific(spellInfo2->Id) == spec1)
+            if (SpellMgr::GetSpellSpecific(spellInfo2->Id) == spec1)
                 return true;
             break;
     }
@@ -1007,7 +1001,7 @@ bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellI
     return false;
 }
 
-bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
+bool SpellMgr::IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
 {
     SpellEntry const *spellproto = sSpellStore.LookupEntry(spellId);
     if (!spellproto) return false;
@@ -1018,7 +1012,7 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
     return false;
 }
 
-SpellCastResult GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
+SpellCastResult SpellMgr::GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
 {
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)
@@ -1063,7 +1057,7 @@ SpellCastResult GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 
     return SPELL_CAST_OK;
 }
 
-bool IsBinaryResistable(SpellEntry const* spellInfo)
+bool SpellMgr::IsBinaryResistable(SpellEntry const* spellInfo)
 {
     if(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY)                  // can't resist holy spells
         return false;
@@ -1075,7 +1069,7 @@ bool IsBinaryResistable(SpellEntry const* spellInfo)
             if(!spellInfo->Effect[eff])
                 continue;
 
-            if (IsPositiveEffect(spellInfo->Id, eff))
+            if (SpellMgr::IsPositiveEffect(spellInfo->Id, eff))
                 continue;
 
             switch(spellInfo->Effect[eff])
@@ -1108,7 +1102,7 @@ bool IsBinaryResistable(SpellEntry const* spellInfo)
     return false;
 }
 
-bool IsPartialyResistable(SpellEntry const* spellInfo)
+bool SpellMgr::IsPartialyResistable(SpellEntry const* spellInfo)
 {
     if (spellInfo->AttributesEx4 & SPELL_ATTR_EX4_IGNORE_RESISTANCES)
         return false;
@@ -1141,7 +1135,7 @@ bool IsPartialyResistable(SpellEntry const* spellInfo)
             return false;
     }
 
-    if (spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY || IsBinaryResistable(spellInfo))
+    if (spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY || SpellMgr::IsBinaryResistable(spellInfo))
         return false;
     else
         return true;
@@ -1486,8 +1480,8 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
         if (!procSpell)
             return false;
 
-        SkillLineAbilityMap::const_iterator lower = spellmgr.GetBeginSkillLineAbilityMap(procSpell->Id);
-        SkillLineAbilityMap::const_iterator upper = spellmgr.GetEndSkillLineAbilityMap(procSpell->Id);
+        SkillLineAbilityMap::const_iterator lower = sSpellMgr.GetBeginSkillLineAbilityMap(procSpell->Id);
+        SkillLineAbilityMap::const_iterator upper = sSpellMgr.GetEndSkillLineAbilityMap(procSpell->Id);
 
         bool found = false;
         for (SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
@@ -1836,8 +1830,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     if (IsSpecialNoStackCase(spellInfo_1, spellInfo_2, sameCaster))
         return true;
 
-    SpellSpecific spellId_spec_1 = GetSpellSpecific(spellId_1);
-    SpellSpecific spellId_spec_2 = GetSpellSpecific(spellId_2);
+    SpellSpecific spellId_spec_1 = SpellMgr::GetSpellSpecific(spellId_1);
+    SpellSpecific spellId_spec_2 = SpellMgr::GetSpellSpecific(spellId_2);
     if (spellId_spec_1 && spellId_spec_2)
         if (IsSingleFromSpellSpecificPerTarget(spellId_spec_1, spellId_spec_2)
             ||(IsSingleFromSpellSpecificPerCaster(spellId_spec_1, spellId_spec_2) && sameCaster) ||
@@ -2000,11 +1994,11 @@ bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
     return IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
 }
 
-bool IsSplashBuffAura(SpellEntry const* spellInfo)
+bool SpellMgr::IsSplashBuffAura(SpellEntry const* spellInfo)
 {
     for (uint8 i = 0; i < 3; i++)
     {
-        if (IsPositiveEffect(spellInfo->Id, i))
+        if (SpellMgr::IsPositiveEffect(spellInfo->Id, i))
         {
             if (spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
                return true;
@@ -3345,7 +3339,7 @@ bool SpellMgr::IsSpellValid(SpellEntry const* spellInfo, Player* pl, bool msg)
     return true;
 }
 
-bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 zone_id,uint32 area_id)
+bool SpellMgr::IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 zone_id,uint32 area_id)
 {
     // hack moved from Player::UpdateAreaDependentAuras <--- is still needed ? Oo i don't think so ...
     if (spellInfo->Id == 38157)
@@ -3359,7 +3353,7 @@ bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 z
     // elixirs (all area dependent elixirs have family SPELLFAMILY_POTION, use this for speedup)
     if (spellInfo->SpellFamilyName==SPELLFAMILY_POTION)
     {
-        if (uint32 mask = spellmgr.GetSpellElixirMask(spellInfo->Id))
+        if (uint32 mask = sSpellMgr.GetSpellElixirMask(spellInfo->Id))
         {
             if (mask & ELIXIR_BATTLE_MASK)
             {
@@ -3538,7 +3532,7 @@ SpellEntry const * SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player
         if (!spell_info)
             continue;
 
-        if (spellmgr.IsRankSpellDueToSpell(highest_rank, itr->first))
+        if (sSpellMgr.IsRankSpellDueToSpell(highest_rank, itr->first))
         {
             if (spell_info->spellLevel > highest_rank->spellLevel)
                 highest_rank = spell_info;
@@ -3551,8 +3545,219 @@ SpellEntry const * SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player
     return highest_rank;
 }
 
+float SpellMgr::GetSpellRadiusForHostile(SpellRadiusEntry const *radius)
+{
+    return (radius ? radius->radiusHostile : 0);
+}
 
-DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered)
+float SpellMgr::GetSpellRadiusForFriend(SpellRadiusEntry const *radius)
+{
+    return (radius ? radius->radiusFriend : 0);
+}
+
+float SpellMgr::GetSpellMaxRange( SpellEntry const *spellInfo )
+{
+    return SpellMgr::GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellInfo->rangeIndex));
+}
+
+float SpellMgr::GetSpellMaxRange( uint32 id )
+{
+    SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
+    if (!spellInfo) return 0;
+    return GetSpellMaxRange(spellInfo);
+}
+
+float SpellMgr::GetSpellMaxRange( SpellRangeEntry const *range )
+{
+    return (range ? range->maxRange : 0);
+}
+
+float SpellMgr::GetSpellMinRange( SpellEntry const *spellInfo )
+{
+    return SpellMgr::GetSpellMinRange(sSpellRangeStore.LookupEntry(spellInfo->rangeIndex));
+}
+
+float SpellMgr::GetSpellMinRange( uint32 id )
+{
+    SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(id);
+    if (!spellInfo) return 0;
+    return SpellMgr::GetSpellMinRange(spellInfo);
+}
+
+float SpellMgr::GetSpellMinRange( SpellRangeEntry const *range )
+{
+    return (range ? range->minRange : 0);
+}
+
+uint32 SpellMgr::GetSpellRangeType( SpellRangeEntry const *range )
+{
+    return (range ? range->type : 0);
+}
+
+uint32 SpellMgr::GetSpellRecoveryTime( SpellEntry const *spellInfo )
+{
+    return spellInfo->RecoveryTime > spellInfo->CategoryRecoveryTime ? spellInfo->RecoveryTime : spellInfo->CategoryRecoveryTime;
+}
+
+float SpellMgr::GetSpellRadius( SpellEntry const *spellInfo, uint32 effectIdx, bool positive )
+{
+    return positive
+        ? SpellMgr::GetSpellRadiusForFriend(sSpellRadiusStore.LookupEntry(spellInfo->EffectRadiusIndex[effectIdx]))
+        : SpellMgr::GetSpellRadiusForHostile(sSpellRadiusStore.LookupEntry(spellInfo->EffectRadiusIndex[effectIdx]));
+}
+
+bool SpellMgr::IsSealSpell( SpellEntry const *spellInfo )
+{
+    // Seal of Command should meet requirements, but mysteriously is not
+    if (spellInfo->Id == 41469)
+        return true;
+    //Collection of all the seal family flags. No other paladin spell has any of those.
+    return spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN &&
+        (spellInfo->SpellFamilyFlags & 0x4000A000200LL);
+}
+
+bool SpellMgr::IsElementalShield( SpellEntry const *spellInfo )
+{
+    // family flags 10 (Lightning), 42 (Earth), 37 (Water), proc shield from T2 8 pieces bonus
+    return (spellInfo->SpellFamilyFlags & 0x42000000400LL) || spellInfo->Id == 23552;
+}
+
+bool SpellMgr::IsPassiveSpellStackableWithRanks( SpellEntry const* spellProto )
+{
+    if (!IsPassiveSpell(spellProto))
+        return false;
+
+    return !spellProto->HasEffect(SPELL_EFFECT_APPLY_AURA);
+}
+
+bool SpellMgr::IsDeathOnlySpell( SpellEntry const *spellInfo )
+{
+    return spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CAST_ON_DEAD
+        || spellInfo->Id == 2584;
+}
+
+bool SpellMgr::IsDeathPersistentSpell( SpellEntry const *spellInfo )
+{
+    if (!spellInfo)
+        return false;
+
+    return spellInfo->AttributesEx3 & SPELL_ATTR_EX3_DEATH_PERSISTENT;
+}
+
+bool SpellMgr::IsNonCombatSpell( SpellEntry const *spellInfo )
+{
+    return (spellInfo->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT) != 0;
+}
+
+bool SpellMgr::IsAreaOfEffectSpell( SpellEntry const *spellInfo )
+{
+    if (IsAreaEffectTarget[spellInfo->EffectImplicitTargetA[0]] || IsAreaEffectTarget[spellInfo->EffectImplicitTargetB[0]])
+        return true;
+    if (IsAreaEffectTarget[spellInfo->EffectImplicitTargetA[1]] || IsAreaEffectTarget[spellInfo->EffectImplicitTargetB[1]])
+        return true;
+    if (IsAreaEffectTarget[spellInfo->EffectImplicitTargetA[2]] || IsAreaEffectTarget[spellInfo->EffectImplicitTargetB[2]])
+        return true;
+    return false;
+}
+
+bool SpellMgr::IsAreaAuraEffect( uint32 effect )
+{
+    if (effect == SPELL_EFFECT_APPLY_AREA_AURA_PARTY    ||
+        effect == SPELL_EFFECT_APPLY_AREA_AURA_FRIEND   ||
+        effect == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY    ||
+        effect == SPELL_EFFECT_APPLY_AREA_AURA_PET      ||
+        effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER)
+        return true;
+    return false;
+}
+
+bool SpellMgr::IsDispel( SpellEntry const *spellInfo )
+{
+    //spellsteal is also dispel
+    if (spellInfo->Effect[0] == SPELL_EFFECT_DISPEL ||
+        spellInfo->Effect[1] == SPELL_EFFECT_DISPEL ||
+        spellInfo->Effect[2] == SPELL_EFFECT_DISPEL)
+        return true;
+    return false;
+}
+
+bool SpellMgr::IsDispelSpell( SpellEntry const *spellInfo )
+{
+    //spellsteal is also dispel
+    if (spellInfo->Effect[0] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF ||
+        spellInfo->Effect[1] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF ||
+        spellInfo->Effect[2] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF
+        ||IsDispel(spellInfo))
+        return true;
+    return false;
+}
+
+bool SpellMgr::isSpellBreakStealth( SpellEntry const* spellInfo )
+{
+    return !(spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH);
+}
+
+bool SpellMgr::IsChanneledSpell( SpellEntry const* spellInfo )
+{
+    return (spellInfo->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2));
+}
+
+bool SpellMgr::NeedsComboPoints( SpellEntry const* spellInfo )
+{
+    return (spellInfo->AttributesEx & (SPELL_ATTR_EX_REQ_COMBO_POINTS1 | SPELL_ATTR_EX_REQ_COMBO_POINTS2));
+}
+
+SpellSchoolMask SpellMgr::GetSpellSchoolMask( SpellEntry const* spellInfo )
+{
+    return SpellSchoolMask(spellInfo->SchoolMask);
+}
+
+uint32 SpellMgr::GetSpellMechanicMask( SpellEntry const* spellInfo, int32 effect )
+{
+    uint32 mask = 0;
+    if (spellInfo->Mechanic)
+        mask |= 1<<spellInfo->Mechanic;
+    if (spellInfo->EffectMechanic[effect])
+        mask |= 1<<spellInfo->EffectMechanic[effect];
+    return mask;
+}
+
+Mechanics SpellMgr::GetEffectMechanic( SpellEntry const* spellInfo, int32 effect )
+{
+    if (spellInfo->EffectMechanic[effect])
+        return Mechanics(spellInfo->EffectMechanic[effect]);
+    if (spellInfo->Mechanic)
+        return Mechanics(spellInfo->Mechanic);
+    return MECHANIC_NONE;
+}
+
+uint32 SpellMgr::GetDispellMask( DispelType dispel )
+{
+    // If dispel all
+    if (dispel == DISPEL_ALL)
+        return DISPEL_ALL_MASK;
+    else
+        return (1 << dispel);
+}
+
+bool SpellMgr::IsPrimaryProfessionSkill( uint32 skill )
+{
+    SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(skill);
+    if (!pSkill)
+        return false;
+
+    if (pSkill->categoryId != SKILL_CATEGORY_PROFESSION)
+        return false;
+
+    return true;
+}
+
+bool SpellMgr::IsProfessionSkill( uint32 skill )
+{
+    return  IsPrimaryProfessionSkill(skill) || skill == SKILL_FISHING || skill == SKILL_COOKING || skill == SKILL_FIRST_AID;
+}
+
+DiminishingGroup SpellMgr::GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered)
 {
     // Explicit Diminishing Groups
     switch (spellproto->SpellFamilyName)
@@ -3676,7 +3881,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
     return DIMINISHING_NONE;
 }
 
-bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
+bool SpellMgr::IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
 {
     switch (group)
     {
@@ -3700,7 +3905,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
     return false;
 }
 
-DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
+DiminishingReturnsType SpellMgr::GetDiminishingReturnsGroupType(DiminishingGroup group)
 {
     switch (group)
     {
@@ -3728,7 +3933,7 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
     return DRTYPE_NONE;
 }
 
-bool SpellIgnoreLOS(SpellEntry const* spellproto, uint8 effIdx)
+bool SpellMgr::SpellIgnoreLOS(SpellEntry const* spellproto, uint8 effIdx)
 {
     if (spellproto->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS)
         return true;

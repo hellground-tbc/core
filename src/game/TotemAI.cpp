@@ -68,7 +68,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
 
     // Get spell rangy
     SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-    float max_range = GetSpellMaxRange(srange);
+    float max_range = SpellMgr::GetSpellMaxRange(srange);
 
     // SPELLMOD_RANGE not applied in this place just because not existence range mods for attacking totems
 
@@ -79,7 +79,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
         victim = &i_totem;
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
-    if (!victim || (!SpellIgnoreLOS(spellInfo, 0) && !i_totem.IsWithinLOSInMap(victim)) ||
+    if (!victim || (!SpellMgr::SpellIgnoreLOS(spellInfo, 0) && !i_totem.IsWithinLOSInMap(victim)) ||
         !victim->isTargetableForAttack() || !i_totem.IsWithinDistInMap(victim, max_range) ||
         (i_totem.IsFriendlyTo(victim) && victim != &i_totem) || !victim->isVisibleForOrDetect(&i_totem,false))
     {
