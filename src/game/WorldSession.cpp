@@ -85,8 +85,6 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
     return (plr->IsInWorld() == false);
 }
 
-#define OPCODE_COOLDOWN 1000
-
 /// WorldSession constructor
 WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, uint64 accFlags, uint16 opcDisabled) :
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time), m_muteReason(mute_reason),
@@ -101,9 +99,8 @@ m_kickTimer(MINUTE * 15 * 1000), m_accFlags(accFlags), m_Warden(NULL)
         sock->AddReference ();
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
 
-        // do it more gently :p
-        (_opcodeCooldowns[CMSG_WHOIS] = ShortIntervalTimer()).SetInterval(OPCODE_COOLDOWN *0.5);
-        (_opcodeCooldowns[CMSG_INSPECT] = ShortIntervalTimer()).SetInterval(OPCODE_COOLDOWN);
+        // create copy of base map :P
+        _opcodesCooldown = sObjectMgr.GetOpcodesCooldown();
     }
 }
 

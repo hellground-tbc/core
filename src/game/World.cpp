@@ -1434,6 +1434,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading trainers...");
     sObjectMgr.LoadTrainerSpell();                              // must be after load CreatureTemplate
 
+    sLog.outString("Loading opcodes cooldown...");
+    sObjectMgr.LoadOpcodesCooldown();
+
     sLog.outString("Loading Waypoints...");
     WaypointMgr.Load();
 

@@ -758,8 +758,8 @@ class HELLGROUND_DLL_SPEC WorldSession
 
         uint16 m_opcodesDisabled;
 
-        typedef std::map</*Opcodes*/uint16, ShortIntervalTimer> OpcodesCooldownMap;
-        OpcodesCooldownMap _opcodeCooldowns;
+        typedef UNORDERED_MAP<uint16,ShortIntervalTimer> OpcodesCooldown;
+        OpcodesCooldown _opcodesCooldown;
 
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
 };

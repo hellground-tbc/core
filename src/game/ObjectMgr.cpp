@@ -7002,3 +7002,33 @@ void ObjectMgr::GetNpcTextLocaleStrings0(uint32 entry, int32 loc_idx, std::strin
         }
     }
 }
+
+void ObjectMgr::LoadOpcodesCooldown()
+{
+    _opcodesCooldown.clear();
+
+    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT `opcode`, `cooldown` FROM `opcodes_cooldown`");
+    if (!result)
+    {
+        BarGoLink bar1(1);
+        bar1.step();
+        sLog.outString("\n>> Opcodes cooldown table is empty \n");
+        return;
+    }
+
+    BarGoLink bar1(result->GetRowCount());
+
+    do
+    {
+        bar1.step();
+
+        Field *fields = result->Fetch();
+
+        uint16 opcode = LookupOpcodeId(fields[0].GetCppString().c_str());
+        uint32 cooldown = fields[1].GetUInt32();
+        _opcodesCooldown[opcode].SetInterval(cooldown);
+    }
+    while (result->NextRow());
+
+    sLog.outString("\n>> Loaded %u opcode cooldowns \n", result->GetRowCount());
+}

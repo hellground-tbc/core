@@ -120,6 +120,7 @@ typedef UNORDERED_MAP<uint32,NpcTextLocale> NpcTextLocaleMap;
 typedef UNORDERED_MAP<uint32,PageTextLocale> PageTextLocaleMap;
 typedef UNORDERED_MAP<uint32,TrinityStringLocale> HellgroundStringLocaleMap;
 typedef UNORDERED_MAP<uint32,NpcOptionLocale> NpcOptionLocaleMap;
+typedef UNORDERED_MAP<uint16,ShortIntervalTimer> OpcodesCooldown;
 
 typedef std::multimap<uint32,uint32> QuestRelations;
 
@@ -530,6 +531,9 @@ class HELLGROUND_DLL_DECL ObjectMgr
         void LoadVendors();
         void LoadTrainerSpell();
 
+        void LoadOpcodesCooldown();
+        OpcodesCooldown& GetOpcodesCooldown() { return _opcodesCooldown; }
+
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint32 level);
 
@@ -876,6 +880,7 @@ class HELLGROUND_DLL_DECL ObjectMgr
         RespawnTimes mGORespawnTimes;
 
         GuildCooldowns mGuildCooldownTimes;
+        OpcodesCooldown _opcodesCooldown;
 
         typedef std::vector<uint32> GuildBankTabPriceMap;
         GuildBankTabPriceMap mGuildBankTabPrice;
