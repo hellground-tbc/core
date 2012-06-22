@@ -207,10 +207,10 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
         return;
 
     Opcodes op = Opcodes(new_packet->GetOpcode());
-    if (_opcodeCooldowns.count(op))
+    if (_opcodesCooldown.count(op))
     {
-        if (_opcodeCooldowns[op].Passed())
-            _opcodeCooldowns[op].Reset();
+        if (_opcodesCooldown[op].Passed())
+            _opcodesCooldown[op].Reset();
         else
             return;
     }
@@ -301,7 +301,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     sWorld.RecordSessionTimeDiff(NULL);
 
-    for (OpcodesCooldownMap::iterator itr = _opcodeCooldowns.begin(); itr != _opcodeCooldowns.end(); ++itr)
+    for (OpcodesCooldown::iterator itr = _opcodesCooldown.begin(); itr != _opcodesCooldown.end(); ++itr)
         itr->second.Update(diff);
 
     ///- Retrieve packets from the receive queue and call the appropriate handlers
