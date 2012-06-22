@@ -1793,12 +1793,9 @@ bool SpellMgr::IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellI
 
 bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
 {
-    // exception: faerie fire (feral)
-    if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x400)
-        return true;
-
     if (spellInfo->powerType != POWER_MANA && spellInfo->powerType != POWER_HEALTH)
         return false;
+
     if (IsProfessionSpell(spellInfo->Id))
         return false;
 
@@ -3523,6 +3520,37 @@ void SpellMgr::LoadSkillLineAbilityMap()
     sLog.outString();
     sLog.outString(">> Loaded %u SkillLineAbility MultiMap", count);
 }
+
+SpellEntry const * SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player* player)
+{
+    SpellEntry const *spell_info = sSpellStore.LookupEntry(spellId);
+    if (!spell_info)
+        return NULL;
+
+    PlayerSpellMap const &sp_list = player->GetSpellMap();
+    SpellEntry const *highest_rank = spell_info;
+    for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
+    {
+        if (!itr->second.active || itr->second.disabled || itr->second.state == PLAYERSPELL_REMOVED)
+            continue;
+
+        spell_info = sSpellStore.LookupEntry(itr->first);
+        if (!spell_info)
+            continue;
+
+        if (spellmgr.IsRankSpellDueToSpell(highest_rank, itr->first))
+        {
+            if (spell_info->spellLevel > highest_rank->spellLevel)
+                highest_rank = spell_info;
+        }
+    }
+
+    if (highest_rank->Id != spellId && !player->HasSpell(spellId))
+        return NULL;
+
+    return highest_rank;
+}
+
 
 DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered)
 {

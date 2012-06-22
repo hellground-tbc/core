@@ -39,33 +39,6 @@ bool PlayerAI::UpdateVictim(float range)
     return me->getVictim();
 }
 
-SpellEntry const *PlayerAI::selectHighestRank(uint32 spell_id)
-{
-    SpellEntry const *spell_info = sSpellStore.LookupEntry(spell_id);
-    if (!spell_info || !me->HasSpell(spell_id))
-        return NULL;
-
-    PlayerSpellMap const &sp_list = me->GetSpellMap();
-
-    SpellEntry const *highest_rank = spell_info;
-    for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
-    {
-        if (!itr->second.active || itr->second.disabled || itr->second.state == PLAYERSPELL_REMOVED)
-            continue;
-
-        spell_info = sSpellStore.LookupEntry(itr->first);
-        if (!spell_info)
-            continue;
-
-        if (spellmgr.IsRankSpellDueToSpell(highest_rank, itr->first))
-        {
-            if (spell_info->spellLevel > highest_rank->spellLevel)
-                highest_rank = spell_info;
-        }
-    }
-    return highest_rank;
-}
-
 void WarriorAI::UpdateAI(const uint32 diff)
 {
     if (!UpdateVictim())

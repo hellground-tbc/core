@@ -36,6 +36,7 @@
 #include "LootMgr.h"
 #include "Chat.h"
 #include "ScriptMgr.h"
+#include "SpellMgr.h"
 #include <zlib/zlib.h>
 #include "MapManager.h"
 #include "ObjectAccessor.h"
@@ -1191,7 +1192,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
                 uint32 curtalent_maxrank = 0;
                 for (uint32 k = 5; k > 0; --k)
                 {
-                    if (talentInfo->RankID[k-1] && plr->HasSpell(talentInfo->RankID[k-1]))
+                    if (talentInfo->RankID[k-1] && SpellMgr::GetHighestSpellRankForPlayer(talentInfo->RankID[k-1], plr))
                     {
                         curtalent_maxrank = k;
                         break;

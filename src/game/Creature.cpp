@@ -2668,12 +2668,7 @@ bool AttackResumeEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             m_owner.AttackStop(/*!b_force*/);
             CreatureAI* ai = m_owner.ToCreature()->AI();
             if (ai)
-            {
-                // Reset EventAI now unsafe, temp disabled (require correct writing EventAI scripts)
-                //    if (CreatureEventAI* eventai = (CreatureEventAI*)ai)
-                //        eventai->Reset();
                 ai->AttackStart(victim);
-            }
             break;
         }
         case HIGHGUID_PET:

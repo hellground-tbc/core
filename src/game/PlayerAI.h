@@ -23,14 +23,11 @@
 
 #include "UnitAI.h"
 #include "Player.h"
-
-struct SpellEntry;
+#include "SpellMgr.h"
 
 struct PlayerAI : public UnitAI
 {
     PlayerAI(Player *pPlayer) : UnitAI((Unit *)pPlayer), me(pPlayer) {}
-
-    SpellEntry const *selectHighestRank(uint32 spell_id);
 
     bool UpdateVictim(float = /*20.0*/100.0f);   // test more range for Felmyst, if no problems, should stay
     void OnCharmed(bool){}
@@ -49,9 +46,9 @@ struct WarriorAI: public PlayerAI
 
 void Reset()
     {
-        TCSpell = selectHighestRank(THUNDERCLAP_R1);
-        BloodrageSpell = selectHighestRank(BLOODRAGE);
-        DemoSpell = selectHighestRank(DEMORALIZING_R1);
+        TCSpell = SpellMgr::GetHighestSpellRankForPlayer(THUNDERCLAP_R1, me);
+        BloodrageSpell = SpellMgr::GetHighestSpellRankForPlayer(BLOODRAGE, me);
+        DemoSpell = SpellMgr::GetHighestSpellRankForPlayer(DEMORALIZING_R1, me);
 
         TC_Timer = 3000+urand(0, 10000);
         Bloodrage_Timer = 3000+urand(0, 10000);
@@ -84,13 +81,13 @@ struct HunterAI: public PlayerAI
 
 void Reset()
     {
-        SteadySpell = selectHighestRank(STEADY_R1);
-        ArcaneSpell = selectHighestRank(ARCANE_R1);
-        MultiSpell = selectHighestRank(MULTI_R1);
-        VolleySpell = selectHighestRank(VOLLEY_R1);
-        RapidSpell = selectHighestRank(RAPIDFIRE);
-        AutoSpell = selectHighestRank(AUTO);
-        if (!(BestialSpell = selectHighestRank(BESTIAL)))
+        SteadySpell = SpellMgr::GetHighestSpellRankForPlayer(STEADY_R1, me);
+        ArcaneSpell = SpellMgr::GetHighestSpellRankForPlayer(ARCANE_R1, me);
+        MultiSpell = SpellMgr::GetHighestSpellRankForPlayer(MULTI_R1, me);
+        VolleySpell = SpellMgr::GetHighestSpellRankForPlayer(VOLLEY_R1, me);
+        RapidSpell = SpellMgr::GetHighestSpellRankForPlayer(RAPIDFIRE, me);
+        AutoSpell = SpellMgr::GetHighestSpellRankForPlayer(AUTO, me);
+        if (!(BestialSpell = SpellMgr::GetHighestSpellRankForPlayer(BESTIAL, me)))
             bestial = false;
 
         Steady_Timer = 1000+urand(0, 4000);
@@ -140,14 +137,14 @@ struct PaladinAI: public PlayerAI
 
 void Reset()
     {
-        AvengingSpell = selectHighestRank(AVENGING);
-        if (!(CrusaderSpell = selectHighestRank(CRUSADER_R1)))
+        AvengingSpell = SpellMgr::GetHighestSpellRankForPlayer(AVENGING, me);
+        if (!(CrusaderSpell = SpellMgr::GetHighestSpellRankForPlayer(CRUSADER_R1, me)))
             crusader=false;
-        ConsecrationSpell = selectHighestRank(CONSECRATION_R1);
-        JudgementSpell = selectHighestRank(JUDGEMENT);
-        if (!(ShockSpell = selectHighestRank(HOLY_SHOCK_R1)))
+        ConsecrationSpell = SpellMgr::GetHighestSpellRankForPlayer(CONSECRATION_R1, me);
+        JudgementSpell = SpellMgr::GetHighestSpellRankForPlayer(JUDGEMENT, me);
+        if (!(ShockSpell = SpellMgr::GetHighestSpellRankForPlayer(HOLY_SHOCK_R1, me)))
             shock=false;
-        FlashSpell = selectHighestRank(FLASH_LIGHT_R1);
+        FlashSpell = SpellMgr::GetHighestSpellRankForPlayer(FLASH_LIGHT_R1, me);
 
         Avenging_Timer = urand (0, 35000);
         Crusader_Timer = 1000+urand(0, 6000);
@@ -196,27 +193,27 @@ struct WarlockAI: public PlayerAI
 
     void Reset()
     {
-        if (!(AOESpell = selectHighestRank(SHADOWFURY_R1)))
-            AOESpell = selectHighestRank(RAINOFFIRE_R1);
+        if (!(AOESpell = SpellMgr::GetHighestSpellRankForPlayer(SHADOWFURY_R1, me)))
+            AOESpell = SpellMgr::GetHighestSpellRankForPlayer(RAINOFFIRE_R1, me);
 
         bool fire = me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) > me->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW);
 
         DOTSpell = NULL;
-        if (!(DOTSpell = selectHighestRank(UNSTABLEAFF_R1)))
+        if (!(DOTSpell = SpellMgr::GetHighestSpellRankForPlayer(UNSTABLEAFF_R1, me)))
         {
             if (fire)
-                DOTSpell = selectHighestRank(IMMOLATE_R1);
+                DOTSpell = SpellMgr::GetHighestSpellRankForPlayer(IMMOLATE_R1, me);
             if (!DOTSpell)
-                DOTSpell = selectHighestRank(CORRUPTION_R1);
+                DOTSpell = SpellMgr::GetHighestSpellRankForPlayer(CORRUPTION_R1, me);
         }
 
-        FearSpell = selectHighestRank(HOWLOFTERROR_R1);
+        FearSpell = SpellMgr::GetHighestSpellRankForPlayer(HOWLOFTERROR_R1, me);
 
         NormalSpell = NULL;
         if (fire)
-            NormalSpell = selectHighestRank(INCINERATE_R1);
+            NormalSpell = SpellMgr::GetHighestSpellRankForPlayer(INCINERATE_R1, me);
         if (!NormalSpell)
-            NormalSpell = selectHighestRank(SHADOWBOLT_R1);
+            NormalSpell = SpellMgr::GetHighestSpellRankForPlayer(SHADOWBOLT_R1, me);
 
         AOE_Timer = 5000;
         Fear_Timer = 3000;
@@ -262,19 +259,19 @@ struct DruidAI: public PlayerAI
 
     void Reset()
     {
-        if (!(MangleBSpell = selectHighestRank(MANGLE_B_R1)))
+        if (!(MangleBSpell = SpellMgr::GetHighestSpellRankForPlayer(MANGLE_B_R1, me)))
                     feral=false;
 
-        DemoSpell = selectHighestRank(DEMOROAR_R1);
-        MangleBSpell = selectHighestRank(MANGLE_B_R1);
-        MangleCSpell = selectHighestRank(MANGLE_C_R1);
-        Heal1Spell = selectHighestRank(REJUVENATION_R1);
-        Heal2Spell = selectHighestRank(LIFEBLOOM);
-        Heal3Spell = selectHighestRank(REGROWTH_R1);
-        Dmg1Spell = selectHighestRank(WRATH_R1);
-        Dmg2Spell = selectHighestRank(STARFIRE_R1);
-        Dmg3Spell = selectHighestRank(MOONFIRE_R1);
-        HurricaneSpell = selectHighestRank(TREE);
+        DemoSpell = SpellMgr::GetHighestSpellRankForPlayer(DEMOROAR_R1, me);
+        MangleBSpell = SpellMgr::GetHighestSpellRankForPlayer(MANGLE_B_R1, me);
+        MangleCSpell = SpellMgr::GetHighestSpellRankForPlayer(MANGLE_C_R1, me);
+        Heal1Spell = SpellMgr::GetHighestSpellRankForPlayer(REJUVENATION_R1, me);
+        Heal2Spell = SpellMgr::GetHighestSpellRankForPlayer(LIFEBLOOM, me);
+        Heal3Spell = SpellMgr::GetHighestSpellRankForPlayer(REGROWTH_R1, me);
+        Dmg1Spell = SpellMgr::GetHighestSpellRankForPlayer(WRATH_R1, me);
+        Dmg2Spell = SpellMgr::GetHighestSpellRankForPlayer(STARFIRE_R1, me);
+        Dmg3Spell = SpellMgr::GetHighestSpellRankForPlayer(MOONFIRE_R1, me);
+        HurricaneSpell = SpellMgr::GetHighestSpellRankForPlayer(TREE, me);
 
         Demo_Timer = 500;
         MangleB_Timer = 1000;
@@ -323,10 +320,10 @@ struct RogueAI: public PlayerAI
 
 void Reset()
     {
-        if (!(FlurrySpell = selectHighestRank(BLADE_FLURRY)))
+        if (!(FlurrySpell = SpellMgr::GetHighestSpellRankForPlayer(BLADE_FLURRY, me)))
             blade=false;
-        GougeSpell = selectHighestRank(GOUGE_R1);
-        SinisterSpell = selectHighestRank(SINISTER_R1);
+        GougeSpell = SpellMgr::GetHighestSpellRankForPlayer(GOUGE_R1, me);
+        SinisterSpell = SpellMgr::GetHighestSpellRankForPlayer(SINISTER_R1, me);
 
         Flurry_Timer = 3000+urand(0, 30000);
         Gouge_Timer = 3000+urand(0, 10000);
@@ -361,18 +358,18 @@ struct ShamanAI: public PlayerAI
 
     void Reset()
     {
-        if (Totem = selectHighestRank(30706))
-            ShieldSpell = selectHighestRank(WATER_SHIELD_R1);
-        else if (ShieldSpell = selectHighestRank(EARTH_SHIELD_R1))
+        if (Totem = SpellMgr::GetHighestSpellRankForPlayer(30706))
+            ShieldSpell = SpellMgr::GetHighestSpellRankForPlayer(WATER_SHIELD_R1, me);
+        else if (ShieldSpell = SpellMgr::GetHighestSpellRankForPlayer(EARTH_SHIELD_R1, me))
             heal = true;
         else
-            ShieldSpell = selectHighestRank(LIGHTNING_SHIELD_R1);
+            ShieldSpell = SpellMgr::GetHighestSpellRankForPlayer(LIGHTNING_SHIELD_R1, me);
 
-        HealSpell = selectHighestRank(CHAIN_HEAL_R1);
-        LightningSpell = selectHighestRank(CHAIN_LIGHTNING_R1);
+        HealSpell = SpellMgr::GetHighestSpellRankForPlayer(CHAIN_HEAL_R1, me);
+        LightningSpell = SpellMgr::GetHighestSpellRankForPlayer(CHAIN_LIGHTNING_R1, me);
 
-        if (!(BLSpell = selectHighestRank(BL)))
-            BLSpell = selectHighestRank(HERO);
+        if (!(BLSpell = SpellMgr::GetHighestSpellRankForPlayer(BL, me)))
+            BLSpell = SpellMgr::GetHighestSpellRankForPlayer(HERO, me);
 
         Shield_Timer = 10000;
         Heal_Timer = 15000;
@@ -416,22 +413,22 @@ struct PriestAI: public PlayerAI
 
     void Reset()
     {
-        if (VampiricSpell = selectHighestRank(VAMPIRIC))
+        if (VampiricSpell = SpellMgr::GetHighestSpellRankForPlayer(VAMPIRIC, me))
             vampiric = true;
 
-        if (!(DOTSpell = selectHighestRank(MINDFLY_R1)))
-            DOTSpell = selectHighestRank(HOLY_FIRE_R1);
+        if (!(DOTSpell = SpellMgr::GetHighestSpellRankForPlayer(MINDFLY_R1, me)))
+            DOTSpell = SpellMgr::GetHighestSpellRankForPlayer(HOLY_FIRE_R1, me);
 
-        DmgSpell = selectHighestRank(SMITE_R1);
+        DmgSpell = SpellMgr::GetHighestSpellRankForPlayer(SMITE_R1, me);
         if (vampiric == true)
-            DmgSpell = selectHighestRank(MINDBLAST_R1);
+            DmgSpell = SpellMgr::GetHighestSpellRankForPlayer(MINDBLAST_R1, me);
 
-        FlashSpell = selectHighestRank(FLASH_R1);
+        FlashSpell = SpellMgr::GetHighestSpellRankForPlayer(FLASH_R1, me);
 
-        if (NovaSpell = selectHighestRank(NOVA_R1))
+        if (NovaSpell = SpellMgr::GetHighestSpellRankForPlayer(NOVA_R1, me))
             holynova = true;
 
-        PWShieldSpell = selectHighestRank(PW_SHIELD_R1);
+        PWShieldSpell = SpellMgr::GetHighestSpellRankForPlayer(PW_SHIELD_R1, me);
 
         Vampiric_Timer = 500;
         DmgSpell_Timer = 1500;
@@ -485,26 +482,26 @@ struct MageAI: public PlayerAI
         bool Special = false;
 
         if (FireMage)
-            MassiveAOESpell = selectHighestRank(FLAMESTRIKE_R1);
+            MassiveAOESpell = SpellMgr::GetHighestSpellRankForPlayer(FLAMESTRIKE_R1, me);
         else
-            MassiveAOESpell = selectHighestRank(BLIZZARD_R1);
+            MassiveAOESpell = SpellMgr::GetHighestSpellRankForPlayer(BLIZZARD_R1, me);
 
-        if (!(ConeSpell = selectHighestRank(DRAGONBREATH_R1)))
-            ConeSpell = selectHighestRank(CONEOFCOLD_R1);
+        if (!(ConeSpell = SpellMgr::GetHighestSpellRankForPlayer(DRAGONBREATH_R1, me)))
+            ConeSpell = SpellMgr::GetHighestSpellRankForPlayer(CONEOFCOLD_R1, me);
 
-        if (!(AOESpell = selectHighestRank(BLASTWAVE_R1)))
-            AOESpell = selectHighestRank(ARCANEEXPLO_R1);
+        if (!(AOESpell = SpellMgr::GetHighestSpellRankForPlayer(BLASTWAVE_R1, me)))
+            AOESpell = SpellMgr::GetHighestSpellRankForPlayer(ARCANEEXPLO_R1, me);
 
         ConeSpell_Timer = 5000;
         MassiveAOE_Timer = 10000;
         AOESpell_Timer = 2000;
 
         if (FireMage)
-            NormalSpell = selectHighestRank(FIREBALL_R1);
+            NormalSpell = SpellMgr::GetHighestSpellRankForPlayer(FIREBALL_R1, me);
         else
-            NormalSpell = selectHighestRank(FROSTBOLT_R1);
+            NormalSpell = SpellMgr::GetHighestSpellRankForPlayer(FROSTBOLT_R1, me);
 
-        SpecialSpell = selectHighestRank(EVOCATION);
+        SpecialSpell = SpellMgr::GetHighestSpellRankForPlayer(EVOCATION, me);
 
         NormalSpell_Timer = 3200;
     }

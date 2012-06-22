@@ -891,6 +891,8 @@ class HELLGROUND_DLL_SPEC SpellMgr
         SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
         SpellSelectTargetTypes SpellTargetType[TOTAL_SPELL_TARGETS];
 
+        static SpellEntry const *GetHighestSpellRankForPlayer(uint32, Player*);
+
         // Modifiers
     public:
         static SpellMgr& Instance();
