@@ -24,7 +24,7 @@
 #include "utf8cpp/utf8.h"
 #include "mersennetwister/MersenneTwister.h"
 #include <ace/TSS_T.h>
-#include <ace/INET_Addr.h>
+#include <ace/OS_NS_arpa_inet.h>
 
 typedef ACE_TSS<MTRand> MTRandTSS;
 
