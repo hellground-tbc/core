@@ -20,11 +20,6 @@
 //lets use Intel scalable_allocator by default and
 //switch to OS specific allocator only when _STANDARD_MALLOC is defined
 
-// We won't use TBB allocation for windows for now ;]
-#ifdef WIN32
-    #define USE_STANDARD_MALLOC
-#endif
-
 #ifndef USE_STANDARD_MALLOC
 
 #undef VERSION
