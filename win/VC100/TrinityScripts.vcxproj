@@ -782,6 +782,11 @@
   <ItemGroup>
     <ResourceCompile Include="..\..\src\bindings\scripts\trinityscripts.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="TrinityCore.vcxproj">
+      <Project>{a3a04e47-43a2-4c08-90b3-029cef558594}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

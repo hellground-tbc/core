@@ -13,6 +13,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityRealm", "VC100\TrinityRealm.vcxproj", "{563E9905-3657-460C-AE63-0AC39D162E23}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrinityScripts", "VC100\TrinityScripts.vcxproj", "{4295C8A9-79B7-4354-8064-F05FB9CA0C96}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A3A04E47-43A2-4C08-90B3-029CEF558594} = {A3A04E47-43A2-4C08-90B3-029CEF558594}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genrevision", "VC100\genrevision.vcxproj", "{803F488E-4C5A-4866-8D5C-1E6C03C007C2}"
 EndProject
