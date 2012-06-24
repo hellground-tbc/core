@@ -117,11 +117,11 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
 {
     mob_ashtongue_channelerAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = (ScriptedInstance *)c->GetInstanceData();
+        instance = (ScriptedInstance *)c->GetInstanceData();
         ShadeGUID = 0;
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
     uint64 ShadeGUID;
     bool m_channel;
 
@@ -155,8 +155,8 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
         }
         else
         {
-            if (pInstance)
-                ShadeGUID = pInstance->GetData64(DATA_SHADEOFAKAMA);
+            if (instance)
+                ShadeGUID = instance->GetData64(DATA_SHADEOFAKAMA);
         }
     }
 };
@@ -165,10 +165,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 {
     mob_ashtongue_defenderAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
+        instance = (ScriptedInstance*)c->GetInstanceData();
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* instance;
 
     uint32 m_debilStrikeTimer;
     uint32 m_shieldBashTimer;
@@ -237,10 +237,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
 
         if (m_checkTimer < diff)
         {
-            if(!pInstance)
+            if(!instance)
                 return;
 
-            if(Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if(Creature *pAkama = me->GetCreature(*me, instance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if(!pAkama->isAlive())
                 {
@@ -269,10 +269,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 {
     mob_ashtongue_spiritbinderAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
+        instance = (ScriptedInstance*)c->GetInstanceData();
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* instance;
 
     uint32 m_chainHealTimer;
     uint32 m_spiritHealTimer;
@@ -297,7 +297,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
         if (pWho->GetTypeId() == TYPEID_PLAYER)
         {
             // drop PointMovement since it has higher priority than chase :P
-            me->GetMotionMaster()->MovementExpired();
+            me->GetMotionMaster()->MoveIdle();
             AttackStart(pWho);
         }
     }
@@ -307,7 +307,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_AKAMA_SHADE)))
+        if (Creature *pAkama = me->GetCreature(*me, instance->GetData64(DATA_AKAMA_SHADE)))
             AttackStart(pAkama);
     }
 
@@ -389,10 +389,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
 
         if (m_checkTimer < diff)
         {
-            if(!pInstance)
+            if(!instance)
                 return;
 
-            if(Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if(Creature *pAkama = me->GetCreature(*me, instance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if(!pAkama->isAlive())
                 {
@@ -420,10 +420,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
 {
     mob_ashtongue_elementalistAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
+        instance = (ScriptedInstance*)c->GetInstanceData();
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* instance;
 
     uint32 m_rainofFireTimer;
     uint32 m_lightningBoltTimer;
@@ -446,7 +446,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
         if (pWho->GetTypeId() == TYPEID_PLAYER)
         {
             // drop PointMovement since it has higher priority than chase :P
-            me->GetMotionMaster()->MovementExpired();
+            me->GetMotionMaster()->MoveIdle();
             AttackStart(pWho);
         }
     }
@@ -456,7 +456,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_AKAMA_SHADE)))
+        if (Creature *pAkama = me->GetCreature(*me, instance->GetData64(DATA_AKAMA_SHADE)))
             AttackStart(pAkama);
     }
 
@@ -487,10 +487,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
 
         if (m_checkTimer < diff)
         {
-            if (!pInstance)
+            if (!instance)
                 return;
 
-            if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if (Creature *pAkama = me->GetCreature(*me, instance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if (!pAkama->isAlive())
                 {
@@ -519,10 +519,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
 {
     mob_ashtongue_rogueAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
+        instance = (ScriptedInstance*)c->GetInstanceData();
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* instance;
 
     uint32 m_debilPoisonTimer;
     uint32 m_eviscerateTimer;
@@ -547,7 +547,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
         if (pWho->GetTypeId() == TYPEID_PLAYER)
         {
             // drop PointMovement since it has higher priority than chase :P
-            me->GetMotionMaster()->MovementExpired();
+            me->GetMotionMaster()->MoveIdle();
             AttackStart(pWho);
         }
     }
@@ -557,7 +557,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
         if (type != POINT_MOTION_TYPE)
             return;
 
-        if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_AKAMA_SHADE)))
+        if (Creature *pAkama = me->GetCreature(*me, instance->GetData64(DATA_AKAMA_SHADE)))
             AttackStart(pAkama);
     }
 
@@ -584,10 +584,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
 
         if (m_checkTimer < diff)
         {
-            if (!pInstance)
+            if (!instance)
                 return;
 
-            if (Creature *pAkama = me->GetCreature(*me, pInstance->GetData64(DATA_SHADEOFAKAMA)))
+            if (Creature *pAkama = me->GetCreature(*me, instance->GetData64(DATA_SHADEOFAKAMA)))
             {
                 if(!pAkama->isAlive())
                 {
@@ -609,10 +609,10 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
 {
     mob_ashtongue_sorcererAI(Creature* c) : ScriptedAI(c)
     {
-        pInstance = (ScriptedInstance *)c->GetInstanceData();
+        instance = (ScriptedInstance *)c->GetInstanceData();
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
 
     uint32 m_checkTimer;
     uint64 m_shadeGUID;
@@ -624,7 +624,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
         m_checkTimer = 1000;
 
         m_channeling = false;
-        m_shadeGUID = pInstance->GetData64(DATA_SHADEOFAKAMA);
+        m_shadeGUID = instance->GetData64(DATA_SHADEOFAKAMA);
     }
 
     void OnAuraRemove(Aura *aura, bool stackRemove)
@@ -694,8 +694,8 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     boss_shade_of_akamaAI(Creature* c) : ScriptedAI(c), m_summons(c)
     {
         me->setActive(true);
-        pInstance = (ScriptedInstance*)c->GetInstanceData();
-        AkamaGUID = pInstance ? pInstance->GetData64(DATA_AKAMA_SHADE) : 0;
+        instance = (ScriptedInstance*)c->GetInstanceData();
+        AkamaGUID = instance ? instance->GetData64(DATA_AKAMA_SHADE) : 0;
 
         me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
         me->ApplySpellImmune(0, IMMUNITY_EFFECT,SPELL_EFFECT_ATTACK_ME, true);
@@ -707,7 +707,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     void EnterEvadeMode()
     {
         // just in case
-        pInstance->SetData(EVENT_SHADEOFAKAMA, NOT_STARTED);
+        instance->SetData(EVENT_SHADEOFAKAMA, NOT_STARTED);
         m_summons.DespawnAll();
 
         if(!_EnterEvadeMode())
@@ -726,7 +726,7 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
              me->GetMotionMaster()->MoveTargetedHome();
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* instance;
 
     std::list<uint64> m_channelers;
     std::list<uint64> m_sorcerers;
@@ -776,8 +776,8 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
 
         m_updateSpeed = false;
 
-        if (pInstance)
-            pInstance->SetData(EVENT_SHADEOFAKAMA, NOT_STARTED);
+        if (instance)
+            instance->SetData(EVENT_SHADEOFAKAMA, NOT_STARTED);
     }
 
     void ProcessSpawning(const uint32 diff)
@@ -1050,8 +1050,8 @@ struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
     {
         if (!event_phase)
         {
-            if (!AkamaGUID && pInstance)
-                AkamaGUID = pInstance->GetData64(DATA_AKAMA_SHADE);
+            if (!AkamaGUID && instance)
+                AkamaGUID = instance->GetData64(DATA_AKAMA_SHADE);
         }
         else
         {
@@ -1160,8 +1160,8 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
 {
     npc_akamaAI(Creature* c) : ScriptedAI(c), m_summons(me)
     {
-        pInstance = (ScriptedInstance *)c->GetInstanceData();
-        ShadeGUID = pInstance ? pInstance->GetData64(DATA_SHADEOFAKAMA) : 0;
+        instance = (ScriptedInstance *)c->GetInstanceData();
+        ShadeGUID = instance ? instance->GetData64(DATA_SHADEOFAKAMA) : 0;
         me->setActive(true);
     }
 
@@ -1170,11 +1170,11 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
         me->InterruptNonMeleeSpells(false);
         m_talk = 0;
         m_talkTimer = 3000;
-        if (pInstance)
-            pInstance->SetData(EVENT_SHADEOFAKAMA, DONE);
+        if (instance)
+            instance->SetData(EVENT_SHADEOFAKAMA, DONE);
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* instance;
 
     uint64 ShadeGUID;
 
@@ -1199,9 +1199,9 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
         m_talk = 0;
         m_talkTimer = 0;
 
-        if (pInstance)
+        if (instance)
         {
-            if (pInstance->GetData(EVENT_SHADEOFAKAMA) == NOT_STARTED)
+            if (instance->GetData(EVENT_SHADEOFAKAMA) == NOT_STARTED)
             {
                 DoCast(me, SPELL_STEALTH);
                 me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
@@ -1219,7 +1219,7 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
 
     void BeginEvent(Player* pl)
     {
-        pInstance->SetData(EVENT_SHADEOFAKAMA, IN_PROGRESS);
+        instance->SetData(EVENT_SHADEOFAKAMA, IN_PROGRESS);
         me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         me->RemoveAurasDueToSpell(SPELL_STEALTH);
         me->GetMotionMaster()->MovePoint(0, AKAMA_X, AKAMA_Y, AKAMA_Z);
@@ -1234,13 +1234,13 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
         {
             case 0:
             {
-                if (!pInstance)
+                if (!instance)
                 {
                     EnterEvadeMode();
                     return;
                 }
 
-                ShadeGUID = pInstance->GetData64(DATA_SHADEOFAKAMA);
+                ShadeGUID = instance->GetData64(DATA_SHADEOFAKAMA);
                 if (!ShadeGUID)
                 {
                     EnterEvadeMode();
@@ -1295,7 +1295,7 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
 
     inline bool UpdateVictim()
     {
-        if (pInstance && pInstance->GetData(EVENT_SHADEOFAKAMA) == IN_PROGRESS)
+        if (instance && instance->GetData(EVENT_SHADEOFAKAMA) == IN_PROGRESS)
         {
             if (!me->isInCombat())
                 return false;
@@ -1311,7 +1311,7 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!pInstance)
+        if (!instance)
             return;
 
         if (m_talkTimer)
@@ -1371,7 +1371,7 @@ struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
                 m_talkTimer -= diff;
         }
 
-        if (pInstance->GetData(EVENT_SHADEOFAKAMA) != IN_PROGRESS)
+        if (instance->GetData(EVENT_SHADEOFAKAMA) != IN_PROGRESS)
             return;
 
         if (!m_yell && (me->GetHealth()*100 / me->GetMaxHealth()) < 15)
@@ -1414,8 +1414,8 @@ void boss_shade_of_akamaAI::JustDied(Unit *)
     if (Creature *akama = me->GetCreature(*me, AkamaGUID))
         ((npc_akamaAI *)akama->AI())->ShadeKilled();
 
-    if (pInstance)
-        pInstance->SetData(EVENT_SHADEOFAKAMA, DONE);   //na wszelki wypadek
+    if (instance)
+        instance->SetData(EVENT_SHADEOFAKAMA, DONE);   //na wszelki wypadek
 }
 
 CreatureAI* GetAI_boss_shade_of_akama(Creature *_Creature)
@@ -1460,9 +1460,9 @@ CreatureAI* GetAI_npc_akama_shade(Creature *_Creature)
 
 bool GossipSelect_npc_akama(Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
-    if (ScriptedInstance *pInstance = (ScriptedInstance *)_Creature->GetInstanceData())
+    if (ScriptedInstance *instance = (ScriptedInstance *)_Creature->GetInstanceData())
     {
-        if (pInstance->GetData(EVENT_SHADEOFAKAMA) != NOT_STARTED)
+        if (instance->GetData(EVENT_SHADEOFAKAMA) != NOT_STARTED)
         {
             player->CLOSE_GOSSIP_MENU();
             return true;
@@ -1479,9 +1479,9 @@ bool GossipSelect_npc_akama(Player *player, Creature *_Creature, uint32 sender, 
 
 bool GossipHello_npc_akama(Player *player, Creature *_Creature)
 {
-    if (ScriptedInstance *pInstance = (ScriptedInstance *)_Creature->GetInstanceData())
+    if (ScriptedInstance *instance = (ScriptedInstance *)_Creature->GetInstanceData())
     {
-        if (pInstance->GetData(EVENT_SHADEOFAKAMA) == NOT_STARTED)
+        if (instance->GetData(EVENT_SHADEOFAKAMA) == NOT_STARTED)
         {
             if (player->isAlive())
             {
