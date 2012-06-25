@@ -280,7 +280,7 @@ void InstanceSaveManager::CleanupInstances()
     CharacterDatabase.CommitTransaction();
     bar.step();
     sLog.outString();
-    sLog.outString(">> Initialized %u instances", (uint32)InstanceSet.size());
+    sLog.outString(">> Instances cleaned up.");
 }
 
 void InstanceSaveManager::PackInstances()

@@ -534,7 +534,8 @@
     <ClInclude Include="..\..\src\shared\DelayExecutor.h" />
     <CustomBuild Include="..\..\src\shared\revision.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Getting Version... :)</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\bin\$(Platform)_$(Configuration)\genrevision.exe</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd ..\..\src\shared
+"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">revision.h;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Getting Version... :)</Message>
@@ -546,9 +547,12 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Getting Version... :)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">Getting Version... :)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">Getting Version... :)</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\bin\$(Platform)_$(Configuration)\genrevision.exe</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">..\..\bin\$(Platform)_$(Configuration)\genrevision.exe</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">..\..\bin\$(Platform)_$(Configuration)\genrevision.exe</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd ..\..\src\shared
+"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">cd ..\..\src\shared
+"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">cd ..\..\src\shared
+"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
