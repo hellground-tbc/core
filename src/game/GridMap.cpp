@@ -1112,7 +1112,7 @@ void TerrainManager::LoadTerrainSpecifics()
 {
     i_TerrainSpecifics.clear();
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT `entry`, `visibility`, `pathfinding`, `lineofsight` FROM `map_specifics`");
+    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT `entry`, `visibility`, `pathfinding`, `lineofsight` FROM `map_template`");
     if (!result)
     {
         BarGoLink bar(1);
@@ -1120,7 +1120,7 @@ void TerrainManager::LoadTerrainSpecifics()
         bar.step();
 
         sLog.outString("");
-        sLog.outString(">> Loaded 0 map specific data. DB table `map_specifics` is empty.");
+        sLog.outString(">> Loaded 0 map template data. DB table `map_template` is empty.");
         return;
     }
 
@@ -1143,7 +1143,7 @@ void TerrainManager::LoadTerrainSpecifics()
     while (result->NextRow());
 
     sLog.outString();
-    sLog.outString(">> Loaded %u map specific data.", i_TerrainSpecifics.size());
+    sLog.outString(">> Loaded %u map template data.", i_TerrainSpecifics.size());
 }
 
 TerrainInfo * TerrainManager::LoadTerrain(const uint32 mapId)

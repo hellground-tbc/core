@@ -837,7 +837,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_MAIL_DELIVERY_DELAY]    = sConfig.GetIntDefault("MailDeliveryDelay", HOUR);
     m_configs[CONFIG_EXTERNAL_MAIL]          = sConfig.GetIntDefault("ExternalMail", 0);
-    m_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] = sConfig.GetIntDefault("ExternalMailInterval", 1); 
+    m_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] = sConfig.GetIntDefault("ExternalMailInterval", 1);
     m_configs[CONFIG_GM_MAIL]                = sConfig.GetBoolDefault("MailGmInstantSend", 1);
 
     m_configs[CONFIG_UPTIME_UPDATE] = sConfig.GetIntDefault("UpdateUptimeInterval", 10);
@@ -1493,7 +1493,7 @@ void World::SetInitialWorldSettings()
     sprintf(isoDate, "%04d-%02d-%02d %02d:%02d:%02d",
         local.tm_year+1900, local.tm_mon+1, local.tm_mday, local.tm_hour, local.tm_min, local.tm_sec);
 
-    WorldDatabase.PExecute("INSERT INTO uptime (startstring, starttime, uptime) VALUES('%s', " UI64FMTD ", 0)",
+    CharacterDatabase.PExecute("INSERT INTO uptime (startstring, starttime, uptime) VALUES('%s', " UI64FMTD ", 0)",
         isoDate, uint64(m_startTime));
 
     m_timers[WUPDATE_OBJECTS].SetInterval(0);
@@ -1508,7 +1508,7 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_GUILD_ANNOUNCES].SetInterval(getConfig(CONFIG_GUILD_ANN_INTERVAL));
     m_timers[WUPDATE_DELETECHARS].SetInterval(DAY*IN_MILISECONDS); // check for chars to delete every day
     m_timers[WUPDATE_OLDMAILS].SetInterval(getConfig(CONFIG_RETURNOLDMAILS_INTERVAL)*1000);
-    m_timers[WUPDATE_EXTERNALMAILS].SetInterval(m_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] * MINUTE * 1000); 
+    m_timers[WUPDATE_EXTERNALMAILS].SetInterval(m_configs[CONFIG_EXTERNAL_MAIL_INTERVAL] * MINUTE * 1000);
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -1847,7 +1847,7 @@ void World::Update(uint32 diff)
         uint32 maxClientsNum = sWorld.GetMaxActiveSessionCount();
 
         m_timers[WUPDATE_UPTIME].Reset();
-        WorldDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " UI64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
+        CharacterDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " UI64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
     }
 
     RecordTimeDiff(NULL);

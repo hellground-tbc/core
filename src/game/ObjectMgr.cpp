@@ -844,7 +844,7 @@ bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
 void ObjectMgr::LoadUnqueuedAccountList()
 {
     m_UnqueuedAccounts.clear();
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT accid FROM unqueue_account ORDER BY accid ASC");
+    QueryResultAutoPtr result = LoginDatabase.Query("SELECT accid FROM unqueue_account ORDER BY accid ASC");
 
     if (!result)
     {
@@ -1264,7 +1264,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 {
     uint32 count = 0;
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT guid,respawntime,instance FROM creature_respawn");
+    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT guid,respawntime,instance FROM creature_respawn");
 
     if (!result)
     {
@@ -1301,7 +1301,7 @@ void ObjectMgr::LoadGuildAnnCooldowns()
 {
     uint32 count = 0;
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT guild_id,cooldown_end FROM guildann_cooldown");
+    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT guild_id, cooldown_end FROM guild_announce_cooldown");
 
     if (!result)
     {
@@ -1336,11 +1336,11 @@ void ObjectMgr::LoadGuildAnnCooldowns()
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
     // remove outdated data
-    WorldDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP(NOW())");
+    CharacterDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP(NOW())");
 
     uint32 count = 0;
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT guid,respawntime,instance FROM gameobject_respawn");
+    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT guid,respawntime,instance FROM gameobject_respawn");
 
     if (!result)
     {
@@ -5491,18 +5491,18 @@ void ObjectMgr::LoadWeatherZoneChances()
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
     mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
-    WorldDatabase.BeginTransaction();
-    WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
+    CharacterDatabase.BeginTransaction();
+    CharacterDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if (t)
-        WorldDatabase.PExecute("INSERT INTO creature_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
-    WorldDatabase.CommitTransaction();
+        CharacterDatabase.PExecute("INSERT INTO creature_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
+    CharacterDatabase.CommitTransaction();
 }
 
 void ObjectMgr::SaveGuildAnnCooldown(uint32 guild_id)
 {
     time_t tmpTime = time_t(time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
     mGuildCooldownTimes[guild_id] = tmpTime;
-    WorldDatabase.PExecute("REPLACE INTO guildann_cooldown VALUES ('%u', '"UI64FMTD"')", guild_id, uint64(tmpTime));
+    CharacterDatabase.PExecute("REPLACE INTO guild_announce_cooldown VALUES ('%u', '"UI64FMTD"')", guild_id, uint64(tmpTime));
 }
 
 void ObjectMgr::DeleteCreatureData(uint32 guid)
@@ -5518,11 +5518,11 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
 void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
-    WorldDatabase.BeginTransaction();
-    WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
+    CharacterDatabase.BeginTransaction();
+    CharacterDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if (t)
-        WorldDatabase.PExecute("INSERT INTO gameobject_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
-    WorldDatabase.CommitTransaction();
+        CharacterDatabase.PExecute("INSERT INTO gameobject_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
+    CharacterDatabase.CommitTransaction();
 }
 
 void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
@@ -5547,10 +5547,10 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
             mCreatureRespawnTimes.erase(itr);
     }
 
-    WorldDatabase.BeginTransaction();
-    WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
-    WorldDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
-    WorldDatabase.CommitTransaction();
+    CharacterDatabase.BeginTransaction();
+    CharacterDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
+    CharacterDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
+    CharacterDatabase.CommitTransaction();
 }
 
 void ObjectMgr::DeleteGOData(uint32 guid)
@@ -6001,7 +6001,7 @@ void ObjectMgr::LoadSpellDisabledEntrys()
     m_DisabledPlayerSpells.clear();                                // need for reload case
     m_DisabledCreatureSpells.clear();
     m_DisabledPetSpells.clear();
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, disable_mask FROM spell_disabled");
+    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT entry, disable_mask FROM spell_disabled");
 
     uint32 total_count = 0;
 
