@@ -171,7 +171,7 @@ unset(READLINE_INCLUDE)
 unset(READLINE_LIBRARY)
 unset(READLINE_LIBRARIES_DIR)
 if(UNIX)
-  find_package(Readline)
+  find_package(Readline REQUIRED)
   if(NOT READLINE_FOUND)
     message(FATAL_ERROR
       "This project requires Readline installed. Please install Readline package"
