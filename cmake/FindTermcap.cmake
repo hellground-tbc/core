@@ -1,33 +1,35 @@
-# find Terrmcap (terminal input library) includes and library
+# Locate termcap (terminal input library) includes and library
+# Once done this will define
 #
-# TERMCAP_INCLUDE_DIR - where the directory containing the TERMCAP headers can be found
-# TERMCAP_LIBRARY     - full path to the TERMCAP library
-# TERMCAP_FOUND       - TRUE if TERMCAP was found
+#  TERMCAP_INCLUDE_DIR - Where to find termcap headers.
+#  TERMCAP_LIBRARY     - List of libraries when using termcap.
+#  TERMCAP_FOUND       - TRUE if termcap found.
 
-MACRO(FIND_TERMCAP)
+#=============================================================================
+# Copyright (C) 2012 HellGround <http://www.hellground.pl/>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#=============================================================================
 
-FIND_PATH(TERMCAP_INCLUDE_DIR termcap.h
-    /usr/include
-    /usr/local/include
 
-    /opt/local/include
-)
+FIND_PATH(TERMCAP_INCLUDE_DIR termcap.h)
+FIND_LIBRARY(TERMCAP_LIBRARY NAMES termcap)
 
-FIND_LIBRARY(TERMCAP_LIBRARY NAMES termcap PATH
-    /usr/lib
-    /usr/local/lib
-    /opt/local/lib
-    /usr/lib64
-)
-
-IF (TERMCAP_INCLUDE_DIR AND TERMCAP_LIBRARY)
-    SET(TERMCAP_FOUND TRUE)
-    MESSAGE(STATUS "Found GNU termcap: ${TERMCAP_LIBRARY}")
-    MESSAGE(STATUS "Include dir is: ${TERMCAP_INCLUDE_DIR}")
-    INCLUDE_DIRECTORIES(${TERMCAP_INCLUDE_DIR})
-ELSE (TERMCAP_INCLUDE_DIR AND TERMCAP_LIBRARY)
-    SET(TERMCAP_FOUND FALSE)
-    MESSAGE(FATAL_ERROR "Could not find GNU termcap")
-ENDIF (TERMCAP_INCLUDE_DIR AND TERMCAP_LIBRARY)
-
-ENDMACRO(FIND_TERMCAP)
+# handle the QUIETLY and REQUIRED arguments and set TERMCAP_FOUND to TRUE if
+# all listed variables are TRUE
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Termcap DEFAULT_MSG
+                                          TERMCAP_LIBRARY
+                                          TERMCAP_INCLUDE_DIR)
