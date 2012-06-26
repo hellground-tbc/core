@@ -38,4 +38,7 @@ endif()
 # Handle the QUIETLY and REQUIRED arguments and set READLINE_FOUND to TRUE if
 # all listed variables are TRUE
 include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
-find_package_handle_standard_args(Readline DEFAULT_MSG READLINE_LIBRARIES READLINE_INCLUDE_DIRS)
+find_package_handle_standard_args(Readline
+                                  "This project requires Readline installed. Please install Readline package"
+                                  READLINE_LIBRARIES
+                                  READLINE_INCLUDE_DIRS)

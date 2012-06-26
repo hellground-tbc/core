@@ -164,19 +164,8 @@ else()
   include(cmake/ImportTBB.cmake)
 endif()
 
-unset(READLINE_INCLUDE CACHE)
-unset(READLINE_LIBRARY CACHE)
-unset(READLINE_LIBRARIES_DIR CACHE)
-unset(READLINE_INCLUDE)
-unset(READLINE_LIBRARY)
-unset(READLINE_LIBRARIES_DIR)
 if(UNIX)
   find_package(Readline REQUIRED)
-  if(NOT READLINE_FOUND)
-    message(FATAL_ERROR
-      "This project requires Readline installed. Please install Readline package"
-      )
-  endif()
 endif()
 
 # Win32 delifered packages

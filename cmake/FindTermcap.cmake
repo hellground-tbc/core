@@ -31,4 +31,7 @@ find_library(TERMCAP_LIBRARIES NAMES termcap)
 # handle the QUIETLY and REQUIRED arguments and set TERMCAP_FOUND to TRUE if all
 # listed variables are TRUE
 include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
-find_package_handle_standard_args(Termcap DEFAULT_MSG TERMCAP_LIBRARIES TERMCAP_INCLUDE_DIRS)
+find_package_handle_standard_args(Termcap
+                                  DEFAULT_MSG
+                                  TERMCAP_LIBRARIES
+                                  TERMCAP_INCLUDE_DIRS)
