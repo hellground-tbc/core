@@ -1,9 +1,10 @@
+# - Find Readline
 # Locate Readline (line input library with editing features) includes and library
 # Once done this will define
 #
-#  READLINE_INCLUDE_DIR - Where to find Readline.
-#  READLINE_LIBRARY     - List of libraries when using Readline.
-#  READLINE_FOUND       - TRUE if Readline was found.
+#  READLINE_INCLUDE_DIRS - Where to find Readline.
+#  READLINE_LIBRARIES    - List of libraries when using Readline.
+#  READLINE_FOUND        - TRUE if Readline was found.
 
 #=============================================================================
 # Copyright (C) 2012 HellGround <http://www.hellground.pl/>
@@ -24,19 +25,17 @@
 #=============================================================================
 
 
-FIND_PATH(READLINE_INCLUDE_DIR readline/readline.h)
-FIND_LIBRARY(READLINE_LIBRARY NAMES readline)
+find_path(READLINE_INCLUDE_DIRS readline/readline.h)
+find_library(READLINE_LIBRARIES NAMES readline)
 
-IF (READLINE_INCLUDE_DIR AND READLINE_LIBRARY)
-    FIND_PACKAGE(Termcap) # Termcap is an optional dependency
-    IF (TERMCAP_FOUND)
-        LIST (APPEND READLINE_LIBRARY "${TERMCAP_LIBRARY}")
-    ENDIF (TERMCAP_FOUND)
-ENDIF (READLINE_INCLUDE_DIR AND READLINE_LIBRARY)
+if(READLINE_INCLUDE_DIRS AND READLINE_LIBRARIES)
+    find_package(Termcap QUIET) # Termcap is an optional dependency
+    if(TERMCAP_FOUND)
+        list(APPEND READLINE_LIBRARIES "${TERMCAP_LIBRARIES}")
+    endif()
+endif()
 
-# handle the QUIETLY and REQUIRED arguments and set READLINE_FOUND to TRUE if
+# Handle the QUIETLY and REQUIRED arguments and set READLINE_FOUND to TRUE if
 # all listed variables are TRUE
-INCLUDE (${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS (Readline DEFAULT_MSG
-                                            READLINE_LIBRARY
-                                            READLINE_INCLUDE_DIR)
+include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
+find_package_handle_standard_args(Readline DEFAULT_MSG READLINE_LIBRARIES READLINE_INCLUDE_DIRS)

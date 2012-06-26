@@ -37,7 +37,7 @@ target_link_libraries(${EXECUTABLE_NAME}
   framework
   g3dlib
   ${ACE_LIBRARIES}
-  ${READLINE_LIBRARY}
+  ${READLINE_LIBRARIES}
 )
 
 if(WIN32)
