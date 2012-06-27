@@ -41,7 +41,7 @@ Guild::Guild()
     BorderStyle = 0;
     BorderColor = 0;
     BackgroundColor = 0;
-    AccountsNumber = 0;
+    AccountsCount = 0;
 
     CreatedYear = 0;
     CreatedMonth = 0;
@@ -154,7 +154,7 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
         pl->SetGuildIdInvited(0);
     }
 
-    UpdateAccountsNumber();
+    UpdateAccountsCount();
 
     return true;
 }
@@ -340,14 +340,14 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
     if (members.empty())
         return false;
 
-    UpdateAccountsNumber();
+    UpdateAccountsCount();
 
     return true;
 }
 
 bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 {
-    int32 accountId;
+    uint32 accountId;
     std::string plName;
     uint32 plLevel;
     uint32 plClass;
@@ -356,15 +356,16 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     Player* pl = sObjectMgr.GetPlayer(guid);
     if (pl)
     {
-        accountId = pl->GetSession()->GetAccountId();
         plName  = pl->GetName();
         plLevel = pl->getLevel();
         plClass = pl->getClass();
         plZone  = pl->GetCachedZone();
+        accountId = pl->GetSession()->GetAccountId();
     }
     else
     {
-        QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT name,level,zone,class FROM characters WHERE guid = '%u'", GUID_LOPART(guid));                                 // player doesn't exist
+        QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT name, level, zone, class, account "
+                                                             "FROM characters WHERE guid = '%u'", GUID_LOPART(guid));                                 // player doesn't exist
         if (!result)
             return false;
 
@@ -374,8 +375,9 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
         plLevel = fields[1].GetUInt32();
         plZone = fields[2].GetUInt32();
         plClass = fields[3].GetUInt32();
+        accountId = fields[4].GetUInt32();
 
-        if (plLevel<1||plLevel>STRONG_MAX_LEVEL)             // can be at broken `data` field
+        if (plLevel < 1 || plLevel > STRONG_MAX_LEVEL)             // can be at broken `data` field
         {
             sLog.outError("Player (GUID: %u) has a broken data in field `characters`.`data`.",GUID_LOPART(guid));
             return false;
@@ -390,19 +392,20 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
             //shouldn't be called often
         }
 
-        if (plClass<CLASS_WARRIOR||plClass>=MAX_CLASSES)     // can be at broken `class` field
+        if (plClass < CLASS_WARRIOR || plClass >= MAX_CLASSES)     // can be at broken `class` field
         {
             sLog.outError("Player (GUID: %u) has a broken data in field `characters`.`class`.",GUID_LOPART(guid));
             return false;
         }
     }
 
+    memslot->accountId = accountId;
     memslot->name = plName;
     memslot->level = plLevel;
     memslot->Class = plClass;
     memslot->zoneId = plZone;
 
-    return(true);
+    return true;
 }
 
 void Guild::LoadPlayerStatsByGuid(uint64 guid)
@@ -491,6 +494,7 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
     }
 
     CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'", GUID_LOPART(guid));
+    UpdateAccountsCount();
 }
 
 void Guild::ChangeRank(uint64 guid, uint32 newRank)
@@ -805,13 +809,13 @@ void Guild::UpdateLogoutTime(uint64 guid)
  * Updates the number of accounts that are in the guild
  * A player may have many characters in the guild, but with the same account
  */
-void Guild::UpdateAccountsNumber()
+void Guild::UpdateAccountsCount()
 {
     // We use a set to be sure each element will be unique
     std::set<uint32> accountsIdSet;
     for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
         accountsIdSet.insert(itr->second.accountId);
-    AccountsNumber = accountsIdSet.size();
+    AccountsCount = accountsIdSet.size();
 }
 
 // *************************************************

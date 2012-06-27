@@ -254,7 +254,7 @@ void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
     data << guild->GetCreatedMonth();
     data << guild->GetCreatedYear();
     data << guild->GetMemberSize();
-    data << guild->GetAccountsNumber();
+    data << guild->GetAccountsCount();
 
     SendPacket(&data);
 }
