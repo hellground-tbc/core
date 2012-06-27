@@ -1045,6 +1045,9 @@ void BattleGround::AddPlayer(Player *plr)
     sBattleGroundMgr.BuildPlayerJoinedBattleGroundPacket(&data, plr);
     SendPacketToTeam(team, &data, plr, false);
 
+    plr->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+    plr->CombatStop();
+
     // add arena specific auras
     if (isArena())
     {
