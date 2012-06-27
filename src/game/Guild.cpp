@@ -41,6 +41,7 @@ Guild::Guild()
     BorderStyle = 0;
     BorderColor = 0;
     BackgroundColor = 0;
+    AccountsNumber = 0;
 
     CreatedYear = 0;
     CreatedMonth = 0;
@@ -152,6 +153,9 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
         pl->SetRank(newmember.RankId);
         pl->SetGuildIdInvited(0);
     }
+
+    UpdateAccountsNumber();
+
     return true;
 }
 
@@ -336,11 +340,14 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
     if (members.empty())
         return false;
 
+    UpdateAccountsNumber();
+
     return true;
 }
 
 bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 {
+    int32 accountId;
     std::string plName;
     uint32 plLevel;
     uint32 plClass;
@@ -349,6 +356,7 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     Player* pl = sObjectMgr.GetPlayer(guid);
     if (pl)
     {
+        accountId = pl->GetSession()->GetAccountId();
         plName  = pl->GetName();
         plLevel = pl->getLevel();
         plClass = pl->getClass();
@@ -791,6 +799,19 @@ void Guild::UpdateLogoutTime(uint64 guid)
         UnloadGuildBank();
         UnloadGuildEventlog();
     }
+}
+
+/**
+ * Updates the number of accounts that are in the guild
+ * A player may have many characters in the guild, but with the same account
+ */
+void Guild::UpdateAccountsNumber()
+{
+    // We use a set to be sure each element will be unique
+    std::set<uint32> accountsIdSet;
+    for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
+        accountsIdSet.insert(itr->second.accountId);
+    AccountsNumber = accountsIdSet.size();
 }
 
 // *************************************************
