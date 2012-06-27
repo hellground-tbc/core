@@ -39,6 +39,12 @@ endif()
 # all listed variables are TRUE
 include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
 find_package_handle_standard_args(Readline
-                                  "This project requires Readline installed. Please install Readline package"
-                                  READLINE_LIBRARIES
-                                  READLINE_INCLUDE_DIRS)
+    "This project requires Readline installed. Please install Readline package"
+    READLINE_LIBRARIES
+    READLINE_INCLUDE_DIRS
+)
+
+mark_as_advanced(
+    READLINE_INCLUDE_DIRS
+    READLINE_LIBRARIES
+)
