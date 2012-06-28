@@ -399,6 +399,14 @@ int main(int argc, char **argv)
                 res = extractDataFromHG(path+".hg/branch.cache",path,use_url,data);
             if (!res)
                 res = extractDataFromHG(path+"_hg/branch.cache",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+".hg/cache/branch",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+"_hg/cache/branch",path,use_url,data);
             // GIT data
             if (!res)
                 res = extractDataFromGit(path+".git/FETCH_HEAD",path,use_url,data);
@@ -425,6 +433,14 @@ int main(int argc, char **argv)
                 res = extractDataFromHG(path+".hg/branch.cache",path,use_url,data);
             if (!res)
                 res = extractDataFromHG(path+"_hg/branch.cache",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+".hg/cache/branch",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+"_hg/cache/branch",path,use_url,data);
            /// SVN data
             if (!res)
                 res = extractDataFromSvn(path+".svn/entries",use_url,data);
@@ -447,6 +463,14 @@ int main(int argc, char **argv)
                 res = extractDataFromHG(path+".hg/branch.cache",path,use_url,data);
             if (!res)
                 res = extractDataFromHG(path+"_hg/branch.cache",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+".hg/cache/branch",path,use_url,data);
+            if (!res)
+                res = extractDataFromHG(path+"_hg/cache/branch",path,use_url,data);
             /// SVN data
             if (!res)
                 res = extractDataFromSvn(path+".svn/entries",use_url,data);
