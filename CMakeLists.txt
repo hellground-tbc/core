@@ -240,7 +240,7 @@ endif(LARGE_CELL)
 
 message("")
 
-set(ADDITIONAL_COMPILE_FLAGS "-O3 -ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -pipe -DFD_SETSIZE=4096 -frename-registers")
+set(ADDITIONAL_COMPILE_FLAGS "-O3 -ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
 set(ADDITIONAL_MATH_FLAGS " -ffast-math -fno-math-errno -funsafe-math-optimizations ")
 
 # Handle debugmode compiles (this will require further work for proper WIN32-setups)
