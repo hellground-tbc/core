@@ -25,18 +25,17 @@
 #=============================================================================
 
 
-find_path(READLINE_INCLUDE_DIRS readline/readline.h)
-find_library(READLINE_LIBRARIES NAMES readline)
+find_path(READLINE_INCLUDE_DIR readline/readline.h)
+find_library(READLINE_LIBRARY NAMES readline)
 
-if(READLINE_INCLUDE_DIRS AND READLINE_LIBRARIES)
+if(READLINE_INCLUDE_DIR AND READLINE_LIBRARY)
     # Readline can be confugured with '--with-curses' option in that case it is
     # required to link also with termcap or curses library.
 
     # TODO: Find a better way of determining whether the addional lib (termcap
     #       or curses) is required
-    find_library(READLINE_TERMCAP_LIBRARIES NAMES termcap)
-    mark_as_advanced(READLINE_TERMCAP_LIBRARIES)
-    list(APPEND READLINE_LIBRARIES "${READLINE_TERMCAP_LIBRARIES}")
+    find_library(READLINE_TERMCAP_LIBRARY NAMES termcap)
+    mark_as_advanced(READLINE_TERMCAP_LIBRARY)
 endif()
 
 # Handle the QUIETLY and REQUIRED arguments and set READLINE_FOUND to TRUE if
@@ -44,11 +43,14 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
 find_package_handle_standard_args(Readline
     "This project requires Readline installed. Please install Readline package"
-    READLINE_LIBRARIES
-    READLINE_INCLUDE_DIRS
+    READLINE_LIBRARY
+    READLINE_INCLUDE_DIR
 )
 
 mark_as_advanced(
-    READLINE_INCLUDE_DIRS
-    READLINE_LIBRARIES
+    READLINE_INCLUDE_DIR
+    READLINE_LIBRARY
 )
+
+set(READLINE_INCLUDE_DIRS ${READLINE_INCLUDE_DIR})
+set(READLINE_LIBRARIES ${READLINE_LIBRARY} ${READLINE_TERMCAP_LIBRARY})
