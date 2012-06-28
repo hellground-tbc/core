@@ -29,10 +29,14 @@ find_path(READLINE_INCLUDE_DIRS readline/readline.h)
 find_library(READLINE_LIBRARIES NAMES readline)
 
 if(READLINE_INCLUDE_DIRS AND READLINE_LIBRARIES)
-    find_package(Termcap QUIET) # Termcap is an optional dependency
-    if(TERMCAP_FOUND)
-        list(APPEND READLINE_LIBRARIES "${TERMCAP_LIBRARIES}")
-    endif()
+    # Readline can be confugured with '--with-curses' option in that case it is
+    # required to link also with termcap or curses library.
+
+    # TODO: Find a better way of determining whether the addional lib (termcap
+    #       or curses) is required
+    find_library(READLINE_TERMCAP_LIBRARIES NAMES termcap)
+    mark_as_advanced(READLINE_TERMCAP_LIBRARIES)
+    list(APPEND READLINE_LIBRARIES "${READLINE_TERMCAP_LIBRARIES}")
 endif()
 
 # Handle the QUIETLY and REQUIRED arguments and set READLINE_FOUND to TRUE if

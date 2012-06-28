@@ -164,10 +164,6 @@ else()
   include(cmake/ImportTBB.cmake)
 endif()
 
-if(UNIX)
-  find_package(Readline REQUIRED)
-endif()
-
 # Win32 delifered packages
 if(WIN32)
   set(MYSQL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/include/mysql)
@@ -181,6 +177,7 @@ endif()
 
 # *nix-specific packages
 if(UNIX)
+  find_package(Readline REQUIRED)
   find_package(MySQL REQUIRED)
   find_package(OpenSSL REQUIRED)
   find_package(ZLIB REQUIRED)
