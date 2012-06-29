@@ -125,7 +125,7 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
 {
     uint32 maxi;
     Field *fields;
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT MAX(%s) FROM %s", store.entry_field, store.table);
+    QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT MAX(%s) FROM %s", store.entry_field, store.table);
     if(!result)
     {
         sLog.outError("Error loading %s table (not exist?)\n", store.table);
@@ -134,7 +134,7 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
 
     maxi = (*result)[0].GetUInt32()+1;
 
-    result = WorldDatabase.PQuery("SELECT COUNT(*) FROM %s", store.table);
+    result = GameDataDatabase.PQuery("SELECT COUNT(*) FROM %s", store.table);
     if(result)
     {
         fields = result->Fetch();
@@ -143,7 +143,7 @@ void SQLStorageLoaderBase<T>::Load(SQLStorage &store)
     else
         store.RecordCount = 0;
 
-    result = WorldDatabase.PQuery("SELECT * FROM %s", store.table);
+    result = GameDataDatabase.PQuery("SELECT * FROM %s", store.table);
 
     if(!result)
     {

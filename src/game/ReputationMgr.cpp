@@ -478,7 +478,7 @@ void ReputationMgr::SaveToDB()
     {
         if (itr->second.needSave)
         {
-            CharacterDatabase.PExecute("REPLACE INTO character_reputation (guid, faction, standing, flags) VALUES ('%u', '%u', '%i', '%u')", m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
+            RealmDataDatabase.PExecute("REPLACE INTO character_reputation (guid, faction, standing, flags) VALUES ('%u', '%u', '%i', '%u')", m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
 
 //            stmtDel.PExecute(m_player->GetGUIDLow(), itr->second.ID);
 //            stmtIns.PExecute(m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);

@@ -2460,7 +2460,7 @@ void InstanceMap::CreateInstanceData(bool load)
     if (load)
     {
         // TODO: make a global storage for this
-        QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT data FROM instance WHERE map = '%u' AND id = '%u'", GetId(), i_InstanceId);
+        QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT data FROM instance WHERE map = '%u' AND id = '%u'", GetId(), i_InstanceId);
         if (result)
         {
             Field* fields = result->Fetch();
@@ -2591,7 +2591,7 @@ void InstanceMap::SetResetSchedule(bool on)
 void InstanceMap::SummonUnlootedCreatures()
 {
     m_unlootedCreaturesSummoned = true;
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT DISTINCT creatureId, position_x, position_y, position_z FROM group_saved_loot WHERE instanceId='%u' AND summoned = TRUE", GetInstanceId());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT DISTINCT creatureId, position_x, position_y, position_z FROM group_saved_loot WHERE instanceId='%u' AND summoned = TRUE", GetInstanceId());
     if (result)
     {
         do

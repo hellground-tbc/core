@@ -114,7 +114,7 @@ void TicketMgr::DeleteGMTicketPermanently(uint64 ticketGuid)
     }
 
     // delete database record
-    CharacterDatabase.PExecute("DELETE FROM `gm_tickets` WHERE guid= '%u'", ticketGuid);
+    RealmDataDatabase.PExecute("DELETE FROM `gm_tickets` WHERE guid= '%u'", ticketGuid);
 }
 
 
@@ -122,7 +122,7 @@ void TicketMgr::LoadGMTickets()
 {
     // Delete all out of object holder
     GM_TicketList.clear();
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT `guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment` FROM `gm_tickets`");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT `guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment` FROM `gm_tickets`");
     GM_Ticket *ticket;
 
     if (!result)
@@ -188,7 +188,7 @@ void TicketMgr::RemoveGMTicketByPlayer(uint64 playerGuid, uint64 GMguid)
 void TicketMgr::SaveGMTicket(GM_Ticket* ticket)
 {
     std::string msg = ticket->message;
-    CharacterDatabase.escape_string(msg);
+    RealmDataDatabase.escape_string(msg);
     std::stringstream ss;
     ss << "REPLACE INTO `gm_tickets` (`guid`, `playerGuid`, `name`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment`) VALUES('";
     ss << ticket->guid << "', '";
@@ -204,9 +204,9 @@ void TicketMgr::SaveGMTicket(GM_Ticket* ticket)
     ss << ticket->closed << "', '";
     ss << ticket->assignedToGM << "', '";
     ss << ticket->comment << "');";
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.Execute(ss.str().c_str());
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.Execute(ss.str().c_str());
+    RealmDataDatabase.CommitTransaction();
 
 }
 
@@ -217,7 +217,7 @@ void TicketMgr::UpdateGMTicket(GM_Ticket *ticket)
 
 void TicketMgr::InitTicketID()
 {
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT MAX(guid) FROM gm_tickets");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT MAX(guid) FROM gm_tickets");
     if (result)
         m_ticketid = result->Fetch()[0].GetUInt64();
 }

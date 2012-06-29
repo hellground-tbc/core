@@ -721,7 +721,7 @@ ChatCommand * ChatHandler::getCommandTable()
     {
         load_command_table = false;
 
-        QueryResultAutoPtr result = WorldDatabase.Query("SELECT name, security, help FROM command");
+        QueryResultAutoPtr result = GameDataDatabase.Query("SELECT name, security, help FROM command");
         if (result)
         {
             do

@@ -121,7 +121,7 @@ class CharacterHandler
 void WorldSession::HandleCharEnum(QueryResultAutoPtr result)
 {
     // keys can be non cleared if player open realm list and close it by 'cancel'
-    LoginDatabase.PExecute("UPDATE account SET v = '0', s = '0' WHERE id = '%u'", GetAccountId());
+    AccountsDatabase.PExecute("UPDATE account SET v = '0', s = '0' WHERE id = '%u'", GetAccountId());
 
     WorldPacket data(SMSG_CHAR_ENUM, 100);                  // we guess size
 
@@ -150,7 +150,7 @@ void WorldSession::HandleCharEnum(QueryResultAutoPtr result)
 void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recv_data*/)
 {
     /// get all the data necessary for loading all characters (along with their pets) on the account
-    CharacterDatabase.AsyncPQuery(&chrHandler, &CharacterHandler::HandleCharEnumCallback, GetAccountId(),
+    RealmDataDatabase.AsyncPQuery(&chrHandler, &CharacterHandler::HandleCharEnumCallback, GetAccountId(),
          !sWorld.getConfig(CONFIG_DECLINED_NAMES_USED) ?
     //   ------- Query Without Declined Names --------
     //          0                1                2                3                 4                  5                       6                        7
@@ -277,7 +277,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         return;
     }
 
-    QueryResultAutoPtr resultacct = LoginDatabase.PQuery("SELECT SUM(numchars) FROM realmcharacters WHERE acctid = '%d'", GetAccountId());
+    QueryResultAutoPtr resultacct = AccountsDatabase.PQuery("SELECT SUM(numchars) FROM realmcharacters WHERE acctid = '%d'", GetAccountId());
     if (resultacct)
     {
         Field *fields=resultacct->Fetch();
@@ -291,7 +291,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         }
     }
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT COUNT(guid) FROM characters WHERE account = '%d'", GetAccountId());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT COUNT(guid) FROM characters WHERE account = '%d'", GetAccountId());
     uint8 charcount = 0;
     if (result)
     {
@@ -312,7 +312,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     bool have_same_race = false;
     if (!AllowTwoSideAccounts || skipCinematics == 1)
     {
-        QueryResultAutoPtr result2 = CharacterDatabase.PQuery("SELECT DISTINCT race FROM characters WHERE account = '%u' %s", GetAccountId(),skipCinematics == 1 ? "" : "LIMIT 1");
+        QueryResultAutoPtr result2 = RealmDataDatabase.PQuery("SELECT DISTINCT race FROM characters WHERE account = '%u' %s", GetAccountId(),skipCinematics == 1 ? "" : "LIMIT 1");
         if (result2)
         {
             uint32 team_= Player::TeamForRace(race_);
@@ -373,8 +373,8 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     pNewChar->SaveToDB();
     charcount+=1;
 
-    LoginDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid= '%d' AND realmid = '%d'", GetAccountId(), realmID);
-    LoginDatabase.PExecute("INSERT INTO realmcharacters (numchars, acctid, realmid) VALUES (%u, %u, %u)",  charcount, GetAccountId(), realmID);
+    AccountsDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid= '%d' AND realmid = '%d'", GetAccountId(), realmID);
+    AccountsDatabase.PExecute("INSERT INTO realmcharacters (numchars, acctid, realmid) VALUES (%u, %u, %u)",  charcount, GetAccountId(), realmID);
 
     delete pNewChar;                                        // created only to call SaveToDB()
 
@@ -418,7 +418,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
         return;
     }
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT account,name FROM characters WHERE guid='%u'", GUID_LOPART(guid));
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT account,name FROM characters WHERE guid='%u'", GUID_LOPART(guid));
     if (result)
     {
         Field *fields = result->Fetch();
@@ -466,7 +466,7 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
         return;
     }
 
-    CharacterDatabase.DelayQueryHolder(&chrHandler, &CharacterHandler::HandlePlayerLoginCallback, holder);
+    RealmDataDatabase.DelayQueryHolder(&chrHandler, &CharacterHandler::HandlePlayerLoginCallback, holder);
 }
 
 void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
@@ -635,8 +635,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     pCurrChar->SendInitialPacketsAfterAddToMap();
 
-    CharacterDatabase.PExecute("UPDATE characters SET online = 1 WHERE guid = '%u'", pCurrChar->GetGUIDLow());
-    LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = '%u'", GetAccountId());
+    RealmDataDatabase.PExecute("UPDATE characters SET online = 1 WHERE guid = '%u'", pCurrChar->GetGUIDLow());
+    AccountsDatabase.PExecute("UPDATE account SET online = 1 WHERE id = '%u'", GetAccountId());
     pCurrChar->SetInGameTime(WorldTimer::getMSTime());
 
     // announce group about member online (must be after add to player list to receive announce to self)
@@ -887,11 +887,11 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     }
 
     std::string escaped_newname = newname;
-    CharacterDatabase.escape_string(escaped_newname);
+    RealmDataDatabase.escape_string(escaped_newname);
 
     // make sure that the character belongs to the current account, that rename at login is enabled
     // and that there is no character with the desired new name
-    CharacterDatabase.AsyncPQuery(&WorldSession::HandleChangePlayerNameOpcodeCallBack,
+    RealmDataDatabase.AsyncPQuery(&WorldSession::HandleChangePlayerNameOpcodeCallBack,
         GetAccountId(), newname,
         "SELECT guid, name FROM characters WHERE guid = %d AND account = %d AND (at_login & %d) = %d AND NOT EXISTS (SELECT NULL FROM characters WHERE name = '%s')",
         GUID_LOPART(guid), GetAccountId(), AT_LOGIN_RENAME, AT_LOGIN_RENAME, escaped_newname.c_str()
@@ -916,10 +916,10 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(QueryResultAutoPtr resul
     uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
     std::string oldname = result->Fetch()[1].GetCppString();
 
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_RENAME), guidLow);
-    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid ='%u'", guidLow);
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_RENAME), guidLow);
+    RealmDataDatabase.PExecute("DELETE FROM character_declinedname WHERE guid ='%u'", guidLow);
+    RealmDataDatabase.CommitTransaction();
 
     sLog.outChar("Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s", session->GetAccountId(), session->GetRemoteAddress().c_str(), oldname.c_str(), guidLow, newname.c_str());
 
@@ -1006,13 +1006,13 @@ void WorldSession::HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data)
     }
 
     for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-        CharacterDatabase.escape_string(declinedname.name[i]);
+        RealmDataDatabase.escape_string(declinedname.name[i]);
 
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'", GUID_LOPART(guid));
-    CharacterDatabase.PExecute("INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES ('%u','%s','%s','%s','%s','%s')",
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'", GUID_LOPART(guid));
+    RealmDataDatabase.PExecute("INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES ('%u','%s','%s','%s','%s','%s')",
         GUID_LOPART(guid), declinedname.name[0].c_str(), declinedname.name[1].c_str(), declinedname.name[2].c_str(), declinedname.name[3].c_str(), declinedname.name[4].c_str());
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 
     WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
     data << uint32(0);                                      // OK

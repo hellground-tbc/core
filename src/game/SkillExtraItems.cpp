@@ -59,7 +59,7 @@ void LoadSkillExtraItemTable()
     SkillExtraItemStore.clear();                            // need for reload
 
     //                                                       0        1                       2                       3
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT spellId, requiredSpecialization, additionalCreateChance, additionalMaxNum FROM skill_extra_item_template");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT spellId, requiredSpecialization, additionalCreateChance, additionalMaxNum FROM skill_extra_item_template");
 
     if (result)
     {

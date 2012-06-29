@@ -211,7 +211,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
     else
     {
         rc_team = sObjectMgr.GetPlayerTeamByGUID(rc);
-        QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT COUNT(*) FROM mail WHERE receiver = '%u'", GUID_LOPART(rc));
+        QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT COUNT(*) FROM mail WHERE receiver = '%u'", GUID_LOPART(rc));
         if (result)
         {
             Field *fields = result->Fetch();
@@ -319,12 +319,12 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                     GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
 
                 pl->MoveItemFromInventory(item->GetBagSlot(), item->GetSlot(), true);
-                CharacterDatabase.BeginTransaction();
+                RealmDataDatabase.BeginTransaction();
                 item->DeleteFromInventoryDB();     //deletes item from character's inventory
                 item->SaveToDB();                  // recursive and not have transaction guard into self, item not in inventory and can be save standalone
                 // owner in data will set at mail receive and item extracting
-                CharacterDatabase.PExecute("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", rc.GetCounter(), item->GetGUIDLow());
-                CharacterDatabase.CommitTransaction();
+                RealmDataDatabase.PExecute("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", rc.GetCounter(), item->GetGUIDLow());
+                RealmDataDatabase.CommitTransaction();
 
                 draft.AddItem(item);
             }
@@ -355,7 +355,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
     // If theres is an item, there is a one hour delivery delay if sent to another account's character.
     uint32 deliver_delay = needItemDelay ? sWorld.getConfig(CONFIG_MAIL_DELIVERY_DELAY) : 0;
 
-    // If GM sends mail to player - deliver_delay must be zero 
+    // If GM sends mail to player - deliver_delay must be zero
     if (deliver_delay && GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_MAIL))
         deliver_delay = 0;
 
@@ -365,9 +365,9 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
         .SetCOD(COD)
         .SendMailTo(MailReceiver(receive, rc), pl, body.empty() ? MAIL_CHECK_MASK_COPIED : MAIL_CHECK_MASK_HAS_BODY, deliver_delay);
 
-    CharacterDatabase.BeginTransaction();
+    RealmDataDatabase.BeginTransaction();
     pl->SaveInventoryAndGoldToDB();
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 }
 
 /**
@@ -478,11 +478,11 @@ void WorldSession::HandleReturnToSender(WorldPacket & recv_data)
 
     //we can return mail now
     //so firstly delete the old one
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", mailId);
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", mailId);
                                                             // needed?
-    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", mailId);
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", mailId);
+    RealmDataDatabase.CommitTransaction();
     pl->RemoveMail(mailId);
 
     // send back only to existing players and simple drop for other cases
@@ -616,10 +616,10 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
         uint32 count = it->GetCount();                      // save counts before store and possible merge with deleting
         pl->MoveItemToInventory(dest, it, true);
 
-        CharacterDatabase.BeginTransaction();
+        RealmDataDatabase.BeginTransaction();
         pl->SaveInventoryAndGoldToDB();
         pl->_SaveMail();
-        CharacterDatabase.CommitTransaction();
+        RealmDataDatabase.CommitTransaction();
 
         pl->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_OK, 0, itemId, count);
     }
@@ -660,10 +660,10 @@ void WorldSession::HandleTakeMoney(WorldPacket & recv_data)
     pl->m_mailsUpdated = true;
 
     // save money and mail to prevent cheating
-    CharacterDatabase.BeginTransaction();
+    RealmDataDatabase.BeginTransaction();
     pl->SaveGoldToDB();
     pl->_SaveMail();
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 }
 
 /**

@@ -54,9 +54,9 @@ char serviceDescription[] = "Massive Network Game Object Server";
 
 RunModes runMode = MODE_NORMAL;
 
-DatabaseType WorldDatabase;                                 ///< Accessor to the world database
-DatabaseType CharacterDatabase;                             ///< Accessor to the character database
-DatabaseType LoginDatabase;                                 ///< Accessor to the realm/login database
+DatabaseType GameDataDatabase;                              ///< Accessor to the world database
+DatabaseType RealmDataDatabase;                             ///< Accessor to the character database
+DatabaseType AccountsDatabase;                              ///< Accessor to the realm/login database
 
 uint32 realmID;                                             ///< Id of the realm
 
@@ -184,7 +184,7 @@ extern int main(int argc, char **argv)
         {
             VMAP::VMapClusterProcess process(process_id);
             return process.Start();
-        } 
+        }
         else
             printf("Runtime-Error: bad format of process arguments\n");
             return 1;
@@ -232,7 +232,7 @@ extern int main(int argc, char **argv)
 
     if(vmapCluster)
         VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file, vmapProcess);
-        
+
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?
     return sMaster.Run();

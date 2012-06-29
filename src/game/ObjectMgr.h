@@ -473,7 +473,7 @@ class HELLGROUND_DLL_DECL ObjectMgr
         void LoadTransportEvents();
 
         bool LoadHellgroundStrings(DatabaseType& db, char const* table, int32 min_value, int32 max_value);
-        bool LoadHellgroundStrings() { return LoadHellgroundStrings(WorldDatabase,"hellground_string",MIN_HELLGROUND_STRING_ID,MAX_HELLGROUND_STRING_ID); }
+        bool LoadHellgroundStrings() { return LoadHellgroundStrings(GameDataDatabase,"hellground_string",MIN_HELLGROUND_STRING_ID,MAX_HELLGROUND_STRING_ID); }
 
         void LoadPetCreateSpells();
         void LoadCreatureLocales();

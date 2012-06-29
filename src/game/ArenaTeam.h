@@ -123,7 +123,7 @@ struct ArenaTeamMember
         {
             case 2:
             {
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateH2Rating, "UPDATE hidden_rating SET rating2 = ? WHERE guid = ?");
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateH2Rating, "UPDATE hidden_rating SET rating2 = ? WHERE guid = ?");
                 stmt.addUInt32(matchmaker_rating);
                 stmt.addUInt32(guid);
                 stmt.Execute();
@@ -131,7 +131,7 @@ struct ArenaTeamMember
             }
             case 3:
             {
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateH3Rating, "UPDATE hidden_rating SET rating3 = ? WHERE guid = ?");
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateH3Rating, "UPDATE hidden_rating SET rating3 = ? WHERE guid = ?");
                 stmt.addUInt32(matchmaker_rating);
                 stmt.addUInt32(guid);
                 stmt.Execute();
@@ -139,7 +139,7 @@ struct ArenaTeamMember
             }
             case 5:
             {
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateH5Rating, "UPDATE hidden_rating SET rating5 = ? WHERE guid = ?");
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateH5Rating, "UPDATE hidden_rating SET rating5 = ? WHERE guid = ?");
                 stmt.addUInt32(matchmaker_rating);
                 stmt.addUInt32(guid);
                 stmt.Execute();

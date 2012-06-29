@@ -1097,7 +1097,7 @@ void BattleGroundMgr::Update(uint32 diff)
 
                 DistributeArenaPoints();
                 m_NextAutoDistributionTime = m_NextAutoDistributionTime + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
-                CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '"UI64FMTD"'", m_NextAutoDistributionTime);
+                RealmDataDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '"UI64FMTD"'", m_NextAutoDistributionTime);
             }
             m_AutoDistributionTimeChecker = 600000; // check in 10 minutes
         }
@@ -1513,7 +1513,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
     uint32 count = 0;
 
     //                                                       0   1                 2                 3      4      5                6              7             8
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, MinPlayersPerTeam,MaxPlayersPerTeam,MinLvl,MaxLvl,AllianceStartLoc,AllianceStartO,HordeStartLoc,HordeStartO FROM battleground_template");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id, MinPlayersPerTeam,MaxPlayersPerTeam,MinLvl,MaxLvl,AllianceStartLoc,AllianceStartO,HordeStartLoc,HordeStartO FROM battleground_template");
 
     if (!result)
     {
@@ -1625,12 +1625,12 @@ void BattleGroundMgr::InitAutomaticArenaPointDistribution()
     if (sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS))
     {
         sLog.outDebug("Initializing Automatic Arena Point Distribution");
-        QueryResultAutoPtr result = CharacterDatabase.Query("SELECT NextArenaPointDistributionTime FROM saved_variables");
+        QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT NextArenaPointDistributionTime FROM saved_variables");
         if (!result)
         {
             sLog.outDebug("Battleground: Next arena point distribution time not found in SavedVariables, reseting it now.");
             m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld.getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
-            CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('"UI64FMTD"')", m_NextAutoDistributionTime);
+            RealmDataDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('"UI64FMTD"')", m_NextAutoDistributionTime);
         }
         else
             m_NextAutoDistributionTime = (*result)[0].GetUInt64();
@@ -1662,7 +1662,7 @@ void BattleGroundMgr::DistributeArenaPoints()
     for (std::map<uint32, uint32>::iterator plr_itr = PlayerPoints.begin(); plr_itr != PlayerPoints.end(); ++plr_itr)
     {
         //update to database
-        CharacterDatabase.PExecute("UPDATE characters SET arena_pending_points = '%u' WHERE `guid` = '%u'", plr_itr->second, plr_itr->first);
+        RealmDataDatabase.PExecute("UPDATE characters SET arena_pending_points = '%u' WHERE `guid` = '%u'", plr_itr->second, plr_itr->first);
         //add points if player is online
         Player* pl = sObjectMgr.GetPlayer(plr_itr->first);
         if (pl)
@@ -1886,7 +1886,7 @@ void BattleGroundMgr::LoadBattleMastersEntry()
 {
     mBattleMastersMap.clear();                              // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,bg_template FROM battlemaster_entry");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,bg_template FROM battlemaster_entry");
 
     if (!result)
     {

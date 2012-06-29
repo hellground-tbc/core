@@ -424,7 +424,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     {
                         std::set<uint32>::iterator i = m_unique_users.begin();
                         for(; i != m_unique_users.end(); i++)
-                        {    
+                        {
                             Unit* caster = Unit::GetUnit(*this, uint64(*i));
                             if (!(caster && caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)))
                             {
@@ -461,7 +461,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     }
                     std::set<uint32>::iterator i = m_unique_users.begin();
                     for(; i != m_unique_users.end(); i++)
-                    {    
+                    {
                         if (Unit* caster = Unit::GetUnit(*this, uint64(*i)))
                         {
                             if (caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
@@ -574,12 +574,12 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     static SqlStatementID saveGameObject;
     static SqlStatementID deleteGameObject;
 
-    WorldDatabase.BeginTransaction();
+    GameDataDatabase.BeginTransaction();
 
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteGameObject,"DELETE FROM gameobject WHERE guid = ?");
+    SqlStatement stmt = GameDataDatabase.CreateStatement(deleteGameObject,"DELETE FROM gameobject WHERE guid = ?");
     stmt.PExecute(m_DBTableGuid);
 
-    stmt = WorldDatabase.CreateStatement(saveGameObject,"INSERT INTO gameobject VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    stmt = GameDataDatabase.CreateStatement(saveGameObject,"INSERT INTO gameobject VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt64(m_DBTableGuid);
     stmt.addUInt32(GetUInt32Value(OBJECT_FIELD_ENTRY));
@@ -598,7 +598,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     stmt.addUInt32(GetGoState());
 
     stmt.Execute();
-    WorldDatabase.CommitTransaction();
+    GameDataDatabase.CommitTransaction();
 }
 
 bool GameObject::LoadFromDB(uint32 guid, Map *map)
@@ -674,8 +674,8 @@ void GameObject::DeleteFromDB()
 {
     sObjectMgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),0);
     sObjectMgr.DeleteGOData(m_DBTableGuid);
-    WorldDatabase.PExecuteLog("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecuteLog("DELETE FROM game_event_gameobject WHERE guid = '%u'", m_DBTableGuid);
+    GameDataDatabase.PExecuteLog("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
+    GameDataDatabase.PExecuteLog("DELETE FROM game_event_gameobject WHERE guid = '%u'", m_DBTableGuid);
 }
 
 GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)
@@ -976,7 +976,7 @@ void GameObject::Use(Unit* user)
             return;
     }
     GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), user, this);
-    
+
     switch (GetGoType())
     {
         case GAMEOBJECT_TYPE_BUTTON:                        //1
@@ -1222,7 +1222,7 @@ void GameObject::Use(Unit* user)
 
             Unit* owner = GetOwner();
             GameObjectInfo const* info = GetGOInfo();
-            
+
             if(owner)
             {
                 if (owner->GetTypeId()!=TYPEID_PLAYER)
@@ -1233,7 +1233,7 @@ void GameObject::Use(Unit* user)
                 if (((Player*)owner)==pPlayer || (info->summoningRitual.castersGrouped && !((Player*)owner)->IsInSameGroupWith(pPlayer)))
                     return;
             }
-            
+
             m_lootState = GO_ACTIVATED;
 
             AddUniqueUse(pPlayer);
@@ -1244,7 +1244,7 @@ void GameObject::Use(Unit* user)
 
             if(m_unique_users.size() == GetGOInfo()->summoningRitual.reqParticipants)
             {
-                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);                
+                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                 Player* target = Player::GetPlayer(m_target);
                 if(!target) target = pPlayer;
                 spellCaster->CastSpell(target, info->summoningRitual.spellId, true);

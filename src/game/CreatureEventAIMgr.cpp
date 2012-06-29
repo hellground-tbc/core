@@ -33,10 +33,10 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
     m_CreatureEventAI_TextMap.clear();
 
     // Load EventAI Text
-    sObjectMgr.LoadHellgroundStrings(WorldDatabase,"creature_ai_texts",MIN_CREATURE_AI_TEXT_STRING_ID,MAX_CREATURE_AI_TEXT_STRING_ID);
+    sObjectMgr.LoadHellgroundStrings(GameDataDatabase,"creature_ai_texts",MIN_CREATURE_AI_TEXT_STRING_ID,MAX_CREATURE_AI_TEXT_STRING_ID);
 
     // Gather Additional data from EventAI Texts
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, sound, type, language, emote FROM creature_ai_texts");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, sound, type, language, emote FROM creature_ai_texts");
 
     sLog.outString("Loading EventAI Texts additional data...");
     if (result)
@@ -151,7 +151,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
     m_CreatureEventAI_Summon_Map.clear();
 
     // Gather additional data for EventAI
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM creature_ai_summons");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, spawntimesecs FROM creature_ai_summons");
     if (result)
     {
         BarGoLink bar(result->GetRowCount());
@@ -238,7 +238,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
     m_CreatureEventAI_Event_Map.clear();
 
     // Gather event data
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, entryOrGUID, event_type, event_inverse_phase_mask, event_chance, event_flags, "
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id, entryOrGUID, event_type, event_inverse_phase_mask, event_chance, event_flags, "
         "event_param1, event_param2, event_param3, event_param4, "
         "action1_type, action1_param1, action1_param2, action1_param3, "
         "action2_type, action2_param1, action2_param2, action2_param3, "
@@ -851,7 +851,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
 void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
 {
     // Gather event data
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT id, entryOrGUID, event_type, event_inverse_phase_mask, event_chance, event_flags, "
+    QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT id, entryOrGUID, event_type, event_inverse_phase_mask, event_chance, event_flags, "
         "event_param1, event_param2, event_param3, event_param4, "
         "action1_type, action1_param1, action1_param2, action1_param3, "
         "action2_type, action2_param1, action2_param2, action2_param3, "

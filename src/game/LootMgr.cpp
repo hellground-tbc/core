@@ -99,7 +99,7 @@ void LootStore::LoadLootTable()
     sLog.outString("%s :", GetName());
 
     //                                                        0      1     2                    3        4              5         6              7                 8
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());
+    QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());
 
     if (result)
     {
@@ -387,7 +387,7 @@ void Loot::AddItem(LootStoreItem const & item)
             ItemPrototype const* proto = ObjectMgr::GetItemPrototype(item.itemid);
             if (!proto || (proto->Flags & ITEM_FLAGS_PARTY_LOOT)==0)
                 ++unlootedCount;
-        }            
+        }
     }
 }
 
@@ -419,7 +419,7 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
 {
     clear();
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemId, itemCount, playerGuids FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT itemId, itemCount, playerGuids FROM group_saved_loot WHERE creatureId='%u' AND instanceId='%u'", pCreature->GetEntry(), pCreature->GetInstanceId());
     if (result)
     {
         m_creatureGUID = pCreature->GetGUID();
@@ -524,7 +524,7 @@ void Loot::removeItemFromSavedLoot(LootItem *item)
         return;
     }
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pMap->GetInstanceId(), pCreature->GetEntry());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pMap->GetInstanceId(), pCreature->GetEntry());
     if (!result)
     {
         if (pMap->IsRaid())
@@ -544,12 +544,12 @@ void Loot::removeItemFromSavedLoot(LootItem *item)
     if (count > 1)
     {
         count--;
-        SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemCount, "UPDATE group_saved_loot SET itemCount=? WHERE instanceId=? AND itemId=? AND creatureId=?");
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(updateItemCount, "UPDATE group_saved_loot SET itemCount=? WHERE instanceId=? AND itemId=? AND creatureId=?");
         stmt.PExecute(count, pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
     }
     else
     {
-        SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItem, "DELETE FROM group_saved_loot WHERE instanceId=? AND itemId=? AND creatureId=?");
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteItem, "DELETE FROM group_saved_loot WHERE instanceId=? AND itemId=? AND creatureId=?");
         stmt.PExecute(pCreature->GetInstanceId(), item->itemid, pCreature->GetEntry());
     }
     //CharacterDatabase.CommitTransaction();
@@ -572,14 +572,14 @@ void Loot::saveLootToDB(Player *owner)
     }
 
     std::map<uint32, uint32> item_count;
-    CharacterDatabase.BeginTransaction();
+    RealmDataDatabase.BeginTransaction();
 
     static SqlStatementID deleteCreatureLoot;
     static SqlStatementID updateItemCount;
     static SqlStatementID insertItem;
 
     // delete old saved loot
-    SqlStatement stmt = CharacterDatabase.CreateStatement(deleteCreatureLoot, "DELETE FROM group_saved_loot WHERE creatureId=? AND instanceId=?");
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCreatureLoot, "DELETE FROM group_saved_loot WHERE creatureId=? AND instanceId=?");
     stmt.PExecute(pCreature->GetEntry(), pCreature->GetInstanceId());
 
     std::stringstream ss;
@@ -608,12 +608,12 @@ void Loot::saveLootToDB(Player *owner)
             uint32 count = item_count[item->itemid];
             if (count > 1)
             {
-                SqlStatement stmt = CharacterDatabase.CreateStatement(updateItemCount, "UPDATE group_saved_loot SET itemCount=? WHERE itemId=? AND instanceId=?");
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateItemCount, "UPDATE group_saved_loot SET itemCount=? WHERE itemId=? AND instanceId=?");
                 stmt.PExecute(count, item->itemid, pCreature->GetInstanceId());
             }
             else
             {
-                SqlStatement stmt = CharacterDatabase.CreateStatement(insertItem, "INSERT INTO group_saved_loot VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(insertItem, "INSERT INTO group_saved_loot VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 stmt.addUInt32(pCreature->GetEntry());
                 stmt.addUInt32(pCreature->GetInstanceId());
                 stmt.addUInt32(item->itemid);
@@ -630,7 +630,7 @@ void Loot::saveLootToDB(Player *owner)
     }
 
     sLog.outBoss(ss.str().c_str());
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 }
 
 // Calls processor of corresponding LootTemplate (which handles everything including references)
@@ -999,7 +999,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     {
         if (!l.items[i].is_looted && !l.items[i].freeforall && !l.items[i].conditionId && l.items[i].AllowedForPlayer(lv.viewer))
         {
-            if (lv.permission == ALL_PERMISSION) 
+            if (lv.permission == ALL_PERMISSION)
                 slot_type = 0;
             else if (lv.permission == MASTER_PERMISSION)
                 slot_type = 2;
@@ -1008,7 +1008,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             else if (lv.permission == GROUP_NONE_PERMISSION)
                 slot_type = 1;
             b << uint8(i) << l.items[i];            //only send one-player loot items now, free for all will be sent later
-            b << uint8(slot_type);                  
+            b << uint8(slot_type);
             ++itemsShown;
         }
     }

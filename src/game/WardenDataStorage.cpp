@@ -62,7 +62,7 @@ void WardenDataStorage::LoadWardenDataResult(bool reload)
     if (reload)
         Cleanup();
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT `check`, `data`, `result`, `address`, `length`, `str` FROM warden_data_result");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT `check`, `data`, `result`, `address`, `length`, `str` FROM warden_data_result");
 
     uint32 count = 0;
 

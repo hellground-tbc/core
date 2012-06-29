@@ -67,7 +67,7 @@ void HookSignals();
 
 bool stopEvent = false;                                     ///< Setting it to true stops the server
 
-DatabaseType LoginDatabase;                                 ///< Accessor to the realm server database
+DatabaseType AccountsDatabase;                                 ///< Accessor to the realm server database
 
 /// Print out the usage string for this program on the console.
 void usage(const char *prog)
@@ -246,7 +246,7 @@ extern int main(int argc, char **argv)
     }
 
 #ifdef REGEX_NAMESPACE
-    QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT ip_pattern, localip_pattern FROM pattern_banned");
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT ip_pattern, localip_pattern FROM pattern_banned");
     if (result)
     {
         AuthSocket::pattern_banned.clear();
@@ -263,10 +263,10 @@ extern int main(int argc, char **argv)
 
     // cleanup query
     // set expired bans to inactive
-    LoginDatabase.BeginTransaction();
-    LoginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
-    LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
-    LoginDatabase.CommitTransaction();
+    AccountsDatabase.BeginTransaction();
+    AccountsDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+    AccountsDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+    AccountsDatabase.CommitTransaction();
 
     ///- Launch the listening network socket
     ACE_Acceptor<AuthSocket, ACE_SOCK_Acceptor> acceptor;
@@ -329,7 +329,7 @@ extern int main(int argc, char **argv)
     #endif
 
     //server has started up successfully => enable async DB requests
-    LoginDatabase.AllowAsyncTransactions();
+    AccountsDatabase.AllowAsyncTransactions();
 
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / 100000));
@@ -352,7 +352,7 @@ extern int main(int argc, char **argv)
         {
             loopCounter = 0;
             sLog.outDetail("Ping MySQL to keep connection alive");
-            LoginDatabase.Ping();
+            AccountsDatabase.Ping();
         }
 #ifdef WIN32
         if (runMode == MODE_SERVICE_STOPPED)
@@ -364,7 +364,7 @@ extern int main(int argc, char **argv)
     }
 
     ///- Wait for the delay thread to exit
-    LoginDatabase.HaltDelayThread();
+    AccountsDatabase.HaltDelayThread();
 
     ///- Remove signal handling before leaving
     UnhookSignals();
@@ -405,7 +405,7 @@ bool StartDB()
 
     sLog.outString("Database: %s", dbstring.c_str() );
 
-    if(!LoginDatabase.Initialize(dbstring.c_str()))
+    if(!AccountsDatabase.Initialize(dbstring.c_str()))
     {
         sLog.outError("Cannot connect to database");
         return false;

@@ -30,8 +30,8 @@ void InstanceData::SaveToDB()
     if (data.empty())
         return;
 
-    CharacterDatabase.escape_string(data);
-    CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
+    RealmDataDatabase.escape_string(data);
+    RealmDataDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
 }
 
 void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)

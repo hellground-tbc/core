@@ -60,18 +60,18 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
     Id = sObjectMgr.GenerateArenaTeamId();
 
     // ArenaTeamName already assigned to ArenaTeam::name, use it to encode string for DB
-    CharacterDatabase.escape_string(ArenaTeamName);
+    RealmDataDatabase.escape_string(ArenaTeamName);
 
-    CharacterDatabase.BeginTransaction();
+    RealmDataDatabase.BeginTransaction();
     // CharacterDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid='%u'", Id); - MAX(arenateam)+1 not exist
-    CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid='%u'", Id);
-    CharacterDatabase.PExecute("INSERT INTO arena_team (arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor) "
+    RealmDataDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid='%u'", Id);
+    RealmDataDatabase.PExecute("INSERT INTO arena_team (arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor) "
         "VALUES('%u','%s','%u','%u','%u','%u','%u','%u','%u')",
         Id, ArenaTeamName.c_str(), GUID_LOPART(CaptainGuid), Type, BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor);
-    CharacterDatabase.PExecute("INSERT INTO arena_team_stats (arenateamid, rating, games, wins, played, wins2, rank) VALUES "
+    RealmDataDatabase.PExecute("INSERT INTO arena_team_stats (arenateamid, rating, games, wins, played, wins2, rank) VALUES "
         "('%u', '%u', '%u', '%u', '%u', '%u', '%u')", Id, stats.rating, stats.games_week, stats.wins_week, stats.games_season, stats.wins_season, stats.rank);
 
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 
     AddMember(CaptainGuid);
     sLog.outArena("New ArenaTeam created [Id: %u] [Type: %u] [Captain GUID: %u]", GetId(), GetType(), GetCaptain());
@@ -102,7 +102,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
     else
     {
         //                                                     0     1
-        QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT name, class FROM characters WHERE guid='%u'", GUID_LOPART(PlayerGuid));
+        QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT name, class FROM characters WHERE guid='%u'", GUID_LOPART(PlayerGuid));
         if (!result)
             return false;
 
@@ -136,13 +136,13 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
         switch (GetType())
         {
             case 2:
-                result = CharacterDatabase.PQuery("SELECT rating2 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
+                result = RealmDataDatabase.PQuery("SELECT rating2 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
                 break;
             case 3:
-                result = CharacterDatabase.PQuery("SELECT rating3 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
+                result = RealmDataDatabase.PQuery("SELECT rating3 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
                 break;
             case 5:
-                result = CharacterDatabase.PQuery("SELECT rating5 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
+                result = RealmDataDatabase.PQuery("SELECT rating5 FROM hidden_rating WHERE guid='%u'", GUID_LOPART(newmember.guid));
                 break;
             default:
                 break;
@@ -151,7 +151,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
         if (!result)
         {
             newmember.matchmaker_rating = 1500;
-            CharacterDatabase.PExecute("INSERT INTO hidden_rating(guid) VALUES ('%u')", GUID_LOPART(newmember.guid));
+            RealmDataDatabase.PExecute("INSERT INTO hidden_rating(guid) VALUES ('%u')", GUID_LOPART(newmember.guid));
         }
         else
         {
@@ -162,7 +162,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
 
     members.push_back(newmember);
 
-    CharacterDatabase.PExecute("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating);
+    RealmDataDatabase.PExecute("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating);
 
     if (pl)
     {
@@ -180,7 +180,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
 
 bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
 {
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT arenateamid,name,captainguid,type,BackgroundColor,EmblemStyle,EmblemColor,BorderStyle,BorderColor FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);
 
     if (!result)
         return false;
@@ -204,11 +204,11 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
     if (Empty())
     {
         // arena team is empty, delete from db
-        CharacterDatabase.BeginTransaction();
-        CharacterDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);
-        CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u'", ArenaTeamId);
-        CharacterDatabase.PExecute("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", ArenaTeamId);
-        CharacterDatabase.CommitTransaction();
+        RealmDataDatabase.BeginTransaction();
+        RealmDataDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid = '%u'", ArenaTeamId);
+        RealmDataDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u'", ArenaTeamId);
+        RealmDataDatabase.PExecute("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", ArenaTeamId);
+        RealmDataDatabase.CommitTransaction();
         return false;
     }
 
@@ -218,7 +218,7 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
 void ArenaTeam::LoadStatsFromDB(uint32 ArenaTeamId)
 {
     //                                                     0      1     2    3      4     5
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT rating,games,wins,played,wins2,rank FROM arena_team_stats WHERE arenateamid = '%u'", ArenaTeamId);
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT rating,games,wins,played,wins2,rank FROM arena_team_stats WHERE arenateamid = '%u'", ArenaTeamId);
 
     if (!result)
         return;
@@ -236,7 +236,7 @@ void ArenaTeam::LoadStatsFromDB(uint32 ArenaTeamId)
 void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
 {
     //                                                                 0           1          2            3              4             5           6      7       8       9         10
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT member.guid, played_week, wons_week, played_season, wons_season, personal_rating, name, class, rating2, rating3, rating5 "
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT member.guid, played_week, wons_week, played_season, wons_season, personal_rating, name, class, rating2, rating3, rating5 "
                                                    "FROM arena_team_member member "
                                                    "INNER JOIN characters chars on member.guid = chars.guid "
                                                    "JOIN hidden_rating hidden ON member.guid = hidden.guid "
@@ -289,7 +289,7 @@ void ArenaTeam::SetCaptain(const uint64& guid)
     CaptainGuid = guid;
 
     // update database
-    CharacterDatabase.PExecute("UPDATE arena_team SET captainguid = '%u' WHERE arenateamid = '%u'", GUID_LOPART(guid), Id);
+    RealmDataDatabase.PExecute("UPDATE arena_team SET captainguid = '%u' WHERE arenateamid = '%u'", GUID_LOPART(guid), Id);
 
     // enable remove/promote buttons
     Player *newcaptain = sObjectMgr.GetPlayer(guid);
@@ -324,7 +324,7 @@ void ArenaTeam::DelMember(uint64 guid)
         }
         sLog.outArena("Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
     }
-    CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), GUID_LOPART(guid));
+    RealmDataDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), GUID_LOPART(guid));
 }
 
 void ArenaTeam::Disband(WorldSession *session)
@@ -343,11 +343,11 @@ void ArenaTeam::Disband(WorldSession *session)
     if (Player *player = session->GetPlayer())
         sLog.outArena("Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
 
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
-    CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u'", Id); //< this should be alredy done by calling DelMember(memberGuids[j]); for each member
-    CharacterDatabase.PExecute("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", Id);
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
+    RealmDataDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u'", Id); //< this should be alredy done by calling DelMember(memberGuids[j]); for each member
+    RealmDataDatabase.PExecute("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", Id);
+    RealmDataDatabase.CommitTransaction();
     sObjectMgr.RemoveArenaTeam(Id);
 }
 
@@ -447,7 +447,7 @@ void ArenaTeam::SetEmblem(uint32 backgroundColor, uint32 emblemStyle, uint32 emb
     BorderStyle = borderStyle;
     BorderColor = borderColor;
 
-    CharacterDatabase.PExecute("UPDATE arena_team SET BackgroundColor='%u', EmblemStyle='%u', EmblemColor='%u', BorderStyle='%u', BorderColor='%u' WHERE arenateamid='%u'", BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor, Id);
+    RealmDataDatabase.PExecute("UPDATE arena_team SET BackgroundColor='%u', EmblemStyle='%u', EmblemColor='%u', BorderStyle='%u', BorderColor='%u' WHERE arenateamid='%u'", BackgroundColor, EmblemStyle, EmblemColor, BorderStyle, BorderColor, Id);
 }
 
 void ArenaTeam::SetStats(uint32 stat_type, uint32 value)
@@ -456,27 +456,27 @@ void ArenaTeam::SetStats(uint32 stat_type, uint32 value)
     {
         case STAT_TYPE_RATING:
             stats.rating = value;
-            CharacterDatabase.PExecute("UPDATE arena_team_stats SET rating = '%u' WHERE arenateamid = '%u'", value, GetId());
+            RealmDataDatabase.PExecute("UPDATE arena_team_stats SET rating = '%u' WHERE arenateamid = '%u'", value, GetId());
             break;
         case STAT_TYPE_GAMES_WEEK:
             stats.games_week = value;
-            CharacterDatabase.PExecute("UPDATE arena_team_stats SET games = '%u' WHERE arenateamid = '%u'", value, GetId());
+            RealmDataDatabase.PExecute("UPDATE arena_team_stats SET games = '%u' WHERE arenateamid = '%u'", value, GetId());
             break;
         case STAT_TYPE_WINS_WEEK:
             stats.wins_week = value;
-            CharacterDatabase.PExecute("UPDATE arena_team_stats SET wins = '%u' WHERE arenateamid = '%u'", value, GetId());
+            RealmDataDatabase.PExecute("UPDATE arena_team_stats SET wins = '%u' WHERE arenateamid = '%u'", value, GetId());
             break;
         case STAT_TYPE_GAMES_SEASON:
             stats.games_season = value;
-            CharacterDatabase.PExecute("UPDATE arena_team_stats SET played = '%u' WHERE arenateamid = '%u'", value, GetId());
+            RealmDataDatabase.PExecute("UPDATE arena_team_stats SET played = '%u' WHERE arenateamid = '%u'", value, GetId());
             break;
         case STAT_TYPE_WINS_SEASON:
             stats.wins_season = value;
-            CharacterDatabase.PExecute("UPDATE arena_team_stats SET wins2 = '%u' WHERE arenateamid = '%u'", value, GetId());
+            RealmDataDatabase.PExecute("UPDATE arena_team_stats SET wins2 = '%u' WHERE arenateamid = '%u'", value, GetId());
             break;
         case STAT_TYPE_RANK:
             stats.rank = value;
-            CharacterDatabase.PExecute("UPDATE arena_team_stats SET rank = '%u' WHERE arenateamid = '%u'", value, GetId());
+            RealmDataDatabase.PExecute("UPDATE arena_team_stats SET rank = '%u' WHERE arenateamid = '%u'", value, GetId());
             break;
         default:
             sLog.outDebug("unknown stat type in ArenaTeam::SetStats() %u", stat_type);
@@ -700,9 +700,9 @@ void ArenaTeam::SaveToDB()
     static SqlStatementID updateH3Rating;
     static SqlStatementID updateH5Rating;
 
-    CharacterDatabase.BeginTransaction();
+    RealmDataDatabase.BeginTransaction();
 
-    SqlStatement stmt = CharacterDatabase.CreateStatement(updateATeam, "UPDATE arena_team_stats SET rating = ?, games = ?, played = ?, rank = ?, wins = ?, wins2 = ? WHERE arenateamid = ?");
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(updateATeam, "UPDATE arena_team_stats SET rating = ?, games = ?, played = ?, rank = ?, wins = ?, wins2 = ? WHERE arenateamid = ?");
     stmt.addUInt32(stats.rating);
     stmt.addUInt32(stats.games_week);
     stmt.addUInt32(stats.games_season);
@@ -717,7 +717,7 @@ void ArenaTeam::SaveToDB()
     // called after a match has ended, or when calculating arena_points
     for (MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
-        stmt = CharacterDatabase.CreateStatement(updateAMembers, "UPDATE arena_team_member SET played_week = ?, wons_week = ?, played_season = ?, wons_season = ?, personal_rating = ? WHERE arenateamid = ? AND guid = ?");
+        stmt = RealmDataDatabase.CreateStatement(updateAMembers, "UPDATE arena_team_member SET played_week = ?, wons_week = ?, played_season = ?, wons_season = ?, personal_rating = ? WHERE arenateamid = ? AND guid = ?");
 
         stmt.addUInt32(itr->games_week);
         stmt.addUInt32(itr->wins_week);
@@ -732,13 +732,13 @@ void ArenaTeam::SaveToDB()
         switch (GetType())
         {
             case 2:
-                stmt = CharacterDatabase.CreateStatement(updateH2Rating, "UPDATE hidden_rating SET rating2 = ? WHERE guid = ?");
+                stmt = RealmDataDatabase.CreateStatement(updateH2Rating, "UPDATE hidden_rating SET rating2 = ? WHERE guid = ?");
                 break;
             case 3:
-                stmt = CharacterDatabase.CreateStatement(updateH3Rating, "UPDATE hidden_rating SET rating3 = ? WHERE guid = ?");
+                stmt = RealmDataDatabase.CreateStatement(updateH3Rating, "UPDATE hidden_rating SET rating3 = ? WHERE guid = ?");
                 break;
             case 5:
-                stmt = CharacterDatabase.CreateStatement(updateH5Rating, "UPDATE hidden_rating SET rating5 = ? WHERE guid = ?");
+                stmt = RealmDataDatabase.CreateStatement(updateH5Rating, "UPDATE hidden_rating SET rating5 = ? WHERE guid = ?");
                 break;
             default:
                 continue;
@@ -749,7 +749,7 @@ void ArenaTeam::SaveToDB()
         stmt.Execute();
     }
 
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 }
 
 void ArenaTeam::FinishWeek()

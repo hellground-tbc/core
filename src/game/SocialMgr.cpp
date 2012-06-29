@@ -72,12 +72,12 @@ bool PlayerSocial::AddToSocialList(uint32 friend_guid, bool ignore)
     PlayerSocialMap::iterator itr = m_playerSocialMap.find(friend_guid);
     if (itr != m_playerSocialMap.end())
     {
-        CharacterDatabase.PExecute("UPDATE character_social SET flags = (flags | %u) WHERE guid = '%u' AND friend = '%u'", flag, GetPlayerGUID(), friend_guid);
+        RealmDataDatabase.PExecute("UPDATE character_social SET flags = (flags | %u) WHERE guid = '%u' AND friend = '%u'", flag, GetPlayerGUID(), friend_guid);
         m_playerSocialMap[friend_guid].Flags |= flag;
     }
     else
     {
-        CharacterDatabase.PExecute("REPLACE INTO character_social (guid, friend, flags) VALUES ('%u', '%u', '%u')", GetPlayerGUID(), friend_guid, flag);
+        RealmDataDatabase.PExecute("REPLACE INTO character_social (guid, friend, flags) VALUES ('%u', '%u', '%u')", GetPlayerGUID(), friend_guid, flag);
         FriendInfo fi;
         fi.Flags |= flag;
         m_playerSocialMap[friend_guid] = fi;
@@ -98,12 +98,12 @@ void PlayerSocial::RemoveFromSocialList(uint32 friend_guid, bool ignore)
     itr->second.Flags &= ~flag;
     if (itr->second.Flags == 0)
     {
-        CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' AND friend = '%u'", GetPlayerGUID(), friend_guid);
+        RealmDataDatabase.PExecute("DELETE FROM character_social WHERE guid = '%u' AND friend = '%u'", GetPlayerGUID(), friend_guid);
         m_playerSocialMap.erase(itr);
     }
     else
     {
-        CharacterDatabase.PExecute("UPDATE character_social SET flags = (flags & ~%u) WHERE guid = '%u' AND friend = '%u'", flag, GetPlayerGUID(), friend_guid);
+        RealmDataDatabase.PExecute("UPDATE character_social SET flags = (flags & ~%u) WHERE guid = '%u' AND friend = '%u'", flag, GetPlayerGUID(), friend_guid);
     }
 }
 
@@ -115,8 +115,8 @@ void PlayerSocial::SetFriendNote(uint32 friend_guid, std::string note)
 
     utf8truncate(note,48);                                  // DB and client size limitation
 
-    CharacterDatabase.escape_string(note);
-    CharacterDatabase.PExecute("UPDATE character_social SET note = '%s' WHERE guid = '%u' AND friend = '%u'", note.c_str(), GetPlayerGUID(), friend_guid);
+    RealmDataDatabase.escape_string(note);
+    RealmDataDatabase.PExecute("UPDATE character_social SET note = '%s' WHERE guid = '%u' AND friend = '%u'", note.c_str(), GetPlayerGUID(), friend_guid);
     m_playerSocialMap[friend_guid].Note = note;
 }
 

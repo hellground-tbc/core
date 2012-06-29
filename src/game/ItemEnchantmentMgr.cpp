@@ -55,7 +55,7 @@ void LoadRandomEnchantmentsTable()
     float chance;
     uint32 count = 0;
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, ench, chance FROM item_enchantment_template");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, ench, chance FROM item_enchantment_template");
 
     if (result)
     {

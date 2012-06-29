@@ -33,7 +33,7 @@
 
 void MapManager::LoadTransports()
 {
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, name, period FROM transports");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, name, period FROM transports");
 
     uint32 count = 0;
 
@@ -123,7 +123,7 @@ void MapManager::LoadTransports()
     sLog.outString(">> Loaded %u transports", count);
 
     // check transport data DB integrity
-    result = WorldDatabase.Query("SELECT gameobject.guid,gameobject.id,transports.name FROM gameobject,transports WHERE gameobject.id = transports.entry");
+    result = GameDataDatabase.Query("SELECT gameobject.guid,gameobject.id,transports.name FROM gameobject,transports WHERE gameobject.id = transports.entry");
     if (result)                                              // wrong data found
     {
         do

@@ -527,7 +527,7 @@ void PoolGroup<GameObject>::ReSpawn1Object(PoolObject* obj)
         {
             if (Map* map = const_cast<Map*>(sMapMgr.FindMap(data->mapid)))
             {
-                if (GameObject* pGameobject = map->GetGameObject(ObjectGuid(HIGHGUID_GAMEOBJECT, data->id, obj->guid)))    
+                if (GameObject* pGameobject = map->GetGameObject(ObjectGuid(HIGHGUID_GAMEOBJECT, data->id, obj->guid)))
                 {
                     pGameobject->Reset();
                     pGameobject->GetMap()->Add(pGameobject);
@@ -606,7 +606,7 @@ struct PoolMapChecker
 
 void PoolManager::LoadFromDB()
 {
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT MAX(entry) FROM pool_template");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT MAX(entry) FROM pool_template");
     if (!result)
     {
         sLog.outString(">> Table pool_template is empty.");
@@ -621,7 +621,7 @@ void PoolManager::LoadFromDB()
 
     mPoolTemplate.resize(max_pool_id + 1);
 
-    result = WorldDatabase.Query("SELECT entry,max_limit FROM pool_template");
+    result = GameDataDatabase.Query("SELECT entry,max_limit FROM pool_template");
     if (!result)
     {
         mPoolTemplate.clear();
@@ -658,7 +658,7 @@ void PoolManager::LoadFromDB()
     mPoolCreatureGroups.resize(max_pool_id + 1);
     mCreatureSearchMap.clear();
     //                                   1     2           3
-    result = WorldDatabase.Query("SELECT guid, pool_entry, chance FROM pool_creature");
+    result = GameDataDatabase.Query("SELECT guid, pool_entry, chance FROM pool_creature");
 
     count = 0;
     if (!result)
@@ -723,7 +723,7 @@ void PoolManager::LoadFromDB()
     mPoolGameobjectGroups.resize(max_pool_id + 1);
     mGameobjectSearchMap.clear();
     //                                   1     2           3
-    result = WorldDatabase.Query("SELECT guid, pool_entry, chance FROM pool_gameobject");
+    result = GameDataDatabase.Query("SELECT guid, pool_entry, chance FROM pool_gameobject");
 
     count = 0;
     if (!result)
@@ -795,7 +795,7 @@ void PoolManager::LoadFromDB()
     // Pool of pools
     mPoolPoolGroups.resize(max_pool_id + 1);
     //                                   1        2            3
-    result = WorldDatabase.Query("SELECT pool_id, mother_pool, chance FROM pool_pool");
+    result = GameDataDatabase.Query("SELECT pool_id, mother_pool, chance FROM pool_pool");
 
     count = 0;
     if( !result )

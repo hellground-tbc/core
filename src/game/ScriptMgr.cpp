@@ -84,7 +84,7 @@ void ScriptMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
 
     scripts.clear();                                        // need for reload support
 
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT id,delay,command,datalong,datalong2,dataint, x, y, z, o FROM %s", tablename);
+    QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT id,delay,command,datalong,datalong2,dataint, x, y, z, o FROM %s", tablename);
 
     uint32 count = 0;
 
@@ -450,7 +450,7 @@ void ScriptMgr::LoadEventScripts()
 void ScriptMgr::LoadEventIdScripts()
 {
     m_EventIdScripts.clear();                           // need for reload case
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, ScriptName FROM scripted_event_id");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id, ScriptName FROM scripted_event_id");
 
     uint32 count = 0;
 
@@ -532,7 +532,7 @@ void ScriptMgr::LoadEventIdScripts()
 void ScriptMgr::LoadSpellIdScripts()
 {
     m_SpellIdScripts.clear();                           // need for reload case
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, ScriptName FROM scripted_spell_id");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id, ScriptName FROM scripted_spell_id");
 
     uint32 count = 0;
 
@@ -577,7 +577,7 @@ void ScriptMgr::LoadWaypointScripts()
 
     for (ScriptMapMap::const_iterator itr = sWaypointScripts.begin(); itr != sWaypointScripts.end(); ++itr)
     {
-        QueryResultAutoPtr query = WorldDatabase.PQuery("SELECT * FROM `waypoint_scripts` WHERE `id` = %u", itr->first);
+        QueryResultAutoPtr query = GameDataDatabase.PQuery("SELECT * FROM `waypoint_scripts` WHERE `id` = %u", itr->first);
         if (!query || !query->GetRowCount())
             sLog.outErrorDb("There is no waypoint which links to the waypoint script %u", itr->first);
     }
@@ -585,7 +585,7 @@ void ScriptMgr::LoadWaypointScripts()
 
 void ScriptMgr::LoadDbScriptStrings()
 {
-    LoadHellgroundStrings(WorldDatabase,"db_script_string",MIN_DB_SCRIPT_STRING_ID,MAX_DB_SCRIPT_STRING_ID);
+    LoadHellgroundStrings(GameDataDatabase,"db_script_string",MIN_DB_SCRIPT_STRING_ID,MAX_DB_SCRIPT_STRING_ID);
 
     std::set<int32> ids;
 
@@ -608,7 +608,7 @@ void ScriptMgr::LoadDbScriptStrings()
 void ScriptMgr::LoadScriptNames()
 {
     m_scriptNames.push_back("");
-    QueryResultAutoPtr result = WorldDatabase.Query(
+    QueryResultAutoPtr result = GameDataDatabase.Query(
       "SELECT DISTINCT(ScriptName) FROM creature_template WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM gameobject_template WHERE ScriptName <> '' "
@@ -638,7 +638,7 @@ void ScriptMgr::LoadScriptNames()
 void ScriptMgr::LoadAreaTriggerScripts()
 {
     m_AreaTriggerScripts.clear();                            // need for reload case
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, ScriptName FROM areatrigger_scripts");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, ScriptName FROM areatrigger_scripts");
 
     uint32 count = 0;
 
@@ -680,7 +680,7 @@ void ScriptMgr::LoadAreaTriggerScripts()
 void ScriptMgr::LoadCompletedCinematicScripts()
 {
     m_CompletedCinematicScripts.clear();                            // need for reload case
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, ScriptName FROM completed_cinematic_scripts");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, ScriptName FROM completed_cinematic_scripts");
 
     uint32 count = 0;
 

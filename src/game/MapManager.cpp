@@ -306,7 +306,7 @@ void MapManager::InitMaxInstanceId()
 {
     i_MaxInstanceId = 0;
 
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT MAX(id) FROM instance");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT MAX(id) FROM instance");
     if (result)
         i_MaxInstanceId = result->Fetch()[0].GetUInt32();
 }

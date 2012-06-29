@@ -973,13 +973,13 @@ void WorldSession::HandleGuildBankDeposit(WorldPacket & recv_data)
     if (GetPlayer()->GetMoney() < money)
         return;
 
-    CharacterDatabase.BeginTransaction();
+    RealmDataDatabase.BeginTransaction();
 
     pGuild->SetBankMoney(pGuild->GetGuildBankMoney()+money);
     GetPlayer()->ModifyMoney(-int(money));
     GetPlayer()->SaveGoldToDB();
 
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 
     if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
     {
@@ -1030,18 +1030,18 @@ void WorldSession::HandleGuildBankWithdraw(WorldPacket & recv_data)
     if (!pGuild->HasRankRight(GetPlayer()->GetRank(), GR_RIGHT_WITHDRAW_GOLD))
         return;
 
-    CharacterDatabase.BeginTransaction();
+    RealmDataDatabase.BeginTransaction();
 
     if (!pGuild->MemberMoneyWithdraw(money, GetPlayer()->GetGUIDLow()))
     {
-        CharacterDatabase.RollbackTransaction();
+        RealmDataDatabase.RollbackTransaction();
         return;
     }
 
     GetPlayer()->ModifyMoney(money);
     GetPlayer()->SaveGoldToDB();
 
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 
     // Log
     pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_MONEY, uint8(0), GetPlayer()->GetGUIDLow(), money);
@@ -1178,7 +1178,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                 return;
             }
 
-            CharacterDatabase.BeginTransaction();
+            RealmDataDatabase.BeginTransaction();
             pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab, pl->GetGUIDLow(), pItemSrc->GetEntry(), SplitedAmount, BankTabDst);
 
             pl->ItemRemovedQuestCheck(pItemSrc->GetEntry(), SplitedAmount);
@@ -1186,7 +1186,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
             pItemSrc->FSetState(ITEM_CHANGED);
             pItemSrc->SaveToDB();                           // not in inventory and can be save standalone
             pGuild->StoreItem(BankTabDst,dest,pNewItem);
-            CharacterDatabase.CommitTransaction();
+            RealmDataDatabase.CommitTransaction();
         }
         else                                                // non split
         {
@@ -1194,12 +1194,12 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
             uint8 msg = pGuild->CanStoreItem(BankTabDst,BankTabSlotDst,gDest,pItemSrc->GetCount(),pItemSrc,false);
             if (msg == EQUIP_ERR_OK)                       // merge to
             {
-                CharacterDatabase.BeginTransaction();
+                RealmDataDatabase.BeginTransaction();
                 pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab,    pl->GetGUIDLow(), pItemSrc->GetEntry(), pItemSrc->GetCount(), BankTabDst);
 
                 pGuild->RemoveItem(BankTab, BankTabSlot);
                 pGuild->StoreItem(BankTabDst, gDest, pItemSrc);
-                CharacterDatabase.CommitTransaction();
+                RealmDataDatabase.CommitTransaction();
             }
             else                                            // swap
             {
@@ -1231,7 +1231,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                         return;
                 }
 
-                CharacterDatabase.BeginTransaction();
+                RealmDataDatabase.BeginTransaction();
                 pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTab,    pl->GetGUIDLow(), pItemSrc->GetEntry(), pItemSrc->GetCount(), BankTabDst);
                 pGuild->LogBankEvent(GUILD_BANK_LOG_MOVE_ITEM, BankTabDst, pl->GetGUIDLow(), pItemDst->GetEntry(), pItemDst->GetCount(), BankTab);
 
@@ -1239,7 +1239,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                 pGuild->RemoveItem(BankTabDst, BankTabSlotDst);
                 pGuild->StoreItem(BankTab, gSrc, pItemDst);
                 pGuild->StoreItem(BankTabDst, gDest, pItemSrc);
-                CharacterDatabase.CommitTransaction();
+                RealmDataDatabase.CommitTransaction();
             }
         }
         pGuild->DisplayGuildBankContentUpdate(BankTab,BankTabSlot,BankTab==BankTabDst ? BankTabSlotDst : -1);
@@ -1311,7 +1311,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                 return;
             }
 
-            CharacterDatabase.BeginTransaction();
+            RealmDataDatabase.BeginTransaction();
             pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), SplitedAmount);
 
             pItemBank->SetCount(pItemBank->GetCount()-SplitedAmount);
@@ -1321,7 +1321,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
             pl->SaveInventoryAndGoldToDB();
 
             pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
-            CharacterDatabase.CommitTransaction();
+            RealmDataDatabase.CommitTransaction();
         }
         else                                                // Bank -> Char swap with slot (move)
         {
@@ -1334,7 +1334,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                 if (remRight <= 0)
                     return;
 
-                CharacterDatabase.BeginTransaction();
+                RealmDataDatabase.BeginTransaction();
                 pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
 
                 pGuild->RemoveItem(BankTab, BankTabSlot);
@@ -1342,7 +1342,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                 pl->SaveInventoryAndGoldToDB();
 
                 pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
-                CharacterDatabase.CommitTransaction();
+                RealmDataDatabase.CommitTransaction();
             }
             else                                            // Bank <-> Char swap items
             {
@@ -1403,7 +1403,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                     }
                 }
 
-                CharacterDatabase.BeginTransaction();
+                RealmDataDatabase.BeginTransaction();
                 pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
                 if (pItemChar)
                     pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
@@ -1421,7 +1421,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                 pl->SaveInventoryAndGoldToDB();
 
                 pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
-                CharacterDatabase.CommitTransaction();
+                RealmDataDatabase.CommitTransaction();
             }
         }
         pGuild->DisplayGuildBankContentUpdate(BankTab,BankTabSlot);
@@ -1477,7 +1477,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                 pItemChar->GetProto()->Name1,pItemChar->GetEntry(),SplitedAmount,GuildId);
         }
 
-        CharacterDatabase.BeginTransaction();
+        RealmDataDatabase.BeginTransaction();
         pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), SplitedAmount);
 
         pl->ItemRemovedQuestCheck(pItemChar->GetEntry(), SplitedAmount);
@@ -1485,7 +1485,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
         pItemChar->SetState(ITEM_CHANGED);
         pl->SaveInventoryAndGoldToDB();
         pGuild->StoreItem(BankTab, dest, pNewItem);
-        CharacterDatabase.CommitTransaction();
+        RealmDataDatabase.CommitTransaction();
 
         pGuild->DisplayGuildBankContentUpdate(BankTab,dest);
     }
@@ -1512,7 +1512,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                     GuildId);
             }
 
-            CharacterDatabase.BeginTransaction();
+            RealmDataDatabase.BeginTransaction();
             pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
 
             pl->MoveItemFromInventory(PlayerBag, PlayerSlot, true);
@@ -1520,7 +1520,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
 
             pGuild->StoreItem(BankTab,dest,pItemChar);
             pl->SaveInventoryAndGoldToDB();
-            CharacterDatabase.CommitTransaction();
+            RealmDataDatabase.CommitTransaction();
 
             pGuild->DisplayGuildBankContentUpdate(BankTab,dest);
         }
@@ -1570,7 +1570,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
                     GuildId);
             }
 
-            CharacterDatabase.BeginTransaction();
+            RealmDataDatabase.BeginTransaction();
             if (pItemBank)
                 pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
             pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
@@ -1586,7 +1586,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
             pl->SaveInventoryAndGoldToDB();
             if (pItemBank)
                 pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
-            CharacterDatabase.CommitTransaction();
+            RealmDataDatabase.CommitTransaction();
 
             pGuild->DisplayGuildBankContentUpdate(BankTab,gDest);
         }

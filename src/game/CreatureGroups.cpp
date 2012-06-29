@@ -75,7 +75,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     CreatureGroupMap.clear();
 
     //Check Integrity of the table
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT MAX(`leaderGUID`) FROM `creature_formations`");
+    QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT MAX(`leaderGUID`) FROM `creature_formations`");
 
     if (!result)
     {
@@ -84,7 +84,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     }
 
     //Get group data
-    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI` FROM `creature_formations` ORDER BY `leaderGUID`");
+    result = GameDataDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI` FROM `creature_formations` ORDER BY `leaderGUID`");
 
     if (!result)
     {

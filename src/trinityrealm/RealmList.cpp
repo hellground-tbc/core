@@ -26,7 +26,7 @@
 #include "Util.h"                                           // for Tokens typedef
 #include "Database/DatabaseEnv.h"
 
-extern DatabaseType LoginDatabase;
+extern DatabaseType AccountsDatabase;
 
 // will only support WoW 1.12.1/1.12.2 , WoW:TBC 2.4.3 and official release for WoW:WotLK and later, client builds 10505, 8606, 6005, 5875
 // if you need more from old build then add it in cases in realmd sources code
@@ -138,7 +138,7 @@ void RealmList::UpdateRealms(bool init)
     sLog.outDetail("Updating Realm List...");
 
     ////                                               0   1     2        3     4     5           6         7                     8           9
-    QueryResultAutoPtr result = LoginDatabase.Query( "SELECT id, name, address, port, icon, realmflags, timezone, allowedSecurityLevel, population, realmbuilds FROM realmlist WHERE (realmflags & 1) = 0 ORDER BY name" );
+    QueryResultAutoPtr result = AccountsDatabase.Query( "SELECT id, name, address, port, icon, realmflags, timezone, allowedSecurityLevel, population, realmbuilds FROM realmlist WHERE (realmflags & 1) = 0 ORDER BY name" );
 
     ///- Circle through results and add them to the realm map
     if(result)

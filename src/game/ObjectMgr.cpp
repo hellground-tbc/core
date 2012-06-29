@@ -266,7 +266,7 @@ void ObjectMgr::LoadCreatureLocales()
 {
     mCreatureLocaleMap.clear();                              // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,name_loc1,subname_loc1,name_loc2,subname_loc2,name_loc3,subname_loc3,name_loc4,subname_loc4,name_loc5,subname_loc5,name_loc6,subname_loc6,name_loc7,subname_loc7,name_loc8,subname_loc8 FROM locales_creature");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,name_loc1,subname_loc1,name_loc2,subname_loc2,name_loc3,subname_loc3,name_loc4,subname_loc4,name_loc5,subname_loc5,name_loc6,subname_loc6,name_loc7,subname_loc7,name_loc8,subname_loc8 FROM locales_creature");
 
     if (!result)
     {
@@ -327,7 +327,7 @@ void ObjectMgr::LoadNpcOptionLocales()
 {
     mNpcOptionLocaleMap.clear();                              // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,"
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,"
         "option_text_loc1,box_text_loc1,option_text_loc2,box_text_loc2,"
         "option_text_loc3,box_text_loc3,option_text_loc4,box_text_loc4,"
         "option_text_loc5,box_text_loc5,option_text_loc6,box_text_loc6,"
@@ -788,7 +788,7 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
 void ObjectMgr::LoadCreatureLinkedRespawn()
 {
     mCreatureLinkedRespawnMap.clear();
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT guid, linkedGuid FROM creature_linked_respawn ORDER BY guid ASC");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT guid, linkedGuid FROM creature_linked_respawn ORDER BY guid ASC");
 
     if (!result)
     {
@@ -828,14 +828,14 @@ bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
     if (!linkedGuid) // we're removing the linking
     {
         mCreatureLinkedRespawnMap.erase(guid);
-        WorldDatabase.DirectPExecute("DELETE FROM `creature_linked_respawn` WHERE `guid` = '%u'",guid);
+        GameDataDatabase.DirectPExecute("DELETE FROM `creature_linked_respawn` WHERE `guid` = '%u'",guid);
         return true;
     }
 
     if (CheckCreatureLinkedRespawn(guid,linkedGuid)) // we add/change linking
     {
         mCreatureLinkedRespawnMap[guid] = linkedGuid;
-        WorldDatabase.DirectPExecute("REPLACE INTO `creature_linked_respawn`(`guid`,`linkedGuid`) VALUES ('%u','%u')",guid,linkedGuid);
+        GameDataDatabase.DirectPExecute("REPLACE INTO `creature_linked_respawn`(`guid`,`linkedGuid`) VALUES ('%u','%u')",guid,linkedGuid);
         return true;
     }
     return false;
@@ -844,7 +844,7 @@ bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
 void ObjectMgr::LoadUnqueuedAccountList()
 {
     m_UnqueuedAccounts.clear();
-    QueryResultAutoPtr result = LoginDatabase.Query("SELECT accid FROM unqueue_account ORDER BY accid ASC");
+    QueryResultAutoPtr result = AccountsDatabase.Query("SELECT accid FROM unqueue_account ORDER BY accid ASC");
 
     if (!result)
     {
@@ -881,7 +881,7 @@ void ObjectMgr::LoadCreatures()
 {
     uint32 count = 0;
     //                                                       0              1   2    3
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
     //   12         13       14          15            16         17     18
@@ -1138,7 +1138,7 @@ void ObjectMgr::LoadGameobjects()
     uint32 count = 0;
 
     //                                                       0                1   2    3           4           5           6
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation,"
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation,"
     //   7          8          9          10         11             12            13     14         15     16
         "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event, pool_entry "
         "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid "
@@ -1264,7 +1264,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 {
     uint32 count = 0;
 
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT guid,respawntime,instance FROM creature_respawn");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT guid,respawntime,instance FROM creature_respawn");
 
     if (!result)
     {
@@ -1301,7 +1301,7 @@ void ObjectMgr::LoadGuildAnnCooldowns()
 {
     uint32 count = 0;
 
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT guild_id, cooldown_end FROM guild_announce_cooldown");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT guild_id, cooldown_end FROM guild_announce_cooldown");
 
     if (!result)
     {
@@ -1336,11 +1336,11 @@ void ObjectMgr::LoadGuildAnnCooldowns()
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
     // remove outdated data
-    CharacterDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP(NOW())");
+    RealmDataDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP(NOW())");
 
     uint32 count = 0;
 
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT guid,respawntime,instance FROM gameobject_respawn");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT guid,respawntime,instance FROM gameobject_respawn");
 
     if (!result)
     {
@@ -1378,10 +1378,10 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
 {
     uint64 guid = 0;
 
-    CharacterDatabase.escape_string(name);
+    RealmDataDatabase.escape_string(name);
 
     // Player name safe to sending to DB (checked at login) and this function using
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'", name.c_str());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'", name.c_str());
     if (result)
         guid = MAKE_NEW_GUID((*result)[0].GetUInt32(), 0, HIGHGUID_PLAYER);
 
@@ -1397,7 +1397,7 @@ bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
         return true;
     }
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT name FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT name FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
 
     if (result)
     {
@@ -1410,7 +1410,7 @@ bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
 
 uint32 ObjectMgr::GetPlayerTeamByGUID(const uint64 &guid) const
 {
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT race FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT race FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
 
     if (result)
     {
@@ -1430,7 +1430,7 @@ uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
     if(Player* player = GetPlayer(guid))
         return player->GetSession()->GetAccountId();
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
     if (result)
     {
         uint32 acc = (*result)[0].GetUInt32();
@@ -1442,7 +1442,7 @@ uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
 
 uint32 ObjectMgr::GetPlayerAccountIdByPlayerName(const std::string& name) const
 {
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'", name.c_str());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'", name.c_str());
     if (result)
     {
         uint32 acc = (*result)[0].GetUInt32();
@@ -1456,7 +1456,7 @@ void ObjectMgr::LoadItemLocales()
 {
     mItemLocaleMap.clear();                                 // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,name_loc1,description_loc1,name_loc2,description_loc2,name_loc3,description_loc3,name_loc4,description_loc4,name_loc5,description_loc5,name_loc6,description_loc6,name_loc7,description_loc7,name_loc8,description_loc8 FROM locales_item");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,name_loc1,description_loc1,name_loc2,description_loc2,name_loc3,description_loc3,name_loc4,description_loc4,name_loc5,description_loc5,name_loc6,description_loc6,name_loc7,description_loc7,name_loc8,description_loc8 FROM locales_item");
 
     if (!result)
     {
@@ -1869,7 +1869,7 @@ void ObjectMgr::LoadPetLevelInfo()
     // Loading levels data
     {
         //                                                        0               1      2   3     4    5    6    7     8    9
-        QueryResultAutoPtr result  = WorldDatabase.Query("SELECT creature_entry, level, hp, mana, str, agi, sta, inte, spi, armor FROM pet_levelstats");
+        QueryResultAutoPtr result  = GameDataDatabase.Query("SELECT creature_entry, level, hp, mana, str, agi, sta, inte, spi, armor FROM pet_levelstats");
 
         uint32 count = 0;
 
@@ -1978,7 +1978,7 @@ void ObjectMgr::LoadPlayerInfo()
     // Load playercreate
     {
         //                                                       0     1      2    3     4           5           6
-        QueryResultAutoPtr result = WorldDatabase.Query("SELECT race, class, map, zone, position_x, position_y, position_z FROM playercreateinfo");
+        QueryResultAutoPtr result = GameDataDatabase.Query("SELECT race, class, map, zone, position_x, position_y, position_z FROM playercreateinfo");
 
         uint32 count = 0;
 
@@ -2067,7 +2067,7 @@ void ObjectMgr::LoadPlayerInfo()
     // Load playercreate items
     {
         //                                                       0     1      2       3
-        QueryResultAutoPtr result = WorldDatabase.Query("SELECT race, class, itemid, amount FROM playercreateinfo_item");
+        QueryResultAutoPtr result = GameDataDatabase.Query("SELECT race, class, itemid, amount FROM playercreateinfo_item");
 
         uint32 count = 0;
 
@@ -2137,9 +2137,9 @@ void ObjectMgr::LoadPlayerInfo()
 
         QueryResultAutoPtr result = QueryResultAutoPtr(NULL);
         if (sWorld.getConfig(CONFIG_START_ALL_SPELLS))
-            result = WorldDatabase.Query("SELECT race, class, Spell, Active FROM playercreateinfo_spell_custom");
+            result = GameDataDatabase.Query("SELECT race, class, Spell, Active FROM playercreateinfo_spell_custom");
         else
-            result = WorldDatabase.Query("SELECT race, class, Spell, Active FROM playercreateinfo_spell");
+            result = GameDataDatabase.Query("SELECT race, class, Spell, Active FROM playercreateinfo_spell");
 
         uint32 count = 0;
 
@@ -2189,7 +2189,7 @@ void ObjectMgr::LoadPlayerInfo()
     // Load playercreate actions
     {
         //                                                0     1      2       3       4     5
-        QueryResultAutoPtr result = WorldDatabase.Query("SELECT race, class, button, action, type, misc FROM playercreateinfo_action");
+        QueryResultAutoPtr result = GameDataDatabase.Query("SELECT race, class, button, action, type, misc FROM playercreateinfo_action");
 
         uint32 count = 0;
 
@@ -2242,7 +2242,7 @@ void ObjectMgr::LoadPlayerInfo()
     // Loading levels data (class only dependent)
     {
         //                                                 0      1      2       3
-        QueryResultAutoPtr result  = WorldDatabase.Query("SELECT class, level, basehp, basemana FROM player_classlevelstats");
+        QueryResultAutoPtr result  = GameDataDatabase.Query("SELECT class, level, basehp, basemana FROM player_classlevelstats");
 
         uint32 count = 0;
 
@@ -2328,7 +2328,7 @@ void ObjectMgr::LoadPlayerInfo()
     // Loading levels data (class/race dependent)
     {
         //                                                        0     1      2      3    4    5    6    7
-        QueryResultAutoPtr result  = WorldDatabase.Query("SELECT race, class, level, str, agi, sta, inte, spi FROM player_levelstats");
+        QueryResultAutoPtr result  = GameDataDatabase.Query("SELECT race, class, level, str, agi, sta, inte, spi FROM player_levelstats");
 
         uint32 count = 0;
 
@@ -2548,7 +2548,7 @@ void ObjectMgr::LoadGuilds()
     Guild *newguild;
     uint32 count = 0;
 
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT guildid FROM guild");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT guildid FROM guild");
 
     if (!result)
     {
@@ -2590,7 +2590,7 @@ void ObjectMgr::LoadArenaTeams()
 {
     uint32 count = 0;
 
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT arenateamid FROM arena_team");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT arenateamid FROM arena_team");
 
     if (!result)
     {
@@ -2633,7 +2633,7 @@ void ObjectMgr::LoadGroups()
     uint64 leaderGuid = 0;
     uint32 count = 0;
     //                                                           0         1              2           3           4              5      6      7      8      9      10     11     12     13      14          15
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty, leaderGuid FROM groups");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT mainTank, mainAssistant, lootMethod, looterGuid, lootThreshold, icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8, isRaid, difficulty, leaderGuid FROM groups");
 
     if (!result)
     {
@@ -2673,7 +2673,7 @@ void ObjectMgr::LoadGroups()
     group = NULL;
     leaderGuid = 0;
     //                                        0           1          2         3
-    result = CharacterDatabase.Query("SELECT memberGuid, assistant, subgroup, leaderGuid FROM group_member ORDER BY leaderGuid");
+    result = RealmDataDatabase.Query("SELECT memberGuid, assistant, subgroup, leaderGuid FROM group_member ORDER BY leaderGuid");
     if (!result)
     {
         BarGoLink bar2(1);
@@ -2694,7 +2694,7 @@ void ObjectMgr::LoadGroups()
                 if (!group)
                 {
                     sLog.outErrorDb("Incorrect entry in group_member table : no group with leader %d for member %d!", fields[3].GetUInt32(), fields[0].GetUInt32());
-                    CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
+                    RealmDataDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
                     continue;
                 }
             }
@@ -2702,7 +2702,7 @@ void ObjectMgr::LoadGroups()
             if (!group->LoadMemberFromDB(fields[0].GetUInt32(), fields[2].GetUInt8(), fields[1].GetBool()))
             {
                 sLog.outErrorDb("Incorrect entry in group_member table : member %d cannot be added to player %d's group!", fields[0].GetUInt32(), fields[3].GetUInt32());
-                CharacterDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
+                RealmDataDatabase.PExecute("DELETE FROM group_member WHERE memberGuid = '%d'", fields[0].GetUInt32());
             }
         }
         while (result->NextRow());
@@ -2727,7 +2727,7 @@ void ObjectMgr::LoadGroups()
     count = 0;
     group = NULL;
     leaderGuid = 0;
-    result = CharacterDatabase.Query(
+    result = RealmDataDatabase.Query(
         //      0           1    2         3          4           5
         "SELECT leaderGuid, map, instance, permanent, difficulty, resettime, "
         // 6
@@ -2792,7 +2792,7 @@ void ObjectMgr::LoadQuests()
     mExclusiveQuestGroups.clear();
 
     //                                                       0      1       2           3             4         5           6     7              8
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, Method, ZoneOrSort, SkillOrClass, MinLevel, QuestLevel, Type, RequiredRaces, RequiredSkillValue,"
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, Method, ZoneOrSort, SkillOrClass, MinLevel, QuestLevel, Type, RequiredRaces, RequiredSkillValue,"
     //   9                    10                 11                     12                   13                     14                   15                16
         "RepObjectiveFaction, RepObjectiveValue, RequiredMinRepFaction, RequiredMinRepValue, RequiredMaxRepFaction, RequiredMaxRepValue, SuggestedPlayers, LimitTime,"
     //   17          18            19           20           21           22              23                24         25            26
@@ -3287,7 +3287,7 @@ void ObjectMgr::LoadQuestLocales()
 {
     mQuestLocaleMap.clear();                                // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,"
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,"
         "Title_loc1,Details_loc1,Objectives_loc1,OfferRewardText_loc1,RequestItemsText_loc1,EndText_loc1,ObjectiveText1_loc1,ObjectiveText2_loc1,ObjectiveText3_loc1,ObjectiveText4_loc1,"
         "Title_loc2,Details_loc2,Objectives_loc2,OfferRewardText_loc2,RequestItemsText_loc2,EndText_loc2,ObjectiveText1_loc2,ObjectiveText2_loc2,ObjectiveText3_loc2,ObjectiveText4_loc2,"
         "Title_loc3,Details_loc3,Objectives_loc3,OfferRewardText_loc3,RequestItemsText_loc3,EndText_loc3,ObjectiveText1_loc3,ObjectiveText2_loc3,ObjectiveText3_loc3,ObjectiveText4_loc3,"
@@ -3423,7 +3423,7 @@ void ObjectMgr::LoadQuestLocales()
 
 void ObjectMgr::LoadPetCreateSpells()
 {
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, Spell1, Spell2, Spell3, Spell4 FROM petcreateinfo_spell");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, Spell1, Spell2, Spell3, Spell4 FROM petcreateinfo_spell");
     if (!result)
     {
         BarGoLink bar(1);
@@ -3517,7 +3517,7 @@ void ObjectMgr::LoadPageTextLocales()
 {
     mPageTextLocaleMap.clear();                             // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,text_loc1,text_loc2,text_loc3,text_loc4,text_loc5,text_loc6,text_loc7,text_loc8 FROM locales_page_text");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,text_loc1,text_loc2,text_loc3,text_loc4,text_loc5,text_loc6,text_loc7,text_loc8 FROM locales_page_text");
     if (!result)
     {
         BarGoLink bar(1);
@@ -3623,7 +3623,7 @@ GossipText const *ObjectMgr::GetGossipText(uint32 Text_ID) const
 
 void ObjectMgr::LoadGossipText()
 {
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT * FROM npc_text");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT * FROM npc_text");
 
     int count = 0;
     if (!result)
@@ -3684,7 +3684,7 @@ void ObjectMgr::LoadNpcTextLocales()
 {
     mNpcTextLocaleMap.clear();                              // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,"
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,"
         "Text0_0_loc1,Text0_1_loc1,Text1_0_loc1,Text1_1_loc1,Text2_0_loc1,Text2_1_loc1,Text3_0_loc1,Text3_1_loc1,Text4_0_loc1,Text4_1_loc1,Text5_0_loc1,Text5_1_loc1,Text6_0_loc1,Text6_1_loc1,Text7_0_loc1,Text7_1_loc1,"
         "Text0_0_loc2,Text0_1_loc2,Text1_0_loc2,Text1_1_loc2,Text2_0_loc2,Text2_1_loc2,Text3_0_loc2,Text3_1_loc1,Text4_0_loc2,Text4_1_loc2,Text5_0_loc2,Text5_1_loc2,Text6_0_loc2,Text6_1_loc2,Text7_0_loc2,Text7_1_loc2,"
         "Text0_0_loc3,Text0_1_loc3,Text1_0_loc3,Text1_1_loc3,Text2_0_loc3,Text2_1_loc3,Text3_0_loc3,Text3_1_loc1,Text4_0_loc3,Text4_1_loc3,Text5_0_loc3,Text5_1_loc3,Text6_0_loc3,Text6_1_loc3,Text7_0_loc3,Text7_1_loc3,"
@@ -3760,9 +3760,9 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
     sLog.outDebug("Returning mails current time: hour: %d, minute: %d, second: %d ", localtime(&basetime)->tm_hour, localtime(&basetime)->tm_min, localtime(&basetime)->tm_sec);
     //delete all old mails without item and without body immediately, if starting server
     if (!serverUp)
-        CharacterDatabase.PExecute("DELETE FROM mail WHERE expire_time < '" UI64FMTD "' AND has_items = '0' AND itemTextId = 0", (uint64)basetime);
+        RealmDataDatabase.PExecute("DELETE FROM mail WHERE expire_time < '" UI64FMTD "' AND has_items = '0' AND itemTextId = 0", (uint64)basetime);
     //                                                            0  1           2      3        4          5         6           7   8       9
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT id,messageType,sender,receiver,itemTextId,has_items,expire_time,cod,checked,mailTemplateId FROM mail WHERE expire_time < '" UI64FMTD "'", (uint64)basetime);
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT id,messageType,sender,receiver,itemTextId,has_items,expire_time,cod,checked,mailTemplateId FROM mail WHERE expire_time < '" UI64FMTD "'", (uint64)basetime);
     if (!result)
         return;                                             // any mails need to be returned or deleted
     Field *fields;
@@ -3799,7 +3799,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         //delete or return mail:
         if (has_items)
         {
-            QueryResultAutoPtr resultItems = CharacterDatabase.PQuery("SELECT item_guid,item_template FROM mail_items WHERE mail_id='%u'", m->messageID);
+            QueryResultAutoPtr resultItems = RealmDataDatabase.PQuery("SELECT item_guid,item_template FROM mail_items WHERE mail_id='%u'", m->messageID);
             if (resultItems)
             {
                 do
@@ -3821,16 +3821,16 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
             {
                 // mail open and then not returned
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
-                    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", itr2->item_guid);
+                    RealmDataDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", itr2->item_guid);
             }
             else
             {
                 //mail will be returned:
-                CharacterDatabase.PExecute("UPDATE mail SET sender = '%u', receiver = '%u', expire_time = '" UI64FMTD "', deliver_time = '" UI64FMTD "',cod = '0', checked = '%u' WHERE id = '%u'", m->receiverGuid.GetCounter(), m->sender, (uint64)(basetime + 30*DAY), (uint64)basetime, MAIL_CHECK_MASK_RETURNED, m->messageID);
+                RealmDataDatabase.PExecute("UPDATE mail SET sender = '%u', receiver = '%u', expire_time = '" UI64FMTD "', deliver_time = '" UI64FMTD "',cod = '0', checked = '%u' WHERE id = '%u'", m->receiverGuid.GetCounter(), m->sender, (uint64)(basetime + 30*DAY), (uint64)basetime, MAIL_CHECK_MASK_RETURNED, m->messageID);
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
                 {
-                    CharacterDatabase.PExecute("UPDATE mail_items SET receiver = %u WHERE item_guid = '%u'", m->sender, itr2->item_guid);
-                    CharacterDatabase.PExecute("UPDATE item_instance SET owner_guid = %u WHERE guid = '%u'", m->sender, itr2->item_guid);
+                    RealmDataDatabase.PExecute("UPDATE mail_items SET receiver = %u WHERE item_guid = '%u'", m->sender, itr2->item_guid);
+                    RealmDataDatabase.PExecute("UPDATE item_instance SET owner_guid = %u WHERE guid = '%u'", m->sender, itr2->item_guid);
                 }
                 delete m;
                 continue;
@@ -3838,11 +3838,11 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         }
 
         if (m->itemTextId)
-            CharacterDatabase.PExecute("DELETE FROM item_text WHERE id = '%u'", m->itemTextId);
+            RealmDataDatabase.PExecute("DELETE FROM item_text WHERE id = '%u'", m->itemTextId);
 
         //deletemail = true;
         //delmails << m->messageID << ", ";
-        CharacterDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", m->messageID);
+        RealmDataDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", m->messageID);
         delete m;
     } while (result->NextRow());
 }
@@ -3851,7 +3851,7 @@ void ObjectMgr::LoadQuestAreaTriggers()
 {
     mQuestAreaTriggerMap.clear();                           // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id,quest FROM areatrigger_involvedrelation");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id,quest FROM areatrigger_involvedrelation");
 
     uint32 count = 0;
 
@@ -3914,7 +3914,7 @@ void ObjectMgr::LoadTavernAreaTriggers()
 {
     mTavernAreaTriggerSet.clear();                          // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id FROM areatrigger_tavern");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id FROM areatrigger_tavern");
 
     uint32 count = 0;
 
@@ -4060,7 +4060,7 @@ void ObjectMgr::LoadGraveyardZones()
 {
     mGraveYardMap.clear();                                  // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id,ghost_zone,faction FROM game_graveyard_zone");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id,ghost_zone,faction FROM game_graveyard_zone");
 
     uint32 count = 0;
 
@@ -4261,7 +4261,7 @@ bool ObjectMgr::AddGraveYardLink(uint32 id, uint32 zoneId, uint32 team, bool inD
     // add link to DB
     if (inDB)
     {
-        WorldDatabase.PExecuteLog("INSERT INTO game_graveyard_zone (id,ghost_zone,faction) "
+        GameDataDatabase.PExecuteLog("INSERT INTO game_graveyard_zone (id,ghost_zone,faction) "
             "VALUES ('%u', '%u','%u')",id,zoneId,team);
     }
 
@@ -4309,7 +4309,7 @@ void ObjectMgr::RemoveGraveYardLink(uint32 id, uint32 zoneId, uint32 team, bool 
     // remove link from DB
     if (inDB)
     {
-        WorldDatabase.PExecute("DELETE FROM game_graveyard_zone WHERE id = '%u' AND ghost_zone = '%u' AND faction = '%u'",id,zoneId,team);
+        GameDataDatabase.PExecute("DELETE FROM game_graveyard_zone WHERE id = '%u' AND ghost_zone = '%u' AND faction = '%u'",id,zoneId,team);
     }
 
     return;
@@ -4323,7 +4323,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
     uint32 count = 0;
 
     //                                                       0       1           2              3               4                   5                   6
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, access_id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM areatrigger_teleport");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id, access_id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM areatrigger_teleport");
     if (!result)
     {
 
@@ -4392,7 +4392,7 @@ void ObjectMgr::LoadAccessRequirements()
     uint32 count = 0;
 
     //                                                       0       1          2       3      4        5           6             7              8                   9                  10                11           12
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, level_min, level_max, item, item2, heroic_key, heroic_key2, quest_done, quest_failed_text, heroic_quest_done, heroic_quest_failed_text, aura_id, missing_aura_text FROM access_requirement");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id, level_min, level_max, item, item2, heroic_key, heroic_key2, quest_done, quest_failed_text, heroic_quest_done, heroic_quest_failed_text, aura_id, missing_aura_text FROM access_requirement");
     if (!result)
     {
 
@@ -4542,51 +4542,51 @@ AreaTrigger const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
 
 void ObjectMgr::SetHighestGuids()
 {
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT MAX(guid) FROM characters");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT MAX(guid) FROM characters");
     if (result)
         m_hiCharGuid = (*result)[0].GetUInt32()+1;
 
-    result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");
+    result = GameDataDatabase.Query("SELECT MAX(guid) FROM creature");
     if (result)
         m_hiCreatureGuid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(guid) FROM item_instance");
+    result = RealmDataDatabase.Query("SELECT MAX(guid) FROM item_instance");
     if (result)
         m_hiItemGuid = (*result)[0].GetUInt32()+1;
 
     // Cleanup other tables from not existed guids (>=m_hiItemGuid)
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item >= '%u'", m_hiItemGuid);
-    CharacterDatabase.PExecute("DELETE FROM mail_items WHERE item_guid >= '%u'", m_hiItemGuid);
-    CharacterDatabase.PExecute("DELETE FROM auctionhouse WHERE itemguid >= '%u'", m_hiItemGuid);
-    CharacterDatabase.PExecute("DELETE FROM guild_bank_item WHERE item_guid >= '%u'", m_hiItemGuid);
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("DELETE FROM character_inventory WHERE item >= '%u'", m_hiItemGuid);
+    RealmDataDatabase.PExecute("DELETE FROM mail_items WHERE item_guid >= '%u'", m_hiItemGuid);
+    RealmDataDatabase.PExecute("DELETE FROM auctionhouse WHERE itemguid >= '%u'", m_hiItemGuid);
+    RealmDataDatabase.PExecute("DELETE FROM guild_bank_item WHERE item_guid >= '%u'", m_hiItemGuid);
+    RealmDataDatabase.CommitTransaction();
 
-    result = WorldDatabase.Query("SELECT MAX(guid) FROM gameobject");
+    result = GameDataDatabase.Query("SELECT MAX(guid) FROM gameobject");
     if (result)
         m_hiGoGuid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(id) FROM auctionhouse");
+    result = RealmDataDatabase.Query("SELECT MAX(id) FROM auctionhouse");
     if (result)
         m_auctionid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(id) FROM mail");
+    result = RealmDataDatabase.Query("SELECT MAX(id) FROM mail");
     if (result)
         m_mailid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(id) FROM item_text");
+    result = RealmDataDatabase.Query("SELECT MAX(id) FROM item_text");
     if (result)
         m_ItemTextId = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(guid) FROM corpse");
+    result = RealmDataDatabase.Query("SELECT MAX(guid) FROM corpse");
     if (result)
         m_hiCorpseGuid = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(arenateamid) FROM arena_team");
+    result = RealmDataDatabase.Query("SELECT MAX(arenateamid) FROM arena_team");
     if (result)
         m_arenaTeamId = (*result)[0].GetUInt32()+1;
 
-    result = CharacterDatabase.Query("SELECT MAX(guildid) FROM guild");
+    result = RealmDataDatabase.Query("SELECT MAX(guildid) FROM guild");
     if (result)
         m_guildId = (*result)[0].GetUInt32()+1;
 }
@@ -4647,11 +4647,11 @@ uint32 ObjectMgr::CreateItemText(std::string text)
     //insert new itempage to container
     mItemTexts[ newItemTextId ] = text;
     //save new itempage
-    CharacterDatabase.escape_string(text);
+    RealmDataDatabase.escape_string(text);
     //any Delete query needed, itemTextId is maximum of all ids
     std::ostringstream query;
     query << "INSERT INTO item_text (id,text) VALUES ('" << newItemTextId << "', '" << text << "')";
-    CharacterDatabase.Execute(query.str().c_str());         //needs to be run this way, because mail body may be more than 1024 characters
+    RealmDataDatabase.Execute(query.str().c_str());         //needs to be run this way, because mail body may be more than 1024 characters
     return newItemTextId;
 }
 
@@ -4720,7 +4720,7 @@ void ObjectMgr::LoadGameObjectLocales()
 {
     mGameObjectLocaleMap.clear();                           // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,"
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,"
         "name_loc1,name_loc2,name_loc3,name_loc4,name_loc5,name_loc6,name_loc7,name_loc8,"
         "castbarcaption_loc1,castbarcaption_loc2,castbarcaption_loc3,castbarcaption_loc4,"
         "castbarcaption_loc5,castbarcaption_loc6,castbarcaption_loc7,castbarcaption_loc8 FROM locales_gameobject");
@@ -5006,7 +5006,7 @@ void ObjectMgr::LoadGameobjectInfo()
 void ObjectMgr::LoadExplorationBaseXP()
 {
     uint32 count = 0;
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT level,basexp FROM exploration_basexp");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT level,basexp FROM exploration_basexp");
 
     if (!result)
     {
@@ -5045,7 +5045,7 @@ uint32 ObjectMgr::GetBaseXP(uint32 level)
 void ObjectMgr::LoadPetNames()
 {
     uint32 count = 0;
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT word,entry,half FROM pet_name_generation");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT word,entry,half FROM pet_name_generation");
 
     if (!result)
     {
@@ -5082,7 +5082,7 @@ void ObjectMgr::LoadPetNames()
 
 void ObjectMgr::LoadPetNumber()
 {
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT MAX(id) FROM character_pet");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT MAX(id) FROM character_pet");
     if (result)
     {
         Field *fields = result->Fetch();
@@ -5122,7 +5122,7 @@ void ObjectMgr::LoadCorpses()
 {
     uint32 count = 0;
     //                                                           0           1           2           3            4    5     6     7            8         10
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT position_x, position_y, position_z, orientation, map, data, time, corpse_type, instance, guid FROM corpse WHERE corpse_type <> 0");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT position_x, position_y, position_z, orientation, map, data, time, corpse_type, instance, guid FROM corpse WHERE corpse_type <> 0");
 
     if (!result)
     {
@@ -5167,7 +5167,7 @@ void ObjectMgr::LoadReputationRewardRate()
     m_RepRewardRateMap.clear();         // for reload case
 
     uint32 count = 0;
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT faction, quest_rate, creature_rate, spell_rate FROM reputation_reward_rate");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT faction, quest_rate, creature_rate, spell_rate FROM reputation_reward_rate");
 
     if (!result)
     {
@@ -5236,7 +5236,7 @@ void ObjectMgr::LoadReputationOnKill()
     uint32 count = 0;
 
     //                                                       0            1                     2
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT creature_id, RewOnKillRepFaction1, RewOnKillRepFaction2,"
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT creature_id, RewOnKillRepFaction1, RewOnKillRepFaction2,"
     //   3             4             5                   6             7             8                   9
         "IsTeamAward1, MaxStanding1, RewOnKillRepValue1, IsTeamAward2, MaxStanding2, RewOnKillRepValue2, TeamDependent "
         "FROM creature_onkill_reputation");
@@ -5312,7 +5312,7 @@ void ObjectMgr::LoadReputationSpilloverTemplate()
     m_RepSpilloverTemplateMap.clear(); // for reload case
 
     uint32 count = 0;
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT faction, faction1, rate_1, rank_1, faction2, rate_2, rank_2, faction3, rate_3, rank_3, faction4, rate_4, rank_4 FROM reputation_spillover_template");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT faction, faction1, rate_1, rank_1, faction2, rate_2, rank_2, faction3, rate_3, rank_3, faction4, rate_4, rank_4 FROM reputation_spillover_template");
 
     if (!result)
     {
@@ -5432,7 +5432,7 @@ void ObjectMgr::LoadWeatherZoneChances()
     uint32 count = 0;
 
     //                                                       0     1                   2                   3                    4                   5                   6                    7                 8                 9                  10                  11                  12
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT zone, spring_rain_chance, spring_snow_chance, spring_storm_chance, summer_rain_chance, summer_snow_chance, summer_storm_chance, fall_rain_chance, fall_snow_chance, fall_storm_chance, winter_rain_chance, winter_snow_chance, winter_storm_chance FROM game_weather");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT zone, spring_rain_chance, spring_snow_chance, spring_storm_chance, summer_rain_chance, summer_snow_chance, summer_storm_chance, fall_rain_chance, fall_snow_chance, fall_storm_chance, winter_rain_chance, winter_snow_chance, winter_storm_chance FROM game_weather");
 
     if (!result)
     {
@@ -5491,18 +5491,18 @@ void ObjectMgr::LoadWeatherZoneChances()
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
     mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if (t)
-        CharacterDatabase.PExecute("INSERT INTO creature_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
-    CharacterDatabase.CommitTransaction();
+        RealmDataDatabase.PExecute("INSERT INTO creature_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
+    RealmDataDatabase.CommitTransaction();
 }
 
 void ObjectMgr::SaveGuildAnnCooldown(uint32 guild_id)
 {
     time_t tmpTime = time_t(time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
     mGuildCooldownTimes[guild_id] = tmpTime;
-    CharacterDatabase.PExecute("REPLACE INTO guild_announce_cooldown VALUES ('%u', '"UI64FMTD"')", guild_id, uint64(tmpTime));
+    RealmDataDatabase.PExecute("REPLACE INTO guild_announce_cooldown VALUES ('%u', '"UI64FMTD"')", guild_id, uint64(tmpTime));
 }
 
 void ObjectMgr::DeleteCreatureData(uint32 guid)
@@ -5518,11 +5518,11 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
 void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if (t)
-        CharacterDatabase.PExecute("INSERT INTO gameobject_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
-    CharacterDatabase.CommitTransaction();
+        RealmDataDatabase.PExecute("INSERT INTO gameobject_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
+    RealmDataDatabase.CommitTransaction();
 }
 
 void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
@@ -5547,10 +5547,10 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
             mCreatureRespawnTimes.erase(itr);
     }
 
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
-    CharacterDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
+    RealmDataDatabase.PExecute("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
+    RealmDataDatabase.CommitTransaction();
 }
 
 void ObjectMgr::DeleteGOData(uint32 guid)
@@ -5583,7 +5583,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
 
     uint32 count = 0;
 
-    QueryResultAutoPtr result = WorldDatabase.PQuery("SELECT id,quest FROM %s",table);
+    QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT id,quest FROM %s",table);
 
     if (!result)
     {
@@ -5681,7 +5681,7 @@ void ObjectMgr::LoadReservedPlayersNames()
 {
     m_ReservedNames.clear();                                // need for reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT name FROM reserved_name");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT name FROM reserved_name");
 
     uint32 count = 0;
 
@@ -6001,7 +6001,7 @@ void ObjectMgr::LoadSpellDisabledEntrys()
     m_DisabledPlayerSpells.clear();                                // need for reload case
     m_DisabledCreatureSpells.clear();
     m_DisabledPetSpells.clear();
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT entry, disable_mask FROM spell_disabled");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT entry, disable_mask FROM spell_disabled");
 
     uint32 total_count = 0;
 
@@ -6047,7 +6047,7 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
     mFishingBaseForArea.clear();                            // for reload case
 
     uint32 count = 0;
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry,skill FROM skill_fishing_base_level");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,skill FROM skill_fishing_base_level");
 
     if (!result)
     {
@@ -6362,7 +6362,7 @@ void ObjectMgr::LoadGameTele()
     m_GameTeleMap.clear();                                  // for reload case
 
     uint32 count = 0;
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, map, name FROM game_tele");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT id, position_x, position_y, position_z, orientation, map, name FROM game_tele");
 
     if (!result)
     {
@@ -6459,7 +6459,7 @@ bool ObjectMgr::AddGameTele(GameTele& tele)
 
     m_GameTeleMap[new_id] = tele;
 
-    return WorldDatabase.PExecuteLog("INSERT INTO game_tele (id,position_x,position_y,position_z,orientation,map,name) VALUES (%u,%f,%f,%f,%f,%d,'%s')",
+    return GameDataDatabase.PExecuteLog("INSERT INTO game_tele (id,position_x,position_y,position_z,orientation,map,name) VALUES (%u,%f,%f,%f,%f,%d,'%s')",
         new_id,tele.position_x,tele.position_y,tele.position_z,tele.orientation,tele.mapId,tele.name.c_str());
 }
 
@@ -6477,7 +6477,7 @@ bool ObjectMgr::DeleteGameTele(const std::string& name)
     {
         if (itr->second.wnameLow == wname)
         {
-            WorldDatabase.PExecuteLog("DELETE FROM game_tele WHERE name = '%s'",itr->second.name.c_str());
+            GameDataDatabase.PExecuteLog("DELETE FROM game_tele WHERE name = '%s'",itr->second.name.c_str());
             m_GameTeleMap.erase(itr);
             return true;
         }
@@ -6495,7 +6495,7 @@ void ObjectMgr::LoadTrainerSpell()
 
     std::set<uint32> skip_trainers;
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, spell,spellcost,reqskill,reqskillvalue,reqlevel FROM npc_trainer");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, spell,spellcost,reqskill,reqskillvalue,reqlevel FROM npc_trainer");
 
     if (!result)
     {
@@ -6583,7 +6583,7 @@ void ObjectMgr::LoadVendors()
 
     std::set<uint32> skip_vendors;
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, item, maxcount, incrtime, ExtendedCost FROM npc_vendor");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, item, maxcount, incrtime, ExtendedCost FROM npc_vendor");
     if (!result)
     {
         BarGoLink bar(1);
@@ -6628,7 +6628,7 @@ void ObjectMgr::LoadNpcTextId()
 
     m_mCacheNpcTextIdMap.clear();
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT npc_guid, textid FROM npc_gossip");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT npc_guid, textid FROM npc_gossip");
     if (!result)
     {
         BarGoLink bar(1);
@@ -6677,7 +6677,7 @@ void ObjectMgr::LoadNpcOptions()
 {
     m_mCacheNpcOptionList.clear();                          // For reload case
 
-    QueryResultAutoPtr result = WorldDatabase.Query(
+    QueryResultAutoPtr result = GameDataDatabase.Query(
         //      0  1         2       3    4      5         6     7           8
         "SELECT id,gossip_id,npcflag,icon,action,box_money,coded,option_text,box_text "
         "FROM npc_option");
@@ -6729,7 +6729,7 @@ void ObjectMgr::AddVendorItem(uint32 entry,uint32 item, uint32 maxcount, uint32 
     VendorItemData& vList = m_mCacheVendorItemMap[entry];
     vList.AddItem(item,maxcount,incrtime,extendedcost);
 
-    if (savetodb) WorldDatabase.PExecuteLog("INSERT INTO npc_vendor (entry,item,maxcount,incrtime,extendedcost) VALUES('%u','%u','%u','%u','%u')",entry, item, maxcount,incrtime,extendedcost);
+    if (savetodb) GameDataDatabase.PExecuteLog("INSERT INTO npc_vendor (entry,item,maxcount,incrtime,extendedcost) VALUES('%u','%u','%u','%u','%u')",entry, item, maxcount,incrtime,extendedcost);
 }
 
 bool ObjectMgr::RemoveVendorItem(uint32 entry,uint32 item, bool savetodb)
@@ -6742,7 +6742,7 @@ bool ObjectMgr::RemoveVendorItem(uint32 entry,uint32 item, bool savetodb)
         return false;
 
     iter->second.RemoveItem(item);
-    if (savetodb) WorldDatabase.PExecuteLog("DELETE FROM npc_vendor WHERE entry='%u' AND item='%u'",entry, item);
+    if (savetodb) GameDataDatabase.PExecuteLog("DELETE FROM npc_vendor WHERE entry='%u' AND item='%u'",entry, item);
     return true;
 }
 
@@ -6835,7 +6835,7 @@ bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, uint32 item_id, uint32 ma
 
 void ObjectMgr::LoadItemTexts()
 {
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT id, text FROM item_text");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT id, text FROM item_text");
 
     uint32 count = 0;
     if (!result)
@@ -6894,7 +6894,7 @@ Quest const* GetQuestTemplateStore(uint32 entry)
 void ObjectMgr::LoadTransportEvents()
 {
 
-    QueryResultAutoPtr result = WorldDatabase.Query("SELECT entry, waypoint_id, event_id FROM transport_events");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry, waypoint_id, event_id FROM transport_events");
 
     if (!result)
     {
@@ -7007,7 +7007,7 @@ void ObjectMgr::LoadOpcodesCooldown()
 {
     _opcodesCooldown.clear();
 
-    QueryResultAutoPtr result = CharacterDatabase.Query("SELECT `opcode`, `cooldown` FROM `opcodes_cooldown`");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT `opcode`, `cooldown` FROM `opcodes_cooldown`");
     if (!result)
     {
         BarGoLink bar1(1);

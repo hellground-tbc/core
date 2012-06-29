@@ -715,11 +715,11 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // Get the account information from the realmd database
     std::string safe_account = account; // Duplicate, else will screw the SHA hash verification below
-    LoginDatabase.escape_string(safe_account);
+    AccountsDatabase.escape_string(safe_account);
     // No SQL injection, username escaped.
 
     QueryResultAutoPtr result =
-          LoginDatabase.PQuery("SELECT "
+          AccountsDatabase.PQuery("SELECT "
                                 "id, "                      //0
                                 "gmlevel, "                 //1
                                 "sessionkey, "              //2
@@ -801,7 +801,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // Re-check account ban(same check as in realmd)
     QueryResultAutoPtr banresult =
-          LoginDatabase.PQuery("SELECT "
+          AccountsDatabase.PQuery("SELECT "
                                 "bandate, "
                                 "unbandate "
                                 "FROM account_banned "
@@ -875,13 +875,13 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // No SQL injection, username escaped.
     static SqlStatementID updAccount;
 
-    SqlStatement stmt = LoginDatabase.CreateStatement(updAccount, "UPDATE account SET last_ip = ? WHERE username = ?");
+    SqlStatement stmt = AccountsDatabase.CreateStatement(updAccount, "UPDATE account SET last_ip = ? WHERE username = ?");
     stmt.PExecute(address.c_str(), account.c_str());
 
-    LoginDatabase.Execute("UPDATE account_mute SET active = 0 WHERE unmutedate <= UNIX_TIMESTAMP()");
+    AccountsDatabase.Execute("UPDATE account_mute SET active = 0 WHERE unmutedate <= UNIX_TIMESTAMP()");
 
     QueryResultAutoPtr muteresult =
-          LoginDatabase.PQuery("SELECT "
+          AccountsDatabase.PQuery("SELECT "
                                 "unmutedate, "
                                 "mutereason "
                                 "FROM account_mute "
@@ -911,9 +911,9 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     m_Crypt.SetKey(&K);
     m_Crypt.Init();
 
-    LoginDatabase.escape_string(lastLocalIp);
+    AccountsDatabase.escape_string(lastLocalIp);
 
-    LoginDatabase.PExecute("INSERT INTO account_login VALUES('%u', NOW(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
+    AccountsDatabase.PExecute("INSERT INTO account_login VALUES('%u', NOW(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
 
     m_Session->InitWarden(&K, operatingSystem);
 

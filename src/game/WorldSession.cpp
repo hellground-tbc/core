@@ -97,7 +97,7 @@ m_kickTimer(MINUTE * 15 * 1000), m_accFlags(accFlags), m_Warden(NULL)
     {
         m_Address = sock->GetRemoteAddress ();
         sock->AddReference ();
-        LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
+        AccountsDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
 
         // create copy of base map :P
         _opcodesCooldown = sObjectMgr.GetOpcodesCooldown();
@@ -126,8 +126,8 @@ WorldSession::~WorldSession()
     while (_recvQueue.next(packet))
         delete packet;
 
-    LoginDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
-    CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
+    AccountsDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
+    RealmDataDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
 }
 
 void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
@@ -145,13 +145,13 @@ char const* WorldSession::GetPlayerName() const
 void WorldSession::SetOpcodeDisableFlag(uint16 flag)
 {
     m_opcodesDisabled |= flag;
-    LoginDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
+    AccountsDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
 }
 
 void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
 {
     m_opcodesDisabled &= ~flag;
-    LoginDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
+    AccountsDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
 }
 
 /// Send a packet to the client
@@ -337,9 +337,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
         {
             case OVERTIME_IPBAN:
-                LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', NOW(), NOW(), 'CONSOLE', 'bye bye')", GetRemoteAddress().c_str());
+                AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', NOW(), NOW(), 'CONSOLE', 'bye bye')", GetRemoteAddress().c_str());
             case OVERTIME_ACCBAN:
-                LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', NOW(), NOW(), 'CONSOLE', 'bye bye', 1)", GetAccountId());
+                AccountsDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', NOW(), NOW(), 'CONSOLE', 'bye bye', 1)", GetAccountId());
             case OVERTIME_KICK:
                 KickPlayer();
             case OVERTIME_LOG:
@@ -543,7 +543,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         ///- Since each account can only have one online character at any given time, ensure all characters for active account are marked as offline
         //No SQL injection as AccountId is uint32
-        CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'",
+        RealmDataDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'",
             GetAccountId());
         sLog.outDebug("SESSION: Sent SMSG_LOGOUT_COMPLETE Message");
     }

@@ -318,10 +318,10 @@ void Item::SaveToDB()
             static SqlStatementID deleteItem;
             static SqlStatementID saveItem;
 
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItem, "DELETE FROM item_instance WHERE guid = ?");
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteItem, "DELETE FROM item_instance WHERE guid = ?");
             stmt.PExecute(guid);
 
-            stmt = CharacterDatabase.CreateStatement(saveItem, "INSERT INTO item_instance (guid, owner_guid, data) VALUES (?, ?, ?)");
+            stmt = RealmDataDatabase.CreateStatement(saveItem, "INSERT INTO item_instance (guid, owner_guid, data) VALUES (?, ?, ?)");
 
             std::ostringstream ss;
             for (uint16 i = 0; i < m_valuesCount; i++)
@@ -335,7 +335,7 @@ void Item::SaveToDB()
             static SqlStatementID updateItem;
             static SqlStatementID updateGift;
 
-            SqlStatement stmt = CharacterDatabase.CreateStatement(updateItem, "UPDATE item_instance SET data = ?,  owner_guid = ? WHERE guid = ?");
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(updateItem, "UPDATE item_instance SET data = ?,  owner_guid = ? WHERE guid = ?");
 
             std::ostringstream ss;
             for (uint16 i = 0; i < m_valuesCount; i++)
@@ -345,7 +345,7 @@ void Item::SaveToDB()
 
             if (HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
             {
-                stmt = CharacterDatabase.CreateStatement(updateGift, "UPDATE character_gifts SET guid = ? WHERE item_guid = ?");
+                stmt = RealmDataDatabase.CreateStatement(updateGift, "UPDATE character_gifts SET guid = ? WHERE item_guid = ?");
                 stmt.PExecute(GUID_LOPART(GetOwnerGUID()), GetGUIDLow());
             }
         }
@@ -356,18 +356,18 @@ void Item::SaveToDB()
             static SqlStatementID deleteItemText;
             static SqlStatementID deleteGift;
 
-            SqlStatement stmt = CharacterDatabase.CreateStatement(deleteItem, "DELETE FROM item_instance WHERE guid = ?");
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteItem, "DELETE FROM item_instance WHERE guid = ?");
             stmt.PExecute(guid);
 
             if (GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) > 0)
             {
-                stmt = CharacterDatabase.CreateStatement(deleteItemText, "DELETE FROM item_text WHERE id = ?");
+                stmt = RealmDataDatabase.CreateStatement(deleteItemText, "DELETE FROM item_text WHERE id = ?");
                 stmt.PExecute(GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID));
             }
 
             if (HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
             {
-                stmt = CharacterDatabase.CreateStatement(deleteGift, "DELETE FROM character_gifts WHERE item_guid = ?");
+                stmt = RealmDataDatabase.CreateStatement(deleteGift, "DELETE FROM character_gifts WHERE item_guid = ?");
                 stmt.PExecute(GetGUIDLow());
             }
 
@@ -387,7 +387,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResultAutoPtr result)
     Object::_Create(guid, 0, HIGHGUID_ITEM);
 
     if (!result)
-        result = CharacterDatabase.PQuery("SELECT data FROM item_instance WHERE guid = '%u'", guid);
+        result = RealmDataDatabase.PQuery("SELECT data FROM item_instance WHERE guid = '%u'", guid);
 
     if (!result)
     {
@@ -453,7 +453,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResultAutoPtr result)
             ss << GetUInt32Value(i) << " ";
         ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "' WHERE guid = '" << guid << "'";
 
-        CharacterDatabase.Execute(ss.str().c_str());
+        RealmDataDatabase.Execute(ss.str().c_str());
     }
 
     return true;
@@ -461,12 +461,12 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResultAutoPtr result)
 
 void Item::DeleteFromDB()
 {
-    CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'",GetGUIDLow());
+    RealmDataDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'",GetGUIDLow());
 }
 
 void Item::DeleteFromInventoryDB()
 {
-    CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'",GetGUIDLow());
+    RealmDataDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'",GetGUIDLow());
 }
 
 ItemPrototype const *Item::GetProto() const

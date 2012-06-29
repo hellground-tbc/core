@@ -34,8 +34,8 @@ typedef DatabaseMysql DatabaseType;
 #define _CONCAT3_(A,B,C) "CONCAT( " A " , " B " , " C " )"
 #define _OFFSET_         "LIMIT %d,1"
 
-extern DatabaseType WorldDatabase;
-extern DatabaseType CharacterDatabase;
-extern DatabaseType LoginDatabase;
+extern DatabaseType GameDataDatabase;
+extern DatabaseType RealmDataDatabase;
+extern DatabaseType AccountsDatabase;
 
 #endif

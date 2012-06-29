@@ -62,7 +62,7 @@ void WorldSession::SendNameQueryOpcode(Player *p)
 
 void WorldSession::SendNameQueryOpcodeFromDB(uint64 guid)
 {
-    CharacterDatabase.AsyncPQuery(&WorldSession::SendNameQueryOpcodeFromDBCallBack, GetAccountId(),
+    RealmDataDatabase.AsyncPQuery(&WorldSession::SendNameQueryOpcodeFromDBCallBack, GetAccountId(),
         !sWorld.getConfig(CONFIG_DECLINED_NAMES_USED) ?
     //   ------- Query Without Declined Names --------
     //          0                1     2

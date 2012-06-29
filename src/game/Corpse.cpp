@@ -103,11 +103,11 @@ bool Corpse::Create(uint32 guidlow, Player *owner)
 void Corpse::SaveToDB()
 {
     // prevent DB data inconsistence problems and duplicates
-    CharacterDatabase.BeginTransaction();
+    RealmDataDatabase.BeginTransaction();
     DeleteFromDB();
 
     static SqlStatementID saveCorpse;
-    SqlStatement stmt = CharacterDatabase.CreateStatement(saveCorpse, "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(saveCorpse, "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt64(GetGUIDLow());
     stmt.addUInt64(GUID_LOPART(GetOwnerGUID()));
@@ -128,7 +128,7 @@ void Corpse::SaveToDB()
     stmt.addInt32(GetInstanceId());
 
     stmt.Execute();
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 }
 
 void Corpse::DeleteBonesFromWorld()
@@ -149,17 +149,17 @@ void Corpse::DeleteFromDB()
 {
     if (GetType() == CORPSE_BONES)
         // only specific bones
-        CharacterDatabase.PExecute("DELETE FROM corpse WHERE guid = '%d'", GetGUIDLow());
+        RealmDataDatabase.PExecute("DELETE FROM corpse WHERE guid = '%d'", GetGUIDLow());
     else
         // all corpses (not bones)
-        CharacterDatabase.PExecute("DELETE FROM corpse WHERE player = '%d' AND corpse_type <> '0'",  GUID_LOPART(GetOwnerGUID()));
+        RealmDataDatabase.PExecute("DELETE FROM corpse WHERE player = '%d' AND corpse_type <> '0'",  GUID_LOPART(GetOwnerGUID()));
 }
 
 bool Corpse::LoadFromDB(uint32 guid, QueryResultAutoPtr result, uint32 InstanceId)
 {
     if (result == NULL)
         //                                        0          1          2          3           4   5    6    7           8
-        result = CharacterDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,data,time,corpse_type,instance FROM corpse WHERE guid = '%u'",guid);
+        result = RealmDataDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,data,time,corpse_type,instance FROM corpse WHERE guid = '%u'",guid);
 
     if (! result)
     {

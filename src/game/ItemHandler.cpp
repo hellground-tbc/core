@@ -1075,8 +1075,8 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recv_data)
         return;
     }
 
-    CharacterDatabase.BeginTransaction();
-    CharacterDatabase.PExecute("INSERT INTO character_gifts VALUES ('%u', '%u', '%u', '%u')", GUID_LOPART(item->GetOwnerGUID()), item->GetGUIDLow(), item->GetEntry(), item->GetUInt32Value(ITEM_FIELD_FLAGS));
+    RealmDataDatabase.BeginTransaction();
+    RealmDataDatabase.PExecute("INSERT INTO character_gifts VALUES ('%u', '%u', '%u', '%u')", GUID_LOPART(item->GetOwnerGUID()), item->GetGUIDLow(), item->GetEntry(), item->GetUInt32Value(ITEM_FIELD_FLAGS));
     item->SetEntry(gift->GetEntry());
 
     switch (item->GetEntry())
@@ -1098,7 +1098,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recv_data)
         item->RemoveFromUpdateQueueOf(_player);
         item->SaveToDB();                                   // item gave inventory record unchanged and can be save standalone
     }
-    CharacterDatabase.CommitTransaction();
+    RealmDataDatabase.CommitTransaction();
 
     uint32 count = 1;
     _player->DestroyItemCount(gift, count, true);

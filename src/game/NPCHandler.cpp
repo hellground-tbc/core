@@ -438,7 +438,7 @@ void WorldSession::SendBindPoint(Creature *npc)
     uint32 bindspell = 3286;
 
     // update sql homebind
-    CharacterDatabase.PExecute("UPDATE character_homebind SET map = '%u', zone = '%u', position_x = '%f', position_y = '%f', position_z = '%f' WHERE guid = '%u'", _player->GetMapId(), _player->GetCachedZone(), _player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(), _player->GetGUIDLow());
+    RealmDataDatabase.PExecute("UPDATE character_homebind SET map = '%u', zone = '%u', position_x = '%f', position_y = '%f', position_z = '%f' WHERE guid = '%u'", _player->GetMapId(), _player->GetCachedZone(), _player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(), _player->GetGUIDLow());
     _player->m_homebindMapId = _player->GetMapId();
     _player->m_homebindZoneId = _player->GetCachedZone();
     _player->m_homebindX = _player->GetPositionX();
@@ -533,7 +533,7 @@ void WorldSession::SendStablePet(uint64 guid)
     }
 
     //                                                            0      1     2   3      4      5        6
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT owner, slot, id, entry, level, loyalty, name FROM character_pet WHERE owner = '%u' AND slot > 0 AND slot < 3",_player->GetGUIDLow());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT owner, slot, id, entry, level, loyalty, name FROM character_pet WHERE owner = '%u' AND slot > 0 AND slot < 3",_player->GetGUIDLow());
 
     if (result)
     {
@@ -593,7 +593,7 @@ void WorldSession::HandleStablePet(WorldPacket & recv_data)
 
     uint32 free_slot = 1;
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT owner,slot,id FROM character_pet WHERE owner = '%u'  AND slot > 0 AND slot < 3 ORDER BY slot ",_player->GetGUIDLow());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT owner,slot,id FROM character_pet WHERE owner = '%u'  AND slot > 0 AND slot < 3 ORDER BY slot ",_player->GetGUIDLow());
     if (result)
     {
         do
@@ -659,7 +659,7 @@ void WorldSession::HandleUnstablePet(WorldPacket & recv_data)
 
     Pet *newpet = NULL;
 
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT entry FROM character_pet WHERE owner = '%u' AND id = '%u' AND slot > 0 AND slot < 3",_player->GetGUIDLow(),petnumber);
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT entry FROM character_pet WHERE owner = '%u' AND id = '%u' AND slot > 0 AND slot < 3",_player->GetGUIDLow(),petnumber);
 
     if (result)
     {
@@ -755,7 +755,7 @@ void WorldSession::HandleStableSwapPet(WorldPacket & recv_data)
         return;
 
     // find swapped pet slot in stable
-    QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT slot,entry FROM character_pet WHERE owner = '%u' AND id = '%u'",
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT slot,entry FROM character_pet WHERE owner = '%u' AND id = '%u'",
                                                          _player->GetGUIDLow(), pet_number);
     if (!result)
         return;

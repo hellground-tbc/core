@@ -23,7 +23,7 @@ class WDBThreadStartReq1 : public ACE_Method_Request
         WDBThreadStartReq1() {}
         virtual int call(void)
         {
-            WorldDatabase.ThreadStart();
+            GameDataDatabase.ThreadStart();
             return 0;
         }
 };
@@ -34,7 +34,7 @@ class WDBThreadEndReq1 : public ACE_Method_Request
         WDBThreadEndReq1() {}
         virtual int call(void)
         {
-            WorldDatabase.ThreadEnd();
+            GameDataDatabase.ThreadEnd();
             return 0;
         }
 };

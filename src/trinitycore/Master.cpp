@@ -154,9 +154,9 @@ int Master::Run()
 
     //server loaded successfully => enable async DB requests
     //this is done to forbid any async transactions during server startup!
-    CharacterDatabase.AllowAsyncTransactions();
-    WorldDatabase.AllowAsyncTransactions();
-    LoginDatabase.AllowAsyncTransactions();
+    RealmDataDatabase.AllowAsyncTransactions();
+    GameDataDatabase.AllowAsyncTransactions();
+    AccountsDatabase.AllowAsyncTransactions();
 
     ACE_SIGACTION action;
     action.sa_handler = _OnSignal;
@@ -188,8 +188,8 @@ int Master::Run()
     // set realmbuilds depend on mangosd expected builds, and set server online
     {
         std::string builds = AcceptableClientBuildsListStr();
-        LoginDatabase.escape_string(builds);
-        LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0, realmbuilds = '%s'  WHERE id = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
+        AccountsDatabase.escape_string(builds);
+        AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0, realmbuilds = '%s'  WHERE id = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
     }
 
     // console should be disabled in service/daemon mode
@@ -249,7 +249,7 @@ int Master::Run()
     uint32 socketSelecttime = sWorld.getConfig(CONFIG_SOCKET_SELECTTIME);
 
     //server has started up successfully => enable async DB requests
-    LoginDatabase.AllowAsyncTransactions();
+    AccountsDatabase.AllowAsyncTransactions();
 
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000000 / socketSelecttime));
@@ -280,7 +280,7 @@ int Master::Run()
     sWorldSocketMgr->Wait();
 
     ///- Set server offline in realmlist
-    LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
+    AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
@@ -334,9 +334,9 @@ int Master::Run()
     sInstanceSaveManager.UnbindBeforeDelete();
 
     ///- Wait for delay threads to end
-    CharacterDatabase.HaltDelayThread();
-    WorldDatabase.HaltDelayThread();
-    LoginDatabase.HaltDelayThread();
+    RealmDataDatabase.HaltDelayThread();
+    GameDataDatabase.HaltDelayThread();
+    AccountsDatabase.HaltDelayThread();
 
     // Exit the process with specified return value
     return World::GetExitCode();
@@ -357,7 +357,7 @@ bool Master::_StartDB()
     sLog.outString("World Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
 
     ///- Initialise the world database
-    if(!WorldDatabase.Initialize(dbstring.c_str(), nConnections))
+    if(!GameDataDatabase.Initialize(dbstring.c_str(), nConnections))
     {
         sLog.outError("Cannot connect to world database %s", dbstring.c_str());
         return false;
@@ -373,7 +373,7 @@ bool Master::_StartDB()
     sLog.outDetail("Character Database: %s", dbstring.c_str());
 
     ///- Initialise the Character database
-    if(!CharacterDatabase.Initialize(dbstring.c_str(), nConnections))
+    if(!RealmDataDatabase.Initialize(dbstring.c_str(), nConnections))
     {
         sLog.outString("Character Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
         return false;
@@ -389,7 +389,7 @@ bool Master::_StartDB()
     nConnections = sConfig.GetIntDefault("LoginDatabaseConnections", 1);
     ///- Initialise the login database
     sLog.outString("Login Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
-    if(!LoginDatabase.Initialize(dbstring.c_str(), nConnections))
+    if(!AccountsDatabase.Initialize(dbstring.c_str(), nConnections))
     {
         sLog.outError("Cannot connect to login database %s", dbstring.c_str());
         return false;
@@ -408,7 +408,7 @@ bool Master::_StartDB()
     clearOnlineAccounts();
 
     ///- Insert version info into DB
-    WorldDatabase.PExecute("UPDATE `version` SET `core_version` = '%s', `core_revision` = '%s'", _FULLVERSION, _REVISION);
+    GameDataDatabase.PExecute("UPDATE `version` SET `core_version` = '%s', `core_revision` = '%s'", _FULLVERSION, _REVISION);
 
     sWorld.LoadDBVersion();
 
@@ -421,12 +421,12 @@ void Master::clearOnlineAccounts()
 {
     // Cleanup online status for characters hosted at current realm
     /// \todo Only accounts with characters logged on *this* realm should have online status reset. Move the online column from 'account' to 'realmcharacters'?
-    LoginDatabase.PExecute(
+    AccountsDatabase.PExecute(
         "UPDATE account SET online = 0 WHERE online > 0 "
         "AND id IN (SELECT acctid FROM realmcharacters WHERE realmid = '%d')",realmID);
 
 
-    CharacterDatabase.Execute("UPDATE characters SET online = 0 WHERE online<>0");
+    RealmDataDatabase.Execute("UPDATE characters SET online = 0 WHERE online<>0");
 }
 
 /// Handle termination signals

@@ -517,7 +517,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
             {
                 m_deathTimer -= update_diff;
             }
-            
+
             if (loot.looterTimer && loot.looterTimer < time(NULL))
             {
                 loot.looterTimer = 0;
@@ -534,7 +534,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                     loot.looterGUID = 0;
                     if (GetLootRecipient() && GetLootRecipient()->GetGroup())
                         GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this);
-                } 
+                }
                 else
                     loot.looterCheckTimer = time(NULL) + 1; // 1 second
             }
@@ -1164,7 +1164,7 @@ void Creature::OnPoiSelect(Player* player, GossipOption const *gossip)
 
 uint32 Creature::GetGossipTextId(uint32 action, uint32 zoneid)
 {
-    QueryResultAutoPtr result= WorldDatabase.PQuery("SELECT textid FROM npc_gossip_textid WHERE action = '%u' AND zoneid ='%u'", action, zoneid);
+    QueryResultAutoPtr result= GameDataDatabase.PQuery("SELECT textid FROM npc_gossip_textid WHERE action = '%u' AND zoneid ='%u'", action, zoneid);
 
     if (!result)
         return 0;
@@ -1327,15 +1327,15 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.spawnMask = spawnMask;
 
     // updated in DB
-    WorldDatabase.BeginTransaction();
+    GameDataDatabase.BeginTransaction();
 
     static SqlStatementID saveCreature;
     static SqlStatementID deleteCreature;
 
-    SqlStatement stmt = WorldDatabase.CreateStatement(deleteCreature, "DELETE FROM creature WHERE guid = ?");
+    SqlStatement stmt = GameDataDatabase.CreateStatement(deleteCreature, "DELETE FROM creature WHERE guid = ?");
     stmt.PExecute(m_DBTableGuid);
 
-    stmt = WorldDatabase.CreateStatement(saveCreature, "INSERT INTO creature VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    stmt = GameDataDatabase.CreateStatement(saveCreature, "INSERT INTO creature VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt64(m_DBTableGuid);
     stmt.addUInt32(GetEntry());
@@ -1357,7 +1357,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 
     stmt.Execute();
 
-    WorldDatabase.CommitTransaction();
+    GameDataDatabase.CommitTransaction();
 }
 
 void Creature::SelectLevel(const CreatureInfo *cinfo)
@@ -1619,12 +1619,12 @@ void Creature::DeleteFromDB()
     sObjectMgr.SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),0);
     sObjectMgr.DeleteCreatureData(m_DBTableGuid);
 
-    WorldDatabase.BeginTransaction();
-    WorldDatabase.PExecuteLog("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecuteLog("DELETE FROM creature_addon WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecuteLog("DELETE FROM game_event_creature WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecuteLog("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.CommitTransaction();
+    GameDataDatabase.BeginTransaction();
+    GameDataDatabase.PExecuteLog("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
+    GameDataDatabase.PExecuteLog("DELETE FROM creature_addon WHERE guid = '%u'", m_DBTableGuid);
+    GameDataDatabase.PExecuteLog("DELETE FROM game_event_creature WHERE guid = '%u'", m_DBTableGuid);
+    GameDataDatabase.PExecuteLog("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_DBTableGuid);
+    GameDataDatabase.CommitTransaction();
 }
 
 bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
@@ -1787,7 +1787,7 @@ void Creature::setDeathState(DeathState s)
             loot.looterTimer = time(NULL) + (m_deathTimer * 3 / 4 / IN_MILISECONDS);
             loot.looterCheckTimer = time(NULL) + 1;
             if (GetLootRecipient() && GetLootRecipient()->GetGroup())
-                GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this); 
+                GetLootRecipient()->GetGroup()->SendRoundRobin(&loot, this);
         }
 
         Unit::setDeathState(CORPSE);

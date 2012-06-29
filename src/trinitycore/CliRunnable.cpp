@@ -225,7 +225,7 @@ bool ChatHandler::HandleServerExitCommand(const char* args)
 bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
 {
     ///- Get the list of accounts ID logged to the realm
-    QueryResultAutoPtr resultDB = CharacterDatabase.Query("SELECT name, account FROM characters WHERE online > 0");
+    QueryResultAutoPtr resultDB = RealmDataDatabase.Query("SELECT name, account FROM characters WHERE online > 0");
     if (!resultDB)
         return true;
 
@@ -244,7 +244,7 @@ bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
         ///- Get the username, last IP and GM level of each account
         // No SQL injection. account is uint32.
         //                                                      0         1        2        3
-        QueryResultAutoPtr resultLogin = LoginDatabase.PQuery("SELECT username, last_ip, gmlevel, expansion FROM account WHERE id = '%u'", account);
+        QueryResultAutoPtr resultLogin = AccountsDatabase.PQuery("SELECT username, last_ip, gmlevel, expansion FROM account WHERE id = '%u'", account);
 
         if(resultLogin)
         {
@@ -312,7 +312,7 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
 
     if(uint32 account_id = AccountMgr::GetId(args))
     {
-        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
+        QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
         if (!result)
             return false;
 
@@ -330,12 +330,12 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
 
         if (accFlags & ACC_SPECIAL_LOG)
         {
-            LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_SPECIAL_LOG, account_id);
+            AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_SPECIAL_LOG, account_id);
             PSendSysMessage("SpecialLog have been disabled for account: %u.", account_id);
         }
         else
         {
-            LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_SPECIAL_LOG, account_id);
+            AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_SPECIAL_LOG, account_id);
             PSendSysMessage("SpecialLog have been enabled for account: %u.", account_id);
         }
     }
@@ -359,14 +359,14 @@ bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
             {
                 session->RemoveAccountFlag(ACC_DISABLED_GANN);
 
-                LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_DISABLED_GANN, account_id);
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("Guild announces have been enabled for this account.");
             }
             else
             {
                 session->AddAccountFlag(ACC_DISABLED_GANN);
 
-                LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("Guild announces have been disabled for this account.");
             }
         }
@@ -388,7 +388,7 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
 
     if (uint32 account_id = AccountMgr::GetId(args))
     {
-        QueryResultAutoPtr result = LoginDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
+        QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
         if (!result)
             return false;
 
@@ -406,12 +406,12 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
 
         if (accFlags & ACC_WHISPER_LOG)
         {
-            LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_WHISPER_LOG, account_id);
+            AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_WHISPER_LOG, account_id);
             PSendSysMessage("WhispLog have been disabled for account: %u.", account_id);
         }
         else
         {
-            LoginDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_WHISPER_LOG, account_id);
+            AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_WHISPER_LOG, account_id);
             PSendSysMessage("WhispLog have been enabled for account: %u.", account_id);
         }
     }
@@ -480,7 +480,7 @@ int kb_hit_return()
 void CliRunnable::run()
 {
     ///- Init new SQL thread for the world database (one connection call enough)
-    WorldDatabase.ThreadStart();                                // let thread do safe mySQL requests
+    GameDataDatabase.ThreadStart();                                // let thread do safe mySQL requests
 
     char commandbuf[256];
     bool canflush = true;
@@ -544,6 +544,6 @@ void CliRunnable::run()
     }
 
     ///- End the database thread
-    WorldDatabase.ThreadEnd();                                  // free mySQL thread resources
+    GameDataDatabase.ThreadEnd();                                  // free mySQL thread resources
 }
 
