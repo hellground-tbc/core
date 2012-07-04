@@ -3539,7 +3539,7 @@ SpellEntry const * SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player
         }
     }
 
-    if (highest_rank->Id != spellId && !player->HasSpell(spellId))
+    if (!player->HasSpell(highest_rank->Id))
         return NULL;
 
     return highest_rank;
