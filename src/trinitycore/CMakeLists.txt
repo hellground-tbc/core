@@ -38,15 +38,14 @@ target_link_libraries(${EXECUTABLE_NAME}
   g3dlib
   ${ACE_LIBRARIES}
   ${READLINE_LIBRARIES}
+  ${OPENSSL_LIBRARIES}
 )
 
 if(WIN32)
   target_link_libraries(${EXECUTABLE_NAME}
     zlib
     optimized ${MYSQL_LIBRARY}
-    optimized ${OPENSSL_LIBRARIES}
     debug ${MYSQL_DEBUG_LIBRARY}
-    debug ${OPENSSL_DEBUG_LIBRARIES}
   )
   if(PLATFORM MATCHES X86)
     target_link_libraries(${EXECUTABLE_NAME})
@@ -56,8 +55,6 @@ endif()
 if(UNIX)
   target_link_libraries(${EXECUTABLE_NAME}
     ${MYSQL_LIBRARY}
-    ${OPENSSL_LIBRARIES}
-    ${OPENSSL_EXTRA_LIBRARIES}
     ${ZLIB_LIBRARIES}
   )
 endif()
