@@ -167,7 +167,6 @@ endif()
 
 find_package(OpenSSL REQUIRED)
 
-
 # Win32 delifered packages
 if(WIN32)
   set(MYSQL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/dep/include/mysql)
@@ -181,6 +180,8 @@ if(UNIX)
   find_package(Readline REQUIRED)
   find_package(MySQL REQUIRED)
   find_package(ZLIB REQUIRED)
+  set(Boost_USE_MULTITHREADED  ON)
+  find_package(Boost 1.34.0 COMPONENTS regex REQUIRED)
 endif()
 
 # Add uninstall script and target
