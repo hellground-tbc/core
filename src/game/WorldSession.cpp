@@ -533,6 +533,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
         sObjectAccessor.RemovePlayer(_player);
+        sWorld.ModifyLoggedInCharsCount(_player->GetTeamId(), -1);
 
         delete _player;
         _player = NULL;

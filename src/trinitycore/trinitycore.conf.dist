@@ -2,7 +2,7 @@
 # Trinity Core worldd configuration file #
 ##########################################
 [CoreConf]
-ConfVersion=2012062101
+ConfVersion=2012070901
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -216,11 +216,13 @@ EAIErrorLevel = 2
 #
 #    SessionUpdate.Threads
 #         Number of threads to update sessions (0 - disable).
-#         Default: 1
+#         WARNING: DON'T use if you don't know what you are doing ... this feature waits for
+#         necessary improvements.
+#         Default: 0
 #
 #    SessionUpdate.MaxTime
-#         Max time to update sessions. If session update time will be greater then method from SessionUpdate.Method
-#         will be called. Time in ms.
+#         Max time to update sessions. If session update time will be greater then method from
+#         SessionUpdate.Method will be called. Time in ms.
 #         Default: 1000
 #
 #    SessionUpdate.Method
@@ -330,13 +332,6 @@ SessionUpdate.Threads = 1
 #        Default: 0 - no timestamp in name
 #                 1 - add timestamp in name in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
 #
-#    CharLogDump
-#        Write character dump before deleting in Char.log
-#        For restoration, cut character data from log starting from
-#        line == START DUMP == to line == END DUMP == (without its) in file and load it using loadpdump command
-#        Default: 0 - don't include dumping chars to log
-#                 1 - include dumping chars to log
-#
 #    GmLogFile
 #        Log file of gm commands
 #        Default: "gm_commands.log"
@@ -410,9 +405,9 @@ SessionUpdate.Threads = 1
 #        Default: "crash.log"
 #                 "" - Empty name for disable
 #
-#    IrcParser
-#        Log file for third party parsers (to provide irc/gg/etc server status)
-#        Default: "parser.irc"
+#    StatusParserFile
+#        Log file for third party parsers
+#        Default: "parser.prsr"
 #                 "" - Empty name for disable
 #
 ###################################################################################################################
@@ -431,7 +426,6 @@ WorldLogFile = ""
 DBErrorLogFile = "db_errors.log"
 CharLogFile = "characters.log"
 CharLogTimestamp = 0
-CharLogDump = 0
 GmLogFile = "gm_commands.log"
 GmLogTimestamp = 0
 GmLogPerAccount = 0
@@ -449,7 +443,7 @@ AuctionLogFile = "auction.log"
 DiffLogFile = "diff.log"
 CrashLogFile = "crash.log"
 
-IrcParser = "parser.irc"
+StatusParserFile = "parser.prsr"
 
 ###################################################################################################################
 # SERVER SETTINGS
@@ -1467,6 +1461,9 @@ Death.Bones.BattlegroundOrArena = 1
 # EnableFakeWho: Enables/Disables fake who list to fake real position of players in arena
 #             Default: 0 (disabled)
 #
+# EnableFakeWho.ForGuild: Adds guild roster support for above option
+#             Default: 0 (disabled)
+#
 ###################################################################################################################
 
 Arena.MaxRatingDifference = 0
@@ -1480,6 +1477,7 @@ Arena.MMRPenalty = 150
 Arena.MMRSpecialLossCalc = 0
 
 Arena.EnableFakeWho = 0
+Arena.EnableFakeWho.ForGuild = 0
 
 ###################################################################################################################
 #

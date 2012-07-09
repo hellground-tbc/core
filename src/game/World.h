@@ -271,6 +271,7 @@ enum WorldConfigs
     CONFIG_ENABLE_HIDDEN_RATING_LOWER_LOSS,
 
     CONFIG_ENABLE_FAKE_WHO_ON_ARENA,
+    CONFIG_ENABLE_FAKE_WHO_IN_GUILD,
 
     CONFIG_VMSS_MAPFREEMETHOD,
     CONFIG_VMSS_FREEZECHECKPERIOD,
@@ -570,11 +571,17 @@ class World
         void AddSession(WorldSession *s);
         bool RemoveSession(uint32 id);
         void AddSessionToRemove(SessionMap::iterator itr) { removedSessions.push_back(itr); }
+
         /// Get the number of current active sessions
         void UpdateMaxSessionCounters();
         uint32 GetActiveAndQueuedSessionCount() const { return m_sessions.size(); }
         uint32 GetActiveSessionCount() const { return m_sessions.size() - m_QueuedPlayer.size(); }
         uint32 GetQueuedSessionCount() const { return m_QueuedPlayer.size(); }
+
+        inline uint32 GetLoggedInCharsCount(TeamId team);
+        inline uint32 ModifyLoggedInCharsCount(TeamId team, int val);
+        inline void SetLoggedInCharsCount(TeamId team, uint32 val);
+
         /// Get the maximum number of parallel sessions on the server since last reboot
         uint32 GetMaxQueuedSessionCount() const { return m_maxQueuedSessionCount; }
         uint32 GetMaxActiveSessionCount() const { return m_maxActiveSessionCount; }
@@ -862,10 +869,14 @@ class World
         // next daily quests reset time
         time_t m_NextDailyQuestReset;
 
-        //Player Queue
+        // Player Queue
         Queue m_QueuedPlayer;
 
-        //sessions that are added async
+        // characters count
+        uint32 loggedInAlliances;
+        uint32 loggedInHordes;
+
+        // sessions that are added async
         void AddSession_(WorldSession* s);
         ACE_Based::LockedQueue<WorldSession*, ACE_Thread_Mutex> addSessQueue;
 

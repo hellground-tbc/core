@@ -722,28 +722,38 @@ void Guild::Roster(WorldSession *session)
     {
         if (Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER)))
         {
-            data << (uint64)pl->GetGUID();
-            data << (uint8)1;
-            data << (std::string)pl->GetName();
-            data << (uint32)itr->second.RankId;
-            data << (uint8)pl->getLevel();
-            data << (uint8)pl->getClass();
-            data << (uint8)0;                               // new 2.4.0
-            data << (uint32)pl->GetCachedZone();
+            data << uint64(pl->GetGUID());
+            data << uint8(1);
+            data << std::string(pl->GetName());
+            data << uint32(itr->second.RankId);
+            data << uint8(pl->getLevel());
+            data << uint8(pl->getClass());
+            data << uint8(0);                               // new 2.4.0
+
+            uint32 pZoneId = pl->GetCachedZone();
+            if (!session->GetPlayer()->isGameMaster() && sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA) && sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_IN_GUILD))
+            {
+                if (pl->InArena())
+                {
+                    pZoneId = sTerrainMgr.GetZoneId(pl->GetBattleGroundEntryPointMap(), pl->GetBattleGroundEntryPointX(), pl->GetBattleGroundEntryPointY(), pl->GetBattleGroundEntryPointZ());
+                }
+            }
+
+            data << pZoneId;
             data << itr->second.Pnote;
             data << itr->second.OFFnote;
         }
         else
         {
             data << uint64(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
-            data << (uint8)0;
+            data << uint8(0);
             data << itr->second.name;
-            data << (uint32)itr->second.RankId;
-            data << (uint8)itr->second.level;
-            data << (uint8)itr->second.Class;
-            data << (uint8)0;                               // new 2.4.0
-            data << (uint32)itr->second.zoneId;
-            data << (float(time(NULL)-itr->second.logout_time) / DAY);
+            data << uint32(itr->second.RankId);
+            data << uint8(itr->second.level);
+            data << uint8(itr->second.Class);
+            data << uint8(0);                               // new 2.4.0
+            data << uint32(itr->second.zoneId);
+            data << float((time(NULL)-itr->second.logout_time) / DAY);
             data << itr->second.Pnote;
             data << itr->second.OFFnote;
         }

@@ -130,6 +130,9 @@ World::World()
 
     m_massMuteTime = 0;
 
+    loggedInAlliances = 0;
+    loggedInHordes = 0;
+
     // TODO: move to config
     m_honorRanks[0] = 10000000;//100;
     m_honorRanks[1] = 10000000;//500;
@@ -1113,8 +1116,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ENABLE_HIDDEN_RATING_LOWER_LOSS] = sConfig.GetBoolDefault("Arena.MMRSpecialLossCalc", false);
 
     m_configs[CONFIG_ENABLE_FAKE_WHO_ON_ARENA] = sConfig.GetBoolDefault("Arena.EnableFakeWho", false);
+    m_configs[CONFIG_ENABLE_FAKE_WHO_IN_GUILD] = sConfig.GetBoolDefault("Arena.EnableFakeWho.ForGuild", false);
 
-    sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 1);
+    sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 0);
 
     // VMSS system
     m_configs[CONFIG_VMSS_ENABLE] = sConfig.GetBoolDefault("VMSS.Enable", false);
@@ -1719,7 +1723,9 @@ void World::Update(uint32 diff)
 
             sLog.outError("Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
             sLog.outDiff("Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
-            sLog.outIrc("%u %u %u %u %u %u %s %u %u", GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(), GetPlayerAmountLimit(), _REVISION, m_curAvgUpdateTime, m_avgUpdateTime);
+            sLog.outIrc("%u %u %u %u %u %u %s %u %u %u %u",
+                        GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(),
+                        GetPlayerAmountLimit(), _REVISION, m_curAvgUpdateTime, m_avgUpdateTime, loggedInAlliances, loggedInHordes);
 
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
@@ -2864,11 +2870,53 @@ void World::CleanupDeletedChars()
     }
 }
 
+uint32 World::GetLoggedInCharsCount(TeamId team)
+{
+    switch (team)
+    {
+        case TEAM_HORDE:
+            return loggedInHordes;
+        case TEAM_ALLIANCE:
+            return loggedInAlliances;
+        default:
+            return loggedInAlliances + loggedInHordes;
+    }
+}
+
+uint32 World::ModifyLoggedInCharsCount(TeamId team, int val)
+{
+    switch (team)
+    {
+        case TEAM_HORDE:
+            return loggedInHordes += val;
+        case TEAM_ALLIANCE:
+            return loggedInAlliances += val;
+        default:
+            break;
+    }
+
+    return 0;
+}
+
+void World::SetLoggedInCharsCount(TeamId team, uint32 val)
+{
+    switch (team)
+    {
+        case TEAM_HORDE:
+            loggedInHordes = val;
+            break;
+        case TEAM_ALLIANCE:
+            loggedInAlliances = val;
+            break;
+        default:
+            break;
+    }
+}
+
 CBTresholds World::GetCoreBalancerTreshold()
 {
     return _coreBalancer.GetTreshold();
 }
-
 
 CoreBalancer::CoreBalancer() : _diffSum(0), _balanceTimer(0)
 {

@@ -755,6 +755,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUIDLow());
 
     m_playerLoading = false;
+
+    sWorld.ModifyLoggedInCharsCount(_player->GetTeamId(), 1);
+
     delete holder;
 }
 

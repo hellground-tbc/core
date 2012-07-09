@@ -58,7 +58,7 @@ enum Color
 enum logFiles
 {
     LOG_DEFAULT     = 0,
-    LOG_IRC         = 1,
+    LOG_STATUS      = 1,
     LOG_GM          = 2,
     LOG_CHAR        = 3,
     LOG_DB_ERR      = 4,

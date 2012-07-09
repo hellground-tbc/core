@@ -193,7 +193,7 @@ void Log::Initialize()
     const char* logToStr[LOG_MAX_FILES] =
     {
         "LogFile",          //LOG_DEFAULT
-        "unused",           //LOG_IRC
+        "unused",           //LOG_STATUS
         "GMLogFile",        //LOG_GM
         "CharLogFile",      //LOG_CHAR
         "DBErrorLogFile",   //LOG_DB_ERR
@@ -597,15 +597,15 @@ void Log::outIrc(const char * str, ... )
     if (!str)
         return;
 
-    if (logFile[LOG_IRC] = openLogFile("IrcParser",NULL,"w"))
+    if (logFile[LOG_STATUS] = openLogFile("StatusParserFile",NULL,"w"))
     {
         va_list ap;
         va_start(ap, str);
-        vfprintf(logFile[LOG_IRC], str, ap);
-        fprintf(logFile[LOG_IRC], "\n" );
+        vfprintf(logFile[LOG_STATUS], str, ap);
+        fprintf(logFile[LOG_STATUS], "\n" );
         va_end(ap);
-        fclose(logFile[LOG_IRC]);
-        logFile[LOG_IRC] = NULL;
+        fclose(logFile[LOG_STATUS]);
+        logFile[LOG_STATUS] = NULL;
     }
 }
 
