@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Mangos <http://www.mangosproject.org/>
+ * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
  *
  * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
  *
@@ -58,6 +58,8 @@ typedef ACE_SHLIB_HANDLE HELLGROUND_LIBRARY_HANDLE;
 #  define HELLGROUND_EXPORT export
 #  if defined(__APPLE_CC__) && defined(BIG_ENDIAN)
 #    define HELLGROUND_IMPORT __attribute__ ((longcall))
+#  elif defined(__x86_64__)
+#    define HELLGROUND_IMPORT
 #  else
 #    define HELLGROUND_IMPORT __attribute__ ((cdecl))
 #  endif //__APPLE_CC__ && BIG_ENDIAN
