@@ -214,9 +214,9 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll $(OutDir)..
+      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll ..\..\bin\$(Platform)_$(Configuration)\lib\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.dist</Command>
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">
@@ -268,9 +268,9 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll $(OutDir)..
+      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll ..\..\bin\$(Platform)_$(Configuration)\lib\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.dist</Command>
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">
@@ -323,9 +323,9 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\dep\lib\precompiled\Debug\*.dll $(OutDir)..
+      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll ..\..\bin\$(Platform)_$(Configuration)\lib\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.dist</Command>
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -375,9 +375,9 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\dep\lib\precompiled\Debug\*.dll $(OutDir)..
+      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll ..\..\bin\$(Platform)_$(Configuration)\lib\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.dist</Command>
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
