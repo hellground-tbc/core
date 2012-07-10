@@ -578,9 +578,9 @@ class World
         uint32 GetActiveSessionCount() const { return m_sessions.size() - m_QueuedPlayer.size(); }
         uint32 GetQueuedSessionCount() const { return m_QueuedPlayer.size(); }
 
-        inline uint32 GetLoggedInCharsCount(TeamId team);
-        inline uint32 ModifyLoggedInCharsCount(TeamId team, int val);
-        inline void SetLoggedInCharsCount(TeamId team, uint32 val);
+        uint32 GetLoggedInCharsCount(TeamId team);
+        uint32 ModifyLoggedInCharsCount(TeamId team, int val);
+        void SetLoggedInCharsCount(TeamId team, uint32 val);
 
         /// Get the maximum number of parallel sessions on the server since last reboot
         uint32 GetMaxQueuedSessionCount() const { return m_maxQueuedSessionCount; }
