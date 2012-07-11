@@ -489,6 +489,8 @@ enum CumulateMapDiff
     DIFF_MAX_CUMULATIVE_INFO     = 11
 };
 
+typedef ACE_Atomic_Op<ACE_Thread_Mutex, uint32> atomic_uint;
+
 struct MapUpdateDiffInfo
 {
 
@@ -517,7 +519,6 @@ struct MapUpdateDiffInfo
 
     void PrintCumulativeMapUpdateDiff();
 
-    typedef ACE_Atomic_Op<ACE_Thread_Mutex, uint32> atomic_uint;
     typedef std::map<uint32, atomic_uint*> CumulativeDiffMap;
 
     CumulativeDiffMap _cumulativeDiffInfo;
@@ -873,8 +874,8 @@ class World
         Queue m_QueuedPlayer;
 
         // characters count
-        uint32 loggedInAlliances;
-        uint32 loggedInHordes;
+        atomic_uint loggedInAlliances;
+        atomic_uint loggedInHordes;
 
         // sessions that are added async
         void AddSession_(WorldSession* s);
