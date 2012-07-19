@@ -1725,7 +1725,7 @@ void World::Update(uint32 diff)
             sLog.outDiff("Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
             sLog.outIrc("%u %u %u %u %u %u %s %u %u %u %u",
                         GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(),
-                        GetPlayerAmountLimit(), _REVISION, m_curAvgUpdateTime, m_avgUpdateTime, loggedInAlliances, loggedInHordes);
+                        GetPlayerAmountLimit(), _REVISION, m_curAvgUpdateTime, m_avgUpdateTime, loggedInAlliances.value(), loggedInHordes.value());
 
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
@@ -2875,11 +2875,11 @@ uint32 World::GetLoggedInCharsCount(TeamId team)
     switch (team)
     {
         case TEAM_HORDE:
-            return loggedInHordes;
+            return loggedInHordes.value();
         case TEAM_ALLIANCE:
-            return loggedInAlliances;
+            return loggedInAlliances.value();
         default:
-            return loggedInAlliances + loggedInHordes;
+            return loggedInAlliances.value() + loggedInHordes.value();
     }
 }
 
