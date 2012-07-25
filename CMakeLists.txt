@@ -241,7 +241,11 @@ endif(LARGE_CELL)
 
 message("")
 
+if(PLATFORM MATCHES X86)
+set(ADDITIONAL_COMPILE_FLAGS "-O3 -ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m32 -pipe -DFD_SETSIZE=4096 -frename-registers")
+else()
 set(ADDITIONAL_COMPILE_FLAGS "-O3 -ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
+endif()
 set(ADDITIONAL_MATH_FLAGS " -ffast-math -fno-math-errno -funsafe-math-optimizations ")
 
 # Handle debugmode compiles (this will require further work for proper WIN32-setups)
