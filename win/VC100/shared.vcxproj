@@ -485,8 +485,6 @@
     <ClCompile Include="..\..\src\shared\Database\SqlPreparedStatement.cpp" />
     <ClCompile Include="..\..\src\shared\Database\SQLStorage.cpp" />
     <ClCompile Include="..\..\src\shared\Log.cpp" />
-    <ClCompile Include="..\..\src\shared\Base.cpp" />
-    <ClCompile Include="..\..\src\shared\Mthread.cpp" />
     <ClCompile Include="..\..\src\shared\ProgressBar.cpp" />
     <ClCompile Include="..\..\src\shared\Util.cpp" />
     <ClCompile Include="..\..\src\shared\Config\Config.cpp" />
@@ -517,11 +515,9 @@
     <ClInclude Include="..\..\src\shared\Database\SQLStorage.h" />
     <ClInclude Include="..\..\src\shared\Database\SQLStorageImpl.h" />
     <ClInclude Include="..\..\src\shared\Log.h" />
-    <ClInclude Include="..\..\src\shared\Base.h" />
     <ClInclude Include="..\..\src\shared\ByteBuffer.h" />
     <ClInclude Include="..\..\src\shared\Errors.h" />
     <ClInclude Include="..\..\dep\include\mersennetwister\MersenneTwister.h" />
-    <ClInclude Include="..\..\src\shared\Mthread.h" />
     <ClInclude Include="..\..\src\shared\ProgressBar.h" />
     <ClInclude Include="..\..\src\shared\Timer.h" />
     <ClInclude Include="..\..\src\shared\Util.h" />
