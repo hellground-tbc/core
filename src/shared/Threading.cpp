@@ -104,7 +104,7 @@ Thread::Thread() : m_task(0), m_iThreadId(0), m_hThreadHandle(0)
 
 Thread::Thread(Runnable* instance) : m_task(instance), m_iThreadId(0), m_hThreadHandle(0)
 {
-    // register reference to m_task to prevent it deeltion until destructor
+    // register reference to m_task to prevent it deletion until destructor
     if (m_task)
         m_task->incReference();
 

@@ -8,31 +8,31 @@
 class DelayExecutor : protected ACE_Task_Base
 {
 public:
-  DelayExecutor ();
-  virtual ~DelayExecutor ();
+  DelayExecutor();
+  virtual ~DelayExecutor();
 
-  static DelayExecutor* instance ();
+  static DelayExecutor* instance();
 
   /// example
   /// DelayExecutor::instance ()->execute(new MyRequest(myarg));
   /// returns -1 on failures
-  int execute (ACE_Method_Request* new_req);
+  int execute(ACE_Method_Request* new_req);
 
-  int activate (int num_threads = 1,
-                ACE_Method_Request* pre_svc_hook = 0,
-                ACE_Method_Request* post_svc_hook = 0);
+  int activate(int num_threads = 1,
+                ACE_Method_Request* pre_svc_hook = NULL,
+                ACE_Method_Request* post_svc_hook = NULL);
 
-  int deactivate ();
+  int deactivate();
 
-  bool activated ();
+  bool activated();
 
-  virtual int svc (void);
+  virtual int svc(void);
 private:
   ACE_Activation_Queue queue_;
   ACE_Method_Request* pre_svc_hook_;
   ACE_Method_Request* post_svc_hook_;
 
-  void activated (bool s);
+  void activated(bool s);
   bool activated_;
 };
 
