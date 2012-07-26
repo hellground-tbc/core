@@ -243,9 +243,9 @@ MovementGenerator* MotionMaster::top()
 
 UnitStateMgr* MotionMaster::impl()
 {
-    MANGOS_ASSERT(m_owner);
+    ASSERT(m_owner);
     UnitStateMgr* mgr = &m_owner->GetUnitStateMgr();
-    MANGOS_ASSERT(mgr);
+    ASSERT(mgr);
     return mgr;
 }
 

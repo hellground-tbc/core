@@ -41,7 +41,7 @@ enum RotateDirection
 #define DEFAULT_WALK_SPEED 24.0f
 #define SPEED_CHARGE       42.0f
 
-class MANGOS_DLL_SPEC MotionMaster 
+class HELLGROUND_DLL_SPEC MotionMaster 
 {
     public:
 

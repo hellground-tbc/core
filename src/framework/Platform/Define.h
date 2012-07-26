@@ -90,11 +90,6 @@ typedef ACE_SHLIB_HANDLE HELLGROUND_LIBRARY_HANDLE;
 #  define DECLSPEC_NORETURN
 #endif //PLATFORM
 
-// provide trinity<>mangoscode
-#define MANGOS_DLL_SPEC HELLGROUND_DLL_SPEC
-#define MaNGOS Trinity
-#define MANGOS_ASSERT ASSERT
-
 #if !defined(DEBUG)
 #  define HELLGROUND_INLINE inline
 #else //DEBUG

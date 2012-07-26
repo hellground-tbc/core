@@ -169,21 +169,20 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
-    int vmapProcess = sConfig.GetIntDefault("vmap.clusterProcesses", 1);
+    int vmapProcesses = sConfig.GetIntDefault("vmap.clusterProcesses", 1);
     bool vmapCluster = sConfig.GetBoolDefault("vmap.enableCluster", false);
-
 
     if(process)
     {
         if(strcmp(process, VMAP_CLUSTER_MANAGER_PROCESS) == 0)
         {
-            VMAP::VMapClusterManager vmap_manager(vmapProcess);
+            VMAP::VMapClusterManager vmap_manager(vmapProcesses);
             return vmap_manager.Start();
         }
         else if(strcmp(process, VMAP_CLUSTER_PROCESS) == 0)
         {
-            VMAP::VMapClusterProcess process(process_id);
-            return process.Start();
+            VMAP::VMapClusterProcess vmapProcess(process_id);
+            return vmapProcess.Start();
         }
         else
             printf("Runtime-Error: bad format of process arguments\n");
@@ -217,11 +216,11 @@ extern int main(int argc, char **argv)
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
     if (confVersion < _HELLGROUND_CORE_CONFVER)
     {
-        sLog.outError("*****************************************************************************");
+        sLog.outError("*********************************************************************************");
         sLog.outError(" WARNING: Your trinitycore.conf version indicates your conf file is out of date!");
         sLog.outError("          Please check for updates, as your current default values may cause");
         sLog.outError("          strange behavior.");
-        sLog.outError("*****************************************************************************");
+        sLog.outError("*********************************************************************************");
         clock_t pause = 3000 + clock();
 
         while (pause > clock()) {}
@@ -231,7 +230,7 @@ extern int main(int argc, char **argv)
 
 
     if(vmapCluster)
-        VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file, vmapProcess);
+        VMAP::VMapClusterManager::SpawnVMapProcesses(argv[0], cfg_file, vmapProcesses);
 
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?

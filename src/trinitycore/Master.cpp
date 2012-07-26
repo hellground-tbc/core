@@ -226,7 +226,6 @@ int Master::Run()
                         sLog.outError("Can't set used processors (hex): %x", curAff);
                 }
             }
-            sLog.outString();
         }
 
         bool Prio = sConfig.GetBoolDefault("ProcessPriority", false);
@@ -237,8 +236,7 @@ int Master::Run()
             if(SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
                 sLog.outString("TrinityCore process priority class set to HIGH");
             else
-                sLog.outError("ERROR: Can't set Trinityd process priority class.");
-            sLog.outString();
+                sLog.outError("Can't set TrinityCore process priority class.");
         }
     }
     #endif
@@ -247,9 +245,6 @@ int Master::Run()
     realCurrTime = realPrevTime = WorldTimer::getMSTime();
 
     uint32 socketSelecttime = sWorld.getConfig(CONFIG_SOCKET_SELECTTIME);
-
-    //server has started up successfully => enable async DB requests
-    AccountsDatabase.AllowAsyncTransactions();
 
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000000 / socketSelecttime));
@@ -261,7 +256,7 @@ int Master::Run()
     if(freeze_delay)
     {
         FreezeDetectorRunnable *fdr = new FreezeDetectorRunnable();
-        fdr->SetDelayTime(freeze_delay*1000);
+        fdr->SetDelayTime(freeze_delay * 1000);
         freeze_thread = new ACE_Based::Thread(fdr);
         freeze_thread->setPriority(ACE_Based::Highest);
     }
