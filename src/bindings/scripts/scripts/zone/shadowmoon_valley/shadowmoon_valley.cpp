@@ -531,7 +531,7 @@ bool GossipSelect_npcs_flanis_swiftwing_and_kagrosh(Player *player, Creature *_C
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
         ItemPosCountVec dest;
-        uint8 msg = player->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, 30658, 1, false);
+        uint8 msg = player->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, 30658, 1, NULL);
         if( msg == EQUIP_ERR_OK )
         {
             player->StoreNewItem( dest, 30658, 1, true);
@@ -541,7 +541,7 @@ bool GossipSelect_npcs_flanis_swiftwing_and_kagrosh(Player *player, Creature *_C
     if (action == GOSSIP_ACTION_INFO_DEF+2)
     {
         ItemPosCountVec dest;
-        uint8 msg = player->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, 30659, 1, false);
+        uint8 msg = player->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, 30659, 1, NULL);
         if( msg == EQUIP_ERR_OK )
         {
             player->StoreNewItem( dest, 30659, 1, true);
@@ -1235,10 +1235,10 @@ static TorlothCinematic TorlothAnim[]=
     {-1000367, 0, 2000},
     {-1000368, 1, 7000},
     {-1000369, 0, 3000},
-    {NULL, 0, 2000}, // Torloth stand
+    {0, 0, 2000}, // Torloth stand
     {-1000370, 0, 1000},
-    {NULL, 0, 3000},
-    {NULL, 0, NULL}
+    {0, 0, 3000},
+    {0, 0, 0}
 };
 
 struct Location
@@ -2065,7 +2065,7 @@ struct HELLGROUND_DLL_DECL npc_AkamaAI : public ScriptedAI
 
             case 1:
                 if (vaga)
-                    ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_1,LANG_UNIVERSAL,NULL);
+                    ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_1,LANG_UNIVERSAL,0);
                 return 3000;
 
             case 2:
@@ -2100,12 +2100,12 @@ struct HELLGROUND_DLL_DECL npc_AkamaAI : public ScriptedAI
                 return 3000;
 
             case 5:
-                m_creature->Say(SAY_DIALOG_AKAMA_3,LANG_UNIVERSAL,NULL);
+                m_creature->Say(SAY_DIALOG_AKAMA_3,LANG_UNIVERSAL,0);
                 return 12000;
 
             case 6:
                 if (vaga)
-                    ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_4,LANG_UNIVERSAL,NULL);
+                    ((Creature*)vaga)->Say(SAY_DIALOG_VAGATH_4,LANG_UNIVERSAL,0);
                 return 15000;
 
             case 7:
@@ -2135,21 +2135,21 @@ struct HELLGROUND_DLL_DECL npc_AkamaAI : public ScriptedAI
                         target->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
                     }
                 }
-                m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, NULL);
+                m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, 0);
                 return 12000;
 
             case 10:
                 if (maiev)
-                    ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_6,LANG_UNIVERSAL,NULL);
+                    ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_6,LANG_UNIVERSAL,0);
                 return 12000;
 
             case 11:
-                m_creature->Say(SAY_DIALOG_AKAMA_7,LANG_UNIVERSAL,NULL);
+                m_creature->Say(SAY_DIALOG_AKAMA_7,LANG_UNIVERSAL,0);
                 return 12000;
 
             case 12:
                 if (maiev)
-                    ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_8,LANG_UNIVERSAL,NULL);
+                    ((Creature*)maiev)->Say(SAY_DIALOG_MAIEV_8,LANG_UNIVERSAL,0);
                 return 1000;
 
             case 13:

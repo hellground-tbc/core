@@ -95,14 +95,14 @@ struct HELLGROUND_DLL_DECL instance_uldaman : public ScriptedInstance
                 altarOfTheKeeperTempleDoor = go->GetGUID();
 
                 if (Encounters[0] == DONE) 
-                    HandleGameObject(NULL,true,go);
+                    HandleGameObject(0,true,go);
                 break;
 
             case ARCHAEDAS_TEMPLE_DOOR:
                 archaedasTempleDoor = go->GetGUID();
 
                 if (Encounters[0] == DONE) 
-                    HandleGameObject(NULL,true,go);
+                    HandleGameObject(0,true,go);
                 break;
 
             case ANCIENT_VAULT_DOOR:
@@ -111,14 +111,14 @@ struct HELLGROUND_DLL_DECL instance_uldaman : public ScriptedInstance
                 ancientVaultDoor = go->GetGUID();
                 
                 if (Encounters[1] == DONE) 
-                    HandleGameObject(NULL,true,go);
+                    HandleGameObject(0,true,go);
                 break;
         
         case IRONAYA_SEAL_DOOR:
                 ironayaSealDoor = go->GetGUID();
 
                 if (Encounters[2] == DONE) 
-                    HandleGameObject(NULL,true,go);
+                    HandleGameObject(0,true,go);
             break;
         
         case KEYSTONE_GO:
@@ -126,7 +126,7 @@ struct HELLGROUND_DLL_DECL instance_uldaman : public ScriptedInstance
 
                 if (Encounters[2] == DONE)
                 {
-                    HandleGameObject(NULL,true,go);        
+                    HandleGameObject(0,true,go);
                     go->SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
         }
             break;
@@ -148,7 +148,7 @@ struct HELLGROUND_DLL_DECL instance_uldaman : public ScriptedInstance
         if(!go)
             return;
 
-        HandleGameObject(NULL,open,go);
+        HandleGameObject(0,open,go);
     }
     
     void BlockGO(uint64 guid)

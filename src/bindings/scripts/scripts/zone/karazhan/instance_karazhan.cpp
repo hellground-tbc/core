@@ -324,17 +324,17 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     case 183932:
         CurtainGUID           = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL, true, go);
+            HandleGameObject(0, true, go);
         break;
     case 184278:
         StageDoorLeftGUID     = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL, true, go);
+            HandleGameObject(0, true, go);
         break;
     case 184279:
         StageDoorRightGUID    = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL, true, go);
+            HandleGameObject(0, true, go);
         break;
     case 184517:
         LibraryDoor           = go->GetGUID();
@@ -347,12 +347,12 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     case 184276:
         GamesmansDoor         = go->GetGUID();
         if(Encounters[5] == DONE)
-            HandleGameObject(NULL, true, go);
+            HandleGameObject(0, true, go);
         break;
     case 184277:
         GamesmansExitDoor     = go->GetGUID();
         if(Encounters[12] == DONE)
-            HandleGameObject(NULL, true, go);
+            HandleGameObject(0, true, go);
         break;
     case 185134:
         NetherspaceDoor       = go->GetGUID();
@@ -366,12 +366,12 @@ void instance_karazhan::OnObjectCreate(GameObject* go)
     case 184275:
         SideEntranceDoor      = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL, true, go);
+            HandleGameObject(0, true, go);
         break;
     case 184281:
         ServentAccessDoor = go->GetGUID();
         if(Encounters[4] == DONE)
-            HandleGameObject(NULL, true, go);
+            HandleGameObject(0, true, go);
         break;
     }
 

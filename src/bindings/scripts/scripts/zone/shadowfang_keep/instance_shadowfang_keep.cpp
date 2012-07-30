@@ -51,11 +51,11 @@ struct HELLGROUND_DLL_DECL instance_shadowfang_keep : public ScriptedInstance
         switch(go->GetEntry())
         {
         case 18895: DoorCourtyardGUID = go->GetGUID();
-            if(Encounters[0] == DONE) HandleGameObject(NULL,true,go); break;
+            if(Encounters[0] == DONE) HandleGameObject(0,true,go); break;
         case 18972: DoorSorcererGUID = go->GetGUID(); 
-            if(Encounters[2] == DONE) HandleGameObject(NULL,true,go); break;
+            if(Encounters[2] == DONE) HandleGameObject(0,true,go); break;
         case 18971: DoorArugalGUID = go->GetGUID(); 
-            if(Encounters[3] == DONE) HandleGameObject(NULL,true,go); break;
+            if(Encounters[3] == DONE) HandleGameObject(0,true,go); break;
 
         }
     }

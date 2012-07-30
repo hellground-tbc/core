@@ -135,7 +135,7 @@ struct HELLGROUND_DLL_DECL mob_crystalcore_mechanicAI : public ScriptedAI
 
         if(Sawblade_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, 0))
                 DoCast(target,SPELL_SAWBLADE);
 
             Saw_count++;
@@ -244,7 +244,7 @@ struct HELLGROUND_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
 
         if(ManaBurn_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, 0))
                 DoCast(target,SPELL_MANABURNE);
 
             ManaBurn_Timer = 20000+rand()%14000;
@@ -254,7 +254,7 @@ struct HELLGROUND_DLL_DECL mob_phoenix_hawkAI : public ScriptedAI
 
         if(Dive_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, 0))
                 DoCast(target,SPELL_DIVE);
 
             Dive_Timer = 16000+rand()%4000;
@@ -275,8 +275,8 @@ CreatureAI* GetAI_mob_phoenix_hawk(Creature *_Creature)
 
 #define SPELL_FIRESHIELD       37318
 #define SPELL_IMMOLATIONARROW  37154
-#define SPELL_KNOCKBACK           37317
-#define SPELL_SHOOT               39079
+#define SPELL_KNOCKBACK        37317
+#define SPELL_SHOOT            39079
 
 struct HELLGROUND_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
 {
@@ -315,7 +315,7 @@ struct HELLGROUND_DLL_DECL mob_tempest_falconerAI : public ScriptedAI
 
         if(ImmolationArrow_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, 0))
                 DoCast(target,SPELL_IMMOLATIONARROW);
 
             ImmolationArrow_Timer = 10000+rand()%4000;
@@ -465,10 +465,10 @@ CreatureAI* GetAI_mob_crimson_hand_blood_knight(Creature *_Creature)
 
 //Bloodwarder Squire
 
-#define SPELL_CLEANSE          39078
-#define SPELL_FLASHOFLIGHT     37254
-#define SPELL_HAMMEROFJUSTICE  39077
-#define SPELL_HAMMEROFWRATH    37255
+#define SPELL_CLEANSE_BW_SQUIRE          39078
+#define SPELL_FLASHOFLIGHT_BW_SQUIRE     37254
+#define SPELL_HAMMEROFJUSTICE_BW_SQUIRE  39077
+#define SPELL_HAMMEROFWRATH_BW_SQUIRE    37255
 
 struct HELLGROUND_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
 {
@@ -503,7 +503,7 @@ struct HELLGROUND_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
             if (!pList.empty())
             {
                 Unit* target = *(pList.begin());
-                DoCast(target,SPELL_CLEANSE);
+                DoCast(target,SPELL_CLEANSE_BW_SQUIRE);
             }
             Cleanse_Timer = 3000+rand()%1000;
         }
@@ -515,7 +515,7 @@ struct HELLGROUND_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
             Unit* target = SelectLowestHpFriendly(50, 1000);
             if(target)
             {
-                DoCast(target,SPELL_FLASHOFLIGHT);
+                DoCast(target,SPELL_FLASHOFLIGHT_BW_SQUIRE);
 
                 if(target->GetHealth() <= target->GetMaxHealth()*0.5)
                     FlashofLight_Timer = 0;
@@ -529,7 +529,7 @@ struct HELLGROUND_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
 
         if(HammerofJustice_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE);
+            DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE_BW_SQUIRE);
             HammerofJustice_Timer = 18000;
         }
         else
@@ -546,7 +546,7 @@ struct HELLGROUND_DLL_DECL mob_Bloodwarder_SquireAI : public ScriptedAI
                     Player *p = i->getSource();
                     if(p->isAlive() && p->GetHealth() <= p->GetMaxHealth()*0.2)
                     {
-                        DoCast(p, SPELL_HAMMEROFWRATH);
+                        DoCast(p, SPELL_HAMMEROFWRATH_BW_SQUIRE);
                         break;
                     }
                 }
@@ -567,10 +567,10 @@ CreatureAI* GetAI_mob_Bloodwarder_Squire(Creature *_Creature)
 
 //Bloodwarder Vindicator
 
-#define SPELL_CLEANSE          39078
-#define SPELL_FLASHOFLIGHT     37249
-#define SPELL_HAMMEROFJUSTICE  13005
-#define SPELL_HAMMEROFWRATH    37251
+#define SPELL_CLEANSE_BW_VINDICATOR          39078
+#define SPELL_FLASHOFLIGHT_BW_VINDICATOR     37249
+#define SPELL_HAMMEROFJUSTICE_BW_VINDICATOR  13005
+#define SPELL_HAMMEROFWRATH_BW_VINDICATOR    37251
 
 struct HELLGROUND_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
 {
@@ -605,7 +605,7 @@ struct HELLGROUND_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
             if (!pList.empty())
             {
                 Unit* target = *(pList.begin());
-                DoCast(target,SPELL_CLEANSE);
+                DoCast(target,SPELL_CLEANSE_BW_VINDICATOR);
             }
             Cleanse_Timer = 3000+rand()%1000;
         }
@@ -617,7 +617,7 @@ struct HELLGROUND_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
             Unit* target = SelectLowestHpFriendly(50, 1000);
             if(target)
             {
-                DoCast(target,SPELL_FLASHOFLIGHT);
+                DoCast(target,SPELL_FLASHOFLIGHT_BW_VINDICATOR);
 
                 if(target->GetHealth() <= target->GetMaxHealth()*0.5)
                     FlashofLight_Timer = 2000;
@@ -630,7 +630,7 @@ struct HELLGROUND_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
 
         if(HammerofJustice_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE);
+            DoCast(m_creature->getVictim(),SPELL_HAMMEROFJUSTICE_BW_VINDICATOR);
             HammerofJustice_Timer = 18000;
         }
         else
@@ -647,7 +647,7 @@ struct HELLGROUND_DLL_DECL mob_Bloodwarder_VindicatorAI : public ScriptedAI
                     Player *p = i->getSource();
                     if(p->isAlive() && p->GetHealth() <= p->GetMaxHealth()*0.2)
                     {
-                        DoCast(p, SPELL_HAMMEROFWRATH);
+                        DoCast(p, SPELL_HAMMEROFWRATH_BW_VINDICATOR);
                         break;
                     }
                 }
@@ -702,7 +702,7 @@ struct HELLGROUND_DLL_DECL mob_tempest_smithAI : public ScriptedAI
 
         if(Fragmentation_Bomb_Timer < diff )
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, 0);
             if(target)
                 DoCast(target,SPELL_FEAGMENTATIONBOMB);
 
@@ -745,7 +745,7 @@ struct HELLGROUND_DLL_DECL mob_tempest_smithAI : public ScriptedAI
 
         if(Shell_Shock_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, 0);
             if(target)
                 DoCast(target,SPELL_SHELLSHOCK);
 
@@ -765,10 +765,10 @@ CreatureAI* GetAI_mob_tempest_smith(Creature *_Creature)
 
 //Novice Astromancer
 
-#define SPELL_FIRENOVA                    38728
-#define SPELL_FIRESHIELD                  37282
-#define SPELL_FIREBALL                    37111
-#define SPELL_RAINOFFIRE                  37279
+#define SPELL_FIRENOVA                      38728
+#define SPELL_FIRESHIELD_NOVICE_ASTROMANCER 37282
+#define SPELL_FIREBALL                      37111
+#define SPELL_RAINOFFIRE                    37279
 
 struct HELLGROUND_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
 {
@@ -799,7 +799,7 @@ struct HELLGROUND_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
 
         if(Fire_Nova_Timer < diff )
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true,0);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, 0);
             if(target)
                 DoCast(target,SPELL_FIRENOVA);
 
@@ -810,7 +810,7 @@ struct HELLGROUND_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
 
         if(Fire_Shield_Timer < diff)
         {
-            DoCast(m_creature,SPELL_FIRESHIELD);
+            DoCast(m_creature,SPELL_FIRESHIELD_NOVICE_ASTROMANCER);
             Fire_Shield_Timer = 60000;
         }
         else
@@ -818,7 +818,7 @@ struct HELLGROUND_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
 
         if(Fireball_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true, NULL);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50, true, 0);
             if(target)
                 DoCast(target,SPELL_FIREBALL);
 
@@ -829,7 +829,7 @@ struct HELLGROUND_DLL_DECL mob_novice_astromancerAI : public ScriptedAI
 
         if(Rain_of_Fire_Timer < diff)
         {
-            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, NULL);
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30, true, 0);
             if(target)
                 DoCast(target,SPELL_RAINOFFIRE);
 

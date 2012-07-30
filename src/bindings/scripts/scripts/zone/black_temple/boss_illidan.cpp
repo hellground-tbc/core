@@ -245,7 +245,7 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->SetLevitate(false);
         me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-        me->SetSelection(NULL);
+        me->SetSelection(0);
 
         instance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
     }

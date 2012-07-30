@@ -273,25 +273,25 @@ struct HELLGROUND_DLL_DECL npc_image_of_medivhAI : public ScriptedAI
         {
             case 0: return 9999999;
             case 1:
-                m_creature->Yell(SAY_DIALOG_MEDIVH_1,LANG_UNIVERSAL,NULL);
+                m_creature->Yell(SAY_DIALOG_MEDIVH_1, LANG_UNIVERSAL, 0);
                 return 10000;
             case 2:
                 if(arca)
-                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_2,LANG_UNIVERSAL,NULL);
+                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_2, LANG_UNIVERSAL, 0);
                 return 20000;
             case 3:
-                m_creature->Yell(SAY_DIALOG_MEDIVH_3,LANG_UNIVERSAL,NULL);
+                m_creature->Yell(SAY_DIALOG_MEDIVH_3,LANG_UNIVERSAL,0);
                 return 10000;
             case 4:
                 if(arca)
-                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_4, LANG_UNIVERSAL, NULL);
+                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_4, LANG_UNIVERSAL, 0);
                 return 20000;
             case 5:
-                m_creature->Yell(SAY_DIALOG_MEDIVH_5, LANG_UNIVERSAL, NULL);
+                m_creature->Yell(SAY_DIALOG_MEDIVH_5, LANG_UNIVERSAL, 0);
                 return 20000;
             case 6:
                 if(arca)
-                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_6, LANG_UNIVERSAL, NULL);
+                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_6, LANG_UNIVERSAL, 0);
                 return 10000;
             case 7:
                 FireArcanagosTimer = 500;
@@ -309,7 +309,7 @@ struct HELLGROUND_DLL_DECL npc_image_of_medivhAI : public ScriptedAI
                 return 1000;
             case 11:
                 if(arca)
-                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_8, LANG_UNIVERSAL, NULL);
+                    ((Creature*)arca)->Yell(SAY_DIALOG_ARCANAGOS_8, LANG_UNIVERSAL, 0);
                 return 5000;
             case 12:
                 arca->GetMotionMaster()->MovePoint(0, -11010.82,-1761.18, 156.47);
@@ -318,7 +318,7 @@ struct HELLGROUND_DLL_DECL npc_image_of_medivhAI : public ScriptedAI
                 arca->SetSpeed(MOVE_FLIGHT, 2.0f);
                 return 10000;
             case 13:
-                m_creature->Yell(SAY_DIALOG_MEDIVH_9, LANG_UNIVERSAL, NULL);
+                m_creature->Yell(SAY_DIALOG_MEDIVH_9, LANG_UNIVERSAL, 0);
                 return 10000;
             case 14:
                 m_creature->SetVisibility(VISIBILITY_OFF);

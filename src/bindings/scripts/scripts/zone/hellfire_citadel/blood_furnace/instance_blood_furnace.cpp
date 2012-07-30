@@ -145,7 +145,7 @@ struct HELLGROUND_DLL_DECL instance_blood_furnace : public ScriptedInstance
         if (type == DATA_BROGGOKEVENT)
             return BroggokEncounter;
 
-        return NULL;
+        return 0;
     }
 
     uint64 GetData64(uint32 type)
@@ -160,7 +160,7 @@ struct HELLGROUND_DLL_DECL instance_blood_furnace : public ScriptedInstance
             case 5:
                 return BroggokDoor;
             default:
-                return NULL;
+                return 0;
         }
     }
 

@@ -207,7 +207,7 @@ struct HELLGROUND_DLL_DECL npc_sethir_the_ancientAI : public ScriptedAI
     {
         if (!m_creature->isInCombat() && !pause_say && m_creature->IsWithinDistInMap(who, 30) && m_creature->IsHostileTo(who) && who->HasAuraType(SPELL_AURA_MOD_STEALTH))
         {
-            me->Say("I know you are there, rogue. Leave my home or join the others at the bottom of the World Tree!", LANG_UNIVERSAL, NULL);
+            me->Say("I know you are there, rogue. Leave my home or join the others at the bottom of the World Tree!", LANG_UNIVERSAL, 0);
             pause_say = true;
             temp = 60000;
         }

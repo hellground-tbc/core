@@ -491,7 +491,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                 }
 
                 CreatureEventAI_Action& action = temp.action[j];
-                uint64 param2_64 = NULL;
+                uint64 param2_64 = 0;
 
                 action.type = EventAI_ActionType(action_type);
                 action.raw.param1 = fields[11+(j*4)].GetUInt32();

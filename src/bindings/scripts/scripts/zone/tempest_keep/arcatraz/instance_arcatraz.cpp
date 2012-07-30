@@ -66,8 +66,8 @@ struct HELLGROUND_DLL_DECL instance_arcatraz : public ScriptedInstance
 
     void Initialize()
     {
-        Containment_Core_Security_Field_Alpha = NULL;
-        Containment_Core_Security_Field_Beta  = NULL;
+        Containment_Core_Security_Field_Alpha = 0;
+        Containment_Core_Security_Field_Beta  = 0;
         Pod_Alpha = NULL;
         Pod_Beta  = NULL;
         Pod_Delta = NULL;
@@ -98,12 +98,12 @@ struct HELLGROUND_DLL_DECL instance_arcatraz : public ScriptedInstance
             case CONTAINMENT_CORE_SECURITY_FIELD_ALPHA:
                 Containment_Core_Security_Field_Alpha = go->GetGUID();
                 if (GetData(TYPE_SOCCOTHRATES) == DONE)
-                    HandleGameObject(NULL, true, go);
+                    HandleGameObject(0, true, go);
                 break;
             case CONTAINMENT_CORE_SECURITY_FIELD_BETA:
                 Containment_Core_Security_Field_Beta =  go->GetGUID();
                 if (GetData(TYPE_DALLIAH) == DONE)
-                    HandleGameObject(NULL, true, go);
+                    HandleGameObject(0, true, go);
                 break;
             case SEAL_SPHERE: GoSphereGUID = go->GetGUID(); break;
             case POD_ALPHA: Pod_Alpha = go; break;

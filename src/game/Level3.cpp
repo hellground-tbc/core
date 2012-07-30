@@ -4869,8 +4869,8 @@ bool ChatHandler::HandleServerRollShutDownCommand(const char* args)
     if (!*args)
         return false;
 
-    char* time_str = strtok((char*) args, " ");
-    char* exitmsg = strtok(NULL, "");
+    const char* time_str = strtok((char*) args, " ");
+    const char* exitmsg = strtok(NULL, "");
 
     int time;
     int roll = atoi(time_str);

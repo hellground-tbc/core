@@ -862,7 +862,9 @@ bool GossipHello_npc_squire_rowe(Player *player, Creature *_Creature)
     if (((npc_squire_roweAI*)_Creature->AI())->inProgress())
         return false;
 
-    if (player->GetQuestStatus(QUEST_STORMWIND_RENDEZVOUS) == QUEST_STATE_COMPLETE && !player->IsActiveQuest(QUEST_THE_GREAT_THE_MASQUERADE))
+    if ((player->GetQuestStatus(QUEST_STORMWIND_RENDEZVOUS)
+         == QUEST_STATUS_COMPLETE)
+        && !player->IsActiveQuest(QUEST_THE_GREAT_THE_MASQUERADE))
     {
         player->ADD_GOSSIP_ITEM(0, GOSSIP_SQUIRE_ROWE_REGINALD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         player->SEND_GOSSIP_MENU(9065, _Creature->GetGUID());
@@ -1250,12 +1252,12 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             if (fordragon)
                                 fordragon->TextEmote(" medallion shatters.", fordragon->GetGUID(), false);
                             else
-                                me->Say("Fordragon zwial", LANG_UNIVERSAL, NULL);
+                                me->Say("Fordragon zwial", LANG_UNIVERSAL, 0);
 
                             if (onyxia)
                                 onyxia->CastSpell(onyxia, SPELL_LADY_ONYXIA_DESPAWNS, false);
                             else
-                                me->Say("Onyxia sie ulotnila", LANG_UNIVERSAL, NULL);
+                                me->Say("Onyxia sie ulotnila", LANG_UNIVERSAL, 0);
 
                             onyxiaDespawnTimer = 1500;
                             onyxiaDespawnEvent = 2;
@@ -1270,14 +1272,14 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                                 onyxia->RemoveCorpse();
                             }
                             else
-                                me->Say("Onyxia poleciala na zlot czarownic", LANG_UNIVERSAL, NULL);
+                                me->Say("Onyxia poleciala na zlot czarownic", LANG_UNIVERSAL, 0);
 
                             onyxiaDespawnEvent = 0;
                             break;
                     }
                 }
                 else
-                    me->Say("Jakas dziwna ta mapa oO bo nima jej :P", LANG_UNIVERSAL, NULL);
+                    me->Say("Jakas dziwna ta mapa oO bo nima jej :P", LANG_UNIVERSAL, 0);
             }
             else
                 onyxiaDespawnTimer -= diff;
@@ -1339,35 +1341,35 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                     switch (eventPhase)
                     {
                         case 0:
-                            marcus->Say(SAY_GENERAL_MARCUS_1, LANG_UNIVERSAL, NULL);
+                            marcus->Say(SAY_GENERAL_MARCUS_1, LANG_UNIVERSAL, 0);
                             phaseTimer = 6000;
                             break;
                         case 1:
-                            m_creature->Say(SAY_REGINALD_2_1, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_2_1, LANG_UNIVERSAL, 0);
                             phaseTimer = 6000;
                             break;
                         case 2:
-                            m_creature->Say(SAY_REGINALD_2_2, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_2_2, LANG_UNIVERSAL, 0);
                             phaseTimer = 1000;
                             break;
                         case 3:
-                            marcus->TextEmote(MARCUS_EMOTE, NULL);
+                            marcus->TextEmote(MARCUS_EMOTE, 0);
                             phaseTimer = 6000;
                             break;
                         case 4:
-                            marcus->Say(SAY_GENERAL_MARCUS_2, LANG_UNIVERSAL, NULL);
+                            marcus->Say(SAY_GENERAL_MARCUS_2, LANG_UNIVERSAL, 0);
                             phaseTimer = 6000;
                             break;
                         case 5:
-                            marcus->Say(SAY_GENERAL_MARCUS_3, LANG_UNIVERSAL, NULL);
+                            marcus->Say(SAY_GENERAL_MARCUS_3, LANG_UNIVERSAL, 0);
                             phaseTimer = 10000;
                             break;
                         case 6:
-                            m_creature->Say(SAY_REGINALD_2_3, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_2_3, LANG_UNIVERSAL, 0);
                             phaseTimer = 9000;
                             break;
                         case 7:
-                            m_creature->Say(SAY_REGINALD_2_4, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_2_4, LANG_UNIVERSAL, 0);
                             phaseTimer = 4000;
                             break;
                         case 8:
@@ -1382,7 +1384,7 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                                 }
                             }
 
-                            marcus->Say(SAY_GENERAL_MARCUS_4, LANG_UNIVERSAL, NULL);
+                            marcus->Say(SAY_GENERAL_MARCUS_4, LANG_UNIVERSAL, 0);
                             marcus->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
                             phaseTimer = 5000;
                             break;
@@ -1398,13 +1400,13 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                                 }
                             }
 
-                            marcus->Say(SAY_GENERAL_MARCUS_5, LANG_UNIVERSAL, NULL);
+                            marcus->Say(SAY_GENERAL_MARCUS_5, LANG_UNIVERSAL, 0);
                             marcus->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
                             phaseTimer = 5000;
                             break;
                         case 10:
                             marcus->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
-                            marcus->Yell(SAY_GENERAL_MARCUS_6, LANG_UNIVERSAL, NULL);
+                            marcus->Yell(SAY_GENERAL_MARCUS_6, LANG_UNIVERSAL, 0);
                             marcus->HandleEmoteCommand(EMOTE_ONESHOT_SHOUT);
                             phaseTimer = 5000;
                             break;
@@ -1413,7 +1415,7 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             phaseTimer = 3000;
                             break;
                         case 12:
-                            marcus->Say(SAY_GENERAL_MARCUS_7, LANG_UNIVERSAL, NULL);
+                            marcus->Say(SAY_GENERAL_MARCUS_7, LANG_UNIVERSAL, 0);
                             phaseTimer = 4000;
                             break;
                         case 13:
@@ -1423,11 +1425,11 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             break;
                         case 14:
                             marcus->GetMotionMaster()->MovePoint(0, -8976.7, 514.0, 96.6);
-                            m_creature->Say(SAY_REGINALD_2_5, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_2_5, LANG_UNIVERSAL, 0);
                             phaseTimer = 3000;
                             break;
                         case 15:
-                            m_creature->Say(SAY_REGINALD_2_6, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_2_6, LANG_UNIVERSAL, 0);
                             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_EXCLAMATION);
                             phaseTimer = 4000;
                             break;
@@ -1455,7 +1457,7 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                     switch (eventPhase)
                     {
                         case 0:
-                            m_creature->Say(SAY_REGINALD_3_1, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_3_1, LANG_UNIVERSAL, 0);
                             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
                             phaseTimer = 4000;
                             break;
@@ -1489,7 +1491,7 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                     {
                         if (!(ladyOnyxia = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_LADY_KATRANA_ID))))
                         {
-                            me->Say("Nima Katrany", LANG_UNIVERSAL, NULL);
+                            me->Say("Nima Katrany", LANG_UNIVERSAL, 0);
                             break;
                         }
                     }
@@ -1497,7 +1499,7 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                     {
                         if (!(ladyOnyxia = (Creature*)FindCreature(NPC_LADY_ONYXIA_ID, 20, me)))
                         {
-                            me->Say("Nima Onyxi", LANG_UNIVERSAL, NULL);
+                            me->Say("Nima Onyxi", LANG_UNIVERSAL, 0);
                             break;
                         }
                     }
@@ -1505,19 +1507,19 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
 
                     if (!(fordragon = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_FORDRAGON_ID))))
                     {
-                        me->Say("Fordragon gdzies zwial oO", LANG_UNIVERSAL, NULL);
+                        me->Say("Fordragon gdzies zwial oO", LANG_UNIVERSAL, 0);
                         break;
                     }
 
                     switch (eventPhase)
                     {
                         case 0:
-                            m_creature->Say(SAY_REGINALD_4_1, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_4_1, LANG_UNIVERSAL, 0);
                             phaseTimer = 2000;
                             break;
                         case 1:
                         {
-                            fordragon->Say(SAY_HIGHLORD_FORDRAGON_1, LANG_UNIVERSAL, NULL);
+                            fordragon->Say(SAY_HIGHLORD_FORDRAGON_1, LANG_UNIVERSAL, 0);
                             Creature * majesty = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_MAJESTY_ID));
 
                             if (majesty)
@@ -1525,7 +1527,7 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                                 majesty->SetWalk(false);
                                 majesty->SetSpeed(MOVE_RUN, 1.5);
                                 majesty->GetMotionMaster()->MovePoint(0, MAJESTY_MOVE_COORDS);
-                                majesty->TextEmote(ANDUIN_WRYN_EMOTE, NULL);
+                                majesty->TextEmote(ANDUIN_WRYN_EMOTE, 0);
                             }
 
                             phaseTimer = 4000;
@@ -1543,7 +1545,7 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                                 majesty->RemoveCorpse();
                             }
 
-                            m_creature->Say(SAY_REGINALD_4_2, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_4_2, LANG_UNIVERSAL, 0);
                             phaseTimer = 4000;
                             break;
                         }
@@ -1552,27 +1554,27 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             phaseTimer = 3000;
                             break;
                         case 4:
-                            ladyOnyxia->Say(SAY_LADY_KATRANA_1, LANG_UNIVERSAL, NULL);
+                            ladyOnyxia->Say(SAY_LADY_KATRANA_1, LANG_UNIVERSAL, 0);
                             phaseTimer = 8000;
                             break;
                         case 5:
-                            ladyOnyxia->Say(SAY_LADY_KATRANA_2, LANG_UNIVERSAL, NULL);
+                            ladyOnyxia->Say(SAY_LADY_KATRANA_2, LANG_UNIVERSAL, 0);
                             phaseTimer = 8000;
                             break;
                         case 6:
-                            m_creature->Say(SAY_REGINALD_4_3, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_4_3, LANG_UNIVERSAL, 0);
                             phaseTimer = 5000;
                             break;
                         case 7:
-                            m_creature->Say(SAY_REGINALD_4_4, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_4_4, LANG_UNIVERSAL, 0);
                             phaseTimer = 5000;
                             break;
                         case 8:
-                            m_creature->Say(SAY_REGINALD_4_5, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_4_5, LANG_UNIVERSAL, 0);
                             phaseTimer = 5000;
                             break;
                         case 9:
-                            m_creature->TextEmote(REGINALD_EMOTE, NULL);
+                            m_creature->TextEmote(REGINALD_EMOTE, 0);
                             m_creature->CastSpell(ladyOnyxia, SPELL_WINDSOR_READING_TABLETS, false);
                             phaseTimer = 13000;
                             break;
@@ -1584,11 +1586,11 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             break;
                         case 11:
                             fordragon->SetUInt64Value(UNIT_FIELD_TARGET, ladyOnyxia->GetGUID());
-                            ladyOnyxia->Say(SAY_LADY_KATRANA_3, LANG_UNIVERSAL, NULL);
+                            ladyOnyxia->Say(SAY_LADY_KATRANA_3, LANG_UNIVERSAL, 0);
                             phaseTimer = 1000;
                             break;
                         case 12:
-                            fordragon->Say(SAY_HIGHLORD_FORDRAGON_2, LANG_UNIVERSAL, NULL);
+                            fordragon->Say(SAY_HIGHLORD_FORDRAGON_2, LANG_UNIVERSAL, 0);
                             phaseTimer = 1500;
                             break;
                         case 13:
@@ -1656,8 +1658,8 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                             }
 
                             ladyOnyxia->CastSpell((Unit*)NULL, SPELL_WINDSOR_DEATH, false);
-                            fordragon->SetUInt64Value(UNIT_FIELD_TARGET, NULL);
-                            m_creature->Say(SAY_REGINALD_4_6, LANG_UNIVERSAL, NULL);
+                            fordragon->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+                            m_creature->Say(SAY_REGINALD_4_6, LANG_UNIVERSAL, 0);
                             phaseTimer = 2000;
                             break;
                         }
@@ -1675,11 +1677,11 @@ struct HELLGROUND_DLL_DECL npc_reginald_windsorAI : public npc_escortAI
                         case 17:
                             fordragon->SetUInt64Value(UNIT_FIELD_TARGET, me->GetGUID());
                             fordragon->SetStandState(PLAYER_STATE_KNEEL);
-                            fordragon->Say(SAY_HIGHLORD_FORDRAGON_3, LANG_UNIVERSAL, NULL);
+                            fordragon->Say(SAY_HIGHLORD_FORDRAGON_3, LANG_UNIVERSAL, 0);
                             phaseTimer = 2000;
                             break;
                         case 18:
-                            m_creature->Say(SAY_REGINALD_4_7, LANG_UNIVERSAL, NULL);
+                            m_creature->Say(SAY_REGINALD_4_7, LANG_UNIVERSAL, 0);
                             phaseTimer = 2000;
                             break;
                         case 19:
@@ -1796,7 +1798,7 @@ bool GossipSelect_npc_reginald_windsor(Player *player, Creature *creature, uint3
                 ((npc_reginald_windsorAI*)creature->AI())->SetEscortPaused(false);
                 creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
                 creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                creature->Say(SAY_REGINALD_3_2, LANG_UNIVERSAL, NULL);
+                creature->Say(SAY_REGINALD_3_2, LANG_UNIVERSAL, 0);
                 ((npc_reginald_windsorAI*)creature->AI())->event = EVENT_NONE;
             }
             break;
@@ -1816,7 +1818,7 @@ bool QuestAccept_npc_reginald_windsor(Player * player, Creature * creature, Ques
         ((npc_reginald_windsorAI*)creature->AI())->SpawnGuards();
         ((npc_reginald_windsorAI*)creature->AI())->SetMaxPlayerDistance(15);
         creature->SetUInt64Value(UNIT_FIELD_TARGET, 0);
-        creature->Yell(SAY_REGINALD_1_3, LANG_UNIVERSAL, NULL);
+        creature->Yell(SAY_REGINALD_1_3, LANG_UNIVERSAL, 0);
         Creature * tmpC = creature->GetMap()->GetCreature(creature->GetMap()->GetCreatureGUID(NPC_MAJESTY_ID));
 
         if (tmpC)

@@ -331,7 +331,7 @@ struct HELLGROUND_DLL_DECL boss_kaelthasAI : public ScriptedAI
             for(uint8 i = 0; i<3; i++)
             {
                 MCTempSpell->EffectImplicitTargetA[i] = TARGET_UNIT_TARGET_ENEMY;
-                MCTempSpell->EffectImplicitTargetB[i] = NULL;
+                MCTempSpell->EffectImplicitTargetB[i] = 0;
             }
         }
     }

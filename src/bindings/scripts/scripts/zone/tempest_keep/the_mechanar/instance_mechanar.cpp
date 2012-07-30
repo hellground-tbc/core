@@ -56,16 +56,16 @@ struct HELLGROUND_DLL_DECL instance_mechanar : public ScriptedInstance
             case GO_MOARGDOOR1:
                 MoargDoor1 = go->GetGUID();
                 if(GetData(DATA_IRONHAND_EVENT) == DONE)
-                    HandleGameObject(NULL, true, go);
+                    HandleGameObject(0, true, go);
                 break;
             case GO_MOARGDOOR2:
                 MoargDoor2 = go->GetGUID();
                 if(GetData(DATA_GYROKILL_EVENT) == DONE)
-                    HandleGameObject(NULL, true, go);
+                    HandleGameObject(0, true, go);
                 break;
             case GO_NETHERMANCERDOOR:
                 NethermancerDoor = go->GetGUID();
-                HandleGameObject(NULL, true, go);
+                HandleGameObject(0, true, go);
                 break;
         }
     }

@@ -660,13 +660,13 @@ bool AreaTrigger_at_commander_dawnforge(Player *player, AreaTriggerEntry const*a
 ## npc_protectorate_nether_drake
 ######*/
 
-#define GOSSIP_ITEM "I'm ready to fly! Take me up, dragon!"
+#define GOSSIP_ITEM_PROTECTOORATE "I'm ready to fly! Take me up, dragon!"
 
 bool GossipHello_npc_protectorate_nether_drake(Player *player, Creature *_Creature)
 {
     //On Nethery Wings
     if (player->GetQuestStatus(10438) == QUEST_STATUS_INCOMPLETE && player->HasItemCount(29778,1) )
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_PROTECTOORATE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
 
@@ -694,7 +694,7 @@ bool GossipSelect_npc_protectorate_nether_drake(Player *player, Creature *_Creat
 ######*/
 
 #define SPELL_PHASE_DISTRUPTOR  35780
-#define GOSSIP_ITEM "I need a new phase distruptor, Professor"
+#define GOSSIP_ITEM_DABIRI "I need a new phase distruptor, Professor"
 #define WHISPER_DABIRI -1000302
 
 #define QUEST_DIMENSIUS 10439
@@ -706,7 +706,7 @@ bool GossipHello_npc_professor_dabiri(Player *player, Creature *_Creature)
         player->PrepareQuestMenu( _Creature->GetGUID() );
 
     if(player->GetQuestStatus(QUEST_ON_NETHERY_WINGS) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(29778, 1))
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_DABIRI, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
 
@@ -1098,7 +1098,7 @@ bool GOUse_go_ethereum_prison(Player *player, GameObject* _GO)
             entry = ethereum_NPC[1][rand()%6];
             if(Creature *prisoner = _GO->SummonCreature(entry,_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ()+0.3, 0,TEMPSUMMON_TIMED_DESPAWN,10000))
             {
-                int32 spellId = NULL;
+                int32 spellId = 0;
                 switch(prisoner->GetEntry())
                 {
                     case 22810: spellId = 39460; break;  // Cenarion Expedition +500
@@ -1108,7 +1108,7 @@ bool GOUse_go_ethereum_prison(Player *player, GameObject* _GO)
                     case 22814: spellId = 39476; break;  // Sporegar +500
                     case 22815: spellId = 39475; break;  // Keepers of Time +500
                 }
-                prisoner->CastSpell(player,spellId,false,false,false,0);
+                prisoner->CastSpell(player, spellId, false, NULL, NULL, 0);
             }
         break;
     }

@@ -235,7 +235,7 @@ class HELLGROUND_DLL_SPEC Aura
         int32 GetMiscBValue() {return m_spellProto->EffectMiscValueB[m_effIndex];}
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
-        uint32 GetId() const{ return m_spellProto ? m_spellProto->Id : NULL; }
+        uint32 GetId() const { return m_spellProto ? m_spellProto->Id : 0; }
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }

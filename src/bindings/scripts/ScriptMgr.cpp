@@ -16,7 +16,7 @@
 
 #ifndef _HELLGROUND_SCRIPT_CONFIG
 # define _HELLGROUND_SCRIPT_CONFIG  "trinitycore.conf"
-#endif _HELLGROUND_SCRIPT_CONFIG
+#endif // _HELLGROUND_SCRIPT_CONFIG
 
 int num_sc_scripts;
 Script *m_scripts[MAX_SCRIPTS];

@@ -45,5 +45,3 @@ void WorldLog::Initialize()
     }
 }
 
-#define sWorldLog WorldLog::Instance()
-

@@ -118,7 +118,7 @@ struct HELLGROUND_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
         Impale_Timer = 7000+rand()%7000;
         Rage_Timer = 45000;
         CanRage = false;
-        CurrentDistiller = NULL;
+        CurrentDistiller = 0;
 
         checkTimer = 3000;
 
@@ -170,7 +170,7 @@ struct HELLGROUND_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
                     distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     distiler->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     distiler->SetHealth(distiler->GetMaxHealth());
-                    CurrentDistiller = NULL;
+                    CurrentDistiller = 0;
                 }
         }
     }

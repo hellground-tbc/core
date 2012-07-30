@@ -277,7 +277,7 @@ CreatureAI* GetAI_npc_daphne_stilwell(Creature *_Creature)
 
 #define SAY_START                   -1000101
 #define SAY_PROGRESS                -1000102
-#define SAY_END                     -1000103
+#define SAY_END_TRAITOR             -1000103
 #define SAY_AGGRO_1                 -1000104
 #define SAY_AGGRO_2                 -1000105
 
@@ -305,7 +305,7 @@ struct HELLGROUND_DLL_DECL npc_defias_traitorAI : public npc_escortAI
                 DoScriptText(SAY_PROGRESS, m_creature, player);
                 break;
             case 44:
-                DoScriptText(SAY_END, m_creature, player);
+                DoScriptText(SAY_END_TRAITOR, m_creature, player);
                 {
                     ((Player*)player)->GroupEventHappens(QUEST_DEFIAS_BROTHERHOOD,m_creature);
                 }

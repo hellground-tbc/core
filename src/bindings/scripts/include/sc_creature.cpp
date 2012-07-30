@@ -451,7 +451,7 @@ void ScriptedAI::AddSpellToCast(Unit* victim, uint32 spellId, bool triggered, bo
     if(m_creature->isCrowdControlled())
         return;
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : 0, spellId, triggered, 0, visualTarget);
 
     spellList.push_back(temp);
 }
@@ -461,7 +461,7 @@ void ScriptedAI::AddCustomSpellToCast(Unit* victim, uint32 spellId, int32 dmg0, 
     if(m_creature->isCrowdControlled())
         return;
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, dmg0, dmg1, dmg2, triggered, 0, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : 0, spellId, dmg0, dmg1, dmg2, triggered, 0, visualTarget);
 
     spellList.push_back(temp);
 }
@@ -481,7 +481,7 @@ void ScriptedAI::AddSpellToCastWithScriptText(Unit* victim, uint32 spellId, int3
     if(m_creature->isCrowdControlled())
         return;
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : 0, spellId, triggered, scriptTextEntry, visualTarget);
 
     spellList.push_back(temp);
 }
@@ -553,7 +553,7 @@ void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell int
             break;
     }
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, 0, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : 0, spellId, triggered, 0, visualTarget);
 
     spellList.push_front(temp);
 }
@@ -581,7 +581,7 @@ void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int3
             break;
     }
 
-    SpellToCast temp(victim ? victim->GetGUID() : NULL, spellId, triggered, scriptTextEntry, visualTarget);
+    SpellToCast temp(victim ? victim->GetGUID() : 0, spellId, triggered, scriptTextEntry, visualTarget);
 
     spellList.push_front(temp);
 }

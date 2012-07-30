@@ -2788,7 +2788,7 @@ struct HELLGROUND_DLL_DECL mob_shadowmoon_deathshaperAI: public ScriptedAI
             advance(i, rand()%CorpseGUID.size());
             return (*i);
         }
-        return NULL;
+        return 0;
     }
 
     void UpdateAI(const uint32 diff)

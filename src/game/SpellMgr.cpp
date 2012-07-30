@@ -2061,7 +2061,7 @@ void SpellMgr::LoadSpellRequired()
 
     QueryResultAutoPtr result = GameDataDatabase.Query("SELECT spell_id, req_spell from spell_required");
 
-    if (result == NULL)
+    if ( ! result )
     {
         BarGoLink bar(1);
         bar.step();
@@ -2919,7 +2919,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 32727: // Arena Preparation - remove invisibility aura
             case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
-                spellInfo->Effect[1] = NULL;
+                spellInfo->Effect[1] = 0;
                 break;
             case 24905: // Moonkin form -> elune's touch
                 spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
@@ -2940,10 +2940,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 40105:
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
                 spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
-                spellInfo->Effect[2] = NULL;
+                spellInfo->Effect[2] = 0;
             case 40106:
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-                spellInfo->EffectTriggerSpell[0] = NULL;
+                spellInfo->EffectTriggerSpell[0] = 0;
             case 41001: // Fatal Attraction Aura
                 spellInfo->EffectTriggerSpell[1] = 0;
                 break;

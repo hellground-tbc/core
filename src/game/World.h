@@ -535,6 +535,19 @@ enum CBTresholds
     CB_TRESHOLD_MAX,
 };
 
+
+inline
+bool operator>(FeaturePriority rhs, CBTresholds lhs)
+{
+    return static_cast<int>(rhs) > static_cast<int>(lhs);
+}
+
+inline
+bool operator<=(FeaturePriority rhs, CBTresholds lhs)
+{
+    return !(rhs > lhs);
+}
+
 class CoreBalancer
 {
     public:

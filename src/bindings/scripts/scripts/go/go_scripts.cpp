@@ -141,7 +141,7 @@ bool GOUse_go_orb_of_command(Player* pPlayer, GameObject* pGO)
 {
     if (pPlayer->GetQuestRewardStatus(QUEST_BLACKHANDS_COMMAND))
     {
-        pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ORB_OF_COMMAND, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ORB_OF_COMMAND, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         pPlayer->SEND_GOSSIP_MENU(7155, pGO->GetGUID());
     }
 
@@ -226,6 +226,7 @@ bool GOUse_go_sacred_fire_of_life(Player* pPlayer, GameObject* pGO)
 #define GOSSIP_ITEM_SORCERER_1 "[PH] Create 1 x Flask of Sorcerer"
 #define GOSSIP_ITEM_SORCERER_5 "[PH] Create 5 x Flask of Sorcerer"
 
+
 enum FELFORGE
 {
     SPELL_CREATE_1_FLASK_OF_BEAST   = 40964,
@@ -243,13 +244,13 @@ bool GOUse_go_crystalforge(Player* pPlayer, GameObject* pGO)
     switch(pGO->GetEntry())
     {
         case 185919: // Fel Crystalforge
-            pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_BEAST_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-            pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_BEAST_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_BEAST_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_BEAST_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
         break;
 
         case 185921: // Bashir Crystalforge
-            pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_SORCERER_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-            pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_SORCERER_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_SORCERER_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_SORCERER_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
         break;
     }
     pPlayer->SEND_GOSSIP_MENU(pGO->GetGOInfo()->questgiver.gossipID, pGO->GetGUID());
@@ -261,10 +262,16 @@ bool GOGossipSelect_go_crystalforge(Player* pPlayer, GameObject* pGO, uint32 Sen
     switch(action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919) ? SPELL_CREATE_1_FLASK_OF_BEAST : SPELL_CREATE_1_FLASK_OF_SORCERER,false);
+            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
+                               ? uint32(SPELL_CREATE_1_FLASK_OF_BEAST)
+                               : uint32(SPELL_CREATE_1_FLASK_OF_SORCERER)
+                               , false);
         break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919) ? SPELL_CREATE_5_FLASK_OF_BEAST : SPELL_CREATE_5_FLASK_OF_SORCERER,false);
+            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
+                               ? uint32(SPELL_CREATE_5_FLASK_OF_BEAST)
+                               : uint32(SPELL_CREATE_5_FLASK_OF_SORCERER),
+                               false);
         break;
     }
 

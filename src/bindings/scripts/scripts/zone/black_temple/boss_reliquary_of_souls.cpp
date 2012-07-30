@@ -226,7 +226,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
 
     void EnterCombat(Unit* who)
     {
-        me->SetSelection(NULL);
+        me->SetSelection(0);
     }
 
     void SummonSouls()
@@ -300,7 +300,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
                 return;
             }
 
-            me->SetSelection(NULL);
+            me->SetSelection(0);
 
             CheckTimer = 2000;
         }

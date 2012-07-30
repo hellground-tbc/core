@@ -105,7 +105,7 @@ struct HELLGROUND_DLL_DECL instance_steam_vault : public ScriptedInstance
         case MAIN_CHAMBERS_DOOR:
             MainChambersDoor = go->GetGUID();
             if(GetData(TYPE_HYDROMANCER_THESPIA) == SPECIAL && GetData(TYPE_MEKGINEER_STEAMRIGGER) == SPECIAL)
-                HandleGameObject(NULL, true, go);
+                HandleGameObject(0, true, go);
             break;
         case ACCESS_PANEL_HYDRO:
             AccessPanelHydro = go->GetGUID();

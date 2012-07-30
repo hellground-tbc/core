@@ -513,7 +513,7 @@ class HELLGROUND_DLL_SPEC SpellMgr
         {
             SpellRequiredMap::const_iterator itr = mSpellReq.find(spell_id);
             if (itr == mSpellReq.end())
-                return NULL;
+                return 0;
 
             return itr->second;
         }

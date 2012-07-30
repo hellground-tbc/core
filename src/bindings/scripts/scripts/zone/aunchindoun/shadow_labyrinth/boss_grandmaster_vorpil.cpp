@@ -80,7 +80,7 @@ struct HELLGROUND_DLL_DECL mob_voidtravelerAI : public ScriptedAI
 
     void Reset()
     {
-        VorpilGUID = NULL;
+        VorpilGUID = 0;
         move = 0;
         sacrificed = false;
         m_creature->setActive(true);

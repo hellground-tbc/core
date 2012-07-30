@@ -293,12 +293,12 @@ struct HELLGROUND_DLL_DECL instance_black_temple : public ScriptedInstance
         case 185483:
             NajentusGate = go->GetGUID();       // Gate past Naj'entus (at the entrance to Supermoose's courtyards)
             if(Encounters[0] == DONE)
-                HandleGameObject(NULL, true, go);
+                HandleGameObject(0, true, go);
             break;
         case 185882:
             MainTempleDoors = go->GetGUID();    // Main Temple Doors - right past Supermoose (Supremus)
             if(Encounters[1] == DONE)
-                HandleGameObject(NULL, true, go);
+                HandleGameObject(0, true, go);
             break;
         case 185478:
             ShadeOfAkamaDoor = go->GetGUID();
@@ -306,41 +306,41 @@ struct HELLGROUND_DLL_DECL instance_black_temple : public ScriptedInstance
         case 185480:
             CommonDoor = go->GetGUID();
             if(Encounters[3] == DONE)
-                HandleGameObject(NULL, true, go);
+                HandleGameObject(0, true, go);
             break;
         case 186153:
             TeronDoor = go->GetGUID();
             if(Encounters[3] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(0,true,go);
             break;
         case 185892:
             GuurtogDoor = go->GetGUID();
             if(Encounters[4] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(0,true,go);
             break;
         case 185479:
             TempleDoor = go->GetGUID();
             if(Encounters[2] == DONE && Encounters[3] == DONE && Encounters[4] == DONE && Encounters[5] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(0,true,go);
             break;
         case 185482:
             MotherDoor = go->GetGUID();
             if(Encounters[6] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(0,true,go);
             break;
         case 185481:
             CouncilDoor = go->GetGUID();
             if(Encounters[7] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(0,true,go);
             break;
         case 186152:
             SimpleDoor = go->GetGUID();
             if(Encounters[7] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(0,true,go);
             break;
         case 185905:
             if(Encounters[9] == DONE)
-                HandleGameObject(NULL,true,go);
+                HandleGameObject(0,true,go);
 
             IllidanGate = go->GetGUID();
             break; // Gate leading to Temple Summit

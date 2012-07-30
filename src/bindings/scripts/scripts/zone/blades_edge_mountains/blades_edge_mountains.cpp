@@ -1250,7 +1250,7 @@ bool OnGossipHello_go_apexis_relic(Player* player, GameObject* go)
     bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
 
     if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
-        player->ADD_GOSSIP_ITEM(NULL, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     player->Kill(player, false);
     player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());

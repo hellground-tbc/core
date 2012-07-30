@@ -122,7 +122,7 @@ struct HELLGROUND_DLL_DECL instance_gruuls_lair : public ScriptedInstance
         {
             case 184468:
                 MaulgarDoor = go->GetGUID();
-                if(Encounters[0] == DONE) HandleGameObject(NULL, true, go);
+                if(Encounters[0] == DONE) HandleGameObject(0, true, go);
                 break;
             case 184662: GruulDoor = go->GetGUID(); break;
         }

@@ -5487,7 +5487,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 41072:
         {
             const int32 damage = irand(3238, 3762);
-            const int32 reduction = NULL;
+            const int32 reduction = 0;
             m_caster->CastCustomSpell(unitTarget, 41229, &damage, &reduction, NULL, true);  // workaround not to implement spell effect 141 only for 1 spell
             unitTarget->CastCustomSpell(unitTarget, 41067, &damage, NULL, NULL, true, 0, 0, m_caster->GetGUID());
             break;

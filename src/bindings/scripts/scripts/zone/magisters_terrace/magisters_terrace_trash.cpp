@@ -273,7 +273,7 @@ struct HELLGROUND_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         FelArmor_Timer = 120000;    //check each 2 minutes
-        SummonGUID = NULL;
+        SummonGUID = 0;
     }
 
     ScriptedInstance* pInstance;
@@ -353,7 +353,7 @@ struct HELLGROUND_DLL_DECL mob_sunblade_warlockAI : public ScriptedAI
           {
               // check if still having pet ;]
               if(!me->GetMap()->GetCreature(SummonGUID))
-                  SummonGUID = NULL;
+                  SummonGUID = 0;
 
               if(!SummonGUID)
                   DoCast(m_creature, SPELL_SUMMON_SUNBLADE_IMP, false);

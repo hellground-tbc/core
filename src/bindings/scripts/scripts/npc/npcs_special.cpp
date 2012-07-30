@@ -1513,7 +1513,7 @@ struct HELLGROUND_DLL_DECL npc_mojoAI : public ScriptedAI
                 me->RemoveAurasDueToSpell(SPELL_HEARTS);
                 hearts = false;
                 me->GetMotionMaster()->MoveFollow(me->GetOwner(), 2.0, M_PI/2);
-                me->SetSelection(NULL);
+                me->SetSelection(0);
             }
             else
                 heartsResetTimer -= diff;
@@ -1536,7 +1536,7 @@ bool ReceiveEmote_npc_mojo( Player *player, Creature *_Creature, uint32 emote )
 
                 _Creature->GetMotionMaster()->MoveFollow(player, 1.0, 0);
 
-                char * text;
+                const char* text;
 
                 switch (urand(0, MOJO_WHISPS_COUNT))
                 {

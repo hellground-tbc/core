@@ -145,7 +145,7 @@ struct HELLGROUND_DLL_DECL boss_kelidan_the_breakerAI : public ScriptedAI
     uint64 GetChanneled(Creature *channeler1)
     {
         SummonChannelers();
-        if(!channeler1) return NULL;
+        if(!channeler1) return 0;
         int i;
         for(i=0; i<5; ++i)
         {

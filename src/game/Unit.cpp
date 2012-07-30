@@ -6652,7 +6652,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  if (((Player*)pVictim)->HasSpellCooldown(trigger_spell_id))
                      return false;
 
-                 ((Player*)pVictim)->AddSpellCooldown(trigger_spell_id, NULL, time(NULL) +1);
+                 ((Player*)pVictim)->AddSpellCooldown(trigger_spell_id, 0, time(NULL) +1);
              }
 
              // Improved Judgement of Light: bonus heal from t4 set

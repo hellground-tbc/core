@@ -157,7 +157,7 @@ void Corpse::DeleteFromDB()
 
 bool Corpse::LoadFromDB(uint32 guid, QueryResultAutoPtr result, uint32 InstanceId)
 {
-    if (result == NULL)
+    if (! result)
         //                                        0          1          2          3           4   5    6    7           8
         result = RealmDataDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,data,time,corpse_type,instance FROM corpse WHERE guid = '%u'",guid);
 

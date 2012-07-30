@@ -969,11 +969,11 @@ CreatureAI* GetAI_npc_blackwing_warp_chaser(Creature *_Creature)
 ## npc_skyguard_prisoner
 ######*/
 
-#define SAY_PROGRESS_1  -1600004 //"Thanks for your help. Let's get out of here!"
-#define SAY_PROGRESS_2  -1600005 //"Let's keep moving. I don't like this place."
-#define SAY_PROGRESS_3  -1600006 //"Thanks again. Sergant Doryn will be glad to hear he has one less scout to replace this week."
+#define SAY_PROGRESS_1_SG_PRISONER  -1600004 //"Thanks for your help. Let's get out of here!"
+#define SAY_PROGRESS_2_SG_PRISONER  -1600005 //"Let's keep moving. I don't like this place."
+#define SAY_PROGRESS_3_SG_PRISONER  -1600006 //"Thanks again. Sergant Doryn will be glad to hear he has one less scout to replace this week."
 
-#define GO_CAGE 185952
+#define GO_CAGE_SG_PRISONER 185952
 #define QUEST_ESC   11085
 #define SKETTIS_AMBUSH  21644
 
@@ -1003,18 +1003,18 @@ struct HELLGROUND_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
         {
         case 0:
             {
-            GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
+            GameObject* Cage = FindGameObject(GO_CAGE_SG_PRISONER, 10, m_creature);
             if(Cage)
                 Cage->SetGoState(GO_STATE_ACTIVE);
-            DoScriptText(SAY_PROGRESS_1, m_creature, player);
+            DoScriptText(SAY_PROGRESS_1_SG_PRISONER, m_creature, player);
             }
             break;
         case 10: m_creature->SummonCreature(SKETTIS_AMBUSH, -4182.85, 3075.50, 333.15, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
             m_creature->SummonCreature(SKETTIS_AMBUSH, -4180.54, 3075.50, 333.15, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
             break;
-        case 11: DoScriptText(SAY_PROGRESS_2, m_creature, player);
+        case 11: DoScriptText(SAY_PROGRESS_2_SG_PRISONER, m_creature, player);
             break;
-        case 12: DoScriptText(SAY_PROGRESS_3, m_creature, player);
+        case 12: DoScriptText(SAY_PROGRESS_3_SG_PRISONER, m_creature, player);
             Cpl=true;
             if(player)
                 player->GroupEventHappens(QUEST_ESC, m_creature);
@@ -1390,7 +1390,7 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
 
     void Reset()
     {
-        fetishGUID = NULL;
+        fetishGUID = 0;
         CastTimer = 0;
         speech = false;
         MinionGUID.clear();

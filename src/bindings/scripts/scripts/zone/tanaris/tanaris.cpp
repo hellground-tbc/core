@@ -77,7 +77,7 @@ struct mob_aquementasAI : public ScriptedAI
             !CAST_PLR(receiver)->HasItemCount(11522,1,true))
         {
             ItemPosCountVec dest;
-            uint8 msg = CAST_PLR(receiver)->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 11522, 1, false);
+            uint8 msg = CAST_PLR(receiver)->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 11522, 1);
             if (msg == EQUIP_ERR_OK)
                 CAST_PLR(receiver)->StoreNewItem(dest, 11522, 1, true);
         }
@@ -777,7 +777,7 @@ struct npc_anachronosAI : public ScriptedAI
         {
             if (HealthBelowPct(20))
             {
-                m_creature->Yell("A terrible and costly mistake you have made. It is not my time, mortals.", LANG_UNIVERSAL, NULL);
+                m_creature->Yell("A terrible and costly mistake you have made. It is not my time, mortals.", LANG_UNIVERSAL, 0);
                 m_creature->SetVisibility(VISIBILITY_OFF);
                 m_creature->DestroyForNearbyPlayers();
                 m_creature->Kill(m_creature, false);

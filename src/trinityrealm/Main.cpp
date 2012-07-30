@@ -59,7 +59,7 @@ char serviceDescription[] = "Massive Network Game Object Server";
  *  6 - linux daemon
  */
 
-extern RunModes runMode = MODE_NORMAL;
+RunModes runMode = MODE_NORMAL;
 
 bool StartDB();
 void UnhookSignals();
