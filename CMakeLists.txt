@@ -1,5 +1,7 @@
 #
-# Copyright (C) 2005-2011 MaNGOS project <http://getmangos.com/>
+# Copyright (C) 2012 HellGround <http://www.hellground.pl/>
+#
+# Copyright (C) 2005-2012 MaNGOS project <http://getmangos.com/>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,17 +44,25 @@ if(WIN32 AND NOT MSVC)
 endif()
 
 find_package(Platform REQUIRED)
+find_package(Mercurial REQUIRED)
 
 # VS100 uses MSBuild.exe instead of devenv.com, so force it to use devenv.com
 if(WIN32 AND MSVC_VERSION MATCHES 1600)
   find_package(VisualStudio2010)
 endif()
 
+# if(NOT PLATFORM MATCHES X86 AND NOT PLATFORM MATCHES X64)
+#   message(FATAL_ERROR
+#     "An unknown Architecture was selected. Only the values X86 and X64 for PLATFORM are supported."
+#   )
+# endif()
+
 # Output description of this script
 message(
   "\nThis script builds the HellGround project server.
   Options that can be used in order to configure the process:
     PREFIX: Path where the server should be installed to
+    PCH   : Use precompiled headers
     DEBUG : Debug mode
     CLI   : Build with CLI (default)
     TBB_USE_EXTERNAL: Use external TBB library instead of built in (default)
@@ -84,8 +94,23 @@ if(WIN32)
   endif()
 endif()
 
+# if(WIN32)
+#   if(PLATFORM MATCHES X86)
+#     set(ARCH_FLAGS "/MACHINE:X86")
+#   else()
+#     set(ARCH_FLAGS "/MACHINE:X64")
+#   endif()
+# elseif(UNIX)
+#   if(PLATFORM MATCHES X86)
+#     set(ARCH_FLAGS "-m32")
+#   else()
+#     set(ARCH_FLAGS "-m64")
+#   endif()
+# endif()
+
 option(DEBUG "Debug mode" 0)
 option(CLI "With CLI" 1)
+# option(RA "With Remote Access" 0) # TODO: support remote access
 option(TBB_USE_EXTERNAL "Use external TBB" 1)
 option(USE_STD_MALLOC "Use standard malloc instead of TBB" 0)
 option(ACE_USE_EXTERNAL "Use external ACE" 1)
@@ -93,6 +118,21 @@ option(LARGE_CELL "Use large cell size" 0)
 option(ADD_COMPILE_F "Add additional compile flags" 1)
 option(ADD_MATH_F "Add additional compile math flags" 0)
 option(MAP_UPDATE_DIFF_INFO "Used for gathering info about execution time for specific parts of Map::Update" 0)
+
+find_package(PCHSupport)
+
+# Add options for compile of HG
+if(PCHSupport_FOUND)
+  if(WIN32)
+    option(PCH "Use precompiled headers" 1)
+  else()
+    option(PCH "Use precompiled headers" 0)
+  endif()
+endif()
+
+# FIXME: options that should be checked
+# option(SQL "Copy SQL files" 0)
+# option(TOOLS "Build tools" 0)
 
 # Set up the install-prefix
 if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
@@ -118,13 +158,11 @@ else()
   set(LIBS_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 endif()
 
-
 # For Unix systems set the rpath so that libraries are found
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH ${LIBS_DIR})
 set(CMAKE_INSTALL_NAME_DIR ${LIBS_DIR})
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# Run out of build tree
+set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
 
 # Find needed packages and if necessery abort if something important is missing
 unset(ACE_INCLUDE_DIR CACHE)
@@ -147,21 +185,23 @@ else()
   include(cmake/ImportACE.cmake)
 endif()
 
-unset(TBB_INCLUDE_DIR CACHE)
-unset(TBB_LIBRARIES CACHE)
-unset(TBB_LIBRARIES_DIR CACHE)
-unset(TBB_INCLUDE_DIR)
-unset(TBB_LIBRARIES)
-unset(TBB_LIBRARIES_DIR)
-if(TBB_USE_EXTERNAL)
-  find_package(TBB)
-  if(NOT TBB_FOUND)
-    message(FATAL_ERROR
-      "This project requires TBB installed when TBB_USE_EXTERNAL is set. Please download the TBB Stable Release from http://www.threadingbuildingblocks.org/ and install it. If this script didn't find TBB and it was correctly installed please set TBB_ROOT to the correct path."
-    )
+if(NOT USE_STD_MALLOC)
+  unset(TBB_INCLUDE_DIR CACHE)
+  unset(TBB_LIBRARIES CACHE)
+  unset(TBB_LIBRARIES_DIR CACHE)
+  unset(TBB_INCLUDE_DIR)
+  unset(TBB_LIBRARIES)
+  unset(TBB_LIBRARIES_DIR)
+  if(TBB_USE_EXTERNAL)
+    find_package(TBB)
+    if(NOT TBB_FOUND)
+      message(FATAL_ERROR
+        "This project requires TBB installed when TBB_USE_EXTERNAL is set. Please download the TBB Stable Release from http://www.threadingbuildingblocks.org/ and install it. If this script didn't find TBB and it was correctly installed please set TBB_ROOT to the correct path."
+      )
+    endif()
+  else()
+    include(cmake/ImportTBB.cmake)
   endif()
-else()
-  include(cmake/ImportTBB.cmake)
 endif()
 
 
@@ -196,24 +236,15 @@ add_custom_target(uninstall
 )
 
 # Find core revision
-#if(HG_EXECUTABLE)
-  execute_process(
-#    COMMAND ${HG_EXECUTABLE} tip --template {rev}
-    COMMAND hg tip --template {rev}
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    OUTPUT_VARIABLE HG_REVISION
-    RESULT_VARIABLE HG_RESULT
-    ERROR_QUIET
-  )
-  if(HG_RESULT)
-    set(HG_REVISION "Hg repository not found")
-  endif()
-#else()
-#  set(HG_REVISION "Mercurial not found")
-#endif()
+if(MERCURIAL_FOUND)
+  MERCURIAL_HG_INFO(${PROJECT_SOURCE_DIR} HellGround)
+endif()
 
 message("")
-message("Core revision         : ${HG_REVISION}")
+message("Revision              : ${HellGround_HG_ID}")
+message("Last Changed Author   : ${HellGround_HG_AUTHOR}")
+message("Last Changed Rev      : ${HellGround_HG_CHANGESET}")
+message("Last Changed Date     : ${HellGround_HG_DATE}")
 message("Install server to     : ${CMAKE_INSTALL_PREFIX}")
 message("")
 
@@ -222,6 +253,27 @@ if(CLI)
   add_definitions(-DENABLE_CLI)
 else()
   message("Build with CLI        : No")
+endif()
+
+# if(RA)
+#   message("* Build with RA         : Yes")
+#   add_definitions(-DENABLE_RA)
+# else(RA)
+#   message("* Build with RA         : No  (default)")
+# endif(RA)
+
+if(PCH AND NOT PCHSupport_FOUND)
+  set(PCH 0 CACHE BOOL
+    "Use precompiled headers"
+    FORCE)
+  message(
+    "No PCH for your system possible but PCH was set to 1. Resetting it."
+  )
+endif()
+if(PCH)
+  message("Use PCH               : Yes")
+else()
+  message("Use PCH               : No")
 endif()
 
 if(DEBUG)
@@ -242,33 +294,36 @@ endif(LARGE_CELL)
 message("")
 
 if(PLATFORM MATCHES X86)
-set(ADDITIONAL_COMPILE_FLAGS "-O3 -ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m32 -pipe -DFD_SETSIZE=4096 -frename-registers")
+set(ADDITIONAL_COMPILE_FLAGS "-ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m32 -pipe -DFD_SETSIZE=4096 -frename-registers")
 else()
-set(ADDITIONAL_COMPILE_FLAGS "-O3 -ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
+set(ADDITIONAL_COMPILE_FLAGS "-ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
 endif()
 set(ADDITIONAL_MATH_FLAGS " -ffast-math -fno-math-errno -funsafe-math-optimizations ")
 
-# Handle debugmode compiles (this will require further work for proper WIN32-setups)
-if(UNIX)
-  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
-endif()
-
 # Set warning levels for different builds
 if(UNIX)
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -Wfatal-errors -Wextra")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wfatal-errors -Wextra")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wfatal-errors")
 elseif(WIN32)
   # Disable warnings in Visual Studio 8 and above and add /MP
   if(MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio 7")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /MP")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4996 /wd4355 /wd4244 /wd4267 /MP")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /MP")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /MP")
   endif()
 endif()
+
+# if(SQL)
+#   message("Install SQL-files     : Yes")
+# else()
+#   message("Install SQL-files     : No  (default)")
+# endif()
+
+# if(TOOLS)
+#   message("Build map/vmap tools  : Yes")
+# else()
+#   message("Build map/vmap tools  : No  (default)")
+# endif()
+
+message("")
 
 # Some small tweaks for Visual Studio 7 and above.
 if(MSVC)
@@ -350,12 +405,10 @@ endif()
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ARCH_FLAGS}")
 
 if(ADD_COMPILE_F)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ADDITIONAL_COMPILE_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILE_FLAGS}")
 endif()
 
 if(ADD_MATH_F)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ADDITIONAL_MATH_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_MATH_FLAGS}")
 endif()
 
@@ -379,7 +432,6 @@ set(DEFINITIONS
   VERSION="${SERVER_VERSION}"
   SYSCONFDIR="${CONF_DIR}/"
 )
-set(DEFINITIONS_RELEASE NDEBUG)
 set(DEFINITIONS_DEBUG _DEBUG MANGOS_DEBUG)
 if(WIN32)
   set(DEFINITIONS ${DEFINITIONS} WIN32 _WIN32)
@@ -393,11 +445,8 @@ set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "${DEFINITIONS}")
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE "${DEFINITIONS_RELEASE}")
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_DEBUG "${DEFINITIONS_DEBUG}")
 
-message("C flags                        : ${CMAKE_C_FLAGS}")
 message("CXX flags                      : ${CMAKE_CXX_FLAGS}")
-message("C Debug flags                  : ${CMAKE_C_FLAGS_DEBUG}")
 message("CXX Debug flags                : ${CMAKE_CXX_FLAGS_DEBUG}")
-message("C Release flags                : ${CMAKE_C_FLAGS_RELEASE}")
 message("CXX Release flags              : ${CMAKE_CXX_FLAGS_RELEASE}")
 
 message("")
