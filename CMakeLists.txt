@@ -44,7 +44,7 @@ if(WIN32 AND NOT MSVC)
 endif()
 
 find_package(Platform REQUIRED)
-find_package(Mercurial REQUIRED)
+find_package(Mercurial)
 
 # VS100 uses MSBuild.exe instead of devenv.com, so force it to use devenv.com
 if(WIN32 AND MSVC_VERSION MATCHES 1600)
