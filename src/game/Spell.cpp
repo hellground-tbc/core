@@ -1780,7 +1780,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 break;
             }
 
-            float x, y, z, angle, dist;
+            Position pos;
+            float dist;
 
             float objSize = m_caster->GetObjectSize();
             dist = SpellMgr::GetSpellRadius(m_spellInfo,i,true);
@@ -1791,21 +1792,21 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
             switch (cur)
             {
-                case TARGET_DEST_CASTER_FRONT_LEFT: angle = -M_PI/4;    break;
-                case TARGET_DEST_CASTER_BACK_LEFT:  angle = -3*M_PI/4;  break;
-                case TARGET_DEST_CASTER_BACK_RIGHT: angle = 3*M_PI/4;   break;
-                case TARGET_DEST_CASTER_FRONT_RIGHT:angle = M_PI/4;     break;
+                case TARGET_DEST_CASTER_FRONT_LEFT: pos.o = -M_PI/4;    break;
+                case TARGET_DEST_CASTER_BACK_LEFT:  pos.o = -3*M_PI/4;  break;
+                case TARGET_DEST_CASTER_BACK_RIGHT: pos.o = 3*M_PI/4;   break;
+                case TARGET_DEST_CASTER_FRONT_RIGHT:pos.o = M_PI/4;     break;
                 case TARGET_MINION:
                 case TARGET_DEST_CASTER_FRONT_LEAP:
-                case TARGET_DEST_CASTER_FRONT:      angle = 0.0f;       break;
-                case TARGET_DEST_CASTER_BACK:       angle = M_PI;       break;
-                case TARGET_DEST_CASTER_RIGHT:      angle = M_PI/2;     break;
-                case TARGET_DEST_CASTER_LEFT:       angle = -M_PI/2;    break;
-                default:                            angle = rand_norm()*2*M_PI; break;
+                case TARGET_DEST_CASTER_FRONT:      pos.o = 0.0f;       break;
+                case TARGET_DEST_CASTER_BACK:       pos.o = M_PI;       break;
+                case TARGET_DEST_CASTER_RIGHT:      pos.o = M_PI/2;     break;
+                case TARGET_DEST_CASTER_LEFT:       pos.o = -M_PI/2;    break;
+                default:                            pos.o = rand_norm()*2*M_PI; break;
             }
 
-            m_caster->GetGroundPointAroundUnit(x, y, z, dist, angle);
-            m_targets.setDestination(x, y, z);
+            m_caster->GetValidPointInAngle(pos, dist, pos.o, true);
+            m_targets.setDestination(pos.x, pos.y, pos.z);
             break;
         }
 
@@ -1824,7 +1825,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 break;
             }
 
-            float x, y, z, angle, dist;
+            Position pos;
+            target->GetPosition(pos);
+            float dist;
 
             float objSize = target->GetObjectSize();
             dist = SpellMgr::GetSpellRadius(m_spellInfo,i,true);
@@ -1835,19 +1838,19 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
             switch (cur)
             {
-                case TARGET_DEST_TARGET_FRONT:      angle = 0.0f;       break;
-                case TARGET_DEST_TARGET_BACK:       angle = M_PI;       break;
-                case TARGET_DEST_TARGET_RIGHT:      angle = M_PI/2;     break;
-                case TARGET_DEST_TARGET_LEFT:       angle = -M_PI/2;    break;
-                case TARGET_DEST_TARGET_FRONT_LEFT: angle = -M_PI/4;    break;
-                case TARGET_DEST_TARGET_BACK_LEFT:  angle = -3*M_PI/4;  break;
-                case TARGET_DEST_TARGET_BACK_RIGHT: angle = 3*M_PI/4;   break;
-                case TARGET_DEST_TARGET_FRONT_RIGHT:angle = M_PI/4;     break;
-                default:                            angle = rand_norm()*2*M_PI; break;
+                case TARGET_DEST_TARGET_FRONT:      pos.o = 0.0f;       break;
+                case TARGET_DEST_TARGET_BACK:       pos.o = M_PI;       break;
+                case TARGET_DEST_TARGET_RIGHT:      pos.o = M_PI/2;     break;
+                case TARGET_DEST_TARGET_LEFT:       pos.o = -M_PI/2;    break;
+                case TARGET_DEST_TARGET_FRONT_LEFT: pos.o = -M_PI/4;    break;
+                case TARGET_DEST_TARGET_BACK_LEFT:  pos.o = -3*M_PI/4;  break;
+                case TARGET_DEST_TARGET_BACK_RIGHT: pos.o = 3*M_PI/4;   break;
+                case TARGET_DEST_TARGET_FRONT_RIGHT:pos.o = M_PI/4;     break;
+                default:                            pos.o = rand_norm()*2*M_PI; break;
             }
 
-            target->GetGroundPointAroundUnit(x, y, z, dist, angle);
-            m_targets.setDestination(x, y, z);
+            target->GetValidPointInAngle(pos, dist, pos.o, false);
+            m_targets.setDestination(pos.x, pos.y, pos.z);
             break;
         }
 

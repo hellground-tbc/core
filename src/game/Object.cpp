@@ -1367,7 +1367,9 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
 
     Hellground::NormalizeMapCoord(pos.x);
     Hellground::NormalizeMapCoord(pos.y);
-    pos.z = GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true) + 0.5f;
+    ground = _map->GetHeight(pos.x, pos.y, MAX_HEIGHT, true);
+    floor = _map->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
+    pos.z = 0.5f +fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const

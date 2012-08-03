@@ -2740,20 +2740,26 @@ void Spell::EffectTeleportUnits(uint32 i)
     if (mapid < 0)
         mapid = (int32)unitTarget->GetMapId();
 
-    float x = m_targets.m_destX;
-    float y = m_targets.m_destY;
-    float z = m_targets.m_destZ;
-    float orientation = m_targets.m_orientation;
+    Position dest;
+    dest.x = m_targets.m_destX;
+    dest.y = m_targets.m_destY;
+    dest.z = m_targets.m_destZ;
+    dest.o = m_targets.m_orientation;
 
-    if(orientation < 0)
-        orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
-    sLog.outDebug("Spell::EffectTeleportUnits - teleport unit to %u %f %f %f\n", mapid, x, y, z);
+    if(dest.o < 0)
+        dest.o = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
+    sLog.outDebug("Spell::EffectTeleportUnits - teleport unit to %u %f %f %f\n", mapid, dest.x, dest.y, dest.z);
+    // Get not in LOS position
+    if (m_targets.getUnitTarget() && m_targets.getUnitTarget() != unitTarget)
+    {
+        if (!m_targets.getUnitTarget()->IsWithinLOS(dest.x, dest.y, dest.z))
+             m_targets.getUnitTarget()->GetPosition(dest);
+    }
     // Teleport
-
     if (mapid == unitTarget->GetMapId())
-        unitTarget->NearTeleportTo(x, y, z, orientation, unitTarget == m_caster);
+        unitTarget->NearTeleportTo(dest.x, dest.y, dest.z, dest.o, unitTarget == m_caster);
     else if (unitTarget->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)unitTarget)->TeleportTo(mapid, x, y, z, orientation, unitTarget == m_caster ? TELE_TO_SPELL : 0);
+        ((Player*)unitTarget)->TeleportTo(mapid, dest.x, dest.y, dest.z, dest.o, unitTarget == m_caster ? TELE_TO_SPELL : 0);
 
     // post effects for TARGET_DST_DB
     switch (m_spellInfo->Id)
@@ -6690,10 +6696,10 @@ void Spell::EffectSummonTotem(uint32 i)
     if (m_caster->GetTypeId()==TYPEID_PLAYER)
         team = ((Player*)m_caster)->GetTeam();
 
-    float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
-
     Position dest;
-    m_caster->GetValidPointInAngle(dest, 5.0f, angle, true);
+    dest.x = m_targets.m_destX;
+    dest.y = m_targets.m_destY;
+    dest.z = m_targets.m_destZ;
 
     Totem* pTotem = new Totem;
     if (!pTotem->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team, dest.x, dest.y, dest.z, m_caster->GetOrientation()))
@@ -7007,7 +7013,9 @@ void Spell::EffectLeapForward(uint32 i)
     if (m_spellInfo->rangeIndex == 1)                        //self range
     {
         Position dest;
-        unitTarget->GetValidPointInAngle(dest, SpellMgr::GetSpellRadius(m_spellInfo,i,false), 0.0f, true);
+        dest.x = m_targets.m_destX;
+        dest.y = m_targets.m_destY;
+        dest.z = m_targets.m_destZ;
 
         unitTarget->NearTeleportTo(dest.x, dest.y, dest.z, unitTarget->GetOrientation(), unitTarget == m_caster);
     }
