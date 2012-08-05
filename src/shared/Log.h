@@ -151,6 +151,7 @@ class Log
         FILE* openGmlogPerAccount(uint32 account);
 
         FILE *logFile[LOG_MAX_FILES];
+        std::string logFileNames[LOG_MAX_FILES];
 
         FILE* openWhisplogPerAccount(uint32 account);
 

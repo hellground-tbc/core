@@ -146,9 +146,9 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
     {
         if (sObjectMgr.GetGuildAnnCooldown(gId) < time(NULL))
         {
-            if (msg.size() > 65) //
+            if (msg.size() > sWorld.getConfig(CONFIG_GUILD_ANN_LENGTH)) //
             {
-                PSendSysMessage("Your message is to long, limit: 65 chars");
+                PSendSysMessage("Your message is to long, limit: %i chars", sWorld.getConfig(CONFIG_GUILD_ANN_LENGTH));
                 return false;
             }
 

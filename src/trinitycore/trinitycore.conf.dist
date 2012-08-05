@@ -968,6 +968,14 @@ DisablePVP = 0
 #		 Default: 0
 #
 #
+#    MonsterSight
+#        Dist from which monster can see.
+#        Default: 50
+#
+#    GuarderSight
+#        Dist from which guard can see.
+#        Default: 50
+#
 ###################################################################################################################
 
 ThreatRadius = 60
@@ -1488,6 +1496,10 @@ Arena.EnableFakeWho.ForGuild = 0
 #              Default: 300000
 #                       0 - disable
 #
+# AnnounceBGStart: Accounces bg start.
+#              Default: 0 - disable
+#                       1 - enable
+#
 ###################################################################################################################
 
 BattleGround.PrematureFinishTimer = 300000
@@ -1683,6 +1695,18 @@ VMSS.MapFreezeDetectTime = 1000
 #        Enable passive anticheat
 #        Default: 1 (Enabled)
 #                 0 (Disabled)
+#
+#    GuildAnnounce.Timer
+#        Interval beetwean guild announces (in minutes)
+#        Default: 1
+#
+#    GuildAnnounce.Cooldown
+#        Cooldown beetwean guild announces from same guild (in minutes)
+#        Default: 60
+#
+#    GuildAnnounce.Length
+#        Maximum length of guild announce message
+#        Default: 60
 #
 ###################################################################################################################
 
