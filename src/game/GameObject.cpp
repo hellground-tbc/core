@@ -979,6 +979,9 @@ void GameObject::Use(Unit* user)
 
     switch (GetGoType())
     {
+        case GAMEOBJECT_TYPE_BUTTON:                        //1
+            if (uint32 trapEntry = GetGOInfo()->button.linkedTrap)
+                TriggeringLinkedGameObject(trapEntry, user);
         case GAMEOBJECT_TYPE_DOOR:                          //0
             if (GetGoState() == GO_STATE_READY)                     //if closed -> open
                 SetGoState(GO_STATE_ACTIVE);
@@ -987,9 +990,6 @@ void GameObject::Use(Unit* user)
             m_cooldownTime = time(NULL) + GetAutoCloseTime();
             Activate();
             break;
-        case GAMEOBJECT_TYPE_BUTTON:                        //1
-            if (uint32 trapEntry = GetGOInfo()->button.linkedTrap)
-                TriggeringLinkedGameObject(trapEntry, user);
         case GAMEOBJECT_TYPE_QUESTGIVER:                    //2
         {
             if (!pPlayer)
@@ -1021,8 +1021,12 @@ void GameObject::Use(Unit* user)
 
             return;
         }
-        //Sitting: Wooden bench, chairs enzz
-        case GAMEOBJECT_TYPE_CHAIR:                         //7
+#if 0
+        case GAMEOBJECT_TYPE_TRAP:                          // 6
+            SetLootState(GO_JUST_DEACTIVATED); // It's a dummy fix.
+            return;
+#endif /* 0 */
+        case GAMEOBJECT_TYPE_CHAIR:                         // 7
         {
             GameObjectInfo const* info = GetGOInfo();
             if (!info)
