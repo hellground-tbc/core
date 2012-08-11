@@ -112,10 +112,7 @@ void CreatureAI::EnterEvadeMode()
 
     sLog.outDebug("Creature %u enters evade mode.", me->GetEntry());
 
-    if (Unit *owner = me->GetCharmerOrOwner())
-        me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, m_creature->GetFollowAngle());
-    else
-        me->GetMotionMaster()->MoveTargetedHome();
+    me->GetMotionMaster()->MoveTargetedHome();
 
     if (CreatureGroup *formation = me->GetFormation())
         formation->EvadeFormation(me);

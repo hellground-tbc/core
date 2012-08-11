@@ -10027,6 +10027,12 @@ Unit* Creature::SelectVictim()
 
     if (!m_ThreatManager.isThreatListEmpty())
     {
+        if (IsInEvadeMode())
+        {
+            DeleteThreatList();
+            return NULL;
+        }
+
         if (!HasAuraType(SPELL_AURA_MOD_TAUNT))
         {
             target = m_ThreatManager.getHostilTarget();
@@ -10041,6 +10047,12 @@ Unit* Creature::SelectVictim()
             SetInFront(target);
 
         return target;
+    }
+
+    if (IsInEvadeMode() && !m_attackers.empty())
+    {
+        RemoveAllAttackers();
+        return NULL;
     }
 
     for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
@@ -10061,6 +10073,7 @@ Unit* Creature::SelectVictim()
     {
         Unit::AuraList const& iAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
         for (Unit::AuraList::const_iterator itr = iAuras.begin(); itr != iAuras.end(); ++itr)
+        {
             if ((*itr)->IsPermanent())
             {
                 if (m_attackers.size())
@@ -10069,6 +10082,7 @@ Unit* Creature::SelectVictim()
                 AI()->EnterEvadeMode();
                 break;
             }
+        }
         return NULL;
     }
 
