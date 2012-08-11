@@ -3636,6 +3636,54 @@ void Spell::EffectEnergisePct(uint32 i)
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, realGain, power);
 }
 
+void Spell::SendLoot(uint64 guid, LootType lootType, LockType lockType)
+{
+    if (gameObjTarget)
+    {
+        switch (gameObjTarget->GetGoType())
+        {
+            case GAMEOBJECT_TYPE_DOOR:
+            case GAMEOBJECT_TYPE_BUTTON:
+            case GAMEOBJECT_TYPE_QUESTGIVER:
+            case GAMEOBJECT_TYPE_SPELL_FOCUS:
+            case GAMEOBJECT_TYPE_GOOBER:
+                gameObjTarget->Use(m_caster);
+                return;
+
+        case GAMEOBJECT_TYPE_CHEST:
+                gameObjTarget->Use(m_caster);
+#if 0
+                // FIXME(asj) Originally MaNGOS uses break, but HG 'requires' return.
+                //            Maybe it would be better to follow MaNGOS way.
+                // Here's the MaNGOS code:
+
+                // Don't return, let loots been taken
+                break;
+#endif /* 0 */
+                return;
+
+
+            case GAMEOBJECT_TYPE_TRAP:
+                if (lockType == LOCKTYPE_DISARM_TRAP)
+                {
+                    gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
+                    return;
+                }
+                sLog.outError("Spell::SendLoot unhandled locktype %u for GameObject trap (entry %u) for spell %u.", lockType, gameObjTarget->GetEntry(), m_spellInfo->Id);
+                return;
+            default:
+                sLog.outError("Spell::SendLoot unhandled GameObject type %u (entry %u).", gameObjTarget->GetGoType(), gameObjTarget->GetEntry(), m_spellInfo->Id);
+                return;
+        }
+    }
+
+    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    // Send loot
+    ((Player*)m_caster)->SendLoot(guid, lootType);
+}
+
 void Spell::EffectOpenLock(uint32 effIndex)
 {
     if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -3707,10 +3755,7 @@ void Spell::EffectOpenLock(uint32 effIndex)
         return;
     }
 
-    if (gameObjTarget)
-        gameObjTarget->Use(m_caster);
-    else
-        player->SendLoot(guid, LOOT_SKINNING);
+    SendLoot(guid, LOOT_SKINNING, LockType(m_spellInfo->EffectMiscValue[effIndex]));
 
     // not allow use skill grow at item base open
     if(!m_CastItem && skillId != SKILL_NONE)

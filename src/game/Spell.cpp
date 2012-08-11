@@ -4686,7 +4686,8 @@ bool Spell::CanAutoCast(Unit* target)
 
 SpellCastResult Spell::CheckRange(bool strict)
 {
-    //float range_mod;
+    Unit *target = m_targets.getUnitTarget();
+    GameObject *pGoTarget = m_targets.getGOTarget();
 
     // self cast doesn't need range checking -- also for Starshards fix
     if (m_spellInfo->rangeIndex == 1)
@@ -4705,8 +4706,6 @@ SpellCastResult Spell::CheckRange(bool strict)
 
     if (Player* modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, max_range, this);
-
-    Unit *target = m_targets.getUnitTarget();
 
     if (target && target != m_caster)
     {
@@ -4732,16 +4731,32 @@ SpellCastResult Spell::CheckRange(bool strict)
             return SPELL_FAILED_UNIT_NOT_INFRONT;
     }
 
+    // NOTE(asj) For now, let as be as selective as possible, so call this only
+    // in case of Traps. In future this might be also required by other GO.
+    if (pGoTarget && pGoTarget->GetGoType() == GAMEOBJECT_TYPE_TRAP)
+    {
+        // distance from target in checks
+        float dist = m_caster->GetDistance(pGoTarget);
+
+        if(dist > max_range)
+            return SPELL_FAILED_OUT_OF_RANGE;
+        if(min_range && dist < min_range)
+            return SPELL_FAILED_TOO_CLOSE;
+        if( m_caster->GetTypeId() == TYPEID_PLAYER &&
+            (m_spellInfo->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT) && !m_caster->HasInArc( M_PI, pGoTarget ) )
+            return SPELL_FAILED_NOT_INFRONT;
+    }
+
+    // TODO verify that such spells really use bounding radius
     if (m_targets.m_targetMask == TARGET_FLAG_DEST_LOCATION && m_targets.m_destX != 0 && m_targets.m_destY != 0 && m_targets.m_destZ != 0)
     {
-        float dist = m_caster->GetDistance(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ);
-        if (dist > max_range)
+        if(!m_caster->IsWithinDist3d(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, max_range))
             return SPELL_FAILED_OUT_OF_RANGE;
-        if (dist < min_range)
+        if(min_range && m_caster->IsWithinDist3d(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, min_range))
             return SPELL_FAILED_TOO_CLOSE;
     }
 
-    return SPELL_CAST_OK;                                               // ok
+    return SPELL_CAST_OK;
 }
 
 SpellCastResult Spell::CheckPower()

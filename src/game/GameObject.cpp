@@ -979,9 +979,6 @@ void GameObject::Use(Unit* user)
 
     switch (GetGoType())
     {
-        case GAMEOBJECT_TYPE_BUTTON:                        //1
-            if (uint32 trapEntry = GetGOInfo()->button.linkedTrap)
-                TriggeringLinkedGameObject(trapEntry, user);
         case GAMEOBJECT_TYPE_DOOR:                          //0
             if (GetGoState() == GO_STATE_READY)                     //if closed -> open
                 SetGoState(GO_STATE_ACTIVE);
@@ -990,12 +987,19 @@ void GameObject::Use(Unit* user)
             m_cooldownTime = time(NULL) + GetAutoCloseTime();
             Activate();
             break;
-        case GAMEOBJECT_TYPE_SPELL_FOCUS:
-            // triggering linked GO
-            if (uint32 trapEntry = GetGOInfo()->spellFocus.linkedTrapId)
+        case GAMEOBJECT_TYPE_BUTTON:                        //1
+            if (uint32 trapEntry = GetGOInfo()->button.linkedTrap)
                 TriggeringLinkedGameObject(trapEntry, user);
+        case GAMEOBJECT_TYPE_QUESTGIVER:                    //2
+        {
+            if (!pPlayer)
+                return;
+
+            pPlayer->PrepareQuestMenu(GetGUID());
+            pPlayer->SendPreparedQuest(GetGUID());
             return;
-        case GAMEOBJECT_TYPE_CHEST:
+        }
+        case GAMEOBJECT_TYPE_CHEST:                         // 3
         {
             if (!pPlayer)
                 return;
@@ -1015,15 +1019,6 @@ void GameObject::Use(Unit* user)
             if (uint32 trapEntry = GetGOInfo()->chest.linkedTrapId)
                 TriggeringLinkedGameObject(trapEntry, pPlayer);
 
-            return;
-        }
-        case GAMEOBJECT_TYPE_QUESTGIVER:                    //2
-        {
-            if (!pPlayer)
-                return;
-
-            pPlayer->PrepareQuestMenu(GetGUID());
-            pPlayer->SendPreparedQuest(GetGUID());
             return;
         }
         //Sitting: Wooden bench, chairs enzz
@@ -1071,6 +1066,11 @@ void GameObject::Use(Unit* user)
             spellCaster->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR+info->chair.height);
             return;
         }
+        case GAMEOBJECT_TYPE_SPELL_FOCUS:                   // 8
+            // triggering linked GO
+            if (uint32 trapEntry = GetGOInfo()->spellFocus.linkedTrapId)
+                TriggeringLinkedGameObject(trapEntry, user);
+            return;
         case GAMEOBJECT_TYPE_GOOBER:                        //10
         {
             GameObjectInfo const* info = GetGOInfo();
@@ -1128,8 +1128,7 @@ void GameObject::Use(Unit* user)
 
             return;
         }
-        //fishing bobber
-        case GAMEOBJECT_TYPE_FISHINGNODE:                   //17
+        case GAMEOBJECT_TYPE_FISHINGNODE:                   //17 fishing bobber
         {
             if (user->GetTypeId()!=TYPEID_PLAYER)
                 return;
@@ -1212,7 +1211,7 @@ void GameObject::Use(Unit* user)
             }
         }
         break;
-        case GAMEOBJECT_TYPE_SUMMONING_RITUAL:              //18
+        case GAMEOBJECT_TYPE_SUMMONING_RITUAL:              // 18
         {
             if (!pPlayer)
                 return;
@@ -1255,9 +1254,9 @@ void GameObject::Use(Unit* user)
 
             return;
         }
-        case GAMEOBJECT_TYPE_SPELLCASTER:                   //22
+        case GAMEOBJECT_TYPE_SPELLCASTER:                   // 22
         {
-            SetUInt32Value(GAMEOBJECT_FLAGS,2);
+            SetUInt32Value(GAMEOBJECT_FLAGS, 2);
 
             GameObjectInfo const* info = GetGOInfo();
             if (!info)
@@ -1280,7 +1279,7 @@ void GameObject::Use(Unit* user)
                 m_lootState = GO_JUST_DEACTIVATED;
             break;
         }
-        case GAMEOBJECT_TYPE_MEETINGSTONE:                  //23
+        case GAMEOBJECT_TYPE_MEETINGSTONE:                  // 23
         {
             GameObjectInfo const* info = GetGOInfo();
 
