@@ -3735,10 +3735,12 @@ void Spell::EffectOpenLock(uint32 effIndex)
         return;
     }
 
-    if (gameObjTarget
-        && HasValidLockType(LockType(m_spellInfo->EffectMiscValue[effIndex])))
+    if (gameObjTarget)
     {
-        gameObjTarget->Use(m_caster);
+        if (HasValidLockType(LockType(m_spellInfo->EffectMiscValue[effIndex])))
+        {
+            gameObjTarget->Use(m_caster);
+        }
     }
     else
     {
