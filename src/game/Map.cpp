@@ -978,6 +978,7 @@ bool Map::CreatureRespawnRelocation(Creature *c)
     {
         c->Relocate(resp_x, resp_y, resp_z, resp_o);
         c->GetUnitStateMgr().InitDefaults(true);
+        c->GetMotionMaster()->Initialize();
         //CreatureRelocationNotify(c,resp_cell,resp_cell.cellPair());
         c->UpdateObjectVisibility(false);
         return true;

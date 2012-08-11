@@ -833,7 +833,7 @@ class AttackResumeEvent : public BasicEvent
 class RestoreReactState : public BasicEvent
 {
     public:
-       RestoreReactState(Creature& owner);
+        RestoreReactState(Creature& owner);
         bool Execute(uint64 e_time, uint32 p_time);
 
     private:
