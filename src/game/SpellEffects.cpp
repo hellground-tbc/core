@@ -3646,13 +3646,13 @@ bool Spell::HasValidLockType(LockType lockType)
         switch (gameObjTarget->GetGoType())
         {
             case GAMEOBJECT_TYPE_TRAP:
-                if (lockType == LOCKTYPE_DISARM_TRAP)
+                if (lockType != LOCKTYPE_DISARM_TRAP)
                 {
-                    return true;
+                    sLog.outError("Spell::HasValidLockType unhandled locktype %u for GameObject trap (entry %u) for spell %u.", lockType, gameObjTarget->GetEntry(), m_spellInfo->Id);
+                    return false;
                 }
 
-                sLog.outError("Spell::HasValidLockType unhandled locktype %u for GameObject trap (entry %u) for spell %u.", lockType, gameObjTarget->GetEntry(), m_spellInfo->Id);
-                validLockType = false;
+                validLockType = true;
                 break;
 
             default:
