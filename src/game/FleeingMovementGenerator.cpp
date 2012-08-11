@@ -46,7 +46,7 @@ bool FleeingMovementGenerator<UNIT>::_getPoint(UNIT &unit, Position &dest)
 {
     // _angle is orientation for running like hell from caster in straight line :p
     float angle = _angle;
-    if (roll_chance_i(33))
+    if (roll_chance_i(20))
         angle += RAND(M_PI/4.0f, M_PI/2.0f, -M_PI/4.0f, -M_PI/2.0f, M_PI*3/4.0f, -M_PI*3/4.0f, M_PI);
 
     // destination point

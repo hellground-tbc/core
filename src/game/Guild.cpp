@@ -753,7 +753,7 @@ void Guild::Roster(WorldSession *session)
             data << uint8(itr->second.Class);
             data << uint8(0);                               // new 2.4.0
             data << uint32(itr->second.zoneId);
-            data << float((time(NULL)-itr->second.logout_time) / DAY);
+            data << float((time(NULL)-itr->second.logout_time)) / DAY;
             data << itr->second.Pnote;
             data << itr->second.OFFnote;
         }
