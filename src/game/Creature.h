@@ -820,7 +820,7 @@ class ForcedDespawnDelayEvent : public BasicEvent
 class AttackResumeEvent : public BasicEvent
 {
     public:
-        AttackResumeEvent(Unit& owner) : m_owner(owner), b_force(false) {};
+        AttackResumeEvent(Unit& owner) : BasicEvent(), m_owner(owner), b_force(false) {};
         AttackResumeEvent(Unit& owner, bool force) : m_owner(owner), b_force(force) {};
         bool Execute(uint64 e_time, uint32 p_time);
 
@@ -828,6 +828,17 @@ class AttackResumeEvent : public BasicEvent
         AttackResumeEvent();
         Unit& m_owner;
         bool  b_force;
+};
+
+class RestoreReactState : public BasicEvent
+{
+    public:
+       RestoreReactState(Creature& owner);
+        bool Execute(uint64 e_time, uint32 p_time);
+
+    private:
+        ReactStates _oldState;
+        Creature& _owner;
 };
 
 #endif

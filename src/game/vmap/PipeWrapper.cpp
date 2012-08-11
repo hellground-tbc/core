@@ -2,6 +2,8 @@
 #include "Config/Config.h"
 #include "Log.h"
 
+#include <ace/OS_NS_unistd.h>
+
 namespace VMAP
 {
     template<>

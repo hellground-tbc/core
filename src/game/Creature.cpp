@@ -2684,3 +2684,20 @@ bool AttackResumeEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     }
     return true;
 }
+
+RestoreReactState::RestoreReactState(Creature& owner) : BasicEvent(), _owner(owner)
+{
+    if (_owner.ToPet())
+        return;
+
+    _oldState = _owner.GetReactState();
+    _owner.SetReactState(REACT_PASSIVE);
+}
+
+bool RestoreReactState::Execute(uint64 e_time, uint32 p_time)
+{
+    if (_owner.ToPet())
+        return;
+
+    _owner.SetReactState(_oldState);
+}

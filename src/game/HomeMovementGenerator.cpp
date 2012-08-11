@@ -47,6 +47,7 @@ void HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
 
     // at apply we can select more nice return points base at current movegen
     owner.GetHomePosition(x, y, z, o);
+
     init.SetFacing(o);
 
     init.MoveTo(x,y,z);
@@ -71,5 +72,7 @@ void HomeMovementGenerator<Creature>::Finalize(Creature& owner)
         owner.LoadCreaturesAddon(true);
 
         owner.AI()->JustReachedHome();
+
+        owner.AddEvent(new RestoreReactState(owner), sWorld.getConfig(CONFIG_CREATURE_RESTORE_STATE));
     }
 }

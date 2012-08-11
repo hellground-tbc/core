@@ -1145,6 +1145,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_COREBALANCER_PLAYABLE_DIFF] = sConfig.GetIntDefault("CoreBalancer.PlayableDiff", 200);
     m_configs[CONFIG_COREBALANCER_INTERVAL] = sConfig.GetIntDefault("CoreBalancer.BalanceInterval", 300000);
     m_configs[CONFIG_COREBALANCER_VISIBILITY_PENALTY] = sConfig.GetIntDefault("CoreBalancer.VisibilityPenalty", 25);
+
+    m_configs[CONFIG_CREATURE_RESTORE_STATE] = sConfig.GetIntDefault("Creature.RestoreStateTimer", 5000);
 }
 
 /// Initialize the World

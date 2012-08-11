@@ -1720,3 +1720,9 @@ Warden.Kick = 0
 Warden.Ban = 0
 
 AntiCheat.Enable = 1
+
+#    Creature.RestoreStateTimer
+#        Timer after which creature will restore its original state from PASSIVE after reaching home
+#        Default: 5000
+
+Creature.RestoreStateTimer = 5000

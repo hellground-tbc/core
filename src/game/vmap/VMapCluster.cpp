@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <ace/Process.h>
 #include <ace/OS_NS_sys_wait.h>
+#include <ace/OS_NS_unistd.h>
 #include <ace/Thread.h>
 
 #include "Log.h"
