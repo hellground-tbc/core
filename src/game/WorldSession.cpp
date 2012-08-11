@@ -22,6 +22,8 @@
     \ingroup u2w
 */
 
+#include <sstream>
+
 #include "WorldSocket.h"                                    // must be first to make ACE happy with ACE includes in it
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -299,7 +301,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     else
         m_kickTimer = MINUTE * 15 * 1000;
 
-    sWorld.RecordSessionTimeDiff(NULL);
+    RecordSessionTimeDiff(NULL);
+    bool verbose = sWorld.getConfig(CONFIG_SESSION_UPDATE_VERBOSE_LOG);
+    std::vector<VerboseLogInfo> packetOpcodeInfo;
 
     for (OpcodesCooldown::iterator itr = _opcodesCooldown.begin(); itr != _opcodesCooldown.end(); ++itr)
         itr->second.Update(diff);
@@ -312,7 +316,15 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     {
         while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
         {
-            ProcessPacket(packet);
+            if (verbose)
+            {
+                RecordVerboseTimeDiff(true);
+                ProcessPacket(packet);
+                packetOpcodeInfo.push_back(VerboseLogInfo(packet->GetOpcode(), RecordVerboseTimeDiff(false)));
+            }
+            else
+                ProcessPacket(packet);
+
             delete packet;
         }
     }
@@ -323,13 +335,13 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     }
 
     bool overtime = false;
-    if (sWorld.RecordSessionTimeDiff("WorldSession:Update: packets. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+    if (RecordSessionTimeDiff("WorldSession:Update: packets. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
         overtime = true;
 
     if (m_Socket && m_Warden)
         m_Warden->Update();
 
-    if (sWorld.RecordSessionTimeDiff("WorldSession:Update: warden. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+    if (RecordSessionTimeDiff("WorldSession:Update: warden. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
         overtime = true;
 
     if (overtime)
@@ -343,7 +355,24 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             case OVERTIME_KICK:
                 KickPlayer();
             case OVERTIME_LOG:
+            {
+                if (verbose)
+                {
+                    std::stringstream overtimeText;
+                    overtimeText << "#################################################\n";
+                    overtimeText << "Overtime verbose info for account " << GetAccountId();
+                    overtimeText << "\nPacket count: " << packetOpcodeInfo.size();
+                    overTimeText << "\nPacket info:\n";
+
+                    for (std::vector<VerboseLogInfo>::const_iterator itr = packetOpcodeInfo.begin(); itr != packetOpcodeInfo.end(); ++itr)
+                        overtimeText << "  " << (*itr).opcode << " (" << (*itr).diff << ")\n";
+
+                    overtimeText << "#################################################";
+                    sLog.outSessionDiff(overtimeText.str().c_str());
+                }
+
                 sLog.outError("WorldSession::Update: session for account %u was too long", GetAccountId());
+            }
             default:
                 break;
         }
@@ -685,4 +714,46 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
 
     if (m_Warden)
         m_Warden->Init(this, K);
+}
+
+uint32 WorldSession::RecordSessionTimeDiff(const char *text, ...)
+{
+    if (!text)
+    {
+        m_currentSessionTime = WorldTimer::getMSTime();
+        return 0;
+    }
+
+    uint32 thisTime = WorldTimer::getMSTime();
+    uint32 diff = WorldTimer::getMSTimeDiff(m_currentSessionTime, thisTime);
+
+    if (diff > sWorld.getConfig(CONFIG_MIN_LOG_UPDATE))
+    {
+        va_list ap;
+        char str [256];
+        va_start(ap, text);
+        vsnprintf(str,256,text, ap);
+        va_end(ap);
+        sLog.outSessionDiff("Session Difftime %s: %u.", str, diff);
+    }
+
+    m_currentSessionTime = thisTime;
+
+    return diff;
+}
+
+uint32 WorldSession::RecordVerboseTimeDiff(bool reset)
+{
+    if (reset)
+    {
+        m_currentVerboseTime = WorldTimer::getMSTime();
+        return 0;
+    }
+
+    uint32 thisTime = WorldTimer::getMSTime();
+    uint32 diff = WorldTimer::getMSTimeDiff(m_currentVerboseTime, thisTime);
+
+    m_currentVerboseTime = thisTime;
+
+    return diff;
 }

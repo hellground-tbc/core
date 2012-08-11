@@ -285,6 +285,7 @@ enum WorldConfigs
 
     CONFIG_SESSION_UPDATE_MAX_TIME,
     CONFIG_SESSION_UPDATE_OVERTIME_METHOD,
+    CONFIG_SESSION_UPDATE_VERBOSE_LOG,
 
     CONFIG_KICK_PLAYER_ON_BAD_PACKET,
 
@@ -835,7 +836,6 @@ class World
         uint32 m_updateTime, m_updateTimeSum, m_avgUpdateTime, m_curAvgUpdateTime;
         uint32 m_updateTimeCount;
         uint32 m_currentTime;
-        uint32 m_currentSessionTime;
 
         MAP_UPDATE_DIFF(MapUpdateDiffInfo m_mapUpdateDiffInfo)
         uint64 m_serverUpdateTimeSum, m_serverUpdateTimeCount;

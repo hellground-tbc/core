@@ -146,8 +146,6 @@ class HELLGROUND_DLL_SPEC WorldSession
         bool PlayerLogout() const { return m_playerLogout; }
         bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
 
-        bool CanMoveTo(MovementInfo & movementInfoPrev, MovementInfo & movementInfoNew);
-
         void SizeError(WorldPacket const& packet, uint32 size) const;
 
         void SendPacket(WorldPacket const* packet);
@@ -162,6 +160,9 @@ class HELLGROUND_DLL_SPEC WorldSession
         void SendLFGDisabled();
         void SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res);
         void SendAreaTriggerMessage(const char* Text, ...) ATTR_PRINTF(2,3);
+
+        uint32 RecordSessionTimeDiff(const char *text, ...);
+        uint32 RecordVerboseTimeDiff(bool reset);
 
         uint32 GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
@@ -762,6 +763,16 @@ class HELLGROUND_DLL_SPEC WorldSession
         OpcodesCooldown _opcodesCooldown;
 
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
+
+        uint32 m_currentSessionTime;
+        uint32 m_currentVerboseTime;
+};
+
+struct VerboseLogInfo
+{
+    VerboseLogInfo(uint16 op, uint32 df) : opcode(op), diff(df) {}
+    uint16 opcode;
+    uint32 diff;
 };
 
 #endif

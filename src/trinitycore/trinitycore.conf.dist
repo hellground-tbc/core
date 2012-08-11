@@ -233,6 +233,10 @@ EAIErrorLevel = 2
 #         3 - Ban account + log (Default)
 #         4 - Ban ip and account + log
 #
+#    SessionUpdate.VerboseLog
+#         Enables session verbose log (prints to session diff log file if max time was exceeded)
+#         Default: 0 (disabled)
+#
 ###################################################################################################################
 
 UseProcessors = 0
@@ -265,6 +269,9 @@ MaxCoreStuckTime = 0
 AddonChannel = 1
 MapUpdate.Threads = 1
 SessionUpdate.Threads = 1
+SessionUpdate.MaxTime = 1000
+SessionUpdate.Method = 3
+SessionUpdate.VerboseLog = 0
 
 ###################################################################################################################
 # SERVER LOGGING
@@ -400,6 +407,11 @@ SessionUpdate.Threads = 1
 #        Default: "diff.log"
 #                 "" - Empty name for disable
 #
+#    SessionDiffLogFile
+#        Session update Diff log file
+#        Default: "sessiondiff.log"
+#                 "" - Empty name for disable
+#
 #    CrashLogFile
 #        Log file for crash stacktrace
 #        Default: "crash.log"
@@ -441,6 +453,7 @@ LogColors = ""
 WardenLogFile = "warden.log"
 AuctionLogFile = "auction.log"
 DiffLogFile = "diff.log"
+SessionDiffLogFile = "sessiondiff.log"
 CrashLogFile = "crash.log"
 
 StatusParserFile = "parser.prsr"

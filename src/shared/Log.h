@@ -57,22 +57,23 @@ enum Color
 
 enum logFiles
 {
-    LOG_DEFAULT     = 0,
-    LOG_STATUS      = 1,
-    LOG_GM          = 2,
-    LOG_CHAR        = 3,
-    LOG_DB_ERR      = 4,
-    LOG_ARENA       = 5,
-    LOG_CHEAT       = 6,
-    LOG_AC          = 7,
-    LOG_SPECIAL     = 8,
-    LOG_MAIL        = 9,
-    LOG_GUILD_ANN   = 10,
-    LOG_BOSS        = 11,
-    LOG_WARDEN      = 12,
-    LOG_AUCTION     = 13,
-    LOG_DIFF        = 14,
-    LOG_CRASH       = 15,
+    LOG_DEFAULT         = 0,
+    LOG_STATUS          = 1,
+    LOG_GM              = 2,
+    LOG_CHAR            = 3,
+    LOG_DB_ERR          = 4,
+    LOG_ARENA           = 5,
+    LOG_CHEAT           = 6,
+    LOG_AC              = 7,
+    LOG_SPECIAL         = 8,
+    LOG_MAIL            = 9,
+    LOG_GUILD_ANN       = 10,
+    LOG_BOSS            = 11,
+    LOG_WARDEN          = 12,
+    LOG_AUCTION         = 13,
+    LOG_DIFF            = 14,
+    LOG_SESSION_DIFF    = 15,
+    LOG_CRASH           = 16,
 
     LOG_MAX_FILES
 };
@@ -102,36 +103,37 @@ class Log
         void outCommand( uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
         void outString();                                   // any log level
                                                             // any log level
-        void outString(const char * str, ...)      ATTR_PRINTF(2,3);
+        void outString(const char * str, ...)       ATTR_PRINTF(2,3);
                                                             // any log level
-        void outError(const char * err, ...)       ATTR_PRINTF(2,3);
+        void outError(const char * err, ...)        ATTR_PRINTF(2,3);
                                                             // log level >= 1
-        void outBasic(const char * str, ...)       ATTR_PRINTF(2,3);
+        void outBasic(const char * str, ...)        ATTR_PRINTF(2,3);
                                                             // log level >= 2
-        void outDetail(const char * str, ...)      ATTR_PRINTF(2,3);
+        void outDetail(const char * str, ...)       ATTR_PRINTF(2,3);
                                                             // log level >= 3
-        void outDebugInLine(const char * str, ...) ATTR_PRINTF(2,3);
+        void outDebugInLine(const char * str, ...)  ATTR_PRINTF(2,3);
                                                             // log level >= 3
-        void outDebug(const char * str, ...)       ATTR_PRINTF(2,3);
+        void outDebug(const char * str, ...)        ATTR_PRINTF(2,3);
                                                             // any log level
-        void outMenu(const char * str, ...)        ATTR_PRINTF(2,3);
+        void outMenu(const char * str, ...)         ATTR_PRINTF(2,3);
                                                             // any log level
-        void outErrorDb(const char * str = "", ...)     ATTR_PRINTF(2,3);
+        void outErrorDb(const char * str = "", ...) ATTR_PRINTF(2,3);
                                                             // any log level
-        void outChar(const char * str, ...)        ATTR_PRINTF(2,3);
-        void outSpecial(const char * str, ...)     ATTR_PRINTF(2,3);
-        void outMail(const char * str, ...)     ATTR_PRINTF(2,3);
+        void outChar(const char * str, ...)         ATTR_PRINTF(2,3);
+        void outSpecial(const char * str, ...)      ATTR_PRINTF(2,3);
+        void outMail(const char * str, ...)         ATTR_PRINTF(2,3);
         void outWhisp(uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
-        void outArena(const char * str, ...)       ATTR_PRINTF(2,3);
-        void outCheat(const char * str, ...)       ATTR_PRINTF(2,3);
-        void outAC(const char * str, ...)       ATTR_PRINTF(2,3);
-        void outIrc(const char * str, ...)         ATTR_PRINTF(2,3);
-        void outBoss(const char * str, ...)        ATTR_PRINTF(2,3);
-        void outWarden(const char * str, ...)      ATTR_PRINTF(2,3);
-        void outAuction(const char * str, ...)     ATTR_PRINTF(2,3);
-        void outGann(const char * str, ...)        ATTR_PRINTF(2,3);
-        void outDiff(const char * str, ...)        ATTR_PRINTF(2,3);
-        void outCrash(const char * err, ...)       ATTR_PRINTF(2,3);
+        void outArena(const char * str, ...)        ATTR_PRINTF(2,3);
+        void outCheat(const char * str, ...)        ATTR_PRINTF(2,3);
+        void outAC(const char * str, ...)           ATTR_PRINTF(2,3);
+        void outIrc(const char * str, ...)          ATTR_PRINTF(2,3);
+        void outBoss(const char * str, ...)         ATTR_PRINTF(2,3);
+        void outWarden(const char * str, ...)       ATTR_PRINTF(2,3);
+        void outAuction(const char * str, ...)      ATTR_PRINTF(2,3);
+        void outGann(const char * str, ...)         ATTR_PRINTF(2,3);
+        void outDiff(const char * str, ...)         ATTR_PRINTF(2,3);
+        void outSessionDiff(const char * str, ...)  ATTR_PRINTF(2,3);
+        void outCrash(const char * err, ...)        ATTR_PRINTF(2,3);
 
         void OutLogToFile(logFiles log, const char * str, ...)    ATTR_PRINTF(3,4);
 

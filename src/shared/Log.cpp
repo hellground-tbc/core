@@ -192,22 +192,23 @@ void Log::Initialize()
 
     const char* logToStr[LOG_MAX_FILES] =
     {
-        "LogFile",          //LOG_DEFAULT
-        "unused",           //LOG_STATUS
-        "GMLogFile",        //LOG_GM
-        "CharLogFile",      //LOG_CHAR
-        "DBErrorLogFile",   //LOG_DB_ERR
-        "ArenaLogFile",     //LOG_ARENA
-        "CheatLogFile",     //LOG_CHEAT
-        "ACLogFile",        //LOG_AC
-        "SpecialLogFile",   //LOG_SPECIAL
-        "MailLogFile",      //LOG_MAIL
-        "GannLogFile",      //LOG_GUILD_ANN
-        "BossLogFile",      //LOG_BOSS
-        "WardenLogFile",    //LOG_WARDEN
-        "AuctionLogFile",   //LOG_AUCTION
-        "DiffLogFile",      //LOG_DIFF
-        "CrashLogFile",     //LOG_CRASH
+        "LogFile",              // LOG_DEFAULT
+        "unused",               // LOG_STATUS
+        "GMLogFile",            // LOG_GM
+        "CharLogFile",          // LOG_CHAR
+        "DBErrorLogFile",       // LOG_DB_ERR
+        "ArenaLogFile",         // LOG_ARENA
+        "CheatLogFile",         // LOG_CHEAT
+        "ACLogFile",            // LOG_AC
+        "SpecialLogFile",       // LOG_SPECIAL
+        "MailLogFile",          // LOG_MAIL
+        "GannLogFile",          // LOG_GUILD_ANN
+        "BossLogFile",          // LOG_BOSS
+        "WardenLogFile",        // LOG_WARDEN
+        "AuctionLogFile",       // LOG_AUCTION
+        "DiffLogFile",          // LOG_DIFF
+        "SessionDiffLogFile",   // LOG_SESSION_DIFF
+        "CrashLogFile",         // LOG_CRASH
     };
 
     /// Open specific log files
@@ -879,6 +880,25 @@ void Log::outDiff(const char * str, ...)
 
         fprintf(logFile[LOG_DIFF], "\n" );
         fflush(logFile[LOG_DIFF]);
+    }
+}
+
+void Log::outSessionDiff(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    if(logFile[LOG_SESSION_DIFF])
+    {
+        outTimestamp(logFile[LOG_SESSION_DIFF]);
+
+        va_list ap;
+        va_start(ap, str);
+        vfprintf(logFile[LOG_SESSION_DIFF], str, ap);
+        va_end(ap);
+
+        fprintf(logFile[LOG_SESSION_DIFF], "\n" );
+        fflush(logFile[LOG_SESSION_DIFF]);
     }
 }
 
