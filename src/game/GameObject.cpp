@@ -1021,11 +1021,9 @@ void GameObject::Use(Unit* user)
 
             return;
         }
-#if 0
         case GAMEOBJECT_TYPE_TRAP:                          // 6
             SetLootState(GO_JUST_DEACTIVATED); // It's a dummy fix.
             return;
-#endif /* 0 */
         case GAMEOBJECT_TYPE_CHAIR:                         // 7
         {
             GameObjectInfo const* info = GetGOInfo();

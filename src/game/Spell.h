@@ -489,7 +489,7 @@ class Spell
         void TriggerGlobalCooldown();
         void CancelGlobalCooldown();
 
-        void SendLoot(uint64 guid, LootType lootType, LockType lockType);
+        bool HasValidLockType(LockType lockType);
 
         Unit* const m_caster;
 
