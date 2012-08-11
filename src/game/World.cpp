@@ -1650,34 +1650,6 @@ uint32 World::RecordTimeDiff(const char *text, ...)
     return diff;
 }
 
-uint32 World::RecordSessionTimeDiff(const char *text, ...)
-{
-    if (m_updateTimeCount != 1)
-        return 0;
-    if (!text)
-    {
-        m_currentSessionTime = WorldTimer::getMSTime();
-        return 0;
-    }
-
-    uint32 thisTime = WorldTimer::getMSTime();
-    uint32 diff = WorldTimer::getMSTimeDiff(m_currentSessionTime, thisTime);
-
-    if (diff > m_configs[CONFIG_MIN_LOG_UPDATE])
-    {
-        va_list ap;
-        char str [256];
-        va_start(ap, text);
-        vsnprintf(str,256,text, ap);
-        va_end(ap);
-        sLog.outDiff("Session Difftime %s: %u.", str, diff);
-    }
-
-    m_currentSessionTime = thisTime;
-
-    return diff;
-}
-
 void World::LoadAutobroadcasts()
 {
     m_Autobroadcasts.clear();

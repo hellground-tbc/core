@@ -342,6 +342,10 @@ struct HELLGROUND_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
+        Creature * magtheridon = me->GetCreature(pInstance->GetData64(DATA_MAGTHERIDON));
+        if (magtheridon)
+            magtheridon->AI()->DoZoneInCombat();
+
         me->InterruptNonMeleeSpells(false);
         DoZoneInCombat();
         AttackStart(who);
@@ -422,7 +426,7 @@ bool GOUse_go_Manticron_Cube(Player *player, GameObject* _GO)
     if (pInstance->GetData(DATA_MAGTHERIDON_EVENT) != IN_PROGRESS)
         return true;
 
-    Creature *Magtheridon = Unit::GetCreature(*_GO, pInstance->GetData64(DATA_MAGTHERIDON));
+    Creature *Magtheridon = _GO->GetCreature(pInstance->GetData64(DATA_MAGTHERIDON));
 
     if (!Magtheridon || !Magtheridon->isAlive())
         return true;
