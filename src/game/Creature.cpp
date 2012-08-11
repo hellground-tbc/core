@@ -2697,7 +2697,8 @@ RestoreReactState::RestoreReactState(Creature& owner) : BasicEvent(), _owner(own
 bool RestoreReactState::Execute(uint64 e_time, uint32 p_time)
 {
     if (_owner.ToPet())
-        return;
+        return true;
 
     _owner.SetReactState(_oldState);
+    return true;
 }
