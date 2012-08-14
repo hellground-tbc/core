@@ -1230,8 +1230,8 @@ void GameObject::Use(Unit* user)
                     return;
 
                 spellCaster = owner;
-                // accept only use by player from same group for caster except caster itself
-                if (((Player*)owner)==pPlayer || (info->summoningRitual.castersGrouped && !((Player*)owner)->IsInSameGroupWith(pPlayer)))
+                // accept only use by player from same raid/group for caster except caster itself
+                if (((Player*)owner)==pPlayer || (info->summoningRitual.castersGrouped && !((Player*)owner)->IsInSameRaidWith(pPlayer)))
                     return;
             }
 
@@ -1292,8 +1292,8 @@ void GameObject::Use(Unit* user)
 
             Player* targetPlayer = ObjectAccessor::FindPlayer(player->GetSelection());
 
-            // accept only use by player from same group for caster except caster itself
-            if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameGroupWith(player))
+            // accept only use by player from same raid/group for caster except caster itself
+            if (!targetPlayer || targetPlayer == player || !targetPlayer->IsInSameRaidWith(player))
                 return;
 
             //required lvl checks!
