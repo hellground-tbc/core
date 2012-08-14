@@ -503,7 +503,8 @@ PersistentAreaAura::PersistentAreaAura(SpellEntry const* spellproto, uint32 eff,
 
     DynamicObject *dynObj = NULL;
     if (m_dynamicObjectGUID)
-        dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID); //prev version commented, delete one
+        dynObj = caster->GetMap()->GetDynamicObject(m_dynamicObjectGUID);
+
     if(dynObj)
     {
         m_maxduration = dynObj->GetDuration();
@@ -2752,7 +2753,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 return;
             case 30632:                                     // Debris
             {
-                m_target->CastSpell(m_target, 30631, true);
+                if (Unit * caster = GetCaster())
+                    caster->CastSpell(caster, 30631, true);
                 return;
             }
         }

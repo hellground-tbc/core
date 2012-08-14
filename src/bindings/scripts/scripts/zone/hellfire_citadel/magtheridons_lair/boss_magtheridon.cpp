@@ -53,7 +53,8 @@ enum MagtheridonMobEntries
     MOB_MAGTHERIDON         = 17257,
     MOB_MAGTHERIDON_ROOM    = 17516,
     MOB_HELLFIRE_CHANNELLER = 17256,
-    MOB_ABYSSAL             = 17454
+    MOB_ABYSSAL             = 17454,
+    MOB_MAGTHERIDON_TRIGGER = 19703
 };
 
 enum MagtheridonSpells
@@ -280,8 +281,17 @@ struct HELLGROUND_DLL_DECL boss_magtheridonAI : public BossAI
                 }
                 case MAGTHERIDON_EVENT_DEBRIS:
                 {
-                    if (Unit * tar = SelectUnit(SELECT_TARGET_RANDOM, 0, 0, true))
-                        tar->CastSpell(tar, SPELL_DEBRIS, true);
+                    Unit * tar = SelectUnit(SELECT_TARGET_RANDOM, 0, 0, true)
+                    if (tar)
+                    {
+                        Creature * magTr = m_creature->SummonCreature(MOB_MAGTHERIDON_TRIGGER, tar->GetPositionX(), tar->GetPositionY(), tar->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 8000);
+                        if (magTr)
+                        {
+                            magTr->setFaction(me->GetFaction());
+                            magTr->SetLevel(73);
+                            magTr->CastSpell(magTr, SPELL_DEBRIS, true);
+                        }
+                    }
 
                     events.ScheduleEvent(MAGTHERIDON_EVENT_DEBRIS, 10000);
                     break;
