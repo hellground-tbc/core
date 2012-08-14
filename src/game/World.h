@@ -238,6 +238,7 @@ enum WorldConfigs
     CONFIG_SHOW_KICK_IN_WORLD,
     CONFIG_INTERVAL_LOG_UPDATE,
     CONFIG_MIN_LOG_UPDATE,
+    CONFIG_MIN_LOG_SESSION_UPDATE,
     CONFIG_ENABLE_SINFO_LOGIN,
     CONFIG_PREMATURE_BG_REWARD,
     CONFIG_PET_LOS,
@@ -763,7 +764,7 @@ class World
         void SetScriptsVersion(char const* version) { m_ScriptsVersion = version ? version : "unknown scripting library"; }
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
-        uint32 RecordTimeDiff(const char * text, ...);
+        uint32 RecordTimeDiff(const char * text, bool skipCountCheck, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
 
         void CleanupDeletedChars();

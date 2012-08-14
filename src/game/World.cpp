@@ -1080,6 +1080,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_SHOW_KICK_IN_WORLD] = sConfig.GetBoolDefault("ShowKickInWorld", false);
     m_configs[CONFIG_INTERVAL_LOG_UPDATE] = sConfig.GetIntDefault("RecordUpdateTimeDiffInterval", 60000);
     m_configs[CONFIG_MIN_LOG_UPDATE] = sConfig.GetIntDefault("MinRecordUpdateTimeDiff", 10);
+    m_configs[CONFIG_MIN_LOG_UPDATE] = sConfig.GetIntDefault("MinRecordUpdateTimeSessionDiff", 25);
     m_configs[CONFIG_NUMTHREADS] = sConfig.GetIntDefault("MapUpdate.Threads",1);
 
     if (m_configs[CONFIG_NUMTHREADS] < 1)
@@ -1622,10 +1623,11 @@ void World::DetectDBCLang()
     sLog.outString("Using %s DBC Locale as default. All available DBC locales: %s",localeNames[m_defaultDbcLocale],availableLocalsStr.empty() ? "<none>" : availableLocalsStr.c_str());
 }
 
-uint32 World::RecordTimeDiff(const char *text, ...)
+uint32 World::RecordTimeDiff(const char *text, bool skipCountCheck, ...)
 {
-    if (m_updateTimeCount != 1)
+    if (m_updateTimeCount != 1 && !skipCountCheck)
         return 0;
+
     if (!text)
     {
         m_currentTime = WorldTimer::getMSTime();
@@ -1639,7 +1641,7 @@ uint32 World::RecordTimeDiff(const char *text, ...)
     {
         va_list ap;
         char str [256];
-        va_start(ap, text);
+        va_start(ap, skipCountCheck);
         vsnprintf(str,256,text, ap);
         va_end(ap);
         sLog.outDiff("Difftime %s: %u.", str, diff);
@@ -1713,7 +1715,7 @@ void World::Update(uint32 diff)
         }
     }
 
-    RecordTimeDiff(NULL);
+    RecordTimeDiff(NULL, false);
     ///- Update the different timers
     for (int i = 0; i < WUPDATE_COUNT; i++)
     {
@@ -1722,11 +1724,11 @@ void World::Update(uint32 diff)
         else
             m_timers[i].SetCurrent(0);
     }
-    RecordTimeDiff("UpdateTimers");
+    RecordTimeDiff("UpdateTimers", false);
 
     ///- Update the game time and check for shutdown time
     _UpdateGameTime();
-    RecordTimeDiff("UpdateGameTime");
+    RecordTimeDiff("UpdateGameTime", false);
 
     /// Handle daily quests reset time
     if (m_gameTime > m_NextDailyQuestReset)
@@ -1739,9 +1741,9 @@ void World::Update(uint32 diff)
     if (m_configs[CONFIG_EXTERNAL_MAIL] != 0 && m_timers[WUPDATE_EXTERNALMAILS].Passed())
     {
         m_timers[WUPDATE_EXTERNALMAILS].Reset();
-        RecordTimeDiff(NULL);
+        RecordTimeDiff(NULL, false);
         WorldSession::SendExternalMails();
-        RecordTimeDiff("SendExternalMails");
+        RecordTimeDiff("SendExternalMails", false);
     }
 
     /// <ul><li> Handle auctions when the timer has passed
@@ -1750,7 +1752,7 @@ void World::Update(uint32 diff)
         m_timers[WUPDATE_OLDMAILS].Reset();
 
         ///- Update mails (return old mails with item, or delete them)
-        RecordTimeDiff(NULL);
+        RecordTimeDiff(NULL, false);
 
         switch (m_configs[CONFIG_RETURNOLDMAILS_MODE])
         {
@@ -1767,20 +1769,20 @@ void World::Update(uint32 diff)
                 break;
         }
 
-        RecordTimeDiff("ReturnOldMails");
+        RecordTimeDiff("ReturnOldMails", false);
     }
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
     {
         m_timers[WUPDATE_AUCTIONS].Reset();
-        RecordTimeDiff(NULL);
+        RecordTimeDiff(NULL, false);
         ///-Handle expired auctions
         sAuctionMgr.Update();
-        RecordTimeDiff("UpdateAuctions");
+        RecordTimeDiff("UpdateAuctions", false);
     }
 
-    RecordTimeDiff(NULL);
+    RecordTimeDiff(NULL, true);
     /// <li> Handle session updates when the timer has passed
     if (m_timers[WUPDATE_SESSIONS].Passed())
     {
@@ -1788,13 +1790,13 @@ void World::Update(uint32 diff)
 
         UpdateSessions(diff);
 
-        RecordTimeDiff("UpdateSessions");
+        RecordTimeDiff("UpdateSessions", true);
 
         // Update groups
         for (ObjectMgr::GroupSet::iterator itr = sObjectMgr.GetGroupSetBegin(); itr != sObjectMgr.GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
 
-        RecordTimeDiff("UpdateGroups");
+        RecordTimeDiff("UpdateGroups", false);
     }
 
     sWorldEventProcessor.ExecuteEvents();
@@ -1819,7 +1821,7 @@ void World::Update(uint32 diff)
                 delete temp;
             }
         }
-        RecordTimeDiff("UpdateWeathers");
+        RecordTimeDiff("UpdateWeathers", false);
     }
 
     /// <li> Update uptime table
@@ -1832,7 +1834,7 @@ void World::Update(uint32 diff)
         RealmDataDatabase.PExecute("UPDATE uptime SET uptime = %d, maxplayers = %d WHERE starttime = " UI64FMTD, tmpDiff, maxClientsNum, uint64(m_startTime));
     }
 
-    RecordTimeDiff(NULL);
+    RecordTimeDiff(NULL, false);
     if (sWorld.getConfig(CONFIG_AUTOBROADCAST_INTERVAL))
     {
         if (m_timers[WUPDATE_AUTOBROADCAST].Passed())
@@ -1849,7 +1851,7 @@ void World::Update(uint32 diff)
 
             sWorld.SendWorldText(LANG_AUTO_ANN, msg.c_str());
         }
-        RecordTimeDiff("Send Autobroadcast");
+        RecordTimeDiff("Send Autobroadcast", false);
     }
 
     ///- send guild announces every one minute
@@ -1873,7 +1875,7 @@ void World::Update(uint32 diff)
             sWorld.SendGuildAnnounce(PAIR64_HIPART(itr->first), guildName.c_str(), itr->second.c_str());
             m_GuildAnnounces[1].pop_front();
         }
-        RecordTimeDiff("Send Guild announce");
+        RecordTimeDiff("Send Guild announce", false);
     }
 
     /// <li> Handle all other objects
@@ -1884,7 +1886,7 @@ void World::Update(uint32 diff)
     }
 
     sMapMgr.Update(diff);                // As interval = 0
-    RecordTimeDiff("MapManager::update");
+    RecordTimeDiff("MapManager::update", false);
 
     if (accumulateMapDiff)
     {
@@ -1892,22 +1894,22 @@ void World::Update(uint32 diff)
     }
 
     sBattleGroundMgr.Update(diff);
-    RecordTimeDiff("UpdateBattleGroundMgr");
+    RecordTimeDiff("UpdateBattleGroundMgr", false);
 
     sOutdoorPvPMgr.Update(diff);
-    RecordTimeDiff("UpdateOutdoorPvPMgr");
+    RecordTimeDiff("UpdateOutdoorPvPMgr", false);
 
     ///- Delete all characters which have been deleted X days before
     if (m_timers[WUPDATE_DELETECHARS].Passed())
     {
         m_timers[WUPDATE_DELETECHARS].Reset();
         CleanupDeletedChars();
-        RecordTimeDiff("CleanupDeletedChars");
+        RecordTimeDiff("CleanupDeletedChars", false);
     }
 
     // execute callbacks from sql queries that were queued recently
     UpdateResultQueue();
-    RecordTimeDiff("UpdateResultQueue");
+    RecordTimeDiff("UpdateResultQueue", false);
 
     ///- Erase corpses once every 20 minutes
     if (m_timers[WUPDATE_CORPSES].Passed())
@@ -1915,33 +1917,33 @@ void World::Update(uint32 diff)
         m_timers[WUPDATE_CORPSES].Reset();
 
         sObjectAccessor.RemoveOldCorpses();
-        RecordTimeDiff("RemoveOldCorpses");
+        RecordTimeDiff("RemoveOldCorpses", false);
     }
 
     ///- Process Game events when necessary
-    RecordTimeDiff(NULL);
+    RecordTimeDiff(NULL, false);
     if (m_timers[WUPDATE_EVENTS].Passed())
     {
         m_timers[WUPDATE_EVENTS].Reset();                   // to give time for Update() to be processed
         uint32 nextGameEvent = sGameEventMgr.Update();
         m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);
         m_timers[WUPDATE_EVENTS].Reset();
-        RecordTimeDiff("UpdateGameEvents");
+        RecordTimeDiff("UpdateGameEvents", false);
     }
 
     /// </ul>
 
     // update the instance reset times
     sInstanceSaveManager.Update();
-    RecordTimeDiff("UpdateSaveMGR");
+    RecordTimeDiff("UpdateSaveMGR", false);
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
-    RecordTimeDiff("UpdateProcessCLI");
+    RecordTimeDiff("UpdateProcessCLI", false);
 
     //cleanup unused GridMap objects as well as VMaps
     sTerrainMgr.Update(diff);
-    RecordTimeDiff("UpdateTerrainMGR");
+    RecordTimeDiff("UpdateTerrainMGR", false);
 }
 
 void World::UpdateSessions(const uint32 & diff)

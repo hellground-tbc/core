@@ -1622,6 +1622,9 @@ Network.KickOnBadPacket = 1
 #   MinRecordUpdateTimeDiff
 #        only record update time diff which is greater than this value
 #
+#   MinRecordUpdateTimeSessionDiff
+#        only record session update time diff which is greater than this value
+#
 #   PlayerStart.String
 #       If set to anything else than "", this string will be displayed to players when they login
 #       to a newly created character.
@@ -1643,6 +1646,7 @@ NoResetTalentsCost = 0
 ShowKickInWorld = 0
 RecordUpdateTimeDiffInterval = 60000
 MinRecordUpdateTimeDiff = 10
+MinRecordUpdateTimeSessionDiff = 25
 PlayerStart.String = ""
 
 ###################################################################################################################

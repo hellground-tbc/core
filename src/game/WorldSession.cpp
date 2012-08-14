@@ -335,13 +335,13 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     }
 
     bool overtime = false;
-    if (RecordSessionTimeDiff("WorldSession:Update: packets. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+    if (RecordSessionTimeDiff(" WorldSession:Update: packets. Accid %u ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
         overtime = true;
 
     if (m_Socket && m_Warden)
         m_Warden->Update();
 
-    if (RecordSessionTimeDiff("WorldSession:Update: warden. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+    if (RecordSessionTimeDiff(" WorldSession:Update: warden. Accid %u ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
         overtime = true;
 
     if (overtime)
@@ -359,7 +359,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                 if (verbose)
                 {
                     std::stringstream overtimeText;
-                    overtimeText << "#################################################\n";
+                    overtimeText << "\n#################################################\n";
                     overtimeText << "Overtime verbose info for account " << GetAccountId();
                     overtimeText << "\nPacket count: " << packetOpcodeInfo.size();
                     overtimeText << "\nPacket info:\n";
@@ -727,7 +727,7 @@ uint32 WorldSession::RecordSessionTimeDiff(const char *text, ...)
     uint32 thisTime = WorldTimer::getMSTime();
     uint32 diff = WorldTimer::getMSTimeDiff(m_currentSessionTime, thisTime);
 
-    if (diff > sWorld.getConfig(CONFIG_MIN_LOG_UPDATE))
+    if (diff > sWorld.getConfig(CONFIG_MIN_LOG_SESSION_UPDATE))
     {
         va_list ap;
         char str [256];

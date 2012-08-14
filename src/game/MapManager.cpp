@@ -232,7 +232,7 @@ void MapManager::Update(uint32 diff)
     if (!i_timer.Passed())
         return;
 
-    sWorld.RecordTimeDiff(NULL);
+    sWorld.RecordTimeDiff(NULL, false);
     for (MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end();)
     {
         if (iter->second->CanUnload(i_timer.GetCurrent()))
@@ -251,12 +251,12 @@ void MapManager::Update(uint32 diff)
 
     m_updater.wait();
 
-    sWorld.RecordTimeDiff("UpdateMaps");
+    sWorld.RecordTimeDiff("UpdateMaps", false);
 
     for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         iter->second->DelayedUpdate(i_timer.GetCurrent());
 
-    sWorld.RecordTimeDiff("Delayed update");
+    sWorld.RecordTimeDiff("Delayed update", false);
 
     for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
     {
@@ -264,7 +264,7 @@ void MapManager::Update(uint32 diff)
         helper.Update(uint32(i_timer.GetCurrent()));
     }
 
-    sWorld.RecordTimeDiff("UpdateTransports");
+    sWorld.RecordTimeDiff("UpdateTransports", false);
 
     i_timer.SetCurrent(0);
 }
