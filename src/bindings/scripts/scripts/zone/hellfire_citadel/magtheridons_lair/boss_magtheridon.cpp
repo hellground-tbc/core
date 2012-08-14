@@ -426,7 +426,7 @@ bool GOUse_go_Manticron_Cube(Player *player, GameObject* _GO)
     if (pInstance->GetData(DATA_MAGTHERIDON_EVENT) != IN_PROGRESS)
         return true;
 
-    Creature *Magtheridon = _GO->GetCreature(pInstance->GetData64(DATA_MAGTHERIDON));
+    Creature *Magtheridon = _GO->GetMap()->GetCreature(pInstance->GetData64(DATA_MAGTHERIDON));
 
     if (!Magtheridon || !Magtheridon->isAlive())
         return true;

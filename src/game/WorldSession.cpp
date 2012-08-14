@@ -362,7 +362,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     overtimeText << "#################################################\n";
                     overtimeText << "Overtime verbose info for account " << GetAccountId();
                     overtimeText << "\nPacket count: " << packetOpcodeInfo.size();
-                    overTimeText << "\nPacket info:\n";
+                    overtimeText << "\nPacket info:\n";
 
                     for (std::vector<VerboseLogInfo>::const_iterator itr = packetOpcodeInfo.begin(); itr != packetOpcodeInfo.end(); ++itr)
                         overtimeText << "  " << (*itr).opcode << " (" << (*itr).diff << ")\n";
