@@ -281,13 +281,13 @@ struct HELLGROUND_DLL_DECL boss_magtheridonAI : public BossAI
                 }
                 case MAGTHERIDON_EVENT_DEBRIS:
                 {
-                    Unit * tar = SelectUnit(SELECT_TARGET_RANDOM, 0, 0, true)
+                    Unit * tar = SelectUnit(SELECT_TARGET_RANDOM, 0, 0, true);
                     if (tar)
                     {
                         Creature * magTr = m_creature->SummonCreature(MOB_MAGTHERIDON_TRIGGER, tar->GetPositionX(), tar->GetPositionY(), tar->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 8000);
                         if (magTr)
                         {
-                            magTr->setFaction(me->GetFaction());
+                            magTr->setFaction(me->getFaction());
                             magTr->SetLevel(73);
                             magTr->CastSpell(magTr, SPELL_DEBRIS, true);
                         }
