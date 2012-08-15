@@ -3103,6 +3103,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectImplicitTargetA[1] = TARGET_SRC_CASTER;
                 spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_AREA_ENEMY_SRC;
                 break;
+            case 30631: // Magtheridon's Debris damage
+                spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_AREA_ENEMY_DST;
+                break;
             case 30207: // Magtheridon's creatures Shadow Grasp
                 spellInfo->StackAmount = 5;
                 break;
