@@ -37,11 +37,11 @@ class MapUpdater
         friend class MapUpdateRequest;
 
         /// schedule update on a map, the update will start
-        /// as soon as possible ,
+        /// as soon as possible,
         /// it may even start before the call returns
         int schedule_update(Map& map, ACE_UINT32 diff);
 
-        /// Wait untill all pending updates finish
+        /// Wait until all pending updates finish
         int wait();
 
         /// Start the worker threads

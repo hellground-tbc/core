@@ -90,13 +90,13 @@ void DoGlobalScriptText(int32 iTextEntry, const char *npcName, Map *map);
 void ScriptText(int32 textEntry, Unit* pSource, Unit* target = NULL);
 
 #if COMPILER == COMPILER_GNU
-#define FUNC_PTR(name,callconvention,returntype,parameters)    typedef returntype(*name)parameters __attribute__ ((callconvention));
+#define FUNC_PTR(name, callconvention, returntype, parameters)    typedef returntype(*name)parameters __attribute__ ((callconvention));
 #else
 #define FUNC_PTR(name, callconvention, returntype, parameters)    typedef returntype(callconvention *name)parameters;
 #endif
 
 #ifdef WIN32
-  #define HELLGROUND_DLL_EXPORT extern "C" __declspec(dllexport)
+#define HELLGROUND_DLL_EXPORT extern "C" __declspec(dllexport)
 #elif defined( __GNUC__ )
 #define HELLGROUND_DLL_EXPORT extern "C"
 #else
