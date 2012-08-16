@@ -1663,8 +1663,6 @@
     <ClInclude Include="..\..\src\bindings\scripts\include\follower_ai.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\bindings\scripts\nclude\escort_ai.h" />
-    <ClInclude Include="..\..\src\bindings\scripts\ystem\system.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\bindings\scripts\trinityscripts.rc" />

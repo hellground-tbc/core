@@ -269,9 +269,9 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
-      <GenerateMapFile>false</GenerateMapFile>
+      <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
     </Link>
     <PostBuildEvent>
@@ -845,7 +845,6 @@
     <ClCompile Include="..\..\src\bindings\scripts\ScriptMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\bindings\scripts\nclude\escort_ai.h" />
     <ClInclude Include="..\..\src\bindings\scripts\include\follower_ai.h" />
     <ClInclude Include="..\..\src\bindings\scripts\scripts\creature\simple_ai.h" />
     <ClInclude Include="..\..\src\bindings\scripts\scripts\guard\guard_ai.h" />
@@ -890,7 +889,6 @@
     <ClInclude Include="..\..\src\bindings\scripts\include\sc_gossip.h" />
     <ClInclude Include="..\..\src\bindings\scripts\include\sc_instance.h" />
     <ClInclude Include="..\..\src\bindings\scripts\system\ScriptLoader.h" />
-    <ClInclude Include="..\..\src\bindings\scripts\ystem\system.h" />
     <ClInclude Include="..\..\src\bindings\scripts\ScriptMgr.h" />
   </ItemGroup>
   <ItemGroup>

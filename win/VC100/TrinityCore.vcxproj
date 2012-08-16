@@ -254,9 +254,9 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configu
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>VCOMP.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
-      <GenerateMapFile>false</GenerateMapFile>
+      <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
       <SubSystem>Console</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -581,14 +581,8 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\..\Authors" />
-    <None Include="..\..\ChangeLog" />
-    <None Include="..\..\Copying" />
-    <None Include="..\..\Install" />
-    <None Include="..\..\News" />
     <None Include="..\..\Readme" />
     <None Include="..\..\src\trinitycore\trinitycore.conf.dist" />
-    <None Include="..\..\Thanks" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\trinitycore\CliRunnable.cpp" />
