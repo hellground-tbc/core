@@ -254,7 +254,7 @@
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>Default</CompileAs>
       <AdditionalOptions>/D_CRT_SECURE_NO_DEPRECATE /D_CRT_SECURE_NO_WARNING /Zm1000 %(AdditionalOptions)</AdditionalOptions>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeaderFile>pchdef.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>pchdef.h</ForcedIncludeFiles>
     </ClCompile>

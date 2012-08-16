@@ -234,6 +234,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
+      <Optimization>MaxSpeed</Optimization>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <Lib>
