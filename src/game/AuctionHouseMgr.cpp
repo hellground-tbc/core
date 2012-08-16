@@ -581,13 +581,16 @@ void AuctionHouseObject::Update()
 {
     time_t curTime = sWorld.GetGameTime();
     ///- Handle expired auctions
-    for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end(); )
+    for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end();)
     {
         if (curTime > itr->second->expireTime)
         {
             ///- perform the transaction if there was bidder
             if (itr->second->bid)
-                itr->second->AuctionBidWinning();
+            {
+                AuctionEntryMap::iterator current = itr++;
+                current->second->AuctionBidWinning();
+            }
             ///- cancel the auction if there was no bidder and clear the auction
             else
             {
@@ -597,11 +600,10 @@ void AuctionHouseObject::Update()
                 sAuctionMgr.RemoveAItem(itr->second->itemGuidLow);
                 delete itr->second;
                 AuctionsMap.erase(itr++);
-                continue;
             }
         }
-
-        ++itr;
+        else
+            ++itr;
     }
 }
 
