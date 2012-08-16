@@ -55,12 +55,11 @@ void LoadDatabase()
     TScriptDB.HaltDelayThread();
 }
 
-HELLGROUND_DLL_EXPORT
 struct TSpellSummary
 {
     uint8 Targets;                                          // set of enum SelectTarget
     uint8 Effects;                                          // set of enum SelectEffect
-} *SpellSummary;
+} extern *SpellSummary;
 
 HELLGROUND_DLL_EXPORT
 void FreeScriptLibrary()
