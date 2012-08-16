@@ -135,6 +135,7 @@ struct HELLGROUND_DLL_DECL boss_alarAI : public ScriptedAI
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->setActive(false);
+        m_creature->addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
     }
 
     void EnterCombat(Unit *who)
