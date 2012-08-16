@@ -831,11 +831,10 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
         {
             itr_team[BG_TEAM_HORDE] = itr_team[BG_TEAM_ALLIANCE];
             ++itr_team[BG_TEAM_HORDE];
-
-            uint32 arenaTeamRatingH = hiddenEnabled ? (*itr_team[BG_TEAM_HORDE])->HiddenRating : (*itr_team[BG_TEAM_HORDE])->ArenaTeamRating;
-
             for(; itr_team[BG_TEAM_HORDE] != m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].end(); ++(itr_team[BG_TEAM_HORDE]))
             {
+                uint32 arenaTeamRatingH = hiddenEnabled ? (*itr_team[BG_TEAM_HORDE])->HiddenRating : (*itr_team[BG_TEAM_HORDE])->ArenaTeamRating;
+
                 if( !(*itr_team[BG_TEAM_HORDE])->IsInvitedToBGInstanceGUID
                     && ((arenaTeamRatingH >= arenaMinRating && arenaTeamRatingH <= arenaMaxRating)
                         || (*itr_team[BG_TEAM_HORDE])->JoinTime < discardTime) )
