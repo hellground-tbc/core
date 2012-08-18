@@ -94,11 +94,8 @@ Object::~Object()
 
         assert(!m_objectUpdated);
 
-        if (m_uint32Values)
-            delete [] m_uint32Values;
-
-        if (m_uint32Values_mirror)
-            delete [] m_uint32Values_mirror;
+        delete [] m_uint32Values;
+        delete [] m_uint32Values_mirror;
 
         m_uint32Values = NULL;
         m_uint32Values_mirror = NULL;
@@ -200,6 +197,7 @@ void Object::SendCreateUpdateToPlayer(Player* player)
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
     upd.BuildPacket(&packet);
+
     player->GetSession()->SendPacket(&packet);
 }
 
@@ -265,6 +263,9 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
                 player->m_movementInfo.RemoveMovementFlag(MOVEFLAG_ONTRANSPORT);
         }
 
+        if (unit->IsStopped() && unit->m_movementInfo.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
+            unit->m_movementInfo.RemoveMovementFlag(MovementFlags(MOVEFLAG_SPLINE_ENABLED|MOVEFLAG_FORWARD));
+
         // Update movement info time
         unit->m_movementInfo.UpdateTime(WorldTimer::getMSTime());
         // Write movement info
@@ -282,13 +283,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
 
         // 0x08000000
         if (unit->m_movementInfo.GetMovementFlags() & MOVEFLAG_SPLINE_ENABLED)
-        {
-            // How it is ever possible ? spline done but still MOVEFLAG_SPLINE_ENABLED present
-            if (unit->IsStopped())
-                unit->m_movementInfo.RemoveMovementFlag(MOVEFLAG_SPLINE_ENABLED);
-            else
-                Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
-        }
+            Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
     }
     // 0x40
     else if (updateFlags & UPDATEFLAG_HAS_POSITION)
@@ -419,7 +414,7 @@ void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask *
             {
                 // remove custom flag before send
                 if (index == UNIT_NPC_FLAGS)
-                    *data << uint32(m_uint32Values[ index ] & ~(UNIT_NPC_FLAG_GUARD + UNIT_NPC_FLAG_OUTDOORPVP));
+                    *data << uint32(m_uint32Values[ index ] & ~(UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_OUTDOORPVP));
                 // FIXME: Some values at server stored in float format but must be sent to client in uint32 format
                 else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
                 {

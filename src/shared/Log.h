@@ -134,6 +134,7 @@ class Log
         void outDiff(const char * str, ...)         ATTR_PRINTF(2,3);
         void outSessionDiff(const char * str, ...)  ATTR_PRINTF(2,3);
         void outCrash(const char * err, ...)        ATTR_PRINTF(2,3);
+        void outPacket(uint32 glow, const char * str, ...) ATTR_PRINTF(3,4);
 
         void OutLogToFile(logFiles log, const char * str, ...)    ATTR_PRINTF(3,4);
 

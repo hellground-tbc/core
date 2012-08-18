@@ -300,6 +300,20 @@ FILE* Log::openGmlogPerAccount(uint32 account)
     return fopen(namebuf, "a");
 }
 
+void Log::outPacket(uint32 glow, const char * str, ...)
+{
+    char namebuf[HELLGROUND_PATH_MAX];
+    snprintf(namebuf, HELLGROUND_PATH_MAX, "packets//%u.txt", glow);
+
+    FILE* per_file = fopen(namebuf, "a");
+    va_list ap;
+    va_start(ap, str);
+    vfprintf(per_file, str, ap);
+    fprintf(per_file, "\n" );
+    va_end(ap);
+    fclose(per_file);
+}
+
 FILE* Log::openWhisplogPerAccount(uint32 account)
 {
     if(m_whisplog_filename_format.empty())
