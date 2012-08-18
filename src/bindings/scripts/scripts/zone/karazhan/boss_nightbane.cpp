@@ -137,6 +137,8 @@ struct HELLGROUND_DLL_DECL boss_nightbaneAI : public ScriptedAI
         Flying = false;
         Movement = false;
 
+        me->addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+        
         if(!Intro)
         {
             m_creature->SetHomePosition(IntroWay[7][0],IntroWay[7][1],IntroWay[7][2],0);
