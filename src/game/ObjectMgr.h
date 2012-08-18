@@ -532,7 +532,7 @@ class HELLGROUND_DLL_DECL ObjectMgr
         void LoadTrainerSpell();
 
         void LoadOpcodesCooldown();
-        OpcodesCooldown& GetOpcodesCooldown() { return _opcodesCooldown; }
+        OpcodesCooldown GetOpcodesCooldown() { return _opcodesCooldown; }
 
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint32 level);

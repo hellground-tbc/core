@@ -208,11 +208,11 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
     if (!new_packet)
         return;
 
-    Opcodes op = Opcodes(new_packet->GetOpcode());
-    if (_opcodesCooldown.count(op))
+    OpcodesCooldown::iterator opItr = _opcodesCooldown.find(new_packet->GetOpcode());
+    if (opItr != _opcodesCooldown.end())
     {
-        if (_opcodesCooldown[op].Passed())
-            _opcodesCooldown[op].Reset();
+        if (opItr->second.Passed())
+            opItr->second.Reset();
         else
             return;
     }

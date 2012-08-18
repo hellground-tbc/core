@@ -7025,10 +7025,13 @@ void ObjectMgr::LoadOpcodesCooldown()
         Field *fields = result->Fetch();
 
         uint16 opcode = LookupOpcodeId(fields[0].GetCppString().c_str());
-        uint32 cooldown = fields[1].GetUInt32();
-        _opcodesCooldown[opcode].SetInterval(cooldown);
+        if (opcode != MSG_NULL_ACTION)
+        {
+            uint32 cooldown = fields[1].GetUInt32();
+            _opcodesCooldown[opcode].SetInterval(cooldown);
+        }
     }
     while (result->NextRow());
 
-    sLog.outString("\n>> Loaded %u opcode cooldowns \n", result->GetRowCount());
+    sLog.outString("\n>> Loaded %u opcode cooldowns \n", _opcodesCooldown.size());
 }
