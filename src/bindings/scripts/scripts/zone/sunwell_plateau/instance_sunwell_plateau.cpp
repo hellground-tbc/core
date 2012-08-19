@@ -20,7 +20,7 @@ enum GoState
     OPEN    = 0
 };
 
-uint32 GauntletNPC[6] = 
+uint32 GauntletNPC[6] =
 {
     25484,
     25837,
@@ -203,7 +203,7 @@ struct HELLGROUND_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         {
             case 24850: Kalecgos_Dragon     = creature->GetGUID(); break;
             case 24891: Kalecgos_Human      = creature->GetGUID(); break;
-            case 24892: 
+            case 24892:
                 Sathrovarr = creature->GetGUID();
                 if(GetData(DATA_KALECGOS_EVENT) == DONE)
                     creature->NearTeleportTo(1705, 927, 53.07, creature->GetOrientation());
@@ -285,18 +285,18 @@ struct HELLGROUND_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
     {
         switch(id)
         {
-            case DATA_KALECGOS_EVENT:           return Encounters[0]; break;
-            case DATA_BRUTALLUS_INTRO_EVENT:    return Encounters[1]; break;
-            case DATA_BRUTALLUS_EVENT:          return Encounters[2]; break;
-            case DATA_FELMYST_EVENT:            return Encounters[3]; break;
-            case DATA_EREDAR_TWINS_EVENT:       return Encounters[4]; break;
-            case DATA_MURU_EVENT:               return Encounters[5]; break;
-            case DATA_KILJAEDEN_EVENT:          return Encounters[6]; break;
-            case DATA_TRASH_GAUNTLET_EVENT:     return GauntletProgress; break;
-            case DATA_KALECGOS_PHASE:           return KalecgosPhase; break;
+            case DATA_KALECGOS_EVENT:           return Encounters[0];
+            case DATA_BRUTALLUS_INTRO_EVENT:    return Encounters[1];
+            case DATA_BRUTALLUS_EVENT:          return Encounters[2];
+            case DATA_FELMYST_EVENT:            return Encounters[3];
+            case DATA_EREDAR_TWINS_EVENT:       return Encounters[4];
+            case DATA_MURU_EVENT:               return Encounters[5];
+            case DATA_KILJAEDEN_EVENT:          return Encounters[6];
+            case DATA_TRASH_GAUNTLET_EVENT:     return GauntletProgress;
+            case DATA_KALECGOS_PHASE:           return KalecgosPhase;
             case DATA_ALYTHESS:                 return EredarTwinsAliveInfo[0];
             case DATA_SACROLASH:                return EredarTwinsAliveInfo[1];
-            case DATA_EREDAR_TWINS_INTRO:        return EredarTwinsIntro; break;
+            case DATA_EREDAR_TWINS_INTRO:       return EredarTwinsIntro;
         }
 
         return 0;
@@ -306,23 +306,23 @@ struct HELLGROUND_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
     {
         switch(id)
         {
-            case DATA_KALECGOS_DRAGON:      return Kalecgos_Dragon;     break;
-            case DATA_KALECGOS_HUMAN:       return Kalecgos_Human;      break;
-            case DATA_SATHROVARR:           return Sathrovarr;          break;
-            case DATA_BRUTALLUS:            return Brutallus;           break;
-            case DATA_MADRIGOSA:            return Madrigosa;           break;
-            case DATA_BRUTALLUS_TRIGGER:    return BrutallusTrigger;    break;
-            case DATA_FELMYST:              return Felmyst;             break;
-            case DATA_ALYTHESS:             return Alythess;            break;
-            case DATA_SACROLASH:            return Sacrolash;           break;
-            case DATA_MURU:                 return Muru;                break;
-            case DATA_KILJAEDEN:            return KilJaeden;           break;
-            case DATA_KILJAEDEN_CONTROLLER: return KilJaedenController; break;
-            case DATA_ANVEENA:              return Anveena;             break;
-            case DATA_KALECGOS_KJ:          return KalecgosKJ;          break;
+            case DATA_KALECGOS_DRAGON:      return Kalecgos_Dragon;
+            case DATA_KALECGOS_HUMAN:       return Kalecgos_Human;
+            case DATA_SATHROVARR:           return Sathrovarr;
+            case DATA_BRUTALLUS:            return Brutallus;
+            case DATA_MADRIGOSA:            return Madrigosa;
+            case DATA_BRUTALLUS_TRIGGER:    return BrutallusTrigger;
+            case DATA_FELMYST:              return Felmyst;
+            case DATA_ALYTHESS:             return Alythess;
+            case DATA_SACROLASH:            return Sacrolash;
+            case DATA_MURU:                 return Muru;
+            case DATA_KILJAEDEN:            return KilJaeden;
+            case DATA_KILJAEDEN_CONTROLLER: return KilJaedenController;
+            case DATA_ANVEENA:              return Anveena;
+            case DATA_KALECGOS_KJ:          return KalecgosKJ;
             case DATA_PLAYER_GUID:
-                Player* Target = GetPlayerInMap();
-                return Target->GetGUID();
+                if (Player* Target = GetPlayerInMap())
+                    return Target->GetGUID();
                 break;
         }
 
