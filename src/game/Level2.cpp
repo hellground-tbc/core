@@ -36,7 +36,7 @@
 #include "SpellMgr.h"
 #include "PoolManager.h"
 #include "AccountMgr.h"
-#include "WaypointManager.h"
+#include "WaypointMgr.h"
 #include "Util.h"
 #include <cctype>
 #include <iostream>
@@ -2198,7 +2198,7 @@ bool ChatHandler::HandleWpReloadPath(const char* args)
         return false;
 
     PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", id);
-    WaypointMgr.UpdatePath(id);
+    sWaypointMgr.UpdatePath(id);
 
     return true;
 }

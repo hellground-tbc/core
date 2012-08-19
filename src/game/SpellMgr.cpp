@@ -3951,7 +3951,7 @@ bool SpellMgr::SpellIgnoreLOS(SpellEntry const* spellproto, uint8 effIdx)
     return false;
 }
 
-bool EffectCanScaleWithLevel(const SpellEntry * spellInfo, uint8 eff)
+bool SpellMgr::EffectCanScaleWithLevel(const SpellEntry * spellInfo, uint8 eff)
 {
     if (!(spellInfo->Attributes & SPELL_ATTR_LEVEL_DAMAGE_CALCULATION) || !spellInfo->spellLevel)
         return false;

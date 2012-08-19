@@ -44,7 +44,7 @@
 #include "InstanceSaveMgr.h"
 #include "SpellAuras.h"
 #include "Util.h"
-#include "WaypointManager.h"
+#include "WaypointMgr.h"
 #include "InstanceData.h" //for condition_instance_data
 
 bool normalizePlayerName(std::string& name)

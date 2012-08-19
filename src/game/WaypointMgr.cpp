@@ -20,25 +20,22 @@
 
 #include "Database/DatabaseEnv.h"
 #include "GridDefines.h"
-#include "WaypointManager.h"
+#include "WaypointMgr.h"
 #include "ProgressBar.h"
 #include "MapManager.h"
 
-UNORDERED_MAP<uint32, WaypointPath*> waypoint_map;
-WaypointStore WaypointMgr;
-
-void WaypointStore::Free()
+void WaypointMgr::Free()
 {
-    waypoint_map.clear();
+    _waypointPathMap.clear();
 }
 
-void WaypointStore::Load()
+void WaypointMgr::Load()
 {
     QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT MAX(`id`) FROM `waypoint_data`");
     if (!result)
     {
-        sLog.outError(" an error occured while loading the table `waypoint_data` (maybe it doesn't exist ?)\n");
-        exit(1);                                            // Stop server at loading non exited table or not accessable table
+        sLog.outError(" an error occurred while loading the table `waypoint_data` (maybe it doesn't exist ?)\n");
+        exit(1);                                            // Stop server at loading non exited table or not accessible table
     }
 
     records = (*result)[0].GetUInt32();
@@ -86,19 +83,20 @@ void WaypointStore::Load()
 
         path_data->push_back(wp);
 
-    if (id != last_id)
-        waypoint_map[id] = path_data;
+        if (id != last_id)
+            _waypointPathMap[id] = path_data;
 
         last_id = id;
 
-    } while (result->NextRow()) ;
+    }
+    while (result->NextRow()) ;
 }
 
-void WaypointStore::UpdatePath(uint32 id)
+void WaypointMgr::UpdatePath(uint32 id)
 {
 
-    if (waypoint_map.find(id)!= waypoint_map.end())
-        waypoint_map[id]->clear();
+    if (_waypointPathMap.find(id)!= _waypointPathMap.end())
+        _waypointPathMap[id]->clear();
 
     QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT `id`,`point`,`position_x`,`position_y`,`position_z`,`move_type`,`delay`,`action`,`action_chance` FROM `waypoint_data` WHERE id = %u ORDER BY `point`", id);
 
@@ -137,8 +135,8 @@ void WaypointStore::UpdatePath(uint32 id)
 
         path_data->push_back(wp);
 
-    }while (result->NextRow());
+    }
+    while (result->NextRow());
 
-    waypoint_map[id] = path_data;
+   _waypointPathMap[id] = path_data;
 }
-

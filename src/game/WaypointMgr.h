@@ -21,6 +21,8 @@
 #ifndef HELLGROUND_WAYPOINTMANAGER_H
 #define HELLGROUND_WAYPOINTMANAGER_H
 
+#include <ace/Singleton.h>
+
 #include <vector>
 #include "Utilities/UnorderedMap.h"
 
@@ -42,12 +44,13 @@ struct WaypointData
 };
 
 typedef std::vector<WaypointData*> WaypointPath;
-extern UNORDERED_MAP<uint32, WaypointPath*> waypoint_map;
+typedef UNORDERED_MAP<uint32, WaypointPath*> WaypointPathMap;
 
-class WaypointStore
+class WaypointMgr
 {
-    private:
-        uint32  records;
+    friend class ACE_Singleton<WaypointMgr, ACE_Thread_Mutex>;
+    // this is on purpose, constructor has to be private :P
+    WaypointMgr() {}
 
     public:
         void UpdatePath(uint32 id);
@@ -56,14 +59,18 @@ class WaypointStore
 
         WaypointPath* GetPath(uint32 id)
         {
-            if (waypoint_map.find(id) != waypoint_map.end())
-                return waypoint_map[id];
-            else return 0;
+            if (_waypointPathMap.find(id) != _waypointPathMap.end())
+                return _waypointPathMap[id];
+
+            return NULL;
         }
 
         inline uint32 GetRecordsCount() { return records; }
+
+    private:
+        int32 records;
+        WaypointPathMap _waypointPathMap;
 };
 
-extern WaypointStore WaypointMgr;
-
+#define sWaypointMgr (*ACE_Singleton<WaypointMgr, ACE_Thread_Mutex>::instance())
 #endif

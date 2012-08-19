@@ -36,7 +36,7 @@
 #include "ScriptMgr.h"
 #include "Group.h"
 #include "MapRefManager.h"
-#include "WaypointManager.h"
+#include "WaypointMgr.h"
 #include "BattleGround.h"
 #include "GridMap.h"
 
@@ -2055,7 +2055,7 @@ void Map::ScriptsProcess()
                     break;
                 }
 
-                if (!WaypointMgr.GetPath(step.script->datalong))
+                if (!sWaypointMgr.GetPath(step.script->datalong))
                 {
                     sLog.outError("SCRIPT_COMMAND_START_MOVE source mover has an invallid path, skipping.", step.script->datalong2);
                     break;
@@ -3213,6 +3213,14 @@ float Map::GetVisibilityDistance(WorldObject* obj) const
 }
 
 bool Map::WaypointMovementAutoActive() const
+{
+    if(Instanceable())
+        return sWorld.getConfig(CONFIG_WAYPOINT_MOVEMENT_ACTIVE_IN_INSTANCES);
+    else
+        return sWorld.getConfig(CONFIG_WAYPOINT_MOVEMENT_ACTIVE_ON_CONTINENTS);
+}
+
+bool Map::WaypointMovementPathfinding() const
 {
     if(Instanceable())
         return sWorld.getConfig(CONFIG_WAYPOINT_MOVEMENT_ACTIVE_IN_INSTANCES);

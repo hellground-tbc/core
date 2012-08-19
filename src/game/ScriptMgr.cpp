@@ -20,7 +20,7 @@
 #include "Log.h"
 #include "ProgressBar.h"
 #include "ObjectMgr.h"
-#include "WaypointManager.h"
+#include "WaypointMgr.h"
 #include "World.h"
 
 #include "../shared/Config/Config.h"

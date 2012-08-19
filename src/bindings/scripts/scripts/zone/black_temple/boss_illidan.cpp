@@ -1081,7 +1081,6 @@ struct HELLGROUND_DLL_DECL boss_illidan_akamaAI : public BossAI
                 if (data == 15 && m_pathId == PATH_AKAMA_DOOR_EVENT_BEFORE)
                 {
                     m_pathId = 0;
-                    me->GetMotionMaster()->MoveIdle();
                     events.ScheduleEvent(EVENT_AKAMA_DOOR_CAST_FAIL, 2000);
                 }
 

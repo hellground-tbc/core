@@ -1023,6 +1023,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_COMBAT_ACTIVE_IN_INSTANCES] = sConfig.GetBoolDefault("AutoActive.Combat.Instances", true);
     m_configs[CONFIG_COMBAT_ACTIVE_FOR_PLAYERS_ONLY] = sConfig.GetBoolDefault("AutoActive.Combat.PlayersOnly", false);
 
+    m_configs[CONFIG_WAYPOINT_MOVEMENT_PATHFINDING_ON_CONTINENTS] = sConfig.GetBoolDefault("Movement.WaypointPathfinding.Continents", true);
+    m_configs[CONFIG_WAYPOINT_MOVEMENT_PATHFINDING_IN_INSTANCES] = sConfig.GetBoolDefault("Movement.WaypointPathfinding.Instances", true);
+
     m_configs[CONFIG_TARGET_POS_RECALCULATION_RANGE] = sConfig.GetIntDefault("Movement.RecalculateRange", 2);
 
     if (m_configs[CONFIG_TARGET_POS_RECALCULATION_RANGE] < 0)
@@ -1447,7 +1450,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadOpcodesCooldown();
 
     sLog.outString("Loading Waypoints...");
-    WaypointMgr.Load();
+    sWaypointMgr.Load();
 
     sLog.outString("Loading Creature Formations...");
     CreatureGroupManager::LoadCreatureFormations();

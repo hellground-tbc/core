@@ -70,9 +70,7 @@ void MotionMaster::MoveRandom(float spawndist)
 
 void MotionMaster::MoveTargetedHome()
 {
-   // if (m_owner->hasUnitState(UNIT_STAT_LOST_CONTROL))
-       // return;
-    m_owner->GetMotionMaster()->MovementExpired();
+    m_owner->GetUnitStateMgr().DropActionHigherThen(UNIT_ACTION_PRIORITY_HOME);
 
     if (m_owner->GetTypeId() == TYPEID_UNIT && !((Creature*)m_owner)->GetCharmerOrOwnerGUID())
     {
@@ -121,12 +119,12 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle)
         Mutate(new FollowMovementGenerator<Creature>(*target,dist,angle), UNIT_ACTION_DOWAYPOINTS);
 }
 
-void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath)
+void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath, UnitActionId actionId /*= UNIT_ACTION_ASSISTANCE*/)
 {
     if (m_owner->GetTypeId() == TYPEID_PLAYER)
-        Mutate(new PointMovementGenerator<Player>(id,x,y,z, generatePath), UNIT_ACTION_ASSISTANCE);
+        Mutate(new PointMovementGenerator<Player>(id,x,y,z, generatePath), actionId);
     else
-        Mutate(new PointMovementGenerator<Creature>(id,x,y,z, generatePath), UNIT_ACTION_ASSISTANCE);
+        Mutate(new PointMovementGenerator<Creature>(id,x,y,z, generatePath), actionId);
 }
 
 void MotionMaster::MoveSeekAssistance(float x, float y, float z)

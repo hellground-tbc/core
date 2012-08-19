@@ -296,6 +296,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         const TerrainInfo * GetTerrain() const { return m_TerrainData; }
 
         bool WaypointMovementAutoActive() const;
+        bool WaypointMovementPathfinding() const;
 
     private:
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }

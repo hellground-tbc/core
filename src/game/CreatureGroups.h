@@ -79,8 +79,10 @@ class CreatureGroup
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);
         Creature* GetNextRandomCreatureGroupMember(Creature* member, float radius);
+
         void ReachedWaypoint() {  if( m_movingUnits > 0 ) m_movingUnits--; }
-        bool AllUnitsReachedWaypoint() const { return !m_movingUnits; }
+        void ClearMovingUnits() { m_movingUnits = 0; }
+        bool AllUnitsReachedWaypoint() const { return m_movingUnits == 0; }
 };
 
 #endif

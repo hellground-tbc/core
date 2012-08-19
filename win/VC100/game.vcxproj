@@ -620,7 +620,7 @@
     <ClCompile Include="..\..\src\game\TicketHandler.cpp" />
     <ClCompile Include="..\..\src\game\TradeHandler.cpp" />
     <ClCompile Include="..\..\src\game\VoiceChatHandler.cpp" />
-    <ClCompile Include="..\..\src\game\WaypointManager.cpp" />
+    <ClCompile Include="..\..\src\game\WaypointMgr.cpp" />
     <ClCompile Include="..\..\src\game\AccountMgr.cpp" />
     <ClCompile Include="..\..\src\game\AuctionHouseMgr.cpp" />
     <ClCompile Include="..\..\src\game\ItemEnchantmentMgr.cpp" />
@@ -788,7 +788,7 @@
     <ClInclude Include="..\..\src\game\Weather.h" />
     <ClInclude Include="..\..\src\game\AddonHandler.h" />
     <ClInclude Include="..\..\src\game\NPCHandler.h" />
-    <ClInclude Include="..\..\src\game\WaypointManager.h" />
+    <ClInclude Include="..\..\src\game\WaypointMgr.h" />
     <ClInclude Include="..\..\src\game\AccountMgr.h" />
     <ClInclude Include="..\..\src\game\AuctionHouseMgr.h" />
     <ClInclude Include="..\..\src\game\ChannelMgr.h" />

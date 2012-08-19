@@ -1228,6 +1228,13 @@ Visibility.Distance.ActiveObjectUpdate.Instances = 132
 Movement.RecalculateRange = 1
 Movement.RecheckTimer = 100
 
+#    Movement..WaypointPathfinding.*
+#        Decides if WaypointMovegen have to generate movepath between nodes ot go in straight line
+#        Default: 1 (on)
+
+Movement.WaypointPathfinding.Continents = 1
+Movement.WaypointPathfinding.Instances = 1
+
 ###################################################################################################################
 # COREBALANCER
 #

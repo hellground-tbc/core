@@ -9302,9 +9302,9 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
 
     if (GetTypeId() == TYPEID_PLAYER)
     {
-        if (m_currentSpells[CURRENT_GENERIC_SPELL] && m_currentSpells[CURRENT_GENERIC_SPELL]->getState() != SPELL_STATE_FINISHED)
+        if (GetCurrentSpell(CURRENT_GENERIC_SPELL) && GetCurrentSpell(CURRENT_GENERIC_SPELL)->getState() != SPELL_STATE_FINISHED)
         {
-            if (m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT)
+            if (GetCurrentSpellProto(CURRENT_GENERIC_SPELL)->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT)
                 InterruptSpell(CURRENT_GENERIC_SPELL);
         }
 
@@ -9313,22 +9313,25 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     }
     else
     {
-        if ((IsAIEnabled && ((Creature*)this)->AI()->IsEscorted()) ||
-            GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE)
-            ((Creature*)this)->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+        Creature* creature = ToCreature();
 
-         if (enemy)
-         {
-            if (((Creature*)this)->AI())
-                ((Creature*)this)->AI()->EnterCombat(enemy);
+        if ((IsAIEnabled && creature->AI()->IsEscorted()) ||
+            GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE || 
+            GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE && creature->GetFormation())
+            creature->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
-            if (((Creature*)this)->GetFormation())
-                ((Creature*)this)->GetFormation()->MemberAttackStart((Creature*)this, enemy);
+        if (enemy)
+        {
+            if (creature->AI())
+                creature->AI()->EnterCombat(enemy);
+
+            if (creature->GetFormation())
+                creature->GetFormation()->MemberAttackStart(creature, enemy);
 
             RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
         }
 
-        if (((Creature*)this)->isPet())
+        if (creature->isPet())
         {
             UpdateSpeed(MOVE_RUN, true);
             UpdateSpeed(MOVE_SWIM, true);
@@ -10148,7 +10151,7 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
         }
     }
 
-    if (!basePointsPerLevel && SpellMgr.EffectCanScaleWithLevel(spellProto, effect_index) &&
+    if (!basePointsPerLevel && SpellMgr::EffectCanScaleWithLevel(spellProto, effect_index) &&
         getLevel() >= spellProto->spellLevel) // probably we shouldn't modify spells for mobs with lower level than spell level
         value *= exp(getLevel()*(getLevel()-spellProto->spellLevel)/1000.0f - 1);
         //value = int32(value * (int32)getLevel() / (int32)(spellProto->spellLevel ? spellProto->spellLevel : 1));

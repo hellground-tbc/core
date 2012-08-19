@@ -308,8 +308,8 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
                 member->SetWalk(false);
         }
 
-        member->GetMotionMaster()->MovePoint(0, dx, dy, dz);
-        member->SetHomePosition(dx, dy, dz, pathangle);
+        member->GetMotionMaster()->MovePoint(0, dx, dy, dz, true, UNIT_ACTION_HOME);
+        member->SetHomePosition(m_leader->GetPositionX(), m_leader->GetPositionY(), m_leader->GetPositionZ(), pathangle);
         m_movingUnits++;
     }
 }
