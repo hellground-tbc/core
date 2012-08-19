@@ -206,6 +206,8 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
         path = 0;
         counter = 0;
 
+        me->addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+
         me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 10);
         me->SetFloatValue(UNIT_FIELD_COMBATREACH, 10);
         me->setActive(true);

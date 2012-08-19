@@ -2623,9 +2623,15 @@ void Creature::SetWalk(bool enable)
 void Creature::SetLevitate(bool enable)
 {
     if (enable)
+    {
         AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+        addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+    }
     else
+    {
         RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
+        clearUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+    }
 
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
