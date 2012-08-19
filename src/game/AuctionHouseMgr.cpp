@@ -628,7 +628,7 @@ void AuctionHouseObject::BuildListOwnerItems(WorldPacket& data, Player* player, 
         AuctionEntry *Aentry = itr->second;
         if (Aentry->owner == player->GetGUIDLow())
         {
-            if (Aentry->BuildAuctionInfo(data))
+            if (count < 240 && Aentry->BuildAuctionInfo(data))
                 ++count;
             ++totalcount;
         }
