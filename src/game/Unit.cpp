@@ -5942,7 +5942,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         if (ToPlayer())
                             item = ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
                         float speed = (item ? item->GetProto()->Delay : BASE_ATTACK_TIME)/1000.0f;
-                        int32 bp0 = 10*speed; 
+                        int32 bp0 = 10*speed;
                         CastCustomSpell(pVictim, 42463, &bp0, 0,0, true);
                     }
                     break;
@@ -8204,10 +8204,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 2500;
             }
-            // Seal of Vengeance - DOT: 17% per Application, DIRECT: 1.1% 
+            // Seal of Vengeance - DOT: 17% per Application, DIRECT: 1.1%
             else if ((spellProto->SpellFamilyFlags & 0x80000000000LL) && spellProto->SpellIconID == 2292)
             {
-                DotFactor = damagetype == DOT ? 0.17f : 0.011f; 
+                DotFactor = damagetype == DOT ? 0.17f : 0.011f;
                 CastingTime = 3500;
             }
             else if (spellProto->Id == 42463)
@@ -10146,16 +10146,8 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
         }
     }
 
-    if (!basePointsPerLevel && (spellProto->Attributes & SPELL_ATTR_LEVEL_DAMAGE_CALCULATION && spellProto->spellLevel) &&
-            spellProto->Effect[effect_index] != SPELL_EFFECT_WEAPON_PERCENT_DAMAGE &&
-            spellProto->Effect[effect_index] != SPELL_EFFECT_KNOCK_BACK &&
-            spellProto->Effect[effect_index] != SPELL_EFFECT_ADD_EXTRA_ATTACKS &&
-            spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_SPEED_ALWAYS &&
-            spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_SPEED_NOT_STACK &&
-            spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_INCREASE_SPEED &&
-            spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_MOD_DECREASE_SPEED &&
-            spellProto->EffectApplyAuraName[effect_index] != SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE)
-            //there are many more: slow speed, -healing pct
+    if (!basePointsPerLevel && SpellMgr.EffectCanScaleWithLevel(spellProto, effect_index) &&
+        getLevel() >= spellProto->spellLevel) // probably we shouldn't modify spells for mobs with lower level than spell level
         value *= exp(getLevel()*(getLevel()-spellProto->spellLevel)/1000.0f - 1);
         //value = int32(value * (int32)getLevel() / (int32)(spellProto->spellLevel ? spellProto->spellLevel : 1));
 
@@ -10261,7 +10253,7 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
     // test pet/charm masters instead pets/charmedsz
     Unit const* targetOwner = GetCharmerOrOwner();
     Unit const* casterOwner = caster->GetCharmerOrOwner();
-    
+
     // Duration of crowd control abilities on pvp target is limited by 10 sec. (2.2.0)
     if (duration > 10000 && SpellMgr::IsDiminishingReturnsGroupDurationLimited(group))
     {
@@ -12214,7 +12206,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
     // roll loot, some additional work is done in Creature::setDeathState(JUST_DIED), must be before calling setDeathState
     if (Creature *cVictim = pVictim->ToCreature())
-    {   
+    {
         if (cVictim->lootForPickPocketed)
         {
             cVictim->lootForPickPocketed = false;
@@ -12987,9 +12979,9 @@ const float PRDConstants[] = {
 0.3021,  0.31268, 0.32329, 0.33412, 0.34737, 0.3604,  0.37322, 0.38584, 0.39828, 0.41054,
 0.42265, 0.4346,  0.44642, 0.4581,  0.46967, 0.48113, 0.49248, 0.50746, 0.52941, 0.55072,
 0.57143, 0.59155, 0.61111, 0.63014, 0.64865, 0.66667, 0.68421, 0.7013,  0.71795, 0.73418,
-0.75,    0.76543, 0.78049, 0.79518, 0.80952, 0.82353, 0.83721, 0.85057, 0.86364, 0.8764,  
+0.75,    0.76543, 0.78049, 0.79518, 0.80952, 0.82353, 0.83721, 0.85057, 0.86364, 0.8764,
 0.88889, 0.9011,  0.91304, 0.92473, 0.93617, 0.94737, 0.95833, 0.96907, 0.97959, 0.9899,
-1 };        
+1 };
 
 // Pseudo-random distribution - each subsequent fail increases chance of success in next try
 // chances are floats in range (0.0, 1.0)
@@ -13018,11 +13010,11 @@ bool Unit::RollPRD(float baseChance, float extraChance, uint32 spellId)
             return false;
         return true;
     }
-    
+
     if (extraChance > 0 && roll_chance_f(extraChance / (1 - baseChance) * 100)) // No step reseting when rolling extra chance!
         return true;
 
-    return false; 
+    return false;
 }
 
 void Unit::SetFeared(bool apply, Unit* target, uint32 time)

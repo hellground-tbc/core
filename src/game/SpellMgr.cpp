@@ -3950,3 +3950,26 @@ bool SpellMgr::SpellIgnoreLOS(SpellEntry const* spellproto, uint8 effIdx)
 
     return false;
 }
+
+bool EffectCanScaleWithLevel(const SpellEntry * spellInfo, uint8 eff)
+{
+    if (!(spellInfo->Attributes & SPELL_ATTR_LEVEL_DAMAGE_CALCULATION) || !spellInfo->spellLevel)
+        return false;
+
+    if (spellInfo->Effect[eff] == SPELL_EFFECT_WEAPON_PERCENT_DAMAGE ||
+        spellInfo->Effect[eff] == SPELL_EFFECT_KNOCK_BACK ||
+        spellInfo->Effect[eff] == SPELL_EFFECT_ADD_EXTRA_ATTACKS)
+        return false;
+
+    if (spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_MOD_SPEED_ALWAYS ||
+        spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_MOD_SPEED_NOT_STACK ||
+        spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_MOD_INCREASE_SPEED ||
+        spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_MOD_DECREASE_SPEED ||
+        spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE ||
+        spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_HASTE_MELEE)
+        return false;
+
+    //there are many more than above: slow speed, -healing pct
+
+    return true;
+}
