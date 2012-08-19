@@ -1815,7 +1815,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         else
             tmpvalue2 += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
 
-        if (tmpvalue2 < 0.0f)
+        if (tmpvalue2 < 0.0f || schoolMask & SPELL_SCHOOL_HOLY)
             tmpvalue2 = 0.0f;
 
         if (Creature* pCre = pVictim->ToCreature())

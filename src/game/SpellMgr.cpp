@@ -1135,7 +1135,7 @@ bool SpellMgr::IsPartialyResistable(SpellEntry const* spellInfo)
             return false;
     }
 
-    if (spellInfo->SchoolMask & SPELL_SCHOOL_MASK_HOLY || SpellMgr::IsBinaryResistable(spellInfo))
+    if (SpellMgr::IsBinaryResistable(spellInfo))
         return false;
     else
         return true;
