@@ -8750,7 +8750,9 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                     CastingTime = 0;
                 break;
             case SPELLFAMILY_WARLOCK:
-                if (spellProto->SpellFamilyFlags & 0x1000000LL)
+                if (spellProto->SpellFamilyFlags & 0x10000LL)   // HealthStone
+                    CastingTime = 0;
+                else if (spellProto->SpellFamilyFlags & 0x1000000LL)
                     CastingTime = 10000;
                 break;
             case SPELLFAMILY_WARRIOR:
