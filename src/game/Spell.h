@@ -489,8 +489,6 @@ class Spell
         void TriggerGlobalCooldown();
         void CancelGlobalCooldown();
 
-        bool HasValidLockType(LockType lockType);
-
         Unit* const m_caster;
 
         SpellValue * const m_spellValue;

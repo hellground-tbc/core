@@ -3637,33 +3637,6 @@ void Spell::EffectEnergisePct(uint32 i)
 }
 
 
-bool Spell::HasValidLockType(LockType lockType)
-{
-    bool validLockType = true;
-
-    if (gameObjTarget)
-    {
-        switch (gameObjTarget->GetGoType())
-        {
-            case GAMEOBJECT_TYPE_TRAP:
-                if (lockType != LOCKTYPE_DISARM_TRAP)
-                {
-                    sLog.outError("Spell::HasValidLockType unhandled locktype %u for GameObject trap (entry %u) for spell %u.", lockType, gameObjTarget->GetEntry(), m_spellInfo->Id);
-                    return false;
-                }
-
-                validLockType = true;
-                break;
-
-            default:
-                validLockType = true;
-        }
-    }
-
-    return validLockType;
-}
-
-
 void Spell::EffectOpenLock(uint32 effIndex)
 {
     if (!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -3737,10 +3710,7 @@ void Spell::EffectOpenLock(uint32 effIndex)
 
     if (gameObjTarget)
     {
-        if (HasValidLockType(LockType(m_spellInfo->EffectMiscValue[effIndex])))
-        {
-            gameObjTarget->Use(m_caster);
-        }
+        gameObjTarget->Use(m_caster);
     }
     else
     {
