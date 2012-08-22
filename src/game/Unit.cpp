@@ -1799,7 +1799,7 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
     return (newdamage > 1) ? newdamage : 1;
 }
 
-void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist)
+void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 & damage, uint32 *absorb, uint32 *resist)
 {
     if (!pVictim || !pVictim->isAlive() || !damage)
         return;
@@ -1815,14 +1815,14 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         else
             tmpvalue2 += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
 
-        if (tmpvalue2 < 0.0f || schoolMask & SPELL_SCHOOL_HOLY)
+        if (tmpvalue2 < 0.0f || schoolMask & SPELL_SCHOOL_MASK_HOLY)
             tmpvalue2 = 0.0f;
 
         if (Creature* pCre = pVictim->ToCreature())
         {
-            int32 leveldif = int32(pCre->getLevelForTarget(this)) - int32(getLevelForTarget(pCre));
-            if (leveldif > 0)
-                tmpvalue2 += leveldif *5;
+            int32 leveldiff = int32(pCre->getLevelForTarget(this)) - int32(getLevelForTarget(pCre));
+            if (leveldiff > 0)
+                tmpvalue2 += leveldiff * 5;
         }
 
         tmpvalue2 *= (float)(0.15f / getLevel());
@@ -9316,7 +9316,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
         Creature* creature = ToCreature();
 
         if ((IsAIEnabled && creature->AI()->IsEscorted()) ||
-            GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE || 
+            GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE ||
             GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE && creature->GetFormation())
             creature->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
