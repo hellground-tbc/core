@@ -2751,12 +2751,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         m_target->CastSpell(m_target, 42316, true, 0, 0, caster->GetGUID());   // cast Alcaz Survey Credit
                 }
                 return;
-            case 30632:                                     // Debris
-            {
-                if (Unit * caster = GetCaster())
-                    caster->CastSpell(caster, 30631, true);
-                return;
-            }
         }
     }
 

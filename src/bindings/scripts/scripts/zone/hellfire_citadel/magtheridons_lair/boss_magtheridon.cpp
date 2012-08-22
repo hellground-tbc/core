@@ -283,15 +283,7 @@ struct HELLGROUND_DLL_DECL boss_magtheridonAI : public BossAI
                 {
                     Unit * tar = SelectUnit(SELECT_TARGET_RANDOM, 0, 0, true);
                     if (tar)
-                    {
-                        Creature * magTr = m_creature->SummonCreature(MOB_MAGTHERIDON_TRIGGER, tar->GetPositionX(), tar->GetPositionY(), tar->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 8000);
-                        if (magTr)
-                        {
-                            magTr->setFaction(me->getFaction());
-                            magTr->SetLevel(73);
-                            magTr->CastSpell(magTr, SPELL_DEBRIS, true);
-                        }
-                    }
+                        m_creature->SummonCreature(MOB_MAGTHERIDON_TRIGGER, tar->GetPositionX(), tar->GetPositionY(), tar->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7500);
 
                     events.ScheduleEvent(MAGTHERIDON_EVENT_DEBRIS, 10000);
                     break;
@@ -425,6 +417,40 @@ struct HELLGROUND_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
     }
 };
 
+struct HELLGROUND_DLL_DECL mob_magtheridon_triggerAI : public Scripted_NoMovementAI
+{
+    mob_hellfire_channelerAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+        m_creature->setActive(true);
+    }
+
+    uint32 debrisTimer;
+
+    void Reset()
+    {
+        debrisTimer = 5000;
+    }
+
+    void JustRespawned()
+    {
+        me->CastSpell(me, SPELL_DEBRIS, true);
+    }
+
+    void UpdateAI(const uint32 & diff)
+    {
+        if (debrisTimer)
+        {
+            if (debrisTimer <= diff)
+            {
+                me->CastSpell(me, SPELL_DEBRIS_DAMAGE, true);
+                debrisTimer = 0;
+            }
+            else
+                debrisTimer -= diff;
+        }
+    }
+};
+
 //Manticron Cube
 bool GOUse_go_Manticron_Cube(Player *player, GameObject* _GO)
 {
@@ -472,26 +498,36 @@ CreatureAI* GetAI_mob_abyssalAI(Creature *_Creature)
     return new mob_abyssalAI(_Creature);
 }
 
+CreatureAI* GetAI_mob_magtheridon_triggerAI(Creature *_Creature)
+{
+    return new mob_magtheridon_triggerAI(_Creature);
+}
+
 void AddSC_boss_magtheridon()
 {
     Script *newscript;
-    newscript = new Script;
-    newscript->Name="boss_magtheridon";
+    newscript = new Script();
+    newscript->Name = "boss_magtheridon";
     newscript->GetAI = &GetAI_boss_magtheridon;
     newscript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name="mob_hellfire_channeler";
+    newscript = new Script();
+    newscript->Name = "mob_hellfire_channeler";
     newscript->GetAI = &GetAI_mob_hellfire_channeler;
     newscript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name="go_manticron_cube";
+    newscript = new Script();
+    newscript->Name = "go_manticron_cube";
     newscript->pGOUse = &GOUse_go_Manticron_Cube;
     newscript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name="mob_abyssal";
+    newscript = new Script();
+    newscript->Name = "mob_abyssal";
     newscript->GetAI = &GetAI_mob_abyssalAI;
+    newscript->RegisterSelf();
+
+    newscript = new Script();
+    newscript->Name = "mob_magtheridon_trigger";
+    newscript->GetAi = &GetAI_mob_magtheridon_triggerAI;
     newscript->RegisterSelf();
 }
