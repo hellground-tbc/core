@@ -853,7 +853,7 @@ void ObjectMgr::LoadUnqueuedAccountList()
         bar.step();
 
         sLog.outString("");
-        sLog.outErrorDb(">> Loaded 0 unqueued accounts. DB table `unqueue_account` is empty.");
+        sLog.outString(">> Loaded 0 unqueued accounts. DB table `unqueue_account` is empty.");
         return;
     }
 
