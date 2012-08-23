@@ -3537,7 +3537,7 @@ SpellEntry const * SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player
             continue;
         }
 
-        if (SpellMgr::IsRankSpellDueToSpell(highest_rank, itr->first))
+        if (sSpellMgr.IsRankSpellDueToSpell(highest_rank, itr->first))
         {
             if (spell_info->spellLevel > highest_rank->spellLevel)
                 highest_rank = spell_info;
