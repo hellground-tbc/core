@@ -419,7 +419,7 @@ struct HELLGROUND_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
 
 struct HELLGROUND_DLL_DECL mob_magtheridon_triggerAI : public Scripted_NoMovementAI
 {
-    mob_hellfire_channelerAI(Creature *c) : Scripted_NoMovementAI(c)
+    mob_magtheridon_triggerAI(Creature *c) : Scripted_NoMovementAI(c)
     {
         m_creature->setActive(true);
     }
@@ -528,6 +528,6 @@ void AddSC_boss_magtheridon()
 
     newscript = new Script();
     newscript->Name = "mob_magtheridon_trigger";
-    newscript->GetAi = &GetAI_mob_magtheridon_triggerAI;
+    newscript->GetAI = &GetAI_mob_magtheridon_triggerAI;
     newscript->RegisterSelf();
 }
