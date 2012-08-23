@@ -844,7 +844,7 @@ bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
 void ObjectMgr::LoadUnqueuedAccountList()
 {
     m_UnqueuedAccounts.clear();
-    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT accid FROM unqueue_account ORDER BY accid ASC");
+    QueryResultAutoPtr result = AccountsDatabase.Query("SELECT accid FROM unqueue_account ORDER BY accid ASC");
 
     if (!result)
     {
@@ -5681,7 +5681,7 @@ void ObjectMgr::LoadReservedPlayersNames()
 {
     m_ReservedNames.clear();                                // need for reload case
 
-    QueryResultAutoPtr result = AccountsDatabase.Query("SELECT name FROM reserved_name");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT name FROM reserved_name");
 
     uint32 count = 0;
 
