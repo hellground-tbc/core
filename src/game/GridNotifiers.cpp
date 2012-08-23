@@ -405,6 +405,9 @@ void MessageDistDeliverer::VisitObject(Player* plr)
 {
     if (!i_ownTeamOnly || (i_source.GetTypeId() == TYPEID_PLAYER && plr->GetTeam() == ((Player&)i_source).GetTeam()))
     {
+        if (!plr->HaveAtClient(&i_source))
+            return;
+
         SendPacket(plr);
     }
 }
