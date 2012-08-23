@@ -110,13 +110,16 @@ void InitScriptLibrary(char const* cfg_file)
 
 void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget, bool withoutPrename)
 {
+    if (!iTextEntry)
+        return;
+
     if (!pSource)
     {
         error_log("TSCR: DoScriptText entry %i, invalid Source pointer.", iTextEntry);
         return;
     }
 
-    if (iTextEntry >= 0)
+    if (iTextEntry > 0)
     {
         error_log("TSCR: DoScriptText with source entry %u (TypeId=%u, guid=%u) attempts to process text entry %i, but text entry must be negative.", pSource->GetEntry(), pSource->GetTypeId(), pSource->GetGUIDLow(), iTextEntry);
         return;
