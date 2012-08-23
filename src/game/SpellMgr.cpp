@@ -3520,30 +3520,29 @@ void SpellMgr::LoadSkillLineAbilityMap()
 
 SpellEntry const * SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player* player)
 {
-    SpellEntry const *spell_info = sSpellStore.LookupEntry(spellId);
-    if (!spell_info)
-        return NULL;
-
     PlayerSpellMap const &sp_list = player->GetSpellMap();
-    SpellEntry const *highest_rank = spell_info;
+    SpellEntry const *highest_rank = NULL;
     for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
     {
         if (!itr->second.active || itr->second.disabled || itr->second.state == PLAYERSPELL_REMOVED)
             continue;
 
-        spell_info = sSpellStore.LookupEntry(itr->first);
+        SpellEntry const *spell_info = sSpellStore.LookupEntry(itr->first);
         if (!spell_info)
             continue;
 
-        if (sSpellMgr.IsRankSpellDueToSpell(highest_rank, itr->first))
+        if (highest_rank == NULL && spell_info->Id == spellId)
+        {
+            highest_rank = spell_info;
+            continue;
+        }
+
+        if (sSpellMgr::IsRankSpellDueToSpell(highest_rank, itr->first))
         {
             if (spell_info->spellLevel > highest_rank->spellLevel)
                 highest_rank = spell_info;
         }
     }
-
-    if (!player->HasSpell(highest_rank->Id))
-        return NULL;
 
     return highest_rank;
 }
