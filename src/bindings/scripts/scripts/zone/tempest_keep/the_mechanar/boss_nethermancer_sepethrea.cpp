@@ -43,12 +43,15 @@ EndScriptData */
 
 struct HELLGROUND_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
 {
-    boss_nethermancer_sepethreaAI(Creature *c) : ScriptedAI(c)
+    boss_nethermancer_sepethreaAI(Creature *c) : ScriptedAI(c), summons(me)
     {
         pInstance = c->GetInstanceData();
+        HeroicMode = m_creature->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
+
+    bool HeroicMode;
 
     uint32 arcane_blast_Timer;
     uint32 dragons_breath_Timer;
@@ -61,7 +64,7 @@ struct HELLGROUND_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
     {
         arcane_blast_Timer = urand(12000, 18000);
         dragons_breath_Timer = urand(18000, 22000);
-        knockback_Timer = uarnd(22000, 28000);
+        knockback_Timer = urand(22000, 28000);
         solarburn_Timer = 30000;
 
         pInstance->SetData(DATA_NETHERMANCER_EVENT, NOT_STARTED);
@@ -158,7 +161,15 @@ CreatureAI* GetAI_boss_nethermancer_sepethrea(Creature *_Creature)
 
 struct HELLGROUND_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
 {
-    mob_ragin_flamesAI(Creature *c) : ScriptedAI(c) { }
+    mob_ragin_flamesAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+        HeroicMode = m_creature->GetMap()->IsHeroic();
+    }
+
+    ScriptedInstance *pInstance;
+
+    bool HeroicMode;
 
     uint32 infernoTimer;
     uint64 currentTarget;
@@ -166,12 +177,10 @@ struct HELLGROUND_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
     void Reset()
     {
         infernoTimer = 10000;
-        flameTimer = 500;
-        prevTarget = 0;
 
         m_creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
         m_creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, true);
-        m_creature->SetSpeed(MOVE_RUN, heroic ? 0.7f : 0.5f);
+        m_creature->SetSpeed(MOVE_RUN, HeroicMode ? 0.7f : 0.5f);
 
         SetAutocast(SPELL_FIRE_TAIL, 500, false, CAST_SELF);
     }
@@ -204,15 +213,15 @@ struct HELLGROUND_DLL_DECL mob_ragin_flamesAI : public ScriptedAI
 
         DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, HeroicMode ? 0.7f : 0.5f);
 
-        if (inferno_Timer < diff)
+        if (infernoTimer < diff)
         {
             AddSpellToCast(HeroicMode ? H_SPELL_INFERNO : SPELL_INFERNO, CAST_SELF);
             ChangeTarget();
 
-            inferno_Timer = 10000;
+            infernoTimer = 10000;
         }
         else
-            inferno_Timer -= diff;
+            infernoTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
