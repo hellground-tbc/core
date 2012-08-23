@@ -1156,9 +1156,9 @@ void mob_ashtongue_channelerAI::OnAuraRemove(Aura *aura, bool stackRemove)
     }
 }
 
-struct HELLGROUND_DLL_DECL npc_akamaAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_akamaAI : public Scripted_NoMovementAI
 {
-    npc_akamaAI(Creature* c) : ScriptedAI(c), m_summons(me)
+    npc_akamaAI(Creature* c) : Scripted_NoMovementAI(c), m_summons(me)
     {
         instance = (ScriptedInstance *)c->GetInstanceData();
         ShadeGUID = instance ? instance->GetData64(DATA_SHADEOFAKAMA) : 0;
