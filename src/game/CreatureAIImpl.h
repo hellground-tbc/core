@@ -564,6 +564,8 @@ inline bool CreatureAI::UpdateVictim()
         me->SetReactState(REACT_PASSIVE);
         return false;
     }
+    else if (me->IsInEvadeMode())
+        return false;
 
     return true;
 }
