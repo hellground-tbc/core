@@ -4160,12 +4160,11 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
     //HACK restore Alchemist stone aura
     Item * item = NULL;
-    if (!HasAura(17619, 0) && (
-        (item = HasEquiped(13503)) ||
+    if ((item = HasEquiped(13503)) ||
         (item = HasEquiped(35751)) ||
         (item = HasEquiped(35748)) ||
         (item = HasEquiped(35750)) ||
-        (item = HasEquiped(35749))))
+        (item = HasEquiped(35749)))
         CastSpell(this, 17619, true, item);
 
     UpdateZone(GetZoneId());
@@ -19458,10 +19457,10 @@ void Player::UpdateZoneDependentAuras(uint32 newZone)
         uint32 spellid = 0;
         // all horde races
         if (GetTeam() == HORDE)
-            spellid = getGender() == GENDER_FEMALE ? 35481 : 35480;
+            spellid = (getGender() == GENDER_FEMALE ? 35481 : 35480);
         // and some alliance races
         else if (getRace() == RACE_NIGHTELF || getRace() == RACE_DRAENEI)
-            spellid = getGender() == GENDER_FEMALE ? 35483 : 35482;
+            spellid = (getGender() == GENDER_FEMALE ? 35483 : 35482);
 
         if (spellid && !HasAura(spellid,0))
             CastSpell(this,spellid,true);

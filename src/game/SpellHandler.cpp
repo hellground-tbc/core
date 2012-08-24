@@ -317,6 +317,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     sLog.outDebug("WORLD: got cast spell packet, spellId - %u, cast_count: %u data length = %i",
         spellId, cast_count, recvPacket.size());
 
+    // can't use our own spells when we're in possession of another unit,
+    if (_player->isPossessing())
+        return;
+
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
 
     if (!spellInfo)
@@ -326,15 +330,11 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // not have spell or spell passive and not casted by client
-    if (!_player->HasSpell (spellId) || SpellMgr::IsPassiveSpell(spellId))
+    if (!_player->HasSpell(spellId) || SpellMgr::IsPassiveSpell(spellId))
     {
         //cheater? kick? ban?
         return;
     }
-
-    // can't use our own spells when we're in possession of another unit,
-    if (_player->isPossessing())
-        return;
 
     // client provided targets
     SpellCastTargets targets;
