@@ -241,22 +241,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
     MovementInfo oldMovementInfo = pPlayer->m_movementInfo;
 
-    // No fall damage cheat
-    if (oldMovementInfo.GetMovementFlags() & (MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR))
-    {
-        if (oldMovementInfo.GetFallTime() == 357)
-        {
-            pPlayer->m_AC_NoFall_count ++;
-            // falltime = 357 <--- WEH  No Fall Damage Cheat
-            sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible no fall damage cheat. MapId: %u, falltime: %u, coords old: %f, %f, %f,coords new: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
-                       pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), oldMovementInfo.GetFallTime(), oldMovementInfo.pos.x, oldMovementInfo.pos.y, oldMovementInfo.pos.z, movementInfo.pos.x, movementInfo.pos.y, movementInfo.pos.z, movementInfo.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
-
-            //pPlayer->Kill(pPlayer, true);
-            if (!(pPlayer->m_AC_NoFall_count % 5))
-                sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName(), pPlayer->GetName(), pPlayer->m_AC_NoFall_count);
-        }
-    }
-
     //Save movement flags
     pPlayer->SetUnitMovementFlags(movementInfo.GetMovementFlags());
 
@@ -313,6 +297,22 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
     if (sWorld.getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && sWorld.m_ac.activated())
     {
+        // No fall damage cheat
+        if (oldMovementInfo.GetMovementFlags() & (MOVEFLAG_FALLING | MOVEFLAG_FALLINGFAR))
+        {
+            if (oldMovementInfo.GetFallTime() == 357)
+            {
+                pPlayer->m_AC_NoFall_count ++;
+                // falltime = 357 <--- WEH  No Fall Damage Cheat
+                sLog.outCheat("Player %s (GUID: %u / ACCOUNT_ID: %u) - possible no fall damage cheat. MapId: %u, falltime: %u, coords old: %f, %f, %f,coords new: %f, %f, %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
+                           pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), pPlayer->GetMapId(), oldMovementInfo.GetFallTime(), oldMovementInfo.pos.x, oldMovementInfo.pos.y, oldMovementInfo.pos.z, movementInfo.pos.x, movementInfo.pos.y, movementInfo.pos.z, movementInfo.GetMovementFlags(), m_latency, pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+
+                //pPlayer->Kill(pPlayer, true);
+                if (!(pPlayer->m_AC_NoFall_count % 5))
+                    sWorld.SendGMText(LANG_ANTICHEAT_NOFALLDMG, pPlayer->GetName(), pPlayer->GetName(), pPlayer->m_AC_NoFall_count);
+            }
+        }
+
         if (!pPlayer->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !pPlayer->isGameMaster() && pPlayer->m_AC_timer == 0 && recv_data.GetOpcode() != MSG_MOVE_SET_FACING)
             sWorld.m_ac.execute(new ACRequest(pPlayer, oldMovementInfo, movementInfo));
     }
@@ -328,11 +328,16 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     pPlayer->m_movementInfo = movementInfo;
     pPlayer->UpdateFallInformationIfNeed(movementInfo, recv_data.GetOpcode());
 
+    uint32 interruptFlags = 0;
+
     if (pPlayer->isMoving())
-        pPlayer->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_NOT_SEATED);
+        interruptFlags |= AURA_INTERRUPT_FLAG_MOVE;
 
     if (pPlayer->isTurning())
-        pPlayer->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING | AURA_INTERRUPT_FLAG_NOT_SEATED);
+        interruptFlags |= AURA_INTERRUPT_FLAG_TURNING;
+
+    if (interruptFlags)
+        pPlayer->RemoveAurasWithInterruptFlags(interruptFlags | AURA_INTERRUPT_FLAG_NOT_SEATED);
 
     pPlayer->HandleFallUnderMap(movementInfo.GetPos()->z);
 }
