@@ -1022,8 +1022,29 @@ void GameObject::Use(Unit* user)
             return;
         }
         case GAMEOBJECT_TYPE_TRAP:                          // 6
-            SetLootState(GO_JUST_DEACTIVATED); // It's a dummy fix.
+        {
+            GameObjectInfo const* info = GetGOInfo();
+
+            if (!info)
+                return;
+
+            LockEntry const *lockInfo = sLockStore.LookupEntry(info->trap.lockId);
+
+            if (!lockInfo)
+                return;
+
+            for (int j = 0; j < MAX_LOCK_CASE; ++j)
+            {
+                if ((lockInfo->Type[j] == LOCK_KEY_SKILL)
+                    && ((LockType(lockInfo->Index[j])) == LOCKTYPE_DISARM_TRAP))
+                {
+                    SetLootState(GO_JUST_DEACTIVATED);
+                    break;
+                }
+            }
+
             return;
+        }
         case GAMEOBJECT_TYPE_CHAIR:                         // 7
         {
             GameObjectInfo const* info = GetGOInfo();

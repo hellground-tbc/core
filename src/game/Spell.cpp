@@ -5628,7 +5628,7 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
 
     bool reqKey = false;                                    // some locks not have reqs
 
-    for (int j = 0; j < 8; ++j)
+    for (int j = 0; j < MAX_LOCK_CASE; ++j)
     {
         switch (lockInfo->Type[j])
         {
