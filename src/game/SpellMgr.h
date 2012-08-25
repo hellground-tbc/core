@@ -753,7 +753,8 @@ class HELLGROUND_DLL_SPEC SpellMgr
         static bool IsPrimaryProfessionSkill(uint32 skill);
         static bool IsProfessionSkill(uint32 skill);
 
-        static bool EffectCanScaleWithLevel(const SpellEntry * spellInfo, uint8 eff);
+        static bool EffectCanScaleWithLevel(const SpellEntry* spellInfo, uint8 eff);
+        static bool CanSpellCrit(const SpellEntry* spellInfo);
 
         static SpellEntry const *GetHighestSpellRankForPlayer(uint32, Player*);
 

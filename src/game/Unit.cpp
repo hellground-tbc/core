@@ -8451,8 +8451,11 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
         if (Unit* owner = GetOwner())
             return owner->isSpellCrit(pVictim, spellProto, schoolMask, attackType);
 
-    // not critting spell
-    if (IS_CREATURE_GUID(GetGUID()) || spellProto->AttributesEx2 & SPELL_ATTR_EX2_CANT_CRIT)
+    if (!SpellMgr::CanSpellCrit(spellProto))
+        return false;
+
+    // creatures can't crit with spells
+    if (IS_CREATURE_GUID(GetGUID()))
         return false;
 
     float baseChance = 0.0f;

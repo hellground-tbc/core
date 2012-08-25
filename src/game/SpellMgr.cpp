@@ -3972,3 +3972,25 @@ bool SpellMgr::EffectCanScaleWithLevel(const SpellEntry * spellInfo, uint8 eff)
 
     return true;
 }
+
+bool SpellMgr::CanSpellCrit(const SpellEntry* spellInfo)
+{
+    if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_CANT_CRIT)
+        return false;
+
+    for (uint8 eff=0; eff<3; ++eff)
+        switch(spellInfo->Effect[eff])
+        {
+            case SPELL_EFFECT_HEAL:
+            case SPELL_EFFECT_HEALTH_LEECH:
+            case SPELL_EFFECT_HEAL_MECHANICAL:
+            case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+            case SPELL_EFFECT_SCHOOL_DAMAGE:
+            case SPELL_EFFECT_WEAPON_DAMAGE:
+            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+                return true;
+        }
+
+    return false;
+}
