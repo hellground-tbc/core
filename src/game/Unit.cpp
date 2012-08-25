@@ -6726,6 +6726,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
 
              RemoveAurasDueToSpell(37658);
              target = pVictim;
+
+             cooldown = 0;
          }
          break;
      }
@@ -7463,6 +7465,9 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     // dead units can neither attack nor be attacked
     if (!isAlive() || !victim->IsInWorld() || !victim->isAlive())
+        return false;
+
+    if (victim->hasUnitState(UNIT_STAT_IGNORE_ATTACKERS))
         return false;
 
     // do not attack players when controlling Vengeful Spirit (with Possess Spirit Immune aura)

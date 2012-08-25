@@ -106,6 +106,7 @@ void HostilReference::addThreat(float pMod)
     // if the link was cut before relink it again
     if (!isOnline())
         updateOnlineStatus();
+
     if (pMod != 0.0f)
     {
         ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, pMod);

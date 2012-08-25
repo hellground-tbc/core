@@ -4855,7 +4855,7 @@ void Spell::EffectTaunt(uint32 /*i*/)
         float myThreat = unitTarget->getThreatManager().getThreat(m_caster);
         float itsThreat = unitTarget->getThreatManager().getCurrentVictim()->getThreat();
         if (itsThreat > myThreat)
-            unitTarget->getThreatManager().addThreat(m_caster, itsThreat - myThreat);
+            unitTarget->AddThreat(m_caster, itsThreat - myThreat);
     }
 
     //Set aggro victim to caster

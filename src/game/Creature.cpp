@@ -2696,6 +2696,8 @@ RestoreReactState::RestoreReactState(Creature& owner) : BasicEvent(), _owner(own
     if (_owner.ToPet())
         return;
 
+    _owner.addUnitState(UNIT_STAT_IGNORE_ATTACKERS);
+
     _oldState = _owner.GetReactState();
     _owner.SetReactState(REACT_PASSIVE);
 }
@@ -2705,6 +2707,7 @@ bool RestoreReactState::Execute(uint64 e_time, uint32 p_time)
     if (_owner.ToPet())
         return true;
 
+    _owner.clearUnitState(UNIT_STAT_IGNORE_ATTACKERS);
     _owner.SetReactState(_oldState);
     return true;
 }
