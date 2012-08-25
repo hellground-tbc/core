@@ -35,8 +35,8 @@ void RotateMovementGenerator::Interrupt(Unit& unit)
 
 void RotateMovementGenerator::Initialize(Unit& owner)
 {
-    if (owner.hasUnitState(UNIT_STAT_MOVE))
-        owner.StopMoving();
+    //if (owner.hasUnitState(UNIT_STAT_MOVE))
+    //    owner.StopMoving();
 
     if (owner.getVictim())
         owner.SetInFront(owner.getVictim());

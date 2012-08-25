@@ -376,29 +376,29 @@ enum DeathState
 
 enum UnitState
 {
-    UNIT_STAT_DIED            = 0x00000001,
-    UNIT_STAT_MELEE_ATTACKING = 0x00000002,                     // player is melee attacking someone
-    //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                   // player is melee attack by someone
-    UNIT_STAT_STUNNED         = 0x00000008,
-    UNIT_STAT_ROAMING         = 0x00000010,
-    UNIT_STAT_CHASE           = 0x00000020,
-    //UNIT_STAT_SEARCHING       = 0x00000040,
-    UNIT_STAT_FLEEING         = 0x00000080,
-    UNIT_STAT_TAXI_FLIGHT     = 0x00000100,                     // player is in flight mode
-    UNIT_STAT_FOLLOW          = 0x00000200,
-    UNIT_STAT_ROOT            = 0x00000400,
-    UNIT_STAT_CONFUSED        = 0x00000800,
-    UNIT_STAT_DISTRACTED      = 0x00001000,
-    UNIT_STAT_ISOLATED        = 0x00002000,                     // area auras do not affect other players
-    UNIT_STAT_ATTACK_PLAYER   = 0x00004000,
-    UNIT_STAT_CASTING         = 0x00008000,
-    UNIT_STAT_POSSESSED       = 0x00010000,
-    UNIT_STAT_CHARGING        = 0x00020000,
-    UNIT_STAT_JUMPING         = 0x00040000,
-    UNIT_STAT_MOVE            = 0x00100000,
-    UNIT_STAT_ROTATING        = 0x00200000,
-    UNIT_STAT_CASTING_NOT_MOVE= 0x00400000,
-    UNIT_STAT_IGNORE_PATHFINDING= 0x00800000,
+    UNIT_STAT_DIED               = 0x00000001,        // unit is dead
+    UNIT_STAT_MELEE_ATTACKING    = 0x00000002,        // player is melee attacking someone
+    UNIT_STAT_IGNORE_ATTACKERS   = 0x00000004,        // unit will ignore all attackers and won't add them to threat list(NYI)
+    UNIT_STAT_STUNNED            = 0x00000008,        // unit is stunned
+    UNIT_STAT_ROAMING            = 0x00000010,        // unit is moving
+    UNIT_STAT_CHASE              = 0x00000020,        // unit is chasing someone
+    //UNIT_STAT_UNUSED           = 0x00000040,
+    UNIT_STAT_FLEEING            = 0x00000080,        // unit is feared
+    UNIT_STAT_TAXI_FLIGHT        = 0x00000100,        // player is flying using taxi mode
+    UNIT_STAT_FOLLOW             = 0x00000200,        // unit is following someone
+    UNIT_STAT_ROOT               = 0x00000400,        // unit is rooted
+    UNIT_STAT_CONFUSED           = 0x00000800,        // unit is disoriented
+    UNIT_STAT_DISTRACTED         = 0x00001000,        // unit is distracted
+    UNIT_STAT_ISOLATED           = 0x00002000,        // area auras do not affect other players
+    UNIT_STAT_ATTACK_PLAYER      = 0x00004000,        // unit is attacking a player
+    UNIT_STAT_CASTING            = 0x00008000,        // unit is casting a spell with cast time
+    UNIT_STAT_POSSESSED          = 0x00010000,        // unit is possessed
+    UNIT_STAT_CHARGING           = 0x00020000,        // unit is charging
+    //UNIT_STAT_UNUSED           = 0x00040000,
+    //UNIT_STAT_UNUSED           = 0x00100000,
+    UNIT_STAT_ROTATING           = 0x00200000,        // unit is rotating
+    UNIT_STAT_CASTING_NOT_MOVE   = 0x00400000,        // unit is casting a spell and can NOT move
+    UNIT_STAT_IGNORE_PATHFINDING = 0x00800000,        // unit won't generate path
 
     UNIT_STAT_CAN_NOT_MOVE    = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED),
     UNIT_STAT_LOST_CONTROL    = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
@@ -407,7 +407,7 @@ enum UnitState
     UNIT_STAT_NOT_MOVE        = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
     UNIT_STAT_CANNOT_AUTOATTACK = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING | UNIT_STAT_CASTING_NOT_MOVE),
     UNIT_STAT_CANNOT_TURN     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING),
-    UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_TAXI_FLIGHT)
+    UNIT_STAT_ALL_STATE       = 0xffffffff
 };
 
 enum UnitStandStateType

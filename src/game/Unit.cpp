@@ -507,8 +507,6 @@ void Unit::SendMonsterStop()
     data << WorldTimer::getMSTime();
     data << uint8(1);
     SendMessageToSet(&data, true);
-
-    clearUnitState(UNIT_STAT_MOVE);
 }
 
 void Unit::UpdateSplineMovement(uint32 t_diff)
