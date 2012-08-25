@@ -30,6 +30,8 @@
 
 void HomeMovementGenerator<Creature>::Initialize(Creature & owner)
 {
+    owner.addUnitState(UNIT_STAT_IGNORE_ATTACKERS);
+
     _setTargetLocation(owner);
 }
 
@@ -45,7 +47,7 @@ void HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
     Movement::MoveSplineInit init(owner);
     float x, y, z, o;
 
-    // at apply we can select more nice return points base at current movegen
+    // at apply we can select more nice return points base at current move generator
     owner.GetHomePosition(x, y, z, o);
 
     init.SetFacing(o);
@@ -66,6 +68,8 @@ bool HomeMovementGenerator<Creature>::Update(Creature &owner, const uint32& time
 
 void HomeMovementGenerator<Creature>::Finalize(Creature& owner)
 {
+    owner.clearUnitState(UNIT_STAT_IGNORE_ATTACKERS);
+
     if (arrived)
     {
         owner.SetWalk(true);
