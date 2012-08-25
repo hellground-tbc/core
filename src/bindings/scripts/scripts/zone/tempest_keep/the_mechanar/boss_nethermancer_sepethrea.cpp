@@ -89,6 +89,7 @@ struct HELLGROUND_DLL_DECL boss_nethermancer_sepethreaAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
         pInstance->SetData(DATA_NETHERMANCER_EVENT, DONE);
+        summons.DespawnAll();
     }
 
     void JustSummoned(Creature * summoned)
