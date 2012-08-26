@@ -4024,16 +4024,8 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
             continue;
 
         bool sameCaster = Aur->GetCasterGUID() == (*i).second->GetCasterGUID();
-        if (sSpellMgr.IsNoStackSpellDueToSpell(spellId, i_spellId, sameCaster))
+        if (SpellMgr::IsNoStackSpellDueToSpell(spellId, i_spellId, sameCaster))
         {
-            //some spells should be not removed by lower rank of them (totem, paladin aura)
-/*            if (!sameCaster
-                &&(spellProto->Effect[effIndex]==SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
-                &&(spellProto->DurationIndex==21)
-                &&(sSpellMgr.IsRankSpellDueToSpell(spellProto, i_spellId))
-                &&(CompareAuraRanks(spellId, effIndex, i_spellId, i_effIndex) < 0))
-                return false;*/     // is this needed ? Oo
-
             // Its a parent aura (create this aura in ApplyModifier)
             if ((*i).second->IsInUse())
             {
@@ -6825,7 +6817,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         if (SpellMgr::IsPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellProto()->Id)
             continue;
 
-        if (sSpellMgr.IsNoStackSpellDueToSpell(trigger_spell_id, (*i).second->GetSpellProto()->Id, ((*i).second->GetCasterGUID() == GetGUID())))
+        if (SpellMgr::IsNoStackSpellDueToSpell(trigger_spell_id, (*i).second->GetSpellProto()->Id, ((*i).second->GetCasterGUID() == GetGUID())))
             return false;
     }
 

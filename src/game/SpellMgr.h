@@ -423,29 +423,11 @@ class HELLGROUND_DLL_SPEC SpellMgr
         // Accessors (const or static functions)
     public:
         // Spell affects
-        uint64 GetSpellAffectMask(uint16 spellId, uint8 effectId) const
-        {
-            SpellAffectMap::const_iterator itr = mSpellAffectMap.find((spellId<<8) + effectId);
-            if (itr != mSpellAffectMap.end())
-                return itr->second;
-            return 0;
-        }
+        uint64 GetSpellAffectMask(uint16 spellId, uint8 effectId) const;
 
         bool IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const;
 
-        bool IsPositionTarget(uint32 target)
-        {
-            switch (SpellTargetType[target])
-            {
-                case TARGET_TYPE_DEST_CASTER:
-                case TARGET_TYPE_DEST_TARGET:
-                case TARGET_TYPE_DEST_DEST:
-                    return true;
-                default:
-                    break;
-            }
-            return false;
-        }
+        bool IsPositionTarget(uint32 target);
 
         SpellElixirMap const& GetSpellElixirMap() const { return mSpellElixirs; }
 
@@ -573,10 +555,11 @@ class HELLGROUND_DLL_SPEC SpellMgr
         }
 
         bool IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
+
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
-        bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
-        bool IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
-        bool IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
+        static bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster);
+        static bool IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true);
+        static bool IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true);
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 

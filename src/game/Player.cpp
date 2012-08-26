@@ -2963,7 +2963,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         newspell.state = state;
         newspell.disabled = disabled;
 
-        // replace spells in action bars and spellbook to bigger rank if only one spell rank must be accessible
+        // replace spells in action bars and spell book to bigger rank if only one spell rank must be accessible
         if (newspell.active && !newspell.disabled && !SpellMgr::canStackSpellRanks(spellInfo) && sSpellMgr.GetSpellRank(spellInfo->Id) != 0)
         {
             for (PlayerSpellMap::iterator itr2 = m_spells.begin(); itr2 != m_spells.end(); ++itr2)

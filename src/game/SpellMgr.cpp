@@ -517,7 +517,7 @@ SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
         }
         case SPELLFAMILY_PALADIN:
         {
-            if (IsSealSpell(spellInfo))
+            if (SpellMgr::IsSealSpell(spellInfo))
                 return SPELL_SEAL;
 
             if (spellInfo->SpellFamilyFlags & 0x10000180LL)
@@ -536,7 +536,7 @@ SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
         }
         case SPELLFAMILY_SHAMAN:
         {
-            if (IsElementalShield(spellInfo))
+            if (SpellMgr::IsElementalShield(spellInfo))
                 return SPELL_ELEMENTAL_SHIELD;
 
             break;
@@ -1790,7 +1790,7 @@ bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
     if (spellInfo->powerType != POWER_MANA && spellInfo->powerType != POWER_HEALTH)
         return false;
 
-    if (IsProfessionSpell(spellInfo->Id))
+    if (SpellMgr::IsProfessionSpell(spellInfo->Id))
         return false;
 
     // All stance spells. if any better way, change it.
@@ -1814,7 +1814,7 @@ bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
     return true;
 }
 
-bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const
+bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster)
 {
     //if(spellId_1 == spellId_2) // auras due to the same spell
     //    return false;
@@ -1824,18 +1824,18 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     if (!spellInfo_1 || !spellInfo_2)
         return false;
 
-    if (IsSpecialStackCase(spellInfo_1, spellInfo_2, sameCaster))
+    if (SpellMgr::IsSpecialStackCase(spellInfo_1, spellInfo_2, sameCaster))
         return false;
 
-    if (IsSpecialNoStackCase(spellInfo_1, spellInfo_2, sameCaster))
+    if (SpellMgr::IsSpecialNoStackCase(spellInfo_1, spellInfo_2, sameCaster))
         return true;
 
     SpellSpecific spellId_spec_1 = SpellMgr::GetSpellSpecific(spellId_1);
     SpellSpecific spellId_spec_2 = SpellMgr::GetSpellSpecific(spellId_2);
     if (spellId_spec_1 && spellId_spec_2)
-        if (IsSingleFromSpellSpecificPerTarget(spellId_spec_1, spellId_spec_2)
-            ||(IsSingleFromSpellSpecificPerCaster(spellId_spec_1, spellId_spec_2) && sameCaster) ||
-            (IsSingleFromSpellSpecificRanksPerTarget(spellId_spec_1, spellId_spec_2) && IsRankSpellDueToSpell(spellInfo_1, spellId_spec_2)))
+        if (SpellMgr::IsSingleFromSpellSpecificPerTarget(spellId_spec_1, spellId_spec_2)
+            ||(SpellMgr::IsSingleFromSpellSpecificPerCaster(spellId_spec_1, spellId_spec_2) && sameCaster) ||
+            (SpellMgr::IsSingleFromSpellSpecificRanksPerTarget(spellId_spec_1, spellId_spec_2) && sSpellMgr.IsRankSpellDueToSpell(spellInfo_1, spellId_spec_2)))
             return true;
 
     // spells with different specific always stack
@@ -1885,13 +1885,9 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
                 }
     }
 
-//    not needed now because we compare effects last rank of spells
-//    if (spellInfo_1->SpellFamilyName && IsRankSpellDueToSpell(spellInfo_1, spellId_2))
-//        return true;
-
     //use data of highest rank spell(needed for spells which ranks have different effects)
-    spellInfo_1=sSpellStore.LookupEntry(GetLastSpellInChain(spellId_1));
-    spellInfo_2=sSpellStore.LookupEntry(GetLastSpellInChain(spellId_2));
+    spellInfo_1=sSpellStore.LookupEntry(sSpellMgr.GetLastSpellInChain(spellId_1));
+    spellInfo_2=sSpellStore.LookupEntry(sSpellMgr.GetLastSpellInChain(spellId_2));
 
     //if spells have exactly the same effect they cannot stack
     for (uint32 i = 0; i < 3; ++i)
@@ -1903,7 +1899,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     return true;
 }
 
-bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur) const
+bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur)
 {
     // put here all spells that should stack, but accoriding to rules in method IsNoStackSpellDueToSpell don't stack
     uint32 spellId_1 = spellInfo_1->Id;
@@ -1941,12 +1937,12 @@ bool SpellMgr::IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry cons
         return true;
 
     if (recur)
-        return IsSpecialStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
+        return SpellMgr::IsSpecialStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
 
     return false;
 }
 
-bool SpellMgr::IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur) const
+bool SpellMgr::IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur)
 {
     // put here all spells that should NOT stack, but accoriding to rules in method IsNoStackSpellDueToSpell stack
 
@@ -1956,7 +1952,7 @@ bool SpellMgr::IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry co
         return true;
 
     if (recur)
-        return IsSpecialNoStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
+        return SpellMgr::IsSpecialNoStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
 
     return false;
 }
@@ -1972,7 +1968,7 @@ bool SpellMgr::IsProfessionSpell(uint32 spellId)
 
     uint32 skill = spellInfo->EffectMiscValue[1];
 
-    return IsProfessionSkill(skill);
+    return SpellMgr::IsProfessionSkill(skill);
 }
 
 bool SpellMgr::IsPrimaryProfessionSpell(uint32 spellId)
@@ -1986,12 +1982,12 @@ bool SpellMgr::IsPrimaryProfessionSpell(uint32 spellId)
 
     uint32 skill = spellInfo->EffectMiscValue[1];
 
-    return IsPrimaryProfessionSkill(skill);
+    return SpellMgr::IsPrimaryProfessionSkill(skill);
 }
 
 bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
 {
-    return IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
+    return SpellMgr::IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
 }
 
 bool SpellMgr::IsSplashBuffAura(SpellEntry const* spellInfo)
@@ -2017,13 +2013,13 @@ bool SpellMgr::IsSplashBuffAura(SpellEntry const* spellInfo)
 SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const
 {
     // ignore passive spells
-    if (IsPassiveSpell(spellInfo->Id))
+    if (SpellMgr::IsPassiveSpell(spellInfo->Id))
         return spellInfo;
 
     bool needRankSelection = false;
     for (int i=0;i<3;i++)
     {
-        if (IsPositiveEffect(spellInfo->Id, i) && (
+        if (SpellMgr::IsPositiveEffect(spellInfo->Id, i) && (
             spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA ||
             spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PARTY
            ))
@@ -3626,7 +3622,7 @@ bool SpellMgr::IsElementalShield( SpellEntry const *spellInfo )
 
 bool SpellMgr::IsPassiveSpellStackableWithRanks( SpellEntry const* spellProto )
 {
-    if (!IsPassiveSpell(spellProto))
+    if (!SpellMgr::IsPassiveSpell(spellProto))
         return false;
 
     return !spellProto->HasEffect(SPELL_EFFECT_APPLY_AURA);
@@ -3670,6 +3666,7 @@ bool SpellMgr::IsAreaAuraEffect( uint32 effect )
         effect == SPELL_EFFECT_APPLY_AREA_AURA_PET      ||
         effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER)
         return true;
+
     return false;
 }
 
@@ -3689,8 +3686,9 @@ bool SpellMgr::IsDispelSpell( SpellEntry const *spellInfo )
     if (spellInfo->Effect[0] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF ||
         spellInfo->Effect[1] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF ||
         spellInfo->Effect[2] == SPELL_EFFECT_STEAL_BENEFICIAL_BUFF
-        ||IsDispel(spellInfo))
+        || SpellMgr::IsDispel(spellInfo))
         return true;
+
     return false;
 }
 
@@ -3756,7 +3754,7 @@ bool SpellMgr::IsPrimaryProfessionSkill( uint32 skill )
 
 bool SpellMgr::IsProfessionSkill( uint32 skill )
 {
-    return  IsPrimaryProfessionSkill(skill) || skill == SKILL_FISHING || skill == SKILL_COOKING || skill == SKILL_FIRST_AID;
+    return SpellMgr::IsPrimaryProfessionSkill(skill) || skill == SKILL_FISHING || skill == SKILL_COOKING || skill == SKILL_FIRST_AID;
 }
 
 DiminishingGroup SpellMgr::GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered)
@@ -3940,7 +3938,7 @@ bool SpellMgr::SpellIgnoreLOS(SpellEntry const* spellproto, uint8 effIdx)
     if (spellproto->AttributesEx2 & SPELL_ATTR_EX2_IGNORE_LOS)
         return true;
 
-    if (IsSplashBuffAura(spellproto))
+    if (SpellMgr::IsSplashBuffAura(spellproto))
         return true;
 
     // Most QuestItems should ommit los ;]
@@ -3992,5 +3990,27 @@ bool SpellMgr::CanSpellCrit(const SpellEntry* spellInfo)
                 return true;
         }
 
+    return false;
+}
+
+uint64 SpellMgr::GetSpellAffectMask(uint16 spellId, uint8 effectId) const
+{
+    SpellAffectMap::const_iterator itr = mSpellAffectMap.find((spellId<<8) + effectId);
+    if (itr != mSpellAffectMap.end())
+        return itr->second;
+    return 0;
+}
+
+bool SpellMgr::IsPositionTarget(uint32 target)
+{
+    switch (SpellTargetType[target])
+    {
+    case TARGET_TYPE_DEST_CASTER:
+    case TARGET_TYPE_DEST_TARGET:
+    case TARGET_TYPE_DEST_DEST:
+        return true;
+    default:
+        break;
+    }
     return false;
 }
