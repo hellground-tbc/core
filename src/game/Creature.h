@@ -470,7 +470,7 @@ class HELLGROUND_DLL_SPEC Creature : public Unit
 
         bool CanWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool CanSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
-        bool CanFly()  const { return GetCreatureInfo()->InhabitType & INHABIT_AIR; }
+        bool CanFly()  const;
 
         void SetWalk(bool enable);
         void SetLevitate(bool enable);

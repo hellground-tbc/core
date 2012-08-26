@@ -2652,6 +2652,12 @@ bool Creature::CanReactToPlayerOnTaxi()
     }
 }
 
+bool Creature::CanFly() const
+{
+    return GetCreatureInfo()->InhabitType & INHABIT_AIR || IsLevitating();
+}
+
+
 bool AttackResumeEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
     if (!m_owner.isAlive())
