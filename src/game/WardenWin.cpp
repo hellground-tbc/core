@@ -404,7 +404,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
                 if (Mem_Result != 0)
                 {
-                    sLog.outWarden("RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", *itr, Client->GetAccountId());
+                    //sLog.outWarden("RESULT MEM_CHECK not 0x00, CheckId %u account Id %u", *itr, Client->GetAccountId());
                     //found = true;
                     continue;
                 }
@@ -438,6 +438,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
                     found = true;
                     buff.rpos(buff.rpos() + rd->Length);
+					sLog.outWarden("RESULT MEM_CHECK passed CheckId %u account Id %u", *itr, Client->GetAccountId());
                     continue;
                 }
 
