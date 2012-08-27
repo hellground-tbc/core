@@ -438,7 +438,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
                     found = true;
                     buff.rpos(buff.rpos() + rd->Length);
-					sLog.outWarden("RESULT MEM_CHECK passed CheckId %u account Id %u", *itr, Client->GetAccountId());
                     continue;
                 }
 
