@@ -156,7 +156,7 @@ void PlayerMenu::SendGossipMenu(uint32 TitleTextId, uint64 npcGUID)
         data << int32(pQuest->GetQuestLevel());
 
         int loc_idx = pSession->GetSessionDbLocaleIndex();
-        std::string title = pQuest->GetTitle();
+        std::string title = pQuest->GetName();
 
         sObjectMgr.GetQuestLocaleStrings(questID, loc_idx, &title);
 
@@ -338,7 +338,7 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
         if (Quest const *pQuest = sObjectMgr.GetQuestTemplate(questID))
         {
             int loc_idx = pSession->GetSessionDbLocaleIndex();
-            std::string title = pQuest->GetTitle();
+            std::string title = pQuest->GetName();
             sObjectMgr.GetQuestLocaleStrings(questID, loc_idx, &title);
 
             data << uint32(questID);
@@ -365,7 +365,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const *pQuest, uint64 npcGUID,
 {
     WorldPacket data(SMSG_QUESTGIVER_QUEST_DETAILS, 100);   // guess size
 
-    std::string Title      = pQuest->GetTitle();
+    std::string Title      = pQuest->GetName();
     std::string Details    = pQuest->GetDetails();
     std::string Objectives = pQuest->GetObjectives();
     std::string EndText    = pQuest->GetEndText();
@@ -455,7 +455,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const *pQuest)
 {
     std::string Title,Details,Objectives,EndText;
     std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
-    Title = pQuest->GetTitle();
+    Title = pQuest->GetName();
     Details = pQuest->GetDetails();
     Objectives = pQuest->GetObjectives();
     EndText = pQuest->GetEndText();
@@ -574,7 +574,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const *pQuest)
 
 void PlayerMenu::SendQuestGiverOfferReward(Quest const* pQuest, uint64 npcGUID, bool EnbleNext)
 {
-    std::string Title = pQuest->GetTitle();
+    std::string Title = pQuest->GetName();
     std::string OfferRewardText = pQuest->GetOfferRewardText();
 
     int loc_idx = pSession->GetSessionDbLocaleIndex();
@@ -661,7 +661,7 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const *pQuest, uint64 npcGUID,
     // We can always call to RequestItems, but this packet only goes out if there are actually
     // items.  Otherwise, we'll skip straight to the OfferReward
 
-    std::string Title = pQuest->GetTitle();
+    std::string Title = pQuest->GetName();
     std::string RequestItemsText = pQuest->GetRequestItemsText();
 
     int loc_idx = pSession->GetSessionDbLocaleIndex();

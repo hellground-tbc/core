@@ -33,7 +33,7 @@ void InstanceData::SaveToDB()
     static SqlStatementID updateInstance;
 
     SqlStatement stmt = RealmDataDatabase.CreateStatement(updateInstance, "UPDATE instance SET data = ? WHERE id = ?");
-    stmt.addString(data)
+    stmt.addString(data);
     stmt.addUInt32(instance->GetInstanceId());
     stmt.Execute();
 }

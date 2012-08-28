@@ -175,6 +175,8 @@ class HELLGROUND_DLL_SPEC Object
             return m_uint32Values[ index ];
         }
 
+        std::string GetUInt32ValuesString() const;
+
         const uint64& GetUInt64Value(uint16 index) const
         {
             ASSERT(index + 1 < m_valuesCount || PrintIndexError(index , false));
