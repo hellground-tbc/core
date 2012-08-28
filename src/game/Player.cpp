@@ -15948,7 +15948,7 @@ void Player::SaveToDB()
     _SaveSpellCooldowns();
     _SaveActions();
     _SaveAuras();
-    m_reputationMgr.SaveToDB();
+    m_reputationMgr.SaveToDB(false);
 
     RealmDataDatabase.CommitTransaction();
 
