@@ -1010,7 +1010,8 @@ void AuctionEntry::DeleteFromDB() const
 void AuctionEntry::SaveToDB() const
 {
     static SqlStatementID saveAuction;
-    SqlStatement stmt = RealmDataDatabase.CreateStatement(saveAuction, "INSERT INTO auctionhouse (id,houseid,itemguid,item_template,item_count,item_randompropertyid,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(saveAuction, "INSERT INTO auctionhouse (id,houseid,itemguid,item_template,item_count,item_randompropertyid,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) "
+                                                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt32(Id);
     stmt.addUInt32(auctionHouseEntry->houseId);

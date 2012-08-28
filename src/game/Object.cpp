@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include <sstream>
+
 #include "Common.h"
 #include "SharedDefines.h"
 #include "WorldPacket.h"
@@ -592,7 +594,7 @@ void Object::_SetUpdateBits(UpdateMask *updateMask, Player* /*target*/) const
         if (m_uint32Values_mirror[index]!= m_uint32Values[index])
             updateMask->SetBit(index);
     }
-    
+
     if (GetTypeId() == TYPEID_PLAYER)
         updateMask->SetBit(UNIT_FIELD_BYTES_2);
 }
@@ -880,6 +882,15 @@ bool Object::PrintIndexError(uint32 index, bool set) const
 
     // assert must fail after function call
     return false;
+}
+
+std::string Object::GetUInt32ValuesString() const
+{
+    std::ostringstream ss;
+    for (uint16 i = 0; i < m_valuesCount; ++i)
+        ss << GetUInt32Value(i) << " ";
+
+    return ss.str();
 }
 
 WorldObject::WorldObject()

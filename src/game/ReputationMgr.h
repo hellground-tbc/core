@@ -60,7 +60,7 @@ class HELLGROUND_DLL_SPEC ReputationMgr
         explicit ReputationMgr(Player* owner) : m_player(owner) {}
         ~ReputationMgr() {}
 
-        void SaveToDB();
+        void SaveToDB(bool transaction = true);
         void LoadFromDB(QueryResultAutoPtr result);
     public:                                                 // statics
         static const int32 PointsInRank[MAX_REPUTATION_RANK];

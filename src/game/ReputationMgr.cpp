@@ -466,24 +466,28 @@ void ReputationMgr::LoadFromDB(QueryResultAutoPtr result)
     }
 }
 
-void ReputationMgr::SaveToDB()
+void ReputationMgr::SaveToDB(bool transaction)
 {
-//    static SqlStatementID delRep;
-//    static SqlStatementID insRep;
+    static SqlStatementID delRep;
+    static SqlStatementID insRep;
 
-//    SqlStatement stmtDel = CharacterDatabase.CreateStatement(delRep, "DELETE FROM character_reputation WHERE guid = ? AND faction=?");
-//    SqlStatement stmtIns = CharacterDatabase.CreateStatement(insRep, "INSERT INTO character_reputation (guid,faction,standing,flags) VALUES (?, ?, ?, ?)");
+    if (transaction)
+        RealmDataDatabase.BeginTransaction();
 
     for (FactionStateList::iterator itr = m_factions.begin(); itr != m_factions.end(); ++itr)
     {
         if (itr->second.needSave)
         {
-            RealmDataDatabase.PExecute("REPLACE INTO character_reputation (guid, faction, standing, flags) VALUES ('%u', '%u', '%i', '%u')", m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(delRep, "DELETE FROM character_reputation WHERE guid = ? AND faction = ?");
+            stmt.PExecute(m_player->GetGUIDLow(), itr->second.ID);
 
-//            stmtDel.PExecute(m_player->GetGUIDLow(), itr->second.ID);
-//            stmtIns.PExecute(m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
+            stmt = RealmDataDatabase.CreateStatement(insRep, "INSERT INTO character_reputation (guid,faction,standing,flags) VALUES (?, ?, ?, ?)");
+            stmt.PExecute(m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
 
             itr->second.needSave = false;
         }
     }
+
+    if (transaction)
+        RealmDataDatabase.CommitTransaction();
 }
