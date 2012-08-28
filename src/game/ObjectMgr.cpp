@@ -2798,7 +2798,7 @@ void ObjectMgr::LoadQuests()
     //   17          18            19           20           21           22              23                24         25            26
         "QuestFlags, SpecialFlags, CharTitleId, PrevQuestId, NextQuestId, ExclusiveGroup, NextQuestInChain, SrcItemId, SrcItemCount, SrcSpell,"
     //   27     28       29          30               31                32       33              34              35              36
-        "Title, Details, Objectives, OfferRewardText, RequestItemsText, EndText, ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4,"
+        "Name, Details, Objectives, OfferRewardText, RequestItemsText, EndText, ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4,"
     //   37          38          39          40          41             42             43             44
         "ReqItemId1, ReqItemId2, ReqItemId3, ReqItemId4, ReqItemCount1, ReqItemCount2, ReqItemCount3, ReqItemCount4,"
     //   45            46            47            48            49               50               51               52               53             54             54             55

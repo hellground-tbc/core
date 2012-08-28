@@ -30,8 +30,12 @@ void InstanceData::SaveToDB()
     if (data.empty())
         return;
 
-    RealmDataDatabase.escape_string(data);
-    RealmDataDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
+    static SqlStatementID updateInstance;
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(updateInstance, "UPDATE instance SET data = ? WHERE id = ?");
+    stmt.addString(data)
+    stmt.addUInt32(instance->GetInstanceId());
+    stmt.Execute();
 }
 
 void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)

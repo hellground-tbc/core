@@ -108,7 +108,8 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
     sLog.outDebug("InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d", mapId, instanceId);
 
     save = new InstanceSave(mapId, instanceId, difficulty, resetTime, canReset);
-    if (!load) save->SaveToDB();
+    if (!load)
+        save->SaveToDB();
 
     m_instanceSaveById[instanceId] = save;
     return save;
@@ -179,7 +180,15 @@ void InstanceSave::SaveToDB()
         }
     }
 
-    RealmDataDatabase.PExecute("INSERT INTO instance VALUES ('%u', '%u', '"UI64FMTD"', '%u', '%s')", m_instanceid, GetMapId(), (uint64)GetResetTimeForDB(), GetDifficulty(), data.c_str());
+    static SqlStatementID insertInstance;
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(insertInstance, "INSERT INTO instance VALUES (?, ?, ?, ?, ?)");
+    stmt.addUInt32(m_instanceid);
+    stmt.addUInt32(GetMapId());
+    stmt.addUInt64(uint64(GetResetTimeForDB()));
+    stmt.addUInt8(GetDifficulty());
+    stmt.addString(data);
+    stmt.Execute();
 }
 
 time_t InstanceSave::GetResetTimeForDB()
@@ -526,6 +535,8 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
         Group *group = *(gList.begin());
         group->UnbindInstance(itr->second->GetMapId(), itr->second->GetDifficulty(), true);
     }
+
+    RealmDataDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceid = '%u'", itr->second->GetInstanceId());
 
     delete itr->second;
     m_instanceSaveById.erase(itr++);

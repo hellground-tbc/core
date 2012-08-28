@@ -2926,9 +2926,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
             {
                 if (il->Title.size() > loc_idx && !il->Title[loc_idx].empty())
                 {
-                    std::string title = il->Title[loc_idx];
+                    std::string name = il->Title[loc_idx];
 
-                    if (Utf8FitTo(title, wnamepart))
+                    if (Utf8FitTo(name, wnamepart))
                     {
                         char const* statusStr = "";
 
@@ -2948,9 +2948,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                         }
 
                         if (m_session)
-                            PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),title.c_str(),statusStr);
+                            PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),name.c_str(),statusStr);
                         else
-                            PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
+                            PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),name.c_str(),statusStr);
                         ++counter;
                         continue;
                     }
@@ -2958,11 +2958,11 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
             }
         }
 
-        std::string title = qinfo->GetTitle();
-        if (title.empty())
+        std::string name = qinfo->GetName();
+        if (name.empty())
             continue;
 
-        if (Utf8FitTo(title, wnamepart))
+        if (Utf8FitTo(name, wnamepart))
         {
             char const* statusStr = "";
 
@@ -2982,9 +2982,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
             }
 
             if (m_session)
-                PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),title.c_str(),statusStr);
+                PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),name.c_str(),statusStr);
             else
-                PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
+                PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),name.c_str(),statusStr);
 
             ++counter;
         }

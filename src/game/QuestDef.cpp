@@ -51,7 +51,7 @@ Quest::Quest(Field * questRecord)
     SrcItemId = questRecord[24].GetUInt32();
     SrcItemCount = questRecord[25].GetUInt32();
     SrcSpell = questRecord[26].GetUInt32();
-    Title = questRecord[27].GetCppString();
+    Name = questRecord[27].GetCppString();
     Details = questRecord[28].GetCppString();
     Objectives = questRecord[29].GetCppString();
     OfferRewardText = questRecord[30].GetCppString();
