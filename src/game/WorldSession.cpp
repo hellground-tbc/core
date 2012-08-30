@@ -344,7 +344,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     if (RecordSessionTimeDiff(" WorldSession:Update: warden. Accid %u ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
         overtime = true;
 
-    if (overtime)
+    if (overtime && !GetPlayer()->isGameMaster())
     {
         switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
         {
