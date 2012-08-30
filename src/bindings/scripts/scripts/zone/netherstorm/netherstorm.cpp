@@ -1406,8 +1406,8 @@ struct HELLGROUND_DLL_DECL npc_maxx_a_million_escortAI : public npc_escortAI
                     case 2:
                         if (GameObject* pGO = FindGameObject(GO_DRAENEI_MACHINE, INTERACTION_DISTANCE, m_creature))
                         {
-                            if (Player* pPlayer = GetPlayerForEscort())
-                                pGO->DestroyForPlayer(GetPlayerForEscort());
+                           // if (Player* pPlayer = GetPlayerForEscort())
+                                //pGO->DestroyForPlayer(GetPlayerForEscort());
                             m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_AT_EASE);
                         }
                         break;

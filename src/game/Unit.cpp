@@ -511,11 +511,12 @@ void Unit::SendMonsterStop()
 
 void Unit::UpdateSplineMovement(uint32 t_diff)
 {
-    enum{
+    enum
+    {
         POSITION_UPDATE_DELAY = 400,
     };
 
-    if (movespline->Finalized())
+    if (IsStopped())
         return;
 
     movespline->updateState(t_diff);
@@ -533,7 +534,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
         if (GetTypeId() == TYPEID_PLAYER)
             ToPlayer()->SetPosition(loc.x,loc.y,loc.z,loc.orientation);
         else
-            GetMap()->CreatureRelocation((Creature*)this,loc.x,loc.y,loc.z,loc.orientation);
+            Unit::SetPosition(loc.x,loc.y,loc.z,loc.orientation);
     }
 }
 
@@ -11385,21 +11386,26 @@ bool Unit::SetPosition(float x, float y, float z, float orientation, bool telepo
     bool turn = (GetOrientation() != orientation);
     bool relocated = (teleport || GetPositionX() != x || GetPositionY() != y || GetPositionZ() != z);
 
-    if (turn)
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
-
+    SpellAuraInterruptFlags interruptFlags;
     if (relocated)
     {
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE);
+        interruptFlags = SpellAuraInterruptFlags(interruptFlags | AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_NOT_SEATED);
 
         // move and update visible state if need
         if (GetTypeId() == TYPEID_PLAYER)
-            GetMap()->PlayerRelocation((Player*)this, x, y, z, orientation);
+            GetMap()->PlayerRelocation(ToPlayer(), x, y, z, orientation);
         else
-            GetMap()->CreatureRelocation((Creature*)this, x, y, z, orientation);
+            GetMap()->CreatureRelocation(ToCreature(), x, y, z, orientation);
     }
-    else if (turn)
+    
+    if (turn)
+    {
+        interruptFlags = SpellAuraInterruptFlags(interruptFlags | AURA_INTERRUPT_FLAG_TURNING | AURA_INTERRUPT_FLAG_NOT_SEATED);
         SetOrientation(orientation);
+    }
+
+    if (interruptFlags)
+        RemoveAurasWithInterruptFlags(interruptFlags);
 
     return (relocated || turn);
 }

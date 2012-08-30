@@ -516,7 +516,7 @@ bool go_panther_cage(Player* pPlayer, GameObject* pGo)
     {
         if (Creature* panther = GetClosestCreatureWithEntry(pGo, ENRAGED_PANTHER, 5))
         {
-            pGo->DestroyForPlayer(pPlayer);
+            //pGo->DestroyForPlayer(pPlayer);
             panther->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
             panther->SetReactState(REACT_AGGRESSIVE);
             panther->AI()->AttackStart(pPlayer);

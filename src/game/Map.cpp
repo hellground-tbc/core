@@ -690,9 +690,9 @@ void Map::ProcessRelocationNotifies(const uint32 & diff)
 void Map::SendObjectUpdates()
 {
     UpdateDataMapType update_players;
-    for (std::set<Object*>::const_iterator it = i_objectsToClientUpdate.begin();it!= i_objectsToClientUpdate.end();++it)
+    for (ObjectSet::const_iterator it = i_objectsToClientUpdate.begin(); it != i_objectsToClientUpdate.end(); ++it)
     {
-        if (*it && (*it)->IsInWorld())
+        if ((*it)->IsInWorld())
             (*it)->BuildUpdate(update_players);
     }
 
@@ -703,6 +703,7 @@ void Map::SendObjectUpdates()
     {
         if (iter->second.BuildPacket(&packet))
             iter->first->GetSession()->SendPacket(&packet);
+
         packet.clear();                                     // clean the string
     }
 }
@@ -774,6 +775,7 @@ void Map::Remove(T *obj, bool remove)
     obj->RemoveFromWorld();
     if (obj->isActiveObject())
         RemoveFromActive(obj);
+
     obj->UpdateObjectVisibility(true);
     RemoveFromGrid(obj,grid,cell);
 
@@ -782,14 +784,13 @@ void Map::Remove(T *obj, bool remove)
         // if option set then object already saved at this moment
         if (!sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
             obj->SaveRespawnTime();
+
         DeleteFromWorld(obj);
     }
 }
 
-void Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)
+void Map::PlayerRelocation(Player* player, float x, float y, float z, float orientation)
 {
-    assert(player);
-
     CellPair old_val = Hellground::ComputeCellPair(player->GetPositionX(), player->GetPositionY());
     CellPair new_val = Hellground::ComputeCellPair(x, y);
 
@@ -815,7 +816,7 @@ void Map::PlayerRelocation(Player *player, float x, float y, float z, float orie
         AddToGrid(player, newGrid,new_cell);
     }
 
-    player->UpdateObjectVisibility(false);
+    player->UpdateObjectVisibility();
 }
 
 void Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
@@ -829,18 +830,11 @@ void Map::CreatureRelocation(Creature *creature, float x, float y, float z, floa
 
     // delay creature move for grid/cell to grid/cell moves
     if (old_cell.DiffCell(new_cell) || old_cell.DiffGrid(new_cell))
-    {
-        #ifdef HELLGROUND_DEBUG
-        if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            sLog.outDebug("Creature (GUID: %u Entry: %u) added to moving list from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", creature->GetGUIDLow(), creature->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
         AddCreatureToMoveList(creature,x,y,z,ang);
-        // in diffcell/diffgrid case notifiers called at finishing move creature in Map::MoveAllCreaturesInMoveList
-    }
     else
     {
         creature->Relocate(x, y, z, ang);
-        creature->UpdateObjectVisibility(false);
+        creature->UpdateObjectVisibility();
     }
     assert(CheckGridIntegrity(creature,true));
 }
@@ -859,8 +853,10 @@ void Map::MoveAllCreaturesInMoveList()
     {
         // get data and remove element;
         CreatureMoveList::iterator iter = i_creaturesToMove.begin();
+
         Creature* c = iter->first;
         CreatureMover cm = iter->second;
+
         i_creaturesToMove.erase(iter);
 
         // calculate cells
@@ -872,22 +868,14 @@ void Map::MoveAllCreaturesInMoveList()
         {
             // update pos
             c->Relocate(cm.x, cm.y, cm.z, cm.ang);
-            //CreatureRelocationNotify(c,new_cell,new_cell.cellPair());
-            c->UpdateObjectVisibility(false);
+            c->UpdateObjectVisibility();
         }
         else
         {
-            // if creature can't be move in new cell/grid (not loaded) move it to repawn cell/grid
+            // if creature can't be moved to new cell/grid (not loaded) move it to respawn cell/grid
             // creature coordinates will be updated and notifiers send
             if (!CreatureRespawnRelocation(c))
-            {
-                // ... or unload (if respawn grid also not loaded)
-                #ifdef HELLGROUND_DEBUG
-                if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                    sLog.outDebug("Creature (GUID: %u Entry: %u) can't be move to unloaded respawn grid.",c->GetGUIDLow(),c->GetEntry());
-                #endif
                 AddObjectToRemoveList(c);
-            }
         }
     }
 }
@@ -895,66 +883,39 @@ void Map::MoveAllCreaturesInMoveList()
 bool Map::CreatureCellRelocation(Creature *c, Cell new_cell)
 {
     Cell const& old_cell = c->GetCurrentCell();
-    if (!old_cell.DiffGrid(new_cell))                       // in same grid
+    // same grid
+    if (!old_cell.DiffGrid(new_cell))
     {
-        // if in same cell then none do
+        // different cell
         if (old_cell.DiffCell(new_cell))
         {
-            #ifdef HELLGROUND_DEBUG
-            if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                sLog.outDebug("Creature (GUID: %u Entry: %u) moved in grid[%u,%u] from cell[%u,%u] to cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.CellX(), new_cell.CellY());
-            #endif
-
             RemoveFromGrid(c,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
             AddToGrid(c,getNGrid(new_cell.GridX(), new_cell.GridY()),new_cell);
         }
-        else
-        {
-            #ifdef HELLGROUND_DEBUG
-            if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-                sLog.outDebug("Creature (GUID: %u Entry: %u) move in same grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY());
-            #endif
-        }
-
         return true;
     }
 
-    // in diff. grids but active creature
+    // different grid and active creature
     if (c->isActiveObject())
     {
         EnsureGridLoadedAtEnter(new_cell);
 
-        #ifdef HELLGROUND_DEBUG
-        if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            sLog.outDebug("Active creature (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
-
         RemoveFromGrid(c,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
         AddToGrid(c,getNGrid(new_cell.GridX(), new_cell.GridY()),new_cell);
-
         return true;
     }
 
-    // in diff. loaded grid normal creature
+    // different grid and non-active creature
     if (loaded(GridPair(new_cell.GridX(), new_cell.GridY())))
     {
-        #ifdef HELLGROUND_DEBUG
-        if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-            sLog.outDebug("Creature (GUID: %u Entry: %u) moved from grid[%u,%u]cell[%u,%u] to grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-        #endif
+        EnsureGridCreated(GridPair(new_cell.GridX(), new_cell.GridY()));
 
         RemoveFromGrid(c,getNGrid(old_cell.GridX(), old_cell.GridY()),old_cell);
-        EnsureGridCreated(GridPair(new_cell.GridX(), new_cell.GridY()));
         AddToGrid(c,getNGrid(new_cell.GridX(), new_cell.GridY()),new_cell);
-
         return true;
     }
 
-    // fail to move: normal creature attempt move to unloaded grid
-    #ifdef HELLGROUND_DEBUG
-    if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-        sLog.outDebug("Creature (GUID: %u Entry: %u) attempt move from grid[%u,%u]cell[%u,%u] to unloaded grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-    #endif
+    // fail to move: normal creature attempted to move to unloaded grid
     return false;
 }
 
@@ -968,18 +929,13 @@ bool Map::CreatureRespawnRelocation(Creature *c)
 
     c->CombatStop();
 
-    #ifdef HELLGROUND_DEBUG
-    if ((sLog.getLogFilter() & LOG_FILTER_CREATURE_MOVES)==0)
-        sLog.outDebug("Creature (GUID: %u Entry: %u) will moved from grid[%u,%u]cell[%u,%u] to respawn grid[%u,%u]cell[%u,%u].", c->GetGUIDLow(), c->GetEntry(), c->GetCurrentCell().GridX(), c->GetCurrentCell().GridY(), c->GetCurrentCell().CellX(), c->GetCurrentCell().CellY(), resp_cell.GridX(), resp_cell.GridY(), resp_cell.CellX(), resp_cell.CellY());
-    #endif
-
     // teleport it to respawn point (like normal respawn if player see)
     if (CreatureCellRelocation(c,resp_cell))
     {
         c->Relocate(resp_x, resp_y, resp_z, resp_o);
         c->GetUnitStateMgr().InitDefaults(true);
         c->GetMotionMaster()->Initialize();
-        //CreatureRelocationNotify(c,resp_cell,resp_cell.cellPair());
+
         c->UpdateObjectVisibility(false);
         return true;
     }
@@ -1075,28 +1031,6 @@ bool Map::CheckGridIntegrity(Creature* c, bool moved) const
 const char* Map::GetMapName() const
 {
     return i_mapEntry ? i_mapEntry->name[sWorld.GetDefaultDbcLocale()] : "UNNAMEDMAP\x0";
-}
-
-void Map::UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair)
-{
-    cell.SetNoCreate();
-    Hellground::VisibleChangesNotifier notifier(*obj);
-    TypeContainerVisitor<Hellground::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
-    cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityDistance(obj));
-}
-
-void Map::UpdateObjectsVisibilityFor(Player* player, Cell cell, CellPair cellpair)
-{
-    Hellground::VisibleNotifier notifier(*player);
-
-    cell.SetNoCreate();
-    TypeContainerVisitor<Hellground::VisibleNotifier, WorldTypeMapContainer > world_notifier(notifier);
-    TypeContainerVisitor<Hellground::VisibleNotifier, GridTypeMapContainer  > grid_notifier(notifier);
-    cell.Visit(cellpair, world_notifier, *this, *player, GetVisibilityDistance());
-    cell.Visit(cellpair, grid_notifier,  *this, *player, GetVisibilityDistance());
-
-    // send data
-    notifier.SendToSelf();
 }
 
 void Map::SendInitSelf(Player * player)
@@ -3226,4 +3160,45 @@ bool Map::WaypointMovementPathfinding() const
         return sWorld.getConfig(CONFIG_WAYPOINT_MOVEMENT_ACTIVE_IN_INSTANCES);
     else
         return sWorld.getConfig(CONFIG_WAYPOINT_MOVEMENT_ACTIVE_ON_CONTINENTS);
+}
+
+bool Map::CanUnload(uint32 diff)
+{
+    if (!m_unloadTimer)
+        return false;
+
+    if (m_unloadTimer <= diff)
+        return true;
+
+    m_unloadTimer -= diff;
+    return false;
+}
+
+bool Map::IsRemovalGrid(float x, float y) const
+{
+    GridPair p = Hellground::ComputeGridPair(x, y);
+    return(!getNGrid(p.x_coord, p.y_coord) || getNGrid(p.x_coord, p.y_coord)->GetGridState() == GRID_STATE_REMOVAL);
+}
+
+bool Map::IsLoaded(float x, float y) const
+{
+    GridPair p = Hellground::ComputeGridPair(x, y);
+    return loaded(p);
+}
+
+void Map::ResetGridExpiry(NGridType &grid, float factor /*= 1*/) const
+{
+    grid.ResetTimeTracker((time_t)((float)i_gridExpiry*factor));
+}
+
+bool Map::GetEntrancePos( int32 &mapid, float &x, float &y )
+{
+    if (!i_mapEntry)
+        return false;
+    if (i_mapEntry->entrance_map < 0)
+        return false;
+    mapid = i_mapEntry->entrance_map;
+    x = i_mapEntry->entrance_x;
+    y = i_mapEntry->entrance_y;
+    return true;
 }
