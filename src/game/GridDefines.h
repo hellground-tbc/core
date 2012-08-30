@@ -33,6 +33,22 @@ class GameObject;
 class Pet;
 class Player;
 
+enum GridMapLiquidStatus
+{
+    LIQUID_MAP_NO_WATER     = 0x00000000,
+    LIQUID_MAP_ABOVE_WATER  = 0x00000001,
+    LIQUID_MAP_WATER_WALK   = 0x00000002,
+    LIQUID_MAP_IN_WATER     = 0x00000004,
+    LIQUID_MAP_UNDER_WATER  = 0x00000008
+};
+
+struct GridMapLiquidData
+{
+    uint32 type;
+    float level;
+    float depth_level;
+};
+
 #ifdef LARGE_CELL
 #define MAX_NUMBER_OF_CELLS     8
 #else
@@ -61,32 +77,15 @@ class Player;
 #define MAP_SIZE                (SIZE_OF_GRIDS*MAX_NUMBER_OF_GRIDS)
 #define MAP_HALFSIZE            (MAP_SIZE/2)
 
-
-enum GridMapLiquidStatus
-{
-    LIQUID_MAP_NO_WATER     = 0x00000000,
-    LIQUID_MAP_ABOVE_WATER  = 0x00000001,
-    LIQUID_MAP_WATER_WALK   = 0x00000002,
-    LIQUID_MAP_IN_WATER     = 0x00000004,
-    LIQUID_MAP_UNDER_WATER  = 0x00000008
-};
-
-struct GridMapLiquidData
-{
-    uint32 type;
-    float level;
-    float depth_level;
-};
-
 // Creature used instead pet to simplify *::Visit templates (not required duplicate code for Creature->Pet case)
 typedef TYPELIST_4(Player, Creature/*pets*/, Corpse/*resurrectable*/, DynamicObject/*farsight target*/) AllWorldObjectTypes;
 typedef TYPELIST_4(GameObject, Creature/*except pets*/, DynamicObject, Corpse/*Bones*/) AllGridObjectTypes;
 
-typedef GridRefManager<Corpse>          CorpseMapType;
-typedef GridRefManager<Creature>        CreatureMapType;
-typedef GridRefManager<DynamicObject>   DynamicObjectMapType;
-typedef GridRefManager<GameObject>      GameObjectMapType;
-typedef GridRefManager<Player>          PlayerMapType;
+typedef GridRefManager<Corpse>        CorpseMapType;
+typedef GridRefManager<Creature>      CreatureMapType;
+typedef GridRefManager<DynamicObject> DynamicObjectMapType;
+typedef GridRefManager<GameObject>    GameObjectMapType;
+typedef GridRefManager<Player>        PlayerMapType;
 
 typedef Grid<Player, AllWorldObjectTypes,AllGridObjectTypes> GridType;
 typedef NGrid<MAX_NUMBER_OF_CELLS, Player, AllWorldObjectTypes, AllGridObjectTypes> NGridType;
@@ -157,7 +156,7 @@ typedef CoordPair<TOTAL_NUMBER_OF_CELLS_PER_MAP> CellPair;
 namespace Hellground
 {
     template<class RET_TYPE, int CENTER_VAL>
-        inline RET_TYPE Compute(float x, float y, float center_offset, float size)
+    inline RET_TYPE Compute(float x, float y, float center_offset, float size)
     {
         // calculate and store temporary values in double format for having same result as same mySQL calculations
         double x_offset = (double(x) - center_offset)/size;
@@ -206,5 +205,5 @@ namespace Hellground
         return IsValidMapCoord(x,y,z) && finite(o);
     }
 }
-#endif
 
+#endif

@@ -426,13 +426,26 @@ void Spell::FillTargetMap()
                             WorldObject* result = NULL;
 
                             Hellground::CannibalizeObjectCheck u_check(m_caster, max_range);
-                            Hellground::WorldObjectSearcher<Hellground::CannibalizeObjectCheck > searcher(result, u_check);
+                            Hellground::UnitSearcher<Hellground::CannibalizeObjectCheck > unit_searcher((Unit*&)result, u_check);
+                            Cell::VisitGridObjects(m_caster, unit_searcher, max_range);
 
-                            Cell::VisitGridObjects(m_caster, searcher, max_range);
+                            // little workaround after generalization :p
+                            for (uint8 c = 0; c < 2; ++c)
+                            {
+                                if (result)
+                                    break;
 
-                            if (!result)
-                                Cell::VisitWorldObjects(m_caster, searcher, max_range);
-
+                                switch (c)
+                                {
+                                    case 0:
+                                        Cell::VisitWorldObjects(m_caster, unit_searcher, max_range);
+                                        break;
+                                    case 1:
+                                        Hellground::ObjectSearcher<Corpse, Hellground::CannibalizeObjectCheck > corpse_searcher((Corpse*&)result, u_check);
+                                        Cell::VisitWorldObjects(m_caster, corpse_searcher, max_range);
+                                        break;
+                                }
+                            }
 
                             if (result)
                             {
@@ -1521,7 +1534,7 @@ void Spell::SearchAreaTarget(std::list<GameObject*> &goList, float radius, const
                 break;
 
             Hellground::AllGameObjectsWithEntryInGrid go_check(entry);
-            Hellground::GameObjectListSearcher<Hellground::AllGameObjectsWithEntryInGrid> go_search(goList, go_check);
+            Hellground::ObjectListSearcher<GameObject, Hellground::AllGameObjectsWithEntryInGrid> go_search(goList, go_check);
             Cell::VisitGridObjects(x, y, m_caster->GetMap(), go_search, radius);
             break;
         }
@@ -1562,7 +1575,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
                         if (i_spellST->second.targetEntry)
                         {
                             Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster,i_spellST->second.targetEntry,range);
-                            Hellground::GameObjectLastSearcher<Hellground::NearestGameObjectEntryInObjectRangeCheck> checker(p_GameObject,go_check);
+                            Hellground::ObjectLastSearcher<GameObject, Hellground::NearestGameObjectEntryInObjectRangeCheck> checker(p_GameObject,go_check);
 
                             Cell::VisitGridObjects(m_caster, checker, range);
 
@@ -1593,7 +1606,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
                         Creature *p_Creature = NULL;
 
                         Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range);
-                        Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(p_Creature, u_check);
+                        Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(p_Creature, u_check);
                         Cell::VisitAllObjects(m_caster, searcher, range);
 
                         if (p_Creature)
@@ -4889,7 +4902,7 @@ SpellCastResult Spell::CheckItems()
     {
         GameObject* ok = NULL;
         Hellground::GameObjectFocusCheck go_check(m_caster,m_spellInfo->RequiresSpellFocus);
-        Hellground::GameObjectSearcher<Hellground::GameObjectFocusCheck> checker(ok,go_check);
+        Hellground::ObjectSearcher<GameObject, Hellground::GameObjectFocusCheck> checker(ok,go_check);
 
         Cell::VisitGridObjects(m_caster, checker, m_caster->GetMap()->GetVisibilityDistance());
 

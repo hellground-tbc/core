@@ -1323,7 +1323,7 @@ Unit* CreatureEventAI::SelectLowestHpFriendly(float range, uint32 MinHPDiff)
 void CreatureEventAI::FindFriendlyCC(std::list<Creature*>& _list, float range)
 {
     Hellground::FriendlyCCedInRange u_check(m_creature, range);
-    Hellground::CreatureListSearcher<Hellground::FriendlyCCedInRange> searcher(_list, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::FriendlyCCedInRange> searcher(_list, u_check);
 
     Cell::VisitGridObjects(m_creature, searcher, range);
 }
@@ -1331,7 +1331,7 @@ void CreatureEventAI::FindFriendlyCC(std::list<Creature*>& _list, float range)
 void CreatureEventAI::FindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid)
 {
     Hellground::FriendlyMissingBuffInRange u_check(m_creature, range, spellid);
-    Hellground::CreatureListSearcher<Hellground::FriendlyMissingBuffInRange> searcher(_list, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::FriendlyMissingBuffInRange> searcher(_list, u_check);
 
     Cell::VisitGridObjects(m_creature,searcher, range);
 }

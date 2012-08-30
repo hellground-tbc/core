@@ -12738,7 +12738,7 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
             // for Creatures, grid search friendly units in radius
             std::list<Creature*> pList;
             Hellground::AllFriendlyCreaturesInGrid u_check(owner);
-            Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+            Hellground::ObjectListSearcher<Creature, Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
             Cell::VisitAllObjects(owner, searcher, radius);
 
             for (std::list<Creature*>::iterator i = pList.begin(); i != pList.end(); ++i)

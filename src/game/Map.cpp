@@ -1697,7 +1697,7 @@ void Map::ScriptsProcess()
                 int32 time_to_despawn = step.script->datalong2<5 ? 5 : (int32)step.script->datalong2;
 
                 Hellground::GameObjectWithDbGUIDCheck go_check(*summoner,step.script->datalong);
-                Hellground::GameObjectSearcher<Hellground::GameObjectWithDbGUIDCheck> checker(go,go_check);
+                Hellground::ObjectSearcher<GameObject, Hellground::GameObjectWithDbGUIDCheck> checker(go,go_check);
 
                 Cell::VisitGridObjects(summoner, checker, GetVisibilityDistance());
 
@@ -1752,7 +1752,7 @@ void Map::ScriptsProcess()
                 int32 time_to_close = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
 
                 Hellground::GameObjectWithDbGUIDCheck go_check(*caster,step.script->datalong);
-                Hellground::GameObjectSearcher<Hellground::GameObjectWithDbGUIDCheck> checker(door,go_check);
+                Hellground::ObjectSearcher<GameObject, Hellground::GameObjectWithDbGUIDCheck> checker(door,go_check);
 
                 Cell::VisitGridObjects(caster, checker, GetVisibilityDistance());
 
@@ -1802,7 +1802,7 @@ void Map::ScriptsProcess()
                 int32 time_to_open = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
 
                 Hellground::GameObjectWithDbGUIDCheck go_check(*caster,step.script->datalong);
-                Hellground::GameObjectSearcher<Hellground::GameObjectWithDbGUIDCheck> checker(door,go_check);
+                Hellground::ObjectSearcher<GameObject, Hellground::GameObjectWithDbGUIDCheck> checker(door,go_check);
 
                 Cell::VisitGridObjects(caster, checker, GetVisibilityDistance());
 
@@ -2013,7 +2013,7 @@ void Map::ScriptsProcess()
                 {
                     //sLog.outDebug("Attempting to find Creature: Db GUID: %i", step.script->datalong);
                     Hellground::CreatureWithDbGUIDCheck target_check(((Unit*)source), step.script->datalong);
-                    Hellground::CreatureSearcher<Hellground::CreatureWithDbGUIDCheck> checker(target,target_check);
+                    Hellground::ObjectSearcher<Creature, Hellground::CreatureWithDbGUIDCheck> checker(target,target_check);
 
                     Cell::VisitGridObjects((Unit*)source, checker, GetVisibilityDistance());
                 }

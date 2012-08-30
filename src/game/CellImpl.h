@@ -47,20 +47,18 @@ inline CellArea Cell::CalculateCellArea(float x, float y, float radius)
     (
         Hellground::ComputeCellPair(x - radius, y - radius).normalize(),
         Hellground::ComputeCellPair(x + radius, y + radius).normalize()
-   );
+    );
 }
 
 template<class T, class CONTAINER>
-inline void
-Cell::Visit(const CellPair &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const WorldObject& obj, float radius) const
+inline void Cell::Visit(const CellPair &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const WorldObject& obj, float radius) const
 {
     Cell::Visit(standing_cell, visitor, m, obj.GetPositionX(), obj.GetPositionY(), radius + obj.GetObjectBoundingRadius());
 }
 
 
 template<class T, class CONTAINER>
-inline void
-Cell::Visit(const CellPair &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, float x, float y, float radius) const
+inline void Cell::Visit(const CellPair &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, float x, float y, float radius) const
 {
     if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         return;
@@ -121,8 +119,7 @@ Cell::Visit(const CellPair &standing_cell, TypeContainerVisitor<T, CONTAINER> &v
 }
 
 template<class T, class CONTAINER>
-inline void
-Cell::VisitCircle(TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const CellPair& begin_cell, const CellPair& end_cell) const
+inline void Cell::VisitCircle(TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const CellPair& begin_cell, const CellPair& end_cell) const
 {
     //here is an algorithm for 'filling' circum-squared octagon
     uint32 x_shift = (uint32)ceilf((end_cell.x_coord - begin_cell.x_coord) * 0.3f - 0.5f);
@@ -178,8 +175,10 @@ inline void Cell::VisitGridObjects(const WorldObject *center_obj, T &visitor, fl
 {
     CellPair p(Hellground::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
+
     if (dont_load)
         cell.SetNoCreate();
+
     TypeContainerVisitor<T, GridTypeMapContainer > gnotifier(visitor);
     cell.Visit(p, gnotifier, *center_obj->GetMap(), *center_obj, radius);
 }
@@ -189,8 +188,10 @@ inline void Cell::VisitWorldObjects(const WorldObject *center_obj, T &visitor, f
 {
     CellPair p(Hellground::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
+
     if (dont_load)
         cell.SetNoCreate();
+
     TypeContainerVisitor<T, WorldTypeMapContainer > gnotifier(visitor);
     cell.Visit(p, gnotifier, *center_obj->GetMap(), *center_obj, radius);
 }
@@ -200,8 +201,10 @@ inline void Cell::VisitAllObjects(const WorldObject *center_obj, T &visitor, flo
 {
     CellPair p(Hellground::ComputeCellPair(center_obj->GetPositionX(), center_obj->GetPositionY()));
     Cell cell(p);
+
     if (dont_load)
         cell.SetNoCreate();
+
     TypeContainerVisitor<T, GridTypeMapContainer > gnotifier(visitor);
     TypeContainerVisitor<T, WorldTypeMapContainer > wnotifier(visitor);
     cell.Visit(p, gnotifier, *center_obj->GetMap(), *center_obj, radius);
@@ -213,8 +216,10 @@ inline void Cell::VisitGridObjects(float x, float y, Map *map, T &visitor, float
 {
     CellPair p(Hellground::ComputeCellPair(x, y));
     Cell cell(p);
+
     if (dont_load)
         cell.SetNoCreate();
+
     TypeContainerVisitor<T, GridTypeMapContainer > gnotifier(visitor);
     cell.Visit(p, gnotifier, *map, x, y, radius);
 }
@@ -224,8 +229,10 @@ inline void Cell::VisitWorldObjects(float x, float y, Map *map, T &visitor, floa
 {
     CellPair p(Hellground::ComputeCellPair(x, y));
     Cell cell(p);
+
     if (dont_load)
         cell.SetNoCreate();
+
     TypeContainerVisitor<T, WorldTypeMapContainer > gnotifier(visitor);
     cell.Visit(p ,gnotifier, *map, x, y, radius);
 }
@@ -235,8 +242,10 @@ inline void Cell::VisitAllObjects(float x, float y, Map *map, T &visitor, float 
 {
     CellPair p(Hellground::ComputeCellPair(x, y));
     Cell cell(p);
+
     if (dont_load)
         cell.SetNoCreate();
+
     TypeContainerVisitor<T, GridTypeMapContainer > gnotifier(visitor);
     TypeContainerVisitor<T, WorldTypeMapContainer > wnotifier(visitor);
     cell.Visit(p, gnotifier, *map, x, y, radius);

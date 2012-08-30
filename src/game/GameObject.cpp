@@ -337,7 +337,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     // affect only players
                     Player* p_ok = NULL;
                     Hellground::AnyPlayerInObjectRangeCheck p_check(this, radius);
-                    Hellground::PlayerSearcher<Hellground::AnyPlayerInObjectRangeCheck>  checker(p_ok, p_check);
+                    Hellground::ObjectSearcher<Player, Hellground::AnyPlayerInObjectRangeCheck>  checker(p_ok, p_check);
 
                     Cell::VisitWorldObjects(this,checker, radius);
 
@@ -903,7 +903,7 @@ void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, Unit* target)
     {
         // using original GO distance
         Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*target, trapEntry, range);
-        Hellground::GameObjectLastSearcher<Hellground::NearestGameObjectEntryInObjectRangeCheck> checker(trapGO, go_check);
+        Hellground::ObjectLastSearcher<GameObject, Hellground::NearestGameObjectEntryInObjectRangeCheck> checker(trapGO, go_check);
 
         Cell::VisitGridObjects(this, checker, range);
     }
@@ -919,7 +919,7 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
     GameObject* ok = NULL;
 
     Hellground::NearestGameObjectFishingHole u_check(*this, range);
-    Hellground::GameObjectSearcher<Hellground::NearestGameObjectFishingHole> checker(ok, u_check);
+    Hellground::ObjectSearcher<GameObject, Hellground::NearestGameObjectFishingHole> checker(ok, u_check);
 
     Cell::VisitGridObjects(this, checker, range);
     return ok;

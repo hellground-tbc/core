@@ -51,174 +51,44 @@ Hellground::ObjectUpdater::Visit(CreatureMapType &m)
         }
 }
 
-// SEARCHERS & LIST SEARCHERS & WORKERS
-
-// WorldObject searchers & workers
-
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(GameObjectMapType &m)
+template<class T, class Check>
+void Hellground::ObjectSearcher<T, Check>::Visit(GridRefManager<T>& m)
 {
     // already found
-    if (i_object)
+    if (_object)
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if (i_check(itr->getSource()))
+        if (_check(itr->getSource()))
         {
-            i_object = itr->getSource();
+            _object = itr->getSource();
             return;
         }
     }
 }
 
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(PlayerMapType &m)
+template<class T, class Check>
+void Hellground::ObjectLastSearcher<T, Check>::Visit(GridRefManager<T>& m)
 {
-    // already found
-    if (i_object)
-        return;
-
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
+        if (_check(itr->getSource()))
+            _object = itr->getSource();
     }
 }
 
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(CreatureMapType &m)
+template<class T, class Check>
+void Hellground::ObjectListSearcher<T, Check>::Visit(GridRefManager<T>& m)
 {
-    // already found
-    if (i_object)
-        return;
-
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
+        if (_check(itr->getSource()))
+            _objects.push_back(itr->getSource());
     }
-}
-
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(CorpseMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
-{
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(CorpseMapType &m)
-{
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
-{
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-// Gameobject searchers
-
-template<class Check>
-void Hellground::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
-template<class Check>
-void Hellground::GameObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
-}
-
-template<class Check>
-void Hellground::GameObjectListSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
 }
 
 // Unit searchers
-
 template<class Check>
 void Hellground::UnitSearcher<Check>::Visit(CreatureMapType &m)
 {
@@ -289,68 +159,6 @@ void Hellground::UnitListSearcher<Check>::Visit(CreatureMapType &m)
             i_objects.push_back(itr->getSource());
 }
 
-// Creature searchers
-
-template<class Check>
-void Hellground::CreatureSearcher<Check>::Visit(CreatureMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
-template<class Check>
-void Hellground::CreatureLastSearcher<Check>::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
-}
-
-template<class Check>
-void Hellground::CreatureListSearcher<Check>::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::PlayerListSearcher<Check>::Visit(PlayerMapType &m)
-{
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::PlayerSearcher<Check>::Visit(PlayerMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
 template<class Builder>
 void Hellground::LocalizedPacketDo<Builder>::operator()( Player* p )
 {
@@ -376,5 +184,4 @@ void Hellground::LocalizedPacketDo<Builder>::operator()( Player* p )
     p->SendDirectMessage(data);
 }
 
-#endif                                                      // HELLGROUND_GRIDNOTIFIERSIMPL_H
-
+#endif

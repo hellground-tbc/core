@@ -2048,7 +2048,7 @@ void Creature::DoFleeToGetAssistance()
         Creature* pCreature = NULL;
 
         Hellground::NearestAssistCreatureInCreatureRangeCheck u_check(this, getVictim(), radius);
-        Hellground::CreatureLastSearcher<Hellground::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
+        Hellground::ObjectLastSearcher<Creature, Hellground::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
 
         Cell::VisitGridObjects(this, searcher, radius);
 
@@ -2097,7 +2097,7 @@ void Creature::CallAssistance()
             std::list<Creature*> assistList;
             {
                 Hellground::AnyAssistCreatureInRangeCheck u_check(this, getVictim(), radius);
-                Hellground::CreatureListSearcher<Hellground::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
+                Hellground::ObjectListSearcher<Creature, Hellground::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
 
                 Cell::VisitGridObjects(this, searcher, radius);
             }
@@ -2123,9 +2123,9 @@ void Creature::CallForHelp(float fRadius)
         return;
 
     Hellground::CallOfHelpCreatureInRangeDo u_do(this, getVictim(), fRadius);
-    Hellground::CreatureWorker<Hellground::CallOfHelpCreatureInRangeDo> worker(this, u_do);
+    Hellground::ObjectWorker<Creature, Hellground::CallOfHelpCreatureInRangeDo> worker(u_do);
 
-    Cell::VisitGridObjects(this,worker, fRadius);
+    Cell::VisitGridObjects(this, worker, fRadius);
 }
 
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /*= true*/) const

@@ -898,7 +898,7 @@ void Spell::EffectDummy(uint32 i)
                             // Handle associated GO - monstrous kaliri egg
                             GameObject* target = NULL;
                             Hellground::AllGameObjectsWithEntryInGrid go_check(185549);
-                            Hellground::GameObjectSearcher<Hellground::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
+                            Hellground::ObjectSearcher<GameObject, Hellground::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
 
                             // Find GO that matches this trigger:
                             Cell::VisitGridObjects(unitTarget, searcher, 3.0f);
@@ -1571,7 +1571,7 @@ void Spell::EffectDummy(uint32 i)
 
                     GameObject* ok = NULL;
                     Hellground::GameObjectFocusCheck go_check(plr,m_spellInfo->RequiresSpellFocus);
-                    Hellground::GameObjectSearcher<Hellground::GameObjectFocusCheck> checker(ok,go_check);
+                    Hellground::ObjectSearcher<GameObject, Hellground::GameObjectFocusCheck> checker(ok,go_check);
 
                     Cell::VisitGridObjects(plr, checker, plr->GetMap()->GetVisibilityDistance());
 
@@ -1809,7 +1809,7 @@ void Spell::EffectDummy(uint32 i)
                         {
                             Creature *pCreature = NULL;
                             Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_caster, LunarEntry[i], true, 7.0);
-                            Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+                            Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
                             Cell::VisitGridObjects(m_caster, searcher, 7.0);
 
                             if (pCreature)
@@ -2546,7 +2546,7 @@ void Spell::EffectTriggerSpell(uint32 i)
         {
             std::list<Creature*> pList;
             Hellground::AllCreaturesOfEntryInRange u_check(m_caster, 21633, 70.0f);
-            Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(pList, u_check);
+            Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(pList, u_check);
 
             Cell::VisitAllObjects(m_caster, searcher, 70.0f);
 

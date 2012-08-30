@@ -1355,7 +1355,7 @@ GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid
     {
         // search near player then
         Hellground::GameObjectWithDbGUIDCheck go_check(*pl,lowguid);
-        Hellground::GameObjectSearcher<Hellground::GameObjectWithDbGUIDCheck> checker(obj,go_check);
+        Hellground::ObjectSearcher<GameObject, Hellground::GameObjectWithDbGUIDCheck> checker(obj,go_check);
 
         Cell::VisitGridObjects(pl,checker, pl->GetMap()->GetVisibilityDistance());
     }

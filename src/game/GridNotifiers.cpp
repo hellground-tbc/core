@@ -412,8 +412,8 @@ void MessageDistDeliverer::VisitObject(Player* plr)
     }
 }
 
-template<class T> void
-ObjectUpdater::Visit(GridRefManager<T> &m)
+template<class T>
+void ObjectUpdater::Visit(GridRefManager<T> &m)
 {
     for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {

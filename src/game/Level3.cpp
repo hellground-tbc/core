@@ -5755,7 +5755,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
     }
 
     Hellground::RespawnDo u_do;
-    Hellground::WorldObjectWorker<Hellground::RespawnDo> worker(u_do);
+    Hellground::ObjectWorker<Creature, Hellground::RespawnDo> worker(u_do);
 
     Cell::VisitGridObjects(pl, worker, pl->GetMap()->GetVisibilityDistance());
     return true;
@@ -7168,7 +7168,7 @@ bool ChatHandler::HandleGameObjectGridCommand(const char* /*args*/)
 {
     std::list<GameObject*> tmpL;
     Hellground::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
-    Hellground::GameObjectListSearcher<Hellground::AllGameObjectsInRange> searcher(tmpL, go_check);
+    Hellground::ObjectListSearcher<GameObject, Hellground::AllGameObjectsInRange> searcher(tmpL, go_check);
 
     Cell::VisitGridObjects(m_session->GetPlayer(), searcher, 20.0f);
 
@@ -7382,7 +7382,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
     std::list<Creature*> creatureList;
 
     Hellground::AnyUnitInObjectRangeCheck go_check(m_session->GetPlayer(), radius);
-    Hellground::CreatureListSearcher<Hellground::AnyUnitInObjectRangeCheck> go_search(creatureList, go_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::AnyUnitInObjectRangeCheck> go_search(creatureList, go_check);
     // Get Creatures
     Cell::VisitGridObjects(m_session->GetPlayer(), go_search, radius);
 

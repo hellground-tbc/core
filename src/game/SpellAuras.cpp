@@ -7827,7 +7827,7 @@ void Aura::PeriodicDummyTick()
         {
             Creature* target = NULL;
             Hellground::AllCreaturesOfEntryInRange check(m_target, 27989, 10.0f);
-            Hellground::CreatureSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(target, check);
+            Hellground::ObjectSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(target, check);
             Cell::VisitAllObjects(m_target, searcher, 10.0f);
 
             if (target)
