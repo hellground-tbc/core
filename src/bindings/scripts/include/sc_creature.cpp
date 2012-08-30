@@ -975,7 +975,7 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder)
 
     Creature* target = NULL;
     Hellground::AllCreaturesOfEntryInRange check(Finder, entry, range);
-    Hellground::CreatureSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(target, check);
+    Hellground::ObjectSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(target, check);
 
     Cell::VisitAllObjects(Finder, searcher, range);
     return target;
@@ -987,7 +987,7 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
         return NULL;
     GameObject* target = NULL;
     Hellground::AllGameObjectsWithEntryInGrid go_check(entry);
-    Hellground::GameObjectSearcher<Hellground::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
+    Hellground::ObjectSearcher<GameObject, Hellground::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
     Cell::VisitGridObjects(Finder, searcher, range);
     return target;
 }
@@ -1096,7 +1096,7 @@ Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float 
 {
     Creature *pCreature = NULL;
     Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*pSource, Entry, alive, MaxSearchRange);
-    Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+    Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
     Cell::VisitGridObjects(pSource, searcher, MaxSearchRange);
     return pCreature;
@@ -1106,7 +1106,7 @@ GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, flo
 {
     GameObject *pGameObject = NULL;
     Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*source, entry, maxSearchRange);
-    Hellground::GameObjectLastSearcher<Hellground::NearestGameObjectEntryInObjectRangeCheck> searcher(pGameObject, go_check);
+    Hellground::ObjectLastSearcher<GameObject, Hellground::NearestGameObjectEntryInObjectRangeCheck> searcher(pGameObject, go_check);
 
     Cell::VisitGridObjects(source, searcher, maxSearchRange);
     return pGameObject;

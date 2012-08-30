@@ -410,7 +410,7 @@ bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* qu
         creature->GetPosition(x, y, z);
 
         Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*creature, 4962, true, 10);
-        Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
+        Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
 
         Cell::VisitGridObjects(creature, searcher, 10.0);
 

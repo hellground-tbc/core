@@ -155,7 +155,7 @@ struct HELLGROUND_DLL_DECL boss_nalorakkAI : public ScriptedAI
         m_creature->GetPosition(x, y, z);
         {
             Hellground::AllFriendlyCreaturesInGrid check(m_creature);
-            Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> searcher(templist, check);
+            Hellground::ObjectListSearcher<Creature, Hellground::AllFriendlyCreaturesInGrid> searcher(templist, check);
 
             Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         }

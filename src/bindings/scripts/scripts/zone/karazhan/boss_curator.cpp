@@ -111,8 +111,8 @@ struct HELLGROUND_DLL_DECL boss_curatorAI : public ScriptedAI
 
         if (!evocating && m_creature->GetPower(POWER_MANA) <= 1000)
         {
-            evocating = true
-            ForceSpellToCastWithScriptText(SPELL_EVOCATION, CAST_SELF, SAY_EVOCATE);
+            evocating = true;
+            ForceSpellCastWithScriptText(SPELL_EVOCATION, CAST_SELF, SAY_EVOCATE);
         }
 
         if (!enraged && !evocating)
@@ -158,7 +158,7 @@ struct HELLGROUND_DLL_DECL boss_curatorAI : public ScriptedAI
 
         if (berserkTimer < diff)
         {
-            ForceSpellCastWithScriptText(SPELL_BERSERK, CAST_SELF, SAY_ENRAGE)
+            ForceSpellCastWithScriptText(SPELL_BERSERK, CAST_SELF, SAY_ENRAGE);
             berserkTimer = 60000;
         }
         else

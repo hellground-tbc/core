@@ -1169,7 +1169,7 @@ struct npc_letollAI : public npc_escortAI
         me->GetPosition(x, y, z);
 
         Hellground::AllCreaturesOfEntryInRange check(me, NPC_RESEARCHER, 25);
-        Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(m_lResearchersList, check);
+        Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(m_lResearchersList, check);
         Cell::VisitGridObjects(me, searcher, 25);
 
         if (!m_lResearchersList.empty())

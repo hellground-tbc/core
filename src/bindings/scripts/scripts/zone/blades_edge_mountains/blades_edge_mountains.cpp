@@ -442,7 +442,7 @@ struct HELLGROUND_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
     {
         Player *pPlayer = NULL;
         Hellground::AnyPlayerInObjectRangeCheck p_check(m_creature, 3.0f);
-        Hellground::PlayerSearcher<Hellground::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
+        Hellground::ObjectSearcher<Player, Hellground::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
 
         Cell::VisitAllObjects(m_creature, searcher, 3.0f);
         return pPlayer;
@@ -943,7 +943,7 @@ struct npc_simon_bunnyAI : public ScriptedAI
 
         std::list<GameObject*> ClusterList;
         Hellground::AllGameObjectsInRange objects(me, searchDistance);
-        Hellground::GameObjectListSearcher<Hellground::AllGameObjectsInRange> searcher(ClusterList, objects);
+        Hellground::ObjectListSearcher<GameObject, Hellground::AllGameObjectsInRange> searcher(ClusterList, objects);
         Cell::VisitGridObjects(me, searcher, searchDistance);
 
         for (std::list<GameObject*>::const_iterator i = ClusterList.begin(); i != ClusterList.end(); ++i)

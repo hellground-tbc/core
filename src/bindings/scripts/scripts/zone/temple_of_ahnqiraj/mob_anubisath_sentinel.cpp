@@ -169,7 +169,7 @@ struct HELLGROUND_DLL_DECL aqsentinelAI : public ScriptedAI
         std::list<Creature*> assistList;
 
         NearbyAQSentinel u_check(nears);
-        Hellground::CreatureListSearcher<NearbyAQSentinel> searcher(assistList, u_check);
+        Hellground::ObjectListSearcher<Creature, NearbyAQSentinel> searcher(assistList, u_check);
         Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
 
         for(std::list<Creature*>::iterator iter = assistList.begin(); iter != assistList.end(); ++iter)

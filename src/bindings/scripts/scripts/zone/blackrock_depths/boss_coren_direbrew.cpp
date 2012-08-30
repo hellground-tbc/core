@@ -40,7 +40,7 @@ struct HELLGROUND_DLL_DECL boss_coren_direbrewAI : public ScriptedAI
 
         std::list<Creature*> antagonistList;
         Hellground::AllCreaturesOfEntryInRange check(me, NPC_DARK_IRON_ANTAGONIST, 100);
-        Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(antagonistList, check);
+        Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(antagonistList, check);
 
         Cell::VisitGridObjects(me, searcher, 100);
 
@@ -165,7 +165,7 @@ struct HELLGROUND_DLL_DECL direbrew_starter_triggerAI : public ScriptedAI
 
                 std::list<Creature*> antagonistList;
                 Hellground::AllCreaturesOfEntryInRange check(me, NPC_DARK_IRON_ANTAGONIST, 100);
-                Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(antagonistList, check);
+                Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(antagonistList, check);
 
                 Cell::VisitGridObjects(me, searcher, 100);
 

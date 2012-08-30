@@ -860,7 +860,7 @@ bool ChatHandler::HandleGetPoolObjectStatsCommand(const char *args)
 
     std::list<GameObject*> pList;
     Hellground::AllGameObjectsWithEntryInGrid u_check(entry);
-    Hellground::GameObjectListSearcher<Hellground::AllGameObjectsWithEntryInGrid> searcher(pList, u_check);
+    Hellground::ObjectListSearcher<GameObject, Hellground::AllGameObjectsWithEntryInGrid> searcher(pList, u_check);
     Cell::VisitAllObjects(m_session->GetPlayer(), searcher, range, false);
 
     UNORDERED_MAP<uint16, uint32> map_unspawned;

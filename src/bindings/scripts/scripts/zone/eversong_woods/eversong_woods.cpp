@@ -551,7 +551,7 @@ bool GOUse_go_second_trial(Player *player, GameObject* _GO)
     // find spawn :: master_kelerun_bloodmourn
     Creature* event_controller = NULL;
     Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*_GO, MASTER_KELERUN_BLOODMOURN, true, 30);
-    Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(event_controller, u_check);
+    Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(event_controller, u_check);
     Cell::VisitGridObjects(player, searcher,30.0);
 
     if ( event_controller )

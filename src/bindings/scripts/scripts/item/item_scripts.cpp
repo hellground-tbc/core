@@ -128,7 +128,7 @@ bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTarg
         GameObject* pGo = NULL;
 
         Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*player, 181616, 10);
-        Hellground::GameObjectLastSearcher<Hellground::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
+        Hellground::ObjectLastSearcher<GameObject, Hellground::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
 
         Cell::VisitGridObjects(player, searcher, 10.0f);
 
@@ -487,7 +487,7 @@ bool ItemUse_item_chest_of_containment_coffers(Player *player, Item* _Item, Spel
 {
     std::list<Creature*> SpawnList;
     Hellground::AllCreaturesOfEntryInRange u_check(player, MOB_RIFT_SPAWN, 20.0);
-    Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(SpawnList, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(SpawnList, u_check);
     Cell::VisitAllObjects(player, searcher, 20.0);
 
     if(!SpawnList.empty())

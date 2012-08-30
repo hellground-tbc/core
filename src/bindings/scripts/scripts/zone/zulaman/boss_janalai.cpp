@@ -251,7 +251,7 @@ struct HELLGROUND_DLL_DECL boss_janalaiAI : public ScriptedAI
 
         {
             Hellground::AllCreaturesOfEntryInRange check(m_creature, MOB_EGG, 100);
-            Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(templist, check);
+            Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(templist, check);
 
             Cell::VisitGridObjects(me, searcher, 100);
         }
@@ -278,7 +278,7 @@ struct HELLGROUND_DLL_DECL boss_janalaiAI : public ScriptedAI
 
         {
             Hellground::AllCreaturesOfEntryInRange check(m_creature, MOB_FIRE_BOMB, 100);
-            Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(templist, check);
+            Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(templist, check);
 
             Cell::VisitGridObjects(me, searcher, me->GetMap()->GetVisibilityDistance());
         }
@@ -542,7 +542,7 @@ struct HELLGROUND_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
 
         {
             Hellground::AllCreaturesOfEntryInRange check(m_creature, 23817, 50);
-            Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(templist, check);
+            Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(templist, check);
 
             Cell::VisitGridObjects(me, searcher, 50);
         }

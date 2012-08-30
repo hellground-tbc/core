@@ -1609,7 +1609,7 @@ struct HELLGROUND_DLL_DECL totem_ashtongue_mysticAI : public Scripted_NoMovement
         {
             std::list<Creature*> pList;
             Hellground::AllFriendlyCreaturesInGrid u_check(me);
-            Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+            Hellground::ObjectListSearcher<Creature, Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
             Cell::VisitAllObjects(me, searcher, 60.0);  // range than of aura, in case mobs moved too far from totem when killed
 
             if(!pList.empty())

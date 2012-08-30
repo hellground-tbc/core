@@ -106,7 +106,7 @@ struct HELLGROUND_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
         Creature* CrystalChosen = NULL;
 
         Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, CREATURE_FEL_CRYSTAL, true, 100.0f);
-        Hellground::CreatureLastSearcher<Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(CrystalChosen, creature_check);
+        Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(CrystalChosen, creature_check);
 
         Cell::VisitGridObjects(me, searcher, 100.0f);
 
