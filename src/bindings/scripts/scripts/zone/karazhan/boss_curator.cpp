@@ -50,142 +50,121 @@ struct HELLGROUND_DLL_DECL boss_curatorAI : public ScriptedAI
 {
     boss_curatorAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        pInstance = c->GetInstanceData();
         m_creature->GetPosition(wLoc);
     }
 
     ScriptedInstance* pInstance;
 
-    uint32 AddTimer;
-    uint32 HatefulBoltTimer;
-    uint32 BerserkTimer;
-    uint32 CheckTimer;
+    uint32 addTimer;
+    uint32 hatefulBoltTimer;
+    uint32 berserkTimer;
 
     WorldLocation wLoc;
 
-    bool Enraged;
-    bool Evocating;
+    bool enraged;
+    bool evocating;
 
     void Reset()
     {
-        AddTimer = 10000;
-        HatefulBoltTimer = 15000;                           //This time may be wrong
-        BerserkTimer = 720000;                              //12 minutes
-        CheckTimer = 3000;
-        Enraged = false;
-        Evocating = false;
-        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_ARCANE, true);
-        m_creature->ApplySpellImmune(1, IMMUNITY_STATE, SPELL_AURA_PERIODIC_LEECH, true);
-        m_creature->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);
+        addTimer = 10000;
+        hatefulBoltTimer = 15000;                           //This time may be wrong
+        berserkTimer = 720000;                              //12 minutes
+        enraged = false;
+        evocating = false;
+        me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_ARCANE, true);
+        me->ApplySpellImmune(1, IMMUNITY_STATE, SPELL_AURA_PERIODIC_LEECH, true);
+        me->ApplySpellImmune(2, IMMUNITY_STATE, SPELL_AURA_PERIODIC_MANA_LEECH, true);
 
-        if(pInstance && pInstance->GetData(DATA_CURATOR_EVENT) != DONE)
-            pInstance->SetData(DATA_CURATOR_EVENT, NOT_STARTED);
+        pInstance->SetData(DATA_CURATOR_EVENT, NOT_STARTED);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_KILL1,SAY_KILL2), m_creature);
+        DoScriptText(RAND(SAY_KILL1, SAY_KILL2), m_creature);
     }
 
     void JustDied(Unit *victim)
     {
         DoScriptText(SAY_DEATH, m_creature);
-
-        if (pInstance)
-            pInstance->SetData(DATA_CURATOR_EVENT, DONE);
+        pInstance->SetData(DATA_CURATOR_EVENT, DONE);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+        pInstance->SetData(DATA_CURATOR_EVENT, IN_PROGRESS);
+    }
 
-        if(pInstance)
-            pInstance->SetData(DATA_CURATOR_EVENT, IN_PROGRESS);
+    void OnAuraRemove(Aura * aur, bool removeStack)
+    {
+        if (aur->GetId() == SPELL_EVOCATION)
+            evocating = false;
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
-        if(CheckTimer < diff)
+        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 135.0f);
+
+        if (!evocating && m_creature->GetPower(POWER_MANA) <= 1000)
         {
-            if(!m_creature->IsWithinDistInMap(&wLoc, 135.0f))
-                EnterEvadeMode();
-            else
-                DoZoneInCombat();
-
-            CheckTimer = 3000;
-        }else CheckTimer -= diff;
-
-        if (Evocating && !m_creature->HasAura(SPELL_EVOCATION, 0))
-            Evocating = false;
-
-        if (m_creature->GetPower(POWER_MANA) <= 1000 && !Evocating)
-        {
-            DoScriptText(SAY_EVOCATE, m_creature);
-            m_creature->InterruptNonMeleeSpells(false);
-            DoCast(m_creature, SPELL_EVOCATION);
-            Evocating = true;
+            evocating = true
+            ForceSpellToCastWithScriptText(SPELL_EVOCATION, CAST_SELF, SAY_EVOCATE);
         }
 
-        if (!Enraged && !Evocating)
+        if (!enraged && !evocating)
         {
-            if (AddTimer < diff)
+            if (addTimer < diff)
             {
                 //Summon Astral Flare
-                Creature* AstralFlare = DoSpawnCreature(17096, rand()%37, rand()%37, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-                Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Creature* astralFlare = DoSpawnCreature(17096, rand()%37, rand()%37, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
 
-                if (AstralFlare && target)
+                if (astralFlare && target)
                 {
-                    AstralFlare->CastSpell(AstralFlare, SPELL_ASTRAL_FLARE_PASSIVE, false);
-                    AstralFlare->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_ARCANE, true);
-                    AstralFlare->AI()->AttackStart(target);
+                    astralFlare->CastSpell(astralFlare, SPELL_ASTRAL_FLARE_PASSIVE, false);
+                    astralFlare->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_ARCANE, true);
+                    astralFlare->AI()->AttackStart(target);
                 }
 
                 //Reduce Mana by 10%
                 int32 mana = (int32)(0.1f*(m_creature->GetMaxPower(POWER_MANA)));
                 m_creature->ModifyPower(POWER_MANA, -mana);
 
-                if(rand()%2)
-                    DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2), m_creature);
+                DoScriptText(RAND(SAY_SUMMON1, SAY_SUMMON2, 0, 0), m_creature);
 
-                AddTimer = 10000;
+                addTimer = 10000;
             }
             else
-                AddTimer -= diff;
+                addTimer -= diff;
 
-            if (HatefulBoltTimer < diff)
+            if (hatefulBoltTimer < diff)
             {
-                Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, GetSpellMaxRange(SPELL_HATEFUL_BOLT), m_creature->getVictim());
-
-                if(target)
-                    DoCast(target, SPELL_HATEFUL_BOLT);
-
-                HatefulBoltTimer = (Enraged) ? 7000 : 15000;
+                AddSpellToCast(SPELL_HATEFUL_BOLT, CAST_THREAT_SECOND);
+                hatefulBoltTimer = enraged ? 7000 : 15000;
             }
             else
-                HatefulBoltTimer -= diff;
+                hatefulBoltTimer -= diff;
 
-            if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 15)
+            if (!enraged && HealthBelowPct(15))
             {
-                Enraged = true;
-                DoCast(m_creature, SPELL_ENRAGE);
-                DoScriptText(SAY_ENRAGE, m_creature);
+                enraged = true;
+                ForceSpellCastWithScriptText(SPELL_ENRAGE, CAST_SELF, SAY_ENRAGE);
             }
         }
 
-        if (BerserkTimer < diff)
+        if (berserkTimer < diff)
         {
-            DoCast(m_creature, SPELL_BERSERK);
-            DoScriptText(SAY_ENRAGE, m_creature);
+            ForceSpellCastWithScriptText(SPELL_BERSERK, CAST_SELF, SAY_ENRAGE)
+            berserkTimer = 60000;
         }
         else
-            BerserkTimer -= diff;
+            berserkTimer -= diff;
 
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
@@ -203,4 +182,3 @@ void AddSC_boss_curator()
     newscript->GetAI = &GetAI_boss_curator;
     newscript->RegisterSelf();
 }
-

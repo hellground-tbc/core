@@ -70,7 +70,8 @@ enum castTargetMode
     CAST_RANDOM                 = 2,    //cast on SelectUnit(SELECT_TARGET_RANDOM) target (needs additionals: range, only player)
     CAST_RANDOM_WITHOUT_TANK    = 3,    //same as AUTOCAST_RANDOM but without tank
     CAST_SELF                   = 4,    //target is m_creature
-    CAST_LOWEST_HP_FRIENDLY     = 5     //cast on SelectLowestHpFriendly
+    CAST_LOWEST_HP_FRIENDLY     = 5,    //cast on SelectLowestHpFriendly
+    CAST_THREAT_SECOND          = 6     //cast on target in second place in threatlist
 };
 
 enum movementCheckType

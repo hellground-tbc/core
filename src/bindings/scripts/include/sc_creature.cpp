@@ -295,6 +295,11 @@ Unit* ScriptedAI::SelectCastTarget(uint32 spellId, castTargetMode targetMode)
             SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
             return SelectLowestHpFriendly(GetSpellMaxRange(spellId));
         }
+        case CAST_THREAT_SECOND:
+        {
+            SpellEntry const* pSpell = GetSpellStore()->LookupEntry(spellId);
+            return SelectUnit(SELECT_TARGET_TOPAGGRO, 1, GetSpellMaxRange(spellId), pSpell->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY);
+        }
         default:
             return NULL;
     };
@@ -400,6 +405,9 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                     case CAST_SELF:
                         victim = m_creature;
                         break;
+                    case CAST_THREAT_SECOND:
+                        victim = SelectUnit(SELECT_TARGET_TOPAGGRO, 1, autocastTargetRange, autocastTargetPlayer);
+                        break;
                     default:    //unsupported autocast, stop
                         {
                             autocast = false;
@@ -479,8 +487,8 @@ void ScriptedAI::AddSpellToCast(uint32 spellId, castTargetMode targetMode, bool 
     Unit *pTarget = SelectCastTarget(spellId, targetMode);
     if (!pTarget && targetMode != CAST_NULL)
         return;
-    uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
 
+    uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
     SpellToCast temp(targetGUID, spellId, triggered, 0, visualTarget);
 
     spellList.push_back(temp);
@@ -491,9 +499,8 @@ void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode,
     Unit *pTarget = SelectCastTarget(spellId, targetMode);
     if (!pTarget && targetMode != CAST_NULL)
         return;
+
     uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
-
-
     SpellToCast temp(targetGUID, spellId, dmg0, dmg1, dmg2, triggered, 0, false);
 
     spellList.push_back(temp);
@@ -504,9 +511,8 @@ void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode tar
     Unit *pTarget = SelectCastTarget(spellId, targetMode);
     if (!pTarget && targetMode != CAST_NULL)
         return;
+
     uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
-
-
     SpellToCast temp(targetGUID, spellId, triggered, scriptTextEntry, false);
 
     spellList.push_back(temp);
@@ -564,10 +570,10 @@ void ScriptedAI::ForceSpellCast(uint32 spellId, castTargetMode targetMode, inter
     Unit *pTarget = SelectCastTarget(spellId, targetMode);
     if (!pTarget && targetMode != CAST_NULL)
         return;
+
     uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
 
-
-    switch(interruptCurrent)
+    switch (interruptCurrent)
     {
         case INTERRUPT_AND_CAST:
             m_creature->InterruptNonMeleeSpells(false);
@@ -589,10 +595,10 @@ void ScriptedAI::ForceSpellCastWithScriptText(uint32 spellId, castTargetMode tar
     Unit *pTarget = SelectCastTarget(spellId, targetMode);
     if (!pTarget && targetMode != CAST_NULL)
         return;
+
     uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
 
-
-    switch(interruptCurrent)
+    switch (interruptCurrent)
     {
         case INTERRUPT_AND_CAST:
             m_creature->InterruptNonMeleeSpells(false);
@@ -612,7 +618,7 @@ void ScriptedAI::ForceSpellCastWithScriptText(uint32 spellId, castTargetMode tar
     spellList.push_front(temp);
 }
 
-void ScriptedAI::SetAutocast (uint32 spellId, uint32 timer, bool startImmediately, castTargetMode mode, uint32 range, bool player)
+void ScriptedAI::SetAutocast(uint32 spellId, uint32 timer, bool startImmediately, castTargetMode mode, uint32 range, bool player)
 {
     if (!spellId)
         return;
