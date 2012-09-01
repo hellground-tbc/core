@@ -125,7 +125,7 @@ struct HELLGROUND_DLL_DECL boss_sacrolashAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-        pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+        //pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -276,7 +276,7 @@ struct HELLGROUND_DLL_DECL boss_alythessAI : public Scripted_NoMovementAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-        pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+        //pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)

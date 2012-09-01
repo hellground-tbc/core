@@ -562,8 +562,7 @@ struct HELLGROUND_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         DoZoneInCombat();
         DoScriptText(SAY_KJ_EMERGE, m_creature);
 
-        if(pInstance)
-            pInstance->SetData(DATA_KILJAEDEN_EVENT, IN_PROGRESS);
+        //pInstance->SetData(DATA_KILJAEDEN_EVENT, IN_PROGRESS);
     }
 
     void CastSinisterReflection()
@@ -882,7 +881,7 @@ struct HELLGROUND_DLL_DECL mob_hand_of_the_deceiverAI : public ScriptedAI
     {
         if(pInstance)
         {
-            pInstance->SetData(DATA_KILJAEDEN_EVENT, IN_PROGRESS);
+            //pInstance->SetData(DATA_KILJAEDEN_EVENT, IN_PROGRESS);
             Creature* Control = ((Creature*)Unit::GetUnit(*m_creature, pInstance->GetData64(DATA_KILJAEDEN_CONTROLLER)));
             if(Control)
                 Control->AddThreat(who, 1.0f);

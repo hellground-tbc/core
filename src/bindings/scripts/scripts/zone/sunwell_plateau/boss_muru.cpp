@@ -272,7 +272,7 @@ struct HELLGROUND_DLL_DECL boss_muruAI : public Scripted_NoMovementAI
 
     void EnterCombat(Unit *who)
     {
-        pInstance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
+        //pInstance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
         DoCastAOE(SPELL_NEGATIVE_ENERGY,false);
     }
 
