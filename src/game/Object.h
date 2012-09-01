@@ -541,8 +541,10 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
 
         virtual void CleanupsBeforeDelete(); // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
 
-        virtual void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true);
-        virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor = true);
+        // method used to broadcast packets to all players around object
+        void BroadcastPacket(WorldPacket*, bool);
+        // method used to broadcast packets to players in specific range around object
+        void BroadcastPacketInRange(WorldPacket*, float, bool, bool = false);
 
         bool IsBeingTeleported() { return mSemaphoreTeleport; }
         void SetSemaphoreTeleport(bool semphsetting) { mSemaphoreTeleport = semphsetting; }

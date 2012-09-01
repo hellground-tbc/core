@@ -143,12 +143,11 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         virtual void Update(const uint32&);
         virtual void DelayedUpdate(const uint32);
 
-        void MessageBroadcast(Player *, WorldPacket *, bool to_self, bool to_possessor);
-        void MessageBroadcast(WorldObject *, WorldPacket *, bool to_possessor);
-        void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
-        void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
+        void BroadcastPacket(WorldObject*, WorldPacket*, bool = false);
+        void BroadcastPacketInRange(WorldObject*, WorldPacket*, float, bool = false, bool = false);
 
         virtual void InitVisibilityDistance();
+
         float GetVisibilityDistance(WorldObject* = NULL) const;
         float GetActiveObjectUpdateDistance() const { return m_ActiveObjectUpdateDistance; }
 

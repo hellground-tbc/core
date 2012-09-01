@@ -3116,7 +3116,7 @@ void Spell::SendSpellStart()
     if (castFlags & CAST_FLAG_AMMO)                         // projectile info
         WriteAmmoToPacket(&data);
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->BroadcastPacket(&data, true);
 }
 
 void Spell::SendSpellGo()
@@ -3156,7 +3156,7 @@ void Spell::SendSpellGo()
     if (castFlags & CAST_FLAG_AMMO)                         // projectile info
         WriteAmmoToPacket(&data);
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->BroadcastPacket(&data, true);
 }
 
 void Spell::WriteAmmoToPacket(WorldPacket * data)
@@ -3354,7 +3354,7 @@ void Spell::SendLogExecute()
         }
     }
 
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->BroadcastPacket(&data, true);
 }
 
 void Spell::SendInterrupted(uint8 result)
@@ -3363,12 +3363,12 @@ void Spell::SendInterrupted(uint8 result)
     data << m_caster->GetPackGUID();
     data << m_spellInfo->Id;
     data << result;
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->BroadcastPacket(&data, true);
 
     data.Initialize(SMSG_SPELL_FAILED_OTHER, (8+4));
     data << m_caster->GetPackGUID();
     data << m_spellInfo->Id;
-    m_caster->SendMessageToSet(&data, true);
+    m_caster->BroadcastPacket(&data, true);
 }
 
 void Spell::SendChannelUpdate(uint32 time)
@@ -3383,7 +3383,7 @@ void Spell::SendChannelUpdate(uint32 time)
     data << m_caster->GetPackGUID();
     data << uint32(time);
 
-    m_caster->SendMessageToSet(&data, true, false);
+    m_caster->BroadcastPacket(&data, true);
 }
 
 void Spell::SendChannelStart(uint32 duration)
@@ -3425,7 +3425,7 @@ void Spell::SendChannelStart(uint32 duration)
     data << uint32(m_spellInfo->Id);
     data << uint32(duration);
 
-    m_caster->SendMessageToSet(&data, true, false);
+    m_caster->BroadcastPacket(&data, true);
 
     m_timer = duration;
     if (target)
@@ -5196,7 +5196,7 @@ void Spell::Delayed() // only called in DealDamage()
     data << m_caster->GetPackGUID();
     data << uint32(delaytime);
 
-    m_caster->SendMessageToSet(&data,true);
+    m_caster->BroadcastPacket(&data,true);
 }
 
 void Spell::DelayedChannel()

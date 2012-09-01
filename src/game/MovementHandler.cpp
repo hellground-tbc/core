@@ -322,7 +322,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     WorldPacket data(recv_data.GetOpcode(), (pPlayer->GetPackGUID().size()+recv_data.size()));
     data << pPlayer->GetPackGUID();
     data.append(recv_data.contents(), recv_data.size());
-    pPlayer->SendMessageToSet(&data, false);
+    pPlayer->BroadcastPacket(&data, false);
 
     pPlayer->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
     pPlayer->m_movementInfo = movementInfo;
@@ -367,7 +367,7 @@ void WorldSession::HandlePossessedMovement(WorldPacket& recv_data, MovementInfo&
     data << pos_unit->GetPackGUID();
     data.append(recv_data.contents(), recv_data.size());
     // Send the packet to self but not to the possessed player; for creatures the first bool is irrelevant
-    pos_unit->SendMessageToSet(&data, true, false);
+    pos_unit->BroadcastPacket(&data, true);
 
     // Possessed is a player
     if (pos_unit->GetTypeId() == TYPEID_PLAYER)
@@ -501,7 +501,7 @@ void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvdata*/)
     WorldPacket data(SMSG_MOUNTSPECIAL_ANIM, 8);
     data << uint64(GetPlayer()->GetGUID());
 
-    GetPlayer()->SendMessageToSet(&data, false);
+    GetPlayer()->BroadcastPacket(&data, false);
 }
 
 void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)

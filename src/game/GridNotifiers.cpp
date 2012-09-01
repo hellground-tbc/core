@@ -324,43 +324,43 @@ void DynamicObjectUpdater::Visit(PlayerMapType &m)
         VisitHelper(itr->getSource());
 }
 
-void Deliverer::Visit(PlayerMapType &m)
+void PacketBroadcaster::Visit(PlayerMapType& m)
 {
     for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist)
+        if (!_dist || iter->getSource()->GetDistance(&_source) <= _dist)
         {
             // Send packet to all who are sharing the player's vision
             if (!iter->getSource()->GetSharedVisionList().empty())
             {
                 SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
                 for (; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                    SendPacket(*it);
+                    BroadcastPacketTo(*it);
             }
 
-            VisitObject(iter->getSource());
+            BroadcastPacketTo(iter->getSource());
         }
     }
 }
 
-void Deliverer::Visit(CreatureMapType &m)
+void PacketBroadcaster::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist)
+        if (!_dist || iter->getSource()->GetDistance(&_source) <= _dist)
         {
             // Send packet to all who are sharing the creature's vision
             if (!iter->getSource()->GetSharedVisionList().empty())
             {
                 SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
                 for (; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                    SendPacket(*it);
+                    BroadcastPacketTo(*it);
             }
         }
     }
 }
 
-void Deliverer::Visit(DynamicObjectMapType &m)
+void PacketBroadcaster::Visit(DynamicObjectMapType &m)
 {
     for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
@@ -369,46 +369,23 @@ void Deliverer::Visit(DynamicObjectMapType &m)
             // Send packet back to the caster if the caster has vision of dynamic object
             Player* caster = (Player*)iter->getSource()->GetCaster();
             if (caster && caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->getSource()->GetGUID() &&
-                (!i_dist || iter->getSource()->GetDistance(&i_source) <= i_dist))
-                SendPacket(caster);
+                (!_dist || iter->getSource()->GetDistance(&_source) <= _dist))
+                BroadcastPacketTo(caster);
         }
     }
 }
 
-void Deliverer::SendPacket(Player* plr)
+void PacketBroadcaster::BroadcastPacketTo(Player* player)
 {
-    if (!plr)
+    if (_ownTeam && _source.ToPlayer()->GetTeam() != player->GetTeam())
         return;
 
-    // Don't send the packet to self if not supposed to
-    if (!i_toSelf && plr == &i_source)
-        return;
-
-    // Don't send the packet to possesor if not supposed to
-    if (!i_toPossessor && plr->isPossessing() && plr->GetCharmGUID() == i_source.GetGUID())
-        return;
-
-    if (plr_list.find(plr->GetGUID()) == plr_list.end())
+    if (playerGUIDS.find(player->GetGUID()) == playerGUIDS.end())
     {
-        if (WorldSession* session = plr->GetSession())
-            session->SendPacket(i_message);
-        plr_list.insert(plr->GetGUID());
-    }
-}
+        if (WorldSession* session = player->GetSession())
+            session->SendPacket(_message);
 
-void MessageDeliverer::VisitObject(Player* plr)
-{
-    SendPacket(plr);
-}
-
-void MessageDistDeliverer::VisitObject(Player* plr)
-{
-    if (!i_ownTeamOnly || (i_source.GetTypeId() == TYPEID_PLAYER && plr->GetTeam() == ((Player&)i_source).GetTeam()))
-    {
-        if (!plr->HaveAtClient(&i_source))
-            return;
-
-        SendPacket(plr);
+        playerGUIDS.insert(player->GetGUID());
     }
 }
 
@@ -444,3 +421,16 @@ bool CannibalizeObjectCheck::operator()(Corpse* u)
 
 template void ObjectUpdater::Visit<GameObject>(GameObjectMapType &);
 template void ObjectUpdater::Visit<DynamicObject>(DynamicObjectMapType &);
+
+Hellground::PacketBroadcaster::PacketBroadcaster(WorldObject& src, WorldPacket* msg, bool self /*= false*/, float dist /*= 0.0f*/, bool ownTeam /*= false*/ ) : _source(src), _message(msg), _dist(dist)
+{
+    if (_source.GetObjectGuid().IsPlayer())
+    {
+        if (!self)
+            playerGUIDS.insert(_source.GetGUID());
+
+        _ownTeam = ownTeam;
+    }
+    else
+        _ownTeam = false;
+}

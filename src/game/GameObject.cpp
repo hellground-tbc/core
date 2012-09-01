@@ -106,14 +106,14 @@ void GameObject::SendCustomAnimation()
     WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM,8+4);
     data << GetGUID();
     data << (uint32)(GetGoAnimProgress());
-    SendMessageToSet(&data, false);
+    BroadcastPacket(&data, false);
 }
 
 void GameObject::SendSpawnAnimation()
 {
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << GetGUID();
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void GameObject::AddToWorld()

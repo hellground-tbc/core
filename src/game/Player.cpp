@@ -891,7 +891,7 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
     data << uint32(damage);
     data << uint32(0);
     data << uint32(0);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 
     DealDamage(this, damage, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
@@ -1096,7 +1096,7 @@ void Player::SetDrunkValue(uint16 newDrunkenValue, uint32 itemId)
     data << uint32(newDrunkenState);
     data << uint32(itemId);
 
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Player::CreateCharmAI()
@@ -3339,7 +3339,7 @@ void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */)
         WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
         data << uint32(spell_id);
         data << uint64(GetGUID());
-        SendDirectMessage(&data);
+        BroadcastPacketToSelf(&data);
     }
 }
 
@@ -5685,26 +5685,7 @@ void Player::SaveRecallPosition()
     m_recallO = GetOrientation();
 }
 
-void Player::SendMessageToSet(WorldPacket *data, bool self, bool to_possessor)
-{
-    // Arena Preparation hack
-    if (InArena() && GetBattleGround()->GetStatus() != STATUS_IN_PROGRESS)
-        GetMap()->MessageDistBroadcast(this, data, 10.0, self, to_possessor);
-    else
-        GetMap()->MessageBroadcast(this, data, self, to_possessor);
-}
-
-void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor)
-{
-    GetMap()->MessageDistBroadcast(this, data, dist, self, to_possessor);
-}
-
-void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only)
-{
-    GetMap()->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
-}
-
-void Player::SendDirectMessage(WorldPacket *data)
+void Player::BroadcastPacketToSelf(WorldPacket *data)
 {
     GetSession()->SendPacket(data);
 }
@@ -5713,7 +5694,7 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId)
 {
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(CinematicSequenceId);
-    SendDirectMessage(&data);
+    BroadcastPacketToSelf(&data);
 
     setWatchingCinematic(CinematicSequenceId);
 }
@@ -6569,7 +6550,7 @@ void Player::DuelComplete(DuelCompleteType type)
         data << (uint8)((type==DUEL_WON) ? 0 : 1);          // 0 = just won; 1 = fled
         data << duel->opponent->GetName();
         data << GetName();
-        SendMessageToSet(&data,true);
+        BroadcastPacket(&data,true);
         if (type == DUEL_WON)
             HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
     }
@@ -7429,7 +7410,7 @@ void Player::SendLootRelease(uint64 guid)
 {
     WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE, (8+1));
     data << uint64(guid) << uint8(1);
-    SendDirectMessage(&data);
+    BroadcastPacketToSelf(&data);
 }
 
 void Player::SendLoot(uint64 guid, LootType loot_type)
@@ -7686,7 +7667,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     data << uint8(loot_type);
     data << LootView(*loot, this, permission);
 
-    SendDirectMessage(&data);
+    BroadcastPacketToSelf(&data);
 
     // add 'this' player as one of the players that are looting 'loot'
     if (permission != NONE_PERMISSION)
@@ -16819,21 +16800,21 @@ void Player::Say(const std::string& text, const uint32 language)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildPlayerChat(&data, CHAT_MSG_SAY, text, language);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
+    BroadcastPacketInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
 }
 
 void Player::Yell(const std::string& text, const uint32 language)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildPlayerChat(&data, CHAT_MSG_YELL, text, language);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
+    BroadcastPacketInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
 }
 
 void Player::TextEmote(const std::string& text)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildPlayerChat(&data, CHAT_MSG_EMOTE, text, LANG_UNIVERSAL);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true, !sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT), true);
+    BroadcastPacketInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), true, !sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT));
 }
 
 void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
@@ -17133,7 +17114,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
             data << uint8(eff);
             data << uint8(mod->op);
             data << int32(val);
-            SendDirectMessage(&data);
+            BroadcastPacketToSelf(&data);
         }
     }
 
@@ -17901,7 +17882,7 @@ void Player::SendCooldownEvent(SpellEntry const *spellInfo)
     WorldPacket data(SMSG_COOLDOWN_EVENT, (4+8));
     data << spellInfo->Id;
     data << GetGUID();
-    SendDirectMessage(&data);
+    BroadcastPacketToSelf(&data);
 }
                                                            //slot to be excluded while counting
 bool Player::EnchantmentFitsRequirements(uint32 enchantmentcondition, int8 slot)
@@ -18639,7 +18620,7 @@ void Player::SendInitialPacketsAfterAddToMap()
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
         data << GetPackGUID();
         data << (uint32)2;
-        SendMessageToSet(&data,true);
+        BroadcastPacket(&data,true);
     }
 
     SendEnchantmentDurations();                             // must be after add to map

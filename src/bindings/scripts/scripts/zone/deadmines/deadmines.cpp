@@ -178,7 +178,7 @@ struct HELLGROUND_DLL_DECL instance_deadmines : public ScriptedInstance
         WorldPacket data(4);
         data.SetOpcode(SMSG_PLAY_SOUND);
         data << uint32(sound);
-        unit->SendMessageToSet(&data,false);
+        unit->BroadcastPacket(&data,false);
     }
 
     void DoPlaySoundCreature(Unit* unit, uint32 sound)
@@ -186,7 +186,7 @@ struct HELLGROUND_DLL_DECL instance_deadmines : public ScriptedInstance
         WorldPacket data(4);
         data.SetOpcode(SMSG_PLAY_SOUND);
         data << uint32(sound);
-        unit->SendMessageToSet(&data,false);
+        unit->BroadcastPacket(&data,false);
     }
 };
 

@@ -506,7 +506,7 @@ void Unit::SendMonsterStop()
     data << GetPositionX() << GetPositionY() << GetPositionZ();
     data << WorldTimer::getMSTime();
     data << uint8(1);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Unit::UpdateSplineMovement(uint32 t_diff)
@@ -1746,7 +1746,7 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
                data << uint32(spellProto->Id);
                data << uint32(damage);
                data << uint32(spellProto->SchoolMask);
-               pVictim->SendMessageToSet(&data, true);
+               pVictim->BroadcastPacket(&data, true);
 
                pVictim->DealDamage(this, damage, SPELL_DIRECT_DAMAGE, SpellMgr::GetSpellSchoolMask(spellProto), spellProto, true);
 
@@ -1767,7 +1767,7 @@ void Unit::HandleEmoteCommand(uint32 anim_id)
     data << anim_id << GetGUID();
     WPAssert(data.size() == 12);
 
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
@@ -2564,7 +2564,7 @@ void Unit::SendMeleeAttackStart(Unit* pVictim)
     data << uint64(GetGUID());
     data << uint64(pVictim->GetGUID());
 
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
     DEBUG_LOG("WORLD: Sent SMSG_ATTACKSTART");
 }
 
@@ -2577,7 +2577,7 @@ void Unit::SendMeleeAttackStop(Unit* victim)
     data << GetPackGUID();
     data << victim->GetPackGUID();                          // can be 0x00...
     data << uint32(0);                                      // can be 0x1
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
     sLog.outDetail("%s %u stopped attacking %s %u", (GetTypeId()==TYPEID_PLAYER ? "player" : "creature"), GetGUIDLow(), (victim->GetTypeId()==TYPEID_PLAYER ? "player" : "creature"),victim->GetGUIDLow());
 }
 
@@ -4799,7 +4799,7 @@ void Unit::SendSpellNonMeleeDamageLog(SpellDamageLog *log)
     data << uint32(log->blocked);                            //blocked
     data << uint32(log->hitInfo & SPELL_HIT_TYPE_CRIT ? 0x27 : 0x25);
     data << uint8 (0);                                       // flag to use extend data
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Unit::SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit)
@@ -4818,7 +4818,7 @@ void Unit::SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage,
     data << uint32(Blocked);                                // blocked
     data << uint32(CriticalHit ? 0x27 : 0x25);              // hitType, flags: 0x2 - SPELL_HIT_TYPE_CRIT, 0x10 - replace caster?
     data << uint8(0);                                       // isDebug?
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Unit::ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procExtra, uint32 amount, WeaponAttackType attType, SpellEntry const *procSpell, bool canTrigger)
@@ -4843,7 +4843,7 @@ void Unit::SendSpellMiss(Unit *target, uint32 spellID, SpellMissInfo missInfo)
     data << uint64(target->GetGUID());                      // target GUID
     data << uint8(missInfo);
     // end loop
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Unit::SendAttackStateUpdate(MeleeDamageLog *damageInfo)
@@ -4866,7 +4866,7 @@ void Unit::SendAttackStateUpdate(MeleeDamageLog *damageInfo)
     data << (uint32)0;
     data << (uint32)0;
     data << (uint32)damageInfo->blocked;
-    SendMessageToSet(&data, true);/**/
+    BroadcastPacket(&data, true);/**/
 }
 
 void Unit::SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, SpellSchoolMask damageSchoolMask, uint32 Damage, uint32 AbsorbDamage, uint32 Resist, VictimState TargetState, uint32 BlockedAmount)
@@ -4900,7 +4900,7 @@ void Unit::SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, 
     data << (uint32)0;
     data << (uint32)BlockedAmount;
 
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAura, SpellEntry const * procSpell, uint32 /*procFlag*/, uint32 /*procEx*/, uint32 cooldown)
 {
@@ -7543,7 +7543,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         WorldPacket data(SMSG_AI_REACTION, 12);
         data << uint64(GetGUID());
         data << uint32(AI_REACTION_AGGRO);                  // Aggro sound
-        ((WorldObject*)this)->SendMessageToSet(&data, true);
+        ((WorldObject*)this)->BroadcastPacket(&data, true);
 
         ((Creature*)this)->CallAssistance();
     }
@@ -7838,7 +7838,7 @@ void Unit::SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool c
     data << uint32(Damage);
     data << uint8(critical ? 1 : 0);
     data << uint8(0);                                       // unused in client?
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Unit::SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Powers powertype)
@@ -7849,7 +7849,7 @@ void Unit::SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Po
     data << uint32(SpellID);
     data << uint32(powertype);
     data << uint32(Damage);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 pdamage, DamageEffectType damagetype, CasterModifiers *casterModifiers)
@@ -9852,7 +9852,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             if (mtype == MOVE_RUN)
                 data << uint8(0);                               // new 2.1.0
             data << float(GetSpeed(mtype));
-            SendMessageToSet(&data, true);
+            BroadcastPacket(&data, true);
         }
         else
         {
@@ -9861,7 +9861,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
             data << GetPackGUID();
             data << m_movementInfo;
             data << float(GetSpeed(mtype));
-            SendMessageToSet(&data, true);
+            BroadcastPacket(&data, true);
         }
     }
 }
@@ -10786,7 +10786,7 @@ void Unit::setHover(bool val)
 
     data << GetPackGUID();
     data << uint32(0);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Unit::RemoveFromWorld()
@@ -12394,7 +12394,7 @@ void Unit::SendHeartBeat()
     WorldPacket data(MSG_MOVE_HEARTBEAT, 64);
     data << GetPackGUID();
     data << m_movementInfo;
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Unit::SetFlying(bool apply)
@@ -12418,7 +12418,7 @@ void Unit::SetFlying(bool apply)
 
     data << GetPackGUID();
     data << uint32(0);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
@@ -12975,7 +12975,7 @@ void Unit::SendCombatStats(const char* format, Unit *pVictim, ...) const
     data << message;
     data << uint8(0);
 
-    target->SendDirectMessage(&data);
+    target->BroadcastPacketToSelf(&data);
 }
 
 // This constants can't be evaluated on runtime

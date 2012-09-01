@@ -125,46 +125,27 @@ namespace Hellground
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
     };
 
-    struct HELLGROUND_DLL_DECL Deliverer
+    struct HELLGROUND_DLL_DECL PacketBroadcaster
     {
-        WorldObject &i_source;
-        WorldPacket *i_message;
-        std::set<uint64> plr_list;
-        bool i_toPossessor;
-        bool i_toSelf;
-        float i_dist;
-        Deliverer(WorldObject &src, WorldPacket *msg, bool to_possessor, bool to_self, float dist = 0.0f) : i_source(src), i_message(msg), i_toPossessor(to_possessor), i_toSelf(to_self), i_dist(dist) {}
-        void Visit(PlayerMapType &m);
-        void Visit(CreatureMapType &m);
-        void Visit(DynamicObjectMapType &m);
-        virtual void VisitObject(Player* plr) = 0;
-        void SendPacket(Player* plr);
-        template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
-    };
+        WorldObject &_source;
+        WorldPacket *_message;
 
-    struct HELLGROUND_DLL_DECL MessageDeliverer : public Deliverer
-    {
-        MessageDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, bool to_self) : Deliverer(pl, msg, to_possessor, to_self) {}
-        void VisitObject(Player* plr);
-    };
+        typedef std::set<uint64> GUIDSet;
+        GUIDSet playerGUIDS;
 
-    struct HELLGROUND_DLL_DECL ObjectMessageDeliverer : public Deliverer
-    {
-        explicit ObjectMessageDeliverer(WorldObject &src, WorldPacket *msg, bool to_possessor) : Deliverer(src, msg, to_possessor, false) {}
-        void VisitObject(Player* plr) { SendPacket(plr); }
-    };
+        float _dist;
+        bool _ownTeam;
 
-    struct HELLGROUND_DLL_DECL MessageDistDeliverer : public Deliverer
-    {
-        bool i_ownTeamOnly;
-        MessageDistDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, float dist, bool to_self, bool ownTeamOnly) : Deliverer(pl, msg, to_possessor, to_self, dist), i_ownTeamOnly(ownTeamOnly) {}
-        void VisitObject(Player* plr);
-    };
+        PacketBroadcaster(WorldObject&, WorldPacket*, bool = false, float = 0.0f, bool = false);
 
-    struct HELLGROUND_DLL_DECL ObjectMessageDistDeliverer : public Deliverer
-    {
-        ObjectMessageDistDeliverer(WorldObject &obj, WorldPacket *msg, bool to_possessor, float dist) : Deliverer(obj, msg, to_possessor, false, dist) {}
-        void VisitObject(Player* plr) { SendPacket(plr); }
+        void BroadcastPacketTo(Player*);
+
+        void Visit(PlayerMapType&);
+        void Visit(CreatureMapType&);
+        void Visit(DynamicObjectMapType&);
+
+        template<class SKIP>
+        void Visit(GridRefManager<SKIP>&) {}
     };
 
     struct HELLGROUND_DLL_DECL ObjectUpdater
@@ -239,23 +220,6 @@ namespace Hellground
         void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-    template<class T, class Do>
-    struct HELLGROUND_DLL_DECL ObjectWorker
-    {
-        Do& _do;
-
-        explicit ObjectWorker(Do& ddo) : _do(ddo) {}
-
-        void Visit(GridRefManager<T> &m)
-        {
-            for (GridRefManager<T>::iterator itr= m.begin(); itr != m.end(); ++itr)
-                _do(itr->getSource());
-        }
-
-        template <class NOT_INTERESTED>
-        void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
     template<class Check>
     struct HELLGROUND_DLL_DECL UnitSearcher
     {
@@ -302,6 +266,23 @@ namespace Hellground
 #pragma endregion Searchers
 
 #pragma region Workers
+    template<class T, class Do>
+    struct HELLGROUND_DLL_DECL ObjectWorker
+    {
+        Do& _do;
+
+        explicit ObjectWorker(Do& ddo) : _do(ddo) {}
+
+        void Visit(GridRefManager<T> &m)
+        {
+            for (GridRefManager<T>::iterator itr= m.begin(); itr != m.end(); ++itr)
+                _do(itr->getSource());
+        }
+
+        template <class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
     template<class Do>
     struct HELLGROUND_DLL_DECL PlayerDistWorker
     {

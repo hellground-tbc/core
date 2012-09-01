@@ -125,12 +125,7 @@ bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTarg
 {
     if( player->GetQuestStatus(9452) == QUEST_STATUS_INCOMPLETE )
     {
-        GameObject* pGo = NULL;
-
-        Hellground::NearestGameObjectEntryInObjectRangeCheck go_check(*player, 181616, 10);
-        Hellground::ObjectLastSearcher<GameObject, Hellground::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
-
-        Cell::VisitGridObjects(player, searcher, 10.0f);
+        GameObject* pGo = GetClosestGameObjectWithEntry(player, 181616, 10.0f);
 
         if(!pGo)
             return true;

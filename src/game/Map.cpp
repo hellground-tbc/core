@@ -417,28 +417,16 @@ void Map::Add(T *obj)
     obj->UpdateObjectVisibility(true);
 }
 
-void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool to_possessor)
+void Map::BroadcastPacket(WorldObject* sender, WorldPacket *msg, bool toSelf)
 {
-    Hellground::MessageDeliverer post_man(*player, msg, to_possessor, to_self);
-    Cell::VisitWorldObjects(player, post_man, GetVisibilityDistance());
+    Hellground::PacketBroadcaster post_man(*sender, msg, toSelf);
+    Cell::VisitWorldObjects(sender, post_man, GetVisibilityDistance());
 }
 
-void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor)
+void Map::BroadcastPacketInRange(WorldObject* sender, WorldPacket *msg, float dist, bool toSelf, bool ownTeam)
 {
-    Hellground::ObjectMessageDeliverer post_man(*obj, msg, to_possessor);
-    Cell::VisitWorldObjects(obj, post_man, GetVisibilityDistance(obj));
-}
-
-void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, bool to_self, bool to_possessor, bool own_team_only)
-{
-    Hellground::MessageDistDeliverer post_man(*player, msg, to_possessor, dist, to_self, own_team_only);
-    Cell::VisitWorldObjects(player, post_man, GetVisibilityDistance());
-}
-
-void Map::MessageDistBroadcast(WorldObject *obj, WorldPacket *msg, float dist, bool to_possessor)
-{
-    Hellground::ObjectMessageDistDeliverer post_man(*obj, msg, to_possessor, dist);
-    Cell::VisitWorldObjects(obj, post_man, GetVisibilityDistance());
+    Hellground::PacketBroadcaster post_man(*sender, msg, toSelf, dist, ownTeam);
+    Cell::VisitWorldObjects(sender, post_man, GetVisibilityDistance());
 }
 
 bool Map::loaded(const GridPair &p) const

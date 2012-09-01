@@ -1010,7 +1010,7 @@ void Spell::EffectDummy(uint32 i)
 
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(pGameObj->GetGUID());
-                    m_caster->SendMessageToSet(&data,true);
+                    m_caster->BroadcastPacket(&data,true);
 
                     return;
                 }
@@ -1285,7 +1285,7 @@ void Spell::EffectDummy(uint32 i)
                     sLog.outDebug("SummonGameObject at SpellEfects.cpp EffectDummy for Spell 23019\n");
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(Crystal_Prison->GetGUID());
-                    m_caster->SendMessageToSet(&data,true);
+                    m_caster->BroadcastPacket(&data,true);
 
                     return;
                 }
@@ -4087,7 +4087,7 @@ void Spell::EffectDispel(uint32 i)
                 else
                 unitTarget->RemoveAurasDueToSpellByDispel(spellInfo->Id, j->second, m_caster);
              }
-            m_caster->SendMessageToSet(&data, true);
+            m_caster->BroadcastPacket(&data, true);
 
             // On succes dispel
             // Devour Magic
@@ -4120,7 +4120,7 @@ void Spell::EffectDispel(uint32 i)
             data << uint32(m_spellInfo->Id);                // dispel spell id
             for (std::list< uint32 >::iterator j = fail_list.begin(); j != fail_list.end(); ++j)
                 data << uint32(*j);                         // Spell Id
-            m_caster->SendMessageToSet(&data, true);
+            m_caster->BroadcastPacket(&data, true);
         }
     }
 }
@@ -6744,7 +6744,7 @@ void Spell::EffectSummonTotem(uint32 i)
         data << uint64(pTotem->GetGUID());
         data << uint32(duration);
         data << uint32(m_spellInfo->Id);
-        ((Player*)m_caster)->SendDirectMessage(&data);
+        ((Player*)m_caster)->BroadcastPacketToSelf(&data);
     }
 
     pTotem->Summon(m_caster);
@@ -6918,7 +6918,7 @@ void Spell::EffectSummonObject(uint32 i)
     map->Add(pGameObj);
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << pGameObj->GetGUID();
-    m_caster->SendMessageToSet(&data,true);
+    m_caster->BroadcastPacket(&data,true);
 
     m_caster->m_ObjectSlot[slot] = pGameObj->GetGUID();
 }
@@ -7395,7 +7395,7 @@ void Spell::EffectDispelMechanic(uint32 i)
             data << uint32(m_spellInfo->Id);                // dispel spell id
             for (std::list< uint32 >::iterator j = fail_list.begin(); j != fail_list.end(); ++j)
                 data << uint32(*j);                         // Spell Id
-            m_caster->SendMessageToSet(&data, true);
+            m_caster->BroadcastPacket(&data, true);
         }
     }
 
@@ -7657,7 +7657,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << uint64(pGameObj->GetGUID());
-    m_caster->SendMessageToSet(&data,true);
+    m_caster->BroadcastPacket(&data,true);
 
     if (uint32 linkedEntry = pGameObj->GetLinkedGameObjectEntry())
     {
@@ -7874,7 +7874,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
                 data << uint8(0);                    // 0 - steals !=0 transfers
                 unitTarget->RemoveAurasDueToSpellBySteal(spellInfo->Id, j->second, m_caster);
             }
-            m_caster->SendMessageToSet(&data, true);
+            m_caster->BroadcastPacket(&data, true);
         }
         // Is there other way to send spellsteal resists?
         // Send fail log to client
@@ -7887,7 +7887,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             data << uint32(m_spellInfo->Id);                // dispel spell id
             for (std::list< uint32 >::iterator j = fail_list.begin(); j != fail_list.end(); ++j)
                 data << uint32(*j);                         // Spell Id
-            m_caster->SendMessageToSet(&data, true);
+            m_caster->BroadcastPacket(&data, true);
         }
     }
 }

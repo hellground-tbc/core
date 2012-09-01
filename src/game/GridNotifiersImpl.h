@@ -181,7 +181,7 @@ void Hellground::LocalizedPacketDo<Builder>::operator()( Player* p )
     else
         data = i_data_cache[cache_idx];
 
-    p->SendDirectMessage(data);
+    p->BroadcastPacketToSelf(data);
 }
 
 #endif

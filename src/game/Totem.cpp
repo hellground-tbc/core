@@ -88,7 +88,7 @@ void Totem::Summon(Unit* owner)
 
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << GetGUID();
-    SendMessageToSet(&data,true);
+    BroadcastPacket(&data,true);
 
     switch (m_type)
     {

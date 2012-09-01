@@ -1458,21 +1458,21 @@ void WorldObject::MonsterSay(const char* text, uint32 language, uint64 TargetGui
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,CHAT_MSG_MONSTER_SAY,text,language,GetName(),TargetGuid);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
+    BroadcastPacketInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
 }
 
 void WorldObject::MonsterYell(const char* text, uint32 language, uint64 TargetGuid)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,GetName(),TargetGuid);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
+    BroadcastPacketInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
 }
 
 void WorldObject::MonsterTextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, text, LANG_UNIVERSAL, GetName(), TargetGuid);
-    SendMessageToSetInRange(&data, sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE), true);
+    BroadcastPacketInRange(&data, sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE), true);
 }
 
 void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper)
@@ -1494,7 +1494,7 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
     if (OnlySelf && GetTypeId() == TYPEID_PLAYER)
         ((Player*)this)->GetSession()->SendPacket(&data);
     else
-        SendMessageToSet(&data, true); // ToSelf ignored in this case
+        BroadcastPacket(&data, true); // ToSelf ignored in this case
 }
 
 void Object::ForceValuesUpdateAtIndex(uint32 i)
@@ -1641,21 +1641,21 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
     *data << (uint8)0;                                      // ChatTag
 }
 
-void WorldObject::SendMessageToSet(WorldPacket *data, bool /*fake*/, bool bToPossessor)
+void WorldObject::BroadcastPacket(WorldPacket *data, bool toSelf)
 {
-    GetMap()->MessageBroadcast(this, data, bToPossessor);
+    GetMap()->BroadcastPacket(this, data, toSelf);
 }
 
-void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool /*bToSelf*/, bool bToPossessor)
+void WorldObject::BroadcastPacketInRange(WorldPacket *data, float dist, bool toSelf, bool ownTeamOnly)
 {
-    GetMap()->MessageDistBroadcast(this, data, dist, bToPossessor);
+    GetMap()->BroadcastPacketInRange(this, data, dist, toSelf, ownTeamOnly);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
 {
     WorldPacket data(SMSG_GAMEOBJECT_DESPAWN_ANIM, 8);
     data << uint64(guid);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void WorldObject::SendGameObjectCustomAnim(uint64 guid)
@@ -1663,7 +1663,7 @@ void WorldObject::SendGameObjectCustomAnim(uint64 guid)
     WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8+4);
     data << uint64(guid);
     data << uint32(0);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 Map* WorldObject::_getMap()
@@ -2021,9 +2021,9 @@ void WorldObject::PlayDistanceSound( uint32 sound_id, Player* target /*= NULL*/ 
     data << uint32(sound_id);
     data << GetGUID();
     if (target)
-        target->SendDirectMessage( &data );
+        target->BroadcastPacketToSelf( &data );
     else
-        SendMessageToSet( &data, true );
+        BroadcastPacket( &data, true );
 }
 
 void WorldObject::PlayDirectSound( uint32 sound_id, Player* target /*= NULL*/ )
@@ -2031,9 +2031,9 @@ void WorldObject::PlayDirectSound( uint32 sound_id, Player* target /*= NULL*/ )
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << uint32(sound_id);
     if (target)
-        target->SendDirectMessage( &data );
+        target->BroadcastPacketToSelf( &data );
     else
-        SendMessageToSet( &data, true );
+        BroadcastPacket( &data, true );
 }
 
 Totem* WorldObject::ToTotem()

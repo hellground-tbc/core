@@ -708,7 +708,7 @@ void ScriptedAI::DoPlaySoundToSet(WorldObject* unit, uint32 sound)
     WorldPacket data(4);
     data.SetOpcode(SMSG_PLAY_SOUND);
     data << uint32(sound);
-    unit->SendMessageToSet(&data,false);
+    unit->BroadcastPacket(&data,false);
 }
 
 Creature* ScriptedAI::DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime)

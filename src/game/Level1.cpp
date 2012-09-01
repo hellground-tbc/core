@@ -2087,13 +2087,13 @@ bool ChatHandler::HandleModifyMountCommand(const char* args)
     data << (uint32)0;
     data << (uint8)0;                                       //new 2.1.0
     data << float(speed);
-    chr->SendMessageToSet(&data, true);
+    chr->BroadcastPacket(&data, true);
 
     data.Initialize(SMSG_FORCE_SWIM_SPEED_CHANGE, (8+4+4));
     data << chr->GetPackGUID();
     data << (uint32)0;
     data << float(speed);
-    chr->SendMessageToSet(&data, true);
+    chr->BroadcastPacket(&data, true);
 
     return true;
 }

@@ -906,7 +906,7 @@ void Aura::UpdateAuraDuration()
         data.Initialize(SMSG_UPDATE_AURA_DURATION, 1+4);
         data << (uint8)m_auraSlot;
         data << (uint32)m_duration;
-        ((Player *)m_target)->SendDirectMessage(&data);
+        ((Player *)m_target)->BroadcastPacketToSelf(&data);
 
         data.Initialize(SMSG_SET_EXTRA_AURA_INFO, (8+1+4+4+4));
         data << m_target->GetPackGUID();
@@ -914,7 +914,7 @@ void Aura::UpdateAuraDuration()
         data << uint32(GetId());
         data << uint32(GetAuraMaxDuration());
         data << uint32(GetAuraDuration());
-        ((Player *)m_target)->SendDirectMessage(&data);
+        ((Player *)m_target)->BroadcastPacketToSelf(&data);
     }
 
     // not send in case player loading (will not work anyway until player not added to map), sent in visibility change code
@@ -2374,7 +2374,7 @@ void Aura::TriggerSpell()
                 WorldPacket data(4);
                 data.SetOpcode(SMSG_PLAY_SOUND);
                 data << uint32(10030);
-                target->SendMessageToSet(&data,false);
+                target->BroadcastPacket(&data,false);
                 break;
             }
             // Self Repair
@@ -3175,7 +3175,7 @@ void Aura::HandleAuraWaterWalk(bool apply, bool Real)
 
     data << m_target->GetPackGUID();
     data << uint32(0);
-    m_target->SendMessageToSet(&data,true);
+    m_target->BroadcastPacket(&data,true);
 }
 
 void Aura::HandleAuraFeatherFall(bool apply, bool Real)
@@ -3192,7 +3192,7 @@ void Aura::HandleAuraFeatherFall(bool apply, bool Real)
 
     data << m_target->GetPackGUID();
     data << uint32(0);
-    m_target->SendMessageToSet(&data,true);
+    m_target->BroadcastPacket(&data,true);
 
     // start fall from current height
     if (!apply && m_target->GetTypeId() == TYPEID_PLAYER)
@@ -4440,7 +4440,7 @@ void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
 
         data << m_target->GetPackGUID();
         data << uint32(0);                                      // unknown
-        m_target->SendMessageToSet(&data, true);
+        m_target->BroadcastPacket(&data, true);
 
         //Players on flying mounts must be immune to polymorph
         if (m_target->GetTypeId() == TYPEID_PLAYER)
@@ -6985,7 +6985,7 @@ void Aura::PeriodicTick()
             data << (uint32)SpellMgr::GetSpellSchoolMask(GetSpellProto()); // will be mask in 2.4.x
             data << (uint32)damageInfo.absorb;
             data << (uint32)damageInfo.resist;
-            m_target->SendMessageToSet(&data,true);
+            m_target->BroadcastPacket(&data,true);
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellEntry const* spellProto = GetSpellProto();
@@ -7193,7 +7193,7 @@ void Aura::PeriodicTick()
             data << uint32(1);
             data << uint32(m_modifier.m_auraname);
             data << (uint32)pdamage;
-            m_target->SendMessageToSet(&data,true);
+            m_target->BroadcastPacket(&data,true);
 
             int32 gain = m_target->ModifyHealth(pdamage);
 
@@ -7278,7 +7278,7 @@ void Aura::PeriodicTick()
             data << (uint32)power;                          // power type
             data << (uint32)drain_amount;
             data << (float)gain_multiplier;
-            m_target->SendMessageToSet(&data,true);
+            m_target->BroadcastPacket(&data,true);
 
             int32 gain_amount = int32(drain_amount*gain_multiplier);
 
@@ -7348,7 +7348,7 @@ void Aura::PeriodicTick()
             data << uint32(m_modifier.m_auraname);
             data << (uint32)power;                          // power type
             data << (uint32)pdamage;
-            m_target->SendMessageToSet(&data,true);
+            m_target->BroadcastPacket(&data,true);
 
             int32 gain = m_target->ModifyPower(power,pdamage);
 
@@ -7377,7 +7377,7 @@ void Aura::PeriodicTick()
             data << uint32(m_modifier.m_auraname);
             data << (uint32)0;                              // ?
             data << (uint32)pdamage;
-            m_target->SendMessageToSet(&data,true);
+            m_target->BroadcastPacket(&data,true);
 
             int32 gain = m_target->ModifyPower(POWER_MANA, pdamage);
 

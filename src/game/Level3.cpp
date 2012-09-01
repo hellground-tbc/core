@@ -5782,7 +5782,7 @@ bool ChatHandler::HandleGMFlyCommand(const char* args)
     }
     data << unit->GetPackGUID();
     data << uint32(0);                                      // unknown
-    unit->SendMessageToSet(&data, true);
+    unit->BroadcastPacket(&data, true);
     PSendSysMessage(LANG_COMMAND_FLYMODE_STATUS, unit->GetName(), args);
     return true;
 }
