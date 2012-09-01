@@ -1013,7 +1013,7 @@ void hyjalAI::HideNearPos(float x, float y)
 void hyjalAI::RespawnNearPos(float x, float y)
 {
     Hellground::RespawnDo u_do;
-    Hellground::ObjectWorker<WorldObject, Hellground::RespawnDo> worker(u_do);
+    Hellground::ObjectWorker<Creature, Hellground::RespawnDo> worker(u_do);
     Cell::VisitGridObjects(x, y, me->GetMap(), worker, me->GetMap()->GetVisibilityDistance());
 }
 
