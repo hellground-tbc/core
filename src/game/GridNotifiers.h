@@ -48,7 +48,9 @@ namespace Hellground
 
         VisibleNotifier(Player &player) : i_player(player), vis_guids(player.m_clientGUIDs) {}
 
-        template<class T> void Visit(GridRefManager<T> &m);
+        template<class T>
+        void Visit(GridRefManager<T> &m);
+
         void SendToSelf(void);
     };
 
@@ -57,10 +59,13 @@ namespace Hellground
         WorldObject &i_object;
 
         explicit VisibleChangesNotifier(WorldObject &object) : i_object(object) {}
-        template<class T> void Visit(GridRefManager<T> &) {}
+
         void Visit(PlayerMapType &);
         void Visit(CreatureMapType &);
         void Visit(DynamicObjectMapType &);
+
+        template<class T>
+        void Visit(GridRefManager<T> &) {}
     };
 
     struct PlayerRelocationNotifier : public VisibleNotifier

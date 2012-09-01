@@ -223,7 +223,11 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
 bool Corpse::isVisibleForInState(Player const* u, bool inVisibleList) const
 {
     const WorldObject* viewPoint = u->GetFarsightTarget();
-    if (!viewPoint || !u->HasFarsightVision()) viewPoint = u;
+    if (!viewPoint || !u->HasFarsightVision())
+        viewPoint = u;
+
+    if (m_type == CORPSE_BONES && u->GetSession()->IsAccountFlagged(ACC_HIDE_BONES))
+        return false;
 
     return IsInWorld() && u->IsInWorld() && IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }

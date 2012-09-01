@@ -52,6 +52,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "create",         SEC_CONSOLE,        true,   &ChatHandler::HandleAccountCreateCommand,       "", NULL },
         { "delete",         SEC_CONSOLE,        true,   &ChatHandler::HandleAccountDeleteCommand,       "", NULL },
         { "gann",           SEC_PLAYER,         false,  &ChatHandler::HandleAccountGuildAnnToggleCommand, "", NULL },
+        { "bones",          SEC_PLAYER,         false,  &ChatHandler::HandleAccountBonesHideCommand,    "", NULL },
         { "log",            SEC_MODERATOR,      true,   &ChatHandler::HandleAccountSpecialLogCommand,   "", NULL },
         { "onlinelist",     SEC_CONSOLE,        true,   &ChatHandler::HandleAccountOnlineListCommand,   "", NULL },
         { "set",            SEC_ADMINISTRATOR,  true,   NULL,                                           "", accountSetCommandTable },

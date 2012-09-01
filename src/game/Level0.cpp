@@ -34,6 +34,70 @@
 #include "revision.h"
 #include "Util.h"
 
+bool ChatHandler::HandleAccountBonesHideCommand(const char* args)
+{
+    if (uint32 account_id = m_session->GetAccountId())
+    {
+        if (WorldSession *session = sWorld.FindSession(account_id))
+        {
+            if (session->IsAccountFlagged(ACC_HIDE_BONES))
+            {
+                session->RemoveAccountFlag(ACC_HIDE_BONES);
+
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_HIDE_BONES, account_id);
+                PSendSysMessage("Client will show bones for this account now.");
+            }
+            else
+            {
+                session->AddAccountFlag(ACC_HIDE_BONES);
+
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_HIDE_BONES, account_id);
+                PSendSysMessage("Client won't show bones for this account now.");
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
+{
+    if (uint32 account_id = m_session->GetAccountId())
+    {
+        if (WorldSession *session = sWorld.FindSession(account_id))
+        {
+            if (session->IsAccountFlagged(ACC_DISABLED_GANN))
+            {
+                session->RemoveAccountFlag(ACC_DISABLED_GANN);
+
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_DISABLED_GANN, account_id);
+                PSendSysMessage("Guild announces have been enabled for this account.");
+            }
+            else
+            {
+                session->AddAccountFlag(ACC_DISABLED_GANN);
+
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
+                PSendSysMessage("Guild announces have been disabled for this account.");
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleHelpCommand(const char* args)
 {
     char* cmd = strtok((char*)args, " ");
