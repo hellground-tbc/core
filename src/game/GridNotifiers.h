@@ -280,7 +280,7 @@ namespace Hellground
 
         void Visit(GridRefManager<T> &m)
         {
-            for (GridRefManager<T>::iterator itr= m.begin(); itr != m.end(); ++itr)
+            for (typename GridRefManager<T>::iterator itr= m.begin(); itr != m.end(); ++itr)
                 _do(itr->getSource());
         }
 

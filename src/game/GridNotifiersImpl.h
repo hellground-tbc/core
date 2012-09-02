@@ -58,7 +58,7 @@ void Hellground::ObjectSearcher<T, Check>::Visit(GridRefManager<T>& m)
     if (_object)
         return;
 
-    for (GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+    for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (_check(itr->getSource()))
         {
@@ -71,7 +71,7 @@ void Hellground::ObjectSearcher<T, Check>::Visit(GridRefManager<T>& m)
 template<class T, class Check>
 void Hellground::ObjectLastSearcher<T, Check>::Visit(GridRefManager<T>& m)
 {
-    for (GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+    for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (_check(itr->getSource()))
             _object = itr->getSource();
@@ -81,7 +81,7 @@ void Hellground::ObjectLastSearcher<T, Check>::Visit(GridRefManager<T>& m)
 template<class T, class Check>
 void Hellground::ObjectListSearcher<T, Check>::Visit(GridRefManager<T>& m)
 {
-    for (GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+    for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (_check(itr->getSource()))
             _objects.push_back(itr->getSource());
