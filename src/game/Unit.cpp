@@ -11386,7 +11386,7 @@ bool Unit::SetPosition(float x, float y, float z, float orientation, bool telepo
     bool turn = (GetOrientation() != orientation);
     bool relocated = (teleport || GetPositionX() != x || GetPositionY() != y || GetPositionZ() != z);
 
-    SpellAuraInterruptFlags interruptFlags;
+    SpellAuraInterruptFlags interruptFlags = AURA_INTERRUPT_FLAG_NONE;
     if (relocated)
     {
         interruptFlags = SpellAuraInterruptFlags(interruptFlags | AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_NOT_SEATED);
