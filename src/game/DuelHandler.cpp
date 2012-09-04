@@ -55,8 +55,8 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 
     WorldPacket data(SMSG_DUEL_COUNTDOWN, 4);
     data << (uint32)3000;                                   // 3 seconds
-    pl->GetSession()->SendPacket(&data);
-    plTarget->GetSession()->SendPacket(&data);
+    pl->BroadcastPacketToSelf(&data);
+    plTarget->BroadcastPacketToSelf(&data);
 }
 
 void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)

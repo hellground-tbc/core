@@ -1347,7 +1347,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recv_data)
 
     WorldPacket data(SMSG_WHOIS, msg.size()+1);
     data << msg;
-    _player->GetSession()->SendPacket(&data);
+    _player->BroadcastPacketToSelf(&data);
 
     sLog.outDebug("Received whois command from player %s for character %s", GetPlayer()->GetName(), charname.c_str());
 }
@@ -1420,37 +1420,22 @@ void WorldSession::HandleRealmStateRequestOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleFarSightOpcode(WorldPacket & recv_data)
 {
-    CHECK_PACKET_SIZE(recv_data, 1);
-
-    sLog.outDebug("WORLD: CMSG_FAR_SIGHT");
-    //recv_data.hexlike();
-
     uint8 apply;
     recv_data >> apply;
 
-    CellPair pair;
+    WorldObject* obj = _player->GetFarsightTarget();
+    if (!obj)
+        return;
 
     switch (apply)
     {
         case 0:
-            _player->SetFarsightVision(false);
-            pair = Hellground::ComputeCellPair(_player->GetPositionX(), _player->GetPositionY());
-            sLog.outDebug("Player %u set vision to himself", _player->GetGUIDLow());
+            _player->GetCamera().ResetView(false);
             break;
         case 1:
-            _player->SetFarsightVision(true);
-            if (WorldObject* obj = _player->GetFarsightTarget())
-                pair = Hellground::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-            else
-                return;
-            sLog.outDebug("Added FarSight " I64FMT " to player %u", _player->GetFarSight(), _player->GetGUIDLow());
+            _player->GetCamera().SetView(obj, false);
             break;
-        default:
-            sLog.outDebug("Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
-            return;
     }
-
-    GetPlayer()->UpdateVisibilityForPlayer();
 }
 
 void WorldSession::HandleChooseTitleOpcode(WorldPacket & recv_data)

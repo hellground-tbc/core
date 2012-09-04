@@ -28,6 +28,7 @@
 #include "World.h"
 #include "CellImpl.h"
 #include "CreatureAI.h"
+#include "GridDefines.h"
 
 class HELLGROUND_DLL_DECL ObjectGridRespawnMover
 {
@@ -109,7 +110,7 @@ template<> void addUnitState(Creature *obj, CellPair const& cell_pair)
 }
 
 template <class T>
-void LoadHelper(CellGuidSet const& guid_set, CellPair &cell, GridRefManager<T> &m, uint32 &count, Map* map)
+void LoadHelper(CellGuidSet const& guid_set, CellPair &cell, GridRefManager<T> &m, uint32 &count, Map* map, GridType& grid)
 {
     for (CellGuidSet::const_iterator i_guid = guid_set.begin(); i_guid != guid_set.end(); ++i_guid)
     {
@@ -122,19 +123,22 @@ void LoadHelper(CellGuidSet const& guid_set, CellPair &cell, GridRefManager<T> &
             continue;
         }
 
-        obj->GetGridRef().link(&m, obj);
+        grid.AddGridObject(obj);
 
         addUnitState(obj,cell);
         obj->AddToWorld();
+
         if (obj->isActiveObject())
             map->AddToActive(obj);
+
+        obj->GetViewPoint().Event_AddedToWorld(&grid);
 
         ++count;
 
     }
 }
 
-void LoadHelper(CellCorpseSet const& cell_corpses, CellPair &cell, CorpseMapType &m, uint32 &count, Map* map)
+void LoadHelper(CellCorpseSet const& cell_corpses, CellPair &cell, CorpseMapType &m, uint32 &count, Map* map, GridType& grid)
 {
     if (cell_corpses.empty())
         return;
@@ -150,10 +154,11 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellPair &cell, CorpseMapType
         if (!obj)
             continue;
 
-        obj->GetGridRef().link(&m, obj);
+        grid.AddWorldObject(obj);
 
         addUnitState(obj,cell);
         obj->AddToWorld();
+
         if (obj->isActiveObject())
             map->AddToActive(obj);
 
@@ -161,8 +166,7 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellPair &cell, CorpseMapType
     }
 }
 
-void
-ObjectGridLoader::Visit(GameObjectMapType &m)
+void ObjectGridLoader::Visit(GameObjectMapType &m)
 {
     uint32 x = (i_cell.GridX()*MAX_NUMBER_OF_CELLS) + i_cell.CellX();
     uint32 y = (i_cell.GridY()*MAX_NUMBER_OF_CELLS) + i_cell.CellY();
@@ -171,11 +175,11 @@ ObjectGridLoader::Visit(GameObjectMapType &m)
 
     CellObjectGuids const& cell_guids = sObjectMgr.GetCellObjectGuids(i_map->GetId(), i_map->GetSpawnMode(), cell_id);
 
-    LoadHelper(cell_guids.gameobjects, cell_pair, m, i_gameObjects, i_map);
+    GridType& grid = (*i_map->getNGrid(i_cell.GridX(),i_cell.GridY())) (i_cell.CellX(),i_cell.CellY());
+    LoadHelper(cell_guids.gameobjects, cell_pair, m, i_gameObjects, i_map, grid);
 }
 
-void
-ObjectGridLoader::Visit(CreatureMapType &m)
+void ObjectGridLoader::Visit(CreatureMapType &m)
 {
     uint32 x = (i_cell.GridX()*MAX_NUMBER_OF_CELLS) + i_cell.CellX();
     uint32 y = (i_cell.GridY()*MAX_NUMBER_OF_CELLS) + i_cell.CellY();
@@ -183,12 +187,11 @@ ObjectGridLoader::Visit(CreatureMapType &m)
     uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
     CellObjectGuids const& cell_guids = sObjectMgr.GetCellObjectGuids(i_map->GetId(), i_map->GetSpawnMode(), cell_id);
-
-    LoadHelper(cell_guids.creatures, cell_pair, m, i_creatures, i_map);
+    GridType& grid = (*i_map->getNGrid(i_cell.GridX(),i_cell.GridY())) (i_cell.CellX(),i_cell.CellY());
+    LoadHelper(cell_guids.creatures, cell_pair, m, i_creatures, i_map, grid);
 }
 
-void
-ObjectWorldLoader::Visit(CorpseMapType &m)
+void ObjectWorldLoader::Visit(CorpseMapType &m)
 {
     uint32 x = (i_cell.GridX()*MAX_NUMBER_OF_CELLS) + i_cell.CellX();
     uint32 y = (i_cell.GridY()*MAX_NUMBER_OF_CELLS) + i_cell.CellY();
@@ -197,11 +200,11 @@ ObjectWorldLoader::Visit(CorpseMapType &m)
 
     // corpses are always added to spawn mode 0 and they are spawned by their instance id
     CellObjectGuids const& cell_guids = sObjectMgr.GetCellObjectGuids(i_map->GetId(), 0, cell_id);
-    LoadHelper(cell_guids.corpses, cell_pair, m, i_corpses, i_map);
+    GridType& grid = (*i_map->getNGrid(i_cell.GridX(),i_cell.GridY())) (i_cell.CellX(),i_cell.CellY());
+    LoadHelper(cell_guids.corpses, cell_pair, m, i_corpses, i_map, grid);
 }
 
-void
-ObjectGridLoader::Load(GridType &grid)
+void ObjectGridLoader::Load(GridType &grid)
 {
     {
         TypeContainerVisitor<ObjectGridLoader, GridTypeMapContainer > loader(*this);
@@ -245,16 +248,14 @@ void ObjectGridUnloader::MoveToRespawnN()
     }
 }
 
-void
-ObjectGridUnloader::Unload(GridType &grid)
+void ObjectGridUnloader::Unload(GridType &grid)
 {
     TypeContainerVisitor<ObjectGridUnloader, GridTypeMapContainer > unloader(*this);
     grid.Visit(unloader);
 }
 
 template<class T>
-void
-ObjectGridUnloader::Visit(GridRefManager<T> &m)
+void ObjectGridUnloader::Visit(GridRefManager<T> &m)
 {
     // remove all cross-reference before deleting
     for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
@@ -271,15 +272,13 @@ ObjectGridUnloader::Visit(GridRefManager<T> &m)
     }
 }
 
-void
-ObjectGridStoper::Stop(GridType &grid)
+void ObjectGridStoper::Stop(GridType &grid)
 {
     TypeContainerVisitor<ObjectGridStoper, GridTypeMapContainer > stoper(*this);
     grid.Visit(stoper);
 }
 
-void
-ObjectGridStoper::Visit(CreatureMapType &m)
+void ObjectGridStoper::Visit(CreatureMapType &m)
 {
     // stop any fights at grid de-activation and remove dynobjects created at cast by creatures
     for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
@@ -294,23 +293,20 @@ ObjectGridStoper::Visit(CreatureMapType &m)
     }
 }
 
-void
-ObjectGridCleaner::Stop(GridType &grid)
+void ObjectGridCleaner::Stop(GridType &grid)
 {
     TypeContainerVisitor<ObjectGridCleaner, GridTypeMapContainer > stoper(*this);
     grid.Visit(stoper);
 }
 
-void
-ObjectGridCleaner::Visit(CreatureMapType &m)
+void ObjectGridCleaner::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
         iter->getSource()->CleanupsBeforeDelete();
 }
 
 template<class T>
-void
-ObjectGridCleaner::Visit(GridRefManager<T> &m)
+void ObjectGridCleaner::Visit(GridRefManager<T> &m)
 {
     for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
         iter->getSource()->RemoveFromWorld();

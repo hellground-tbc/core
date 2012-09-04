@@ -439,7 +439,7 @@ void WorldSession::LogoutPlayer(bool Save)
                 _player->RemoveAllAurasOnDeath();
 
                 // build set of player who attack _player or who have pet attacking of _player
-                std::set<Player*> aset;
+                PlayerSet aset;
                 if (!_player->getAttackers().empty())
                 {
                     for (Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
@@ -462,7 +462,7 @@ void WorldSession::LogoutPlayer(bool Save)
                 _player->RepopAtGraveyard();
 
                 // give honor to all attackers from set like group case
-                for (std::set<Player*>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
+                for (PlayerSet::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
                     (*itr)->RewardHonor(_player,aset.size());
 
                 // give bg rewards and update counters like kill by first from attackers

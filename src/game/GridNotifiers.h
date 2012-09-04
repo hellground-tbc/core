@@ -41,12 +41,15 @@ namespace Hellground
 {
     struct VisibleNotifier
     {
-        Player &i_player;
+        Camera& _camera;
+
         UpdateData i_data;
-        std::set<Unit*> i_visibleNow;
+        std::set<WorldObject*> i_visibleNow;
         Player::ClientGUIDs vis_guids;
 
-        VisibleNotifier(Player &player) : i_player(player), vis_guids(player.m_clientGUIDs) {}
+        VisibleNotifier(Camera &c) : _camera(c), vis_guids(c.GetOwner()->m_clientGUIDs) {}
+
+        void Visit(CameraMapType &m) {}
 
         template<class T>
         void Visit(GridRefManager<T> &m);
@@ -56,56 +59,37 @@ namespace Hellground
 
     struct HELLGROUND_DLL_DECL VisibleChangesNotifier
     {
-        WorldObject &i_object;
+        WorldObject &_object;
 
-        explicit VisibleChangesNotifier(WorldObject &object) : i_object(object) {}
+        explicit VisibleChangesNotifier(WorldObject &object) : _object(object) {}
 
-        void Visit(PlayerMapType &);
-        void Visit(CreatureMapType &);
-        void Visit(DynamicObjectMapType &);
+        void Visit(CameraMapType &);
 
-        template<class T>
-        void Visit(GridRefManager<T> &) {}
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-    struct PlayerRelocationNotifier : public VisibleNotifier
+    struct PlayerRelocationNotifier
     {
-        PlayerRelocationNotifier(Player &pl) : VisibleNotifier(pl) {}
+        Player &_player;
+        PlayerRelocationNotifier(Player &pl) : _player(pl) {}
 
-        template<class T> void Visit(GridRefManager<T> &m) { VisibleNotifier::Visit(m); }
-        void Visit(CreatureMapType &);
-        void Visit(PlayerMapType &);
+        void Visit(CameraMapType&);
+        void Visit(CreatureMapType&);
+
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED>&) {}
     };
 
     struct CreatureRelocationNotifier
     {
-        Creature &i_creature;
-        CreatureRelocationNotifier(Creature &c) : i_creature(c) {}
-        template<class T> void Visit(GridRefManager<T> &) {}
-        void Visit(CreatureMapType &);
-        void Visit(PlayerMapType &);
-    };
+        Creature &_creature;
+        CreatureRelocationNotifier(Creature& c) : _creature(c) {}
 
-    struct DelayedUnitRelocation
-    {
-        Map &i_map;
-        Cell &cell;
-        CellPair &p;
-        const float i_radius;
-        DelayedUnitRelocation(Cell &c, CellPair &pair, Map &map, float radius) :
-            cell(c), p(pair), i_map(map), i_radius(radius) {}
-        template<class T> void Visit(GridRefManager<T> &) {}
-        void Visit(CreatureMapType &);
-        void Visit(PlayerMapType   &);
-    };
+        void Visit(PlayerMapType&);
 
-    struct AIRelocationNotifier
-    {
-       Unit &i_unit;
-       bool isCreature;
-       explicit AIRelocationNotifier(Unit &unit) : i_unit(unit), isCreature(unit.GetTypeId() == TYPEID_UNIT)  {}
-       template<class T> void Visit(GridRefManager<T> &) {}
-       void Visit(CreatureMapType &);
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED>&) {}
     };
 
     struct HELLGROUND_DLL_DECL GridUpdater
@@ -145,9 +129,7 @@ namespace Hellground
 
         void BroadcastPacketTo(Player*);
 
-        void Visit(PlayerMapType&);
-        void Visit(CreatureMapType&);
-        void Visit(DynamicObjectMapType&);
+        void Visit(CameraMapType &);
 
         template<class SKIP>
         void Visit(GridRefManager<SKIP>&) {}
@@ -157,9 +139,13 @@ namespace Hellground
     {
         uint32 i_timeDiff;
         explicit ObjectUpdater(const uint32 &diff) : i_timeDiff(diff) {}
-        template<class T> void Visit(GridRefManager<T> &m);
-        void Visit(PlayerMapType &) {}
-        void Visit(CorpseMapType &) {}
+
+        template<class T>
+        void Visit(GridRefManager<T> &m);
+
+        void Visit(PlayerMapType&) {}
+        void Visit(CorpseMapType&) {}
+        void Visit(CameraMapType&) {}
         void Visit(CreatureMapType &);
     };
 
@@ -289,23 +275,23 @@ namespace Hellground
     };
 
     template<class Do>
-    struct HELLGROUND_DLL_DECL PlayerDistWorker
+    struct HELLGROUND_DLL_DECL CameraDistWorker
     {
         WorldObject const* i_searcher;
         float i_dist;
         Do& i_do;
 
-        PlayerDistWorker(WorldObject const* searcher, float _dist, Do& _do)
-            : i_searcher(searcher), i_dist(_dist), i_do(_do) {}
+        CameraDistWorker(WorldObject const* searcher, float _dist, Do& _do) : i_searcher(searcher), i_dist(_dist), i_do(_do) {}
 
-        void Visit(PlayerMapType &m)
+        void Visit(CameraMapType &m)
         {
-            for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                if(itr->getSource()->GetDistance(i_searcher) <= i_dist)
-                    i_do(itr->getSource());
+            for(CameraMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+                if (itr->getSource()->GetBody()->IsWithinDist(i_searcher, i_dist))
+                    i_do(itr->getSource()->GetOwner());
         }
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
     // CHECKS && DO classes
@@ -448,7 +434,7 @@ namespace Hellground
             {
                 if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)   // cant target when out of phase -> invisibility 10
                 {
-                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf((Unit*)i_obj, u))
                         return false;
                 }
 
@@ -474,7 +460,7 @@ namespace Hellground
 
                 if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)   // cant target when out of phase -> invisibility 10
                 {
-                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf((Unit*)i_obj, u))
                         return false;
                 }
 
@@ -563,7 +549,7 @@ namespace Hellground
             bool operator()(Unit* u)
             {
                 if (u->isTargetableForAttack() && i_obj->IsWithinDistInMap(u, i_range) &&
-                    !i_funit->IsFriendlyTo(u) && u->isVisibleForOrDetect(i_funit,false) )
+                    !i_funit->IsFriendlyTo(u) && u->isVisibleForOrDetect(i_funit, i_funit, false) )
                 {
                     i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
                     return true;
@@ -599,7 +585,7 @@ namespace Hellground
                     return false;
                 if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)   // cant target when out of phase -> invisibility 10
                 {
-                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf((Unit*)i_obj, u))
                         return false;
                 }
                 if (u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isTotem())

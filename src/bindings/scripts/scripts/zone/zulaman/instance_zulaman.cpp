@@ -276,14 +276,17 @@ struct HELLGROUND_DLL_DECL instance_zulaman : public ScriptedInstance
             HandleGameObject(HexLordExitGateGUID, true);
     }
 
-    void UpdateWorldState(uint32 field, uint32 value, Player* player = NULL)
+    void UpdateWorldState(uint32 field, uint32 value)
     {
-        WorldPacket data(SMSG_UPDATE_WORLD_STATE, 8);
-        data << field << value;
-        if(player)
-            player->GetSession()->SendPacket(&data);
-        else
-            instance->SendToPlayers(&data);
+        Map::PlayerList const& players = instance->GetPlayers();
+        if (!players.isEmpty())
+        {
+            for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if (Player* player = itr->getSource())
+                    player->SendUpdateWorldState(field, value);
+            }
+        }
     }
 
     std::string GetSaveData()
@@ -519,10 +522,10 @@ struct HELLGROUND_DLL_DECL instance_zulaman : public ScriptedInstance
 
     void OnPlayerEnter(Player *player)
     {
-        if(QuestMinute)
+        if (QuestMinute)
         {
-            UpdateWorldState(3104, 1, player);
-            UpdateWorldState(3106, QuestMinute, player);
+            player->SendUpdateWorldState(3104, 1);
+            player->SendUpdateWorldState(3106, QuestMinute);
         }
     }
 

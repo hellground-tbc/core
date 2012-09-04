@@ -738,12 +738,11 @@ class World
         static float GetVisibleUnitGreyDistance()           { return m_VisibleUnitGreyDistance;       }
         static float GetVisibleObjectGreyDistance()         { return m_VisibleObjectGreyDistance;     }
 
-        static int32 GetVisibilityNotifyPeriodOnContinents(){ return m_visibility_notify_periodOnContinents; }
-        static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
-        static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
-
         static int32 GetActiveObjectUpdateDistanceOnContinents() { return m_activeObjectUpdateDistanceOnContinents; }
         static int32 GetActiveObjectUpdateDistanceInInstances() { return m_activeObjectUpdateDistanceInInstances; }
+
+        static uint32 GetRelocationLowerLimitSq() { return m_relocationLowerLimitSq; }
+        static uint32 GetRelocationAINotifyDelay() { return m_relocationAINotifyDelay; }
 
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder::Print* zprintf, char const* input) { cliCmdQueue.add(new CliCommandHolder(input, zprintf)); }
@@ -875,12 +874,11 @@ class World
         static float m_VisibleUnitGreyDistance;
         static float m_VisibleObjectGreyDistance;
 
-        static int32 m_visibility_notify_periodOnContinents;
-        static int32 m_visibility_notify_periodInInstances;
-        static int32 m_visibility_notify_periodInBGArenas;
-
         static int32 m_activeObjectUpdateDistanceOnContinents;
         static int32 m_activeObjectUpdateDistanceInInstances;
+
+        static uint32 m_relocationLowerLimitSq;
+        static uint32 m_relocationAINotifyDelay;
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*, ACE_Thread_Mutex> cliCmdQueue;

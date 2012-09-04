@@ -490,7 +490,7 @@ void ArenaTeam::BroadcastPacket(WorldPacket *packet)
     {
         Player *player = sObjectMgr.GetPlayer(itr->guid);
         if (player)
-            player->GetSession()->SendPacket(packet);
+            player->BroadcastPacketToSelf(packet);
     }
 }
 

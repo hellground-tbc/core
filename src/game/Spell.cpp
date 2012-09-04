@@ -1136,7 +1136,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         if ((m_originalCaster && !m_originalCaster->IsFriendlyTo(unit)) || !m_caster->IsFriendlyTo(unit))
         {
             // reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
-            bool isVisibleForHit = ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, true)) ? false : true;
+            bool isVisibleForHit = ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, m_caster, true)) ? false : true;
 
             // for delayed spells ignore not visible explicit target
             if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit==m_targets.getUnitTarget() && !isVisibleForHit)
@@ -1402,7 +1402,7 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
 
             while (m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
                 && !m_caster->isInFront(*next, max_range)
-                || !m_caster->canSeeOrDetect(*next, false)
+                || !m_caster->canSeeOrDetect(*next, m_caster, false)
                 || (m_spellInfo->AttributesEx6 & SPELL_ATTR_EX6_CANT_TARGET_CCD && ((*next)->hasNegativeAuraWithInterruptFlag(AURA_INTERRUPT_FLAG_CC) || (*next)->GetTypeId() == TYPEID_UNIT && ((Creature*)(*next))->GetCreatureType() == CREATURE_TYPE_CRITTER))
                 || !ignoreLOS && !cur->IsWithinLOSInMap(*next))
             {
@@ -2403,7 +2403,7 @@ void Spell::cast(bool skipCheck)
 
     if (Unit *pTarget = m_targets.getUnitTarget())
     {
-        if (pTarget->isAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, true))
+        if (pTarget->isAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, m_caster, true))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
@@ -3033,7 +3033,7 @@ void Spell::SendCastResult(SpellCastResult result)
         WorldPacket data(SMSG_CLEAR_EXTRA_AURA_INFO, (8+4));
         data << m_caster->GetPackGUID();
         data << uint32(m_spellInfo->Id);
-        ((Player*)m_caster)->GetSession()->SendPacket(&data);
+        ((Player*)m_caster)->BroadcastPacketToSelf(&data);
         return;
     }
 
@@ -3084,7 +3084,7 @@ void Spell::SendCastResult(SpellCastResult result)
             data << uint32(m_spellInfo->EquippedItemInventoryTypeMask);
             break;
     }
-    ((Player*)m_caster)->GetSession()->SendPacket(&data);
+    ((Player*)m_caster)->BroadcastPacketToSelf(&data);
 }
 
 void Spell::SendSpellStart()
@@ -3452,7 +3452,7 @@ void Spell::SendResurrectRequest(Player* target)
     if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_IGNORE_RESURRECTION_TIMER)
         data << uint32(0);
 
-    target->GetSession()->SendPacket(&data);
+    target->BroadcastPacketToSelf(&data);
 }
 
 void Spell::SendPlaySpellVisual(uint32 SpellID)
@@ -3463,7 +3463,7 @@ void Spell::SendPlaySpellVisual(uint32 SpellID)
     WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);
     data << uint64(m_caster->GetGUID());
     data << uint32(SpellID);                                // spell visual id?
-    ((Player*)m_caster)->GetSession()->SendPacket(&data);
+    ((Player*)m_caster)->BroadcastPacketToSelf(&data);
 }
 
 void Spell::TakeCastItem()

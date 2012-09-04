@@ -243,8 +243,9 @@ void Creature::RemoveCorpse()
         return;
 
     setDeathState(DEAD);
-    m_deathTimer = 0;
     UpdateObjectVisibility();
+
+    m_deathTimer = 0;
     loot.clear();
     m_respawnTime = time(NULL) + m_respawnDelay;
 
@@ -1627,7 +1628,7 @@ void Creature::DeleteFromDB()
     GameDataDatabase.CommitTransaction();
 }
 
-bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
+bool Creature::canSeeOrDetect(Unit const* u, WorldObject const* viewPoint, bool detect, bool inVisibleList, bool is3dDistance) const
 {
     // not in world
     if (!IsInWorld() || !u->IsInWorld())
@@ -1649,7 +1650,7 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
         return false;
 
     // invisible aura
-    if ((m_invisibilityMask || u->m_invisibilityMask) && !canDetectInvisibilityOf(u))
+    if ((m_invisibilityMask || u->m_invisibilityMask) && !canDetectInvisibilityOf(u, viewPoint))
         return false;
 
     // unit got in stealth in this moment and must ignore old detected state
@@ -1660,7 +1661,7 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
     if (u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
         //do not know what is the use of this detect
-        if (!detect || !canDetectStealthOf(u, GetDistance(u)))
+        if (!detect || !canDetectStealthOf(u, viewPoint, viewPoint->GetDistance(u)))
             return false;
     }
 
@@ -1671,10 +1672,10 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
 
 bool Creature::IsWithinSightDist(Unit const* u) const
 {
-    if (!IsWithinLOSInMap(u))
+    if (!IsWithinDistInMap(u, sWorld.getConfig(CONFIG_SIGHT_MONSTER)))
         return false;
 
-    return IsWithinDistInMap(u, sWorld.getConfig(CONFIG_SIGHT_MONSTER));
+    return IsWithinLOSInMap(u);
 }
 
 bool Creature::canStartAttack(Unit const* who) const
@@ -1823,9 +1824,7 @@ void Creature::Respawn()
     // forced recreate creature object at clients
     UnitVisibility currentVis = GetVisibility();
     SetVisibility(VISIBILITY_RESPAWN);
-    UpdateObjectVisibility();
     SetVisibility(currentVis);                              // restore visibility state
-    UpdateObjectVisibility();
 
     if (getDeathState()==DEAD)
     {

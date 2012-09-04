@@ -917,7 +917,7 @@ void Item::SendTimeUpdate(Player* owner)
     WorldPacket data(SMSG_ITEM_TIME_UPDATE, (8+4));
     data << (uint64)GetGUID();
     data << (uint32)GetUInt32Value(ITEM_FIELD_DURATION);
-    owner->GetSession()->SendPacket(&data);
+    owner->BroadcastPacketToSelf(&data);
 }
 
 Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)

@@ -200,7 +200,7 @@ void Object::SendCreateUpdateToPlayer(Player* player)
     BuildCreateUpdateBlockForPlayer(&upd, player);
     upd.BuildPacket(&packet);
 
-    player->GetSession()->SendPacket(&packet);
+    player->BroadcastPacketToSelf(&packet);
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) const
@@ -244,7 +244,7 @@ void Object::DestroyForPlayer(Player *target) const
 
     WorldPacket data(SMSG_DESTROY_OBJECT, 8);
     data << uint64(GetGUID());
-    target->GetSession()->SendPacket(&data);
+    target->BroadcastPacketToSelf(&data);
 }
 
 void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
@@ -899,7 +899,6 @@ WorldObject::WorldObject()
     mSemaphoreTeleport(false)
     , m_map(NULL), m_zoneScript(NULL)
     , m_activeBy(0), IsTempWorldObject(false)
-    , m_notifyflags(0), m_executed_notifies(0)
 {
     mSemaphoreTeleport  = false;
 }
@@ -937,19 +936,9 @@ void WorldObject::setActive(bool on, ActiveObject activeBy)
         return;
 
     if (on)
-    {
-        if (GetTypeId() == TYPEID_UNIT)
-            map->AddToActive((Creature*)this);
-        else if (GetTypeId() == TYPEID_DYNAMICOBJECT)
-            map->AddToActive((DynamicObject*)this);
-    }
+        map->AddToActive(this);
     else
-    {
-        if (GetTypeId() == TYPEID_UNIT)
-            map->RemoveFromActive((Creature*)this);
-        else if (GetTypeId() == TYPEID_DYNAMICOBJECT)
-            map->RemoveFromActive((DynamicObject*)this);
-    }
+        map->RemoveFromActive(this);
 }
 
 void WorldObject::CleanupsBeforeDelete()
@@ -1033,7 +1022,7 @@ InstanceData* WorldObject::GetInstanceData()
 }
 
                                                             //slow
-float WorldObject::GetDistance(const WorldObject* obj) const
+float WorldObject::GetDistance(WorldObject const* obj) const
 {
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
@@ -1100,7 +1089,7 @@ float WorldObject::GetDistanceSq(const float &x, const float &y, const float &z)
     return dx*dx + dy*dy + dz*dz;
 }
 
-float WorldObject::GetDistance2d(const WorldObject* obj) const
+float WorldObject::GetDistance2d(WorldObject const* obj) const
 {
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
@@ -1109,7 +1098,7 @@ float WorldObject::GetDistance2d(const WorldObject* obj) const
     return (dist > 0 ? dist : 0);
 }
 
-float WorldObject::GetDistanceZ(const WorldObject* obj) const
+float WorldObject::GetDistanceZ(WorldObject const* obj) const
 {
     float dz = fabs(GetPositionZ() - obj->GetPositionZ());
     float sizefactor = GetObjectSize() + obj->GetObjectSize();
@@ -1173,7 +1162,7 @@ bool WorldObject::_IsWithinDist(WorldLocation const* wLoc, float dist2compare, b
     return distsq < maxdist * maxdist;
 }
 
-bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
+bool WorldObject::IsWithinLOSInMap(WorldObject const* obj) const
 {
     if (!IsInMap(obj)) return false;
     float ox,oy,oz;
@@ -1255,7 +1244,7 @@ bool WorldObject::IsInRange3d(float x, float y, float z, float minRange, float m
     return distsq < maxdist * maxdist;
 }
 
-float WorldObject::GetAngle(const WorldObject* obj) const
+float WorldObject::GetAngle(WorldObject const* obj) const
 {
     if (!obj) return 0;
     return GetAngle(obj->GetPositionX(), obj->GetPositionY());
@@ -1272,7 +1261,7 @@ float WorldObject::GetAngle(const float x, const float y) const
     return ang;
 }
 
-bool WorldObject::HasInArc(const float arcangle, const WorldObject* obj) const
+bool WorldObject::HasInArc(const float arcangle, WorldObject const* obj) const
 {
     // always have self in arc
     if (obj == this)
@@ -1484,7 +1473,7 @@ void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossW
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER,text,LANG_UNIVERSAL,GetName(),receiver);
 
-    player->GetSession()->SendPacket(&data);
+    player->BroadcastPacketToSelf(&data);
 }
 
 void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
@@ -1492,7 +1481,7 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << Sound;
     if (OnlySelf && GetTypeId() == TYPEID_PLAYER)
-        ((Player*)this)->GetSession()->SendPacket(&data);
+        ((Player*)this)->BroadcastPacketToSelf(&data);
     else
         BroadcastPacket(&data, true); // ToSelf ignored in this case
 }
@@ -1539,8 +1528,8 @@ void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
     float range = sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY);
     Hellground::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_SAY, textId, language, TargetGuid);
     Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
-    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
-    TypeContainerVisitor<Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
+    Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
+    TypeContainerVisitor<Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
     //cell_lock->Visit(cell_lock, message, *GetMap());
     Cell::VisitWorldObjects(this, say_worker, range);
 }
@@ -1550,7 +1539,7 @@ void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
     float range = sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL);
     Hellground::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
     Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
-    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
+    Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
     Cell::VisitWorldObjects(this, say_worker, range);
 }
 
@@ -1572,7 +1561,7 @@ void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossE
     float range = sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE);
     Hellground::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid, withoutPrename);
     Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
-    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
+    Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
     Cell::VisitWorldObjects(this, say_worker, range);
 }
 
@@ -1601,7 +1590,7 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, text, LANG_UNIVERSAL, GetNameForLocaleIdx(loc_idx), receiver);
 
-    player->GetSession()->SendPacket(&data);
+    player->BroadcastPacketToSelf(&data);
 }
 
 void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, int32 iTextEntry, uint32 language, char const* name, uint64 targetGuid, bool withoutPrename) const
@@ -1931,6 +1920,13 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
+void WorldObject::UpdateVisibilityAndView()
+{
+    GetViewPoint().Call_UpdateVisibilityForOwner();
+    UpdateObjectVisibility();
+    GetViewPoint().Event_ViewPointVisibilityChanged();
+}
+
 void WorldObject::UpdateObjectVisibility(bool /*forced*/)
 {
     //updates object's visibility for nearby players
@@ -1953,58 +1949,25 @@ struct WorldObjectChangeAccumulator
     UpdateDataMapType &i_updateDatas;
     WorldObject &i_object;
     std::set<uint64> plr_list;
-    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d) : i_updateDatas(d), i_object(obj) {}
-    void Visit(PlayerMapType &m)
+
+    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d) : i_updateDatas(d), i_object(obj)
     {
-        for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        if (i_object.isType(TYPEMASK_PLAYER))
+            i_object.BuildFieldsUpdate(i_object.ToPlayer(), i_updateDatas);
+    }
+
+    void Visit(CameraMapType &m)
+    {
+        for (CameraMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         {
-            BuildPacket(iter->getSource());
-            if (!iter->getSource()->GetSharedVisionList().empty())
-            {
-                SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-                for (; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                    BuildPacket(*it);
-            }
+            Player* owner = iter->getSource()->GetOwner();
+            if (owner != &i_object && owner->HaveAtClient(&i_object))
+                i_object.BuildFieldsUpdate(owner, i_updateDatas);
         }
     }
 
-    void Visit(CreatureMapType &m)
-    {
-        for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-        {
-            if (!iter->getSource()->GetSharedVisionList().empty())
-            {
-                SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-                for (; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                    BuildPacket(*it);
-            }
-        }
-    }
-    void Visit(DynamicObjectMapType &m)
-    {
-        for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-        {
-            uint64 guid = iter->getSource()->GetCasterGUID();
-            if (IS_PLAYER_GUID(guid))
-            {
-                //Caster may be NULL if DynObj is in removelist
-                if (Player *caster = ObjectAccessor::FindPlayer(guid))
-                    if (caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->getSource()->GetGUID())
-                        BuildPacket(caster);
-            }
-        }
-    }
-    void BuildPacket(Player* plr)
-    {
-        // Only send update once to a player
-        if (plr_list.find(plr->GetGUID()) == plr_list.end() && plr->HaveAtClient(&i_object))
-        {
-            i_object.BuildFieldsUpdate(plr, i_updateDatas);
-            plr_list.insert(plr->GetGUID());
-        }
-    }
-
-    template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
+    template<class SKIP>
+    void Visit(GridRefManager<SKIP> &) {}
 };
 
 void WorldObject::BuildUpdate(UpdateDataMapType& data_map)

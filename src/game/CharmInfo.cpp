@@ -385,7 +385,7 @@ void CharmInfo::HandleSpellActCommand(uint64 targetGUID, uint32 spellId)
             }
 
             Player *pPlayer = m_unit->GetCharmer()->ToPlayer();
-            pPlayer->GetSession()->SendPacket(&data);
+            pPlayer->BroadcastPacketToSelf(&data);
         }
         else
             m_unit->SendPetCastFail(spellId, result);

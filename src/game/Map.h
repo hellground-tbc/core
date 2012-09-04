@@ -214,26 +214,13 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
 
-        void SendToPlayers(WorldPacket const* data) const;
-
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }
 
         // must called with AddToWorld
-        template<class T>
-        void AddToActive(T* obj) { AddToActiveHelper(obj); }
-
-        void AddToActive(Creature* obj);
-
-        //per-map script storage
-        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);
-        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
-
+        void AddToActive(WorldObject* obj);
         // must called with RemoveFromWorld
-        template<class T>
-        void RemoveFromActive(T* obj) { RemoveFromActiveHelper(obj); }
-
-        void RemoveFromActive(Creature* obj);
+        void RemoveFromActive(WorldObject* obj);
 
         template<class T>
         void SwitchGridContainers(T* obj, bool active);
@@ -273,6 +260,16 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         bool WaypointMovementAutoActive() const;
         bool WaypointMovementPathfinding() const;
 
+        void setNGrid(NGridType* grid, uint32 x, uint32 y);
+        NGridType* getNGrid(uint32 x, uint32 y) const
+        {
+            return i_grids[x][y];
+        }
+
+        //per-map script storage
+        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);
+        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
+
     private:
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
         //uint64 CalculateGridMask(const uint32 &y) const;
@@ -293,12 +290,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         void EnsureGridLoadedAtEnter(Cell const&, Player* player = NULL);
 
         void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(this); }
-
-        void setNGrid(NGridType* grid, uint32 x, uint32 y);
-        NGridType* getNGrid(uint32 x, uint32 y) const
-        {
-            return i_grids[x][y];
-        }
 
         bool isGridObjectDataLoaded(uint32 x, uint32 y) const { return getNGrid(x,y)->isGridObjectDataLoaded(); }
         void setGridObjectDataLoaded(bool pLoaded, uint32 x, uint32 y) { getNGrid(x,y)->setGridObjectDataLoaded(pLoaded); }
@@ -331,8 +322,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
 
-        int32 m_VisibilityNotifyPeriod;
-
         typedef std::set<WorldObject*> ActiveNonPlayers;
         ActiveNonPlayers m_activeNonPlayers;
         ActiveNonPlayers::iterator m_activeNonPlayersIter;
@@ -347,10 +336,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         bool m_bLoadedGrids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
 
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
-
-        //these functions used to process player/mob aggro reactions and
-        //visibility calculations. Highly optimized for massive calculations
-        void ProcessRelocationNotifies(const uint32 &diff);
 
         time_t i_gridExpiry;
 
@@ -371,29 +356,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         template<class T>
         void DeleteFromWorld(T*);
-
-        template<class T>
-        void AddToActiveHelper(T* obj)
-        {
-            m_activeNonPlayers.insert(obj);
-        }
-
-        template<class T>
-        void RemoveFromActiveHelper(T* obj)
-        {
-            // Map::Update for active object in proccess
-            if (m_activeNonPlayersIter != m_activeNonPlayers.end())
-            {
-                ActiveNonPlayers::iterator itr = m_activeNonPlayers.find(obj);
-                if (itr == m_activeNonPlayers.end())
-                    return;
-                if (itr==m_activeNonPlayersIter)
-                    ++m_activeNonPlayersIter;
-                m_activeNonPlayers.erase(itr);
-            }
-            else
-                m_activeNonPlayers.erase(obj);
-        }
 };
 
 enum InstanceResetMethod

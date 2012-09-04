@@ -1239,7 +1239,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
                         data << unitTarget->GetGUID();
-                        ((Player*)m_originalCaster)->GetSession()->SendPacket(&data);
+                        ((Player*)m_originalCaster)->BroadcastPacketToSelf(&data);
                     }
                     return;
                 }
@@ -1582,7 +1582,7 @@ void Spell::EffectDummy(uint32 i)
                         data << uint8(SPELL_FAILED_REQUIRES_SPELL_FOCUS);
                         data << uint8(m_cast_count);
                         data << uint32(m_spellInfo->RequiresSpellFocus);
-                        plr->GetSession()->SendPacket(&data);
+                        plr->BroadcastPacketToSelf(&data);
                         return;
                     }
 
@@ -4206,9 +4206,7 @@ void Spell::EffectAddFarsight(uint32 i)
     dynObj->setActive(true);    //must before add to map to be put in world container
     m_caster->GetMap()->Add(dynObj); //grid will also be loaded
 
-    // Need to update visibility of object for client to accept farsight guid
-    ((Player*)m_caster)->UpdateVisibilityOf(dynObj);
-    ((Player*)m_caster)->SetFarsightTarget(dynObj);
+    ((Player*)m_caster)->GetCamera().SetView(dynObj);
 }
 
 void Spell::EffectSummonWild(uint32 i)
@@ -6571,8 +6569,8 @@ void Spell::EffectDuel(uint32 i)
     WorldPacket data(SMSG_DUEL_REQUESTED, 16);
     data << pGameObj->GetGUID();
     data << caster->GetGUID();
-    caster->GetSession()->SendPacket(&data);
-    target->GetSession()->SendPacket(&data);
+    caster->BroadcastPacketToSelf(&data);
+    target->BroadcastPacketToSelf(&data);
 
     // create duel-info
     DuelInfo *duel   = new DuelInfo;
@@ -6648,7 +6646,7 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
     data << uint64(m_caster->GetGUID());                    // summoner guid
     data << uint32(zoneid);                                 // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
-    ((Player*)unitTarget)->GetSession()->SendPacket(&data);
+    ((Player*)unitTarget)->BroadcastPacketToSelf(&data);
 }
 
 static ScriptInfo generateActivateCommand()
@@ -7929,5 +7927,5 @@ void Spell::EffectPlayMusic(uint32 i)
 
     WorldPacket data(SMSG_PLAY_MUSIC, 4);
     data << uint32(soundid);
-    ((Player*)unitTarget)->GetSession()->SendPacket(&data);
+    ((Player*)unitTarget)->BroadcastPacketToSelf(&data);
 }

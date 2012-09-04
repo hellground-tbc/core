@@ -71,7 +71,7 @@ void MapManager::InitializeVisibilityDistanceInfo()
         (*iter).second->InitVisibilityDistance();
 }
 
-Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
+Map* MapManager::CreateMap(uint32 id, WorldObject const* obj)
 {
     ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
 

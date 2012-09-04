@@ -2391,7 +2391,7 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
                     player->SetClientControl(player, false);
                     player->SetFlying(true);
 
-                    pSpectator->AddPlayerToVision(player);
+                    player->GetCamera().SetView(player);
                 }
             }
             player->CLOSE_GOSSIP_MENU();

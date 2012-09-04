@@ -48,7 +48,8 @@ class DynamicObject : public WorldObject
         void AddAffected(Unit *unit) { m_affected.insert(unit); }
         void RemoveAffected(Unit *unit) { m_affected.erase(unit); }
         void Delay(int32 delaytime);
-        bool isVisibleForInState(Player const* u, bool inVisibleList) const;
+
+        bool isVisibleForInState(Player const*, WorldObject const*, bool) const;
 
         float GetObjectBoundingRadius() const               // overwrite WorldObject version
         {

@@ -462,6 +462,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\game\AntiCheat.cpp" />
+    <ClCompile Include="..\..\src\game\Camera.cpp" />
     <ClCompile Include="..\..\src\game\Channel.cpp" />
     <ClCompile Include="..\..\src\game\CharmInfo.cpp" />
     <ClCompile Include="..\..\src\game\Chat.cpp" />
@@ -631,6 +632,7 @@
     <ClCompile Include="..\..\src\game\MapUpdater.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\game\Camera.h" />
     <ClInclude Include="..\..\src\game\Channel.h" />
     <ClInclude Include="..\..\src\game\CharmInfo.h" />
     <ClInclude Include="..\..\src\game\Chat.h" />

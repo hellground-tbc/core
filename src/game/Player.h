@@ -920,7 +920,6 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         void AddToWorld();
         void RemoveFromWorld();
 
-        void SetViewport(uint64 guid, bool movable);
         void StopCastingCharm() { Uncharm(); }
         void StopCastingBindSight();
         WorldObject* GetFarsightTarget() const;
@@ -2077,19 +2076,17 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         typedef std::set<uint64> ClientGUIDs;
         ClientGUIDs m_clientGUIDs;
 
-        bool HaveAtClient(WorldObject const* u) const { return u==this || m_clientGUIDs.find(u->GetGUID())!=m_clientGUIDs.end(); }
+        bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
 
-        bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool canSeeOrDetect(Unit const* u, WorldObject const*, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsVisibleInGridForPlayer(Player const* pl) const;
         bool IsVisibleGloballyfor (Player* pl) const;
 
-        void UpdateVisibilityOf(WorldObject* target);
         void SendInitialVisiblePackets(Unit* target);
-        void UpdateObjectVisibility(bool forced = true);
-        void UpdateVisibilityForPlayer();
 
         template<class T>
-            void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
+        void UpdateVisibilityOf(WorldObject const*, T*, UpdateData&, std::set<WorldObject*>&);
+        void UpdateVisibilityOf(WorldObject const*, WorldObject*);
 
         // Stealth detection system
         uint32 m_DetectInvTimer;
@@ -2194,6 +2191,8 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         uint32 GetCachedArea() const { return m_areaUpdateId; }
 
         void InterruptTaxiFlying();
+
+        Camera& GetCamera() { return m_camera; }
 
     protected:
 
@@ -2461,7 +2460,12 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         GlobalCooldownMgr m_GlobalCooldownMgr;
 
         ReputationMgr  m_reputationMgr;
+
+        Camera m_camera;
 };
+
+typedef std::set<Player*> PlayerSet;
+typedef std::list<Player*> PlayerList;
 
 void AddItemsSetItem(Player*player,Item *item);
 void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);

@@ -237,7 +237,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket & /*recv_data*/)
                 //Offset surely incorrect, but works
                 WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4);
                 data << uint32(money_per_player);
-                (*i)->GetSession()->SendPacket(&data);
+                (*i)->BroadcastPacketToSelf(&data);
             }
         }
         else

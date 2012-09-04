@@ -25,7 +25,7 @@
 #include "ByteBuffer.h"
 #include "UpdateFields.h"
 #include "UpdateData.h"
-#include "GameSystem/GridReference.h"
+#include "Camera.h"
 #include "ObjectGuid.h"
 #include "GridDefines.h"
 #include "Map.h"
@@ -55,14 +55,6 @@ enum TempSummonType
     TEMPSUMMON_MANUAL_DESPAWN              = 8              // despawns when UnSummon() is called
 };
 #define MAX_TYPEID         10
-
-enum NotifyFlags
-{
-    NOTIFY_NONE                     = 0x00,
-    NOTIFY_AI_RELOCATION            = 0x01,
-    NOTIFY_VISIBILITY_CHANGED       = 0x02,
-    NOTIFY_ALL                      = 0xFF
-};
 
 enum ActiveObject
 {
@@ -141,8 +133,15 @@ class HELLGROUND_DLL_SPEC Object
             ClearUpdateMask(true);
         }
 
+#pragma region ObjectGuid
+
         ObjectGuid const& GetObjectGuid() const { return GetGuidValue(OBJECT_FIELD_GUID); }
         std::string GetGuidStr() const { return GetObjectGuid().GetString(); }
+
+        ObjectGuid const& GetGuidValue(uint16 index) const { return *reinterpret_cast<ObjectGuid const*>(&GetUInt64Value(index)); }
+        void SetGuidValue(uint16 index, ObjectGuid const& value) { SetUInt64Value(index, value.GetRawValue()); }
+
+#pragma endregion ObjectGuid
 
         const uint64& GetGUID() const { return GetUInt64Value(0); }
         uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(0)); }
@@ -202,8 +201,6 @@ class HELLGROUND_DLL_SPEC Object
             ASSERT(offset < 2);
             return *(((uint16*)&m_uint32Values[ index ])+offset);
         }
-
-        ObjectGuid const& GetGuidValue( uint16 index ) const { return *reinterpret_cast<ObjectGuid const*>(&GetUInt64Value(index)); }
 
         void SetInt32Value( uint16 index,        int32  value);
         void SetUInt32Value(uint16 index,       uint32  value);
@@ -444,7 +441,7 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
             GetPosition(x, y, z);
             GetGroundPoint(x, y, z, dist, angle);
         }
-        void GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const
+        void GetContactPoint(WorldObject const* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const
         {
             // angle to face `obj` to `this` using distance includes size of `obj`
             GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle(obj));
@@ -479,14 +476,14 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
 
         virtual const char* GetNameForLocaleIdx(int32 /*locale_idx*/) const { return GetName(); }
 
-        float GetDistance(const WorldObject* obj) const;
+        float GetDistance(WorldObject const* obj) const;
         float GetDistance(const float x, const float y, const float z) const;
         float GetDistanceSq(const float &x, const float &y, const float &z) const;
-        float GetDistance2d(const WorldObject* obj) const;
+        float GetDistance2d(WorldObject const* obj) const;
         float GetDistance2d(const float x, const float y) const;
         bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
         float GetExactDistance2d(const float x, const float y) const;
-        float GetDistanceZ(const WorldObject* obj) const;
+        float GetDistanceZ(WorldObject const* obj) const;
 
         float GetExactDist2dSq(float x, float y) const
             { float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy; }
@@ -505,7 +502,7 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
         float GetExactDist(const WorldLocation *pos) const
             { return sqrt(GetExactDistSq(pos)); }
 
-        bool IsInMap(const WorldObject* obj) const
+        bool IsInMap(WorldObject const* obj) const
         {
             return IsInWorld() && obj->IsInWorld() && GetMapId()==obj->GetMapId() &&
                 GetInstanceId()==obj->GetInstanceId();
@@ -529,15 +526,15 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
             return wLoc && GetMapId() == wLoc->mapid && _IsWithinDist(wLoc,dist2compare,is3D);
         }
         bool IsWithinLOS(const float x, const float y, const float z) const;
-        bool IsWithinLOSInMap(const WorldObject* obj) const;
+        bool IsWithinLOSInMap(WorldObject const* obj) const;
 
         bool IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D = true) const;
         bool IsInRange2d(float x, float y, float minRange, float maxRange) const;
         bool IsInRange3d(float x, float y, float z, float minRange, float maxRange) const;
 
-        float GetAngle(const WorldObject* obj) const;
+        float GetAngle(WorldObject const* obj) const;
         float GetAngle(const float x, const float y) const;
-        bool HasInArc(const float arcangle, const WorldObject* obj) const;
+        bool HasInArc(const float arcangle, WorldObject const* obj) const;
 
         virtual void CleanupsBeforeDelete(); // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
 
@@ -571,23 +568,17 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
         virtual void SaveRespawnTime() {}
 
         void AddObjectToRemoveList();
+
+        virtual void UpdateVisibilityAndView();
         virtual void UpdateObjectVisibility(bool forced = true);
+
         void BuildUpdate(UpdateDataMapType&);
 
-        //new relocation and visibility system functions
-        void AddToNotify(uint16 f) { m_notifyflags |= f;}
-        bool isNeedNotify(uint16 f) const { return m_notifyflags & f;}
-
-        uint16 GetNotifyFlags() const { return m_notifyflags; }
-        bool NotifyExecuted(uint16 f) const { return m_executed_notifies & f;}
-        void SetNotified(uint16 f) { m_executed_notifies |= f;}
-        void ResetAllNotifies() { m_notifyflags = 0; m_executed_notifies = 0; }
-
-        // main visibility check function in normal case (ignore grey zone distance check)
-        bool isVisiblefor (Player const* u) const { return isVisibleForInState(u,false); }
+        // main visibility check function in normal case (ignore gray zone distance check)
+        bool isVisibleFor(Player const* u, WorldObject const* viewPoint) const { return isVisibleForInState(u,viewPoint,false); }
 
         // low level function for visibility change code, must be define in all main world object subclasses
-        virtual bool isVisibleForInState(Player const* u, bool inVisibleList) const = 0;
+        virtual bool isVisibleForInState(Player const*, WorldObject const*, bool) const = 0;
 
         // Low Level Packets
         void SendPlaySound(uint32 Sound, bool OnlySelf);
@@ -608,16 +599,17 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 
-        uint32 isActiveObject() const { return m_activeBy; }
+        uint32 isActiveObject() const { return m_activeBy || m_viewPoint.hasViewers(); }
         void setActive(bool isActiveObject, ActiveObject activeBy = ACTIVE_BY_MANUAL);
         void SetWorldObject(bool apply);
 
         bool IsTempWorldObject;
 
-        Player* ToPlayer(){ if (GetTypeId() == TYPEID_PLAYER)  return reinterpret_cast<Player*>(this); else return NULL;  }
-        const Player* ToPlayer() const { if (GetTypeId() == TYPEID_PLAYER)  return (const Player*)((Player*)this); else return NULL;  }
+        Player const* ToPlayer() const;
+        Player* ToPlayer();
+
+        Creature const* ToCreature() const {if (GetTypeId() == TYPEID_UNIT) return (const Creature*)((Creature*)this); else return NULL; }
         Creature* ToCreature(){ if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return NULL; }
-        const Creature* ToCreature() const {if (GetTypeId() == TYPEID_UNIT) return (const Creature*)((Creature*)this); else return NULL; }
 
         Unit* ToUnit(){ if (GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER) return reinterpret_cast<Unit*>(this); else return NULL; }
         const Unit* ToUnit() const {if (GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER) return (const Unit*)((Unit*)this); else return NULL; }
@@ -632,6 +624,8 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
 
         Pet* ToPet();
         const Pet* ToPet() const;
+
+        ViewPoint& GetViewPoint() { return m_viewPoint; }
 
     protected:
         explicit WorldObject();
@@ -652,11 +646,10 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
         float m_positionZ;
         float m_orientation;
 
-        uint16 m_notifyflags;
-        uint16 m_executed_notifies;
-
         bool mSemaphoreTeleport;
         WorldUpdateCounter m_updateTracker;
+
+        ViewPoint m_viewPoint;
 };
 
 #endif

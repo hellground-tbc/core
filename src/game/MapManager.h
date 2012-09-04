@@ -57,7 +57,7 @@ class HELLGROUND_DLL_DECL MapManager
     public:
         typedef std::map<MapID, Map* > MapMapType;
 
-        Map* CreateMap(uint32, const WorldObject* obj);
+        Map* CreateMap(uint32, WorldObject const* obj);
         Map* CreateBgMap(uint32 mapid, uint32, BattleGround* bg);
         Map* FindMap(uint32 mapid, uint32 instanceId = 0) const;
 
@@ -84,7 +84,7 @@ class HELLGROUND_DLL_DECL MapManager
             i_timer.Reset();
         }
 
-        //void LoadGrid(int mapid, float x, float y, const WorldObject* obj, bool no_unload = false);
+        //void LoadGrid(int mapid, float x, float y, WorldObject const* obj, bool no_unload = false);
         void UnloadAll();
 
         static bool ExistMapAndVMap(uint32 mapid, float x, float y);

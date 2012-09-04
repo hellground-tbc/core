@@ -562,6 +562,9 @@
     <ClCompile Include="..\..\src\game\WaypointMgr.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\Camera.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -1065,6 +1068,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\WaypointMgr.h">
       <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\Camera.h">
+      <Filter>Objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

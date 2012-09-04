@@ -264,7 +264,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                             WorldPacket packet;
                             BuildValuesUpdateBlockForPlayer(&udata,((Player*)caster));
                             udata.BuildPacket(&packet);
-                            ((Player*)caster)->GetSession()->SendPacket(&packet);
+                            ((Player*)caster)->BroadcastPacketToSelf(&packet);
 
                             SendGameObjectCustomAnim(GetGUID());
                         }
@@ -454,7 +454,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                             if(GetGOInfo()->summoningRitual.spellId == 7720)
                             {
                                 WorldPacket data(SMSG_SUMMON_CANCEL, 0);
-                                target->GetSession()->SendPacket(&data);
+                                target->BroadcastPacketToSelf(&data);
 
                             }
                         }
@@ -745,18 +745,18 @@ void GameObject::SaveRespawnTime()
         sObjectMgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),m_respawnTime);
 }
 
-bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
+bool GameObject::isVisibleForInState(Player const* player, WorldObject const* viewPoint, bool inVisibleList) const
 {
     // Not in world
-    if (!IsInWorld() || !u->IsInWorld())
+    if (!IsInWorld() || !player->IsInWorld())
         return false;
 
     // Transport always visible at this step implementation
-    if (IsTransport() && IsInMap(u))
+    if (IsTransport() && IsInMap(player))
         return true;
 
     // quick check visibility false cases for non-GM-mode
-    if (!u->isGameMaster())
+    if (!player->isGameMaster())
     {
         // despawned and then not visible for non-GM in GM-mode
         if (!isSpawned())
@@ -766,19 +766,14 @@ bool GameObject::isVisibleForInState(Player const* u, bool inVisibleList) const
         if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRAP && GetGOInfo()->trap.stealthed)
         {
             Unit *owner = GetOwner();
-            if (owner && u->IsHostileTo(owner) && !canDetectTrap(u, GetDistance(u)))
+            if (owner && player->IsHostileTo(owner) && !canDetectTrap(player, GetDistance(player)))
                 return false;
         }
 
         // Smuggled Mana Cell required 10 invisibility type detection/state
-        if (GetEntry()==187039 && ((u->m_detectInvisibilityMask | u->m_invisibilityMask) & (1<<10))==0)
+        if (GetEntry() == 187039 && ((player->m_detectInvisibilityMask | player->m_invisibilityMask) & (1<<10))==0)
             return false;
     }
-
-    // check distance
-    const WorldObject* viewPoint = u->GetFarsightTarget();
-    if (!viewPoint || !u->HasFarsightVision())
-        viewPoint = u;
 
     return IsWithinDistInMap(viewPoint, GetMap()->GetVisibilityDistance(const_cast<GameObject*>(this)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
@@ -856,6 +851,7 @@ void GameObject::Despawn()
         if (sWorld.getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
             SaveRespawnTime();
     }
+
     UpdateObjectVisibility();
 }
 
@@ -1104,7 +1100,7 @@ void GameObject::Use(Unit* user)
                 {
                     WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8);
                     data << GetGUID();
-                    pPlayer->GetSession()->SendPacket(&data);
+                    pPlayer->BroadcastPacketToSelf(&data);
                 }
 
                 // possible quest objective for active quests
@@ -1211,7 +1207,7 @@ void GameObject::Use(Unit* user)
                         SetLootState(GO_JUST_DEACTIVATED);
 
                         WorldPacket data(SMSG_FISH_ESCAPED, 0);
-                        player->GetSession()->SendPacket(&data);
+                        player->BroadcastPacketToSelf(&data);
                     }
                     break;
                 }
@@ -1222,7 +1218,7 @@ void GameObject::Use(Unit* user)
                     SetLootState(GO_JUST_DEACTIVATED);
 
                     WorldPacket data(SMSG_FISH_NOT_HOOKED, 0);
-                    player->GetSession()->SendPacket(&data);
+                    player->BroadcastPacketToSelf(&data);
                     break;
                 }
             }

@@ -951,7 +951,7 @@ void Aura::SendAuraDurationForCaster(Player* caster)
     data << uint32(GetId());
     data << uint32(GetAuraMaxDuration());                   // full
     data << uint32(GetAuraDuration());                      // remain
-    caster->GetSession()->SendPacket(&data);
+    caster->BroadcastPacketToSelf(&data);
 }
 
 void Aura::_AddAura()
@@ -3739,10 +3739,11 @@ void Aura::HandleBindSight(bool apply, bool Real)
     if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
+    Camera& camera = ((Player*)caster)->GetCamera();
     if (apply)
-        m_target->AddPlayerToVision((Player*)caster);
+        camera.SetView(m_target);
     else
-        m_target->RemovePlayerFromVision((Player*)caster);
+        camera.ResetView();
 }
 
 void Aura::HandleFarSight(bool apply, bool Real)
@@ -3751,7 +3752,11 @@ void Aura::HandleFarSight(bool apply, bool Real)
     if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    ((Player*)caster)->SetFarSight(apply ? m_target->GetGUID() : 0);
+    Camera& camera = ((Player*)caster)->GetCamera();
+    if (apply)
+        camera.SetView(m_target);
+    else
+        camera.ResetView();
 }
 
 void Aura::HandleAuraTrackCreatures(bool apply, bool Real)
@@ -4216,8 +4221,7 @@ void Aura::HandleInvisibilityDetect(bool apply, bool Real)
     }
 
     if (Real && m_target->GetTypeId()==TYPEID_PLAYER)
-        //ObjectAccessor::UpdateVisibilityForPlayer((Player*)m_target);
-        m_target->UpdateObjectVisibility();
+        m_target->ToPlayer()->GetCamera().UpdateVisibilityForOwner();
 }
 
 void Aura::HandleAuraModRoot(bool apply, bool Real)

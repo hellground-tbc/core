@@ -59,7 +59,7 @@ class ChannelMgr
             {
                 WorldPacket data;
                 MakeNotOnPacket(&data,name);
-                p->GetSession()->SendPacket(&data);
+                p->BroadcastPacketToSelf(&data);
                 return NULL;
             }
             else

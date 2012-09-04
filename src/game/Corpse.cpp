@@ -220,16 +220,15 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     return true;
 }
 
-bool Corpse::isVisibleForInState(Player const* u, bool inVisibleList) const
+bool Corpse::isVisibleForInState(Player const* player, WorldObject const* viewPoint, bool inVisibleList) const
 {
-    const WorldObject* viewPoint = u->GetFarsightTarget();
-    if (!viewPoint || !u->HasFarsightVision())
-        viewPoint = u;
-
-    if (m_type == CORPSE_BONES && u->GetSession()->IsAccountFlagged(ACC_HIDE_BONES))
+    if (m_type == CORPSE_BONES && player->GetSession()->IsAccountFlagged(ACC_HIDE_BONES))
         return false;
 
-    return IsInWorld() && u->IsInWorld() && IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
+    if (!IsInWorld() || !player->IsInWorld())
+        return false;
+
+    return IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
 
 bool Corpse::IsExpired(time_t t) const

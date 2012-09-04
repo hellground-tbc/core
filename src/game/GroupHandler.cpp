@@ -162,7 +162,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
     // ok, we do it
     WorldPacket data(SMSG_GROUP_INVITE, 10);                // guess size
     data << GetPlayer()->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->BroadcastPacketToSelf(&data);
 
     SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_OK);
 }
@@ -230,7 +230,7 @@ void WorldSession::HandleGroupDeclineOpcode(WorldPacket & /*recv_data*/)
 
     WorldPacket data(SMSG_GROUP_DECLINE, 10);             // guess size
     data << GetPlayer()->GetName();
-    leader->GetSession()->SendPacket(&data);
+    leader->BroadcastPacketToSelf(&data);
 }
 
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recv_data)

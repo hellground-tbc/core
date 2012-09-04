@@ -653,7 +653,8 @@ namespace Hellground
             i_caster = spell.GetCaster();
         }
 
-        template<class T> inline void Visit(GridRefManager<T>  &m)
+        template<class T>
+        inline void Visit(GridRefManager<T>  &m)
         {
             assert(i_data);
 
@@ -704,6 +705,7 @@ namespace Hellground
         template<> inline void Visit(PlayerMapType &) {}
         template<> inline void Visit(GameObjectMapType &) {}
         template<> inline void Visit(DynamicObjectMapType &) {}
+        template<> inline void Visit(CameraMapType & ) {}
         #endif
     };
 
@@ -726,7 +728,8 @@ namespace Hellground
             i_caster = spell.GetCaster();
         }
 
-        template<class T> inline void Visit(GridRefManager<T>  &m)
+        template<class T>
+        inline void Visit(GridRefManager<T>  &m)
         {
             assert(i_data);
 
@@ -738,7 +741,7 @@ namespace Hellground
                 if (!itr->getSource()->isAlive() || (itr->getSource()->GetTypeId() == TYPEID_PLAYER && ((Player*)itr->getSource())->IsTaxiFlying()))
                     continue;
 
-                if (itr->getSource()->m_invisibilityMask && itr->getSource()->m_invisibilityMask & (1 << 10) && !i_caster->canDetectInvisibilityOf(itr->getSource()))
+                if (itr->getSource()->m_invisibilityMask && itr->getSource()->m_invisibilityMask & (1 << 10) && !i_caster->canDetectInvisibilityOf(itr->getSource(), i_caster))
                     continue;
 
                 switch (i_TargetType)
@@ -809,6 +812,7 @@ namespace Hellground
         template<> inline void Visit(CorpseMapType &) {}
         template<> inline void Visit(GameObjectMapType &) {}
         template<> inline void Visit(DynamicObjectMapType &) {}
+        template<> inline void Visit(CameraMapType & ) {}
         #endif
     };
 
@@ -914,6 +918,7 @@ namespace Hellground
         template<> inline void Visit(CorpseMapType &) {}
         template<> inline void Visit(GameObjectMapType &) {}
         template<> inline void Visit(PlayerMapType &) {}
+        template<> inline void Visit(CameraMapType &) {}
         template<> inline void Visit(DynamicObjectMapType &) {}
         #endif
     };
@@ -923,15 +928,18 @@ namespace Hellground
     template<> inline void SpellNotifierGameObject::Visit(CreatureMapType&) {}
     template<> inline void SpellNotifierGameObject::Visit(PlayerMapType&) {}
     template<> inline void SpellNotifierGameObject::Visit(DynamicObjectMapType&) {}
+    template<> inline void SpellNotifierGameObject::Visit(CameraMapType&) {}
 
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(CorpseMapType&) {}
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(GameObjectMapType&) {}
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(DynamicObjectMapType&) {}
+    template<> inline void SpellNotifierCreatureAndPlayer::Visit(CameraMapType&) {}
 
     template<> inline void SpellNotifierDeadCreature::Visit(CorpseMapType&) {}
     template<> inline void SpellNotifierDeadCreature::Visit(GameObjectMapType&) {}
     template<> inline void SpellNotifierDeadCreature::Visit(PlayerMapType&) {}
     template<> inline void SpellNotifierDeadCreature::Visit(DynamicObjectMapType&) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(CameraMapType&) {}
     #endif
 }
 

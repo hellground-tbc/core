@@ -675,7 +675,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
 
     Hellground::EmoteChatBuilder emote_builder(*player, text_emote, emoteNum, unit);
     Hellground::LocalizedPacketDo<Hellground::EmoteChatBuilder > emote_do(emote_builder);
-    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::EmoteChatBuilder > > emote_worker(player, sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), emote_do);
+    Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::EmoteChatBuilder > > emote_worker(player, sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), emote_do);
     Cell::VisitWorldObjects(player, emote_worker,  sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
 
     //Send scripted event call
@@ -705,7 +705,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recv_data)
 
     WorldPacket data;
     ChatHandler::FillMessageData(&data, this, CHAT_MSG_IGNORED, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), GetPlayer()->GetName(),NULL);
-    player->GetSession()->SendPacket(&data);
+    player->BroadcastPacketToSelf(&data);
 }
 
 void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)

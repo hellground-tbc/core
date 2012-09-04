@@ -573,7 +573,6 @@ struct HELLGROUND_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         for(i = PlayerList.begin(); i != PlayerList.end(); ++i)
             if(Player* i_pl = i->getSource())
             {
-                i_pl->UpdateVisibilityForPlayer();
                 i_pl->RemoveAurasDueToSpell(AURA_SPECTRAL_REALM);
                 i_pl->RemoveAurasDueToSpell(SPELL_AGONY_CURSE);
                 i_pl->RemoveAurasDueToSpell(SPELL_AGONY_CURSE2);

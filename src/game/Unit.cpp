@@ -361,6 +361,8 @@ Unit::Unit() :
 
     m_meleeAPAttackerBonus = 0;
     m_GMToSendCombatStats = 0;
+
+    _AINotifyScheduled = false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -7543,7 +7545,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         WorldPacket data(SMSG_AI_REACTION, 12);
         data << uint64(GetGUID());
         data << uint32(AI_REACTION_AGGRO);                  // Aggro sound
-        ((WorldObject*)this)->BroadcastPacket(&data, true);
+        BroadcastPacket(&data, true);
 
         ((Creature*)this)->CallAssistance();
     }
@@ -7778,28 +7780,6 @@ void Unit::SetCharm(Unit* pet)
 {
     if (GetTypeId() == TYPEID_PLAYER)
         SetUInt64Value(UNIT_FIELD_CHARM, pet ? pet->GetGUID() : 0);
-}
-
-void Unit::AddPlayerToVision(Player* plr)
-{
-    if (m_sharedVision.empty())
-    {
-        setActive(true);
-        SetWorldObject(true);
-    }
-    m_sharedVision.push_back(plr);
-    plr->SetFarsightTarget(this);
-}
-
-void Unit::RemovePlayerFromVision(Player* plr)
-{
-    m_sharedVision.remove(plr);
-    if (m_sharedVision.empty())
-    {
-        setActive(false);
-        SetWorldObject(false);
-    }
-    plr->ClearFarsight();
 }
 
 void Unit::RemoveBindSightAuras()
@@ -9412,10 +9392,10 @@ bool Unit::canAttack(Unit const* target, bool force) const
     else if (target->hasUnitState(UNIT_STAT_DIED))
         return false;
 
-    if ((m_invisibilityMask || target->m_invisibilityMask) && !canDetectInvisibilityOf(target))
+    if ((m_invisibilityMask || target->m_invisibilityMask) && !canDetectInvisibilityOf(target, this))
         return false;
 
-    if (target->GetVisibility() == VISIBILITY_GROUP_STEALTH && !canDetectStealthOf(target, GetDistance(target)))
+    if (target->GetVisibility() == VISIBILITY_GROUP_STEALTH && !canDetectStealthOf(target, this, GetDistance(target)))
         return false;
 
     return true;
@@ -9521,28 +9501,28 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
     return gain;
 }
 
-bool Unit::isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
+bool Unit::isVisibleForOrDetect(Unit const* unit, WorldObject const* viewPoint, bool detect, bool inVisibleList, bool is3dDistance) const
 {
-    if (!u || !IsInMap(u))
+    if (!IsInMap(unit))
         return false;
 
     // Arena Preparation hack
-    if (!IsInRaidWith(u))
+    if (!IsInRaidWith(unit))
     {
-        Player *pPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
-        if (pPlayer && pPlayer->InArena() && pPlayer->GetBattleGround()->GetStatus() != STATUS_IN_PROGRESS)
+        Player *player = GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (player && player->InArena() && player->GetBattleGround()->GetStatus() != STATUS_IN_PROGRESS)
             return false;
     }
 
-    return u->canSeeOrDetect(this, detect, inVisibleList, is3dDistance);
+    return unit->canSeeOrDetect(this, viewPoint, detect, inVisibleList, is3dDistance);
 }
 
-bool Unit::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
+bool Unit::canSeeOrDetect(Unit const*, WorldObject const*, bool, bool, bool) const
 {
     return true;
 }
 
-bool Unit::canDetectInvisibilityOf(Unit const* u) const
+bool Unit::canDetectInvisibilityOf(Unit const* u, WorldObject const* viewPoint) const
 {
     if (m_invisibilityMask & u->m_invisibilityMask) // same group
         return true;
@@ -9621,20 +9601,23 @@ bool Unit::canDetectInvisibilityOf(Unit const* u) const
     return false;
 }
 
-bool Unit::canDetectStealthOf(Unit const* target, float distance) const
+bool Unit::canDetectStealthOf(Unit const* target, WorldObject const* viewPoint, float distance) const
 {
     if (hasUnitState(UNIT_STAT_STUNNED))
         return false;
+
     if (distance < 0.24f) //collision
         return true;
-    if (!HasInArc(M_PI, target)) //behind
+
+    if (!viewPoint->HasInArc(M_PI, target)) //behind
         return false;
+
     if (HasAuraType(SPELL_AURA_DETECT_STEALTH))
         return true;
 
     AuraList const& auras = target->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
     for (AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-        if ((*iter)->GetCasterGUID()==GetGUID())
+        if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
     //Visible distance based on stealth value (stealth rank 4 300MOD, 10.5 - 3 = 7.5)
@@ -9672,10 +9655,8 @@ void Unit::SetVisibility(UnitVisibility x)
 {
     m_Visibility = x;
 
-    if (x == VISIBILITY_GROUP_STEALTH)
-        DestroyForNearbyPlayers();
-
-    UpdateObjectVisibility();
+    if (IsInWorld())
+        UpdateVisibilityAndView();
 }
 
 void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
@@ -10350,9 +10331,9 @@ Player* Unit::GetPlayerByName(const char *name)
     return sObjectMgr.GetPlayer(name);
 }
 
-bool Unit::isVisibleForInState(Player const* u, bool inVisibleList) const
+bool Unit::isVisibleForInState(Player const* player, WorldObject const* viewPoint, bool inVisibleList) const
 {
-    return isVisibleForOrDetect(u, false, inVisibleList, false);
+    return isVisibleForOrDetect(player, viewPoint, false, inVisibleList, false);
 }
 
 uint32 Unit::GetCreatureType() const
@@ -10796,6 +10777,7 @@ void Unit::RemoveFromWorld()
     {
         RemoveBindSightAuras();
         RemoveNotOwnSingleTargetAuras();
+        GetViewPoint().Event_RemovedFromWorld();
 
         WorldObject::RemoveFromWorld();
     }
@@ -11309,7 +11291,7 @@ void Unit::SendPetCastFail(uint32 spellid, SpellCastResult msg)
     WorldPacket data(SMSG_PET_CAST_FAILED, (4+1));
     data << uint32(spellid);
     data << uint8(msg);
-    ((Player*)owner)->GetSession()->SendPacket(&data);
+    ((Player*)owner)->BroadcastPacketToSelf(&data);
 }
 
 void Unit::SendPetActionFeedback (uint8 msg)
@@ -11320,7 +11302,7 @@ void Unit::SendPetActionFeedback (uint8 msg)
 
     WorldPacket data(SMSG_PET_ACTION_FEEDBACK, 1);
     data << uint8(msg);
-    ((Player*)owner)->GetSession()->SendPacket(&data);
+    ((Player*)owner)->BroadcastPacketToSelf(&data);
 }
 
 void Unit::SendPetTalk (uint32 pettalk)
@@ -11332,7 +11314,7 @@ void Unit::SendPetTalk (uint32 pettalk)
     WorldPacket data(SMSG_PET_ACTION_SOUND, 8+4);
     data << uint64(GetGUID());
     data << uint32(pettalk);
-    ((Player*)owner)->GetSession()->SendPacket(&data);
+    ((Player*)owner)->BroadcastPacketToSelf(&data);
 }
 
 void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
@@ -11347,7 +11329,7 @@ void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
     data << uint32(spellid);
     data << uint32(cooltime);
 
-    ((Player*)owner)->GetSession()->SendPacket(&data);
+    ((Player*)owner)->BroadcastPacketToSelf(&data);
 }
 
 void Unit::SendPetClearCooldown(uint32 spellid)
@@ -11359,7 +11341,7 @@ void Unit::SendPetClearCooldown(uint32 spellid)
     WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
     data << uint32(spellid);
     data << uint64(GetGUID());
-    ((Player*)owner)->GetSession()->SendPacket(&data);
+    ((Player*)owner)->BroadcastPacketToSelf(&data);
 }
 
 void Unit::SendPetAIReaction(uint64 guid)
@@ -11370,7 +11352,7 @@ void Unit::SendPetAIReaction(uint64 guid)
 
     WorldPacket data(SMSG_AI_REACTION, 12);
     data << uint64(guid) << uint32(00000002);
-    ((Player*)owner)->GetSession()->SendPacket(&data);
+    ((Player*)owner)->BroadcastPacketToSelf(&data);
 }
 
 ///----------End of Pet responses methods----------
@@ -11452,7 +11434,7 @@ void Unit::SetStandState(uint8 state)
     {
         WorldPacket data(SMSG_STANDSTATE_UPDATE, 1);
         data << (uint8)state;
-        ((Player*)this)->GetSession()->SendPacket(&data);
+        ((Player*)this)->BroadcastPacketToSelf(&data);
     }
 }
 
@@ -12096,17 +12078,92 @@ bool Unit::preventApplyPersistentAA(SpellEntry const *spellInfo, uint8 eff_index
     return false;
 }
 
-void Unit::UpdateObjectVisibility(bool forced)
+class RelocationNotifyEvent : public BasicEvent
 {
-    if (!forced)
-        AddToNotify(NOTIFY_VISIBILITY_CHANGED);
-    else
+    public:
+        RelocationNotifyEvent(Unit& owner) : BasicEvent(), _owner(owner)
+        {
+            _owner._SetAINotifyScheduled(true);
+        }
+
+        bool Execute(uint64 /*e_time*/, uint32 /*p_time*/)
+        {
+            float radius = _owner.GetMap()->GetVisibilityDistance(&_owner);
+            if (_owner.GetObjectGuid().IsPlayer())
+            {
+                 Hellground::PlayerRelocationNotifier notify(*_owner.ToPlayer());
+                 Cell::VisitAllObjects(&_owner,notify,radius);
+            }
+            else
+            {
+                Hellground::CreatureRelocationNotifier notify(*_owner.ToCreature());
+                Cell::VisitAllObjects(&_owner,notify,radius);
+            }
+
+            _owner.GetPosition(_owner._notifiedPosition);
+            _owner._SetAINotifyScheduled(false);
+            return true;
+        }
+
+        void Abort(uint64)
+        {
+            _owner._SetAINotifyScheduled(false);
+        }
+
+    private:
+        Unit& _owner;
+};
+
+void Unit::ScheduleAINotify(uint32 delay)
+{
+    if (!IsAINotifyScheduled())
+        AddEvent(new RelocationNotifyEvent(*this), delay);
+}
+
+void Unit::OnRelocated()
+{
+    Position delta;
+    delta.x = _notifiedPosition.x - GetPositionX();
+    delta.y = _notifiedPosition.y - GetPositionY();
+    delta.z = _notifiedPosition.z - GetPositionZ();
+
+    float distsq = delta.x*delta.x+delta.y*delta.y+delta.z*delta.z;
+    if (distsq > World::GetRelocationLowerLimitSq())
     {
-        WorldObject::UpdateObjectVisibility(true);
-        // call MoveInLineOfSight for nearby creatures
-        Hellground::AIRelocationNotifier notifier(*this);
-        Cell::VisitAllObjects(this, notifier, GetMap()->GetVisibilityDistance());
+        GetPosition(_notifiedPosition);
+        ScheduleAINotify(0);
     }
+    else
+        ScheduleAINotify(World::GetRelocationAINotifyDelay());
+}
+
+void Unit::UpdateVisibilityAndView()
+{
+    /*static const AuraType auratypes[] = {SPELL_AURA_BIND_SIGHT, SPELL_AURA_FAR_SIGHT, SPELL_AURA_NONE};
+    for (AuraType const* type = &auratypes[0]; *type != SPELL_AURA_NONE; ++type)
+    {
+        AuraList alist = m_modAuras[*type];
+        if (alist.empty())
+            continue;
+
+        for (AuraList::iterator it = alist.begin(); it != alist.end();)
+        {
+            Aura* aura = (*it);
+            Unit* owner = aura->GetCaster();
+
+            if (!owner || !isVisibleForOrDetect(owner,this,false))
+            {
+                alist.erase(it);
+                RemoveAura(aura);
+                it = alist.begin();
+            }
+            else
+                ++it;
+        }
+    }*/
+
+    WorldObject::UpdateVisibilityAndView();
+    ScheduleAINotify(0);
 }
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)
@@ -12214,115 +12271,113 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     }
 
     // roll loot, some additional work is done in Creature::setDeathState(JUST_DIED), must be before calling setDeathState
-    if (Creature *cVictim = pVictim->ToCreature())
+    if (Creature *creatureVictim = pVictim->ToCreature())
     {
-        if (cVictim->lootForPickPocketed)
+        if (creatureVictim->lootForPickPocketed)
         {
-            cVictim->lootForPickPocketed = false;
-            cVictim->loot.clear();
+            creatureVictim->lootForPickPocketed = false;
+            creatureVictim->loot.clear();
         }
 
-        if (!cVictim->loot.LootLoadedFromDB())
+        if (!creatureVictim->loot.LootLoadedFromDB())
         {
-            cVictim->loot.clear();
+            creatureVictim->loot.clear();
 
-            if (uint32 lootid = cVictim->GetCreatureInfo()->lootid)
+            if (uint32 lootid = creatureVictim->GetCreatureInfo()->lootid)
             {
-                cVictim->loot.setCreatureGUID(cVictim);
-                cVictim->loot.FillLoot(lootid, LootTemplates_Creature, cVictim->GetLootRecipient(), false);
+                creatureVictim->loot.setCreatureGUID(creatureVictim);
+                creatureVictim->loot.FillLoot(lootid, LootTemplates_Creature, creatureVictim->GetLootRecipient(), false);
             }
 
-            cVictim->loot.generateMoneyLoot(cVictim->GetCreatureInfo()->mingold, cVictim->GetCreatureInfo()->maxgold);
+            creatureVictim->loot.generateMoneyLoot(creatureVictim->GetCreatureInfo()->mingold, creatureVictim->GetCreatureInfo()->maxgold);
         }
 
         // set looterGUID for round robin loot
-        if (cVictim->GetLootRecipient() && cVictim->GetLootRecipient()->GetGroup())
+        if (creatureVictim->GetLootRecipient() && creatureVictim->GetLootRecipient()->GetGroup())
         {
-            Group *group = cVictim->GetLootRecipient()->GetGroup();
+            Group *group = creatureVictim->GetLootRecipient()->GetGroup();
             group->UpdateLooterGuid(this, true);            // select next looter if one is out of xp range
-            cVictim->loot.looterGUID = group->GetLooterGuid();
+            creatureVictim->loot.looterGUID = group->GetLooterGuid();
             group->UpdateLooterGuid(this, false);           // select next looter
         }
     }
 
     if (!SpiritOfRedemption && !VengeanceSpirit)
-    {
-        DEBUG_LOG("SET JUST_DIED");
         pVictim->setDeathState(JUST_DIED);
-    }
 
     // 10% durability loss on death
     // clean InHateListOf
-    if (pVictim->GetTypeId() == TYPEID_PLAYER)
+    if (Player* playerVictim = pVictim->ToPlayer())
     {
         // remember victim PvP death for corpse type and corpse reclaim delay
         // at original death (not at SpiritOfRedemtionTalent timeout)
-        ((Player*)pVictim)->SetPvPDeath(player!=NULL);
+        playerVictim->SetPvPDeath(player != NULL);
 
         // only if not player and not controlled by player pet. And not at BG
-        if (durabilityLoss && !player && !((Player*)pVictim)->InBattleGround())
+        if (durabilityLoss && !player && !playerVictim->InBattleGround())
         {
-            DEBUG_LOG("We are dead, loosing 10 percents durability");
-            ((Player*)pVictim)->DurabilityLossAll(0.10f,false);
+            playerVictim->DurabilityLossAll(0.10f,false);
+
             // durability lost message
             WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
-            ((Player*)pVictim)->GetSession()->SendPacket(&data);
+            playerVictim->BroadcastPacketToSelf(&data);
         }
         // Call KilledUnit for creatures
-        if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->IsAIEnabled)
-            ((Creature*)this)->AI()->KilledUnit(pVictim);
+        if (GetTypeId() == TYPEID_UNIT && ToCreature()->IsAIEnabled)
+            ToCreature()->AI()->KilledUnit(pVictim);
 
         // last damage from non duel opponent or opponent controlled creature
-        if (((Player*)pVictim)->duel)
+        if (playerVictim->duel)
         {
-            ((Player*)pVictim)->duel->opponent->CombatStopWithPets(true);
-            ((Player*)pVictim)->CombatStopWithPets(true);
-            ((Player*)pVictim)->DuelComplete(DUEL_INTERUPTED);
+            playerVictim->duel->opponent->CombatStopWithPets(true);
+            playerVictim->CombatStopWithPets(true);
+            playerVictim->DuelComplete(DUEL_INTERUPTED);
         }
+
+        playerVictim->UpdateObjectVisibility();
     }
     else                                                // creature died
     {
-        DEBUG_LOG("DealDamageNotPlayer");
-        Creature *cVictim = pVictim->ToCreature();
+        Creature *creatureVictim = pVictim->ToCreature();
 
-        if (!cVictim->isPet())
+        if (!creatureVictim->isPet())
         {
-            cVictim->DeleteThreatList();
-            CreatureInfo const* cInfo = cVictim->GetCreatureInfo();
+            creatureVictim->DeleteThreatList();
+            CreatureInfo const* cInfo = creatureVictim->GetCreatureInfo();
             if (cInfo && (cInfo->lootid || cInfo->mingold || cInfo->maxgold))
-                cVictim->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+                creatureVictim->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
 
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set
-        if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->IsAIEnabled)
-            ((Creature*)this)->AI()->KilledUnit(pVictim);
+        if (GetTypeId() == TYPEID_UNIT && ToCreature()->IsAIEnabled)
+            ToCreature()->AI()->KilledUnit(pVictim);
 
         // Call creature just died function
-        if (cVictim->IsAIEnabled)
-            cVictim->AI()->JustDied(this);
+        if (creatureVictim->IsAIEnabled)
+            creatureVictim->AI()->JustDied(this);
 
-        if (InstanceData * tmpInst = cVictim->GetInstanceData())
-            tmpInst->OnCreatureDeath(cVictim);
+        if (InstanceData* instance = creatureVictim->GetInstanceData())
+            instance->OnCreatureDeath(creatureVictim);
 
         // Dungeon specific stuff, only applies to players killing creatures
-        if (cVictim->GetInstanceId())
+        if (creatureVictim->GetInstanceId())
         {
-            Map *m = cVictim->GetMap();
+            Map* m = creatureVictim->GetMap();
             Player *creditedPlayer = m->GetPlayers().begin() != m->GetPlayers().end() ? m->GetPlayers().begin()->getSource() : NULL;
 
             if (m->IsDungeon() && creditedPlayer)
             {
                 if (m->IsRaid() || m->IsHeroic())
                 {
-                    if (cVictim->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
+                    if (creatureVictim->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
                         ((InstanceMap *)m)->PermBindAllPlayers(creditedPlayer);
 
                     // Killer == Player
-                    if (creditedPlayer && cVictim->GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS)
+                    if (creditedPlayer && creatureVictim->GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS)
                     {
                         Player *killer = creditedPlayer;
                         std::stringstream ss;
-                        ss << "BossEntry: " << cVictim->GetEntry() << " InstanceId: " << cVictim->GetInstanceId()
+                        ss << "BossEntry: " << creatureVictim->GetEntry() << " InstanceId: " << creatureVictim->GetInstanceId()
                            << " MapId: " << m->GetId() << " Players: ";
                         if (Group *group = killer->GetGroup())
                         {
@@ -12342,9 +12397,12 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 {
                     // the reset time is set but not added to the scheduler
                     // until the players leave the instance
-                    time_t resettime = cVictim->GetRespawnTimeEx() + 2 * HOUR;
-                    if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(cVictim->GetInstanceId()))
-                        if (save->GetResetTime() < resettime) save->SetResetTime(resettime);
+                    time_t resettime = creatureVictim->GetRespawnTimeEx() + 2 * HOUR;
+                    if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(creatureVictim->GetInstanceId()))
+                    {
+                        if (save->GetResetTime() < resettime)
+                            save->SetResetTime(resettime);
+                    }
                 }
             }
         }
@@ -12473,7 +12531,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         if (((Player*)this)->isAFK())
             ((Player*)this)->ToggleAFK();
 
-        ((Player*)this)->SetViewport(GetGUID(), false);
+        ToPlayer()->SetClientControl(this, false);
 
         if (charmer->GetTypeId() == TYPEID_UNIT)
             ((Player*)this)->CharmAI(true);
@@ -12494,9 +12552,12 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     {
         addUnitState(UNIT_STAT_POSSESSED);
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-        AddPlayerToVision((Player*)charmer);
-        ((Player*)charmer)->SetViewport(GetGUID(), true);
+
+        charmer->ToPlayer()->SetClientControl(this, true);
         charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+
+        Camera& camera = charmer->ToPlayer()->GetCamera();
+        camera.SetView(this);
     }
     // Charm demon
     else if (GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->getClass() == CLASS_WARLOCK)
@@ -12570,7 +12631,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
         if (IsAIEnabled)
             ((Player*)this)->CharmAI(false);
 
-        ((Player*)this)->SetViewport(GetGUID(), true);
+        ToPlayer()->SetClientControl(this, true);
     }
 
     // If charmer still exists
@@ -12582,9 +12643,11 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     charmer->SetCharm(0);
     if (possess)
     {
-        RemovePlayerFromVision((Player*)charmer);
-        ((Player*)charmer)->SetViewport(charmer->GetGUID(), true);
+        charmer->ToPlayer()->SetClientControl(charmer, true);
         charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+
+        Camera& camera = charmer->ToPlayer()->GetCamera();
+        camera.ResetView();
     }
     // restore UNIT_FIELD_BYTES_0
     else if (GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->getClass() == CLASS_WARLOCK)
@@ -12615,7 +12678,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
         // Remove pet spell action bar
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
-        ((Player*)charmer)->GetSession()->SendPacket(&data);
+        ((Player*)charmer)->BroadcastPacketToSelf(&data);
     }
 }
 
@@ -12812,7 +12875,7 @@ void Unit::KnockBack(float angle, float horizontalSpeed, float verticalSpeed)
         data << float(vsin);                                // y direction
         data << float(horizontalSpeed);                     // Horizontal speed
         data << float(-verticalSpeed);                      // Z Movement speed (vertical)
-        ((Player*)this)->GetSession()->SendPacket(&data);
+        ((Player*)this)->BroadcastPacketToSelf(&data);
 
         ((Player*)this)->m_AC_timer = 5 *IN_MILISECONDS;
     }

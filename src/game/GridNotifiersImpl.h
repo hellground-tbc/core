@@ -30,18 +30,86 @@
 #include "SpellAuras.h"
 
 template<class T>
-inline void
-Hellground::VisibleNotifier::Visit(GridRefManager<T> &m)
+inline void Hellground::VisibleNotifier::Visit(GridRefManager<T> &m)
 {
     for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         vis_guids.erase(iter->getSource()->GetGUID());
-        i_player.UpdateVisibilityOf(iter->getSource(),i_data,i_visibleNow);
+        _camera.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow);
     }
 }
 
-inline void
-Hellground::ObjectUpdater::Visit(CreatureMapType &m)
+inline void PlayerCreatureRelocationWorker(Player* p, Creature* c)
+{
+    if (!p->isAlive() || !c->isAlive())
+        return;
+    
+    if (p->IsTaxiFlying() && !c->CanReactToPlayerOnTaxi())
+        return;
+
+    if (c->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_SIGHTLESS | UNIT_STAT_IGNORE_ATTACKERS))
+        return;
+
+    // Creature AI reaction
+    if (c->HasReactState(REACT_AGGRESSIVE) && !c->IsInEvadeMode() && c->IsAIEnabled)
+        c->AI()->MoveInLineOfSight_Safe(p);
+}
+
+inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
+{
+    if (c1->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_SIGHTLESS | UNIT_STAT_IGNORE_ATTACKERS))
+        return;
+
+    if (c2->hasUnitState(UNIT_STAT_IGNORE_ATTACKERS))
+        return;
+
+    // Creature AI reaction
+    if (c1->HasReactState(REACT_AGGRESSIVE) && !c1->IsInEvadeMode() && c1->IsAIEnabled)
+        c1->AI()->MoveInLineOfSight_Safe(c2);
+}
+
+inline void Hellground::PlayerRelocationNotifier::Visit(CameraMapType &m)
+{
+    for(CameraMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        iter->getSource()->UpdateVisibilityOf(&_player);
+
+        // need to choose this or below one (this should be faster :P
+        _player.GetCamera().UpdateVisibilityOf(iter->getSource()->GetBody());
+    }
+
+    //_player.GetCamera().UpdateVisibilityForOwner();
+}
+
+inline void Hellground::PlayerRelocationNotifier::Visit(CreatureMapType &m)
+{
+    for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        PlayerCreatureRelocationWorker(&_player, iter->getSource());
+}
+
+inline void Hellground::CreatureRelocationNotifier::Visit(PlayerMapType &m)
+{
+    if (!_creature.isAlive())
+        return;
+
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        PlayerCreatureRelocationWorker(iter->getSource(), &_creature);
+}
+
+template<>
+inline void Hellground::CreatureRelocationNotifier::Visit(CreatureMapType &m)
+{
+    if (!_creature.isAlive())
+        return;
+
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        CreatureCreatureRelocationWorker(iter->getSource(), &_creature);
+        CreatureCreatureRelocationWorker(&_creature, iter->getSource());
+    }
+}
+
+inline void Hellground::ObjectUpdater::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
         if (iter->getSource()->IsInWorld() && !iter->getSource()->isSpiritService())

@@ -1218,10 +1218,7 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         CharmInfo* InitCharmInfo();
         void       DeleteCharmInfo();
         void UpdateCharmAI();
-        SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
-        void AddPlayerToVision(Player* plr);
-        void RemovePlayerFromVision(Player* plr);
-        bool HasSharedVision() const { return !m_sharedVision.empty(); }
+
         void RemoveBindSightAuras();
         void RemoveCharmAuras();
 
@@ -1367,23 +1364,40 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
 
         bool isBetween(WorldObject *s, WorldObject *e, float offset = 1.5f) const;
 
-        // Visibility system
+#pragma region VisibilityRelocation
+
         UnitVisibility GetVisibility() const { return m_Visibility; }
         void SetVisibility(UnitVisibility x);
         void DestroyForNearbyPlayers();
 
+        void UpdateVisibilityAndView();
+
         // common function for visibility checks for player/creatures with detection code
-        virtual bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool canDetectInvisibilityOf(Unit const* u) const;
-        bool canDetectStealthOf(Unit const* u, float distance) const;
-        void UpdateObjectVisibility(bool forced = true);
+        virtual bool canSeeOrDetect(Unit const* u, WorldObject const*, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+
+        bool canDetectInvisibilityOf(Unit const* u, WorldObject const*) const;
+        bool canDetectStealthOf(Unit const* u, WorldObject const*, float distance) const;
 
         // virtual functions for all world objects types
-        bool isVisibleForInState(Player const* u, bool inVisibleList) const;
+        bool isVisibleForInState(Player const*, WorldObject const*, bool) const;
+        bool isVisibleForOrDetect(Unit const*, WorldObject const*, bool, bool = false, bool = true) const;
+
         // function for low level grid visibility checks in player/creature cases
         virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
 
+        void OnRelocated();
+        void ScheduleAINotify(uint32 delay);
+        bool IsAINotifyScheduled() const { return _AINotifyScheduled;}
+        void _SetAINotifyScheduled(bool on) { _AINotifyScheduled = on;}
+
+        Position _notifiedPosition;
+
+    private:
+        bool _AINotifyScheduled;
+
+#pragma endregion VisibilityRelocation
+
+    public:
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
@@ -1640,7 +1654,6 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         float m_max_speed_rate[MAX_MOVE_TYPE];                  // max possible speed
 
         CharmInfo *m_charmInfo;
-        SharedVisionList m_sharedVision;
 
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
@@ -1693,6 +1706,9 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         void UpdateSplineMovement(uint32 t_diff);
         TimeTrackerSmall m_movesplineTimer;
 };
+
+typedef std::set<Unit*> UnitSet;
+typedef std::list<Unit*> UnitList;
 
 namespace Hellground
 {

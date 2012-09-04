@@ -147,7 +147,7 @@ struct HELLGROUND_DLL_DECL boss_akilzonAI : public ScriptedAI
         WorldPacket data(SMSG_WEATHER, (4+4+4));
         data << uint32(weather) << (float)grade << uint8(0);
 
-        map->SendToPlayers(&data);
+        map->BroadcastPacket(me, &data);
     }
 
     void UpdateAI(const uint32 diff)
