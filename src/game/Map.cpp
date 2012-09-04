@@ -3018,15 +3018,18 @@ void Map::ForcedUnload()
     SetBroken(false);
 }
 
-float Map::GetVisibilityDistance(WorldObject* obj) const
+float Map::GetVisibilityDistance(WorldObject* obj, Player* invoker) const
 {
+    if (invoker && invoker->getWatchingCinematic() != 0)
+        return MAX_VISIBILITY_DISTANCE;
+
     float dist = m_TerrainData->GetVisibilityDistance();
     if (obj)
     {
         if (obj->GetObjectGuid().IsGameObject())
-            return (dist + ((GameObject*)obj)->GetDeterminativeSize());    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
+            return (dist + obj->ToGameObject()->GetDeterminativeSize());    // or maybe should be GetMaxVisibleDistanceForObject instead m_VisibleDistance ?
         else if(obj->GetObjectGuid().IsCreature())
-            return (dist + ((Creature*)obj)->GetDeterminativeSize());
+            return (dist + obj->ToCreature()->GetDeterminativeSize());
     }
 
     return dist;

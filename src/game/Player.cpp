@@ -337,7 +337,6 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     ClearTrade();
 
-    m_cinematic = 0;
     m_watchingCinematicId = 0;
 
     PlayerTalkClass = new PlayerMenu(GetSession());
@@ -1420,10 +1419,6 @@ void Player::Update(uint32 update_diff, uint32 p_time)
 
     // group update
     SendUpdateToOutOfRangeGroupMembers();
-
-    Pet* pet = GetPet();
-    if (pet && !IsWithinDistInMap(pet, GetMap()->GetVisibilityDistance()) && !pet->isPossessed())
-        RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
 
     _preventUpdate = false;
     updateMutex.release();
@@ -5693,9 +5688,10 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId)
 {
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(CinematicSequenceId);
-     SendPacketToSelf(&data);
+    SendPacketToSelf(&data);
 
     setWatchingCinematic(CinematicSequenceId);
+    GetCamera().UpdateVisibilityForOwner();
 }
 
 void Player::CheckAreaExploreAndOutdoor()
@@ -18151,31 +18147,31 @@ bool Player::canSeeOrDetect(Unit const* u, WorldObject const* viewPoint, bool de
     // different visible distance checks
     if (IsTaxiFlying())                                     // what see player in flight
     {
-        if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
+        if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if (!u->isAlive())                                     // distance for show body
     {
-        if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
+        if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if (u->GetTypeId()==TYPEID_PLAYER)                     // distance for show player
     {
         // Players far than max visible distance for player or not in our map are not visible too
-        if (!at_same_transport && !viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
+        if (!at_same_transport && !viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if (u->GetCharmerOrOwnerGUID())                        // distance for show pet/charmed
     {
         // Pet/charmed far than max visible distance for player or not in our map are not visible too
-        if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
+        if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else                                                    // distance for show creature
     {
         // Units far than max visible distance for creature or not in our map are not visible too
         if (!viewPoint->IsWithinDistInMap(u, u->isActiveObject() ? (MAX_VISIBILITY_DISTANCE - (inVisibleList ? 0.0f : World::GetVisibleUnitGreyDistance()))
-            : (_map.GetVisibilityDistance() + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f))
+            : (_map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f))
             , is3dDistance))
             return false;
     }
@@ -18333,8 +18329,8 @@ inline void BeforeVisibilityDestroy(T* /*t*/, Player* /*p*/)
 template<>
 inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
 {
-    //if (p->GetPetGUID() == t->GetGUID() && t->GetObjectGuid().IsPet())
-    //    t->ToPet()->Unsummon(PET_SAVE_REAGENTS);
+    if (p->GetPetGUID() == t->GetGUID() && t->GetObjectGuid().IsPet())
+        p->RemovePet(t->ToPet(), PET_SAVE_NOT_IN_SLOT, true);
 }
 
 void Player::UpdateVisibilityOf(WorldObject const* viewPoint, WorldObject* target)

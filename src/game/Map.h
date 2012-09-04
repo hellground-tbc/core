@@ -148,7 +148,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         virtual void InitVisibilityDistance();
 
-        float GetVisibilityDistance(WorldObject* = NULL) const;
+        float GetVisibilityDistance(WorldObject* = NULL, Player* = NULL) const;
         float GetActiveObjectUpdateDistance() const { return m_ActiveObjectUpdateDistance; }
 
         void PlayerRelocation(Player*, float, float, float, float);

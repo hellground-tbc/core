@@ -1010,6 +1010,7 @@ void WorldSession::HandleCompleteCinema(WorldPacket & recv_data)
     }
 
     GetPlayer()->setWatchingCinematic(0);
+    GetPlayer()->GetCamera().UpdateVisibilityForOwner();
 
     if (sScriptMgr.OnCompletedCinematic(GetPlayer(), cinematic))
         return;

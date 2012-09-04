@@ -775,7 +775,7 @@ bool GameObject::isVisibleForInState(Player const* player, WorldObject const* vi
             return false;
     }
 
-    return IsWithinDistInMap(viewPoint, GetMap()->GetVisibilityDistance(const_cast<GameObject*>(this)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
+    return IsWithinDistInMap(viewPoint, GetMap()->GetVisibilityDistance(const_cast<GameObject*>(this), const_cast<Player*>(player)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
 
 bool GameObject::canDetectTrap(Player const* u, float distance) const
