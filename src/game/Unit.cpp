@@ -11291,7 +11291,7 @@ void Unit::SendPetCastFail(uint32 spellid, SpellCastResult msg)
     WorldPacket data(SMSG_PET_CAST_FAILED, (4+1));
     data << uint32(spellid);
     data << uint8(msg);
-    ((Player*)owner)->BroadcastPacketToSelf(&data);
+    ((Player*)owner)->SendPacketToSelf(&data);
 }
 
 void Unit::SendPetActionFeedback (uint8 msg)
@@ -11302,7 +11302,7 @@ void Unit::SendPetActionFeedback (uint8 msg)
 
     WorldPacket data(SMSG_PET_ACTION_FEEDBACK, 1);
     data << uint8(msg);
-    ((Player*)owner)->BroadcastPacketToSelf(&data);
+    ((Player*)owner)->SendPacketToSelf(&data);
 }
 
 void Unit::SendPetTalk (uint32 pettalk)
@@ -11314,7 +11314,7 @@ void Unit::SendPetTalk (uint32 pettalk)
     WorldPacket data(SMSG_PET_ACTION_SOUND, 8+4);
     data << uint64(GetGUID());
     data << uint32(pettalk);
-    ((Player*)owner)->BroadcastPacketToSelf(&data);
+    ((Player*)owner)->SendPacketToSelf(&data);
 }
 
 void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
@@ -11329,7 +11329,7 @@ void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
     data << uint32(spellid);
     data << uint32(cooltime);
 
-    ((Player*)owner)->BroadcastPacketToSelf(&data);
+    ((Player*)owner)->SendPacketToSelf(&data);
 }
 
 void Unit::SendPetClearCooldown(uint32 spellid)
@@ -11341,7 +11341,7 @@ void Unit::SendPetClearCooldown(uint32 spellid)
     WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
     data << uint32(spellid);
     data << uint64(GetGUID());
-    ((Player*)owner)->BroadcastPacketToSelf(&data);
+    ((Player*)owner)->SendPacketToSelf(&data);
 }
 
 void Unit::SendPetAIReaction(uint64 guid)
@@ -11352,7 +11352,7 @@ void Unit::SendPetAIReaction(uint64 guid)
 
     WorldPacket data(SMSG_AI_REACTION, 12);
     data << uint64(guid) << uint32(00000002);
-    ((Player*)owner)->BroadcastPacketToSelf(&data);
+    ((Player*)owner)->SendPacketToSelf(&data);
 }
 
 ///----------End of Pet responses methods----------
@@ -11434,7 +11434,7 @@ void Unit::SetStandState(uint8 state)
     {
         WorldPacket data(SMSG_STANDSTATE_UPDATE, 1);
         data << (uint8)state;
-        ((Player*)this)->BroadcastPacketToSelf(&data);
+        ((Player*)this)->SendPacketToSelf(&data);
     }
 }
 
@@ -12320,7 +12320,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
             // durability lost message
             WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
-            playerVictim->BroadcastPacketToSelf(&data);
+            playerVictim->SendPacketToSelf(&data);
         }
         // Call KilledUnit for creatures
         if (GetTypeId() == TYPEID_UNIT && ToCreature()->IsAIEnabled)
@@ -12678,7 +12678,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
         // Remove pet spell action bar
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
-        ((Player*)charmer)->BroadcastPacketToSelf(&data);
+        ((Player*)charmer)->SendPacketToSelf(&data);
     }
 }
 
@@ -12875,7 +12875,7 @@ void Unit::KnockBack(float angle, float horizontalSpeed, float verticalSpeed)
         data << float(vsin);                                // y direction
         data << float(horizontalSpeed);                     // Horizontal speed
         data << float(-verticalSpeed);                      // Z Movement speed (vertical)
-        ((Player*)this)->BroadcastPacketToSelf(&data);
+        ((Player*)this)->SendPacketToSelf(&data);
 
         ((Player*)this)->m_AC_timer = 5 *IN_MILISECONDS;
     }
@@ -13038,7 +13038,7 @@ void Unit::SendCombatStats(const char* format, Unit *pVictim, ...) const
     data << message;
     data << uint8(0);
 
-    target->BroadcastPacketToSelf(&data);
+    target->SendPacketToSelf(&data);
 }
 
 // This constants can't be evaluated on runtime

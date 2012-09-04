@@ -313,7 +313,7 @@ void BattleGround::SendPacketToAll(WorldPacket *packet)
     {
         Player *plr = sObjectMgr.GetPlayer(itr->first);
         if (plr)
-            plr->BroadcastPacketToSelf(packet);
+            plr->SendPacketToSelf(packet);
         else
             sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
     }
@@ -338,7 +338,7 @@ void BattleGround::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
         if (!team) team = plr->GetTeam();
 
         if (team == TeamID)
-            plr->BroadcastPacketToSelf(packet);
+            plr->SendPacketToSelf(packet);
     }
 }
 
@@ -369,7 +369,7 @@ void BattleGround::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
         if (team == TeamID)
         {
             sBattleGroundMgr.BuildPlaySoundPacket(&data, SoundID);
-            plr->BroadcastPacketToSelf(&data);
+            plr->SendPacketToSelf(&data);
         }
     }
 }
@@ -406,7 +406,7 @@ void BattleGround::YellToAll(Creature* creature, const char* text, uint32 langua
             continue;
         }
         creature->BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,creature->GetName(),itr->first);
-        plr->BroadcastPacketToSelf(&data);
+        plr->SendPacketToSelf(&data);
     }
 }
 
@@ -471,7 +471,7 @@ void BattleGround::UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player 
 {
     WorldPacket data;
     sBattleGroundMgr.BuildUpdateWorldStatePacket(&data, Field, Value);
-    Source->BroadcastPacketToSelf(&data);
+    Source->SendPacketToSelf(&data);
 }
 
 void BattleGround::EndBattleGround(uint32 winner)
@@ -650,11 +650,11 @@ void BattleGround::EndBattleGround(uint32 winner)
         BlockMovement(plr);
 
         sBattleGroundMgr.BuildPvpLogDataPacket(&data, this);
-        plr->BroadcastPacketToSelf(&data);
+        plr->SendPacketToSelf(&data);
 
         BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(GetTypeID(), GetArenaType());
         sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
-        plr->BroadcastPacketToSelf(&data);
+        plr->SendPacketToSelf(&data);
     }
 
     if (isArena() && isRated() && winner_arena_team && loser_arena_team)
@@ -901,7 +901,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             if (SendPacket)
             {
                 sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, team, plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_NONE, 0, 0);
-                plr->BroadcastPacketToSelf(&data);
+                plr->SendPacketToSelf(&data);
             }
 
             // this call is important, because player, when joins to battleground, this method is not called, so it must be called when leaving bg
@@ -1596,7 +1596,7 @@ bool BattleGround::HandlePlayerUnderMap(Player * plr, float z)
             data << graveyard->x;
             data << graveyard->y;
             data << graveyard->z;
-            plr->BroadcastPacketToSelf(&data);
+            plr->SendPacketToSelf(&data);
         }
         return true;
     }
@@ -1713,10 +1713,10 @@ void BattleGround::PlayerRelogin(uint64 guid)
     BlockMovement(plr);
 
     sBattleGroundMgr.BuildPvpLogDataPacket(&data, this);
-    plr->BroadcastPacketToSelf(&data);
+    plr->SendPacketToSelf(&data);
 
     sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattleGroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetStartTime());
-    plr->BroadcastPacketToSelf(&data);
+    plr->SendPacketToSelf(&data);
 }
 
 uint32 BattleGround::GetAlivePlayersCountByTeam(uint32 Team) const

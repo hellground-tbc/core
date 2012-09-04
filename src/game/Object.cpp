@@ -200,7 +200,7 @@ void Object::SendCreateUpdateToPlayer(Player* player)
     BuildCreateUpdateBlockForPlayer(&upd, player);
     upd.BuildPacket(&packet);
 
-    player->BroadcastPacketToSelf(&packet);
+    player->SendPacketToSelf(&packet);
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) const
@@ -244,7 +244,7 @@ void Object::DestroyForPlayer(Player *target) const
 
     WorldPacket data(SMSG_DESTROY_OBJECT, 8);
     data << uint64(GetGUID());
-    target->BroadcastPacketToSelf(&data);
+    target->SendPacketToSelf(&data);
 }
 
 void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
@@ -1473,7 +1473,7 @@ void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossW
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER,text,LANG_UNIVERSAL,GetName(),receiver);
 
-    player->BroadcastPacketToSelf(&data);
+    player->SendPacketToSelf(&data);
 }
 
 void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
@@ -1481,7 +1481,7 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << Sound;
     if (OnlySelf && GetTypeId() == TYPEID_PLAYER)
-        ((Player*)this)->BroadcastPacketToSelf(&data);
+        ((Player*)this)->SendPacketToSelf(&data);
     else
         BroadcastPacket(&data, true); // ToSelf ignored in this case
 }
@@ -1590,7 +1590,7 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, text, LANG_UNIVERSAL, GetNameForLocaleIdx(loc_idx), receiver);
 
-    player->BroadcastPacketToSelf(&data);
+    player->SendPacketToSelf(&data);
 }
 
 void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, int32 iTextEntry, uint32 language, char const* name, uint64 targetGuid, bool withoutPrename) const
@@ -1984,7 +1984,7 @@ void WorldObject::PlayDistanceSound( uint32 sound_id, Player* target /*= NULL*/ 
     data << uint32(sound_id);
     data << GetGUID();
     if (target)
-        target->BroadcastPacketToSelf( &data );
+        target->SendPacketToSelf( &data );
     else
         BroadcastPacket( &data, true );
 }
@@ -1994,7 +1994,7 @@ void WorldObject::PlayDirectSound( uint32 sound_id, Player* target /*= NULL*/ )
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << uint32(sound_id);
     if (target)
-        target->BroadcastPacketToSelf( &data );
+        target->SendPacketToSelf( &data );
     else
         BroadcastPacket( &data, true );
 }

@@ -151,7 +151,7 @@ void PlayerSocial::SendSocialList()
         }
     }
 
-    plr->BroadcastPacketToSelf(&data);
+    plr->SendPacketToSelf(&data);
     sLog.outDebug("WORLD: Sent SMSG_CONTACT_LIST");
 }
 
@@ -273,7 +273,7 @@ void SocialMgr::SendFriendStatus(Player *player, FriendsResult result, uint32 fr
     if (broadcast)
         BroadcastToFriendListers(player, &data);
     else
-        player->BroadcastPacketToSelf(&data);
+        player->SendPacketToSelf(&data);
 }
 
 void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
@@ -301,7 +301,7 @@ void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
                 (pFriend->GetTeam() == team || allowTwoSideWhoList) &&
                 (security == SEC_PLAYER || gmInWhoList && player->IsVisibleGloballyfor (pFriend))))
             {
-                pFriend->BroadcastPacketToSelf(packet);
+                pFriend->SendPacketToSelf(packet);
             }
         }
     }

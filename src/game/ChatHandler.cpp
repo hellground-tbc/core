@@ -705,7 +705,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recv_data)
 
     WorldPacket data;
     ChatHandler::FillMessageData(&data, this, CHAT_MSG_IGNORED, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), GetPlayer()->GetName(),NULL);
-    player->BroadcastPacketToSelf(&data);
+    player->SendPacketToSelf(&data);
 }
 
 void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)

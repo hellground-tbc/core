@@ -906,7 +906,7 @@ void Aura::UpdateAuraDuration()
         data.Initialize(SMSG_UPDATE_AURA_DURATION, 1+4);
         data << (uint8)m_auraSlot;
         data << (uint32)m_duration;
-        ((Player *)m_target)->BroadcastPacketToSelf(&data);
+        ((Player *)m_target)->SendPacketToSelf(&data);
 
         data.Initialize(SMSG_SET_EXTRA_AURA_INFO, (8+1+4+4+4));
         data << m_target->GetPackGUID();
@@ -914,7 +914,7 @@ void Aura::UpdateAuraDuration()
         data << uint32(GetId());
         data << uint32(GetAuraMaxDuration());
         data << uint32(GetAuraDuration());
-        ((Player *)m_target)->BroadcastPacketToSelf(&data);
+        ((Player *)m_target)->SendPacketToSelf(&data);
     }
 
     // not send in case player loading (will not work anyway until player not added to map), sent in visibility change code
@@ -951,7 +951,7 @@ void Aura::SendAuraDurationForCaster(Player* caster)
     data << uint32(GetId());
     data << uint32(GetAuraMaxDuration());                   // full
     data << uint32(GetAuraDuration());                      // remain
-    caster->BroadcastPacketToSelf(&data);
+    caster->SendPacketToSelf(&data);
 }
 
 void Aura::_AddAura()

@@ -39,7 +39,7 @@ Camera::~Camera()
 
 void Camera::ReceivePacket(WorldPacket *data)
 {
-    _owner.BroadcastPacketToSelf(data);
+    _owner.SendPacketToSelf(data);
 }
 
 void Camera::UpdateForCurrentViewPoint()

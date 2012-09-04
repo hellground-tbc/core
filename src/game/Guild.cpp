@@ -547,7 +547,7 @@ void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, uint
             Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
 
             if (pl && pl->GetSession() && HasRankRight(pl->GetRank(),GR_RIGHT_GCHATLISTEN) && !pl->GetSocial()->HasIgnore(session->GetPlayer()->GetGUIDLow()))
-                pl->BroadcastPacketToSelf(&data);
+                pl->SendPacketToSelf(&data);
         }
     }
 }
@@ -564,7 +564,7 @@ void Guild::BroadcastToOfficers(WorldSession *session, const std::string& msg, u
             Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
 
             if (pl && pl->GetSession() && HasRankRight(pl->GetRank(),GR_RIGHT_OFFCHATLISTEN) && !pl->GetSocial()->HasIgnore(session->GetPlayer()->GetGUIDLow()))
-                pl->BroadcastPacketToSelf(&data);
+                pl->SendPacketToSelf(&data);
         }
     }
 }
@@ -575,7 +575,7 @@ void Guild::BroadcastPacket(WorldPacket *packet)
     {
         Player *player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
         if (player)
-            player->BroadcastPacketToSelf(packet);
+            player->SendPacketToSelf(packet);
     }
 }
 
@@ -587,7 +587,7 @@ void Guild::BroadcastPacketToRank(WorldPacket *packet, uint32 rankId)
         {
             Player *player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
             if (player)
-                player->BroadcastPacketToSelf(packet);
+                player->SendPacketToSelf(packet);
         }
     }
 }
@@ -1043,7 +1043,7 @@ void Guild::DisplayGuildBankContentUpdate(uint8 TabId, int32 slot1, int32 slot2)
 
         data.put<uint32>(rempos,uint32(GetMemberSlotWithdrawRem(player->GetGUIDLow(), TabId)));
 
-        player->BroadcastPacketToSelf(&data);
+        player->SendPacketToSelf(&data);
     }
 
     sLog.outDebug("WORLD: Sent (SMSG_GUILD_BANK_LIST)");
@@ -1081,7 +1081,7 @@ void Guild::DisplayGuildBankContentUpdate(uint8 TabId, GuildItemPosCountVec cons
 
         data.put<uint32>(rempos,uint32(GetMemberSlotWithdrawRem(player->GetGUIDLow(), TabId)));
 
-        player->BroadcastPacketToSelf(&data);
+        player->SendPacketToSelf(&data);
     }
 
     sLog.outDebug("WORLD: Sent (SMSG_GUILD_BANK_LIST)");

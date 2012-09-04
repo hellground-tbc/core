@@ -1240,7 +1240,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
                         data << unitTarget->GetGUID();
-                        ((Player*)m_originalCaster)->BroadcastPacketToSelf(&data);
+                        ((Player*)m_originalCaster)->SendPacketToSelf(&data);
                     }
                     return;
                 }
@@ -1583,7 +1583,7 @@ void Spell::EffectDummy(uint32 i)
                         data << uint8(SPELL_FAILED_REQUIRES_SPELL_FOCUS);
                         data << uint8(m_cast_count);
                         data << uint32(m_spellInfo->RequiresSpellFocus);
-                        plr->BroadcastPacketToSelf(&data);
+                        plr->SendPacketToSelf(&data);
                         return;
                     }
 
@@ -6570,8 +6570,8 @@ void Spell::EffectDuel(uint32 i)
     WorldPacket data(SMSG_DUEL_REQUESTED, 16);
     data << pGameObj->GetGUID();
     data << caster->GetGUID();
-    caster->BroadcastPacketToSelf(&data);
-    target->BroadcastPacketToSelf(&data);
+    caster->SendPacketToSelf(&data);
+    target->SendPacketToSelf(&data);
 
     // create duel-info
     DuelInfo *duel   = new DuelInfo;
@@ -6647,7 +6647,7 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
     data << uint64(m_caster->GetGUID());                    // summoner guid
     data << uint32(zoneid);                                 // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
-    ((Player*)unitTarget)->BroadcastPacketToSelf(&data);
+    ((Player*)unitTarget)->SendPacketToSelf(&data);
 }
 
 static ScriptInfo generateActivateCommand()
@@ -6743,7 +6743,7 @@ void Spell::EffectSummonTotem(uint32 i)
         data << uint64(pTotem->GetGUID());
         data << uint32(duration);
         data << uint32(m_spellInfo->Id);
-        ((Player*)m_caster)->BroadcastPacketToSelf(&data);
+        ((Player*)m_caster)->SendPacketToSelf(&data);
     }
 
     pTotem->Summon(m_caster);
@@ -7942,5 +7942,5 @@ void Spell::EffectPlayMusic(uint32 i)
 
     WorldPacket data(SMSG_PLAY_MUSIC, 4);
     data << uint32(soundid);
-    ((Player*)unitTarget)->BroadcastPacketToSelf(&data);
+    ((Player*)unitTarget)->SendPacketToSelf(&data);
 }

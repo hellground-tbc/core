@@ -1836,7 +1836,7 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         void SendInitWorldStates(bool force = false, uint32 forceZoneId = 0);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
 
-        void BroadcastPacketToSelf(WorldPacket*);
+        void SendPacketToSelf(WorldPacket*);
 
         void SendAuraDurationsForTarget(Unit* target);
 

@@ -286,7 +286,7 @@ bool ChatHandler::HandleDebugSendOpcodeCommand(const char* /*args*/)
     ifs.close();
     sLog.outDebug("Sending opcode %u", data.GetOpcode());
     data.hexlike();
-    ((Player*)unit)->BroadcastPacketToSelf(&data);
+    ((Player*)unit)->SendPacketToSelf(&data);
     PSendSysMessage(LANG_COMMAND_OPCODESENT, data.GetOpcode(), unit->GetName());
     return true;
 }

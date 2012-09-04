@@ -59,7 +59,7 @@ class ChannelMgr
             {
                 WorldPacket data;
                 MakeNotOnPacket(&data,name);
-                p->BroadcastPacketToSelf(&data);
+                p->SendPacketToSelf(&data);
                 return NULL;
             }
             else

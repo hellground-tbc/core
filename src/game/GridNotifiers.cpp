@@ -69,7 +69,7 @@ void VisibleNotifier::SendToSelf()
 
     WorldPacket packet;
     i_data.BuildPacket(&packet);
-    player.BroadcastPacketToSelf(&packet);
+    player.SendPacketToSelf(&packet);
 
     for (std::set<WorldObject*>::const_iterator it = i_visibleNow.begin(); it != i_visibleNow.end(); ++it)
     {

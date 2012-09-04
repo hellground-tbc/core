@@ -1,2 +1,2 @@
-database = http://bitbucket.org/_hellground/database
-tools = http://bitbucket.org/_hellground/tools
+database = ssh://hg@bitbucket.org/_hellground/database
+tools = ssh://hg@bitbucket.org/_hellground/tools

@@ -553,7 +553,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     // send abandon ticket
     WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
     data << uint32(9);
-    plr->BroadcastPacketToSelf(&data);
+    plr->SendPacketToSelf(&data);
     return true;
 }
 
@@ -619,7 +619,7 @@ bool ChatHandler::HandleGMTicketResponseCommand(const char* args)
     // send abandon ticket
     WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
     data << uint32(9);
-    plr->BroadcastPacketToSelf(&data);
+    plr->SendPacketToSelf(&data);
 
     return true;
 }
@@ -796,7 +796,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
         // Force abandon ticket
         WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
         data << uint32(9);
-        plr->BroadcastPacketToSelf(&data);
+        plr->SendPacketToSelf(&data);
     }
 
     ticket = NULL;
@@ -1550,7 +1550,7 @@ bool ChatHandler::HandleModifySpellCommand(const char* args)
     data << uint8(op);
     data << uint16(val);
     data << uint16(mark);
-    chr->BroadcastPacketToSelf(&data);
+    chr->SendPacketToSelf(&data);
 
     return true;
 }

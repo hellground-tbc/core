@@ -2541,7 +2541,7 @@ void World::SendServerMessage(ServerMessageType type, const char *text, Player* 
         data << text;
 
     if (player)
-        player->BroadcastPacketToSelf(&data);
+        player->SendPacketToSelf(&data);
     else
         SendGlobalMessage(&data);
 }

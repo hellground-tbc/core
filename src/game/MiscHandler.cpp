@@ -1347,7 +1347,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recv_data)
 
     WorldPacket data(SMSG_WHOIS, msg.size()+1);
     data << msg;
-    _player->BroadcastPacketToSelf(&data);
+    _player->SendPacketToSelf(&data);
 
     sLog.outDebug("Received whois command from player %s for character %s", GetPlayer()->GetName(), charname.c_str());
 }

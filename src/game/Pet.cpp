@@ -682,7 +682,7 @@ void Pet::ModifyLoyalty(int32 addvalue)
             if (owner && owner->GetTypeId() == TYPEID_PLAYER)
             {
                 WorldPacket data(SMSG_PET_BROKEN, 0);
-                ((Player*)owner)->BroadcastPacketToSelf(&data);
+                ((Player*)owner)->SendPacketToSelf(&data);
 
                 //run away
                 ((Player*)owner)->RemovePet(this,PET_SAVE_AS_DELETED);
@@ -1319,7 +1319,7 @@ void Pet::_LoadSpellCooldowns()
         if (!m_CreatureSpellCooldowns.empty() && GetOwner())
         {
             if (GetOwner()->GetTypeId() == TYPEID_PLAYER)
-                ((Player*)GetOwner())->BroadcastPacketToSelf(&data);
+                ((Player*)GetOwner())->SendPacketToSelf(&data);
         }
     }
 }
@@ -1950,7 +1950,7 @@ void Pet::ProhibitSpellScholl(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
             //owner->AddSpellCooldown(unSpellId, 0, curTime + unTimeMs/1000);
         }
     }
-    owner->BroadcastPacketToSelf(&data);
+    owner->SendPacketToSelf(&data);
 }
 
 bool Pet::IsRightSpellIdForPet(uint32 spellid)

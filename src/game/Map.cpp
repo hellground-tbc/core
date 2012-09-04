@@ -592,7 +592,7 @@ void Map::SendObjectUpdates()
     for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
     {
         if (iter->second.BuildPacket(&packet))
-            iter->first->BroadcastPacketToSelf(&packet);
+            iter->first->SendPacketToSelf(&packet);
 
         packet.clear();                                     // clean the string
     }
@@ -945,7 +945,7 @@ void Map::SendInitSelf(Player * player)
 
     WorldPacket packet;
     data.BuildPacket(&packet, hasTransport);
-    player->BroadcastPacketToSelf(&packet);
+    player->SendPacketToSelf(&packet);
 }
 
 void Map::SendInitTransports(Player * player)
@@ -975,7 +975,7 @@ void Map::SendInitTransports(Player * player)
 
     WorldPacket packet;
     transData.BuildPacket(&packet, hasTransport);
-    player->BroadcastPacketToSelf(&packet);
+    player->SendPacketToSelf(&packet);
 }
 
 void Map::SendRemoveTransports(Player * player)
@@ -998,7 +998,7 @@ void Map::SendRemoveTransports(Player * player)
 
     WorldPacket packet;
     transData.BuildPacket(&packet);
-    player->BroadcastPacketToSelf(&packet);
+    player->SendPacketToSelf(&packet);
 }
 
 inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)
@@ -2193,7 +2193,7 @@ bool InstanceMap::Add(Player *player)
                         {
                             WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 4);
                             data << uint32(0);
-                            player->BroadcastPacketToSelf(&data);
+                            player->SendPacketToSelf(&data);
                             player->BindToInstance(mapSave, true);
                         }
                     }
@@ -2363,7 +2363,7 @@ void InstanceMap::PermBindAllPlayers(Player *player)
             plr->BindToInstance(save, true);
             WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 4);
             data << uint32(0);
-            plr->BroadcastPacketToSelf(&data);
+            plr->SendPacketToSelf(&data);
         }
 
         // if the leader is not in the instance the group will not get a perm bind

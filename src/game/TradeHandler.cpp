@@ -616,7 +616,7 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
     WorldPacket data(SMSG_TRADE_STATUS, 12);
     data << (uint32) TRADE_STATUS_BEGIN_TRADE;
     data << (uint64)_player->GetGUID();
-    _player->pTrader->BroadcastPacketToSelf(&data);
+    _player->pTrader->SendPacketToSelf(&data);
 }
 
 void WorldSession::HandleSetTradeGoldOpcode(WorldPacket& recvPacket)

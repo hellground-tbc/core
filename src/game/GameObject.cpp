@@ -264,7 +264,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                             WorldPacket packet;
                             BuildValuesUpdateBlockForPlayer(&udata,((Player*)caster));
                             udata.BuildPacket(&packet);
-                            ((Player*)caster)->BroadcastPacketToSelf(&packet);
+                            ((Player*)caster)->SendPacketToSelf(&packet);
 
                             SendGameObjectCustomAnim(GetGUID());
                         }
@@ -454,7 +454,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                             if(GetGOInfo()->summoningRitual.spellId == 7720)
                             {
                                 WorldPacket data(SMSG_SUMMON_CANCEL, 0);
-                                target->BroadcastPacketToSelf(&data);
+                                target->SendPacketToSelf(&data);
 
                             }
                         }
@@ -1100,7 +1100,7 @@ void GameObject::Use(Unit* user)
                 {
                     WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8);
                     data << GetGUID();
-                    pPlayer->BroadcastPacketToSelf(&data);
+                    pPlayer->SendPacketToSelf(&data);
                 }
 
                 // possible quest objective for active quests
@@ -1207,7 +1207,7 @@ void GameObject::Use(Unit* user)
                         SetLootState(GO_JUST_DEACTIVATED);
 
                         WorldPacket data(SMSG_FISH_ESCAPED, 0);
-                        player->BroadcastPacketToSelf(&data);
+                        player->SendPacketToSelf(&data);
                     }
                     break;
                 }
@@ -1218,7 +1218,7 @@ void GameObject::Use(Unit* user)
                     SetLootState(GO_JUST_DEACTIVATED);
 
                     WorldPacket data(SMSG_FISH_NOT_HOOKED, 0);
-                    player->BroadcastPacketToSelf(&data);
+                    player->SendPacketToSelf(&data);
                     break;
                 }
             }

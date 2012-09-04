@@ -252,7 +252,7 @@ void LocalizedPacketDo<Builder>::operator()( Player* p )
     else
         data = i_data_cache[cache_idx];
 
-    p->BroadcastPacketToSelf(data);
+    p->SendPacketToSelf(data);
 }
 }
 

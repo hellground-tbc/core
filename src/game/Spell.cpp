@@ -3033,7 +3033,7 @@ void Spell::SendCastResult(SpellCastResult result)
         WorldPacket data(SMSG_CLEAR_EXTRA_AURA_INFO, (8+4));
         data << m_caster->GetPackGUID();
         data << uint32(m_spellInfo->Id);
-        ((Player*)m_caster)->BroadcastPacketToSelf(&data);
+        ((Player*)m_caster)->SendPacketToSelf(&data);
         return;
     }
 
@@ -3084,7 +3084,7 @@ void Spell::SendCastResult(SpellCastResult result)
             data << uint32(m_spellInfo->EquippedItemInventoryTypeMask);
             break;
     }
-    ((Player*)m_caster)->BroadcastPacketToSelf(&data);
+    ((Player*)m_caster)->SendPacketToSelf(&data);
 }
 
 void Spell::SendSpellStart()
@@ -3452,7 +3452,7 @@ void Spell::SendResurrectRequest(Player* target)
     if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_IGNORE_RESURRECTION_TIMER)
         data << uint32(0);
 
-    target->BroadcastPacketToSelf(&data);
+    target->SendPacketToSelf(&data);
 }
 
 void Spell::SendPlaySpellVisual(uint32 SpellID)
@@ -3463,7 +3463,7 @@ void Spell::SendPlaySpellVisual(uint32 SpellID)
     WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);
     data << uint64(m_caster->GetGUID());
     data << uint32(SpellID);                                // spell visual id?
-    ((Player*)m_caster)->BroadcastPacketToSelf(&data);
+    ((Player*)m_caster)->SendPacketToSelf(&data);
 }
 
 void Spell::TakeCastItem()

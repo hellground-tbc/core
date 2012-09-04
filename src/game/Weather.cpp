@@ -195,7 +195,7 @@ void Weather::SendWeatherUpdateToPlayer(Player *player)
     WorldPacket data(SMSG_WEATHER, (4+4+4));
 
     data << uint32(GetWeatherState()) << (float)m_grade << uint8(0);
-    player->BroadcastPacketToSelf(&data);
+    player->SendPacketToSelf(&data);
 }
 
 void Weather::SendFineWeatherUpdateToPlayer(Player *player)
@@ -206,7 +206,7 @@ void Weather::SendFineWeatherUpdateToPlayer(Player *player)
     WorldPacket data(SMSG_WEATHER, (4+4+4));
 
     data << (uint32)WEATHER_STATE_FINE << (float)0.0f << uint8(0);
-    player->BroadcastPacketToSelf(&data);
+    player->SendPacketToSelf(&data);
 }
 
 /// Send the new weather to all players in the zone
