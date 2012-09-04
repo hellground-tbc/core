@@ -254,6 +254,6 @@ void LocalizedPacketDo<Builder>::operator()( Player* p )
 
     p->BroadcastPacketToSelf(data);
 }
-
 }
+
 #endif
