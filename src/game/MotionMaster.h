@@ -26,6 +26,7 @@
 #include <stack>
 #include <vector>
 
+class PathFinder;
 class MovementGenerator;
 class Unit;
 
@@ -61,6 +62,7 @@ class HELLGROUND_DLL_SPEC MotionMaster
         void MoveFleeing(Unit* enemy, uint32 timeLimit = 0);
         void MovePoint(uint32 id, float x,float y,float z, bool generatePath = true, UnitActionId actionId = UNIT_ACTION_ASSISTANCE);
         void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool generatePath = false);
+        void MoveCharge(PathFinder path, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE);
         void MoveSeekAssistance(float x,float y,float z);
         void MoveSeekAssistanceDistract(uint32 timer);
         void MovePath(uint32 path_id, bool repeatable);

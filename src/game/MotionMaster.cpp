@@ -286,3 +286,12 @@ void MotionMaster::MoveCharge(float x, float y, float z, float speed /*= SPEED_C
     init.Launch();
     Mutate(new EffectMovementGenerator(id), UNIT_ACTION_EFFECT);
 }
+
+void MotionMaster::MoveCharge(PathFinder path, float speed /*= SPEED_CHARGE*/, uint32 id /*= EVENT_CHARGE*/)
+{
+    Movement::MoveSplineInit init(*m_owner);
+    init.MovebyPath(path.getPath());
+    init.SetVelocity(speed);
+    init.Launch();
+    Mutate(new EffectMovementGenerator(id), UNIT_ACTION_EFFECT);
+}

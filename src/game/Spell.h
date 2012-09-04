@@ -23,6 +23,7 @@
 
 #include "GridDefines.h"
 #include "SharedDefines.h"
+#include "PathFinder.h"
 
 #define MAX_SPELL_ID    60000
 
@@ -630,6 +631,8 @@ class Spell
         SpellEntry const* m_triggeredByAuraSpell;
 
         bool m_skipCheck;
+
+        PathFinder _path;
 };
 
 namespace Hellground

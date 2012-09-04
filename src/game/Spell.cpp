@@ -271,7 +271,7 @@ void SpellCastTargets::write (ByteBuffer& data) const
 
 Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck)
 : m_spellInfo(info), m_spellValue(new SpellValue(m_spellInfo))
-, m_caster(Caster)
+, m_caster(Caster), _path(PathFinder(m_caster))
 {
     m_spellState = SPELL_STATE_NULL;
     m_skipCheck = skipCheck;
@@ -4124,9 +4124,27 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_ROOTED;
 
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    if (BattleGround const *bg = dynamic_cast<Player *>(m_caster)->GetBattleGround())
+                {
+                    if (BattleGround const *bg = m_caster->ToPlayer()->GetBattleGround())
+                    {
                         if (bg->GetStatus() != STATUS_IN_PROGRESS)
                             return SPELL_FAILED_TRY_AGAIN;
+                    }
+                }
+
+                if (Unit* target = m_targets.getUnitTarget())
+                {
+                    Position dest;
+                    target->GetPosition(dest);
+
+                    float angle = m_caster->GetAngle(target) - m_caster->GetOrientation() - M_PI;
+                    m_caster->GetValidPointInAngle(dest, 2.0f, angle, false);
+                    _path.setPathLengthLimit(SpellMgr::GetSpellMaxRange(m_spellInfo) * 1.5f);
+                    _path.calculate(dest.x, dest.y, dest.z);
+
+                    if (_path.getPathType() & PATHFIND_SHORT)
+                        return SPELL_FAILED_OUT_OF_RANGE;
+                }
                 break;
             }
             case SPELL_EFFECT_SKINNING:

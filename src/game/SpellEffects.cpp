@@ -59,6 +59,7 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "PathFinder.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -7137,12 +7138,17 @@ void Spell::EffectCharge(uint32 /*i*/)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
         ((Player *)m_caster)->m_AC_timer = 3000;
 
-    Position dest;
-    target->GetPosition(dest);
+    if (_path.getPathType() & PATHFIND_NOPATH)
+    {
+        Position dest;
+        target->GetPosition(dest);
 
-    float angle = m_caster->GetAngle(target) - m_caster->GetOrientation() - M_PI;
-    m_caster->GetValidPointInAngle(dest, 2.0f, angle, false);
-    m_caster->GetMotionMaster()->MoveCharge(dest.x, dest.y, dest.z);
+        float angle = m_caster->GetAngle(target) - m_caster->GetOrientation() - M_PI;
+        m_caster->GetValidPointInAngle(dest, 2.0f, angle, false);
+        m_caster->GetMotionMaster()->MoveCharge(dest.x, dest.y, dest.z);
+    }
+    else
+        m_caster->GetMotionMaster()->MoveCharge(_path);
 
     // not all charge effects used in negative spells
     if (!SpellMgr::IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -7151,25 +7157,34 @@ void Spell::EffectCharge(uint32 /*i*/)
 
 void Spell::EffectCharge2(uint32 /*i*/)
 {
-    float x, y, z;
-    if (m_targets.m_targetMask & TARGET_FLAG_DEST_LOCATION)
-    {
-        x = m_targets.m_destX;
-        y = m_targets.m_destY;
-        z = m_targets.m_destZ;
-
-        if (unitTarget && unitTarget->GetTypeId() != TYPEID_PLAYER)
-            unitTarget->StopMoving();
-    }
-    else if (unitTarget && unitTarget != m_caster)
-        unitTarget->GetContactPoint(m_caster, x, y, z, 3.666666f);
-    else
+    Unit *target = m_targets.getUnitTarget();
+    if (!target && !(m_targets.m_targetMask & TARGET_FLAG_DEST_LOCATION))
         return;
 
-    m_caster->MonsterMoveWithSpeed(x, y, z, SPEED_CHARGE);
+    if (_path.getPathType() & PATHFIND_NOPATH)
+    {
+        Position dest;
+        if (m_targets.m_targetMask & TARGET_FLAG_DEST_LOCATION)
+        {
+            dest.x = m_targets.m_destX;
+            dest.y = m_targets.m_destY;
+            dest.z = m_targets.m_destZ;
+        }
+        else
+        {
+            target->GetPosition(dest);
+
+            float angle = m_caster->GetAngle(target) - m_caster->GetOrientation() - M_PI;
+            m_caster->GetValidPointInAngle(dest, 2.0f, angle, false);
+        }
+
+        m_caster->GetMotionMaster()->MoveCharge(dest.x, dest.y, dest.z);
+    }
+    else
+        m_caster->GetMotionMaster()->MoveCharge(_path);
 
     // not all charge effects used in negative spells
-    if (unitTarget && unitTarget != m_caster && !SpellMgr::IsPositiveSpell(m_spellInfo->Id))
+    if (!SpellMgr::IsPositiveSpell(m_spellInfo->Id))
         m_caster->Attack(unitTarget, true);
 }
 
