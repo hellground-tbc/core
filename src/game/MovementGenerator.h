@@ -47,7 +47,7 @@ class HELLGROUND_DLL_SPEC MovementGenerator : public UnitAction
 
         virtual MovementGeneratorType GetMovementGeneratorType() const = 0;
 
-        virtual void unitSpeedChanged() { }
+        virtual void UnitSpeedChanged() { _recalculateTravel = true; }
 
         virtual void UpdateFinalDistance(float /*fDistance*/) { }
 
@@ -60,6 +60,9 @@ class HELLGROUND_DLL_SPEC MovementGenerator : public UnitAction
         // used for check from Update call is movegen still be active (top movement generator)
         // after some not safe for this calls
         bool IsActive(Unit& u);
+
+    protected:
+        bool _recalculateTravel;
 };
 
 template<class T, class D>

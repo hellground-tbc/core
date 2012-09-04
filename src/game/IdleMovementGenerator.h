@@ -31,6 +31,8 @@ class HELLGROUND_DLL_SPEC IdleMovementGenerator : public MovementGenerator
         void Interrupt(Unit &) {}
         void Reset(Unit &);
         bool Update(Unit &, const uint32 &) { return true; }
+
+        const char* Name() const { return "<Idle>"; };
         MovementGeneratorType GetMovementGeneratorType() const { return IDLE_MOTION_TYPE; }
 };
 

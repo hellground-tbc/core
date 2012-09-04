@@ -38,6 +38,7 @@ void FleeingMovementGenerator<UNIT>::_moveToNextLocation(UNIT &unit)
     init.SetWalk(false);
     init.Launch();
 
+    _recalculateTravel = false;
     _nextCheckTime.Reset(urand(500,1000));
 }
 
@@ -78,6 +79,11 @@ bool FleeingMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 & time_diff
     _nextCheckTime.Update(time_diff);
     if (_nextCheckTime.Passed() && unit.IsStopped())
         _moveToNextLocation(unit);
+    else
+    {
+        if (_recalculateTravel)
+            _moveToNextLocation(unit);
+    }
 
     return true;
 }

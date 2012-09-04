@@ -38,12 +38,13 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
 
     creature.GetValidPointInAngle(dest, range, angle, false);
 
-    i_nextMoveTime.Reset(urand(500, 10000));
-
     Movement::MoveSplineInit init(creature);
     init.MoveTo(dest.x, dest.y, dest.z);
     init.SetWalk(true);
     init.Launch();
+
+    _recalculateTravel = false;
+    i_nextMoveTime.Reset(urand(500, 10000));
 }
 
 template<>
@@ -79,16 +80,10 @@ void RandomMovementGenerator<Creature>::Finalize(Creature &creature)
 template<>
 bool RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff)
 {
-    if (creature.hasUnitState(UNIT_STAT_NOT_MOVE))
-    {
-        i_nextMoveTime.Reset(0);  // Expire the timer
-        return true;
-    }
-
-    if (creature.movespline->Finalized())
+    if (creature.IsStopped() || _recalculateTravel)
     {
         i_nextMoveTime.Update(diff);
-        if (i_nextMoveTime.Passed())
+        if (i_nextMoveTime.Passed() || _recalculateTravel)
             _setRandomLocation(creature);
     }
     return true;
