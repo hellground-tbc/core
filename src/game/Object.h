@@ -605,8 +605,8 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
 
         bool IsTempWorldObject;
 
-        Player const* ToPlayer() const;
-        Player* ToPlayer();
+        Player const* ToPlayer() const { if (GetObjectGuid().IsPlayer()) return (const Player*)((Player*)this); else return NULL; }
+        Player* ToPlayer() { if (GetObjectGuid().IsPlayer()) return reinterpret_cast<Player*>(this); else return NULL; }
 
         Creature const* ToCreature() const {if (GetTypeId() == TYPEID_UNIT) return (const Creature*)((Creature*)this); else return NULL; }
         Creature* ToCreature(){ if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return NULL; }
