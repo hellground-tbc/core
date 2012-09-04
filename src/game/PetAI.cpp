@@ -165,11 +165,7 @@ void PetAI::AddSpellForAutocast(uint32 spellID, Unit* target)
 {
     if (!spellID)
         return;
-/*
-    if (m_owner && m_owner->GetTypeId() == TYPEID_PLAYER)
-        if(((Player*)m_owner)->HasSpellCooldown(spellID))
-            return;
-*/
+
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellID);
     if (!spellInfo)
         return;
@@ -249,7 +245,6 @@ void PetAI::UpdateAI(const uint32 diff)
     {
         if (_needToStop())
         {
-            DEBUG_LOG("Pet AI stoped attacking [guid=%u]", m_creature->GetGUIDLow());
             _stopAttack();
             return;
         }
@@ -259,7 +254,10 @@ void PetAI::UpdateAI(const uint32 diff)
     else
     {
         if (me->isInCombat())
-           _stopAttack();
+        {
+            if (!m_owner|| !m_owner->GetObjectGuid().IsPlayer())
+                _stopAttack();
+        }
         else if (m_owner && m_creature->GetCharmInfo()) //no victim
         {
             if (m_owner->isInCombat() && !(m_creature->HasReactState(REACT_PASSIVE) || m_creature->GetCharmInfo()->HasCommandState(COMMAND_STAY)))
@@ -382,7 +380,10 @@ void ImpAI::UpdateAI(const uint32 diff)
     else
     {
         if (me->isInCombat())
-           _stopAttack();
+        {
+            if (!m_owner|| !m_owner->GetObjectGuid().IsPlayer())
+                _stopAttack();
+        }
         else if (m_owner && m_creature->GetCharmInfo()) //no victim
         {
             if (m_owner->isInCombat() && !(m_creature->HasReactState(REACT_PASSIVE) || m_creature->GetCharmInfo()->HasCommandState(COMMAND_STAY)))
