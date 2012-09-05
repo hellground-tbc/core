@@ -784,7 +784,7 @@ class World
             if (reason)
                 m_massMuteReason = reason;
             else
-                m_massMuteReason = "";
+                m_massMuteReason = "no-reason";
         }
 
         uint64 GetMassMuteTime() { return m_massMuteTime; }

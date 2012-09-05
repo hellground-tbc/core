@@ -6421,6 +6421,26 @@ bool ChatHandler::HandleInstanceSaveDataCommand(const char * /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleInstanceBindCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    int32 InstanceId = atoi((char*)args);
+
+    Player* player = m_session->GetPlayer();
+    if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(InstanceId))
+        player->BindToInstance(save, true, false);
+    else
+    {
+        PSendSysMessage("There is no such instance save");
+        return false;
+    }
+
+    PSendSysMessage("You have been binded successfully");
+    return true;
+}
+
 /// Display the list of GMs
 bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
 {

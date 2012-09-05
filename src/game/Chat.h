@@ -208,6 +208,7 @@ class ChatHandler
         bool HandleInstanceSelfUnbindCommand(const char* args);
         bool HandleInstanceStatsCommand(const char* args);
         bool HandleInstanceSaveDataCommand(const char * args);
+        bool HandleInstanceBindCommand(const char* args);
 
         bool HandleMmapPathCommand(const char* args);
         bool HandleMmapLocCommand(const char* args);

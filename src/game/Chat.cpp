@@ -572,6 +572,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "selfunbind",     SEC_GAMEMASTER,     false,  &ChatHandler::HandleInstanceSelfUnbindCommand,  "", NULL },
         { "stats",          SEC_MODERATOR,      true,   &ChatHandler::HandleInstanceStatsCommand,       "", NULL },
         { "unbind",         SEC_GAMEMASTER,     false,  &ChatHandler::HandleInstanceUnbindCommand,      "", NULL },
+        { "bind",           SEC_GAMEMASTER,     false,  &ChatHandler::HandleInstanceBindCommand,        "", NULL },
         { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
