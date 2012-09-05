@@ -7596,8 +7596,10 @@ void Unit::CombatStop(bool cast)
 
     AttackStop();
     RemoveAllAttackers();
-    if (GetTypeId()==TYPEID_PLAYER)
-        ((Player*)this)->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
+
+    if (GetObjectGuid().IsPlayer())
+        ToPlayer()->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
+
     ClearInCombat();
 }
 
@@ -12481,11 +12483,6 @@ void Unit::SetFlying(bool apply)
 
 void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
 {
-    if (!charmer)
-        return;
-
-    assert(!possess || charmer->GetTypeId() == TYPEID_PLAYER);
-
     if (this == charmer)
         return;
 
@@ -12496,17 +12493,18 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         return;
 
     RemoveUnitMovementFlag(MOVEFLAG_WALK_MODE);
+
     CastStop();
-    CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
+    CombatStop();
     DeleteThreatList();
 
     // Charmer stop charming
-    if (charmer->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)charmer)->StopCastingCharm();
+    if (charmer->GetObjectGuid().IsPlayer())
+        charmer->ToPlayer()->StopCastingCharm();
 
     // Charmed stop charming
-    if (GetTypeId() == TYPEID_PLAYER)
-        ((Player*)this)->StopCastingCharm();
+    if (GetObjectGuid().IsPlayer())
+        ToPlayer()->StopCastingCharm();
 
     // StopCastingCharm may remove a possessed pet?
     if (!IsInWorld())
@@ -12514,31 +12512,39 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
 
     // Set charmed
     charmer->SetCharm(this);
+
     // delete charmed players for threat list
-    if(charmer->CanHaveThreatList())
+    if (charmer->CanHaveThreatList())
         charmer->getThreatManager().modifyThreatPercent(this, -101);
+
     SetCharmerGUID(charmer->GetGUID());
     setFaction(charmer->getFaction());
+
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 
-    if (GetTypeId() == TYPEID_UNIT)
+    bool initCharmInfo = false;
+    if (GetObjectGuid().IsCreature())
     {
-        ((Creature*)this)->AI()->OnCharmed(true);
+        ToCreature()->AI()->OnCharmed(true);
         GetMotionMaster()->MoveIdle();
+
+        // pets already have initialized charm info
+        initCharmInfo = !GetObjectGuid().IsPet();
     }
     else
     {
-        if (((Player*)this)->isAFK())
-            ((Player*)this)->ToggleAFK();
+        if (ToPlayer()->isAFK())
+            ToPlayer()->ToggleAFK();
 
         ToPlayer()->SetClientControl(this, false);
 
-        if (charmer->GetTypeId() == TYPEID_UNIT)
-            ((Player*)this)->CharmAI(true);
+        if (charmer->GetObjectGuid().IsCreature())
+            ToPlayer()->CharmAI(true);
+
+        initCharmInfo = true;
     }
 
-    // Pets already have a properly initialized CharmInfo, don't overwrite it.
-    if (GetTypeId() == TYPEID_PLAYER || GetTypeId() == TYPEID_UNIT && !((Creature*)this)->isPet())
+    if (initCharmInfo)
     {
         CharmInfo *charmInfo = InitCharmInfo();
         if (possess)
@@ -12562,7 +12568,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     // Charm demon
     else if (GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->getClass() == CLASS_WARLOCK)
     {
-        CreatureInfo const *cinfo = ((Creature*)this)->GetCreatureInfo();
+        CreatureInfo const *cinfo = ToCreature()->GetCreatureInfo();
         if (cinfo && cinfo->type == CREATURE_TYPE_DEMON)
         {
             //to prevent client crash
@@ -12577,10 +12583,13 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         }
     }
 
-    if (possess)
-        ((Player*)charmer)->PossessSpellInitialize();
-    else if (charmer->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)charmer)->CharmSpellInitialize();
+    if (Player* playerCharmer = charmer->ToPlayer())
+    {
+        if (possess)
+            playerCharmer->PossessSpellInitialize();
+        else if (charmer->GetTypeId() == TYPEID_PLAYER)
+            playerCharmer->CharmSpellInitialize();
+    }
 }
 
 void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)

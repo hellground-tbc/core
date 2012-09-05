@@ -78,6 +78,10 @@ void MotionMaster::MoveTargetedHome()
     }
     else if (m_owner->GetTypeId() == TYPEID_UNIT && ((Creature*)m_owner)->GetCharmerOrOwnerGUID())
     {
+        // Possessed creatures shouldn't have FollowMovegen assigned :P
+        if (m_owner->hasUnitState(UNIT_STAT_POSSESSED))
+            return;
+
         if (Unit *target = ((Creature*)m_owner)->GetCharmerOrOwner())
             Mutate(new FollowMovementGenerator<Creature>(*target,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE), UNIT_ACTION_HOME);
     }

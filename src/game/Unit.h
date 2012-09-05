@@ -1198,8 +1198,10 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
 
         void SetPet(Pet* pet);
         void SetCharm(Unit* pet);
-        void SetCharmedOrPossessedBy(Unit* charmer, bool possess);
+
+        void SetCharmedOrPossessedBy(Unit*, bool possess);
         void RemoveCharmedOrPossessedBy(Unit* charmer);
+
         void RestoreFaction();
 
         bool isCharmed() const { return GetCharmerGUID() != 0; }
