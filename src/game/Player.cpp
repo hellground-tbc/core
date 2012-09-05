@@ -3321,8 +3321,8 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     SpellLearnSpellMap::const_iterator spell_begin = sSpellMgr.GetBeginSpellLearnSpell(spell_id);
     SpellLearnSpellMap::const_iterator spell_end   = sSpellMgr.GetEndSpellLearnSpell(spell_id);
 
-    for (SpellLearnSpellMap::const_iterator itr2 = spell_begin; itr2 != spell_end; ++itr2)
-        removeSpell(itr2->second.spell, disabled);
+    for (SpellLearnSpellMap::const_iterator itr3 = spell_begin; itr3 != spell_end; ++itr3)
+        removeSpell(itr3->second.spell, disabled);
 }
 
 void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */)
@@ -5962,7 +5962,7 @@ void Player::UpdatePvpTitles()
     {
         if (search)
         {
-            if (pvp_title & uint64(1 << i))
+            if (pvp_title & (uint64(1) << i))
             {
                 index = i;
                 search = false;
@@ -5975,7 +5975,7 @@ void Player::UpdatePvpTitles()
         }
     }
 
-    uint64 new_title = (1 << index);
+    uint64 new_title = uint64(1) << index;
     if (pvp_title != new_title)
     {
         SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES, (titles & ~PLAYER_TITLE_PVP) | new_title);
@@ -6104,7 +6104,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
                     uint32 offset = pVictim->GetTeam() == HORDE ? MAX_PVP_RANKS : 0;
                     for (uint32 i = 1 + offset; i <= MAX_PVP_RANKS + offset; ++i)
                     {
-                        if (victim_title & uint64(1 << i))
+                        if (victim_title & (uint64(1) << i))
                         {
                             victim_rank = i - offset + 4;
                             break;

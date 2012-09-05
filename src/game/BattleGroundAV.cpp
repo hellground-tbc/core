@@ -1109,8 +1109,10 @@ void BattleGroundAV::FillInitialWorldStates(WorldPacket& data)
         for (uint8 j =1; j <= 3; j+=2)
         {//j=1=assaulted j=3=controled //i dont have j=2=destroyed cause destroyed is the same like enemy-team controll
             stateok = (m_Nodes[i].State == j || (m_Nodes[i].State == POINT_DESTROYED && j==3));
-            data << uint32(BG_AV_NodeWorldStates[i][GetWorldStateType(j,ALLIANCE)]) << uint32((m_Nodes[i].Owner == ALLIANCE && stateok)?1:0);
-            data << uint32(BG_AV_NodeWorldStates[i][GetWorldStateType(j,HORDE)]) << uint32((m_Nodes[i].Owner == HORDE && stateok)?1:0);
+            data << uint32(BG_AV_NodeWorldStates[i][GetWorldStateType(j,ALLIANCE)]);
+            data << uint32((m_Nodes[i].Owner == ALLIANCE && stateok)?1:0);
+            data << uint32(BG_AV_NodeWorldStates[i][GetWorldStateType(j,HORDE)]);
+            data << uint32((m_Nodes[i].Owner == HORDE && stateok)?1:0);
         }
     if (m_Nodes[BG_AV_NODES_SNOWFALL_GRAVE].Owner == AV_NEUTRAL_TEAM) //cause neutral teams aren't handled generic
         data << uint32(AV_SNOWFALL_N) << uint32(1);

@@ -3952,7 +3952,7 @@ bool ChatHandler::HandleGameObjectAddTempCommand(const char* args)
     Player *chr = m_session->GetPlayer();
 
     char* spawntime = strtok(NULL, " ");
-    uint32 spawntm;
+    uint32 spawntm = 60;
 
     if (spawntime)
         spawntm = atoi((char*)spawntime);

@@ -318,7 +318,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 //Gore
                 if (m_spellInfo->SpellIconID == 2269)
                 {
-                     damage += rand32()%2 ? damage : 0;
+                     damage += (rand32()%2 ? damage : 0);
                 }
 
                 if (m_spellInfo->Id == 37841)
@@ -913,22 +913,22 @@ void Spell::EffectDummy(uint32 i)
                 // Six Demon Bag, TODO: Search and add more spells to cast with normal dmg (100 ~ 200), Shadow bolt, Fireball, Summon Felhunter
                 case 14537:
                 {
-                    int32 spell_id = 0;
+                    int32 spellid = 0;
                     if (rand()%4)
                         switch (urand(1,3))
                         {
-                            case 1: spell_id = 45297; break;     // Chain Lightning
-                            case 2: spell_id = 23102; break;     // Frostbolt!
-                            case 3: spell_id = 9487;  break;     // Fireball !
+                            case 1: spellid = 45297; break;     // Chain Lightning
+                            case 2: spellid = 23102; break;     // Frostbolt!
+                            case 3: spellid = 9487;  break;     // Fireball !
                         }
                     else
-                        spell_id = (rand()%2) ? 29848 : 31718;     // Polymorph: Sheep : Enveloping Winds
+                        spellid = (rand()%2) ? 29848 : 31718;     // Polymorph: Sheep : Enveloping Winds
 
                     uint8 backfire = rand()%5;
-                    if (spell_id == 29848 && !backfire)
-                        m_caster->CastSpell(m_caster,spell_id,true); // backfire with poly chance
+                    if (spellid == 29848 && !backfire)
+                        m_caster->CastSpell(m_caster,spellid,true); // backfire with poly chance
                     else
-                        m_caster->CastSpell(unitTarget,spell_id,true);
+                        m_caster->CastSpell(unitTarget,spellid,true);
                 return;
                 }
                 // Salvage Wreckage

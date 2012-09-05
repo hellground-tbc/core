@@ -101,7 +101,7 @@ struct HELLGROUND_DLL_SPEC CharmInfo
     private:
         Unit* m_unit;
         UnitActionBarEntry PetActionBar[10];
-        CharmSpellEntry m_charmspells[4];
+        CharmSpellEntry m_charmspells[CREATURE_MAX_SPELLS];
 
         CommandStates   m_CommandState;
 

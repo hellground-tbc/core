@@ -99,10 +99,11 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         }
     }
 
-    if (sWorld.GetMassMuteTime() > time(NULL))
+    if (GetSecurity() < SEC_MODERATOR && sWorld.GetMassMuteTime() > time(NULL))
     {
         if (sWorld.GetMassMuteReason())
             ChatHandler(_player).PSendSysMessage("Mass mute reason: %s", sWorld.GetMassMuteReason());
+
         return;
     }
 
