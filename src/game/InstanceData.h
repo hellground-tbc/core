@@ -123,6 +123,9 @@ class HELLGROUND_DLL_SPEC InstanceData : public ZoneScript
         virtual bool SetBossState(uint32 id, EncounterState state);
 
         Creature *GetCreature(uint64 guid){ return instance->GetCreature(guid); }
+
+        virtual uint32 GetEncounterForEntry(uint32 entry) { return 0; }
+
     protected:
         void SetBossNumber(uint32 number) { bosses.resize(number); }
         void LoadDoorData(const DoorData *data);
@@ -139,5 +142,5 @@ class HELLGROUND_DLL_SPEC InstanceData : public ZoneScript
         virtual void OnObjectCreate(GameObject *) {}
         virtual void OnCreatureCreate(Creature *, uint32 entry) {}
 };
-#endif
 
+#endif
