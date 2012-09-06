@@ -1411,10 +1411,12 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         void DeleteThreatList();
         void TauntApply(Unit* pVictim);
         void TauntFadeOut(Unit *taunter);
-        ThreatManager& getThreatManager() { return m_ThreatManager; }
-        void addHatedBy(HostilReference* pHostilReference) { m_HostilRefManager.insertFirst(pHostilReference); };
+
+        HostilRefManager& getHostilRefManager() { return _hostilRefManager; }
+        ThreatManager& getThreatManager() { return _threatManager; }
+
+        void addHatedBy(HostilReference* pHostilReference) { getHostilRefManager().insertFirst(pHostilReference); };
         void removeHatedBy(HostilReference* /*pHostilReference*/) { /* nothing to do yet */ }
-        HostilRefManager& getHostilRefManager() { return m_HostilRefManager; }
 
         Aura* GetAura(uint32 spellId, uint32 effindex);
         AuraMap      & GetAuras()       { return m_Auras; }
@@ -1665,8 +1667,6 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         uint32 m_reactiveTimer[MAX_REACTIVE];
         uint32 m_regenTimer;
 
-        ThreatManager m_ThreatManager;
-
         int32 m_meleeAPAttackerBonus;
 
     public:
@@ -1688,10 +1688,10 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         UnitVisibility m_Visibility;
 
         Diminishing m_Diminishing;
-        // Manage all Units threatening us
-//        ThreatManager m_ThreatManager;
+
         // Manage all Units that are threatened by us
-        HostilRefManager m_HostilRefManager;
+        HostilRefManager _hostilRefManager;
+        ThreatManager _threatManager;
 
         FollowerRefManager m_FollowingRefManager;
 

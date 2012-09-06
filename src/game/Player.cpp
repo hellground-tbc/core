@@ -2288,7 +2288,6 @@ void Player::SetGameMaster(bool on)
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
         ResetContestedPvP();
 
-        getHostilRefManager().setOnlineOfflineState(false);
         CombatStop();
     }
     else
@@ -2303,10 +2302,9 @@ void Player::SetGameMaster(bool on)
 
         // restore FFA PvP area state, remove not allowed for GM mounts
         UpdateArea(m_areaUpdateId);
-
-        getHostilRefManager().setOnlineOfflineState(true);
     }
 
+    getHostilRefManager().setOnlineOfflineState(!on);
     UpdateVisibilityAndView();
 }
 
