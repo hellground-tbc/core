@@ -6451,7 +6451,7 @@ bool ChatHandler::HandleInstanceResetEncountersCommand(const char* args)
     Player* player = m_session->GetPlayer();
     if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(InstanceId))
     {
-        if (Map* map = sMapMgr.FindMap(save->GetMapId(), save->GetInstanceId())
+        if (Map* map = sMapMgr.FindMap(save->GetMapId(), save->GetInstanceId()))
         {
             if (InstanceData* data = reinterpret_cast<InstanceMap*>(map)->GetInstanceData())
             {
