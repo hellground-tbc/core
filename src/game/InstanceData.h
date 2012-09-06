@@ -98,6 +98,7 @@ class HELLGROUND_DLL_SPEC InstanceData : public ZoneScript
         //Used by the map's CanEnter function.
         //This is to prevent players from entering during boss encounters.
         virtual bool IsEncounterInProgress() const;
+        virtual void ResetEncounterInProgress();
 
         //Called when a player successfully enters the instance.
         virtual void OnPlayerEnter(Player *) {}

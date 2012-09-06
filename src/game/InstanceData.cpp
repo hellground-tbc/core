@@ -175,3 +175,9 @@ std::string InstanceData::GetBossSaveData()
         saveStream << (uint32)i->state << " ";
     return saveStream.str();
 }
+
+void InstanceData::ResetEncounterInProgress()
+{
+    // this will only reset encounter state to NOT_STARTED, it won't evade creatures inside of map, better option is to override it in instance script
+    Load(GetSaveData().c_str());
+}
