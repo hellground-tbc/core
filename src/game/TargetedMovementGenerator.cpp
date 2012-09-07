@@ -78,7 +78,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
         return;
 
     _targetReached = false;
-    _recalculateTravel = false;
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = false;
 
     Movement::MoveSplineInit init(owner);
     init.MovebyPath(_path->getPath());
@@ -102,14 +102,14 @@ template<>
 void TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >::UpdateFinalDistance(float fDistance)
 {
     _offset = fDistance;
-    _recalculateTravel = true;
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = true;
 }
 
 template<>
 void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::UpdateFinalDistance(float fDistance)
 {
     _offset = fDistance;
-    _recalculateTravel = true;
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = true;
 }
 
 template<class T, typename D>
@@ -163,7 +163,7 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     }
     else
     {
-        if (_recalculateTravel)
+        if (static_cast<MovementGenerator*>(this)->_recalculateTravel)
             _setTargetLocation(owner);
     }
     return true;

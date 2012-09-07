@@ -12104,7 +12104,7 @@ class RelocationNotifyEvent : public BasicEvent
                 Cell::VisitAllObjects(&_owner,notify,radius);
             }
 
-            _owner.GetPosition(_owner._notifiedPosition);
+            //_owner.GetPosition(_owner._notifiedPosition);
             _owner._SetAINotifyScheduled(false);
             return true;
         }
@@ -12135,10 +12135,10 @@ void Unit::OnRelocated()
     if (distsq > World::GetRelocationLowerLimitSq())
     {
         GetPosition(_notifiedPosition);
-        ScheduleAINotify(0);
+        UpdateVisibilityAndView();
     }
-    else
-        ScheduleAINotify(World::GetRelocationAINotifyDelay());
+
+    ScheduleAINotify(World::GetRelocationAINotifyDelay());
 }
 
 void Unit::UpdateVisibilityAndView()
@@ -12337,8 +12337,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             playerVictim->CombatStopWithPets(true);
             playerVictim->DuelComplete(DUEL_INTERUPTED);
         }
-
-        playerVictim->UpdateObjectVisibility();
     }
     else                                                // creature died
     {
@@ -12411,6 +12409,8 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             }
         }
     }
+
+    pVictim->UpdateObjectVisibility();
 
     // outdoor pvp things, do these after setting the death state, else the player activity notify won't work... doh...
     // handle player kill only if not suicide (spirit of redemption for example)

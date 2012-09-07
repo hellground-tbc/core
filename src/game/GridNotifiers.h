@@ -74,7 +74,7 @@ namespace Hellground
         Player &_player;
         PlayerRelocationNotifier(Player &pl) : _player(pl) {}
 
-        void Visit(CameraMapType&);
+        //void Visit(CameraMapType&);
         void Visit(CreatureMapType&);
 
         template<class NOT_INTERESTED>
@@ -87,6 +87,7 @@ namespace Hellground
         CreatureRelocationNotifier(Creature& c) : _creature(c) {}
 
         void Visit(PlayerMapType&);
+        void Visit(CreatureMapType&);
 
         template<class NOT_INTERESTED>
         void Visit(GridRefManager<NOT_INTERESTED>&) {}

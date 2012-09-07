@@ -78,6 +78,8 @@ class Creature;
 class Unit;
 struct GossipOption;
 
+typedef std::set<Player*> PlayerSet;
+
 class OutdoorPvP;
 class OPvPCapturePoint
 {

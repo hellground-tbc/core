@@ -43,7 +43,7 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     init.SetWalk(true);
     init.Launch();
 
-    _recalculateTravel = false;
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = false;
     i_nextMoveTime.Reset(urand(500, 10000));
 }
 
@@ -80,10 +80,10 @@ void RandomMovementGenerator<Creature>::Finalize(Creature &creature)
 template<>
 bool RandomMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff)
 {
-    if (creature.IsStopped() || _recalculateTravel)
+    if (creature.IsStopped() || static_cast<MovementGenerator*>(this)->_recalculateTravel)
     {
         i_nextMoveTime.Update(diff);
-        if (i_nextMoveTime.Passed() || _recalculateTravel)
+        if (i_nextMoveTime.Passed() || static_cast<MovementGenerator*>(this)->_recalculateTravel)
             _setRandomLocation(creature);
     }
     return true;
