@@ -1010,22 +1010,25 @@ void hyjalAI::HideNearPos(float x, float y)
     }
 }
 
+class RespawnDo
+{
+    public:
+        RespawnDo() {}
+
+        void operator()(Creature* u) const
+        {
+            if (u->isWorldBoss() && u->GetInstanceData()->GetData(u->GetInstanceData()->GetEncounterForEntry(u->GetEntry())) == DONE)
+                u->DisappearAndDie();
+            else
+                u->Respawn();
+        }
+        void operator()(GameObject* u) const { }
+        void operator()(WorldObject*) const {}
+        void operator()(Corpse*) const {}
+};
+
 void hyjalAI::RespawnNearPos(float x, float y)
 {
-    class RespawnDo
-    {
-        public:
-            RespawnDo() {}
-
-            void operator()(Creature* u) const
-            {
-                if (u->isWorldBoss() && u->GetInstanceData()->GetData(u->GetInstanceData()->GetEncounterForEntry(u->GetEntry())) == DONE)
-                    u->DisappearAndDie();
-                else
-                    u->Respawn();
-            }
-    };
-
     RespawnDo u_do;
     Hellground::ObjectWorker<Creature, RespawnDo> worker(u_do);
     Cell::VisitGridObjects(x, y, me->GetMap(), worker, me->GetMap()->GetVisibilityDistance());
