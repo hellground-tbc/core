@@ -12132,13 +12132,14 @@ void Unit::OnRelocated()
     delta.z = _notifiedPosition.z - GetPositionZ();
 
     float distsq = delta.x*delta.x+delta.y*delta.y+delta.z*delta.z;
-    if (distsq > World::GetRelocationLowerLimitSq())
+    if (distsq > GetTerrain()->GetSpecifics()->viewupdatedistance)
     {
         GetPosition(_notifiedPosition);
         UpdateVisibilityAndView();
+        return;
     }
 
-    ScheduleAINotify(World::GetRelocationAINotifyDelay());
+    ScheduleAINotify(GetTerrain()->GetSpecifics()->ainotifyperiod);
 }
 
 void Unit::UpdateVisibilityAndView()
