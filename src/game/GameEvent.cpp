@@ -135,13 +135,16 @@ bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
 
 void GameEventMgr::StopEvent(uint16 event_id, bool overwrite)
 {
-    if (event_id==15){
+    if (event_id == 15)
         RealmDataDatabase.Execute("DELETE FROM character_inventory WHERE item_template=19807");
-    }
+
     bool serverwide_evt = mGameEvent[event_id].state != GAMEEVENT_NORMAL;
 
     RemoveActiveEvent(event_id);
     UnApplyEvent(event_id);
+
+    static SqlStatementID deleteGameEventSave;
+    static SqlStatementID deleteGameEventCondSave;
 
     if (overwrite && !serverwide_evt)
     {
@@ -160,9 +163,13 @@ void GameEventMgr::StopEvent(uint16 event_id, bool overwrite)
             std::map<uint32 /*condition id*/, GameEventFinishCondition>::iterator itr;
             for (itr = mGameEvent[event_id].conditions.begin(); itr != mGameEvent[event_id].conditions.end(); ++itr)
                 itr->second.done = 0;
+
             RealmDataDatabase.BeginTransaction();
-            RealmDataDatabase.PExecute("DELETE FROM game_event_save WHERE event_id = '%u'",event_id);
-            RealmDataDatabase.PExecute("DELETE FROM game_event_condition_save WHERE event_id = '%u'",event_id);
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteGameEventSave, "DELETE FROM game_event_save WHERE event_id = ?");
+            stmt.PExecute(event_id);
+
+            stmt = RealmDataDatabase.CreateStatement(deleteGameEventCondSave, "DELETE FROM game_event_condition_save WHERE event_id = ?");
+            stmt.PExecute(event_id);
             RealmDataDatabase.CommitTransaction();
         }
     }
@@ -1519,11 +1526,19 @@ void GameEventMgr::HandleQuestComplete(uint32 quest_id)
                 // check max limit
                 if (citr->second.done > citr->second.reqNum)
                     citr->second.done = citr->second.reqNum;
+
+                static SqlStatementID deleteGECondSave;
+                static SqlStatementID insertGECondSave;
+
                 // save the change to db
                 RealmDataDatabase.BeginTransaction();
-                RealmDataDatabase.PExecute("DELETE FROM game_event_condition_save WHERE event_id = '%u' AND condition_id = '%u'",event_id,condition);
-                RealmDataDatabase.PExecute("INSERT INTO game_event_condition_save (event_id, condition_id, done) VALUES (%u,%u,%f)",event_id,condition,citr->second.done);
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteGECondSave, "DELETE FROM game_event_condition_save WHERE event_id = ? AND condition_id = ?");
+                stmt.PExecute(event_id, condition);
+
+                stmt = RealmDataDatabase.CreateStatement(insertGECondSave, "INSERT INTO game_event_condition_save (event_id, condition_id, done) VALUES (?, ?, ?)");
+                stmt.PExecute(event_id, condition, citr->second.done);
                 RealmDataDatabase.CommitTransaction();
+
                 // check if all conditions are met, if so, update the event state
                 if (CheckOneGameEventConditions(event_id))
                 {
@@ -1556,12 +1571,28 @@ bool GameEventMgr::CheckOneGameEventConditions(uint16 event_id)
 
 void GameEventMgr::SaveWorldEventStateToDB(uint16 event_id)
 {
+    static SqlStatementID deleteGESave;
+    static SqlStatementID insertGESave1;
+    static SqlStatementID insertGESave2;
+
     RealmDataDatabase.BeginTransaction();
-    RealmDataDatabase.PExecute("DELETE FROM game_event_save WHERE event_id = '%u'",event_id);
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteGESave, "DELETE FROM game_event_save WHERE event_id = ?");
+    stmt.PExecute(event_id);
+
     if (mGameEvent[event_id].nextstart)
-        RealmDataDatabase.PExecute("INSERT INTO game_event_save (event_id, state, next_start) VALUES ('%u','%u',FROM_UNIXTIME("UI64FMTD"))",event_id,mGameEvent[event_id].state,(uint64)(mGameEvent[event_id].nextstart));
+    {
+        stmt = RealmDataDatabase.CreateStatement(insertGESave1, "INSERT INTO game_event_save (event_id, state, next_start) VALUES (?, ?, FROM_UNIXTIME(?))");
+        stmt.addUInt32(event_id);
+        stmt.addUInt32(mGameEvent[event_id].state);
+        stmt.addUInt64(uint64(mGameEvent[event_id].nextstart));
+        stmt.Execute();
+    }
     else
-        RealmDataDatabase.PExecute("INSERT INTO game_event_save (event_id, state, next_start) VALUES ('%u','%u','0000-00-00 00:00:00')",event_id,mGameEvent[event_id].state);
+    {
+        stmt = RealmDataDatabase.CreateStatement(insertGESave2, "INSERT INTO game_event_save (event_id, state, next_start) VALUES (?, ?, '0000-00-00 00:00:00')");
+        stmt.PExecute(event_id, mGameEvent[event_id].state);
+    }
+
     RealmDataDatabase.CommitTransaction();
 }
 
