@@ -864,6 +864,7 @@ class HELLGROUND_DLL_SPEC PlayerTaxi
             uint32 submask = 1<<((nodeidx-1)%32);
             return (m_taximask[field] & submask) == submask;
         }
+
         bool SetTaximaskNode(uint32 nodeidx)
         {
             uint8  field   = uint8((nodeidx - 1) / 32);
@@ -876,6 +877,16 @@ class HELLGROUND_DLL_SPEC PlayerTaxi
             else
                 return false;
         }
+
+        std::string GetTaxiMaskString()
+        {
+            std::ostringstream ss;
+            for(int i = 0; i < TaxiMaskSize; ++i)
+                ss << m_taximask[i] << " ";
+
+            return ss.str();
+        }
+
         void AppendTaximaskTo(ByteBuffer& data,bool all);
 
         // Destinations
