@@ -117,12 +117,7 @@ void Corpse::SaveToDB()
     stmt.addFloat(GetOrientation());
     stmt.addUInt32(GetZoneId());
     stmt.addUInt32(GetMapId());
-
-    std::ostringstream ss;
-    for (uint16 i = 0; i < m_valuesCount; i++)
-        ss << GetUInt32Value(i) << " ";
-
-    stmt.addString(ss);
+    stmt.addString(GetUInt32ValuesString());
     stmt.addUInt64(m_time);
     stmt.addUInt32(GetType());
     stmt.addInt32(GetInstanceId());
@@ -147,12 +142,21 @@ void Corpse::DeleteBonesFromWorld()
 
 void Corpse::DeleteFromDB()
 {
+    static SqlStatementID deleteCorpse;
+    static SqlStatementID deleteCorpseByPlayer;
+
     if (GetType() == CORPSE_BONES)
+    {
         // only specific bones
-        RealmDataDatabase.PExecute("DELETE FROM corpse WHERE guid = '%d'", GetGUIDLow());
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCorpse, "DELETE FROM corpse WHERE guid = ?");
+        stmt.PExecute(GetGUIDLow());
+    }
     else
+    {
         // all corpses (not bones)
-        RealmDataDatabase.PExecute("DELETE FROM corpse WHERE player = '%d' AND corpse_type <> '0'",  GUID_LOPART(GetOwnerGUID()));
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCorpseByPlayer, "DELETE FROM corpse WHERE player = ? AND corpse_type <> '0'");
+        stmt.PExecute(GUID_LOPART(GetOwnerGUID()));
+    }
 }
 
 bool Corpse::LoadFromDB(uint32 guid, QueryResultAutoPtr result, uint32 InstanceId)
