@@ -26,6 +26,14 @@ void FillSpellSummary();
 // -------------------
 void LoadDatabase()
 {
+    char const* cfg_file = _HELLGROUND_SCRIPT_CONFIG;
+
+    if (!sConfig.SetSource(cfg_file))
+    {
+        printf("TSCR: Could not find configuration file %s.", cfg_file);
+        return;
+    }
+
     //Get db string from file
     std::string dbstring = sConfig.GetStringDefault("WorldDatabaseInfo", "");
     if (dbstring.empty())
