@@ -265,6 +265,8 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 {
     m_transport = 0;
 
+    m_mover = this;
+
     m_AC_timer = 0;
     m_AC_NoFall_count = 0;
 

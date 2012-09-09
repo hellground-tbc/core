@@ -542,6 +542,7 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
         void BroadcastPacket(WorldPacket*, bool);
         // method used to broadcast packets to players in specific range around object
         void BroadcastPacketInRange(WorldPacket*, float, bool, bool = false);
+        void BroadcastPacketExcept(WorldPacket*, Player*);
 
         bool IsBeingTeleported() { return mSemaphoreTeleport; }
         void SetSemaphoreTeleport(bool semphsetting) { mSemaphoreTeleport = semphsetting; }

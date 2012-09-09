@@ -145,6 +145,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         void BroadcastPacket(WorldObject*, WorldPacket*, bool = false);
         void BroadcastPacketInRange(WorldObject*, WorldPacket*, float, bool = false, bool = false);
+        void BroadcastPacketExcept(WorldObject*, WorldPacket*, Player*);
 
         virtual void InitVisibilityDistance();
 

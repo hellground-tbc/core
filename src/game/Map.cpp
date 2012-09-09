@@ -416,13 +416,19 @@ void Map::Add(T *obj)
 
 void Map::BroadcastPacket(WorldObject* sender, WorldPacket *msg, bool toSelf)
 {
-    Hellground::PacketBroadcaster post_man(*sender, msg, toSelf);
+    Hellground::PacketBroadcaster post_man(*sender, msg, toSelf ? NULL : sender->ToPlayer());
     Cell::VisitWorldObjects(sender, post_man, GetVisibilityDistance());
 }
 
 void Map::BroadcastPacketInRange(WorldObject* sender, WorldPacket *msg, float dist, bool toSelf, bool ownTeam)
 {
-    Hellground::PacketBroadcaster post_man(*sender, msg, toSelf, dist, ownTeam);
+    Hellground::PacketBroadcaster post_man(*sender, msg, toSelf ? NULL : sender->ToPlayer(), dist, ownTeam);
+    Cell::VisitWorldObjects(sender, post_man, GetVisibilityDistance());
+}
+
+void Map::BroadcastPacketExcept(WorldObject* sender, WorldPacket* msg, Player* except)
+{
+    Hellground::PacketBroadcaster post_man(*sender, msg, except);
     Cell::VisitWorldObjects(sender, post_man, GetVisibilityDistance());
 }
 

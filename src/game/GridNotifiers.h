@@ -126,7 +126,7 @@ namespace Hellground
         float _dist;
         bool _ownTeam;
 
-        PacketBroadcaster(WorldObject&, WorldPacket*, bool = false, float = 0.0f, bool = false);
+        PacketBroadcaster(WorldObject&, WorldPacket*, Player* = NULL, float = 0.0f, bool = false);
 
         void BroadcastPacketTo(Player*);
 

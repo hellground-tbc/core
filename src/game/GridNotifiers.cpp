@@ -163,17 +163,12 @@ void DynamicObjectUpdater::Visit(PlayerMapType &m)
         VisitHelper(itr->getSource());
 }
 
-PacketBroadcaster::PacketBroadcaster(WorldObject& src, WorldPacket* msg, bool self /*= false*/, float dist /*= 0.0f*/, bool ownTeam /*= false*/ ) : _source(src), _message(msg), _dist(dist)
+PacketBroadcaster::PacketBroadcaster(WorldObject& src, WorldPacket* msg, Player* except /*= NULL*/, float dist /*= 0.0f*/, bool ownTeam /*= false*/ ) : _source(src), _message(msg), _dist(dist)
 {
-    if (_source.GetObjectGuid().IsPlayer())
-    {
-        if (!self)
-            playerGUIDS.insert(_source.GetGUID());
+    if (except)
+        playerGUIDS.insert(except->GetGUID());
 
-        _ownTeam = ownTeam;
-    }
-    else
-        _ownTeam = false;
+   _ownTeam = ownTeam && _source.GetObjectGuid().IsPlayer();
 }
 
 void PacketBroadcaster::Visit(CameraMapType& m)

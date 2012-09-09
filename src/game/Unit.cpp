@@ -12562,11 +12562,16 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         addUnitState(UNIT_STAT_POSSESSED);
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
 
-        charmer->ToPlayer()->SetClientControl(this, true);
-        charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        if (charmer->ToPlayer())
+        {
+            charmer->ToPlayer()->SetClientControl(this, true);
+            charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
 
-        Camera& camera = charmer->ToPlayer()->GetCamera();
-        camera.SetView(this);
+            Camera& camera = charmer->ToPlayer()->GetCamera();
+            camera.SetView(this);
+
+            charmer->ToPlayer()->SetMover(this);
+        }
     }
     // Charm demon
     else if (GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->getClass() == CLASS_WARLOCK)
@@ -12660,6 +12665,8 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
 
         Camera& camera = charmer->ToPlayer()->GetCamera();
         camera.ResetView();
+
+        charmer->ToPlayer()->SetMover(charmer);
     }
     // restore UNIT_FIELD_BYTES_0
     else if (GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->getClass() == CLASS_WARLOCK)

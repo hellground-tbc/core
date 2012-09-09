@@ -1640,6 +1640,11 @@ void WorldObject::BroadcastPacketInRange(WorldPacket *data, float dist, bool toS
     GetMap()->BroadcastPacketInRange(this, data, dist, toSelf, ownTeamOnly);
 }
 
+void WorldObject::BroadcastPacketExcept(WorldPacket* data, Player* except)
+{
+
+}
+
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
 {
     WorldPacket data(SMSG_GAMEOBJECT_DESPAWN_ANIM, 8);
