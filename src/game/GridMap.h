@@ -219,6 +219,9 @@ typedef struct ts
     FeaturePriority pathfinding;
     FeaturePriority lineofsight;
 
+    uint32 ainotifyperiod;
+    uint32 viewupdatedistance;
+
 } TerrainSpecifics;
 
 //class for sharing and managing GridMap objects

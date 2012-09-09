@@ -1112,7 +1112,7 @@ void TerrainManager::LoadTerrainSpecifics()
 {
     i_TerrainSpecifics.clear();
 
-    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT `entry`, `visibility`, `pathfinding`, `lineofsight` FROM `map_template`");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT `entry`, `visibility`, `pathfinding`, `lineofsight`, `ainotifyperiod`, `viewupdatedistance` FROM `map_template`");
     if (!result)
     {
         BarGoLink bar(1);
@@ -1138,6 +1138,10 @@ void TerrainManager::LoadTerrainSpecifics()
         info.visibility = fields[1].GetFloat();
         info.pathfinding = FeaturePriority(fields[2].GetUInt8());
         info.lineofsight = FeaturePriority(fields[3].GetUInt8());
+
+        info.ainotifyperiod = fields[4].GetUInt32();
+        // in database we have this in yards, but in core that is as square
+        info.viewupdatedistance = fields[5].GetUInt32()*fields[5].GetUInt32();
 
     }
     while (result->NextRow());

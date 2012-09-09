@@ -695,6 +695,7 @@ void Map::PlayerRelocation(Player* player, float x, float y, float z, float orie
 
         NGridType* oldGrid = getNGrid(old_cell.GridX(), old_cell.GridY());
         RemoveFromGrid(player, oldGrid,old_cell);
+
         if (old_cell.DiffGrid(new_cell))
             EnsureGridLoadedAtEnter(new_cell, player);
 

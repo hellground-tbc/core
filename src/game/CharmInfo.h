@@ -2,8 +2,8 @@
 #define __CHARMINFO_H
 
 #include "Common.h"
+#include "Unit.h"
 
-class Unit;
 struct SpellEntry;
 
 enum ReactStates

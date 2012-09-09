@@ -70,7 +70,7 @@ inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
     if (c1->HasReactState(REACT_AGGRESSIVE) && !c1->IsInEvadeMode() && c1->IsAIEnabled)
         c1->AI()->MoveInLineOfSight_Safe(c2);
 }
-
+/*
 inline void PlayerRelocationNotifier::Visit(CameraMapType &m)
 {
     for(CameraMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
@@ -83,10 +83,10 @@ inline void PlayerRelocationNotifier::Visit(CameraMapType &m)
 
     //_player.GetCamera().UpdateVisibilityForOwner();
 }
-
+*/
 inline void PlayerRelocationNotifier::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         PlayerCreatureRelocationWorker(&_player, iter->getSource());
 }
 
@@ -99,7 +99,6 @@ inline void CreatureRelocationNotifier::Visit(PlayerMapType &m)
         PlayerCreatureRelocationWorker(iter->getSource(), &_creature);
 }
 
-template<>
 inline void CreatureRelocationNotifier::Visit(CreatureMapType &m)
 {
     if (!_creature.isAlive())

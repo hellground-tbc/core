@@ -672,10 +672,17 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
 
 void GameObject::DeleteFromDB()
 {
+    static SqlStatementID deleteGO;
+    static SqlStatementID deleteGEGO;
+
     sObjectMgr.SaveGORespawnTime(m_DBTableGuid,GetInstanceId(),0);
     sObjectMgr.DeleteGOData(m_DBTableGuid);
-    GameDataDatabase.PExecuteLog("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
-    GameDataDatabase.PExecuteLog("DELETE FROM game_event_gameobject WHERE guid = '%u'", m_DBTableGuid);
+
+    SqlStatement stmt = GameDataDatabase.CreateStatement(deleteGO, "DELETE FROM gameobject WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
+
+    stmt = GameDataDatabase.CreateStatement(deleteGEGO, "DELETE FROM game_event_gameobject WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
 }
 
 GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)

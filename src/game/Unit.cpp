@@ -261,7 +261,7 @@ bool CastSpellEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 Unit::Unit() :
     WorldObject(), i_motionMaster(this), movespline(new Movement::MoveSpline()),
-    m_ThreatManager(this), m_HostilRefManager(this), m_stateMgr(this),
+    _threatManager(this), _hostilRefManager(this), m_stateMgr(this),
     IsAIEnabled(false), NeedChangeAI(false), i_AI(NULL), i_disabledAI(NULL),
     m_procDeep(0), m_AI_locked(false), m_removedAurasCount(0)
 {
@@ -449,7 +449,7 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
     // update combat timer only for players and pets
     if (isInCombat() && isCharmedOwnedByPlayerOrPlayer())
     {
-        if (m_HostilRefManager.isEmpty())
+        if (getHostilRefManager().isEmpty())
         {
             // m_CombatTimer set at aura start and it will be freeze until aura removing
             if (m_CombatTimer <= update_diff)
@@ -9851,7 +9851,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
 
 void Unit::setDeathState(DeathState s)
 {
-    if (s != ALIVE && s!= JUST_ALIVED)
+    if (s != ALIVE && s != JUST_ALIVED)
     {
         CombatStop();
         DeleteThreatList();
@@ -9938,14 +9938,14 @@ void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, Sp
 {
     // Only mobs can manage threat lists
     if (CanHaveThreatList())
-        m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
+        getThreatManager().addThreat(pVictim, threat, schoolMask, threatSpell);
 }
 
 //======================================================================
 
 void Unit::DeleteThreatList()
 {
-    m_ThreatManager.clearReferences();
+    getThreatManager().clearReferences();
 }
 
 //======================================================================
@@ -9987,7 +9987,7 @@ void Unit::TauntFadeOut(Unit *taunter)
     if (!target || target != taunter)
         return;
 
-    if (m_ThreatManager.isThreatListEmpty())
+    if (getThreatManager().isThreatListEmpty())
     {
         if (((Creature*)this)->IsAIEnabled)
             ((Creature*)this)->AI()->EnterEvadeMode();
@@ -9995,7 +9995,7 @@ void Unit::TauntFadeOut(Unit *taunter)
     }
 
     //m_ThreatManager.tauntFadeOut(taunter);
-    target = m_ThreatManager.getHostilTarget();
+    target = getThreatManager().getHostilTarget();
 
     if (target && target != taunter)
     {
@@ -10019,7 +10019,7 @@ Unit* Creature::SelectVictim()
 
     Unit* target = NULL;
 
-    if (!m_ThreatManager.isThreatListEmpty())
+    if (!getThreatManager().isThreatListEmpty())
     {
         if (IsInEvadeMode())
         {
@@ -10029,7 +10029,7 @@ Unit* Creature::SelectVictim()
 
         if (!HasAuraType(SPELL_AURA_MOD_TAUNT))
         {
-            target = m_ThreatManager.getHostilTarget();
+            target = getThreatManager().getHostilTarget();
         }
         else
             target = getVictim();
@@ -10777,6 +10777,8 @@ void Unit::RemoveFromWorld()
     // cleanup
     if (IsInWorld())
     {
+        getHostilRefManager().deleteReferences();
+
         RemoveBindSightAuras();
         RemoveNotOwnSingleTargetAuras();
         GetViewPoint().Event_RemovedFromWorld();
@@ -12102,7 +12104,7 @@ class RelocationNotifyEvent : public BasicEvent
                 Cell::VisitAllObjects(&_owner,notify,radius);
             }
 
-            _owner.GetPosition(_owner._notifiedPosition);
+            //_owner.GetPosition(_owner._notifiedPosition);
             _owner._SetAINotifyScheduled(false);
             return true;
         }
@@ -12130,13 +12132,14 @@ void Unit::OnRelocated()
     delta.z = _notifiedPosition.z - GetPositionZ();
 
     float distsq = delta.x*delta.x+delta.y*delta.y+delta.z*delta.z;
-    if (distsq > World::GetRelocationLowerLimitSq())
+    if (distsq > GetTerrain()->GetSpecifics()->viewupdatedistance)
     {
         GetPosition(_notifiedPosition);
-        ScheduleAINotify(0);
+        UpdateVisibilityAndView();
+        return;
     }
-    else
-        ScheduleAINotify(World::GetRelocationAINotifyDelay());
+
+    ScheduleAINotify(GetTerrain()->GetSpecifics()->ainotifyperiod);
 }
 
 void Unit::UpdateVisibilityAndView()
@@ -12335,8 +12338,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             playerVictim->CombatStopWithPets(true);
             playerVictim->DuelComplete(DUEL_INTERUPTED);
         }
-
-        playerVictim->UpdateObjectVisibility();
     }
     else                                                // creature died
     {
@@ -12409,6 +12410,8 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             }
         }
     }
+
+    pVictim->UpdateObjectVisibility();
 
     // outdoor pvp things, do these after setting the death state, else the player activity notify won't work... doh...
     // handle player kill only if not suicide (spirit of redemption for example)

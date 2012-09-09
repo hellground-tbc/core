@@ -192,6 +192,9 @@ void PacketBroadcaster::BroadcastPacketTo(Player* player)
     if (_ownTeam && _source.ToPlayer()->GetTeam() != player->GetTeam())
         return;
 
+    if (!player->HaveAtClient(&_source))
+        return;
+
     if (playerGUIDS.find(player->GetGUID()) == playerGUIDS.end())
     {
         if (WorldSession* session = player->GetSession())

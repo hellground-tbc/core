@@ -1620,11 +1620,23 @@ void Creature::DeleteFromDB()
     sObjectMgr.SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),0);
     sObjectMgr.DeleteCreatureData(m_DBTableGuid);
 
+    static SqlStatementID deleteCreature;
+    static SqlStatementID deleteCreatureAddon;
+    static SqlStatementID deleteGECreature;
+    static SqlStatementID deleteGEModelEquip;
+
     GameDataDatabase.BeginTransaction();
-    GameDataDatabase.PExecuteLog("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
-    GameDataDatabase.PExecuteLog("DELETE FROM creature_addon WHERE guid = '%u'", m_DBTableGuid);
-    GameDataDatabase.PExecuteLog("DELETE FROM game_event_creature WHERE guid = '%u'", m_DBTableGuid);
-    GameDataDatabase.PExecuteLog("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_DBTableGuid);
+    SqlStatement stmt = GameDataDatabase.CreateStatement(deleteCreature, "DELETE FROM creature WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
+
+    stmt = GameDataDatabase.CreateStatement(deleteCreatureAddon, "DELETE FROM creature_addon WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
+
+    stmt = GameDataDatabase.CreateStatement(deleteGECreature, "DELETE FROM game_event_creature WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
+
+    stmt = GameDataDatabase.CreateStatement(deleteGEModelEquip, "DELETE FROM game_event_model_equip WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
     GameDataDatabase.CommitTransaction();
 }
 

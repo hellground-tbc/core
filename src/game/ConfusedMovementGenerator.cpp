@@ -64,7 +64,7 @@ bool ConfusedMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
     unit.SetSelection(0);
 
     _nextMoveTime.Update(diff);
-    if (_nextMoveTime.Passed() || _recalculateTravel)
+    if (_nextMoveTime.Passed() || static_cast<MovementGenerator*>(this)->_recalculateTravel)
     {
         uint32 nextMove = urand(0, MAX_RANDOM_POINTS-1);
 
@@ -73,7 +73,7 @@ bool ConfusedMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
         init.SetWalk(true);
         init.Launch();
 
-        _recalculateTravel = false;
+        static_cast<MovementGenerator*>(this)->_recalculateTravel = false;
         _nextMoveTime.Reset(urand(0, 2000));
     }
     return true;

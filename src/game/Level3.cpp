@@ -6441,6 +6441,36 @@ bool ChatHandler::HandleInstanceBindCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleInstanceResetEncountersCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    int32 InstanceId = atoi((char*)args);
+
+    Player* player = m_session->GetPlayer();
+    if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(InstanceId))
+    {
+        if (Map* map = sMapMgr.FindMap(save->GetMapId(), save->GetInstanceId()))
+        {
+            if (InstanceData* data = reinterpret_cast<InstanceMap*>(map)->GetInstanceData())
+            {
+                data->ResetEncounterInProgress();
+                PSendSysMessage("You have called ResetEncounters successfully.");
+                return true;
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("There is no instance save for that instance id!");
+        return false;
+    }
+
+    PSendSysMessage("Something went wrong, there were no such map or map didn't have instance data.");
+    return false;
+}
+
 /// Display the list of GMs
 bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
 {

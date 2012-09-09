@@ -2288,7 +2288,6 @@ void Player::SetGameMaster(bool on)
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
         ResetContestedPvP();
 
-        getHostilRefManager().setOnlineOfflineState(false);
         CombatStop();
     }
     else
@@ -2303,10 +2302,9 @@ void Player::SetGameMaster(bool on)
 
         // restore FFA PvP area state, remove not allowed for GM mounts
         UpdateArea(m_areaUpdateId);
-
-        getHostilRefManager().setOnlineOfflineState(true);
     }
 
+    getHostilRefManager().setOnlineOfflineState(!on);
     UpdateVisibilityAndView();
 }
 
@@ -13921,12 +13919,12 @@ void Player::SendQuestConfirmAccept(const Quest* pQuest, Player* pReceiver)
     if (pReceiver)
     {
         int loc_idx = pReceiver->GetSession()->GetSessionDbLocaleIndex();
-        std::string title = pQuest->GetName();
-        sObjectMgr.GetQuestLocaleStrings(pQuest->GetQuestId(), loc_idx, &title);
+        std::string name = pQuest->GetName();
+        sObjectMgr.GetQuestLocaleStrings(pQuest->GetQuestId(), loc_idx, &name);
 
-        WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, (4 + title.size() + 8));
+        WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, (4 + name.size() + 8));
         data << uint32(pQuest->GetQuestId());
-        data << title;
+        data << name;
         data << uint64(GetGUID());
         pReceiver->SendPacketToSelf(&data);
 
@@ -15794,28 +15792,37 @@ void Player::SaveToDB()
 
     //CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",GetGUIDLow());
 
-    std::string sql_name = m_name;
-    RealmDataDatabase.escape_string(sql_name);
+    static SqlStatementID deleteCharacter;
+    static SqlStatementID insertCharacter;
 
-    std::ostringstream ss;
-    ss << "REPLACE INTO characters (guid,account,name,race,class,gender,level,xp,money,playerBytes,playerBytes2,playerFlags,"
-        "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
-        "taximask, online, cinematic, "
-        "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
-        "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
-        "death_expire_time, taxi_path, arena_pending_points, latency) VALUES ("
-        << GetGUIDLow() << ", "
-        << GetSession()->GetAccountId() << ", '"
-        << sql_name << "', "
-        << uint32(getRace()) << ", "
-        << uint32(getClass()) << ", "
-        << uint32(getGender()) << ", "
-        << uint32(getLevel()) << ", "
-        << GetUInt32Value(PLAYER_XP) << ", "
-        << GetMoney() << ", "
-        << GetUInt32Value(PLAYER_BYTES) << ", "
-        << GetUInt32Value(PLAYER_BYTES_2) << ", "
-        << GetUInt32Value(PLAYER_FLAGS) << ", ";
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCharacter, "DELETE FROM characters WHERE guid = ?");
+    stmt.PExecute(GetGUIDLow());
+
+    stmt = RealmDataDatabase.CreateStatement(insertCharacter, "INSERT INTO characters (guid, account, name, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
+                                            "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
+                                            "taximask, online, cinematic, "
+                                            "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
+                                            "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
+                                            "death_expire_time, taxi_path, arena_pending_points, latency) "
+                                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+                                                "?, ?, ?, ?, ?, ?, ?, ?, "
+                                                "?, ?, ?, "
+                                                "?, ?, ?, ?, ?, ?, ?, "
+                                                "?, ?, ?, ?, ?, ?, ?, ?, ?, "
+                                                "?, ?, ?, ?)");
+
+    stmt.addUInt32(GetGUIDLow());
+    stmt.addUInt32(GetSession()->GetAccountId());
+    stmt.addString(m_name);
+    stmt.addUInt32(uint32(getRace()));
+    stmt.addUInt32(uint32(getClass()));
+    stmt.addUInt32(uint32(getGender()));
+    stmt.addUInt32(uint32(getLevel()));
+    stmt.addUInt32(GetUInt32Value(PLAYER_XP));
+    stmt.addUInt32(GetMoney());
+    stmt.addUInt32(GetUInt32Value(PLAYER_BYTES));
+    stmt.addUInt32(GetUInt32Value(PLAYER_BYTES_2));
+    stmt.addUInt32(GetUInt32Value(PLAYER_FLAGS));
 
     bool save_to_dest = false;
     if (IsBeingTeleported())
@@ -15828,89 +15835,59 @@ void Player::SaveToDB()
 
     if (!save_to_dest)
     {
-        ss << GetMapId() << ", "
-        << (uint32)GetInstanceId() << ", "
-        << (uint32)GetDifficulty() << ", "
-        << finiteAlways(GetPositionX()) << ", "
-        << finiteAlways(GetPositionY()) << ", "
-        << finiteAlways(GetPositionZ()) << ", "
-        << finiteAlways(GetOrientation()) << ", '";
+        stmt.addUInt32(GetMapId());
+        stmt.addUInt32(GetInstanceId());
+        stmt.addUInt32(uint32(GetDifficulty()));
+        stmt.addFloat(finiteAlways(GetPositionX()));
+        stmt.addFloat(finiteAlways(GetPositionY()));
+        stmt.addFloat(finiteAlways(GetPositionZ()));
+        stmt.addFloat(finiteAlways(GetOrientation()));
     }
     else
     {
-        ss << GetTeleportDest().mapid << ", "
-        << (uint32)0 << ", "
-        << (uint32)GetDifficulty() << ", "
-        << finiteAlways(GetTeleportDest().coord_x) << ", "
-        << finiteAlways(GetTeleportDest().coord_y) << ", "
-        << finiteAlways(GetTeleportDest().coord_z) << ", "
-        << finiteAlways(GetTeleportDest().orientation) << ", '";
+        stmt.addUInt32(GetTeleportDest().mapid);
+        stmt.addUInt32(0);
+        stmt.addUInt32(uint32(GetDifficulty()));
+        stmt.addFloat(finiteAlways(GetTeleportDest().coord_x));
+        stmt.addFloat(finiteAlways(GetTeleportDest().coord_y));
+        stmt.addFloat(finiteAlways(GetTeleportDest().coord_z));
+        stmt.addFloat(finiteAlways(GetTeleportDest().orientation));", '";
     }
 
-    uint16 i;
-    for (i = 0; i < m_valuesCount; ++i)
-        ss << GetUInt32Value(i) << " ";
+    std::string tmpStr = GetUInt32ValuesString();
 
-    ss << "', ";
+    stmt.addString(tmpStr);
 
-    ss << m_taxi;                                           // string with TaxiMaskSize numbers
+    tmpStr = m_taxi.GetTaxiMaskString();
+    stmt.addString(tmpStr);
+    stmt.addBool(inworld ? true : false);
+    stmt.addInt32(m_cinematic);
+    stmt.addUInt32(m_Played_time[0]);
+    stmt.addUInt32(m_Played_time[1]);
+    stmt.addFloat(finiteAlways(m_rest_bonus));
+    stmt.addUInt64(uint64(time(NULL)));
+    stmt.addBool(is_save_resting);
+    stmt.addUInt32(m_resetTalentsCost);
+    stmt.addUInt64(uint64(m_resetTalentsTime));
+    stmt.addFloat(finiteAlways(m_movementInfo.GetTransportPos()->x));
+    stmt.addFloat(finiteAlways(m_movementInfo.GetTransportPos()->y));
+    stmt.addFloat(finiteAlways(m_movementInfo.GetTransportPos()->z));
+    stmt.addFloat(finiteAlways(m_movementInfo.GetTransportPos()->o));
 
-    ss << ", ";
-
-    ss << (inworld ? 1 : 0);
-
-    ss << ", ";
-    ss << m_cinematic;
-
-    ss << ", ";
-    ss << m_Played_time[0];
-    ss << ", ";
-    ss << m_Played_time[1];
-
-    ss << ", ";
-    ss << finiteAlways(m_rest_bonus);
-    ss << ", ";
-    ss << (uint64)time(NULL);
-    ss << ", ";
-    ss << is_save_resting;
-    ss << ", ";
-    ss << m_resetTalentsCost;
-    ss << ", ";
-    ss << (uint64)m_resetTalentsTime;
-
-    ss << ", ";
-    ss << finiteAlways(m_movementInfo.GetTransportPos()->x) << ", ";
-    ss << finiteAlways(m_movementInfo.GetTransportPos()->y) << ", ";
-    ss << finiteAlways(m_movementInfo.GetTransportPos()->z) << ", ";
-    ss << finiteAlways(m_movementInfo.GetTransportPos()->o) << ", ";
     if (m_transport)
-        ss << m_transport->GetGUIDLow();
+        stmt.addUInt32(m_transport->GetGUIDLow());
     else
-        ss << "0";
+        stmt.addUInt32(0);
 
-    ss << ", ";
-    ss << m_ExtraFlags;
-
-    ss << ", ";
-    ss << uint32(m_stableSlots);                            // to prevent save uint8 as char
-
-    ss << ", ";
-    ss << uint32(m_atLoginFlags);
-
-    ss << ", ";
-    ss << GetCachedZone();
-
-    ss << ", ";
-    ss << (uint64)m_deathExpireTime;
-
-    ss << ", '";
-    ss << m_taxi.SaveTaxiDestinationsToString();
-
-    ss << "', '0', '";
-    ss << GetSession()->GetLatency();
-    ss << "')";
-
-    RealmDataDatabase.Execute(ss.str().c_str());
+    stmt.addUInt32(m_ExtraFlags);
+    stmt.addUInt8(m_stableSlots);                  // to prevent save uint8 as char
+    stmt.addUInt32(m_atLoginFlags);
+    stmt.addUInt32(GetCachedZone());
+    stmt.addUInt64(uint64(m_deathExpireTime));
+    stmt.addString(m_taxi.SaveTaxiDestinationsToString());
+    stmt.addUInt32(0);
+    stmt.addUInt32(GetSession()->GetLatency());
+    stmt.Execute();
 
     if (m_mailsUpdated)                                      //save mails only when needed
         _SaveMail();
@@ -15951,31 +15928,57 @@ void Player::SaveInventoryAndGoldToDB()
 
 void Player::SaveGoldToDB()
 {
-    RealmDataDatabase.PExecute("UPDATE characters SET money = '%u' WHERE guid = '%u'", GetMoney(), GetGUIDLow());
+    static SqlStatementID updateMoney;
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(updateMoney, "UPDATE characters SET money = ? WHERE guid = ?");
+    stmt.PExecute(GetMoney(), GetGUIDLow());
 }
 
 void Player::_SaveActions()
 {
+    static SqlStatementID insertCharacterAction;
+    static SqlStatementID updateCharacterAction;
+    static SqlStatementID deleteCharacterAction;
+
     for (ActionButtonList::iterator itr = m_actionButtons.begin(); itr != m_actionButtons.end();)
     {
         switch (itr->second.uState)
         {
             case ACTIONBUTTON_NEW:
-                RealmDataDatabase.PExecute("INSERT INTO character_action (guid,button,action,type,misc) VALUES ('%u', '%u', '%u', '%u', '%u')",
-                    GetGUIDLow(), (uint32)itr->first, (uint32)itr->second.action, (uint32)itr->second.type, (uint32)itr->second.misc);
+            {
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(insertCharacterAction, "INSERT INTO character_action (guid, button, action, type, misc) VALUES (?, ?, ?, ?, ?)");
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32(uint32(itr->first));
+                stmt.addUInt32(uint32(itr->second.action));
+                stmt.addUInt32(uint32(itr->second.type));
+                stmt.addUInt32(uint32(itr->second.misc));
+                stmt.Execute();
+
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
+            }
             case ACTIONBUTTON_CHANGED:
-                RealmDataDatabase.PExecute("UPDATE character_action  SET action = '%u', type = '%u', misc= '%u' WHERE guid= '%u' AND button= '%u' ",
-                    (uint32)itr->second.action, (uint32)itr->second.type, (uint32)itr->second.misc, GetGUIDLow(), (uint32)itr->first);
+            {
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateCharacterAction, "UPDATE character_action  SET action = ?, type = ?, misc = ? WHERE guid = ? AND button = ?");
+                stmt.addUInt32(uint32(itr->second.action));
+                stmt.addUInt32(uint32(itr->second.type));
+                stmt.addUInt32(uint32(itr->second.misc));
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32(uint32(itr->first));
+                stmt.Execute();
+
                 itr->second.uState = ACTIONBUTTON_UNCHANGED;
                 ++itr;
                 break;
+            }
             case ACTIONBUTTON_DELETED:
-                RealmDataDatabase.PExecute("DELETE FROM character_action WHERE guid = '%u' and button = '%u'", GetGUIDLow(), (uint32)itr->first);
+            {
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCharacterAction, "DELETE FROM character_action WHERE guid = ? and button = ?");
+                stmt.PExecute(GetGUIDLow(), uint32(itr->first));
+
                 m_actionButtons.erase(itr++);
                 break;
+            }
             default:
                 ++itr;
                 break;
@@ -15985,7 +15988,11 @@ void Player::_SaveActions()
 
 void Player::_SaveAuras()
 {
-    RealmDataDatabase.PExecute("DELETE FROM character_aura WHERE guid = '%u'",GetGUIDLow());
+    static SqlStatementID deleteAuras;
+    static SqlStatementID insertAura;
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteAuras, "DELETE FROM character_aura WHERE guid = ?");
+    stmt.PExecute(GetGUIDLow());
 
     AuraMap const& auras = GetAuras();
 
@@ -16019,9 +16026,18 @@ void Player::_SaveAuras()
 
                     if (i == 3)
                     {
-                        RealmDataDatabase.PExecute("INSERT INTO character_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges) "
-                            "VALUES ('%u', '" UI64FMTD "' ,'%u', '%u', '%u', '%d', '%d', '%d', '%d')",
-                            GetGUIDLow(), itr2->second->GetCasterGUID(), (uint32)itr2->second->GetId(), (uint32)itr2->second->GetEffIndex(), (uint32)itr2->second->GetStackAmount(), itr2->second->GetModifier()->m_amount,int(itr2->second->GetAuraMaxDuration()),int(itr2->second->GetAuraDuration()),int(itr2->second->m_procCharges));
+                        stmt = RealmDataDatabase.CreateStatement(insertAura, "INSERT INTO character_aura (guid, caster_guid, spell, effect_index, stackcount, amount, maxduration, remaintime, remaincharges) "
+                                                                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        stmt.addUInt32(GetGUIDLow());
+                        stmt.addUInt64(itr2->second->GetCasterGUID());
+                        stmt.addUInt32(uint32(itr2->second->GetId()));
+                        stmt.addUInt32(uint32(itr2->second->GetEffIndex()));
+                        stmt.addUInt32(uint32(itr2->second->GetStackAmount()));
+                        stmt.addInt32(itr2->second->GetModifier()->m_amount);
+                        stmt.addInt32(itr2->second->GetAuraMaxDuration());
+                        stmt.addInt32(itr2->second->GetAuraDuration());
+                        stmt.addInt32(itr2->second->m_procCharges);
+                        stmt.Execute();
                     }
                 }
             }
@@ -16043,51 +16059,63 @@ void Player::_SaveAuras()
 
 void Player::_SaveBattleGroundCoord()
 {
-    RealmDataDatabase.PExecute("DELETE FROM character_bgcoord WHERE guid = '%u'", GetGUIDLow());
+    static SqlStatementID deleteBGCoord;
+    static SqlStatementID insertBGCoord;
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteBGCoord, "DELETE FROM character_bgcoord WHERE guid = ?");
+    stmt.PExecute(GetGUIDLow());
 
     // don't save if not needed
     if (!InBattleGround())
         return;
 
-    std::ostringstream ss;
-    ss << "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx,"
-        "bgy, bgz, bgo) VALUES ("
-        << GetGUIDLow() << ", ";
-    ss << GetBattleGroundId();
-    ss << ", ";
-    ss << GetBGTeam();
-    ss << ", ";
-    ss << GetBattleGroundEntryPointMap() << ", "
-        << finiteAlways(GetBattleGroundEntryPointX()) << ", "
-        << finiteAlways(GetBattleGroundEntryPointY()) << ", "
-        << finiteAlways(GetBattleGroundEntryPointZ()) << ", "
-        << finiteAlways(GetBattleGroundEntryPointO());
-    ss << ")";
-
-    RealmDataDatabase.Execute(ss.str().c_str());
+    stmt = RealmDataDatabase.CreateStatement(insertBGCoord, "INSERT INTO character_bgcoord (guid, bgid, bgteam, bgmap, bgx, bgy, bgz, bgo) "
+                                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    stmt.addUInt32(GetGUIDLow());
+    stmt.addUInt32(GetBattleGroundId());
+    stmt.addUInt32(GetBGTeam());
+    stmt.addUInt32(GetBattleGroundEntryPointMap());
+    stmt.addFloat(finiteAlways(GetBattleGroundEntryPointX()));
+    stmt.addFloat(finiteAlways(GetBattleGroundEntryPointY()));
+    stmt.addFloat(finiteAlways(GetBattleGroundEntryPointZ()));
+    stmt.addFloat(finiteAlways(GetBattleGroundEntryPointO()));
+    stmt.Execute();
 }
 
 void Player::_SaveInventory()
 {
+    static SqlStatementID deleteCharInvByItem;
+    static SqlStatementID deleteItemInstance;
+    static SqlStatementID deleteCharInvByPlace;
+    static SqlStatementID updateAccountFlags;
+    static SqlStatementID insertBan;
+    static SqlStatementID insertCharInv;
+    static SqlStatementID updateCharInv;
+
     // force items in buyback slots to new state
     // and remove those that aren't already
     for (uint8 i = BUYBACK_SLOT_START; i < BUYBACK_SLOT_END; i++)
     {
         Item *item = m_items[i];
-        if (!item || item->GetState() == ITEM_NEW) continue;
-        RealmDataDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
-        RealmDataDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", item->GetGUIDLow());
+        if (!item || item->GetState() == ITEM_NEW)
+            continue;
+
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCharInvByItem, "DELETE FROM character_inventory WHERE item = ?");
+        stmt.PExecute(item->GetGUIDLow());
+
+        stmt = RealmDataDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
+        stmt.PExecute(item->GetGUIDLow());
+
         m_items[i]->FSetState(ITEM_NEW);
     }
 
     // update enchantment durations
-    for (EnchantDurationList::iterator itr = m_enchantDuration.begin();itr != m_enchantDuration.end();++itr)
-    {
-        itr->item->SetEnchantmentDuration(itr->slot,itr->leftduration);
-    }
+    for (EnchantDurationList::iterator itr = m_enchantDuration.begin(); itr != m_enchantDuration.end(); ++itr)
+        itr->item->SetEnchantmentDuration(itr->slot, itr->leftduration);
 
     // if no changes
-    if (m_itemUpdateQueue.empty()) return;
+    if (m_itemUpdateQueue.empty())
+        return;
 
     // do not save if the update queue is corrupt
     uint32 lowGuid = GetGUIDLow();
@@ -16106,26 +16134,34 @@ void Player::_SaveInventory()
             if (test == NULL)
             {
                 uint32 bagTestGUID = 0;
+
                 if (Item* test2 = GetItemByPos(INVENTORY_SLOT_BAG_0, item->GetBagSlot()))
                     bagTestGUID = test2->GetGUIDLow();
+
                 sLog.outError("Player(GUID: %u Name: %s)::_SaveInventory - the bag(%u) and slot(%u) values for the item with guid %u (state %d) are incorrect, the player doesn't have an item at that position!", lowGuid, GetName(), item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), (int32)item->GetState());
+
                 // according to the test that was just performed nothing should be in this slot, delete
-                RealmDataDatabase.PExecute("DELETE FROM character_inventory WHERE bag=%u AND slot=%u", bagTestGUID, item->GetSlot());
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCharInvByPlace, "DELETE FROM character_inventory WHERE bag = ? AND slot = ?");
+                stmt.PExecute(bagTestGUID, item->GetSlot());
+
                 // also THIS item should be somewhere else, cheat attempt
                 item->FSetState(ITEM_REMOVED); // we are IN updateQueue right now, can't use SetState which modifies the queue
                 item->RemoveFromWorld();
+
                 // don't skip, let the switch delete it
                 //continue;
 
-                //zostawiam special log dla pewnosci, autobana sie przywroci jesli bedzie potrzeba
                 AccountsDatabase.BeginTransaction();
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
                     GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
-                    AccountsDatabase.PExecute("UPDATE account SET accounts_flag = accounts_flag | '%u' WHERE id = '%u'", ACC_SPECIAL_LOG, GetSession()->GetAccountId());
+                    stmt = AccountsDatabase.CreateStatement(updateAccountFlags, "UPDATE account SET accounts_flag = accounts_flag | ? WHERE id = ?");
+                    stmt.PExecute(ACC_SPECIAL_LOG, GetSession()->GetAccountId());
                 }
 
-                AccountsDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
+                stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
+                stmt.PExecute(GetSession()->GetAccountId());
+
                 AccountsDatabase.CommitTransaction();
                 //GetSession()->KickPlayer();
             }
@@ -16137,15 +16173,18 @@ void Player::_SaveInventory()
                     item->SaveToDB();
                 // ...but do not save position in invntory
 
-                //zostawiam special log dla pewnosci, autobana sie przywroci jesli bedzie potrzeba
                 AccountsDatabase.BeginTransaction();
+
+                SqlStatement stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
+                stmt.PExecute(GetSession()->GetAccountId());
+
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                 {
                     GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
-                    AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_SPECIAL_LOG, GetSession()->GetAccountId());
+                    stmt = AccountsDatabase.CreateStatement(updateAccountFlags, "UPDATE account SET account_flags = account_flags | ? WHERE id = ?");
+                    stmt.PExecute(ACC_SPECIAL_LOG, GetSession()->GetAccountId());
                 }
 
-                AccountsDatabase.PExecute("INSERT INTO account_banned VALUES(%i, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'Siof', 'With love: cheater -.-', 1)", GetSession()->GetAccountId());
                 AccountsDatabase.CommitTransaction();
                 GetSession()->KickPlayer();
 
@@ -16156,14 +16195,33 @@ void Player::_SaveInventory()
         switch (item->GetState())
         {
             case ITEM_NEW:
-                RealmDataDatabase.PExecute("INSERT INTO character_inventory (guid,bag,slot,item,item_template) VALUES ('%u', '%u', '%u', '%u', '%u')", lowGuid, bag_guid, item->GetSlot(), item->GetGUIDLow(), item->GetEntry());
+            {
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(insertCharInv, "INSERT INTO character_inventory (guid, bag, slot, item, item_template) VALUES (?, ?, ?, ?, ?)");
+                stmt.addUInt32(lowGuid);
+                stmt.addUInt32(bag_guid);
+                stmt.addUInt32(item->GetSlot());
+                stmt.addUInt32(item->GetGUIDLow());
+                stmt.addUInt32(item->GetEntry());
+                stmt.Execute();
                 break;
+            }
             case ITEM_CHANGED:
-                RealmDataDatabase.PExecute("UPDATE character_inventory SET guid='%u', bag='%u', slot='%u', item_template='%u' WHERE item='%u'", lowGuid, bag_guid, item->GetSlot(), item->GetEntry(), item->GetGUIDLow());
+            {
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateCharInv, "UPDATE character_inventory SET guid = ?, bag = ?, slot = ?, item_template = ? WHERE item = ?");
+                stmt.addUInt32(lowGuid);
+                stmt.addUInt32(bag_guid);
+                stmt.addUInt32(item->GetSlot());
+                stmt.addUInt32(item->GetEntry());
+                stmt.addUInt32(item->GetGUIDLow());
+                stmt.Execute();
                 break;
+            }
             case ITEM_REMOVED:
-                RealmDataDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item->GetGUIDLow());
+            {
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCharInvByItem, "DELETE FROM character_inventory WHERE item = ?");
+                stmt.PExecute(item->GetGUIDLow());
                 break;
+            }
             case ITEM_UNCHANGED:
                 break;
         }
@@ -16175,30 +16233,62 @@ void Player::_SaveInventory()
 
 void Player::_SaveMail()
 {
+    static SqlStatementID updateMail;
+    static SqlStatementID deleteMailItemsByGuid;
+    static SqlStatementID deleteMailItemsById;
+    static SqlStatementID deleteMail;
+    static SqlStatementID deleteItemText;
+    static SqlStatementID deleteItemInstance;
+
     for (PlayerMails::iterator itr = m_mail.begin(); itr != m_mail.end(); ++itr)
     {
         Mail *m = (*itr);
         if (m->state == MAIL_STATE_CHANGED)
         {
-            RealmDataDatabase.PExecute("UPDATE mail SET itemTextId = '%u',has_items = '%u',expire_time = '" UI64FMTD "', deliver_time = '" UI64FMTD "',money = '%u',cod = '%u',checked = '%u' WHERE id = '%u'",
-                m->itemTextId, m->HasItems() ? 1 : 0, (uint64)m->expire_time, (uint64)m->deliver_time, m->money, m->COD, m->checked, m->messageID);
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(updateMail, "UPDATE mail SET itemTextId = ?, has_items = ?, expire_time = ?, deliver_time = ?, money = ?, cod = ?, checked = ? WHERE id = ?");
+            stmt.addUInt32(m->itemTextId);
+            stmt.addBool(m->HasItems() ? true : false);
+            stmt.addUInt64(uint64(m->expire_time));
+            stmt.addUInt64(uint64(m->deliver_time));
+            stmt.addUInt32(m->money);
+            stmt.addUInt32(m->COD);
+            stmt.addBool(m->checked);
+            stmt.addUInt32(m->messageID);
+            stmt.Execute();
+
             if (m->removedItems.size())
             {
                 for (std::vector<uint32>::iterator itr2 = m->removedItems.begin(); itr2 != m->removedItems.end(); ++itr2)
-                    RealmDataDatabase.PExecute("DELETE FROM mail_items WHERE item_guid = '%u'", *itr2);
+                {
+                    stmt = RealmDataDatabase.CreateStatement(deleteMailItemsByGuid, "DELETE FROM mail_items WHERE item_guid = ?");
+                    stmt.PExecute(*itr2);
+                }
                 m->removedItems.clear();
             }
             m->state = MAIL_STATE_UNCHANGED;
         }
         else if (m->state == MAIL_STATE_DELETED)
         {
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteMail, "DELETE FROM mail WHERE id = ?");
+            stmt.PExecute(m->messageID);
+
+            stmt = RealmDataDatabase.CreateStatement(deleteMailItemsById, "DELETE FROM mail_items WHERE mail_id = ?");
+            stmt.PExecute(m->messageID);
+
             if (m->HasItems())
+            {
                 for (std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
-                    RealmDataDatabase.PExecute("DELETE FROM item_instance WHERE guid = '%u'", itr2->item_guid);
+                {
+                    stmt = RealmDataDatabase.CreateStatement(deleteItemInstance, "DELETE FROM item_instance WHERE guid = ?");
+                    stmt.PExecute(itr2->item_guid);
+                }
+            }
+
             if (m->itemTextId)
-                RealmDataDatabase.PExecute("DELETE FROM item_text WHERE id = '%u'", m->itemTextId);
-            RealmDataDatabase.PExecute("DELETE FROM mail WHERE id = '%u'", m->messageID);
-            RealmDataDatabase.PExecute("DELETE FROM mail_items WHERE mail_id = '%u'", m->messageID);
+            {
+                stmt = RealmDataDatabase.CreateStatement(deleteItemText, "DELETE FROM item_text WHERE id = ?");
+                stmt.PExecute(m->itemTextId);
+            }
         }
     }
 
@@ -16221,20 +16311,57 @@ void Player::_SaveMail()
 
 void Player::_SaveQuestStatus()
 {
-    // we don't need transactions here.
+    static SqlStatementID insertQuestStatus;
+    static SqlStatementID updateQuestStatus;
+
     for (QuestStatusMap::iterator i = mQuestStatus.begin(); i != mQuestStatus.end(); ++i)
     {
         switch (i->second.uState)
         {
-            case QUEST_NEW :
-                RealmDataDatabase.PExecute("INSERT INTO character_queststatus (guid,quest,status,rewarded,explored,timer,mobcount1,mobcount2,mobcount3,mobcount4,itemcount1,itemcount2,itemcount3,itemcount4) "
-                    "VALUES ('%u', '%u', '%u', '%u', '%u', '" UI64FMTD "', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')",
-                    GetGUIDLow(), i->first, i->second.m_status, i->second.m_rewarded, i->second.m_explored, uint64(i->second.m_timer / 1000 + sWorld.GetGameTime()), i->second.m_creatureOrGOcount[0], i->second.m_creatureOrGOcount[1], i->second.m_creatureOrGOcount[2], i->second.m_creatureOrGOcount[3], i->second.m_itemcount[0], i->second.m_itemcount[1], i->second.m_itemcount[2], i->second.m_itemcount[3]);
+            case QUEST_NEW:
+            {
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(insertQuestStatus, "INSERT INTO character_queststatus (guid, quest, status, rewarded, explored, timer, mobcount1, mobcount2, mobcount3, mobcount4, itemcount1, itemcount2, itemcount3, itemcount4) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32(i->first);
+                stmt.addUInt8(i->second.m_status);
+                stmt.addBool(i->second.m_rewarded);
+                stmt.addBool(i->second.m_explored);
+                stmt.addUInt64(uint64(i->second.m_timer / 1000 + sWorld.GetGameTime()));
+                stmt.addUInt32(i->second.m_creatureOrGOcount[0]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[1]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[2]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[3]);
+                stmt.addUInt32(i->second.m_itemcount[0]);
+                stmt.addUInt32(i->second.m_itemcount[1]);
+                stmt.addUInt32(i->second.m_itemcount[2]);
+                stmt.addUInt32(i->second.m_itemcount[3]);
+                stmt.Execute();
+
                 break;
-            case QUEST_CHANGED :
-                RealmDataDatabase.PExecute("UPDATE character_queststatus SET status = '%u',rewarded = '%u',explored = '%u',timer = '" UI64FMTD "',mobcount1 = '%u',mobcount2 = '%u',mobcount3 = '%u',mobcount4 = '%u',itemcount1 = '%u',itemcount2 = '%u',itemcount3 = '%u',itemcount4 = '%u'  WHERE guid = '%u' AND quest = '%u' ",
-                    i->second.m_status, i->second.m_rewarded, i->second.m_explored, uint64(i->second.m_timer / 1000 + sWorld.GetGameTime()), i->second.m_creatureOrGOcount[0], i->second.m_creatureOrGOcount[1], i->second.m_creatureOrGOcount[2], i->second.m_creatureOrGOcount[3], i->second.m_itemcount[0], i->second.m_itemcount[1], i->second.m_itemcount[2], i->second.m_itemcount[3], GetGUIDLow(), i->first);
+            }
+            case QUEST_CHANGED:
+            {
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateQuestStatus, "UPDATE character_queststatus SET status = ?, rewarded = ?, explored = ?, timer = ?, mobcount1 = ?, mobcount2 = , mobcount3 = ?, mobcount4 = ?, itemcount1 = ?, itemcount2 = ?, itemcount3 = ?, itemcount4 = ? WHERE guid = ? AND quest = ?");
+                stmt.addUInt8(i->second.m_status);
+                stmt.addBool(i->second.m_rewarded);
+                stmt.addBool(i->second.m_explored);
+                stmt.addUInt64(uint64(i->second.m_timer / 1000 + sWorld.GetGameTime()));
+                stmt.addUInt32(i->second.m_creatureOrGOcount[0]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[1]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[2]);
+                stmt.addUInt32(i->second.m_creatureOrGOcount[3]);
+                stmt.addUInt32(i->second.m_itemcount[0]);
+                stmt.addUInt32(i->second.m_itemcount[1]);
+                stmt.addUInt32(i->second.m_itemcount[2]);
+                stmt.addUInt32(i->second.m_itemcount[3]);
+                stmt.addUInt32(GetGUIDLow());
+                stmt.addUInt32(i->first);
+                stmt.Execute();
+
                 break;
+            }
             case QUEST_UNCHANGED:
                 break;
         };
@@ -16252,24 +16379,50 @@ void Player::_SaveDailyQuestStatus()
 
     // save last daily quest time for all quests: we need only mostly reset time for reset check anyway
 
-    // we don't need transactions here.
-    RealmDataDatabase.PExecute("DELETE FROM character_queststatus_daily WHERE guid = '%u'",GetGUIDLow());
+    static SqlStatementID deleteDailies;
+    static SqlStatementID insertDaily;
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteDailies, "DELETE FROM character_queststatus_daily WHERE guid = ?");
+    stmt.PExecute(GetGUIDLow());
+
     for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    {
         if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
-            RealmDataDatabase.PExecute("INSERT INTO character_queststatus_daily (guid,quest,time) VALUES ('%u', '%u','" UI64FMTD "')",
-                GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx),uint64(m_lastDailyQuestTime));
+        {
+            stmt = RealmDataDatabase.CreateStatement(insertDaily, "INSERT INTO character_queststatus_daily (guid, quest, time) VALUES (?, ?, ?)");
+            stmt.addUInt32(GetGUIDLow());
+            stmt.addUInt32(GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx));
+            stmt.addUInt64(uint64(m_lastDailyQuestTime));
+            stmt.Execute();
+        }
+    }
 }
 
 void Player::_SaveSpells()
 {
+    static SqlStatementID deleteSpell;
+    static SqlStatementID insertSpell;
+
     for (PlayerSpellMap::iterator itr = m_spells.begin(), next = m_spells.begin(); itr != m_spells.end(); itr = next)
     {
         ++next;
 
         if (itr->second.state == PLAYERSPELL_REMOVED || itr->second.state == PLAYERSPELL_CHANGED)
-            RealmDataDatabase.PExecute("DELETE FROM character_spell WHERE guid = '%u' and spell = '%u'", GetGUIDLow(), itr->first);
+        {
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteSpell, "DELETE FROM character_spell WHERE guid = ? and spell = ?");
+            stmt.PExecute(GetGUIDLow(), itr->first);
+        }
+
         if (itr->second.state == PLAYERSPELL_NEW || itr->second.state == PLAYERSPELL_CHANGED)
-            RealmDataDatabase.PExecute("INSERT INTO character_spell (guid,spell,slot,active,disabled) VALUES ('%u', '%u', '%u','%u','%u')", GetGUIDLow(), itr->first, itr->second.slotId, itr->second.active ? 1 : 0, itr->second.disabled ? 1 : 0);
+        {
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(insertSpell, "INSERT INTO character_spell (guid, spell, slot, active, disabled) VALUES (?, ?, ?, ?, ?)");
+            stmt.addUInt32(GetGUIDLow());
+            stmt.addUInt32(itr->first);
+            stmt.addUInt32(itr->second.slotId);
+            stmt.addBool(itr->second.active);
+            stmt.addBool(itr->second.disabled);
+            stmt.Execute();
+        }
 
         if (itr->second.state == PLAYERSPELL_REMOVED)
             _removeSpell(itr->first);
@@ -16283,6 +16436,9 @@ void Player::_SaveTutorials()
     if (!m_TutorialsChanged)
         return;
 
+    static SqlStatementID updateTutorial;
+    static SqlStatementID insertTutorial;
+
     uint32 Rows=0;
     // it's better than rebuilding indexes multiple times
     QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT count(*) AS r FROM character_tutorial WHERE account = '%u' AND realmid = '%u'", GetSession()->GetAccountId(), realmID);
@@ -16291,13 +16447,34 @@ void Player::_SaveTutorials()
 
     if (Rows)
     {
-        RealmDataDatabase.PExecute("UPDATE character_tutorial SET tut0='%u', tut1='%u', tut2='%u', tut3='%u', tut4='%u', tut5='%u', tut6='%u', tut7='%u' WHERE account = '%u' AND realmid = '%u'",
-            m_Tutorials[0], m_Tutorials[1], m_Tutorials[2], m_Tutorials[3], m_Tutorials[4], m_Tutorials[5], m_Tutorials[6], m_Tutorials[7], GetSession()->GetAccountId(), realmID);
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(updateTutorial, "UPDATE character_tutorial SET tut0 = ?, tut1 = ?, tut2 = ? , tut3 = ?, tut4 = ?, tut5 = ?, tut6 = ?, tut7 = ? WHERE account = ? AND realmid = ?");
+        stmt.addUInt32(m_Tutorials[0]);
+        stmt.addUInt32(m_Tutorials[1]);
+        stmt.addUInt32(m_Tutorials[2]);
+        stmt.addUInt32(m_Tutorials[3]);
+        stmt.addUInt32(m_Tutorials[4]);
+        stmt.addUInt32(m_Tutorials[5]);
+        stmt.addUInt32(m_Tutorials[6]);
+        stmt.addUInt32(m_Tutorials[7]);
+        stmt.addUInt32(GetSession()->GetAccountId());
+        stmt.addUInt32(realmID);
+        stmt.Execute();
     }
     else
     {
-        RealmDataDatabase.PExecute("INSERT INTO character_tutorial (account,realmid,tut0,tut1,tut2,tut3,tut4,tut5,tut6,tut7) VALUES ('%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')", GetSession()->GetAccountId(), realmID, m_Tutorials[0], m_Tutorials[1], m_Tutorials[2], m_Tutorials[3], m_Tutorials[4], m_Tutorials[5], m_Tutorials[6], m_Tutorials[7]);
-    };
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(insertTutorial, "INSERT INTO character_tutorial (account, realmid, tut0, tut1, tut2, tut3, tut4, tut5, tut6, tut7) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        stmt.addUInt32(GetSession()->GetAccountId());
+        stmt.addUInt32(realmID);
+        stmt.addUInt32(m_Tutorials[0]);
+        stmt.addUInt32(m_Tutorials[1]);
+        stmt.addUInt32(m_Tutorials[2]);
+        stmt.addUInt32(m_Tutorials[3]);
+        stmt.addUInt32(m_Tutorials[4]);
+        stmt.addUInt32(m_Tutorials[5]);
+        stmt.addUInt32(m_Tutorials[6]);
+        stmt.addUInt32(m_Tutorials[7]);
+        stmt.Execute();
+    }
 
     m_TutorialsChanged = false;
 }
@@ -16375,41 +16552,43 @@ void Player::SendAttackSwingNotInRange()
 
 void Player::SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,uint64 guid)
 {
-    std::ostringstream ss;
-    ss << "UPDATE characters SET position_x='"<<x<<"',position_y='"<<y
-        << "',position_z='"<<z<<"',orientation='"<<o<<"',map='"<<mapid
-        << "',zone='"<<zone<<"',trans_x='0',trans_y='0',trans_z='0',"
-        << "transguid='0',taxi_path='' WHERE guid='"<< GUID_LOPART(guid) <<"'";
-    sLog.outDebug(ss.str().c_str());
-    RealmDataDatabase.Execute(ss.str().c_str());
+    static SqlStatementID updatePosition;
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(updatePosition, "UPDATE characters SET position_x = ?, position_y = ?, position_z = ?, "
+                                                            "orientation = ?, map = ?, zone = ?, trans_x = '0', trans_y = '0', trans_z = '0', transguid = '0', taxi_path = '' WHERE guid = ?");
+
+    stmt.addFloat(x);
+    stmt.addFloat(y);
+    stmt.addFloat(z);
+    stmt.addFloat(o);
+    stmt.addUInt32(mapid);
+    stmt.addUInt32(zone);
+    stmt.addUInt32(GUID_LOPART(guid));
+    stmt.Execute();
 }
 
 void Player::SaveDataFieldToDB()
 {
-    std::ostringstream ss;
-    ss<<"UPDATE characters SET data='";
-
-    for (uint16 i = 0; i < m_valuesCount; i++)
-    {
-        ss << GetUInt32Value(i) << " ";
-    }
-    ss<<"' WHERE guid='"<< GUID_LOPART(GetGUIDLow()) <<"'";
-
-    RealmDataDatabase.Execute(ss.str().c_str());
+    static SqlStatementID updateCharData;
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(updateCharData, "UPDATE characters SET data = ?  WHERE guid = ?");
+    stmt.addString(GetUInt32ValuesString());
+    stmt.addUInt32(GetGUIDLow());
+    stmt.Execute();
 }
 
 bool Player::SaveValuesArrayInDB(Tokens const& tokens, uint64 guid)
 {
-    std::ostringstream ss2;
-    ss2<<"UPDATE characters SET data='";
-    int i=0;
-    for (Tokens::const_iterator iter = tokens.begin(); iter != tokens.end(); ++iter, ++i)
-    {
-        ss2<<tokens[i]<<" ";
-    }
-    ss2<<"' WHERE guid='"<< GUID_LOPART(guid) <<"'";
+    static SqlStatementID updateCharData;
 
-    return RealmDataDatabase.Execute(ss2.str().c_str());
+    int cnt = tokens.size();
+    std::ostringstream ss;
+    for (int i = 0; i < cnt; ++i)
+        ss << tokens[i] << " ";
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(updateCharData, "UPDATE characters SET data = ?  WHERE guid = ?");
+    stmt.addString(ss);
+    stmt.addUInt32(GUID_LOPART(guid));
+
+    return stmt.Execute();
 }
 
 void Player::SetUInt32ValueInArray(Tokens& tokens,uint16 index, uint32 value)
@@ -18158,20 +18337,20 @@ bool Player::canSeeOrDetect(Unit const* u, WorldObject const* viewPoint, bool de
     else if (u->GetTypeId()==TYPEID_PLAYER)                     // distance for show player
     {
         // Players far than max visible distance for player or not in our map are not visible too
-        if (!at_same_transport && !viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
+        if (!at_same_transport && !viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else if (u->GetCharmerOrOwnerGUID())                        // distance for show pet/charmed
     {
         // Pet/charmed far than max visible distance for player or not in our map are not visible too
-        if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f), is3dDistance))
+        if (!viewPoint->IsWithinDistInMap(u, _map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), is3dDistance))
             return false;
     }
     else                                                    // distance for show creature
     {
         // Units far than max visible distance for creature or not in our map are not visible too
-        if (!viewPoint->IsWithinDistInMap(u, u->isActiveObject() ? (MAX_VISIBILITY_DISTANCE - (inVisibleList ? 0.0f : World::GetVisibleUnitGreyDistance()))
-            : (_map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleUnitGreyDistance() : 0.0f))
+        if (!viewPoint->IsWithinDistInMap(u, u->isActiveObject() ? (MAX_VISIBILITY_DISTANCE - (inVisibleList ? 0.0f : World::GetVisibleObjectGreyDistance()))
+            : (_map.GetVisibilityDistance(const_cast<Unit*>(u), const_cast<Player*>(this)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f))
             , is3dDistance))
             return false;
     }

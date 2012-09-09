@@ -61,7 +61,7 @@ class HELLGROUND_DLL_SPEC MovementGenerator : public UnitAction
         // after some not safe for this calls
         bool IsActive(Unit& u);
 
-    protected:
+    //protected:
         bool _recalculateTravel;
 };
 
