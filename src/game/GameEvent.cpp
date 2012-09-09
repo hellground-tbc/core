@@ -1583,14 +1583,14 @@ void GameEventMgr::SaveWorldEventStateToDB(uint16 event_id)
     {
         stmt = RealmDataDatabase.CreateStatement(insertGESave1, "INSERT INTO game_event_save (event_id, state, next_start) VALUES (?, ?, FROM_UNIXTIME(?))");
         stmt.addUInt32(event_id);
-        stmt.addUInt32(mGameEvent[event_id].state);
+        stmt.addUInt32(uint32(mGameEvent[event_id].state));
         stmt.addUInt64(uint64(mGameEvent[event_id].nextstart));
         stmt.Execute();
     }
     else
     {
         stmt = RealmDataDatabase.CreateStatement(insertGESave2, "INSERT INTO game_event_save (event_id, state, next_start) VALUES (?, ?, '0000-00-00 00:00:00')");
-        stmt.PExecute(event_id, mGameEvent[event_id].state);
+        stmt.PExecute(event_id, uint32(mGameEvent[event_id].state));
     }
 
     RealmDataDatabase.CommitTransaction();

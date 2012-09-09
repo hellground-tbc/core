@@ -1251,7 +1251,7 @@ bool Group::_removeMember(const uint64 &guid)
         m_memberSlots.erase(slot);
     }
 
-    static SqlStatement deleteGroupMember;
+    static SqlStatementID deleteGroupMember;
 
     if (!isBGGroup())
     {

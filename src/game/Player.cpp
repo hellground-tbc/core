@@ -16156,7 +16156,7 @@ void Player::_SaveInventory()
                 {
                     GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
                     stmt = AccountsDatabase.CreateStatement(updateAccountFlags, "UPDATE account SET accounts_flag = accounts_flag | ? WHERE id = ?");
-                    stmt.PExecute(ACC_SPECIAL_LOG, GetSession()->GetAccountId());
+                    stmt.PExecute(uint32(ACC_SPECIAL_LOG), GetSession()->GetAccountId());
                 }
 
                 stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
@@ -16182,7 +16182,7 @@ void Player::_SaveInventory()
                 {
                     GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
                     stmt = AccountsDatabase.CreateStatement(updateAccountFlags, "UPDATE account SET account_flags = account_flags | ? WHERE id = ?");
-                    stmt.PExecute(ACC_SPECIAL_LOG, GetSession()->GetAccountId());
+                    stmt.PExecute(uint32(ACC_SPECIAL_LOG), GetSession()->GetAccountId());
                 }
 
                 AccountsDatabase.CommitTransaction();
