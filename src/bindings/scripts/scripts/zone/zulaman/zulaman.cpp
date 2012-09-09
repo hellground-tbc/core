@@ -654,11 +654,12 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
     npc_harrison_jones_zaAI(Creature* pCreature) : npc_escortAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        RespawnDelay = me->GetRespawnDelay();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    uint32 ResetTimer;
+    uint32 RespawnDelay;
 
     void DamageTaken(Unit* done_by, uint32 &damage)
     {
@@ -678,6 +679,9 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
         switch(uiPointId)
         {
             case 2:
+                //modify respawn if event fails (out of LOS)
+                me->SetRespawnDelay(10); // then sec for a nice respawn effect
+                
                 DoScriptText(SAY_AT_GONG, me);
 
                 if (GameObject* pEntranceDoor = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_GONG)))
@@ -695,6 +699,7 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
                 break;
             case 5:
                 m_pInstance->SetData(TYPE_EVENT_RUN,SPECIAL);
+                me->SetRespawnDelay(RespawnDelay);
                 break;
             case 6:
                 std::list<Creature*> trolls = FindAllCreaturesWithEntry(23889, 100);
@@ -714,21 +719,22 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
                 DoGlobalScriptText(SAY_INST_BEGIN, HEXLORD, me->GetMap());
                 break;
                 //TODO: Spawn group of Amani'shi Savage and make them run to entrance
-                //TODO: Add, and modify reseting of the event, reseting quote is missing
         }
     }
 
     void Reset()
     {
-        ResetTimer = 600000;    // 10min for players to make an event
         me->RemoveAllAuras();
         me->setActive(true);    // very important due to grid issues
+        //if event not started respawn on reset
+        if (m_pInstance->GetData(TYPE_EVENT_RUN) == NOT_STARTED)
+            me->Respawn();
     }
 
     void StartEvent(Player* pPlayer)
     {
         DoScriptText(SAY_START, me);
-        Start(true, false, pPlayer->GetGUID(), 0, false, true);
+        Start(true, false, pPlayer->GetGUID(), 0, true, true);
     }
 
     void SetHoldState(bool bOnHold)
@@ -746,17 +752,6 @@ struct HELLGROUND_DLL_DECL npc_harrison_jones_zaAI : public npc_escortAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(HasEscortState(STATE_ESCORT_PAUSED))
-        {/*
-            if(ResetTimer < diff)
-            {
-                me->Kill(me, false);
-                me->Respawn();
-                ResetTimer = 600000;
-            }
-            else
-                ResetTimer -= diff;*/
-        }
         npc_escortAI::UpdateAI(diff);
     }
 };
@@ -830,7 +825,7 @@ struct HELLGROUND_DLL_DECL npc_zulaman_door_triggerAI : public Scripted_NoMoveme
                 if (Player* plr = itr->getSource())
                 {
                     if(plr->HasAura(SPELL_BANGING_THE_GONG, 0))
-                        count++;
+                        count += (plr->isGameMaster()) ? 5 : 1; //possibility for gamemaster to start this event solo
                 }
             }
         }
