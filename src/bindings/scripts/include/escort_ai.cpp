@@ -438,7 +438,7 @@ void npc_escortAI::Start(bool bIsActiveAttacker, bool bRun, uint64 uiPlayerGUID,
 
     if (WaypointList.empty())
     {
-        error_db_log("TSCR: EscortAI Start with 0 waypoints (possible missing entry in script_waypoint).");
+        error_db_log("TSCR: EscortAI Start with 0 waypoints (possible missing entry in script_waypoint for creature %u).", m_creature->GetEntry());
         return;
     }
 
