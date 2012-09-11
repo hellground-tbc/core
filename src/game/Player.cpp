@@ -3198,7 +3198,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     if (node)
     {
         if (HasSpell(node->next) && !GetTalentSpellPos(node->next))
-        removeSpell(node->next,disabled);
+            removeSpell(node->next,disabled);
     }
     //unlearn spells dependent from recently removed spells
     SpellsRequiringSpellMap const& reqMap = sSpellMgr.GetSpellsRequiringSpell();

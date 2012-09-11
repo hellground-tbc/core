@@ -1788,6 +1788,10 @@ bool SpellMgr::IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellI
 
 bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
 {
+    // exception: faerie fire (feral)
+    if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x400)
+        return false;
+
     if (spellInfo->powerType != POWER_MANA && spellInfo->powerType != POWER_HEALTH)
         return false;
 
@@ -1964,6 +1968,7 @@ bool SpellMgr::IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry co
             // Bloodlust
             case 2825:
                 return true;
+        }
     }
 
     if (recur)
