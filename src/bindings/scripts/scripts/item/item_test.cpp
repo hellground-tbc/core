@@ -23,11 +23,11 @@ EndScriptData */
 
 #include "precompiled.h"
 
-extern void LoadDatabase();
+extern void LoadDatabase(char const* cfg_file);
 
 bool ItemUse_item_test(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
-    LoadDatabase();
+    //LoadDatabase();
     return true;
 }
 

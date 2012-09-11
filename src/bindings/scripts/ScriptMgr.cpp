@@ -24,10 +24,8 @@ Script *m_scripts[MAX_SCRIPTS];
 void FillSpellSummary();
 
 // -------------------
-void LoadDatabase()
+void LoadDatabase(char const* cfg_file)
 {
-    char const* cfg_file = _HELLGROUND_SCRIPT_CONFIG;
-
     if (!sConfig.SetSource(cfg_file))
     {
         printf("TSCR: Could not find configuration file %s.", cfg_file);
@@ -96,7 +94,7 @@ void InitScriptLibrary(char const* cfg_file)
     outstring_log("");
 
     //Load database (must be called after TScriptConfig.SetSource). In case it failed, no need to even try load.
-    LoadDatabase();
+    LoadDatabase(cfg_file);
 
     outstring_log("TSCR: Loading C++ scripts");
     BarGoLink bar(1);
