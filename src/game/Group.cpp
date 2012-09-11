@@ -1086,7 +1086,10 @@ void Group::Update(uint32 diff)
 
 void Group::UpdatePlayerOutOfRange(Player* pPlayer)
 {
-    if (!pPlayer || !pPlayer->IsInWorld())// && !pPlayer->IsBeingTeleported())) // is this needed ?
+    if (!pPlayer || !pPlayer->IsInWorld())
+        return;
+
+    if (pPlayer->GetGroupUpdateFlag() == GROUP_UPDATE_FLAG_NONE)
         return;
 
     Player *player;
@@ -1096,7 +1099,7 @@ void Group::UpdatePlayerOutOfRange(Player* pPlayer)
     for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
         player = itr->getSource();
-        if (player && player != pPlayer && !pPlayer->IsWithinDistInMap(player, pPlayer->GetMap()->GetVisibilityDistance())/* && !pPlayer->isVisiblefor(player)*/)
+        if (player && player != pPlayer && !player->HaveAtClient(pPlayer))
             player->SendPacketToSelf(&data);
     }
 }
