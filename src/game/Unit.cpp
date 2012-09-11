@@ -12534,7 +12534,7 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         // pets already have initialized charm info
         initCharmInfo = !GetObjectGuid().IsPet();
     }
-    else
+    else if (GetObjectGuid().IsPlayer())
     {
         if (ToPlayer()->isAFK())
             ToPlayer()->ToggleAFK();
