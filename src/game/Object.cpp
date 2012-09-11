@@ -1642,7 +1642,7 @@ void WorldObject::BroadcastPacketInRange(WorldPacket *data, float dist, bool toS
 
 void WorldObject::BroadcastPacketExcept(WorldPacket* data, Player* except)
 {
-
+    GetMap()->BroadcastPacketExcept(this, data, except);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
