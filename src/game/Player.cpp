@@ -5671,7 +5671,7 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
     return true;
 }
 
-void Player::SaveRecallPosition(TaxiNodesEntry* taxinode)
+void Player::SaveRecallPosition(TaxiNodesEntry const* taxinode)
 {
     if (taxinode)
     {

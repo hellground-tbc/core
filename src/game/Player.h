@@ -2070,7 +2070,7 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         uint32 GetSaveTimer() const { return m_nextSave; }
         void   SetSaveTimer(uint32 timer) { m_nextSave = timer; }
 
-        void SaveRecallPosition(TaxiNodesEntry* = NULL);
+        void SaveRecallPosition(TaxiNodesEntry const* = NULL);
 
         // Recall position
         WorldLocation _recallPosition;
