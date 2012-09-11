@@ -665,7 +665,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "dismount",       SEC_PLAYER,         false,  &ChatHandler::HandleDismountCommand,            "", NULL },
         { "distance",       SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleGetDistanceCommand,         "", NULL },
         { "explorecheat",   SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleExploreCheatCommand,        "", NULL },
-        { "flusharenapoints",    SEC_CONSOLE,   false,  &ChatHandler::HandleFlushArenaPointsCommand,    "", NULL },
+        //{ "flusharenapoints",    SEC_CONSOLE,   false,  &ChatHandler::HandleFlushArenaPointsCommand,    "", NULL },
         { "freeze",         SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleFreezeCommand,              "", NULL },
         { "goname",         SEC_MODERATOR,      false,  &ChatHandler::HandleGonameCommand,              "", NULL },
         { "gps",            SEC_MODERATOR,      false,  &ChatHandler::HandleGPSCommand,                 "", NULL },
