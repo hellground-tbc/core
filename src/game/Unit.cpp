@@ -12526,23 +12526,23 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 
     bool initCharmInfo = false;
-    if (GetObjectGuid().IsCreature())
+    if (Creature* thisCreature = ToCreature())
     {
-        ToCreature()->AI()->OnCharmed(true);
+        thisCreature->AI()->OnCharmed(true);
         GetMotionMaster()->MoveIdle();
 
         // pets already have initialized charm info
         initCharmInfo = !GetObjectGuid().IsPet();
     }
-    else if (GetObjectGuid().IsPlayer())
+    else if (Player *thisPlayer = ToPlayer())
     {
-        if (ToPlayer()->isAFK())
-            ToPlayer()->ToggleAFK();
+        if (thisPlayer->isAFK())
+            thisPlayer->ToggleAFK();
 
-        ToPlayer()->SetClientControl(this, false);
+        thisPlayer->SetClientControl(this, false);
 
         if (charmer->GetObjectGuid().IsCreature())
-            ToPlayer()->CharmAI(true);
+            thisPlayer->CharmAI(true);
 
         initCharmInfo = true;
     }
@@ -12562,15 +12562,15 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         addUnitState(UNIT_STAT_POSSESSED);
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
 
-        if (charmer->ToPlayer())
+        if (Player* charmerPlayer = charmer->ToPlayer())
         {
-            charmer->ToPlayer()->SetClientControl(this, true);
-            charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+            charmerPlayer->SetClientControl(this, true);
+            charmerPlayer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
 
-            Camera& camera = charmer->ToPlayer()->GetCamera();
+            Camera& camera = charmerPlayer->GetCamera();
             camera.SetView(this);
 
-            charmer->ToPlayer()->SetMover(this);
+            charmerPlayer->SetMover(this);
         }
     }
     // Charm demon
@@ -12591,12 +12591,12 @@ void Unit::SetCharmedOrPossessedBy(Unit* charmer, bool possess)
         }
     }
 
-    if (Player* playerCharmer = charmer->ToPlayer())
+    if (Player* charmerPlayer = charmer->ToPlayer())
     {
         if (possess)
-            playerCharmer->PossessSpellInitialize();
+            charmerPlayer->PossessSpellInitialize();
         else if (charmer->GetTypeId() == TYPEID_PLAYER)
-            playerCharmer->CharmSpellInitialize();
+            charmerPlayer->CharmSpellInitialize();
     }
 }
 
@@ -12626,29 +12626,29 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
     }
 
-    if (GetTypeId() == TYPEID_UNIT)
+    if (Creature* thisCreature = ToCreature())
     {
-        if (!((Creature*)this)->isPet())
+        if (!thisCreature->isPet())
             RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 
-        ((Creature*)this)->AI()->OnCharmed(false);
-        if (isAlive() && ((Creature*)this)->IsAIEnabled)
+        thisCreature->AI()->OnCharmed(false);
+        if (isAlive() && thisCreature->IsAIEnabled)
         {
             if (charmer && !IsFriendlyTo(charmer))
             {
-                ((Creature*)this)->AddThreat(charmer, 10000.0f);
-                ((Creature*)this)->AI()->AttackStart(charmer);
+                thisCreature->AddThreat(charmer, 10000.0f);
+                thisCreature->AI()->AttackStart(charmer);
             }
             else
-                ((Creature*)this)->AI()->EnterEvadeMode();
+                thisCreature->AI()->EnterEvadeMode();
         }
     }
-    else
+    else if (Player* thisPlayer = ToPlayer())
     {
         if (IsAIEnabled)
-            ((Player*)this)->CharmAI(false);
+            thisPlayer->CharmAI(false);
 
-        ToPlayer()->SetClientControl(this, true);
+        thisPlayer->SetClientControl(this, true);
     }
 
     // If charmer still exists
@@ -12660,13 +12660,15 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     charmer->SetCharm(0);
     if (possess)
     {
-        charmer->ToPlayer()->SetClientControl(charmer, true);
-        charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        Player* charmerPlayer = charmer->ToPlayer();
 
-        Camera& camera = charmer->ToPlayer()->GetCamera();
+        charmerPlayer->SetClientControl(charmer, true);
+        charmerPlayer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+
+        Camera& camera = charmerPlayer->GetCamera();
         camera.ResetView();
 
-        charmer->ToPlayer()->SetMover(charmer);
+        charmerPlayer->SetMover(charmer);
     }
     // restore UNIT_FIELD_BYTES_0
     else if (GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->getClass() == CLASS_WARLOCK)
