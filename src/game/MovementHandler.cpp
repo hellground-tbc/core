@@ -247,7 +247,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
     WorldPacket data(opcode, recv_data.size());
     data << mover->GetPackGUID();                 // write guid
     movementInfo.Write(data);                     // write data
-    mover->BroadcastPacket(&data, _player);
+    mover->BroadcastPacketExcept(&data, _player);
 }
 
 void WorldSession::HandleMoverRelocation(MovementInfo& movementInfo)
