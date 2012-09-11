@@ -16345,7 +16345,7 @@ void Player::_SaveQuestStatus()
             }
             case QUEST_CHANGED:
             {
-                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateQuestStatus, "UPDATE character_queststatus SET status = ?, rewarded = ?, explored = ?, timer = ?, mobcount1 = ?, mobcount2 = , mobcount3 = ?, mobcount4 = ?, itemcount1 = ?, itemcount2 = ?, itemcount3 = ?, itemcount4 = ? WHERE guid = ? AND quest = ?");
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(updateQuestStatus, "UPDATE character_queststatus SET status = ?, rewarded = ?, explored = ?, timer = ?, mobcount1 = ?, mobcount2 = ?, mobcount3 = ?, mobcount4 = ?, itemcount1 = ?, itemcount2 = ?, itemcount3 = ?, itemcount4 = ? WHERE guid = ? AND quest = ?");
                 stmt.addUInt8(i->second.m_status);
                 stmt.addBool(i->second.m_rewarded);
                 stmt.addBool(i->second.m_explored);
