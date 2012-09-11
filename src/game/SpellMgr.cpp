@@ -544,6 +544,7 @@ SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
 
         case SPELLFAMILY_POTION:
             return sSpellMgr.GetSpellElixirSpecific(spellInfo->Id);
+            break;
     }
 
     // only warlock armor/skin have this (in additional to family cases)
@@ -1950,6 +1951,20 @@ bool SpellMgr::IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry co
     if (spellInfo_1->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo_1->SpellFamilyFlags & 0x4000L
         && spellInfo_2->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo_2->SpellFamilyFlags & 0x80000L)
         return true;
+
+    // Power Infusion
+    if (spellInfo_1->Id == 10060)
+    {
+        switch (spellInfo_2->Id)
+        {
+            // Icy Veins
+            case 12472:
+            // Heroism
+            case 32182:
+            // Bloodlust
+            case 2825:
+                return true;
+    }
 
     if (recur)
         return SpellMgr::IsSpecialNoStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
