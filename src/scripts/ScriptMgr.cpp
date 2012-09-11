@@ -10,7 +10,7 @@
 #include "system/ScriptLoader.h"
 #include "system/system.h"
 
-#include "../../../game/ScriptMgr.h"
+#include "../game/ScriptMgr.h"
 
 #define _FULLVERSION "TrinityScript"
 
