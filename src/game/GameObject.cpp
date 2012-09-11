@@ -978,6 +978,7 @@ void GameObject::Use(Unit* user)
         if (sScriptMgr.OnGameObjectUse(pPlayer, this))
             return;
     }
+
     GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), user, this);
 
     switch (GetGoType())
