@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_gruuls_lair.h"
 
-#include "../../../../../framework/Utilities/EventProcessor.h"
+#include "../../../framework/Utilities/EventProcessor.h"
 
 /* Yells & Quotes */
 #define SAY_AGGRO                   -1565010
