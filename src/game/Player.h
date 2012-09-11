@@ -1523,11 +1523,11 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         bool isRessurectRequested() const { return m_resurrectGUID != 0; }
         void ResurectUsingRequestData();
 
-        int getCinematic()
+        bool getCinematic()
         {
             return m_cinematic;
         }
-        void setCinematic(int cine)
+        void setCinematic(bool cine)
         {
             m_cinematic = cine;
         }
@@ -2355,7 +2355,7 @@ class HELLGROUND_DLL_SPEC Player : public Unit
 
         bool m_dontMove;
 
-        int m_cinematic;
+        bool m_cinematic;
         uint32 m_watchingCinematicId;
 
         Player *pTrader;

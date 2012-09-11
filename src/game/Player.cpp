@@ -339,6 +339,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     ClearTrade();
 
+    m_cinematic = false;
     m_watchingCinematicId = 0;
 
     PlayerTalkClass = new PlayerMenu(GetSession());
@@ -14494,7 +14495,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         SetRestBonus(GetRestBonus()+ time_diff*((float)GetUInt32Value(PLAYER_NEXT_LEVEL_XP)/72000)*bubble);
     }
 
-    m_cinematic = fields[19].GetUInt32();
+    m_cinematic = fields[19].GetBool();
     m_Played_time[PLAYED_TIME_TOTAL]= fields[20].GetUInt32();
     m_Played_time[PLAYED_TIME_LEVEL]= fields[21].GetUInt32();
     m_resetTalentsCost = fields[25].GetUInt32();
@@ -15863,7 +15864,7 @@ void Player::SaveToDB()
     tmpStr = m_taxi.GetTaxiMaskString();
     stmt.addString(tmpStr);
     stmt.addBool(inworld ? true : false);
-    stmt.addInt32(m_cinematic);
+    stmt.addBool(m_cinematic);
     stmt.addUInt32(m_Played_time[0]);
     stmt.addUInt32(m_Played_time[1]);
     stmt.addFloat(finiteAlways(m_rest_bonus));

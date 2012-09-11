@@ -369,7 +369,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     }
 
     if ((have_same_race && skipCinematics == 1) || skipCinematics == 2)
-        pNewChar->setCinematic(1);                          // not show intro
+        pNewChar->setCinematic(true);                       // not show intro
 
     // Player created, save it now
     pNewChar->SaveToDB();
@@ -621,7 +621,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     //Show cinematic at the first time that player login
     if (!pCurrChar->getCinematic())
     {
-        pCurrChar->setCinematic(1);
+        pCurrChar->setCinematic(true);
 
         if(ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(pCurrChar->getRace()))
         {
