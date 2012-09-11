@@ -289,17 +289,13 @@ void WorldSession::HandleMoverRelocation(MovementInfo& movementInfo)
             // now client not include swimming flag in case jumping under water
             plMover->SetInWater(!plMover->IsInWater() || plMover->GetTerrain()->IsInWater(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z));
         }
-
-        mover->m_movementInfo = movementInfo;
-        mover->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
-
-        plMover->HandleFallUnderMap(movementInfo.GetPos()->z);
     }
-    else
-    {
-        mover->m_movementInfo = movementInfo;
-        mover->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
-    }
+
+    mover->m_movementInfo = movementInfo;
+    mover->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
+
+    if (mover->GetObjectGuid().IsPlayer())
+        mover->ToPlayer()->HandleFallUnderMap(movementInfo.GetPos()->z);
 }
 
 void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)
