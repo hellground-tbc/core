@@ -5671,13 +5671,18 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
     return true;
 }
 
-void Player::SaveRecallPosition()
+void Player::SaveRecallPosition(TaxiNodesEntry* taxinode)
 {
-    m_recallMap = GetMapId();
-    m_recallX = GetPositionX();
-    m_recallY = GetPositionY();
-    m_recallZ = GetPositionZ();
-    m_recallO = GetOrientation();
+    if (taxinode)
+    {
+        _recallPosition.mapid = taxinode->map_id;
+        _recallPosition.coord_x = taxinode->x;
+        _recallPosition.coord_y = taxinode->y;
+        _recallPosition.coord_z = taxinode->z;
+
+    }
+    else
+        GetPosition(_recallPosition);
 }
 
 void Player::SendPacketToSelf(WorldPacket *data)
@@ -14664,10 +14669,8 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         // save source node as recall coord to prevent recall and fall from sky
         TaxiNodesEntry const* nodeEntry = sTaxiNodesStore.LookupEntry(node_id);
         assert(nodeEntry);                                  // checked in m_taxi.LoadTaxiDestinationsFromString
-        m_recallMap = nodeEntry->map_id;
-        m_recallX = nodeEntry->x;
-        m_recallY = nodeEntry->y;
-        m_recallZ = nodeEntry->z;
+
+        SaveRecallPosition(nodeEntry);
 
         // flight will started later
     }
