@@ -1790,7 +1790,7 @@ bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
 {
     // exception: faerie fire (feral)
     if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x400)
-        return false;
+        return true;
 
     if (spellInfo->powerType != POWER_MANA && spellInfo->powerType != POWER_HEALTH)
         return false;
