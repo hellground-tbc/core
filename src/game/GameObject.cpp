@@ -474,8 +474,13 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     break;
                 }
             }
+
+            if (IsInWorld())
+                UpdateObjectVisibility();
+
             if(GetDespawnPossibility())
                 Despawn();
+
             break;
         }
     }
