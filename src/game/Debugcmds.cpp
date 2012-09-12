@@ -720,17 +720,20 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
         target = m_session->GetPlayer();
     HostilReference* ref = target->getHostilRefManager().getFirst();
     uint32 cnt = 0;
-    PSendSysMessage("Hostil reference list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
+    PSendSysMessage("Hostile reference list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
     while (ref)
     {
-        if (Unit * unit = ref->getSource()->getOwner())
+        if (Unit* unit = ref->getSource()->getOwner())
         {
+            CellPair p = Hellground::ComputeCellPair(unit->GetPositionX(), unit->GetPositionY());
+            uint8 gridstate = unit->GetMap()->getNGrid(Cell(p).GridX(), Cell(p).GridY())->GetGridState();
+
             ++cnt;
-            PSendSysMessage("   %u.   %s   (guid %u)  - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), ref->getThreat());
+            PSendSysMessage("   %u.   %s   (guid %u)  - threat %f [GridState: %u]",cnt,unit->GetName(), unit->GetGUIDLow(), ref->getThreat(), gridstate);
         }
         ref = ref->next();
     }
-    SendSysMessage("End of hostil reference list.");
+    SendSysMessage("End of hostile reference list.");
     return true;
 }
 
