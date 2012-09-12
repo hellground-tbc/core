@@ -234,7 +234,7 @@ bool FlightPathMovementGenerator::Update(Player &player, const uint32 &diff)
         while(true);
     }
 
-    return !(player.movespline->Finalized() || _currentNode >= (_path->size()-1));
+    return _currentNode < _path->size()-1;
 }
 
 void FlightPathMovementGenerator::SetCurrentNodeAfterTeleport()
