@@ -4943,8 +4943,8 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
             {
                 if (Unit* caster = GetCaster())
                 {
-                    if(m_target->GetTypeId() == TYPEID_UNIT && !m_target->isInCombat())
-                            ((Creature*)m_target)->AI()->AttackStart(caster);
+                    if (m_target->GetTypeId() == TYPEID_UNIT && !m_target->isInCombat())
+                        ((Creature*)m_target)->AI()->AttackStart(caster);
                 }
                 break;
             }

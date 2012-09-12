@@ -655,22 +655,30 @@ void Spell::prepareDataForTriggerSystem()
                 m_procAttacker |= PROC_FLAG_SUCCESSFUL_OFFHAND_HIT;
 
             m_procVictim   = PROC_FLAG_TAKEN_MELEE_SPELL_HIT;
-
             if (IsNextMeleeSwingSpell())
             {
                 //m_procAttacker |= PROC_FLAG_SUCCESSFUL_MELEE_HIT;
                 m_procVictim   |= PROC_FLAG_TAKEN_MELEE_HIT;
             }
+
+            if (IsDelayedSpell())
+                m_procCastEnd = PROC_FLAG_DELAYED_MELEE_SPELL_CAST_END;
             break;
         case SPELL_DAMAGE_CLASS_RANGED:
             m_procAttacker = PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT;
             m_procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
+
+            if (IsDelayedSpell())
+                m_procCastEnd = PROC_FLAG_DELAYED_RANGED_SPELL_CAST_END;
             break;
         default:
             if (SpellMgr::IsPositiveSpell(m_spellInfo->Id))          // Check for positive spell
             {
                 m_procAttacker = PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL;
                 m_procVictim   = PROC_FLAG_TAKEN_POSITIVE_SPELL;
+
+                if (IsDelayedSpell())
+                    m_procCastEnd = PROC_FLAG_DELAYED_POSITIVE_SPELL_CAST_END;
             }
             else if (m_spellInfo->Id == 5019) // Wands
             {
@@ -681,6 +689,9 @@ void Spell::prepareDataForTriggerSystem()
             {
                 m_procAttacker = PROC_FLAG_SUCCESSFUL_NEGATIVE_SPELL_HIT;
                 m_procVictim   = PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT;
+
+                if (IsDelayedSpell())
+                    m_procCastEnd = PROC_FLAG_DELAYED_NEGATIVE_SPELL_CAST_END;
             }
             break;
     }
@@ -2522,6 +2533,8 @@ void Spell::cast(bool skipCheck)
         m_immediateHandled = false;
         m_spellState = SPELL_STATE_DELAYED;
         SetDelayStart(0);
+
+        m_caster->ProcDamageAndSpell(m_targets.getUnitTarget(), m_procCastEnd, PROC_FLAG_NONE, PROC_EX_EX_TRIGGER_ALWAYS, 1, BASE_ATTACK, m_spellInfo);
     }
     else
     {

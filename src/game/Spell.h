@@ -441,6 +441,10 @@ class Spell
         {
             return  m_spellInfo->Attributes & SPELL_ATTR_RANGED;
         }
+        bool IsDelayedSpell() const
+        {
+            return m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY;
+        }
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
         bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK);  }
         bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && /*IsRangedSpell() &&*/ !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT); }
@@ -548,6 +552,8 @@ class Spell
         bool   m_canTrigger;                  // Can start trigger (m_IsTriggeredSpell can`t use for this)
         uint32 m_procAttacker;                // Attacker trigger flags
         uint32 m_procVictim;                  // Victim   trigger flags
+        uint32 m_procCastEnd;
+
         void   prepareDataForTriggerSystem();
 
         //*****************************************
