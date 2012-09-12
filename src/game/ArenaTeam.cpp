@@ -74,7 +74,7 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
     RealmDataDatabase.CommitTransaction();
 
     AddMember(CaptainGuid);
-    sLog.outArena("New ArenaTeam created [Id: %u] [Type: %u] [Captain GUID: %u]", GetId(), GetType(), GetCaptain());
+    sLog.outArena("New ArenaTeam created [Name: %s] [Id: %u] [Type: %u] [Captain GUID: %u]", ArenaTeamName.c_str(), GetId(), GetType(), GetCaptain());
     return true;
 }
 
