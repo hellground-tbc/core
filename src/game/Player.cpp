@@ -17025,11 +17025,14 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
         tmpText = "receiver DND ! text: " + tmpText;
     }
 
-    if (rPlayer->GetSession()->IsAccountFlagged(ACC_WHISPER_LOG))
-        sLog.outWhisp(rPlayer->GetSession()->GetAccountId(), "[%s | %u] FROM: %u (%s) : %s ", rPlayer->GetName(), rPlayer->GetGUID(), GetGUID(), GetName(), tmpText.c_str());
+    if (language != LANG_ADDON)
+    {
+        if (rPlayer->GetSession()->IsAccountFlagged(ACC_WHISPER_LOG))
+            sLog.outWhisp(rPlayer->GetSession()->GetAccountId(), "[%s | %u] FROM: %u (%s) : %s ", rPlayer->GetName(), rPlayer->GetGUID(), GetGUID(), GetName(), tmpText.c_str());
 
-    if (GetSession()->IsAccountFlagged(ACC_WHISPER_LOG))
-        sLog.outWhisp(GetSession()->GetAccountId(), "[%s | %u] TO: %u (%s) : %s", GetName(), GetGUID(), rPlayer->GetGUID(), rPlayer->GetName(), tmpText.c_str());
+        if (GetSession()->IsAccountFlagged(ACC_WHISPER_LOG))
+            sLog.outWhisp(GetSession()->GetAccountId(), "[%s | %u] TO: %u (%s) : %s", GetName(), GetGUID(), rPlayer->GetGUID(), rPlayer->GetName(), tmpText.c_str());
+    }
 
     if (!isAcceptWhispers() && !isGameMaster() && !rPlayer->isGameMaster())
     {
