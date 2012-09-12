@@ -42,7 +42,7 @@ int32 ReputationMgr::GetReputation(uint32 faction_id) const
 
     if (!factionEntry)
     {
-        sLog.outError("ReputationMgr::GetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.",m_player->GetName(), faction_id);
+        sLog.outLog(LOG_DEFAULT, "ERROR: ReputationMgr::GetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.",m_player->GetName(), faction_id);
         return 0;
     }
 
@@ -294,7 +294,7 @@ bool ReputationMgr::SetReputation(uint32 factionId, int32 standing)
 
     if (!factionEntry)
     {
-        sLog.outError("ReputationMgr::SetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.", m_player->GetName(), factionId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: ReputationMgr::SetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.", m_player->GetName(), factionId);
         return false;
     }
 
@@ -307,7 +307,7 @@ bool ReputationMgr::ModifyReputation(uint32 factionId, int32 standing)
 
     if (!factionEntry)
     {
-        sLog.outError("ReputationMgr::SetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.", m_player->GetName(), factionId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: ReputationMgr::SetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.", m_player->GetName(), factionId);
         return false;
     }
 

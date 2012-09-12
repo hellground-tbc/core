@@ -34,7 +34,7 @@ void WaypointMgr::Load()
     QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT MAX(`id`) FROM `waypoint_data`");
     if (!result)
     {
-        sLog.outError(" an error occurred while loading the table `waypoint_data` (maybe it doesn't exist ?)\n");
+        sLog.outLog(LOG_DEFAULT, "ERROR: an error occurred while loading the table `waypoint_data` (maybe it doesn't exist ?)\n");
         exit(1);                                            // Stop server at loading non exited table or not accessible table
     }
 
@@ -43,7 +43,7 @@ void WaypointMgr::Load()
     result = GameDataDatabase.PQuery("SELECT `id`,`point`,`position_x`,`position_y`,`position_z`,`move_type`,`delay`,`action`,`action_chance` FROM `waypoint_data` ORDER BY `id`, `point`");
     if (!result)
     {
-        sLog.outErrorDb("The table `creature_addon` is empty or corrupted");
+        sLog.outLog(LOG_DB_ERR, "The table `creature_addon` is empty or corrupted");
         return;
     }
 

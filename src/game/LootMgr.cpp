@@ -122,7 +122,7 @@ void LootStore::LoadLootTable()
 
             if (!PlayerCondition::IsValid(condition,cond_value1, cond_value2))
             {
-                sLog.outErrorDb("... in table '%s' entry %u item %u", GetName(), entry, item);
+                sLog.outLog(LOG_DB_ERR, "... in table '%s' entry %u item %u", GetName(), entry, item);
                 continue;                                   // error already printed to log/console.
             }
 
@@ -163,7 +163,7 @@ void LootStore::LoadLootTable()
     else
     {
         sLog.outString();
-        sLog.outErrorDb(">> Loaded 0 loot definitions. DB table `%s` is empty.",GetName());
+        sLog.outLog(LOG_DB_ERR, ">> Loaded 0 loot definitions. DB table `%s` is empty.",GetName());
     }
 }
 
@@ -215,12 +215,12 @@ void LootStore::ReportUnusedIds(LootIdSet const& ids_set) const
 {
     // all still listed ids isn't referenced
     for (LootIdSet::const_iterator itr = ids_set.begin(); itr != ids_set.end(); ++itr)
-        sLog.outErrorDb("Table '%s' entry %d isn't %s and not referenced from loot, and then useless.", GetName(), *itr,GetEntryName());
+        sLog.outLog(LOG_DB_ERR, "Table '%s' entry %d isn't %s and not referenced from loot, and then useless.", GetName(), *itr,GetEntryName());
 }
 
 void LootStore::ReportNotExistedId(uint32 id) const
 {
-    sLog.outErrorDb("Table '%s' entry %d (%s) not exist but used as loot id in DB.", GetName(), id,GetEntryName());
+    sLog.outLog(LOG_DB_ERR, "Table '%s' entry %d (%s) not exist but used as loot id in DB.", GetName(), id,GetEntryName());
 }
 
 //
@@ -249,7 +249,7 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
 {
     if (mincountOrRef == 0)
     {
-        sLog.outErrorDb("Table '%s' entry %d item %d: wrong mincountOrRef (%d) - skipped", store.GetName(), entry, itemid, mincountOrRef);
+        sLog.outLog(LOG_DB_ERR, "Table '%s' entry %d item %d: wrong mincountOrRef (%d) - skipped", store.GetName(), entry, itemid, mincountOrRef);
         return false;
     }
 
@@ -258,19 +258,19 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
         ItemPrototype const *proto = ObjectMgr::GetItemPrototype(itemid);
         if (!proto)
         {
-            sLog.outErrorDb("Table '%s' entry %d item %d: item entry not listed in `item_template` - skipped", store.GetName(), entry, itemid);
+            sLog.outLog(LOG_DB_ERR, "Table '%s' entry %d item %d: item entry not listed in `item_template` - skipped", store.GetName(), entry, itemid);
             return false;
         }
 
         if (chance == 0 && group == 0)                      // Zero chance is allowed for grouped entries only
         {
-            sLog.outErrorDb("Table '%s' entry %d item %d: equal-chanced grouped entry, but group not defined - skipped", store.GetName(), entry, itemid);
+            sLog.outLog(LOG_DB_ERR, "Table '%s' entry %d item %d: equal-chanced grouped entry, but group not defined - skipped", store.GetName(), entry, itemid);
             return false;
         }
 
         if (chance != 0 && chance < 0.000001f)             // loot with low chance
         {
-            sLog.outErrorDb("Table '%s' entry %d item %d: low chance (%f) - skipped",
+            sLog.outLog(LOG_DB_ERR, "Table '%s' entry %d item %d: low chance (%f) - skipped",
                 store.GetName(), entry, itemid, chance);
             return false;
         }
@@ -278,10 +278,10 @@ bool LootStoreItem::IsValid(LootStore const& store, uint32 entry) const
     else                                                    // mincountOrRef < 0
     {
         if (needs_quest)
-            sLog.outErrorDb("Table '%s' entry %d item %d: quest chance will be treated as non-quest chance", store.GetName(), entry, itemid);
+            sLog.outLog(LOG_DB_ERR, "Table '%s' entry %d item %d: quest chance will be treated as non-quest chance", store.GetName(), entry, itemid);
         else if (chance == 0)                              // no chance for the reference
         {
-            sLog.outErrorDb("Table '%s' entry %d item %d: zero chance is specified for a reference, skipped", store.GetName(), entry, itemid);
+            sLog.outLog(LOG_DB_ERR, "Table '%s' entry %d item %d: zero chance is specified for a reference, skipped", store.GetName(), entry, itemid);
             return false;
         }
     }
@@ -491,7 +491,7 @@ void Loot::FillLootFromDB(Creature *pCreature, Player* pLootOwner)
         //set variable to true even if we don't load anything so new loot won't be generated
         m_lootLoadedFromDB = true;
 
-        sLog.outBoss(ss.str().c_str());
+        sLog.outLog(LOG_BOSS, ss.str().c_str());
 
         // make body visible to loot
         pCreature->setDeathState(JUST_DIED);
@@ -520,7 +520,7 @@ void Loot::removeItemFromSavedLoot(LootItem *item)
     {
         // log only for raids
         if (pMap->IsRaid())
-            sLog.outBoss("Loot::removeItemFromSavedLoot: pCreature not found !! guid: %u, instanceid: %u) ", m_creatureGUID, pMap->GetInstanceId());
+            sLog.outLog(LOG_BOSS, "Loot::removeItemFromSavedLoot: pCreature not found !! guid: %u, instanceid: %u) ", m_creatureGUID, pMap->GetInstanceId());
         return;
     }
 
@@ -528,7 +528,7 @@ void Loot::removeItemFromSavedLoot(LootItem *item)
     if (!result)
     {
         if (pMap->IsRaid())
-            sLog.outBoss("Loot::removeItemFromSavedLoot: result empty !! SQL: SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pMap->GetInstanceId(), pCreature->GetEntry());
+            sLog.outLog(LOG_BOSS, "Loot::removeItemFromSavedLoot: result empty !! SQL: SELECT itemCount FROM group_saved_loot WHERE itemId='%u' AND instanceId='%u' AND creatureId='%u'", item->itemid, pMap->GetInstanceId(), pCreature->GetEntry());
         return;
     }
 
@@ -567,7 +567,7 @@ void Loot::saveLootToDB(Player *owner)
     Creature *pCreature = pMap->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
     {
-        sLog.outBoss("Loot::saveLootToDB: pCreature not found !!: player %s(%u)", owner->GetName(),owner->GetGUIDLow());
+        sLog.outLog(LOG_BOSS, "Loot::saveLootToDB: pCreature not found !!: player %s(%u)", owner->GetName(),owner->GetGUIDLow());
         return;
     }
 
@@ -629,7 +629,7 @@ void Loot::saveLootToDB(Player *owner)
         }
     }
 
-    sLog.outBoss(ss.str().c_str());
+    sLog.outLog(LOG_BOSS, ss.str().c_str());
     RealmDataDatabase.CommitTransaction();
 }
 
@@ -640,7 +640,7 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, 
 
     if (!tab)
     {
-        sLog.outErrorDb("Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
+        sLog.outLog(LOG_DB_ERR, "Table '%s' loot id #%u used but it doesn't have records.",store.GetName(),loot_id);
         return;
     }
 
@@ -1198,12 +1198,12 @@ void LootTemplate::LootGroup::Verify(LootStore const& lootstore, uint32 id, uint
     float chance = RawTotalChance();
     if (chance > 101.0f)                                    // TODO: replace with 100% when DBs will be ready
     {
-        sLog.outErrorDb("Table '%s' entry %u group %d has total chance > 100%% (%f)", lootstore.GetName(), id, group_id, chance);
+        sLog.outLog(LOG_DB_ERR, "Table '%s' entry %u group %d has total chance > 100%% (%f)", lootstore.GetName(), id, group_id, chance);
     }
 
     if (chance >= 100.0f && !EqualChanced.empty())
     {
-        sLog.outErrorDb("Table '%s' entry %u group %d has items with chance=0%% but group total chance >= 100%% (%f)", lootstore.GetName(), id, group_id, chance);
+        sLog.outLog(LOG_DB_ERR, "Table '%s' entry %u group %d has items with chance=0%% but group total chance >= 100%% (%f)", lootstore.GetName(), id, group_id, chance);
     }
 }
 

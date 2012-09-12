@@ -683,7 +683,7 @@ namespace Hellground
                             continue;
                     }break;
                     default:
-                        sLog.outError("Game Object can only have SPELL_TARGETS_ENTRY (%i) type not %i", SPELL_TARGETS_ENTRY, i_TargetType);
+                        sLog.outLog(LOG_DEFAULT, "ERROR: Game Object can only have SPELL_TARGETS_ENTRY (%i) type not %i", SPELL_TARGETS_ENTRY, i_TargetType);
                         continue;
                 }
 

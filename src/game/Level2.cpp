@@ -596,7 +596,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     // User wants to teleport to the NPC's template entry
     if (strcmp(pParam1, "id") == 0)
     {
-        //sLog.outError("DEBUG: ID found");
+        //sLog.outLog(LOG_DEFAULT, "DEBUG: ID found");
 
         // Get the "creature_template.entry"
         // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
@@ -608,7 +608,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
             return false;
 
         int32 tEntry = atoi(cId);
-        //sLog.outError("DEBUG: ID value: %d", tEntry);
+        //sLog.outLog(LOG_DEFAULT, "DEBUG: ID value: %d", tEntry);
         if (!tEntry)
             return false;
 
@@ -616,7 +616,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     }
     else
     {
-        //sLog.outError("DEBUG: ID *not found*");
+        //sLog.outLog(LOG_DEFAULT, "DEBUG: ID *not found*");
 
         int32 guid = atoi(pParam1);
 
@@ -632,7 +632,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
             whereClause <<  "WHERE guid = '" << guid << "'";
         }
     }
-    //sLog.outError("DEBUG: %s", whereClause.c_str());
+    //sLog.outLog(LOG_DEFAULT, "DEBUG: %s", whereClause.c_str());
 
     QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map FROM creature %s", whereClause.str().c_str());
     if (!result)
@@ -1449,7 +1449,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 
     if (dontdel_str)
     {
-        //sLog.outError("DEBUG: All 3 params are set");
+        //sLog.outLog(LOG_DEFAULT, "DEBUG: All 3 params are set");
 
         // All 3 params are set
         // GUID
@@ -1457,7 +1457,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         // doNotDEL
         if (stricmp(dontdel_str, "NODEL") == 0)
         {
-            //sLog.outError("DEBUG: doNotDelete = true;");
+            //sLog.outLog(LOG_DEFAULT, "DEBUG: doNotDelete = true;");
             doNotDelete = true;
         }
     }
@@ -1466,10 +1466,10 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         // Only 2 params - but maybe NODEL is set
         if (type_str)
         {
-            sLog.outError("DEBUG: Only 2 params ");
+            sLog.outLog(LOG_DEFAULT, "DEBUG: Only 2 params ");
             if (stricmp(type_str, "NODEL") == 0)
             {
-                //sLog.outError("DEBUG: type_str, NODEL ");
+                //sLog.outLog(LOG_DEFAULT, "DEBUG: type_str, NODEL ");
                 doNotDelete = true;
                 type_str = NULL;
             }
@@ -3765,7 +3765,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
     if (!pet->InitStatsForLevel(creatureTarget->getLevel()))
     {
-        sLog.outError("ERROR: InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
+        sLog.outLog(LOG_DEFAULT, "ERROR: InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
         PSendSysMessage("Error 2");
         delete pet;
         return false;

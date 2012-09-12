@@ -18,7 +18,7 @@ namespace VMAP
             char addr_buf[50];
             sprintf(addr_buf, "%s_%u", name, *id);
             addr.set(addr_buf);
-        } 
+        }
         else
             addr.set(name);
 
@@ -34,7 +34,7 @@ namespace VMAP
             {
                 if(ACE_OS::last_error() != ERROR_CONNECT_NO_PIPE)
                 {
-                    sMLog.outError("Connect: failed to connect to stream %s because of error %d", addr.get_path_name(), ACE_OS::last_error());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: Connect: failed to connect to stream %s because of error %d", addr.get_path_name(), ACE_OS::last_error());
                     return;
                 }
             }
@@ -59,7 +59,7 @@ namespace VMAP
         else
             sprintf(addr_buf, "%s", name);
 
-        
+
 
         m_stream = new ACE_FIFO_Send();
         while(true)
@@ -69,12 +69,12 @@ namespace VMAP
             {
                 if(ACE_OS::last_error() != ERROR_CONNECT_NO_PIPE)
                 {
-                    sMLog.outError("Connect: failed to connect to stream %s because of error %d", addr_buf, ACE_OS::last_error());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: Connect: failed to connect to stream %s because of error %d", addr_buf, ACE_OS::last_error());
                     delete m_stream;
                     m_stream = 0;
                 }
-                
-            } 
+
+            }
             else
             {
                 m_connected = true;
@@ -96,7 +96,7 @@ namespace VMAP
             char addr_buf[50];
             sprintf(addr_buf, "%s_%u", name, *id);
             addr.set(addr_buf);
-        } 
+        }
         else
             addr.set(name);
 
@@ -105,7 +105,7 @@ namespace VMAP
         ACE_SPIPE_Acceptor acceptor = ACE_SPIPE_Acceptor(addr);
         if(acceptor.accept(*m_stream) == -1)
         {
-            sMLog.outError("Accept: failed to accept on stream %s becaus of error %d", addr.get_path_name(), ACE_OS::last_error());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Accept: failed to accept on stream %s becaus of error %d", addr.get_path_name(), ACE_OS::last_error());
             delete m_stream;
             m_stream = 0;
         }
@@ -129,7 +129,7 @@ namespace VMAP
 
         if(m_stream->open(addr_buf) == -1)
         {
-            sMLog.outError("Connect: failed to accept to stream %s because of error %d", addr_buf, ACE_OS::last_error());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Connect: failed to accept to stream %s because of error %d", addr_buf, ACE_OS::last_error());
             delete m_stream;
             m_stream = 0;
         }
@@ -160,7 +160,7 @@ namespace VMAP
             logfn.insert(dot_pos, postfix.str());
         else
             logfn += postfix.str();
-     
+
         m_logFile = fopen((logsDir+logfn).c_str(), "w");
 
         m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
@@ -192,7 +192,7 @@ namespace VMAP
 
             fflush(m_logFile);
         }
-        fflush(stdout);        
+        fflush(stdout);
     }
 
     void MultiProcessLog::outError(const char *str, ...)

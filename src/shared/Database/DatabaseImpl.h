@@ -38,7 +38,7 @@
         \
         if(res==-1) \
         { \
-            sLog.outError("SQL Query truncated (and not execute) for format: %s",format); \
+            sLog.outLog(LOG_DEFAULT, "ERROR: SQL Query truncated (and not execute) for format: %s",format); \
             return false; \
         } \
     }

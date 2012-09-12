@@ -34,7 +34,7 @@ class HELLGROUND_DLL_DECL GridState
         {
             if (i_Magic != MAGIC_TESTVAL)
             {
-                sLog.outError("!!! GridState: Magic value gone !!!");
+                sLog.outLog(LOG_DEFAULT, "ERROR: !!! GridState: Magic value gone !!!");
                 return false;
             }
             return true;

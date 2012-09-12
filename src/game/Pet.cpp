@@ -180,7 +180,7 @@ bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool cur
 
     if (!IsPositionValid())
     {
-        sLog.outError("ERROR: Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
@@ -236,7 +236,7 @@ bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool cur
             setPowerType(POWER_FOCUS);
             break;
         default:
-            sLog.outError("Pet have incorrect type (%u) for pet loading.",getPetType());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Pet have incorrect type (%u) for pet loading.",getPetType());
     }
     InitStatsForLevel(petlevel);
     SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
@@ -481,7 +481,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
             break;
         }
         default:
-            sLog.outError("Unknown pet save/remove mode: %d",mode);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Unknown pet save/remove mode: %d",mode);
     }
     RealmDataDatabase.CommitTransaction();
 }
@@ -945,7 +945,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
 {
     if (!creature)
     {
-        sLog.outError("CRITICAL ERROR: NULL pointer parsed into CreateBaseAtCreature()");
+        sLog.outLog(LOG_DEFAULT, "ERROR: CRITICAL ERROR: NULL pointer parsed into CreateBaseAtCreature()");
         return false;
     }
     uint32 guid=sObjectMgr.GenerateLowGuid(HIGHGUID_PET);
@@ -962,7 +962,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
 
     if (!IsPositionValid())
     {
-        sLog.outError("ERROR: Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
@@ -970,7 +970,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     CreatureInfo const *cinfo = GetCreatureInfo();
     if (!cinfo)
     {
-        sLog.outError("ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
         return false;
     }
 
@@ -1018,7 +1018,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
     Unit* owner = GetOwner();
     if (!owner)
     {
-        sLog.outError("ERROR: attempt to summon pet (Entry %u) without owner! Attempt terminated.", cinfo->Entry);
+        sLog.outLog(LOG_DEFAULT, "ERROR: attempt to summon pet (Entry %u) without owner! Attempt terminated.", cinfo->Entry);
         return false;
     }
 
@@ -1118,7 +1118,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
             }
             else                                            // not exist in DB, use some default fake data
             {
-                sLog.outErrorDb("Summoned pet (Entry: %u) not have pet stats data in DB",cinfo->Entry);
+                sLog.outLog(LOG_DB_ERR, "Summoned pet (Entry: %u) not have pet stats data in DB",cinfo->Entry);
 
                 // remove elite bonuses included in DB values
                 SetCreateHealth(uint32(((float(cinfo->maxhealth) / cinfo->maxlevel) / (1 + 2 * cinfo->rank)) * petlevel));
@@ -1158,7 +1158,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
             }
             else                                            // not exist in DB, use some default fake data
             {
-                sLog.outErrorDb("Hunter pet levelstats missing in DB");
+                sLog.outLog(LOG_DB_ERR, "Hunter pet levelstats missing in DB");
 
                 // remove elite bonuses included in DB values
                 SetCreateHealth(uint32(((float(cinfo->maxhealth) / cinfo->maxlevel) / (1 + 2 * cinfo->rank)) * petlevel));
@@ -1225,7 +1225,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
         default:
             SetCreateHealth(urand(cinfo->minhealth, cinfo->maxhealth));
             SetCreateMana(urand(cinfo->minmana, cinfo->maxmana));
-            //sLog.outError("Pet have incorrect type (%u) for levelup.", getPetType());
+            //sLog.outLog(LOG_DEFAULT, "ERROR: Pet have incorrect type (%u) for levelup.", getPetType());
             break;
     }
 
@@ -1299,7 +1299,7 @@ void Pet::_LoadSpellCooldowns()
 
             if (!sSpellStore.LookupEntry(spell_id))
             {
-                sLog.outError("Pet %u have unknown spell %u in `pet_spell_cooldown`, skipping.",m_charmInfo->GetPetNumber(),spell_id);
+                sLog.outLog(LOG_DEFAULT, "ERROR: Pet %u have unknown spell %u in `pet_spell_cooldown`, skipping.",m_charmInfo->GetPetNumber(),spell_id);
                 continue;
             }
 
@@ -1409,13 +1409,13 @@ void Pet::_LoadAuras(uint32 timediff)
             SpellEntry const* spellproto = sSpellStore.LookupEntry(spellid);
             if (!spellproto)
             {
-                sLog.outError("Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
+                sLog.outLog(LOG_DEFAULT, "ERROR: Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
                 continue;
             }
 
             if (effindex >= 3)
             {
-                sLog.outError("Invalid effect index (spellid %u, effindex %u), ignore.",spellid,effindex);
+                sLog.outLog(LOG_DEFAULT, "ERROR: Invalid effect index (spellid %u, effindex %u), ignore.",spellid,effindex);
                 continue;
             }
 
@@ -1517,11 +1517,11 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
         // do pet spell book cleanup
         if (state == PETSPELL_UNCHANGED)                     // spell load case
         {
-            sLog.outError("Pet::addSpell: Non-existed in SpellStore spell #%u request, deleting for all pets in `pet_spell`.",spell_id);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Pet::addSpell: Non-existed in SpellStore spell #%u request, deleting for all pets in `pet_spell`.",spell_id);
             RealmDataDatabase.PExecute("DELETE FROM pet_spell WHERE spell = '%u'",spell_id);
         }
         else
-            sLog.outError("Pet::addSpell: Non-existed in SpellStore spell #%u request.",spell_id);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Pet::addSpell: Non-existed in SpellStore spell #%u request.",spell_id);
 
         return false;
     }
@@ -1989,7 +1989,7 @@ bool Pet::IsRightSpellIdForPet(uint32 spellid)
         case CREATURE_FAMILY_NETHER_RAY: RightSkillId = SKILL_PET_NETHER_RAY; break;
         case CREATURE_FAMILY_SERPENT: RightSkillId = SKILL_PET_SERPENT; break;
         default:
-            sLog.outError("Unhandled case for IsRightSkillIdForPet for creaturefamily %u", cinfo->family);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Unhandled case for IsRightSkillIdForPet for creaturefamily %u", cinfo->family);
             break;
     }
 

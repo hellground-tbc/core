@@ -79,7 +79,7 @@ void CreatureGroupManager::LoadCreatureFormations()
 
     if (!result)
     {
-        sLog.outErrorDb(" ...an error occured while loading the table `creature_formations` (maybe it doesn't exist ?)\n");
+        sLog.outLog(LOG_DB_ERR, " ...an error occured while loading the table `creature_formations` (maybe it doesn't exist ?)\n");
         return;
     }
 
@@ -88,7 +88,7 @@ void CreatureGroupManager::LoadCreatureFormations()
 
     if (!result)
     {
-        sLog.outErrorDb("The table `creature_formations` is empty or corrupted");
+        sLog.outLog(LOG_DB_ERR, "The table `creature_formations` is empty or corrupted");
         return;
     }
 
@@ -120,7 +120,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         const CreatureData* member = sObjectMgr.GetCreatureData(memberGUID);
         if (!leader || !member || leader->mapid != member->mapid)
         {
-            sLog.outErrorDb("Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
+            sLog.outLog(LOG_DB_ERR, "Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
             delete group_member;
             continue;
         }

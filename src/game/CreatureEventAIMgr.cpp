@@ -59,33 +59,33 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
             // range negative
             if (i > MIN_CREATURE_AI_TEXT_STRING_ID || i <= MAX_CREATURE_AI_TEXT_STRING_ID)
             {
-                sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` is not in valid range(%d-%d)",i,MIN_CREATURE_AI_TEXT_STRING_ID,MAX_CREATURE_AI_TEXT_STRING_ID);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Entry %i in table `creature_ai_texts` is not in valid range(%d-%d)",i,MIN_CREATURE_AI_TEXT_STRING_ID,MAX_CREATURE_AI_TEXT_STRING_ID);
                 continue;
             }
 
             // range negative (don't must be happen, loaded from same table)
             if (!sObjectMgr.GetTrinityStringLocale(i))
             {
-                sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` not found",i);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Entry %i in table `creature_ai_texts` not found",i);
                 continue;
             }
 
             if (temp.SoundId)
             {
                 if (!sSoundEntriesStore.LookupEntry(temp.SoundId))
-                    sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` has Sound %u but sound does not exist.",i,temp.SoundId);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Entry %i in table `creature_ai_texts` has Sound %u but sound does not exist.",i,temp.SoundId);
             }
 
             if (!GetLanguageDescByID(temp.Language))
-                sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` using Language %u but Language does not exist.",i,temp.Language);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Entry %i in table `creature_ai_texts` using Language %u but Language does not exist.",i,temp.Language);
 
             if (temp.Type > CHAT_TYPE_ZONE_YELL)
-                sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` has Type %u but this Chat Type does not exist.",i,temp.Type);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Entry %i in table `creature_ai_texts` has Type %u but this Chat Type does not exist.",i,temp.Type);
 
             if (temp.Emote)
             {
                 if (!sEmotesStore.LookupEntry(temp.Emote))
-                    sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` has Emote %u but emote does not exist.",i,temp.Emote);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Entry %i in table `creature_ai_texts` has Emote %u but emote does not exist.",i,temp.Emote);
             }
 
             m_CreatureEventAI_TextMap[i] = temp;
@@ -140,7 +140,7 @@ void CreatureEventAIMgr::CheckUnusedAITexts()
     }
 
     for (std::set<int32>::const_iterator itr = idx_set.begin(); itr != idx_set.end(); ++itr)
-        sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_texts` but not used in EventAI scripts.",*itr);
+        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Entry %i in table `creature_ai_texts` but not used in EventAI scripts.",*itr);
 }
 
 // -------------------
@@ -173,7 +173,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
 
             if (!Hellground::IsValidMapCoord(temp.position_x,temp.position_y,temp.position_z,temp.orientation))
             {
-                sLog.outErrorDb("CreatureEventAI:  Summon id %u have wrong coordinates (%f,%f,%f,%f), skipping.", i,temp.position_x,temp.position_y,temp.position_z,temp.orientation);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Summon id %u have wrong coordinates (%f,%f,%f,%f), skipping.", i,temp.position_x,temp.position_y,temp.position_z,temp.orientation);
                 continue;
             }
 
@@ -228,7 +228,7 @@ void CreatureEventAIMgr::CheckUnusedAISummons()
     }
 
     for (std::set<int32>::const_iterator itr = idx_set.begin(); itr != idx_set.end(); ++itr)
-        sLog.outErrorDb("CreatureEventAI:  Entry %i in table `creature_ai_summons` but not used in EventAI scripts.",*itr);
+        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Entry %i in table `creature_ai_summons` but not used in EventAI scripts.",*itr);
 }
 
 // -------------------
@@ -265,7 +265,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             //Report any errors in event
             if (e_type >= EVENT_T_END)
             {
-                sLog.outErrorDb("CreatureEventAI:  Event %u have wrong type (%u), skipping.", i,e_type);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u have wrong type (%u), skipping.", i,e_type);
                 continue;
             }
             temp.event_type = EventAI_Type(e_type);
@@ -283,7 +283,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             {
                 if (!sCreatureStorage.LookupEntry<CreatureInfo>(temp.entryOrGUID))
                 {
-                    sLog.outErrorDb("CreatureEventAI:  Event %u has script for non-existing creature entry (%u), skipping.", i, entryOrGUID);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u has script for non-existing creature entry (%u), skipping.", i, entryOrGUID);
                     continue;
                 }
             }
@@ -291,18 +291,18 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             {
                 if (!sObjectMgr.GetCreatureData(-entryOrGUID))
                 {
-                    sLog.outErrorDb("CreatureEventAI:  Event %u has script for non-existing creature GUID ("SI64FMTD"), skipping.", i, entryOrGUID);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u has script for non-existing creature GUID ("SI64FMTD"), skipping.", i, entryOrGUID);
                     continue;
                 }
             }
 
             //No chance of this event occuring
             if (temp.event_chance == 0)
-                sLog.outErrorDb("CreatureEventAI:  Event %u has 0 percent chance. Event will never trigger!", i);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u has 0 percent chance. Event will never trigger!", i);
             //Chance above 100, force it to be 100
             else if (temp.event_chance > 100)
             {
-                sLog.outErrorDb("CreatureEventAI:  Creature %i are using event %u with more than 100 percent chance. Adjusting to 100 percent.", temp.entryOrGUID, i);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i are using event %u with more than 100 percent chance. Adjusting to 100 percent.", temp.entryOrGUID, i);
                 temp.event_chance = 100;
             }
 
@@ -312,23 +312,23 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                 case EVENT_T_TIMER:
                 case EVENT_T_TIMER_OOC:
                     if (temp.timer.initialMax < temp.timer.initialMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i are using timed event(%u) with param2 < param1 (InitialMax < InitialMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i are using timed event(%u) with param2 < param1 (InitialMax < InitialMin). Event will never repeat.", temp.entryOrGUID, i);
                     if (temp.timer.repeatMax < temp.timer.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_HP:
                 case EVENT_T_MANA:
                 case EVENT_T_TARGET_HP:
                 case EVENT_T_TARGET_MANA:
                     if (temp.percent_range.percentMax > 100)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i are using percentage event(%u) with param2 (MinPercent) > 100. Event will never trigger! ", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i are using percentage event(%u) with param2 (MinPercent) > 100. Event will never trigger! ", temp.entryOrGUID, i);
 
                     if (temp.percent_range.percentMax <= temp.percent_range.percentMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i are using percentage event(%u) with param1 <= param2 (MaxPercent <= MinPercent). Event will never trigger! ", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i are using percentage event(%u) with param1 <= param2 (MaxPercent <= MinPercent). Event will never trigger! ", temp.entryOrGUID, i);
 
                     if (temp.event_flags & EFLAG_REPEATABLE && !temp.percent_range.repeatMin && !temp.percent_range.repeatMax)
                     {
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i has param3 and param4=0 (RepeatMin/RepeatMax) but cannot be repeatable without timers. Removing EFLAG_REPEATABLE for event %u.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has param3 and param4=0 (RepeatMin/RepeatMax) but cannot be repeatable without timers. Removing EFLAG_REPEATABLE for event %u.", temp.entryOrGUID, i);
                         temp.event_flags &= ~EFLAG_REPEATABLE;
                     }
                     break;
@@ -338,33 +338,33 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         SpellEntry const* pSpell = sSpellStore.LookupEntry(temp.spell_hit.spellId);
                         if (!pSpell)
                         {
-                            sLog.outErrorDb("CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
                             continue;
                         }
 
                         if ((temp.spell_hit.schoolMask & pSpell->SchoolMask) != pSpell->SchoolMask)
-                            sLog.outErrorDb("CreatureEventAI:  Creature %i has param1(spellId %u) but param2 is not -1 and not equal to spell's school mask. Event %u can never trigger.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has param1(spellId %u) but param2 is not -1 and not equal to spell's school mask. Event %u can never trigger.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
 
                         // if you fill schoolmask field it will show an error
                         if (temp.spell_hit.schoolMask)
-                            sLog.outErrorDb("CreatureEventAI:  Creature %i has param1(spellId %u) but param2 is not 0. Event %u can never trigger.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has param1(spellId %u) but param2 is not 0. Event %u can never trigger.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
                     }
 
                     if (!temp.spell_hit.schoolMask)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u is using invalid SpellSchoolMask(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u is using invalid SpellSchoolMask(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
 
                     if (temp.spell_hit.repeatMax < temp.spell_hit.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_RANGE:
                     if (temp.range.maxDist < temp.range.minDist)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (MaxDist < MinDist). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (MaxDist < MinDist). Event will never repeat.", temp.entryOrGUID, i);
                     if (temp.range.repeatMax < temp.range.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_OOC_LOS:
                     if (temp.ooc_los.repeatMax < temp.ooc_los.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_SPAWNED:
                     switch (temp.spawned.condition)
@@ -373,55 +373,55 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                             break;
                         case SPAWNED_EVENT_MAP:
                             if (!sMapStore.LookupEntry(temp.spawned.conditionValue1))
-                                sLog.outErrorDb("CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'map specific' but with not existed map (%u) in param2. Event will never repeat.", temp.entryOrGUID, i, temp.spawned.condition, temp.spawned.conditionValue1);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'map specific' but with not existed map (%u) in param2. Event will never repeat.", temp.entryOrGUID, i, temp.spawned.condition, temp.spawned.conditionValue1);
                             break;
                         case SPAWNED_EVENT_ZONE:
                             if (!GetAreaEntryByAreaID(temp.spawned.conditionValue1))
-                                sLog.outErrorDb("CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'area specific' but with not existed area (%u) in param2. Event will never repeat.", temp.entryOrGUID, i, temp.spawned.condition, temp.spawned.conditionValue1);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'area specific' but with not existed area (%u) in param2. Event will never repeat.", temp.entryOrGUID, i, temp.spawned.condition, temp.spawned.conditionValue1);
                         default:
-                            sLog.outErrorDb("CreatureEventAI:  Creature %u are using invalid spawned event %u mode (%u) in param1", temp.entryOrGUID, i, temp.spawned.condition);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using invalid spawned event %u mode (%u) in param1", temp.entryOrGUID, i, temp.spawned.condition);
                             break;
                     }
                     break;
                 case EVENT_T_FRIENDLY_HP:
                     if (temp.friendly_hp.repeatMax < temp.friendly_hp.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_FRIENDLY_IS_CC:
                     if (temp.friendly_is_cc.repeatMax < temp.friendly_is_cc.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_FRIENDLY_MISSING_BUFF:
                 {
                     SpellEntry const* pSpell = sSpellStore.LookupEntry(temp.spell_hit.spellId);
                     if (!pSpell)
                     {
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
                         continue;
                     }
                     if (temp.friendly_buff.repeatMax < temp.friendly_buff.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 }
                 case EVENT_T_KILL:
                     if (temp.kill.repeatMax < temp.kill.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_TARGET_CASTING:
                     if (temp.target_casting.repeatMax < temp.target_casting.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_SUMMONED_UNIT:
                     if (!sCreatureStorage.LookupEntry<CreatureInfo>(temp.summon_unit.creatureId))
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with not existed creature template id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.summon_unit.creatureId);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with not existed creature template id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.summon_unit.creatureId);
                     if (temp.summon_unit.repeatMax < temp.summon_unit.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_QUEST_ACCEPT:
                 case EVENT_T_QUEST_COMPLETE:
                     if (!sObjectMgr.GetQuestTemplate(temp.quest.questId))
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with not existed qyest id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.quest.questId);
-                    sLog.outErrorDb("CreatureEventAI: Creature %u using not implemented event (%u) in event %u.", temp.entryOrGUID, temp.event_id, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with not existed qyest id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.quest.questId);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using not implemented event (%u) in event %u.", temp.entryOrGUID, temp.event_id, i);
                     continue;
 
                 case EVENT_T_AGGRO:
@@ -431,7 +431,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                 {
                     if (temp.event_flags & EFLAG_REPEATABLE)
                     {
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i has EFLAG_REPEATABLE set. Event can never be repeatable. Removing flag for event %u.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has EFLAG_REPEATABLE set. Event can never be repeatable. Removing flag for event %u.", temp.entryOrGUID, i);
                         temp.event_flags &= ~EFLAG_REPEATABLE;
                     }
 
@@ -442,19 +442,19 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                 {
                     if (!sEmotesTextStore.LookupEntry(temp.receive_emote.emoteId))
                     {
-                        sLog.outErrorDb("CreatureEventAI: Creature %u using event %u: param1 (EmoteTextId: %u) are not valid.",temp.entryOrGUID, i, temp.receive_emote.emoteId);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using event %u: param1 (EmoteTextId: %u) are not valid.",temp.entryOrGUID, i, temp.receive_emote.emoteId);
                         continue;
                     }
 
                     if (!PlayerCondition::IsValid(ConditionType(temp.receive_emote.condition), temp.receive_emote.conditionValue1, temp.receive_emote.conditionValue2))
                     {
-                        sLog.outErrorDb("CreatureEventAI: Creature %u using event %u: param2 (Condition: %u) are not valid.",temp.entryOrGUID, i, temp.receive_emote.condition);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using event %u: param2 (Condition: %u) are not valid.",temp.entryOrGUID, i, temp.receive_emote.condition);
                         continue;
                     }
 
                     if (!(temp.event_flags & EFLAG_REPEATABLE))
                     {
-                        sLog.outErrorDb("CreatureEventAI: Creature %u using event %u: EFLAG_REPEATABLE not set. Event must always be repeatable. Flag applied.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using event %u: EFLAG_REPEATABLE not set. Event must always be repeatable. Flag applied.", temp.entryOrGUID, i);
                         temp.event_flags |= EFLAG_REPEATABLE;
                     }
 
@@ -467,16 +467,16 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                     SpellEntry const* pSpell = sSpellStore.LookupEntry(temp.buffed.spellId);
                     if (!pSpell)
                     {
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
                         continue;
                     }
                     if (temp.buffed.repeatMax < temp.buffed.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 }
 
                 default:
-                    sLog.outErrorDb("CreatureEventAI: Creature %u using not checked at load event (%u) in event %u. Need check code update?", temp.entryOrGUID, temp.event_id, i);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using not checked at load event (%u) in event %u. Need check code update?", temp.entryOrGUID, temp.event_id, i);
                     break;
             }
 
@@ -485,7 +485,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                 uint16 action_type = fields[10+(j*4)].GetUInt16();
                 if (action_type >= ACTION_T_END)
                 {
-                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u has incorrect action type (%u), replace by ACTION_T_NONE.", i, j+1, action_type);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u has incorrect action type (%u), replace by ACTION_T_NONE.", i, j+1, action_type);
                     temp.action[j].type = ACTION_T_NONE;
                     continue;
                 }
@@ -514,19 +514,19 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                            if (action.text.TextId[k])
                            {
                                 if (k > 0 && not_set)
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u has param%d, but it follow after not set param. Required for randomized text.", i, j+1, k+1);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u has param%d, but it follow after not set param. Required for randomized text.", i, j+1, k+1);
                                 if (!action.text.TextId[k])
                                     not_set = true;
 
                                 // range negative
                                 else if (action.text.TextId[k] > MIN_CREATURE_AI_TEXT_STRING_ID || action.text.TextId[k] <= MAX_CREATURE_AI_TEXT_STRING_ID)
                                 {
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param%d references out-of-range entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param%d references out-of-range entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
                                     action.text.TextId[k] = 0;
                                 }
                                 else if (m_CreatureEventAI_TextMap.find(action.text.TextId[k]) == m_CreatureEventAI_TextMap.end())
                                 {
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param%d references non-existing entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param%d references non-existing entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
                                     action.text.TextId[k] = 0;
                                 }
                             }
@@ -536,7 +536,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                     case ACTION_T_SET_FACTION:
                         if (action.set_faction.factionId !=0 && !sFactionStore.LookupEntry(action.set_faction.factionId))
                         {
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent FactionId %u.", i, j+1, action.set_faction.factionId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent FactionId %u.", i, j+1, action.set_faction.factionId);
                             action.set_faction.factionId = 0;
                         }
                         break;
@@ -545,7 +545,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         {
                             if (action.morph.creatureId && !sCreatureStorage.LookupEntry<CreatureInfo>(action.morph.creatureId))
                             {
-                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant Creature entry %u.", i, j+1, action.morph.creatureId);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant Creature entry %u.", i, j+1, action.morph.creatureId);
                                 action.morph.creatureId = 0;
                             }
 
@@ -553,12 +553,12 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                             {
                                 if (action.morph.creatureId)
                                 {
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u have unused ModelId %u with also set creature id %u.", i, j+1, action.morph.modelId,action.morph.creatureId);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u have unused ModelId %u with also set creature id %u.", i, j+1, action.morph.modelId,action.morph.creatureId);
                                     action.morph.modelId = 0;
                                 }
                                 else if (!sCreatureDisplayInfoStore.LookupEntry(action.morph.modelId))
                                 {
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant ModelId %u.", i, j+1, action.morph.modelId);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant ModelId %u.", i, j+1, action.morph.modelId);
                                     action.morph.modelId = 0;
                                 }
                             }
@@ -566,47 +566,47 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         break;
                     case ACTION_T_SOUND:
                         if (!sSoundEntriesStore.LookupEntry(action.sound.soundId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant SoundID %u.", i, j+1, action.sound.soundId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant SoundID %u.", i, j+1, action.sound.soundId);
                         break;
                     case ACTION_T_EMOTE:
                         if (!sEmotesStore.LookupEntry(action.emote.emoteId))
-                            sLog.outErrorDb("CreatureEventAI: Event %u Action %u param1 (EmoteId: %u) are not valid.", i, j+1, action.emote.emoteId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %u Action %u param1 (EmoteId: %u) are not valid.", i, j+1, action.emote.emoteId);
                         break;
                     case ACTION_T_RANDOM_SOUND:
                         if (!sSoundEntriesStore.LookupEntry(action.random_sound.soundId1))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param1 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param1 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId1);
                         if (action.random_sound.soundId2 >= 0 && !sSoundEntriesStore.LookupEntry(action.random_sound.soundId2))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param2 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId2);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param2 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId2);
                         if (action.random_sound.soundId3 >= 0 && !sSoundEntriesStore.LookupEntry(action.random_sound.soundId3))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param3 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId3);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param3 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId3);
                         break;
                     case ACTION_T_RANDOM_EMOTE:
                         if (!sEmotesStore.LookupEntry(action.random_emote.emoteId1))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param1 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param1 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId1);
                         if (action.random_emote.emoteId2 >= 0 && !sEmotesStore.LookupEntry(action.random_emote.emoteId2))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param2 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId2);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param2 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId2);
                         if (action.random_emote.emoteId3 >= 0 && !sEmotesStore.LookupEntry(action.random_emote.emoteId3))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param3 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId3);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param3 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId3);
                         break;
                     case ACTION_T_CAST:
                     {
                         const SpellEntry *spell = sSpellStore.LookupEntry(action.cast.spellId);
                         if (!spell)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast.spellId);
 
                         //Cast is always triggered if target is forced to cast on self
                         if (action.cast.castFlags & CAST_FORCE_TARGET_SELF)
                             action.cast.castFlags |= CAST_TRIGGERED;
 
                         if (action.cast.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     }
                     case ACTION_T_CAST_GUID:
                     {
                         const SpellEntry *spell = sSpellStore.LookupEntry(action.castguid.spellId);
                         if (!spell)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.castguid.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.castguid.spellId);
 
                         //Cast is always triggered if target is forced to cast on self
                         if (action.castguid.castFlags & CAST_FORCE_TARGET_SELF)
@@ -615,143 +615,143 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         action.castguid.targetGUID = param2_64;
 
                         if (!action.castguid.targetGUID || !sObjectMgr.GetCreatureData(action.castguid.targetGUID))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
                         break;
                     }
                     case ACTION_T_SUMMON:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.summon.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.summon.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.summon.creatureId);
 
                         if (action.summon.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_THREAT_SINGLE_PCT:
                         if (std::abs(action.threat_single_pct.percent) > 100)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_single_pct.percent);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_single_pct.percent);
                         if (action.threat_single_pct.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_THREAT_ALL_PCT:
                         if (std::abs(action.threat_all_pct.percent) > 100)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_all_pct.percent);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_all_pct.percent);
                         break;
                     case ACTION_T_QUEST_EVENT:
                         if (Quest const* qid = sObjectMgr.GetQuestTemplate(action.quest_event.questId))
                         {
                             if (!qid->HasFlag(QUEST_HELLGROUND_FLAGS_EXPLORATION_OR_EVENT))
-                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event.questId);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event.questId);
                         }
                         else
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent Quest entry %u.", i, j+1, action.quest_event.questId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent Quest entry %u.", i, j+1, action.quest_event.questId);
 
                         if (action.quest_event.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
 
                         break;
                     case ACTION_T_CAST_EVENT:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.cast_event.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.cast_event.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.cast_event.creatureId);
                         if (!sSpellStore.LookupEntry(action.cast_event.spellId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast_event.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast_event.spellId);
                         if (action.cast_event.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_SET_UNIT_FIELD:
                         if (action.set_unit_field.field < OBJECT_END || action.set_unit_field.field >= UNIT_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param1 (UNIT_FIELD*). Index out of range for intended use.", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param1 (UNIT_FIELD*). Index out of range for intended use.", i, j+1);
                         if (action.set_unit_field.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_SET_UNIT_FLAG:
                     case ACTION_T_REMOVE_UNIT_FLAG:
                         if (action.unit_flag.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_SET_PHASE:
                         if (action.set_phase.phase >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phase >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phase >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         break;
                     case ACTION_T_INC_PHASE:
                         if (action.set_inc_phase.step == 0)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u is incrementing phase by 0. Was this intended?", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u is incrementing phase by 0. Was this intended?", i, j+1);
                         else if (std::abs(action.set_inc_phase.step) > MAX_PHASE-1)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u is change phase by too large for any use %i.", i, j+1, action.set_inc_phase.step);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u is change phase by too large for any use %i.", i, j+1, action.set_inc_phase.step);
                         break;
                     case ACTION_T_QUEST_EVENT_ALL:
                         if (Quest const* qid = sObjectMgr.GetQuestTemplate(action.quest_event_all.questId))
                         {
                             if (!qid->HasFlag(QUEST_HELLGROUND_FLAGS_EXPLORATION_OR_EVENT))
-                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event_all.questId);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event_all.questId);
                         }
                         else
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent Quest entry %u.", i, j+1, action.quest_event_all.questId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent Quest entry %u.", i, j+1, action.quest_event_all.questId);
                         break;
                     case ACTION_T_CAST_EVENT_ALL:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.cast_event_all.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.cast_event_all.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.cast_event_all.creatureId);
                         if (!sSpellStore.LookupEntry(action.cast_event_all.spellId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast_event_all.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast_event_all.spellId);
                         break;
                     case ACTION_T_REMOVEAURASFROMSPELL:
                         if (!sSpellStore.LookupEntry(action.remove_aura.spellId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.remove_aura.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.remove_aura.spellId);
                         if (action.remove_aura.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_RANDOM_PHASE:             //PhaseId1, PhaseId2, PhaseId3
                         if (action.random_phase.phase1 >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phase1 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phase1 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         if (action.random_phase.phase2 >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phase2 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phase2 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         if (action.random_phase.phase3 >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phase3 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phase3 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         break;
                     case ACTION_T_RANDOM_PHASE_RANGE:       //PhaseMin, PhaseMax
                         if (action.random_phase_range.phaseMin >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phaseMin >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phaseMin >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         if (action.random_phase_range.phaseMin >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phaseMax >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phaseMax >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         if (action.random_phase_range.phaseMin >= action.random_phase_range.phaseMax)
                         {
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phaseMax <= phaseMin.", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phaseMax <= phaseMin.", i, j+1);
                             std::swap(action.random_phase_range.phaseMin,action.random_phase_range.phaseMax);
                             // equal case processed at call
                         }
                         break;
                     case ACTION_T_SUMMON_ID:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.summon_id.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.summon_id.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.summon_id.creatureId);
                         if (action.summon_id.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         if (m_CreatureEventAI_Summon_Map.find(action.summon_id.spawnId) == m_CreatureEventAI_Summon_Map.end())
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u summons missing CreatureEventAI_Summon %u", i, j+1, action.summon_id.spawnId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u summons missing CreatureEventAI_Summon %u", i, j+1, action.summon_id.spawnId);
                         break;
                     case ACTION_T_KILLED_MONSTER:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.killed_monster.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.killed_monster.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.killed_monster.creatureId);
                         if (action.killed_monster.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_SET_INST_DATA:
                         //if (!(temp.event_flags & EFLAG_NORMAL) && !(temp.event_flags & EFLAG_HEROIC))
-                        //    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. Cannot set instance data without event flags (normal/heroic).", i, j+1);
+                        //    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u. Cannot set instance data without event flags (normal/heroic).", i, j+1);
                         if (action.set_inst_data.value > 4/*SPECIAL*/)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set instance data above encounter state 4. Custom case?", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set instance data above encounter state 4. Custom case?", i, j+1);
                         break;
                     case ACTION_T_SET_INST_DATA64:
                         //if (!(temp.event_flags & EFLAG_NORMAL) && !(temp.event_flags & EFLAG_HEROIC))
-                        //    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. Cannot set instance data without event flags (normal/heroic).", i, j+1);
+                        //    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u. Cannot set instance data without event flags (normal/heroic).", i, j+1);
                         if (action.set_inst_data64.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_UPDATE_TEMPLATE:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.update_template.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.update_template.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.update_template.creatureId);
                         break;
                     case ACTION_T_SET_SHEATH:
                         if (action.set_sheath.sheath >= MAX_SHEATH_STATE)
                         {
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses wrong sheath state %u.", i, j+1, action.set_sheath.sheath);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses wrong sheath state %u.", i, j+1, action.set_sheath.sheath);
                             action.set_sheath.sheath = SHEATH_STATE_UNARMED;
                         }
                         break;
@@ -760,7 +760,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         {
                             if (action.invincibility_hp_level.hp_level > 100)
                             {
-                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses wrong percent value %u.", i, j+1, action.invincibility_hp_level.hp_level);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses wrong percent value %u.", i, j+1, action.invincibility_hp_level.hp_level);
                                 action.invincibility_hp_level.hp_level = 100;
                             }
                         }
@@ -781,7 +781,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                     case ACTION_T_RANDOM_SAY:
                     case ACTION_T_RANDOM_YELL:
                     case ACTION_T_RANDOM_TEXTEMOTE:
-                        sLog.outErrorDb("CreatureEventAI:  Event %u Action %u currently unused ACTION type. Did you forget to update database?", i, j+1);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u currently unused ACTION type. Did you forget to update database?", i, j+1);
                         break;
 
                     case ACTION_T_MOVE_RANDOM_POINT:
@@ -795,7 +795,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
                         break;
 
                     default:
-                        sLog.outErrorDb("CreatureEventAI:  Event %u Action %u have currently not checked at load action type (%u). Need check code update?", i, j+1, temp.action[j].type);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u have currently not checked at load action type (%u). Need check code update?", i, j+1, temp.action[j].type);
                         break;
                 }
             }
@@ -816,18 +816,18 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts()
             {
                 if (!cInfo->AIName || !cInfo->AIName[0])
                 {
-                    //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but its AIName is empty. Set to EventAI as default.", cInfo->Entry);
+                    //sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature Entry %u has EventAI script but its AIName is empty. Set to EventAI as default.", cInfo->Entry);
                     size_t len = strlen("EventAI")+1;
                     const_cast<CreatureInfo*>(cInfo)->AIName = new char[len];
                     strncpy(const_cast<char*>(cInfo->AIName), "EventAI", len);
                 }
                 if (strcmp(cInfo->AIName, "EventAI"))
                 {
-                    sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it has AIName %s. EventAI script will be overriden.", cInfo->Entry, cInfo->AIName);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature Entry %u has EventAI script but it has AIName %s. EventAI script will be overriden.", cInfo->Entry, cInfo->AIName);
                 }
                 if (cInfo->ScriptID)
                 {
-                    sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it also has C++ script. EventAI script will be overriden.", cInfo->Entry);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature Entry %u has EventAI script but it also has C++ script. EventAI script will be overriden.", cInfo->Entry);
                 }
             }
         }
@@ -876,7 +876,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
             //Report any errors in event
             if (e_type >= EVENT_T_END)
             {
-                sLog.outErrorDb("CreatureEventAI:  Event %u have wrong type (%u), skipping.", i,e_type);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u have wrong type (%u), skipping.", i,e_type);
                 continue;
             }
             temp.event_type = EventAI_Type(e_type);
@@ -892,17 +892,17 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
             //Creature does not exist in database
             if (!sCreatureStorage.LookupEntry<CreatureInfo>(temp.entryOrGUID))
             {
-                sLog.outErrorDb("CreatureEventAI:  Event %u has script for non-existing creature entry (%u), skipping.", i, temp.entryOrGUID);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u has script for non-existing creature entry (%u), skipping.", i, temp.entryOrGUID);
                 continue;
             }
 
             //No chance of this event occuring
             if (temp.event_chance == 0)
-                sLog.outErrorDb("CreatureEventAI:  Event %u has 0 percent chance. Event will never trigger!", i);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u has 0 percent chance. Event will never trigger!", i);
             //Chance above 100, force it to be 100
             else if (temp.event_chance > 100)
             {
-                sLog.outErrorDb("CreatureEventAI:  Creature %u are using event %u with more than 100 percent chance. Adjusting to 100 percent.", temp.entryOrGUID, i);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event %u with more than 100 percent chance. Adjusting to 100 percent.", temp.entryOrGUID, i);
                 temp.event_chance = 100;
             }
 
@@ -912,23 +912,23 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                 case EVENT_T_TIMER:
                 case EVENT_T_TIMER_OOC:
                     if (temp.timer.initialMax < temp.timer.initialMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using timed event(%u) with param2 < param1 (InitialMax < InitialMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using timed event(%u) with param2 < param1 (InitialMax < InitialMin). Event will never repeat.", temp.entryOrGUID, i);
                     if (temp.timer.repeatMax < temp.timer.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_HP:
                 case EVENT_T_MANA:
                 case EVENT_T_TARGET_HP:
                 case EVENT_T_TARGET_MANA:
                     if (temp.percent_range.percentMax > 100)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using percentage event(%u) with param2 (MinPercent) > 100. Event will never trigger! ", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using percentage event(%u) with param2 (MinPercent) > 100. Event will never trigger! ", temp.entryOrGUID, i);
 
                     if (temp.percent_range.percentMax <= temp.percent_range.percentMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using percentage event(%u) with param1 <= param2 (MaxPercent <= MinPercent). Event will never trigger! ", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using percentage event(%u) with param1 <= param2 (MaxPercent <= MinPercent). Event will never trigger! ", temp.entryOrGUID, i);
 
                     if (temp.event_flags & EFLAG_REPEATABLE && !temp.percent_range.repeatMin && !temp.percent_range.repeatMax)
                     {
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i has param3 and param4=0 (RepeatMin/RepeatMax) but cannot be repeatable without timers. Removing EFLAG_REPEATABLE for event %u.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has param3 and param4=0 (RepeatMin/RepeatMax) but cannot be repeatable without timers. Removing EFLAG_REPEATABLE for event %u.", temp.entryOrGUID, i);
                         temp.event_flags &= ~EFLAG_REPEATABLE;
                     }
                     break;
@@ -938,33 +938,33 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                         SpellEntry const* pSpell = sSpellStore.LookupEntry(temp.spell_hit.spellId);
                         if (!pSpell)
                         {
-                            sLog.outErrorDb("CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
                             continue;
                         }
 
                         if ((temp.spell_hit.schoolMask & pSpell->SchoolMask) != pSpell->SchoolMask)
-                            sLog.outErrorDb("CreatureEventAI:  Creature %i has param1(spellId %u) but param2 is not -1 and not equal to spell's school mask. Event %u can never trigger.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has param1(spellId %u) but param2 is not -1 and not equal to spell's school mask. Event %u can never trigger.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
 
                         // if you fill schoolmask field it will show an error
                         if (temp.spell_hit.schoolMask)
-                            sLog.outErrorDb("CreatureEventAI:  Creature %i has param1(spellId %u) but param2 is not 0. Event %u can never trigger.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has param1(spellId %u) but param2 is not 0. Event %u can never trigger.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
                     }
 
                     if (!temp.spell_hit.schoolMask)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u is using invalid SpellSchoolMask(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u is using invalid SpellSchoolMask(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.schoolMask, i);
 
                     if (temp.spell_hit.repeatMax < temp.spell_hit.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_RANGE:
                     if (temp.range.maxDist < temp.range.minDist)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (MaxDist < MinDist). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (MaxDist < MinDist). Event will never repeat.", temp.entryOrGUID, i);
                     if (temp.range.repeatMax < temp.range.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_OOC_LOS:
                     if (temp.ooc_los.repeatMax < temp.ooc_los.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_SPAWNED:
                     switch (temp.spawned.condition)
@@ -973,55 +973,55 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                             break;
                         case SPAWNED_EVENT_MAP:
                             if (!sMapStore.LookupEntry(temp.spawned.conditionValue1))
-                                sLog.outErrorDb("CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'map specific' but with not existed map (%u) in param2. Event will never repeat.", temp.entryOrGUID, i, temp.spawned.condition, temp.spawned.conditionValue1);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'map specific' but with not existed map (%u) in param2. Event will never repeat.", temp.entryOrGUID, i, temp.spawned.condition, temp.spawned.conditionValue1);
                             break;
                         case SPAWNED_EVENT_ZONE:
                             if (!GetAreaEntryByAreaID(temp.spawned.conditionValue1))
-                                sLog.outErrorDb("CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'area specific' but with not existed area (%u) in param2. Event will never repeat.", temp.entryOrGUID, i, temp.spawned.condition, temp.spawned.conditionValue1);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using spawned event(%u) with param1 = %u 'area specific' but with not existed area (%u) in param2. Event will never repeat.", temp.entryOrGUID, i, temp.spawned.condition, temp.spawned.conditionValue1);
                         default:
-                            sLog.outErrorDb("CreatureEventAI:  Creature %u are using invalid spawned event %u mode (%u) in param1", temp.entryOrGUID, i, temp.spawned.condition);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using invalid spawned event %u mode (%u) in param1", temp.entryOrGUID, i, temp.spawned.condition);
                             break;
                     }
                     break;
                 case EVENT_T_FRIENDLY_HP:
                     if (temp.friendly_hp.repeatMax < temp.friendly_hp.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_FRIENDLY_IS_CC:
                     if (temp.friendly_is_cc.repeatMax < temp.friendly_is_cc.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_FRIENDLY_MISSING_BUFF:
                 {
                     SpellEntry const* pSpell = sSpellStore.LookupEntry(temp.spell_hit.spellId);
                     if (!pSpell)
                     {
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
                         continue;
                     }
                     if (temp.friendly_buff.repeatMax < temp.friendly_buff.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 }
                 case EVENT_T_KILL:
                     if (temp.kill.repeatMax < temp.kill.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_TARGET_CASTING:
                     if (temp.target_casting.repeatMax < temp.target_casting.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_SUMMONED_UNIT:
                     if (!sCreatureStorage.LookupEntry<CreatureInfo>(temp.summon_unit.creatureId))
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with not existed creature template id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.summon_unit.creatureId);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with not existed creature template id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.summon_unit.creatureId);
                     if (temp.summon_unit.repeatMax < temp.summon_unit.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with param2 < param1 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 case EVENT_T_QUEST_ACCEPT:
                 case EVENT_T_QUEST_COMPLETE:
                     if (!sObjectMgr.GetQuestTemplate(temp.quest.questId))
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using event(%u) with not existed qyest id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.quest.questId);
-                    sLog.outErrorDb("CreatureEventAI: Creature %u using not implemented event (%u) in event %u.", temp.entryOrGUID, temp.event_id, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using event(%u) with not existed qyest id (%u) in param1, skipped.", temp.entryOrGUID, i, temp.quest.questId);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using not implemented event (%u) in event %u.", temp.entryOrGUID, temp.event_id, i);
                     continue;
 
                 case EVENT_T_AGGRO:
@@ -1031,7 +1031,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                 {
                     if (temp.event_flags & EFLAG_REPEATABLE)
                     {
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i has EFLAG_REPEATABLE set. Event can never be repeatable. Removing flag for event %u.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has EFLAG_REPEATABLE set. Event can never be repeatable. Removing flag for event %u.", temp.entryOrGUID, i);
                         temp.event_flags &= ~EFLAG_REPEATABLE;
                     }
 
@@ -1042,19 +1042,19 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                 {
                     if (!sEmotesTextStore.LookupEntry(temp.receive_emote.emoteId))
                     {
-                        sLog.outErrorDb("CreatureEventAI: Creature %u using event %u: param1 (EmoteTextId: %u) are not valid.",temp.entryOrGUID, i, temp.receive_emote.emoteId);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using event %u: param1 (EmoteTextId: %u) are not valid.",temp.entryOrGUID, i, temp.receive_emote.emoteId);
                         continue;
                     }
 
                     if (!PlayerCondition::IsValid(ConditionType(temp.receive_emote.condition), temp.receive_emote.conditionValue1, temp.receive_emote.conditionValue2))
                     {
-                        sLog.outErrorDb("CreatureEventAI: Creature %u using event %u: param2 (Condition: %u) are not valid.",temp.entryOrGUID, i, temp.receive_emote.condition);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using event %u: param2 (Condition: %u) are not valid.",temp.entryOrGUID, i, temp.receive_emote.condition);
                         continue;
                     }
 
                     if (!(temp.event_flags & EFLAG_REPEATABLE))
                     {
-                        sLog.outErrorDb("CreatureEventAI: Creature %u using event %u: EFLAG_REPEATABLE not set. Event must always be repeatable. Flag applied.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using event %u: EFLAG_REPEATABLE not set. Event must always be repeatable. Flag applied.", temp.entryOrGUID, i);
                         temp.event_flags |= EFLAG_REPEATABLE;
                     }
 
@@ -1067,16 +1067,16 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                     SpellEntry const* pSpell = sSpellStore.LookupEntry(temp.buffed.spellId);
                     if (!pSpell)
                     {
-                        sLog.outErrorDb("CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", temp.entryOrGUID, temp.spell_hit.spellId, i);
                         continue;
                     }
                     if (temp.buffed.repeatMax < temp.buffed.repeatMin)
-                        sLog.outErrorDb("CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", temp.entryOrGUID, i);
                     break;
                 }
 
                 default:
-                    sLog.outErrorDb("CreatureEventAI: Creature %u using not checked at load event (%u) in event %u. Need check code update?", temp.entryOrGUID, temp.event_id, i);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using not checked at load event (%u) in event %u. Need check code update?", temp.entryOrGUID, temp.event_id, i);
                     break;
             }
 
@@ -1085,7 +1085,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                 uint16 action_type = fields[10+(j*4)].GetUInt16();
                 if (action_type >= ACTION_T_END)
                 {
-                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u has incorrect action type (%u), replace by ACTION_T_NONE.", i, j+1, action_type);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u has incorrect action type (%u), replace by ACTION_T_NONE.", i, j+1, action_type);
                     temp.action[j].type = ACTION_T_NONE;
                     continue;
                 }
@@ -1110,19 +1110,19 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                            if (action.text.TextId[k])
                            {
                                 if (k > 0 && not_set)
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u has param%d, but it follow after not set param. Required for randomized text.", i, j+1, k+1);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u has param%d, but it follow after not set param. Required for randomized text.", i, j+1, k+1);
                                 if (!action.text.TextId[k])
                                     not_set = true;
 
                                 // range negative
                                 else if (action.text.TextId[k] > MIN_CREATURE_AI_TEXT_STRING_ID || action.text.TextId[k] <= MAX_CREATURE_AI_TEXT_STRING_ID)
                                 {
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param%d references out-of-range entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param%d references out-of-range entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
                                     action.text.TextId[k] = 0;
                                 }
                                 else if (m_CreatureEventAI_TextMap.find(action.text.TextId[k]) == m_CreatureEventAI_TextMap.end())
                                 {
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param%d references non-existing entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param%d references non-existing entry (%i) in texts table.", i, j+1, k+1, action.text.TextId[k]);
                                     action.text.TextId[k] = 0;
                                 }
                             }
@@ -1132,7 +1132,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                     case ACTION_T_SET_FACTION:
                         if (action.set_faction.factionId !=0 && !sFactionStore.LookupEntry(action.set_faction.factionId))
                         {
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent FactionId %u.", i, j+1, action.set_faction.factionId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent FactionId %u.", i, j+1, action.set_faction.factionId);
                             action.set_faction.factionId = 0;
                         }
                         break;
@@ -1141,7 +1141,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                         {
                             if (action.morph.creatureId && !sCreatureStorage.LookupEntry<CreatureInfo>(action.morph.creatureId))
                             {
-                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant Creature entry %u.", i, j+1, action.morph.creatureId);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant Creature entry %u.", i, j+1, action.morph.creatureId);
                                 action.morph.creatureId = 0;
                             }
 
@@ -1149,12 +1149,12 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                             {
                                 if (action.morph.creatureId)
                                 {
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u have unused ModelId %u with also set creature id %u.", i, j+1, action.morph.modelId,action.morph.creatureId);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u have unused ModelId %u with also set creature id %u.", i, j+1, action.morph.modelId,action.morph.creatureId);
                                     action.morph.modelId = 0;
                                 }
                                 else if (!sCreatureDisplayInfoStore.LookupEntry(action.morph.modelId))
                                 {
-                                    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant ModelId %u.", i, j+1, action.morph.modelId);
+                                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant ModelId %u.", i, j+1, action.morph.modelId);
                                     action.morph.modelId = 0;
                                 }
                             }
@@ -1162,190 +1162,190 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                         break;
                     case ACTION_T_SOUND:
                         if (!sSoundEntriesStore.LookupEntry(action.sound.soundId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant SoundID %u.", i, j+1, action.sound.soundId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant SoundID %u.", i, j+1, action.sound.soundId);
                         break;
                     case ACTION_T_EMOTE:
                         if (!sEmotesStore.LookupEntry(action.emote.emoteId))
-                            sLog.outErrorDb("CreatureEventAI: Event %u Action %u param1 (EmoteId: %u) are not valid.", i, j+1, action.emote.emoteId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %u Action %u param1 (EmoteId: %u) are not valid.", i, j+1, action.emote.emoteId);
                         break;
                     case ACTION_T_RANDOM_SOUND:
                         if (!sSoundEntriesStore.LookupEntry(action.random_sound.soundId1))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param1 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param1 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId1);
                         if (action.random_sound.soundId2 >= 0 && !sSoundEntriesStore.LookupEntry(action.random_sound.soundId2))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param2 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId2);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param2 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId2);
                         if (action.random_sound.soundId3 >= 0 && !sSoundEntriesStore.LookupEntry(action.random_sound.soundId3))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param3 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId3);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param3 uses non-existant SoundID %u.", i, j+1, action.random_sound.soundId3);
                         break;
                     case ACTION_T_RANDOM_EMOTE:
                         if (!sEmotesStore.LookupEntry(action.random_emote.emoteId1))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param1 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param1 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId1);
                         if (action.random_emote.emoteId2 >= 0 && !sEmotesStore.LookupEntry(action.random_emote.emoteId2))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param2 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId2);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param2 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId2);
                         if (action.random_emote.emoteId3 >= 0 && !sEmotesStore.LookupEntry(action.random_emote.emoteId3))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param3 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId3);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param3 (EmoteId: %u) are not valid.", i, j+1, action.random_emote.emoteId3);
                         break;
                     case ACTION_T_CAST:
                     {
                         const SpellEntry *spell = sSpellStore.LookupEntry(action.cast.spellId);
                         if (!spell)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast.spellId);
 
                         //Cast is always triggered if target is forced to cast on self
                         if (action.cast.castFlags & CAST_FORCE_TARGET_SELF)
                             action.cast.castFlags |= CAST_TRIGGERED;
 
                         if (action.cast.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     }
                     case ACTION_T_CAST_GUID:
                     {
                         const SpellEntry *spell = sSpellStore.LookupEntry(action.castguid.spellId);
                         if (!spell)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.castguid.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.castguid.spellId);
 
                         //Cast is always triggered if target is forced to cast on self
                         if (action.castguid.castFlags & CAST_FORCE_TARGET_SELF)
                             action.castguid.castFlags |= CAST_TRIGGERED;
 
                         if (!action.castguid.targetGUID || !sObjectMgr.GetCreatureData(action.castguid.targetGUID))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses invalid targetGUID", i, j+1);
                         break;
                     }
                     case ACTION_T_SUMMON:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.summon.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.summon.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.summon.creatureId);
 
                         if (action.summon.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_THREAT_SINGLE_PCT:
                         if (std::abs(action.threat_single_pct.percent) > 100)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_single_pct.percent);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_single_pct.percent);
                         if (action.threat_single_pct.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_THREAT_ALL_PCT:
                         if (std::abs(action.threat_all_pct.percent) > 100)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_all_pct.percent);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses invalid percent value %u.", i, j+1, action.threat_all_pct.percent);
                         break;
                     case ACTION_T_QUEST_EVENT:
                         if (Quest const* qid = sObjectMgr.GetQuestTemplate(action.quest_event.questId))
                         {
                             if (!qid->HasFlag(QUEST_HELLGROUND_FLAGS_EXPLORATION_OR_EVENT))
-                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event.questId);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event.questId);
                         }
                         else
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent Quest entry %u.", i, j+1, action.quest_event.questId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent Quest entry %u.", i, j+1, action.quest_event.questId);
 
                         if (action.quest_event.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
 
                         break;
                     case ACTION_T_CAST_EVENT:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.cast_event.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.cast_event.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.cast_event.creatureId);
                         if (!sSpellStore.LookupEntry(action.cast_event.spellId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast_event.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast_event.spellId);
                         if (action.cast_event.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_SET_UNIT_FIELD:
                         if (action.set_unit_field.field < OBJECT_END || action.set_unit_field.field >= UNIT_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u param1 (UNIT_FIELD*). Index out of range for intended use.", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u param1 (UNIT_FIELD*). Index out of range for intended use.", i, j+1);
                         if (action.set_unit_field.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_SET_UNIT_FLAG:
                     case ACTION_T_REMOVE_UNIT_FLAG:
                         if (action.unit_flag.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_SET_PHASE:
                         if (action.set_phase.phase >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phase >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phase >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         break;
                     case ACTION_T_INC_PHASE:
                         if (action.set_inc_phase.step == 0)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u is incrementing phase by 0. Was this intended?", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u is incrementing phase by 0. Was this intended?", i, j+1);
                         else if (std::abs(action.set_inc_phase.step) > MAX_PHASE-1)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u is change phase by too large for any use %i.", i, j+1, action.set_inc_phase.step);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u is change phase by too large for any use %i.", i, j+1, action.set_inc_phase.step);
                         break;
                     case ACTION_T_QUEST_EVENT_ALL:
                         if (Quest const* qid = sObjectMgr.GetQuestTemplate(action.quest_event_all.questId))
                         {
                             if (!qid->HasFlag(QUEST_HELLGROUND_FLAGS_EXPLORATION_OR_EVENT))
-                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event_all.questId);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u. SpecialFlags for quest entry %u does not include |2, Action will not have any effect.", i, j+1, action.quest_event_all.questId);
                         }
                         else
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent Quest entry %u.", i, j+1, action.quest_event_all.questId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent Quest entry %u.", i, j+1, action.quest_event_all.questId);
                         break;
                     case ACTION_T_CAST_EVENT_ALL:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.cast_event_all.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.cast_event_all.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent creature entry %u.", i, j+1, action.cast_event_all.creatureId);
                         if (!sSpellStore.LookupEntry(action.cast_event_all.spellId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast_event_all.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.cast_event_all.spellId);
                         break;
                     case ACTION_T_REMOVEAURASFROMSPELL:
                         if (!sSpellStore.LookupEntry(action.remove_aura.spellId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.remove_aura.spellId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existent SpellID %u.", i, j+1, action.remove_aura.spellId);
                         if (action.remove_aura.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_RANDOM_PHASE:             //PhaseId1, PhaseId2, PhaseId3
                         if (action.random_phase.phase1 >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phase1 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phase1 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         if (action.random_phase.phase2 >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phase2 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phase2 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         if (action.random_phase.phase3 >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phase3 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phase3 >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         break;
                     case ACTION_T_RANDOM_PHASE_RANGE:       //PhaseMin, PhaseMax
                         if (action.random_phase_range.phaseMin >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phaseMin >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phaseMin >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         if (action.random_phase_range.phaseMin >= MAX_PHASE)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phaseMax >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phaseMax >= %u. Phase mask cannot be used past phase %u.", i, j+1, MAX_PHASE, MAX_PHASE-1);
                         if (action.random_phase_range.phaseMin >= action.random_phase_range.phaseMax)
                         {
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set phaseMax <= phaseMin.", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set phaseMax <= phaseMin.", i, j+1);
                             std::swap(action.random_phase_range.phaseMin,action.random_phase_range.phaseMax);
                             // equal case processed at call
                         }
                         break;
                     case ACTION_T_SUMMON_ID:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.summon_id.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.summon_id.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.summon_id.creatureId);
                         if (action.summon_id.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         if (m_CreatureEventAI_Summon_Map.find(action.summon_id.spawnId) == m_CreatureEventAI_Summon_Map.end())
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u summons missing CreatureEventAI_Summon %u", i, j+1, action.summon_id.spawnId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u summons missing CreatureEventAI_Summon %u", i, j+1, action.summon_id.spawnId);
                         break;
                     case ACTION_T_KILLED_MONSTER:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.killed_monster.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.killed_monster.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.killed_monster.creatureId);
                         if (action.killed_monster.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_SET_INST_DATA:
                         //if (!(temp.event_flags & EFLAG_NORMAL) && !(temp.event_flags & EFLAG_HEROIC))
-                        //    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. Cannot set instance data without event flags (normal/heroic).", i, j+1);
+                        //    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u. Cannot set instance data without event flags (normal/heroic).", i, j+1);
                         if (action.set_inst_data.value > 4/*SPECIAL*/)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u attempts to set instance data above encounter state 4. Custom case?", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u attempts to set instance data above encounter state 4. Custom case?", i, j+1);
                         break;
                     case ACTION_T_SET_INST_DATA64:
                         //if (!(temp.event_flags & EFLAG_NORMAL) && !(temp.event_flags & EFLAG_HEROIC))
-                        //    sLog.outErrorDb("CreatureEventAI:  Event %u Action %u. Cannot set instance data without event flags (normal/heroic).", i, j+1);
+                        //    sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u. Cannot set instance data without event flags (normal/heroic).", i, j+1);
                         if (action.set_inst_data64.target >= TARGET_T_END)
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses incorrect Target type", i, j+1);
                         break;
                     case ACTION_T_UPDATE_TEMPLATE:
                         if (!sCreatureStorage.LookupEntry<CreatureInfo>(action.update_template.creatureId))
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.update_template.creatureId);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses non-existant creature entry %u.", i, j+1, action.update_template.creatureId);
                         break;
                     case ACTION_T_SET_SHEATH:
                         if (action.set_sheath.sheath >= MAX_SHEATH_STATE)
                         {
-                            sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses wrong sheath state %u.", i, j+1, action.set_sheath.sheath);
+                            sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses wrong sheath state %u.", i, j+1, action.set_sheath.sheath);
                             action.set_sheath.sheath = SHEATH_STATE_UNARMED;
                         }
                         break;
@@ -1354,7 +1354,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                         {
                             if (action.invincibility_hp_level.hp_level > 100)
                             {
-                                sLog.outErrorDb("CreatureEventAI:  Event %u Action %u uses wrong percent value %u.", i, j+1, action.invincibility_hp_level.hp_level);
+                                sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u uses wrong percent value %u.", i, j+1, action.invincibility_hp_level.hp_level);
                                 action.invincibility_hp_level.hp_level = 100;
                             }
                         }
@@ -1375,7 +1375,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                     case ACTION_T_RANDOM_SAY:
                     case ACTION_T_RANDOM_YELL:
                     case ACTION_T_RANDOM_TEXTEMOTE:
-                        sLog.outErrorDb("CreatureEventAI:  Event %u Action %u currently unused ACTION type. Did you forget to update database?", i, j+1);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u currently unused ACTION type. Did you forget to update database?", i, j+1);
                         break;
 
                     case ACTION_T_MOVE_RANDOM_POINT:
@@ -1389,7 +1389,7 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                         break;
 
                     default:
-                        sLog.outErrorDb("CreatureEventAI:  Event %u Action %u have currently not checked at load action type (%u). Need check code update?", i, j+1, temp.action[j].type);
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Event %u Action %u have currently not checked at load action type (%u). Need check code update?", i, j+1, temp.action[j].type);
                         break;
                 }
             }
@@ -1401,18 +1401,18 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
             {
                 if (!cInfo->AIName || !cInfo->AIName[0])
                 {
-                    //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but its AIName is empty. Set to EventAI as default.", cInfo->Entry);
+                    //sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature Entry %u has EventAI script but its AIName is empty. Set to EventAI as default.", cInfo->Entry);
                     size_t len = strlen("EventAI")+1;
                     const_cast<CreatureInfo*>(cInfo)->AIName = new char[len];
                     strncpy(const_cast<char*>(cInfo->AIName), "EventAI", len);
                 }
                 if (strcmp(cInfo->AIName, "EventAI"))
                 {
-                    //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it has AIName %s. EventAI script will be overriden.", cInfo->Entry, cInfo->AIName);
+                    //sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature Entry %u has EventAI script but it has AIName %s. EventAI script will be overriden.", cInfo->Entry, cInfo->AIName);
                 }
                 if (cInfo->ScriptID)
                 {
-                    //sLog.outErrorDb("CreatureEventAI: Creature Entry %u has EventAI script but it also has C++ script. EventAI script will be overriden.", cInfo->Entry);
+                    //sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature Entry %u has EventAI script but it also has C++ script. EventAI script will be overriden.", cInfo->Entry);
                 }
             }
         }
@@ -1423,6 +1423,6 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
         m_CreatureEventAI_Event_Map[creatureId] = tmpMap;
     }
     else
-        sLog.outError("LoadCreatureEventAI_Scripts(uint32 creatureId = %u). Result is empty !", creatureId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: LoadCreatureEventAI_Scripts(uint32 creatureId = %u). Result is empty !", creatureId);
 }
 

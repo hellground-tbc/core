@@ -216,11 +216,11 @@ extern int main(int argc, char **argv)
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
     if (confVersion < _HELLGROUND_CORE_CONFVER)
     {
-        sLog.outError("*********************************************************************************");
-        sLog.outError(" WARNING: Your trinitycore.conf version indicates your conf file is out of date!");
-        sLog.outError("          Please check for updates, as your current default values may cause");
-        sLog.outError("          strange behavior.");
-        sLog.outError("*********************************************************************************");
+        sLog.outLog(LOG_DEFAULT, "ERROR: *********************************************************************************");
+        sLog.outLog(LOG_DEFAULT, "ERROR:  WARNING: Your trinitycore.conf version indicates your conf file is out of date!");
+        sLog.outLog(LOG_DEFAULT, "ERROR:           Please check for updates, as your current default values may cause");
+        sLog.outLog(LOG_DEFAULT, "ERROR:           strange behavior.");
+        sLog.outLog(LOG_DEFAULT, "ERROR: *********************************************************************************");
         clock_t pause = 3000 + clock();
 
         while (pause > clock()) {}

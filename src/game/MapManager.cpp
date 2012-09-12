@@ -60,7 +60,7 @@ void MapManager::Initialize()
     // Start mtmaps if needed.
     if (m_updater.activate(num_threads) == -1)
     {
-        sLog.outError("MapUpdater cannot be activated !!!!!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: MapUpdater cannot be activated !!!!!");
         abort();
     }
 }
@@ -396,13 +396,13 @@ InstanceMap* MapManager::CreateInstanceMap(uint32 id, uint32 InstanceId, Dungeon
     const MapEntry* entry = sMapStore.LookupEntry(id);
     if (!entry)
     {
-        sLog.outError("CreateInstanceMap: no entry for map %d", id);
+        sLog.outLog(LOG_DEFAULT, "ERROR: CreateInstanceMap: no entry for map %d", id);
         ASSERT(false);
     }
 
     if (!ObjectMgr::GetInstanceTemplate(id))
     {
-        sLog.outError("CreateInstanceMap: no instance template for map %d", id);
+        sLog.outLog(LOG_DEFAULT, "ERROR: CreateInstanceMap: no instance template for map %d", id);
         ASSERT(false);
     }
 

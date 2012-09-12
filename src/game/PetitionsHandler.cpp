@@ -254,7 +254,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recv_data)
     QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT type FROM petition WHERE petitionguid = '%u'", petitionguid_low);
     if (!result)
     {
-        sLog.outError("any petition on server...");
+        sLog.outLog(LOG_DEFAULT, "ERROR: any petition on server...");
         return;
     }
     Field *fields = result->Fetch();
@@ -458,7 +458,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
 
     if (!result)
     {
-        sLog.outError("any petition on server...");
+        sLog.outLog(LOG_DEFAULT, "ERROR: any petition on server...");
         return;
     }
 
@@ -724,7 +724,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
     }
     else
     {
-        sLog.outError("petition table has broken data!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: petition table has broken data!");
         return;
     }
 
@@ -831,7 +831,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         ArenaTeam* at = new ArenaTeam;
         if (!at->Create(_player->GetGUID(), type, name))
         {
-            sLog.outError("PetitionsHandler: arena team create failed.");
+            sLog.outLog(LOG_DEFAULT, "ERROR: PetitionsHandler: arena team create failed.");
             delete at;
             return;
         }

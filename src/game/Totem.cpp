@@ -78,7 +78,7 @@ void Totem::Summon(Unit* owner)
         if (modelid)
             SetDisplayId(modelid);
         else
-            sLog.outErrorDb("Totem::Summon: Missing modelid information for entry %u, team %u, totem will use default values.",GetEntry(),((Player*)owner)->GetTeam());
+            sLog.outLog(LOG_DB_ERR, "Totem::Summon: Missing modelid information for entry %u, team %u, totem will use default values.",GetEntry(),((Player*)owner)->GetTeam());
     }
 
     // Only add if a display exists.

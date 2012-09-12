@@ -124,7 +124,7 @@ void WorldSession::SendDoFlight(uint16 mountDisplayId, uint32 path, uint32 pathN
         GetPlayer()->GetUnitStateMgr().PushAction(UNIT_ACTION_TAXI, GetPlayer()->GetUnitStateMgr().CreateStandartState(UNIT_ACTION_TAXI, mountDisplayId, path, pathNode));
     else
     {
-        sLog.outError("WorldSession::SendDoFlight %s attempt taxi to (nonexistent Path %u node %u)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::SendDoFlight %s attempt taxi to (nonexistent Path %u node %u)",
         GetPlayer()->GetGuidStr().c_str(), path, pathNode);
     }
 }

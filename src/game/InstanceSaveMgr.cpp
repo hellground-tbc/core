@@ -87,7 +87,7 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
     const MapEntry* entry = sMapStore.LookupEntry(mapId);
     if (!entry || instanceId == 0)
     {
-        sLog.outError("InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d!", mapId, instanceId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d!", mapId, instanceId);
         return NULL;
     }
 
@@ -407,7 +407,7 @@ void InstanceSaveManager::LoadResetTimes()
             uint32 mapid = fields[0].GetUInt32();
             if (!ObjectMgr::GetInstanceTemplate(mapid))
             {
-                sLog.outError("InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
+                sLog.outLog(LOG_DEFAULT, "ERROR: InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
                 RealmDataDatabase.DirectPExecute("DELETE FROM instance_reset WHERE mapid = '%u'", mapid);
                 continue;
             }
@@ -484,7 +484,7 @@ void InstanceSaveManager::ScheduleReset(bool add, time_t time, InstResetEvent ev
             for (itr = m_resetTimeQueue.begin(); itr != m_resetTimeQueue.end(); ++itr)
                 if (itr->second == event) { m_resetTimeQueue.erase(itr); return; }
             if (itr == m_resetTimeQueue.end())
-                sLog.outError("InstanceSaveManager::ScheduleReset: cannot cancel the reset, the event(%d,%d,%d) was not found!", event.type, event.mapid, event.instanceId);
+                sLog.outLog(LOG_DEFAULT, "ERROR: InstanceSaveManager::ScheduleReset: cannot cancel the reset, the event(%d,%d,%d) was not found!", event.type, event.mapid, event.instanceId);
         }
     }
 }
@@ -557,7 +557,7 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
     {
         const MapEntry *mapEntry = sMapStore.LookupEntry(mapid);
         if (mapEntry->IsRaid())
-            sLog.outError("Called _ResetInstance for mapid: %u, canreset: %B", mapid, itr->second->CanReset());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Called _ResetInstance for mapid: %u, canreset: %B", mapid, itr->second->CanReset());
 
         _ResetSave(itr);
     }
@@ -587,7 +587,7 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLe
         InstanceTemplate const* temp = sObjectMgr.GetInstanceTemplate(mapid);
         if (!temp || !temp->reset_delay)
         {
-            sLog.outError("InstanceSaveManager::ResetOrWarnAll: no instance template or reset delay for map %d", mapid);
+            sLog.outLog(LOG_DEFAULT, "ERROR: InstanceSaveManager::ResetOrWarnAll: no instance template or reset delay for map %d", mapid);
             return;
         }
 

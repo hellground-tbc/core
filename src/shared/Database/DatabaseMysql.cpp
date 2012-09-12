@@ -46,7 +46,7 @@ DatabaseMysql::DatabaseMysql()
 
         if (!mysql_thread_safe())
         {
-            sLog.outError("FATAL ERROR: Used MySQL library isn't thread-safe.");
+            sLog.outLog(LOG_DEFAULT, "ERROR: FATAL ERROR: Used MySQL library isn't thread-safe.");
             exit(1);
         }
     }
@@ -77,7 +77,7 @@ bool MySQLConnection::Initialize(const char *infoString)
     MYSQL * mysqlInit = mysql_init(NULL);
     if (!mysqlInit)
     {
-        sLog.outError( "Could not initialize Mysql connection" );
+        sLog.outLog(LOG_DEFAULT, "ERROR: Could not initialize Mysql connection");
         return false;
     }
 
@@ -178,7 +178,7 @@ bool MySQLConnection::Initialize(const char *infoString)
     }
     else
     {
-        sLog.outError( "Could not connect to MySQL database at %s: %s\n",
+        sLog.outLog(LOG_DEFAULT, "Could not connect to MySQL database at %s: %s\n",
             host.c_str(),mysql_error(mysqlInit));
         mysql_close(mysqlInit);
         return false;
@@ -194,8 +194,8 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
 
     if(mysql_query(mMysql, sql))
     {
-        sLog.outErrorDb( "SQL: %s", sql );
-        sLog.outErrorDb("query ERROR: %s", mysql_error(mMysql));
+        sLog.outLog(LOG_DB_ERR,  "SQL: %s", sql );
+        sLog.outLog(LOG_DB_ERR, "query ERROR: %s", mysql_error(mMysql));
         return false;
     }
     else
@@ -266,8 +266,8 @@ bool MySQLConnection::Execute(const char* sql)
 
         if(mysql_query(mMysql, sql))
         {
-            sLog.outErrorDb("SQL: %s", sql);
-            sLog.outErrorDb("SQL ERROR: %s", mysql_error(mMysql));
+            sLog.outLog(LOG_DB_ERR, "SQL: %s", sql);
+            sLog.outLog(LOG_DB_ERR, "SQL ERROR: %s", mysql_error(mMysql));
             return false;
         }
         else
@@ -284,8 +284,8 @@ bool MySQLConnection::_TransactionCmd(const char *sql)
 {
     if (mysql_query(mMysql, sql))
     {
-        sLog.outError("SQL: %s", sql);
-        sLog.outError("SQL ERROR: %s", mysql_error(mMysql));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: %s", sql);
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_error(mMysql));
         return false;
     }
     else
@@ -348,15 +348,15 @@ bool MySqlPreparedStatement::prepare()
     m_stmt = mysql_stmt_init(m_pMySQLConn);
     if (!m_stmt)
     {
-        sLog.outError("SQL: mysql_stmt_init()() failed ");
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: mysql_stmt_init()() failed ");
         return false;
     }
 
     //prepare statement
     if (mysql_stmt_prepare(m_stmt, m_szFmt.c_str(), m_szFmt.length()))
     {
-        sLog.outError("SQL: mysql_stmt_prepare() failed for '%s'", m_szFmt.c_str());
-        sLog.outError("SQL ERROR: %s", mysql_stmt_error(m_stmt));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: mysql_stmt_prepare() failed for '%s'", m_szFmt.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
         return false;
     }
 
@@ -368,8 +368,8 @@ bool MySqlPreparedStatement::prepare()
     //if we do not have result metadata
     if (!m_pResultMetadata && strnicmp(m_szFmt.c_str(), "select", 6) == 0)
     {
-        sLog.outError("SQL: no meta information for '%s'", m_szFmt.c_str());
-        sLog.outError("SQL ERROR: %s", mysql_stmt_error(m_stmt));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: no meta information for '%s'", m_szFmt.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
         return false;
     }
 
@@ -427,8 +427,8 @@ void MySqlPreparedStatement::bind( const SqlStmtParameters& holder )
     //bind input arguments
     if(mysql_stmt_bind_param(m_stmt, m_pInputArgs))
     {
-        sLog.outError("SQL ERROR: mysql_stmt_bind_param() failed\n");
-        sLog.outError("SQL ERROR: %s", mysql_stmt_error(m_stmt));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: mysql_stmt_bind_param() failed\n");
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
     }
 }
 
@@ -476,8 +476,8 @@ bool MySqlPreparedStatement::execute()
 
     if(mysql_stmt_execute(m_stmt))
     {
-        sLog.outError("SQL: cannot execute '%s'", m_szFmt.c_str());
-        sLog.outError("SQL ERROR: %s", mysql_stmt_error(m_stmt));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: cannot execute '%s'", m_szFmt.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
         return false;
     }
 

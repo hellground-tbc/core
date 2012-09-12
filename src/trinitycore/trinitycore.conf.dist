@@ -445,7 +445,6 @@ GmLogMinLevel = 1
 ArenaLogFile = ""
 ArenaLogExtendedInfo = 1
 CheatLogFile = "cheat.log"
-ACLogFile = "AC.log"
 MailLogFile = "sendmail.log"
 GannLogFile = "guildann.log"
 WhispLogDir = "whisps/"

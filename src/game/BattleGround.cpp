@@ -155,7 +155,7 @@ void BattleGround::Update(uint32 diff)
                     RemovePlayerFromResurrectQueue(itr->first);
                     break;
                 default:
-                    sLog.outError("BattleGround: Unknown remove player case!");
+                    sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround: Unknown remove player case!");
             }
         }
         m_RemovedPlayers.clear();
@@ -560,11 +560,11 @@ void BattleGround::EndBattleGround(uint32 winner)
                 SetArenaTeamRatingChangeForTeam(ALLIANCE, loser_change);
             }
 
-            sLog.outArena("Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_rating, loser_rating, winner_change);
+            sLog.outLog(LOG_ARENA, "Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), winner_rating, loser_rating, winner_change);
             if (sWorld.getConfig(CONFIG_ARENA_LOG_EXTENDED_INFO))
                 for (BattleGroundScoreMap::const_iterator itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr)
                     if (Player* player = sObjectMgr.GetPlayer(itr->first))
-                        sLog.outArena("Statistics for %s (GUID: " UI64FMTD ", Team: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
+                        sLog.outLog(LOG_ARENA, "Statistics for %s (GUID: " UI64FMTD ", Team: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
         }
         else
         {
@@ -972,7 +972,7 @@ void BattleGround::Reset()
     m_Events = 0;
 
     if (m_InvitedAlliance > 0 || m_InvitedHorde > 0)
-        sLog.outError("BattleGround system ERROR: bad counter, m_InvitedAlliance: %d, m_InvitedHorde: %d", m_InvitedAlliance, m_InvitedHorde);
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround system ERROR: bad counter, m_InvitedAlliance: %d, m_InvitedHorde: %d", m_InvitedAlliance, m_InvitedHorde);
 
     m_InvitedAlliance = 0;
     m_InvitedHorde = 0;
@@ -992,7 +992,7 @@ void BattleGround::StartBattleGround()
     SetLastResurrectTime(0);
     AnnounceBGStart();
     if (m_IsRated)
-        sLog.outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
+        sLog.outLog(LOG_ARENA, "Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
 }
 
 void BattleGround::AnnounceBGStart()
@@ -1216,7 +1216,7 @@ void BattleGround::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
             itr->second->HealingDone += value;
             break;
         default:
-            sLog.outError("BattleGround: Unknown player score type %u", type);
+            sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround: Unknown player score type %u", type);
             break;
     }
 }
@@ -1272,8 +1272,8 @@ bool BattleGround::AddObject(uint32 type, uint32 entry, float x, float y, float 
     GameObject * go = new GameObject;
     if (!go->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry, map,x,y,z,o,rotation0,rotation1,rotation2,rotation3,100,GO_STATE_READY))
     {
-        sLog.outErrorDb("Gameobject template %u not found in database! BattleGround not created!", entry);
-        sLog.outError("Cannot create gameobject template %u! BattleGround not created!", entry);
+        sLog.outLog(LOG_DB_ERR, "Gameobject template %u not found in database! BattleGround not created!", entry);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot create gameobject template %u! BattleGround not created!", entry);
         delete go;
         return false;
     }
@@ -1313,7 +1313,7 @@ void BattleGround::DoorClose(uint32 type)
 
     if (!tmpMap)
     {
-        sLog.outError("BattleGround::DoorClose: map not found");
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround::DoorClose: map not found");
         return;
     }
 
@@ -1330,7 +1330,7 @@ void BattleGround::DoorClose(uint32 type)
     }
     else
     {
-        sLog.outError("BattleGround: Door object not found (cannot close doors)");
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround: Door object not found (cannot close doors)");
     }
 }
 
@@ -1340,7 +1340,7 @@ void BattleGround::DoorOpen(uint32 type)
 
     if (!tmpMap)
     {
-        sLog.outError("BattleGround::DoorClose: map not found");
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround::DoorClose: map not found");
         return;
     }
 
@@ -1353,7 +1353,7 @@ void BattleGround::DoorOpen(uint32 type)
     }
     else
     {
-        sLog.outError("BattleGround: Door object not found! - doors will be closed.");
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround: Door object not found! - doors will be closed.");
     }
 }
 
@@ -1363,13 +1363,13 @@ GameObject* BattleGround::GetBGObject(uint32 type)
 
     if (!tmpMap)
     {
-        sLog.outError("BattleGround::GetBGObject: map not found");
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround::GetBGObject: map not found");
         return NULL;
     }
 
     GameObject *obj = tmpMap->GetGameObject(m_BgObjects[type]);
     if (!obj)
-        sLog.outError("couldn't get gameobject %i",type);
+        sLog.outLog(LOG_DEFAULT, "ERROR: couldn't get gameobject %i",type);
     return obj;
 }
 
@@ -1381,7 +1381,7 @@ Creature* BattleGround::GetBGCreature(uint32 type)
     if (tmp)
         creature = tmp->GetCreature(m_BgCreatures[type]);
     if (!creature)
-        sLog.outError("couldn't get creature %i",type);
+        sLog.outLog(LOG_DEFAULT, "ERROR: couldn't get creature %i",type);
     return creature;
 }
 
@@ -1423,7 +1423,7 @@ Creature* BattleGround::AddCreature(uint32 entry, uint32 type, uint32 teamval, f
     Creature* pCreature = new Creature;
     if (!pCreature->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_UNIT), map, entry, teamval, x, y, z, o))
     {
-        sLog.outError("Can't create creature entry: %u",entry);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Can't create creature entry: %u",entry);
         delete pCreature;
         return NULL;
     }
@@ -1477,7 +1477,7 @@ bool BattleGround::DelCreature(uint32 type)
     Creature *cr = map->GetCreature(m_BgCreatures[type]);
     if (!cr)
     {
-        sLog.outError("Can't find creature guid: %u",GUID_LOPART(m_BgCreatures[type]));
+        sLog.outLog(LOG_DEFAULT, "ERROR: Can't find creature guid: %u",GUID_LOPART(m_BgCreatures[type]));
         return false;
     }
     //TODO: only delete creature after not in combat
@@ -1498,7 +1498,7 @@ bool BattleGround::DelObject(uint32 type)
     GameObject *obj = map->GetGameObject(m_BgObjects[type]);
     if (!obj)
     {
-        sLog.outError("Can't find gobject guid: %u",GUID_LOPART(m_BgObjects[type]));
+        sLog.outLog(LOG_DEFAULT, "ERROR: Can't find gobject guid: %u",GUID_LOPART(m_BgObjects[type]));
         return false;
     }
     obj->SetRespawnTime(0);                                 // not save respawn time
@@ -1519,7 +1519,7 @@ bool BattleGround::AddSpiritGuide(uint32 type, float x, float y, float z, float 
     Creature* pCreature = AddCreature(entry,type,team,x,y,z,o);
     if (!pCreature)
     {
-        sLog.outError("Can't create Spirit guide. BattleGround not created!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Can't create Spirit guide. BattleGround not created!");
         EndNow();
         return false;
     }
@@ -1546,7 +1546,7 @@ void BattleGround::AddSpectatorNPC(float x, float y, float z, float o)
 {
     Creature* pCreature = AddCreature(WORLD_TRIGGER, ARENA_NPC_SPECTATOR, 0, x, y, z, o);
     if (!pCreature)
-        sLog.outError("Can't create Arena Spectator!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Can't create Arena Spectator!");
 
     pCreature->SetLevitate(true);
     pCreature->SetReactState(REACT_PASSIVE);
@@ -1628,7 +1628,7 @@ void BattleGround::HandleTriggerBuff(uint64 const& go_guid)
         index--;
     if (index < 0)
     {
-        sLog.outError("BattleGround (Type: %u) has buff gameobject (Guid: %u Entry: %u Type:%u) but it hasn't that object in its internal data",GetTypeID(),GUID_LOPART(go_guid),obj->GetEntry(),obj->GetGoType());
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround (Type: %u) has buff gameobject (Guid: %u Entry: %u Type:%u) but it hasn't that object in its internal data",GetTypeID(),GUID_LOPART(go_guid),obj->GetEntry(),obj->GetGoType());
         return;
     }
 
@@ -1707,7 +1707,7 @@ void BattleGround::PlayerRelogin(uint64 guid)
     Player *plr = sObjectMgr.GetPlayer(guid);
     if (!plr)
     {
-        sLog.outError("BattleGround: Player " UI64FMTD " not found!", guid);
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround: Player " UI64FMTD " not found!", guid);
         return;
     }
 
@@ -1751,7 +1751,7 @@ int32 BattleGround::GetObjectType(uint64 guid)
     for (uint32 i = 0;i <= m_BgObjects.size(); i++)
         if (m_BgObjects[i] == guid)
             return i;
-    sLog.outError("BattleGround: cheating? a player used a gameobject which isnt supposed to be a usable object!");
+    sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround: cheating? a player used a gameobject which isnt supposed to be a usable object!");
     return -1;
 }
 

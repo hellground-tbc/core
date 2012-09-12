@@ -74,7 +74,7 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
     RealmDataDatabase.CommitTransaction();
 
     AddMember(CaptainGuid);
-    sLog.outArena("New ArenaTeam created [Name: %s] [Id: %u] [Type: %u] [Captain GUID: %u]", ArenaTeamName.c_str(), GetId(), GetType(), GetCaptain());
+    sLog.outLog(LOG_ARENA, "New ArenaTeam created [Name: %s] [Id: %u] [Type: %u] [Captain GUID: %u]", ArenaTeamName.c_str(), GetId(), GetType(), GetCaptain());
     return true;
 }
 
@@ -92,7 +92,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
     {
         if (pl->GetArenaTeamId(GetSlot()))
         {
-            sLog.outError("Arena::AddMember() : player already in this sized team");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Arena::AddMember() : player already in this sized team");
             return false;
         }
 
@@ -112,7 +112,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
         // check if player already in arenateam of that size
         if (Player::GetArenaTeamIdFromDB(PlayerGuid, GetType()) != 0)
         {
-            sLog.outError("Arena::AddMember() : player already in this sized team");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Arena::AddMember() : player already in this sized team");
             return false;
         }
     }
@@ -173,7 +173,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid)
         // hide promote/remove buttons
         if (CaptainGuid != PlayerGuid)
             pl->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + 1, 1);
-        sLog.outArena("Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", pl->GetName(), pl->GetGUIDLow(), GetType(), GetId());
+        sLog.outLog(LOG_ARENA, "Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", pl->GetName(), pl->GetGUIDLow(), GetType(), GetId());
     }
     return true;
 }
@@ -296,7 +296,7 @@ void ArenaTeam::SetCaptain(const uint64& guid)
     if (newcaptain)
     {
         newcaptain->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 1 + (GetSlot() * 6), 0);
-        sLog.outArena("Player: %s [GUID: %u] promoted player: %s [GUID: %u] to leader of arena team [Id: %u] [Type: %u].", oldcaptain->GetName(), oldcaptain->GetGUIDLow(), newcaptain->GetName(), newcaptain->GetGUID(), GetId(), GetType());
+        sLog.outLog(LOG_ARENA, "Player: %s [GUID: %u] promoted player: %s [GUID: %u] to leader of arena team [Id: %u] [Type: %u].", oldcaptain->GetName(), oldcaptain->GetGUIDLow(), newcaptain->GetName(), newcaptain->GetGUID(), GetId(), GetType());
     }
 }
 
@@ -322,7 +322,7 @@ void ArenaTeam::DelMember(uint64 guid)
         {
             player->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + i, 0);
         }
-        sLog.outArena("Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
+        sLog.outLog(LOG_ARENA, "Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
     }
     RealmDataDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), GUID_LOPART(guid));
 }
@@ -341,7 +341,7 @@ void ArenaTeam::Disband(WorldSession *session)
     }
 
     if (Player *player = session->GetPlayer())
-        sLog.outArena("Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
+        sLog.outLog(LOG_ARENA, "Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName(), player->GetGUIDLow(), GetType(), GetId());
 
     RealmDataDatabase.BeginTransaction();
     RealmDataDatabase.PExecute("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
@@ -504,7 +504,7 @@ uint8 ArenaTeam::GetSlotByType(uint32 type)
         default:
             break;
     }
-    sLog.outError("FATAL: Unknown arena team type %u for some arena team", type);
+    sLog.outLog(LOG_DEFAULT, "FATAL ERROR: Unknown arena team type %u for some arena team", type);
     return 0xFF;
 }
 

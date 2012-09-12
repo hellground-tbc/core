@@ -126,7 +126,7 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
 
             uint32 owner_accid = sObjectMgr.GetPlayerAccountIdByGUID(auction->owner);
 
-            sLog.outAuction("Player %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
+            sLog.outLog(LOG_AUCTION, "Player %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
                 bidder_name.c_str(), bidder_accId, pItem->GetProto()->Name1, pItem->GetEntry(), pItem->GetCount(), auction->bid, owner_name.c_str(), owner_accid);
         }
 
@@ -246,7 +246,7 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry * auction)
     Item *pItem = GetAItem(auction->itemGuidLow);
     if (!pItem)
     {
-        sLog.outError("Auction item (GUID: %u) not found, and lost.", auction->itemGuidLow);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Auction item (GUID: %u) not found, and lost.", auction->itemGuidLow);
         return;
     }
 
@@ -315,7 +315,7 @@ void AuctionHouseMgr::LoadAuctionItems()
 
         if (!proto)
         {
-            sLog.outError("AuctionHouseMgr::LoadAuctionItems: Unknown item (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
+            sLog.outLog(LOG_DEFAULT, "ERROR: AuctionHouseMgr::LoadAuctionItems: Unknown item (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
             continue;
         }
 
@@ -420,7 +420,7 @@ void AuctionHouseMgr::LoadAuctions()
         if (!pItem)
         {
             auction->DeleteFromDB();
-            sLog.outError("Auction %u has not a existing item : %u, deleted", auction->Id, auction->itemGuidLow);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Auction %u has not a existing item : %u, deleted", auction->Id, auction->itemGuidLow);
             delete auction;
             continue;
         }
@@ -959,7 +959,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
     Item *pItem = sAuctionMgr.GetAItem(itemGuidLow);
     if (!pItem)
     {
-        sLog.outError("auction to item, that doesn't exist !!!!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: auction to item, that doesn't exist !!!!");
         return false;
     }
     data << uint32(Id);

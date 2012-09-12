@@ -58,11 +58,11 @@ void WardenMac::Init(WorldSession *pClient, BigNumber *K)
 
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
-//    sLog.outWarden("Server side warden for client %u initializing...", pClient->GetAccountId());
+//    sLog.outLog(LOG_WARDEN, "Server side warden for client %u initializing...", pClient->GetAccountId());
 //    PrintHexArray("  C->S Key: ", InputKey, 16, true);
 //    PrintHexArray("  S->C Key: ", OutputKey, 16, true);
 //    PrintHexArray("  Seed: ", Seed, 16, true);
-//    sLog.outWarden("Loading Module...");
+//    sLog.outLog(LOG_WARDEN, "Loading Module...");
 
     Module = GetModuleForClient(Client);
 
@@ -94,12 +94,12 @@ ClientWardenModule *WardenMac::GetModuleForClient(WorldSession *session)
 
 void WardenMac::InitializeModule()
 {
-//    sLog.outWarden("Initialize module");
+//    sLog.outLog(LOG_WARDEN, "Initialize module");
 }
 
 void WardenMac::RequestHash()
 {
-//    sLog.outWarden("Request hash");
+//    sLog.outLog(LOG_WARDEN, "Request hash");
 
     // Create packet structure
     WardenHashRequest Request;
@@ -152,13 +152,13 @@ void WardenMac::HandleHashResult(ByteBuffer &buff)
     // verify key not equal kick player
     if (memcmp(buff.contents() + 1, sha1.GetDigest(), 20) != 0)
     {
-        sLog.outWarden("MAC Request hash reply: failed account %u", Client->GetAccountId());
+        sLog.outLog(LOG_WARDEN, "MAC Request hash reply: failed account %u", Client->GetAccountId());
         if (sWorld.getConfig(CONFIG_WARDEN_KICK))
             Client->KickPlayer();
         return;
     }
 
-//    sLog.outWarden("Request hash reply: succeed");
+//    sLog.outLog(LOG_WARDEN, "Request hash reply: succeed");
 
     // client 7F96EEFDA5B63D20A4DF8E00CBF48304
     //const uint8 client_key[16] = { 0x7F, 0x96, 0xEE, 0xFD, 0xA5, 0xB6, 0x3D, 0x20, 0xA4, 0xDF, 0x8E, 0x00, 0xCB, 0xF4, 0x83, 0x04 };
@@ -180,7 +180,7 @@ void WardenMac::HandleHashResult(ByteBuffer &buff)
 
 void WardenMac::RequestData()
 {
-//    sLog.outWarden("Request data");
+//    sLog.outLog(LOG_WARDEN, "Request data");
 
     ByteBuffer buff;
     buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
@@ -204,7 +204,7 @@ void WardenMac::RequestData()
 
 void WardenMac::HandleData(ByteBuffer &buff)
 {
-//    sLog.outWarden("Handle data");
+//    sLog.outLog(LOG_WARDEN, "Handle data");
 
     m_WardenDataSent = false;
     m_WardenKickTimer = 0;
@@ -237,7 +237,7 @@ void WardenMac::HandleData(ByteBuffer &buff)
 
     if (memcmp(sha1Hash, sha1.GetDigest(), 20))
     {
-        sLog.outWarden("MAC Handle data failed: SHA1 hash is wrong! account %u", Client->GetAccountId());
+        sLog.outLog(LOG_WARDEN, "MAC Handle data failed: SHA1 hash is wrong! account %u", Client->GetAccountId());
         found = true;
     }
 
@@ -252,7 +252,7 @@ void WardenMac::HandleData(ByteBuffer &buff)
 
     if (memcmp(ourMD5Hash, theirsMD5Hash, 16))
     {
-        sLog.outWarden("MAC Handle data failed: MD5 hash is wrong! account %u", Client->GetAccountId());
+        sLog.outLog(LOG_WARDEN, "MAC Handle data failed: MD5 hash is wrong! account %u", Client->GetAccountId());
         found = true;
     }
 

@@ -8,7 +8,7 @@
 #include <ace/FIFO_Send.h>
 #include <ace/FIFO_Recv.h>
 
-#define sMLog (*ACE_Singleton<VMAP::MultiProcessLog, ACE_Null_Mutex>::instance())
+#define sLog (*ACE_Singleton<VMAP::MultiProcessLog, ACE_Null_Mutex>::instance())
 
 class ByteBuffer;
 
@@ -38,9 +38,9 @@ namespace VMAP
     public:
         explicit _SendPipeWrapper() {}
         ~_SendPipeWrapper() {}
-        
+
         virtual void SendPacket(ByteBuffer &packet);
-        virtual void Connect(const char* name, int32 *id = 0);        
+        virtual void Connect(const char* name, int32 *id = 0);
     };
 
     template<class STREAM>
@@ -59,7 +59,7 @@ namespace VMAP
 
     private:
         uint8 m_buffer[100];
-        
+
         bool recv(ByteBuffer &packet, uint32 size);
     };
 
@@ -71,7 +71,7 @@ namespace VMAP
         ~_SynchronizedSendPipeWrapper() {}
 
         void SendPacket(ByteBuffer &packet);
-        void Connect(const char* name, int32 *id = 0);        
+        void Connect(const char* name, int32 *id = 0);
 
     private:
         LockType m_lock;
@@ -99,7 +99,7 @@ namespace VMAP
 
         void outString(const char *fmt, ...);
         void outError(const char *fmt, ...);
-        
+
     private:
         FILE* m_logFile;
         bool m_includeTime;

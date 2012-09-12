@@ -262,7 +262,7 @@ bool Database::PExecuteLog(const char * format,...)
 
     if(res==-1)
     {
-        sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL Query truncated (and not execute) for format: %s",format);
         return false;
     }
 
@@ -286,7 +286,7 @@ bool Database::PExecuteLog(const char * format,...)
         else
         {
             // The file could not be opened
-            sLog.outError("SQL-Logging is disabled - Log file for the SQL commands could not be openend: %s",fName);
+            sLog.outLog(LOG_DEFAULT, "ERROR: SQL-Logging is disabled - Log file for the SQL commands could not be openend: %s",fName);
         }
     }
 
@@ -306,7 +306,7 @@ QueryResultAutoPtr Database::PQuery(const char *format,...)
 
     if(res==-1)
     {
-        sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL Query truncated (and not execute) for format: %s",format);
         return QueryResultAutoPtr(NULL);
     }
 
@@ -325,7 +325,7 @@ QueryNamedResult* Database::PQueryNamed(const char *format,...)
 
     if(res==-1)
     {
-        sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL Query truncated (and not execute) for format: %s",format);
         return false;
     }
 
@@ -369,7 +369,7 @@ bool Database::PExecute(const char * format,...)
 
     if(res==-1)
     {
-        sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL Query truncated (and not execute) for format: %s",format);
         return false;
     }
 
@@ -389,7 +389,7 @@ bool Database::DirectPExecute(const char * format,...)
 
     if(res==-1)
     {
-        sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL Query truncated (and not execute) for format: %s",format);
         return false;
     }
 
@@ -500,44 +500,44 @@ bool Database::CheckRequiredField( char const* table_name, char const* required_
 
         if(!reqName.empty())
         {
-            sLog.outErrorDb("The table `%s` in your [%s] database indicates that this database is out of date!",table_name,db_name);
-            sLog.outErrorDb();
-            sLog.outErrorDb("  [A] You have: --> `%s.sql`",cur_sql_update_name.c_str());
-            sLog.outErrorDb();
-            sLog.outErrorDb("  [B] You need: --> `%s.sql`",req_sql_update_name);
-            sLog.outErrorDb();
-            sLog.outErrorDb("You must apply all updates after [A] to [B] to use mangos with this database.");
-            sLog.outErrorDb("These updates are included in the sql/updates folder.");
-            sLog.outErrorDb("Please read the included [README] in sql/updates for instructions on updating.");
+            sLog.outLog(LOG_DB_ERR, "The table `%s` in your [%s] database indicates that this database is out of date!",table_name,db_name);
+            sLog.outLog(LOG_DB_ERR, "");
+            sLog.outLog(LOG_DB_ERR, "  [A] You have: --> `%s.sql`",cur_sql_update_name.c_str());
+            sLog.outLog(LOG_DB_ERR, "");
+            sLog.outLog(LOG_DB_ERR, "  [B] You need: --> `%s.sql`",req_sql_update_name);
+            sLog.outLog(LOG_DB_ERR, "");
+            sLog.outLog(LOG_DB_ERR, "You must apply all updates after [A] to [B] to use mangos with this database.");
+            sLog.outLog(LOG_DB_ERR, "These updates are included in the sql/updates folder.");
+            sLog.outLog(LOG_DB_ERR, "Please read the included [README] in sql/updates for instructions on updating.");
         }
         else
         {
-            sLog.outErrorDb("The table `%s` in your [%s] database is missing its version info.",table_name,db_name);
-            sLog.outErrorDb("MaNGOS cannot find the version info needed to check that the db is up to date.");
-            sLog.outErrorDb();
-            sLog.outErrorDb("This revision of MaNGOS requires a database updated to:");
-            sLog.outErrorDb("`%s.sql`",req_sql_update_name);
-            sLog.outErrorDb();
+            sLog.outLog(LOG_DB_ERR, "The table `%s` in your [%s] database is missing its version info.",table_name,db_name);
+            sLog.outLog(LOG_DB_ERR, "MaNGOS cannot find the version info needed to check that the db is up to date.");
+            sLog.outLog(LOG_DB_ERR, "");
+            sLog.outLog(LOG_DB_ERR, "This revision of MaNGOS requires a database updated to:");
+            sLog.outLog(LOG_DB_ERR, "`%s.sql`",req_sql_update_name);
+            sLog.outLog(LOG_DB_ERR, "");
 
             if(!strcmp(db_name, "WORLD"))
-                sLog.outErrorDb("Post this error to your database provider forum or find a solution there.");
+                sLog.outLog(LOG_DB_ERR, "Post this error to your database provider forum or find a solution there.");
             else
-                sLog.outErrorDb("Reinstall your [%s] database with the included sql file in the sql folder.",db_name);
+                sLog.outLog(LOG_DB_ERR, "Reinstall your [%s] database with the included sql file in the sql folder.",db_name);
         }
     }
     else
     {
-        sLog.outErrorDb("The table `%s` in your [%s] database is missing or corrupt.",table_name,db_name);
-        sLog.outErrorDb("MaNGOS cannot find the version info needed to check that the db is up to date.");
-        sLog.outErrorDb();
-        sLog.outErrorDb("This revision of mangos requires a database updated to:");
-        sLog.outErrorDb("`%s.sql`",req_sql_update_name);
-        sLog.outErrorDb();
+        sLog.outLog(LOG_DB_ERR, "The table `%s` in your [%s] database is missing or corrupt.",table_name,db_name);
+        sLog.outLog(LOG_DB_ERR, "MaNGOS cannot find the version info needed to check that the db is up to date.");
+        sLog.outLog(LOG_DB_ERR, "");
+        sLog.outLog(LOG_DB_ERR, "This revision of mangos requires a database updated to:");
+        sLog.outLog(LOG_DB_ERR, "`%s.sql`",req_sql_update_name);
+        sLog.outLog(LOG_DB_ERR, "");
 
         if(!strcmp(db_name, "WORLD"))
-            sLog.outErrorDb("Post this error to your database provider forum or find a solution there.");
+            sLog.outLog(LOG_DB_ERR, "Post this error to your database provider forum or find a solution there.");
         else
-            sLog.outErrorDb("Reinstall your [%s] database with the included sql file in the sql folder.",db_name);
+            sLog.outLog(LOG_DB_ERR, "Reinstall your [%s] database with the included sql file in the sql folder.",db_name);
     }
 
     return false;

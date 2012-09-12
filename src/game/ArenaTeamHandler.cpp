@@ -390,7 +390,7 @@ void WorldSession::BuildArenaTeamEventPacket(WorldPacket *data, uint8 eventid, u
             *data << str3;
             break;
         default:
-            sLog.outError("Unhandled str_count %u in SendArenaTeamEvent()", str_count);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Unhandled str_count %u in SendArenaTeamEvent()", str_count);
             return;
     }
 }

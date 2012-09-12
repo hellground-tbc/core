@@ -63,7 +63,7 @@ bool Guild::create(uint64 lGuid, std::string gname)
     if (sObjectMgr.GetGuildByName(gname))
         return false;
 
-    sLog.outSpecial("GUILD: creating guild %s to leader: %u", gname.c_str(), GUID_LOPART(lGuid));
+    sLog.outLog(LOG_SPECIAL, "GUILD: creating guild %s to leader: %u", gname.c_str(), GUID_LOPART(lGuid));
 
     leaderGuid = lGuid;
     name = gname;
@@ -281,7 +281,7 @@ bool Guild::LoadRanksFromDB(uint32 GuildId)
     // guild_rank have wrong numbered ranks, repair
     if (broken_ranks)
     {
-        sLog.outError("Guild %u have broken `guild_rank` data, repairing...",GuildId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Guild %u have broken `guild_rank` data, repairing...",GuildId);
         RealmDataDatabase.BeginTransaction();
         RealmDataDatabase.PExecute("DELETE FROM guild_rank WHERE guildid='%u'", GuildId);
         for (size_t i =0; i < m_ranks.size(); ++i)
@@ -379,13 +379,13 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 
         if (plLevel < 1 || plLevel > STRONG_MAX_LEVEL)             // can be at broken `data` field
         {
-            sLog.outError("Player (GUID: %u) has a broken data in field `characters`.`data`.",GUID_LOPART(guid));
+            sLog.outLog(LOG_DEFAULT, "ERROR: Player (GUID: %u) has a broken data in field `characters`.`data`.",GUID_LOPART(guid));
             return false;
         }
 
         if (!plZone)
         {
-            sLog.outError("Player (GUID: %u) has broken zone-data",GUID_LOPART(guid));
+            sLog.outLog(LOG_DEFAULT, "ERROR: Player (GUID: %u) has broken zone-data",GUID_LOPART(guid));
             //here it will also try the same, to get the zone from characters-table, but additional it tries to find
             plZone = Player::GetZoneIdFromDB(guid);
             //the zone through xy coords.. this is a bit redundant, but
@@ -394,7 +394,7 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 
         if (plClass < CLASS_WARRIOR || plClass >= MAX_CLASSES)     // can be at broken `class` field
         {
-            sLog.outError("Player (GUID: %u) has a broken data in field `characters`.`class`.",GUID_LOPART(guid));
+            sLog.outLog(LOG_DEFAULT, "ERROR: Player (GUID: %u) has a broken data in field `characters`.`class`.",GUID_LOPART(guid));
             return false;
         }
     }
@@ -1237,13 +1237,13 @@ void Guild::LoadGuildBankFromDB()
         // sprawdzamy rozmiar tab ? moze byc rozny od purchased_tabs? oO
         if (TabId >= m_TabListMap.size() || TabId >= purchased_tabs || TabId >= GUILD_BANK_MAX_TABS)
         {
-            sLog.outError("Guild::LoadGuildBankFromDB: Invalid tab for item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Guild::LoadGuildBankFromDB: Invalid tab for item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
             continue;
         }
 
         if (SlotId >= GUILD_BANK_MAX_SLOTS)
         {
-            sLog.outError("Guild::LoadGuildBankFromDB: Invalid slot for item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Guild::LoadGuildBankFromDB: Invalid slot for item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
             continue;
         }
 
@@ -1251,7 +1251,7 @@ void Guild::LoadGuildBankFromDB()
 
         if (!proto)
         {
-            sLog.outError("Guild::LoadGuildBankFromDB: Unknown item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Guild::LoadGuildBankFromDB: Unknown item (GUID: %u id: #%u) in guild bank, skipped.", ItemGuid,ItemEntry);
             continue;
         }
 
@@ -1259,7 +1259,7 @@ void Guild::LoadGuildBankFromDB()
         if (!pItem->LoadFromDB(ItemGuid, 0, result))
         {
             RealmDataDatabase.PExecute("DELETE FROM guild_bank_item WHERE guildid='%u' AND TabId='%u' AND SlotId='%u'", Id, uint32(TabId), uint32(SlotId));
-            sLog.outError("Item GUID %u not found in item_instance, deleting from Guild Bank!", ItemGuid);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Item GUID %u not found in item_instance, deleting from Guild Bank!", ItemGuid);
             delete pItem;
             continue;
         }
@@ -1532,7 +1532,7 @@ void Guild::LoadGuildBankEventLogFromDB()
 
         if (TabId >= GUILD_BANK_MAX_TABS)
         {
-            sLog.outError("Guild::LoadGuildBankEventLogFromDB: Invalid tabid '%u' for guild bank log entry (guild: '%s', LogGuid: %u), skipped.", TabId, GetName().c_str(), NewEvent->LogGuid);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Guild::LoadGuildBankEventLogFromDB: Invalid tabid '%u' for guild bank log entry (guild: '%s', LogGuid: %u), skipped.", TabId, GetName().c_str(), NewEvent->LogGuid);
             delete NewEvent;
             continue;
         }

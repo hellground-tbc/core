@@ -64,7 +64,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
     if (type >= MAX_CHAT_MSG_TYPE)
     {
-        sLog.outError("CHAT: Wrong message type received: %u", type);
+        sLog.outLog(LOG_DEFAULT, "ERROR: CHAT: Wrong message type received: %u", type);
         return;
     }
 
@@ -579,7 +579,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         } break;
 
         default:
-            sLog.outError("CHAT: unknown message type %u, lang: %u", type, lang);
+            sLog.outLog(LOG_DEFAULT, "ERROR: CHAT: unknown message type %u, lang: %u", type, lang);
             break;
     }
 }

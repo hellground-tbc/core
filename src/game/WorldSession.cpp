@@ -134,7 +134,7 @@ WorldSession::~WorldSession()
 
 void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
 {
-    sLog.outError("Client (account %u) send packet %s (%u) with size %u but expected %u (attempt crash server?), skipped",
+    sLog.outLog(LOG_DEFAULT, "ERROR: Client (account %u) send packet %s (%u) with size %u but expected %u (attempt crash server?), skipped",
         GetAccountId(),LookupOpcodeName(packet.GetOpcode()),packet.GetOpcode(),packet.size(),size);
 }
 
@@ -236,7 +236,7 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
 
     if (packet->GetOpcode() >= NUM_MSG_TYPES)
     {
-        sLog.outError("SESSION: received non-existed opcode %s (0x%.4X)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received non-existed opcode %s (0x%.4X)",
             LookupOpcodeName(packet->GetOpcode()),
             packet->GetOpcode());
     }
@@ -280,7 +280,7 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
                 break;
             case STATUS_NEVER:
                 if (packet->GetOpcode() != CMSG_MOVE_NOT_ACTIVE_MOVER)
-                    sLog.outError("SESSION: received not allowed opcode %s (0x%.4X)",
+                    sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received not allowed opcode %s (0x%.4X)",
                         LookupOpcodeName(packet->GetOpcode()),
                         packet->GetOpcode());
                 break;
@@ -330,7 +330,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     }
     catch (...)
     {
-        sLog.outSpecial("WPE NOOB: packet doesn't contains required data, %s(%u), acc: %u", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetAccountId());
+        sLog.outLog(LOG_SPECIAL, "WPE NOOB: packet doesn't contains required data, %s(%u), acc: %u", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetAccountId());
         KickPlayer();
     }
 
@@ -368,10 +368,10 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         overtimeText << "  " << (*itr).opcode << " (" << (*itr).diff << ")\n";
 
                     overtimeText << "#################################################";
-                    sLog.outSessionDiff(overtimeText.str().c_str());
+                    sLog.outLog(LOG_SESSION_DIFF, overtimeText.str().c_str());
                 }
 
-                sLog.outError("WorldSession::Update: session for account %u was too long", GetAccountId());
+                sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::Update: session for account %u was too long", GetAccountId());
             }
             default:
                 break;
@@ -659,21 +659,21 @@ void WorldSession::Handle_NULL(WorldPacket& recvPacket)
 
 void WorldSession::Handle_EarlyProccess(WorldPacket& recvPacket)
 {
-    sLog.outError("SESSION: received opcode %s (0x%.4X) that must be processed in WorldSocket::OnRead",
+    sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received opcode %s (0x%.4X) that must be processed in WorldSocket::OnRead",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
 
 void WorldSession::Handle_ServerSide(WorldPacket& recvPacket)
 {
-    sLog.outError("SESSION: received server-side opcode %s (0x%.4X)",
+    sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received server-side opcode %s (0x%.4X)",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
 
 void WorldSession::Handle_Deprecated(WorldPacket& recvPacket)
 {
-    sLog.outError("SESSION: received deprecated opcode %s (0x%.4X)",
+    sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received deprecated opcode %s (0x%.4X)",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
@@ -706,7 +706,7 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
 //            m_Warden = (WardenBase*)new WardenMac();
             break;
         default:
-            sLog.outWarden("Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
+            sLog.outLog(LOG_WARDEN, "Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
             if (sWorld.getConfig(CONFIG_WARDEN_KICK))
                 KickPlayer();
             return;
@@ -734,7 +734,7 @@ uint32 WorldSession::RecordSessionTimeDiff(const char *text, ...)
         va_start(ap, text);
         vsnprintf(str,256,text, ap);
         va_end(ap);
-        sLog.outSessionDiff("Session Difftime %s: %u.", str, diff);
+        sLog.outLog(LOG_SESSION_DIFF, "Session Difftime %s: %u.", str, diff);
     }
 
     m_currentSessionTime = thisTime;

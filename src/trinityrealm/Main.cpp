@@ -192,11 +192,11 @@ extern int main(int argc, char **argv)
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
     if (confVersion < _REALMDCONFVERSION)
     {
-        sLog.outError("**********************************************************************************");
-        sLog.outError(" WARNING: Your trinityrealm.conf version indicates your conf file is out of date!");
-        sLog.outError("          Please check for updates, as your current default values may cause");
-        sLog.outError("          strange behavior.");
-        sLog.outError("**********************************************************************************");
+        sLog.outLog(LOG_DEFAULT, "ERROR: **********************************************************************************");
+        sLog.outLog(LOG_DEFAULT, "ERROR:  WARNING: Your trinityrealm.conf version indicates your conf file is out of date!");
+        sLog.outLog(LOG_DEFAULT, "ERROR:           Please check for updates, as your current default values may cause");
+        sLog.outLog(LOG_DEFAULT, "ERROR:           strange behavior.");
+        sLog.outLog(LOG_DEFAULT, "ERROR: **********************************************************************************");
         clock_t pause = 3000 + clock();
 
         while (pause > clock()) {}
@@ -226,7 +226,7 @@ extern int main(int argc, char **argv)
         uint32 pid = CreatePIDFile(pidfile);
         if( !pid )
         {
-            sLog.outError("Cannot create PID file %s.\n", pidfile.c_str());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Cannot create PID file %s.\n", pidfile.c_str());
             return 1;
         }
 
@@ -241,7 +241,7 @@ extern int main(int argc, char **argv)
     sRealmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
     if (sRealmList.size() == 0)
     {
-        sLog.outError("No valid realms specified.");
+        sLog.outLog(LOG_DEFAULT, "ERROR: No valid realms specified.");
         return 1;
     }
 
@@ -258,7 +258,7 @@ extern int main(int argc, char **argv)
         while (result->NextRow());
     }
 #else
-        sLog.outError("No Valid Regex Library for your Compiler, the pattern_banned feature will be disabled");
+        sLog.outLog(LOG_DEFAULT, "ERROR: No Valid Regex Library for your Compiler, the pattern_banned feature will be disabled");
 #endif
 
     // cleanup query
@@ -278,7 +278,7 @@ extern int main(int argc, char **argv)
 
     if (acceptor.open(bind_addr, ACE_Reactor::instance(), ACE_NONBLOCK) == -1)
     {
-        sLog.outError("TrinityRealm can not bind to %s:%d", bind_ip.c_str(), rmport);
+        sLog.outLog(LOG_DEFAULT, "ERROR: TrinityRealm can not bind to %s:%d", bind_ip.c_str(), rmport);
         return 1;
     }
 
@@ -302,14 +302,14 @@ extern int main(int argc, char **argv)
 
                 if(!curAff )
                 {
-                    sLog.outError("Processors marked in UseProcessors bitmask (hex) %x not accessible for realmd. Accessible processors bitmask (hex): %x",Aff,appAff);
+                    sLog.outLog(LOG_DEFAULT, "ERROR: Processors marked in UseProcessors bitmask (hex) %x not accessible for realmd. Accessible processors bitmask (hex): %x",Aff,appAff);
                 }
                 else
                 {
                     if(SetProcessAffinityMask(hProcess,curAff))
                         sLog.outString("Using processors (bitmask, hex): %x", curAff);
                     else
-                        sLog.outError("Can't set used processors (hex): %x", curAff);
+                        sLog.outLog(LOG_DEFAULT, "ERROR: Can't set used processors (hex): %x", curAff);
                 }
             }
         }
@@ -321,7 +321,7 @@ extern int main(int argc, char **argv)
             if(SetPriorityClass(hProcess,HIGH_PRIORITY_CLASS))
                 sLog.outString("TrinityRealm process priority class set to HIGH");
             else
-                sLog.outError("Can't set TrinityRealm process priority class.");
+                sLog.outLog(LOG_DEFAULT, "ERROR: Can't set TrinityRealm process priority class.");
         }
     }
     #endif
@@ -397,7 +397,7 @@ bool StartDB()
     std::string dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
     if(dbstring.empty())
     {
-        sLog.outError("Database not specified");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Database not specified");
         return false;
     }
 
@@ -405,7 +405,7 @@ bool StartDB()
 
     if(!AccountsDatabase.Initialize(dbstring.c_str()))
     {
-        sLog.outError("Cannot connect to database");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to database");
         return false;
     }
 

@@ -87,7 +87,7 @@ bool GridMap::loadData(char *filename)
         // loadup area data
         if (header.areaMapOffset && !loadAreaData(in, header.areaMapOffset, header.areaMapSize))
         {
-            sLog.outError("Error loading map area data\n");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Error loading map area data\n");
             fclose(in);
             return false;
         }
@@ -95,7 +95,7 @@ bool GridMap::loadData(char *filename)
         // loadup height data
         if (header.heightMapOffset && !loadHeightData(in, header.heightMapOffset, header.heightMapSize))
         {
-            sLog.outError("Error loading map height data\n");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Error loading map height data\n");
             fclose(in);
             return false;
         }
@@ -103,7 +103,7 @@ bool GridMap::loadData(char *filename)
         // loadup liquid data
         if (header.liquidMapOffset && !loadGridMapLiquidData(in, header.liquidMapOffset, header.liquidMapSize))
         {
-            sLog.outError("Error loading map liquids data\n");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Error loading map liquids data\n");
             fclose(in);
             return false;
         }
@@ -112,7 +112,7 @@ bool GridMap::loadData(char *filename)
         return true;
     }
 
-    sLog.outError("Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.", filename);
+    sLog.outLog(LOG_DEFAULT, "ERROR: Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.", filename);
     fclose(in);
     return false;
 }
@@ -571,7 +571,7 @@ bool GridMap::ExistMap(uint32 mapid,int gx,int gy)
 
     if(!pf)
     {
-        sLog.outError("Check existing of map file '%s': not exist!",tmp);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Check existing of map file '%s': not exist!",tmp);
         delete[] tmp;
         return false;
     }
@@ -582,7 +582,7 @@ bool GridMap::ExistMap(uint32 mapid,int gx,int gy)
         header.versionMagic != *((uint32 const*)(MAP_VERSION_MAGIC)) ||
         !IsAcceptableClientBuild(header.buildMagic))
     {
-        sLog.outError("Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.",tmp);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.",tmp);
         delete [] tmp;
         fclose(pf);                                         //close file before return
         return false;
@@ -601,7 +601,7 @@ bool GridMap::ExistVMap(uint32 mapid,int gx,int gy)
         if (!exists)
         {
             std::string name = vmgr->getDirFileName(mapid,gx,gy);
-            sLog.outError("VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld.GetDataPath()+"vmaps/"+name).c_str());
+            sLog.outLog(LOG_DEFAULT, "ERROR: VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld.GetDataPath()+"vmaps/"+name).c_str());
             return false;
         }
     }
@@ -1023,7 +1023,7 @@ GridMap* TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
 
             if(!map->loadData(tmp))
             {
-                sLog.outError("Error load map file: \n %s\n", tmp);
+                sLog.outLog(LOG_DEFAULT, "ERROR: Error load map file: \n %s\n", tmp);
                 //ASSERT(false);
             }
 

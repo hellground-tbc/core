@@ -20,7 +20,7 @@ namespace VMAP
     {
         if(m_stream && m_connected)
             Close();
-        
+
         if(m_stream)
             delete m_stream;
     }
@@ -30,7 +30,7 @@ namespace VMAP
     {
         Guard g(m_lock);
         if(!g.locked())
-            sMLog.outError("Connect: failed to aquire lock");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Connect: failed to aquire lock");
 
         _SendPipeWrapper<STREAM>::Connect(name, id);
     }
@@ -40,9 +40,9 @@ namespace VMAP
     {
         Guard g(m_lock);
         if(!g.locked())
-            sMLog.outError("Accept: failed to aquire log");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Accept: failed to aquire log");
 
-        _RecvPipeWrapper<STREAM>::Accept(name, id);    
+        _RecvPipeWrapper<STREAM>::Accept(name, id);
     }
 
     template<class STREAM>
@@ -52,7 +52,7 @@ namespace VMAP
         if(!g.locked())
         {
             ByteBuffer packet;
-            sMLog.outError("RecvPacket: failed to aquire lock");
+            sLog.outLog(LOG_DEFAULT, "ERROR: RecvPacket: failed to aquire lock");
             _RecvPipeWrapper<STREAM>::m_eof = true;
             return packet;
         }
@@ -66,25 +66,25 @@ namespace VMAP
         while(true)
         {
             n = _PipeWrapper<STREAM>::m_stream->recv_n(m_buffer, size);
-            if (n < 0) 
+            if (n < 0)
             {
                 int code = ACE_OS::last_error();
                 if(code == ERROR_EOF_ON_PIPE)
                 {
                     m_eof = true;
                     return false;
-                } 
-                else if(code == ERROR_MORE_DATA_IN_PIPE) 
+                }
+                else if(code == ERROR_MORE_DATA_IN_PIPE)
                 {
                     // ignore error
                 }
-                else 
+                else
                 {
-                    sMLog.outError("recv: failed to recv data from stream because of error %d", code);
+                    sLog.outLog(LOG_DEFAULT, "ERROR: recv: failed to recv data from stream because of error %d", code);
                     m_eof = true;
                     return false;
                 }
-            } 
+            }
             else if(n == 0)
             {
                 ACE_Thread::yield();
@@ -121,7 +121,7 @@ namespace VMAP
     {
         Guard g(m_lock);
         if(!g.locked())
-            sMLog.outError("SendPacket: failed to aquire lock, unintended bahaviour possible");
+            sLog.outLog(LOG_DEFAULT, "ERROR: SendPacket: failed to aquire lock, unintended bahaviour possible");
 
         return _SendPipeWrapper<STREAM>::SendPacket(packet);
     }
