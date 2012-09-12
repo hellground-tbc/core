@@ -93,6 +93,43 @@ bool Spell_seed_of_corruption_proc(Unit* pCaster, std::list<Unit*> &unitList, Sp
     return true;
 }
 
+bool Spell_arcane_torrent(Unit* caster, std::list<Unit*> &, SpellCastTargets const&, SpellEntry const *spellInfo, uint32 effectIndex)
+{
+    if (effectIndex != 0)
+        return true;
+
+    switch (spellInfo->Id)
+    {
+        case 28730:                                 // Arcane Torrent (Mana)
+        case 33390:                                 // Arcane Torrent (mana Wretched Devourer)
+        {
+            Aura* dummy = caster->GetDummyAura(28734);
+            if (dummy)
+            {
+                int32 bp = (5 + caster->getLevel()) * dummy->GetStackAmount();
+                caster->CastCustomSpell(caster, 28733, &bp, NULL, NULL, true);
+                caster->RemoveAurasDueToSpell(28734);
+            }
+            break;
+        }
+
+        // Arcane Torrent (Energy)
+        case 25046:
+        {
+            // Search Mana Tap auras on caster
+            Aura* dummy = caster->GetDummyAura(28734);
+            if (dummy)
+            {
+                int32 bp = dummy->GetStackAmount() * 10;
+                caster->CastCustomSpell(caster, 25048, &bp, NULL, NULL, true);
+                caster->RemoveAurasDueToSpell(28734);
+            }
+            break;
+        }
+    }
+    return true;
+}
+
 void AddSC_spell_scripts()
 {
     Script *newscript;
@@ -110,5 +147,10 @@ void AddSC_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_seed_of_corruption_proc";
     newscript->pSpellTargetMap = &Spell_seed_of_corruption_proc;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "spell_arcane_torrent";
+    newscript->pSpellTargetMap = &Spell_arcane_torrent;
     newscript->RegisterSelf();
 }
