@@ -986,11 +986,14 @@ float TerrainInfo::GetWaterOrGroundLevel(float x, float y, float z, float* pGrou
     return VMAP_INVALID_HEIGHT_VALUE;
 }
 
-GridMap * TerrainInfo::GetGrid(const float x, const float y)
+GridMap* TerrainInfo::GetGrid(const float x, const float y)
 {
     // half opt method
-    int gx=(int)(32-x/SIZE_OF_GRIDS);                       //grid x
-    int gy=(int)(32-y/SIZE_OF_GRIDS);                       //grid y
+    uint32 gx = uint32(32 - x / SIZE_OF_GRIDS);                       //grid x
+    uint32 gy = uint32(32 - y / SIZE_OF_GRIDS);                       //grid y
+
+    ASSERT(gx >= 0 && gx < MAX_NUMBER_OF_GRIDS);
+    ASSERT(gy >= 0 && gy < MAX_NUMBER_OF_GRIDS);
 
     //quick check if GridMap already loaded
     GridMap * pMap = m_GridMaps[gx][gy];
@@ -1000,7 +1003,7 @@ GridMap * TerrainInfo::GetGrid(const float x, const float y)
     return pMap;
 }
 
-GridMap * TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
+GridMap* TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
 {
     //double checked lock pattern
     if(!m_GridMaps[x][y])

@@ -3517,6 +3517,9 @@ bool Unit::isInAccessiblePlacefor (Creature const* c) const
 
 bool Unit::IsInWater() const
 {
+    if (!Hellground::IsValidMapCoord(GetPositionX(),GetPositionY(), GetPositionZ()))
+        return false;
+
     return GetTerrain()->IsInWater(GetPositionX(),GetPositionY(), GetPositionZ());
 }
 
