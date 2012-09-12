@@ -4114,18 +4114,11 @@ void Aura::HandleModStealth(bool apply, bool Real)
                 if (pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
                     pTarget->SetVisibility(VISIBILITY_GROUP_STEALTH);
                 else
-                {
                     pTarget->SetVisibility(VISIBILITY_ON);
-                    /*
-                    if (pTarget->GetTypeId() == TYPEID_PLAYER)
-                        if (OutdoorPvP * pvp = ((Player*)pTarget)->GetOutdoorPvP())
-                            pvp->HandlePlayerActivityChanged((Player*)pTarget);
-                    */
-                }
             }
 
-            //if (m_removeMode == AURA_REMOVE_BY_CANCEL)
-            //    pTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+            if (m_removeMode == AURA_REMOVE_BY_CANCEL)
+                pTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
         }
     }
 
@@ -4187,15 +4180,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
             {
                 // if have stealth aura then already have stealth visibility
                 if (!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH))
-                {
                     m_target->SetVisibility(VISIBILITY_ON);
-
-                    /*
-                    if (m_target->GetTypeId() == TYPEID_PLAYER)
-                        if (OutdoorPvP * pvp = ((Player*)m_target)->GetOutdoorPvP())
-                            pvp->HandlePlayerActivityChanged((Player*)m_target);
-                    */
-                }
             }
         }
     }
