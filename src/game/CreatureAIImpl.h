@@ -555,8 +555,6 @@ inline bool CreatureAI::UpdateVictim()
     {
         if (Unit *pVictim = me->SelectVictim())
             AttackStart(pVictim);
-
-        return me->getVictim();
     }
     else if (me->getThreatManager().isThreatListEmpty())
     {
@@ -567,7 +565,7 @@ inline bool CreatureAI::UpdateVictim()
     else if (me->IsInEvadeMode())
         return false;
 
-    return true;
+    return me->getVictim();
 }
 
 /*
