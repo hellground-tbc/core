@@ -2024,6 +2024,9 @@ bool SpellMgr::IsSplashBuffAura(SpellEntry const* spellInfo)
 
             if (spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_PARTY_SRC)
                 return true;
+
+            if (spellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_PARTY_DST)
+                return true;
         }
 
     }
