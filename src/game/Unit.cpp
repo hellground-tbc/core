@@ -598,9 +598,15 @@ void Unit::RemoveMovementImpairingAuras()
 {
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
-        // do not remove Encapsulate as movem imp effect
-        if (iter->second->GetSpellProto()->AttributesCu & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
-            RemoveAura(iter);
+        SpellEntry const* spellInfo = iter->second->GetSpellProto();
+        if (spellInfo->AttributesCu & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
+        {
+            // do NOT remove Dazed effect on shape shift
+            if (spellInfo->SpellIconID == 15 && spellInfo->Dispel == 0)
+                ++iter;
+            else
+                RemoveAura(iter);
+        }
         else
             ++iter;
     }
