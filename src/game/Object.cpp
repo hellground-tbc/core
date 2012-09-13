@@ -1807,6 +1807,15 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             AddGuardian(pet);
             break;
         case SUMMON_PET:
+            if (getClass() == CLASS_MAGE)
+            {
+                pet->SetMaxHealth(pet->GetMaxHealth() + GetStat(STAT_STAMINA)*0.3f*7.5f);
+                pet->SetMaxPower(POWER_MANA, pet->GetMaxPower(POWER_MANA) + GetStat(STAT_INTELLECT)*0.3f*5.0f);
+
+                // Water Elemental is frost immune
+                if (pet->GetCreatureType() == CREATURE_TYPE_ELEMENTAL)
+                    pet->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FROST, true);
+            }
             pet->SetUInt32Value(UNIT_FIELD_BYTES_0, 2048);
             pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
