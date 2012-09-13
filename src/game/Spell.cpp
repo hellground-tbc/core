@@ -4138,6 +4138,9 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 if (Unit* target = m_targets.getUnitTarget())
                 {
+                    if (!target->isAlive())
+                        return SPELL_FAILED_BAD_TARGETS;
+
                     Position dest;
                     target->GetPosition(dest);
 
