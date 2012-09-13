@@ -1112,7 +1112,10 @@ bool GOUse_go_ethereum_prison(Player *player, GameObject* _GO)
             }
         break;
     }
-    return false;
+
+    _GO->SetLootState(GO_READY);
+    _GO->UseDoorOrButton(5*MINUTE*IN_MILISECONDS);
+    return true;
 }
 
 /***
