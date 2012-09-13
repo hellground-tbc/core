@@ -2408,11 +2408,16 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
 
 struct HELLGROUND_DLL_DECL npc_land_mineAI : public Scripted_NoMovementAI
 {
-    npc_land_mineAI(Creature *c) : Scripted_NoMovementAI(c) {}
-
-    void IsSummonedBy(Unit *pSummoner)
+    npc_land_mineAI(Creature *c) : Scripted_NoMovementAI(c), _done(false)
     {
-        me->setFaction(pSummoner->getFaction());
+        me->SetAggroRange(5.0f);
+    }
+
+    bool _done;
+    void IsSummonedBy(Unit *summoner)
+    {
+        me->setFaction(summoner->getFaction());
+        me->SetOwnerGUID(summoner->GetGUID());
 
         // despawn after 10s
         me->ForcedDespawn(10000);
@@ -2420,15 +2425,14 @@ struct HELLGROUND_DLL_DECL npc_land_mineAI : public Scripted_NoMovementAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!who->IsHostileTo(me))
-            return;
-
-        if (!me->IsWithinDistInMap(who, 5.0f))
+        if (_done || !me->canStartAttack(who))
             return;
 
         int32 damage = urand(394, 507);
         me->CastCustomSpell(me, 27745, &damage, 0, 0, true);
         me->ForcedDespawn();
+
+        _done = true;
     }
 };
 
