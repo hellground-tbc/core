@@ -2441,7 +2441,7 @@ void World::_UpdateGameTime()
 }
 
 /// Shutdown the server
-void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
+void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode, char const* exitmsg)
 {
     // ignore if server shutdown at next tick
     if (m_stopEvent)
@@ -2449,6 +2449,8 @@ void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
 
     m_ShutdownMask = options;
     m_ExitCode = exitcode;
+
+    m_ShutdownReason = exitmsg;
 
     m_ShutdownTimer = time;
     ShutdownMsg(true);
@@ -2476,6 +2478,7 @@ void World::ShutdownMsg(bool show, Player* player)
         (m_ShutdownTimer>12*HOUR   && (m_ShutdownTimer % (12*HOUR))==0))
     {
         std::string str = secsToTimeString(m_ShutdownTimer);
+        str += " Reason: " + m_ShutdownReason + ".";
 
         ServerMessageType msgid = (m_ShutdownMask & SHUTDOWN_MASK_RESTART) ? SERVER_MSG_RESTART_TIME : SERVER_MSG_SHUTDOWN_TIME;
 
@@ -2495,6 +2498,8 @@ void World::ShutdownCancel()
 
     m_ShutdownMask = 0;
     m_ShutdownTimer = 0;
+    m_ShutdownReason = "no-reason";
+
     m_ExitCode = SHUTDOWN_EXIT_CODE;                       // to default value
     SendServerMessage(msgid);
 

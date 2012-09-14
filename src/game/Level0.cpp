@@ -186,7 +186,14 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     PSendSysMessage("Hellground.pl - rev: "_REVISION);
     PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
-    PSendSysMessage("Diff: %u.", updateTime);
+    PSendSysMessage("Update time diff: %u.", updateTime);
+
+    if (sWorld.IsShutdowning())
+    {
+        PSendSysMessage("");
+        PSendSysMessage("Server will %s in: %s", (sWorld.GetShutdownMask() & SHUTDOWN_MASK_RESTART ? "restart" : "be shutteddown"), secsToTimeString(sWorld.GetShutdownTimer()));
+        PSendSysMessage("Reason: %s.", sWorld.GetShutdownReason().c_str());
+    }
 
     return true;
 }
