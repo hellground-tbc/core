@@ -8,7 +8,7 @@
 #include <ace/FIFO_Send.h>
 #include <ace/FIFO_Recv.h>
 
-#define sLog (*ACE_Singleton<VMAP::MultiProcessLog, ACE_Null_Mutex>::instance())
+#define sLogMP (*ACE_Singleton<VMAP::MultiProcessLog, ACE_Null_Mutex>::instance())
 
 class ByteBuffer;
 
