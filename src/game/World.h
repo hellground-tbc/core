@@ -685,7 +685,7 @@ class World
         bool IsShutdowning() const { return m_ShutdownTimer > 0; }
         uint32 GetShutdownMask() const { return m_ShutdownMask; }
         uint32 GetShutdownTimer() const { return m_ShutdownTimer; }
-        std::string& GetShutdownReason() { return m_ShutdownReason; }
+        char const* GetShutdownReason() { return m_ShutdownReason.c_str(); }
 
         void ShutdownServ(uint32 time, uint32 options, uint8 exitcode, char const* = "no reason");
         void ShutdownCancel();

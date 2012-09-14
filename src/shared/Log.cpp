@@ -624,7 +624,12 @@ void Log::outLog(LogNames log, const char * str, ...)
     if (logFile[log])
     {
         // check for errors
-        if (!outTimestamp(logFile[log]))
+        if (log == LOG_STATUS)
+        {
+            // we need to reopen file
+            logFile[log] = fopen(logFileNames[log].c_str(), logToStr[log][1]);
+        }
+        else if (!outTimestamp(logFile[log]))
         {
             // if error reopen file
             logFile[log] = fopen(logFileNames[log].c_str(), logToStr[log][1]);
