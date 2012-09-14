@@ -14888,6 +14888,16 @@ void Player::_LoadAuras(QueryResultAutoPtr result, uint32 timediff)
                 continue;
             }
 
+            if (spellproto->Effect[effindex] == SPELL_EFFECT_APPLY_AURA)
+            {
+                switch (spellproto->EffectApplyAuraName[effindex])
+                {
+                case SPELL_AURA_MOD_CHARM:
+                case SPELL_AURA_MOD_POSSESS:
+                    continue;
+                }
+            }
+
             // negative effects should continue counting down after logout
             if (remaintime != -1 && !SpellMgr::IsPositiveEffect(spellid, effindex))
             {
