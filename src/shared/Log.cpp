@@ -38,9 +38,9 @@ const int LogType_count = int(LogError) +1;
 
 const char* logToStr[LOG_MAX_FILES][3] =
 {     // file name conf    mode  timestamp conf name
+    { "GMLogFile",          "a", "GmLogTimestamp" },    // LOG_GM
     { "LogFile",            "w", "LogTimestamp" },      // LOG_DEFAULT
     { "StatusParserFile",   "w", NULL },                // LOG_STATUS
-    { "GMLogFile",          "a", "GmLogTimestamp" },    // LOG_GM
     { "CharLogFile",        "a", "CharLogTimestamp" },  // LOG_CHAR
     { "DBErrorLogFile",     "a", NULL },                // LOG_DB_ERR
     { "ArenaLogFile",       "a", NULL },                // LOG_ARENA
@@ -212,8 +212,6 @@ void Log::Initialize()
     m_logsTimestamp = "_" + GetTimestampStr();
 
     /// Open specific log files
-    logFile[LOG_DEFAULT] = openLogFile(LOG_DEFAULT);
-
     m_gmlog_per_account = sConfig.GetBoolDefault("GmLogPerAccount",false);
     if(!m_gmlog_per_account)
         logFile[LOG_GM] = openLogFile(LOG_GM);
@@ -247,9 +245,7 @@ void Log::Initialize()
 
     m_whisplog_filename_format = (m_logsDir.empty() ? "." : m_logsDir) + sConfig.GetStringDefault("WhispLogDir", "whisps/") + "whisp_%u_.log";
 
-    logFile[LOG_CHAR] = openLogFile(LOG_CHAR);
-
-    for (uint8 i = LOG_DB_ERR; i < LOG_MAX_FILES; i++)
+    for (uint8 i = LOG_DEFAULT; i < LOG_MAX_FILES; ++i)
         logFile[i] = openLogFile(LogNames(i));
 
     // Main log file settings

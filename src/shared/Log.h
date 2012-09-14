@@ -57,9 +57,9 @@ enum Color
 
 enum LogNames
 {
-    LOG_DEFAULT         = 0,
-    LOG_STATUS          = 1,
-    LOG_GM              = 2,
+    LOG_GM              = 0,
+    LOG_DEFAULT         = 1,
+    LOG_STATUS          = 2,
     LOG_CHAR            = 3,
     LOG_DB_ERR          = 4,
     LOG_ARENA           = 5,
