@@ -627,12 +627,12 @@ void Log::outLog(LogNames log, const char * str, ...)
         if (log == LOG_STATUS)
         {
             // we need to reopen file
-            logFile[log] = fopen(logFileNames[log].c_str(), logToStr[log][1]);
+            logFile[log] = freopen(logFileNames[log].c_str(), logToStr[log][1], logFile[log]);
         }
         else if (!outTimestamp(logFile[log]))
         {
             // if error reopen file
-            logFile[log] = fopen(logFileNames[log].c_str(), logToStr[log][1]);
+            logFile[log] = freopen(logFileNames[log].c_str(), logToStr[log][1], logFile[log]);
             outTimestamp(logFile[log]);
         }
 
