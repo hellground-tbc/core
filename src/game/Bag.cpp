@@ -41,8 +41,9 @@ Bag::~Bag()
 {
     for (int i = 0; i < MAX_BAG_SIZE; ++i)
     {
-        if (Item *item = m_bagslot[i])
+        if (m_bagslot[i] && m_bagslot[i] != this)
         {
+            Item *item = m_bagslot[i];
             if (item->IsInWorld())
                 item->RemoveFromWorld();
 
