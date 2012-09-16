@@ -68,6 +68,10 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         return;
     }
 
+    // check if addon channel is disabled
+    if (lang == LANG_ADDON && !sWorld.getConfig(CONFIG_ADDON_CHANNEL))
+        return;
+
     //sLog.outDebug("CHAT: packet received. type %u, lang %u", type, lang);
 
     // prevent talking at unknown language (cheating)
@@ -99,7 +103,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         }
     }
 
-    if (GetSecurity() < SEC_MODERATOR && sWorld.GetMassMuteTime() > time(NULL))
+    // mass mute for players check
+    if (GetSecurity() < SEC_MODERATOR && sWorld.GetMassMuteTime() && sWorld.GetMassMuteTime() > time(NULL))
     {
         if (sWorld.GetMassMuteReason())
             ChatHandler(_player).PSendSysMessage("Mass mute reason: %s", sWorld.GetMassMuteReason());
@@ -107,14 +112,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         return;
     }
 
-    if (lang == LANG_ADDON)
-    {
-        // Disabled addon channel?
-        if (!sWorld.getConfig(CONFIG_ADDON_CHANNEL))
-            return;
-    }
     // LANG_ADDON should not be changed nor be affected by flood control
-    else
+    if (lang != LANG_ADDON)
     {
         // send in universal language if player in .gmon mode (ignore spell effects)
         if (_player->isGameMaster())
@@ -717,4 +716,3 @@ void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)
 {
     sLog.outDebug("Opcode %u", recvPacket.GetOpcode());
 }
-

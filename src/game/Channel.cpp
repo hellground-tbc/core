@@ -175,10 +175,7 @@ void Channel::Leave(uint64 p, bool send)
         LeaveNotify(p);
 
         if (changeowner)
-        {
-            uint64 newowner = !players.empty() ? players.begin()->second.player : 0;
-            SetOwner(newowner);
-        }
+            ChangeOwner();
     }
 }
 
@@ -235,10 +232,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
             bad->LeftChannel(this);
 
             if (changeowner)
-            {
-                uint64 newowner = !players.empty() ? good : false;
-                SetOwner(newowner);
-            }
+                ChangeOwner():
         }
     }
 }
@@ -1014,4 +1008,22 @@ std::list<uint64> Channel::GetPlayers()
         tmpList.push_back(itr->second.player);
 
     return tmpList;
+}
+
+void Channel::ChangeOwner()
+{
+    uint64 newOwner = 0;
+
+    // ignore GM for automatic owner change ;)
+    for (PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+    {
+        Player * tmpPlr = ObjectAccessor::GetPlayer(itr->second.player);
+        if (tmpPlr && tmpPlr->GetSession()->GetSecurity() == SEC_PLAYER)
+        {
+            newOwner = itr->second.player;
+            break;
+        }
+    }
+
+    SetOwner(newOwner);
 }
