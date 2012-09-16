@@ -191,7 +191,7 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     if (sWorld.IsShutdowning())
     {
         PSendSysMessage("");
-        PSendSysMessage("Server will %s in: %s", (sWorld.GetShutdownMask() & SHUTDOWN_MASK_RESTART ? "restart" : "be shutteddown"), secsToTimeString(sWorld.GetShutdownTimer()));
+        PSendSysMessage("Server will %s in: %s", (sWorld.GetShutdownMask() & SHUTDOWN_MASK_RESTART ? "restart" : "be shutteddown"), secsToTimeString(sWorld.GetShutdownTimer()).c_str());
         PSendSysMessage("Reason: %s.", sWorld.GetShutdownReason());
     }
 

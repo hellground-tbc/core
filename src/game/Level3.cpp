@@ -4843,7 +4843,11 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
     if (time <= 0)
         return false;
 
-    sWorld.ShutdownServ(time,0,SHUTDOWN_EXIT_CODE, exitmsg);
+    if (exitmsg)
+        sWorld.ShutdownServ(time,0,SHUTDOWN_EXIT_CODE, exitmsg);
+    else
+        sWorld.ShutdownServ(time,0,SHUTDOWN_EXIT_CODE);
+
     return true;
 }
 
@@ -4885,7 +4889,10 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
     if (time <= 0)
         return false;
 
-    sWorld.ShutdownServ(time, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, exitcode_str);
+    if (exitcode_str)
+        sWorld.ShutdownServ(time, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, exitcode_str);
+    else
+        sWorld.ShutdownServ(time, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
     return true;
 }
 
@@ -4902,7 +4909,10 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
     if (time <= 0)
         return false;
 
-    sWorld.ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,RESTART_EXIT_CODE, exitcode_str);
+    if (exitcode_str)
+        sWorld.ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,RESTART_EXIT_CODE, exitcode_str);
+    else
+        sWorld.ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,RESTART_EXIT_CODE);
     return true;
 }
 
@@ -4919,7 +4929,10 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
     if (time <= 0)
         return false;
 
-    sWorld.ShutdownServ(time,SHUTDOWN_MASK_IDLE,SHUTDOWN_EXIT_CODE, exitcode_str);
+    if (exitcode_str)
+        sWorld.ShutdownServ(time,SHUTDOWN_MASK_IDLE,SHUTDOWN_EXIT_CODE, exitcode_str);
+    else
+        sWorld.ShutdownServ(time,SHUTDOWN_MASK_IDLE,SHUTDOWN_EXIT_CODE);
     return true;
 }
 

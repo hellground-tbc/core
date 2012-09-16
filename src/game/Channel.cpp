@@ -232,7 +232,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
             bad->LeftChannel(this);
 
             if (changeowner)
-                ChangeOwner():
+                ChangeOwner();
         }
     }
 }
