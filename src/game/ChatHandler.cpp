@@ -151,16 +151,20 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
                 lang = ModLangAuras.front()->GetModifier()->m_miscvalue;
         }
 
-        if (!_player->CanSpeak())
+        if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
+            GetPlayer()->UpdateSpeakTime();
+    }
+
+    if (!_player->CanSpeak())
+    {
+        if (lang != LANG_ADDON)
         {
             std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
             SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
             ChatHandler(_player).PSendSysMessage(LANG_YOUR_CHAT_IS_DISABLED, timeStr.c_str(), m_muteReason.c_str());
-            return;
         }
 
-        if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
-            GetPlayer()->UpdateSpeakTime();
+        return;
     }
 
     if (GetPlayer()->getLevel() < sWorld.getConfig(CONFIG_CHAT_MINIMUM_LVL))
