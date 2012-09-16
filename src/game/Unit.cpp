@@ -9248,6 +9248,9 @@ void Unit::SetInCombatWith(Unit* enemy)
 
 void Unit::CombatStart(Unit* target, bool initialAggro)
 {
+    if (!isAlive() || target->isAlive())
+        return;
+
     if (initialAggro)
     {
         if (!target->IsStandState()/* && !target->hasUnitState(UNIT_STAT_STUNNED)*/)

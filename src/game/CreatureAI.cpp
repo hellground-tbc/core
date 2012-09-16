@@ -40,7 +40,7 @@ void CreatureAI::DoZoneInCombat(float max_dist)
 {
      Unit *creature = me;
 
-    if (!me->CanHaveThreatList() || me->IsInEvadeMode())
+    if (!me->CanHaveThreatList() || me->IsInEvadeMode() || !me->isAlive())
         return;
 
     Map *pMap = me->GetMap();
