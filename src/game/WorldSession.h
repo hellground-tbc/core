@@ -108,8 +108,12 @@ class PacketFilter
 public:
     explicit PacketFilter(WorldSession * pSession) : m_pSession(pSession) {}
     virtual ~PacketFilter() {}
-    virtual bool Process(WorldPacket * packet) { return true; }
-    virtual bool ProcessLogout() const { return true; }
+
+    virtual bool Process(WorldPacket * packet) = 0;
+    virtual bool ProcessLogout() const  = 0;
+    virtual bool ProcessTimersUpdate() const = 0;
+    virtual bool ProcessWardenUpdate() const = 0;
+
 protected:
     WorldSession * const m_pSession;
 };
@@ -117,22 +121,29 @@ protected:
 //process only thread-safe packets in Map::Update()
 class MapSessionFilter : public PacketFilter
 {
-public:
-    explicit MapSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
-    ~MapSessionFilter() {}
-    virtual bool Process(WorldPacket * packet);
-    //in Map::Update() we do not process player logout!
-    virtual bool ProcessLogout() const { return false; }
+    public:
+        explicit MapSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
+        ~MapSessionFilter() {}
+
+        bool Process(WorldPacket * packet);
+        //in Map::Update() we do not process player logout!
+        bool ProcessLogout() const { return false; }
+        bool ProcessTimersUpdate() const { return false; }
+        bool ProcessWardenUpdate() const { return false; }
 };
 
 //class used to filer only thread-unsafe packets from queue
 //in order to update only be used in World::UpdateSessions()
 class WorldSessionFilter : public PacketFilter
 {
-public:
-    explicit WorldSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
-    ~WorldSessionFilter() {}
-    virtual bool Process(WorldPacket* packet);
+    public:
+        explicit WorldSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
+        ~WorldSessionFilter() {}
+
+        virtual bool Process(WorldPacket* packet);
+        bool ProcessLogout() const { return true; }
+        bool ProcessTimersUpdate() const { return true; }
+        bool ProcessWardenUpdate() const { return true; }
 };
 
 /// Player session in the World

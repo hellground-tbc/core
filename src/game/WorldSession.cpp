@@ -291,22 +291,25 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
 /// Update the WorldSession (triggered by World update)
 bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 {
-    if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
-    {
-        if (m_kickTimer < diff)
-            KickPlayer();
-        else
-            m_kickTimer -= diff;
-    }
-    else
-        m_kickTimer = MINUTE * 15 * 1000;
-
     RecordSessionTimeDiff(NULL);
     bool verbose = sWorld.getConfig(CONFIG_SESSION_UPDATE_VERBOSE_LOG);
     std::vector<VerboseLogInfo> packetOpcodeInfo;
 
-    for (OpcodesCooldown::iterator itr = _opcodesCooldown.begin(); itr != _opcodesCooldown.end(); ++itr)
-        itr->second.Update(diff);
+    if (updater.ProcessTimersUpdate())
+    {
+        if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
+        {
+            if (m_kickTimer < diff)
+                KickPlayer();
+            else
+                m_kickTimer -= diff;
+        }
+        else
+            m_kickTimer = MINUTE * 15 * 1000;
+
+        for (OpcodesCooldown::iterator itr = _opcodesCooldown.begin(); itr != _opcodesCooldown.end(); ++itr)
+            itr->second.Update(diff);
+    }
 
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not proccess packets if socket already closed
@@ -335,14 +338,17 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     }
 
     bool overtime = false;
-    if (RecordSessionTimeDiff(" WorldSession:Update: packets. Accid %u ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+    if (RecordSessionTimeDiff("[%s]: packets. Accid %u ", __FUNCTION__, GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
         overtime = true;
 
-    if (m_Socket && m_Warden)
-        m_Warden->Update();
+    if (updater.ProcessWardenUpdate())
+    {
+        if (m_Socket && m_Warden)
+            m_Warden->Update();
 
-    if (RecordSessionTimeDiff(" WorldSession:Update: warden. Accid %u ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
-        overtime = true;
+        if (RecordSessionTimeDiff("[%s]: warden. Accid %u ", __FUNCTION__, GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+            overtime = true;
+    }
 
     if (overtime && GetSecurity() < SEC_MODERATOR)
     {
@@ -371,7 +377,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     sLog.outLog(LOG_SESSION_DIFF, overtimeText.str().c_str());
                 }
 
-                sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::Update: session for account %u was too long", GetAccountId());
+                sLog.outLog(LOG_DEFAULT, "ERROR: %s: session for account %u was too long", __FUNCTION__, GetAccountId());
             }
             default:
                 break;
