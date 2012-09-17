@@ -337,6 +337,10 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 SetAutocast(SPELL_ILLIDAN_FIREBALL, 3000, false, CAST_RANDOM, 0, true);
 
                 events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 15000, m_phase);
+                events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 15500, m_phase);
+
+                events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_TEAR, 17000, m_phase);
+
                 events.ScheduleEvent(EVENT_ILLIDAN_EYE_BLAST, urand(30000, 40000), m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_DARK_BARRAGE, 80000, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_CHANGE_PHASE, 2000, m_phase);
@@ -545,11 +549,8 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 case EVENT_ILLIDAN_THROW_GLAIVE:
                 {
                     AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, CAST_NULL);
-                    AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, CAST_NULL);
 
                     SetWarglaivesEquipped(false);
-
-                    events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_TEAR, 2000, m_phase);
                     break;
                 }
                 case EVENT_ILLIDAN_SUMMON_TEAR:
