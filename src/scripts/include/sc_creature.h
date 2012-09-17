@@ -427,4 +427,5 @@ struct HELLGROUND_DLL_DECL BossAI : public ScriptedAI
 // SD2 grid searchers
 Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange, bool alive = true);
 GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange);
+Player* GetClosestPlayer(WorldObject* source, float maxSearchRange);
 #endif

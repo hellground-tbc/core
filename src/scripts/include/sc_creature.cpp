@@ -1043,7 +1043,7 @@ void ScriptedAI::DoSpecialThings(uint32 diff, SpecialThing flags, float range, f
         {
             // need to call SetHomePosition ?
             WorldLocation home = me->GetHomePosition();
-            if (!me->IsWithinDistInMap(&home, range, true))
+            if (!me->IsWithinDistInMap(&home, range, true) || GetClosestPlayer(me, range) == NULL)
                 EnterEvadeMode();
         }
 
@@ -1110,4 +1110,14 @@ GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, flo
 
     Cell::VisitGridObjects(source, searcher, maxSearchRange);
     return pGameObject;
+}
+
+Player* GetClosestPlayer(WorldObject* source, float maxSearchRange)
+{
+    Player* player = NULL;
+    Hellground::AnyPlayerInObjectRangeCheck p_check(source, maxSearchRange);
+    Hellground::ObjectSearcher<Player, Hellground::AnyPlayerInObjectRangeCheck> checker(player, p_check);
+
+    Cell::VisitWorldObjects(source, checker, maxSearchRange);
+    return player;
 }
