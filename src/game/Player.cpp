@@ -19578,6 +19578,12 @@ void Player::ResurectUsingRequestData()
 
 void Player::SetClientControl(Unit* target, uint8 allowMove)
 {
+    if (target->GetObjectGuid().IsPlayer())
+    {
+        if (allowMove && this == target && target->isPossessed())
+            return;
+    }
+
     WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, target->GetPackGUID().size()+1);
     data << target->GetPackGUID();
     data << uint8(allowMove);

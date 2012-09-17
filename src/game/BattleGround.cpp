@@ -803,7 +803,7 @@ void BattleGround::RewardQuest(Player *plr)
 
 void BattleGround::BlockMovement(Player *plr)
 {
-    plr->SetClientControl(plr, 0);                          // movement disabled NOTE: the effect will be automatically removed by client when the player is teleported from the battleground, so no need to send with uint8(1) in RemovePlayerAtLeave()
+    plr->SetClientControl(plr, false);                          // movement disabled NOTE: the effect will be automatically removed by client when the player is teleported from the battleground, so no need to send with uint8(1) in RemovePlayerAtLeave()
 }
 
 void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket)
