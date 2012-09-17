@@ -438,6 +438,10 @@ void Channel::SendWhoOwner(uint64 p)
 
 void Channel::List(Player* player)
 {
+    // exploit fix
+    if (player->InArena())
+        return;
+
     uint64 p = player->GetGUID();
 
     if (!IsOn(p))
@@ -461,11 +465,13 @@ void Channel::List(Player* player)
         uint32 count  = 0;
         for (PlayerList::iterator i = players.begin(); i != players.end(); ++i)
         {
-            Player *plr = sObjectMgr.GetPlayer(i->first);
+            Player *user = sObjectMgr.GetPlayer(i->first);
+            if (!user)
+                continue;
 
             // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
             // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
-            if (plr && (plr->GetSession()->GetSecurity() == SEC_PLAYER || gmInWhoList))
+            if (user->GetSession()->GetSecurity() == SEC_PLAYER || gmInWhoList)
             {
                 data << uint64(i->first);
                 data << uint8(i->second.flags);             // flags seems to be changed...
