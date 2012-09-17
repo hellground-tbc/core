@@ -199,10 +199,25 @@ enum CreatureEntries
 {
     BLADE_OF_AZZINOTH       =   22996,
     FLAME_OF_AZZINOTH       =   22997,
-
+    GLAIVE_TARGET           =   23448,
     ILLIDARI_ELITE          =   23226,
     PARASITIC_SHADOWFIEND   =   23498,
     CAGE_TRAP_TRIGGER       =   23292
+};
+
+class GlaiveTargetRespawner
+{
+    public:
+        GlaiveTargetRespawner() {}
+
+        void operator()(Creature* u) const
+        {
+            if (u->GetEntry() == GLAIVE_TARGET)
+                u->Respawn();
+        }
+        void operator()(GameObject* u) const { }
+        void operator()(WorldObject*) const {}
+        void operator()(Corpse*) const {}
 };
 
 struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
@@ -332,7 +347,9 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
                 me->SetLevitate(true);
 
-                me->GetMotionMaster()->MovePoint(0, CENTER_X +5.0f, CENTER_Y, CENTER_Z);
+                me->GetMotionMaster()->MovePoint(0, CENTER_X +5.0f, CENTER_Y, CENTER_Z, UNIT_ACTION_CONTROLLED);
+
+                RespawnGlaiveTargets();
 
                 SetAutocast(SPELL_ILLIDAN_FIREBALL, 3000, false, CAST_RANDOM, 0, true);
 
@@ -487,20 +504,29 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
         return true;
     }
 
+    void RespawnGlaiveTargets()
+    {
+        GlaiveTargetRespawner respawner;
+        Hellground::ObjectWorker<Creature, GlaiveTargetRespawner> worker(respawner);
+        Cell::VisitGridObjects(me, worker, 200.0f);
+    }
+
     void CastEyeBlast()
     {
         Locations initial = EyeBlast[urand(0,4)];
         if (Creature* pTrigger = me->SummonTrigger(initial.x, initial.y, initial.z, 0, 13000))
         {
-            if (Creature *pGlaive = GetClosestCreatureWithEntry(pTrigger, 23448, 70.0f))
+            RespawnGlaiveTargets();
+
+            if (Creature *pGlaive = GetClosestCreatureWithEntry(pTrigger, GLAIVE_TARGET, 70.0f, true))
             {
                 WorldLocation final;
                 pTrigger->GetClosePoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
                 final.coord_z = 354.519f;
                 pTrigger->SetSpeed(MOVE_RUN, 1.0f);
-                pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z);
+                pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z, UNIT_ACTION_CONTROLLED);
+
                 pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                //pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
                 m_hoverPoint = urand(0,3);
                 me->GetMotionMaster()->MovePoint(1, HoverPosition[m_hoverPoint].x, HoverPosition[m_hoverPoint].y, HoverPosition[m_hoverPoint].z);

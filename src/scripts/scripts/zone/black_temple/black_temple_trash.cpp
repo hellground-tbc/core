@@ -1077,19 +1077,6 @@ struct HELLGROUND_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
         me->GetMotionMaster()->MoveChase(who, 15);
     }
 
-    Unit * CheckMeleeRange()
-    {
-        Map::PlayerList const &PlayerList = ((InstanceMap*)me->GetMap())->GetPlayers();
-        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-        {
-            Player* i_pl = i->getSource();
-            if (i_pl && i_pl->isAlive() && !i_pl->isGameMaster() && me->IsWithinDistInMap(i_pl, 6))
-                return (Unit*)i_pl;
-        }
-
-        return NULL;
-    }
-
     Unit * GetNewTarget()
     {
         Map::PlayerList const &PlayerList = ((InstanceMap*)me->GetMap())->GetPlayers();
@@ -1171,7 +1158,7 @@ struct HELLGROUND_DLL_DECL mob_dragonmaw_windreaverAI : public ScriptedAI
 
         if (freezeTimer < diff)
         {
-            Unit * tmpTarget = CheckMeleeRange();
+            Unit* tmpTarget = GetClosestPlayer(me, 6.0f);
             if (tmpTarget)
             {
                 me->CastSpell(tmpTarget, SPELL_WINDREAVER_FREEZE, false);
