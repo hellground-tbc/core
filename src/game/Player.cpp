@@ -18789,6 +18789,8 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
+
+    UpdateVisibilityAndView();
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()

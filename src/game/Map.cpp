@@ -371,7 +371,7 @@ bool Map::Add(Player *player)
     SendInitTransports(player);
 
     player->GetViewPoint().Event_AddedToWorld(&(*grid)(cell.CellX(), cell.CellY()));
-    player->UpdateObjectVisibility();
+    //player->UpdateObjectVisibility();
     player->m_clientGUIDs.clear();
     return true;
 }
