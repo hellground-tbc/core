@@ -890,34 +890,13 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
         if (m_combatTimer < diff)
         {
-            DoZoneInCombat();
-            me->SetSpeed(MOVE_RUN, 2.5f);
+            DoSpecialThings(diff, DO_EVERYTHING, 200.0f, 2.5f);
 
             if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
                 DoModifyThreatPercent(pAkama, -101);
 
             if (Creature *pMaiev = GetClosestCreatureWithEntry(me, 23197, 200.0f))
                 DoModifyThreatPercent(pMaiev, -101);
-
-            bool found = false;
-            Map::PlayerList const &plList = me->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator i = plList.begin(); i != plList.end(); ++i)
-            {
-                if (Player* pPlayer = i->getSource())
-                {
-                    if (pPlayer->isGameMaster())
-                         continue;
-
-                    if (pPlayer->isAlive() && pPlayer->isInCombat() && me->IsWithinDistInMap(pPlayer, 200.0f))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!found)
-                EnterEvadeMode();
 
             m_combatTimer = 2000;
         }

@@ -1112,11 +1112,24 @@ GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, flo
     return pGameObject;
 }
 
+class AnyAlivePlayerExceptGm
+{
+    public:
+        AnyAlivePlayerExceptGm(WorldObject const* obj) : _obj(obj) {}
+        bool operator()(Player* u)
+        {
+            return u->isAlive() && !u->isGameMaster();
+        }
+
+    private:
+        WorldObject const* _obj;
+};
+
 Player* GetClosestPlayer(WorldObject* source, float maxSearchRange)
 {
     Player* player = NULL;
-    Hellground::AnyPlayerInObjectRangeCheck p_check(source, maxSearchRange);
-    Hellground::ObjectSearcher<Player, Hellground::AnyPlayerInObjectRangeCheck> checker(player, p_check);
+    AnyAlivePlayerExceptGm check(source);
+    Hellground::ObjectSearcher<Player, AnyAlivePlayerExceptGm> checker(player, check);
 
     Cell::VisitWorldObjects(source, checker, maxSearchRange);
     return player;
