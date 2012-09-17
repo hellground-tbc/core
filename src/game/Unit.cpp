@@ -5585,7 +5585,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 37381:
                 {
                     target = GetPet();
-                    if (!target)
+                    if (!target || !target->isAlive())
                         return false;
 
                     // heal amount

@@ -2473,7 +2473,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             if (((Player*)m_caster)->HasSpellCooldown(spellInfo->Id))
                 ((Player*)m_caster)->RemoveSpellCooldown(spellInfo->Id);
 
-            m_TriggerSpells.push_back(spellInfo);
+            AddTriggeredSpell(spellInfo);
             return;
         }
         // just skip
@@ -2653,15 +2653,10 @@ void Spell::EffectTriggerSpell(uint32 i)
             break;
         }
     }
+    */
 
-    if (instant)
-    {*/
     if (unitTarget)
         m_caster->CastSpell(unitTarget, spellInfo, true, m_CastItem, NULL, m_originalCasterGUID);
-    /*}
-    else
-        m_TriggerSpells.push_back(spellInfo);
-    */
 }
 
 void Spell::EffectTriggerMissileSpell(uint32 effect_idx)

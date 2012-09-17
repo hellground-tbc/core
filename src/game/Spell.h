@@ -483,7 +483,7 @@ class Spell
 
         bool CheckTargetCreatureType(Unit* target) const;
 
-        void AddTriggeredSpell(SpellEntry const* spell) { m_TriggerSpells.push_back(spell); }
+        void AddTriggeredSpell(SpellEntry const* spell) { if (spell) m_TriggerSpells.push_back(spell); }
 
         void CleanupTargetList();
 

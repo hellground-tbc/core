@@ -2737,7 +2737,7 @@ void Spell::_handle_immediate_phase()
 void Spell::_handle_finish_phase()
 {
     // spell log
-    if (m_needSpellLog)
+    if (m_needSpellLog && m_spellInfo)
         SendLogExecute();
 }
 
