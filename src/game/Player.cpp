@@ -18751,6 +18751,21 @@ void Player::SendInitialPacketsBeforeAddToMap()
         AddUnitMovementFlag(MOVEFLAG_FLYING);
 }
 
+class VisibilityAndViewUpdateEvent : public BasicEvent
+{
+    public:
+        VisibilityAndViewUpdateEvent(Player& owner) : BasicEvent(), _owner(owner) {}
+
+    bool Execute(uint64 /*e_time*/, uint32 /*p_time*/)
+    {
+        _owner.UpdateVisibilityAndView();
+        return true;
+    }
+
+    private:
+        Player& _owner;
+};
+
 void Player::SendInitialPacketsAfterAddToMap()
 {
     ResetTimeSync();
@@ -18790,7 +18805,8 @@ void Player::SendInitialPacketsAfterAddToMap()
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
 
-    UpdateVisibilityAndView();
+    // Delay visibility update by 5s after porting to new map
+    AddEvent(new VisibilityAndViewUpdateEvent(*this), 5000);
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()
