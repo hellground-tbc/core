@@ -157,7 +157,7 @@ struct HELLGROUND_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             // Don't respawn adds if encounter is done
             if(pInstance->GetData(DATA_KARATHRESSEVENT) == DONE)
             {
-                m_creature->SummonCreature(SEER_OLUM, OLUM_X, OLUM_Y, OLUM_Z, OLUM_O, TEMPSUMMON_TIMED_DESPAWN, 3600000);
+                m_creature->SummonCreature(SEER_OLUM, OLUM_X, OLUM_Y, OLUM_Z, OLUM_O, TEMPSUMMON_MANUAL_DESPAWN, 0);
                 return;
             }
 
