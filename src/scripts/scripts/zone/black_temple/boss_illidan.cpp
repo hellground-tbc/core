@@ -250,6 +250,28 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
         instance->SetData(EVENT_ILLIDANSTORMRAGE, NOT_STARTED);
     }
 
+    void SearchForGlaiveTargets()
+    {
+        uint32 const GLAIVE_TARGET = 23448;
+
+        std::list<Creature*> _glaiveTargets = FindAllCreaturesWithEntry(GLAIVE_TARGET, 50.0f);
+
+        bool customSummon = (_glaiveTargets.size() < 2);
+        if (customSummon)
+        {
+            me->SummonCreature(GLAIVE_TARGET, 672.98f, 286.26f, 354.25f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000);
+            me->SummonCreature(GLAIVE_TARGET, 673.26f, 325.87f, 354.25f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 2000);
+        }
+
+        for (std::list<Creature*>::iterator it = _glaiveTargets.begin(); it != _glaiveTargets.end(); ++it)
+        {
+            if (customSummon)
+                (*it)->ForcedDespawn();
+            else
+                (*it)->Respawn();
+        }
+    }
+
     void SetWarglaivesEquipped(bool equip)
     {
         me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, equip ? 45479 : 0);
@@ -260,7 +282,6 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
     void ChangePhase(IllidanPhase phase)
     {
         StopAutocast();
-
         ClearCastQueue();
         events.CancelEventsByGCD(m_phase);
 
@@ -545,6 +566,8 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_THROW_GLAIVE:
                 {
+                    SearchForGlaiveTargets();
+
                     AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, CAST_NULL);
                     AddSpellToCast(SPELL_ILLIDAN_THROW_GLAIVE, CAST_NULL);
 
