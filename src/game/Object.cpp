@@ -1945,7 +1945,7 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/)
 {
     //updates object's visibility for nearby players
     Hellground::VisibleChangesNotifier notifier(*this);
-    Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance());
+    Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance() + World::GetVisibleObjectGreyDistance());
 }
 
 void WorldObject::AddToClientUpdateList()
