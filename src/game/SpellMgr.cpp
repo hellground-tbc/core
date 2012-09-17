@@ -3785,6 +3785,9 @@ bool SpellMgr::IsProfessionSkill( uint32 skill )
 
 DiminishingGroup SpellMgr::GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered)
 {
+    if (!spellproto)
+        return DIMINISHING_NONE;
+
     // Explicit Diminishing Groups
     switch (spellproto->SpellFamilyName)
     {
