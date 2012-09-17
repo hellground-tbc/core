@@ -1586,8 +1586,10 @@ const char *BattleGround::GetTrinityString(int32 entry)
 
 bool BattleGround::HandlePlayerUnderMap(Player * plr, float z)
 {
-    if (z > - 500.0f)
+    if (z > -500.0f)
         return false;
+
+    EventPlayerDroppedFlag(plr);
 
     WorldSafeLocsEntry const *graveyard = GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetTeam());
     if (graveyard)
