@@ -349,12 +349,12 @@ bool Master::_StartDB()
     }
 
     int nConnections = sConfig.GetIntDefault("WorldDatabaseConnections", 1);
-    sLog.outString("World Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+    sLog.outString("World Database: total connections: %i", nConnections + 1);
 
     ///- Initialise the world database
     if(!GameDataDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to world database %s", dbstring.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to world database.");
         return false;
     }
 
@@ -365,12 +365,12 @@ bool Master::_StartDB()
         return false;
     }
     nConnections = sConfig.GetIntDefault("CharacterDatabaseConnections", 1);
-    sLog.outDetail("Character Database: %s", dbstring.c_str());
+    sLog.outString("Character Database: total connections: %i", nConnections + 1);
 
     ///- Initialise the Character database
     if(!RealmDataDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outString("Character Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+         sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to characters database.");
         return false;
     }
 
@@ -383,10 +383,10 @@ bool Master::_StartDB()
     }
     nConnections = sConfig.GetIntDefault("LoginDatabaseConnections", 1);
     ///- Initialise the login database
-    sLog.outString("Login Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+    sLog.outString("Login Database: total connections: %i", nConnections + 1);
     if(!AccountsDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to login database %s", dbstring.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to login database.");
         return false;
     }
 

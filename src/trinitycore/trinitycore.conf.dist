@@ -268,10 +268,18 @@ UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
 AddonChannel = 1
 MapUpdate.Threads = 1
+
 SessionUpdate.Threads = 1
 SessionUpdate.MaxTime = 1000
 SessionUpdate.Method = 3
 SessionUpdate.VerboseLog = 0
+
+#    SessionUpdate.IdleKickTimer
+#         Max time that user can spend in character selection screen
+#         Default: 900000 (ms) - 15 min
+#
+
+SessionUpdate.IdleKickTimer = 900000
 
 ###################################################################################################################
 # SERVER LOGGING

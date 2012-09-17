@@ -93,8 +93,10 @@ LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mu
 _player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
-m_kickTimer(MINUTE * 15 * 1000), m_accFlags(accFlags), m_Warden(NULL)
+m_accFlags(accFlags), m_Warden(NULL)
 {
+    _kickTimer.Reset(sWorld.getConfig(CONFIG_SESSION_UPDATE_IDLE_KICK));
+
     if (sock)
     {
         m_Address = sock->GetRemoteAddress ();
@@ -299,13 +301,12 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     {
         if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
         {
-            if (m_kickTimer < diff)
+            _kickTimer.Update(diff);
+            if (_kickTimer.Passed())
                 KickPlayer();
-            else
-                m_kickTimer -= diff;
         }
         else
-            m_kickTimer = MINUTE * 15 * 1000;
+            _kickTimer.Reset(sWorld.getConfig(CONFIG_SESSION_UPDATE_IDLE_KICK));
 
         for (OpcodesCooldown::iterator itr = _opcodesCooldown.begin(); itr != _opcodesCooldown.end(); ++itr)
             itr->second.Update(diff);

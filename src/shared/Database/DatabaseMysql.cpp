@@ -137,10 +137,10 @@ bool MySQLConnection::Initialize(const char *infoString)
 
     if (mMysql)
     {
-        sLog.outDetail( "Connected to MySQL database at %s",
-            host.c_str());
-        sLog.outString( "MySQL client library: %s", mysql_get_client_info());
-        sLog.outString( "MySQL server ver: %s ", mysql_get_server_info( mMysql));
+        //sLog.outString( "Connected to MySQL database at %s",
+        //    host.c_str());
+        //sLog.outString( "MySQL client library: %s", mysql_get_client_info());
+        //sLog.outString( "MySQL server ver: %s ", mysql_get_server_info( mMysql));
 
         /*----------SET AUTOCOMMIT ON---------*/
         // It seems mysql 5.0.x have enabled this feature
@@ -178,8 +178,8 @@ bool MySQLConnection::Initialize(const char *infoString)
     }
     else
     {
-        sLog.outLog(LOG_DEFAULT, "Could not connect to MySQL database at %s: %s\n",
-            host.c_str(),mysql_error(mysqlInit));
+        sLog.outLog(LOG_DEFAULT, "Could not connect to MySQL database at %s\n",
+            host.c_str());
         mysql_close(mysqlInit);
         return false;
     }

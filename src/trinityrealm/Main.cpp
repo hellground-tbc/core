@@ -401,7 +401,7 @@ bool StartDB()
         return false;
     }
 
-    sLog.outString("Database: %s", dbstring.c_str() );
+    //sLog.outString("Database: %s", dbstring.c_str() );
 
     if(!AccountsDatabase.Initialize(dbstring.c_str()))
     {

@@ -766,7 +766,8 @@ class HELLGROUND_DLL_SPEC WorldSession
         LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;
         uint32 m_latency;
-        uint32 m_kickTimer;
+
+        TimeTrackerSmall _kickTimer;
 
         bool m_customRates;
 
