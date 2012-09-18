@@ -18768,6 +18768,11 @@ class VisibilityAndViewUpdateEvent : public BasicEvent
 
 void Player::SendInitialPacketsAfterAddToMap()
 {
+    // Delay visibility update by 5s after porting to new map
+
+    UpdateVisibilityAndView();
+    AddEvent(new VisibilityAndViewUpdateEvent(*this), 3000);
+        
     ResetTimeSync();
     SendTimeSync();
 
@@ -18804,9 +18809,6 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
-
-    // Delay visibility update by 5s after porting to new map
-    AddEvent(new VisibilityAndViewUpdateEvent(*this), 5000);
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()
