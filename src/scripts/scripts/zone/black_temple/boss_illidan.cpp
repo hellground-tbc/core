@@ -835,6 +835,7 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
     void EnterEvadeMode()
     {
         summons.DespawnAll();
+        events.Reset();
 
         me->SetReactState(REACT_PASSIVE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);

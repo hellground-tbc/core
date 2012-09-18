@@ -18609,7 +18609,7 @@ void Player::UpdateVisibilityOf(WorldObject const* viewPoint, T* target, UpdateD
             m_clientGUIDs.erase(target->GetGUID());
         }
     }
-    else if (visibleNow.size() < 30)
+    else
     {
         if (target->isVisibleForInState(this, viewPoint, false))
         {
