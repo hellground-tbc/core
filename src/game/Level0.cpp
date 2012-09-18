@@ -33,6 +33,7 @@
 #include "SystemConfig.h"
 #include "revision.h"
 #include "Util.h"
+#include "GameEvent.h"
 
 bool ChatHandler::HandleAccountBonesHideCommand(const char* args)
 {
@@ -195,6 +196,13 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
         PSendSysMessage("Reason: %s.", sWorld.GetShutdownReason());
     }
 
+    return true;
+}
+
+bool ChatHandler::HandleServerEventsCommand(const char*)
+{
+    std::string active_events = sGameEventMgr.getActiveEventsString();
+    PSendSysMessage(active_events.c_str());//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
     return true;
 }
 

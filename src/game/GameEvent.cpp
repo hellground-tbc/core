@@ -1082,7 +1082,7 @@ void GameEventMgr::UnApplyEvent(uint16 event_id)
     UpdateEventNPCVendor(event_id, false);
 }
 
-const char *GameEventMgr::getActiveEventsString()
+char const* GameEventMgr::getActiveEventsString()
 {
     std::stringstream eventstring;
     eventstring << "Active events:\n";

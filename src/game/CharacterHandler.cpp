@@ -564,8 +564,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     {
         // active game events info
-        const char *active_events = sGameEventMgr.getActiveEventsString();
-        ChatHandler(this).SendSysMessage(active_events);//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
+        std::string active_events = sGameEventMgr.getActiveEventsString();
+        ChatHandler(this).SendSysMessage(active_events.c_str());//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
     }
 
     QueryResultAutoPtr resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);

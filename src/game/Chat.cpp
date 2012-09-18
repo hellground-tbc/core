@@ -113,6 +113,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "idlerestart",    SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverIdleRestartCommandTable },
         { "idleshutdown",   SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverShutdownCommandTable },
         { "info",           SEC_PLAYER,         true,   &ChatHandler::HandleServerInfoCommand,          "", NULL },
+        { "events",         SEC_PLAYER,         true,   &ChatHandler::HandleServerEventsCommand,        "", NULL },
         { "motd",           SEC_PLAYER,         true,   &ChatHandler::HandleServerMotdCommand,          "", NULL },
         { "mute",           SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerMuteCommand,          "", NULL },
         { "restart",        SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverRestartCommandTable },

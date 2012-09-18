@@ -95,7 +95,7 @@ class GameEventMgr
     GameEventMgr();
 
     public:
-        const char *getActiveEventsString();
+        char const* getActiveEventsString();
         ~GameEventMgr() {};
         typedef std::set<uint16> ActiveEvents;
         typedef std::vector<GameEventData> GameEventDataMap;

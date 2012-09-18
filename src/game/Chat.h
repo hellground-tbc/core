@@ -400,6 +400,7 @@ class ChatHandler
         bool HandleServerIdleRestartCommand(const char* args);
         bool HandleServerIdleShutDownCommand(const char* args);
         bool HandleServerInfoCommand(const char* args);
+        bool HandleServerEventsCommand(const char* args);
         bool HandleServerMotdCommand(const char* args);
         bool HandleServerMuteCommand(const char* args);
         bool HandleServerRestartCommand(const char* args);
