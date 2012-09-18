@@ -106,7 +106,7 @@ bool Spell_arcane_torrent(Unit* caster, std::list<Unit*> &, SpellCastTargets con
             Aura* dummy = caster->GetDummyAura(28734);
             if (dummy)
             {
-                int32 bp = (5 + caster->getLevel()) * dummy->GetStackAmount();
+                int32 bp = (2.17*caster->getLevel() + 9.136) * dummy->GetStackAmount();
                 caster->CastCustomSpell(caster, 28733, &bp, NULL, NULL, true);
                 caster->RemoveAurasDueToSpell(28734);
             }
