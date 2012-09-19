@@ -9657,18 +9657,20 @@ void Unit::DestroyForNearbyPlayers()
     if (!IsInWorld())
         return;
 
-    std::list<Unit*> targets;
-    Hellground::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
-    Hellground::UnitListSearcher<Hellground::AnyUnitInObjectRangeCheck> searcher(targets, check);
-    Cell::VisitWorldObjects(this, searcher, GetMap()->GetVisibilityDistance());
+    std::list<Player*> targets;
+    Hellground::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance() + World::GetVisibleObjectGreyDistance());
+    Hellground::ObjectListSearcher<Player, Hellground::AnyUnitInObjectRangeCheck> searcher(targets, check);
+    Cell::VisitWorldObjects(this, searcher, GetMap()->GetVisibilityDistance() + World::GetVisibleObjectGreyDistance());
 
-    for (std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
-        if (*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
-            && ((Player*)(*iter))->HaveAtClient(this))
+    for (std::list<Player*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+    {
+        Player* player = (*iter);
+        if (player != this && player->HaveAtClient(this))
         {
-            DestroyForPlayer((Player*)(*iter));
-            ((Player*)(*iter))->m_clientGUIDs.erase(GetGUID());
+            DestroyForPlayer(player);
+            player->m_clientGUIDs.erase(GetGUID());
         }
+    }
 }
 
 void Unit::SetVisibility(UnitVisibility x)
