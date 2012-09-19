@@ -19954,7 +19954,6 @@ void Player::LFMAttemptAddMore()
         if (GetGroup()->IsFull())
         {
             LeaveLFGChannel();
-
             break;
         }
     }

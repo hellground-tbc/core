@@ -40,7 +40,6 @@
 #include "CliRunnable.h"
 #include "ScriptMgr.h"
 #include "Util.h"
-#include "InstanceSaveMgr.h"
 #include "DBCStores.h"
 
 #ifdef WIN32
@@ -325,8 +324,6 @@ int Master::Run()
         BOOL ret = WriteConsoleInput(hStdIn, b, 4, &numb);
     }
     #endif
-
-    sInstanceSaveManager.UnbindBeforeDelete();
 
     ///- Wait for delay threads to end
     RealmDataDatabase.HaltDelayThread();

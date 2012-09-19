@@ -49,7 +49,6 @@ InstanceSaveManager::InstanceSaveManager() : lock_instLists(false)
 
 InstanceSaveManager::~InstanceSaveManager()
 {
-    UnbindBeforeDelete();
 }
 
 void InstanceSaveManager::UnbindBeforeDelete()
