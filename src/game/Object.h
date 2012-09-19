@@ -392,9 +392,16 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
 
                 void Update(uint32 time_diff)
                 {
-                    m_obj->Update(m_obj->m_updateTracker.timeElapsed(), time_diff);
+                    m_obj->Update(GetTimeElapsed(), time_diff);
                     m_obj->m_updateTracker.Reset();
                 }
+
+                bool ProcessUpdate();
+
+                bool ProcessUpdate(Creature*);
+                bool ProcessUpdate(WorldObject*);
+
+                time_t GetTimeElapsed() const { return m_obj->m_updateTracker.timeElapsed(); }
 
             private:
                 UpdateHelper(const UpdateHelper&);

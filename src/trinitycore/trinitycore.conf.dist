@@ -267,7 +267,9 @@ mmap.ignoreMapIds = ""
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
 AddonChannel = 1
+
 MapUpdate.Threads = 1
+MapUpdate.UpdateVisitorsMax = 20
 
 SessionUpdate.Threads = 1
 SessionUpdate.MaxTime = 1000

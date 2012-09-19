@@ -93,28 +93,6 @@ namespace Hellground
         void Visit(GridRefManager<NOT_INTERESTED>&) {}
     };
 
-    struct HELLGROUND_DLL_DECL GridUpdater
-    {
-        GridType &i_grid;
-        uint32 i_timeDiff;
-        GridUpdater(GridType &grid, uint32 diff) : i_grid(grid), i_timeDiff(diff) {}
-
-        template<class T> void updateObjects(GridRefManager<T> &m)
-        {
-            for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
-            {
-                WorldObject::UpdateHelper helper(iter->getSource());
-                helper.Update(i_timeDiff);
-            }
-        }
-
-        void Visit(PlayerMapType &m) { updateObjects<Player>(m); }
-        void Visit(CreatureMapType &m){ updateObjects<Creature>(m); }
-        void Visit(GameObjectMapType &m) { updateObjects<GameObject>(m); }
-        void Visit(DynamicObjectMapType &m) { updateObjects<DynamicObject>(m); }
-        void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
-    };
-
     struct HELLGROUND_DLL_DECL PacketBroadcaster
     {
         WorldObject &_source;
@@ -141,13 +119,13 @@ namespace Hellground
         uint32 i_timeDiff;
         explicit ObjectUpdater(const uint32 &diff) : i_timeDiff(diff) {}
 
-        template<class T>
-        void Visit(GridRefManager<T> &m);
-
         void Visit(PlayerMapType&) {}
         void Visit(CorpseMapType&) {}
         void Visit(CameraMapType&) {}
         void Visit(CreatureMapType &);
+
+        template<class T>
+        void Visit(GridRefManager<T> &m);
     };
 
     struct HELLGROUND_DLL_DECL DynamicObjectUpdater

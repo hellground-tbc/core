@@ -111,14 +111,44 @@ inline void CreatureRelocationNotifier::Visit(CreatureMapType &m)
     }
 }
 
+typedef std::list<WorldObject::UpdateHelper*> UpdateHelperList;
+
+struct UpdateHelperSorter : public std::binary_function<WorldObject::UpdateHelper*, WorldObject::UpdateHelper*, bool>
+{
+    // functor for operator ">"
+    bool operator()(WorldObject::UpdateHelper* left,WorldObject::UpdateHelper* right) const
+    {
+        return left->GetTimeElapsed() > right->GetTimeElapsed();
+    }
+};
+
 inline void ObjectUpdater::Visit(CreatureMapType &m)
 {
-    for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
-        if (iter->getSource()->IsInWorld() && !iter->getSource()->isSpiritService())
-        {
-            WorldObject::UpdateHelper helper(iter->getSource());
-            helper.Update(i_timeDiff);
-        }
+    UpdateHelperList updateList;
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        WorldObject::UpdateHelper* helper = new WorldObject::UpdateHelper(iter->getSource());
+
+        if (helper->ProcessUpdate())
+            updateList.push_back(helper);
+        else
+            delete helper;
+    }
+
+    // only way to prevent memleaks after resize :p
+    UpdateHelperList deleteList = updateList;
+    if (sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS))
+    {
+        // sort list (objects updated old time ago will be first)
+        updateList.sort(UpdateHelperSorter());
+        updateList.resize(sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS));
+    }
+
+    for (UpdateHelperList::iterator it = updateList.begin(); it != updateList.end(); ++it)
+        (*it)->Update(i_timeDiff);
+
+    for (UpdateHelperList::iterator it = deleteList.begin(); it != deleteList.end(); ++it)
+        delete (*it);
 }
 
 template<class T, class Check>

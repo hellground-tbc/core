@@ -2044,3 +2044,26 @@ const Pet* WorldObject::ToPet() const
 
     return NULL;
 }
+
+bool WorldObject::UpdateHelper::ProcessUpdate()
+{
+    if (m_obj->GetObjectGuid().IsCreature())
+        return ProcessUpdate(m_obj->ToCreature());
+
+    return ProcessUpdate(m_obj);
+}
+
+bool WorldObject::UpdateHelper::ProcessUpdate(Creature* creature)
+{
+    if (!creature->IsInWorld() || creature->isSpiritService())
+        return false;
+
+    uint32 minUpdateTime = creature->isInCombat() ? sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE) : 3*sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE);
+
+    return creature->m_updateTracker.timeElapsed() > minUpdateTime;
+}
+
+bool WorldObject::UpdateHelper::ProcessUpdate(WorldObject* obj)
+{
+    return obj->IsInWorld();
+}
