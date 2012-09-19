@@ -1043,14 +1043,11 @@ bool ReceiveEmote_npc_brewfest_reveler( Player *player, Creature *_Creature, uin
 ## npc_snake_trap_serpents
 ####*/
 
-#define SPELL_MIND_NUMBING_POISON    8692    // Viper
-#define SPELL_DEADLY_POISON          34655   // Venomous Snake
-#define SPELL_CRIPPLING_POISON       3409    // Viper
+#define SPELL_MIND_NUMBING_POISON  8692    // Viper
+#define SPELL_DEADLY_POISON        34655   // Venomous Snake
+#define SPELL_CRIPPLING_POISON     3409    // Viper
 
-#define VENOMOUS_SNAKE_TIMER 1200
-#define VIPER_TIMER 3000
-
-#define C_VIPER 19921
+#define SNAKE_VIPER                19921
 
 struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 {
@@ -1058,14 +1055,12 @@ struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 
     void Reset()
     {
-        SetAutocast(me->GetEntry() == C_VIPER ? RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON) : SPELL_DEADLY_POISON, urand(1100, 3000), false, CAST_TANK);
+        SetAutocast(me->GetEntry() == SNAKE_VIPER ? RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON) : SPELL_DEADLY_POISON, urand(1100, 3000), false, CAST_TANK);
 
         if (roll_chance_f(66.0f))
             StartAutocast();
 
         me->SetReactState(REACT_AGGRESSIVE);
-
-        CreatureInfo const* info = me->GetCreatureInfo();
         me->setAttackTimer(BASE_ATTACK, urand(100, 1000));
     }
 
@@ -1077,6 +1072,9 @@ struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
             me->ForcedDespawn();
             return;
         }
+
+        if (!UpdateVictim())
+            return;
 
         CastNextSpellIfAnyAndReady(diff);
         DoMeleeAttackIfReady();
