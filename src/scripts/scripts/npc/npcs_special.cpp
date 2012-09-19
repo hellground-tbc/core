@@ -1054,103 +1054,31 @@ bool ReceiveEmote_npc_brewfest_reveler( Player *player, Creature *_Creature, uin
 
 struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 {
-    npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) {}
-
-    uint32 SpellTimer;
-
-    bool IsViper;
+    npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(30.0f); }
 
     void Reset()
     {
-        CreatureInfo const *pInfo = me->GetCreatureInfo();
-        if (pInfo->Entry == C_VIPER)
-            IsViper = true;
+        SetAutocast(me->GetEntry() == C_VIPER ? RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON) : SPELL_DEADLY_POISON, urand(1100, 3000), false, CAST_TANK);
 
-        // Add delta to make them not all hit the same time
-        uint32 delta = urand(0, 700);
-        me->SetStatFloatValue(UNIT_FIELD_BASEATTACKTIME, pInfo->baseattacktime + delta);
-        me->SetStatFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER , pInfo->attackpower);
-    }
+        if (roll_chance_f(66.0f))
+            StartAutocast();
 
-    // Redefined for random target selection:
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (!me->isPet() || me->getVictim())
-            return;
+        me->SetReactState(REACT_AGGRESSIVE);
 
-        if (who->isTargetableForAttack() && me->IsHostileTo(who) && who->isInAccessiblePlacefor(me))
-        {
-            Unit *pOwner = me->GetUnit(me->GetOwnerGUID());
-            if (!pOwner || !pOwner->IsInMap(me))
-                return;
-
-            if (!pOwner->IsHostileTo(who))
-                return;
-
-            if (me->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
-                return;
-
-            float attackRadius = me->GetAttackDistance(who);
-            if (me->IsWithinDistInMap(who, attackRadius) && me->IsWithinLOSInMap(who) )
-            {
-                if (roll_chance_f(20.0f))
-                {
-                    me->setAttackTimer(BASE_ATTACK, urand(100, 1000));
-                    SpellTimer = urand(0, 1000);
-                    ScriptedAI::AttackStart(who);
-                }
-            }
-        }
+        CreatureInfo const* info = me->GetCreatureInfo();
+        me->setAttackTimer(BASE_ATTACK, urand(100, 1000));
     }
 
     void UpdateAI(const uint32 diff)
     {
-        Unit *pOwner = me->GetUnit(me->GetOwnerGUID());
-        if (!pOwner || !pOwner->IsInMap(me))
+        Unit* owner = me->GetOwner();
+        if (!owner || !owner->IsInMap(me))
         {
             me->ForcedDespawn();
             return;
         }
 
-        // Follow if not in combat
-        if (!me->hasUnitState(UNIT_STAT_FOLLOW) && !me->isInCombat())
-        {
-            me->GetMotionMaster()->MoveFollow(pOwner, PET_FOLLOW_DIST, frand(0.0f, PET_FOLLOW_ANGLE));
-        }
-
-        // No victim -> get new from owner (need this because MoveInLineOfSight won't work while following -> corebug)
-        if (!me->getVictim())
-        {
-            if (Unit *pTarget = pOwner->getAttackerForHelper())
-                ScriptedAI::AttackStart(pTarget);
-
-            return;
-        }
-
-        if (SpellTimer < diff)
-        {
-            // Viper
-            if (IsViper)
-            {
-                if (roll_chance_f(33.0f)) //33% chance to cast
-                    AddSpellToCast(RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON));
-
-                SpellTimer = VIPER_TIMER;
-            }
-            // Venomous Snake
-            else
-            {
-                // 80% chance to cast
-                if (roll_chance_f(80.0f))
-                    AddSpellToCast(SPELL_DEADLY_POISON);
-
-                SpellTimer = urand(VENOMOUS_SNAKE_TIMER, VENOMOUS_SNAKE_TIMER+500);
-            }
-        }
-        else
-            SpellTimer -= diff;
-
-        CastNextSpellIfAnyAndReady();
+        CastNextSpellIfAnyAndReady(diff);
         DoMeleeAttackIfReady();
     }
 };
