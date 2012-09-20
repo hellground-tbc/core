@@ -10037,48 +10037,52 @@ Unit* Creature::SelectVictim()
     //or who does not have threat (totem/pet/critter)
     //otherwise enterevademode every update
 
-    Unit* target = NULL;
-
-    if (!getThreatManager().isThreatListEmpty())
+    if (IsInEvadeMode())
     {
-        if (IsInEvadeMode())
-        {
-            DeleteThreatList();
-            return NULL;
-        }
+        if (!m_attackers.empty())
+            RemoveAllAttackers();
 
-        if (!HasAuraType(SPELL_AURA_MOD_TAUNT))
+        if (!getThreatManager().isThreatListEmpty())
+            DeleteThreatList();
+
+        return NULL;
+    }
+
+    Unit* target = NULL;
+    if (CanHaveThreatList())
+    {
+        if (!getThreatManager().isThreatListEmpty())
         {
-            target = getThreatManager().getHostilTarget();
+            if (!HasAuraType(SPELL_AURA_MOD_TAUNT))
+                target = getThreatManager().getHostilTarget();
+            else
+            {
+                target = getVictim();
+                if (IsOutOfThreatArea(target))
+                    target = NULL;
+            }
         }
-        else
-            target = getVictim();
     }
 
     if (target)
     {
-        if (!hasUnitState(UNIT_STAT_STUNNED))
+        if (!hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CANNOT_TURN))
             SetInFront(target);
 
         return target;
     }
 
-    if (IsInEvadeMode() && !m_attackers.empty())
-    {
-        RemoveAllAttackers();
-        return NULL;
-    }
-
     for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
     {
-        if ((*itr) && !IsOutOfThreatArea(*itr))
-            return *itr;
+        Unit* attacker = (*itr);
+        if (!IsOutOfThreatArea(attacker))
+            return attacker;
     }
 
     // search nearby enemy before enter evade mode
     if (HasReactState(REACT_AGGRESSIVE))
     {
-        target = SelectNearestTarget();
+        target = SelectNearestTarget(45.0f);
         if (target && !IsOutOfThreatArea(target))
             return target;
     }
