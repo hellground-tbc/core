@@ -5634,6 +5634,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (triggeredByAura->GetCasterGUID() != pVictim->GetGUID())
                         return false;
 
+                    if (!pVictim->IsInMap(triggeredByAura->GetCaster()))
+                        return false;
+
                     // heal amount
                     basepoints0 = triggeredByAura->GetModifier()->m_amount*damage/100;
                     pVictim->CastCustomSpell(pVictim,15290,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
