@@ -88,8 +88,11 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         default:
         {
             recv_data >> msg;
-            if (msg.empty())
-                return;
+            if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
+            {
+                if (msg.empty())
+                    return;
+            }
 
             if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
                 return;
