@@ -2209,7 +2209,7 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
 
     float dist = (ThreatRadius > AttackDist ? ThreatRadius : AttackDist);
     //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return !IsWithinDistInMap(&homeLocation, dist) || !pVictim->IsWithinDistInMap(&homeLocation, 2.5f*dist);
+    return !IsWithinDistInMap(&homeLocation, dist) || !pVictim->IsWithinDistInMap(&homeLocation, 2.0f*dist);
 }
 
 CreatureDataAddon const* Creature::GetCreatureAddon() const

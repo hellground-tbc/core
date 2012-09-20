@@ -10059,11 +10059,7 @@ Unit* Creature::SelectVictim()
             if (!HasAuraType(SPELL_AURA_MOD_TAUNT))
                 target = getThreatManager().getHostilTarget();
             else
-            {
                 target = getVictim();
-                if (IsOutOfThreatArea(target))
-                    target = NULL;
-            }
         }
     }
 
