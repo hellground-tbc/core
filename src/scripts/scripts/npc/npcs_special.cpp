@@ -1079,7 +1079,7 @@ struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
                 me->ForcedDespawn();
                 return;
             }
-            checkTimer.Reset();
+            checkTimer.Reset(2000);
         }
 
         if (!UpdateVictim())
