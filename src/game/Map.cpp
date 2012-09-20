@@ -501,7 +501,7 @@ void Map::Update(const uint32 &t_diff)
 
         CheckHostileRefFor(plr);
 
-        CellArea area = Cell::CalculateCellArea(plr->GetPositionX(), plr->GetPositionY(), GetVisibilityDistance());
+        CellArea area = Cell::CalculateCellArea(plr->GetPositionX(), plr->GetPositionY(), GetVisibilityDistance() + World::GetVisibleObjectGreyDistance());
 
         for (uint32 x = area.low_bound.x_coord; x < area.high_bound.x_coord; ++x)
         {
@@ -589,6 +589,7 @@ void Map::CheckHostileRefFor(Player* plr)
 {
     if (IsDungeon())
         return;
+
 }
 
 void Map::SendObjectUpdates()
