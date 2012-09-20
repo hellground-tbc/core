@@ -92,10 +92,10 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
             {
                 if (msg.empty())
                     return;
-            }
 
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                return;
+                if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+                    return;
+            }
         }
     }
 

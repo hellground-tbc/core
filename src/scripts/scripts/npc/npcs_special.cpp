@@ -1053,24 +1053,33 @@ struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 {
     npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(30.0f); }
 
+    TimeTrackerSmall checkTimer;
+
     void Reset()
     {
-        SetAutocast(me->GetEntry() == SNAKE_VIPER ? RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON) : SPELL_DEADLY_POISON, urand(1100, 3000), false, CAST_TANK);
+        SetAutocast(me->GetEntry() == SNAKE_VIPER ? RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON) : SPELL_DEADLY_POISON, urand(2000, 3000), false, CAST_TANK);
 
-        if (roll_chance_f(66.0f))
+        if (roll_chance_f(22.0f))
             StartAutocast();
 
+        checkTimer.Reset(2000);
+
         me->SetReactState(REACT_AGGRESSIVE);
-        me->setAttackTimer(BASE_ATTACK, urand(100, 1000));
+        me->setAttackTimer(BASE_ATTACK, urand(1000, 2500));
     }
 
     void UpdateAI(const uint32 diff)
     {
-        Unit* owner = me->GetOwner();
-        if (!owner || !owner->IsInMap(me))
+        checkTimer.Update(diff);
+        if (checkTimer.Passed())
         {
-            me->ForcedDespawn();
-            return;
+            Unit* owner = me->GetOwner();
+            if (!owner || !owner->IsInMap(me))
+            {
+                me->ForcedDespawn();
+                return;
+            }
+            checkTimer.Reset();
         }
 
         if (!UpdateVictim())
