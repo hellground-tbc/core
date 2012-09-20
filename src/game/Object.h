@@ -387,7 +387,7 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
         class UpdateHelper
         {
             public:
-                explicit UpdateHelper(WorldObject * obj) : m_obj(obj) {}
+                explicit UpdateHelper(WorldObject* obj) : m_obj(obj) {}
                 ~UpdateHelper() {}
 
                 void Update(uint32 time_diff)
@@ -396,18 +396,18 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
                     m_obj->m_updateTracker.Reset();
                 }
 
-                bool ProcessUpdate();
+                //bool ProcessUpdate();
 
-                bool ProcessUpdate(Creature*);
-                bool ProcessUpdate(WorldObject*);
+                static bool ProcessUpdate(Creature*);
+                static bool ProcessUpdate(WorldObject*);
 
                 time_t GetTimeElapsed() const { return m_obj->m_updateTracker.timeElapsed(); }
 
             private:
-                UpdateHelper(const UpdateHelper&);
                 UpdateHelper& operator=(const UpdateHelper&);
+                UpdateHelper(const UpdateHelper& o);
 
-                WorldObject * const m_obj;
+                WorldObject* m_obj;
         };
 
         virtual ~WorldObject () {}
@@ -634,6 +634,7 @@ class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
         const Pet* ToPet() const;
 
         ViewPoint& GetViewPoint() { return m_viewPoint; }
+        WorldUpdateCounter& GetUpdateCounter() { return m_updateTracker; }
 
     protected:
         explicit WorldObject();

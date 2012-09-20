@@ -111,44 +111,38 @@ inline void CreatureRelocationNotifier::Visit(CreatureMapType &m)
     }
 }
 
-typedef std::list<WorldObject::UpdateHelper*> UpdateHelperList;
+typedef std::list<Creature*> UpdateList;
 
-struct UpdateHelperSorter : public std::binary_function<WorldObject::UpdateHelper*, WorldObject::UpdateHelper*, bool>
+struct UpdateListSorter : public std::binary_function<WorldObject::UpdateHelper&, WorldObject::UpdateHelper&, bool>
 {
     // functor for operator ">"
-    bool operator()(WorldObject::UpdateHelper* left,WorldObject::UpdateHelper* right) const
+    bool operator()(Creature* left, Creature* right) const
     {
-        return left->GetTimeElapsed() > right->GetTimeElapsed();
+        return left->GetUpdateCounter().timeElapsed() > right->GetUpdateCounter().timeElapsed();
     }
 };
 
 inline void ObjectUpdater::Visit(CreatureMapType &m)
 {
-    UpdateHelperList updateList;
+    UpdateList updateList;
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        WorldObject::UpdateHelper* helper = new WorldObject::UpdateHelper(iter->getSource());
-
-        if (helper->ProcessUpdate())
-            updateList.push_back(helper);
-        else
-            delete helper;
+        if (WorldObject::UpdateHelper::ProcessUpdate(iter->getSource()))
+            updateList.push_back(iter->getSource());
     }
 
-    // only way to prevent memleaks after resize :p
-    UpdateHelperList deleteList = updateList;
     if (sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS))
     {
         // sort list (objects updated old time ago will be first)
-        updateList.sort(UpdateHelperSorter());
+        updateList.sort(UpdateListSorter());
         updateList.resize(sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS));
     }
 
-    for (UpdateHelperList::iterator it = updateList.begin(); it != updateList.end(); ++it)
-        (*it)->Update(i_timeDiff);
-
-    for (UpdateHelperList::iterator it = deleteList.begin(); it != deleteList.end(); ++it)
-        delete (*it);
+    for (UpdateList::iterator it = updateList.begin(); it != updateList.end(); ++it)
+    {
+        WorldObject::UpdateHelper helper(*it);
+        helper.Update(i_timeDiff);
+    }
 }
 
 template<class T, class Check>

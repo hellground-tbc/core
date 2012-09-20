@@ -499,6 +499,8 @@ void Map::Update(const uint32 &t_diff)
         if (!plr->IsInWorld() || !plr->IsPositionValid())
             continue;
 
+        CheckHostileRefFor(plr);
+
         CellArea area = Cell::CalculateCellArea(plr->GetPositionX(), plr->GetPositionY(), GetVisibilityDistance());
 
         for (uint32 x = area.low_bound.x_coord; x < area.high_bound.x_coord; ++x)
@@ -581,6 +583,12 @@ void Map::Update(const uint32 &t_diff)
     MoveAllCreaturesInMoveList();
 
     MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MOVE_CREATURES_IN_LIST, RecordTimeDiff(), GetId()))
+}
+
+void Map::CheckHostileRefFor(Player* plr)
+{
+    if (IsDungeon())
+        return;
 }
 
 void Map::SendObjectUpdates()

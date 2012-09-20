@@ -297,6 +297,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         void ScriptsProcess();
 
+        void CheckHostileRefFor(Player*);
         void SendObjectUpdates();
 
         typedef std::set<Object*> ObjectSet;

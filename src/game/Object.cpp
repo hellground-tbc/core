@@ -2045,14 +2045,6 @@ const Pet* WorldObject::ToPet() const
     return NULL;
 }
 
-bool WorldObject::UpdateHelper::ProcessUpdate()
-{
-    if (m_obj->GetObjectGuid().IsCreature())
-        return ProcessUpdate(m_obj->ToCreature());
-
-    return ProcessUpdate(m_obj);
-}
-
 bool WorldObject::UpdateHelper::ProcessUpdate(Creature* creature)
 {
     if (!creature->IsInWorld() || creature->isSpiritService())
