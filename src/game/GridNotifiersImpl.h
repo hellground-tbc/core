@@ -113,7 +113,7 @@ inline void CreatureRelocationNotifier::Visit(CreatureMapType &m)
 
 typedef std::list<Creature*> UpdateList;
 
-struct UpdateListSorter : public std::binary_function<WorldObject::UpdateHelper&, WorldObject::UpdateHelper&, bool>
+struct UpdateListSorter : public std::binary_function<Creature*, Creature*, bool>
 {
     // functor for operator ">"
     bool operator()(Creature* left, Creature* right) const
