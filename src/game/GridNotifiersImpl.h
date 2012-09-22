@@ -127,6 +127,9 @@ inline void ObjectUpdater::Visit(CreatureMapType &m)
     UpdateList updateList;
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
+        if (iter->getSource()->isSpiritGuide())
+            continue;
+
         WorldObject::UpdateHelper helper(iter->getSource());
         helper.Update(i_timeDiff);
     }
