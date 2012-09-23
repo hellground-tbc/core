@@ -232,18 +232,25 @@ void CreatureGroup::RespawnFormation(Creature *member)
 
     m_Respawned = true;
 
-    for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    if (Map* map = member->GetMap())
     {
-        // Called at EnterEvadeMode, do not check self
-        if (itr->first == member->GetGUID())
-            continue;
-
-        if (Creature *mem = member->GetMap()->GetCreature(itr->first))
+        for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
         {
-            if (mem->isAlive())
+            // Called at EnterEvadeMode, do not check self
+            if (itr->first == member->GetGUID())
                 continue;
 
-            mem->Respawn();
+            if (Creature* mem = map->GetCreature(itr->first))
+            {
+                if (mem->isAlive())
+                    continue;
+
+                if (map->IsDungeon() && (map->IsRaid() || map->IsHeroic()))
+                    if (mem->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
+                        continue;
+
+                mem->Respawn();
+            }
         }
     }
 }
