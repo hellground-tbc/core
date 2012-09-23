@@ -3992,7 +3992,8 @@ bool SpellMgr::EffectCanScaleWithLevel(const SpellEntry * spellInfo, uint8 eff)
         spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_MOD_INCREASE_SPEED ||
         spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_MOD_DECREASE_SPEED ||
         spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE ||
-        spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_HASTE_MELEE)
+        spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_HASTE_MELEE ||
+        spellInfo->EffectApplyAuraName[eff] == SPELL_AURA_MOD_HASTE)
         return false;
 
     //there are many more than above: slow speed, -healing pct
