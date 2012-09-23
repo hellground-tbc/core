@@ -46,7 +46,7 @@ inline void PlayerCreatureRelocationWorker(Player* p, Creature* c)
 {
     if (!p->isAlive() || !c->isAlive())
         return;
-    
+
     if (p->IsTaxiFlying() && !c->CanReactToPlayerOnTaxi())
         return;
 
@@ -130,11 +130,7 @@ inline void ObjectUpdater::Visit(CreatureMapType &m)
         if (iter->getSource()->isSpiritGuide())
             continue;
 
-        WorldObject::UpdateHelper helper(iter->getSource());
-        helper.Update(i_timeDiff);
-    }
-    
-/*    if (WorldObject::UpdateHelper::ProcessUpdate(iter->getSource()))
+        if (WorldObject::UpdateHelper::ProcessUpdate(iter->getSource()))
             updateList.push_back(iter->getSource());
     }
 
@@ -142,15 +138,18 @@ inline void ObjectUpdater::Visit(CreatureMapType &m)
     {
         // sort list (objects updated old time ago will be first)
         updateList.sort(UpdateListSorter());
-        updateList.resize(sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS));
+        updateList.resize(sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS), NULL); // set initial value for added elements to NULL
     }
 
     for (UpdateList::iterator it = updateList.begin(); it != updateList.end(); ++it)
     {
+        // check for NULL because of resize
+        if (!(*it))
+            continue;
+
         WorldObject::UpdateHelper helper(*it);
         helper.Update(i_timeDiff);
     }
-*/
 }
 
 template<class T, class Check>
