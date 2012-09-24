@@ -134,7 +134,8 @@ inline void ObjectUpdater::Visit(CreatureMapType &m)
             updateList.push_back(iter->getSource());
     }
 
-    if (sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS))
+    uint32 maxListSize = sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS);
+    if (maxListSize && maxListSize < updateList.size())
     {
         // sort list (objects updated old time ago will be first)
         updateList.sort(UpdateListSorter());
@@ -143,10 +144,6 @@ inline void ObjectUpdater::Visit(CreatureMapType &m)
 
     for (UpdateList::iterator it = updateList.begin(); it != updateList.end(); ++it)
     {
-        // check for NULL because of resize
-        if (!(*it))
-            continue;
-
         WorldObject::UpdateHelper helper(*it);
         helper.Update(i_timeDiff);
     }
