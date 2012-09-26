@@ -450,14 +450,15 @@ SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
             if (spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED)
             {
                 for (int i = 0; i < 3; i++)
+                {
                     if (spellInfo->EffectApplyAuraName[i]==SPELL_AURA_MOD_POWER_REGEN)
                         return SPELL_DRINK;
                     else if (spellInfo->EffectApplyAuraName[i]==SPELL_AURA_MOD_REGEN)
                         return SPELL_FOOD;
+                }
             }
             // this may be a hack
-            else if ((spellInfo->AttributesEx2 & SPELL_ATTR_EX2_FOOD)
-                && !spellInfo->Category)
+            else if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_FOOD && !spellInfo->Category)
                 return SPELL_WELL_FED;
 
             switch (spellInfo->Id)
@@ -2772,6 +2773,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+            /* WELL FEED */
+            case 18191:
+                spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_FOOD;
+                break;
             /* ROGUE CUSTOM ATTRIBUTES */
             case 2094:                     // Blind
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_FAKE_DELAY; // add const fake delay
