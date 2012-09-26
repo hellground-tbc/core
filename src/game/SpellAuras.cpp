@@ -6671,7 +6671,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
             switch (m_spellProto->SpellFamilyName)
             {
                 case SPELLFAMILY_PRIEST:
-                    if (m_spellProto->SpellFamilyFlags == 0x1) //PW:S
+                    if (m_spellProto->SpellFamilyFlags & 0x1LL) //PW:S
                     {
                         //+30% from +healing bonus
                         DoneActualBenefit = caster->SpellBaseHealingBonus(SpellMgr::GetSpellSchoolMask(m_spellProto)) * 0.3f;
@@ -6679,7 +6679,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
                     }
                     break;
                 case SPELLFAMILY_MAGE:
-                    if (m_spellProto->SpellFamilyFlags == 0x100080108LL)
+                    if (m_spellProto->SpellFamilyFlags & 0x100080108LL)
                     {
                         //frost ward, fire ward, ice barrier
                         //+10% from +spd bonus
