@@ -2775,6 +2775,7 @@ void SpellMgr::LoadSpellCustomAttr()
         {
             /* WELL FEED */
             case 18191:
+            case 46687:
                 spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_FOOD;
                 break;
             /* ROGUE CUSTOM ATTRIBUTES */
