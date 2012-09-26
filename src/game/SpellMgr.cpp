@@ -2871,12 +2871,21 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_SHARE_DAMAGE;
                 switch (i) // Saber Lash Targets
                 {
-                case 40810:             spellInfo->MaxAffectedTargets = 3; break;
-                case 43267: case 43268: spellInfo->MaxAffectedTargets = 2; break;
+                    case 40810:
+                        spellInfo->MaxAffectedTargets = 3;
+                        break;
+                    case 43267:
+                    case 43268:
+                        spellInfo->MaxAffectedTargets = 2;
+                        break;
                 }
                 break;
-            case 44978: case 45001: case 45002:     // Wild Magic
-            case 45004: case 45006: case 45010:     // Wild Magic
+            case 44978:
+            case 45001:
+            case 45002:     // Wild Magic
+            case 45004:
+            case 45006:
+            case 45010:     // Wild Magic
             //case 31347: // Doom
             case 41635: // Prayer of Mending
             case 44869: // Spectral Blast
@@ -2934,7 +2943,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 40861: // Wicked Beam
                 spellInfo->MaxAffectedTargets = 10;
                 break;
-            case 8122: case 8124: case 10888: case 10890: // Psychic Scream
+            case 8122:
+            case 8124:
+            case 10888:
+            case 10890: // Psychic Scream
             case 12494: // Frostbite
                 spellInfo->Attributes |= SPELL_ATTR_BREAKABLE_BY_DAMAGE;
                 break;
@@ -3101,7 +3113,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_IGNORE_LOS;
                 break;
             case 43383: // Spirit Bolts (HexLord)
-                spellInfo->ChannelInterruptFlags = CHANNEL_FLAG_MOVEMENT;
+                spellInfo->ChannelInterruptFlags |= CHANNEL_FLAG_MOVEMENT;
                 break;
             case 29962: // Summon Elemental (Shade of Aran)
             case 37053:
@@ -3137,6 +3149,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 20814: // Collect Dire Water
                 spellInfo->InterruptFlags = SPELL_INTERRUPT_FLAG_MOVEMENT | SPELL_INTERRUPT_FLAG_DAMAGE | SPELL_INTERRUPT_FLAG_AUTOATTACK | SPELL_INTERRUPT_FLAG_PUSH_BACK | SPELL_INTERRUPT_FLAG_INTERRUPT;
                 break;
+            case 30346: // Fel Iron SHells duplicated effect, weird
             case 30254: // Curator Evocation
                 spellInfo->Effect[1] = 0;   // remove self stun
                 break;
