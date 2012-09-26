@@ -3111,3 +3111,21 @@ bool Map::GetEntrancePos( int32 &mapid, float &x, float &y )
     y = i_mapEntry->entrance_y;
     return true;
 }
+
+void Map::UpdateHelper::Update( DelayedMapList& delayedUpdate )
+{
+    sMapMgr.GetMapUpdater()->schedule_update(*m_map, GetTimeElapsed());
+    delayedUpdate.push_back(std::make_pair(m_map, uint32(GetTimeElapsed())));
+
+    m_map->m_updateTracker.Reset();
+}
+
+bool Map::UpdateHelper::ProcessUpdate() const
+{
+    return GetTimeElapsed() >= sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE);
+}
+
+time_t Map::UpdateHelper::GetTimeElapsed() const
+{
+    return m_map->m_updateTracker.timeElapsed();
+}

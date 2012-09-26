@@ -75,15 +75,6 @@ class HELLGROUND_DLL_DECL MapManager
                 i_gridCleanUpDelay = t;
         }
 
-        void SetMapUpdateInterval(uint32 t)
-        {
-            if (t < MIN_MAP_UPDATE_DELAY)
-                t = MIN_MAP_UPDATE_DELAY;
-
-            i_timer.SetInterval(t);
-            i_timer.Reset();
-        }
-
         //void LoadGrid(int mapid, float x, float y, WorldObject const* obj, bool no_unload = false);
         void UnloadAll();
 
@@ -166,7 +157,6 @@ class HELLGROUND_DLL_DECL MapManager
 
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
-        IntervalTimer i_timer;
 
         MapUpdater m_updater;
         uint32 i_MaxInstanceId;

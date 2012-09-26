@@ -360,25 +360,6 @@ class HELLGROUND_DLL_SPEC Object
 
 struct WorldObjectChangeAccumulator;
 
-class WorldUpdateCounter
-{
-    public:
-        WorldUpdateCounter() : m_tmStart(0) {}
-
-        time_t timeElapsed()
-        {
-            if (!m_tmStart)
-                m_tmStart = WorldTimer::tickPrevTime();
-
-            return WorldTimer::getMSTimeDiff(m_tmStart, WorldTimer::tickTime());
-        }
-
-        void Reset() { m_tmStart = WorldTimer::tickTime(); }
-
-    private:
-       uint32 m_tmStart;
-};
-
 class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
 {
     friend struct WorldObjectChangeAccumulator;

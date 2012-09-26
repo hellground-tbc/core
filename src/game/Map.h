@@ -117,10 +117,31 @@ enum GetCreatureGuidType
     GET_ALIVE_CREATURE_GUID     = 3
 };
 
+typedef std::list<std::pair<Map*, uint32> > DelayedMapList;
+
 class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
+        class UpdateHelper
+        {
+            public:
+                explicit UpdateHelper(Map* m) : m_map(m) {}
+                ~UpdateHelper() {}
+
+                bool ProcessUpdate() const;
+
+                void Update(DelayedMapList& delayedUpdate);
+
+                time_t GetTimeElapsed() const;
+
+            private:
+                UpdateHelper& operator=(const UpdateHelper&);
+                UpdateHelper(const UpdateHelper& o);
+
+                Map* m_map;
+        };
+
         Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
         virtual ~Map();
 
@@ -340,6 +361,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
         time_t i_gridExpiry;
+        WorldUpdateCounter m_updateTracker;
 
         bool i_scriptLock;
 

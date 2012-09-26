@@ -36,7 +36,6 @@
 
 MapManager::MapManager() : i_gridCleanUpDelay(sWorld.getConfig(CONFIG_INTERVAL_GRIDCLEAN))
 {
-    i_timer.SetInterval(sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
 
 MapManager::~MapManager()
@@ -226,16 +225,15 @@ void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
     }
 }
 
+typedef std::list<std::pair<Map*, uint32> > DelayedMapList;
 void MapManager::Update(uint32 diff)
 {
-    i_timer.Update(diff);
-    if (!i_timer.Passed())
-        return;
-
     sWorld.RecordTimeDiff(NULL, false);
+
+    DelayedMapList delayedUpdate;
     for (MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end();)
     {
-        if (iter->second->CanUnload(i_timer.GetCurrent()))
+        if (iter->second->CanUnload(diff))
         {
             iter->second->UnloadAll();
             delete iter->second;
@@ -244,7 +242,10 @@ void MapManager::Update(uint32 diff)
         }
         else
         {
-            m_updater.schedule_update(*iter->second, uint32(i_timer.GetCurrent()));
+            Map::UpdateHelper helper(iter->second);
+            if (helper.ProcessUpdate())
+                helper.Update(delayedUpdate);
+
             ++iter;
         }
     }
@@ -253,20 +254,20 @@ void MapManager::Update(uint32 diff)
 
     sWorld.RecordTimeDiff("UpdateMaps", false);
 
-    for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
-        iter->second->DelayedUpdate(i_timer.GetCurrent());
+    for (DelayedMapList::iterator iter = delayedUpdate.begin(); iter != delayedUpdate.end(); ++iter)
+        iter->first->DelayedUpdate(iter->second);
+
+    delayedUpdate.clear();
 
     sWorld.RecordTimeDiff("Delayed update", false);
 
     for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
     {
-        WorldObject::UpdateHelper helper((*iter));
-        helper.Update(uint32(i_timer.GetCurrent()));
+        WorldObject::UpdateHelper helper(*iter);
+        helper.Update(diff);
     }
 
     sWorld.RecordTimeDiff("UpdateTransports", false);
-
-    i_timer.SetCurrent(0);
 }
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)

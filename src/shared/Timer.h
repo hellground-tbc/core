@@ -180,4 +180,23 @@ struct PeriodicTimer
         int32 i_expireTime;
 };
 
+class WorldUpdateCounter
+{
+    public:
+        WorldUpdateCounter() : m_tmStart(0) {}
+
+        time_t timeElapsed()
+        {
+            if (!m_tmStart)
+                m_tmStart = WorldTimer::tickPrevTime();
+
+            return WorldTimer::getMSTimeDiff(m_tmStart, WorldTimer::tickTime());
+        }
+
+        void Reset() { m_tmStart = WorldTimer::tickTime(); }
+
+    private:
+        uint32 m_tmStart;
+};
+
 #endif
