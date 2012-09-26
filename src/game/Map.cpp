@@ -650,8 +650,10 @@ void Map::Remove(Player *player, bool remove)
     NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
     assert(grid != NULL);
 
+    player->DestroyForNearbyPlayers();
+
     player->RemoveFromWorld();
-    player->UpdateObjectVisibility();
+    //player->UpdateObjectVisibility();
 
     RemoveFromGrid(player,grid,cell);
     SendRemoveTransports(player);

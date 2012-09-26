@@ -967,7 +967,7 @@ void GameObject::SwitchDoorOrButton()
 
 void GameObject::Use(Unit* user)
 {
-    if(!isSpawned())
+    if (!isSpawned())
         return;
 
     // by default spell caster is user

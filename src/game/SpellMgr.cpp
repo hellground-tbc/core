@@ -3149,7 +3149,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 20814: // Collect Dire Water
                 spellInfo->InterruptFlags = SPELL_INTERRUPT_FLAG_MOVEMENT | SPELL_INTERRUPT_FLAG_DAMAGE | SPELL_INTERRUPT_FLAG_AUTOATTACK | SPELL_INTERRUPT_FLAG_PUSH_BACK | SPELL_INTERRUPT_FLAG_INTERRUPT;
                 break;
-            case 30346: // Fel Iron SHells duplicated effect, weird
+            case 30346: // Fel Iron Shells duplicated effect, weird
             case 30254: // Curator Evocation
                 spellInfo->Effect[1] = 0;   // remove self stun
                 break;

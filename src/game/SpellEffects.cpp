@@ -3705,13 +3705,9 @@ void Spell::EffectOpenLock(uint32 effIndex)
     }
 
     if (gameObjTarget)
-    {
         gameObjTarget->Use(m_caster);
-    }
     else
-    {
         player->SendLoot(guid, LOOT_SKINNING);
-    }
 
     // not allow use skill grow at item base open
     if(!m_CastItem && skillId != SKILL_NONE)
