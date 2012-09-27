@@ -141,10 +141,10 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 {
     boss_lady_vashjAI (Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = c->GetInstanceData();
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
 
     uint64 ShieldGeneratorChannel[4];
 
@@ -190,31 +190,32 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         EnchantedElemental_Pos = 0;
         Phase = 0;
         Intro = false;
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); //set it only once on creature create (no need do intro if wiped)
+
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE); //set it only once on creature create (no need do intro if wiped)
+
         Entangle = false;
         CanAttack = false;
 
-        Unit *remo;
-        for(uint8 i = 0; i < 4; i++)
+        for (uint8 i = 0; i < 4; i++)
         {
-            remo = Unit::GetUnit(*m_creature, ShieldGeneratorChannel[i]);
+            Unit* remo = Unit::GetUnit(*me, ShieldGeneratorChannel[i]);
             if (remo)
                 remo->setDeathState(JUST_DIED);
         }
 
-        if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != DONE)
-            pInstance->SetData(DATA_LADYVASHJEVENT, NOT_STARTED);
+        instance->SetData(DATA_LADYVASHJEVENT, NOT_STARTED);
+
         ShieldGeneratorChannel[0] = 0;
         ShieldGeneratorChannel[1] = 0;
         ShieldGeneratorChannel[2] = 0;
         ShieldGeneratorChannel[3] = 0;
 
-        m_creature->SetCorpseDelay(1000*60*60);
+        me->SetCorpseDelay(1000*60*60);
     }
 
     void Paralyze(bool apply)
     {
-        Map *map = m_creature->GetMap();
+        Map *map = me->GetMap();
         Map::PlayerList const &PlayerList = map->GetPlayers();
 
         for(Map::PlayerList::const_iterator i = PlayerList.begin();i != PlayerList.end(); ++i)
@@ -235,41 +236,39 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
     void EventTaintedElementalDeath()
     {
         //the next will spawn 50 seconds after the previous one's death
-        if(TaintedElemental_Timer > 50000)
+        if (TaintedElemental_Timer > 50000)
             TaintedElemental_Timer = 50000;
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
     }
 
     void JustDied(Unit *victim)
     {
         Paralyze(false);
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
-        if(pInstance)
-            pInstance->SetData(DATA_LADYVASHJEVENT, DONE);
+        instance->SetData(DATA_LADYVASHJEVENT, DONE);
     }
 
     void StartEvent()
     {
-        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3, SAY_AGGRO4), m_creature);
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3, SAY_AGGRO4), me);
 
         InCombat = true;
         Phase = 1;
 
-        if(pInstance)
-            pInstance->SetData(DATA_LADYVASHJEVENT, IN_PROGRESS);
+        instance->SetData(DATA_LADYVASHJEVENT, IN_PROGRESS);
     }
 
     void EnterCombat(Unit *who)
     {
-        if (pInstance)
+        if (instance)
         {
             //remove old tainted cores to prevent cheating in phase 2
-            Map *map = m_creature->GetMap();
+            Map *map = me->GetMap();
             Map::PlayerList const &PlayerList = map->GetPlayers();
             for(Map::PlayerList::const_iterator i = PlayerList.begin();i != PlayerList.end(); ++i)
             {
@@ -291,18 +290,18 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         if (!Intro)
         {
             Intro = true;
-            DoScriptText(SAY_INTRO, m_creature);
+            DoScriptText(SAY_INTRO, me);
         }
         if (!CanAttack)
             return;
 
-        if (!who || m_creature->getVictim())
+        if (!who || me->getVictim())
             return;
 
-        if (who->isTargetableForAttack() && who->isInAccessiblePlacefor(m_creature) && m_creature->IsHostileTo(who))
+        if (who->isTargetableForAttack() && who->isInAccessiblePlacefor(me) && me->IsHostileTo(who))
         {
-            float attackRadius = m_creature->GetAttackDistance(who);
-            if (m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->GetDistanceZ(who) <= CREATURE_Z_ATTACK_RANGE && m_creature->IsWithinLOSInMap(who))
+            float attackRadius = me->GetAttackDistance(who);
+            if (me->IsWithinDistInMap(who, attackRadius) && me->GetDistanceZ(who) <= CREATURE_Z_ATTACK_RANGE && me->IsWithinLOSInMap(who))
             {
                 //if(who->HasStealthAura())
                 //    who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
@@ -310,7 +309,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 if(Phase != 2)
                     AttackStart(who);
 
-                if(!m_creature->isInCombat())
+                if(!me->isInCombat())
                     StartEvent();
             }
         }
@@ -322,10 +321,10 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
         //Used in Phases 1 and 3 after Entangle or while having nobody in melee range. A shot that hits her target for 4097-5543 Physical damage.
         //Multishot
         //Used in Phases 1 and 3 after Entangle or while having nobody in melee range. A shot that hits 1 person and 4 people around him for 6475-7525 physical damage.
-        DoCast(m_creature->getVictim(), RAND(SPELL_SHOOT, SPELL_MULTI_SHOT));
+        DoCast(me->getVictim(), RAND(SPELL_SHOOT, SPELL_MULTI_SHOT));
 
         if(rand()%3)
-            DoScriptText(RAND(SAY_BOWSHOT1, SAY_BOWSHOT2), m_creature);
+            DoScriptText(RAND(SAY_BOWSHOT1, SAY_BOWSHOT2), me);
     }
 
     void UpdateAI(const uint32 diff)
@@ -335,7 +334,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if(AggroTimer < diff)
             {
                 CanAttack = true;
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 AggroTimer = 19000;
             }
             else
@@ -369,9 +368,9 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
            if(ParalyzeCheck_Timer < diff)
            {
                Paralyze(true);
-               if(m_creature->hasUnitState(UNIT_STAT_CHASE))
+               if(me->hasUnitState(UNIT_STAT_CHASE))
                {
-                    m_creature->GetMotionMaster()->Clear();
+                    me->GetMotionMaster()->Clear();
                     DoTeleportTo(MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
                }
                ParalyzeCheck_Timer = 1000;
@@ -387,10 +386,10 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             {
                 //Shock Burst
                 //Randomly used in Phases 1 and 3 on Vashj's target, it's a Shock spell doing 8325-9675 nature damage and stunning the target for 5 seconds, during which she will not attack her target but switch to the next person on the aggro list.
-                //if(m_creature->getVictim()->HasAura(23920,0)) anti-reflect not needed anymore
-                //    m_creature->getVictim()->RemoveAurasDueToSpell(23920);
+                //if(me->getVictim()->HasAura(23920,0)) anti-reflect not needed anymore
+                //    me->getVictim()->RemoveAurasDueToSpell(23920);
 
-                DoCast(m_creature->getVictim(), SPELL_SHOCK_BLAST);
+                DoCast(me->getVictim(), SPELL_SHOCK_BLAST);
                 ShockBlast_Timer = 8000+rand()%12000;       //random cooldown
             }
             else
@@ -418,7 +417,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 {
                     //Entangle
                     //Used in Phases 1 and 3, it casts Entangling Roots on everybody in a 15 yard radius of Vashj, immobilzing them for 10 seconds and dealing 500 damage every 2 seconds. It's not a magic effect so it cannot be dispelled, but is removed by various buffs such as Cloak of Shadows or Blessing of Freedom.
-                    DoCast(m_creature->getVictim(), SPELL_ENTANGLE);
+                    DoCast(me->getVictim(), SPELL_ENTANGLE);
                     Entangle = true;
                     Entangle_Timer = 10000;
                 }
@@ -436,24 +435,24 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if(Phase == 1)
             {
                 //Start phase 2
-                if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 70)
+                if ((me->GetHealth()*100 / me->GetMaxHealth()) < 70)
                 {
                     //Phase 2 begins when Vashj hits 70%. She will run to the middle of her platform and surround herself in a shield making her invulerable.
                     Phase = 2;
 
-                    m_creature->GetMotionMaster()->MovementExpired();
+                    me->GetMotionMaster()->MovementExpired();
                     DoTeleportTo(MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
 
                     Creature *pCreature;
                     for(uint8 i = 0; i < 4; i++)
                     {
-                        pCreature = m_creature->SummonCreature(SHIED_GENERATOR_CHANNEL, ShieldGeneratorChannelPos[i][0],  ShieldGeneratorChannelPos[i][1],  ShieldGeneratorChannelPos[i][2],  ShieldGeneratorChannelPos[i][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+                        pCreature = me->SummonCreature(SHIED_GENERATOR_CHANNEL, ShieldGeneratorChannelPos[i][0],  ShieldGeneratorChannelPos[i][1],  ShieldGeneratorChannelPos[i][2],  ShieldGeneratorChannelPos[i][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
                         if (pCreature)
                             ShieldGeneratorChannel[i] = pCreature->GetGUID();
                     }
 
-                    m_creature->CastSpell(m_creature, SPELL_MAGIC_BARRIER,true);
-                    DoScriptText(SAY_PHASE2, m_creature);
+                    me->CastSpell(me, SPELL_MAGIC_BARRIER,true);
+                    DoScriptText(SAY_PHASE2, me);
                 }
             }
             //Phase 3
@@ -463,7 +462,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 if(SummonSporebat_Timer < diff)
                 {
                     Creature *Sporebat = NULL;
-                    Sporebat = m_creature->SummonCreature(TOXIC_SPOREBAT, SPOREBAT_X, SPOREBAT_Y, SPOREBAT_Z, SPOREBAT_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    Sporebat = me->SummonCreature(TOXIC_SPOREBAT, SPOREBAT_X, SPOREBAT_Y, SPOREBAT_Z, SPOREBAT_O, TEMPSUMMON_CORPSE_DESPAWN, 0);
 
                     if(Sporebat)
                     {
@@ -493,12 +492,12 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             {
                 bool InMeleeRange = false;
                 Unit *target;
-                std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+                std::list<HostilReference *> t_list = me->getThreatManager().getThreatList();
                 for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
-                    target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                    target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
                                                             //if in melee range
-                    if(target && target->IsWithinDistInMap(m_creature, 5))
+                    if(target && target->IsWithinDistInMap(me, 5))
                     {
                         InMeleeRange = true;
                         break;
@@ -523,7 +522,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, GetSpellMaxRange(SPELL_FORKED_LIGHTNING), true);
 
                 if(!target)
-                    target = m_creature->getVictim();
+                    target = me->getVictim();
 
                 DoCast(target, SPELL_FORKED_LIGHTNING);
 
@@ -540,7 +539,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 for (int i = 0; i < 4; i++)
                 {
                     EnchantedElemental_Pos = i * 2 + (rand()%2);
-                    Elemental = m_creature->SummonCreature(ENCHANTED_ELEMENTAL, ElementPos[EnchantedElemental_Pos][0], ElementPos[EnchantedElemental_Pos][1], ElementPos[EnchantedElemental_Pos][2], ElementPos[EnchantedElemental_Pos][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
+                    Elemental = me->SummonCreature(ENCHANTED_ELEMENTAL, ElementPos[EnchantedElemental_Pos][0], ElementPos[EnchantedElemental_Pos][1], ElementPos[EnchantedElemental_Pos][2], ElementPos[EnchantedElemental_Pos][3], TEMPSUMMON_CORPSE_DESPAWN, 0);
                 }
 
                 if (Elemental)
@@ -555,7 +554,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             {
                 Creature *Tain_Elemental;
                 uint32 pos = rand()%8;
-                Tain_Elemental = m_creature->SummonCreature(TAINTED_ELEMENTAL, ElementPos[pos][0], ElementPos[pos][1], ElementPos[pos][2], ElementPos[pos][3], TEMPSUMMON_DEAD_DESPAWN, 0);
+                Tain_Elemental = me->SummonCreature(TAINTED_ELEMENTAL, ElementPos[pos][0], ElementPos[pos][1], ElementPos[pos][2], ElementPos[pos][3], TEMPSUMMON_DEAD_DESPAWN, 0);
 
                 TaintedElemental_Timer = 120000;
             }
@@ -566,7 +565,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if(CoilfangElite_Timer < diff)
             {
                 path_nr = urand(0,3);
-                m_creature->SummonCreature(COILFANG_ELITE, StriderNagaWP[path_nr*4][0],StriderNagaWP[path_nr*4][1],StriderNagaWP[path_nr*4][2],0, TEMPSUMMON_DEAD_DESPAWN, 0);
+                me->SummonCreature(COILFANG_ELITE, StriderNagaWP[path_nr*4][0],StriderNagaWP[path_nr*4][1],StriderNagaWP[path_nr*4][2],0, TEMPSUMMON_DEAD_DESPAWN, 0);
                 CoilfangElite_Timer = 50000+rand()%5000;
             }
             else
@@ -576,7 +575,7 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if(CoilfangStrider_Timer < diff)
             {
                 uint32 pos = rand()%3;
-                m_creature->SummonCreature(COILFANG_STRIDER, StriderNagaWP[pos*4][0],StriderNagaWP[pos*4][1],StriderNagaWP[pos*4][2],0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                me->SummonCreature(COILFANG_STRIDER, StriderNagaWP[pos*4][0],StriderNagaWP[pos*4][1],StriderNagaWP[pos*4][2],0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
 
                 CoilfangStrider_Timer = 60000+rand()%10000;
             }
@@ -587,19 +586,19 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if(Check_Timer < diff)
             {
                 //Start Phase 3
-                if(pInstance && pInstance->GetData(DATA_CANSTARTPHASE3))
+                if(instance && instance->GetData(DATA_CANSTARTPHASE3))
                 {
                     //set life 50%
-                    m_creature->SetHealth(m_creature->GetMaxHealth()/2);
-                    m_creature->RemoveAurasDueToSpell(SPELL_MAGIC_BARRIER);
+                    me->SetHealth(me->GetMaxHealth()/2);
+                    me->RemoveAurasDueToSpell(SPELL_MAGIC_BARRIER);
 
                     DoResetThreat();
-                    DoScriptText(SAY_PHASE3, m_creature);
+                    DoScriptText(SAY_PHASE3, me);
 
                     Phase = 3;
                     Paralyze(false);
                     //return to the tank
-                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+                    me->GetMotionMaster()->MoveChase(me->getVictim());
                 }
                 Check_Timer = 1000;
             }
@@ -620,10 +619,10 @@ struct HELLGROUND_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
 {
     mob_enchanted_elementalAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = (c->GetInstanceData());
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
     uint32 move;
     uint32 phase;
     float x, y, z;
@@ -631,8 +630,8 @@ struct HELLGROUND_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_WALK,0.6);//walk
-        m_creature->SetSpeed(MOVE_RUN,0.6);//run
+        me->SetSpeed(MOVE_WALK,0.6);//walk
+        me->SetSpeed(MOVE_RUN,0.6);//run
         move = 0;
         phase = 1;
         Vashj = NULL;
@@ -647,7 +646,7 @@ struct HELLGROUND_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
             }
             else
             {
-                if (m_creature->GetDistance(ElementWPPos[i][0],ElementWPPos[i][1],ElementWPPos[i][2]) < m_creature->GetDistance(x,y,z))
+                if (me->GetDistance(ElementWPPos[i][0],ElementWPPos[i][1],ElementWPPos[i][2]) < me->GetDistance(x,y,z))
                 {
                     x = ElementWPPos[i][0];
                     y = ElementWPPos[i][1];
@@ -655,8 +654,8 @@ struct HELLGROUND_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
                 }
             }
         }
-        if (pInstance)
-            Vashj = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_LADYVASHJ));
+        if (instance)
+            Vashj = Unit::GetUnit((*me), instance->GetData64(DATA_LADYVASHJ));
     }
 
     void EnterCombat(Unit *who) { return; }
@@ -665,7 +664,7 @@ struct HELLGROUND_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!pInstance)
+        if(!instance)
             return;
 
         if (!Vashj)
@@ -679,21 +678,21 @@ struct HELLGROUND_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
             me->SetSpeed(MOVE_WALK, 0.6, true);
             if (phase == 1)
             {
-                m_creature->GetMotionMaster()->MovePoint(0, x, y, z);
+                me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
-            if (phase == 1 && m_creature->GetDistance(x,y,z) < 0.1)
+            if (phase == 1 && me->GetDistance(x,y,z) < 0.1)
             {
                 phase = 2;
             }
             if (phase == 2)
             {
-                m_creature->GetMotionMaster()->MovePoint(0, MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
+                me->GetMotionMaster()->MovePoint(0, MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
                 phase = 3;
             }
             if (phase == 3)
             {
-                m_creature->GetMotionMaster()->MovePoint(0, MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
-                if(m_creature->GetDistance(MIDDLE_X, MIDDLE_Y, MIDDLE_Z) < 3)
+                me->GetMotionMaster()->MovePoint(0, MIDDLE_X, MIDDLE_Y, MIDDLE_Z);
+                if(me->GetDistance(MIDDLE_X, MIDDLE_Y, MIDDLE_Z) < 3)
                 {
                     SpellEntry *spell = (SpellEntry *)GetSpellStore()->LookupEntry(SPELL_SURGE);
                     if( spell )
@@ -706,13 +705,13 @@ struct HELLGROUND_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
                             Vashj->AddAura(new VashjSurgeAura(spell, i, NULL, Vashj, Vashj));
                         }
                     }
-                    m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 }
             }
             if(((boss_lady_vashjAI*)((Creature*)Vashj)->AI())->InCombat == false || ((boss_lady_vashjAI*)((Creature*)Vashj)->AI())->Phase != 2 || Vashj->isDead())
             {
                 //call Unsummon()
-                m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                me->DealDamage(me, me->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
             move = 1000;
         }else move -= diff;
@@ -725,10 +724,10 @@ struct HELLGROUND_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementA
 {
     mob_tainted_elementalAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = (c->GetInstanceData());
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
 
     uint32 PoisonBolt_Timer;
     uint32 Despawn_Timer;
@@ -741,9 +740,9 @@ struct HELLGROUND_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementA
 
     void JustDied(Unit *killer)
     {
-        if(pInstance)
+        if(instance)
         {
-            Creature *Vashj = Unit::GetCreature((*m_creature), pInstance->GetData64(DATA_LADYVASHJ));
+            Creature *Vashj = Unit::GetCreature((*me), instance->GetData64(DATA_LADYVASHJ));
 
             if(Vashj)
                 ((boss_lady_vashjAI*)Vashj->AI())->EventTaintedElementalDeath();
@@ -752,7 +751,7 @@ struct HELLGROUND_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementA
 
     void EnterCombat(Unit *who)
     {
-        m_creature->AddThreat(who, 0.1f);
+        me->AddThreat(who, 0.1f);
     }
 
     void UpdateAI(const uint32 diff)
@@ -770,8 +769,8 @@ struct HELLGROUND_DLL_DECL mob_tainted_elementalAI : public Scripted_NoMovementA
         if(Despawn_Timer < diff)
         {
             //call Unsummon()
-            m_creature->setDeathState(DEAD);
-            m_creature->AI()->JustDied(m_creature);
+            me->setDeathState(DEAD);
+            me->AI()->JustDied(me);
 
             //to prevent crashes
             Despawn_Timer = 5000;
@@ -785,7 +784,7 @@ struct HELLGROUND_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
 {
     mob_toxic_sporebatAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = (c->GetInstanceData());
         EnterEvadeMode();
         SpellEntry *TempSpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_TOXIC_SPORES);
         if(TempSpell)
@@ -794,7 +793,7 @@ struct HELLGROUND_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
         }
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
 
     uint32 movement_timer;
     uint32 ToxicSpore_Timer;
@@ -803,8 +802,8 @@ struct HELLGROUND_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetLevitate(true);
-        m_creature->setFaction(14);
+        me->SetLevitate(true);
+        me->setFaction(14);
         movement_timer = 0;
         ToxicSpore_Timer = 5000;
         bolt_timer = 5500;
@@ -836,7 +835,7 @@ struct HELLGROUND_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
         if (movement_timer < diff)
         {
             uint32 rndpos = rand()%8;
-            m_creature->GetMotionMaster()->MovePoint(1,SporebatWPPos[rndpos][0], SporebatWPPos[rndpos][1], SporebatWPPos[rndpos][2]);
+            me->GetMotionMaster()->MovePoint(1,SporebatWPPos[rndpos][0], SporebatWPPos[rndpos][1], SporebatWPPos[rndpos][2]);
             movement_timer = 6000;
         }else movement_timer -= diff;
 
@@ -845,7 +844,7 @@ struct HELLGROUND_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
         {
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 300, true))
             {
-                if(Creature* trig = m_creature->SummonCreature(TOXIC_SPORES_TRIGGER,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN,30000))
+                if(Creature* trig = me->SummonCreature(TOXIC_SPORES_TRIGGER,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN,30000))
                 {
                     trig->setFaction(14);
                     trig->CastSpell(trig, SPELL_TOXIC_SPORES,true);
@@ -858,16 +857,16 @@ struct HELLGROUND_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
         //Check_Timer
         if(Check_Timer < diff)
         {
-            if(pInstance)
+            if(instance)
             {
                 //check if vashj is death
-                Unit *Vashj = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_LADYVASHJ));
+                Unit *Vashj = Unit::GetUnit((*me), instance->GetData64(DATA_LADYVASHJ));
                 if(!Vashj || (Vashj && !Vashj->isAlive()) || (Vashj && ((boss_lady_vashjAI*)((Creature*)Vashj)->AI())->Phase != 3))
                 {
                     //remove
-                    m_creature->setDeathState(DEAD);
-                    m_creature->RemoveCorpse();
-                    m_creature->setFaction(35);
+                    me->setDeathState(DEAD);
+                    me->RemoveCorpse();
+                    me->setFaction(35);
                 }
             }
 
@@ -880,10 +879,10 @@ struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 {
     mob_coilfang_eliteAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = (c->GetInstanceData());
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
 
     uint8 MoveWP, path_nr;
     uint32 Cleave_Timer, Check_Timer;
@@ -892,12 +891,12 @@ struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_WALK, 3);
-        m_creature->SetSpeed(MOVE_RUN, 3);
+        me->SetSpeed(MOVE_WALK, 3);
+        me->SetSpeed(MOVE_RUN, 3);
 
         for(int i = 0; i < 3; ++i)
         {
-            if(m_creature->GetDistance(StriderNagaWP[i*4][0],StriderNagaWP[i*4][1],StriderNagaWP[i*4][2]) < 5)
+            if(me->GetDistance(StriderNagaWP[i*4][0],StriderNagaWP[i*4][1],StriderNagaWP[i*4][2]) < 5)
             {
                 path_nr = i;
                 break;
@@ -911,7 +910,7 @@ struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
         Move = false;
         OnPath = true;
 
-        m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
+        me->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -926,10 +925,10 @@ struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
     {
         if(OnPath)
         {
-            m_creature->SetSpeed(MOVE_WALK,1.5);
-            m_creature->SetSpeed(MOVE_RUN,1.5);
+            me->SetSpeed(MOVE_WALK,1.5);
+            me->SetSpeed(MOVE_RUN,1.5);
 
-            m_creature->GetMotionMaster()->Clear(false);
+            me->GetMotionMaster()->Clear(false);
             DoStartMovement(done_by);
             OnPath = false;
         }
@@ -950,10 +949,10 @@ struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
         {
             if(MoveWP >= 4)
             {
-                m_creature->GetMotionMaster()->Clear(false);
+                me->GetMotionMaster()->Clear(false);
 
-                m_creature->SetSpeed(MOVE_WALK,1.5);
-                m_creature->SetSpeed(MOVE_RUN,1.5);
+                me->SetSpeed(MOVE_WALK,1.5);
+                me->SetSpeed(MOVE_RUN,1.5);
 
                 OnPath = false;
 
@@ -961,7 +960,7 @@ struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
                     DoStartMovement(target);
 
             }else
-                m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + MoveWP][0],StriderNagaWP[4*path_nr + MoveWP][1],StriderNagaWP[4*path_nr + MoveWP][2]);
+                me->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + MoveWP][0],StriderNagaWP[4*path_nr + MoveWP][1],StriderNagaWP[4*path_nr + MoveWP][2]);
 
             Move = false;
         }
@@ -970,8 +969,8 @@ struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
         {
             DoZoneInCombat();
 
-            if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
-                m_creature->Kill(m_creature,false);
+            if(instance && instance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
+                me->Kill(me,false);
 
               Check_Timer = 2000;
         }else Check_Timer -= diff;
@@ -984,7 +983,7 @@ struct HELLGROUND_DLL_DECL mob_coilfang_eliteAI : public ScriptedAI
 
         if(Cleave_Timer < diff)
         {
-            m_creature->CastSpell(m_creature->getVictim(),31345,false);
+            me->CastSpell(me->getVictim(),31345,false);
             Cleave_Timer = 10000+rand()%5000;
         }else Cleave_Timer -= diff;
 
@@ -996,10 +995,10 @@ struct HELLGROUND_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
 {
     mob_coilfang_striderAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = (c->GetInstanceData());
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
 
     uint8 MoveWP, path_nr;
     uint32 MindBlast_Timer, Check_Timer;
@@ -1008,14 +1007,14 @@ struct HELLGROUND_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_RUN, 2);
+        me->SetSpeed(MOVE_RUN, 2);
 
-        m_creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 2);
-        m_creature->SetFloatValue(UNIT_FIELD_COMBATREACH, 2);
+        me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 2);
+        me->SetFloatValue(UNIT_FIELD_COMBATREACH, 2);
 
         for(int i = 0; i < 3; ++i)
         {
-            if(m_creature->GetDistance(StriderNagaWP[i*4][0],StriderNagaWP[i*4][1],StriderNagaWP[i*4][2]) < 5)
+            if(me->GetDistance(StriderNagaWP[i*4][0],StriderNagaWP[i*4][1],StriderNagaWP[i*4][2]) < 5)
             {
                 path_nr = i;
                 break;
@@ -1029,8 +1028,8 @@ struct HELLGROUND_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         Move = false;
         OnPath = true;
 
-        m_creature->CastSpell(m_creature,38257,true);
-        m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
+        me->CastSpell(me,38257,true);
+        me->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + 1][0],StriderNagaWP[4*path_nr + 1][1],StriderNagaWP[4*path_nr + 1][2]);
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -1045,10 +1044,10 @@ struct HELLGROUND_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
     {
         if(OnPath)
         {
-            m_creature->SetSpeed(MOVE_WALK, 1.1);
-            m_creature->SetSpeed(MOVE_RUN, 1.1);
+            me->SetSpeed(MOVE_WALK, 1.1);
+            me->SetSpeed(MOVE_RUN, 1.1);
 
-            m_creature->GetMotionMaster()->Clear(false);
+            me->GetMotionMaster()->Clear(false);
             DoStartMovement(done_by);
             OnPath = false;
         }
@@ -1069,17 +1068,17 @@ struct HELLGROUND_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         {
             if(MoveWP >= 4)
             {
-                m_creature->SetSpeed(MOVE_WALK, 1.1);
-                m_creature->SetSpeed(MOVE_RUN, 1.1);
+                me->SetSpeed(MOVE_WALK, 1.1);
+                me->SetSpeed(MOVE_RUN, 1.1);
 
-                m_creature->GetMotionMaster()->Clear(false);
+                me->GetMotionMaster()->Clear(false);
                 OnPath = false;
 
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,60,true))
                     DoStartMovement(target);
             }
             else
-                m_creature->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + MoveWP][0],StriderNagaWP[4*path_nr + MoveWP][1],StriderNagaWP[4*path_nr + MoveWP][2]);
+                me->GetMotionMaster()->MovePoint(MoveWP,StriderNagaWP[4*path_nr + MoveWP][0],StriderNagaWP[4*path_nr + MoveWP][1],StriderNagaWP[4*path_nr + MoveWP][2]);
 
             Move = false;
         }
@@ -1088,8 +1087,8 @@ struct HELLGROUND_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
         {
             DoZoneInCombat();
 
-            if(pInstance && pInstance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
-                m_creature->Kill(m_creature,false);
+            if(instance && instance->GetData(DATA_LADYVASHJEVENT) != IN_PROGRESS)
+                me->Kill(me,false);
 
               Check_Timer = 2000;
         }else Check_Timer -= diff;
@@ -1102,7 +1101,7 @@ struct HELLGROUND_DLL_DECL mob_coilfang_striderAI : public ScriptedAI
 
         if(MindBlast_Timer < diff)
         {
-            m_creature->CastSpell(m_creature->getVictim(),SPELL_MIND_BLAST,true);
+            me->CastSpell(me->getVictim(),SPELL_MIND_BLAST,true);
             MindBlast_Timer = 3000+rand()%1000;
         }else MindBlast_Timer -= diff;
 
@@ -1113,19 +1112,19 @@ struct HELLGROUND_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
 {
     mob_shield_generator_channelAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = (c->GetInstanceData());
     }
 
-    ScriptedInstance *pInstance;
+    ScriptedInstance *instance;
     uint32 Check_Timer;
     bool Casted;
     void Reset()
     {
         Check_Timer = 0;
         Casted = false;
-        m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID , 11686);  //invisible
+        me->SetUInt32Value(UNIT_FIELD_DISPLAYID , 11686);  //invisible
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void EnterCombat(Unit *who) { return; }
@@ -1134,20 +1133,20 @@ struct HELLGROUND_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
 
     void UpdateAI (const uint32 diff)
     {
-        if(!pInstance)
+        if(!instance)
             return;
 
         if(Check_Timer < diff)
         {
             Unit *Vashj = NULL;
-            Vashj = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_LADYVASHJ));
+            Vashj = Unit::GetUnit((*me), instance->GetData64(DATA_LADYVASHJ));
 
             if(Vashj && Vashj->isAlive())
             {
                 //start visual channel
                 if (!Casted || !Vashj->HasAura(SPELL_MAGIC_BARRIER,0))
                 {
-                    m_creature->CastSpell(Vashj,SPELL_MAGIC_BARRIER,true);
+                    me->CastSpell(Vashj,SPELL_MAGIC_BARRIER,true);
                     Casted = true;
                 }
             }
@@ -1167,15 +1166,15 @@ bool ItemUse_item_tainted_core(Player *player, Item* _Item, SpellCastTargets con
     else if(targets.getUnitTarget() && targets.getUnitTarget()->GetTypeId() == TYPEID_UNIT )
             return false;
 
-    ScriptedInstance *pInstance = (player->GetInstanceData()) ? (player->GetInstanceData()) : NULL;
+    ScriptedInstance *instance = (player->GetInstanceData()) ? (player->GetInstanceData()) : NULL;
 
-    if(!pInstance)
+    if(!instance)
     {
         player->GetSession()->SendNotification("Instance script not initialized");
         return true;
     }
 
-    Creature *Vashj = Unit::GetCreature((*player), pInstance->GetData64(DATA_LADYVASHJ));
+    Creature *Vashj = Unit::GetCreature((*player), instance->GetData64(DATA_LADYVASHJ));
     if(Vashj && ((boss_lady_vashjAI*)Vashj->AI())->Phase == 2)
     {
         if(targets.getGOTarget() && targets.getGOTarget()->GetTypeId()==TYPEID_GAMEOBJECT)
@@ -1204,7 +1203,7 @@ bool ItemUse_item_tainted_core(Player *player, Item* _Item, SpellCastTargets con
                     return true;
             }
 
-            if(pInstance->GetData(identifier))
+            if(instance->GetData(identifier))
             {
                 player->GetSession()->SendNotification("Already deactivated");
                 return true;
@@ -1218,7 +1217,7 @@ bool ItemUse_item_tainted_core(Player *player, Item* _Item, SpellCastTargets con
                 Channel->setDeathState(JUST_DIED);
             }
 
-            pInstance->SetData(identifier, 1);
+            instance->SetData(identifier, 1);
 
             //remove this item
             player->DestroyItemCount(ITEM_TAINTED_CORE, 1, true);

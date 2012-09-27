@@ -25,6 +25,8 @@
 
 class ScriptedInstance;
 
+typedef TimeTrackerSmall Timer;
+
 class SummonList : std::list<uint64>
 {
 public:

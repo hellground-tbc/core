@@ -1053,11 +1053,11 @@ struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 {
     npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(15.0f); }
 
-    TimeTrackerSmall checkTimer;
+    Timer checkTimer;
 
     void Reset()
     {
-        if (roll_chance_f(45.0f))
+        if (roll_chance_f(66.0f))
         {
             SetAutocast(me->GetEntry() == SNAKE_VIPER ? RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON) : SPELL_DEADLY_POISON, urand(1000, 3000), false, CAST_TANK);
             StartAutocast();

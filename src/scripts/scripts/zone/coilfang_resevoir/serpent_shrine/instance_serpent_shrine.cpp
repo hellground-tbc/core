@@ -122,8 +122,11 @@ struct HELLGROUND_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstan
     bool IsEncounterInProgress() const
     {
         for(uint8 i = 0; i < ENCOUNTERS; i++)
-            if(Encounters[i] != NOT_STARTED && Encounters[i] != DONE)
+        {
+            if (Encounters[i] == IN_PROGRESS)
                 return true;
+        }
+
         return false;
     }
 
@@ -315,7 +318,7 @@ struct HELLGROUND_DLL_DECL instance_serpentshrine_cavern : public ScriptedInstan
                     ShieldGeneratorDeactivated[2] = false;
                     ShieldGeneratorDeactivated[3] = false;
                 }
-                //if(Encounters[5] != DONE)
+                if (Encounters[5] != DONE)
                     Encounters[5] = data;
                 break;
             case DATA_SHIELDGENERATOR1:ShieldGeneratorDeactivated[0] = (data) ? true : false;   break;
