@@ -1051,21 +1051,33 @@ bool ReceiveEmote_npc_brewfest_reveler( Player *player, Creature *_Creature, uin
 
 struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
 {
-    npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(30.0f); }
+    npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(15.0f); }
 
     TimeTrackerSmall checkTimer;
 
     void Reset()
     {
-        SetAutocast(me->GetEntry() == SNAKE_VIPER ? RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON) : SPELL_DEADLY_POISON, urand(2000, 3000), false, CAST_TANK);
-
-        if (roll_chance_f(22.0f))
+        if (roll_chance_f(45.0f))
+        {
+            SetAutocast(me->GetEntry() == SNAKE_VIPER ? RAND(SPELL_MIND_NUMBING_POISON, SPELL_CRIPPLING_POISON) : SPELL_DEADLY_POISON, urand(1000, 3000), false, CAST_TANK);
             StartAutocast();
+        }
 
         checkTimer.Reset(2000);
 
         me->SetReactState(REACT_AGGRESSIVE);
-        me->setAttackTimer(BASE_ATTACK, urand(1000, 2500));
+        me->setAttackTimer(BASE_ATTACK, urand(500, 1500));
+    }
+
+    bool UpdateVictim()
+    {
+        if (ScriptedAI::UpdateVictim())
+            return true;
+
+        if (Unit* target = me->SelectNearbyTarget(15.0f))
+            AttackStart(target);
+
+        return me->getVictim();
     }
 
     void UpdateAI(const uint32 diff)

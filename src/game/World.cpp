@@ -1667,7 +1667,7 @@ void World::Update(uint32 diff)
 
             m_avgUpdateTime = m_serverUpdateTimeSum/m_serverUpdateTimeCount; // from server start
 
-            sLog.outLog(LOG_DEFAULT, "ERROR: Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
+            sLog.outLog(LOG_DEFAULT, "[Diff]: Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
             sLog.outLog(LOG_DIFF, "Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
             sLog.outLog(LOG_STATUS, "%u %u %u %u %u %u %s %u %u %u %u",
                         GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(),
