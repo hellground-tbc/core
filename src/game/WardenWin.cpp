@@ -387,7 +387,11 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
     WardenDataResult * rs;
     const WardenData * rd;
+
     uint8 type;
+ 
+    std::stringstream ids;
+    ids << "failed checks: ";
 
     for (std::vector<uint32>::iterator itr = SendDataId.begin(); itr != SendDataId.end(); ++itr)
     {
@@ -435,6 +439,8 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     }
 
                     sLog.outLog(LOG_WARDEN, "RESULT MEM_CHECK fail CheckId %u account Id %u got: %s  should be: %s;", *itr, Client->GetAccountId(), tmpStrContents.c_str(), tmpStrByteArray.c_str());
+
+                    ids << *itr << " ";
 
                     found = true;
                     buff.rpos(buff.rpos() + rd->Length);
@@ -535,6 +541,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
     {
         std::string accountname;
         if (AccountMgr::GetName(Client->GetAccountId(), accountname))
-            sWorld.BanAccount(BAN_ACCOUNT, accountname.c_str(), "-1", "Cheat", "CONSOLE");
+            sWorld.BanAccount(BAN_ACCOUNT, accountname.c_str(), "-1", ids.str(), "Warden");
     }
 }
