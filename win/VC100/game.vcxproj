@@ -257,6 +257,7 @@
       <Optimization>MaxSpeed</Optimization>
       <PrecompiledHeaderFile>pchdef.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>pchdef.h</ForcedIncludeFiles>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
