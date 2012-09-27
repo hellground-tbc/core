@@ -684,7 +684,7 @@ void Map::Remove(T *obj, bool remove)
     if (obj->isActiveObject())
         RemoveFromActive(obj);
 
-    if (IsLoaded(obj->GetPositionX(), obj->GetPositionY()))
+    if (!obj->GetObjectGuid().IsCorpse())
         obj->UpdateObjectVisibility();
 
     RemoveFromGrid(obj,grid,cell);
@@ -3043,7 +3043,7 @@ float Map::GetVisibilityDistance(WorldObject* obj, Player* invoker) const
     if (invoker && invoker->getWatchingCinematic() != 0)
         return MAX_VISIBILITY_DISTANCE;
 
-    float dist = m_TerrainData ? m_TerrainData->GetVisibilityDistance() : 0.0f;
+    float dist = m_TerrainData->GetVisibilityDistance();
     if (obj)
     {
         if (obj->GetObjectGuid().IsGameObject())
