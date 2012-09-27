@@ -71,6 +71,7 @@ message(
     LARGE_CELL      : Use large cell size
     ADD_COMPILE_F   : Add additional compile flags (default)
     ADD_MATH_F      : Add additional compile math flags
+    ADD_GPROF_F     : Add additional compile gprof flag
     MAP_UPDATE_DIFF_INFO: Used for gathering info about execution time for specific parts of Map::Update
 
   To set an option simply type -D<OPTION>=<VALUE> after 'cmake <srcs>'.
@@ -116,6 +117,7 @@ option(ACE_USE_EXTERNAL "Use external ACE" 1)
 option(LARGE_CELL "Use large cell size" 0)
 option(ADD_COMPILE_F "Add additional compile flags" 1)
 option(ADD_MATH_F "Add additional compile math flags" 0)
+option(ADD_GPROF_F "Add additional compile gprof flag" 0)
 option(MAP_UPDATE_DIFF_INFO "Used for gathering info about execution time for specific parts of Map::Update" 0)
 
 find_package(PCHSupport)
@@ -295,7 +297,8 @@ set(ADDITIONAL_COMPILE_FLAGS "-ggdb -msse3 -fomit-frame-pointer -fno-delete-null
 else()
 set(ADDITIONAL_COMPILE_FLAGS "-ggdb -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
 endif()
-set(ADDITIONAL_MATH_FLAGS " -ffast-math -fno-math-errno -funsafe-math-optimizations ")
+set(ADDITIONAL_MATH_FLAGS " -ffast-math -fno-math-errno -funsafe-math-optimizations")
+set(ADDITIONAL_GPROF_FLAGS " -pg")
 
 # Set warning levels for different builds
 if(UNIX)
@@ -407,6 +410,10 @@ endif()
 
 if(ADD_MATH_F)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_MATH_FLAGS}")
+endif()
+
+if (ADD_GPROF_F)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_GPROF_FLAGS}")
 endif()
 
 if(XCODE)

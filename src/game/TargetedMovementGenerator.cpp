@@ -158,6 +158,9 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
             _setTargetLocation(owner);
     }
 
+    if (!targetMoved && !owner.IsStopped())
+        owner.StopMoving();
+
     if (owner.IsStopped())
     {
         if (_angle == 0.f && !owner.HasInArc(0.01f, _target.getTarget()))
