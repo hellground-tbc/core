@@ -50,7 +50,12 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     else if (!_offset)
     {
         if (_target->IsWithinMeleeRange(&owner))
+        {
+            if (!owner.IsStopped())
+                owner.StopMoving();
+
             return;
+        }
 
         // this should prevent weird behavior on tight spaces like lines between columns and bridge on BEM
         if (Pet* pet = owner.ToPet())
@@ -61,8 +66,13 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     }
     else
     {
-        if (_target->IsWithinDistInMap(&owner, _offset + 1.0f))
+        if (_target->IsWithinDistInMap(&owner, _offset))
+        {
+            if (!owner.IsStopped())
+                owner.StopMoving();
+
             return;
+        }
 
         // to at _offset distance from target and _angle from target facing
         _target->GetClosePoint(x, y, z, owner.GetObjectSize(), _offset, _angle);
@@ -157,9 +167,6 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
         if (targetMoved)
             _setTargetLocation(owner);
     }
-
-    if (!targetMoved && !owner.IsStopped())
-        owner.StopMoving();
 
     if (owner.IsStopped())
     {
