@@ -5364,6 +5364,11 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
             return false;
     }
 
+    // hack for level req
+    uint32 const SONGFLOWER_SERENADE = 15366;
+    if (m_spellInfo->Id == SONGFLOWER_SERENADE && target->getLevel() >= 64)
+        return false;
+
     if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY && target->GetTypeId() != TYPEID_PLAYER)
         return false;
 
