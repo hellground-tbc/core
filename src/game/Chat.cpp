@@ -670,6 +670,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "freeze",         SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleFreezeCommand,              "", NULL },
         { "goname",         SEC_MODERATOR,      false,  &ChatHandler::HandleGonameCommand,              "", NULL },
         { "gps",            SEC_MODERATOR,      false,  &ChatHandler::HandleGPSCommand,                 "", NULL },
+        { "info",           SEC_MODERATOR,      false,  &ChatHandler::HandleInfoCommand,                "", NULL },
         { "groupgo",        SEC_MODERATOR,      false,  &ChatHandler::HandleGroupgoCommand,             "", NULL },
         { "guid",           SEC_GAMEMASTER,     false,  &ChatHandler::HandleGUIDCommand,                "", NULL },
         { "help",           SEC_PLAYER,         true,   &ChatHandler::HandleHelpCommand,                "", NULL },

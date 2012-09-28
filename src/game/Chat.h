@@ -445,6 +445,7 @@ class ChatHandler
         bool HandleNameAnnounceCommand(const char* args);
         bool HandleNotifyCommand(const char* args);
         bool HandleGPSCommand(const char* args);
+        bool HandleInfoCommand(const char* args);
         bool HandleTaxiCheatCommand(const char* args);
         bool HandleWhispersCommand(const char* args);
         bool HandleModifyDrunkCommand(const char* args);

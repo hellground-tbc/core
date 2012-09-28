@@ -935,6 +935,35 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleInfoCommand(const char* args)
+{
+    Player* _player = m_session->GetPlayer();
+
+    MapEntry const* mapEntry = sMapStore.LookupEntry(_player->GetMapId());
+    PSendSysMessage("MapId: %u, Name: %s", _player->GetMapId(), mapEntry->name);
+    PSendSysMessage("- cached data -");
+
+    PSendSysMessage("*zone: %s [%u]", GetAreaEntryByAreaID(_player->GetCachedZone())->area_name, _player->GetCachedZone());
+    PSendSysMessage("*area: %s [%u]", GetAreaEntryByAreaID(_player->GetCachedArea())->area_name, _player->GetCachedArea());
+
+    PSendSysMessage("- real data -");
+    PSendSysMessage("*zone: %s [%u]", GetAreaEntryByAreaID(_player->GetZoneId())->area_name, _player->GetZoneId());
+    PSendSysMessage("*area: %s [%u]", GetAreaEntryByAreaID(_player->GetAreaId())->area_name, _player->GetAreaId());
+
+    TerrainInfo const *terrain = _player->GetTerrain();
+    PSendSysMessage("- terrain data -");
+
+    PSendSysMessage("*ground Z: %u", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), MAX_HEIGHT));
+    PSendSysMessage("*floor Z: %u", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()));
+    PSendSysMessage("*los: %s", terrain->IsLineOfSightEnabled() ? "enabled" : "disabled");
+    PSendSysMessage("*mmaps: %s", terrain->IsPathFindingEnabled() ? "enabled" : "disabled");
+    PSendSysMessage("*outdoors: %s", terrain->IsOutdoors(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()) ? "yes" : "no");
+    PSendSysMessage("*visibility: %f", terrain->GetSpecifics()->visibility);
+    PSendSysMessage("*ainotify: %u", terrain->GetSpecifics()->ainotifyperiod);
+    PSendSysMessage("*viewupdateafter: %f", sqrt(float(terrain->GetSpecifics()->viewupdatedistance)));
+    return true;
+}
+
 //Summon Player
 bool ChatHandler::HandleNamegoCommand(const char* args)
 {

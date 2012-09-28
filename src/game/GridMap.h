@@ -205,13 +205,16 @@ enum FeaturePriority
     F_ALWAYS_ENABLED = 6//CB_TRESHOLD_MAX +1,
 };
 
-typedef struct ts
+typedef struct MapTemplate
 {
-    ts()
+    MapTemplate()
     {
         visibility = DEFAULT_VISIBILITY_DISTANCE;
-        pathfinding = F_ALWAYS_ENABLED;
+        pathfinding = F_ALWAYS_DISABLED;
         lineofsight = F_ALWAYS_ENABLED;
+
+        ainotifyperiod = 1000;
+        viewupdatedistance = 10;
     }
 
     float visibility;
