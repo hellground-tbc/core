@@ -359,6 +359,7 @@ struct SpellChainNode
     uint32 next;
     uint32 first;
     uint32 last;
+    uint32 cur;
     uint8  rank;
 };
 

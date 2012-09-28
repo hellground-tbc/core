@@ -2305,23 +2305,24 @@ void SpellMgr::LoadSpellChains()
 
         itr=RankMap.upper_bound(entry);
         uint32 spell_rank=1;
-        for (std::list<uint32>::iterator itr2 = RankedSpells.begin();itr2!=RankedSpells.end();spell_rank++)
+        for (std::list<uint32>::iterator itr2 = RankedSpells.begin(); itr2 != RankedSpells.end(); spell_rank++)
         {
-            uint32 spell_id=*itr2;
-            mSpellChains[spell_id].rank=spell_rank;
-            mSpellChains[spell_id].first=RankedSpells.front();
-            mSpellChains[spell_id].last=RankedSpells.back();
+            uint32 spell_id = *itr2;
+            mSpellChains[spell_id].rank = spell_rank;
+            mSpellChains[spell_id].first = RankedSpells.front();
+            mSpellChains[spell_id].last = RankedSpells.back();
+            mSpellChains[spell_id].cur = *itr2;
 
             itr2++;
-            if (spell_rank<2)
-                mSpellChains[spell_id].prev=0;
+            if (spell_rank < 2)
+                mSpellChains[spell_id].prev = 0;
 
-            if (spell_id==RankedSpells.back())
-                mSpellChains[spell_id].next=0;
+            if (spell_id == RankedSpells.back())
+                mSpellChains[spell_id].next = 0;
             else
             {
-                mSpellChains[*itr2].prev=spell_id;
-                mSpellChains[spell_id].next=*itr2;
+                mSpellChains[*itr2].prev = spell_id;
+                mSpellChains[spell_id].next = *itr2;
             }
         }
     }
@@ -3561,28 +3562,17 @@ void SpellMgr::LoadSkillLineAbilityMap()
 
 SpellEntry const * SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player* player)
 {
-    PlayerSpellMap const &sp_list = player->GetSpellMap();
     SpellEntry const *highest_rank = NULL;
-    for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
+
+    SpellChainNode const * tmpNode = sSpellMgr.GetSpellChainNode(sSpellMgr.GetLastSpellInChain(spellId));
+
+    while (tmpNode)
     {
-        if (!itr->second.active || itr->second.disabled || itr->second.state == PLAYERSPELL_REMOVED)
-            continue;
+        if (player->HasSpell(tmpNode->cur))
+            if (highest_rank = sSpellStore.LookupEntry(tmpNode->cur))
+                break;
 
-        SpellEntry const *spell_info = sSpellStore.LookupEntry(itr->first);
-        if (!spell_info)
-            continue;
-
-        if (highest_rank == NULL && spell_info->Id == spellId)
-        {
-            highest_rank = spell_info;
-            continue;
-        }
-
-        if (sSpellMgr.IsRankSpellDueToSpell(highest_rank, itr->first))
-        {
-            if (spell_info->spellLevel > highest_rank->spellLevel)
-                highest_rank = spell_info;
-        }
+        tmpNode = sSpellMgr.GetSpellChainNode(tmpNode->prev);
     }
 
     return highest_rank;
