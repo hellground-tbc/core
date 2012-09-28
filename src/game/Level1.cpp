@@ -943,7 +943,7 @@ bool ChatHandler::HandleInfoCommand(const char* args)
     PSendSysMessage("MapId: %u, Name: %s", _player->GetMapId(), mapEntry->name);
     PSendSysMessage("- cached data -");
 
-    PSendSysMessage("*zone: %s [%u]", GetAreaEntryByAreaID(_player->GetCachedZone())->area_name, _player->GetCachedZone());
+    PSendSysMessage("=zone: %s [%u]", GetAreaEntryByAreaID(_player->GetCachedZone())->area_name, _player->GetCachedZone());
     PSendSysMessage("*area: %s [%u]", GetAreaEntryByAreaID(_player->GetCachedArea())->area_name, _player->GetCachedArea());
 
     PSendSysMessage("- real data -");

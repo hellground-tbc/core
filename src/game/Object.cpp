@@ -1164,7 +1164,9 @@ bool WorldObject::_IsWithinDist(WorldLocation const* wLoc, float dist2compare, b
 
 bool WorldObject::IsWithinLOSInMap(WorldObject const* obj) const
 {
-    if (!IsInMap(obj)) return false;
+    if (!IsInMap(obj))
+        return false;
+
     float ox,oy,oz;
     obj->GetPosition(ox,oy,oz);
     return(IsWithinLOS(ox, oy, oz));
@@ -1172,6 +1174,9 @@ bool WorldObject::IsWithinLOSInMap(WorldObject const* obj) const
 
 bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz) const
 {
+    if (!GetTerrain()->IsLineOfSightEnabled())
+        return true;
+
     float x,y,z;
     GetPosition(x,y,z);
     VMAP::IVMapManager *vMapManager = VMAP::VMapFactory::createOrGetVMapManager();
