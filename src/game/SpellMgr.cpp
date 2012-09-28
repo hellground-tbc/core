@@ -3560,19 +3560,21 @@ void SpellMgr::LoadSkillLineAbilityMap()
     sLog.outString(">> Loaded %u SkillLineAbility MultiMap", count);
 }
 
-SpellEntry const * SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player* player)
+SpellEntry const* SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player* player)
 {
-    SpellEntry const *highest_rank = NULL;
+    SpellEntry const* highest_rank = NULL;
 
-    SpellChainNode const * tmpNode = sSpellMgr.GetSpellChainNode(sSpellMgr.GetLastSpellInChain(spellId));
+    SpellChainNode const* node = sSpellMgr.GetSpellChainNode(sSpellMgr.GetLastSpellInChain(spellId));
 
-    while (tmpNode)
+    while (node)
     {
-        if (player->HasSpell(tmpNode->cur))
-            if (highest_rank = sSpellStore.LookupEntry(tmpNode->cur))
+        if (player->HasSpell(node->cur))
+        {
+            if (highest_rank = sSpellStore.LookupEntry(node->cur))
                 break;
+        }
 
-        tmpNode = sSpellMgr.GetSpellChainNode(tmpNode->prev);
+        node = sSpellMgr.GetSpellChainNode(node->prev);
     }
 
     return highest_rank;
