@@ -2772,8 +2772,93 @@ void SpellMgr::LoadSpellCustomAttr()
 
         LoadCustomSpellCooldowns(spellInfo);
 
+        if (spellInfo->HasApplyAura(SPELL_AURA_DAMAGE_SHIELD))
+            spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
+        switch (spellInfo->SpellFamilyName)
+        {
+            case SPELLFAMILY_GENERIC:
+            {
+                 // Goblin Rocket Launcher
+                 if (spellInfo->SpellIconID == 184 && spellInfo->Attributes == 4259840)
+                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+                 // Siphon Essence
+                 else if (spellInfo->AttributesEx == 268435456 && spellInfo->SpellIconID == 2027)
+                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
+                 break;
+            }
+            case SPELLFAMILY_PALADIN:
+            {
+                // Seal of Righteousness trigger - already computed for parent spell
+                if (spellInfo->SpellIconID==25 && spellInfo->AttributesEx4 & 0x00800000LL)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_FIXED_DAMAGE;
+                // Blessing of Sanctuary
+                else if (spellInfo->SpellFamilyFlags & 0x10000000LL && spellInfo->SpellIconID == 29)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
+                break;
+            }
+            case SPELLFAMILY_PRIEST:
+            {
+                // Mana Burn
+                if (spellInfo->SpellFamilyFlags & 0x10LL && spellInfo->SpellIconID == 212)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
+                // Reflective Shield
+                else if (!spellInfo->SpellFamilyFlags && spellInfo->SpellIconID == 566)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
+                break;
+            }
+            case SPELLFAMILY_MAGE:
+            {
+                // Molten Armor
+                if (spellInfo->SpellFamilyFlags & 0x800000000LL)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
+                break;
+            }
+            case SPELLFAMILY_WARLOCK:
+            {
+                // Drain Mana
+                if (spellInfo->SpellFamilyFlags & 0x10LL && spellInfo->SpellIconID == 548)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+                // Healthstone
+                else if (spellInfo->SpellFamilyFlags & 0x10000LL)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
+                break;
+            }
+            case SPELLFAMILY_WARRIOR:
+            case SPELLFAMILY_HUNTER:
+            case SPELLFAMILY_ROGUE:
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+                break;
+        }
         switch (i)
         {
+            /* FIXED DAMAGE SPELLS */
+            // Ignite
+            case 12654:
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_FIXED_DAMAGE;
+                break;
+            /* NO SPELL DMG COEFF */
+            // Judgement of Blood
+            case 32221:
+            case 32220:
+            // Flame Cap, Scalding Water, Fiery Blaze
+            case 28715:
+            case 37284:
+            case 6297:
+            // Deathfrost
+            case 46579:
+            // Mana Tap
+            case 28734:
+                // SW: Death
+            case 32409:
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+                break;
             /* WELL FEED */
             case 18191:
             case 46687:

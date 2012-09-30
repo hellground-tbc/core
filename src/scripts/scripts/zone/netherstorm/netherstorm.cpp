@@ -1184,16 +1184,16 @@ struct HELLGROUND_DLL_DECL mob_epextractionAI : public ScriptedAI
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
-        if(spell->Id == SPELL_EPEXTRACTOR)
+        if (spell->Id == SPELL_EPEXTRACTOR)
             PowerExtracted = true;
     }
 
     void JustDied(Unit* killer)
     {
-        if(me->GetEntry() == ENTRY_RUMBLER)
+        if (me->GetEntry() == ENTRY_RUMBLER)
            me->CastSpell(me, SPELL_SUMMON_SHARD, true);
 
-        if(PowerExtracted)
+        if (PowerExtracted)
             me->CastSpell(me, SPELL_CREATE_EPOWER, true);
 
         me->RemoveCorpse();

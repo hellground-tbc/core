@@ -465,7 +465,6 @@
     <ClCompile Include="..\..\src\game\TicketMgr.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\MapUpdater.cpp" />
     <ClCompile Include="..\..\src\game\WardenBase.cpp">
       <Filter>Warden</Filter>
     </ClCompile>
@@ -564,6 +563,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\game\Camera.cpp">
       <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\MapUpdater.cpp">
+      <Filter>Maps/Grids</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -927,7 +929,6 @@
     <ClInclude Include="..\..\src\game\TicketMgr.h">
       <Filter>Managers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\game\MapUpdater.h" />
     <ClInclude Include="..\..\src\game\ZoneScript.h">
       <Filter>Outdoor PvP</Filter>
     </ClInclude>
@@ -1071,6 +1072,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\Camera.h">
       <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\MapUpdater.h">
+      <Filter>Maps/Grids</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

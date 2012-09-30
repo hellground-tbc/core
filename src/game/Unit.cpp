@@ -7871,8 +7871,14 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         }
     }
 
+    if (spellProto->AttributesCu & SPELL_ATTR_CU_FIXED_DAMAGE)
+        return pdamage;
+
     // Damage Done
     uint32 CastingTime = !SpellMgr::IsChanneledSpell(spellProto) ? SpellMgr::GetSpellBaseCastTime(spellProto) : SpellMgr::GetSpellDuration(spellProto);
+
+    if (spellProto->AttributesCu & SPELL_ATTR_CU_NO_SPELL_DMG_COEFF)
+        CastingTime = 0;
 
     // Taken/Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit  = SpellBaseDamageBonus(SpellMgr::GetSpellSchoolMask(spellProto))+BonusDamage;
@@ -7936,7 +7942,8 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             case 14528: // P Wand Spec 5
                 if (spellProto->Id != 5019) // Wand Shoot
                     continue;
-            default: break;
+            default:
+                break;
         }
 
         if (((*i)->GetModifier()->m_miscvalue & SpellMgr::GetSpellSchoolMask(spellProto)) &&
@@ -8036,29 +8043,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     {
         case SPELLFAMILY_GENERIC:
             // Siphon Essence - 0%
-            if (spellProto->AttributesEx == 268435456 && spellProto->SpellIconID == 2027)
-            {
-                CastingTime = 0;
-            }
-            // Goblin Rocket Launcher - 0%
-            else if (spellProto->SpellIconID == 184 && spellProto->Attributes == 4259840)
-            {
-                CastingTime = 0;
-            }
             // Darkmoon Card: Vengeance - 0.1%
-            else if (spellProto->SpellVisual == 9850 && spellProto->SpellIconID == 2230)
+            if (spellProto->SpellVisual == 9850 && spellProto->SpellIconID == 2230)
             {
                 CastingTime = 3.5;
-            }
-            // Seal and Judgement of Blood self damage 0%
-            else if (spellProto->Id == 32221 || spellProto->Id == 32220)
-            {
-                CastingTime = 0;
-            }
-            // Flame Cap / Scalding Water / Fiery Blaze
-            else if (spellProto->Id == 28715 || spellProto->Id == 37284 || spellProto->Id == 6297)
-            {
-                CastingTime = 0;
             }
             else if (spellProto->Id == 43427 || spellProto->Id == 46194 || spellProto->Id == 44176) // Ice Lance (Hex Lord Malacrass / Yazzai)
             {
@@ -8070,23 +8058,11 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 DoneTotalMod = 1.0f;
             }
-            else if (spellProto->Id == 46579) // Deathfrost
-            {
-                CastingTime = 0;
-            }
             break;
         case SPELLFAMILY_MAGE:
-            // Ignite - do not modify, it is (8*Rank)% damage of procing Spell
-            if (spellProto->Id==12654)
-            {
-                return pdamage;
-            }
             // Mana Tap(Racial)
-            else if (spellProto->Id == 28734)
-            {
-                CastingTime = 0;
+            if (spellProto->Id == 28734)
                 pdamage += getLevel();
-            }
             // Ice Lance
             else if ((spellProto->SpellFamilyFlags & 0x20000LL) && spellProto->SpellIconID == 186)
             {
@@ -8104,11 +8080,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             else if ((spellProto->SpellFamilyFlags & 0x1LL) && spellProto->SpellIconID == 185)
             {
                 CastingTime = damagetype == DOT ? 0 : 3500;
-            }
-            // Molten armor
-            else if (spellProto->SpellFamilyFlags & 0x0000000800000000LL)
-            {
-                CastingTime = 0;
             }
             // Arcane Missiles triggered spell
             else if ((spellProto->SpellFamilyFlags & 0x200000LL) && spellProto->SpellIconID == 225)
@@ -8146,11 +8117,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 DotFactor = 1.2f;
             }
-            // Drain Mana - 0% of Shadow Damage
-            else if ((spellProto->SpellFamilyFlags & 0x10LL) && spellProto->SpellIconID == 548)
-            {
-                CastingTime = 0;
-            }
             // Drain Soul 214.3%
             else if ((spellProto->SpellFamilyFlags & 0x4000LL) && spellProto->SpellIconID == 113)
             {
@@ -8170,11 +8136,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             else if ((spellProto->SpellFamilyFlags & 0x2LL) && spellProto->SpellIconID == 313)
             {
                 DotFactor = 0.93f;
-            }
-            // HealthStone 0%
-            else if (spellProto->SpellFamilyFlags & 0x10000LL)
-            {
-                CastingTime = 0;
             }
             break;
         case SPELLFAMILY_PALADIN:
@@ -8215,21 +8176,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 175;
             }
-            // Blessing of Sanctuary - 0%
-            else if ((spellProto->SpellFamilyFlags & 0x10000000LL) && spellProto->SpellIconID == 29)
-            {
-                CastingTime = 0;
-            }
-            // Seal of Righteousness trigger - already computed for parent spell
-            else if (spellProto->SpellIconID==25 && spellProto->AttributesEx4 & 0x00800000LL)
-            {
-                return pdamage;
-            }
-            // Blessing of Sanctuary
-            else if (spellProto->SpellFamilyFlags & 0x10000000LL)
-            {
-                CastingTime = 0;
-            }
             break;
         case  SPELLFAMILY_SHAMAN:
             // totem attack
@@ -8247,13 +8193,8 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 CastingTime = 1155;                         // ignore CastingTimePenalty and use as modifier
             break;
         case SPELLFAMILY_PRIEST:
-            // Mana Burn - 0% of Shadow Damage
-            if ((spellProto->SpellFamilyFlags & 0x10LL) && spellProto->SpellIconID == 212)
-            {
-                CastingTime = 0;
-            }
             // Mind Flay - 57.1% of Shadow Damage
-            else if ((spellProto->SpellFamilyFlags & 0x800000LL) && spellProto->SpellIconID == 548)
+            if ((spellProto->SpellFamilyFlags & 0x800000LL) && spellProto->SpellIconID == 548)
             {
                 CastingTime = 2000;
             }
@@ -8273,11 +8214,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             {
                 CastingTime = 350;
             }
-            // Reflective Shield (back damage) - 0% (other spells fit to check not have damage effects/auras)
-            else if (spellProto->SpellFamilyFlags == 0 && spellProto->SpellIconID == 566)
-            {
-                CastingTime = 0;
-            }
             // Holy Nova - 14%
             else if ((spellProto->SpellFamilyFlags & 0x400000LL) && spellProto->SpellIconID == 1874)
             {
@@ -8285,10 +8221,8 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             }
             // Shadow Word: Death back damage - 0%
             else if (spellProto->Id == 32409)
-            {
                 DoneTotalMod = 1.0f; // Fix shadow word death sometimes had more damage then even target gets
-                CastingTime = 0;
-            }
+
             break;
         case SPELLFAMILY_DRUID:
             // Hurricane triggered spell
@@ -8297,17 +8231,9 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 CastingTime = 500;
             }
             break;
-        case SPELLFAMILY_WARRIOR:
-        case SPELLFAMILY_HUNTER:
-        case SPELLFAMILY_ROGUE:
-            CastingTime = 0;
-            break;
         default:
             break;
     }
-
-    if (spellProto->HasApplyAura(SPELL_AURA_DAMAGE_SHIELD))
-        CastingTime = 0;
 
     //if (spellProto->AttributesEx3 & SPELL_ATTR_EX3_NO_DONE_BONUS
     //    DoneTotalMod = 1.0f; or return pdamage;
@@ -8326,9 +8252,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_SPELL_BONUS_DAMAGE, CoefficientPtc);
         // DO IT IN BETTER WAY (read: rewrite auras system)
         if (damagetype == DOT && DotFactor != 0)
-        {
             CoefficientPtc += (CoefficientPtc-oldCoeff)*(DotTicks-1);
-        }
     }
 
     //SpellModSpellDamage /= 100.0f;
@@ -8372,7 +8296,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
 
     tmpDamage = (tmpDamage+TakenActualBenefit)*TakenTotalMod;
 
-    if (GetTypeId() == TYPEID_UNIT && !((Creature*)this)->isPet())
+    if (GetObjectGuid().IsCreature())
         tmpDamage *= ((Creature*)this)->GetSpellDamageMod(((Creature*)this)->GetCreatureInfo()->rank);
 
     return tmpDamage > 0 ? uint32(tmpDamage) : 0;

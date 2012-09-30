@@ -1122,7 +1122,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 
     // Recheck immune (only for delayed spells)
-    if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) &&
+    if (IsDelayedSpell() &&
         !(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) &&
         (unit->IsImmunedToDamage(SpellMgr::GetSpellSchoolMask(m_spellInfo),true) ||
         unit->IsImmunedToSpell(m_spellInfo,true))
@@ -1150,7 +1150,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             bool isVisibleForHit = ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->isVisibleForOrDetect(m_caster, m_caster, true)) ? false : true;
 
             // for delayed spells ignore not visible explicit target
-            if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit==m_targets.getUnitTarget() && !isVisibleForHit)
+            if (IsDelayedSpell() && unit == m_targets.getUnitTarget() && !isVisibleForHit)
             {
                 // that was causing CombatLog errors
                 //m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
@@ -1165,7 +1165,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // this cause soul transfer, and curse of boundless agony bugged, for a moment exception added
-            if (m_spellInfo->Id != 45034 && m_spellInfo->Id != 30531 && (m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && unit->GetTypeId() == TYPEID_PLAYER && !SpellMgr::IsPositiveSpell(m_spellInfo->Id))
+            if (m_spellInfo->Id != 45034 && m_spellInfo->Id != 30531 && IsDelayedSpell() && unit->GetTypeId() == TYPEID_PLAYER && !SpellMgr::IsPositiveSpell(m_spellInfo->Id))
             {
                 m_caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
@@ -2523,7 +2523,7 @@ void Spell::cast(bool skipCheck)
     }
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
-    if ((m_spellInfo->speed > 0.0f || m_spellInfo->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY) && !SpellMgr::IsChanneledSpell(m_spellInfo))
+    if (IsDelayedSpell() && !SpellMgr::IsChanneledSpell(m_spellInfo))
     {
         // Remove used for cast item if need (it can be already NULL after TakeReagents call
         // in case delayed spell remove item at cast delay start
