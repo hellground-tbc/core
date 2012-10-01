@@ -684,7 +684,8 @@ void Map::Remove(T *obj, bool remove)
     if (obj->isActiveObject())
         RemoveFromActive(obj);
 
-    if (!obj->GetObjectGuid().IsCorpse())
+    // workaround for crash caused by corpses on not loaded terrain /?
+    if (!obj->GetObjectGuid().IsCorpse() || !GetPlayers().isEmpty())
         obj->UpdateObjectVisibility();
 
     RemoveFromGrid(obj,grid,cell);
