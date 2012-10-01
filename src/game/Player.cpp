@@ -1636,6 +1636,60 @@ uint8 Player::chatTag() const
         return 0;
 }
 
+class TaskTeleportPlayer : public WorldEvent
+{
+    public:
+        TaskTeleportPlayer(Player* p, WorldLocation const& loc) : WorldEvent(p), _dest(loc) {}
+
+        bool Execute()
+        {
+            // send transfer packets
+            WorldPacket data(SMSG_TRANSFER_PENDING, (4+4+4));
+            data << uint32(_dest.mapid);
+            if (_owner->GetTransport())
+            {
+                data << uint32(_owner->GetTransport()->GetEntry());
+                data << uint32(_owner->GetMapId());
+            }
+            _owner->SendPacketToSelf(&data);
+
+            data.Initialize(SMSG_NEW_WORLD, (20));
+            if (_owner->GetTransport())
+            {
+                data << uint32(_dest.mapid);
+                data << float(_owner->m_movementInfo.GetTransportPos()->x);
+                data << float(_owner->m_movementInfo.GetTransportPos()->y);
+                data << float(_owner->m_movementInfo.GetTransportPos()->z);
+                data << float(_owner->m_movementInfo.GetTransportPos()->o);
+            }
+            else
+            {
+                data << uint32(_dest.mapid);
+                data << float(_dest.coord_x);
+                data << float(_dest.coord_y);
+                data << float(_dest.coord_z);
+                data << float(_dest.orientation);
+            }
+
+            _owner->SendPacketToSelf(&data);
+            _owner->SendSavedInstances();
+
+            // remove from old map now
+            if (_owner->IsInWorld())
+                _owner->GetMap()->Remove(_owner, false);
+
+            return true;
+        }
+
+    private:
+        WorldLocation const& _dest;
+};
+
+void Player::ScheduleMapSwitch(WorldLocation const& loc)
+{
+    sWorldEventProcessor.ScheduleEvent(this, new TaskTeleportPlayer(this, loc));
+}
+
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
 {
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
@@ -1706,8 +1760,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     // ObjectAccessor won't find the flag.
     if (duel && GetMapId() != mapid)
     {
-        GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER));
-        if (obj)
+        if (GameObject* obj = GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER)))
             DuelComplete(DUEL_FLED);
     }
 
@@ -1720,9 +1773,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // prepare zone change detect
         uint32 old_zone = GetZoneId();
 
-        WorldLocation tmpWLoc(mapid, x, y, z, orientation);
+        WorldLocation loc(mapid, x, y, z, orientation);
 
-        if (!IsWithinDistInMap(&tmpWLoc, GetMap()->GetVisibilityDistance()))
+        if (!IsWithinDistInMap(&loc, GetMap()->GetVisibilityDistance()))
             DestroyForNearbyPlayers();
 
         // near teleport
@@ -1736,7 +1789,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         }
         else
             // this will be used instead of the current location in SaveToDB
-            m_teleport_dest = tmpWLoc;
+            m_teleport_dest = loc;
 
         SetFallInformation(0, z);
 
@@ -1798,8 +1851,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     }
     else
     {
-        // far teleport to another map
-        Map* oldmap = IsInWorld() ? GetMap() : NULL;
         // check if we can enter before stopping combat / removing pet / totems / interrupting spells
 
         // Check enter rights before map getting to avoid creating instance copy for player
@@ -1869,37 +1920,6 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             if (!GetSession()->PlayerLogout())
             {
-                // send transfer packets
-                WorldPacket data(SMSG_TRANSFER_PENDING, (4+4+4));
-                data << uint32(mapid);
-                if (m_transport)
-                {
-                    data << uint32(m_transport->GetEntry());
-                    data << uint32(GetMapId());
-                }
-                SendPacketToSelf(&data);
-
-                data.Initialize(SMSG_NEW_WORLD, (20));
-                if (m_transport)
-                {
-                    data << uint32(mapid);
-                    data << float(m_movementInfo.GetTransportPos()->x);
-                    data << float(m_movementInfo.GetTransportPos()->y);
-                    data << float(m_movementInfo.GetTransportPos()->z);
-                    data << float(m_movementInfo.GetTransportPos()->o);
-                }
-                else
-                {
-                    data << uint32(mapid);
-                    data << float(x);
-                    data << float(y);
-                    data << float(z);
-                    data << float(orientation);
-                }
-
-                SendPacketToSelf(&data);
-                SendSavedInstances();
-
                 if (getFollowingGM())
                 {
                     setGMFollow(0);
@@ -1910,9 +1930,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     GetMotionMaster()->Clear(true);
                 }
 
-                // remove from old map now
-                if(oldmap)
-                    oldmap->Remove(this, false);
+                ScheduleMapSwitch(WorldLocation(mapid, x, y, z, orientation));
             }
 
             // new final coordinates
@@ -4554,7 +4572,6 @@ void Player::TeleportToNearestGraveyard()
             default:
                 ClosestGrave = sObjectMgr.GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
                 break;
-
         }
     }
     else
