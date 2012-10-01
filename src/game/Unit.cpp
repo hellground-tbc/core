@@ -9611,8 +9611,15 @@ void Unit::SetVisibility(UnitVisibility x)
 {
     m_Visibility = x;
 
-    if (x == VISIBILITY_OFF)
-        DestroyForNearbyPlayers();
+    switch (x)
+    {
+        case VISIBILITY_OFF:
+        case VISIBILITY_GROUP_STEALTH:
+            DestroyForNearbyPlayers();
+            break;
+        default:
+            break;
+    }
 
     if (IsInWorld())
         UpdateVisibilityAndView();
