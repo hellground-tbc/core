@@ -5672,6 +5672,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if (!procSpell || (SpellMgr::GetSpellSchoolMask(procSpell) & (SPELL_SCHOOL_MASK_FROST | SPELL_SCHOOL_MASK_SHADOW))==0)
                         return false;
 
+                    if (!isAlive())
+                        return false;
+
+                    // do NOT proc on cross map interaction(rare case)
+                    if (!IsInWorld() || (pVictim && !IsInMap(pVictim)))
+                        return false;
+
                     // heal amount
                     basepoints0 = int32(damage * 2 / 100);
                     target = this;
