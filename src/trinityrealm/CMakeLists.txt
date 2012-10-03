@@ -49,6 +49,7 @@ if(UNIX)
   target_link_libraries(${EXECUTABLE_NAME}
     ${MYSQL_LIBRARY}
     ${Boost_REGEX_LIBRARY}
+    ${OPENSSL_EXTRA_LIBRARIES}
   )
 endif()
 
