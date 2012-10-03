@@ -1969,6 +1969,9 @@ PetLevelInfo const* ObjectMgr::GetPetLevelInfo(uint32 creature_id, uint32 level)
     PetLevelInfoMap::const_iterator itr = petInfo.find(creature_id);
     if (itr == petInfo.end())
         return NULL;
+        
+    if (level < 1)
+        return NULL;
 
     return &itr->second[level-1];                           // data for level 1 stored in [0] array element, ...
 }
