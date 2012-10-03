@@ -30,7 +30,7 @@ class Player;
 class HELLGROUND_DLL_SPEC WorldEvent
 {
     public:
-        explicit WorldEvent(Player* player) : _owner(player) {}
+        WorldEvent(Player* player) : _owner(player) {}
         virtual ~WorldEvent() {}
 
         virtual bool Execute() = 0;
