@@ -2855,8 +2855,16 @@ void SpellMgr::LoadSpellCustomAttr()
             case 46579:
             // Mana Tap
             case 28734:
-                // SW: Death
+            // SW: Death
             case 32409:
+            // Six Demon Bag spells
+            case 45297:   // Chain Lightning
+            case 2310:    // Frostbolt!
+            case 9487:    // Fireball !
+            // Shattered Sun Pendant of Acumen: Scryers ex proc
+            case 45429:
+            // Heart of Wyrmthalak: Flame Lash proc
+            case 27655:
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                 break;
             /* WELL FEED */
