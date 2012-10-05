@@ -5365,9 +5365,23 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     }
 
     // hack for level req
-    uint32 const SONGFLOWER_SERENADE = 15366;
-    if (m_spellInfo->Id == SONGFLOWER_SERENADE && target->getLevel() >= 64)
-        return false;
+    switch (m_spellInfo->Id)
+    {
+        // Songflower Serenade
+        case 15366:
+        // Mol'dar's Moxie
+        case 18222:
+        // Slip'kik's Savvy
+        case 22820:
+        // Rallying Cry of the Dragonslayer
+        case 22888:
+        // Traces of Silithyst
+        case 29534:
+        {
+            if (target->getLevel() >= 64)
+                return false;
+        }
+    }
 
     if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY && target->GetTypeId() != TYPEID_PLAYER)
         return false;

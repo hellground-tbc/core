@@ -458,8 +458,14 @@ SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
                 }
             }
             // this may be a hack
-            else if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_FOOD && !spellInfo->Category)
-                return SPELL_WELL_FED;
+            else
+            {
+                if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_FOOD && !spellInfo->Category)
+                    return SPELL_WELL_FED;
+
+                if (spellInfo->AttributesCu & SPELL_ATTR_CU_TREAT_AS_WELL_FEED)
+                    return SPELL_WELL_FED;
+            }
 
             switch (spellInfo->Id)
             {
@@ -2870,7 +2876,25 @@ void SpellMgr::LoadSpellCustomAttr()
             /* WELL FEED */
             case 18191:
             case 46687:
-                spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_FOOD;
+            /* RUMS */
+            case 5257:
+            case 5021:
+            case 5020:
+            case 22789:
+            case 37058:
+            case 25804:
+            case 25722:
+            case 25037:
+            case 20875:
+            /* DIFF FOOD */
+            case 18193:
+            case 18125:
+            case 18192:
+            case 23697:
+            case 18141:
+            case 18194:
+            case 18222:
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_TREAT_AS_WELL_FEED;
                 break;
             /* ROGUE CUSTOM ATTRIBUTES */
             case 2094:                     // Blind

@@ -410,7 +410,8 @@ enum AttributesCu
     SPELL_ATTR_CU_MOVEMENT_IMPAIR    = 0x00008000,
     SPELL_ATTR_CU_FAKE_DELAY         = 0x00010000,
     SPELL_ATTR_CU_FIXED_DAMAGE       = 0x00020000, // ignore all %dmg done, %dmg taken auras
-    SPELL_ATTR_CU_NO_SPELL_DMG_COEFF = 0x00040000  // to those spells won't be applied and bonuses from spell dmg
+    SPELL_ATTR_CU_NO_SPELL_DMG_COEFF = 0x00040000, // to those spells won't be applied and bonuses from spell dmg
+    SPELL_ATTR_CU_TREAT_AS_WELL_FEED = 0x00080000
 };
 
 #define SPELL_FAKE_DELAY 200LL
