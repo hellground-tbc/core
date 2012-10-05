@@ -437,18 +437,9 @@ bool Map::loaded(const GridPair &p) const
     return (getNGrid(p.x_coord, p.y_coord) && isGridObjectDataLoaded(p.x_coord, p.y_coord));
 }
 
-uint32 Map::RecordTimeDiff()
-{
-    uint32 thisTime = WorldTimer::getMSTime();
-    uint32 diff = WorldTimer::getMSTimeDiff(m_currentTime, thisTime);
-
-    m_currentTime = thisTime;
-    return diff;
-}
-
 void Map::Update(const uint32 &t_diff)
 {
-    MAP_UPDATE_DIFF(RecordTimeDiff())
+    MAP_UPDATE_DIFF(DiffRecorder diff("", 0))
 
     /// update worldsessions for existing players
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
@@ -462,7 +453,7 @@ void Map::Update(const uint32 &t_diff)
         }
     }
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_SESSION_UPDATE, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_SESSION_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 
     /// update players at tick
     for (m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
@@ -475,7 +466,7 @@ void Map::Update(const uint32 &t_diff)
         }
     }
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PLAYER_UPDATE, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PLAYER_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 
     resetMarkedCells();
 
@@ -483,12 +474,12 @@ void Map::Update(const uint32 &t_diff)
     // for creature
     TypeContainerVisitor<Hellground::ObjectUpdater, GridTypeMapContainer> grid_object_update(updater);
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_CREATURE_UPDATE, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_CREATURE_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 
     // for pets
     TypeContainerVisitor<Hellground::ObjectUpdater, WorldTypeMapContainer> world_object_update(updater);
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PET_UPDATE, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PET_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 
     // the player iterator is stored in the map object
     // to make sure calls to Map::Remove don't invalidate it
@@ -523,7 +514,7 @@ void Map::Update(const uint32 &t_diff)
         }
     }
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PLAYER_GRID_VISIT, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PLAYER_GRID_VISIT, diff.RecordTimeFor(false, ""), GetId()))
 
     // non-player active objects
     if (!m_activeNonPlayers.empty())
@@ -563,12 +554,12 @@ void Map::Update(const uint32 &t_diff)
         }
     }
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_ACTIVEUNIT_GRID_VISIT, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_ACTIVEUNIT_GRID_VISIT, diff.RecordTimeFor(false, ""), GetId()))
 
     // Send world objects and item update field changes
     SendObjectUpdates();
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_SEND_OBJECTS_UPDATE, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_SEND_OBJECTS_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 
     ///- Process necessary scripts
     if (!m_scriptSchedule.empty())
@@ -578,11 +569,11 @@ void Map::Update(const uint32 &t_diff)
         i_scriptLock = false;
     }
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PROCESS_SCRIPTS, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_PROCESS_SCRIPTS, diff.RecordTimeFor(false, ""), GetId()))
 
     MoveAllCreaturesInMoveList();
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MOVE_CREATURES_IN_LIST, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MOVE_CREATURES_IN_LIST, diff.RecordTimeFor(false, ""), GetId()))
 }
 
 void Map::CheckHostileRefFor(Player* plr)
@@ -2262,7 +2253,7 @@ void InstanceMap::Update(const uint32& t_diff)
 {
     Map::Update(t_diff);
 
-    MAP_UPDATE_DIFF(RecordTimeDiff())
+    MAP_UPDATE_DIFF(diff.RecordTimeFor(false, ""))
 
     if (i_data)
         i_data->Update(t_diff);
@@ -2270,7 +2261,7 @@ void InstanceMap::Update(const uint32& t_diff)
     if (!m_unlootedCreaturesSummoned)
         SummonUnlootedCreatures();
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MAP_SPECIAL_DATA_UPDATE, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MAP_SPECIAL_DATA_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 }
 
 void InstanceMap::Remove(Player *player, bool remove)
@@ -2507,12 +2498,12 @@ void BattleGroundMap::Update(const uint32& t_diff)
 {
     Map::Update(t_diff);
 
-    MAP_UPDATE_DIFF(RecordTimeDiff())
+    MAP_UPDATE_DIFF(diff.RecordTimeFor(false, ""))
 
     if (m_bg)
         m_bg->Update(time_t(t_diff));
 
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MAP_SPECIAL_DATA_UPDATE, RecordTimeDiff(), GetId()))
+    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MAP_SPECIAL_DATA_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 }
 
 bool BattleGroundMap::Add(Player * player)

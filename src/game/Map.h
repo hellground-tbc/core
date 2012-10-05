@@ -349,8 +349,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         ActiveNonPlayers m_activeNonPlayers;
         ActiveNonPlayers::iterator m_activeNonPlayersIter;
 
-        uint32 RecordTimeDiff();
-
     private:
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
 
@@ -364,8 +362,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         WorldUpdateCounter m_updateTracker;
 
         bool i_scriptLock;
-
-        uint32 m_currentTime;
 
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;

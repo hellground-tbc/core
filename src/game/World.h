@@ -765,7 +765,6 @@ class World
         void SetScriptsVersion(char const* version) { m_ScriptsVersion = version ? version : "unknown scripting library"; }
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
-        uint32 RecordTimeDiff(const char * text, bool skipCountCheck, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
 
         void CleanupDeletedChars();
@@ -836,8 +835,8 @@ class World
         uint32 mail_timer;
         uint32 mail_timer_expires;
         uint32 m_updateTime, m_updateTimeSum, m_avgUpdateTime, m_curAvgUpdateTime;
+
         uint32 m_updateTimeCount;
-        uint32 m_currentTime;
 
         MAP_UPDATE_DIFF(MapUpdateDiffInfo m_mapUpdateDiffInfo)
         uint64 m_serverUpdateTimeSum, m_serverUpdateTimeCount;
