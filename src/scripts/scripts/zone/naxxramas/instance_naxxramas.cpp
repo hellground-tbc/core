@@ -13,6 +13,8 @@ EndScriptData */
 // This spawns 5 corpse scarabs ontop of us (most likely the player casts this on death)
 #define SPELL_SELF_SPAWN_5  29105
 
+#define GO_FOUR_HORSEMEN_CHEST 181366
+
 struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
 {
     instance_naxxramas(Map *map) : ScriptedInstance(map) { Initialize(); };
@@ -158,9 +160,12 @@ struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
                 switch (data)
                 {
                     case DONE:
-                        if ((++deadHorsemans) == 4)
+                        if ((++deadHorsemans) == 4 && Encounters[8] != DONE)
+                        {
                             Encounters[8] = data;
-                        // add chest spawn
+                            if (Player *player = GetPlayer())
+                                player->SummonGameObject(GO_FOUR_HORSEMEN_CHEST, 2514, -2945, 245.5, 5.48, 0, 0, 0, 0, 0);
+                        }
                         break;
                     case NOT_STARTED:
                         if (Encounters[8] != DONE)
@@ -310,6 +315,17 @@ struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
                 Encounters[i] = NOT_STARTED;
 
         OUT_LOAD_INST_DATA_COMPLETE;
+    }
+
+    Player* GetPlayer() 
+    {
+        Map::PlayerList const &players = instance->GetPlayers();
+        for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+        {
+            if (i->getSource())
+                return i->getSource();
+        }
+        return NULL;
     }
 };
 
