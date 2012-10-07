@@ -5317,6 +5317,18 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     // TODO: we must implement hunter pet summon at login there (spell 6962)
     switch (m_spellInfo->Id)
     {
+        // we need script here, because KillCreadit in DB is used for diff quest :p
+        case 32307:
+        {
+            uint32 const CREDIT_MARKER = 18388;
+            if (Player* caster = m_caster->ToPlayer())
+            {
+                caster->KilledMonster(CREDIT_MARKER, unitTarget->GetGUID());
+                if (Creature* creature = unitTarget->ToCreature())
+                    creature->RemoveCorpse();
+            }
+            break;
+        }
         case 28338:
         case 28339:
         {

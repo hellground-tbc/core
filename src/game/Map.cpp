@@ -2253,15 +2253,11 @@ void InstanceMap::Update(const uint32& t_diff)
 {
     Map::Update(t_diff);
 
-    MAP_UPDATE_DIFF(diff.RecordTimeFor(false, ""))
-
     if (i_data)
         i_data->Update(t_diff);
 
     if (!m_unlootedCreaturesSummoned)
         SummonUnlootedCreatures();
-
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MAP_SPECIAL_DATA_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 }
 
 void InstanceMap::Remove(Player *player, bool remove)
@@ -2498,12 +2494,8 @@ void BattleGroundMap::Update(const uint32& t_diff)
 {
     Map::Update(t_diff);
 
-    MAP_UPDATE_DIFF(diff.RecordTimeFor(false, ""))
-
     if (m_bg)
         m_bg->Update(time_t(t_diff));
-
-    MAP_UPDATE_DIFF(sWorld.MapUpdateDiff().CumulateDiffFor(DIFF_MAP_SPECIAL_DATA_UPDATE, diff.RecordTimeFor(false, ""), GetId()))
 }
 
 bool BattleGroundMap::Add(Player * player)
