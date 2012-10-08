@@ -2549,21 +2549,24 @@ uint32 Unit::CalculateDamage (WeaponAttackType attType, bool normalized)
 
 float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
 {
-    if (spellProto->spellLevel <= 0)
+    if (spellProto->spellLevel == 0 || spellProto->maxLevel == 0)
         return 1.0f;
 
     if (spellProto->Id == 28880) // Gift of Naaru, TODO: more general check for racial spells
         return 1.0f;
 
-    float LvlPenalty = 0.0f;
+    float lvlPenalty = 0.0f;
 
+    // should we check spellLevel, baseLevel or levelReq ? Oo
     if (spellProto->spellLevel < 20)
-        LvlPenalty = 20.0f - spellProto->spellLevel * 3.75f;
-    float LvlFactor = (float(spellProto->spellLevel) + 6.0f) / float(getLevel());
-    if (LvlFactor > 1.0f)
-        LvlFactor = 1.0f;
+        lvlPenalty = 20.0f - spellProto->spellLevel * 3.75f;
 
-    return (100.0f - LvlPenalty) * LvlFactor / 100.0f;
+    // next rank min lvl + 5 = current rank maxLevel + 6 for most spells
+    float lvlFactor = (float(spellProto->maxLevel) + 6.0f) / float(getLevel());
+    if (lvlFactor > 1.0f)
+        lvlFactor = 1.0f;
+
+    return (100.0f - lvlPenalty) * lvlFactor / 100.0f;
 }
 
 void Unit::SendMeleeAttackStart(Unit* pVictim)
@@ -8033,7 +8036,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     CastingTime = GetCastingTimeForBonus(spellProto, damagetype, CastingTime);
     if (spellProto->AttributesCu & SPELL_ATTR_CU_NO_SPELL_DMG_COEFF)
         CastingTime = 0;
-        
+
     // 50% for damage and healing spells for leech spells from damage bonus and 0% from healing
     for (int j = 0; j < 3; ++j)
     {
