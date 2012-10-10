@@ -315,6 +315,8 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
                     me->SetReactState(REACT_AGGRESSIVE);
                     instance->SetData(EVENT_ILLIDANSTORMRAGE, IN_PROGRESS);
 
+                    me->setActive(true);
+
                     Map::PlayerList const &plList = me->GetMap()->GetPlayers();
                     for (Map::PlayerList::const_iterator i = plList.begin(); i != plList.end(); ++i)
                     {
@@ -357,7 +359,7 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
                 SetAutocast(SPELL_ILLIDAN_FIREBALL, 3000, false, CAST_RANDOM, 0, true);
 
                 events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 15000, m_phase);
-                events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 15500, m_phase);
+                events.ScheduleEvent(EVENT_ILLIDAN_THROW_GLAIVE, 16000, m_phase);
 
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_TEAR, 17000, m_phase);
 
@@ -837,6 +839,8 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     void EnterEvadeMode()
     {
+        me->setActive(false);
+
         summons.DespawnAll();
         events.Reset();
 
@@ -901,16 +905,22 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
 
     bool UpdateVictim()
     {
-        if (m_phase == PHASE_MAIEV)
-            return true;
-            
-        if (m_phase == PHASE_DEATH)
-            return true;
-
-        if (m_phase == PHASE_TWO)
-            return true;
-            
-        return ScriptedAI::UpdateVictim();
+        switch (m_phase)
+        {
+            case PHASE_TWO:
+            case PHASE_MAIEV:
+            case PHASE_DEATH:
+            {
+                if (me->GetMap()->GetAlivePlayersCountExceptGMs() == 0)
+                {
+                    EnterEvadeMode();
+                    return false;
+                }
+                return true;
+            }
+            default:
+                return ScriptedAI::UpdateVictim();
+        }
     }
    
     void UpdateAI(const uint32 diff)
@@ -971,7 +981,7 @@ struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
     }
 };
 
-static float SpiritSpawns[][4]=
+static float SpiritSpawns[][4] =
 {
     {23411, 755.5426, 309.9156, 312.2129},
     {23410, 755.5426, 298.7923, 312.0834}

@@ -233,6 +233,7 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
+        uint32 GetAlivePlayersCountExceptGMs() const;
 
         bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
 

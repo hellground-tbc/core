@@ -1132,6 +1132,17 @@ uint32 Map::GetPlayersCountExceptGMs() const
     return count;
 }
 
+uint32 Map::GetAlivePlayersCountExceptGMs() const
+{
+    uint32 count = 0;
+    for (MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+    {
+        if (!itr->getSource()->isGameMaster() && itr->getSource()->isAlive())
+            ++count;
+    }
+    return count;
+}
+
 bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
 {
     CellPair cell_min(x*MAX_NUMBER_OF_CELLS, y*MAX_NUMBER_OF_CELLS);
