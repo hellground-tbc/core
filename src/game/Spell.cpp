@@ -2537,16 +2537,12 @@ void Spell::cast(bool skipCheck)
         m_caster->ProcDamageAndSpell(m_targets.getUnitTarget(), m_procCastEnd, PROC_FLAG_NONE, PROC_EX_EX_TRIGGER_ALWAYS, 1, BASE_ATTACK, m_spellInfo);
     }
     else
-    {
         // Immediate spell, no big deal
         handle_immediate();
-    }
 
     // combo points should not be taken before SPELL_AURA_ADD_TARGET_TRIGGER auras are handled
     if (!m_IsTriggeredSpell)
-    {
         TakePower();
-    }
 
     if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_LINK_CAST)
     {
