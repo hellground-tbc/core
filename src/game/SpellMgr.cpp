@@ -3683,16 +3683,21 @@ SpellEntry const* SpellMgr::GetHighestSpellRankForPlayer(uint32 spellId, Player*
 
     SpellChainNode const* node = sSpellMgr.GetSpellChainNode(sSpellMgr.GetLastSpellInChain(spellId));
 
-    while (node)
+    // should work for spells with multiple ranks
+    if (node)
     {
-        if (player->HasSpell(node->cur))
+        while (node)
         {
-            if (highest_rank = sSpellStore.LookupEntry(node->cur))
-                break;
-        }
+            if (player->HasSpell(node->cur))
+                if (highest_rank = sSpellStore.LookupEntry(node->cur))
+                    break;
 
-        node = sSpellMgr.GetSpellChainNode(node->prev);
+            node = sSpellMgr.GetSpellChainNode(node->prev);
+        }
     }
+    // if spell don't have ranks check spell itself
+    else if (player->HasSpell(spellId))
+        highest_rank = sSpellStore.LookupEntry(spellId);
 
     return highest_rank;
 }
