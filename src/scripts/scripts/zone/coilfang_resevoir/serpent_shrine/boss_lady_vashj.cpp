@@ -175,16 +175,16 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
     {
         AggroTimer = 19000;
         PulseCombat_Timer = 5000;
-        ShockBlast_Timer = 1+rand()%60000;
+        ShockBlast_Timer = urand(1, 60001);
         Entangle_Timer = 30000;
-        StaticCharge_Timer = 10000+rand()%15000;
+        StaticCharge_Timer = urand(10000, 25000);
         ForkedLightning_Timer = 2000;
         Check_Timer = 15000;
         ParalyzeCheck_Timer = 1000;
         EnchantedElemental_Timer = 5000;
         TaintedElemental_Timer = 50000;
         CoilfangElite_Timer = 45000;
-        CoilfangStrider_Timer = 60000+rand()%10000;
+        CoilfangStrider_Timer = urand(60000, 70000);
         SummonSporebat_Timer = 10000;
         SummonSporebat_StaticTimer = 25000;
         EnchantedElemental_Pos = 0;
@@ -198,17 +198,13 @@ struct HELLGROUND_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 
         for (uint8 i = 0; i < 4; i++)
         {
-            Unit* remo = Unit::GetUnit(*me, ShieldGeneratorChannel[i]);
-            if (remo)
+            if (Unit* remo = me->GetMap()->GetUnit(ShieldGeneratorChannel[i]))
                 remo->setDeathState(JUST_DIED);
+
+            ShieldGeneratorChannel[i] = 0;
         }
 
         instance->SetData(DATA_LADYVASHJEVENT, NOT_STARTED);
-
-        ShieldGeneratorChannel[0] = 0;
-        ShieldGeneratorChannel[1] = 0;
-        ShieldGeneratorChannel[2] = 0;
-        ShieldGeneratorChannel[3] = 0;
 
         me->SetCorpseDelay(1000*60*60);
     }

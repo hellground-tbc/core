@@ -1142,7 +1142,7 @@ void Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castIte
 void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     // we can't cast spells on targets in other map - crash avoidance for proc spells
-    if (Victim && IsInMap(Victim))
+    if (Victim && Victim->IsInMap(this))
         return;
 
     if (!spellInfo)
@@ -1216,7 +1216,7 @@ void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit
 void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
     // we can't cast spells on targets in other map - crash avoidance for proc spells
-    if (Victim && IsInMap(Victim))
+    if (Victim && Victim->IsInMap(this))
         return;
 
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
@@ -8214,6 +8214,11 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             if ((spellProto->SpellFamilyFlags & 0x800000LL) && spellProto->SpellIconID == 548)
             {
                 CastingTime = 2000;
+            }
+            // Shadow word: Pain - 110%
+            else if ((spellProto->SpellFamilyFlags & 0x8000LL) && spellProto->SpellIconID == 234)
+            {
+                CastingTime = 16500;
             }
             // Holy Fire - 86.71%, DoT - 16.5%
             else if ((spellProto->SpellFamilyFlags & 0x100000LL) && spellProto->SpellIconID == 156)
