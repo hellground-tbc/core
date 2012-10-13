@@ -3295,11 +3295,7 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
     if (!*args)
         return false;
 
-    char* par1 = strtok ((char*)args, " ");
-    if (!par1)
-        return false;
-
-    std::string gld = par1;
+    std::string gld = args;
 
     Guild* targetGuild = sObjectMgr.GetGuildByName (gld);
     if (!targetGuild)
