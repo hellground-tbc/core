@@ -538,7 +538,7 @@ void Guild::SetOFFNOTE(uint64 guid,std::string offnote)
 
 void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, uint32 language)
 {
-    if (session && session->GetPlayer() && HasRankRight(session->GetPlayer()->GetRank(),GR_RIGHT_GCHATSPEAK))
+    if (session && (session->GetSecurity() > SEC_PLAYER || (session->GetPlayer() && HasRankRight(session->GetPlayer()->GetRank(),GR_RIGHT_GCHATSPEAK))))
     {
         WorldPacket data;
         ChatHandler(session).FillMessageData(&data, CHAT_MSG_GUILD, language, 0, msg.c_str());
