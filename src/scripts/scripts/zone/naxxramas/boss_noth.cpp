@@ -243,6 +243,9 @@ struct HELLGROUND_DLL_DECL boss_nothAI : public BossAI
                     events.RescheduleEvent(EVENT_SKELETONS, 15000, 0, NOTH_PHASE_NORMAL);
                     events.SetPhase(NOTH_PHASE_NORMAL);
                     checkSummons = false;
+
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     break;
                 }
                 default:
