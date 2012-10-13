@@ -380,11 +380,25 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
+    static ChatCommand guildDisableCommandTable[] =
+    {
+        { "announce",       SEC_GAMEMASTER,     true,   &ChatHandler::HandleGuildDisableAnnounceCommand,    "", NULL},
+        { NULL,             0,                  false,  NULL,                                               "", NULL}
+    };
+
+    static ChatCommand guildEnableCommandTable[] =
+    {
+        { "announce",       SEC_GAMEMASTER,     true,   &ChatHandler::HandleGuildEnableAnnounceCommand,     "", NULL},
+        { NULL,             0,                  false,  NULL,                                               "", NULL}
+    };
+
     static ChatCommand guildCommandTable[] =
     {
         { "ann",            SEC_PLAYER,         false,  &ChatHandler::HandleGuildAnnounceCommand,       "", NULL },
         { "create",         SEC_GAMEMASTER,     true,   &ChatHandler::HandleGuildCreateCommand,         "", NULL },
         { "delete",         SEC_GAMEMASTER,     true,   &ChatHandler::HandleGuildDeleteCommand,         "", NULL },
+        { "disable",        SEC_GAMEMASTER,     true,   NULL,                                           "", guildDisableCommandTable },
+        { "enable",         SEC_GAMEMASTER,     true,   NULL,                                           "", guildEnableCommandTable },
         { "invite",         SEC_GAMEMASTER,     true,   &ChatHandler::HandleGuildInviteCommand,         "", NULL },
         { "rank",           SEC_GAMEMASTER,     true,   &ChatHandler::HandleGuildRankCommand,           "", NULL },
         { "uninvite",       SEC_GAMEMASTER,     true,   &ChatHandler::HandleGuildUninviteCommand,       "", NULL },

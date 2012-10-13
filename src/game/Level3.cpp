@@ -3297,7 +3297,7 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
 
     std::string gld = args;
 
-    Guild* targetGuild = sObjectMgr.GetGuildByName (gld);
+    Guild* targetGuild = sObjectMgr.GetGuildByName(gld);
     if (!targetGuild)
         return false;
 

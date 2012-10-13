@@ -198,8 +198,8 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
 
     //                                        0        1     2           3            4            5           6
     result = RealmDataDatabase.PQuery("SELECT guildid, name, leaderguid, EmblemStyle, EmblemColor, BorderStyle, BorderColor,"
-    //   7                8     9     10          11
-        "BackgroundColor, info, motd, createdate, BankMoney FROM guild WHERE guildid = '%u'", GuildId);
+    //   7                8     9     10          11          12
+        "BackgroundColor, info, motd, createdate, BankMoney, flags FROM guild WHERE guildid = '%u'", GuildId);
 
     if (!result)
         return false;
@@ -219,6 +219,7 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
     MOTD = fields[9].GetCppString();
     uint64 time = fields[10].GetUInt64();                   //datetime is uint64 type ... YYYYmmdd:hh:mm:ss
     guildbank_money = fields[11].GetUInt64();
+    m_guildFlags = fields[12].GetUInt64();
 
     uint64 dTime = time /1000000;
     CreatedDay   = dTime%100;
@@ -2000,6 +2001,35 @@ void Guild::SendGuildBankTabText(WorldSession *session, uint8 TabId)
     session->SendPacket(&data);
 }
 
+void Guild::AddFlag(GuildFlags flag)
+{
+    // don't change if already added
+    if (m_guildFlags & flag)
+        return;
+
+    SetFlags(m_guildFlags | flag);
+}
+
+void Guild::RemoveFlag(GuildFlags flag)
+{
+    // don't change if don't have that flag
+    if (!m_guildFlags & flag)
+        return;
+
+    SetFlags(m_guildFlags &~ flag);
+}
+
+void Guild::SetFlags(uint64 flags)
+{
+    m_guildFlags = flags;
+
+    static SqlStatementID setFlags;
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(setFlags, "UPDATE guild SET flags = ? WHERE guildid = ?");
+    stmt.addUInt64(m_guildFlags);
+    stmt.addUInt32(GetId());
+    stmt.Execute();
+}
+
 bool GuildItemPosCount::isContainedIn(GuildItemPosCountVec const &vec) const
 {
     for (GuildItemPosCountVec::const_iterator itr = vec.begin(); itr != vec.end();++itr)
@@ -2008,4 +2038,3 @@ bool GuildItemPosCount::isContainedIn(GuildItemPosCountVec const &vec) const
 
     return false;
 }
-

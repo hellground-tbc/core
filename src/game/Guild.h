@@ -28,6 +28,11 @@
 
 class Item;
 
+enum GuildFlags
+{
+    GUILD_FLAG_DISABLE_ANN      = 0x01      // disables guild announce system for guild
+};
+
 enum GuildDefaultRanks
 {
     GR_GUILDMASTER  = 0,
@@ -418,6 +423,11 @@ class Guild
         void   RenumBankLogs();
         bool   AddGBankItemToDB(uint32 GuildId, uint32 BankTab , uint32 BankTabSlot , uint32 GUIDLow, uint32 Entry);
 
+        bool IsFlagged(GuildFlags flag) { return m_guildFlags & flag; }
+        void AddFlag(GuildFlags flag);
+        void RemoveFlag(GuildFlags flag);
+        void SetFlags(uint64 flags);
+
     protected:
         void AddRank(const std::string& name,uint32 rights,uint32 money);
 
@@ -466,6 +476,8 @@ class Guild
         uint8 _CanStoreItem_InSpecificSlot(uint8 tab, uint8 slot, GuildItemPosCountVec& dest, uint32& count, bool swap, Item *pSrcItem) const;
         uint8 _CanStoreItem_InTab(uint8 tab, GuildItemPosCountVec& dest, uint32& count, bool merge, Item *pSrcItem, uint8 skip_slot) const;
         Item* _StoreItem(uint8 tab, uint8 slot, Item *pItem, uint32 count, bool clone);
+
+        uint64 m_guildFlags;
 };
 #endif
 

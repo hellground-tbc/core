@@ -199,6 +199,10 @@ class ChatHandler
         bool HandleGuildRankCommand(const char* args);
         bool HandleGuildDeleteCommand(const char* args);
 
+        bool HandleGuildDisableAnnounceCommand(const char *args);
+
+        bool HandleGuildEnableAccounceCommand(const char *args);
+
         bool HandleHonorAddCommand(const char* args);
         bool HandleHonorAddKillCommand(const char* args);
         bool HandleHonorUpdateCommand(const char* args);
