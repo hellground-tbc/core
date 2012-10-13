@@ -333,6 +333,8 @@ class EventMap : private std::map<uint32, uint32>
                 m_phase = (1 << (phase + 24));
         }
 
+        uint32 GetPhase() { return m_phase; }
+
         void ScheduleEvent(uint32 eventId, uint32 time, uint32 gcd = 0, uint32 phase = 0)
         {
             time += m_time;

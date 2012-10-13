@@ -25,9 +25,15 @@ EndScriptData */
 #include "def_naxxramas.h"
 
 #define SOUND_DEATH         8848
-#define PLAGUED_WARRIOR_ID  16984
 
 #define BALCONY_LOC 2631.370, -3529.680, 274.040, 6.277
+
+enum NothSummmonIds
+{
+    PLAGUED_WARRIOR         = 16984,
+    PLAGUED_CHAMPION        = 16983,
+    PLAGUED_GUARDIAN        = 16981
+};
 
 enum NothTexts
 {
@@ -51,7 +57,27 @@ enum NothEvents
 {
     EVENT_BLINK             = 1,
     EVENT_CURSE             = 2,
-    EVENT_SKELETONS         = 3
+    EVENT_SKELETONS         = 3,
+    EVENT_TELEPORT_1        = 4,
+    EVENT_TELEPORT_2        = 5,
+    EVENT_TELEPORT_3        = 6,
+    EVENT_SUMMON_1          = 7,
+    EVENT_SUMMON_2          = 8,
+
+    EVENT_TELEPORT_BACK     = 9
+};
+
+enum NothPhases
+{
+    NOTH_PHASE_NORMAL       = 1,
+    NOTH_PHASE_BALCONY      = 2
+};
+
+const float NothSummonLocations[3][4] =
+{
+    { 2724.83, -3526.62, 261.96, 3.00 },
+    { 2716.68, -3463.05, 262.05, 4.14 },
+    { 2646.88, -3461.90, 263.53, 5.28 }
 };
 
 struct HELLGROUND_DLL_DECL boss_nothAI : public BossAI
@@ -61,14 +87,25 @@ struct HELLGROUND_DLL_DECL boss_nothAI : public BossAI
     uint32 Blink_Timer;
     uint32 Curse_Timer;
     uint32 Summon_Timer;
+    uint32 tpCount;
+    bool checkSummons;
 
     void Reset()
     {
         events.Reset();
-        events.ScheduleEvent(EVENT_BLINK, 25000);
-        events.ScheduleEvent(EVENT_CURSE, 4000);
-        events.ScheduleEvent(EVENT_SKELETONS, 12000);
+        // phase normal spells
+        events.ScheduleEvent(EVENT_BLINK, 25000, 0, NOTH_PHASE_NORMAL);
+        events.ScheduleEvent(EVENT_CURSE, 4000, 0, NOTH_PHASE_NORMAL);
+        events.ScheduleEvent(EVENT_SKELETONS, 12000, 0, NOTH_PHASE_NORMAL);
 
+        // not phased spells
+        events.ScheduleEvent(EVENT_TELEPORT_1, 90000);                      // 90 s after pull
+        events.ScheduleEvent(EVENT_TELEPORT_2, 90000 + 110000);             // 110 s after first tp
+        events.ScheduleEvent(EVENT_TELEPORT_3, 90000 + 110000 + 180000);    // 180 s after second tp
+
+        events.SetPhase(NOTH_PHASE_NORMAL);
+
+        tpCount = 0;
         instance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, NOT_STARTED);
     }
 
@@ -85,14 +122,45 @@ struct HELLGROUND_DLL_DECL boss_nothAI : public BossAI
 
     void JustSummoned(Creature* summoned)
     {
+        summoned->AI()->DoZoneInCombat();
         if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
             summoned->AI()->AttackStart(target);
+
+        if (summoned->GetEntry() != PLAGUED_WARRIOR)
+            BossAI::JustSummoned(summoned);
+    }
+
+    void SummonedCreatureDespawn(Creature * summoned)
+    {
+        BossAI::SummonedCreatureDespawn(summoned);
+
+        // if all summons was killed we should teleport back
+        if (checkSummons && m_creature->isAlive() && events.GetPhase() == NOTH_PHASE_BALCONY && summons.isEmpty())
+            events.RescheduleEvent(EVENT_TELEPORT_BACK, 1000, 0, NOTH_PHASE_BALCONY);
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
         instance->SetData(DATA_NOTH_THE_PLAGUEBRINGER, DONE);
+    }
+
+    void SummonAdds()
+    {
+        int champCount = 0;
+
+        if (tpCount == 1)
+            champCount = 3;
+        else if (tpCount == 2)
+            champCount = 2;
+
+        int guardCount = 3 - champCount;
+
+        for (int i = 0; i < champCount; ++i)
+            m_creature->SummonCreature(PLAGUED_CHAMPION, NothSummonLocations[i][0], NothSummonLocations[i][1], NothSummonLocations[i][2], NothSummonLocations[i][3], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
+
+        for (int i = 0; i < guardCount; ++i)
+            m_creature->SummonCreature(PLAGUED_GUARDIAN, NothSummonLocations[3-i][0], NothSummonLocations[3-i][1], NothSummonLocations[3-i][2], NothSummonLocations[3-i][3], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
     }
 
     void UpdateAI(const uint32 diff)
@@ -111,30 +179,70 @@ struct HELLGROUND_DLL_DECL boss_nothAI : public BossAI
                 {
                     AddSpellToCast(SPELL_CRIPPLE, CAST_NULL);
                     AddSpellToCast(SPELL_BLINK, CAST_SELF);
-                    events.ScheduleEvent(EVENT_BLINK, 25000);
+                    events.ScheduleEvent(EVENT_BLINK, 25000, 0, NOTH_PHASE_NORMAL);
                     break;
                 }
                 case EVENT_CURSE:
                 {
                     AddSpellToCast(SPELL_CURSE_PLAGUEBRINGER, CAST_NULL);
-                    events.ScheduleEvent(EVENT_CURSE, urand(10000, 20000));
+                    events.ScheduleEvent(EVENT_CURSE, urand(10000, 20000), 0, NOTH_PHASE_NORMAL);
                     break;
                 }
                 case EVENT_SKELETONS:
                 {
                     DoScriptText(SAY_SUMMON, m_creature);
-                    Creature * tmpCreature;
-                    Unit * tmpUnit;
 
                     for (uint8 i = 0; i < 6; ++i)
-                    {
-                        tmpCreature = m_creature->SummonCreature(PLAGUED_WARRIOR_ID, 2684.804, -3502.517, 261.313, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 80000);
-                        tmpUnit = SelectUnit(SELECT_TARGET_RANDOM);
-                        if (tmpCreature && tmpUnit)
-                            tmpCreature->AI()->AttackStart(tmpUnit);
-                    }
+                        m_creature->SummonCreature(PLAGUED_WARRIOR, NothSummonLocations[i%3][0], NothSummonLocations[i%3][1], NothSummonLocations[i%3][2], NothSummonLocations[i%3][3], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
 
-                    events.ScheduleEvent(EVENT_SKELETONS, 30000);
+                    events.ScheduleEvent(EVENT_SKELETONS, 30000, 0, NOTH_PHASE_NORMAL);
+                    break;
+                }
+                case EVENT_TELEPORT_1:
+                {
+                    events.RescheduleEvent(EVENT_TELEPORT_BACK, 70000, 0, NOTH_PHASE_BALCONY);
+                }
+                case EVENT_TELEPORT_2:
+                {
+                    if (eventId == EVENT_TELEPORT_2)
+                        events.RescheduleEvent(EVENT_TELEPORT_BACK, 90000, 0, NOTH_PHASE_BALCONY);
+                }
+                case EVENT_TELEPORT_3:
+                {
+                    if (eventId == EVENT_TELEPORT_3)
+                        events.RescheduleEvent(EVENT_TELEPORT_BACK, 110000, 0, NOTH_PHASE_BALCONY);  // guessed
+
+                    m_creature->NearTeleportTo(BALCONY_LOC);
+                    events.ScheduleEvent(EVENT_SUMMON_1, 2000, 0, NOTH_PHASE_BALCONY);
+                    events.SetPhase(NOTH_PHASE_BALCONY);
+                    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+                    ++tpCount;
+                    break;
+                }
+                case EVENT_SUMMON_1:
+                {
+                    SummonAdds();
+                    events.ScheduleEvent(EVENT_SUMMON_2, 25000, 0, NOTH_PHASE_BALCONY);
+                    break;
+                }
+                case EVENT_SUMMON_2:
+                {
+                    SummonAdds();
+                    checkSummons = true;
+                    break;
+                }
+                case EVENT_TELEPORT_BACK:
+                {
+                    WorldLocation home = m_creature->GetHomePosition();
+                    m_creature->NearTeleportTo(home.coord_x, home.coord_y, home.coord_z, home.orientation);
+                    // guessed
+                    events.RescheduleEvent(EVENT_BLINK, 2000, 0, NOTH_PHASE_NORMAL);
+                    events.RescheduleEvent(EVENT_CURSE, 4000, 0, NOTH_PHASE_NORMAL);
+                    events.RescheduleEvent(EVENT_SKELETONS, 15000, 0, NOTH_PHASE_NORMAL);
+                    events.SetPhase(NOTH_PHASE_NORMAL);
+                    checkSummons = false;
                     break;
                 }
                 default:
