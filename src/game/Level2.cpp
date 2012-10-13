@@ -28,6 +28,7 @@
 #include "GameObject.h"
 #include "Opcodes.h"
 #include "Chat.h"
+#include "Guild.h"
 #include "ObjectAccessor.h"
 #include "MapManager.h"
 #include "Language.h"
@@ -4390,7 +4391,7 @@ bool ChatHandler::HandleGuildDisableAnnounceCommand(const char *args)
     return true;
 }
 
-bool ChatHandler::HandleGuildEnableAccounceCommand(const char *args)
+bool ChatHandler::HandleGuildEnableAnnounceCommand(const char *args)
 {
     if (!args)
         return false;

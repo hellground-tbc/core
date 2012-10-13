@@ -392,16 +392,16 @@ void AddSC_boss_thaddius()
 
     newscript = new Script;
     newscript->Name = "boss_thaddius";
-    newscript->GetAI = &GetAI_boss_thaddius();
+    newscript->GetAI = &GetAI_boss_thaddius;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "mob_feugen";
-    newscript->GetAI = &GetAI_mob_feugen();
+    newscript->GetAI = &GetAI_mob_feugen;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "mob_stalagg";
-    newscript->GetAI = &GetAI_mob_stalagg();
+    newscript->GetAI = &GetAI_mob_stalagg;
     newscript->RegisterSelf();
 }

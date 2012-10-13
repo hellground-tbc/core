@@ -161,7 +161,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
 
             if (pGuild->IsFlagged(GUILD_FLAG_DISABLE_ANN))
             {
-                PSendSysMessage("Guild announce system has been blocked for your guild.")
+                PSendSysMessage("Guild announce system has been blocked for your guild.");
                 return false;
             }
 
