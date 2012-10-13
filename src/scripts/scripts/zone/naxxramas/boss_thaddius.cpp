@@ -79,18 +79,19 @@ enum eSpells
 enum eEvents
 {
     // 1st phase shared
-    EVENT_WAR_STOMP      = 1,
-    EVENT_PULL_TANK      = 2,
+    EVENT_WAR_STOMP         = 1,
+    EVENT_PULL_TANK         = 2,
 
     // Fuegen
-    EVENT_MANA_BURN      = 3,
+    EVENT_MANA_BURN         = 3,
 
     // Stalagg
-    EVENT_POWER_SURGE    = 4,
+    EVENT_POWER_SURGE       = 4,
 
     // Thaddius
-    EVENT_POLARITY_SHIFT = 5,
-    EVENT_BERSERK        = 6
+    EVENT_POLARITY_SHIFT    = 5,
+    EVENT_BERSERK           = 6,
+    EVENT_CHAIN_LIGHTNING   = 7
 };
 
 struct boss_thaddiusAI : public BossAI
@@ -104,6 +105,7 @@ struct boss_thaddiusAI : public BossAI
 
         events.ScheduleEvent(EVENT_POLARITY_SHIFT, 30000);
         events.ScheduleEvent(EVENT_BERSERK, 300000);
+        events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(15000, 45000));   // GUESSED
     }
 
     void EnterCombat(Unit*)
@@ -120,6 +122,50 @@ struct boss_thaddiusAI : public BossAI
     void JustDied(Unit*)
     {
         DoScriptText(SAY_DEATH, me);
+    }
+
+    // i'm not sure :P but probably he shouldn't move
+    void AttackStart(Unit* pWho)
+    {
+        if (!pWho)
+            return;
+
+        if (m_creature->Attack(pWho, true))
+            DoStartNoMovement(pWho);
+    }
+
+    void DoMeleeAttackIfReady()
+    {
+        if (m_creature->hasUnitState(UNIT_STAT_CASTING))
+            return;
+
+        Unit *temp = m_creature->getVictim();
+
+        if (!temp)
+            temp = SelectUnit(SELECT_TARGET_TOPAGGRO, 0, 5.0f);
+
+        if (!temp || !me->IsWithinMeleeRange(temp))
+        {
+            ForceSpellCast(SPELL_BALL_LIGHTNING, CAST_TANK);
+            return;
+        }
+
+        // set selection back to attacked victim if not selected (after spell casting)
+        if (((Creature*)me)->GetSelection() != temp->GetGUID())
+            ((Creature*)me)->SetSelection(temp->GetGUID());
+
+        //Make sure our attack is ready
+        if (me->isAttackReady())
+        {
+            me->AttackerStateUpdate(temp);
+            me->resetAttackTimer();
+        }
+
+        if (me->haveOffhandWeapon() && me->isAttackReady(OFF_ATTACK))
+        {
+            me->AttackerStateUpdate(temp, OFF_ATTACK);
+            me->resetAttackTimer(OFF_ATTACK);
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -143,6 +189,12 @@ struct boss_thaddiusAI : public BossAI
                     AddSpellToCast(SPELL_BERSERK, CAST_SELF);
                     break;
                 }
+                case EVENT_CHAIN_LIGHTNING:
+                {
+                    AddSpellToCast(SPELL_CHAIN_LIGHTNING, CAST_RANDOM);
+                    events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(15000, 45000));
+                    break;
+                }
                 default:
                     break;
             }
@@ -152,6 +204,11 @@ struct boss_thaddiusAI : public BossAI
         DoMeleeAttackIfReady();
     }
 };
+
+CreatureAI* GetAI_boss_thaddius(Creature *_Creature)
+{
+    return new boss_thaddiusAI(_Creature);
+}
 
 struct boss_stalaggAI : public BossAI
 {
@@ -188,7 +245,7 @@ struct boss_stalaggAI : public BossAI
     {
         if (Creature* pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
         {
-            if (!pFeugen->HealthBelowPct(5))
+            if (!pFeugen->HealthBelowPct(2))
             {
                 me->Respawn();
                 return;
@@ -236,6 +293,11 @@ struct boss_stalaggAI : public BossAI
     }
 };
 
+CreatureAI* GetAI_mob_stalagg(Creature *_Creature)
+{
+    return new boss_stalaggAI(_Creature);
+}
+
 struct boss_feugenAI : public BossAI
 {
     boss_feugenAI(Creature *c): BossAI(c, DATA_FEUGEN) {}
@@ -271,7 +333,7 @@ struct boss_feugenAI : public BossAI
     {
         if (Creature* pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
         {
-            if (!pStalagg->HealthBelowPct(5))
+            if (!pStalagg->HealthBelowPct(2))
             {
                 me->Respawn();
                 return;
@@ -318,3 +380,28 @@ struct boss_feugenAI : public BossAI
         DoMeleeAttackIfReady();
     }
 };
+
+CreatureAI* GetAI_mob_feugen(Creature *_Creature)
+{
+    return new boss_feugenAI(_Creature);
+}
+
+void AddSC_boss_thaddius()
+{
+    Script *newscript;
+
+    newscript = new Script;
+    newscript->Name = "boss_thaddius";
+    newscript->GetAI = &GetAI_boss_thaddius();
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_feugen";
+    newscript->GetAI = &GetAI_mob_feugen();
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_stalagg";
+    newscript->GetAI = &GetAI_mob_stalagg();
+    newscript->RegisterSelf();
+}

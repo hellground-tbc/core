@@ -376,7 +376,7 @@ extern void AddSC_boss_noth();
 extern void AddSC_boss_patchwerk();
 extern void AddSC_boss_razuvious();
 extern void AddSC_boss_sapphiron();
-//extern void AddSC_boss_thaddius();
+extern void AddSC_boss_thaddius();
 extern void AddSC_instance_naxxramas();
 
 //Netherstorm
@@ -988,7 +988,7 @@ void AddScripts()
     AddSC_boss_patchwerk();
     AddSC_boss_razuvious();
     AddSC_boss_sapphiron();
-//  AddSC_boss_thaddius();
+    AddSC_boss_thaddius();
     AddSC_instance_naxxramas();
 
     //Netherstorm

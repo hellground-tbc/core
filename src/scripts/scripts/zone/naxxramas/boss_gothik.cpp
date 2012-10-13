@@ -95,10 +95,12 @@ struct HELLGROUND_DLL_DECL boss_gothikAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
+
 CreatureAI* GetAI_boss_gothik(Creature *_Creature)
 {
     return new boss_gothikAI (_Creature);
 }
+
 void AddSC_boss_gothik()
 {
     Script *newscript;
