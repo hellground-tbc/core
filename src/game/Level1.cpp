@@ -146,13 +146,25 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
     {
         if (sObjectMgr.GetGuildAnnCooldown(gId) < time(NULL))
         {
-            if (msg.size() > sWorld.getConfig(CONFIG_GUILD_ANN_LENGTH)) //
+            if (msg.size() > sWorld.getConfig(CONFIG_GUILD_ANN_LENGTH))
             {
                 PSendSysMessage("Your message is to long, limit: %i chars", sWorld.getConfig(CONFIG_GUILD_ANN_LENGTH));
                 return false;
             }
 
             Guild * pGuild = sObjectMgr.GetGuildById(gId);
+            if (!pGuild)
+            {
+                PSendSysMessage("Error occured while sending guild announce.");
+                return false;
+            }
+
+            if (pGuild->IsFlagged(GUILD_FLAG_DISABLE_ANN))
+            {
+                PSendSysMessage("Guild announce system has been blocked for your guild.")
+                return false;
+            }
+
             if (!pGuild->HasRankRight(m_session->GetPlayer()->GetRank(), GR_RIGHT_OFFCHATLISTEN))
             {
                 PSendSysMessage("Your guild rank is to low to use that command.");
