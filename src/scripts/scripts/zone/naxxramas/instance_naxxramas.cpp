@@ -15,6 +15,11 @@ EndScriptData */
 
 #define GO_FOUR_HORSEMEN_CHEST 181366
 
+#define THADDIUS_LAMENT_1   8873
+#define THADDIUS_LAMENT_2   8874
+#define THADDIUS_LAMENT_3   8875
+#define THADDIUS_LAMENT_4   8876
+
 struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
 {
     instance_naxxramas(Map *map) : ScriptedInstance(map) { Initialize(); };
@@ -30,6 +35,8 @@ struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
     uint64 m_sir_zeliekGUID;
     uint64 m_highlord_mograineGUID;
 
+    uint64 screemTimer;
+
     void Initialize()
     {
         for (uint8 i = 0; i < ENCOUNTERS; ++i)
@@ -38,6 +45,8 @@ struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
         m_stalaggGUID = 0;
         m_feugenGUID = 0;
         deadHorsemans = 0;
+
+        screemTimer = urand(3*MINUTE*IN_MILISECONDS, 5*MINUTE*IN_MILISECONDS);
     }
 
     bool IsEncounterInProgress() const
@@ -317,7 +326,7 @@ struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
         OUT_LOAD_INST_DATA_COMPLETE;
     }
 
-    Player* GetPlayer() 
+    Player* GetPlayer()
     {
         Map::PlayerList const &players = instance->GetPlayers();
         for(Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
@@ -326,6 +335,24 @@ struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
                 return i->getSource();
         }
         return NULL;
+    }
+
+    void Update(uint32 diff)
+    {
+        if (screemTimer < diff)
+        {
+            if (GetData(DATA_THADDIUS) != DONE)
+            {
+                uint32 sound = RAND(THADDIUS_LAMENT_1, THADDIUS_LAMENT_2, THADDIUS_LAMENT_3, THADDIUS_LAMENT_4);
+
+                Map::PlayerList const &players = instance->GetPlayers();
+                for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+                    if (Player *player = i->getSource())
+                        player->SendPlaySound(sound, true);
+            }
+
+            screemTimer = urand(3*MINUTE*IN_MILISECONDS, 5*MINUTE*IN_MILISECONDS);
+        }
     }
 };
 
