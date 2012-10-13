@@ -316,7 +316,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             if (_mailSendTimer.Passed())
             {
                 SendExternalMails();
-                _mailSendTimer.Reset(sWorld.getConfig(CONFIG_EXTERNAL_MAIL_INTERVAL));
+                _mailSendTimer.Reset(sWorld.getConfig(CONFIG_EXTERNAL_MAIL_INTERVAL)*MINUTE*IN_MILISECONDS);
             }
         }
 
