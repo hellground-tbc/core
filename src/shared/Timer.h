@@ -203,7 +203,7 @@ class WorldUpdateCounter
 class DiffRecorder
 {
     public:
-        DiffRecorder(std::string& funcName, uint32 treshold)
+        DiffRecorder(std::string funcName, uint32 treshold)
         {
             ownerName = funcName;
             _diffTresholdForFile = treshold;
