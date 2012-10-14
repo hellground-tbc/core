@@ -1141,10 +1141,6 @@ void Unit::CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item *castIte
 
 void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    // we can't cast spells on targets in other map - crash avoidance for proc spells
-    if (Victim && Victim->IsInMap(this))
-        return;
-
     if (!spellInfo)
     {
         sLog.outLog(LOG_DEFAULT, "ERROR: CastSpell: unknown spell by caster: %s %u)", (GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
@@ -1215,10 +1211,6 @@ void Unit::CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit
 
 void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim, bool triggered, Item *castItem, Aura* triggeredByAura, uint64 originalCaster)
 {
-    // we can't cast spells on targets in other map - crash avoidance for proc spells
-    if (Victim && Victim->IsInMap(this))
-        return;
-
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo)
     {
