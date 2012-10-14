@@ -8210,7 +8210,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             // Shadow word: Pain - 110%
             else if ((spellProto->SpellFamilyFlags & 0x8000LL) && spellProto->SpellIconID == 234)
             {
-                CastingTime = 16500;
+                CastingTime = 3250;
             }
             // Holy Fire - 86.71%, DoT - 16.5%
             else if ((spellProto->SpellFamilyFlags & 0x100000LL) && spellProto->SpellIconID == 156)

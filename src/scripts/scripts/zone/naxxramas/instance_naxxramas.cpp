@@ -315,9 +315,21 @@ struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
 
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
-        stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3] >> Encounters[4]
-             >> Encounters[5] >> Encounters[6] >> Encounters[7] >> Encounters[8] >> Encounters[9]
-             >> Encounters[10] >> Encounters[11] >> Encounters[12] >> Encounters[13] >> Encounters[14];
+        stream  >> Encounters[0]
+                >> Encounters[1]
+                >> Encounters[2]
+                >> Encounters[3]
+                >> Encounters[4]
+                >> Encounters[5]
+                >> Encounters[6]
+                >> Encounters[7]
+                >> Encounters[8]
+                >> Encounters[9]
+                >> Encounters[10]
+                >> Encounters[11]
+                >> Encounters[12]
+                >> Encounters[13]
+                >> Encounters[14];
 
         for (uint8 i = 0; i < ENCOUNTERS; ++i)
             if (Encounters[i] == IN_PROGRESS) // Do not load an encounter as "In Progress" - reset it instead.
