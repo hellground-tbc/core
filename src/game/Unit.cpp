@@ -8621,17 +8621,8 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
 
         // distribute healing to all effects, reduce AoE damage
         CastingTime = GetCastingTimeForBonus(spellProto, damagetype, CastingTime);
-
-        // 0% bonus for damage and healing spells for leech spells from healing bonus
-        for (int j = 0; j < 3; ++j)
-        {
-            if (spellProto->Effect[j] == SPELL_EFFECT_HEALTH_LEECH ||
-                spellProto->Effect[j] == SPELL_EFFECT_APPLY_AURA && spellProto->EffectApplyAuraName[j] == SPELL_AURA_PERIODIC_LEECH)
-            {
-                CastingTime = 0;
-                break;
-            }
-        }
+        if (spellProto->AttributesCu & SPELL_ATTR_CU_NO_SPELL_DMG_COEFF)
+            CastingTime = 0;
 
         // Exception
         switch (spellProto->SpellFamilyName)
@@ -8678,23 +8669,10 @@ uint32 Unit::SpellHealingBonus(SpellEntry const *spellProto, uint32 healamount, 
                 if (spellProto->Id == 41635)
                     CastingTime = 1500;
                 break;
-            case SPELLFAMILY_PALADIN:
-                // Seal and Judgement of Light
-                if (spellProto->SpellFamilyFlags & 0x100040000LL)
-                    CastingTime = 0;
-                // Enduring Light (proc from t6 trinket)
-                if (spellProto->Id == 40471)
-                    CastingTime = 0;
-                break;
             case SPELLFAMILY_WARLOCK:
-                if (spellProto->SpellFamilyFlags & 0x10000LL)   // HealthStone
-                    CastingTime = 0;
-                else if (spellProto->SpellFamilyFlags & 0x1000000LL)
+                if (spellProto->SpellFamilyFlags & 0x1000000LL)
                     CastingTime = 10000;
                 break;
-            case SPELLFAMILY_WARRIOR:
-            case SPELLFAMILY_ROGUE:
-            case SPELLFAMILY_HUNTER:
             case SPELLFAMILY_POTION:
             case SPELLFAMILY_GENERIC: // not sure about generic
                 CastingTime = 0;

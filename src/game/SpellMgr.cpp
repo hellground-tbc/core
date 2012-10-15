@@ -2778,7 +2778,9 @@ void SpellMgr::LoadSpellCustomAttr()
 
         LoadCustomSpellCooldowns(spellInfo);
 
-        if (spellInfo->HasApplyAura(SPELL_AURA_DAMAGE_SHIELD))
+        if (spellInfo->HasApplyAura(SPELL_AURA_DAMAGE_SHIELD) ||
+            spellInfo->HasApplyAura(SPELL_AURA_PERIODIC_LEECH) ||
+            spellInfo->HasEffect(SPELL_EFFECT_HEALTH_LEECH))
             spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
 
         switch (spellInfo->SpellFamilyName)
@@ -2796,8 +2798,11 @@ void SpellMgr::LoadSpellCustomAttr()
             }
             case SPELLFAMILY_PALADIN:
             {
+                // Judgement & seal of Light
+                if (spellInfo->SpellFamilyFlags & 0x100040000LL)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                 // Seal of Righteousness trigger - already computed for parent spell
-                if (spellInfo->SpellIconID==25 && spellInfo->AttributesEx4 & 0x00800000LL)
+                else if (spellInfo->SpellIconID==25 && spellInfo->AttributesEx4 & 0x00800000LL)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_FIXED_DAMAGE;
                 // Blessing of Sanctuary
                 else if (spellInfo->SpellFamilyFlags & 0x10000000LL && spellInfo->SpellIconID == 29)
@@ -2850,6 +2855,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_FIXED_DAMAGE;
                 break;
             /* NO SPELL DMG COEFF */
+            // Enduring Light - T6 proc
+            case 40471:
             // Judgement of Blood
             case 32221:
             case 32220:
