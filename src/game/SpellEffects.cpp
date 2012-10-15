@@ -2245,8 +2245,7 @@ void Spell::EffectDummy(uint32 i)
                 if (m_CastItem && m_CastItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
                     mainhand = true;
 
-                bp = ((Player*)m_caster)->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) *0.1;
-                bp += m_caster->GetAttackTime(mainhand ? BASE_ATTACK : OFF_ATTACK) * (m_spellInfo->EffectBasePoints[0]+1) / 100000;
+                bp = m_caster->GetAttackTime(mainhand ? BASE_ATTACK : OFF_ATTACK) * (m_spellInfo->EffectBasePoints[0]+1) / 100000;
                 spell_id = 10444;
                 break;
             }
@@ -2318,7 +2317,7 @@ void Spell::EffectDummy(uint32 i)
                     return;
 
                 // Regenerate 6% of Total Mana Every 3 secs
-                int32 EffectBasePoints0 = unitTarget->GetMaxPower(POWER_MANA)  * damage / 100;
+                int32 EffectBasePoints0 = unitTarget->GetMaxPower(POWER_MANA) * damage / 100;
                 m_caster->CastCustomSpell(unitTarget,39609,&EffectBasePoints0,NULL,NULL,true,NULL,NULL,m_originalCasterGUID);
                 return;
             }

@@ -8187,8 +8187,11 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             }
             break;
         case  SPELLFAMILY_SHAMAN:
+            // 10% Flametongue
+            if (spellProto->SpellFamilyFlags & 0x200000)
+                CastingTime = 350;
             // totem attack
-            if (spellProto->SpellFamilyFlags & 0x000040000000LL)
+            else if (spellProto->SpellFamilyFlags & 0x000040000000LL)
             {
                 if (spellProto->SpellIconID == 33)          // Fire Nova totem attack must be 21.4%(untested)
                     CastingTime = 749;                      // ignore CastingTime and use as modifier
