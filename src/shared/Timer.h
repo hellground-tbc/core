@@ -203,7 +203,7 @@ class WorldUpdateCounter
 class DiffRecorder
 {
     public:
-        DiffRecorder(std::string funcName, uint32 treshold)
+        DiffRecorder(std::string funcName, uint32 treshold = 0)
         {
             ownerName = funcName;
             _diffTresholdForFile = treshold;
@@ -211,17 +211,17 @@ class DiffRecorder
             _startTime = WorldTimer::getMSTime();
         }
 
-        inline uint32 RecordTimeFor(bool toFile, char const* fmt, ...)
+        inline uint32 RecordTimeFor(char const* fmt, ...)
         {
             uint32 diffTime = WorldTimer::getMSTimeDiffToNow(_startTime);
 
             _startTime = WorldTimer::getMSTime();
 
-            if (toFile && diffTime >= _diffTresholdForFile)
+            if (_diffTresholdForFile && diffTime >= _diffTresholdForFile)
             {
                 va_list ap;
                 char str [256];
-                va_start(ap, toFile);
+                va_start(ap, fmt);
                 vsnprintf(str, 256, fmt, ap);
                 va_end(ap);
 

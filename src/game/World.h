@@ -570,6 +570,7 @@ class CoreBalancer
 
     private:
         uint32 _diffSum;
+        uint32 _diffCount;
         CBTresholds _treshold;
         TimeTrackerSmall _balanceTimer;
 };
