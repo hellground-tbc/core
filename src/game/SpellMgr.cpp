@@ -2902,6 +2902,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 5171:
             case 6774:                     // Slice'n'Dice
+                spellInfo->AttributesEx |= SPELL_ATTR_EX_NOT_BREAK_STEALTH;
                 spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO; // Do not put caster in combat after use
                 break;
             /* SHAMAN CUSTOM ATTRIBUTES */
