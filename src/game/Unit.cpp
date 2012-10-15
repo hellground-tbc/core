@@ -4149,7 +4149,7 @@ void Unit::RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit
             // Unstable Affliction
             if (aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (aur->GetSpellProto()->SpellFamilyFlags & 0x010000000000LL) && aur->GetSpellProto()->SpellIconID == 2039)
             {
-                int32 damage = aur->GetModifier()->m_amount*9;
+                int32 damage = aur->GetModifier()->m_amount;//*9;
                 uint64 caster_guid = aur->GetCasterGUID();
 
                 // Remove aura
