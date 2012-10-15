@@ -2405,6 +2405,7 @@ void Spell::cancel()
 
 void Spell::cast(bool skipCheck)
 {
+    // what the fuck is done here? o.O
     SpellEntry const* spellInfo = sSpellStore.LookupEntry(m_spellInfo->Id);
     if (!spellInfo)
         return;
@@ -2493,7 +2494,7 @@ void Spell::cast(bool skipCheck)
     //SendCastResult(castResult);
     SendSpellGo();                                          // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
 
-    if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_DIRECT_DAMAGE)
+    if (spellInfo->AttributesCu & SPELL_ATTR_CU_DIRECT_DAMAGE)
         CalculateDamageDoneForAllTargets();
 
     //handle SPELL_AURA_ADD_TARGET_TRIGGER auras
@@ -2514,9 +2515,9 @@ void Spell::cast(bool skipCheck)
         }
     }
 
-    if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_CHARGE)
+    if (spellInfo->AttributesCu & SPELL_ATTR_CU_CHARGE)
     {
-        if (m_spellInfo->Effect[0] == SPELL_EFFECT_CHARGE2) //swoop is always first effect
+        if (spellInfo->Effect[0] == SPELL_EFFECT_CHARGE2) //swoop is always first effect
             EffectCharge2(0);
         else
             EffectCharge(0);
@@ -2544,9 +2545,9 @@ void Spell::cast(bool skipCheck)
     if (!m_IsTriggeredSpell)
         TakePower();
 
-    if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_LINK_CAST)
+    if (spellInfo->AttributesCu & SPELL_ATTR_CU_LINK_CAST)
     {
-        if (const std::vector<int32> *spell_triggered = sSpellMgr.GetSpellLinked(m_spellInfo->Id))
+        if (const std::vector<int32> *spell_triggered = sSpellMgr.GetSpellLinked(spellInfo->Id))
             for (std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
                 if (*i < 0)
                     m_caster->RemoveAurasDueToSpell(-(*i));
