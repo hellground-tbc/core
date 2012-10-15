@@ -408,22 +408,6 @@ uint32 SpellMgr::CalculatePowerCost(SpellEntry const * spellInfo, Unit const * c
     return powerCost;
 }
 
-/*bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
-{
-    SpellEntry const *spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
-    SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
-    if (!spellInfo_1 || !spellInfo_2) return false;
-    if (spellInfo_1->Id == spellId_2) return false;
-
-    if (spellInfo_1->Effect[effIndex_1] != spellInfo_2->Effect[effIndex_2] ||
-        spellInfo_1->EffectItemType[effIndex_1] != spellInfo_2->EffectItemType[effIndex_2] ||
-        spellInfo_1->EffectMiscValue[effIndex_1] != spellInfo_2->EffectMiscValue[effIndex_2] ||
-        spellInfo_1->EffectApplyAuraName[effIndex_1] != spellInfo_2->EffectApplyAuraName[effIndex_2])
-        return false;
-
-    return true;
-}*/
-
 int32 SpellMgr::CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
 {
     SpellEntry const*spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
@@ -441,6 +425,9 @@ SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellId);
     if (!spellInfo)
         return SPELL_NORMAL;
+
+    if (spellInfo->AttributesCu & SPELL_ATTR_CU_TREAT_AS_WELL_FEED)
+        return SPELL_WELL_FED;
 
     switch (spellInfo->SpellFamilyName)
     {
@@ -461,9 +448,6 @@ SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
             else
             {
                 if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_FOOD && !spellInfo->Category)
-                    return SPELL_WELL_FED;
-
-                if (spellInfo->AttributesCu & SPELL_ATTR_CU_TREAT_AS_WELL_FEED)
                     return SPELL_WELL_FED;
             }
 
