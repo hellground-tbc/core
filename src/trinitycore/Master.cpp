@@ -404,7 +404,7 @@ bool Master::_StartDB()
 
     sWorld.LoadDBVersion();
 
-    sLog.outString("Using %s", sWorld.GetDBVersion());
+    //sLog.outString("Using %s", sWorld.GetDBVersion());
     return true;
 }
 
