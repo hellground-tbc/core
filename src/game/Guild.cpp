@@ -125,6 +125,7 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
 
     // fill player data
     MemberSlot newmember;
+    newmember.guid = GUID_LOPART(plGuid);
 
     if (!FillPlayerData(plGuid, &newmember))                 // problems with player data collection
         return false;
@@ -153,6 +154,8 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
         pl->SetRank(newmember.RankId);
         pl->SetGuildIdInvited(0);
     }
+
+    AddMemberToOrderList(newmember);
 
     UpdateAccountsCount();
 
@@ -319,6 +322,7 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
         MemberSlot newmember;
         newmember.RankId = fields[1].GetUInt32();
         uint64 guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+        newmember.guid = GUID_LOPART(guid);
 
         // Player does not exist
         if (!FillPlayerData(guid, &newmember))
@@ -336,6 +340,8 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
         newmember.logout_time           = fields[18].GetUInt64();
         members[GUID_LOPART(guid)]      = newmember;
 
+        AddMemberToOrderList(newmember);
+
     }while (result->NextRow());
 
     if (members.empty())
@@ -344,6 +350,26 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
     UpdateAccountsCount();
 
     return true;
+}
+
+void Guild::AddMemberToOrderList(const MemberSlot &newmember)
+{
+    MemberGuidList::const_iterator itr;
+    for (itr = m_membersOrder.begin(); itr != m_membersOrder.end(); ++itr){
+        MemberSlot member = members[*itr];
+        if (newmember < member){
+            m_membersOrder.insert(itr, newmember.guid);
+            break;
+        }
+    }
+    if (itr == m_membersOrder.end())
+        m_membersOrder.push_back(newmember.guid);
+}
+
+
+void Guild::DelMemberFromOrderList(uint32 guid)
+{
+    m_membersOrder.remove(guid);
 }
 
 bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
@@ -485,6 +511,7 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
     }
 
     members.erase(GUID_LOPART(guid));
+    DelMemberFromOrderList(GUID_LOPART(guid));
 
     Player *player = sObjectMgr.GetPlayer(guid);
     // If player not online data in data field will be loaded from guild tabs no need to update it !!
@@ -700,66 +727,105 @@ void Guild::Disband()
     sObjectMgr.RemoveGuild(Id);
 }
 
+void Guild::WriteMemberRosterPacket(Player *sessionPlayer, const MemberSlot &member, Player *pl, WorldPacket &data)
+{
+    if (pl)
+    {
+        data << uint64(pl->GetGUID());
+        data << uint8(1);
+        data << std::string(pl->GetName());
+        data << uint32(member.RankId);
+        data << uint8(pl->getLevel());
+        data << uint8(pl->getClass());
+        data << uint8(0);                               // new 2.4.0
+
+        uint32 pZoneId = pl->GetCachedZone();
+        if (!sessionPlayer->isGameMaster() && sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA) && sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_IN_GUILD))
+        {
+            if (pl->InArena())
+            {
+                pZoneId = sTerrainMgr.GetZoneId(pl->GetBattleGroundEntryPointMap(), pl->GetBattleGroundEntryPointX(), pl->GetBattleGroundEntryPointY(), pl->GetBattleGroundEntryPointZ());
+            }
+        }
+
+        data << pZoneId;
+        data << member.Pnote;
+        data << member.OFFnote;
+    }else{
+        data << uint64(MAKE_NEW_GUID(member.guid, 0, HIGHGUID_PLAYER));
+        data << uint8(0);
+        data << member.name;
+        data << uint32(member.RankId);
+        data << uint8(member.level);
+        data << uint8(member.Class);
+        data << uint8(0);                               // new 2.4.0
+        data << uint32(member.zoneId);
+        data << float((time(NULL)-member.logout_time)) / DAY;
+        data << member.Pnote;
+        data << member.OFFnote;
+    }
+}
+
+
 void Guild::Roster(WorldSession *session)
 {
+    // Blizz proof: While approximately 500 members were visible in the UI, there was no real need to limit guild size. That is no longer the case. Guild leveling in Cataclysm features ... 
+    // I guess 2.4.3 client cant show more than 500 members on guild tab, otherwise throw #132 error
+    uint32 membersSize = members.size() > MAX_ROSTER_MEMBERS ? MAX_ROSTER_MEMBERS : members.size();
                                                             // we can only guess size
-    WorldPacket data(SMSG_GUILD_ROSTER, (4+MOTD.length()+1+GINFO.length()+1+4+m_ranks.size()*(4+4+GUILD_BANK_MAX_TABS*(4+4))+members.size()*50));
-    data << (uint32)members.size();
+    WorldPacket data(SMSG_GUILD_ROSTER, (4+MOTD.length()+1+GINFO.length()+1+4+m_ranks.size()*(4+4+GUILD_BANK_MAX_TABS*(4+4))+membersSize*50));
+    data << uint32(membersSize);
     data << MOTD;
     data << GINFO;
 
-    data << (uint32)m_ranks.size();
+    data << uint32(m_ranks.size());
     for (RankList::const_iterator ritr = m_ranks.begin(); ritr != m_ranks.end(); ++ritr)
     {
-        data << (uint32)ritr->rights;
-        data << (uint32)ritr->BankMoneyPerDay;              // count of: withdraw gold(gold/day) Note: in game set gold, in packet set bronze.
+        data << uint32(ritr->rights);
+        data << uint32(ritr->BankMoneyPerDay);             // count of: withdraw gold(gold/day) Note: in game set gold, in packet set bronze
         for (int i = 0; i < GUILD_BANK_MAX_TABS; ++i)
         {
-            data << (uint32)ritr->TabRight[i];              // for TAB_i rights: view tabs = 0x01, deposit items =0x02
-            data << (uint32)ritr->TabSlotPerDay[i];         // for TAB_i count of: withdraw items(stack/day)
+            data << uint32(ritr->TabRight[i]);              // for TAB_i rights: view tabs = 0x01, deposit items =0x02
+            data << uint32(ritr->TabSlotPerDay[i]);         // for TAB_i count of: withdraw items(stack/day)
         }
     }
-    for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
-    {
-        if (Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER)))
-        {
-            data << uint64(pl->GetGUID());
-            data << uint8(1);
-            data << std::string(pl->GetName());
-            data << uint32(itr->second.RankId);
-            data << uint8(pl->getLevel());
-            data << uint8(pl->getClass());
-            data << uint8(0);                               // new 2.4.0
 
-            uint32 pZoneId = pl->GetCachedZone();
-            if (!session->GetPlayer()->isGameMaster() && sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_ON_ARENA) && sWorld.getConfig(CONFIG_ENABLE_FAKE_WHO_IN_GUILD))
-            {
-                if (pl->InArena())
-                {
-                    pZoneId = sTerrainMgr.GetZoneId(pl->GetBattleGroundEntryPointMap(), pl->GetBattleGroundEntryPointX(), pl->GetBattleGroundEntryPointY(), pl->GetBattleGroundEntryPointZ());
-                }
+    if (members.size() > membersSize){
+        uint32 count = 0;
+
+        // Online members first, according to the order list
+        for (MemberGuidList::const_iterator itr = m_membersOrder.begin(); itr != m_membersOrder.end(); ++itr){
+            if (count > MAX_ROSTER_MEMBERS)
+                break;
+            MemberSlot member = members[*itr];
+            Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(member.guid, 0, HIGHGUID_PLAYER));
+            if (pl){
+                WriteMemberRosterPacket(session->GetPlayer(), member, pl, data);
+                ++count;
             }
-
-            data << pZoneId;
-            data << itr->second.Pnote;
-            data << itr->second.OFFnote;
         }
-        else
+
+        // Offline members, according to the order list
+        for (MemberGuidList::const_iterator itr = m_membersOrder.begin(); itr != m_membersOrder.end(); ++itr){
+            if (count > MAX_ROSTER_MEMBERS)
+                break;
+            MemberSlot member = members[*itr];
+            Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(member.guid, 0, HIGHGUID_PLAYER));
+            if (!pl){
+                WriteMemberRosterPacket(session->GetPlayer(), member, pl, data);
+                ++count;
+            }
+        }
+
+    }else{
+        for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
         {
-            data << uint64(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
-            data << uint8(0);
-            data << itr->second.name;
-            data << uint32(itr->second.RankId);
-            data << uint8(itr->second.level);
-            data << uint8(itr->second.Class);
-            data << uint8(0);                               // new 2.4.0
-            data << uint32(itr->second.zoneId);
-            data << float((time(NULL)-itr->second.logout_time)) / DAY;
-            data << itr->second.Pnote;
-            data << itr->second.OFFnote;
+            Player *pl = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
+            WriteMemberRosterPacket(session->GetPlayer(), itr->second, pl, data);
         }
     }
-    session->SendPacket(&data);;
+
+    session->SendPacket(&data);
     sLog.outDebug("WORLD: Sent (SMSG_GUILD_ROSTER)");
 }
 

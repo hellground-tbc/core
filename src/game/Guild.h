@@ -23,6 +23,7 @@
 
 #define WITHDRAW_MONEY_UNLIMITED    0xFFFFFFFF
 #define WITHDRAW_SLOT_UNLIMITED     0xFFFFFFFF
+#define MAX_ROSTER_MEMBERS 499
 
 #include "Item.h"
 
@@ -233,7 +234,17 @@ typedef std::vector<GuildItemPosCount> GuildItemPosCountVec;
 
 struct MemberSlot
 {
+    bool operator<(const MemberSlot &member) const {
+        if (RankId < member.RankId)
+            return true;
+        if (RankId > member.RankId)
+            return false;
+        if (logout_time > member.logout_time)
+            return true;
+        return false;
+    }
     uint32 accountId;
+    uint64 guid;
     uint64 logout_time;
     std::string name;
     std::string Pnote;
@@ -276,6 +287,7 @@ class Guild
         void Disband();
 
         typedef std::map<uint32, MemberSlot> MemberList;
+        typedef std::list<uint32> MemberGuidList;
         typedef std::vector<RankInfo> RankList;
 
         uint32 GetId(){ return Id; }
@@ -450,6 +462,7 @@ class Guild
         RankList m_ranks;
 
         MemberList members;
+        MemberGuidList m_membersOrder;
 
         typedef std::vector<GuildBankTab*> TabListMap;
         TabListMap m_TabListMap;
@@ -476,6 +489,9 @@ class Guild
         uint8 _CanStoreItem_InSpecificSlot(uint8 tab, uint8 slot, GuildItemPosCountVec& dest, uint32& count, bool swap, Item *pSrcItem) const;
         uint8 _CanStoreItem_InTab(uint8 tab, GuildItemPosCountVec& dest, uint32& count, bool merge, Item *pSrcItem, uint8 skip_slot) const;
         Item* _StoreItem(uint8 tab, uint8 slot, Item *pItem, uint32 count, bool clone);
+        void WriteMemberRosterPacket(Player *sessionPlayer, const MemberSlot &member, Player *pl, WorldPacket &data);
+        void AddMemberToOrderList(const MemberSlot &newmember);
+        void DelMemberFromOrderList(uint32 guid);
 
         uint64 m_guildFlags;
 };
