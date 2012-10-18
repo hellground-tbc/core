@@ -354,7 +354,7 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
 
 void Guild::AddMemberToOrderList(const MemberSlot &newmember)
 {
-    MemberGuidList::const_iterator itr;
+    MemberGuidList::iterator itr;
     for (itr = m_membersOrder.begin(); itr != m_membersOrder.end(); ++itr){
         MemberSlot member = members[*itr];
         if (newmember < member){
