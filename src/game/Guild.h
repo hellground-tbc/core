@@ -287,7 +287,7 @@ class Guild
         void Disband();
 
         typedef std::map<uint32, MemberSlot> MemberList;
-        typedef std::list<uint32> MemberGuidList;
+        typedef std::list<uint64> MemberGuidList;
         typedef std::vector<RankInfo> RankList;
 
         uint32 GetId(){ return Id; }
