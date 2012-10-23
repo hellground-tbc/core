@@ -100,7 +100,7 @@ void MotionMaster::MoveConfused()
 void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 {
     // ignore movement request if target not exist
-    if (!target)
+    if (!target || m_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
 
     if (m_owner->GetTypeId() == TYPEID_PLAYER)
@@ -112,7 +112,7 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 void MotionMaster::MoveFollow(Unit* target, float dist, float angle)
 {
     // ignore movement request if target not exist
-    if (!target)
+    if (!target || m_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
 
     m_owner->GetMotionMaster()->MovementExpired();

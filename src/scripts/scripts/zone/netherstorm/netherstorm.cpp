@@ -1208,9 +1208,9 @@ CreatureAI* GetAI_mob_epextraction(Creature *_Creature)
 #define BOOM_BOT_TARGET 20392
 #define BOOM_BOT 19692
 
-struct HELLGROUND_DLL_DECL mob_dr_boomAI : public Scripted_NoMovementAI
+struct HELLGROUND_DLL_DECL mob_dr_boomAI : public ScriptedAI
 {
-    mob_dr_boomAI(Creature *c) : Scripted_NoMovementAI(c) {}
+    mob_dr_boomAI(Creature *c) : ScriptedAI(c) {}
 
     std::vector<uint64> targetGUID;
 
