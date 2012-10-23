@@ -4373,6 +4373,35 @@ bool ChatHandler::HandleMmapStatsCommand(const char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleMmapOffsetCreateCommand(const char* /*args*/)
+{
+    Unit* target = getSelectedUnit();
+    if (target == NULL)
+        return false;
+
+    int32 gx = 32 - player->GetPositionX() / SIZE_OF_GRIDS;
+    int32 gy = 32 - player->GetPositionY() / SIZE_OF_GRIDS;
+
+    char fileName[25];
+    sprintf(fileName, "%03u%02i%02i.offmesh", player->GetMapId(), gy, gx);
+
+    std::ofstream file;
+    file.open(fileName, std::ios_base::out | std::ios_base::app);
+    if (file.fail())
+        return false;
+
+    // in fileName gx and gy are swapped I have no idea if inside offmesh data also
+    file << player->GetMapId() << " " << gy << "," << gx << "(
+         << player->GetPositionX() << "', '"
+         << player->GetPositionY() << "', '"
+         << player->GetPositionZ() << ")" << " " << "("
+         << target->GetPositionX() << "', '"
+         << target->GetPositionY() << "', '"
+         << target->GetPositionZ() << ") 2.5" << std::endl;
+
+    return true;
+}
+
 bool ChatHandler::HandleGuildDisableAnnounceCommand(const char *args)
 {
     if (!args)
