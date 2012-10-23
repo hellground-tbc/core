@@ -4379,6 +4379,7 @@ bool ChatHandler::HandleMmapOffsetCreateCommand(const char* /*args*/)
     if (target == NULL)
         return false;
 
+    Player* player = m_session->GetPlayer();
     int32 gx = 32 - player->GetPositionX() / SIZE_OF_GRIDS;
     int32 gy = 32 - player->GetPositionY() / SIZE_OF_GRIDS;
 
@@ -4391,7 +4392,7 @@ bool ChatHandler::HandleMmapOffsetCreateCommand(const char* /*args*/)
         return false;
 
     // in fileName gx and gy are swapped I have no idea if inside offmesh data also
-    file << player->GetMapId() << " " << gy << "," << gx << "(
+    file << player->GetMapId() << " " << gy << "," << gx << "("
          << player->GetPositionX() << "', '"
          << player->GetPositionY() << "', '"
          << player->GetPositionZ() << ")" << " " << "("
