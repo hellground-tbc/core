@@ -940,6 +940,149 @@ bool GossipSelect_go_ice_stone(Player *player, GameObject* _GO, uint32 sender, u
     return true;
 }
 
+/*######
+## npc_hand_berserker
+######*/
+
+enum
+{
+    SPELL_SOUL_BURDEN       = 38879,
+    SPELL_ENRAGE            = 8599,
+    SPELL_CHARGE            = 35570,
+
+    NPC_BUNNY               = 22444
+};
+
+struct HELLGROUND_DLL_DECL npc_hand_berserkerAI : public ScriptedAI
+{
+    npc_hand_berserkerAI(Creature* c) : ScriptedAI(c) {}
+
+    void Reset() {}
+
+    void AttackStart(Unit *pWho)
+    {
+        ScriptedAI::AttackStart(pWho);
+    }
+
+    void EnterCombat(Unit* pWho)
+    {
+        if (rand()%60)
+        {
+            DoCast(pWho, SPELL_CHARGE);
+        }
+    }   
+
+    void DamageTaken(Unit* pDoneby, uint32 & Damage)
+    {
+        if (m_creature->HasAura(SPELL_ENRAGE))
+            return;
+
+        if (pDoneby->GetTypeId() == TYPEID_PLAYER && (m_creature->GetHealth()*100 - Damage) / m_creature->GetMaxHealth() < 30)
+        {
+            DoCast(m_creature, SPELL_ENRAGE);
+        }
+    }
+
+    void JustDied(Unit* pWho)
+    {
+        if (Creature* Bunny = GetClosestCreatureWithEntry(m_creature, NPC_BUNNY, 17.5f))
+        {
+            Bunny->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            DoCast(Bunny, SPELL_SOUL_BURDEN);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_hand_berserker(Creature* c)
+{
+    return new npc_hand_berserkerAI(c);
+}
+
+/*######
+## npc_anchorite_relic_bunny
+######*/
+
+enum
+{
+    NPC_HAND_BERSERKER      = 16878,
+    NPC_FEL_SPIRIT          = 22454,
+    SPELL_CHANNELS          = 39184,
+
+    GO_RELIC                = 185298,
+    SAY_SP                  = -1900130
+};
+
+struct HELLGROUND_DLL_DECL npc_anchorite_relic_bunnyAI : public ScriptedAI
+{
+    npc_anchorite_relic_bunnyAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 m_ChTimer;
+    uint32 m_EndTimer;
+
+    void Reset()
+    {
+        m_ChTimer = 2000;
+        m_EndTimer = 60000;
+    }
+
+    void AttackedBy(Unit* pEnemy) {}
+    void AttackStart(Unit* pEnemy) {}
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        if (pSummoned->GetEntry() == NPC_FEL_SPIRIT)
+        {
+            DoScriptText(SAY_SP, pSummoned);
+            pSummoned->AI()->AttackStart(pSummoned->getVictim());
+        }
+    }
+
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if (spell->Id == SPELL_SOUL_BURDEN)
+        {
+            me->InterruptNonMeleeSpells(false);
+            m_creature->SummonCreature(NPC_FEL_SPIRIT, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            m_ChTimer = 2000;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (m_ChTimer <= diff)
+        {
+            if (Creature* pBer = GetClosestCreatureWithEntry(m_creature, NPC_HAND_BERSERKER, 17.5f, true))
+            {
+                {
+                    DoCast(pBer, SPELL_CHANNELS, false);
+                    m_ChTimer = 95000;
+                }
+            }
+            else m_creature->InterruptNonMeleeSpells(false);
+        }
+        else m_ChTimer -= diff;
+
+        if (m_EndTimer <= diff)
+        {
+            if (GameObject* pRelic = GetClosestGameObjectWithEntry(m_creature, GO_RELIC, 5.0f))
+            {
+                pRelic->RemoveFromWorld();
+                m_creature->setDeathState(JUST_DIED);
+                m_creature->RemoveCorpse();
+            }
+
+            m_EndTimer = 60000;
+        }
+        else m_EndTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_anchorite_relic_bunny(Creature* c)
+{
+    return new npc_anchorite_relic_bunnyAI(c);
+}
+
 void AddSC_hellfire_peninsula()
 {
     Script *newscript;
@@ -1017,5 +1160,15 @@ void AddSC_hellfire_peninsula()
     newscript->Name="go_ice_stone";
     newscript->pGOUse  = &GossipHello_go_ice_stone;
     newscript->pGossipSelectGO = &GossipSelect_go_ice_stone;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_hand_berserker";
+    newscript->GetAI = &GetAI_npc_hand_berserker;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_anchorite_relic_bunny";
+    newscript->GetAI = &GetAI_npc_anchorite_relic_bunny;
     newscript->RegisterSelf();
 }
