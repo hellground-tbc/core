@@ -4391,13 +4391,12 @@ bool ChatHandler::HandleMmapOffsetCreateCommand(const char* /*args*/)
     if (file.fail())
         return false;
 
-    // in fileName gx and gy are swapped I have no idea if inside offmesh data also
     file << player->GetMapId() << " " << gy << "," << gx << "("
-         << player->GetPositionX() << "', '"
-         << player->GetPositionY() << "', '"
+         << player->GetPositionX() << " "
+         << player->GetPositionY() << " "
          << player->GetPositionZ() << ")" << " " << "("
-         << target->GetPositionX() << "', '"
-         << target->GetPositionY() << "', '"
+         << target->GetPositionX() << " "
+         << target->GetPositionY() << " "
          << target->GetPositionZ() << ") 2.5" << std::endl;
 
     return true;
