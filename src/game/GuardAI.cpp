@@ -19,7 +19,7 @@
  */
 
 #include "GuardAI.h"
-#include "Errors.h"
+#include "Log.h"
 #include "Player.h"
 #include "ObjectAccessor.h"
 #include "World.h"

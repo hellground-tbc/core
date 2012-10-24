@@ -4076,7 +4076,7 @@ void Player::BuildPlayerRepop()
     if (GetCorpse())
     {
         sLog.outLog(LOG_DEFAULT, "ERROR: BuildPlayerRepop: player %s(%d) already has a corpse", GetName(), GetGUIDLow());
-        assert(false);
+        ASSERT(false);
     }
 
     // create a corpse and place it at the player's location
@@ -4283,7 +4283,7 @@ void Player::CreateCorpse()
 
     // we don't SaveToDB for players in battlegrounds so don't do it for corpses either
     const MapEntry *entry = sMapStore.LookupEntry(corpse->GetMapId());
-    assert(entry);
+    ASSERT(entry);
     if (entry->map_type != MAP_BATTLEGROUND)
         corpse->SaveToDB();
 
@@ -8268,7 +8268,7 @@ void Player::SendPetSkillWipeConfirm()
 
 void Player::SetVirtualItemSlot(uint8 i, Item* item)
 {
-    assert(i < 3);
+    ASSERT(i < 3);
     if (i < 2 && item)
     {
         if (!item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
@@ -11760,7 +11760,7 @@ void Player::UpdateEnchantTime(uint32 time)
 {
     for (EnchantDurationList::iterator itr = m_enchantDuration.begin(),next;itr != m_enchantDuration.end();itr=next)
     {
-        assert(itr->item);
+        ASSERT(itr->item);
         next=itr;
         if (!itr->item->GetEnchantmentId(itr->slot))
         {
@@ -12648,7 +12648,7 @@ bool Player::CanRewardQuest(Quest const *pQuest, uint32 reward, bool msg)
 void Player::AddQuest(Quest const *pQuest, Object *questGiver)
 {
     uint16 log_slot = FindQuestSlot(0);
-    assert(log_slot < MAX_QUEST_LOG_SIZE);
+    ASSERT(log_slot < MAX_QUEST_LOG_SIZE);
 
     uint32 quest_id = pQuest->GetQuestId();
 
@@ -13021,7 +13021,7 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
                 ObjectMgr::ExclusiveQuestGroups::iterator iter2 = sObjectMgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
                 ObjectMgr::ExclusiveQuestGroups::iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
 
-                assert(iter2!=end);                          // always must be found if qPrevInfo->ExclusiveGroup != 0
+                ASSERT(iter2!=end);                          // always must be found if qPrevInfo->ExclusiveGroup != 0
 
                 for (; iter2 != end; ++iter2)
                 {
@@ -13056,7 +13056,7 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
                 ObjectMgr::ExclusiveQuestGroups::iterator iter2 = sObjectMgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
                 ObjectMgr::ExclusiveQuestGroups::iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
 
-                assert(iter2!=end);                          // always must be found if qPrevInfo->ExclusiveGroup != 0
+                ASSERT(iter2!=end);                          // always must be found if qPrevInfo->ExclusiveGroup != 0
 
                 for (; iter2 != end; ++iter2)
                 {
@@ -13158,7 +13158,7 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
     ObjectMgr::ExclusiveQuestGroups::iterator iter = sObjectMgr.mExclusiveQuestGroups.lower_bound(qInfo->GetExclusiveGroup());
     ObjectMgr::ExclusiveQuestGroups::iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qInfo->GetExclusiveGroup());
 
-    assert(iter!=end);                                      // always must be found if qInfo->ExclusiveGroup != 0
+    ASSERT(iter!=end);                                      // always must be found if qInfo->ExclusiveGroup != 0
 
     for (; iter != end; ++iter)
     {
@@ -13969,7 +13969,7 @@ void Player::SendQuestUpdateAddItem(Quest const* pQuest, uint32 item_idx, uint32
 
 void Player::SendQuestUpdateAddCreatureOrGo(Quest const* pQuest, uint64 guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count)
 {
-    assert(old_count + add_count < 256 && "mob/GO count store in 8 bits 2^8 = 256 (0..256)");
+    ASSERT(old_count + add_count < 256 && "mob/GO count store in 8 bits 2^8 = 256 (0..256)");
 
     int32 entry = pQuest->ReqCreatureOrGOId[ creatureOrGO_idx ];
     if (entry < 0)
@@ -14426,7 +14426,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             {
                 sLog.outLog(LOG_DEFAULT, "ERROR: Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
                 sLog.outLog(LOG_DEFAULT, "ERROR: CRASH.");
-                assert(false);
+                ASSERT(false);
             }
         }
     }
@@ -14666,7 +14666,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     {
         // save source node as recall coord to prevent recall and fall from sky
         TaxiNodesEntry const* nodeEntry = sTaxiNodesStore.LookupEntry(node_id);
-        assert(nodeEntry);                                  // checked in m_taxi.LoadTaxiDestinationsFromString
+        ASSERT(nodeEntry);                                  // checked in m_taxi.LoadTaxiDestinationsFromString
 
         SaveRecallPosition(nodeEntry);
 
@@ -15605,7 +15605,7 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player
     bool has_solo = false;
 
     if (player) { player_guid = player->GetGUID(); if (!group) group = player->GetGroup(); }
-    assert(player_guid);
+    ASSERT(player_guid);
 
     // copy all binds to the group, when changing leader it's assumed the character
     // will not have any solo binds
@@ -18696,7 +18696,7 @@ void Player::SetGroup(Group *group, int8 subgroup)
     else
     {
         // never use SetGroup without a subgroup unless you specify NULL for group
-        assert(subgroup >= 0);
+        ASSERT(subgroup >= 0);
         m_group.link(group, this);
         m_group.setSubGroup((uint8)subgroup);
     }
@@ -19112,7 +19112,7 @@ uint32 Player::GetMinLevelForBattleGroundBracketId(BattleGroundBracketId bracket
         bracket_id = BG_BRACKET_ID_LAST;
 
     BattleGround *bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
-    assert(bg);
+    ASSERT(bg);
     return 10 * bracket_id + bg->GetMinLevel();
 }
 
@@ -20208,7 +20208,7 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
     else
     {
         // never use SetOriginalGroup without a subgroup unless you specify NULL for group
-        assert(subgroup >= 0);
+        ASSERT(subgroup >= 0);
         m_originalGroup.link(group, this);
         m_originalGroup.setSubGroup((uint8)subgroup);
     }
@@ -20531,7 +20531,7 @@ uint32 Player::CalculateTalentsPoints() const
 BattleGroundBracketId Player::GetBattleGroundBracketIdFromLevel(BattleGroundTypeId bgTypeId) const
 {
     BattleGround *bg = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
-    assert(bg);
+    ASSERT(bg);
     if (getLevel() < bg->GetMinLevel())
         return BG_BRACKET_ID_FIRST;
 

@@ -91,10 +91,10 @@ Object::~Object()
         {
             ///- Do NOT call RemoveFromWorld here, if the object is a player it will crash
             sLog.outLog(LOG_DEFAULT, "ERROR: Object::~Object - guid="UI64FMTD", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
-            assert(false);
+            ASSERT(false);
         }
 
-        assert(!m_objectUpdated);
+        ASSERT(!m_objectUpdated);
 
         delete [] m_uint32Values;
         delete [] m_uint32Values_mirror;
@@ -227,7 +227,7 @@ void Object::BuildFieldsUpdate(Player *pl, UpdateDataMapType &data_map) const
     if (iter == data_map.end())
     {
         std::pair<UpdateDataMapType::iterator, bool> p = data_map.insert(UpdateDataMapType::value_type(pl, UpdateData()));
-        assert(p.second);
+        ASSERT(p.second);
         iter = p.first;
     }
     BuildValuesUpdateBlockForPlayer(&iter->second, iter->first);
@@ -402,7 +402,7 @@ void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask *
         }
     }
 
-    WPAssert(updateMask && updateMask->GetCount() == m_valuesCount);
+    ASSERT(updateMask && updateMask->GetCount() == m_valuesCount);
 
     *data << (uint8)updateMask->GetBlockCount();
     data->append(updateMask->GetMask(), updateMask->GetLength());
@@ -1677,7 +1677,7 @@ TerrainInfo const* WorldObject::GetTerrain() const
 
 void WorldObject::AddObjectToRemoveList()
 {
-    assert(m_uint32Values);
+    ASSERT(m_uint32Values);
 
     GetMap()->AddObjectToRemoveList(this);
 }

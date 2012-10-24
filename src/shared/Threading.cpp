@@ -17,10 +17,10 @@
  */
 
 #include "Threading.h"
-#include "Errors.h"
 #include <ace/OS_NS_unistd.h>
 #include <ace/Sched_Params.h>
 #include <vector>
+#include "Log.h"
 
 using namespace ACE_Based;
 

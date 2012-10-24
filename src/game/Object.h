@@ -115,7 +115,7 @@ class HELLGROUND_DLL_SPEC Object
             if (m_inWorld)
                 return;
 
-            assert(m_uint32Values);
+            ASSERT(m_uint32Values);
 
             m_inWorld = true;
 

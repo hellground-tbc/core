@@ -121,7 +121,7 @@ Map* MapManager::FindMap(uint32 mapid, uint32 instanceId) const
     //this is a small workaround for transports
     if(instanceId == 0 && iter->second->Instanceable())
     {
-        assert(false);
+        ASSERT(false);
         return NULL;
     }
 

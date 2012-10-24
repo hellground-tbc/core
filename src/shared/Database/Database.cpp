@@ -171,13 +171,13 @@ void Database::StopServer()
 
 SqlDelayThread * Database::CreateDelayThread()
 {
-    assert(m_pAsyncConn);
+    ASSERT(m_pAsyncConn);
     return new SqlDelayThread(this, m_pAsyncConn);
 }
 
 void Database::InitDelayThread()
 {
-    assert(!m_delayThread);
+    ASSERT(!m_delayThread);
 
     //New delay thread for delay execute
     m_threadBody = CreateDelayThread();              // will deleted at m_delayThread delete

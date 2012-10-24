@@ -398,9 +398,8 @@ Unit::~Unit()
 
     delete [] m_modAuras;
 
-    assert(!m_attacking);
-    assert(m_attackers.empty());
-    assert(m_sharedVision.empty());
+    ASSERT(!m_attacking);
+    ASSERT(m_attackers.empty());
 }
 
 EventProcessor* Unit::GetEvents()
@@ -1089,10 +1088,10 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
             // last damage from duel opponent
             if (duel_hasEnded)
             {
-                assert(pVictim->GetTypeId()==TYPEID_PLAYER);
+                ASSERT(pVictim->GetTypeId()==TYPEID_PLAYER);
                 Player *he = (Player*)pVictim;
 
-                assert(he->duel);
+                ASSERT(he->duel);
 
                 he->SetHealth(1);
 
@@ -1773,7 +1772,7 @@ void Unit::HandleEmoteCommand(uint32 anim_id)
 {
     WorldPacket data(SMSG_EMOTE, 12);
     data << anim_id << GetGUID();
-    WPAssert(data.size() == 12);
+    ASSERT(data.size() == 12);
 
     BroadcastPacket(&data, true);
 }
@@ -3289,7 +3288,7 @@ void Unit::_UpdateAutoRepeatSpell()
 
 void Unit::SetCurrentCastedSpell(Spell* spell)
 {
-    assert(spell);                                         // NULL may be never passed here, use InterruptSpell or InterruptNonMeleeSpells
+    ASSERT(spell);                                         // NULL may be never passed here, use InterruptSpell or InterruptNonMeleeSpells
 
     CurrentSpellTypes SpellType = spell->GetCurrentContainer();
     if (spell == GetCurrentSpell(SpellType))
@@ -3369,7 +3368,7 @@ void Unit::SetCurrentCastedSpell(Spell* spell)
 
 void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
 {
-    assert(spellType < CURRENT_MAX_SPELL);
+    ASSERT(spellType < CURRENT_MAX_SPELL);
 
     Spell* spell = GetCurrentSpell(CurrentSpellTypes(spellType));
     if (spell
@@ -4505,7 +4504,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
     }
 
     sLog.outDebug("Aura %u (%u) now is remove mode %d", Aur->GetId(), Aur->GetModifier()->m_auraname, mode);
-    assert(!Aur->IsInUse());
+    ASSERT(!Aur->IsInUse());
     Aur->ApplyModifier(false,true);
 
     Aur->SetStackAmount(0);
@@ -4728,14 +4727,14 @@ DynamicObject * Unit::GetDynObject(uint32 spellId)
 
 void Unit::AddGameObject(GameObject* gameObj)
 {
-    assert(gameObj && gameObj->GetOwnerGUID()==0);
+    ASSERT(gameObj && gameObj->GetOwnerGUID()==0);
     m_gameObj.push_back(gameObj);
     gameObj->SetOwnerGUID(GetGUID());
 }
 
 void Unit::RemoveGameObject(GameObject* gameObj, bool del)
 {
-    assert(gameObj && gameObj->GetOwnerGUID()==GetGUID());
+    ASSERT(gameObj && gameObj->GetOwnerGUID()==GetGUID());
 
     gameObj->SetOwnerGUID(0);
 
@@ -9301,7 +9300,7 @@ bool Unit::isTargetableForAttack() const
 
 bool Unit::canAttack(Unit const* target, bool force) const
 {
-    assert(target);
+    ASSERT(target);
 
     if (force)
     {
@@ -9895,7 +9894,7 @@ void Unit::DeleteThreatList()
 
 void Unit::TauntApply(Unit* taunter)
 {
-    assert(GetTypeId() == TYPEID_UNIT);
+    ASSERT(GetTypeId() == TYPEID_UNIT);
 
     if (!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((Player*)taunter)->isGameMaster()))
         return;
@@ -9918,7 +9917,7 @@ void Unit::TauntApply(Unit* taunter)
 
 void Unit::TauntFadeOut(Unit *taunter)
 {
-    assert(GetTypeId()== TYPEID_UNIT);
+    ASSERT(GetTypeId()== TYPEID_UNIT);
 
     if (!taunter || (taunter->GetTypeId() == TYPEID_PLAYER && ((Player*)taunter)->isGameMaster()))
         return;
@@ -12598,7 +12597,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
     if (!charmer)
         return;
 
-    assert(!possess || charmer->GetTypeId() == TYPEID_PLAYER);
+    ASSERT(!possess || charmer->GetTypeId() == TYPEID_PLAYER);
 
     charmer->SetCharm(0);
     if (possess)

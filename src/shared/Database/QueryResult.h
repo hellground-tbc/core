@@ -23,8 +23,8 @@
 #include <ace/Null_Mutex.h>
 
 #include "Common.h"
-#include "Errors.h"
 #include "Field.h"
+#include "Log.h"
 
 class HELLGROUND_DLL_SPEC QueryResult
 {
@@ -76,7 +76,7 @@ class HELLGROUND_DLL_SPEC QueryNamedResult
                 if(mFieldNames[idx] == name)
                     return idx;
             }
-            assert(false && "unknown field name");
+            ASSERT(false && "unknown field name");
             return uint32(-1);
         }
 

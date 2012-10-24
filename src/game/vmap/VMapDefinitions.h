@@ -32,7 +32,6 @@ namespace VMAP
 }
 
 #ifndef NO_CORE_FUNCS
-    #include "Errors.h"
     #include "Log.h"
     #define ERROR_LOG(...) sLog.outLog(LOG_DEFAULT, __VA_ARGS__);
     #define DETAIL_LOG(...) sLog.outDetail(__VA_ARGS__);

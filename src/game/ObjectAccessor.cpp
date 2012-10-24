@@ -156,7 +156,7 @@ Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
     Player2CorpsesMapType::const_accessor a;
     if (i_player2corpse.find(a, guid))
     {
-        assert(a->second->GetType() != CORPSE_BONES);
+        ASSERT(a->second->GetType() != CORPSE_BONES);
         return a->second;
     }
 
@@ -165,7 +165,7 @@ Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 
 void ObjectAccessor::RemoveCorpse(Corpse *corpse)
 {
-    assert(corpse && corpse->GetType() != CORPSE_BONES);
+    ASSERT(corpse && corpse->GetType() != CORPSE_BONES);
 
     Player2CorpsesMapType::const_accessor a;
     if (!i_player2corpse.find(a, corpse->GetOwnerGUID()))
@@ -184,10 +184,10 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
 
 void ObjectAccessor::AddCorpse(Corpse *corpse)
 {
-    assert(corpse && corpse->GetType() != CORPSE_BONES);
+    ASSERT(corpse && corpse->GetType() != CORPSE_BONES);
 
     Player2CorpsesMapType::accessor a;
-    assert(!i_player2corpse.find(a, corpse->GetOwnerGUID()));
+    ASSERT(!i_player2corpse.find(a, corpse->GetOwnerGUID()));
     a.release();
 
     ACE_GUARD(LockType, g, i_corpseGuard);

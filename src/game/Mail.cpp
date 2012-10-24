@@ -95,7 +95,7 @@ MailReceiver::MailReceiver(Player* receiver) : m_receiver(receiver), m_receiver_
  */
 MailReceiver::MailReceiver(Player* receiver, ObjectGuid receiver_guid) : m_receiver(receiver), m_receiver_guid(receiver_guid)
 {
-    assert(!receiver || receiver->GetObjectGuid() == receiver_guid);
+    ASSERT(!receiver || receiver->GetObjectGuid() == receiver_guid);
 }
 
 /**
@@ -114,7 +114,7 @@ MailDraft& MailDraft::SetSubjectAndBody(std::string subject, std::string text)
 {
     m_subject = subject;
 
-    assert(!m_bodyId);
+    ASSERT(!m_bodyId);
     m_bodyId = !text.empty() ? sObjectMgr.CreateItemText(text) : 0;
 
     return *this;
@@ -195,7 +195,7 @@ void MailDraft::CloneFrom(MailDraft const& draft)
 
     m_subject = draft.GetSubject();
 
-    assert(!m_bodyId);
+    ASSERT(!m_bodyId);
     if (uint32 bodyId = draft.GetBodyId())
     {
         std::string text = sObjectMgr.GetItemText(bodyId);

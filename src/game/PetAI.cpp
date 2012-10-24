@@ -19,7 +19,7 @@
  */
 
 #include "PetAI.h"
-#include "Errors.h"
+#include "Log.h"
 #include "Pet.h"
 #include "Player.h"
 #include "DBCStores.h"

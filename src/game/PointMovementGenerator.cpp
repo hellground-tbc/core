@@ -19,7 +19,7 @@
  */
 
 #include "PointMovementGenerator.h"
-#include "Errors.h"
+#include "Log.h"
 #include "Creature.h"
 #include "Player.h"
 #include "CreatureAI.h"

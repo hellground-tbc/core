@@ -175,4 +175,10 @@ void HELLGROUND_DLL_SPEC debug_log(const char * str, ...) ATTR_PRINTF(1,2);
 void HELLGROUND_DLL_SPEC error_log(const char * str, ...) ATTR_PRINTF(1,2);
 void HELLGROUND_DLL_SPEC error_db_log(const char * str, ...) ATTR_PRINTF(1,2);
 
+// old clean assert from Errors.h
+//#define ASSERT(assertion) { if(!(assertion)) { fprintf(stderr, "\n%s:%i ASSERTION FAILED:\n  %s\n", __FILE__, __LINE__, #assertion); assert(#assertion &&0); } }
+
+// i think we should use this assert, cause we see asserts in log files, not only on console (mostly we dont't see it cause the server restarts)
+#define ASSERT(assertion) { if(!(assertion)) { error_log("ERROR: %s:%i ASSERTION FAILED:\n  %s\n", __FILE__, __LINE__, #assertion); assert(#assertion &&0); } }
+
 #endif

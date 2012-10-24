@@ -542,7 +542,7 @@ void Pet::Update(uint32 update_diff, uint32 p_diff)
         {
             if (m_deathTimer <= update_diff)
             {
-                assert(getPetType()!=SUMMON_PET && "Must be already removed.");
+                ASSERT(getPetType()!=SUMMON_PET && "Must be already removed.");
                 Remove(PET_SAVE_NOT_IN_SLOT);               //hunters' pets never get removed because of death, NEVER!
                 return;
             }
@@ -1013,7 +1013,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
 bool Pet::InitStatsForLevel(uint32 petlevel)
 {
     CreatureInfo const *cinfo = GetCreatureInfo();
-    assert(cinfo);
+    ASSERT(cinfo);
 
     Unit* owner = GetOwner();
     if (!owner)
