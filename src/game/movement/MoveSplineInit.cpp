@@ -25,7 +25,7 @@ namespace Movement
 {
     UnitMoveType SelectSpeedType(uint32 moveFlags)
     {
-        if (moveFlags & MOVEFLAG_FLYING)
+        if (moveFlags & (MOVEFLAG_FLYING | MOVEFLAG_LEVITATING))
         {
             if (moveFlags & MOVEFLAG_BACKWARD /*&& speed_obj.flight >= speed_obj.flight_back*/)
                 return MOVE_FLIGHT_BACK;
