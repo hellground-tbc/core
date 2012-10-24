@@ -63,7 +63,8 @@ class HELLGROUND_DLL_DECL PetAI : public CreatureAI
 
         TimeTracker i_tracker;
         std::set<uint64> m_AllySet;
-        uint32 m_updateAlliesTimer;
+        
+        TimeTrackerSmall updateAlliesTimer;
         uint32 m_forceTimer;
 
         typedef std::pair<Unit*, Spell*> TargetSpellPair;
