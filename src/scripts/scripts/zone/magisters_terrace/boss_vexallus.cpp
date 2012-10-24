@@ -49,15 +49,17 @@ struct HELLGROUND_DLL_DECL boss_vexallusAI : public ScriptedAI
 {
     boss_vexallusAI(Creature *c) : ScriptedAI(c), summons(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = (c->GetInstanceData());
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* instance;
 
     uint32 ChainLightningTimer;
     uint32 ArcaneShockTimer;
     uint32 SpawnAddInterval;
     uint32 AlreadySpawnedAmount;
+
+    TimeTrackerSmall evadeTimer;
 
     SummonList summons;
 
@@ -69,72 +71,96 @@ struct HELLGROUND_DLL_DECL boss_vexallusAI : public ScriptedAI
         AlreadySpawnedAmount = 0;
         summons.DespawnAll();
 
-        if(pInstance)
-            pInstance->SetData(DATA_VEXALLUS_EVENT, NOT_STARTED);
+        evadeTimer.Reset(2000);
+
+        me->setActive(false);
+        instance->SetData(DATA_VEXALLUS_EVENT, NOT_STARTED);
     }
 
     void AttackStart(Unit* who)
     {
         if(!who->GetCharmerOrOwnerPlayerOrPlayerItself())
             EnterEvadeMode();
+
         ScriptedAI::AttackStart(who);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(SAY_KILL, m_creature);
+        DoScriptText(SAY_KILL, me);
     }
 
     void JustDied(Unit *victim)
     {
-        if (pInstance)
-            pInstance->SetData(DATA_VEXALLUS_EVENT, DONE);
+        instance->SetData(DATA_VEXALLUS_EVENT, DONE);
+
         summons.DespawnAll();
         RemoveEnergyFeedback();
     }
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
-        if (pInstance)
-            pInstance->SetData(DATA_VEXALLUS_EVENT, IN_PROGRESS);
+        me->setActive(true);
+
+        DoScriptText(SAY_AGGRO, me);
+        instance->SetData(DATA_VEXALLUS_EVENT, IN_PROGRESS);
     }
 
     void JustSummoned(Creature *c)
     {
-        if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+        if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
         {
             c->AI()->AttackStart(target);
             c->AddThreat(target, 1000);
         }
+
         c->CastSpell(c, SPELL_ENERGY_PASSIVE, true);
         summons.Summon(c);
     }
 
     void RemoveEnergyFeedback()
     {
-        Map *map = m_creature->GetMap();
+        Map *map = me->GetMap();
         Map::PlayerList const &PlayerList = map->GetPlayers();
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
-            if(Player* player = i->getSource())
+            if (Player* player = i->getSource())
                 player->RemoveAurasDueToSpell(SPELL_ENERGY_FEEDBACK);
         }
     }
 
+    bool UpdateVictim(uint32 diff)
+    {
+        if (me->isInCombat() && !me->IsInEvadeMode())
+        {
+            evadeTimer.Update(diff);
+            if (evadeTimer.Passed())
+            {
+                if (me->GetMap()->GetAlivePlayersCountExceptGMs() == 0)
+                {
+                    EnterEvadeMode();
+                    return false;
+                }
+                evadeTimer.Reset(2000);
+            }
+        }
+
+        return ScriptedAI::UpdateVictim();
+    }
+
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim())
+        if (!UpdateVictim(diff))
             return;
 
-        if(!HealthBelowPct(11))
+        if (!HealthBelowPct(11))
         {
             //used for check, when Vexallus cast adds 85%, 70%, 55%, 40%, 25%
-            if(HealthBelowPct(100-(15*(AlreadySpawnedAmount+1))))
+            if (HealthBelowPct(100-(15*(AlreadySpawnedAmount+1))))
             {
-                DoScriptText(SAY_ENERGY, m_creature);
-                DoScriptText(EMOTE_DISCHARGE_ENERGY, m_creature);
-                if(HeroicMode)
+                DoScriptText(SAY_ENERGY, me);
+                DoScriptText(EMOTE_DISCHARGE_ENERGY, me);
+                if (HeroicMode)
                 {
                     AddSpellToCast(SPELL_H_SUMMON_PURE_ENERGY1, CAST_SELF);
                     AddSpellToCast(SPELL_H_SUMMON_PURE_ENERGY2, CAST_SELF);
@@ -148,16 +174,17 @@ struct HELLGROUND_DLL_DECL boss_vexallusAI : public ScriptedAI
                 ++AlreadySpawnedAmount;
             };
 
-            if(ChainLightningTimer < diff)
+            if (ChainLightningTimer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     AddSpellToCast(target, SPELL_CHAIN_LIGHTNING);
+
                 ChainLightningTimer = urand(12000, 20000);
             }
             else
                 ChainLightningTimer -= diff;
 
-            if(ArcaneShockTimer < diff)
+            if (ArcaneShockTimer < diff)
             {
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     AddSpellToCast(target, SPELL_ARCANE_SHOCK);
@@ -168,9 +195,9 @@ struct HELLGROUND_DLL_DECL boss_vexallusAI : public ScriptedAI
         }
         else
         {
-            if(!me->HasAura(SPELL_OVERLOAD))
+            if (!me->HasAura(SPELL_OVERLOAD))
             {
-                DoScriptText(EMOTE_OVERLOAD, m_creature);
+                DoScriptText(EMOTE_OVERLOAD, me);
                 ForceSpellCast(SPELL_OVERLOAD, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
             }
         }
@@ -189,10 +216,10 @@ struct HELLGROUND_DLL_DECL mob_pure_energyAI : public ScriptedAI
 {
     mob_pure_energyAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        instance = (c->GetInstanceData());
     }
 
-    ScriptedInstance* pInstance;
+    ScriptedInstance* instance;
 
     void AttackStart(Unit* who)
     {
@@ -227,8 +254,8 @@ struct HELLGROUND_DLL_DECL mob_pure_energyAI : public ScriptedAI
         {
             if(Unit* Trigger = me->SummonTrigger(x, y, z, 0, 10000))
                 Trigger->CastSpell(pl_killer, SPELL_ENERGY_FEEDBACK_CHANNEL, false);
-            if(pInstance)
-                pl_killer->CastSpell(pl_killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, pInstance->GetData64(DATA_VEXALLUS));
+            if(instance)
+                pl_killer->CastSpell(pl_killer, SPELL_ENERGY_FEEDBACK, true, 0, 0, instance->GetData64(DATA_VEXALLUS));
         }
         me->RemoveCorpse();
     }
