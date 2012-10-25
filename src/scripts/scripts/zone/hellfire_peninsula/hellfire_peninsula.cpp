@@ -384,24 +384,51 @@ bool QuestAccept_npc_wounded_blood_elf(Player* player, Creature* pCreature, Ques
 ## npc_demoniac_scryer
 ######*/
 
-#define FINISHED_WHISPER "Thank you for allowing me to visit, $N. You have a very colorful soul, but it's a little brighter than I prefer... or I might have stayed longer!"
+#define GOSSIP_ITEM_ATTUNE    "Yes, Scryer. You may possess me."
+#define FINISHED_WHISPER    "Thank you for allowing me to visit, $N. You have a very colorful soul, but it's a little brighter than I prefer... or I might have stayed longer!"
 
-struct HELLGROUND_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
+enum
 {
-    npc_demoniac_scryerAI(Creature *c) :  Scripted_NoMovementAI(c) {}
+    GOSSIP_TEXTID_PROTECT           = 10659,
+    GOSSIP_TEXTID_ATTUNED           = 10643,
 
-    uint32 Lifespan_Timer;
-    uint32 Imps_Timer;
-    uint32 Warlock_Timer;
+    QUEST_DEMONIAC                  = 10838,
+    NPC_HELLFIRE_WARDLING           = 22259,
+    NPC_ORC_HA                      = 22273,
+    NPC_BUTTRESS                    = 22267,
+    NPC_BUTTRESS_SPAWNER            = 22260,
+
+    MAX_BUTTRESS                    = 4,
+    TIME_TOTAL                      = MINUTE*10*IN_MILISECONDS,
+
+    SPELL_SUMMONED                  = 7741,
+    SPELL_DEMONIAC_VISITATION       = 38708,
+    SPELL_BUTTRESS_APPERANCE        = 38719,
+    SPELL_SUCKER_CHANNEL            = 38721,
+    SPELL_SUCKER_DESPAWN_MOB        = 38691,
+};
+
+struct HELLGROUND_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
+{
+    npc_demoniac_scryerAI(Creature* c) : ScriptedAI(c) {}
+
+    bool IfIsComplete;
+
+    uint32 m_SpawnDemonTimer;
+    uint32 m_SpawnOrcTimer;
+    uint32 m_SpawnButtressTimer;
+    uint32 m_EndTimer;
+    uint32 m_ButtressCount;
     std::list<uint64> PlayersWithQuestList;
-    bool Spawns;
 
     void Reset()
-    {
-        Lifespan_Timer = 120000;
-        Imps_Timer = 20000;
-        Warlock_Timer = 10000;
-        Spawns = true;
+	{
+        IfIsComplete = false;
+        m_SpawnDemonTimer = 15000;
+        m_SpawnOrcTimer = 30000;
+        m_SpawnButtressTimer = 45000;
+        m_EndTimer = 262000;
+        m_ButtressCount = 0;
         PlayersWithQuestList.clear();
 
         std::list<Unit*> PlayerList;
@@ -415,64 +442,215 @@ struct HELLGROUND_DLL_DECL npc_demoniac_scryerAI : public  Scripted_NoMovementAI
             if((*i)->GetTypeId() != TYPEID_PLAYER)
                 continue;
             Player *player = (Player*)(*i);
-            if(player->GetQuestStatus(10838) == QUEST_STATUS_INCOMPLETE)
+            if(player->GetQuestStatus(QUEST_DEMONIAC) == QUEST_STATUS_INCOMPLETE)
                 PlayersWithQuestList.push_back(player->GetGUID());
+        }
+	}
+
+    void AttackedBy(Unit* pEnemy) {}
+    void AttackStart(Unit* pEnemy) {}
+ 
+    void DoSpawnButtress()
+    {
+        ++m_ButtressCount;
+
+        float fAngle = 0.0f;
+
+        switch(m_ButtressCount)
+        {
+            case 1: fAngle = 0.0f; break;
+            case 2: fAngle = 4.6f; break;
+            case 3: fAngle = 1.5f; break;
+            case 4: fAngle = 3.1f; break;
+        }
+
+        float fX, fY, fZ;
+        m_creature->GetNearPoint(m_creature, fX, fY, fZ, 0.0f, 5.0f, fAngle);
+
+        uint32 m_Time = TIME_TOTAL - (m_SpawnButtressTimer * m_ButtressCount);
+        m_creature->SummonCreature(NPC_BUTTRESS, fX, fY, fZ, m_creature->GetAngle(fX, fY), TEMPSUMMON_TIMED_DESPAWN, m_Time);
+        m_creature->SummonCreature(NPC_BUTTRESS_SPAWNER, fX, fY, fZ, m_creature->GetAngle(fX, fY), TEMPSUMMON_TIMED_DESPAWN, m_Time);
+    }
+
+    void DoSpawnDemon()
+    {
+        float fX, fY, fZ;
+        m_creature->GetRandomPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 20.0f, fX, fY, fZ);
+        m_creature->SummonCreature(NPC_HELLFIRE_WARDLING, fX, fY, fZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+    }
+
+    void DospawnOrc()
+    {
+        float fX, fY, fZ;
+        m_creature->GetRandomPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 20.0f, fX, fY, fZ);
+        m_creature->SummonCreature(NPC_ORC_HA, fX, fY, fZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        if (pSummoned->GetEntry() == NPC_HELLFIRE_WARDLING)
+        {
+            pSummoned->CastSpell(pSummoned, SPELL_SUMMONED, false);
+            pSummoned->AI()->AttackStart(m_creature);
+        }
+        if (pSummoned->GetEntry() == NPC_ORC_HA)
+        {
+            pSummoned->CastSpell(pSummoned, SPELL_SUMMONED, false);
+            pSummoned->AI()->AttackStart(m_creature);
+        }
+        if (pSummoned->GetEntry() == NPC_BUTTRESS)
+        {
+            pSummoned->CastSpell(pSummoned, SPELL_BUTTRESS_APPERANCE, false);
+        }
+        else
+        {
+            if (pSummoned->GetEntry() == NPC_BUTTRESS_SPAWNER)
+            {
+                pSummoned->CastSpell(m_creature, SPELL_SUCKER_CHANNEL, true);
+            }
         }
     }
 
-    void JustRespawned()
+    void SpellHitTarget(Unit* pTarget, const SpellEntry* pSpell)
     {
-        Reset();
-    }
-
-    void JustSummoned(Creature* summoned)
-    {
-        summoned->getThreatManager().addThreat(me, 1);
+        if (pTarget->GetEntry() == NPC_BUTTRESS && pSpell->Id == SPELL_SUCKER_DESPAWN_MOB)
+            ((Creature*)pTarget)->setDeathState(CORPSE);
+        if (pTarget->GetEntry() == NPC_BUTTRESS_SPAWNER && pSpell->Id == SPELL_SUCKER_DESPAWN_MOB)
+            ((Creature*)pTarget)->setDeathState(CORPSE);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(Spawns)
+        if (m_EndTimer <= diff)
         {
-            if(Imps_Timer < diff)
-            {
-                me->SummonCreature(22259, me->GetPositionX() - 3, me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN , 120000);
-                me->SummonCreature(22259, me->GetPositionX() + 3, me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN , 120000);
-                Imps_Timer = 30000;
-            }
-            else
-                Imps_Timer -= diff;
+            m_creature->setDeathState(CORPSE);
+            m_EndTimer = 262000;
+        }
+        else m_EndTimer -= diff;
 
-            if(Warlock_Timer < diff)
-            {
-                me->SummonCreature(22273, me->GetPositionX(), me->GetPositionY() + 3, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000);
-                Warlock_Timer = 20000;
-            }
-            else
-                Warlock_Timer -= diff;
+        if (IfIsComplete)
+            return;
 
-            if(Lifespan_Timer < diff)
+        if (m_SpawnButtressTimer <= diff)
+        {
+            if (m_ButtressCount >= MAX_BUTTRESS)
             {
-                Spawns = false;
+                DoCast(m_creature, SPELL_SUCKER_DESPAWN_MOB);
                 for(std::list<uint64>::iterator i = PlayersWithQuestList.begin(); i != PlayersWithQuestList.end(); i++)
                 {
                     if(Unit* player = Unit::GetUnit(*me, (*i)))
-                    {
-                        me->CastSpell(player, 38708, true);        
+                    {      
                         me->Whisper(FINISHED_WHISPER, (*i));  
                     }
                 }
+                m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                IfIsComplete = true;
+                return;
             }
-            else
-                Lifespan_Timer -= diff;
+            m_SpawnButtressTimer = 45000;
+            DoSpawnButtress();
         }
+        else m_SpawnButtressTimer -= diff;
+
+        if (m_SpawnDemonTimer <= diff)
+        {
+            DoSpawnDemon();
+            m_SpawnDemonTimer = 15000;
+        }
+        else m_SpawnDemonTimer -= diff;
+
+        if (m_SpawnOrcTimer <= diff)
+        {
+            DospawnOrc();
+            m_SpawnOrcTimer = 30000;
+        }
+        else m_SpawnOrcTimer -= diff;
     }
 };
 
-CreatureAI* GetAI_npc_demoniac_scryer(Creature *_Creature)
+CreatureAI* GetAI_npc_demoniac_scryer(Creature* c)
 {
-    CreatureAI* newAI = new npc_demoniac_scryerAI(_Creature);
-    return newAI;
+    return new npc_demoniac_scryerAI(c);
+}
+
+bool GossipHello_npc_demoniac_scryer(Player* pPlayer, Creature* c)
+{
+    if (npc_demoniac_scryerAI* pScryerAI = dynamic_cast<npc_demoniac_scryerAI*>(c->AI()))
+    {
+        if (pScryerAI->IfIsComplete)
+        {
+            if (pPlayer->GetQuestStatus(QUEST_DEMONIAC) == QUEST_STATUS_INCOMPLETE)
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_ATTUNE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_ATTUNED, c->GetObjectGuid());
+            return true;
+        }
+    }
+    pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_PROTECT, c->GetObjectGuid());
+    return true;
+}
+
+bool GossipSelect_npc_demoniac_scryer(Player* pPlayer, Creature* c, uint32 m_Sender, uint32 m_Action)
+{
+    if (m_Action == GOSSIP_ACTION_INFO_DEF + 1)
+    {
+        pPlayer->CLOSE_GOSSIP_MENU();
+        c->CastSpell(pPlayer, SPELL_DEMONIAC_VISITATION, false);
+    }
+    return true;
+}
+
+/*######
+## npc_magic_sucker_device_spawner
+######*/
+
+enum
+{
+    SPELL_EFFECT    = 38724,
+    NPC_SCRYER      = 22258,
+    NPC_BUTTRES     = 22267
+};
+
+struct HELLGROUND_DLL_DECL npc_magic_sucker_device_spawnerAI : public ScriptedAI
+{
+    npc_magic_sucker_device_spawnerAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 m_CastTimer;
+    uint32 m_CheckTimer;
+
+    void Reset()
+    {
+        m_CastTimer = 1800;
+        m_CheckTimer = 5000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (m_CastTimer <= diff)
+        {
+            DoCast(m_creature, SPELL_EFFECT);
+            m_CastTimer = 1800;
+        }
+        else m_CastTimer -= diff;
+
+        if (m_CheckTimer <= diff)
+        {
+            if (Creature* pScr = GetClosestCreatureWithEntry(m_creature, NPC_SCRYER, 15.0f, false))
+            {
+                if (Creature* pBut = GetClosestCreatureWithEntry(m_creature, NPC_BUTTRES, 5.0f))
+                {
+                    pBut->setDeathState(CORPSE);
+                    m_creature->setDeathState(CORPSE);
+                }
+            }
+
+            m_CheckTimer = 5000;
+        }
+        else m_CheckTimer -= diff;
+    }
+};
+CreatureAI* GetAI_npc_magic_sucker_device_spawner(Creature* c)
+{
+    return new npc_magic_sucker_device_spawnerAI(c);
 }
 
 /*######
@@ -1464,7 +1642,7 @@ enum
     NPC_SEDAI      = 17404
 };
 
-struct npc_sedai_quest_credit_markerAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_sedai_quest_credit_markerAI : public ScriptedAI
 {
     npc_sedai_quest_credit_markerAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
@@ -1513,7 +1691,7 @@ enum
     SPELL_HOLYFIRE    = 17141
 };
 
-struct npc_vindicator_sedaiAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_vindicator_sedaiAI : public ScriptedAI
 {
     npc_vindicator_sedaiAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
@@ -1739,7 +1917,7 @@ static Pos S[]=
     {60.14f, 4830.46f, 77.83f}
 };
 
-struct npc_pathaleon_imageAI : public ScriptedAI
+struct HELLGROUND_DLL_DECL npc_pathaleon_imageAI : public ScriptedAI
 {
     npc_pathaleon_imageAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
@@ -1906,8 +2084,15 @@ void AddSC_hellfire_peninsula()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_demoniac_scryer";
+    newscript->Name = "npc_demoniac_scryer";
+    newscript->pGossipHello =  &GossipHello_npc_demoniac_scryer;
+    newscript->pGossipSelect = &GossipSelect_npc_demoniac_scryer;
     newscript->GetAI = &GetAI_npc_demoniac_scryer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_magic_sucker_device_spawner";
+    newscript->GetAI = &GetAI_npc_magic_sucker_device_spawner;
     newscript->RegisterSelf();
 
     newscript = new Script;
