@@ -1169,11 +1169,11 @@ struct HELLGROUND_DLL_DECL npc_anchorite_baradaAI : public ScriptedAI
         m_creature->SummonCreature(NPC_DARKNESS_RELEASED, P[11].x, P[11].y, P[11].z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
     }
 
-    uint32 NextStep(uint32 uiSteps)
+    uint32 NextStep(uint32 m_Steps)
     {
         Creature* pColonel = GetClosestCreatureWithEntry(m_creature, NPC_COLONEL_JULES, 15);
 
-        switch(uiSteps)
+        switch(m_Steps)
         {
             case 1:m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                    m_creature->SetStandState(UNIT_STAND_STATE_STAND);return 2000;
