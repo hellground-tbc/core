@@ -1702,6 +1702,166 @@ CreatureAI* GetAI_npc_vindicator_sedai(Creature* pCreature)
     return new npc_vindicator_sedaiAI(pCreature);
 }
 
+/*######
+## npc_pathaleon_image
+######*/
+
+enum
+{
+    SAY_PATHALEON1         = -1900165,
+    SAY_PATHALEON2         = -1900166,
+    SAY_PATHALEON3         = -1900167,
+    SAY_PATHALEON4         = -1900168,
+
+    SPELL_ROOTS            = 35468,
+    SPELL_INSECT           = 35471,
+    SPELL_LIGHTING         = 35487,
+    SPELL_TELE             = 7741,
+
+    NPC_TARGET_TRIGGER     = 20781,
+    NPC_CRYSTAL_TRIGGER    = 20617,
+    NPC_GOLIATHON          = 19305,
+};
+
+struct Pos
+{
+    float x, y, z;
+};
+
+static Pos S[]=
+{
+    {113.29f, 4858.19f, 74.37f},
+    {81.20f, 4806.26f, 51.75f},
+    {106.21f, 4834.39f, 79.56f},
+    {124.98f, 4813.17f, 79.66f},
+    {124.01f, 4778.61f, 77.86f},
+    {46.37f, 4795.72f, 66.73f},
+    {60.14f, 4830.46f, 77.83f}
+};
+
+struct npc_pathaleon_imageAI : public ScriptedAI
+{
+    npc_pathaleon_imageAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+
+    bool Event;
+    bool SummonTrigger;
+
+    uint32 m_SumTimer;
+    uint32 m_StepsTimer;
+    uint32 m_Steps;
+
+    void Reset()
+	{
+        m_SumTimer = 5000;
+        m_StepsTimer = 0;
+        m_Steps = 0;
+        Event = true;
+        SummonTrigger = false;
+	}
+
+    void DoSpawnGoliathon()
+    {
+        m_creature->SummonCreature(NPC_GOLIATHON, S[0].x, S[0].y, S[0].z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+    }
+
+    void DoSpawnTrigger()
+    {
+        m_creature->SummonCreature(NPC_TARGET_TRIGGER, S[1].x, S[1].y, S[1].z, 2.25f, TEMPSUMMON_TIMED_DESPAWN, 120000);
+    }
+
+    void DoSpawnCtrigger()
+    {
+        m_creature->SummonCreature(NPC_CRYSTAL_TRIGGER, S[2].x, S[2].y, S[2].z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
+        m_creature->SummonCreature(NPC_CRYSTAL_TRIGGER, S[3].x, S[3].y, S[3].z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
+        m_creature->SummonCreature(NPC_CRYSTAL_TRIGGER, S[4].x, S[4].y, S[4].z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
+        m_creature->SummonCreature(NPC_CRYSTAL_TRIGGER, S[5].x, S[5].y, S[5].z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
+        m_creature->SummonCreature(NPC_CRYSTAL_TRIGGER, S[6].x, S[6].y, S[6].z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 7000);
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        if (pSummoned->GetEntry() == NPC_GOLIATHON)
+        {
+            pSummoned->CastSpell(pSummoned, SPELL_TELE, false);
+            pSummoned->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+        }
+        if (pSummoned->GetEntry() == NPC_CRYSTAL_TRIGGER)
+        {
+            pSummoned->CastSpell(pSummoned, SPELL_INSECT, false);
+            pSummoned->CastSpell(pSummoned, SPELL_LIGHTING, false);
+        }
+        else
+        {
+            if (pSummoned->GetEntry() == NPC_TARGET_TRIGGER)
+            {
+                pSummoned->CastSpell(pSummoned, SPELL_ROOTS, false);
+            }
+        }
+    }
+
+    int32 NextStep(uint32 m_Steps)
+    {              
+        switch (m_Steps)
+        {
+            case 1:
+                return 10000;
+            case 2:
+                DoSpawnTrigger();
+                SummonTrigger = true;
+                return 2000;
+            case 3:
+                DoScriptText(SAY_PATHALEON1, m_creature, 0);
+                return 15000;
+            case 4:
+                DoScriptText(SAY_PATHALEON2, m_creature, 0);
+                return 15000;
+            case 5:
+                DoScriptText(SAY_PATHALEON3, m_creature, 0);
+                return 15000;
+            case 6:
+                DoScriptText(SAY_PATHALEON4, m_creature, 0);
+                return 5000;
+            case 7:
+                DoSpawnGoliathon();
+                return 1000;
+            case 8:
+                DoCast(m_creature, SPELL_TELE);
+                return 600;
+            case 9:
+                m_creature->SetVisibility(VISIBILITY_OFF);
+                return 60000;
+            case 10:
+                m_creature->setDeathState(CORPSE);
+            default: return 0;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (m_StepsTimer <= diff)
+        {
+            if (Event)
+                m_StepsTimer = NextStep(++m_Steps);
+        }
+        else m_StepsTimer -= diff;
+
+        if (SummonTrigger)
+        {
+            if (m_SumTimer <= diff)
+            {
+                DoSpawnCtrigger();
+                m_SumTimer = 5000;
+            }
+            else m_SumTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_pathaleon_image(Creature* pCreature)
+{
+    return new npc_pathaleon_imageAI(pCreature);
+}
+
 void AddSC_hellfire_peninsula()
 {
     Script *newscript;
@@ -1816,6 +1976,11 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name = "npc_vindicator_sedai";
     newscript->GetAI = &GetAI_npc_vindicator_sedai;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_pathaleon_image";
+    newscript->GetAI = &GetAI_npc_pathaleon_image;
     newscript->RegisterSelf();
 }
 
