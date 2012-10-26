@@ -24,6 +24,7 @@
 #include "Common.h"
 #include "SharedDefines.h"
 #include "DBCStructure.h"
+#include "Log.h"
 
 class Item;
 class Player;
@@ -109,7 +110,7 @@ class AuctionHouseObject
 
         void AddAuction(AuctionEntry *ah)
         {
-            ASSERT( ah );
+            ASSERT(ah);
             AuctionsMap[ah->Id] = ah;
         }
 
