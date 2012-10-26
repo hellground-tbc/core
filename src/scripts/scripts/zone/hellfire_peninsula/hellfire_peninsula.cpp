@@ -2040,6 +2040,99 @@ CreatureAI* GetAI_npc_pathaleon_image(Creature* pCreature)
     return new npc_pathaleon_imageAI(pCreature);
 }
 
+/*######
+## npc_viera
+######*/
+
+#define SAY_VIERA1                       -1900172
+#define SAY_VIERA2                       -1900173
+
+#define QUEST_LIVE_IS_FINER_PLEASURES    9483
+
+#define NPC_CAT                          17230
+
+struct HELLGROUND_DLL_DECL npc_vieraAI : public npc_escortAI
+{
+    npc_vieraAI(Creature* pCreature) : npc_escortAI(pCreature) {}
+
+    uint32 m_EndsTimer;
+
+    void WaypointReached(uint32 i)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+
+        if (!pPlayer)
+            return;
+
+        switch (i)
+        {
+            case 0:
+                m_creature->SetStandState(UNIT_STAND_STATE_STAND);
+                DoSpawnCreature(NPC_CAT, 5, 5, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 85000);
+                break;
+            case 9:
+                m_creature->SetFacingToObject(pPlayer);
+                DoScriptText(SAY_VIERA1, m_creature, pPlayer);
+                m_creature->SetStandState(UNIT_STAND_STATE_SIT);
+                m_EndsTimer = 40000;
+                SetEscortPaused(true);
+                SetRun();
+                break;
+            case 10:
+                if (Creature* pCat = GetClosestCreatureWithEntry(m_creature, NPC_CAT, 20))
+                {
+                    pCat->ForcedDespawn();
+                }
+                break;
+        }
+    }
+
+    void Reset()
+    {
+        m_EndsTimer = 0;
+    }
+
+    void EnterCombat(Unit* who) {}
+
+    void JustSummoned(Creature* summoned)
+    {
+        summoned->GetMotionMaster()->MoveFollow(m_creature, PET_FOLLOW_DIST,  summoned->GetFollowAngle());
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if(spell->Id == 30077)
+        {
+            DoScriptText(SAY_VIERA2, m_creature, 0);
+            SetEscortPaused(false);
+        }
+    }
+
+    void UpdateEscortAI(const uint32 diff)
+    {
+        if (m_EndsTimer <= diff)
+        {
+            SetEscortPaused(false);
+        }
+        else m_EndsTimer -= diff;
+    }
+};
+
+bool QuestRewarded_npc_viera(Player* player, Creature* creature, Quest const* quest)
+{
+    if (quest->GetQuestId() == QUEST_LIVE_IS_FINER_PLEASURES)
+    {
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_vieraAI, creature->AI()))
+            pEscortAI->Start(false, false, player->GetGUID(), quest);
+    }
+    return true;
+}
+
+CreatureAI* GetAI_npc_viera(Creature* pCreature)
+{
+    return new npc_vieraAI(pCreature);
+}
+
 void AddSC_hellfire_peninsula()
 {
     Script *newscript;
@@ -2167,5 +2260,12 @@ void AddSC_hellfire_peninsula()
     newscript->Name = "npc_pathaleon_image";
     newscript->GetAI = &GetAI_npc_pathaleon_image;
     newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_viera";
+    newscript->GetAI = &GetAI_npc_viera;
+    newscript->pQuestRewardedNPC = &QuestRewarded_npc_viera;
+    newscript->RegisterSelf();
 }
+
 
