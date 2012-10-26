@@ -3263,6 +3263,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 30254: // Curator Evocation
                 spellInfo->Effect[1] = 0;   // remove self stun
                 break;
+            case 29200: // Purify Helboar Meat
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+                break;
             default:
                 break;
         }
