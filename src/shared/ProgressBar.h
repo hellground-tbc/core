@@ -26,7 +26,7 @@
 class HELLGROUND_DLL_SPEC BarGoLink
 {
     public:
-        BarGoLink(int);
+        BarGoLink(int row_count, bool on = true);
         ~BarGoLink();
 
         void step();

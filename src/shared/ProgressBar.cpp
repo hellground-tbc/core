@@ -44,8 +44,9 @@ void BarGoLink::SetOutputState(bool on)
     m_showOutput = on;
 }
 
-BarGoLink::BarGoLink(int row_count)
+BarGoLink::BarGoLink(int row_count, bool on)
 {
+    m_showOutput = on;
     if (!m_showOutput)
         return;
 
