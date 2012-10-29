@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Hellfire_Peninsula
 SD%Complete: 99
- SDComment: Quest support: 9375, 9410, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 11516, 10909, 10935, 9545, 10351, 10838, 9472, 9483 
+ SDComment: Quest support: 9375, 9410, 9418, 10129, 10146, 10162, 10163, 10340, 10346, 10347, 10382 (Special flight paths), 11516, 10909, 10935, 9545, 10351, 10838, 9472, 9483, 10629
 SDCategory: Hellfire Peninsula
 EndScriptData */
 
@@ -43,6 +43,7 @@ npc_sedai_quest_credit_marker
 npc_vindicator_sedai
 npc_pathaleon_image
 npc_viera
+npc_deranged_helboar
 EndContentData */
 
 #include "precompiled.h"
@@ -860,62 +861,6 @@ CreatureAI* GetAI_npc_abyssal_shelf_quest(Creature *creature)
     return newAI;
 }
 
-struct HELLGROUND_DLL_DECL npc_shattered_hand_berserkerAI : public ScriptedAI
-{
-    npc_shattered_hand_berserkerAI(Creature* creature) : ScriptedAI(creature) {}
-
-    uint32 EnrageTimer;
-    uint32 ChargeTimer;
-
-
-    void Reset()
-    {
-        EnrageTimer = 15000;
-        ChargeTimer = 0;
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-         if (!UpdateVictim())
-             return;
-
-         if (ChargeTimer < diff)
-         {
-             if (me->GetDistance2d(me->getVictim()) > 8.0f)
-                 AddSpellToCast(me->getVictim(), 35570);
-
-             ChargeTimer = 15000;
-         }
-         else
-             ChargeTimer -= diff;
-
-         if (EnrageTimer < diff)
-         {
-             AddSpellToCast(me->getVictim(), 8599);
-             EnrageTimer = 120000;
-         }
-         else
-             EnrageTimer -= diff;
-
-         CastNextSpellIfAnyAndReady();
-         DoMeleeAttackIfReady();
-    }
-
-    void JustDied(Unit* pKiller)
-    {
-        if (GetClosestCreatureWithEntry(me, 22444, 25.0f))
-        {
-            if (Creature *pSpirit = me->SummonCreature(22454, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 30000))
-                pSpirit->AI()->AttackStart(pKiller);
-        }
-    }
-};
-
-CreatureAI* GetAI_npc_shattered_hand_berserker(Creature *creature)
-{
-    return new npc_shattered_hand_berserkerAI(creature);
-}
-
 /*######
 ## npc_felblood_initiate & npc_emaciated_felblood
 ######*/
@@ -1116,11 +1061,6 @@ struct HELLGROUND_DLL_DECL npc_hand_berserkerAI : public ScriptedAI
     npc_hand_berserkerAI(Creature* creature) : ScriptedAI(creature) {}
 
     void Reset() {}
-
-    void AttackStart(Unit *who)
-    {
-        ScriptedAI::AttackStart(who);
-    }
 
     void EnterCombat(Unit* who)
     {
@@ -2113,6 +2053,67 @@ CreatureAI* GetAI_npc_viera(Creature* creature)
     return new npc_vieraAI(creature);
 }
 
+/*######
+## npc_deranged_helboar
+######*/
+
+enum
+{
+    SPELL_BURNING_SPOKES                           = 33908,
+    SPELL_ENRAGES                                  = 8599,
+    //SPELL_TELL_DOG_I_JUST_DEAD                     = 37689,
+    SPELL_SUMMON_POODAD                            = 37688,
+
+    NPC_FEL_GUARD_HOUND                            = 21847
+};
+
+struct HELLGROUND_DLL_DECL npc_deranged_helboarAI : public ScriptedAI
+{
+    npc_deranged_helboarAI(Creature* creature) : ScriptedAI(creature) {}
+
+    Unit* Hound;
+
+    void Reset()
+    {
+        Hound = 0;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoCast(me, SPELL_BURNING_SPOKES);
+    } 
+
+    void DamageTaken(Unit* doneby, uint32 & damage)
+    {
+        if (me->HasAura(SPELL_ENRAGES))
+            return;
+
+        if (doneby->GetTypeId() == TYPEID_PLAYER && (me->GetHealth()*100 - damage) / me->GetMaxHealth() < 30)
+        {
+            DoCast(me, SPELL_ENRAGES);
+        }
+    }
+
+    void JustDied(Unit* slayer)
+    {
+        if(slayer->GetTypeId()==TYPEID_PLAYER && ((Player*)(slayer))->GetQuestStatus(10629)==QUEST_STATUS_INCOMPLETE)
+        {
+            Hound = FindCreature(NPC_FEL_GUARD_HOUND, 8, me);
+
+            if(Hound && Hound->GetOwner()==slayer)
+            {
+                Hound->GetMotionMaster()->MoveChase(me);
+                Hound->CastSpell(Hound, SPELL_SUMMON_POODAD, false);
+            }
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_deranged_helboar(Creature* creature)
+{
+    return new npc_deranged_helboarAI(creature);
+}
+
 void AddSC_hellfire_peninsula()
 {
     Script *newscript;
@@ -2184,11 +2185,6 @@ void AddSC_hellfire_peninsula()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_shattered_hand_berserker";
-    newscript->GetAI = &GetAI_npc_shattered_hand_berserker;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
     newscript->Name="npc_felblood_initiate";
     newscript->GetAI = &GetAI_npc_felblood_initiate;
     newscript->RegisterSelf();
@@ -2245,5 +2241,10 @@ void AddSC_hellfire_peninsula()
     newscript->Name="npc_viera";
     newscript->GetAI = &GetAI_npc_viera;
     newscript->pQuestRewardedNPC = &QuestRewarded_npc_viera;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_deranged_helboar";
+    newscript->GetAI = &GetAI_npc_deranged_helboar;
     newscript->RegisterSelf();
 }
