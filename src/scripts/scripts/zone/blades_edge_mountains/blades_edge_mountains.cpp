@@ -1301,12 +1301,12 @@ struct HELLGROUND_DLL_DECL npc_light_orb_attracterAI : public Scripted_NoMovemen
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (who->ToCreature() && who->GetEntry() == NPC_LIGHT_ORB)
+        if (who->GetEntry() == NPC_LIGHT_ORB)
         {
             if (who->IsWithinDistInMap(me, 2.0f))
             {
                 who->ToCreature()->DisappearAndDie();
-                if (Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
+                if (Player* player = me->GetCharmerOrOwnerPlayerOrPlayerItself())
                     player->KilledMonster(NPC_QUEST_CREDIT2, who->GetGUID());
             }
         }
