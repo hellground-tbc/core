@@ -1219,7 +1219,7 @@ struct npc_simon_bunnyAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI(Creature* creature)
+CreatureAI* Get_npc_simmon_bunnyAI(Creature* creature)
 {
     return new npc_simon_bunnyAI(creature);
 }
@@ -1271,6 +1271,65 @@ bool OnGossipSelect_go_apexis_relic(Player* player, GameObject* go, uint32 /*sen
     }
 
     return true;
+}
+
+enum Entries
+{
+    NPC_LIGHT_ORB = 20635,
+    NPC_QUEST_CREDIT2 = 21929,
+};
+
+struct AttractOrbs
+{
+    AttractOrbs(Creature* t) : totem(t) {}
+    void operator()(Creature* orb)
+    {
+        if (orb->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
+            orb->GetMotionMaster()->MovePoint(0, totem->GetPositionX(), totem->GetPositionY(), totem->GetPositionZ(), true);
+    }
+
+    Creature* totem;
+};
+
+struct HELLGROUND_DLL_DECL npc_light_orb_attracterAI : public Scripted_NoMovementAI
+{
+    npc_light_orb_attracterAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+        me->SetReactState(REACT_PASSIVE);
+        attractTimer.Reset(1000);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (who->ToCreature() && who->GetEntry() == NPC_LIGHT_ORB)
+        {
+            if (who->IsWithinDistInMap(me, 2.0f))
+            {
+                who->ToCreature()->DisappearAndDie();
+                if (Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
+                    player->KilledMonster(NPC_QUEST_CREDIT2, who->GetGUID());
+            }
+        }
+    }
+
+    TimeTrackerSmall attractTimer;
+
+    void UpdateAI(const uint32 diff)
+    {
+        attractTimer.Update(diff);
+        if (attractTimer.Passed())
+        {
+            std::list<Creature*> orbs = FindAllCreaturesWithEntry(NPC_LIGHT_ORB, 35.0f);
+            std::for_each(orbs.begin(), orbs.end(), AttractOrbs(me));
+
+            attractTimer.Reset(2000);
+        }
+    }
+};
+
+CreatureAI* Get_orb_attracterAI(Creature* creature)
+{
+    return new npc_light_orb_attracterAI(creature);
 }
 
 /*######
@@ -1360,5 +1419,15 @@ void AddSC_blades_edge_mountains()
     newscript = new Script;
     newscript->Name = "go_simon_cluster";
     newscript->pGOUse = &OnGossipHello_go_simon_cluster;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_orb_attracter";
+    newscript->GetAI = &Get_orb_attracterAI;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_simmon_bunny";
+    newscript->GetAI = &Get_npc_simmon_bunnyAI;
     newscript->RegisterSelf();
 }
