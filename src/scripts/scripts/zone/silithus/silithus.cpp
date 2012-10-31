@@ -339,6 +339,37 @@ bool GossipSelect_go_wind_stone(Player *player, GameObject* _GO, uint32 sender, 
     }
     return true;
 }
+
+/*######
+## go_silithyst_mound  (id 181597)
+######*/
+#define GOSSIP_TAKE_BUFF "[PH] Take the Silithyst"
+#define SPELL_SILITHYST  29519
+
+bool GOUse_go_silithyst_mound(Player* pPlayer, GameObject* pGO)
+{
+    pPlayer->PlayerTalkClass->ClearMenus();
+    pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_TAKE_BUFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    pPlayer->SEND_GOSSIP_MENU(pGO->GetGOInfo()->questgiver.gossipID, pGO->GetGUID());
+    return true;
+}
+
+bool GOGossipSelect_go_silithyst_mound(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
+{
+    switch(action)
+    {
+
+    case GOSSIP_ACTION_INFO_DEF+1:
+        if(!pPlayer->HasAura(SPELL_SILITHYST))
+            pPlayer->CastSpell(pPlayer,SPELL_SILITHYST,false);  
+        pGO->Delete();
+        break;
+    }
+
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
 /*###
 ##
 ####*/
@@ -381,6 +412,12 @@ void AddSC_silithus()
     newscript->Name="go_wind_stone";
     newscript->pGOUse  = &GossipHello_go_wind_stone;
     newscript->pGossipSelectGO = &GossipSelect_go_wind_stone;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_silithyst_mound";
+    newscript->pGOUse =           &GOUse_go_silithyst_mound;
+    newscript->pGossipSelectGO =  &GOGossipSelect_go_silithyst_mound;
     newscript->RegisterSelf();
 }
 
