@@ -1410,6 +1410,7 @@ void BattleGround::SpawnBGObject(uint32 type, uint32 respawntime)
             map->Add(obj);
             obj->SetRespawnTime(respawntime);
             obj->SetLootState(GO_JUST_DEACTIVATED);
+            obj->UpdateObjectVisibility();
         }
     }
 }
