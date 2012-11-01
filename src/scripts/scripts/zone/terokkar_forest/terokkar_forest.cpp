@@ -2220,6 +2220,100 @@ CreatureAI* GetAI_npc_akuno(Creature* pCreature)
     return new npc_akunoAI(pCreature);
 }
 
+/*######
+# npc_empoor
+######*/
+
+enum
+{
+    FACTION_HOSTILE_A          = 90,
+    FACTION_FRIENDLY_A         = 35,
+
+    QUEST_BAMN                 = 9978,
+    NPC_MY_BODYGUARD           = 18483,
+
+    SPELL_SHIELD               = 12550,
+    SPELL_FROST_SHOCK          = 12548
+};
+
+struct HELLGROUND_DLL_DECL npc_empoorAI : public ScriptedAI
+{
+    npc_empoorAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 ShockTimer;
+
+    void Reset()
+    {
+        ShockTimer = 5000;
+        m_creature->setFaction(FACTION_FRIENDLY_A);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        DoCast(m_creature ,SPELL_SHIELD);
+
+        if (Creature* Guard = GetClosestCreatureWithEntry(m_creature, NPC_MY_BODYGUARD, 10.5f))
+        {
+            Guard->setFaction(FACTION_HOSTILE_A);
+            Guard->AI()->AttackStart(who);
+        }
+    }
+
+    void DamageTaken(Unit *done_by, uint32 &damage)
+    {
+        if( done_by->GetTypeId() == TYPEID_PLAYER )
+        {
+            if( (m_creature->GetHealth()-damage)*100 / m_creature->GetMaxHealth() < 20 )
+            {
+                ((Player*)done_by)->AreaExploredOrEventHappens(QUEST_BAMN);
+                damage = 0;
+
+                if (Creature* Guard = GetClosestCreatureWithEntry(m_creature, NPC_MY_BODYGUARD, 10.5f))
+                {
+                    Guard->setFaction(FACTION_FRIENDLY_A);
+                    Guard->AI()->EnterEvadeMode();
+                }
+
+                EnterEvadeMode();
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if( ShockTimer < diff )
+        {
+            DoCast(m_creature->getVictim(),SPELL_FROST_SHOCK);
+            ShockTimer = 15000;
+        }else ShockTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+CreatureAI* GetAI_npc_empoor(Creature *_Creature)
+{
+    return new npc_empoorAI (_Creature);
+}
+
+bool GossipHello_npc_empoor(Player *player, Creature *_Creature)
+{
+    if( player->GetQuestStatus(QUEST_BAMN) == QUEST_STATUS_INCOMPLETE)
+    {
+        _Creature->setFaction(FACTION_HOSTILE_A);
+        ((npc_empoorAI*)_Creature->AI())->AttackStart(player);
+    }
+    else
+    {
+        if( _Creature->isQuestGiver() )
+            player->PrepareQuestMenu( _Creature->GetGUID() );
+        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    }
+    return true;
+}
+
 void AddSC_terokkar_forest()
 {
     Script *newscript;
@@ -2337,5 +2431,11 @@ void AddSC_terokkar_forest()
     newscript->Name="npc_akuno";
     newscript->GetAI = &GetAI_npc_akuno;
     newscript->pQuestAcceptNPC = &QuestAccept_npc_akuno;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_empoor";
+    newscript->GetAI = &GetAI_npc_empoor;
+    newscript->pGossipHello =  &GossipHello_npc_empoor;
     newscript->RegisterSelf();
 }
