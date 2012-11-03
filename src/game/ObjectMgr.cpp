@@ -762,7 +762,7 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
 
     if (!slave || !master) // they must have a corresponding entry in db
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: LinkedRespawn: Creature '%u' linking to '%u' which doesn't exist",guid,linkedGuid);
+        sLog.outLog(LOG_DB_ERR, "LinkedRespawn: Creature '%u' linking to '%u' which doesn't exist",guid,linkedGuid);
         return false;
     }
 
@@ -771,14 +771,14 @@ bool ObjectMgr::CheckCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid) const
     if (master->mapid != slave->mapid        // link only to same map
         && (!map || map->Instanceable()))   // or to unistanced world
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: LinkedRespawn: Creature '%u' linking to '%u' on an unpermitted map",guid,linkedGuid);
+        sLog.outLog(LOG_DB_ERR, "LinkedRespawn: Creature '%u' linking to '%u' on an unpermitted map",guid,linkedGuid);
         return false;
     }
 
     if (!(master->spawnMask & slave->spawnMask)  // they must have a possibility to meet (normal/heroic difficulty)
         && (!map || map->Instanceable()))
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: LinkedRespawn: Creature '%u' linking to '%u' with not corresponding spawnMask",guid,linkedGuid);
+        sLog.outLog(LOG_DB_ERR, "LinkedRespawn: Creature '%u' linking to '%u' with not corresponding spawnMask",guid,linkedGuid);
         return false;
     }
 
