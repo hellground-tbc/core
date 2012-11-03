@@ -90,7 +90,8 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Texts(bool check_entry_use)
 
             m_CreatureEventAI_TextMap[i] = temp;
             ++count;
-        }while (result->NextRow());
+        }
+        while (result->NextRow());
 
         if (check_entry_use)
            CheckUnusedAITexts();
@@ -180,7 +181,8 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Summons(bool check_entry_use)
             //Add to map
             m_CreatureEventAI_Summon_Map[i] = temp;
             ++Count;
-        }while (result->NextRow());
+        }
+        while (result->NextRow());
 
         if (check_entry_use)
             CheckUnusedAISummons();
@@ -415,6 +417,11 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                         sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", entry, temp.spell_hit.spellId, i);
                         continue;
                     }
+                    if (temp.friendly_buff.radius <= 0)
+                    {
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u has wrong radius (%u) for EVENT_T_FRIENDLY_MISSING_BUFF defined in event %u.", entry, temp.friendly_buff.radius, i);
+                        continue;
+                    }
                     if (temp.friendly_buff.repeatMax < temp.friendly_buff.repeatMin)
                         sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u are using repeatable event(%u) with param4 < param3 (RepeatMax < RepeatMin). Event will never repeat.", entry, i);
                     break;
@@ -484,6 +491,11 @@ void CreatureEventAIMgr::LoadCreatureEventAI_Scripts(uint32 creatureId)
                     if (!pSpell)
                     {
                         sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %i has non-existant SpellID(%u) defined in event %u.", entry, temp.spell_hit.spellId, i);
+                        continue;
+                    }
+                    if (temp.buffed.amount < 1)
+                    {
+                        sLog.outLog(LOG_DB_ERR, "CreatureEventAI:  Creature %u has wrong spell stack size (%u) defined in event %u.", entry, temp.buffed.amount, i);
                         continue;
                     }
                     if (temp.buffed.repeatMax < temp.buffed.repeatMin)
