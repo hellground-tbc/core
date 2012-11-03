@@ -531,12 +531,12 @@
     <CustomBuild Include="..\..\src\shared\revision.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Getting Version... :)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd ..\..\src\shared
-"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">revision.h;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Getting Version... :)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd %(RootDir)%(Directory)
-"$(TargetDir)\..\genrevision__$(Platform)_$(Configuration)\genrevision.exe" "..\.."
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">revision.h;%(Outputs)</Outputs>
@@ -544,11 +544,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">Getting Version... :)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">Getting Version... :)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd ..\..\src\shared
-"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">cd ..\..\src\shared
-"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">cd ..\..\src\shared
-"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
@@ -559,13 +559,13 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">Getting Version... :)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">Getting Version... :)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd %(RootDir)%(Directory)
-"$(TargetDir)\..\genrevision__$(Platform)_$(Configuration)\genrevision.exe" "..\.."
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">cd %(RootDir)%(Directory)
-"$(TargetDir)\..\genrevision__$(Platform)_$(Configuration)\genrevision.exe" "..\.."
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">cd %(RootDir)%(Directory)
-"$(TargetDir)\..\genrevision__$(Platform)_$(Configuration)\genrevision.exe" "..\.."
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
