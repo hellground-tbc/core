@@ -261,7 +261,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
