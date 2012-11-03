@@ -243,6 +243,7 @@ enum WorldConfigs
     CONFIG_PET_LOS,
     CONFIG_VMAP_TOTEM,
     CONFIG_NUMTHREADS,
+    CONFIG_CUMULATIVE_LOG_METHOD,
     CONFIG_MAPUPDATE_MAXVISITORS,
     CONFIG_ANNOUNCE_BG_START,
     CONFIG_AUTOBROADCAST_INTERVAL,
@@ -512,7 +513,6 @@ struct MapUpdateDiffInfo
 
     void ClearDiffInfo()
     {
-        InitializeMapData();
         for (CumulativeDiffMap::iterator itr = _cumulativeDiffInfo.begin(); itr != _cumulativeDiffInfo.end(); ++itr)
         {
             for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)

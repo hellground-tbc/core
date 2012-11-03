@@ -82,10 +82,14 @@ int32 World::m_activeObjectUpdateDistanceInInstances = DEFAULT_VISIBILITY_DISTAN
 
 void MapUpdateDiffInfo::InitializeMapData()
 {
-    for(MapManager::MapMapType::const_iterator i = sMapMgr.Maps().begin(); i != sMapMgr.Maps().end(); ++i)
+    for(MapManager::MapMapType::const_iterator map = sMapMgr.Maps().begin(); map != sMapMgr.Maps().end(); ++map)
     {
-        if (_cumulativeDiffInfo.find(i->first.nMapId) == _cumulativeDiffInfo.end())
-            _cumulativeDiffInfo[i->first.nMapId] = new atomic_uint[DIFF_MAX_CUMULATIVE_INFO];
+        if (_cumulativeDiffInfo.find(map->first.nMapId) == _cumulativeDiffInfo.end())
+        {
+            _cumulativeDiffInfo[map->first.nMapId] = new atomic_uint[DIFF_MAX_CUMULATIVE_INFO];
+            for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
+                _cumulativeDiffInfo[map->first.nMapId][i] = 0;
+        }
     }
 }
 
@@ -100,6 +104,7 @@ void MapUpdateDiffInfo::PrintCumulativeMapUpdateDiff()
                 sLog.outLog(LOG_DIFF, "Map[%u] diff for: %i - %u", itr->first, i, diff);
         }
     }
+    ClearDiffInfo();
 }
 
 /// World constructor
@@ -1049,6 +1054,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MIN_LOG_UPDATE] = sConfig.GetIntDefault("MinRecordUpdateTimeDiff", 10);
     m_configs[CONFIG_MIN_LOG_SESSION_UPDATE] = sConfig.GetIntDefault("MinRecordUpdateTimeSessionDiff", 25);
     m_configs[CONFIG_NUMTHREADS] = sConfig.GetIntDefault("MapUpdate.Threads",1);
+    m_configs[CONFIG_CUMULATIVE_LOG_METHOD] = sConfig.GetIntDefault("MapUpdate.CumulativeLogMethod",0);
 
     if (m_configs[CONFIG_NUMTHREADS] < 1)
         m_configs[CONFIG_NUMTHREADS] = 1;
@@ -1626,12 +1632,12 @@ void World::Update(uint32 diff)
     if (getConfig(CONFIG_COREBALANCER_ENABLED))
         _coreBalancer.Update(diff);
 
-    bool accumulateMapDiff = false;
+    bool accumulateMapDiff = getConfig(CONFIG_CUMULATIVE_LOG_METHOD) == 1 ? true : false;
     if (getConfig(CONFIG_INTERVAL_LOG_UPDATE))
     {
         if (m_updateTimeSum > getConfig(CONFIG_INTERVAL_LOG_UPDATE))
         {
-             accumulateMapDiff = true;
+            accumulateMapDiff = true;
 
             m_curAvgUpdateTime = m_updateTimeSum/m_updateTimeCount;   // from last log time
             m_serverUpdateTimeSum += m_updateTimeSum;
@@ -1817,10 +1823,7 @@ void World::Update(uint32 diff)
 
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures,...)
-    if (accumulateMapDiff)
-    {
-        MAP_UPDATE_DIFF(MapUpdateDiff().ClearDiffInfo())
-    }
+    MAP_UPDATE_DIFF(MapUpdateDiff().InitializeMapData())
 
     sMapMgr.Update(diff);                // As interval = 0
 

@@ -214,6 +214,12 @@ EAIErrorLevel = 2
 #         Number of threads to update maps.
 #         Default: 1
 #
+#    MapUpdate.CumulativeLogMethod
+#        Activate a more detailed Log Feature for Map Update
+#        Requires define MAP_UPDATE_DIFF_INFO
+#        Default: 0 Log will be Printed as Sum on each RecordUpdateTimeDiffInterval
+#                 1 Log will be Printed on each Map Update Cycle
+#
 #    SessionUpdate.Threads
 #         Number of threads to update sessions (0 - disable).
 #         WARNING: DON'T use if you don't know what you are doing ... this feature waits for
@@ -270,6 +276,7 @@ AddonChannel = 1
 
 MapUpdate.Threads = 1
 MapUpdate.UpdateVisitorsMax = 20
+MapUpdate.CumulativeLogMethod = 0
 
 SessionUpdate.Threads = 1
 SessionUpdate.MaxTime = 1000
