@@ -1103,7 +1103,6 @@ enum
     MAX_RESEARCHER                  = 4
 };
 
-//Some details still missing from here, and will also have issues if followers evade for any reason.
 struct npc_letollAI : public npc_escortAI
 {
     npc_letollAI(Creature* pCreature) : npc_escortAI(pCreature)
@@ -1120,7 +1119,6 @@ struct npc_letollAI : public npc_escortAI
 
     void Reset() {}
 
-    //will make them follow, but will only work until they enter combat with any unit
     void SetFormation()
     {
         uint32 uiCount = 0;
@@ -1158,7 +1156,7 @@ struct npc_letollAI : public npc_escortAI
         return NULL;
     }
 
-    void JustStartedEscort()
+    void JustStarted()
     {
         m_uiEventTimer = 5000;
         m_uiEventCount = 0;
@@ -1168,9 +1166,9 @@ struct npc_letollAI : public npc_escortAI
         float x, y, z;
         me->GetPosition(x, y, z);
 
-        Hellground::AllCreaturesOfEntryInRange check(me, NPC_RESEARCHER, 25);
+        Hellground::AllCreaturesOfEntryInRange check(me, NPC_RESEARCHER, 25.0f);
         Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(m_lResearchersList, check);
-        Cell::VisitGridObjects(me, searcher, 25);
+        Cell::VisitGridObjects(me, searcher, 25.0f);
 
         if (!m_lResearchersList.empty())
             SetFormation();
@@ -1181,6 +1179,7 @@ struct npc_letollAI : public npc_escortAI
         switch(uiPointId)
         {
             case 0:
+                JustStarted();
                 if (Player* pPlayer = GetPlayerForEscort())
                     DoScriptText(SAY_LE_KEEP_SAFE, me, pPlayer);
                 break;
@@ -1192,28 +1191,48 @@ struct npc_letollAI : public npc_escortAI
                 break;
             case 12:
                 DoScriptText(SAY_LE_BURIED, me);
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_WORK_NOSHEATHE_MINING);
+                for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+                {
+                    (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_WORK_NOSHEATHE_MINING);
+                }
                 SetEscortPaused(true);
                 break;
             case 13:
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
+                for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+                {
+                    (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
+                }
                 SetRun();
+                break;
+            case 20:
+                if (Player* pPlayer = GetPlayerForEscort())
+                {
+                    DoScriptText(SAY_LE_THANKS, me, pPlayer);
+                    pPlayer->GroupEventHappens(QUEST_DIGGING_BONES, me);
+                }
                 break;
         }
     }
 
-    void Aggro(Unit* pWho)
+    void EnterCombat(Unit* pWho)
     {
         if (pWho->isInCombat() && pWho->GetTypeId() == TYPEID_UNIT && pWho->GetEntry() == NPC_BONE_SIFTER)
             DoScriptText(SAY_LE_HELP_HIM, me);
+
+        for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+        {
+            float x, y, z;
+            me->GetPosition(x, y, z);
+            (*itr)->SetHomePosition(x, y, z, 0);
+            (*itr)->AI()->AttackStart(pWho);
+        }
     }
 
     void JustSummoned(Creature* pSummoned)
     {
-        Player* pPlayer = GetPlayerForEscort();
-
-        if (pPlayer && pPlayer->isAlive())
-            pSummoned->AI()->AttackStart(pPlayer);
-        else
-            pSummoned->AI()->AttackStart(me);
+        pSummoned->AI()->AttackStart(me);
     }
 
     void UpdateEscortAI(const uint32 uiDiff)
@@ -1273,17 +1292,10 @@ struct npc_letollAI : public npc_escortAI
                             break;
                         case 12:
                             DoScriptText(SAY_LE_IN_YOUR_FACE, me);
-                            me->SummonCreature(NPC_BONE_SIFTER, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            me->SummonCreature(NPC_BONE_SIFTER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                             break;
                         case 13:
                             DoScriptText(EMOTE_LE_PICK_UP, me);
-
-                            if (Player* pPlayer = GetPlayerForEscort())
-                            {
-                                DoScriptText(SAY_LE_THANKS, me, pPlayer);
-                                pPlayer->GroupEventHappens(QUEST_DIGGING_BONES, me);
-                            }
-
                             SetEscortPaused(false);
                             break;
                     }
@@ -1321,7 +1333,6 @@ bool QuestAccept_npc_letoll(Player* pPlayer, Creature* pCreature, const Quest* p
 
     return true;
 }
-
 
 /*######
 ## npc_sarthis & his companions
