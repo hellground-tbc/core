@@ -2314,6 +2314,184 @@ bool GossipHello_npc_empoor(Player *player, Creature *_Creature)
     return true;
 }
 
+/*########
+## npc_captive_child
+########*/
+
+enum
+{
+    QUEST_FRIENDS               = 10852,
+    NPC_CHILD_CAPITIVE          = 22314,
+
+    SAY_CHILD1                  = -1900174,
+    SAY_CHILD2                  = -1900175,
+    SAY_CHILD3                  = -1900176,
+    SAY_CHILD4                  = -1900177,
+    SAY_CHILD5                  = -1900178
+};
+
+struct WP
+{
+    float x, y, z;
+};
+
+static WP W[]=
+{
+    {-2464.39f, 5398.43f, 2.12f},
+    {-2485.65f, 5382.77f, 0.11f},
+    {-2464.22f, 5402.19f, 2.16f},
+    {-2542.65f, 5482.23f, 8.25f},
+    {-2520.57f, 5447.79f, 0.12f},
+    {-2545.31f, 5484.29f, 8.34f},
+    {-2582.34f, 5425.01f, 26.85f},
+    {-2561.75f, 5439.09f, 27.16f},
+    {-2579.22f, 5430.93f, 28.04f},
+    {-2528.63f, 5387.37f, 27.65f},
+    {-2550.72f, 5404.97f, 20.00f},
+    {-2526.76f, 5384.53f, 28.09f}
+};
+
+struct HELLGROUND_DLL_DECL npc_captive_childAI : public npc_escortAI
+{
+    npc_captive_childAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
+
+    void Reset()
+    {
+        me->SetVisibility(VISIBILITY_ON); //???
+    }
+    //if you add more children .add GUID here.
+    uint32 WaypointID()
+    {
+        switch (me->GetGUIDLow())
+        {
+            case 78491:
+                return 1;
+                break;
+            case 78494:
+                return 2;
+                break;
+            case 78493:
+                return 3;
+                break;
+            case 78492:
+                return 3;
+                break;
+            case 78490:
+                return 4;
+                break;
+            case 78488:
+                return 4;
+                break;
+            case 78489:
+                return 4;
+                break;
+            default:
+                return 2;
+                break;
+        }
+    }
+
+    void StartRun(Player* player)
+    {
+        switch (WaypointID())
+        {
+            case 1:
+                AddWaypoint(0, W[0].x+(rand()%4), W[0].y-(rand()%4), W[0].z, 3000);
+                AddWaypoint(1, W[1].x, W[1].y, W[1].z);
+                AddWaypoint(2, W[2].x, W[2].y, W[2].z);
+                Start(false, true, player->GetGUID());
+                break;
+            case 2:
+                AddWaypoint(0, W[3].x+(rand()%4), W[3].y-(rand()%4), W[3].z, 3000);
+                AddWaypoint(1, W[4].x, W[4].y, W[4].z);
+                AddWaypoint(2, W[5].x, W[5].y, W[5].z);
+                Start(false, true, player->GetGUID());
+                break;
+            case 3:
+                AddWaypoint(0, W[6].x+(rand()%4), W[6].y-(rand()%4), W[6].z, 3000);
+                AddWaypoint(1, W[7].x, W[7].y, W[7].z);
+                AddWaypoint(2, W[8].x, W[8].y, W[8].z);
+                Start(false, true, player->GetGUID());
+                break;
+            case 4:
+                AddWaypoint(0, W[9].x+(rand()%4), W[9].y-(rand()%4), W[9].z, 3000);
+                AddWaypoint(1, W[10].x, W[10].y, W[10].z);
+                AddWaypoint(2, W[11].x, W[11].y, W[11].z);
+                Start(false, true, player->GetGUID());
+                break;
+        }
+        return;
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        switch (i)
+        {
+            case 0:
+                switch (urand(0,4))
+                {
+                    case 0:
+                        DoScriptText(SAY_CHILD1, me);
+                        break;
+                    case 1:
+                        DoScriptText(SAY_CHILD2, me);
+                        break;
+                    case 2:
+                        DoScriptText(SAY_CHILD3, me);
+                        break;
+                    case 3:
+                        DoScriptText(SAY_CHILD4, me);
+                        break;
+                    case 4:
+                        DoScriptText(SAY_CHILD5, me);
+                        break;
+                }
+                break;
+            case 1:
+                me->SetVisibility(VISIBILITY_OFF); //??? strange bug and we need wp2(home).
+                break;
+            case 2:
+                me->ForcedDespawn();
+                break;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_captive_child(Creature* creature)
+{
+    return new npc_captive_childAI(creature);
+}
+
+bool go_veil_skith_cage(Player* player, GameObject* go)
+{
+    std::list<Creature*> ChildrenList;
+    ChildrenList.clear();
+
+    if(player->GetQuestStatus(QUEST_FRIENDS) == QUEST_STATUS_INCOMPLETE)
+    {
+        Hellground::AllCreaturesOfEntryInRange check(player, NPC_CHILD_CAPITIVE, 5.0f);
+        Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(ChildrenList, check);
+        Cell::VisitGridObjects(player, searcher, 5.0f);
+
+        if(!ChildrenList.empty())
+        {
+            for (std::list<Creature*>::iterator itr = ChildrenList.begin(); itr != ChildrenList.end(); ++itr)
+            {
+                if ((*itr)->isAlive())
+                {
+                    if (npc_captive_childAI* escortAI = CAST_AI(npc_captive_childAI, (*itr)->AI()))
+                    {
+                        player->KilledMonster(NPC_CHILD_CAPITIVE, (*itr)->GetGUID());
+                        escortAI->StartRun(player);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    return true;
+}
+
 void AddSC_terokkar_forest()
 {
     Script *newscript;
@@ -2437,5 +2615,15 @@ void AddSC_terokkar_forest()
     newscript->Name="npc_empoor";
     newscript->GetAI = &GetAI_npc_empoor;
     newscript->pGossipHello =  &GossipHello_npc_empoor;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_captive_child";
+    newscript->GetAI = &GetAI_npc_captive_child;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="go_veil_skith_cage";
+    newscript->pGOUse = &go_veil_skith_cage;
     newscript->RegisterSelf();
 }
