@@ -2552,6 +2552,42 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     caster->CastSpell(caster, 45044, true);
                 return;
             }
+            case 39246:                                     // Q: The Big Bone Worm
+            {
+                if (!m_target)
+                    return;
+
+                if (Unit* caster = GetCaster())
+                {
+                    if (urand(0,10) > 2)
+                    {
+                        int32 count = urand(0,1) ? 2 : 4;
+                        for(int i = 0; i < count; ++i)
+                            caster->SummonCreature(urand(0,1) ? 22482 : 22483, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                    }
+                    else
+                        caster->SummonCreature(22038, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                }
+                return;
+            }
+            case 39238:                                     // Fumping
+            {
+                if (!m_target)
+                    return;
+
+                if (Unit* caster = GetCaster())
+                {
+                    if(urand(0,1) == 0)
+                        caster->SummonCreature(22482, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                    else
+                    {
+                        caster->SummonCreature(22483, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                        caster->SummonCreature(22483, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                        caster->SummonCreature(22483, m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000);
+                    }
+                }
+                return;
+            }
         }
 
         // Earth Shield
