@@ -2503,6 +2503,90 @@ bool go_veil_skith_cage(Player* player, GameObject* go)
     return true;
 }
 
+/*######
+## npc_skywing
+######*/
+
+enum
+{
+    SAY_SKYWING_START            = -1900179,
+    SAY_SKYWING_TREE_DOWN        = -1900180,
+    SAY_SKYWING_TREE_UP          = -1900181,
+    SAY_SKYWING_JUMP             = -1900182,
+    SAY_SKYWING_SUMMON           = -1900183,
+    SAY_SKYWING_END              = -1900184,
+
+    SPELL_TRANSFORM              = 41301,
+
+    NPC_LUANGA_THE_IMPRISONER    = 18533,
+
+    QUEST_SKYWING                = 10898
+};
+
+static const float LuangaSpawnCoords[3] = { -3507.203f, 4084.619f, 92.947f};
+
+struct HELLGROUND_DLL_DECL npc_skywingAI : public npc_escortAI
+{
+    npc_skywingAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
+
+    void Reset() {}
+
+    void WaypointReached(uint32 i)
+    {
+        switch (i)
+        {
+            case 6:
+                DoScriptText(SAY_SKYWING_TREE_DOWN , me);
+                break;
+            case 36:
+                DoScriptText(SAY_SKYWING_TREE_UP, me);
+                break;
+            case 60:
+                DoScriptText(SAY_SKYWING_JUMP, me);
+                me->SetLevitate(true);
+                break;
+            case 61:
+                me->SetLevitate(false);
+                break;
+            case 80:
+                DoScriptText(SAY_SKYWING_SUMMON, me);
+                m_creature->SummonCreature(NPC_LUANGA_THE_IMPRISONER, LuangaSpawnCoords[0], LuangaSpawnCoords[1], LuangaSpawnCoords[2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 82:
+                DoCast(me, SPELL_TRANSFORM);
+                DoScriptText(SAY_SKYWING_END, me);
+
+                if (Player* pPlayer = GetPlayerForEscort())
+                    pPlayer->GroupEventHappens(QUEST_SKYWING, me);
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        summoned->AI()->AttackStart(me);
+    }
+};
+
+bool QuestAccept_npc_skywing(Player* player, Creature* creature, const Quest* quest)
+{
+    if (quest->GetQuestId() == QUEST_SKYWING)
+    {
+        if (npc_skywingAI* EscortAI = dynamic_cast<npc_skywingAI*>(creature->AI()))
+        {
+            creature->setFaction(FACTION_ESCORT_N_NEUTRAL_PASSIVE);
+            DoScriptText(SAY_SKYWING_START, creature);
+
+            EscortAI->Start(false, false, player->GetGUID(), quest);
+        }
+    }
+    return true;
+}
+
+CreatureAI* GetAI_npc_skywing(Creature* creature)
+{
+    return new npc_skywingAI(creature);
+}
+
 void AddSC_terokkar_forest()
 {
     Script *newscript;
@@ -2636,5 +2720,11 @@ void AddSC_terokkar_forest()
     newscript = new Script;
     newscript->Name="go_veil_skith_cage";
     newscript->pGOUse = &go_veil_skith_cage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_skywing";
+    newscript->GetAI = &GetAI_npc_skywing;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_skywing;
     newscript->RegisterSelf();
 }
