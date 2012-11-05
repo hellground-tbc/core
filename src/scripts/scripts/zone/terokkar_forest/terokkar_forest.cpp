@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Terokkar_Forest
-SD%Complete: 80
-SDComment: Quest support: 9889, 10009, 10051, 10052, 10873, 10896, 10887, 11085, 11096. Skettis->Ogri'la Flight
+SD%Complete: 98
+SDComment: Quest support: 9889, 10009, 10051, 10052, 10873, 10896, 10887, 11085, 11096. Skettis->Ogri'la Flight, 9978, 10852, 10898
 SDCategory: Terokkar Forest
 EndScriptData */
 
@@ -29,9 +29,24 @@ mob_netherweb_victim
 npc_floon
 npc_skyguard_handler_deesak
 npc_isla_starmane
+go_skull_pile
+go_ancient_skull_pile
+mob_terokk
+npc_skyguard_ace
+npc_blackwing_warp_chaser
 npc_skyguard_prisoner
+npc_letoll
+npc_sarthis
+npc_sarthis_elemental
+npc_minion_of_sarthis
 npc_razorthorn_ravager
+quest_the_vengeful_harbringer
+mob_vengeful_draenei
 npc_akuno
+npc_empoor
+npc_captive_child
+go_veil_skith_cage
+npc_skywing
 EndContentData */
 
 #include "precompiled.h"
@@ -52,7 +67,7 @@ EndContentData */
 
 struct HELLGROUND_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
 {
-    mob_unkor_the_ruthlessAI(Creature* c) : ScriptedAI(c) {}
+    mob_unkor_the_ruthlessAI(Creature* creature) : ScriptedAI(creature) {}
 
     bool CanDoQuest;
     uint32 UnkorUnfriendly_Timer;
@@ -63,27 +78,27 @@ struct HELLGROUND_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
         CanDoQuest = false;
         UnkorUnfriendly_Timer = 0;
         Pulverize_Timer = 3000;
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
-        m_creature->setFaction(FACTION_HOSTILE);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
+        me->setFaction(FACTION_HOSTILE);
     }
 
     void EnterCombat(Unit *who) {}
 
     void DoNice()
     {
-        DoScriptText(SAY_SUBMIT, m_creature);
-        m_creature->setFaction(FACTION_FRIENDLY);
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SIT);
-        m_creature->RemoveAllAuras();
-        m_creature->DeleteThreatList();
-        m_creature->CombatStop();
+        DoScriptText(SAY_SUBMIT, me);
+        me->setFaction(FACTION_FRIENDLY);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SIT);
+        me->RemoveAllAuras();
+        me->DeleteThreatList();
+        me->CombatStop();
         UnkorUnfriendly_Timer = 60000;
     }
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         if( done_by->GetTypeId() == TYPEID_PLAYER )
-            if( (m_creature->GetHealth()-damage)*100 / m_creature->GetMaxHealth() < 30 )
+            if( (me->GetHealth()-damage)*100 / me->GetMaxHealth() < 30 )
         {
             if( Group* pGroup = ((Player*)done_by)->GetGroup() )
             {
@@ -115,7 +130,7 @@ struct HELLGROUND_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
         {
             if( !UnkorUnfriendly_Timer )
             {
-                //DoCast(m_creature,SPELL_QUID9889);        //not using spell for now
+                //DoCast(me,SPELL_QUID9889);        //not using spell for now
                 DoNice();
             }
             else
@@ -133,7 +148,7 @@ struct HELLGROUND_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
 
         if( Pulverize_Timer < diff )
         {
-            DoCast(m_creature,SPELL_PULVERIZE);
+            DoCast(me,SPELL_PULVERIZE);
             Pulverize_Timer = 9000;
         }else Pulverize_Timer -= diff;
 
@@ -141,9 +156,9 @@ struct HELLGROUND_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_unkor_the_ruthless(Creature *_Creature)
+CreatureAI* GetAI_mob_unkor_the_ruthless(Creature *creature)
 {
-    return new mob_unkor_the_ruthlessAI (_Creature);
+    return new mob_unkor_the_ruthlessAI (creature);
 }
 
 /*######
@@ -152,7 +167,7 @@ CreatureAI* GetAI_mob_unkor_the_ruthless(Creature *_Creature)
 
 struct HELLGROUND_DLL_DECL mob_infested_root_walkerAI : public ScriptedAI
 {
-    mob_infested_root_walkerAI(Creature *c) : ScriptedAI(c) {}
+    mob_infested_root_walkerAI(Creature *creature) : ScriptedAI(creature) {}
 
     void Reset() { }
     void EnterCombat(Unit *who) { }
@@ -160,15 +175,15 @@ struct HELLGROUND_DLL_DECL mob_infested_root_walkerAI : public ScriptedAI
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         if (done_by && done_by->GetTypeId() == TYPEID_PLAYER)
-            if (m_creature->GetHealth() <= damage)
+            if (me->GetHealth() <= damage)
                 if (rand()%100 < 75)
                     //Summon Wood Mites
-                    m_creature->CastSpell(m_creature,39130,true);
+                    me->CastSpell(me,39130,true);
     }
 };
-CreatureAI* GetAI_mob_infested_root_walker(Creature *_Creature)
+CreatureAI* GetAI_mob_infested_root_walker(Creature *creature)
 {
-    return new mob_infested_root_walkerAI (_Creature);
+    return new mob_infested_root_walkerAI (creature);
 }
 
 /*######
@@ -177,7 +192,7 @@ CreatureAI* GetAI_mob_infested_root_walker(Creature *_Creature)
 
 struct HELLGROUND_DLL_DECL mob_rotting_forest_ragerAI : public ScriptedAI
 {
-    mob_rotting_forest_ragerAI(Creature *c) : ScriptedAI(c) {}
+    mob_rotting_forest_ragerAI(Creature *creature) : ScriptedAI(creature) {}
 
     void Reset() { }
     void EnterCombat(Unit *who) { }
@@ -185,15 +200,15 @@ struct HELLGROUND_DLL_DECL mob_rotting_forest_ragerAI : public ScriptedAI
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
         if (done_by->GetTypeId() == TYPEID_PLAYER)
-            if (m_creature->GetHealth() <= damage)
+            if (me->GetHealth() <= damage)
                 if (rand()%100 < 75)
                     //Summon Lots of Wood Mights
-                    m_creature->CastSpell(m_creature,39134,true);
+                    me->CastSpell(me,39134,true);
     }
 };
-CreatureAI* GetAI_mob_rotting_forest_rager(Creature *_Creature)
+CreatureAI* GetAI_mob_rotting_forest_rager(Creature *creature)
 {
-    return new mob_rotting_forest_ragerAI (_Creature);
+    return new mob_rotting_forest_ragerAI (creature);
 }
 
 /*######
@@ -209,7 +224,7 @@ const uint32 netherwebVictims[6] =
 };
 struct HELLGROUND_DLL_DECL mob_netherweb_victimAI : public ScriptedAI
 {
-    mob_netherweb_victimAI(Creature *c) : ScriptedAI(c) {}
+    mob_netherweb_victimAI(Creature *creature) : ScriptedAI(creature) {}
 
     void Reset() { }
     void EnterCombat(Unit *who) { }
@@ -224,7 +239,7 @@ struct HELLGROUND_DLL_DECL mob_netherweb_victimAI : public ScriptedAI
                 if( rand()%100 < 25 )
                 {
                     DoSpawnCreature(QUEST_TARGET,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,60000);
-                    ((Player*)Killer)->KilledMonster(QUEST_TARGET, m_creature->GetGUID());
+                    ((Player*)Killer)->KilledMonster(QUEST_TARGET, me->GetGUID());
                 }else
                 DoSpawnCreature(netherwebVictims[rand()%6],0,0,0,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,60000);
 
@@ -235,9 +250,9 @@ struct HELLGROUND_DLL_DECL mob_netherweb_victimAI : public ScriptedAI
         }
     }
 };
-CreatureAI* GetAI_mob_netherweb_victim(Creature *_Creature)
+CreatureAI* GetAI_mob_netherweb_victim(Creature *creature)
 {
-    return new mob_netherweb_victimAI (_Creature);
+    return new mob_netherweb_victimAI (creature);
 }
 
 /*######
@@ -258,7 +273,7 @@ CreatureAI* GetAI_mob_netherweb_victim(Creature *_Creature)
 
 struct HELLGROUND_DLL_DECL npc_floonAI : public ScriptedAI
 {
-    npc_floonAI(Creature* c) : ScriptedAI(c) {}
+    npc_floonAI(Creature* creature) : ScriptedAI(creature) {}
 
     uint32 Silence_Timer;
     uint32 Frostbolt_Timer;
@@ -269,7 +284,7 @@ struct HELLGROUND_DLL_DECL npc_floonAI : public ScriptedAI
         Silence_Timer = 2000;
         Frostbolt_Timer = 4000;
         FrostNova_Timer = 9000;
-        m_creature->setFaction(FACTION_FRIENDLY_FL);
+        me->setFaction(FACTION_FRIENDLY_FL);
     }
 
     void EnterCombat(Unit *who) {}
@@ -281,52 +296,52 @@ struct HELLGROUND_DLL_DECL npc_floonAI : public ScriptedAI
 
         if( Silence_Timer < diff )
         {
-            DoCast(m_creature->getVictim(),SPELL_SILENCE);
+            DoCast(me->getVictim(),SPELL_SILENCE);
             Silence_Timer = 30000;
         }else Silence_Timer -= diff;
 
         if( FrostNova_Timer < diff )
         {
-            DoCast(m_creature,SPELL_FROST_NOVA);
+            DoCast(me,SPELL_FROST_NOVA);
             FrostNova_Timer = 20000;
         }else FrostNova_Timer -= diff;
 
         if( Frostbolt_Timer < diff )
         {
-            DoCast(m_creature->getVictim(),SPELL_FROSTBOLT);
+            DoCast(me->getVictim(),SPELL_FROSTBOLT);
             Frostbolt_Timer = 5000;
         }else Frostbolt_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_npc_floon(Creature *_Creature)
+CreatureAI* GetAI_npc_floon(Creature *creature)
 {
-    return new npc_floonAI (_Creature);
+    return new npc_floonAI (creature);
 }
 
-bool GossipHello_npc_floon(Player *player, Creature *_Creature )
+bool GossipHello_npc_floon(Player *player, Creature *creature )
 {
     if( player->GetQuestStatus(10009) == QUEST_STATUS_INCOMPLETE )
         player->ADD_GOSSIP_ITEM(1, GOSSIP_FLOON1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    player->SEND_GOSSIP_MENU(9442, _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(9442, creature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_floon(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_floon(Player *player, Creature *creature, uint32 sender, uint32 action )
 {
     if( action == GOSSIP_ACTION_INFO_DEF )
     {
         player->ADD_GOSSIP_ITEM(1, GOSSIP_FLOON2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-        player->SEND_GOSSIP_MENU(9443, _Creature->GetGUID());
+        player->SEND_GOSSIP_MENU(9443, creature->GetGUID());
     }
     if( action == GOSSIP_ACTION_INFO_DEF+1 )
     {
         player->CLOSE_GOSSIP_MENU();
-        _Creature->setFaction(FACTION_HOSTILE_FL);
-        DoScriptText(SAY_FLOON_ATTACK, _Creature, player);
-        ((npc_floonAI*)_Creature->AI())->AttackStart(player);
+        creature->setFaction(FACTION_HOSTILE_FL);
+        DoScriptText(SAY_FLOON_ATTACK, creature, player);
+        ((npc_floonAI*)creature->AI())->AttackStart(player);
     }
     return true;
 }
@@ -337,20 +352,20 @@ bool GossipSelect_npc_floon(Player *player, Creature *_Creature, uint32 sender, 
 
 #define GOSSIP_SKYGUARD "Fly me to Ogri'la please"
 
-bool GossipHello_npc_skyguard_handler_deesak(Player *player, Creature *_Creature )
+bool GossipHello_npc_skyguard_handler_deesak(Player *player, Creature *creature )
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (creature->isQuestGiver())
+        player->PrepareQuestMenu( creature->GetGUID() );
 
     if (player->GetReputationMgr().GetRank(1031) >= REP_HONORED)
         player->ADD_GOSSIP_ITEM( 2, GOSSIP_SKYGUARD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_skyguard_handler_deesak(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_skyguard_handler_deesak(Player *player, Creature *creature, uint32 sender, uint32 action )
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
@@ -376,7 +391,7 @@ bool GossipSelect_npc_skyguard_handler_deesak(Player *player, Creature *_Creatur
 
 struct HELLGROUND_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
 {
-    npc_isla_starmaneAI(Creature* c) : npc_escortAI(c) {}
+    npc_isla_starmaneAI(Creature* creature) : npc_escortAI(creature) {}
 
     bool Completed;
 
@@ -391,32 +406,32 @@ struct HELLGROUND_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
         {
         case 0:
             {
-            GameObject* Cage = FindGameObject(GO_CAGE, 10, m_creature);
+            GameObject* Cage = FindGameObject(GO_CAGE, 10, me);
             if(Cage)
                 Cage->SetGoState(GO_STATE_ACTIVE);
             }break;
-        case 2: DoScriptText(SAY_PROGRESS_1, m_creature, player); break;
-        case 5: DoScriptText(SAY_PROGRESS_2, m_creature, player); break;
-        case 6: DoScriptText(SAY_PROGRESS_3, m_creature, player); break;
-        case 29:DoScriptText(SAY_PROGRESS_4, m_creature, player);
+        case 2: DoScriptText(SAY_PROGRESS_1, me, player); break;
+        case 5: DoScriptText(SAY_PROGRESS_2, me, player); break;
+        case 6: DoScriptText(SAY_PROGRESS_3, me, player); break;
+        case 29:DoScriptText(SAY_PROGRESS_4, me, player);
             if (player)
             {
                 if( player->GetTeam() == ALLIANCE)
-                    player->GroupEventHappens(QUEST_EFTW_A, m_creature);
+                    player->GroupEventHappens(QUEST_EFTW_A, me);
                 else if(player->GetTeam() == HORDE)
-                    player->GroupEventHappens(QUEST_EFTW_H, m_creature);
+                    player->GroupEventHappens(QUEST_EFTW_H, me);
             } Completed = true;
-            m_creature->SetInFront(player); break;
-        case 30: m_creature->HandleEmoteCommand(EMOTE_ONESHOT_WAVE); break;
-        case 31: DoCast(m_creature, SPELL_CAT);
-            m_creature->SetWalk(false); break;
+            me->SetInFront(player); break;
+        case 30: me->HandleEmoteCommand(EMOTE_ONESHOT_WAVE); break;
+        case 31: DoCast(me, SPELL_CAT);
+            me->SetWalk(false); break;
         }
     }
 
     void Reset()
     {
         Completed = false;
-        m_creature->setFaction(1660);
+        me->setFaction(1660);
     }
 
     void EnterCombat(Unit* who){}
@@ -450,47 +465,9 @@ bool QuestAccept_npc_isla_starmane(Player* player, Creature* creature, Quest con
     return true;
 }
 
-CreatureAI* GetAI_npc_isla_starmaneAI(Creature *_Creature)
+CreatureAI* GetAI_npc_isla_starmane(Creature* creature)
 {
-    npc_isla_starmaneAI* thisAI = new npc_isla_starmaneAI(_Creature);
-
-    thisAI->AddWaypoint(0, -2265.21, 3091.14, 13.91);
-    thisAI->AddWaypoint(1, -2266.80, 3091.33, 13.82, 1000);
-    thisAI->AddWaypoint(2, -2268.20, 3091.14, 13.82, 7000);//progress1
-    thisAI->AddWaypoint(3, -2278.32, 3098.98, 13.82);
-    thisAI->AddWaypoint(4, -2294.82, 3110.59, 13.82);
-    thisAI->AddWaypoint(5, -2300.71, 3114.60, 13.82, 20000);//progress2
-    thisAI->AddWaypoint(6, -2300.71, 3114.60, 13.82, 3000);//progress3
-    thisAI->AddWaypoint(7, -2307.36, 3122.76, 13.79);
-    thisAI->AddWaypoint(8, -2312.83, 3130.55, 12.04);
-    thisAI->AddWaypoint(9, -2345.02, 3151.00, 8.38);
-    thisAI->AddWaypoint(10, -2351.97, 3157.61, 6.27);
-    thisAI->AddWaypoint(11, -2360.35, 3171.48, 3.31);
-    thisAI->AddWaypoint(12, -2371.44, 3185.41, 0.89);
-    thisAI->AddWaypoint(13, -2371.21, 3197.92, -0.96);
-    thisAI->AddWaypoint(14, -2380.35, 3210.45, -1.08);
-    thisAI->AddWaypoint(15, -2384.74, 3221.25, -1.17);
-    thisAI->AddWaypoint(16, -2386.15, 3233.39, -1.29);
-    thisAI->AddWaypoint(17, -2383.45, 3247.79, -1.32);
-    thisAI->AddWaypoint(18, -2367.50, 3265.64, -1.33);
-    thisAI->AddWaypoint(19, -2354.90, 3273.30, -1.50);
-    thisAI->AddWaypoint(20, -2348.88, 3280.58, -0.09);
-    thisAI->AddWaypoint(21, -2349.06, 3295.86, -0.95);
-    thisAI->AddWaypoint(22, -2350.43, 3328.27, -2.10);
-    thisAI->AddWaypoint(23, -2346.76, 3356.27, -2.82);
-    thisAI->AddWaypoint(24, -2340.56, 3370.68, -4.02);
-    thisAI->AddWaypoint(25, -2318.84, 3384.60, -7.61);
-    thisAI->AddWaypoint(26, -2313.99, 3398.61, -10.40);
-    thisAI->AddWaypoint(27, -2320.85, 3414.49, -11.49);
-    thisAI->AddWaypoint(28, -2338.26, 3426.06, -11.46);
-    thisAI->AddWaypoint(29, -2342.67, 3439.44, -11.32, 12000);//progress4
-    thisAI->AddWaypoint(30, -2342.67, 3439.44, -11.32, 7000);//emote bye
-    thisAI->AddWaypoint(31, -2342.67, 3439.44, -11.32, 5000);//cat form
-    thisAI->AddWaypoint(32, -2344.60, 3461.27, -10.44);
-    thisAI->AddWaypoint(33, -2396.81, 3517.17, -3.55);
-    thisAI->AddWaypoint(34, -2439.23, 3523.00, -1.05);
-
-    return (CreatureAI*)thisAI;
+    return new npc_isla_starmaneAI(creature);
 }
 
 /*######
@@ -501,7 +478,7 @@ CreatureAI* GetAI_npc_isla_starmaneAI(Creature *_Creature)
 #define GOSSIP_S_GEZZARAK_THE_HUNTRESS         "Summon Gezzarak the Huntress"
 #define GOSSIP_S_VAKKIZ_THE_WINDRAGER         "Summon Vakkiz the Windrager"
 
-bool GossipHello_go_skull_pile(Player *player, GameObject* _GO)
+bool GossipHello_go_skull_pile(Player *player, GameObject* go)
 {
     if ((player->GetQuestStatus(11885) == QUEST_STATUS_INCOMPLETE) || player->GetQuestRewardStatus(11885))
     {
@@ -511,17 +488,17 @@ bool GossipHello_go_skull_pile(Player *player, GameObject* _GO)
         player->ADD_GOSSIP_ITEM(0, GOSSIP_S_VAKKIZ_THE_WINDRAGER, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
     }
 
-    player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
+    player->SEND_GOSSIP_MENU(go->GetGOInfo()->questgiver.gossipID, go->GetGUID());
     return true;
 }
 
-void SendActionMenu_go_skull_pile(Player *player, GameObject* _GO, uint32 action)
+void SendActionMenu_go_skull_pile(Player *player, GameObject* go, uint32 action)
 {
     // GO should be despawned by spell casted below, but it's not working :(
     if(player->HasItemCount(32620, 10))
     {
-        _GO->SetGoState(GO_STATE_ACTIVE);
-        _GO->SetRespawnTime(600);
+        go->SetGoState(GO_STATE_ACTIVE);
+        go->SetRespawnTime(600);
         player->CLOSE_GOSSIP_MENU();
     }
 
@@ -542,11 +519,11 @@ void SendActionMenu_go_skull_pile(Player *player, GameObject* _GO, uint32 action
     }
 }
 
-bool GossipSelect_go_skull_pile(Player *player, GameObject* _GO, uint32 sender, uint32 action )
+bool GossipSelect_go_skull_pile(Player *player, GameObject* go, uint32 sender, uint32 action )
 {
     switch(sender)
     {
-        case GOSSIP_SENDER_MAIN:    SendActionMenu_go_skull_pile(player, _GO, action); break;
+        case GOSSIP_SENDER_MAIN:    SendActionMenu_go_skull_pile(player, go, action); break;
     }
     return true;
 }
@@ -556,14 +533,14 @@ bool GossipSelect_go_skull_pile(Player *player, GameObject* _GO, uint32 sender, 
 ######*/
 #define GOSSIP_S_TEROKK         "Summon Terokk"
 
-bool GossipHello_go_ancient_skull_pile(Player *player, GameObject* _GO)
+bool GossipHello_go_ancient_skull_pile(Player *player, GameObject* go)
 {
     player->ADD_GOSSIP_ITEM(0, GOSSIP_S_TEROKK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-    player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
+    player->SEND_GOSSIP_MENU(go->GetGOInfo()->questgiver.gossipID, go->GetGUID());
     return true;
 }
 
-bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 sender, uint32 action )
+bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* go, uint32 sender, uint32 action )
 {
     switch(sender)
     {
@@ -573,10 +550,10 @@ bool GossipSelect_go_ancient_skull_pile(Player *player, GameObject* _GO, uint32 
             if(player->HasItemCount(32720, 1))
             {
                 player->DestroyItemCount(32720, 1, true);
-                player->SummonCreature(21838, _GO->GetPositionX(), _GO->GetPositionY(), _GO->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
+                player->SummonCreature(21838, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
                 player->CLOSE_GOSSIP_MENU();
-                _GO->SetGoState(GO_STATE_ACTIVE);
-                _GO->SetRespawnTime(600);
+                go->SetGoState(GO_STATE_ACTIVE);
+                go->SetRespawnTime(600);
             }
             break;
     }
@@ -632,7 +609,7 @@ float skyguardWPs[6][2] = {
 
 struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
 {
-    mob_terokkAI(Creature* c) : ScriptedAI(c) {}
+    mob_terokkAI(Creature* creature) : ScriptedAI(creature) {}
 
     uint32 ShadowBoltVolley_Timer;
     uint32 Cleave_Timer;
@@ -672,7 +649,7 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
         for(int i = 0; i < 3; i++)
         {
             if(SkyguardGUIDs[i])
-                if(Creature* skyguard = Creature::GetCreature(*m_creature, SkyguardGUIDs[i]))
+                if(Creature* skyguard = Creature::GetCreature(*me, SkyguardGUIDs[i]))
                     skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_DESPAWN, skyguardSpawn[i][0], skyguardSpawn[i][1], skyguardAltitude);
             SkyguardGUIDs[i] = 0;
         }
@@ -696,7 +673,7 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
 
         if( ShadowBoltVolley_Timer < diff )
         {
-            DoCast(m_creature, SPELL_SHADOW_BOLT_VOLLEY);
+            DoCast(me, SPELL_SHADOW_BOLT_VOLLEY);
             ShadowBoltVolley_Timer = 10000 + rand()%5000;
         }
         else
@@ -704,7 +681,7 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
 
         if( Cleave_Timer < diff )
         {
-            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+            DoCast(me->getVictim(), SPELL_CLEAVE);
             Cleave_Timer = 7000 + rand() % 2000;
         }
         else
@@ -714,9 +691,9 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
         {
             if( ChosenOneActive_Timer < diff )
             {
-                if(m_creature->getVictimGUID() == ChosenOneTarget)
-                    m_creature->AddThreat(m_creature->getVictim(), -500000.0f);
-                m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
+                if(me->getVictimGUID() == ChosenOneTarget)
+                    me->AddThreat(me->getVictim(), -500000.0f);
+                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, false);
                 ChosenOneActive_Timer = 0;
                 ChosenOneTarget = 0;
             }
@@ -731,8 +708,8 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
                 if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
                 {
                     DoCast(target,SPELL_CHOSEN_ONE);
-                    m_creature->AddThreat(target, 500000.0f);
-                    m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                    me->AddThreat(target, 500000.0f);
+                    me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
                     ChosenOneTarget = target->GetGUID();
                     ChosenOneActive_Timer = 12000;
                     ChosenOne_Timer = 30000 + rand() % 20000;
@@ -742,12 +719,12 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
                 ChosenOne_Timer -= diff;
         }
 
-        if(phase == 0 && m_creature->GetHealth() / (float)m_creature->GetMaxHealth() < 0.30f)
+        if(phase == 0 && me->GetHealth() / (float)me->GetMaxHealth() < 0.30f)
         {
             phase = 1;
-            DoCast(m_creature, SPELL_DIVINE_SHIELD, true);
+            DoCast(me, SPELL_DIVINE_SHIELD, true);
             for(int i = 0; i < 3; i++)
-                if(Creature *skyguard = m_creature->SummonCreature(23377, skyguardSpawn[i][0], skyguardSpawn[i][1], skyguardAltitude, 3.30f, TEMPSUMMON_MANUAL_DESPAWN, 0))
+                if(Creature *skyguard = me->SummonCreature(23377, skyguardSpawn[i][0], skyguardSpawn[i][1], skyguardAltitude, 3.30f, TEMPSUMMON_MANUAL_DESPAWN, 0))
                 {
                     SkyguardGUIDs[i] = skyguard->GetGUID();
                     skyguard->setActive(true);
@@ -768,8 +745,8 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
                 {
                     if(!skyguardTargets.empty() && !(*skyguardTargets.begin())->HasAura(SPELL_SKYGUARD_FLARE, 0))
                     {
-                        m_creature->RemoveAurasDueToSpell(SPELL_DIVINE_SHIELD);
-                        DoCast(m_creature, SPELL_ENRAGE, true);
+                        me->RemoveAurasDueToSpell(SPELL_DIVINE_SHIELD);
+                        DoCast(me, SPELL_ENRAGE, true);
                         phase = 2;
                     }
                 }
@@ -777,8 +754,8 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
                 {
                     if(skyguardTargets.empty())
                     {
-                        m_creature->RemoveAurasDueToSpell(SPELL_ENRAGE);
-                        DoCast(m_creature, SPELL_DIVINE_SHIELD, true);
+                        me->RemoveAurasDueToSpell(SPELL_ENRAGE);
+                        DoCast(me, SPELL_DIVINE_SHIELD, true);
                         phase = 1;
                     }
                 }
@@ -789,7 +766,7 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
 
             if(SkyguardFlare_Timer < diff)
             {
-                if(Creature *skyguard = Creature::GetCreature(*m_creature, SkyguardGUIDs[skyguardTurn++]))
+                if(Creature *skyguard = Creature::GetCreature(*me, SkyguardGUIDs[skyguardTurn++]))
                     skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_MIDDLE, skyguardWPMiddle[0], skyguardWPMiddle[1], skyguardWPMiddle[2]);
                 skyguardTurn %= 3;
                 SkyguardFlare_Timer = 20000;
@@ -803,9 +780,9 @@ struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_terokk(Creature *_Creature)
+CreatureAI* GetAI_mob_terokk(Creature *creature)
 {
-    return new mob_terokkAI (_Creature);
+    return new mob_terokkAI (creature);
 }
 
 /*
@@ -815,7 +792,7 @@ CreatureAI* GetAI_mob_terokk(Creature *_Creature)
 struct HELLGROUND_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
 {
 
-    npc_skyguard_aceAI(Creature* c) : ScriptedAI(c) {}
+    npc_skyguard_aceAI(Creature* creature) : ScriptedAI(creature) {}
 
     uint64 TargetGUID;
     uint32 TargetLifetime;
@@ -924,9 +901,9 @@ struct HELLGROUND_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_skyguard_ace(Creature *_Creature)
+CreatureAI* GetAI_npc_skyguard_ace(Creature *creature)
 {
-    return new npc_skyguard_aceAI (_Creature);
+    return new npc_skyguard_aceAI (creature);
 }
 
 
@@ -935,7 +912,7 @@ Script for Quest: Hungry Nether Rays (11093)
 ***/
 struct HELLGROUND_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
 {
-    npc_blackwing_warp_chaser(Creature *c) : ScriptedAI(c) {}
+    npc_blackwing_warp_chaser(Creature *creature) : ScriptedAI(creature) {}
 
     Unit* HungryNetherRay;
 
@@ -943,7 +920,7 @@ struct HELLGROUND_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
     {
         if(slayer->GetTypeId()==TYPEID_PLAYER && ((Player*)(slayer))->GetQuestStatus(11093)==QUEST_STATUS_INCOMPLETE)
         {
-            HungryNetherRay = FindCreature(23439, 50, m_creature);
+            HungryNetherRay = FindCreature(23439, 50, me);
             // to avoid leeching by other players:
             if(HungryNetherRay && HungryNetherRay->GetOwner()==slayer)
             {
@@ -961,9 +938,9 @@ struct HELLGROUND_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_blackwing_warp_chaser(Creature *_Creature)
+CreatureAI* GetAI_npc_blackwing_warp_chaser(Creature *creature)
 {
-    return new npc_blackwing_warp_chaser(_Creature);
+    return new npc_blackwing_warp_chaser(creature);
 }
 /*######
 ## npc_skyguard_prisoner
@@ -979,7 +956,7 @@ CreatureAI* GetAI_npc_blackwing_warp_chaser(Creature *_Creature)
 
 struct HELLGROUND_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
 {
-    npc_skyguard_prisonerAI(Creature* c) : npc_escortAI(c) {}
+    npc_skyguard_prisonerAI(Creature* creature) : npc_escortAI(creature) {}
 
     bool Cpl;
 
@@ -992,7 +969,7 @@ struct HELLGROUND_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
 
     void JustSummoned(Creature *summoned)
     {
-        summoned->AI()->AttackStart(m_creature);
+        summoned->AI()->AttackStart(me);
     }
 
     void WaypointReached(uint32 i)
@@ -1003,21 +980,21 @@ struct HELLGROUND_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
         {
         case 0:
             {
-            GameObject* Cage = FindGameObject(GO_CAGE_SG_PRISONER, 10, m_creature);
+            GameObject* Cage = FindGameObject(GO_CAGE_SG_PRISONER, 10, me);
             if(Cage)
                 Cage->SetGoState(GO_STATE_ACTIVE);
-            DoScriptText(SAY_PROGRESS_1_SG_PRISONER, m_creature, player);
+            DoScriptText(SAY_PROGRESS_1_SG_PRISONER, me, player);
             }
             break;
-        case 10: m_creature->SummonCreature(SKETTIS_AMBUSH, -4182.85, 3075.50, 333.15, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-            m_creature->SummonCreature(SKETTIS_AMBUSH, -4180.54, 3075.50, 333.15, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+        case 10: me->SummonCreature(SKETTIS_AMBUSH, -4182.85, 3075.50, 333.15, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+            me->SummonCreature(SKETTIS_AMBUSH, -4180.54, 3075.50, 333.15, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
             break;
-        case 11: DoScriptText(SAY_PROGRESS_2_SG_PRISONER, m_creature, player);
+        case 11: DoScriptText(SAY_PROGRESS_2_SG_PRISONER, me, player);
             break;
-        case 12: DoScriptText(SAY_PROGRESS_3_SG_PRISONER, m_creature, player);
+        case 12: DoScriptText(SAY_PROGRESS_3_SG_PRISONER, me, player);
             Cpl=true;
             if(player)
-                player->GroupEventHappens(QUEST_ESC, m_creature);
+                player->GroupEventHappens(QUEST_ESC, me);
             break;
         }
     }
@@ -1046,25 +1023,9 @@ bool QuestAccept_npc_skyguard_prisoner(Player* player, Creature* creature, Quest
     return true;
 }
 
-CreatureAI* GetAI_npc_skyguard_prisonerAI(Creature* _Creature)
+CreatureAI* GetAI_npc_skyguard_prisoner(Creature* creature)
 {
-    npc_skyguard_prisonerAI* thisAI = new npc_skyguard_prisonerAI(_Creature);
-
-    thisAI->AddWaypoint(0, -4109.57, 3032.77, 344.76, 3000);//SAY_PROGRESS_1
-    thisAI->AddWaypoint(1, -4118.01, 3033.23, 344.10);
-    thisAI->AddWaypoint(2, -4123.30, 3025.59, 344.15);
-    thisAI->AddWaypoint(3, -4128.86, 3026.66, 344.03);
-    thisAI->AddWaypoint(4, -4150.29, 3030.85, 336.91);
-    thisAI->AddWaypoint(5, -4172.36, 3034.88, 343.17);
-    thisAI->AddWaypoint(6, -4174.32, 3037.06, 343.44);
-    thisAI->AddWaypoint(7, -4177.75, 3053.99, 344.08);
-    thisAI->AddWaypoint(8, -4184.69, 3058.26, 344.15);
-    thisAI->AddWaypoint(9, -4183.33, 3066.00, 342.27);
-    thisAI->AddWaypoint(10, -4182.44, 3071.66, 336.59, 5000);//Ambush
-    thisAI->AddWaypoint(11, -4182.44, 3071.66, 336.59, 5000);//SAY_PROGRESS_2
-    thisAI->AddWaypoint(12, -4178.90, 3093.35, 323.98, 6000);//SAY_PROGRESS_3
-
-    return (CreatureAI*)thisAI;
+    return new npc_skyguard_prisonerAI(creature);
 }
 
 /*######
@@ -1105,17 +1066,17 @@ enum
 
 struct npc_letollAI : public npc_escortAI
 {
-    npc_letollAI(Creature* pCreature) : npc_escortAI(pCreature)
+    npc_letollAI(Creature* creature) : npc_escortAI(creature)
     {
-        m_uiEventTimer = 5000;
-        m_uiEventCount = 0;
+        EventTimer = 5000;
+        EventCount = 0;
         Reset();
     }
 
-    std::list<Creature*> m_lResearchersList;
+    std::list<Creature*> ResearchersList;
 
-    uint32 m_uiEventTimer;
-    uint32 m_uiEventCount;
+    uint32 EventTimer;
+    uint32 EventCount;
 
     void Reset() {}
 
@@ -1123,7 +1084,7 @@ struct npc_letollAI : public npc_escortAI
     {
         uint32 uiCount = 0;
 
-        for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+        for (std::list<Creature*>::iterator itr = ResearchersList.begin(); itr != ResearchersList.end(); ++itr)
         {
             float fAngle = uiCount < MAX_RESEARCHER ? M_PI/MAX_RESEARCHER - (uiCount*2*M_PI/MAX_RESEARCHER) : 0.0f;
 
@@ -1134,17 +1095,17 @@ struct npc_letollAI : public npc_escortAI
         }
     }
 
-    Creature* GetAvailableResearcher(uint8 uiListNum)
+    Creature* GetAvailableResearcher(uint8 ListNum)
     {
-        if (!m_lResearchersList.empty())
+        if (!ResearchersList.empty())
         {
-            uint8 uiNum = 1;
+            uint8 Num = 1;
 
-            for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+            for (std::list<Creature*>::iterator itr = ResearchersList.begin(); itr != ResearchersList.end(); ++itr)
             {
-                if (uiListNum && uiListNum != uiNum)
+                if (ListNum && ListNum != Num)
                 {
-                    ++uiNum;
+                    ++Num;
                     continue;
                 }
 
@@ -1158,30 +1119,30 @@ struct npc_letollAI : public npc_escortAI
 
     void JustStarted()
     {
-        m_uiEventTimer = 5000;
-        m_uiEventCount = 0;
+        EventTimer = 5000;
+        EventCount = 0;
 
-        m_lResearchersList.clear();
+        ResearchersList.clear();
 
         float x, y, z;
         me->GetPosition(x, y, z);
 
         Hellground::AllCreaturesOfEntryInRange check(me, NPC_RESEARCHER, 25.0f);
-        Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(m_lResearchersList, check);
+        Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(ResearchersList, check);
         Cell::VisitGridObjects(me, searcher, 25.0f);
 
-        if (!m_lResearchersList.empty())
+        if (!ResearchersList.empty())
             SetFormation();
     }
 
-    void WaypointReached(uint32 uiPointId)
+    void WaypointReached(uint32 i)
     {
-        switch(uiPointId)
+        switch(i)
         {
             case 0:
                 JustStarted();
-                if (Player* pPlayer = GetPlayerForEscort())
-                    DoScriptText(SAY_LE_KEEP_SAFE, me, pPlayer);
+                if (Player* player = GetPlayerForEscort())
+                    DoScriptText(SAY_LE_KEEP_SAFE, me, player);
                 break;
             case 1:
                 DoScriptText(SAY_LE_NORTH, me);
@@ -1192,7 +1153,7 @@ struct npc_letollAI : public npc_escortAI
             case 12:
                 DoScriptText(SAY_LE_BURIED, me);
                 me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_WORK_NOSHEATHE_MINING);
-                for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+                for (std::list<Creature*>::iterator itr = ResearchersList.begin(); itr != ResearchersList.end(); ++itr)
                 {
                     (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_WORK_NOSHEATHE_MINING);
                 }
@@ -1200,33 +1161,33 @@ struct npc_letollAI : public npc_escortAI
                 break;
             case 13:
                 me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
-                for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+                for (std::list<Creature*>::iterator itr = ResearchersList.begin(); itr != ResearchersList.end(); ++itr)
                 {
                     (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
                 }
                 SetRun();
                 break;
             case 20:
-                if (Player* pPlayer = GetPlayerForEscort())
+                if (Player* player = GetPlayerForEscort())
                 {
-                    DoScriptText(SAY_LE_THANKS, me, pPlayer);
-                    pPlayer->GroupEventHappens(QUEST_DIGGING_BONES, me);
+                    DoScriptText(SAY_LE_THANKS, me, player);
+                    player->GroupEventHappens(QUEST_DIGGING_BONES, me);
                 }
                 break;
         }
     }
 
-    void EnterCombat(Unit* pWho)
+    void EnterCombat(Unit* who)
     {
-        if (pWho->isInCombat() && pWho->GetTypeId() == TYPEID_UNIT && pWho->GetEntry() == NPC_BONE_SIFTER)
+        if (who->isInCombat() && who->GetTypeId() == TYPEID_UNIT && who->GetEntry() == NPC_BONE_SIFTER)
             DoScriptText(SAY_LE_HELP_HIM, me);
 
-        for (std::list<Creature*>::iterator itr = m_lResearchersList.begin(); itr != m_lResearchersList.end(); ++itr)
+        for (std::list<Creature*>::iterator itr = ResearchersList.begin(); itr != ResearchersList.end(); ++itr)
         {
             float x, y, z;
             me->GetPosition(x, y, z);
             (*itr)->SetHomePosition(x, y, z, 0);
-            (*itr)->AI()->AttackStart(pWho);
+            (*itr)->AI()->AttackStart(who);
         }
     }
 
@@ -1235,17 +1196,17 @@ struct npc_letollAI : public npc_escortAI
         pSummoned->AI()->AttackStart(me);
     }
 
-    void UpdateEscortAI(const uint32 uiDiff)
+    void UpdateEscortAI(const uint32 diff)
     {
         if (!UpdateVictim())
         {
             if (HasEscortState(STATE_ESCORT_PAUSED))
             {
-                if (m_uiEventTimer < uiDiff)
+                if (EventTimer < diff)
                 {
-                    m_uiEventTimer = 7000;
+                    EventTimer = 7000;
 
-                    switch(m_uiEventCount)
+                    switch(EventCount)
                     {
                         case 0:
                             DoScriptText(SAY_LE_ALMOST, me);
@@ -1254,41 +1215,41 @@ struct npc_letollAI : public npc_escortAI
                             DoScriptText(SAY_LE_DRUM, me);
                             break;
                         case 2:
-                            if (Creature* pResearcher = GetAvailableResearcher(0))
-                                DoScriptText(SAY_LE_DRUM_REPLY, pResearcher);
+                            if (Creature* Researcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_DRUM_REPLY, Researcher);
                             break;
                         case 3:
                             DoScriptText(SAY_LE_DISCOVERY, me);
                             break;
                         case 4:
-                            if (Creature* pResearcher = GetAvailableResearcher(0))
-                                DoScriptText(SAY_LE_DISCOVERY_REPLY, pResearcher);
+                            if (Creature* Researcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_DISCOVERY_REPLY, Researcher);
                             break;
                         case 5:
                             DoScriptText(SAY_LE_NO_LEAVE, me);
                             break;
                         case 6:
-                            if (Creature* pResearcher = GetAvailableResearcher(1))
-                                DoScriptText(SAY_LE_NO_LEAVE_REPLY1, pResearcher);
+                            if (Creature* Researcher = GetAvailableResearcher(1))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY1, Researcher);
                             break;
                         case 7:
-                            if (Creature* pResearcher = GetAvailableResearcher(2))
-                                DoScriptText(SAY_LE_NO_LEAVE_REPLY2, pResearcher);
+                            if (Creature* Researcher = GetAvailableResearcher(2))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY2, Researcher);
                             break;
                         case 8:
-                            if (Creature* pResearcher = GetAvailableResearcher(3))
-                                DoScriptText(SAY_LE_NO_LEAVE_REPLY3, pResearcher);
+                            if (Creature* Researcher = GetAvailableResearcher(3))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY3, Researcher);
                             break;
                         case 9:
-                            if (Creature* pResearcher = GetAvailableResearcher(4))
-                                DoScriptText(SAY_LE_NO_LEAVE_REPLY4, pResearcher);
+                            if (Creature* Researcher = GetAvailableResearcher(4))
+                                DoScriptText(SAY_LE_NO_LEAVE_REPLY4, Researcher);
                             break;
                         case 10:
                             DoScriptText(SAY_LE_SHUT, me);
                             break;
                         case 11:
-                            if (Creature* pResearcher = GetAvailableResearcher(0))
-                                DoScriptText(SAY_LE_REPLY_HEAR, pResearcher);
+                            if (Creature* Researcher = GetAvailableResearcher(0))
+                                DoScriptText(SAY_LE_REPLY_HEAR, Researcher);
                             break;
                         case 12:
                             DoScriptText(SAY_LE_IN_YOUR_FACE, me);
@@ -1300,10 +1261,10 @@ struct npc_letollAI : public npc_escortAI
                             break;
                     }
 
-                    ++m_uiEventCount;
+                    ++EventCount;
                 }
                 else
-                    m_uiEventTimer -= uiDiff;
+                    EventTimer -= diff;
             }
 
             return;
@@ -1313,21 +1274,21 @@ struct npc_letollAI : public npc_escortAI
     }
 };
 
-CreatureAI* GetAI_npc_letollAI(Creature* pCreature)
+CreatureAI* GetAI_npc_letollAI(Creature* creature)
 {
-    return new npc_letollAI(pCreature);
+    return new npc_letollAI(creature);
 }
 
-bool QuestAccept_npc_letoll(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+bool QuestAccept_npc_letoll(Player* player, Creature* creature, const Quest* quest)
 {
-    if (pQuest->GetQuestId() == QUEST_DIGGING_BONES)
+    if (quest->GetQuestId() == QUEST_DIGGING_BONES)
     {
-        if (npc_letollAI* pEscortAI = dynamic_cast<npc_letollAI*>(pCreature->AI()))
+        if (npc_letollAI* pEscortAI = dynamic_cast<npc_letollAI*>(creature->AI()))
         {
-            DoScriptText(SAY_LE_START, pCreature);
-            pCreature->setFaction(FACTION_ESCORT_N_NEUTRAL_PASSIVE);
+            DoScriptText(SAY_LE_START, creature);
+            creature->setFaction(FACTION_ESCORT_N_NEUTRAL_PASSIVE);
 
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest, true);
+            pEscortAI->Start(false, false, player->GetGUID(), quest, true);
         }
     }
 
@@ -1389,7 +1350,7 @@ enum eSarthis
 
 struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
 {
-    npc_sarthisAI(Creature* c) : npc_escortAI(c) {}
+    npc_sarthisAI(Creature* creature) : npc_escortAI(creature) {}
 
     uint64 fetishGUID;
     std::list<uint64> MinionGUID;
@@ -1412,18 +1373,18 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
 
     void WaypointReached(uint32 i)
     {
-        Player* pPlayer = GetPlayerForEscort();
+        Player* player = GetPlayerForEscort();
 
         switch(i)
         {
             case 2:
             {
-                DoScriptText(EMOTE_SARTHIS_FETISH, m_creature, pPlayer);
-                GameObject* Fetish = m_creature->SummonGameObject(GO_SARTHIS_FETISH, SummonCoord[0][0], SummonCoord[0][1], SummonCoord[0][2], 0, 0, 0, 0, 0, 180000);
-                Unit* Trigger = m_creature->SummonCreature(12999, SummonCoord[0][0], SummonCoord[0][1], SummonCoord[0][2], 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                DoScriptText(EMOTE_SARTHIS_FETISH, me, player);
+                GameObject* Fetish = me->SummonGameObject(GO_SARTHIS_FETISH, SummonCoord[0][0], SummonCoord[0][1], SummonCoord[0][2], 0, 0, 0, 0, 0, 180000);
+                Unit* Trigger = me->SummonCreature(12999, SummonCoord[0][0], SummonCoord[0][1], SummonCoord[0][2], 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
                 if(Fetish)
                     fetishGUID = Fetish->GetGUID();
-                DoScriptText(SAY_SARTHIS_START, m_creature, pPlayer);
+                DoScriptText(SAY_SARTHIS_START, me, player);
                 break;
             }
             case 6:
@@ -1431,7 +1392,7 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
                 SetEscortPaused(true);
                 if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 20, me))
                     MinionGUID.push_front(Minion->GetGUID());
-                DoCast(m_creature, SPELL_SUMMON_AIR_ELEMENTAL);
+                DoCast(me, SPELL_SUMMON_AIR_ELEMENTAL);
                 break;
             }
             case 11:
@@ -1439,8 +1400,8 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
                 SetEscortPaused(true);
                 if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 20, me))
                     MinionGUID.push_front(Minion->GetGUID());
-                DoScriptText(SAY_SARTHIS_WATER, m_creature, pPlayer);
-                DoCast(m_creature, SPELL_SUMMON_WATER_ELEMENTAL);
+                DoScriptText(SAY_SARTHIS_WATER, me, player);
+                DoCast(me, SPELL_SUMMON_WATER_ELEMENTAL);
                 break;
             }
             case 15:
@@ -1448,8 +1409,8 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
                 SetEscortPaused(true);
                 if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 30, me))
                     MinionGUID.push_front(Minion->GetGUID());
-                DoScriptText(SAY_SARTHIS_EARTH, m_creature, pPlayer);
-                DoCast(m_creature, SPELL_SUMMON_EARTH_ELEMENTAL);
+                DoScriptText(SAY_SARTHIS_EARTH, me, player);
+                DoCast(me, SPELL_SUMMON_EARTH_ELEMENTAL);
                 break;
             }
             case 21:
@@ -1457,8 +1418,8 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
                 SetEscortPaused(true);
                 if(Unit* Minion = FindCreature(NPC_MINION_OF_SARTHIS, 30, me))
                     MinionGUID.push_front(Minion->GetGUID());
-                DoScriptText(SAY_SARTHIS_FIRE, m_creature, pPlayer);
-                DoCast(m_creature, SPELL_SUMMON_FIRE_ELEMENTAL);
+                DoScriptText(SAY_SARTHIS_FIRE, me, player);
+                DoCast(me, SPELL_SUMMON_FIRE_ELEMENTAL);
                 break;
             }
             case 23:
@@ -1478,8 +1439,8 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
                     }
                 }
                 if(Unit* Fetish = FindCreature(12999, 40, me))
-                    m_creature->SetFacingToObject(Fetish);
-                DoScriptText(SAY_SARTHIS_ARCANE, m_creature, pPlayer);
+                    me->SetFacingToObject(Fetish);
+                DoScriptText(SAY_SARTHIS_ARCANE, me, player);
                 speech = true;
                 SpeechTimer = 15000;
                 CastTimer = 10000;
@@ -1507,14 +1468,14 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
     void DamageTaken(Unit* done_by, uint32& )
     {
         if(done_by->GetTypeId() == TYPEID_UNIT)
-            done_by->Kill(m_creature, false);
+            done_by->Kill(me, false);
     }
 
     void UpdateAI(const uint32 diff)
     {
         if(speech && CastTimer < diff)
         {
-            DoCast(m_creature, SPELL_SUMMON_ARCANE_ELEMENTAL);
+            DoCast(me, SPELL_SUMMON_ARCANE_ELEMENTAL);
             CastTimer = 120000; //not let cast again;
         }
         else
@@ -1524,7 +1485,7 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
         {
             if(Unit* ArcaneAcolyte = FindCreature(NPC_ARCANE_ELEMENTAL, 30, me))
             {
-                m_creature->SetFacingToObject(ArcaneAcolyte);
+                me->SetFacingToObject(ArcaneAcolyte);
                 ArcaneAcolyte->MonsterSay(SAY_ELEMENTAL_1, 0, me->GetGUID());
             }
             SpeechTimer = 120000;   //not let speak again;
@@ -1537,9 +1498,9 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
         {
             if(Unit* ArcaneAcolyte = FindCreature(NPC_ARCANE_ELEMENTAL, 30, me))
             {
-                DoScriptText(SAY_SARTHIS_FINAL, m_creature, ArcaneAcolyte);
+                DoScriptText(SAY_SARTHIS_FINAL, me, ArcaneAcolyte);
                 ArcaneAcolyte->setFaction(16);
-                ((Creature*)ArcaneAcolyte)->AI()->AttackStart(m_creature);
+                ((Creature*)ArcaneAcolyte)->AI()->AttackStart(me);
             }
             speech = false;
         }
@@ -1563,14 +1524,14 @@ struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
     }
 };
 
-CreatureAI* GetAI_npc_sarthisAI(Creature* _Creature)
+CreatureAI* GetAI_npc_sarthisAI(Creature* creature)
 {
-    return new npc_sarthisAI(_Creature);
+    return new npc_sarthisAI(creature);
 }
 
 struct HELLGROUND_DLL_DECL npc_sarthis_elementalAI : public ScriptedAI
 {
-    npc_sarthis_elementalAI(Creature* c) : ScriptedAI(c) {}
+    npc_sarthis_elementalAI(Creature* creature) : ScriptedAI(creature) {}
 
     void JustDied(Unit* killer)
     {
@@ -1591,14 +1552,14 @@ struct HELLGROUND_DLL_DECL npc_sarthis_elementalAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_sarthis_elementalAI(Creature* _Creature)
+CreatureAI* GetAI_npc_sarthis_elementalAI(Creature* creature)
 {
-    return new npc_sarthis_elementalAI(_Creature);
+    return new npc_sarthis_elementalAI(creature);
 }
 
 struct HELLGROUND_DLL_DECL npc_minion_of_sarthisAI : public ScriptedAI
 {
-    npc_minion_of_sarthisAI(Creature* c) : ScriptedAI(c) {}
+    npc_minion_of_sarthisAI(Creature* creature) : ScriptedAI(creature) {}
 
     uint32 delay;
 
@@ -1615,11 +1576,11 @@ struct HELLGROUND_DLL_DECL npc_minion_of_sarthisAI : public ScriptedAI
         {
             if(Unit* Fetish = FindCreature(12999, 40, me))
             {
-                m_creature->CastSpell(Fetish, BeamId, false);
-                m_creature->SetFacingToObject(Fetish);
+                me->CastSpell(Fetish, BeamId, false);
+                me->SetFacingToObject(Fetish);
             }
-            m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MoveIdle();
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveIdle();
         }
     }
 
@@ -1629,28 +1590,28 @@ struct HELLGROUND_DLL_DECL npc_minion_of_sarthisAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_minion_of_sarthisAI(Creature* _Creature)
+CreatureAI* GetAI_npc_minion_of_sarthisAI(Creature* creature)
 {
-    return new npc_minion_of_sarthisAI(_Creature);
+    return new npc_minion_of_sarthisAI(creature);
 }
 
-bool GossipHello_npc_sarthis(Player* pPlayer, Creature *_Creature )
+bool GossipHello_npc_sarthis(Player* player, Creature *creature )
 {
-    if( pPlayer->GetQuestStatus(QUEST_THE_SOUL_CANNON_OF_RETHHEDRON) == QUEST_STATUS_INCOMPLETE )
-        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_SARTHIS_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    if( player->GetQuestStatus(QUEST_THE_SOUL_CANNON_OF_RETHHEDRON) == QUEST_STATUS_INCOMPLETE )
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_SARTHIS_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    pPlayer->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_sarthis(Player* pPlayer, Creature* _Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_sarthis(Player* player, Creature* creature, uint32 sender, uint32 action )
 {
     if(action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        pPlayer->CLOSE_GOSSIP_MENU();
-        DoScriptText(SAY_SARTHIS_INTRO, _Creature, pPlayer);
-        CAST_AI(npc_sarthisAI,_Creature->AI())->Start(false, false, pPlayer->GetGUID());
-        CAST_AI(npc_sarthisAI,_Creature->AI())->SetMaxPlayerDistance(200.0f);
+        player->CLOSE_GOSSIP_MENU();
+        DoScriptText(SAY_SARTHIS_INTRO, creature, player);
+        CAST_AI(npc_sarthisAI,creature->AI())->Start(false, false, player->GetGUID());
+        CAST_AI(npc_sarthisAI,creature->AI())->SetMaxPlayerDistance(200.0f);
     }
     return true;
 }
@@ -1671,7 +1632,7 @@ enum RazorthornRavager
 
 struct HELLGROUND_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
 {
-    npc_razorthorn_ravagerAI(Creature* c) : ScriptedAI(c) { }
+    npc_razorthorn_ravagerAI(Creature* creature) : ScriptedAI(creature) { }
 
     uint32 RavageTimer;
     uint32 RendTimer;
@@ -1708,7 +1669,7 @@ struct HELLGROUND_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        if(m_creature->isCharmed())
+        if(me->isCharmed())
         {
             if(!me->HasReactState(REACT_AGGRESSIVE))
                 return;
@@ -1819,7 +1780,7 @@ struct HELLGROUND_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
         if(RavageTimer < diff)
         {
             if(urand(0,3))
-                AddSpellToCast(m_creature->getVictim(), SPELL_RAVAGE);
+                AddSpellToCast(me->getVictim(), SPELL_RAVAGE);
             RavageTimer = urand(17000, 20000);
         }
         else
@@ -1828,7 +1789,7 @@ struct HELLGROUND_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
         if(RendTimer < diff)
         {
             if(urand(0,3))
-                AddSpellToCast(m_creature->getVictim(), SPELL_REND);
+                AddSpellToCast(me->getVictim(), SPELL_REND);
             RendTimer = urand(15000, 20000);
         }
         else
@@ -1836,7 +1797,7 @@ struct HELLGROUND_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
 
         if(RavageTauntTimer < diff)
         {
-            AddSpellToCast(m_creature->getVictim(), SPELL_RAVAGER_TAUNT);
+            AddSpellToCast(me->getVictim(), SPELL_RAVAGER_TAUNT);
             RavageTauntTimer = urand(10000, 35000);
         }
         else
@@ -1847,14 +1808,14 @@ struct HELLGROUND_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_razorthorn_ravagerAI(Creature *_creature)
+CreatureAI* GetAI_npc_razorthorn_ravagerAI(Creature *creature)
 {
-    return new npc_razorthorn_ravagerAI(_creature);
+    return new npc_razorthorn_ravagerAI(creature);
 }
 
 struct HELLGROUND_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
 {
-    quest_the_vengeful_harbringerAI(Creature* c) : ScriptedAI(c){}
+    quest_the_vengeful_harbringerAI(Creature* creature) : ScriptedAI(creature){}
 
     uint32 visual_1_timer;
     uint32 trash_timer;
@@ -1973,7 +1934,7 @@ struct HELLGROUND_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
                 visual_energy->CastSpell(visual_energy,35510,true); // Visual BOOM
                 visual_1_timer=250000;
 
-                Creature * Dranei_Guardian = m_creature->SummonCreature(22285, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 240000);
+                Creature * Dranei_Guardian = me->SummonCreature(22285, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 240000);
                 Creature * Defender_Trigger = GetClosestCreatureWithEntry(me,21431, 20.0f);
 
                 if (!Defender_Trigger || !Dranei_Guardian)
@@ -2101,15 +2062,15 @@ struct HELLGROUND_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_quest_the_vengeful_harbringer(Creature *_creature)
+CreatureAI* GetAI_quest_the_vengeful_harbringer(Creature *creature)
 {
-    return new quest_the_vengeful_harbringerAI(_creature);
+    return new quest_the_vengeful_harbringerAI(creature);
 }
 
 
 struct HELLGROUND_DLL_DECL mob_vengeful_draeneiAI : public ScriptedAI
 {
-    mob_vengeful_draeneiAI(Creature* c) : ScriptedAI(c) { }
+    mob_vengeful_draeneiAI(Creature* creature) : ScriptedAI(creature) { }
     bool start;
 
     void JustSummoned(Creature *creature) {start=false;}
@@ -2127,9 +2088,9 @@ struct HELLGROUND_DLL_DECL mob_vengeful_draeneiAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_mob_vengeful_draenei(Creature *_creature)
+CreatureAI* GetAI_mob_vengeful_draenei(Creature *creature)
 {
-    return new mob_vengeful_draeneiAI(_creature);
+    return new mob_vengeful_draeneiAI(creature);
 }
 
 
@@ -2151,7 +2112,7 @@ CreatureAI* GetAI_mob_vengeful_draenei(Creature *_creature)
 
 struct npc_akunoAI : public npc_escortAI
 {
-    npc_akunoAI(Creature* pCreature) : npc_escortAI(pCreature) { Reset(); }
+    npc_akunoAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 
     uint32 chainLightningTimer;
 
@@ -2175,60 +2136,60 @@ struct npc_akunoAI : public npc_escortAI
 
                 break;
             case 13:
-                if (Player* pPlayer = GetPlayerForEscort())
-                    pPlayer->GroupEventHappens(QUEST_ESCAPING_THE_TOMB, me);
+                if (Player* player = GetPlayerForEscort())
+                    player->GroupEventHappens(QUEST_ESCAPING_THE_TOMB, me);
 
                 SetRun();
                 break;
         }
     }
 
-    void JustSummoned(Creature* pSummoned)
+    void JustSummoned(Creature* summoned)
     {
-        pSummoned->SetWalk(false);
-        pSummoned->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
-        pSummoned->AI()->AttackStart(me);
+        summoned->SetWalk(false);
+        summoned->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
+        summoned->AI()->AttackStart(me);
     }
 
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(const uint32 diff)
     {
-        npc_escortAI::UpdateAI(uiDiff);
+        npc_escortAI::UpdateAI(diff);
         if (!me->getVictim())
             return;
 
-        if (chainLightningTimer <= uiDiff)
+        if (chainLightningTimer <= diff)
         {
             AddSpellToCast(me->getVictim(), SPELL_AKUNO_CHAIN_LIGHTNING);
             chainLightningTimer = urand(6000, 12000);
         }
         else
-            chainLightningTimer -= uiDiff;
+            chainLightningTimer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
 
-bool QuestAccept_npc_akuno(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+bool QuestAccept_npc_akuno(Player* player, Creature* creature, const Quest* quest)
 {
-    if (pQuest->GetQuestId() == QUEST_ESCAPING_THE_TOMB)
+    if (quest->GetQuestId() == QUEST_ESCAPING_THE_TOMB)
     {
-        npc_akunoAI* pEscortAI = dynamic_cast<npc_akunoAI*>(pCreature->AI());
+        npc_akunoAI* pEscortAI = dynamic_cast<npc_akunoAI*>(creature->AI());
         if (pEscortAI)
         {
-            pCreature->SetStandState(UNIT_STAND_STATE_STAND);
-            pCreature->setFaction(232); // faction escortee
+            creature->SetStandState(UNIT_STAND_STATE_STAND);
+            creature->setFaction(232); // faction escortee
 
-            pEscortAI->Start(true, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(true, false, player->GetGUID(), quest);
         }
     }
 
     return true;
 }
 
-CreatureAI* GetAI_npc_akuno(Creature* pCreature)
+CreatureAI* GetAI_npc_akuno(Creature* creature)
 {
-    return new npc_akunoAI(pCreature);
+    return new npc_akunoAI(creature);
 }
 
 /*######
@@ -2249,21 +2210,21 @@ enum
 
 struct HELLGROUND_DLL_DECL npc_empoorAI : public ScriptedAI
 {
-    npc_empoorAI(Creature* c) : ScriptedAI(c) {}
+    npc_empoorAI(Creature* creature) : ScriptedAI(creature) {}
 
     uint32 ShockTimer;
 
     void Reset()
     {
         ShockTimer = 5000;
-        m_creature->setFaction(FACTION_FRIENDLY_A);
+        me->setFaction(FACTION_FRIENDLY_A);
     }
 
     void EnterCombat(Unit *who)
     {
-        DoCast(m_creature ,SPELL_SHIELD);
+        DoCast(me ,SPELL_SHIELD);
 
-        if (Creature* Guard = GetClosestCreatureWithEntry(m_creature, NPC_MY_BODYGUARD, 10.5f))
+        if (Creature* Guard = GetClosestCreatureWithEntry(me, NPC_MY_BODYGUARD, 10.5f))
         {
             Guard->setFaction(FACTION_HOSTILE_A);
             Guard->AI()->AttackStart(who);
@@ -2274,12 +2235,12 @@ struct HELLGROUND_DLL_DECL npc_empoorAI : public ScriptedAI
     {
         if( done_by->GetTypeId() == TYPEID_PLAYER )
         {
-            if( (m_creature->GetHealth()-damage)*100 / m_creature->GetMaxHealth() < 20 )
+            if( (me->GetHealth()-damage)*100 / me->GetMaxHealth() < 20 )
             {
                 ((Player*)done_by)->AreaExploredOrEventHappens(QUEST_BAMN);
                 damage = 0;
 
-                if (Creature* Guard = GetClosestCreatureWithEntry(m_creature, NPC_MY_BODYGUARD, 10.5f))
+                if (Creature* Guard = GetClosestCreatureWithEntry(me, NPC_MY_BODYGUARD, 10.5f))
                 {
                     Guard->setFaction(FACTION_FRIENDLY_A);
                     Guard->AI()->EnterEvadeMode();
@@ -2297,30 +2258,30 @@ struct HELLGROUND_DLL_DECL npc_empoorAI : public ScriptedAI
 
         if( ShockTimer < diff )
         {
-            DoCast(m_creature->getVictim(),SPELL_FROST_SHOCK);
+            DoCast(me->getVictim(),SPELL_FROST_SHOCK);
             ShockTimer = 15000;
         }else ShockTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_npc_empoor(Creature *_Creature)
+CreatureAI* GetAI_npc_empoor(Creature *creature)
 {
-    return new npc_empoorAI (_Creature);
+    return new npc_empoorAI (creature);
 }
 
-bool GossipHello_npc_empoor(Player *player, Creature *_Creature)
+bool GossipHello_npc_empoor(Player *player, Creature *creature)
 {
     if( player->GetQuestStatus(QUEST_BAMN) == QUEST_STATUS_INCOMPLETE)
     {
-        _Creature->setFaction(FACTION_HOSTILE_A);
-        ((npc_empoorAI*)_Creature->AI())->AttackStart(player);
+        creature->setFaction(FACTION_HOSTILE_A);
+        ((npc_empoorAI*)creature->AI())->AttackStart(player);
     }
     else
     {
-        if( _Creature->isQuestGiver() )
-            player->PrepareQuestMenu( _Creature->GetGUID() );
-        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+        if( creature->isQuestGiver() )
+            player->PrepareQuestMenu( creature->GetGUID() );
+        player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
     }
     return true;
 }
@@ -2550,14 +2511,14 @@ struct HELLGROUND_DLL_DECL npc_skywingAI : public npc_escortAI
                 break;
             case 80:
                 DoScriptText(SAY_SKYWING_SUMMON, me);
-                m_creature->SummonCreature(NPC_LUANGA_THE_IMPRISONER, LuangaSpawnCoords[0], LuangaSpawnCoords[1], LuangaSpawnCoords[2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                me->SummonCreature(NPC_LUANGA_THE_IMPRISONER, LuangaSpawnCoords[0], LuangaSpawnCoords[1], LuangaSpawnCoords[2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                 break;
             case 82:
                 DoCast(me, SPELL_TRANSFORM);
                 DoScriptText(SAY_SKYWING_END, me);
 
-                if (Player* pPlayer = GetPlayerForEscort())
-                    pPlayer->GroupEventHappens(QUEST_SKYWING, me);
+                if (Player* player = GetPlayerForEscort())
+                    player->GroupEventHappens(QUEST_SKYWING, me);
         }
     }
 
@@ -2625,7 +2586,7 @@ void AddSC_terokkar_forest()
 
     newscript = new Script;
     newscript->Name= "npc_isla_starmane";
-    newscript->GetAI = &GetAI_npc_isla_starmaneAI;
+    newscript->GetAI = &GetAI_npc_isla_starmane;
     newscript->pQuestAcceptNPC = &QuestAccept_npc_isla_starmane;
     newscript->RegisterSelf();
 
@@ -2658,7 +2619,7 @@ void AddSC_terokkar_forest()
 
     newscript = new Script;
     newscript->Name= "npc_skyguard_prisoner";
-    newscript->GetAI = &GetAI_npc_skyguard_prisonerAI;
+    newscript->GetAI = &GetAI_npc_skyguard_prisoner;
     newscript->pQuestAcceptNPC = &QuestAccept_npc_skyguard_prisoner;
     newscript->RegisterSelf();
 
