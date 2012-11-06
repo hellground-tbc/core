@@ -797,6 +797,7 @@ enum eNagrandCaptive
     SAY_MAG_LIGHTNING           = -1000486,
     SAY_MAG_SHOCK               = -1000487,
     SAY_MAG_COMPLETE            = -1000488,
+    SAY_KUR_COMPLETE            = -1900132,
 
     SPELL_CHAIN_LIGHTNING       = 16006,
     SPELL_EARTHBIND_TOTEM       = 15786,
@@ -806,6 +807,8 @@ enum eNagrandCaptive
     QUEST_TOTEM_KARDASH_H       = 9868,
     QUEST_TOTEM_KARDASH_A       = 9879,
 
+    NPC_KUR_CAPTIVE             = 18209,
+    NPC_MAG_CAPTIVE             = 18210,
     NPC_MURK_RAIDER             = 18203,
     NPC_MURK_BRUTE              = 18211,
     NPC_MURK_SCAVENGER          = 18207,
@@ -813,8 +816,8 @@ enum eNagrandCaptive
 };
 
 static float m_afAmbushAH[]= {-1568.805786, 8533.873047, 1.958};
-static float m_afAmbushAA[]= {-1512.240967, 8483.319336, -3.946};
-static float m_afAmbushB[]= {-1491.554321, 8506.483398, 1.248};
+static float m_afAmbushAA[]= {-1517.302246, 8439.866211, -4.035};
+static float m_afAmbushB[]= {-1442.524780, 8500.364258, 6.381};
 
 struct npc_nagrand_captiveAI : public npc_escortAI
 {
@@ -841,18 +844,41 @@ struct npc_nagrand_captiveAI : public npc_escortAI
         switch(uiPointId)
         {
             case 7:
-                DoScriptText(SAY_MAG_MORE, me);
+                if (me->GetEntry() == NPC_KUR_CAPTIVE)
+                {
+                    DoScriptText(SAY_MAG_MORE, me);
 
-                if (Creature* pTemp = me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0], m_afAmbushB[1], m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000))
-                    DoScriptText(SAY_MAG_MORE_REPLY, pTemp);
+                    if (Creature* pTemp = me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0], m_afAmbushB[1], m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000))
+                        DoScriptText(SAY_MAG_MORE_REPLY, pTemp);
 
-                me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0]-2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                    me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0]-2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                    me->SummonCreature(NPC_MURK_SCAVENGER, m_afAmbushB[0]+2.5f, m_afAmbushB[1]+2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                    me->SummonCreature(NPC_MURK_SCAVENGER, m_afAmbushB[0]+2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                }
+                break;
+             case 10:
+                if (me->GetEntry() == NPC_MAG_CAPTIVE)
+                {
+                    DoScriptText(SAY_MAG_MORE, me);
 
-                me->SummonCreature(NPC_MURK_SCAVENGER, m_afAmbushB[0]+2.5f, m_afAmbushB[1]+2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
-                me->SummonCreature(NPC_MURK_SCAVENGER, m_afAmbushB[0]+2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                    if (Creature* pTemp = me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0], m_afAmbushB[1], m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000))
+                        DoScriptText(SAY_MAG_MORE_REPLY, pTemp);
+
+                    me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0]-2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                    me->SummonCreature(NPC_MURK_SCAVENGER, m_afAmbushB[0]+2.5f, m_afAmbushB[1]+2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                    me->SummonCreature(NPC_MURK_SCAVENGER, m_afAmbushB[0]+2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                }
                 break;
             case 16:
-                DoScriptText(SAY_MAG_COMPLETE, me);
+                switch (me->GetEntry())
+                {
+                    case NPC_MAG_CAPTIVE:
+                        DoScriptText(SAY_MAG_COMPLETE, me);
+                        break;
+                    case NPC_KUR_CAPTIVE:
+                        DoScriptText(SAY_KUR_COMPLETE, me);
+                        break;
+                }
 
                 if (Player* pPlayer = GetPlayerForEscort())
                     pPlayer->GroupEventHappens(pPlayer->GetTeam() == ALLIANCE ? QUEST_TOTEM_KARDASH_A : QUEST_TOTEM_KARDASH_H, me);
