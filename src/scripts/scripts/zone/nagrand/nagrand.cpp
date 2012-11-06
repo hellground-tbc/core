@@ -660,89 +660,125 @@ CreatureAI* GetAI_mob_sparrowhawk(Creature *_Creature)
 
 enum CorkiCage
 {
-    QUEST_HELP1                          = 9923, // HELP!
-    NPC_CORKI_CAPITIVE1                  = 18445,
-    GO_CORKI_CAGE1                       = 182349,
+    QUEST_HELP1            = 9923, // HELP!
+    NPC_CORKI_CAPITIVE1    = 18445,
+    GO_CORKI_CAGE1         = 182349,
 
-    QUEST_HELP2                          = 9924, // Corki's Gone Missing Again!
-    NPC_CORKI_CAPITIVE2                  = 20812,
-    GO_CORKI_CAGE2                       = 182350,
+    QUEST_HELP2            = 9924, // Corki's Gone Missing Again!
+    NPC_CORKI_CAPITIVE2    = 20812,
+    GO_CORKI_CAGE2         = 182350,
 
-    QUEST_HELP3                          = 9955, // Cho'war the Pillager
-    NPC_CORKI_CAPITIVE3                  = 18369,
-    GO_CORKI_CAGE3                       = 182521
+    QUEST_HELP3            = 9955, // Cho'war the Pillager
+    NPC_CORKI_CAPITIVE3    = 18369,
+    GO_CORKI_CAGE3         = 182521,
+
+    SAY_THANKS             = -1900133,
+    SAY_KORKI2             = -1900134,
+    SAY_KORKI3             = -1900135,
+    SAY_KORKI4             = -1900136,
+    SAY_KORKI5             = -1900137,
+    SAY_KORKI6             = -1900138,
+    SAY_THANKS1            = -1900139
 };
 
 
 
 struct npc_corki_capitiveAI : public ScriptedAI
 {
-    npc_corki_capitiveAI(Creature *c) : ScriptedAI(c){}
+    npc_corki_capitiveAI(Creature *creature) : ScriptedAI(creature){}
 
-    uint32 FleeTimer;
+    uint64 PlayerGUID;
 
-  void Reset()
-  {
-    FleeTimer = 0;
-    GameObject* cage = NULL;
-    switch (me->GetEntry())
+    void Reset()
     {
-      case NPC_CORKI_CAPITIVE1:
-        cage = FindGameObject(GO_CORKI_CAGE1, 5.0f, me);
-        break;
-      case NPC_CORKI_CAPITIVE2:
-        cage = FindGameObject(GO_CORKI_CAGE2, 5.0f, me);
-        break;
-      case NPC_CORKI_CAPITIVE3:
-        cage = FindGameObject(GO_CORKI_CAGE3, 5.0f, me);
-        break;
+        PlayerGUID = NULL;
+        me->SetWalk(false);
     }
 
-     if(cage)
-      cage->ResetDoorOrButton();
-  }
-
-    void UpdateAI(const uint32 diff)
+    void MoveInLineOfSight(Unit* who)
     {
-        if(FleeTimer)
+        if (who->GetTypeId() == TYPEID_PLAYER && ((Player *)who)->GetReputationRank(978) >= REP_FRIENDLY && me->IsWithinDistInMap(((Player *)who), 20.0f))
         {
-            if(FleeTimer <= diff)
-                me->ForcedDespawn();
-            else FleeTimer -= diff;
+            if (PlayerGUID == who->GetGUID())
+            {
+                return;
+            }
+            else PlayerGUID = NULL;
+
+            switch (urand(0,4))
+            {
+                case 0:
+                    DoScriptText(SAY_KORKI2, me);
+                    break;
+                case 1: 
+                    DoScriptText(SAY_KORKI3, me);
+                    break;
+                case 2:
+                    DoScriptText(SAY_KORKI4, me);
+                    break;
+                case 3:
+                    DoScriptText(SAY_KORKI5, me);
+                    break;
+                case 4:
+                    DoScriptText(SAY_KORKI6, me);
+                    break;
+            }
+
+            PlayerGUID = who->GetGUID();
         }
+    }
+
+    void MovementInform(uint32 MotionType, uint32 i)
+    {
+        if (MotionType == POINT_MOTION_TYPE)
+            m_creature->ForcedDespawn();
     }
 };
 
-CreatureAI* GetAI_npc_corki_capitiveAI(Creature* pCreature)
+CreatureAI* GetAI_npc_corki_capitiveAI(Creature* creature)
 {
-    return new npc_corki_capitiveAI(pCreature);
+    return new npc_corki_capitiveAI(creature);
 }
 
-bool go_corki_cage(Player* pPlayer, GameObject* pGo)
+bool go_corki_cage(Player* player, GameObject* go)
 {
-   Creature* pCreature = NULL;
-    switch(pGo->GetEntry())
+   Creature* Creature = NULL;
+    switch(go->GetEntry())
     {
         case GO_CORKI_CAGE1:
-            if(pPlayer->GetQuestStatus(QUEST_HELP1) == QUEST_STATUS_INCOMPLETE)
-                pCreature = GetClosestCreatureWithEntry(pGo, NPC_CORKI_CAPITIVE1, 5.0f);
+            if(player->GetQuestStatus(QUEST_HELP1) == QUEST_STATUS_INCOMPLETE)
+                Creature = GetClosestCreatureWithEntry(go, NPC_CORKI_CAPITIVE1, 5.0f);
             break;
         case GO_CORKI_CAGE2:
-            if(pPlayer->GetQuestStatus(QUEST_HELP2) == QUEST_STATUS_INCOMPLETE)
-                pCreature = GetClosestCreatureWithEntry(pGo, NPC_CORKI_CAPITIVE2, 5.0f);
+            if(player->GetQuestStatus(QUEST_HELP2) == QUEST_STATUS_INCOMPLETE)
+                Creature = GetClosestCreatureWithEntry(go, NPC_CORKI_CAPITIVE2, 5.0f);
             break;
         case GO_CORKI_CAGE3:
-            if(pPlayer->GetQuestStatus(QUEST_HELP3) == QUEST_STATUS_INCOMPLETE)
-                pCreature = GetClosestCreatureWithEntry(pGo, NPC_CORKI_CAPITIVE3, 5.0f);
+            if(player->GetQuestStatus(QUEST_HELP3) == QUEST_STATUS_INCOMPLETE)
+                Creature = GetClosestCreatureWithEntry(go, NPC_CORKI_CAPITIVE3, 5.0f);
             break;
     }
-    if(pCreature)
+    if(Creature)
     {
-        DoScriptText(-1230010-urand(0, 2), pCreature, pPlayer);
-        pCreature->GetMotionMaster()->Clear();
-        pCreature->GetMotionMaster()->MoveFleeing(pPlayer, 3500);
-        pPlayer->KilledMonster(pCreature->GetEntry(), pCreature->GetGUID());
-        CAST_AI(npc_corki_capitiveAI, pCreature->AI())->FleeTimer = 3500;
+        switch (Creature->GetEntry())
+        {
+            case NPC_CORKI_CAPITIVE1:
+                DoScriptText(SAY_THANKS, Creature, player);
+                Creature->GetMotionMaster()->Clear();
+                Creature->GetMotionMaster()->MovePoint(0, -2534.01f, 6269.02f, 17.14f);
+                break;
+            case NPC_CORKI_CAPITIVE2:
+                DoScriptText(SAY_THANKS1, Creature, player);
+                Creature->GetMotionMaster()->Clear();
+                Creature->GetMotionMaster()->MovePoint(0, -1000.26f, 8113.16f, -95.85f);
+                break;
+            case NPC_CORKI_CAPITIVE3:
+                DoScriptText(SAY_THANKS, Creature, player);
+                Creature->GetMotionMaster()->Clear();
+                Creature->GetMotionMaster()->MovePoint(0, -897.06f, 8688.03f, 170.47f);
+                break;
+        }
+        player->KilledMonster(Creature->GetEntry(), Creature->GetGUID());
         return false;
     }
     return true;
