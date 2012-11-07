@@ -317,7 +317,9 @@ void AuthSocket::SendProof(Sha1Hash sha)
     }
 }
 
+#ifdef REGEX_NAMESPACE
 PatternList AuthSocket::pattern_banned = PatternList();
+#endif
 
 /// Logon Challenge command handler
 bool AuthSocket::_HandleLogonChallenge()

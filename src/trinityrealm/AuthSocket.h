@@ -75,7 +75,9 @@ class AuthSocket: public BufferedSocket
 
         void _SetVSFields(const std::string& rI);
 
+#ifdef REGEX_NAMESPACE
         static PatternList pattern_banned;
+#endif
 
     private:
 
