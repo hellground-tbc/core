@@ -697,7 +697,7 @@ struct npc_corki_capitiveAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER && ((Player *)who)->GetReputationRank(978) >= REP_FRIENDLY && me->IsWithinDistInMap(((Player *)who), 20.0f))
+        if (who->GetTypeId() == TYPEID_PLAYER && ((Player *)who)->GetTeam() == ALLIANCE && me->IsWithinDistInMap(((Player *)who), 20.0f))
         {
             if (PlayerGUID == who->GetGUID())
             {
@@ -1039,6 +1039,240 @@ CreatureAI* GetAI_npc_multiphase_disturbance(Creature* pCreature)
     return new npc_multiphase_disurbanceAI(pCreature);
 }
 
+/*#####
+## go_maghar_prison & npc_maghar_prisoner
+#####*/
+
+enum
+{
+    QUEST_SURVIVORS       = 9948,
+    NPC_MPRISONER         = 18428,
+
+    SAY_MAG_PRISONER1     = -1900148,
+    SAY_MAG_PRISONER2     = -1900149,
+    SAY_MAG_PRISONER3     = -1900150,
+    SAY_MAG_PRISONER4     = -1900151,
+    SAYT_MAG_PRISONER1    = -1900152,
+    SAYT_MAG_PRISONER2    = -1900153,
+    SAYT_MAG_PRISONER3    = -1900154,
+    SAYT_MAG_PRISONER4    = -1900155
+};
+
+struct WP
+{
+    float x, y, z;
+};
+
+static WP M[]=
+{
+    {-1076.000f, 8945.270f, 101.891f},
+    {-782.796f, 8875.171f, 181.745f},
+    {-670.298f, 8810.587f, 196.057f},
+    {-710.969f, 8763.471f, 186.513f},
+    {-865.144f, 8713.610f, 248.041f},
+    {-847.285f, 8722.406f, 177.255f},
+    {-897.005f, 8689.280f, 170.527},
+    {-838.047f, 8691.124f, 180.549f}
+};
+
+struct npc_maghar_prisonerAI : public ScriptedAI
+{
+    npc_maghar_prisonerAI(Creature *creature) : ScriptedAI(creature) {}
+
+    uint32 DieTimer;
+    uint64 PlayerGUID;
+
+    void Reset()
+    {
+        DieTimer = 0;
+        PlayerGUID = 0;
+        me->SetWalk(false);
+        me->SetVisibility(VISIBILITY_ON); //???
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER && ((Player *)who)->GetTeam() == HORDE && me->IsWithinDistInMap(((Player *)who), 20.0f))
+        {
+            if (PlayerGUID == who->GetGUID())
+            {
+                return;
+            }
+            else PlayerGUID = NULL;
+
+            switch (urand(0,3))
+            {
+                case 0:
+                    DoScriptText(SAY_MAG_PRISONER1, me);
+                    break;
+                case 1:
+                    DoScriptText(SAY_MAG_PRISONER2, me);
+                    break;
+                case 2:
+                    DoScriptText(SAY_MAG_PRISONER3, me);
+                    break;
+                case 3:
+                    DoScriptText(SAY_MAG_PRISONER4, me);
+                    break;
+            }
+            PlayerGUID = who->GetGUID();
+        }
+    }
+
+    uint32 WaypointID()
+    {
+        switch (me->GetGUIDLow())
+        {
+            case 65828:
+            case 65826:
+            case 65827:
+            case 65825:
+            case 65829:
+                return 1;
+                break;
+            case 65823:
+            case 65824:
+            case 65821:
+            case 65815:
+                return 2;
+                break;
+            case 65814:
+                return 3;
+                break;
+            case 65813:
+                return 4;
+                break;
+            case 65819:
+            case 65820:
+                return 5;
+                break;
+            case 65817:
+            case 65822:
+            case 65816:
+                return 6;
+                break;
+            case 65831:
+            case 65832:
+            case 65830:
+                return 7;
+                break;
+            case 65818:
+                return 8;
+                break;
+            default:
+                return 1;
+                break;
+        }
+    }
+
+    void StartRun(Player* player)
+    {
+        switch (WaypointID())
+        {
+            case 1:
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, M[0].x, M[0].y, M[0].z);
+                break;
+            case 2:
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, M[1].x, M[1].y, M[1].z);
+                break;
+            case 3:
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, M[2].x, M[2].y, M[2].z);
+                break;
+            case 4:
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, M[3].x, M[3].y, M[3].z);
+                break;
+            case 5:
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, M[4].x, M[4].y, M[4].z);
+                break;
+            case 6:
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, M[5].x, M[5].y, M[5].z);
+                break;
+            case 7:
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, M[6].x, M[6].y, M[6].z);
+                break;
+            case 8:
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, M[7].x, M[7].y, M[7].z);
+                break;
+        }
+        return;
+    }
+
+    void MovementInform(uint32 MotionType, uint32 i)
+    {
+        if (MotionType == POINT_MOTION_TYPE)
+        {
+            //me->ForcedDespawn();
+            me->SetVisibility(VISIBILITY_OFF); //???
+            me->GetMotionMaster()->MoveTargetedHome(); //???
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+	{
+        if(DieTimer)
+        {
+            if(DieTimer <= diff)
+            {
+                me->ForcedDespawn();
+            }
+            else DieTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_maghar_prisoner(Creature* creature)
+{
+    return new npc_maghar_prisonerAI(creature);
+}
+
+bool go_maghar_prison(Player* player, GameObject* go)
+{
+    Creature* Prisoner = NULL;
+
+    if (player->GetQuestStatus(QUEST_SURVIVORS) == QUEST_STATUS_INCOMPLETE)
+    {
+        Prisoner = GetClosestCreatureWithEntry(go, NPC_MPRISONER, 5.0f);
+
+        if(Prisoner)
+        {
+            player->KilledMonster(NPC_MPRISONER, Prisoner->GetGUID());
+
+            switch (urand(0,3))
+            {
+                case 0:
+                    DoScriptText(SAYT_MAG_PRISONER1, Prisoner, player);
+                    break;
+                case 1:
+                    DoScriptText(SAYT_MAG_PRISONER2, Prisoner, player);
+                    break;
+                case 2:
+                    DoScriptText(SAYT_MAG_PRISONER3, Prisoner, player);
+                    break;
+                case 3:
+                    DoScriptText(SAYT_MAG_PRISONER4, Prisoner, player);
+                    break;
+            }
+
+            if (npc_maghar_prisonerAI* scriptedAI = CAST_AI(npc_maghar_prisonerAI, Prisoner->AI()))
+            {
+                scriptedAI->StartRun(player);
+                scriptedAI->DieTimer = 20000;
+            }
+
+			return false;
+        }
+    }
+    return true;
+};
+
 void AddSC_nagrand()
 {
     Script *newscript;
@@ -1108,5 +1342,15 @@ void AddSC_nagrand()
     newscript = new Script;
     newscript->Name = "npc_multiphase_disturbance";
     newscript->GetAI = &GetAI_npc_multiphase_disturbance;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_maghar_prison";
+    newscript->pGOUse =  &go_maghar_prison;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_maghar_prisoner";
+    newscript->GetAI = &GetAI_npc_maghar_prisoner;
     newscript->RegisterSelf();
 }
