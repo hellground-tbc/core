@@ -2867,13 +2867,18 @@ void Spell::EffectApplyAura(uint32 i)
     if (!unitTarget)
         return;
 
+    // what the fuck is done here? o.O
+    SpellEntry const* spellInfo = sSpellStore.LookupEntry(m_spellInfo->Id);
+    if (!spellInfo)
+        return;
+
     SpellImmuneList const& list = unitTarget->m_spellImmune[IMMUNITY_STATE];
     for (SpellImmuneList::const_iterator itr = list.begin(); itr != list.end(); ++itr)
-        if (itr->type == m_spellInfo->EffectApplyAuraName[i])
+        if (itr->type == spellInfo->EffectApplyAuraName[i])
             return;
 
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
-    if (!unitTarget->isAlive() && m_spellInfo->Id != 20584 && m_spellInfo->Id != 8326 &&
+    if (!unitTarget->isAlive() && spellInfo->Id != 20584 && spellInfo->Id != 8326 &&
         (unitTarget->GetTypeId()!=TYPEID_PLAYER || !((Player*)unitTarget)->GetSession()->PlayerLoading()))
         return;
 
@@ -2881,25 +2886,25 @@ void Spell::EffectApplyAura(uint32 i)
     if (!caster)
         return;
 
-    sLog.outDebug("Spell: Aura is: %u", m_spellInfo->EffectApplyAuraName[i]);
+    sLog.outDebug("Spell: Aura is: %u", spellInfo->EffectApplyAuraName[i]);
 
-    Aura* Aur = CreateAura(m_spellInfo, i, &damage, unitTarget, caster, m_CastItem);
+    Aura* Aur = CreateAura(spellInfo, i, &damage, unitTarget, caster, m_CastItem);
 
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
-    if (!SpellMgr::IsPositiveSpell(m_spellInfo->Id))
+    if (!SpellMgr::IsPositiveSpell(spellInfo->Id))
     {
-        if (unitTarget != caster || !SpellMgr::IsChanneledSpell(m_spellInfo))
+        if (unitTarget != caster || !SpellMgr::IsChanneledSpell(spellInfo))
         {
-            unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel, m_spellInfo);
+            unitTarget->ApplyDiminishingToDuration(m_diminishGroup,duration,caster,m_diminishLevel, spellInfo);
             Aur->setDiminishGroup(m_diminishGroup);
         }
     }
 
     //mod duration of channeled aura by spell haste
-    if (SpellMgr::IsChanneledSpell(m_spellInfo))
+    if (SpellMgr::IsChanneledSpell(spellInfo))
     {
-        caster->ModSpellCastTime(m_spellInfo, duration, this);
+        caster->ModSpellCastTime(spellInfo, duration, this);
         SendChannelStart(duration);
     }
 
@@ -2931,15 +2936,15 @@ void Spell::EffectApplyAura(uint32 i)
     if (unitTarget->GetTypeId()==TYPEID_PLAYER ||(unitTarget->GetTypeId()==TYPEID_UNIT && ((Creature*)unitTarget)->isPet()))              // Negative buff should only be applied on players
     {
         uint32 spellId = 0;
-        if (m_spellInfo->CasterAuraStateNot==AURA_STATE_WEAKENED_SOUL || m_spellInfo->TargetAuraStateNot==AURA_STATE_WEAKENED_SOUL)
+        if (spellInfo->CasterAuraStateNot==AURA_STATE_WEAKENED_SOUL || spellInfo->TargetAuraStateNot==AURA_STATE_WEAKENED_SOUL)
             spellId = 6788;                                 // Weakened Soul
-        else if (m_spellInfo->CasterAuraStateNot==AURA_STATE_FORBEARANCE || m_spellInfo->TargetAuraStateNot==AURA_STATE_FORBEARANCE)
+        else if (spellInfo->CasterAuraStateNot==AURA_STATE_FORBEARANCE || spellInfo->TargetAuraStateNot==AURA_STATE_FORBEARANCE)
             spellId = 25771;                                // Forbearance
-        else if (m_spellInfo->CasterAuraStateNot==AURA_STATE_HYPOTHERMIA)
+        else if (spellInfo->CasterAuraStateNot==AURA_STATE_HYPOTHERMIA)
             spellId = 41425;                                // Hypothermia
-        else if (m_spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
+        else if (spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
             spellId = 11196;                                // Recently Bandaged
-        else if ((m_spellInfo->AttributesEx & 0x20) && (m_spellInfo->AttributesEx2 & 0x20000))
+        else if ((spellInfo->AttributesEx & 0x20) && (spellInfo->AttributesEx2 & 0x20000))
             spellId = 23230;                                // Blood Fury - Healing Reduction
 
         SpellEntry const *AdditionalSpellInfo = sSpellStore.LookupEntry(spellId);
@@ -2953,7 +2958,7 @@ void Spell::EffectApplyAura(uint32 i)
     }
 
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
+    if (spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (spellInfo->SpellFamilyFlags & 0x00002000000000LL))
         m_caster->CastSpell(unitTarget, 41637, true, NULL, Aur, m_originalCasterGUID);
 }
 
