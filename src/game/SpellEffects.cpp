@@ -5320,6 +5320,17 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     switch (m_spellInfo->Id)
     {
         // we need script here, because KillCreadit in DB is used for diff quest :p
+        case 32314:
+        {
+            uint32 const CREDIT_MARKER = 18393;
+            if (Player* caster = m_caster->ToPlayer())
+            {
+                caster->KilledMonster(CREDIT_MARKER, unitTarget->GetGUID());
+                if (Creature* creature = unitTarget->ToCreature())
+                    creature->RemoveCorpse();
+            }
+            break;
+        }
         case 32307:
         {
             uint32 const CREDIT_MARKER = 18388;
