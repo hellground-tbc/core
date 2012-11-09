@@ -2934,6 +2934,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 40103: // Sludge Nova
                 spellInfo->EffectBasePoints[0] = urand(24, 29);
                 break;
+            case 40076://Electric Spur (used by Coilskar Wrangler 22877 in BlackTemple)
+               spellInfo->EffectBasePoints[1] = 2;
+               break;
             /****************/
             // do NOT remove encapsulate on druid shapeshift, attribute is added higher, so is safe to remove it here
             case 45665:
