@@ -218,10 +218,14 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
             pInstance->SetData(DATA_FELMYST_EVENT, NOT_STARTED);
 
         summons.DespawnAll();   // for any other summons? (should not be needed?)
+
+         me->setActive(false);
     }
 
     void EnterCombat(Unit *who)
     {
+        me->setActive(true);
+
         DoZoneInCombat();
         RemoveMCAuraIfExist();  // just in case
         EnterPhase(PHASE_GROUND);
@@ -251,16 +255,16 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
-        if(Phase == PHASE_NULL)
+        if (Phase == PHASE_NULL)
             return;
 
-        if(Phase != PHASE_FLIGHT && Phase != PHASE_RESPAWNING)
+        if (Phase != PHASE_FLIGHT && Phase != PHASE_RESPAWNING)
             ScriptedAI::AttackStart(who);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(Phase == PHASE_NULL)
+        if (Phase == PHASE_NULL)
             return;
 
         if(Phase != PHASE_FLIGHT && Phase != PHASE_RESPAWNING)
@@ -618,6 +622,21 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
         }
     }
 
+    bool UpdateVictim()
+    {
+        switch (Phase)
+        {
+            case PHASE_FLIGHT:
+            {
+                if (me->GetMap()->GetAlivePlayersCountExceptGMs() == 0)
+                    EnterEvadeMode();
+
+                 return false;
+            }
+            default:
+                 return ScriptedAI::UpdateVictim();
+        }
+    }
     void UpdateAI(const uint32 diff)
     {
         if(IntroTimer)
@@ -628,7 +647,7 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
                 IntroTimer -= diff;
         }
 
-        if (!UpdateVictim() && Phase != PHASE_FLIGHT)
+        if (!UpdateVictim())
             return;
 
         if(PulseCombat < diff)
