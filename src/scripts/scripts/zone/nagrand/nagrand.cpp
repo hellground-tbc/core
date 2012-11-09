@@ -1273,6 +1273,260 @@ bool go_maghar_prison(Player* player, GameObject* go)
     return true;
 };
 
+/*#####
+## npc_warmaul_pyre Q 9932
+#####*/
+
+enum
+{
+    NPC_SABOTEUR         = 18396,
+    NPC_CORPSE           = 18397,
+
+    SAY_SABOTEUR1        = -1900192,
+    SAY_SABOTEUR2        = -1900193,
+    SAY_SABOTEUR3        = -1900194,
+    SAY_SABOTEUR4        = -1900195,
+    SAY_SABOTEUR5        = -1900196,
+    SAY_SABOTEUR6        = -1900197,
+    SAY_SABOTEUR7        = -1900198,
+    SAY_SABOTEUR8        = -1900199,
+    SAY_SABOTEUR9        = -1900200,
+    SAY_SABOTEUR10       = -1900201
+};
+
+struct Move
+{
+    float x, y, z;
+};
+
+static Move Z[]=
+{
+    {-885.76f, 7717.75f, 35.24f},
+    {-882.96f, 7723.00f, 34.78f},
+    {-871.40f, 7724.87f, 33.36f},
+    {-873.16F, 7727.59f, 33.35f},
+    {-855.66f, 7732.36f, 33.42f},
+    {-855.44f, 7735.44f, 33.44f},
+    {-843.39f, 7726.59f, 34.50f},
+    {-840.20f, 7728.34f, 34.39f},
+    {-848.31f, 7714.37f, 34.42f},
+    {-845.44f, 7710.70f, 35.05f},
+    {-859.99f, 7713.96f, 35.94f},
+    {-859.70f, 7710.61f, 36.68f},
+    {-873.74f, 7720.35f, 33.98f},
+    {-875.16f, 7717.15f, 34.39f}
+};
+
+struct HELLGROUND_DLL_DECL npc_warmaul_pyreAI : public ScriptedAI
+{
+    npc_warmaul_pyreAI(Creature* creature) : ScriptedAI(creature) {}
+
+    bool Event;
+
+    std::list<Creature*> SaboteurList;
+    ObjectGuid PlayerGUID;
+    uint32 StepsTimer;
+    uint32 Steps;
+    uint32 CorpseCount;
+    uint32 MoveCount;
+
+    void Reset()
+    {
+        Event = false;
+        PlayerGUID = 0;
+        StepsTimer =0;
+        Steps = 0;
+        CorpseCount = 0;
+        MoveCount = 1;
+        me->SetVisibility(VISIBILITY_OFF);
+    }
+
+    void EnterCombat(Unit *who){}
+
+    void DoSpawn()
+    {
+        me->SummonCreature(NPC_SABOTEUR, Z[0].x, Z[0].y, Z[0].z, 0.6f, TEMPSUMMON_CORPSE_DESPAWN, 60000);
+        me->SummonCreature(NPC_SABOTEUR, Z[1].x, Z[1].y, Z[1].z, 3.8f, TEMPSUMMON_CORPSE_DESPAWN, 60000);
+    }
+
+	void DoSummon()
+    {
+        ++CorpseCount;
+
+        uint32 Time = 100000 - (10000 *CorpseCount);
+
+        if (Creature* Saboteur = GetSaboteur(2))
+        {
+            Saboteur->HandleEmoteCommand(EMOTE_ONESHOT_KNEEL);
+            me->SummonCreature(NPC_CORPSE, Saboteur->GetPositionX(), Saboteur->GetPositionY(), Saboteur->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, Time);
+        }
+
+        if (Creature* Saboteur = GetSaboteur(1))
+        {
+            Saboteur->HandleEmoteCommand(EMOTE_ONESHOT_KNEEL);
+            me->SummonCreature(NPC_CORPSE, Saboteur->GetPositionX(), Saboteur->GetPositionY(), Saboteur->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, Time);
+        }
+    }
+
+    void Move()
+    {
+        ++MoveCount;
+        if (Creature* Saboteur = GetSaboteur(2))
+            Saboteur->GetMotionMaster()->MovePoint(0, Z[MoveCount].x, Z[MoveCount].y, Z[MoveCount].z);
+
+        ++MoveCount;
+        if (Creature* Saboteur = GetSaboteur(1))
+            Saboteur->GetMotionMaster()->MovePoint(0, Z[MoveCount].x, Z[MoveCount].y, Z[MoveCount].z);
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        if (summoned->GetEntry() == NPC_SABOTEUR)
+            summoned->SetWalk(true);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (((Player*)who)->GetQuestStatus(9932) == QUEST_STATUS_INCOMPLETE)
+            {
+                if (me->IsWithinDistInMap(((Player *)who), 3.0f))
+                {
+                    PlayerGUID = who->GetObjectGuid();
+                    Event = true;
+                }
+            }
+        }
+    }
+
+    void Started()
+    {
+        SaboteurList.clear();
+
+        Hellground::AllCreaturesOfEntryInRange check(me, NPC_SABOTEUR, 25.0f);
+        Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(SaboteurList, check);
+        Cell::VisitGridObjects(me, searcher, 25.0f);
+    }
+
+    Creature* GetSaboteur(uint8 ListNum)
+    {
+        if (!SaboteurList.empty())
+        {
+            uint8 Num = 1;
+
+            for (std::list<Creature*>::iterator itr = SaboteurList.begin(); itr != SaboteurList.end(); ++itr)
+            {
+                if (ListNum && ListNum != Num)
+                {
+                    ++Num;
+                    continue;
+                }
+
+                if ((*itr)->isAlive() && (*itr)->IsWithinDistInMap(me, 25.0f))
+                    return (*itr);
+            }
+        }
+
+        return NULL;
+    }
+
+    uint32 NextStep(uint32 Steps)
+    {
+        switch(Steps)
+        {
+            case 1:DoSpawn();
+                return 4000;
+            case 2:Started();
+                return 2900;
+            case 3:if (Creature* Saboteur = GetSaboteur(2))
+                       DoScriptText(SAY_SABOTEUR1, Saboteur);
+                return 5000;
+            case 4:if (Creature* Saboteur = GetSaboteur(1))
+                       DoScriptText(SAY_SABOTEUR2, Saboteur);
+                return 5000;
+            case 5:if (Creature* Saboteur = GetSaboteur(2))
+                       DoScriptText(SAY_SABOTEUR3, Saboteur);
+                return 5000;
+            case 6:if (Creature* Saboteur = GetSaboteur(1))
+                       DoScriptText(SAY_SABOTEUR4, Saboteur);
+                return 4000;
+            case 7:Move();
+                return 6000;
+            case 8:DoSummon();
+                return 2000;
+            case 9:if (Creature* Saboteur = GetSaboteur(2))
+                       DoScriptText(SAY_SABOTEUR5, Saboteur);
+                return 2000;
+            case 10:Move();
+                return 7000;
+            case 11:DoSummon();
+                return 2000;
+            case 12:if (Creature* Saboteur = GetSaboteur(1))
+                        DoScriptText(SAY_SABOTEUR6, Saboteur);
+                return 2000;
+            case 13:Move();
+                return 7000;
+            case 14:DoSummon();
+                return 2000;
+            case 15:if (Creature* Saboteur = GetSaboteur(2))
+                        DoScriptText(SAY_SABOTEUR7, Saboteur);
+                return 3000;
+            case 16:if (Creature* Saboteur = GetSaboteur(1))
+                        DoScriptText(SAY_SABOTEUR7, Saboteur);
+                return 2000;
+            case 17:Move();
+                return 7000;
+            case 18:DoSummon();
+                return 2000;     
+            case 19:if (Creature* Saboteur = GetSaboteur(2))
+                        DoScriptText(SAY_SABOTEUR8, Saboteur);
+                return 3000;           
+            case 21:if (Creature* Saboteur = GetSaboteur(1))
+                        DoScriptText(SAY_SABOTEUR9, Saboteur);
+                return 2000; 
+            case 22:Move();
+                return 7000;
+            case 23:DoSummon();
+                return 2000;
+            case 24:if (Creature* Saboteur = GetSaboteur(2))
+                        DoScriptText(SAY_SABOTEUR10, Saboteur);
+                return 2000; 
+            case 25:Move();
+                return 7000;
+            case 26:if (Player* player = me->GetPlayer(PlayerGUID))
+                    {
+                        float Radius = 15.0f;
+                        if (me->IsWithinDistInMap(player, Radius))
+                            ((Player*)player)->KilledMonster(18395, me->GetObjectGuid());
+                    }
+                return 2000;
+            case 27:for (std::list<Creature*>::iterator itr = SaboteurList.begin(); itr != SaboteurList.end(); ++itr)
+                    {
+                        (*itr)->ForcedDespawn();
+                    }
+                    Reset();
+        default: return 0;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+
+        if (StepsTimer <= diff)
+        {
+            if (Event)
+                StepsTimer = NextStep(++Steps);
+        }
+        else StepsTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_warmaul_pyre(Creature *_Creature)
+{
+    return new npc_warmaul_pyreAI (_Creature);
+}
+
 void AddSC_nagrand()
 {
     Script *newscript;
@@ -1352,5 +1606,10 @@ void AddSC_nagrand()
     newscript = new Script;
     newscript->Name = "npc_maghar_prisoner";
     newscript->GetAI = &GetAI_npc_maghar_prisoner;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_warmaul_pyre";
+    newscript->GetAI = &GetAI_npc_warmaul_pyre;
     newscript->RegisterSelf();
 }
