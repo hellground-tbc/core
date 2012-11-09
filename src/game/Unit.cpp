@@ -10054,6 +10054,11 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
     // prevent random generator from getting confused by spells casted with Unit::CastCustomSpell
     int32 randvalue = spellProto->EffectBaseDice[effect_index] >= randomPoints ? spellProto->EffectBaseDice[effect_index]:irand(spellProto->EffectBaseDice[effect_index], randomPoints);
     int32 value = basePoints + randvalue;
+
+    // hacky formula for lowlvl spells with high spelldmg after spelllevel calc
+    if (getLevel() < 13 && GetObjectGuid().IsCreature() && value > int32(GetMaxHealth()*0.09))
+        value = int32(GetMaxHealth()*0.07);
+
     //random damage
     if (comboDamage != 0 && unitPlayer /*&& target && (target->GetGUID() == unitPlayer->GetComboTarget())*/)
         value += (int32)(comboDamage * comboPoints);
