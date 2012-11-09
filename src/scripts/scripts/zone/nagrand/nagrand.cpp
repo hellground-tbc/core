@@ -1527,6 +1527,64 @@ CreatureAI* GetAI_npc_warmaul_pyre(Creature *_Creature)
     return new npc_warmaul_pyreAI (_Creature);
 }
 
+/*######
+## npc_fel_cannon
+######*/
+
+enum
+{
+    NPC_CANNON_FEAR           = 19210,
+    NPC_FEAR_TARGET           = 19211,
+    NPC_CANNON_HATE           = 19067,
+    NPC_HATE_TARGET           = 19212,
+
+    SPELL_BOLT                = 40109,
+    SPELL_HATE                = 33531,
+    SPELL_FEAR                = 33532,
+
+    OBJECT_LARGE_FIRE         = 187084,
+
+
+};
+
+struct HELLGROUND_DLL_DECL npc_fel_cannonAI : public ScriptedAI
+{
+    npc_fel_cannonAI(Creature *creature) : ScriptedAI(creature) {}
+
+    void Reset(){}
+
+    void EnterCombat(Unit *who){}
+
+    void SpellHit(Unit *hitter, const SpellEntry *spellkind)
+    {
+        if(spellkind->Id == SPELL_HATE && me->GetEntry() == NPC_CANNON_HATE)
+        {
+            if (Creature* Target = GetClosestCreatureWithEntry(me, NPC_HATE_TARGET, 85.5f))
+            {
+                me->SetFacingToObject(Target);
+                DoCast(Target, SPELL_BOLT);
+                me->SummonGameObject(OBJECT_LARGE_FIRE, Target->GetPositionX(), Target->GetPositionY(), Target->GetPositionZ(), Target->GetOrientation(), 0, 0, 0, 0, 30);
+            }
+        }
+
+        if(spellkind->Id == SPELL_FEAR && me->GetEntry() == NPC_CANNON_FEAR)
+        {
+            if (Creature* Target = GetClosestCreatureWithEntry(me, NPC_FEAR_TARGET, 85.5f))
+            {
+                me->SetFacingToObject(Target);
+                DoCast(Target, SPELL_BOLT);
+                me->SummonGameObject(OBJECT_LARGE_FIRE, Target->GetPositionX(), Target->GetPositionY(), Target->GetPositionZ(), Target->GetOrientation(), 0, 0, 0, 0, 30);
+            }
+        }
+        return;
+    }
+};
+CreatureAI* GetAI_npc_fel_cannon(Creature *creature)
+{
+    return new npc_fel_cannonAI (creature);
+}
+
+
 void AddSC_nagrand()
 {
     Script *newscript;
@@ -1611,5 +1669,10 @@ void AddSC_nagrand()
     newscript = new Script;
     newscript->Name="npc_warmaul_pyre";
     newscript->GetAI = &GetAI_npc_warmaul_pyre;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_fel_cannon";
+    newscript->GetAI = &GetAI_npc_fel_cannon;
     newscript->RegisterSelf();
 }
