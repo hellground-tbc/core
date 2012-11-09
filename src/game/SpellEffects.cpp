@@ -306,22 +306,27 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
 
 void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 {
+    // what the fuck is done here? o.O
+    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spellInfo->Id);
+    if (!spellInfo)
+        return;
+
     if (unitTarget && unitTarget->isAlive())
     {
         float totalDmgModPct = 1.0f;
         float attackPowerCoefficient = 0.0f;
         float rangedAttackPowerCoefficient = 0.0f;
-        switch (m_spellInfo->SpellFamilyName)
+        switch (spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_GENERIC:
             {
                 //Gore
-                if (m_spellInfo->SpellIconID == 2269)
+                if (spellInfo->SpellIconID == 2269)
                 {
                      damage += (rand32()%2 ? damage : 0);
                 }
 
-                if (m_spellInfo->Id == 37841)
+                if (spellInfo->Id == 37841)
                 {
                     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
                     {
@@ -334,7 +339,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 }
 
                 // Self-damage
-                if (m_spellInfo->Id == 44998)
+                if (spellInfo->Id == 44998)
                 {
                     if (100*unitTarget->GetHealth()/unitTarget->GetMaxHealth() <= 50)
                     {
@@ -347,7 +352,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 }
 
                 // Meteor like spells (divided damage to targets)
-                if (m_spellInfo->AttributesCu & SPELL_ATTR_CU_SHARE_DAMAGE)
+                if (spellInfo->AttributesCu & SPELL_ATTR_CU_SHARE_DAMAGE)
                 {
                     uint32 count = 0;
                     for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
@@ -362,7 +367,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     damage /= count;                    // divide to all targets
                 }
 
-                switch (m_spellInfo->Id)                     // better way to check unknown
+                switch (spellInfo->Id)                     // better way to check unknown
                 {
                     case 35354: //Hand of Death
                     {
@@ -395,10 +400,10 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if (unitTarget->GetGUID() == m_caster->GetGUID() || unitTarget->GetTypeId() != TYPEID_PLAYER)
                             return;
 
-                        float radius = SpellMgr::GetSpellRadius(m_spellInfo,0,false);
+                        float radius = SpellMgr::GetSpellRadius(spellInfo,0,false);
                         if (!radius) return;
                         float distance = m_caster->GetDistance2d(unitTarget);
-                        damage = (distance > radius) ? 0 : (int32)(m_spellInfo->EffectBasePoints[0]*((radius - distance)/radius));
+                        damage = (distance > radius) ? 0 : (int32)(spellInfo->EffectBasePoints[0]*((radius - distance)/radius));
                         // Set the damage directly without spell bonus damage
                         m_damage += damage;
                         damage = 0;
@@ -415,7 +420,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             case SPELLFAMILY_MAGE:
             {
                 // Arcane Blast
-                if (m_spellInfo->SpellFamilyFlags & 0x20000000LL)
+                if (spellInfo->SpellFamilyFlags & 0x20000000LL)
                 {
                     m_caster->CastSpell(m_caster,36032,true);
                 }
@@ -424,16 +429,16 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             case SPELLFAMILY_WARRIOR:
             {
                 // Bloodthirst
-                if (m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
+                if (spellInfo->SpellFamilyFlags & 0x40000000000LL)
                 {
                     attackPowerCoefficient += float(damage) *0.01f; // Base damage shows us percentage of AP that need be added
                     damage = 0; // clear this, we have now how much AP should be taken
                 }
                 // Shield Slam
-                else if (m_spellInfo->SpellFamilyFlags & 0x100000000LL)
+                else if (spellInfo->SpellFamilyFlags & 0x100000000LL)
                     damage += int32(m_caster->GetShieldBlockValue());
                 // Victory Rush
-                else if (m_spellInfo->SpellFamilyFlags & 0x10000000000LL)
+                else if (spellInfo->SpellFamilyFlags & 0x10000000000LL)
                 {
                     attackPowerCoefficient += float(damage) *0.01f; // Base damage shows us percentage of AP that need be added
                     damage = 0; // clear this, we have now how much AP should be taken
@@ -444,7 +449,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             case SPELLFAMILY_WARLOCK:
             {
                 // Incinerate Rank 1 & 2
-                if ((m_spellInfo->SpellFamilyFlags & 0x00004000000000LL) && m_spellInfo->SpellIconID==2128)
+                if ((spellInfo->SpellFamilyFlags & 0x00004000000000LL) && spellInfo->SpellIconID==2128)
                 {
                     // Incinerate does more dmg (dmg*0.25) if the target is Immolated.
                     if (unitTarget->HasAuraState(AURA_STATE_IMMOLATE))
@@ -467,14 +472,14 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     }
                 }
                 // Incinerate, Sunwell Warlock in MgT
-                if (m_spellInfo->Id == 44519 || m_spellInfo->Id == 46043)
+                if (spellInfo->Id == 44519 || spellInfo->Id == 46043)
                 {
                     // Incinerate does more dmg (dmg*0.25) if the target is Immolated.
                     if (unitTarget->HasAura(44518, 0) || unitTarget->HasAura(46042, 0))
                         damage += int32(damage*0.25);
                 }
                 // Shadow bolt
-                if (m_spellInfo->SpellFamilyFlags & 1)
+                if (spellInfo->SpellFamilyFlags & 1)
                 {
                     // T5 bonus - increase corruption on shadow bolt hit
                     if (m_caster->HasAura(37384, 0))
@@ -494,7 +499,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     }
                 }
                 // Conflagrate - consumes immolate
-                if (m_spellInfo->TargetAuraState == AURA_STATE_IMMOLATE)
+                if (spellInfo->TargetAuraState == AURA_STATE_IMMOLATE)
                 {
                     // for caster applied auras only
                     Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
@@ -513,26 +518,26 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             case SPELLFAMILY_DRUID:
             {
                 // Ferocious Bite
-                if ((m_spellInfo->SpellFamilyFlags & 0x000800000) && m_spellInfo->SpellVisual==6587)
+                if ((spellInfo->SpellFamilyFlags & 0x000800000) && spellInfo->SpellVisual==6587)
                 {
                     // converts each extra point of energy into ($f1+$AP/630) additional damage
                     int extraEnergy = (m_caster->GetPower(POWER_ENERGY) - GetPowerCost());
-                    damage += int32(extraEnergy * m_spellInfo->DmgMultiplier[effect_idx]);
+                    damage += int32(extraEnergy * spellInfo->DmgMultiplier[effect_idx]);
                     m_caster->SetPower(POWER_ENERGY, GetPowerCost());
                     attackPowerCoefficient += extraEnergy / 630.0f + 0.1526f;
                 }
                 // Rake
-                else if (m_spellInfo->SpellFamilyFlags & 0x0000000000001000LL && m_spellInfo->SpellIconID == 494)
+                else if (spellInfo->SpellFamilyFlags & 0x0000000000001000LL && spellInfo->SpellIconID == 494)
                 {
                     attackPowerCoefficient += 0.01f;
                 }
                 // Swipe
-                else if (m_spellInfo->SpellFamilyFlags & 0x0010000000000000LL)
+                else if (spellInfo->SpellFamilyFlags & 0x0010000000000000LL)
                 {
                     attackPowerCoefficient += 0.08f;
                 }
                 // Starfire
-                else if (m_spellInfo->SpellFamilyFlags & 0x0004LL)
+                else if (spellInfo->SpellFamilyFlags & 0x0004LL)
                 {
                     Unit::AuraList const& m_OverrideClassScript = m_caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                     for (Unit::AuraList::const_iterator i = m_OverrideClassScript.begin(); i != m_OverrideClassScript.end(); ++i)
@@ -563,8 +568,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     }
                 }
                 //Mangle Bonus for the initial damage of Lacerate and Rake
-                if ((m_spellInfo->SpellFamilyFlags==0x0000000000001000LL && m_spellInfo->SpellIconID==494) ||
-                    (m_spellInfo->SpellFamilyFlags==0x0000010000000000LL && m_spellInfo->SpellIconID==2246))
+                if ((spellInfo->SpellFamilyFlags==0x0000000000001000LL && spellInfo->SpellIconID==494) ||
+                    (spellInfo->SpellFamilyFlags==0x0000010000000000LL && spellInfo->SpellIconID==2246))
                 {
                     Unit::AuraList const& mDummyAuras = unitTarget->GetAurasByType(SPELL_AURA_DUMMY);
                     for (Unit::AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
@@ -575,14 +580,14 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         }
                 }
                 // L5 Arcane Charge (its weird that it is claimed to be DRUID spell :D)
-                if (m_spellInfo->Id == 41360)
+                if (spellInfo->Id == 41360)
                     damage = unitTarget->GetMaxHealth();
                 break;
             }
             case SPELLFAMILY_ROGUE:
             {
                 // Envenom
-                if (m_caster->GetTypeId()==TYPEID_PLAYER && (m_spellInfo->SpellFamilyFlags & 0x800000000LL))
+                if (m_caster->GetTypeId()==TYPEID_PLAYER && (spellInfo->SpellFamilyFlags & 0x800000000LL))
                 {
                     // consume from stack dozes not more that have combo-points
                     if (uint32 combo = ((Player*)m_caster)->GetComboPoints())
@@ -618,7 +623,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     }
                 }
                 // Eviscerate
-                else if ((m_spellInfo->SpellFamilyFlags & 0x00020000LL) && m_caster->GetTypeId()==TYPEID_PLAYER)
+                else if ((spellInfo->SpellFamilyFlags & 0x00020000LL) && m_caster->GetTypeId()==TYPEID_PLAYER)
                 {
                     if (uint32 combo = ((Player*)m_caster)->GetComboPoints())
                     {
@@ -634,17 +639,17 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             case SPELLFAMILY_HUNTER:
             {
                 // Mongoose Bite
-                if ((m_spellInfo->SpellFamilyFlags & 0x000000002) && m_spellInfo->SpellVisual==342)
+                if ((spellInfo->SpellFamilyFlags & 0x000000002) && spellInfo->SpellVisual==342)
                 {
                     attackPowerCoefficient += 0.2f;
                 }
                 // Arcane Shot
-                else if ((m_spellInfo->SpellFamilyFlags & 0x00000800) && m_spellInfo->maxLevel > 0)
+                else if ((spellInfo->SpellFamilyFlags & 0x00000800) && spellInfo->maxLevel > 0)
                 {
                     rangedAttackPowerCoefficient += 0.15f;
                 }
                 // Steady Shot
-                else if (m_spellInfo->SpellFamilyFlags & 0x100000000LL)
+                else if (spellInfo->SpellFamilyFlags & 0x100000000LL)
                 {
                     int32 base = irand((int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE),(int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE));
                     damage += int32(float(base)/m_caster->GetAttackTime(RANGED_ATTACK)*2800);
@@ -665,10 +670,10 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
                     //TODO: should this be put on taken but not done?
                     if (found)
-                        damage += m_spellInfo->EffectBasePoints[1];
+                        damage += spellInfo->EffectBasePoints[1];
                 }
                 //Explosive Trap Effect
-                else if (m_spellInfo->SpellFamilyFlags & 0x00000004)
+                else if (spellInfo->SpellFamilyFlags & 0x00000004)
                 {
                     rangedAttackPowerCoefficient += 0.1f;
                 }
@@ -677,7 +682,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             case SPELLFAMILY_PALADIN:
             {
                 //Judgement of Vengeance
-                if ((m_spellInfo->SpellFamilyFlags & 0x800000000LL) && m_spellInfo->SpellIconID==2292 && m_spellInfo->Id != 42463)
+                if ((spellInfo->SpellFamilyFlags & 0x800000000LL) && spellInfo->SpellIconID==2292 && spellInfo->Id != 42463)
                 {
                     uint32 stacks = 0;
                     Unit::AuraList const& auras = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
@@ -699,7 +704,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
             case SPELLFAMILY_SHAMAN:
             {
                 // Lightning Bolt & Chain Lightning
-                if (m_spellInfo->SpellFamilyFlags & 0x0003LL)
+                if (spellInfo->SpellFamilyFlags & 0x0003LL)
                 {
                     bool stop = false;
                     Unit::AuraList const& auras = m_caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
@@ -740,7 +745,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
         }
 
         if (m_originalCaster && damage > 0)
-            damage = m_originalCaster->SpellDamageBonus(unitTarget, m_spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
+            damage = m_originalCaster->SpellDamageBonus(unitTarget, spellInfo, (uint32)damage, SPELL_DIRECT_DAMAGE);
 
         damage *= totalDmgModPct;
 
