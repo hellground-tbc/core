@@ -1450,6 +1450,112 @@ bool QuestAccept_npc_maxx_a_million(Player* pPlayer, Creature* pCreature, const 
 }
 
 /*######
+## npc_scrapped_reaver
+######*/
+
+enum
+{
+    NPC_ZAXXIS                  = 20287,
+
+    SPELL_ZAPPER                = 35282
+};
+
+struct HELLGROUND_DLL_DECL npc_scrapped_reaverAI : public ScriptedAI
+{
+    npc_scrapped_reaverAI(Creature *creature) : ScriptedAI(creature) {}
+
+    bool Ambush;
+
+    uint32 ZaxxTimer;
+
+    void Reset()
+    {
+        Ambush = false;
+        ZaxxTimer = 10000;
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+    }
+
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if(spell->Id == SPELL_ZAPPER && caster->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (((Player*)caster)->GetQuestStatus(10309) == QUEST_STATUS_INCOMPLETE)
+            {
+                ScriptedAI::AttackStart(caster);
+                Ambush = true;
+            }
+        }
+    }
+
+    void SpawnZaxx()
+    {
+        float angle = 0.0f;
+
+        switch (urand(0,2))
+        {
+            case 0: angle = 2.3f; break;
+            case 1: angle = 3.4f; break;
+            case 2: angle = 4.8f; break;
+        }
+
+        float x, y, z;
+
+        me->GetNearPoint(me, x, y, z, 0.0f, 35.0f, angle);
+        me->SummonCreature(NPC_ZAXXIS, x, y, z+2, me->GetAngle(x, y), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 7000);
+    }
+
+    void ByeZaxx()
+    {
+        std::list<Creature*> zaxx = FindAllCreaturesWithEntry(NPC_ZAXXIS, 40.0f);
+
+        for(std::list<Creature*>::iterator it = zaxx.begin(); it != zaxx.end(); it++)
+            (*it)->ForcedDespawn();
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        if (summoned->GetEntry() == NPC_ZAXXIS)
+        {
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f))
+            {
+                summoned->AI()->AttackStart(target);
+            }
+            else summoned->GetMotionMaster()->MoveChase(me);
+        }
+    }
+
+    void JustDied(Unit* killer)
+    {
+        ByeZaxx();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if (Ambush)
+        {
+            if(ZaxxTimer <= diff)
+            {
+                SpawnZaxx();
+
+                if(urand(0, 99) > 53)
+                    SpawnZaxx();
+
+                ZaxxTimer = 24000;
+            }
+            else ZaxxTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_scrapped_reaver(Creature *creature)
+{
+    return new npc_scrapped_reaverAI (creature);
+}
+
+/*######
 ## AddSC_netherstrom
 ######*/
 
@@ -1546,6 +1652,11 @@ void AddSC_netherstorm()
     newscript->Name = "npc_maxx_a_million";
     newscript->GetAI = &GetAI_npc_maxx_a_million;
     newscript->pQuestAcceptNPC = &QuestAccept_npc_maxx_a_million;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_scrapped_reaver";
+    newscript->GetAI = &GetAI_npc_scrapped_reaver;
     newscript->RegisterSelf();
 }
 

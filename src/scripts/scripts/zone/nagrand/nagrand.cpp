@@ -1398,7 +1398,7 @@ struct HELLGROUND_DLL_DECL npc_warmaul_pyreAI : public ScriptedAI
                 if (me->IsWithinDistInMap(((Player *)who), 3.0f))
                 {
                     PlayerGUID = who->GetObjectGuid();
-                    Event = true;                     // this is not the best way to start thr event :)
+                    Event = true;                     // this is not the best way to start the event :)
                 }
             }
         }
@@ -1547,8 +1547,6 @@ enum
     SPELL_FEAR                = 33532,
 
     OBJECT_LARGE_FIRE         = 187084,
-
-
 };
 
 struct HELLGROUND_DLL_DECL npc_fel_cannonAI : public ScriptedAI
