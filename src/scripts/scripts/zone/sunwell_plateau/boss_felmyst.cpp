@@ -629,9 +629,12 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
             case PHASE_FLIGHT:
             {
                 if (me->GetMap()->GetAlivePlayersCountExceptGMs() == 0)
+                {
                     EnterEvadeMode();
+                    return false;
+                }
 
-                 return false;
+                return true;
             }
             default:
                  return ScriptedAI::UpdateVictim();
