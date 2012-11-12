@@ -307,7 +307,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
 void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 {
     // what the fuck is done here? o.O
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spellInfo->Id);
+    SpellEntry const* spellInfo = sSpellStore.LookupEntry(m_spellInfo->Id);
     if (!spellInfo)
         return;
 
