@@ -1462,10 +1462,11 @@ enum
 
 struct HELLGROUND_DLL_DECL npc_scrapped_reaverAI : public ScriptedAI
 {
-    npc_scrapped_reaverAI(Creature *creature) : ScriptedAI(creature) {}
+    npc_scrapped_reaverAI(Creature *creature) : ScriptedAI(creature), zaxxis(me) {}
 
     bool Ambush;
 
+    SummonList zaxxis;
     uint32 ZaxxTimer;
 
     void Reset()
@@ -1489,31 +1490,17 @@ struct HELLGROUND_DLL_DECL npc_scrapped_reaverAI : public ScriptedAI
 
     void SpawnZaxx()
     {
-        float angle = 0.0f;
-
-        switch (urand(0,2))
-        {
-            case 0: angle = 2.3f; break;
-            case 1: angle = 3.4f; break;
-            case 2: angle = 4.8f; break;
-        }
-
+        float angle = RAND(2.3f, 3.4f, 4.8f);
         float x, y, z;
 
         me->GetNearPoint(me, x, y, z, 0.0f, 35.0f, angle);
         me->SummonCreature(NPC_ZAXXIS, x, y, z+2, me->GetAngle(x, y), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 7000);
     }
 
-    void ByeZaxx()
-    {
-        std::list<Creature*> zaxx = FindAllCreaturesWithEntry(NPC_ZAXXIS, 40.0f);
-
-        for(std::list<Creature*>::iterator it = zaxx.begin(); it != zaxx.end(); it++)
-            (*it)->ForcedDespawn();
-    }
-
     void JustSummoned(Creature* summoned)
     {
+        zaxxis.Summon(summoned);
+
         if (summoned->GetEntry() == NPC_ZAXXIS)
         {
             if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f))
@@ -1526,7 +1513,7 @@ struct HELLGROUND_DLL_DECL npc_scrapped_reaverAI : public ScriptedAI
 
     void JustDied(Unit* killer)
     {
-        ByeZaxx();
+        zaxxis.DespawnAll();
     }
 
     void UpdateAI(const uint32 diff)
