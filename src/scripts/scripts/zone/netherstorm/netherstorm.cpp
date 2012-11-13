@@ -2010,6 +2010,162 @@ CreatureAI* GetAI_npc_controller(Creature *creature)
 }
 
 /*######
+## npc_protectorate_demolitionist
+######*/
+
+enum
+{
+    SAY_INTRO                = -1900206,
+    SAY_ATTACKED_1           = -1900207,
+    SAY_ATTACKED_2           = -1900208,
+    SAY_STAGING_GROUNDS      = -1900209,
+    SAY_TOXIC_HORROR         = -1900210,
+    SAY_SALHADAAR            = -1900211,
+    SAY_DISRUPTOR            = -1900212,
+    SAY_NEXUS_PROTECT        = -1900213,
+    SAY_FINISH_1             = -1900214,
+    SAY_FINISH_2             = -1900215,
+
+    SPELL_PROTECTORATE       = 35679,
+
+    NPC_NEXUS_STALKER        = 20474,
+    NPC_ARCHON               = 20458,
+
+    QUEST_DELIVERING_MESSAGE = 10406
+};
+
+struct HELLGROUND_DLL_DECL npc_protectorate_demolitionistAI : public npc_escortAI
+{
+    npc_protectorate_demolitionistAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
+
+    uint32 EventTimer;
+    uint8 EventStage;
+
+    void Reset()
+    {
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            EventTimer = 0;
+            EventStage = 0;
+        }
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        DoScriptText(urand(0, 1) ? SAY_ATTACKED_1 : SAY_ATTACKED_2, me);
+    }
+
+    void AttackStart(Unit* who) {}
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (HasEscortState(STATE_ESCORT_ESCORTING))
+            return;
+
+        if (who->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (who->HasAura(SPELL_PROTECTORATE) && ((Player*)who)->GetQuestStatus(QUEST_DELIVERING_MESSAGE) == QUEST_STATUS_INCOMPLETE)
+            {
+                if (me->IsWithinDistInMap(who, 10.0f))
+                {
+                    me->setFaction(FACTION_ESCORT_N_NEUTRAL_PASSIVE);
+                    Start(false, false, ((Player *)who)->GetGUID());
+                }
+            }
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        if (summoned->GetEntry() == NPC_NEXUS_STALKER)
+            DoScriptText(SAY_NEXUS_PROTECT, summoned);
+        else if (summoned->GetEntry() == NPC_ARCHON)
+            summoned->CastSpell(summoned, SPELL_ETHEREAL_TELEPORT, true);
+
+        summoned->AI()->AttackStart(me);
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        switch (i)
+        {
+            case 0:
+                DoScriptText(SAY_INTRO, me);
+                break;
+            case 3:
+                DoScriptText(SAY_STAGING_GROUNDS, me);
+                break;
+            case 4:
+                DoScriptText(SAY_TOXIC_HORROR, me);
+                break;
+            case 9:
+                DoScriptText(SAY_SALHADAAR, me);
+                break;
+            case 12:
+                DoScriptText(SAY_DISRUPTOR, me);
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_WORK_NOSHEATHE);
+                SetEscortPaused(true);
+                EventTimer = 5000;
+                break;
+            case 13:
+                DoScriptText(SAY_FINISH_2, me);
+                if (Player* player = GetPlayerForEscort())
+                {
+                    m_creature->SetFacingToObject(player);
+                    player->GroupEventHappens(QUEST_DELIVERING_MESSAGE, me);
+                }
+                SetEscortPaused(true);
+                EventTimer = 6000;
+                break;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if (EventTimer)
+        {
+            if (EventTimer <= diff)
+            {
+                switch (EventStage)
+                {
+                    case 0:
+                        me->SummonCreature(NPC_ARCHON, 3875.69f, 2308.72f, 115.80f, 1.48f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                        EventTimer = 8000;
+                        break;
+                    case 1:
+                        me->SummonCreature(NPC_NEXUS_STALKER, 3884.06f, 2325.22f, 111.37f, 3.45f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                        me->SummonCreature(NPC_NEXUS_STALKER, 3861.54f, 2320.44f, 111.48f, 0.32f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                        EventTimer = 16000;
+                        break;
+                    case 2:
+                        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
+                        DoScriptText(SAY_FINISH_1, me);
+                        SetRun();
+                        SetEscortPaused(false);
+                        EventTimer = 0;
+                        break;
+                    case 3:
+                        DoCast(me, SPELL_ETHEREAL_TELEPORT);
+                        me->ForcedDespawn(1000);
+                        EventTimer = 0;
+                        break;
+                }
+                ++EventStage;
+            }
+            else
+                EventTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_protectorate_demolitionist(Creature* creature)
+{
+    return new npc_protectorate_demolitionistAI(creature);
+}
+
+/*######
 ## AddSC_netherstrom
 ######*/
 
@@ -2128,6 +2284,11 @@ void AddSC_netherstorm()
     newscript = new Script;
     newscript->Name="npc_controller";
     newscript->GetAI = &GetAI_npc_controller;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_protectorate_demolitionist";
+    newscript->GetAI = &GetAI_npc_protectorate_demolitionist;
     newscript->RegisterSelf();
 }
 

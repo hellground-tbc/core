@@ -41,6 +41,7 @@ go_sacred_fire_of_life
 go_field_repair_bot_74A
 go_teleporter
 go_hive_pod
+go_ethereum_transponder_zeta
 EndContentData */
 
 #include "precompiled.h"
@@ -435,6 +436,20 @@ bool GOUse_go_DISCO(Player* pPlayer, GameObject* pGO)
     return false;
 }
 
+/*######
+## go_ethereum_transponder_zeta
+######*/
+
+#define NPC_AMEER  20482
+
+bool GOUse_go_ethereum_transponder_zeta(Player* pPlayer, GameObject* pGO)
+{
+    pGO->UseDoorOrButton(60);
+    pPlayer->SummonCreature(NPC_AMEER, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+1, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 60000);
+	
+    return true;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -534,6 +549,11 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_DISCO";
     newscript->pGOUse = &GOUse_go_DISCO;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_ethereum_transponder_zeta";
+    newscript->pGOUse = &GOUse_go_ethereum_transponder_zeta;
     newscript->RegisterSelf();
 }
 
