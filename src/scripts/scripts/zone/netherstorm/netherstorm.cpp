@@ -1807,6 +1807,209 @@ bool QuestAccept_npc_drijya(Player* player, Creature* creature, const Quest* que
 }
 
 /*######
+## npc_captured_vanguard
+######*/
+
+enum
+{
+    SAY_VANGUARD_INTRO                  = -1900202,
+    SAY_VANGUARD_START                  = -1900203,
+    SAY_VANGUARD_FINISH                 = -1900204,
+    EMOTE_VANGUARD_FINISH               = -1900205,
+
+    SPELL_ETHEREAL_TELEPORT             = 34427,
+    SPELL_GLAIVE                        = 36500,
+    SPELL_HAMSTRING                     = 31553,
+
+    NPC_GLADIATOR                       = 20854,
+    NPC_VANGUARD                        = 20763,
+    NPC_COMMANDER_AMEER                 = 20448,
+
+    QUEST_ESCAPE_STAGING_GROUNDS        = 10425,
+};
+
+struct HELLGROUND_DLL_DECL npc_captured_vanguardAI : public npc_escortAI
+{
+    npc_captured_vanguardAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
+
+    bool CanStart;
+    bool CantStart;
+
+    uint32 GlaiveTimer;
+    uint32 HamstringTimer;
+    uint32 CheckTimer;
+    uint32 EndTimer;
+
+    void Reset()
+    {
+        CanStart = true;
+        CantStart = false;
+        GlaiveTimer = urand(4000, 8000);
+        HamstringTimer = urand(8000, 13000);
+        CheckTimer = 2000;
+        EndTimer = 0;
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        switch (i)
+        {
+            case 15:
+                if (Player* pPlayer = GetPlayerForEscort())
+                    pPlayer->GroupEventHappens(QUEST_ESCAPE_STAGING_GROUNDS, me);
+                break;
+            case 16:
+                DoScriptText(SAY_VANGUARD_FINISH, me);
+                SetRun();
+                break;
+            case 17:
+                if (Creature* Ameer = GetClosestCreatureWithEntry(me, NPC_COMMANDER_AMEER, 5.0f))
+                    DoScriptText(EMOTE_VANGUARD_FINISH, me, Ameer);
+                break;
+            case 18:
+                DoCast(me, SPELL_ETHEREAL_TELEPORT);
+                me->ForcedDespawn(1000);
+                break;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if (CanStart)
+        {
+            if (CheckTimer <= diff)              //for any case with timer.
+            {
+                if (Creature* Gladiator = GetClosestCreatureWithEntry(me, NPC_GLADIATOR, 40.0f, false))
+                {
+                    DoScriptText(SAY_VANGUARD_INTRO, me);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+                    CanStart = false;
+                    EndTimer = 40000;
+                    CantStart = true;
+                }
+
+            CheckTimer = 2000;
+            }
+            else CheckTimer -= diff;
+        }
+
+        if (CantStart)
+        {
+            if (EndTimer <= diff)
+            {
+                if (HasEscortState(STATE_ESCORT_ESCORTING))
+                {
+                    CantStart = false;
+                    return;
+                }
+                else
+                {
+                    DoCast(me, SPELL_ETHEREAL_TELEPORT);
+                    me->ForcedDespawn(1500);
+                }
+           }
+           else EndTimer -= diff;
+        }
+
+        if (!me->getVictim())
+            return;
+		
+        if (GlaiveTimer < diff)
+        {
+            DoCast(me->getVictim(), SPELL_GLAIVE);
+            GlaiveTimer = urand(5000, 9000);
+        }
+        else
+            GlaiveTimer -= diff;
+
+        if (HamstringTimer < diff)
+        {
+            DoCast(me->getVictim(), SPELL_HAMSTRING);
+            HamstringTimer = urand(10000, 16000);
+        }
+        else
+            HamstringTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_captured_vanguard(Creature* creature)
+{
+    return new npc_captured_vanguardAI(creature);
+}
+
+bool QuestAccept_npc_captured_vanguard(Player* player, Creature* creature, const Quest* quest)
+{
+    if (quest->GetQuestId() == QUEST_ESCAPE_STAGING_GROUNDS)
+    {
+        if (npc_captured_vanguardAI* pEscortAI = dynamic_cast<npc_captured_vanguardAI*>(creature->AI()))
+            pEscortAI->Start(true, false, player->GetGUID(), quest);
+
+        DoScriptText(SAY_VANGUARD_START, creature, player);
+    }
+
+    return true;
+}
+
+/*######
+## npc_controller
+######*/
+
+struct HELLGROUND_DLL_DECL npc_controllerAI : public ScriptedAI
+{
+    npc_controllerAI(Creature *creature) : ScriptedAI(creature) {}
+
+    bool CanSpawn;
+
+    void Reset()
+    {
+        CanSpawn = true;
+        me->SetVisibility(VISIBILITY_OFF);
+    }
+
+    void MoveInLineOfSight(Unit *who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER && !((Player*)who)->GetQuestRewardStatus(QUEST_ESCAPE_STAGING_GROUNDS))
+        {
+            if (me->IsWithinDistInMap(((Player *)who), 8.0f))
+            {
+                DoSpawn();
+                CanSpawn = false;
+                me->ForcedDespawn(120000);
+            }
+        }
+    }
+
+    void DoSpawn()
+    {
+        if (CanSpawn)
+        {
+            me->SummonCreature(NPC_VANGUARD, 4055.96f, 2296.44f, 113.29f, 0.8f, TEMPSUMMON_CORPSE_DESPAWN, 7000);
+            me->SummonCreature(NPC_GLADIATOR, 4055.65f, 2322.45f, 112.39f, 3.1f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 7000);
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+            if (summoned->GetEntry() == NPC_GLADIATOR)
+            {
+                if (Creature* Vanguard = GetClosestCreatureWithEntry(me, NPC_VANGUARD, 20.0f))
+                    summoned->AI()->AttackStart(Vanguard);
+            }
+
+        summoned->CastSpell(summoned, SPELL_ETHEREAL_TELEPORT, true);
+    }
+};
+
+CreatureAI* GetAI_npc_controller(Creature *creature)
+{
+    return new npc_controllerAI (creature);
+}
+
+/*######
 ## AddSC_netherstrom
 ######*/
 
@@ -1914,6 +2117,17 @@ void AddSC_netherstorm()
     newscript->Name = "npc_drijya";
     newscript->GetAI = &GetAI_npc_drijya;
     newscript->pQuestAcceptNPC = &QuestAccept_npc_drijya;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_captured_vanguard";
+    newscript->GetAI = &GetAI_npc_captured_vanguard;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_captured_vanguard;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_controller";
+    newscript->GetAI = &GetAI_npc_controller;
     newscript->RegisterSelf();
 }
 
