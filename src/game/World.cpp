@@ -2598,6 +2598,9 @@ void World::UpdateAllowedSecurity()
 
 void World::SelectRandomHeroicDungeonDaily()
 {
+    if (sGameEventMgr.GetEventMap().empty())
+        return;
+
     const uint32 HeroicEventStart = 100;
     const uint32 HeroicEventEnd   = 115;
 
@@ -2625,6 +2628,9 @@ void World::SelectRandomHeroicDungeonDaily()
 
 void World::SelectRandomDungeonDaily()
 {
+    if (sGameEventMgr.GetEventMap().empty())
+        return;
+
     const uint32 DungeonEventStart = 116;
     const uint32 DungeonEventEnd   = 123;
 
@@ -2652,6 +2658,9 @@ void World::SelectRandomDungeonDaily()
 
 void World::SelectRandomCookingDaily()
 {
+    if (sGameEventMgr.GetEventMap().empty())
+        return;
+
     const uint32 CookingEventStart = 124;
     const uint32 CookingEventEnd   = 127;
 
@@ -2679,6 +2688,9 @@ void World::SelectRandomCookingDaily()
 
 void World::SelectRandomFishingDaily()
 {
+    if (sGameEventMgr.GetEventMap().empty())
+        return;
+
     const uint32 FishingEventStart = 128;
     const uint32 FishingEventEnd   = 132;
 
@@ -2707,6 +2719,9 @@ void World::SelectRandomFishingDaily()
 
 void World::SelectRandomPvPDaily()
 {
+    if (sGameEventMgr.GetEventMap().empty())
+        return;
+
     const uint32 PvPEventStart = 133;
     const uint32 PvPEventEnd   = 136;
 
