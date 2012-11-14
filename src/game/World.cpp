@@ -1095,7 +1095,10 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ENABLE_FAKE_WHO_ON_ARENA] = sConfig.GetBoolDefault("Arena.EnableFakeWho", false);
     m_configs[CONFIG_ENABLE_FAKE_WHO_IN_GUILD] = sConfig.GetBoolDefault("Arena.EnableFakeWho.ForGuild", false);
 
-    sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 0);
+    sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 1);
+    // needed to prevent wrong values from old config (remove it someday)
+    if (sessionThreads < 1)
+        sessionThreads = 1;
 
     // VMSS system
     m_configs[CONFIG_VMSS_ENABLE] = sConfig.GetBoolDefault("VMSS.Enable", false);
@@ -1893,29 +1896,8 @@ void World::UpdateSessions(const uint32 & diff)
     while (addSessQueue.next(sess))
         AddSession_ (sess);
 
-    if (sessionThreads)
-        tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size(), m_sessions.size()/sessionThreads), SessionsUpdater(&m_sessions, diff));
-    else
-    {
-        ///- Then send an update signal to remaining ones
-        for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)
-        {
-            next = itr;
-            ++next;
-
-            if (!itr->second)
-                continue;
-
-            ///- and remove not active sessions from the list
-            WorldSession * pSession = itr->second;
-            WorldSessionFilter updater(pSession);
-            if (!pSession->Update(diff, updater))   // As interval = 0
-            {
-                RemoveQueuedPlayer(pSession);
-                AddSessionToRemove(itr);
-            }
-        }
-    }
+    ///- Then send an update signal to remaining ones
+    tbb::parallel_for(tbb::blocked_range<int>(0, m_sessions.size(), m_sessions.size()/sessionThreads), SessionsUpdater(&m_sessions, diff));
 
     for (std::list<SessionMap::iterator>::iterator itr = removedSessions.begin(); itr != removedSessions.end(); ++itr)
     {

@@ -221,10 +221,10 @@ EAIErrorLevel = 2
 #                 1 Log will be Printed on each Map Update Cycle
 #
 #    SessionUpdate.Threads
-#         Number of threads to update sessions (0 - disable).
+#         Number of threads to update sessions.
 #         WARNING: DON'T use if you don't know what you are doing ... this feature waits for
 #         necessary improvements.
-#         Default: 0
+#         Default: 1
 #
 #    SessionUpdate.MaxTime
 #         Max time to update sessions. If session update time will be greater then method from
