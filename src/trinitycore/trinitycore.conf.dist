@@ -242,6 +242,8 @@ EAIErrorLevel = 2
 #    SessionUpdate.VerboseLog
 #         Enables session verbose log (prints to session diff log file if max time was exceeded)
 #         Default: 0 (disabled)
+#                  1 Log if diff is greater then SessionUpdate.MaxTime
+#                  2 Log if diff is greater then MinRecordUpdateTimeSessionDiff
 #
 ###################################################################################################################
 

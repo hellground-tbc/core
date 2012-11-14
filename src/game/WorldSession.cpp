@@ -296,7 +296,7 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
 bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 {
     RecordSessionTimeDiff(NULL);
-    bool verbose = sWorld.getConfig(CONFIG_SESSION_UPDATE_VERBOSE_LOG);
+    uint32 verbose = sWorld.getConfig(CONFIG_SESSION_UPDATE_VERBOSE_LOG);
     std::vector<VerboseLogInfo> packetOpcodeInfo;
 
     if (updater.ProcessTimersUpdate())
@@ -332,7 +332,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     {
         while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
         {
-            if (verbose)
+            if (verbose > 0)
             {
                 RecordVerboseTimeDiff(true);
                 ProcessPacket(packet);
@@ -351,7 +351,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     }
 
     bool overtime = false;
-    if (RecordSessionTimeDiff("[%s]: packets. Accid %u ", __FUNCTION__, GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+    uint32 overtimediff = RecordSessionTimeDiff("[%s]: packets. Accid %u ", __FUNCTION__, GetAccountId());
+
+    if (overtimediff > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
         overtime = true;
 
     if (updater.ProcessWardenUpdate())
@@ -374,27 +376,35 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             case OVERTIME_KICK:
                 KickPlayer();
             case OVERTIME_LOG:
-            {
-                if (verbose)
-                {
-                    std::stringstream overtimeText;
-                    overtimeText << "\n#################################################\n";
-                    overtimeText << "Overtime verbose info for account " << GetAccountId();
-                    overtimeText << "\nPacket count: " << packetOpcodeInfo.size();
-                    overtimeText << "\nPacket info:\n";
-
-                    for (std::vector<VerboseLogInfo>::const_iterator itr = packetOpcodeInfo.begin(); itr != packetOpcodeInfo.end(); ++itr)
-                        overtimeText << "  " << (*itr).opcode << " (" << (*itr).diff << ")\n";
-
-                    overtimeText << "#################################################";
-                    sLog.outLog(LOG_SESSION_DIFF, overtimeText.str().c_str());
-                }
-
                 sLog.outLog(LOG_DEFAULT, "ERROR: %s: session for account %u was too long", __FUNCTION__, GetAccountId());
-            }
             default:
                 break;
         }
+    }
+
+    bool logverbose = false;
+    if (verbose == 1) // log only if overtime
+        if (overtime && GetSecurity() < SEC_MODERATOR && sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD) >= OVERTIME_LOG)
+            logverbose = true;
+
+    if (verbose == 2) // log if session update is logged as slow
+        if (overtimediff > sWorld.getConfig(CONFIG_MIN_LOG_SESSION_UPDATE))
+            logverbose = true;
+
+    if (logverbose)
+    {
+        std::stringstream overtimeText;
+        overtimeText << "\n#################################################\n";
+        overtimeText << "Overtime verbose info for account " << GetAccountId();
+        overtimeText << "\nPacket Processing Time: " << overtimediff;
+        overtimeText << "\nPacket count: " << packetOpcodeInfo.size();
+        overtimeText << "\nPacket info:\n";
+
+        for (std::vector<VerboseLogInfo>::const_iterator itr = packetOpcodeInfo.begin(); itr != packetOpcodeInfo.end(); ++itr)
+            overtimeText << "  " << (*itr).opcode << " (" << (*itr).diff << ")\n";
+
+        overtimeText << "#################################################";
+        sLog.outLog(LOG_SESSION_DIFF, overtimeText.str().c_str());
     }
 
     //check if we are safe to proceed with logout

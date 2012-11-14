@@ -1107,7 +1107,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_SESSION_UPDATE_MAX_TIME] = sConfig.GetIntDefault("SessionUpdate.MaxTime", 1000);
     m_configs[CONFIG_SESSION_UPDATE_OVERTIME_METHOD] = sConfig.GetIntDefault("SessionUpdate.Method", 3);
-    m_configs[CONFIG_SESSION_UPDATE_VERBOSE_LOG] = sConfig.GetBoolDefault("SessionUpdate.VerboseLog", false);
+    m_configs[CONFIG_SESSION_UPDATE_VERBOSE_LOG] = sConfig.GetIntDefault("SessionUpdate.VerboseLog", 0);
     m_configs[CONFIG_SESSION_UPDATE_IDLE_KICK] = sConfig.GetIntDefault("SessionUpdate.IdleKickTimer", 15*MINUTE*IN_MILISECONDS);
 
     m_configs[CONFIG_KICK_PLAYER_ON_BAD_PACKET] = sConfig.GetBoolDefault("Network.KickOnBadPacket", true);
