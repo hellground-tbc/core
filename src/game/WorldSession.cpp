@@ -101,8 +101,8 @@ m_accFlags(accFlags), m_Warden(NULL)
 
     if (sock)
     {
-        m_Address = sock->GetRemoteAddress ();
-        sock->AddReference ();
+        m_Address = sock->GetRemoteAddress();
+        sock->AddReference();
         AccountsDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
 
         // create copy of base map :P
@@ -607,7 +607,7 @@ void WorldSession::LogoutPlayer(bool Save)
 void WorldSession::KickPlayer()
 {
     if (m_Socket)
-        m_Socket->CloseSocket ();
+        m_Socket->CloseSocket();
 }
 
 /// Cancel channeling handler
