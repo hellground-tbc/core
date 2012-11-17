@@ -680,7 +680,6 @@ void Map::Remove(T *obj, bool remove)
         obj->UpdateObjectVisibility();
     else
     {
-        NGridType *grid = getNGrid(obj->GetPositionX(), obj->GetPositionY());
         if (grid->GetGridState() == GRID_STATE_ACTIVE)
             obj->UpdateObjectVisibility();
     }
