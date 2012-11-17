@@ -261,7 +261,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>Default</CompileAs>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <ResourceCompile>

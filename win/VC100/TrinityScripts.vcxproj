@@ -170,6 +170,7 @@
       </Command>
     </PreBuildEvent>
     <ClCompile>
+      <AdditionalOptions>/MP -Zm124 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\dep\include\;..\..\src\scripts\scripts\npc;..\..\src\shared\;..\..\src\shared\Database;..\..\src\framework\;..\..\src\game\;..\..\src\scripts\include\;..\..\src\scripts\scripts\npc\;..\..\dep\ACE_wrappers;..\..\src\scripts\system;..\..\src\game\movemap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;MANGOS_DEBUG;_WINDOWS;_USRDLL;SCRIPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
