@@ -42,9 +42,6 @@ void npc_escortAI::AttackStart(Unit* pWho)
 
     if (m_creature->Attack(pWho, true))
     {
-        if(HasEscortState(STATE_ESCORT_ESCORTING))
-            m_creature->SetHomePosition(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
-
         if (IsCombatMovement())
             m_creature->GetMotionMaster()->MoveChase(pWho);
     }
@@ -184,9 +181,9 @@ void npc_escortAI::EnterEvadeMode()
     {
         debug_log("TSCR: EscortAI has left combat and is now returning to THE home");
         m_creature->GetMotionMaster()->MoveTargetedHome();
-    }
-    
-    Reset();
+
+        Reset();
+    } 
 }
 
 bool npc_escortAI::IsPlayerOrGroupInRange()
@@ -348,6 +345,11 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
         }
 
         debug_log("TSCR: EscortAI Waypoint %u reached", CurrentWP->id);
+
+        //evade back to combat start position
+        m_creature->SetHomePosition(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
+        m_creature->GetUnitStateMgr().InitDefaults(true);
+        m_creature->GetMotionMaster()->MoveIdle();
 
         //Call WP function
         WaypointReached(CurrentWP->id);
