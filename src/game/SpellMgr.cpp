@@ -2804,6 +2804,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 else if (!spellInfo->SpellFamilyFlags && spellInfo->SpellIconID == 566)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
 
+                else if (!spellInfo->SpellFamilyFlags && spellInfo->SpellIconID == 237)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
                 break;
             }
             case SPELLFAMILY_MAGE:
