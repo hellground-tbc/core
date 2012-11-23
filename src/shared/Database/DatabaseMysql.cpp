@@ -194,20 +194,24 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
 
     if(mysql_query(mMysql, sql))
     {
-        sLog.outLog(LOG_DB_ERR,  "SQL: %s", sql );
+        sLog.outLog(LOG_DB_ERR, "SQL: %s", sql );
         sLog.outLog(LOG_DB_ERR, "query ERROR: %s", mysql_error(mMysql));
         return false;
     }
     else
     {
-        sLog.outDebug("[%u ms] SQL: %s", WorldTimer::getMSTimeDiff(_s,WorldTimer::getMSTime()), sql );
+        uint32 queryDiff = WorldTimer::getMSTimeDiff(_s, WorldTimer::getMSTime());
+        if (m_db.CheckMinLogTime(queryDiff))
+            sLog.outLog(LOG_DB_DIFF, "[%u ms] SQL: %s", queryDiff, sql);
+
+        sLog.outDebug("[%u ms] SQL: %s", queryDiff, sql);
     }
 
     *pResult = mysql_store_result(mMysql);
     *pRowCount = mysql_affected_rows(mMysql);
     *pFieldCount = mysql_field_count(mMysql);
 
-    if (!*pResult )
+    if (!*pResult)
         return false;
 
     if (!*pRowCount)
@@ -272,7 +276,11 @@ bool MySQLConnection::Execute(const char* sql)
         }
         else
         {
-            sLog.outDebug("[%u ms] SQL: %s", WorldTimer::getMSTimeDiff(_s,WorldTimer::getMSTime()), sql );
+            uint32 queryDiff = WorldTimer::getMSTimeDiff(_s, WorldTimer::getMSTime());
+            if (m_db.CheckMinLogTime(queryDiff))
+                sLog.outLog(LOG_DB_DIFF, "[%u ms] SQL: %s", queryDiff, sql);
+
+            sLog.outDebug("[%u ms] SQL: %s", queryDiff, sql);
         }
         // end guarded block
     }
@@ -474,11 +482,21 @@ bool MySqlPreparedStatement::execute()
     if(!isPrepared())
         return false;
 
+    uint32 _s = WorldTimer::getMSTime();
+
     if(mysql_stmt_execute(m_stmt))
     {
         sLog.outLog(LOG_DEFAULT, "ERROR: SQL: cannot execute '%s'", m_szFmt.c_str());
         sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
         return false;
+    }
+    else
+    {
+        uint32 queryDiff = WorldTimer::getMSTimeDiff(_s, WorldTimer::getMSTime());
+        if (this->m_pConn.DB().CheckMinLogTime(queryDiff))
+            sLog.outLog(LOG_DB_DIFF, "[%u ms] SQL: %s", queryDiff, m_szFmt.c_str());
+
+        sLog.outDebug("[%u ms] SQL: %s", queryDiff, m_szFmt.c_str());
     }
 
     return true;

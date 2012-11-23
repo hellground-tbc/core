@@ -53,7 +53,8 @@ const char* logToStr[LOG_MAX_FILES][3] =
     { "AuctionLogFile",     "a", NULL },                // LOG_AUCTION
     { "DiffLogFile",        "a", NULL },                // LOG_DIFF
     { "SessionDiffLogFile", "a", NULL },                // LOG_SESSION_DIFF
-    { "CrashLogFile",       "a", NULL }                 // LOG_CRASH
+    { "CrashLogFile",       "a", NULL },                // LOG_CRASH
+    { "DBDiffFile",         "a", NULL }                 // LOG_DB_DIFF
 };
 
 Log::Log() : m_colored(false), m_includeTime(false), m_gmlog_per_account(false)

@@ -73,6 +73,7 @@ enum LogNames
     LOG_DIFF            = 13,
     LOG_SESSION_DIFF    = 14,
     LOG_CRASH           = 15,
+    LOG_DB_DIFF         = 16,
 
     LOG_MAX_FILES
 };

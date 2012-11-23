@@ -157,6 +157,10 @@ int Master::Run()
     GameDataDatabase.AllowAsyncTransactions();
     AccountsDatabase.AllowAsyncTransactions();
 
+    RealmDataDatabase.EnableLogging();
+    GameDataDatabase.EnableLogging();
+    AccountsDatabase.EnableLogging();
+
     ACE_SIGACTION action;
     action.sa_handler = _OnSignal;
     action.sa_flags = 0; //SA_RESTART

@@ -292,6 +292,13 @@ SessionUpdate.VerboseLog = 0
 
 SessionUpdate.IdleKickTimer = 900000
 
+#    DBDiffLog.LogTime
+#         Query who reaches the Time will be Logged
+#         Is a kind of SlowQueryLog. Time in ms.
+#         Default: 10
+
+DBDiffLog.LogTime = 10
+
 ###################################################################################################################
 # SERVER LOGGING
 #
@@ -436,6 +443,11 @@ SessionUpdate.IdleKickTimer = 900000
 #        Default: "crash.log"
 #                 "" - Empty name for disable
 #
+#    DBDiffFile
+#        Log file for DB Query Duration
+#        Default: "querydiff.log"
+#                 "" - Empty name for disable
+#
 #    StatusParserFile
 #        Log file for third party parsers
 #        Default: "parser.prsr"
@@ -473,6 +485,7 @@ AuctionLogFile = "auction.log"
 DiffLogFile = "diff.log"
 SessionDiffLogFile = "sessiondiff.log"
 CrashLogFile = "crash.log"
+DBDiffFile = "querydiff.log"
 
 StatusParserFile = "parser.prsr"
 

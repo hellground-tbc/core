@@ -110,7 +110,8 @@ bool Database::Initialize(const char * infoString, int nConns /*= 1*/)
             m_logsDir.append("/");
     }
 
-    m_pingIntervallms = sConfig.GetIntDefault ("MaxPingTime", 30) * (MINUTE * 1000);
+    m_pingIntervallms = (uint32)sConfig.GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000);
+    m_minLogTimems = (uint32)sConfig.GetIntDefault("DBDiffLog.LogTime", 10);
 
     //create DB connections
 
@@ -231,6 +232,14 @@ SqlConnection * Database::getQueryConnection()
         nCount = ++m_nQueryCounter;
 
     return m_pQueryConnections[nCount % m_nQueryConnPoolSize];
+}
+
+bool Database::CheckMinLogTime(uint32 time)
+{
+    if (m_enableLogging && m_minLogTimems > 0 && time >= m_minLogTimems)
+        return true;
+    else
+        return false;
 }
 
 void Database::Ping()

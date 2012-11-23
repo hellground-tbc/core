@@ -328,6 +328,7 @@ extern int main(int argc, char **argv)
 
     //server has started up successfully => enable async DB requests
     AccountsDatabase.AllowAsyncTransactions();
+    AccountsDatabase.EnableLogging();
 
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000000 / 100000));
