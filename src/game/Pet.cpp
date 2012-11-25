@@ -2013,3 +2013,14 @@ bool Pet::IsRightSpellIdForPet(uint32 spellid)
     else
         return false;
 }
+
+bool Pet::canSeeOrDetect(Unit const* u, WorldObject const* vp, bool detect, bool inVisibleList /*= false*/, bool is3dDistance /*= true*/) const
+{
+    if (Unit* owner = GetOwner())
+    {
+        if (Player* playerOwner = owner->ToPlayer())
+            return playerOwner->canSeeOrDetect(u, vp, detect, inVisibleList, is3dDistance);
+    }
+
+    return Creature::canSeeOrDetect(u, vp, detect, inVisibleList, is3dDistance);
+}
