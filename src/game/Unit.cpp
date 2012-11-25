@@ -2311,7 +2311,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
         block_chance = 0;
     }
 
-    if (pVictim->IsNonMeleeSpellCasted(false))
+    if (pVictim->hasUnitState(UNIT_STAT_CASTING))
     {
         dodge_chance = 0;
         parry_chance = 0;
@@ -3001,7 +3001,7 @@ uint32 Unit::GetDefenseSkillValue(Unit const* target) const
 
 float Unit::GetUnitDodgeChance() const
 {
-    if (IsNonMeleeSpellCasted(false) || hasUnitState(UNIT_STAT_LOST_CONTROL))
+    if (hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING))
         return 0.0f;
 
     if (GetTypeId() == TYPEID_PLAYER)
