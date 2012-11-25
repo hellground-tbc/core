@@ -1030,6 +1030,12 @@ void WorldSession::HandleGuildBankWithdraw(WorldPacket & recv_data)
     if (!pGuild->HasRankRight(GetPlayer()->GetRank(), GR_RIGHT_WITHDRAW_GOLD))
         return;
 
+    if (GetPlayer()->GetMoney() + money >= MAX_MONEY_AMOUNT)
+    {
+        GetPlayer()->SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD,NULL,NULL);
+        return;
+    }
+
     RealmDataDatabase.BeginTransaction();
 
     if (!pGuild->MemberMoneyWithdraw(money, GetPlayer()->GetGUIDLow()))
