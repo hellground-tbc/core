@@ -640,6 +640,7 @@ struct HELLGROUND_DLL_DECL boss_felmystAI : public ScriptedAI
                  return ScriptedAI::UpdateVictim();
         }
     }
+
     void UpdateAI(const uint32 diff)
     {
         if(IntroTimer)
