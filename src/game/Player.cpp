@@ -15805,11 +15805,18 @@ void Player::SaveToDB()
     RealmDataDatabase.BeginTransaction();
 
     //CharacterDatabase.PExecute("DELETE FROM characters WHERE guid = '%u'",GetGUIDLow());
+    static SqlStatementID deleteStats;
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteStats, "DELETE FROM character_stats_ro WHERE guid = ?");
+    stmt.PExecute(GetGUIDLow());
+
+    static SqlStatementID updateStats;
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(updateStats, "INSERT INTO character_stats_ro VALUES (?, ?, ?)");
+    stmt.PExecute(GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY), GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
 
     static SqlStatementID deleteCharacter;
     static SqlStatementID insertCharacter;
 
-    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCharacter, "DELETE FROM characters WHERE guid = ?");
+    stmt = RealmDataDatabase.CreateStatement(deleteCharacter, "DELETE FROM characters WHERE guid = ?");
     stmt.PExecute(GetGUIDLow());
 
     stmt = RealmDataDatabase.CreateStatement(insertCharacter, "INSERT INTO characters (guid, account, name, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
