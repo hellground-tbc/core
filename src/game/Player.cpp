@@ -14201,6 +14201,25 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     bytes0 |= fields[4].GetUInt8();                         // race
     bytes0 |= fields[5].GetUInt8() << 8;                    // class
     bytes0 |= fields[6].GetUInt8() << 16;                   // gender
+
+    if (GetSession()->IsAccountFlagged(ACC_CHANGE_DISPLAY))
+    {
+        std::string name = "hg"; name += GetName(); name += "hg";
+        uint64 guid = sObjectMgr.GetPlayerGUIDByName(name);
+        if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
+        {
+            uint32 newBytes0 = GetUInt32ValueFromDB(UNIT_FIELD_BYTES_0, guid) & 0xFF000000;
+            newBytes0 |= fields[4].GetUInt8();                         // race
+            newBytes0 |= fields[5].GetUInt8() << 8;                    // class
+            newBytes0 |= fields[6].GetUInt8() << 16;                   // gender
+
+
+            bytes0 = newBytes0;
+            DeleteFromDB(guid, GetSession()->GetAccountId(), true);
+            GetSession()->RemoveAccountFlag(ACC_CHANGE_DISPLAY);
+        }
+    }
+
     SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[7].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[8].GetUInt32());

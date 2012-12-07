@@ -68,7 +68,8 @@ enum AccountFlags
     ACC_WHISPER_LOG       = 0x0002, // all incoming and outgoing whispers are logged o file
     ACC_DISABLED_GANN     = 0x0004, // account flagged with this won't display messages related to guild announces system
     ACC_BLIZZLIKE_RATES   = 0x0008, // enables fully blizzlike rates for account. ex: XP, QXP etc
-    ACC_HIDE_BONES        = 0x0010  // client won't show bones created from corpses
+    ACC_HIDE_BONES        = 0x0010, // client won't show bones created from corpses
+    ACC_CHANGE_DISPLAY    = 0x0020
 };
 
 enum PartyOperation
