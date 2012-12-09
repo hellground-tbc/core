@@ -5380,7 +5380,8 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
         }
     }
 
-    if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY && target->GetTypeId() != TYPEID_PLAYER)
+    if (m_spellInfo->AttributesEx3 & SPELL_ATTR_EX3_PLAYERS_ONLY && target->GetTypeId() != TYPEID_PLAYER &&
+        m_spellInfo->EffectImplicitTargetA[eff] != TARGET_UNIT_CASTER)
         return false;
 
     if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_CANT_TARGET_SELF && m_caster == target &&
