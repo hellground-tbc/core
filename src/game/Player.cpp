@@ -69,6 +69,7 @@
 #include "PlayerAI.h"
 
 #include <cmath>
+#include <cctype>
 
 #define ZONE_UPDATE_INTERVAL 1000
 
@@ -14204,7 +14205,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     if (GetSession()->IsAccountFlagged(ACC_CHANGE_DISPLAY))
     {
-        std::string name = "Hg"; name += GetName(); name += "hg";
+        std::string orgName = GetName();
+        orgName[0] = std::tolower(orgName[0]);
+
+        std::string name = "Hg"; name += orgName; name += "hg";
+
         uint64 guid = sObjectMgr.GetPlayerGUIDByName(name);
         if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
         {
@@ -15834,7 +15839,7 @@ void Player::SaveToDB()
     stmt.PExecute(GetGUIDLow());
 
     static SqlStatementID updateStats;
-    SqlStatement stmt = RealmDataDatabase.CreateStatement(updateStats, "INSERT INTO character_stats_ro VALUES (?, ?, ?)");
+    stmt = RealmDataDatabase.CreateStatement(updateStats, "INSERT INTO character_stats_ro VALUES (?, ?, ?)");
     stmt.PExecute(GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY), GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
 
     static SqlStatementID deleteCharacter;
