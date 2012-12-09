@@ -14204,19 +14204,24 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     if (GetSession()->IsAccountFlagged(ACC_CHANGE_DISPLAY))
     {
-        std::string name = "hg"; name += GetName(); name += "hg";
+        std::string name = "Hg"; name += GetName(); name += "hg";
         uint64 guid = sObjectMgr.GetPlayerGUIDByName(name);
         if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
         {
-            uint32 newBytes0 = GetUInt32ValueFromDB(UNIT_FIELD_BYTES_0, guid) & 0xFF000000;
-            newBytes0 |= fields[4].GetUInt8();                         // race
-            newBytes0 |= fields[5].GetUInt8() << 8;                    // class
-            newBytes0 |= fields[6].GetUInt8() << 16;                   // gender
+            // & will clear class and gender
+            uint32 newBytes0 = GetUInt32ValueFromDB(UNIT_FIELD_BYTES_0, guid) & 0xFF0000FF;
+            // same race, continue
+            if (newBytes0 & fields[4].GetUInt8())
+            {
+                //newBytes0 |= fields[4].GetUInt8();                         // race
+                newBytes0 |= fields[5].GetUInt8() << 8;  // class
+                newBytes0 |= fields[6].GetUInt8() << 16; // gender
 
-
-            bytes0 = newBytes0;
-            DeleteFromDB(guid, GetSession()->GetAccountId(), true);
-            GetSession()->RemoveAccountFlag(ACC_CHANGE_DISPLAY);
+                bytes0 = newBytes0;
+                DeleteFromDB(guid, GetSession()->GetAccountId(), true);
+                GetSession()->RemoveAccountFlag(ACC_CHANGE_DISPLAY);
+                sLog.outLog(LOG_SPECIAL, "Player: %s [%u] changed character display successfully.", GetName(), GetGUIDLow());
+            }
         }
     }
 
