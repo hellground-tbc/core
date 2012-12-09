@@ -990,10 +990,10 @@ int ChatHandler::ParseCommands(const char* text)
 
     std::string fullcmd = text;
 
-    /// chat case (.command or !command format)
+    /// chat case (.command format)
     if (m_session)
     {
-        if (text[0] != '!' && text[0] != '.')
+        if (text[0] != '.')
             return 0;
     }
 
@@ -1003,11 +1003,11 @@ int ChatHandler::ParseCommands(const char* text)
     // original `text` can't be used. It content destroyed in command code processing.
 
     /// ignore messages staring from many dots.
-    if (text[0] == '.' && text[1] == '.' || text[0] == '!' && text[1] == '!')
+    if (text[0] == '.' && text[1] == '.')
         return 0;
 
-    /// skip first . or ! (in console allowed use command with . and ! and without its)
-    if (text[0] == '!' || text[0] == '.')
+    /// skip first . (in console allowed use command with . and without its)
+    if (text[0] == '.')
         ++text;
 
     if (!ExecuteCommandInTable(getCommandTable(), text, fullcmd))
