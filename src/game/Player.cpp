@@ -14203,6 +14203,10 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     bytes0 |= fields[5].GetUInt8() << 8;                    // class
     bytes0 |= fields[6].GetUInt8() << 16;                   // gender
 
+    uint32 pBytes = fields[10].GetUInt32();
+    uint32 pBytes2 = fields[11].GetUInt32();
+    
+    int8 gender = fields[6].GetUInt8();
     if (GetSession()->IsAccountFlagged(ACC_CHANGE_DISPLAY))
     {
         std::string orgName = GetName();
@@ -14214,15 +14218,22 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
         {
             // & will clear class and gender
-            uint32 newBytes0 = GetUInt32ValueFromDB(UNIT_FIELD_BYTES_0, guid) & 0xFF0000FF;
+            uint32 newBytes0 = GetUInt32ValueFromDB(UNIT_FIELD_BYTES_0, guid) & 0x00FF00FF;
+
             // same race, continue
             if (newBytes0 & fields[4].GetUInt8())
             {
-                //newBytes0 |= fields[4].GetUInt8();                         // race
+                //newBytes0 |= fields[4].GetUInt8();     // race
                 newBytes0 |= fields[5].GetUInt8() << 8;  // class
-                newBytes0 |= fields[6].GetUInt8() << 16; // gender
+                newBytes0 |= bytes0 & 0xFF000000;
 
                 bytes0 = newBytes0;
+
+                pBytes = GetUInt32ValueFromDB(PLAYER_BYTES, guid);
+                pBytes2 = GetUInt32ValueFromDB(PLAYER_BYTES_2, guid);
+
+                gender = newBytes0 & 0x00FF0000;
+
                 DeleteFromDB(guid, GetSession()->GetAccountId(), true);
                 GetSession()->RemoveAccountFlag(ACC_CHANGE_DISPLAY);
                 sLog.outLog(LOG_SPECIAL, "Player: %s [%u] changed character display successfully.", GetName(), GetGUIDLow());
@@ -14234,9 +14245,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[7].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[8].GetUInt32());
     SetUInt32Value(PLAYER_FIELD_COINAGE, fields[9].GetUInt32());
-    SetUInt32Value(PLAYER_BYTES, fields[10].GetUInt32());
-    SetUInt32Value(PLAYER_BYTES_2, fields[11].GetUInt32());
-    SetUInt32Value(PLAYER_BYTES_3, (GetUInt32Value(PLAYER_BYTES_3) & ~1) | fields[6].GetUInt8());
+
+    SetUInt32Value(PLAYER_BYTES, pBytes);
+    SetUInt32Value(PLAYER_BYTES_2, pBytes2);
+    SetUInt32Value(PLAYER_BYTES_3, (GetUInt32Value(PLAYER_BYTES_3) & ~1) | gender);
+
     SetUInt32Value(PLAYER_FLAGS, fields[12].GetUInt32());
 
     // cleanup inventory related item value fields (its will be filled correctly in _LoadInventory)
