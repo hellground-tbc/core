@@ -14167,9 +14167,6 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     Field *fields = result->Fetch();
 
-    if (fields[3].GetString()[0] == '_')
-        return false;
-
     uint32 dbAccountId = fields[1].GetUInt32();
 
     // check if the character's account in the db and the logged in account match.

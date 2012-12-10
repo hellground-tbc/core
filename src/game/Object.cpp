@@ -1764,7 +1764,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         else if(entry == 510)
             pet->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FROST, true);
 
-        return pet;
+        return NULL;
     }
 
     // petentry==0 for hunter "call pet" (current pet summoned if any)

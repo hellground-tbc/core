@@ -123,7 +123,7 @@ inline bool isBasicLatinCharacter(wchar_t wchar)
     if(wchar >= L'A' && wchar <= L'Z')                      // LATIN CAPITAL LETTER A - LATIN CAPITAL LETTER Z
         return true;
 
-    return wchar == L'_';
+    return false;
 }
 
 inline bool isExtendedLatinCharacter(wchar_t wchar)
