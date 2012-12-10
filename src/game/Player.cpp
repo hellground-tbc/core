@@ -14209,8 +14209,8 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     int8 gender = fields[6].GetUInt8();
     if (GetSession()->IsAccountFlagged(ACC_CHANGE_DISPLAY))
     {
-        std::string name = GetName();
-        name[0] = '_';
+        std::string name = std::string("Hg") + GetName();
+        name[2] = std::tolower(name[2]);
 
         uint64 guid = sObjectMgr.GetPlayerGUIDByName(name);
         if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
