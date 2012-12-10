@@ -4207,7 +4207,7 @@ void Spell::EffectAddFarsight(uint32 i)
 
     dynObj->setActive(true);    //must before add to map to be put in world container
     m_caster->GetMap()->Add(dynObj); //grid will also be loaded
-    
+
     m_caster->UpdateVisibilityAndView();
 
     ((Player*)m_caster)->GetCamera().SetView(dynObj, true);
@@ -5369,7 +5369,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 40609:
         {
-            unitTarget->CastSpell(unitTarget, 40637, true, 0, 0, m_caster->GetGUID());
+            m_caster->CastSpell(unitTarget, 40637, true, 0, 0, m_caster->GetGUID());
             break;
         }
         case 38530:
