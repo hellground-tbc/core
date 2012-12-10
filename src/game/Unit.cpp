@@ -9219,6 +9219,9 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
                 InterruptSpell(CURRENT_GENERIC_SPELL);
         }
 
+        if (Pet* pet = GetPet())
+            pet->SetInCombatState(PvP, enemy);
+
         if (!isCharmed())
             return;
     }
@@ -9244,6 +9247,9 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
 
         if (creature->isPet())
         {
+            if (Unit* owner = GetCharmerOrOwnerPlayerOrPlayerItself())
+                owner->SetInCombatState(PvP, enemy);
+
             UpdateSpeed(MOVE_RUN, true);
             UpdateSpeed(MOVE_SWIM, true);
             UpdateSpeed(MOVE_FLIGHT, true);
