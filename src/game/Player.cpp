@@ -14232,7 +14232,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
                 pBytes = GetUInt32ValueFromDB(PLAYER_BYTES, guid);
                 pBytes2 = GetUInt32ValueFromDB(PLAYER_BYTES_2, guid);
 
-                gender = newBytes0 & 0x00FF0000;
+                gender = (newBytes0 & 0x00FF0000) >> 16;
 
                 DeleteFromDB(guid, GetSession()->GetAccountId(), true);
                 GetSession()->RemoveAccountFlag(ACC_CHANGE_DISPLAY);
