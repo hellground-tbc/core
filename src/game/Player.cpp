@@ -14206,7 +14206,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     uint32 pBytes = fields[10].GetUInt32();
     uint32 pBytes2 = fields[11].GetUInt32();
     
-    int8 gender = fields[6].GetUInt8();
+    uint8 gender = fields[6].GetUInt8();
     if (GetSession()->IsAccountFlagged(ACC_CHANGE_DISPLAY))
     {
         std::string name = std::string("Hg") + GetName();
@@ -14223,7 +14223,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             {
                 //newBytes0 |= fields[4].GetUInt8();     // race
                 newBytes0 |= fields[5].GetUInt8() << 8;  // class
-                newBytes0 |= bytes0 & 0xFF000000;
+                newBytes0 |= bytes0 & 0x00FF0000;
 
                 bytes0 = newBytes0;
 
