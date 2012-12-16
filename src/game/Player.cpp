@@ -14214,16 +14214,15 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
         uint64 guid = sObjectMgr.GetPlayerGUIDByName(name);
         if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
-        {
-            // & will clear class and gender
+        { 
+            // & will clear class and rest of stuff
             uint32 newBytes0 = GetUInt32ValueFromDB(UNIT_FIELD_BYTES_0, guid) & 0x00FF00FF;
 
             // same race, continue
             if (newBytes0 & fields[4].GetUInt8())
             {
-                //newBytes0 |= fields[4].GetUInt8();     // race
                 newBytes0 |= fields[5].GetUInt8() << 8;  // class
-                newBytes0 |= bytes0 & 0x00FF0000;
+                newBytes0 |= bytes0 & 0xFF000000; // powertype
 
                 bytes0 = newBytes0;
 
@@ -14231,6 +14230,10 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
                 pBytes2 = GetUInt32ValueFromDB(PLAYER_BYTES_2, guid);
 
                 gender = (newBytes0 & 0x00FF0000) >> 16;
+                uint32 display = GetUInt32ValueFromDB(UNIT_FIELD_NATIVEDISPLAYID, guid);
+
+                SetNativeDisplayId(display);
+                SetDisplayId(display);
 
                 DeleteFromDB(guid, GetSession()->GetAccountId(), true);
                 GetSession()->RemoveAccountFlag(ACC_CHANGE_DISPLAY);
@@ -14246,7 +14249,8 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     SetUInt32Value(PLAYER_BYTES, pBytes);
     SetUInt32Value(PLAYER_BYTES_2, pBytes2);
-    SetUInt32Value(PLAYER_BYTES_3, (GetUInt32Value(PLAYER_BYTES_3) & ~1) | gender);
+    SetUInt32Value(PLAYER_BYTES_3, (GetUInt32Value(PLAYER_BYTES_3) & ~1));
+    SetByteValue(PLAYER_BYTES_3, 0, gender);
 
     SetUInt32Value(PLAYER_FLAGS, fields[12].GetUInt32());
 
