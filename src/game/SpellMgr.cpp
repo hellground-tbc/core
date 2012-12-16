@@ -3273,6 +3273,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 29200: // Purify Helboar Meat
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
                 break;
+            case 40637: // Flame of Azzinoth Blaze summon on target
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
             default:
                 break;
         }

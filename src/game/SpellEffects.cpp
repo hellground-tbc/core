@@ -5367,6 +5367,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         }
+        // Flame of Azzinoth Blaze
         case 40609:
         {
             m_caster->CastSpell(unitTarget, 40637, true, 0, 0, m_caster->GetGUID());
@@ -5641,20 +5642,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             uint32 itemtype;
             uint32 rank = 0;
-            Unit::AuraList const& mDummyAuras = unitTarget->GetAurasByType(SPELL_AURA_DUMMY);
-            for (Unit::AuraList::const_iterator i = mDummyAuras.begin();i != mDummyAuras.end(); ++i)
-            {
-                if ((*i)->GetId() == 18692)
-                {
-                    rank = 1;
-                    break;
-                }
-                else if ((*i)->GetId() == 18693)
-                {
-                    rank = 2;
-                    break;
-                }
-            }
+
+            // imp healthstone rank 1
+            if (unitTarget->HasAura(18692))
+                rank = 1;
+
+            // imp healthstone rank 2
+            if (unitTarget->HasAura(18693))
+                rank = 2;
 
             static uint32 const itypes[6][3] = {
                 { 5512,19004,19005},                        // Minor Healthstone

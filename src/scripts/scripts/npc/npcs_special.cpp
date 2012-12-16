@@ -1020,7 +1020,7 @@ bool ReceiveEmote_npc_winter_reveler( Player *player, Creature *_Creature, uint3
 
     if (emote == TEXTEMOTE_KISS)
     {
-        _Creature->CastSpell(_Creature, 26218, false);
+        //_Creature->CastSpell(_Creature, 26218, false);
         player->CastSpell(player, 26218, false);
         player->AddSpellCooldown(26218, 0, time(NULL) + 3600);
     }
