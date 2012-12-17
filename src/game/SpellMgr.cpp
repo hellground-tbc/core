@@ -2914,7 +2914,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 18222:
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_TREAT_AS_WELL_FEED;
                 break;
-            /* Scrolls */
+            /* Scrolls - no stack */
             case 8112:  // Spirit I
             case 8113:  // Spirit II
             case 8114:  // Spirit III
@@ -2935,6 +2935,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 8095:  // Protection III
             case 12175: // Protection IV
             case 33079: // Protection V
+            /* Other to not stack with scrolls */
+            case 35078: // Band of the Eternal Defender
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
                 break;
             /* ROGUE CUSTOM ATTRIBUTES */
