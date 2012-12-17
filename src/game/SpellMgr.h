@@ -392,26 +392,27 @@ typedef std::multimap<uint32, SkillLineAbilityEntry const*> SkillLineAbilityMap;
 
 enum AttributesCu
 {
-    SPELL_ATTR_CU_IGNORE_ARMOR       = 0x00000001,
-    SPELL_ATTR_CU_CONE_BACK          = 0x00000002,
-    SPELL_ATTR_CU_CONE_LINE          = 0x00000004,
-    SPELL_ATTR_CU_SHARE_DAMAGE       = 0x00000008,
-    SPELL_ATTR_CU_AURA_HOT           = 0x00000010,
-    SPELL_ATTR_CU_AURA_DOT           = 0x00000020,
-    SPELL_ATTR_CU_AURA_CC            = 0x00000040,
-    SPELL_ATTR_CU_AURA_SPELL         = 0x00000080,
-    SPELL_ATTR_CU_DIRECT_DAMAGE      = 0x00000100,
-    SPELL_ATTR_CU_CHARGE             = 0x00000200,
-    SPELL_ATTR_CU_LINK_CAST          = 0x00000400,     // after cast bar
-    SPELL_ATTR_CU_LINK_HIT           = 0x00000800,
-    SPELL_ATTR_CU_LINK_AURA          = 0x00001000,
-    SPELL_ATTR_CU_LINK_REMOVE        = 0x00002000,
-    SPELL_ATRR_CU_LINK_PRECAST       = 0x00004000,     // before cast barem
-    SPELL_ATTR_CU_MOVEMENT_IMPAIR    = 0x00008000,
-    SPELL_ATTR_CU_FAKE_DELAY         = 0x00010000,
-    SPELL_ATTR_CU_FIXED_DAMAGE       = 0x00020000, // ignore all %dmg done, %dmg taken auras
-    SPELL_ATTR_CU_NO_SPELL_DMG_COEFF = 0x00040000, // to those spells won't be applied and bonuses from spell dmg
-    SPELL_ATTR_CU_TREAT_AS_WELL_FEED = 0x00080000
+    SPELL_ATTR_CU_IGNORE_ARMOR          = 0x00000001,
+    SPELL_ATTR_CU_CONE_BACK             = 0x00000002,
+    SPELL_ATTR_CU_CONE_LINE             = 0x00000004,
+    SPELL_ATTR_CU_SHARE_DAMAGE          = 0x00000008,
+    SPELL_ATTR_CU_AURA_HOT              = 0x00000010,
+    SPELL_ATTR_CU_AURA_DOT              = 0x00000020,
+    SPELL_ATTR_CU_AURA_CC               = 0x00000040,
+    SPELL_ATTR_CU_AURA_SPELL            = 0x00000080,
+    SPELL_ATTR_CU_DIRECT_DAMAGE         = 0x00000100,
+    SPELL_ATTR_CU_CHARGE                = 0x00000200,
+    SPELL_ATTR_CU_LINK_CAST             = 0x00000400,     // after cast bar
+    SPELL_ATTR_CU_LINK_HIT              = 0x00000800,
+    SPELL_ATTR_CU_LINK_AURA             = 0x00001000,
+    SPELL_ATTR_CU_LINK_REMOVE           = 0x00002000,
+    SPELL_ATRR_CU_LINK_PRECAST          = 0x00004000,     // before cast barem
+    SPELL_ATTR_CU_MOVEMENT_IMPAIR       = 0x00008000,
+    SPELL_ATTR_CU_FAKE_DELAY            = 0x00010000,
+    SPELL_ATTR_CU_FIXED_DAMAGE          = 0x00020000, // ignore all %dmg done, %dmg taken auras
+    SPELL_ATTR_CU_NO_SPELL_DMG_COEFF    = 0x00040000, // to those spells won't be applied and bonuses from spell dmg
+    SPELL_ATTR_CU_TREAT_AS_WELL_FEED    = 0x00080000,
+    SPELL_ATTR_CU_NO_SCROLL_STACK       = 0x00100000  // for spells which can't stack with scrolls (must be also applied to scroll spells)
 };
 
 #define SPELL_FAKE_DELAY 200LL

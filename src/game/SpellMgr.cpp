@@ -1962,6 +1962,14 @@ bool SpellMgr::IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry co
         }
     }
 
+    // Scrolls no stack case
+    if (spellInfo_1->attributesCu & SPELL_ATTR_CU_NO_SCROLL_STACK && spellInfo_2->attributesCu & SPELL_ATTR_CU_NO_SCROLL_STACK)
+    {
+        // if it's same stat
+        if (spellInfo_1->EffectMiscValue[0] == spellInfo_2->EffectMiscValue[0])
+            return true;
+    }
+
     if (recur)
         return SpellMgr::IsSpecialNoStackCase(spellInfo_2, spellInfo_1, sameCaster, false);
 
@@ -2792,6 +2800,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 else if (spellInfo->SpellFamilyFlags & 0x10000000LL && spellInfo->SpellIconID == 29)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
 
+                // Devotion Aura
+                else if (spellInfo->SpellFamilyFlags & 0x40 && spellInfo->SpellIconID == 291)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
+
                 break;
             }
             case SPELLFAMILY_PRIEST:
@@ -2807,6 +2819,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 else if (!spellInfo->SpellFamilyFlags && spellInfo->SpellIconID == 237)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
 
+                // Divine Spirit/Prayer of Spirit
+                else if (spellInfo->SpellFamilyFlags & 0x20)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
+                // Power Word: Fortitude/Prayer of Fortitude
+                else if (spellInfo->SpellFamilyFlags & 0x08 && spellInfo->SpellVisual == 278)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
+
                 break;
             }
             case SPELLFAMILY_MAGE:
@@ -2814,6 +2833,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Molten Armor
                 if (spellInfo->SpellFamilyFlags & 0x800000000LL)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+
+                // Arcane Intellect/Brilliance
+                else if (spellInfo->SpellFamilyFlags & 0x0400)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
 
                 break;
             }
@@ -2890,6 +2913,29 @@ void SpellMgr::LoadSpellCustomAttr()
             case 18194:
             case 18222:
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_TREAT_AS_WELL_FEED;
+                break;
+            /* Scrolls */
+            case 8112:  // Spirit I
+            case 8113:  // Spirit II
+            case 8114:  // Spirit III
+            case 12177: // Spirit IV
+            case 33080: // Spirit V
+            case 8099:  // Stamina I
+            case 8100:  // Stamina II
+            case 8101:  // Stamina III
+            case 12178: // Stamina IV
+            case 33081: // Stamina V
+            case 8096:  // Intellect I
+            case 8097:  // Intellect II
+            case 8098:  // Intellect III
+            case 12176: // Intellect IV
+            case 33078: // Intellect V
+            case 8091:  // Protection I
+            case 8094:  // Protection II
+            case 8095:  // Protection III
+            case 12175: // Protection IV
+            case 33079: // Protection V
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
                 break;
             /* ROGUE CUSTOM ATTRIBUTES */
             case 2094:                     // Blind
@@ -3275,8 +3321,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 40637: // Flame of Azzinoth Blaze summon on target
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+                break;
             case 31790: // Righteous Defense taunt
                 spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MELEE;
+                break;
             default:
                 break;
         }
