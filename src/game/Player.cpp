@@ -14205,12 +14205,16 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     uint32 pBytes = fields[10].GetUInt32();
     uint32 pBytes2 = fields[11].GetUInt32();
-    
+
+    m_atLoginFlags = fields[34].GetUInt32();
+
     uint8 gender = fields[6].GetUInt8();
-    if (GetSession()->IsAccountFlagged(ACC_CHANGE_DISPLAY))
+    if (HasAtLoginFlag(AT_LOGIN_DISPLAY_CHANGE))
     {
         std::string name = std::string("Hg") + GetName();
         name[2] = std::tolower(name[2]);
+        if (name.length() > 8)
+            name.resize(8, '\0');
 
         uint64 guid = sObjectMgr.GetPlayerGUIDByName(name);
         if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
@@ -14236,7 +14240,9 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
                 SetDisplayId(display);
 
                 DeleteFromDB(guid, GetSession()->GetAccountId(), true);
-                GetSession()->RemoveAccountFlag(ACC_CHANGE_DISPLAY);
+
+                m_atLoginFlags = m_atLoginFlags & ~AT_LOGIN_DISPLAY_CHANGE;
+                RealmDataDatabase.PExecute("UPDATE characters SET at_login = at_login & ~ %u WHERE guid ='%u'", uint32(AT_LOGIN_DISPLAY_CHANGE), GetGUIDLow());
                 sLog.outLog(LOG_SPECIAL, "Player: %s [%u] changed character display successfully.", GetName(), GetGUIDLow());
             }
         }
@@ -14564,8 +14570,6 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         sLog.outLog(LOG_DEFAULT, "ERROR: Player can have not more 2 stable slots, but have in DB %u",uint32(m_stableSlots));
         m_stableSlots = 2;
     }
-
-    m_atLoginFlags = fields[34].GetUInt32();
 
     // Honor system
     // Update Honor kills data
