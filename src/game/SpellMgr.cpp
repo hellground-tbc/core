@@ -1963,7 +1963,7 @@ bool SpellMgr::IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry co
     }
 
     // Scrolls no stack case
-    if (spellInfo_1->attributesCu & SPELL_ATTR_CU_NO_SCROLL_STACK && spellInfo_2->attributesCu & SPELL_ATTR_CU_NO_SCROLL_STACK)
+    if (spellInfo_1->AttributesCu & SPELL_ATTR_CU_NO_SCROLL_STACK && spellInfo_2->AttributesCu & SPELL_ATTR_CU_NO_SCROLL_STACK)
     {
         // if it's same stat
         if (spellInfo_1->EffectMiscValue[0] == spellInfo_2->EffectMiscValue[0])
