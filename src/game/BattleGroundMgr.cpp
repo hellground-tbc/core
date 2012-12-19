@@ -173,7 +173,7 @@ void BattleGroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
     // add the pinfo to ginfo's list
     ginfo->Players[plr->GetGUID()]  = &info;
 
-    queuedPlayersCount[ginfo->Team][plr->GetBattleGroundBracketIdFromLevel()] += 1;
+    queuedPlayersCount[ginfo->Team][plr->GetBattleGroundBracketIdFromLevel(ginfo->BgTypeId)] += 1;
 }
 
 //remove player from queue and from group info, if group info is empty then remove it too
@@ -275,7 +275,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
         RemovePlayer(group->Players.begin()->first, decreaseInvitedCount);
     }
 
-    queuedPlayersCount[ginfo->Team][plr->GetBattleGroundBracketIdFromLevel()] -= 1;
+    queuedPlayersCount[group->Team][bracket_id] -= 1;
 }
 
 bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * bg, uint32 side)
