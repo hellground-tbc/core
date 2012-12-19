@@ -14213,8 +14213,8 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     {
         std::string name = std::string("Hg") + GetName();
         name[2] = std::tolower(name[2]);
-        if (name.length() > 8)
-            name.resize(8, '\0');
+        if (name.length() > 12)
+            name.resize(12, '\0');
 
         uint64 guid = sObjectMgr.GetPlayerGUIDByName(name);
         if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
