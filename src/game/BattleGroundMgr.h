@@ -90,6 +90,8 @@ class BattleGroundQueue
         void DecreaseGroupLength(uint32 queueId, uint32 AsGroup);
         void BGEndedRemoveInvites(BattleGround * bg);
 
+        uint32 GetQueuedPlayersCount(BattleGroundTeamId team, BattleGroundBracketId bracketId);
+
         typedef std::map<uint64, PlayerQueueInfo> QueuedPlayersMap;
         QueuedPlayersMap m_QueuedPlayers;
 
@@ -123,6 +125,9 @@ class BattleGroundQueue
 
         //one selection pool for horde, other one for alliance
         SelectionPool m_SelectionPools[BG_TEAMS_COUNT];
+
+        typedef ACE_Atomic_Op<ACE_Thread_Mutex, uint32> atomicUInt32;
+        atomicUInt32 queuedPlayersCount[BG_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS];
 
     private:
 

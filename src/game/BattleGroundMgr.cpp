@@ -58,6 +58,9 @@ BattleGroundQueue::~BattleGroundQueue()
 
             m_QueuedGroups[i][j].clear();
         }
+
+        queuedPlayersCount[BG_TEAM_ALLIANCE][i] = 0;
+        queuedPlayersCount[BG_TEAM_HORDE][i] = 0;
     }
 }
 
@@ -169,6 +172,8 @@ void BattleGroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
 
     // add the pinfo to ginfo's list
     ginfo->Players[plr->GetGUID()]  = &info;
+
+    queuedPlayersCount[ginfo->Team][plr->GetBattleGroundBracketIdFromLevel()] += 1;
 }
 
 //remove player from queue and from group info, if group info is empty then remove it too
@@ -269,6 +274,8 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
         // then actually delete, this may delete the group as well!
         RemovePlayer(group->Players.begin()->first, decreaseInvitedCount);
     }
+
+    queuedPlayersCount[ginfo->Team][plr->GetBattleGroundBracketIdFromLevel()] -= 1;
 }
 
 bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * bg, uint32 side)
@@ -886,6 +893,15 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
         }
     }
 }
+
+uint32 BattleGroundQueue::GetQueuedPlayersCount(BattleGroundTeamId team, BattleGroundBracketId bracketId)
+{
+    if (bracketId > MAX_BATTLEGROUND_BRACKETS || team > BG_TEAMS_COUNT)
+        return 0;
+
+    return queuedPlayersCount[team][bracketId].value();
+}
+
 /*********************************************************/
 /***            BATTLEGROUND QUEUE EVENTS              ***/
 /*********************************************************/

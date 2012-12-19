@@ -997,7 +997,7 @@ void BattleGround::StartBattleGround()
 
 void BattleGround::AnnounceBGStart()
 {
-    if (!sWorld.getConfig(CONFIG_ANNOUNCE_BG_START))
+    if (!sWorld.getConfig(CONFIG_BATTLEGROUND_ANNOUNCE_START))
         return;
 
     std::stringstream ss;

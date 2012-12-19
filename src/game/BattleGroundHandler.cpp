@@ -203,6 +203,14 @@ void WorldSession::HandleBattleGroundJoinOpcode(WorldPacket & recv_data )
         sBattleGroundMgr.ScheduleQueueUpdate(bgQueueTypeId, bgTypeId, _player->GetBattleGroundBracketIdFromLevel(bgTypeId));
         DEBUG_LOG("Battleground: player joined queue for bg queue type %u bg type %u: GUID %u, NAME %s",bgQueueTypeId,bgTypeId,_player->GetGUIDLow(), _player->GetName());
     }
+
+    if (sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_INFO))
+    {
+        uint32 queuedHorde = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetQueuedPlayersCount(BG_TEAM_ALLIANCE, bgBracketId);
+        uint32 queuedAlliance = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetQueuedPlayersCount(BG_TEAM_ALLIANCE, bgBracketId);
+        uint32 minPlayers = bg->GetMinPlayersPerTeam();
+        ChatHandler(_player).PSendSysMessage("Horde queued: %u, Alliance queued: %u. Minimum per team: %u", queuedHorde, queuedAlliance, minPlayers);
+    }
 }
 
 void WorldSession::HandleBattleGroundPlayerPositionsOpcode(WorldPacket & /*recv_data*/)

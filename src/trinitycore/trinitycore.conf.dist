@@ -1538,14 +1538,19 @@ Arena.EnableFakeWho.ForGuild = 0
 #              Default: 300000
 #                       0 - disable
 #
-# AnnounceBGStart: Accounces bg start.
+# BattleGround.AnnounceStart: Accounces bg start.
+#              Default: 0 - disable
+#                       1 - enable
+#
+# BattleGround.QueueInfo: sends info about queue on queue join
 #              Default: 0 - disable
 #                       1 - enable
 #
 ###################################################################################################################
 
 BattleGround.PrematureFinishTimer = 300000
-
+BattleGround.AnnounceStart = 0
+BattleGround.QueueInfo = 0
 
 ###################################################################################################################
 #
