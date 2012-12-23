@@ -163,6 +163,8 @@ GroupQueueInfo * BattleGroundQueue::AddGroup(Player *leader, BattleGroundTypeId 
 //add player to playermap
 void BattleGroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
 {
+    queuedPlayersCount[ginfo->GetBGTeam()][plr->GetBattleGroundBracketIdFromLevel(ginfo->BgTypeId)] += 1;
+
     //if player isn't in queue, he is added, if already is, then values are overwritten, no memory leak
     PlayerQueueInfo& info = m_QueuedPlayers[plr->GetGUID()];
     info.InviteTime                 = 0;
@@ -172,8 +174,6 @@ void BattleGroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
 
     // add the pinfo to ginfo's list
     ginfo->Players[plr->GetGUID()]  = &info;
-
-    queuedPlayersCount[ginfo->Team][plr->GetBattleGroundBracketIdFromLevel(ginfo->BgTypeId)] += 1;
 }
 
 //remove player from queue and from group info, if group info is empty then remove it too
@@ -231,6 +231,8 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     // remove player from group
     // if only one player there, remove group
 
+    queuedPlayersCount[group->GetBGTeam()][bracket_id] -= 1;
+
     // remove player queue info from group queue info
     std::map<uint64, PlayerQueueInfo*>::iterator pitr = group->Players.find(guid);
     if (pitr != group->Players.end())
@@ -274,8 +276,6 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
         // then actually delete, this may delete the group as well!
         RemovePlayer(group->Players.begin()->first, decreaseInvitedCount);
     }
-
-    queuedPlayersCount[group->Team][bracket_id] -= 1;
 }
 
 bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * bg, uint32 side)

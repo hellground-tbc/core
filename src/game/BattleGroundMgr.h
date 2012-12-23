@@ -60,6 +60,11 @@ struct GroupQueueInfo                                       // stores informatio
     uint32  HiddenRating;                                   // if rated match, inited to the rating of the team
     uint32  OpponentsTeamRating;                            // for rated arena matches
     uint32  OpponentsHiddenRating;                          // for rated arena matches
+
+    BattleGroundTeamId GetBGTeam()
+    {
+        return Team == HORDE ? BG_TEAM_HORDE : BG_TEAM_ALLIANCE;
+    }
 };
 
 enum BattleGroundQueueGroupTypes
