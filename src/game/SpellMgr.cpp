@@ -2990,6 +2990,11 @@ void SpellMgr::LoadSpellCustomAttr()
                spellInfo->EffectBasePoints[1] = 2;
                break;
             /****************/
+            // Leggins of BeastMastery
+            case 38297:
+                spellInfo->Effect[0] = 0;
+                spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+                break;
             // do NOT remove encapsulate on druid shapeshift, attribute is added higher, so is safe to remove it here
             case 45665:
                 spellInfo->AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;

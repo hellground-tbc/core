@@ -2462,6 +2462,19 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     {
         switch (GetId())
         {
+            case 38297:
+            {
+                if (!caster)
+                    return;
+
+                if (Pet* pet = caster->GetPet())
+                {
+                    pet->UpdateArmor();
+                    pet->UpdateAttackPowerAndDamage(BASE_ATTACK);
+                    pet->UpdateStats(STAT_STAMINA);
+                }
+                return;
+            }
             case 1515:                                      // Tame beast
                 // FIX_ME: this is 2.0.12 threat effect replaced in 2.1.x by dummy aura, must be checked for correctness
                 if (caster && m_target->CanHaveThreatList())
