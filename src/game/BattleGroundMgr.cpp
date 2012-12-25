@@ -44,7 +44,14 @@
 /***            BATTLEGROUND QUEUE SYSTEM              ***/
 /*********************************************************/
 
-BattleGroundQueue::BattleGroundQueue() {}
+BattleGroundQueue::BattleGroundQueue()
+{
+    for (int i = 0; i < MAX_BATTLEGROUND_BRACKETS; ++i)
+    {
+        queuedPlayersCount[BG_TEAM_ALLIANCE][i] = 0;
+        queuedPlayersCount[BG_TEAM_HORDE][i] = 0;
+    }
+}
 
 BattleGroundQueue::~BattleGroundQueue()
 {
@@ -896,7 +903,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
 
 uint32 BattleGroundQueue::GetQueuedPlayersCount(BattleGroundTeamId team, BattleGroundBracketId bracketId)
 {
-    if (bracketId > MAX_BATTLEGROUND_BRACKETS || team > BG_TEAMS_COUNT)
+    if (bracketId >= MAX_BATTLEGROUND_BRACKETS || team >= BG_TEAMS_COUNT)
         return 0;
 
     return queuedPlayersCount[team][bracketId].value();
@@ -1466,6 +1473,7 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(BattleGroundTypeId bgTypeI
     bg->SetBracketId(bracket_id);
     bg->SetArenaType(arenaType);
     bg->SetRated(isRated);
+    bg->CalculateBracketLevelRange();
 
     bg->SetHoliday(IsBGWeekend(bgTypeId));
 

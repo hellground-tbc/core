@@ -1015,11 +1015,11 @@ void BattleGround::AnnounceBGStart()
     }
 
     ss << "(#" << GetInstanceID() << ") started for levels: ";
-    ss << m_LevelMin;
-    if (m_LevelMin != 70)
-        ss << "-" << m_LevelMax;
+    ss << m_BracketLevelMin;
+    if (m_BracketLevelMin != 70)
+        ss << "-" << m_BracketLevelMax;
 
-    sWorld.SendWorldTextForLevels(m_LevelMin, m_LevelMax, LANG_BG_START_ANNOUNCE, ss.str().c_str());
+    sWorld.SendWorldTextForLevels(m_BracketLevelMin, m_BracketLevelMax, LANG_BG_START_ANNOUNCE, ss.str().c_str());
 }
 
 void BattleGround::AddPlayer(Player *plr)
