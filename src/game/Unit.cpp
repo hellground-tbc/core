@@ -601,7 +601,7 @@ void Unit::RemoveMovementImpairingAuras()
         if (spellInfo->AttributesCu & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
         {
             // do NOT remove Dazed effect on shape shift
-            if (spellInfo->SpellIconID == 15 && spellInfo->Dispel == 0)
+            if (spellInfo->Id == 1604)
                 ++iter;
             else
                 RemoveAura(iter);
