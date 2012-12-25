@@ -10062,7 +10062,7 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
     int32 value = basePoints + randvalue;
 
     // hacky formula for lowlvl spells with high spelldmg after spelllevel calc
-    if (getLevel() < 13 && GetObjectGuid().IsCreature() && value > int32(GetMaxHealth()*0.09))
+    if (getLevel() < 13 && GetObjectGuid().IsCreature() && value > int32(GetMaxHealth()*0.09) && !ToCreature()->isTrigger())
         value = int32(GetMaxHealth()*0.07);
 
     //random damage
