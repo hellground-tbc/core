@@ -1651,7 +1651,7 @@ bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint3
 
 struct HELLGROUND_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
 {
-    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c) {}
+    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c) { c->SetReactState(REACT_PASSIVE); }
 
     uint32 m_checkTimer;
 
@@ -1660,24 +1660,7 @@ struct HELLGROUND_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
         m_checkTimer = 2000;
     }
 
-    void AttackStart(Unit *pWho)
-    {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(me->GetAreaId());
-        if (area && area->flags & AREA_FLAG_SANCTUARY)       //sanctuary
-            return;
-
-        ScriptedAI::AttackStart(pWho);
-    }
-
-    void MoveInLineOfSight(Unit *pWho)
-    {
-        if (!me->getVictim() && me->IsHostileTo(pWho))
-        {
-            Creature *pTotem = me->GetCreature(*me, me->GetOwnerGUID());
-            if (pTotem && pTotem->IsWithinDistInMap(pWho, 30.0f))
-                ScriptedAI::MoveInLineOfSight(pWho);
-        }
-    }
+    void MoveInLineOfSight(Unit *pWho) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -1686,28 +1669,22 @@ struct HELLGROUND_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
             Creature *pTotem = me->GetCreature(me->GetOwnerGUID());
             if (!me->getVictim() && pTotem)
             {
-                if(!me->hasUnitState(UNIT_STAT_FOLLOW))
+                if (!me->hasUnitState(UNIT_STAT_FOLLOW))
                     me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
 
-                if (Unit *pOwner = pTotem->GetOwner())
-                {
-                    if (pOwner->GetTypeId() != TYPEID_PLAYER)
-                    {
-                        if (Unit *pTemp = pTotem->SelectNearestTarget(30.0))
-                            AttackStart(pTemp);
-                    }
-                }
+                if (Unit *pTemp = pTotem->SelectNearestTarget(30.0f))
+                    AttackStart(pTemp);
             }
 
             if (pTotem)
             {
-                if(!pTotem->isAlive())
+                if (!pTotem->isAlive())
                 {
                     me->ForcedDespawn();
                     return;
                 }
 
-                if(!me->IsWithinDistInMap(pTotem, 30.0f))
+                if (!me->IsWithinDistInMap(pTotem, 30.0f))
                 {
                     EnterEvadeMode();
                     me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
