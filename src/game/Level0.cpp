@@ -99,6 +99,38 @@ bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleAccountBattleGroundAnnCommand(const char* args)
+{
+    if (uint32 account_id = m_session->GetAccountId())
+    {
+        if (WorldSession *session = sWorld.FindSession(account_id))
+        {
+            if (session->IsAccountFlagged(ACC_DISABLED_BGANN))
+            {
+                session->RemoveAccountFlag(ACC_DISABLED_BGANN);
+
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_DISABLED_GANN, account_id);
+                PSendSysMessage("BattleGround announces have been enabled for this account.");
+            }
+            else
+            {
+                session->AddAccountFlag(ACC_DISABLED_BGANN);
+
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
+                PSendSysMessage("BattleGround announces have been disabled for this account.");
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleHelpCommand(const char* args)
 {
     char* cmd = strtok((char*)args, " ");

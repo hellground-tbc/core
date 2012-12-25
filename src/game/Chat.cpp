@@ -50,6 +50,7 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand accountCommandTable[] =
     {
         { "create",         SEC_CONSOLE,        true,   &ChatHandler::HandleAccountCreateCommand,       "", NULL },
+        { "bgann",          SEC_PLAYER,         false,  &ChatHandler::HandleAccountBattleGroundAnnCommand. "", NULL },
         { "delete",         SEC_CONSOLE,        true,   &ChatHandler::HandleAccountDeleteCommand,       "", NULL },
         { "gann",           SEC_PLAYER,         false,  &ChatHandler::HandleAccountGuildAnnToggleCommand, "", NULL },
         { "bones",          SEC_PLAYER,         false,  &ChatHandler::HandleAccountBonesHideCommand,    "", NULL },

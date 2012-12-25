@@ -675,7 +675,7 @@ class World
         void SendGuildAnnounce(uint32 team, ...);
 
         void SendWorldText(int32 string_id, ...);
-        void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, int32 string_id, ...);
+        void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, uint32 preventFlags, int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
         void SendGMText(int32 string_id, ...);
         void SendGlobalMessage(WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);

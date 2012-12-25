@@ -1019,7 +1019,7 @@ void BattleGround::AnnounceBGStart()
     if (m_BracketLevelMin != 70)
         ss << "-" << m_BracketLevelMax;
 
-    sWorld.SendWorldTextForLevels(m_BracketLevelMin, m_BracketLevelMax, LANG_BG_START_ANNOUNCE, ss.str().c_str());
+    sWorld.SendWorldTextForLevels(m_BracketLevelMin, m_BracketLevelMax, ACC_DISABLED_BGANN, LANG_BG_START_ANNOUNCE, ss.str().c_str());
 }
 
 void BattleGround::AddPlayer(Player *plr)

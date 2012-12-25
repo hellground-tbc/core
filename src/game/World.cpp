@@ -2087,8 +2087,9 @@ void World::SendWorldText(int32 string_id, ...)
             delete data_cache[i][j];
 }
 
-// send global message for players in range <minLevel, maxLevel>
-void World::SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, int32 string_id, ...)
+// send global message for players in range <minLevel, maxLevel> which don't have account flags
+// setted in 'preventFlags'
+void World::SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, uint32 preventFlags, int32 string_id, ...)
 {
     std::vector<std::vector<WorldPacket*> > data_cache;     // 0 = default, i => i-1 locale index
 
@@ -2098,6 +2099,9 @@ void World::SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, int32 strin
             continue;
 
         if (itr->second->GetPlayer()->getLevel() < minLevel || itr->second->GetPlayer()->getLevel() > maxLevel)
+            continue;
+
+        if (itr->second->IsAccountFlagged(preventFlag))
             continue;
 
         uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();
