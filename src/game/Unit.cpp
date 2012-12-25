@@ -10898,16 +10898,7 @@ uint32 createProcExtendMask(SpellDamageLog *damageInfo, SpellMissInfo missCondit
         case SPELL_MISS_IMMUNE:  procEx|=PROC_EX_IMMUNE; break;
         case SPELL_MISS_IMMUNE2: procEx|=PROC_EX_IMMUNE; break;
         case SPELL_MISS_DEFLECT: procEx|=PROC_EX_DEFLECT;break;
-        case SPELL_MISS_ABSORB:
-        {
-            procEx |= PROC_EX_ABSORB;
-            // On crit
-            if (damageInfo->hitInfo & SPELL_HIT_TYPE_CRIT)
-                procEx |= PROC_EX_CRITICAL_HIT;
-            else
-                procEx |= PROC_EX_NORMAL_HIT;
-            break;
-        }
+        case SPELL_MISS_ABSORB: procEx |= PROC_EX_ABSORB;break;
         case SPELL_MISS_REFLECT: procEx|=PROC_EX_REFLECT;break;
         default:
             break;
@@ -11023,7 +11014,7 @@ void Unit::ProcDamageAndSpellfor (bool isVictim, Unit * pTarget, uint32 procFlag
     for (AuraMap::const_iterator itr = GetAuras().begin(); itr!= GetAuras().end(); ++itr)
     {
         SpellProcEventEntry const* spellProcEvent = NULL;
-        bool active = (damage > 0) || (procExtra & PROC_EX_ABSORB && isVictim);
+        bool active = (damage > 0) || (procExtra & PROC_EX_ABSORB && (isVictim && procSpell == NULL));
         if (!IsTriggeredAtSpellProcEvent(itr->second, procSpell, procFlag, procExtra, attType, isVictim, active, spellProcEvent))
            continue;
 
