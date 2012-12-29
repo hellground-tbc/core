@@ -963,9 +963,14 @@ bool ChatHandler::HandleInfoCommand(const char* args)
     PSendSysMessage("*zone: %s [%u]", zEntry->area_name, _player->GetCachedZone());
     PSendSysMessage("*area: %s [%u]", aEntry->area_name, _player->GetCachedArea());
 
+    const AreaTableEntry* zEntry2 = GetAreaEntryByAreaID(_player->GetZoneId());
+    const AreaTableEntry* aEntry2 = GetAreaEntryByAreaID(_player->GetAreaId());
+    if (!aEntry2 || !zEntry2)
+        return false;
+
     PSendSysMessage("- real data -");
-    PSendSysMessage("*zone: %s [%u]", zEntry->area_name, _player->GetZoneId());
-    PSendSysMessage("*area: %s [%u]", aEntry->area_name, _player->GetAreaId());
+    PSendSysMessage("*zone: %s [%u]", zEntry2->area_name, _player->GetZoneId());
+    PSendSysMessage("*area: %s [%u]", aEntry2->area_name, _player->GetAreaId());
 
     TerrainInfo const *terrain = _player->GetTerrain();
     PSendSysMessage("- terrain data -");
