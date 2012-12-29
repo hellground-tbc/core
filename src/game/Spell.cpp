@@ -270,7 +270,7 @@ void SpellCastTargets::write (ByteBuffer& data) const
 }
 
 Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck)
-: m_spellInfo(sSpellStore.LookupEntry(info->Id)), m_spellValue(new SpellValue(GetSpellInfo()))
+: m_spellInfo(info), m_spellValue(new SpellValue(info))
 , m_caster(Caster), _path(PathFinder(m_caster))
 {
     m_spellState = SPELL_STATE_NULL;
