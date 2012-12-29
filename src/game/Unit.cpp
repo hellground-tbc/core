@@ -1716,7 +1716,7 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
         }
     }
 
-    if (GetTypeId() == TYPEID_PLAYER && !IsInFeralForm(true))
+    if (GetTypeId() == TYPEID_PLAYER)
         ((Player *)this)->CastItemCombatSpell(pVictim, damageInfo->attackType, damageInfo->procVictim, damageInfo->procEx);
 
     // Do effect if any damage done to target

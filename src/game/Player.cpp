@@ -7031,6 +7031,7 @@ void Player::UpdateEquipSpellsAtFormChange()
         }
     }
 }
+
 void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellEntry const *spellInfo)
 {
     if (spellInfo && ((spellInfo->Attributes & SPELL_ATTR_STOP_ATTACK_TARGET) ||
@@ -7069,10 +7070,34 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                         if (attType == BASE_ATTACK && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED))
                             continue;
 
-                        if (IsInFeralForm(true))
-                            continue;
+                        /*if (IsInFeralForm(true))
+                            continue;*/
                     }
-                    ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
+                    
+                    bool canProcInFeralForm = false;
+                    // check for exception combat item spells that can proc in feral form
+                    for (int e_slot = 0; e_slot < MAX_ENCHANTMENT_SLOT; ++e_slot)
+                    {
+                        uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(e_slot));
+                        SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                        if (!pEnchant) continue;
+                        for (int s = 0; s < 3; ++s)
+                        {
+                            uint32 spell_id = 0;
+                            if (pEnchant->type[s] != ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+                            {
+                                switch (pEnchant->ID)
+                                {
+                                    // Righteous Weapon Coating can proc in feral form
+                                    case 3266: canProcInFeralForm = true; break;
+                                    default:
+                                        continue;
+                                }
+                            }
+                        }
+                    }
+                    if(!IsInFeralForm(true) || (!IsInFeralForm(true) && canProcInFeralForm))
+                        ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
                 }
             }
         }
@@ -7145,6 +7170,8 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     case 1665: spell_id = 16343; break; // Rank5
                     case 1666: spell_id = 16344; break; // Rank6
                     case 2634: spell_id = 25488; break; // Rank7
+                    // Righteous Weapon Coating enchantment
+                    case 3266: spell_id = 45401; break; // Righteousness spell proc
                     default:
                         continue;
                 }
