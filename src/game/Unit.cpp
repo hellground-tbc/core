@@ -3533,6 +3533,9 @@ bool Unit::IsInWater() const
 
 bool Unit::IsUnderWater() const
 {
+    if (!Hellground::IsValidMapCoord(GetPositionX(),GetPositionY(), GetPositionZ()))
+        return false;
+
     return GetTerrain()->IsUnderWater(GetPositionX(),GetPositionY(),GetPositionZ());
 }
 

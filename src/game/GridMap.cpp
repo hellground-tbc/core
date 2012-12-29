@@ -992,8 +992,11 @@ GridMap* TerrainInfo::GetGrid(const float x, const float y)
     uint32 gx = uint32(32 - x / SIZE_OF_GRIDS);                       //grid x
     uint32 gy = uint32(32 - y / SIZE_OF_GRIDS);                       //grid y
 
-    ASSERT(gx >= 0 && gx < MAX_NUMBER_OF_GRIDS);
-    ASSERT(gy >= 0 && gy < MAX_NUMBER_OF_GRIDS);
+    if (gx > MAX_NUMBER_OF_GRIDS)
+        return NULL;
+
+    if (gy > MAX_NUMBER_OF_GRIDS)
+        return NULL;
 
     //quick check if GridMap already loaded
     GridMap * pMap = m_GridMaps[gx][gy];
