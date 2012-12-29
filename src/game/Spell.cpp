@@ -2458,7 +2458,7 @@ void Spell::cast(bool skipCheck)
         }
 
         // proc item enchantment spell cast for Blessed Weapon Coating enchantment, not needed more general method for now
-        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && roll_chance_f(3)) // ~3% chance on proc
         {
             Player* plr = m_caster->ToPlayer();
             if(plr->getPowerType() == POWER_MANA)
@@ -2471,10 +2471,7 @@ void Spell::cast(bool skipCheck)
                     {
                         SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                         if(pEnchant && pEnchant->ID == 3265) // Blessed Weapon Coating
-                        {
-                            if (roll_chance_f(3))   // ~3% chance on proc
-                                plr->CastSpell(plr, 45403, true, item); // Blessedness spell proc
-                        }
+                            plr->CastSpell(plr, 45403, true, item); // Blessedness spell proc
                     }
                 }
             }
