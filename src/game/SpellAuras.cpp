@@ -2546,10 +2546,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (m_target->GetTypeId()==TYPEID_PLAYER)
                     ((Player*)m_target)->RemoveAmmo();      // not use ammo and not allow use
                 return;
-            case 44867:     // Spectral Exhaustion
-                if(m_target->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)m_target)->GetReputationMgr().ApplyForceReaction(960, REP_FRIENDLY, true);
-                return;
             case 43052:
             {
                 if(GetStackAmount() >= 99)
@@ -3122,6 +3118,16 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             break;
         }
+    }
+
+    switch (GetId())
+    {
+        case 44867:     // Spectral Exhaustion
+            if(m_target->GetTypeId() == TYPEID_PLAYER)
+                ((Player*)m_target)->GetReputationMgr().ApplyForceReaction(960, REP_FRIENDLY, apply);
+            return;
+        default:
+            break;
     }
 
     // pet auras
