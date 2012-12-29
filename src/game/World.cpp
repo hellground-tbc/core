@@ -2101,7 +2101,7 @@ void World::SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, uint32 prev
         if (itr->second->GetPlayer()->getLevel() < minLevel || itr->second->GetPlayer()->getLevel() > maxLevel)
             continue;
 
-        if (itr->second->IsAccountFlagged(preventFlag))
+        if (itr->second->IsAccountFlagged(AccountFlags(preventFlags)))
             continue;
 
         uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();

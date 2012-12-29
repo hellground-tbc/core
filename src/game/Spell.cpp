@@ -2473,10 +2473,7 @@ void Spell::cast(bool skipCheck)
                         if(pEnchant && pEnchant->ID == 3265) // Blessed Weapon Coating
                         {
                             if (roll_chance_f(3))   // ~3% chance on proc
-                            {
-                                plr->Say("procuje", 0);
                                 plr->CastSpell(plr, 45403, true, item); // Blessedness spell proc
-                            }
                         }
                     }
                 }
