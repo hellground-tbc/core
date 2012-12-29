@@ -350,7 +350,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG)
     {
-        if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == spellInfo->Id)
+        if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->GetSpellInfo()->Id == spellInfo->Id)
             return;
     }
 
@@ -412,7 +412,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     if (SpellMgr::IsChanneledSpell(spellInfo))
     {
         if (_player->m_currentSpells[CURRENT_CHANNELED_SPELL] &&
-            _player->m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->Id==spellId)
+            _player->m_currentSpells[CURRENT_CHANNELED_SPELL]->GetSpellInfo()->Id==spellId)
             _player->InterruptSpell(CURRENT_CHANNELED_SPELL);
         return;
     }

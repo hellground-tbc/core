@@ -201,10 +201,10 @@ void PetAI::AutocastPreparedSpells()
                 me->SendCreateUpdateToPlayer((Player*)m_owner);
         }
 
-        me->AddCreatureSpellCooldown(spell->m_spellInfo->Id);
+        me->AddCreatureSpellCooldown(spell->GetSpellInfo()->Id);
 
         if (me->isPet())
-            ((Pet*)me)->CheckLearning(spell->m_spellInfo->Id);
+            ((Pet*)me)->CheckLearning(spell->GetSpellInfo()->Id);
 
         spell->prepare(&targets);
     }

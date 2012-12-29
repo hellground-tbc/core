@@ -4284,7 +4284,7 @@ void Aura::HandleAuraModSilence(bool apply, bool Real)
         for (uint32 i = CURRENT_MELEE_SPELL; i < CURRENT_MAX_SPELL;i++)
         {
             Spell* currentSpell = m_target->m_currentSpells[i];
-            if (currentSpell && currentSpell->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
+            if (currentSpell && currentSpell->GetSpellInfo()->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
             {
                 uint32 state = currentSpell->getState();
                 // Stop spells on prepare or casting state
@@ -7138,7 +7138,7 @@ void Aura::PeriodicTick()
             {
                 for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
                 {
-                    if (pCaster->m_currentSpells[i] && pCaster->m_currentSpells[i]->m_spellInfo->Id == spellProto->Id)
+                    if (pCaster->m_currentSpells[i] && pCaster->m_currentSpells[i]->GetSpellInfo()->Id == spellProto->Id)
                         pCaster->m_currentSpells[i]->cancel();
                 }
             }

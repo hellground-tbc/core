@@ -9903,9 +9903,9 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                 {
                     // exclude spells with transform item effect
                     if (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
-                        (m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[0] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
-                        m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[1] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
-                        m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[2] != SPELL_EFFECT_SUMMON_CHANGE_ITEM))
+                        (m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Effect[0] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
+                        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Effect[1] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
+                        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Effect[2] != SPELL_EFFECT_SUMMON_CHANGE_ITEM))
 
                         return EQUIP_ERR_CANT_DO_RIGHT_NOW;
                 }
@@ -17599,7 +17599,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     // not let cheating with start flight in time of logout process || if casting not finished || while in combat || if not use Spell's with EffectSendTaxi
     if (GetSession()->isLogingOut() ||
         (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
-        m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Effect[0] != SPELL_EFFECT_SEND_TAXI)&&
+        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Effect[0] != SPELL_EFFECT_SEND_TAXI)&&
         IsNonMeleeSpellCasted(false) ||
         isInCombat())
     {
@@ -19473,7 +19473,7 @@ void Player::RemoveItemDependentAurasAndCasts(Item * pItem)
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
     {
         if (m_currentSpells[i] && m_currentSpells[i]->getState()!=SPELL_STATE_DELAYED &&
-            !HasItemFitToSpellReqirements(m_currentSpells[i]->m_spellInfo,pItem))
+            !HasItemFitToSpellReqirements(m_currentSpells[i]->GetSpellInfo(),pItem))
             InterruptSpell(i);
     }
 }

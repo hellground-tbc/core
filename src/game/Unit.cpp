@@ -694,8 +694,8 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
     // interrupt channeled spell
     if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
         if (spell->getState() == SPELL_STATE_CASTING
-            && (spell->m_spellInfo->ChannelInterruptFlags & flag)
-            && spell->m_spellInfo->Id != except)
+            && (spell->GetSpellInfo()->ChannelInterruptFlags & flag)
+            && spell->GetSpellInfo()->Id != except)
             InterruptNonMeleeSpells(false);
 
     UpdateInterruptMask();
@@ -711,7 +711,7 @@ void Unit::UpdateInterruptMask()
     }
     if (Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
         if (spell->getState() == SPELL_STATE_CASTING)
-            m_interruptMask |= spell->m_spellInfo->ChannelInterruptFlags;
+            m_interruptMask |= spell->GetSpellInfo()->ChannelInterruptFlags;
 }
 
 bool Unit::HasAuraType(AuraType auraType) const
@@ -1064,7 +1064,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
                         {
                             if (spell->getState() == SPELL_STATE_PREPARING)
                             {
-                                uint32 interruptFlags = spell->m_spellInfo->InterruptFlags;
+                                uint32 interruptFlags = spell->GetSpellInfo()->InterruptFlags;
                                 if (interruptFlags & SPELL_INTERRUPT_FLAG_DAMAGE)
                                     pVictim->InterruptNonMeleeSpells(false);
                                 else if (interruptFlags & SPELL_INTERRUPT_FLAG_PUSH_BACK)
@@ -1077,7 +1077,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
                     {
                         if (spell->getState() == SPELL_STATE_CASTING)
                         {
-                            uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
+                            uint32 channelInterruptFlags = spell->GetSpellInfo()->ChannelInterruptFlags;
                             if (damagetype != DOT && channelInterruptFlags & CHANNEL_FLAG_DELAY)
                                 spell->DelayedChannel();
                         }
@@ -1121,7 +1121,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, DamageEffectType damagetyp
 void Unit::CastStop(uint32 except_spellid)
 {
     for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
-        if (m_currentSpells[i] && m_currentSpells[i]->m_spellInfo->Id!=except_spellid)
+        if (m_currentSpells[i] && m_currentSpells[i]->GetSpellInfo()->Id!=except_spellid)
             InterruptSpell(i,false, false);
 }
 
@@ -2602,7 +2602,7 @@ uint32 Unit::GetCurrentSpellId() const
 {
     for (int i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
         if(m_currentSpells[i])
-            return m_currentSpells[i]->m_spellInfo->Id;
+            return m_currentSpells[i]->GetSpellInfo()->Id;
 
     return 0;
 }
@@ -2614,7 +2614,7 @@ Spell* Unit::GetCurrentSpell(CurrentSpellTypes type) const
 
 SpellEntry const* Unit::GetCurrentSpellProto(CurrentSpellTypes type) const
 {
-    return (m_currentSpells[type] ? m_currentSpells[type]->m_spellInfo : NULL);
+    return (m_currentSpells[type] ? m_currentSpells[type]->GetSpellInfo() : NULL);
 }
 
 bool Unit::isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAttackType attackType)
@@ -3252,7 +3252,7 @@ void Unit::_UpdateAutoRepeatSpell()
     if ((GetTypeId() == TYPEID_PLAYER && ((Player*)this)->isMoving()) || IsNonMeleeSpellCasted(false,false,true))
     {
         // cancel wand shoot
-        if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category == 351)
+        if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->GetSpellInfo()->Category == 351)
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
         m_AutoRepeatFirstCast = true;
         return;
@@ -3275,7 +3275,7 @@ void Unit::_UpdateAutoRepeatSpell()
         }
 
         // we want to shoot
-        Spell* spell = new Spell(this, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo, true, 0);
+        Spell* spell = new Spell(this, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->GetSpellInfo(), true, 0);
         spell->prepare(&(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets));
 
         if (!IsStandState())
@@ -3309,7 +3309,7 @@ void Unit::SetCurrentCastedSpell(Spell* spell)
             if (Spell* current = GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
             {
                 // break autorepeat if not Auto Shot
-                if (current->m_spellInfo->Category == 351)
+                if (current->GetSpellInfo()->Category == 351)
                     InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 
                 m_AutoRepeatFirstCast = true;
@@ -3330,7 +3330,7 @@ void Unit::SetCurrentCastedSpell(Spell* spell)
             if (Spell* current = GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
             {
                 // break autorepeat if not Auto Shot
-                if (current->m_spellInfo->Category == 351)
+                if (current->GetSpellInfo()->Category == 351)
                     InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
             }
 
@@ -3342,7 +3342,7 @@ void Unit::SetCurrentCastedSpell(Spell* spell)
         case CURRENT_AUTOREPEAT_SPELL:
         {
             // only Auto Shoot does not break anything
-            if (spell->m_spellInfo->Category == 351)
+            if (spell->GetSpellInfo()->Category == 351)
             {
                 // generic autorepeats break generic non-delayed and channeled non-delayed spells
                 InterruptSpell(CURRENT_GENERIC_SPELL,false);
@@ -3434,22 +3434,22 @@ bool Unit::IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled, bool skip
 void Unit::InterruptNonMeleeSpells(bool withDelayed, uint32 spell_id, bool withInstant)
 {
     // generic spells are interrupted if they are not finished or delayed
-    if (m_currentSpells[CURRENT_GENERIC_SPELL] && (!spell_id || m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Id==spell_id))
+    if (m_currentSpells[CURRENT_GENERIC_SPELL] && (!spell_id || m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Id==spell_id))
         InterruptSpell(CURRENT_GENERIC_SPELL,withDelayed,withInstant);
 
     // autorepeat spells are interrupted if they are not finished or delayed
-    if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && (!spell_id || m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id==spell_id))
+    if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && (!spell_id || m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->GetSpellInfo()->Id==spell_id))
         InterruptSpell(CURRENT_AUTOREPEAT_SPELL,withDelayed,withInstant);
 
     // channeled spells are interrupted if they are not finished, even if they are delayed
-    if (m_currentSpells[CURRENT_CHANNELED_SPELL] && (!spell_id || m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->Id==spell_id))
+    if (m_currentSpells[CURRENT_CHANNELED_SPELL] && (!spell_id || m_currentSpells[CURRENT_CHANNELED_SPELL]->GetSpellInfo()->Id==spell_id))
         InterruptSpell(CURRENT_CHANNELED_SPELL,true,true);
 }
 
 Spell* Unit::FindCurrentSpellBySpellId(uint32 spell_id) const
 {
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
-        if (m_currentSpells[i] && m_currentSpells[i]->m_spellInfo->Id==spell_id)
+        if (m_currentSpells[i] && m_currentSpells[i]->GetSpellInfo()->Id==spell_id)
             return m_currentSpells[i];
     return NULL;
 }

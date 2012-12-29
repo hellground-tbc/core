@@ -383,10 +383,10 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                         victim = m_creature->getVictim();
                         // prevent from LoS exploiting, probably some general check should be implemented for this
                         uint8 i = 0;
-                        SpellEntry const *m_spellInfo = GetSpellStore()->LookupEntry(autocastId);
+                        SpellEntry const *spellInfo = GetSpellStore()->LookupEntry(autocastId);
 
                         // while (!victim or not in los) and i < threatlist size
-                        while ((!victim || (!SpellMgr::SpellIgnoreLOS(m_spellInfo, 0) && !m_creature->IsWithinLOSInMap(victim))) && i < m_creature->getThreatManager().getThreatList().size())
+                        while ((!victim || (!SpellMgr::SpellIgnoreLOS(spellInfo, 0) && !m_creature->IsWithinLOSInMap(victim))) && i < m_creature->getThreatManager().getThreatList().size())
                         {
                             ++i;
                             victim = SelectUnit(SELECT_TARGET_TOPAGGRO, i, GetSpellMaxRange(autocastId), true);
