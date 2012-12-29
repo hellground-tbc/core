@@ -3829,12 +3829,6 @@ bool Unit::AddAura(Aura *Aur)
                 ++i2;
                 continue;
             }
-            if (SpellMgr::GetSpellMaxDuration(aurSpellInfo) > Aur->GetAuraMaxDuration() &&        // HACK check for spellsteal case
-                Aur->GetAuraDuration() < i2->second->GetAuraDuration())               // don't override longer bufs when spellstealing
-            {
-                delete Aur;
-                return false;
-            }
             RemoveAura(i2,AURA_REMOVE_BY_STACK);
             i2=m_Auras.lower_bound(spair);
             continue;
@@ -4169,6 +4163,7 @@ void Unit::RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit
 
 void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit *stealer)
 {
+    bool onlyDispel = false;
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
         Aura *aur = iter->second;
@@ -4180,19 +4175,33 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit 
             if (!new_aur)
                 continue;
 
-            // set its duration and maximum duration
-            // max duration 2 minutes (in msecs)
-            int32 dur = aur->GetAuraDuration();
-            const int32 max_dur = 2*MINUTE*1000;
-            new_aur->SetAuraMaxDuration(max_dur > dur ? dur : max_dur);
-            new_aur->SetAuraDuration(max_dur > dur ? dur : max_dur);
-
+            const int32 max_dur = 2*MINUTE*1000;    // max duration 2 minutes (in msecs)
             // Unregister _before_ adding to stealer
             aur->UnregisterSingleCastAura();
+
+            // check for similar aura on stealer, not to override better spell or with longer duration
+            Unit::AuraMap const& auras = stealer->GetAuras();
+            for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+            {
+                Aura *stealer_aur = (*itr).second;
+                if (aur->GetSpellProto()->SpellFamilyName == stealer_aur->GetSpellProto()->SpellFamilyName &&
+                    aur->GetSpellProto()->SpellFamilyFlags == stealer_aur->GetSpellProto()->SpellFamilyFlags &&
+                    (aur->GetBasePoints() < stealer_aur->GetBasePoints() ||  // better values
+                    (aur->GetBasePoints() == stealer_aur->GetBasePoints() && stealer_aur->GetAuraDuration() > max_dur))) // same values but timer longer than 2 minutes
+                {
+                    onlyDispel = true;
+                    break;
+                }
+            }
+            // set its duration and maximum duration
+            int32 dur = aur->GetAuraDuration();
+            new_aur->SetAuraMaxDuration(max_dur > dur ? dur : max_dur);
+            new_aur->SetAuraDuration(max_dur > dur ? dur : max_dur);
             // strange but intended behaviour: Stolen single target auras won't be treated as single targeted
             new_aur->SetIsSingleTarget(false);
-            // add the new aura to stealer
-            stealer->AddAura(new_aur);
+            // add the new aura to stealer when needed
+            if (!onlyDispel)
+                stealer->AddAura(new_aur);
             // Remove aura as dispel
             if(spellId == 43421)         // Special case - Hex Lord Malacrass Lifebloom (prevent lifebloom from blomming when spellstolen)
                 RemoveAura(iter, AURA_REMOVE_BY_DEFAULT);
