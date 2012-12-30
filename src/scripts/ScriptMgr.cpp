@@ -24,7 +24,7 @@ Script *m_scripts[MAX_SCRIPTS];
 void FillSpellSummary();
 
 // -------------------
-void LoadDatabase(char const* cfg_file)
+void LoadDatabase()
 {
     pSystemMgr.LoadVersion();
     pSystemMgr.LoadScriptTexts();
@@ -52,7 +52,7 @@ void FreeScriptLibrary()
 }
 
 HELLGROUND_DLL_EXPORT
-void InitScriptLibrary(char const* cfg_file)
+void InitScriptLibrary()
 {
     //Trinity Script startup
     outstring_log(" _____     _       _ _         ____            _       _");
@@ -65,7 +65,7 @@ void InitScriptLibrary(char const* cfg_file)
     outstring_log("");
 
     //Load database (must be called after TScriptConfig.SetSource). In case it failed, no need to even try load.
-    LoadDatabase(cfg_file);
+    LoadDatabase();
 
     outstring_log("TSCR: Loading C++ scripts");
     BarGoLink bar(1);
