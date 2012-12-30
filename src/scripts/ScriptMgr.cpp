@@ -26,39 +26,10 @@ void FillSpellSummary();
 // -------------------
 void LoadDatabase(char const* cfg_file)
 {
-    if (!sConfig.SetSource(cfg_file))
-    {
-        printf("TSCR: Could not find configuration file %s.", cfg_file);
-        return;
-    }
-
-    //Get db string from file
-    std::string dbstring = sConfig.GetStringDefault("WorldDatabaseInfo", "");
-    if (dbstring.empty())
-    {
-        error_log("TSCR: Missing world database info from configuration file. Load database aborted.");
-        return;
-    }
-
-    //Initialize connection to DB
-    if (!dbstring.empty() && TScriptDB.Initialize(dbstring.c_str()))
-    {
-        outstring_log("TSCR: TrinityScript database initialized successfully.");
-        outstring_log("");
-
-        pSystemMgr.LoadVersion();
-        pSystemMgr.LoadScriptTexts();
-        pSystemMgr.LoadScriptTextsCustom();
-        pSystemMgr.LoadScriptWaypoints(); //[TZERO] to implement
-    }
-    else
-    {
-        error_log("TSCR: Unable to connect to database at %s. Load database aborted.", dbstring.c_str());
-        return;
-    }
-
-    //Free database thread and resources
-    TScriptDB.HaltDelayThread();
+    pSystemMgr.LoadVersion();
+    pSystemMgr.LoadScriptTexts();
+    pSystemMgr.LoadScriptTextsCustom();
+    pSystemMgr.LoadScriptWaypoints(); //[TZERO] to implement
 }
 
 struct TSpellSummary
