@@ -397,6 +397,19 @@ struct npc_commander_dawnforgeAI : public ScriptedAI
 
     void EnterCombat(Unit *who) { }
 
+    //Select any creature in a grid
+    Creature* SelectCreatureInGrid(uint32 entry, float range)
+    {
+        Creature* pCreature = NULL;
+
+        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
+        Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+        Cell::VisitGridObjects(me, searcher, range);
+
+        return pCreature;
+    }
+
     void JustSummoned(Creature *summoned)
     {
         pathaleonGUID = summoned->GetGUID();
@@ -458,7 +471,7 @@ struct npc_commander_dawnforgeAI : public ScriptedAI
     {
         if (!isEvent)
         {
-            Creature *ardonis = GetClosestCreatureWithEntry(me, CreatureEntry[0][0], 10.0f);
+            Creature *ardonis = SelectCreatureInGrid(CreatureEntry[0][0], 10.0f);
             if (!ardonis)
                 return false;
 
@@ -612,6 +625,18 @@ CreatureAI* GetAI_npc_commander_dawnforge(Creature* _Creature)
     return new npc_commander_dawnforgeAI(_Creature);
 }
 
+Creature* SearchDawnforge(Player *source, uint32 entry, float range)
+{
+    Creature* pCreature = NULL;
+
+    Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*source, entry, true, range);
+    Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+    Cell::VisitGridObjects(source, searcher, range);
+
+    return pCreature;
+}
+
 bool AreaTrigger_at_commander_dawnforge(Player *player, AreaTriggerEntry const*at)
 {
     //if player lost aura or not have at all, we should not try start event.
@@ -620,7 +645,7 @@ bool AreaTrigger_at_commander_dawnforge(Player *player, AreaTriggerEntry const*a
 
     if (player->isAlive() && player->GetQuestStatus(QUEST_INFO_GATHERING) == QUEST_STATUS_INCOMPLETE)
     {
-        Creature* Dawnforge = GetClosestCreatureWithEntry(player, CreatureEntry[1][0], 30.0f);
+        Creature* Dawnforge = SearchDawnforge(player, CreatureEntry[1][0], 30.0f);
 
         if (!Dawnforge)
             return false;
@@ -2141,6 +2166,539 @@ CreatureAI* GetAI_npc_protectorate_demolitionist(Creature* creature)
 }
 
 /*######
+## npc_saeed
+######*/
+
+#define GOSSIP_ITEM_START      "I am that fleshling, Saeed. Let's go!"
+#define GOSSIP_ITEM_GO         "I am ready. Let's make history!"
+
+enum
+{
+    SAY_SAEED_1            = -1900216,
+    SAY_SAEED_2            = -1900217,
+    SAY_SAEED_3            = -1900218,
+    SAY_SAEED_4            = -1900221,
+    SAY_SAEED_5            = -1900222,
+    SAY_DIMENSIUS_1        = -1900219,
+    SAY_DIMENSIUS_2        = -1900220,
+
+    MAX_DEFENDERS          = 9,
+
+    NPC_DIMENSIUS_ZERO     = 21035,
+    NPC_DIMENSIUS          = 19554,
+    NPC_DEFENDER           = 20984,
+    NPC_AVENGER            = 21805,
+    NPC_REGENERATOR        = 21783,
+
+    SPELL_CLEAVE           = 15496
+};
+
+struct npc_saeedAI : public npc_escortAI
+{
+    npc_saeedAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
+
+    bool Check;
+
+    std::list<Creature*> DefendersList;
+    std::list<Creature*> AvengersList;
+    std::list<Creature*> RegeneratorsList;
+    uint32 CleaveTimer;
+    uint32 EventTimer;
+    uint8 EventStage;
+
+    void Reset()
+    {
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            EventTimer = 0;
+            EventStage = 0;
+        }
+
+        Check = false;
+        CleaveTimer = 20000;
+    }
+
+    void DoSpawnDimensius()
+    {
+        if (Creature* Dim = GetClosestCreatureWithEntry(me, NPC_DIMENSIUS, 45.0f))
+        {
+            me->AI()->AttackStart(Dim);
+        }
+        else
+        {
+            if (Creature* Dimz = GetClosestCreatureWithEntry(me, NPC_DIMENSIUS_ZERO, 45.0f))
+            {
+                me->SummonCreature(NPC_DIMENSIUS, Dimz->GetPositionX(), Dimz->GetPositionY(), Dimz->GetPositionZ(), 1.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                Dimz->SetVisibility(VISIBILITY_OFF);
+            }
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        if (summoned->GetEntry() == NPC_DIMENSIUS)
+        {
+            summoned->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            DoScriptText(SAY_DIMENSIUS_1, summoned);
+            summoned->AI()->AttackStart(me);
+        }
+    }
+
+    void SetFormation()
+    {
+        uint32 uiCount = 0;
+
+        for (std::list<Creature*>::iterator itr = DefendersList.begin(); itr != DefendersList.end(); ++itr)
+        {
+            float fAngle = uiCount < MAX_DEFENDERS ? M_PI/MAX_DEFENDERS - (uiCount*2*M_PI/MAX_DEFENDERS) : 0.0f;
+            if ((*itr)->isAlive())
+                (*itr)->GetMotionMaster()->MoveFollow(me, 1.5f, fAngle);
+
+            ++uiCount;
+        }
+
+        for (std::list<Creature*>::iterator itr = AvengersList.begin(); itr != AvengersList.end(); ++itr)
+        {
+            float fAngle = uiCount < MAX_DEFENDERS ? M_PI/MAX_DEFENDERS - (uiCount*2*M_PI/MAX_DEFENDERS) : 0.0f;
+            if ((*itr)->isAlive())
+                (*itr)->GetMotionMaster()->MoveFollow(me, 1.5f, fAngle);
+
+            ++uiCount;
+        }
+
+        for (std::list<Creature*>::iterator itr = RegeneratorsList.begin(); itr != RegeneratorsList.end(); ++itr)
+        {
+            float fAngle = uiCount < MAX_DEFENDERS ? M_PI/MAX_DEFENDERS - (uiCount*2*M_PI/MAX_DEFENDERS) : 0.0f;
+            if ((*itr)->isAlive())
+                (*itr)->GetMotionMaster()->MoveFollow(me, 1.5f, fAngle);
+
+            ++uiCount;
+        }
+    }
+
+    void FindDefenders()
+    {
+        DefendersList.clear();
+        AvengersList.clear();
+        RegeneratorsList.clear();
+
+        DefendersList = FindAllCreaturesWithEntry(NPC_DEFENDER, 25.0f);
+        AvengersList = FindAllCreaturesWithEntry(NPC_AVENGER, 25.0f);
+        RegeneratorsList = FindAllCreaturesWithEntry(NPC_REGENERATOR, 25.0f);
+    }
+
+    void JustStarted()
+    {
+        if (!DefendersList.empty())
+            SetFormation();
+
+        if (!AvengersList.empty())
+            SetFormation();
+
+        if (!RegeneratorsList.empty())
+            SetFormation();
+    }
+
+    void AttackStart(Unit* who)
+    {
+        npc_escortAI::AttackStart(who);
+
+        for (std::list<Creature*>::iterator itr = DefendersList.begin(); itr != DefendersList.end(); ++itr)
+        {
+            float x, y, z;
+            (*itr)->GetPosition(x, y, z);
+            (*itr)->SetHomePosition(x, y, z, 0);
+            (*itr)->AI()->AttackStart(who);
+        }
+
+        for (std::list<Creature*>::iterator itr = AvengersList.begin(); itr != AvengersList.end(); ++itr)
+        {
+            float x, y, z;
+            (*itr)->GetPosition(x, y, z);
+            (*itr)->SetHomePosition(x, y, z, 0);
+            (*itr)->AI()->AttackStart(who);
+        }
+
+        for (std::list<Creature*>::iterator itr = RegeneratorsList.begin(); itr != RegeneratorsList.end(); ++itr)
+        {
+            float x, y, z;
+            (*itr)->GetPosition(x, y, z);
+            (*itr)->SetHomePosition(x, y, z, 0);
+            (*itr)->AI()->AttackStart(who);
+        }
+    }
+
+    void DoEmote()
+    {
+        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY1H);
+
+        for (std::list<Creature*>::iterator itr = DefendersList.begin(); itr != DefendersList.end(); ++itr)
+            (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY1H);
+
+        for (std::list<Creature*>::iterator itr = AvengersList.begin(); itr != AvengersList.end(); ++itr)
+            (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY1H);
+
+        for (std::list<Creature*>::iterator itr = RegeneratorsList.begin(); itr != RegeneratorsList.end(); ++itr)
+            (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READY1H);
+    }
+
+    void CleanEmote()
+    {
+        me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
+
+        for (std::list<Creature*>::iterator itr = DefendersList.begin(); itr != DefendersList.end(); ++itr)
+            (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
+
+        for (std::list<Creature*>::iterator itr = AvengersList.begin(); itr != AvengersList.end(); ++itr)
+            (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
+
+        for (std::list<Creature*>::iterator itr = RegeneratorsList.begin(); itr != RegeneratorsList.end(); ++itr)
+            (*itr)->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
+    }
+
+    void PlayEmote()
+    {
+        me->HandleEmoteCommand(15);
+
+        for (std::list<Creature*>::iterator itr = DefendersList.begin(); itr != DefendersList.end(); ++itr)
+            (*itr)->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+
+        for (std::list<Creature*>::iterator itr = AvengersList.begin(); itr != AvengersList.end(); ++itr)
+            (*itr)->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+
+        for (std::list<Creature*>::iterator itr = RegeneratorsList.begin(); itr != RegeneratorsList.end(); ++itr)
+            (*itr)->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+    }
+
+    void DespawnDefenders()
+    {
+        for(std::list<Creature*>::iterator itr = DefendersList.begin(); itr != DefendersList.end(); itr++)
+            (*itr)->setDeathState(JUST_DIED);
+
+        for(std::list<Creature*>::iterator itr = AvengersList.begin(); itr != AvengersList.end(); itr++)
+            (*itr)->setDeathState(JUST_DIED);
+
+        for(std::list<Creature*>::iterator itr = RegeneratorsList.begin(); itr != RegeneratorsList.end(); itr++)
+            (*itr)->setDeathState(JUST_DIED);
+
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        switch(i)
+        {
+            case 0:
+                DoScriptText(SAY_SAEED_1, me);
+                FindDefenders();
+                SetEscortPaused(true);
+                Check = true;
+                EventTimer = 3000;
+                break;
+            case 21:
+                SetEscortPaused(true);
+                DoEmote();
+                me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                if (Player* player = GetPlayerForEscort())
+                    DoScriptText(SAY_SAEED_2, me, player);
+                 break;
+             case 22:
+                 me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
+                 break;
+             case 24:
+                 EventTimer = 8000;
+                 break;
+        }
+    }
+ 
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if (Check)
+        {
+            Player* player = GetPlayerForEscort();
+
+            if (!me->IsWithinDistInMap(player, 48.0f))
+            {
+                DespawnDefenders();
+                Check = false;
+            }
+        }
+
+        if (EventTimer)
+        {
+            if (EventTimer <= diff)
+            {
+                switch (EventStage)
+                {
+                    case 0:
+                        PlayEmote();
+                        EventTimer = 5000;
+                        break;
+                    case 1:
+                        JustStarted();
+                        SetEscortPaused(false);
+                        EventTimer = 0;
+                        break;
+                    case 2:
+                        DoScriptText(SAY_SAEED_4, me);
+                        EventTimer = 5000;
+                        break;
+                    case 3:
+                        CleanEmote();
+                        DoSpawnDimensius();
+                        EventTimer = 0;
+                        break;
+                }
+
+                ++EventStage;
+            }
+            else EventTimer -= diff;
+        }
+
+        if (!UpdateVictim())
+            return;
+
+        if (CleaveTimer <= diff)
+        {
+            DoCast(me->getVictim(), SPELL_CLEAVE);
+            CleaveTimer = 20000;
+        }
+        else CleaveTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_saeed(Creature* creature)
+{
+    return new npc_saeedAI(creature);
+}
+
+bool GossipHello_npc_saeed(Player *player, Creature *creature)
+{
+    if (player->GetQuestStatus(10439) == QUEST_STATUS_INCOMPLETE && !((npc_saeedAI*)creature->AI())->HasEscortState(STATE_ESCORT_PAUSED))
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
+
+    if (((npc_saeedAI*)creature->AI())->HasEscortState(STATE_ESCORT_PAUSED))
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+    player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
+			
+    return true;
+}
+
+bool GossipSelect_npc_saeed(Player* player, Creature* creature, uint32 sender, uint32 action)
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        creature->setFaction(231);
+        ((npc_saeedAI*)creature->AI())->Start(true, true, player->GetGUID());
+        player->KilledMonster(20985, creature->GetGUID());
+        player->CLOSE_GOSSIP_MENU();
+    }
+
+    if (action == GOSSIP_ACTION_INFO_DEF+2)
+    {
+        DoScriptText(SAY_SAEED_3, creature);
+        ((npc_saeedAI*)creature->AI())->SetEscortPaused(false);
+        player->CLOSE_GOSSIP_MENU();
+    }
+
+    return true;
+}
+
+
+/*######
+## npc_dimensius
+######*/
+
+enum
+{
+    SPELL_PAIN5       = 37399,
+    SPELL_PAIN10      = 37405,
+    SPELL_PAIN15      = 37397,
+    SPELL_PAIN25      = 37396,
+    SPELL_PAIN35      = 37409,
+    SPELL_SPIRAL      = 37500,
+    SPELL_VAULT       = 37412,
+    SPELL_FEEDING     = 37450,
+
+    NPC_SAEED         = 20985,
+    NPC_SPAWN         = 21780
+};
+// this is fast one maybe need corrections.
+struct npc_dimensiusAI : public ScriptedAI
+{
+    npc_dimensiusAI(Creature* creature) : ScriptedAI(creature), spawns(me) {}
+
+    bool CanSpawn;
+    bool DoSpawns;
+
+    SummonList spawns;
+    uint32 VaultTimer;
+    uint32 SpiraltTimer;
+    uint32 StartTimer;
+    uint32 ShadowRainTimer;
+    uint32 SpawnsCount;
+
+    void Reset() 
+    {
+        CanSpawn = true;
+        DoSpawns = false;
+        VaultTimer = 15000;
+        SpiraltTimer = 2000;
+        ShadowRainTimer = 10000;
+        SpawnsCount = 0;
+    }
+
+    void DoSpawn()
+    {
+        ++SpawnsCount;
+
+        float fangle = 0.0f;
+
+        switch(SpawnsCount)
+        {
+            case 1: fangle = 0.0f; break;
+            case 2: fangle = 4.6f; break;
+            case 3: fangle = 1.5f; break;
+            case 4: fangle = 3.1f; break;
+        }
+
+        float fx, fy, fz;
+        me->GetNearPoint(me, fx, fy, fz, 0.0f, 20.0f, fangle);
+        me->SummonCreature(NPC_SPAWN, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_DEAD_DESPAWN, 5000);
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        spawns.Summon(summoned);
+
+        summoned->CastSpell(me, SPELL_FEEDING, true);
+    }
+
+    void DamageTaken(Unit* doneby, uint32 & damage)
+    {
+        if (CanSpawn)
+        {
+            if ((me->GetHealth()*100 - damage) / me->GetMaxHealth() < 80)
+            {
+                DoScriptText(SAY_DIMENSIUS_2, me);
+                DoSpawns= true;
+                CanSpawn = false;
+            }
+        }
+    }
+
+    void EnterEvadeMode()
+    {
+
+        spawns.DespawnAll();
+
+        if (Creature* Dimz = GetClosestCreatureWithEntry(me, NPC_DIMENSIUS_ZERO, 25.0f))
+            Dimz->SetVisibility(VISIBILITY_ON);
+
+        me->ForcedDespawn();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        std::list<Creature*> Defenders = FindAllCreaturesWithEntry(NPC_DEFENDER, 25.0f);
+        std::list<Creature*> Avengers = FindAllCreaturesWithEntry(NPC_AVENGER, 25.0f);
+        std::list<Creature*> Regenerators = FindAllCreaturesWithEntry(NPC_REGENERATOR, 25.0f);
+
+        if (!Defenders.empty())
+        {
+            for(std::list<Creature*>::iterator it = Defenders.begin(); it != Defenders.end(); it++)
+            {
+                DoCast((*it), SPELL_ETHEREAL_TELEPORT);
+                (*it)->ForcedDespawn(1500);
+            }
+        }
+
+        if (!Avengers.empty())
+        {
+            for(std::list<Creature*>::iterator it = Avengers.begin(); it != Avengers.end(); it++)
+            {
+                DoCast((*it), SPELL_ETHEREAL_TELEPORT);
+                (*it)->ForcedDespawn(1500);
+            }
+        }
+
+        if (!Regenerators.empty())
+        {
+            for(std::list<Creature*>::iterator it = Regenerators.begin(); it != Regenerators.end(); it++)
+            {
+                DoCast((*it), SPELL_ETHEREAL_TELEPORT);
+                (*it)->ForcedDespawn(1500);
+            }
+        }
+
+        if (Creature* Saeed = GetClosestCreatureWithEntry(me, NPC_SAEED, 25.0f))
+        {
+            DoScriptText(SAY_SAEED_5, Saeed);
+            Saeed->ForcedDespawn(5000);
+        }
+
+        if (Creature* Dimz = GetClosestCreatureWithEntry(me, NPC_DIMENSIUS_ZERO, 25.0f))
+            Dimz->SetVisibility(VISIBILITY_ON);
+
+        spawns.DespawnAll();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (DoSpawns)
+        {
+            if (SpawnsCount >= 4)
+                DoSpawns = false;
+            else DoSpawn();
+        }
+
+        if (SpiraltTimer <= diff)
+        {
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f))
+                DoCast(me->getVictim(), SPELL_SPIRAL);
+
+            SpiraltTimer = 13000;
+        }
+        else SpiraltTimer -= diff;
+
+        if (VaultTimer <= diff)
+        {
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f))
+                DoCast(target, SPELL_VAULT);
+
+            VaultTimer = 20000;
+        }
+        else VaultTimer -= diff;
+
+        if (ShadowRainTimer <= diff)
+        {
+            if (me->HasAura(37450))
+            {
+                if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f))
+                    DoCast(target, RAND(SPELL_PAIN35, SPELL_PAIN25, SPELL_PAIN5, SPELL_PAIN10, SPELL_PAIN15));
+            }
+                
+            ShadowRainTimer = 10000;
+        }
+        else ShadowRainTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_dimensius(Creature* creature)
+{
+    return new npc_dimensiusAI(creature);
+}
+
+/*######
 ## AddSC_netherstrom
 ######*/
 
@@ -2264,6 +2822,18 @@ void AddSC_netherstorm()
     newscript = new Script;
     newscript->Name = "npc_protectorate_demolitionist";
     newscript->GetAI = &GetAI_npc_protectorate_demolitionist;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_saeed";
+    newscript->pGossipHello = &GossipHello_npc_saeed;
+    newscript->pGossipSelect = &GossipSelect_npc_saeed;
+    newscript->GetAI = &GetAI_npc_saeed;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_dimensius";
+    newscript->GetAI = &GetAI_npc_dimensius;
     newscript->RegisterSelf();
 }
 
