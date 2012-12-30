@@ -183,7 +183,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -222,7 +222,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -264,7 +264,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
@@ -306,7 +306,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
