@@ -421,7 +421,7 @@ typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
 extern bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 
-class HELLGROUND_DLL_SPEC SpellMgr
+class HELLGROUND_IMPORT_EXPORT SpellMgr
 {
     friend class ACE_Singleton<SpellMgr, ACE_Null_Mutex >;
 

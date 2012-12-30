@@ -119,7 +119,7 @@ enum GetCreatureGuidType
 
 typedef std::list<std::pair<Map*, uint32> > DelayedMapList;
 
-class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
+class HELLGROUND_IMPORT_EXPORT Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
@@ -389,7 +389,7 @@ enum InstanceResetMethod
     INSTANCE_RESET_RESPAWN_DELAY
 };
 
-class HELLGROUND_DLL_SPEC InstanceMap : public Map
+class HELLGROUND_IMPORT_EXPORT InstanceMap : public Map
 {
     public:
         InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
@@ -419,7 +419,7 @@ class HELLGROUND_DLL_SPEC InstanceMap : public Map
         uint32 i_script_id;
 };
 
-class HELLGROUND_DLL_SPEC BattleGroundMap : public Map
+class HELLGROUND_IMPORT_EXPORT BattleGroundMap : public Map
 {
     public:
         BattleGroundMap(uint32 id, time_t, uint32 InstanceId, BattleGround *bg);

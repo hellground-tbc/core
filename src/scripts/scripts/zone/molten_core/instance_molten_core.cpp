@@ -41,7 +41,7 @@ EndScriptData */
 #define CACHE_OF_THE_FIRELORD   179703
 
 
-struct HELLGROUND_DLL_DECL instance_molten_core : public ScriptedInstance
+struct instance_molten_core : public ScriptedInstance
 {
     instance_molten_core(Map *map) : ScriptedInstance(map) {Initialize();};
 

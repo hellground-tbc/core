@@ -27,7 +27,7 @@ template<class OBJECT>
 class GridRefManager;
 
 template<class OBJECT>
-class HELLGROUND_DLL_SPEC GridReference : public Reference<GridRefManager<OBJECT>, OBJECT>
+class HELLGROUND_IMPORT_EXPORT GridReference : public Reference<GridRefManager<OBJECT>, OBJECT>
 {
     protected:
         void targetObjectBuildLink()

@@ -26,7 +26,7 @@
 class TargetedMovementGeneratorBase;
 class Unit;
 
-class HELLGROUND_DLL_SPEC FollowerReference : public Reference<Unit, TargetedMovementGeneratorBase>
+class HELLGROUND_IMPORT_EXPORT FollowerReference : public Reference<Unit, TargetedMovementGeneratorBase>
 {
     protected:
         void targetObjectBuildLink();

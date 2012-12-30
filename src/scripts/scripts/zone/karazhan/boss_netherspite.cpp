@@ -44,7 +44,7 @@ const uint32 PlayerBuff[3] = {30421,30422,30423};
 const uint32 NetherBuff[3] = {30466,30467,30468};
 const uint32 PlayerDebuff[3] = {38637,38638,38639};
 
-struct HELLGROUND_DLL_DECL boss_netherspiteAI : public ScriptedAI
+struct boss_netherspiteAI : public ScriptedAI
 {
     boss_netherspiteAI(Creature* c) : ScriptedAI(c)
     {
@@ -363,7 +363,7 @@ CreatureAI* GetAI_boss_netherspite(Creature *_Creature)
 * Void Zone - id 16697
 ***************/
 
-struct HELLGROUND_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
+struct mob_void_zoneAI : public Scripted_NoMovementAI
 {
     mob_void_zoneAI(Creature* c) : Scripted_NoMovementAI(c)
     {

@@ -74,7 +74,7 @@ bool GossipSelect_npc_cassa_crimsonwing(Player *player, Creature *_Creature, uin
 #define SPELL_CONSUME_FLESH                 37933           //Risen Husk
 #define SPELL_INTANGIBLE_PRESENCE           43127           //Risen Spirit
 
-struct HELLGROUND_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
+struct mobs_risen_husk_spiritAI : public ScriptedAI
 {
     mobs_risen_husk_spiritAI(Creature *c) : ScriptedAI(c) {}
 
@@ -139,7 +139,7 @@ bool GossipHello_npc_restless_apparition(Player *player, Creature *_Creature)
 ## npc_deserter_agitator
 ######*/
 
-struct HELLGROUND_DLL_DECL npc_deserter_agitatorAI : public ScriptedAI
+struct npc_deserter_agitatorAI : public ScriptedAI
 {
     npc_deserter_agitatorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -174,7 +174,7 @@ bool GossipHello_npc_deserter_agitator(Player *player, Creature *_Creature)
 #define GOSSIP_ITEM_JAINA "I know this is rather silly but i have a young ward who is a bit shy and would like your autograph."
 #define GOSSIP_TELE_TO_STORMWIND "I'm ready to travel to Stormwind."
 
-struct HELLGROUND_DLL_DECL npc_dustwallow_lady_jaina_proudmooreAI : public ScriptedAI
+struct npc_dustwallow_lady_jaina_proudmooreAI : public ScriptedAI
 {
     npc_dustwallow_lady_jaina_proudmooreAI(Creature *c) : ScriptedAI(c) {}
 
@@ -264,7 +264,7 @@ bool GossipSelect_npc_nat_pagle(Player *player, Creature *_Creature, uint32 send
 ## npc_theramore_combat_dummy
 ######*/
 
-struct HELLGROUND_DLL_DECL npc_theramore_combat_dummyAI : public Scripted_NoMovementAI
+struct npc_theramore_combat_dummyAI : public Scripted_NoMovementAI
 {
     npc_theramore_combat_dummyAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -327,7 +327,7 @@ CreatureAI* GetAI_npc_theramore_combat_dummy(Creature *_Creature)
 ## mob_mottled_drywallow_crocolisks
 ######*/
 
-struct HELLGROUND_DLL_DECL mob_mottled_drywallow_crocolisksAI : public ScriptedAI
+struct mob_mottled_drywallow_crocolisksAI : public ScriptedAI
 {
    mob_mottled_drywallow_crocolisksAI(Creature *c) : ScriptedAI(c) {}
 

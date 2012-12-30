@@ -129,7 +129,7 @@ struct PackedGuidReader
     ObjectGuid* m_guidPtr;
 };
 
-class HELLGROUND_DLL_SPEC ObjectGuid
+class HELLGROUND_IMPORT_EXPORT ObjectGuid
 {
     public:                                                 // constructors
         ObjectGuid() : m_guid(0) {}

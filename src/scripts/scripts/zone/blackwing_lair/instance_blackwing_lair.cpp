@@ -37,7 +37,7 @@ EndScriptData */
 7 - Nefarian Event
 */
 
-struct HELLGROUND_DLL_DECL instance_blackwing_lair : public ScriptedInstance
+struct instance_blackwing_lair : public ScriptedInstance
 {
     instance_blackwing_lair(Map *map) : ScriptedInstance(map) {Initialize();};
 

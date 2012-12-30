@@ -63,7 +63,7 @@ enum SqlStmtFieldType
 
 //templates might be the best choice here
 //but I didn't have time to play with them
-class HELLGROUND_DLL_SPEC SqlStmtFieldData
+class SqlStmtFieldData
 {
     public:
         SqlStmtFieldData() : m_type(FIELD_NONE) { m_binaryData.ui64 = 0; }
@@ -140,7 +140,7 @@ template<> inline void SqlStmtFieldData::set(const char * val) { m_type = FIELD_
 
 class SqlStatement;
 //prepared statement executor
-class HELLGROUND_DLL_SPEC SqlStmtParameters
+class SqlStmtParameters
 {
     public:
         typedef std::vector<SqlStmtFieldData> ParameterContainer;
@@ -189,7 +189,7 @@ class SqlStatementID
 };
 
 //statement index
-class HELLGROUND_DLL_SPEC SqlStatement
+class SqlStatement
 {
     public:
         ~SqlStatement() { delete m_pParams; }
@@ -296,7 +296,7 @@ class HELLGROUND_DLL_SPEC SqlStatement
 };
 
 //base prepared statement class
-class HELLGROUND_DLL_SPEC SqlPreparedStatement
+class SqlPreparedStatement
 {
     public:
         virtual ~SqlPreparedStatement() {}
@@ -328,7 +328,7 @@ class HELLGROUND_DLL_SPEC SqlPreparedStatement
 };
 
 //prepared statements via plain SQL string requests
-class HELLGROUND_DLL_SPEC SqlPlainPreparedStatement : public SqlPreparedStatement
+class SqlPlainPreparedStatement : public SqlPreparedStatement
 {
     public:
         SqlPlainPreparedStatement(const std::string& fmt, SqlConnection& conn);

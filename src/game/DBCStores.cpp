@@ -754,8 +754,8 @@ uint32 const* GetTalentTabPages(uint32 cls)
 }
 
 // script support functions
-HELLGROUND_DLL_SPEC DBCStorage <SoundEntriesEntry>  const* GetSoundEntriesStore()   { return &sSoundEntriesStore;   }
-HELLGROUND_DLL_SPEC DBCStorage <SpellEntry>         const* GetSpellStore()          { return &sSpellStore;          }
-HELLGROUND_DLL_SPEC DBCStorage <SpellRangeEntry>    const* GetSpellRangeStore()     { return &sSpellRangeStore;     }
-HELLGROUND_DLL_SPEC DBCStorage <EmotesEntry>        const* GetEmotesStore()         { return &sEmotesStore;         }
-HELLGROUND_DLL_SPEC DBCStorage <EmotesTextEntry>    const* GetEmotesTextStore()     { return &sEmotesTextStore;     }
+HELLGROUND_EXPORT DBCStorage <SoundEntriesEntry>  const* GetSoundEntriesStore()   { return &sSoundEntriesStore;   }
+HELLGROUND_EXPORT DBCStorage <SpellEntry>         const* GetSpellStore()          { return &sSpellStore;          }
+HELLGROUND_EXPORT DBCStorage <SpellRangeEntry>    const* GetSpellRangeStore()     { return &sSpellRangeStore;     }
+HELLGROUND_EXPORT DBCStorage <EmotesEntry>        const* GetEmotesStore()         { return &sEmotesStore;         }
+HELLGROUND_EXPORT DBCStorage <EmotesTextEntry>    const* GetEmotesTextStore()     { return &sEmotesTextStore;     }

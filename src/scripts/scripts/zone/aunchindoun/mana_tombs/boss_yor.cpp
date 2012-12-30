@@ -6,7 +6,7 @@
 #define SPELL_DOUBLE_BREATH     38361
 #define SPELL_STOMP             36405
 
-struct HELLGROUND_DLL_DECL boss_yorAI : public ScriptedAI
+struct boss_yorAI : public ScriptedAI
 {
     boss_yorAI(Creature *c) : ScriptedAI(c)
     {

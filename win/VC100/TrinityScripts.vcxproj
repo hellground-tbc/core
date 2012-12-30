@@ -173,7 +173,7 @@
       <AdditionalOptions>/MP -Zm124 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\dep\include\;..\..\src\scripts\scripts\npc;..\..\src\shared\;..\..\src\shared\Database;..\..\src\framework\;..\..\src\game\;..\..\src\scripts\include\;..\..\src\scripts\scripts\npc\;..\..\dep\ACE_wrappers;..\..\src\scripts\system;..\..\src\game\movemap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SCRIPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;THIS_IS_SCRIPT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -183,7 +183,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -209,7 +209,7 @@
     <ClCompile>
       <AdditionalOptions>/MP -Zm113 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\..\dep\include\;..\..\src\scripts\scripts\npc;..\..\src\shared\;..\..\src\shared\Database;..\..\src\framework\;..\..\src\game\;..\..\src\scripts\include\;..\..\src\scripts\scripts\npc\;..\..\dep\ACE_wrappers;..\..\src\scripts\system;..\..\src\game\movemap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;THIS_IS_SCRIPT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -222,7 +222,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -250,7 +250,7 @@
     <ClCompile>
       <AdditionalOptions>/MP -Zm113 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\..\dep\include\;..\..\src\scripts\scripts\npc;..\..\src\shared\;..\..\src\shared\Database;..\..\src\framework\;..\..\src\game\;..\..\src\scripts\include\;..\..\src\scripts\scripts\npc\;..\..\dep\ACE_wrappers;..\..\src\scripts\system;..\..\src\game\movemap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;THIS_IS_SCRIPT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -264,7 +264,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
@@ -292,7 +292,7 @@
     <ClCompile>
       <AdditionalOptions>/MP -Zm124 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\..\dep\include\;..\..\src\scripts\scripts\npc;..\..\src\shared\;..\..\src\shared\Database;..\..\src\framework\;..\..\src\game\;..\..\src\scripts\include\;..\..\src\scripts\scripts\npc\;..\..\dep\ACE_wrappers;..\..\src\scripts\system;..\..\src\game\movemap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SCRIPT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;THIS_IS_SCRIPT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -306,7 +306,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
@@ -901,6 +901,9 @@
     <ResourceCompile Include="..\..\src\scripts\trinityscripts.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="shared.vcxproj">
+      <Project>{90297c34-f231-4df4-848e-a74bcc0e40ed}</Project>
+    </ProjectReference>
     <ProjectReference Include="TrinityCore.vcxproj">
       <Project>{a3a04e47-43a2-4c08-90b3-029cef558594}</Project>
     </ProjectReference>

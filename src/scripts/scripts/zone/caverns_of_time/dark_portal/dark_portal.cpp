@@ -63,7 +63,7 @@ EndContentData */
 #define C_EXECU 18994
 #define C_VANQU 18995
 
-struct HELLGROUND_DLL_DECL npc_medivh_bmAI : public ScriptedAI
+struct npc_medivh_bmAI : public ScriptedAI
 {
     npc_medivh_bmAI(Creature *c) : ScriptedAI(c)
     {
@@ -284,7 +284,7 @@ struct Wave
     uint32 PortalMob[4];                                    //spawns for portal waves (in order)
 };
 
-struct HELLGROUND_DLL_DECL npc_time_riftAI : public ScriptedAI
+struct npc_time_riftAI : public ScriptedAI
 {
     npc_time_riftAI(Creature *c) : ScriptedAI(c)
     {
@@ -413,7 +413,7 @@ CreatureAI* GetAI_npc_time_rift(Creature *_Creature)
     return new npc_time_riftAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL rift_summonAI : public ScriptedAI
+struct rift_summonAI : public ScriptedAI
 {
     rift_summonAI(Creature *c) : ScriptedAI(c)
     {

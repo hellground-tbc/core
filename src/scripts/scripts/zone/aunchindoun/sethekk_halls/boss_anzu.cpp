@@ -27,7 +27,7 @@ float AnzuSpiritLoc[][3] = {
     { -62, 288, 27 }
 };
 
-struct HELLGROUND_DLL_DECL boss_anzuAI : public ScriptedAI
+struct boss_anzuAI : public ScriptedAI
 {
     boss_anzuAI(Creature* c) : ScriptedAI(c), summons(c)
     {
@@ -174,7 +174,7 @@ CreatureAI* GetAI_boss_anzu(Creature *_Creature)
     return new boss_anzuAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL npc_anzu_spiritAI : public Scripted_NoMovementAI
+struct npc_anzu_spiritAI : public Scripted_NoMovementAI
 {
     npc_anzu_spiritAI(Creature* c, uint32 spell) : Scripted_NoMovementAI(c)
     {

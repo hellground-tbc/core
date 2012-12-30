@@ -27,7 +27,7 @@
 class Creature;
 class Spell;
 
-class HELLGROUND_DLL_DECL PetAI : public CreatureAI
+class PetAI : public CreatureAI
 {
     public:
 
@@ -73,7 +73,7 @@ class HELLGROUND_DLL_DECL PetAI : public CreatureAI
         Unit* m_owner;              // pointer updated every UpdateAI call
 };
 
-class HELLGROUND_DLL_DECL ImpAI : public PetAI
+class ImpAI : public PetAI
 {
     public:
         ImpAI(Creature *c) : PetAI(c), m_chasing(false) {}
@@ -84,7 +84,7 @@ class HELLGROUND_DLL_DECL ImpAI : public PetAI
         bool m_chasing;
 };
 
-class HELLGROUND_DLL_DECL FelhunterAI : public PetAI
+class FelhunterAI : public PetAI
 {
     public:
         FelhunterAI(Creature *c) : PetAI(c) {}

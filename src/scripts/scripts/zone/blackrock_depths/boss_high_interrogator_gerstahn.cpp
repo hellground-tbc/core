@@ -28,7 +28,7 @@ EndScriptData */
 #define SPELL_PSYCHICSCREAM         8122
 #define SPELL_SHADOWSHIELD          22417
 
-struct HELLGROUND_DLL_DECL boss_high_interrogator_gerstahnAI : public ScriptedAI
+struct boss_high_interrogator_gerstahnAI : public ScriptedAI
 {
     boss_high_interrogator_gerstahnAI(Creature *c) : ScriptedAI(c) {}
 

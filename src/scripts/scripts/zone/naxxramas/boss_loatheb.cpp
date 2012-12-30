@@ -61,7 +61,7 @@ float SporesLocations[3][3] = {
         {2909.130, -4042.970, 274.280},
         {2861.102, -3997.901, 274.280}};
 
-struct HELLGROUND_DLL_DECL boss_loathebAI : public BossAI
+struct boss_loathebAI : public BossAI
 {
     boss_loathebAI(Creature *c) : BossAI(c, DATA_LOATHEB) { }
 

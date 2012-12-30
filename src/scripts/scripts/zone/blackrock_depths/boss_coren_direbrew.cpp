@@ -19,7 +19,7 @@
 //////////////////////
 //Coren Direbrew
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_coren_direbrewAI : public ScriptedAI
+struct boss_coren_direbrewAI : public ScriptedAI
 {
     boss_coren_direbrewAI(Creature *c) : ScriptedAI(c) { }
 
@@ -142,7 +142,7 @@ CreatureAI* GetAI_boss_coren_direbrew(Creature *_Creature)
 //////////////////////
 //Trigger
 //////////////////////
-struct HELLGROUND_DLL_DECL direbrew_starter_triggerAI : public ScriptedAI
+struct direbrew_starter_triggerAI : public ScriptedAI
 {
     direbrew_starter_triggerAI(Creature *c) : ScriptedAI(c) { }
 

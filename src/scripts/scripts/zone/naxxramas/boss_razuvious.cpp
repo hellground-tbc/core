@@ -64,7 +64,7 @@ enum RazuviousEvents
     EVENT_COMMAND_SOUND         = 3
 };
 
-struct HELLGROUND_DLL_DECL boss_razuviousAI : public BossAI
+struct boss_razuviousAI : public BossAI
 {
     boss_razuviousAI(Creature *c) : BossAI(c, DATA_INSTRUCTOR_RAZUVIOUS) { }
 

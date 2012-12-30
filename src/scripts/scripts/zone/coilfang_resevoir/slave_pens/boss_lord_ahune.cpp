@@ -37,7 +37,7 @@ EndScriptData */
 
 #define GO_ICE_SPEAR                188077
 
-struct HELLGROUND_DLL_DECL boss_lord_ahune_coreAI : public Scripted_NoMovementAI
+struct boss_lord_ahune_coreAI : public Scripted_NoMovementAI
 {
     boss_lord_ahune_coreAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
@@ -116,7 +116,7 @@ CreatureAI* GetAI_boss_lord_ahune_core(Creature *_Creature)
 }
 
 
-struct HELLGROUND_DLL_DECL boss_lord_ahuneAI : public Scripted_NoMovementAI
+struct boss_lord_ahuneAI : public Scripted_NoMovementAI
 {
     ScriptedInstance* pInstance;
     SummonList Summons;
@@ -312,7 +312,7 @@ CreatureAI* GetAI_boss_lord_ahune(Creature *_Creature)
     return new boss_lord_ahuneAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
+struct npc_ice_spear_bunnyAI : public Scripted_NoMovementAI
 {
     npc_ice_spear_bunnyAI(Creature *c) : Scripted_NoMovementAI(c)  {}
 

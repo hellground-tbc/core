@@ -80,7 +80,7 @@ const float NothSummonLocations[3][4] =
     { 2646.88, -3461.90, 263.53, 5.28 }
 };
 
-struct HELLGROUND_DLL_DECL boss_nothAI : public BossAI
+struct boss_nothAI : public BossAI
 {
     boss_nothAI(Creature *c) : BossAI(c, DATA_NOTH_THE_PLAGUEBRINGER) { }
 

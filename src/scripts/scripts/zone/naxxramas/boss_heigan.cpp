@@ -46,7 +46,7 @@ EndScriptData */
 //Spell by eye stalks
 #define SPELL_MIND_FLAY     26143
 
-struct HELLGROUND_DLL_DECL boss_heiganAI : public ScriptedAI
+struct boss_heiganAI : public ScriptedAI
 {
     boss_heiganAI(Creature *c) : ScriptedAI(c)
     {

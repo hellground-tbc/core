@@ -39,7 +39,7 @@ EndScriptData */
 9 - Akama open door after Illidari defeat
 */
 
-struct HELLGROUND_DLL_DECL instance_black_temple : public ScriptedInstance
+struct instance_black_temple : public ScriptedInstance
 {
     instance_black_temple(Map *map) : ScriptedInstance(map) {Initialize();};
 

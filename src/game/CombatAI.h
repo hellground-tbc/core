@@ -26,7 +26,7 @@
 
 class Creature;
 
-class HELLGROUND_DLL_DECL AggressorAI : public CreatureAI
+class AggressorAI : public CreatureAI
 {
     public:
         explicit AggressorAI(Creature *c) : CreatureAI(c) {}
@@ -37,7 +37,7 @@ class HELLGROUND_DLL_DECL AggressorAI : public CreatureAI
 
 typedef std::vector<uint32> SpellVct;
 
-class HELLGROUND_DLL_SPEC CombatAI : public CreatureAI
+class HELLGROUND_IMPORT_EXPORT CombatAI : public CreatureAI
 {
     public:
         explicit CombatAI(Creature *c) : CreatureAI(c) {}
@@ -53,7 +53,7 @@ class HELLGROUND_DLL_SPEC CombatAI : public CreatureAI
         SpellVct spells;
 };
 
-class HELLGROUND_DLL_SPEC CasterAI : public CombatAI
+class HELLGROUND_IMPORT_EXPORT CasterAI : public CombatAI
 {
     public:
         explicit CasterAI(Creature *c) : CombatAI(c) { m_attackDist = MELEE_RANGE; }

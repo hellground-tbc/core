@@ -96,7 +96,7 @@ static InfernalPoint InfernalPoints[] =
 #define AXE_EQUIP_INFO           33448898
 
 //---------Infernal code first
-struct HELLGROUND_DLL_DECL netherspite_infernalAI : public Scripted_NoMovementAI
+struct netherspite_infernalAI : public Scripted_NoMovementAI
 {
     netherspite_infernalAI(Creature *c) : Scripted_NoMovementAI(c) ,
         malchezaarGUID(0), HellfireTimer(0), CleanupTimer(0), point(NULL) {}
@@ -162,7 +162,7 @@ struct HELLGROUND_DLL_DECL netherspite_infernalAI : public Scripted_NoMovementAI
     void Cleanup();
 };
 
-struct HELLGROUND_DLL_DECL boss_malchezaarAI : public ScriptedAI
+struct boss_malchezaarAI : public ScriptedAI
 {
     boss_malchezaarAI(Creature *c) : ScriptedAI(c)
     {

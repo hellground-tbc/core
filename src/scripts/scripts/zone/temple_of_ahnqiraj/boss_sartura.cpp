@@ -37,7 +37,7 @@ EndScriptData */
 #define SPELL_KNOCKBACK                              26027
 
 
-struct HELLGROUND_DLL_DECL boss_sarturaAI : public ScriptedAI
+struct boss_sarturaAI : public ScriptedAI
 {
     boss_sarturaAI(Creature *c) : ScriptedAI(c)
     {
@@ -174,7 +174,7 @@ struct HELLGROUND_DLL_DECL boss_sarturaAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_sartura_royal_guardAI : public ScriptedAI
+struct mob_sartura_royal_guardAI : public ScriptedAI
 {
     mob_sartura_royal_guardAI(Creature *c) : ScriptedAI(c) {}
 

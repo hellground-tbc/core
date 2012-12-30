@@ -41,7 +41,7 @@
 #define TIMEDIFF_NEXT_WP      250
 
 template<class T, class P>
-class HELLGROUND_DLL_SPEC PathMovementBase
+class HELLGROUND_IMPORT_EXPORT PathMovementBase
 {
     public:
         PathMovementBase() : _currentNode(0), _path(NULL) {}
@@ -99,7 +99,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
 /** FlightPathMovementGenerator generates movement of the player for the paths
  * and hence generates ground and activities for the player.
  */
-class HELLGROUND_DLL_SPEC FlightPathMovementGenerator
+class HELLGROUND_IMPORT_EXPORT FlightPathMovementGenerator
 : public MovementGeneratorMedium< Player, FlightPathMovementGenerator >,
 public PathMovementBase<Player,TaxiPathNodeList const*>
 {

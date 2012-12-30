@@ -603,7 +603,7 @@ struct CreatureEventAIHolder
     bool UpdateRepeatTimer(Creature* creature, uint32 repeatMin, uint32 repeatMax);
 };
 
-class HELLGROUND_DLL_SPEC CreatureEventAI : public CreatureAI
+class HELLGROUND_IMPORT_EXPORT CreatureEventAI : public CreatureAI
 {
 
     public:

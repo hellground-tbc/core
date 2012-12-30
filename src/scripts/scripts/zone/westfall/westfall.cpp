@@ -56,7 +56,7 @@ EndContentData */
 #define SAY_END "We've done it, we won!"
 #define SAY_MOVE_BACK "Meet me at the orchad--I just need to put my gun away."
 
-struct HELLGROUND_DLL_DECL npc_daphne_stilwellAI : public npc_escortAI
+struct npc_daphne_stilwellAI : public npc_escortAI
 {
     npc_daphne_stilwellAI(Creature *c) : npc_escortAI(c)
     {
@@ -283,7 +283,7 @@ CreatureAI* GetAI_npc_daphne_stilwell(Creature *_Creature)
 
 #define QUEST_DEFIAS_BROTHERHOOD    155
 
-struct HELLGROUND_DLL_DECL npc_defias_traitorAI : public npc_escortAI
+struct npc_defias_traitorAI : public npc_escortAI
 {
     npc_defias_traitorAI(Creature *c) : npc_escortAI(c) {}
 

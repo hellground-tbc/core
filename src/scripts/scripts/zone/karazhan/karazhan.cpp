@@ -98,7 +98,7 @@ bool GossipSelect_npc_berthold(Player* player, Creature* _Creature, uint32 sende
 #define CALLIARD_SAY2           "All quiet."
 #define CALLIARD_SAY3           "Am I hearing things?"
 
-struct HELLGROUND_DLL_DECL npc_calliardAI : public ScriptedAI
+struct npc_calliardAI : public ScriptedAI
 {
     npc_calliardAI(Creature* c) : ScriptedAI(c) {}
 
@@ -202,7 +202,7 @@ bool GossipSelect_npc_hastings(Player* player, Creature* _Creature, uint32 sende
 static float MedivPos[4] = {-11161.49,-1902.24,91.48,1.94};
 static float ArcanagosPos[4] = {-11169.75,-1881.48,95.39,4.83};
 
-struct HELLGROUND_DLL_DECL npc_image_of_medivhAI : public ScriptedAI
+struct npc_image_of_medivhAI : public ScriptedAI
 {
     npc_image_of_medivhAI(Creature* c) : ScriptedAI(c)
     {

@@ -41,7 +41,7 @@ EndScriptData */
 #define C_WARDEN  17833
 #define C_VETERAN 17860
 
-struct HELLGROUND_DLL_DECL boss_captain_skarlocAI : public ScriptedAI
+struct boss_captain_skarlocAI : public ScriptedAI
 {
     boss_captain_skarlocAI(Creature *c) : ScriptedAI(c)
     {

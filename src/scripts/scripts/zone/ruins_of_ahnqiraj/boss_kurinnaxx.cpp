@@ -31,7 +31,7 @@ EndScriptData */
 #define SPELL_THRASH_AURA       3417
 #define SPELL_SUMMON            26446 //sometimes summons player in front of him
 
-struct HELLGROUND_DLL_DECL boss_kurinnaxxAI : public ScriptedAI
+struct boss_kurinnaxxAI : public ScriptedAI
 {
     boss_kurinnaxxAI(Creature *c) : ScriptedAI(c)
     {

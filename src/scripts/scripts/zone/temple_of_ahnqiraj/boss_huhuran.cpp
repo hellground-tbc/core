@@ -31,7 +31,7 @@ EndScriptData */
 #define SPELL_WYVERNSTING 26180
 #define SPELL_ACIDSPIT 26050
 
-struct HELLGROUND_DLL_DECL boss_huhuranAI : public ScriptedAI
+struct boss_huhuranAI : public ScriptedAI
 {
     boss_huhuranAI(Creature *c) : ScriptedAI(c)
     {

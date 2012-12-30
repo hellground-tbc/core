@@ -62,7 +62,7 @@ static uint32 trashEntry[]=
     18848
 };
 
-struct HELLGROUND_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
+struct boss_blackheart_the_inciterAI : public ScriptedAI
 {
     boss_blackheart_the_inciterAI(Creature *c) : ScriptedAI(c)
     {

@@ -32,7 +32,7 @@ EndScriptData */
 #define SPELL_ARMAGEDDOM            20478 //20479 triggered
 #define SPELL_SUMMONPLAYER          20477 //not implemented
 
-struct HELLGROUND_DLL_DECL boss_baron_geddonAI : public ScriptedAI
+struct boss_baron_geddonAI : public ScriptedAI
 {
     boss_baron_geddonAI(Creature *c) : ScriptedAI(c)
     {

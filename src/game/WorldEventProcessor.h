@@ -27,7 +27,7 @@
 
 class Player;
 
-class HELLGROUND_DLL_SPEC WorldEvent
+class HELLGROUND_IMPORT_EXPORT WorldEvent
 {
     public:
         WorldEvent(Player* player) : _owner(player) {}
@@ -39,7 +39,7 @@ class HELLGROUND_DLL_SPEC WorldEvent
         Player* _owner;
 };
 
-class HELLGROUND_DLL_SPEC WorldEventProcessor
+class HELLGROUND_IMPORT_EXPORT WorldEventProcessor
 {
     friend class ACE_Singleton<WorldEventProcessor, ACE_Thread_Mutex>;
     WorldEventProcessor() {}

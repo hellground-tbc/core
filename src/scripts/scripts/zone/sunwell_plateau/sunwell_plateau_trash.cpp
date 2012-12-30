@@ -49,7 +49,7 @@ enum SunbladeArchMage
     SPELL_BLINK                     = 46573
 };
 
-struct HELLGROUND_DLL_DECL mob_sunblade_arch_mageAI : public ScriptedAI
+struct mob_sunblade_arch_mageAI : public ScriptedAI
 {
     mob_sunblade_arch_mageAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -131,7 +131,7 @@ enum SunbladeCabalist
     SPELL_SUMMON_IMP                = 46544
 };
 
-struct HELLGROUND_DLL_DECL mob_sunblade_cabalistAI : public ScriptedAI
+struct mob_sunblade_cabalistAI : public ScriptedAI
 {
     mob_sunblade_cabalistAI(Creature *c) : ScriptedAI(c), summons(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -225,7 +225,7 @@ enum SunbladeDawnPriest
     SPELL_RENEW                     = 46563
 };
 
-struct HELLGROUND_DLL_DECL mob_sunblade_dawn_priestAI : public ScriptedAI
+struct mob_sunblade_dawn_priestAI : public ScriptedAI
 {
     mob_sunblade_dawn_priestAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -325,7 +325,7 @@ enum SunbladeDuskPriest
     SPELL_MIND_FLAY                 = 46562
 };
 
-struct HELLGROUND_DLL_DECL mob_sunblade_dusk_priestAI : public ScriptedAI
+struct mob_sunblade_dusk_priestAI : public ScriptedAI
 {
     mob_sunblade_dusk_priestAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -406,7 +406,7 @@ enum SunbladeProtector
 
 #define PROTECTOR_YELL "Unit entering energy conservation mode."
 
-struct HELLGROUND_DLL_DECL mob_sunblade_protectorAI : public ScriptedAI
+struct mob_sunblade_protectorAI : public ScriptedAI
 {
     mob_sunblade_protectorAI(Creature *c) : ScriptedAI(c)
     {
@@ -480,7 +480,7 @@ enum SunbladeScout
 
 #define SCOUT_YELL "Enemies Spotted! Attack while I try to activate a Protector!"
 
-struct HELLGROUND_DLL_DECL mob_sunblade_scoutAI : public ScriptedAI
+struct mob_sunblade_scoutAI : public ScriptedAI
 {
     mob_sunblade_scoutAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -599,7 +599,7 @@ enum SunbladeSlayer
     SPELL_SLAYING_SHOT                  = 46557
 };
 
-struct HELLGROUND_DLL_DECL mob_sunblade_slayerAI : public ScriptedAI
+struct mob_sunblade_slayerAI : public ScriptedAI
 {
     mob_sunblade_slayerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -684,7 +684,7 @@ enum SunbladeVindicator
     SPELL_MORTAL_STRIKE                 = 44268
 };
 
-struct HELLGROUND_DLL_DECL mob_sunblade_vindicatorAI : public ScriptedAI
+struct mob_sunblade_vindicatorAI : public ScriptedAI
 {
     mob_sunblade_vindicatorAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -792,7 +792,7 @@ enum ShadowswordAssassin
     SPELL_SHADOWSTEP                = 46463
 };
 
-struct HELLGROUND_DLL_DECL mob_shadowsword_assassinAI : public ScriptedAI
+struct mob_shadowsword_assassinAI : public ScriptedAI
 {
     mob_shadowsword_assassinAI(Creature *c) : ScriptedAI(c) { pInstance = c->GetInstanceData(); }
 
@@ -894,7 +894,7 @@ enum ShadowswordCommander
     YELL_GAUNTLET_START             = -1811006
 };
 
-struct HELLGROUND_DLL_DECL mob_shadowsword_commanderAI : public ScriptedAI
+struct mob_shadowsword_commanderAI : public ScriptedAI
 {
     mob_shadowsword_commanderAI(Creature *c) : ScriptedAI(c), summons(c)
     { 
@@ -1023,7 +1023,7 @@ enum ShadowswordDeathbringer
     SPELL_VOLATILE_DISEASE          = 46483
 };
 
-struct HELLGROUND_DLL_DECL mob_shadowsword_deathbringerAI : public ScriptedAI
+struct mob_shadowsword_deathbringerAI : public ScriptedAI
 {
     mob_shadowsword_deathbringerAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1091,7 +1091,7 @@ enum ShadowswordLifeshaper
     SPELL_HEALTH_FUNNEL             = 46467,
 };
 
-struct HELLGROUND_DLL_DECL mob_shadowsword_lifeshaperAI : public ScriptedAI
+struct mob_shadowsword_lifeshaperAI : public ScriptedAI
 {
     mob_shadowsword_lifeshaperAI(Creature *c) : ScriptedAI(c)
     {
@@ -1192,7 +1192,7 @@ enum ShadowswordManafiend
     SPELL_DRAIN_MANA                = 46453
 };
 
-struct HELLGROUND_DLL_DECL mob_shadowsword_manafiendAI : public ScriptedAI
+struct mob_shadowsword_manafiendAI : public ScriptedAI
 {
     mob_shadowsword_manafiendAI(Creature *c) : ScriptedAI(c)
     {
@@ -1286,7 +1286,7 @@ enum ShadowswordSoulbinder
     SPELL_FLASH_OF_DARKNESS         = 46442
 };
 
-struct HELLGROUND_DLL_DECL mob_shadowsword_soulbinderAI : public ScriptedAI
+struct mob_shadowsword_soulbinderAI : public ScriptedAI
 {
     mob_shadowsword_soulbinderAI(Creature *c) : ScriptedAI(c)
     {
@@ -1383,7 +1383,7 @@ enum ShadowswordVanquisher
     SPELL_MELT_AROMOR               = 46469
 };
 
-struct HELLGROUND_DLL_DECL mob_shadowsword_vanquisherAI : public ScriptedAI
+struct mob_shadowsword_vanquisherAI : public ScriptedAI
 {
     mob_shadowsword_vanquisherAI(Creature *c) : ScriptedAI(c)
     {
@@ -1472,7 +1472,7 @@ enum VolatileFiend
     SPELL_FELFIRE_FISSION               = 45779 // used in KJ fight?
 };
 
-struct HELLGROUND_DLL_DECL mob_volatile_fiendAI : public ScriptedAI
+struct mob_volatile_fiendAI : public ScriptedAI
 {
     mob_volatile_fiendAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
@@ -1604,7 +1604,7 @@ CreatureAI* GetAI_mob_volatile_fiend(Creature *_Creature)
 *****************/
 #define EMOTE_WARNING_YELL  -1811007
 
-struct HELLGROUND_DLL_DECL npc_SWP_gatekeeperAI : public Scripted_NoMovementAI
+struct npc_SWP_gatekeeperAI : public Scripted_NoMovementAI
 {
     npc_SWP_gatekeeperAI(Creature *c) : Scripted_NoMovementAI(c) { me->SetAggroRange(20.0f); }
 

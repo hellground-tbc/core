@@ -71,10 +71,10 @@ class CreatureGroup
         void RemoveMember(Creature *member);
         void FormationReset(bool dismiss);
         // as for now, used in scripts to respawn whole group when one member enters evade mode
-        HELLGROUND_DLL_SPEC void RespawnFormation(Creature *member);
+        HELLGROUND_IMPORT_EXPORT void RespawnFormation(Creature *member);
 
         // used to respawn and evade whole formation
-        HELLGROUND_DLL_SPEC void EvadeFormation(Creature *member);
+        HELLGROUND_IMPORT_EXPORT void EvadeFormation(Creature *member);
 
         void LeaderMoveTo(float x, float y, float z);
         void MemberAttackStart(Creature* member, Unit *target);

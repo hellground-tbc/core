@@ -50,7 +50,7 @@ EndScriptData */
 #define SPELL_KICK                15614
 #define SPELL_BLIND               21060
 
-struct HELLGROUND_DLL_DECL boss_thekalAI : public ScriptedAI
+struct boss_thekalAI : public ScriptedAI
 {
     boss_thekalAI(Creature *c) : ScriptedAI(c)
     {
@@ -253,7 +253,7 @@ struct HELLGROUND_DLL_DECL boss_thekalAI : public ScriptedAI
 };
 
 //Zealot Lor'Khan
-struct HELLGROUND_DLL_DECL mob_zealot_lorkhanAI : public ScriptedAI
+struct mob_zealot_lorkhanAI : public ScriptedAI
 {
     mob_zealot_lorkhanAI(Creature *c) : ScriptedAI(c)
     {
@@ -397,7 +397,7 @@ struct HELLGROUND_DLL_DECL mob_zealot_lorkhanAI : public ScriptedAI
 };
 
 //Zealot Zath
-struct HELLGROUND_DLL_DECL mob_zealot_zathAI : public ScriptedAI
+struct mob_zealot_zathAI : public ScriptedAI
 {
     mob_zealot_zathAI(Creature *c) : ScriptedAI(c)
     {

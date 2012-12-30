@@ -104,7 +104,7 @@ struct WorldLocation
         : mapid(loc.mapid), coord_x(loc.coord_x), coord_y(loc.coord_y), coord_z(loc.coord_z), orientation(loc.orientation) {}
 };
 
-class HELLGROUND_DLL_SPEC Object
+class HELLGROUND_IMPORT_EXPORT Object
 {
     public:
         virtual ~Object ();
@@ -360,12 +360,12 @@ class HELLGROUND_DLL_SPEC Object
 
 struct WorldObjectChangeAccumulator;
 
-class HELLGROUND_DLL_SPEC WorldObject : public Object//, public WorldLocation
+class HELLGROUND_IMPORT_EXPORT WorldObject : public Object//, public WorldLocation
 {
     friend struct WorldObjectChangeAccumulator;
 
     public:
-        class UpdateHelper
+        class HELLGROUND_IMPORT_EXPORT UpdateHelper
         {
             public:
                 explicit UpdateHelper(WorldObject* obj) : m_obj(obj) {}

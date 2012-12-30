@@ -38,7 +38,7 @@ EndScriptData */
 #define SPELL_TIME_LAPSE            31467
 #define SPELL_ATTRACTION            38540
 
-struct HELLGROUND_DLL_DECL boss_chrono_lord_dejaAI : public ScriptedAI
+struct boss_chrono_lord_dejaAI : public ScriptedAI
 {
     boss_chrono_lord_dejaAI(Creature *c) : ScriptedAI(c)
     {

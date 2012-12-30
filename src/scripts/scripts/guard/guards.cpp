@@ -2496,7 +2496,7 @@ CreatureAI* GetAI_guard_shattrath(Creature *_Creature)
 #define SPELL_BANISH_TELEPORT       36643
 #define SPELL_EXILE                 39533
 
-struct HELLGROUND_DLL_DECL guard_shattrath_aldorAI : public guardAI
+struct guard_shattrath_aldorAI : public guardAI
 {
     guard_shattrath_aldorAI(Creature *c) : guardAI(c) {}
 
@@ -2697,7 +2697,7 @@ CreatureAI* GetAI_guard_shattrath_aldor(Creature *_Creature)
  * guard_shattrath_scryer
  *******************************************************/
 
-struct HELLGROUND_DLL_DECL guard_shattrath_scryerAI : public guardAI
+struct guard_shattrath_scryerAI : public guardAI
 {
     guard_shattrath_scryerAI(Creature *c) : guardAI(c) {}
 

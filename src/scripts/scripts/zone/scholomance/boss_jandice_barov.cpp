@@ -28,7 +28,7 @@ EndScriptData */
 //#define SPELL_BANISH                8994
 //#define SPELL_ILLUSION              17773
 
-struct HELLGROUND_DLL_DECL boss_jandicebarovAI : public ScriptedAI
+struct boss_jandicebarovAI : public ScriptedAI
 {
     boss_jandicebarovAI(Creature *c) : ScriptedAI(c) {}
 
@@ -158,7 +158,7 @@ struct HELLGROUND_DLL_DECL boss_jandicebarovAI : public ScriptedAI
 
 // Illusion of Jandice Barov Script
 
-struct HELLGROUND_DLL_DECL mob_illusionofjandicebarovAI : public ScriptedAI
+struct mob_illusionofjandicebarovAI : public ScriptedAI
 {
     mob_illusionofjandicebarovAI(Creature *c) : ScriptedAI(c) {}
 

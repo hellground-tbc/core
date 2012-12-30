@@ -53,7 +53,7 @@ float webWrapLocations[3][3] =
     {3497.067, -3843.384, 302.384}
 };
 
-struct HELLGROUND_DLL_DECL mob_webwrapAI : public ScriptedAI
+struct mob_webwrapAI : public ScriptedAI
 {
     mob_webwrapAI(Creature *c) : ScriptedAI(c) { }
 
@@ -82,7 +82,7 @@ struct HELLGROUND_DLL_DECL mob_webwrapAI : public ScriptedAI
     void UpdateAI(const uint32 diff) { }
 };
 
-struct HELLGROUND_DLL_DECL boss_maexxnaAI : public BossAI
+struct boss_maexxnaAI : public BossAI
 {
     boss_maexxnaAI(Creature *c) : BossAI(c, DATA_MAEXXNA) { }
 

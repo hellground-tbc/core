@@ -63,7 +63,7 @@ EndContentData */
 #define SPELL_INTERRUPT_2       35176                       //ACID mobs should cast this (Manaforge Ara-version)
 #define SPELL_SLEEP_VISUAL      34664                        // Used by in Creatures of Eco-Drome
 
-struct HELLGROUND_DLL_DECL npc_manaforge_control_consoleAI : public ScriptedAI
+struct npc_manaforge_control_consoleAI : public ScriptedAI
 {
     npc_manaforge_control_consoleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -365,7 +365,7 @@ int CreatureEntry[3][1] =
     {21504}                                                 // Pathaleon
 };
 
-struct HELLGROUND_DLL_DECL npc_commander_dawnforgeAI : public ScriptedAI
+struct npc_commander_dawnforgeAI : public ScriptedAI
 {
     npc_commander_dawnforgeAI(Creature *c) : ScriptedAI(c) { Reset (); }
 
@@ -775,7 +775,7 @@ bool GossipSelect_npc_veronia(Player *player, Creature *_Creature, uint32 sender
 #define SPELL_MATERIALIZE       34804
 #define SPELL_DE_MATERIALIZE    34804
 
-struct HELLGROUND_DLL_DECL mob_phase_hunterAI : public ScriptedAI
+struct mob_phase_hunterAI : public ScriptedAI
 {
 
     mob_phase_hunterAI(Creature *c) : ScriptedAI(c) {}
@@ -893,7 +893,7 @@ CreatureAI* GetAI_mob_phase_hunter(Creature *_Creature)
 #define SAY_THADELL_1   -1000304
 #define SAY_THADELL_2   -1000305
 
-struct HELLGROUND_DLL_DECL npc_bessyAI : public npc_escortAI
+struct npc_bessyAI : public npc_escortAI
 {
 
     npc_bessyAI(Creature *c) : npc_escortAI(c) {}
@@ -994,7 +994,7 @@ CreatureAI* GetAI_npc_bessy(Creature *_Creature)
 /***
 Script for Quest: Creatures of the Eco-Domes (10427)
 ***/
-struct HELLGROUND_DLL_DECL mob_talbukAI : public ScriptedAI
+struct mob_talbukAI : public ScriptedAI
 {
     mob_talbukAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1037,7 +1037,7 @@ CreatureAI* GetAI_mob_talbuk(Creature *_Creature)
 /***
 Script for Quest: The Flesh Lies... (10345)
 ***/
-struct HELLGROUND_DLL_DECL npc_withered_corpseAI : public ScriptedAI
+struct npc_withered_corpseAI : public ScriptedAI
 {
     npc_withered_corpseAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1122,7 +1122,7 @@ bool GOUse_go_ethereum_prison(Player *player, GameObject* _GO)
 Script for Quest: Bloody Imp-ossible! (10924)
 ***/
 
-struct HELLGROUND_DLL_DECL npc_warp_chaserAI : public ScriptedAI
+struct npc_warp_chaserAI : public ScriptedAI
 {
     npc_warp_chaserAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1168,7 +1168,7 @@ CreatureAI* GetAI_npc_warp_chaser(Creature *_Creature)
 #define SPELL_SUMMON_SHARD      35310
 #define ENTRY_RUMBLER           18881
 
-struct HELLGROUND_DLL_DECL mob_epextractionAI : public ScriptedAI
+struct mob_epextractionAI : public ScriptedAI
 {
 
     mob_epextractionAI(Creature *c) : ScriptedAI(c) {}
@@ -1208,7 +1208,7 @@ CreatureAI* GetAI_mob_epextraction(Creature *_Creature)
 #define BOOM_BOT_TARGET 20392
 #define BOOM_BOT 19692
 
-struct HELLGROUND_DLL_DECL mob_dr_boomAI : public ScriptedAI
+struct mob_dr_boomAI : public ScriptedAI
 {
     mob_dr_boomAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1270,7 +1270,7 @@ CreatureAI* GetAI_mob_dr_boom(Creature *_Creature)
     return new mob_dr_boomAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL mob_boom_botAI : public ScriptedAI
+struct mob_boom_botAI : public ScriptedAI
 {
     mob_boom_botAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1333,7 +1333,7 @@ enum
     SAY_ALLEY_FINISH            = -1000578
 };
 
-struct HELLGROUND_DLL_DECL npc_maxx_a_million_escortAI : public npc_escortAI
+struct npc_maxx_a_million_escortAI : public npc_escortAI
 {
     npc_maxx_a_million_escortAI(Creature* pCreature) : npc_escortAI(pCreature) {Reset();}
 
@@ -1460,7 +1460,7 @@ enum
     SPELL_ZAPPER                = 35282
 };
 
-struct HELLGROUND_DLL_DECL npc_scrapped_reaverAI : public ScriptedAI
+struct npc_scrapped_reaverAI : public ScriptedAI
 {
     npc_scrapped_reaverAI(Creature *creature) : ScriptedAI(creature), zaxxis(me) {}
 
@@ -1588,7 +1588,7 @@ static Pos S[]=
     {3021.556f, 2718.887f, 115.055f}
 };
 
-struct HELLGROUND_DLL_DECL npc_drijyaAI : public npc_escortAI
+struct npc_drijyaAI : public npc_escortAI
 {
     npc_drijyaAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 
@@ -1828,7 +1828,7 @@ enum
     QUEST_ESCAPE_STAGING_GROUNDS        = 10425,
 };
 
-struct HELLGROUND_DLL_DECL npc_captured_vanguardAI : public npc_escortAI
+struct npc_captured_vanguardAI : public npc_escortAI
 {
     npc_captured_vanguardAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 
@@ -1958,7 +1958,7 @@ bool QuestAccept_npc_captured_vanguard(Player* player, Creature* creature, const
 ## npc_controller
 ######*/
 
-struct HELLGROUND_DLL_DECL npc_controllerAI : public ScriptedAI
+struct npc_controllerAI : public ScriptedAI
 {
     npc_controllerAI(Creature *creature) : ScriptedAI(creature) {}
 
@@ -2034,7 +2034,7 @@ enum
     QUEST_DELIVERING_MESSAGE = 10406
 };
 
-struct HELLGROUND_DLL_DECL npc_protectorate_demolitionistAI : public npc_escortAI
+struct npc_protectorate_demolitionistAI : public npc_escortAI
 {
     npc_protectorate_demolitionistAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 

@@ -94,7 +94,7 @@ float Orientation = 5.33;
 //////////////////////
 //Theldren
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_theldrenAI : public ScriptedAI
+struct boss_theldrenAI : public ScriptedAI
 {
     boss_theldrenAI(Creature *c) : ScriptedAI(c)
     {
@@ -273,7 +273,7 @@ CreatureAI* GetAI_boss_theldren(Creature *_Creature)
 //////////////////////
 ///add malgen_longspear
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_malgen_longspearAI : public ScriptedAI
+struct boss_malgen_longspearAI : public ScriptedAI
 {
     boss_malgen_longspearAI(Creature *c) : ScriptedAI(c)
     {
@@ -413,7 +413,7 @@ CreatureAI* GetAI_boss_malgen_longspear(Creature *_Creature)
 //////////////////////
 ///add lefty
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_leftyAI : public ScriptedAI
+struct boss_leftyAI : public ScriptedAI
 {
     boss_leftyAI(Creature *c) : ScriptedAI(c)
     {
@@ -495,7 +495,7 @@ CreatureAI* GetAI_boss_lefty(Creature *_Creature)
 //////////////////////
 ///add rotfang
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_rotfangAI : public ScriptedAI
+struct boss_rotfangAI : public ScriptedAI
 {
     boss_rotfangAI(Creature *c) : ScriptedAI(c)
     {
@@ -609,7 +609,7 @@ CreatureAI* GetAI_boss_rotfang(Creature *_Creature)
 //////////////////////
 ///add Va'jashni
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_vajashniAI : public ScriptedAI
+struct boss_vajashniAI : public ScriptedAI
 {
     boss_vajashniAI(Creature *c) : ScriptedAI(c)
     {
@@ -726,7 +726,7 @@ CreatureAI* GetAI_boss_vajashni(Creature *_Creature)
 //////////////////////
 ///add Volida
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_volidaAI : public ScriptedAI
+struct boss_volidaAI : public ScriptedAI
 {
     boss_volidaAI(Creature *c) : ScriptedAI(c)
     {
@@ -836,7 +836,7 @@ CreatureAI* GetAI_boss_volida(Creature *_Creature)
 //////////////////////
 ///add Snokh Blackspine
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_snokhAI : public ScriptedAI
+struct boss_snokhAI : public ScriptedAI
 {
     boss_snokhAI(Creature *c) : ScriptedAI(c)
     {
@@ -946,7 +946,7 @@ CreatureAI* GetAI_boss_snokh(Creature *_Creature)
 //////////////////////
 ///add Korv
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_korvAI : public ScriptedAI
+struct boss_korvAI : public ScriptedAI
 {
     boss_korvAI(Creature *c) : ScriptedAI(c)
     {
@@ -1053,7 +1053,7 @@ CreatureAI* GetAI_boss_korv(Creature *_Creature)
 //////////////////////
 ///add Rezznik
 //////////////////////
-struct HELLGROUND_DLL_DECL boss_rezznikAI : public ScriptedAI
+struct boss_rezznikAI : public ScriptedAI
 {
     boss_rezznikAI(Creature *c) : ScriptedAI(c)
     {

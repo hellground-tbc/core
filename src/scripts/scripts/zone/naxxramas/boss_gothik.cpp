@@ -61,7 +61,7 @@ EndScriptData */
 //Spectral Horse
 #define SPELL_STOMP                 27993
 
-struct HELLGROUND_DLL_DECL boss_gothikAI : public ScriptedAI
+struct boss_gothikAI : public ScriptedAI
 {
     boss_gothikAI(Creature *c) : ScriptedAI(c)
     {

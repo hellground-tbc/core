@@ -24,7 +24,7 @@
 #include "MovementGenerator.h"
 
 template<class T>
-class HELLGROUND_DLL_SPEC RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovementGenerator<T> >
+class RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovementGenerator<T> >
 {
     public:
         explicit RandomMovementGenerator(const Unit &) : i_nextMoveTime(0) {}

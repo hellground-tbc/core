@@ -102,7 +102,7 @@ enum MagtheridonEvents
 
 typedef std::map<uint64, uint64> CubeMap;
 
-struct HELLGROUND_DLL_DECL mob_abyssalAI : public ScriptedAI
+struct mob_abyssalAI : public ScriptedAI
 {
     mob_abyssalAI(Creature *c) : ScriptedAI(c) { }
 
@@ -136,7 +136,7 @@ struct HELLGROUND_DLL_DECL mob_abyssalAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_magtheridonAI : public BossAI
+struct boss_magtheridonAI : public BossAI
 {
     boss_magtheridonAI(Creature *c) : BossAI(c, DATA_MAGTHERIDON)
     {
@@ -316,7 +316,7 @@ struct HELLGROUND_DLL_DECL boss_magtheridonAI : public BossAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
+struct mob_hellfire_channelerAI : public ScriptedAI
 {
     mob_hellfire_channelerAI(Creature *c) : ScriptedAI(c)
     {
@@ -417,7 +417,7 @@ struct HELLGROUND_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_magtheridon_triggerAI : public Scripted_NoMovementAI
+struct mob_magtheridon_triggerAI : public Scripted_NoMovementAI
 {
     mob_magtheridon_triggerAI(Creature *c) : Scripted_NoMovementAI(c)
     {

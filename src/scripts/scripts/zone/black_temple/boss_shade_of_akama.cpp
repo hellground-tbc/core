@@ -113,7 +113,7 @@ static float SpawnLocations[2][2]=
 
 static const uint32 spawnEntries[3]= {23523, 23318, 23524};
 
-struct HELLGROUND_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
+struct mob_ashtongue_channelerAI : public ScriptedAI
 {
     mob_ashtongue_channelerAI(Creature* c) : ScriptedAI(c)
     {
@@ -161,7 +161,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_channelerAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_ashtongue_defenderAI : public ScriptedAI
+struct mob_ashtongue_defenderAI : public ScriptedAI
 {
     mob_ashtongue_defenderAI(Creature* c) : ScriptedAI(c)
     {
@@ -265,7 +265,7 @@ enum spiritbinderSpells
     SPELL_SPIRIT_MEND  = 42025
 };
 
-struct HELLGROUND_DLL_DECL mob_ashtongue_spiritbinderAI : public ScriptedAI
+struct mob_ashtongue_spiritbinderAI : public ScriptedAI
 {
     mob_ashtongue_spiritbinderAI(Creature* c) : ScriptedAI(c)
     {
@@ -416,7 +416,7 @@ enum elementalistSpells
     SPELL_LIGHTNING_BOLT = 42024
 };
 
-struct HELLGROUND_DLL_DECL mob_ashtongue_elementalistAI : public ScriptedAI
+struct mob_ashtongue_elementalistAI : public ScriptedAI
 {
     mob_ashtongue_elementalistAI(Creature* c) : ScriptedAI(c)
     {
@@ -515,7 +515,7 @@ enum rogueSpells
     SPELL_DUAL_WIELD          = 29651
 };
 
-struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
+struct mob_ashtongue_rogueAI : public ScriptedAI
 {
     mob_ashtongue_rogueAI(Creature* c) : ScriptedAI(c)
     {
@@ -605,7 +605,7 @@ struct HELLGROUND_DLL_DECL mob_ashtongue_rogueAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_ashtongue_sorcererAI : public ScriptedAI
+struct mob_ashtongue_sorcererAI : public ScriptedAI
 {
     mob_ashtongue_sorcererAI(Creature* c) : ScriptedAI(c)
     {
@@ -689,7 +689,7 @@ enum phases
     AKAMA_DEATH  = 10  // Akama dies after 60s of fight with shade
 };
 
-struct HELLGROUND_DLL_DECL boss_shade_of_akamaAI : public ScriptedAI
+struct boss_shade_of_akamaAI : public ScriptedAI
 {
     boss_shade_of_akamaAI(Creature* c) : ScriptedAI(c), m_summons(c)
     {
@@ -1156,7 +1156,7 @@ void mob_ashtongue_channelerAI::OnAuraRemove(Aura *aura, bool stackRemove)
     }
 }
 
-struct HELLGROUND_DLL_DECL npc_akamaAI : public Scripted_NoMovementAI
+struct npc_akamaAI : public Scripted_NoMovementAI
 {
     npc_akamaAI(Creature* c) : Scripted_NoMovementAI(c), m_summons(me)
     {

@@ -59,7 +59,7 @@ EndContentData */
 #define SPELL_MANA_BURN             38884
 #define SPELL_INTANGIBLE_PRESENCE   36513
 
-struct HELLGROUND_DLL_DECL mobs_nether_drakeAI : public ScriptedAI
+struct mobs_nether_drakeAI : public ScriptedAI
 {
     mobs_nether_drakeAI(Creature *c) : ScriptedAI(c) {}
 
@@ -220,7 +220,7 @@ CreatureAI* GetAI_mobs_nether_drake(Creature *_Creature)
 
 #define SAY_DARANELLE -1000401
 
-struct HELLGROUND_DLL_DECL npc_daranelleAI : public ScriptedAI
+struct npc_daranelleAI : public ScriptedAI
 {
     npc_daranelleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -427,7 +427,7 @@ CreatureAI* GetAI_npc_ogre_brute(Creature* pCreature)
 #define PENTAGRAM_TRIGGER 23040
 #define MAIN_SPAWN 22911
 
-struct HELLGROUND_DLL_DECL npc_vim_bunnyAI : public ScriptedAI
+struct npc_vim_bunnyAI : public ScriptedAI
 {
     npc_vim_bunnyAI(Creature *c) : ScriptedAI(c){}
 
@@ -501,7 +501,7 @@ CreatureAI* GetAI_npc_vim_bunny(Creature *_Creature)
 #define SPELL_SUMMON_WRANGLED   40917
 #define SPELL_CHANNEL           40626
 
-struct HELLGROUND_DLL_DECL mob_aetherrayAI : public ScriptedAI
+struct mob_aetherrayAI : public ScriptedAI
 {
 
     mob_aetherrayAI(Creature *c) : ScriptedAI(c) {}
@@ -647,7 +647,7 @@ return true;
 # npc_prophecy_trigger
 #########*/
 
-struct HELLGROUND_DLL_DECL npc_prophecy_triggerAI : public ScriptedAI
+struct npc_prophecy_triggerAI : public ScriptedAI
 {
     npc_prophecy_triggerAI(Creature *c) : ScriptedAI(c)
     {
@@ -1291,7 +1291,7 @@ struct AttractOrbs
     Creature* totem;
 };
 
-struct HELLGROUND_DLL_DECL npc_light_orb_attracterAI : public Scripted_NoMovementAI
+struct npc_light_orb_attracterAI : public Scripted_NoMovementAI
 {
     npc_light_orb_attracterAI(Creature *c) : Scripted_NoMovementAI(c)
     {

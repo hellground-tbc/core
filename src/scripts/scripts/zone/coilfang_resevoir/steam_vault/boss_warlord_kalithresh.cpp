@@ -40,7 +40,7 @@ EndScriptData */
 
 #define SPELL_WARLORDS_RAGE_PROC    36453
 
-struct HELLGROUND_DLL_DECL mob_naga_distillerAI : public Scripted_NoMovementAI
+struct mob_naga_distillerAI : public Scripted_NoMovementAI
 {
     mob_naga_distillerAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -90,7 +90,7 @@ struct HELLGROUND_DLL_DECL mob_naga_distillerAI : public Scripted_NoMovementAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_warlord_kalithreshAI : public ScriptedAI
+struct boss_warlord_kalithreshAI : public ScriptedAI
 {
     boss_warlord_kalithreshAI(Creature *c) : ScriptedAI(c)
     {

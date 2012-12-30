@@ -434,7 +434,7 @@ class Unit;
 // 5 sec for bobber catch
 #define FISHING_BOBBER_READY_TIME 5
 
-class HELLGROUND_DLL_SPEC GameObject : public WorldObject
+class HELLGROUND_IMPORT_EXPORT GameObject : public WorldObject
 {
     public:
         explicit GameObject();

@@ -26,7 +26,7 @@ EndScriptData */
 #define SPELL_FIERYBURST        13900
 #define SPELL_WARSTOMP          24375
 
-struct HELLGROUND_DLL_DECL boss_magmusAI : public ScriptedAI
+struct boss_magmusAI : public ScriptedAI
 {
     boss_magmusAI(Creature *c) : ScriptedAI(c) {}
 

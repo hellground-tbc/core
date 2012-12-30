@@ -60,7 +60,7 @@ EndContentData */
 #define FACTION_FRIENDLY    84
 #define FACTION_CHICKEN     31
 
-struct HELLGROUND_DLL_DECL npc_chicken_cluckAI : public ScriptedAI
+struct npc_chicken_cluckAI : public ScriptedAI
 {
     npc_chicken_cluckAI(Creature *c) : ScriptedAI(c) {}
 
@@ -167,7 +167,7 @@ bool QuestComplete_npc_chicken_cluck(Player *player, Creature *_Creature, const 
 #define SPELL_SEDUCTION     47057
 #define SPELL_FIERY_AURA    45427
 
-struct HELLGROUND_DLL_DECL npc_dancing_flamesAI : public ScriptedAI
+struct npc_dancing_flamesAI : public ScriptedAI
 {
     npc_dancing_flamesAI(Creature *c) : ScriptedAI(c) {}
 
@@ -350,7 +350,7 @@ const uint32 HordeSoldierId[3] =
 ## npc_doctor (handles both Gustaf Vanhowzen and Gregory Victor)
 ######*/
 
-struct HELLGROUND_DLL_DECL npc_doctorAI : public ScriptedAI
+struct npc_doctorAI : public ScriptedAI
 {
     npc_doctorAI(Creature *c) : ScriptedAI(c) {}
 
@@ -386,7 +386,7 @@ struct HELLGROUND_DLL_DECL npc_doctorAI : public ScriptedAI
 ## npc_injured_patient (handles all the patients, no matter Horde or Alliance)
 #####*/
 
-struct HELLGROUND_DLL_DECL npc_injured_patientAI : public ScriptedAI
+struct npc_injured_patientAI : public ScriptedAI
 {
     npc_injured_patientAI(Creature *c) : ScriptedAI(c) {}
 
@@ -654,7 +654,7 @@ CreatureAI* GetAI_npc_doctor(Creature *_Creature)
 #define SPELL_DEATHTOUCH                5
 #define SAY_AGGRO                        "This area is closed!"
 
-struct HELLGROUND_DLL_DECL npc_guardianAI : public ScriptedAI
+struct npc_guardianAI : public ScriptedAI
 {
     npc_guardianAI(Creature *c) : ScriptedAI(c) {}
 
@@ -956,7 +956,7 @@ bool GossipSelect_npc_sayge(Player *player, Creature *_Creature, uint32 sender, 
 #define SPELL_TONK_MINE_DETONATE 25099
 #define NPC_STEAM_TONK 19405
 
-struct HELLGROUND_DLL_DECL npc_tonk_mineAI : public ScriptedAI
+struct npc_tonk_mineAI : public ScriptedAI
 {
     npc_tonk_mineAI(Creature *c) : ScriptedAI(c)
     {
@@ -1049,7 +1049,7 @@ bool ReceiveEmote_npc_brewfest_reveler( Player *player, Creature *_Creature, uin
 
 #define SNAKE_VIPER                19921
 
-struct HELLGROUND_DLL_DECL npc_snake_trap_serpentsAI : public ScriptedAI
+struct npc_snake_trap_serpentsAI : public ScriptedAI
 {
     npc_snake_trap_serpentsAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(15.0f); }
 
@@ -1121,7 +1121,7 @@ uint32 ADVISOR[] =
 };
 const char type[] = "WGBHD";
 
-struct HELLGROUND_DLL_DECL npc_flight_masterAI : public ScriptedAI
+struct npc_flight_masterAI : public ScriptedAI
 {
     npc_flight_masterAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1212,7 +1212,7 @@ float RunTo[5][3]=
     {2471.303, 371.101, 30.919},                            //kel
 };
 
-struct HELLGROUND_DLL_DECL npc_garments_of_questsAI : public ScriptedAI
+struct npc_garments_of_questsAI : public ScriptedAI
 {
     npc_garments_of_questsAI(Creature *c) : ScriptedAI(c)
     {
@@ -1426,7 +1426,7 @@ CreatureAI* GetAI_npc_garments_of_quests(Creature* pCreature)
 #define SPELL_HEARTS            20372   //wrong ?
 #define MOJO_WHISPS_COUNT       8
 
-struct HELLGROUND_DLL_DECL npc_mojoAI : public ScriptedAI
+struct npc_mojoAI : public ScriptedAI
 {
     npc_mojoAI(Creature *c) : ScriptedAI(c) {}
 
@@ -1533,7 +1533,7 @@ CreatureAI* GetAI_npc_mojo(Creature *_Creature)
 
 #define SPELL_PREYER_OF_HEALING     30604
 
-struct HELLGROUND_DLL_DECL npc_woeful_healerAI : public ScriptedAI
+struct npc_woeful_healerAI : public ScriptedAI
 {
     npc_woeful_healerAI(Creature *c) : ScriptedAI(c)
     {
@@ -1649,7 +1649,7 @@ bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint3
 # npc_elemental_guardian
 #########*/
 
-struct HELLGROUND_DLL_DECL npc_elemental_guardianAI : public ScriptedAI
+struct npc_elemental_guardianAI : public ScriptedAI
 {
     npc_elemental_guardianAI(Creature *c) : ScriptedAI(c) { c->SetReactState(REACT_PASSIVE); }
 
@@ -1907,7 +1907,7 @@ bool GossipSelect_npc_lorekeeper_lydros(Player *player, Creature *_Creature, uin
 #define SPELL_ELECTRICAL            42372
 #define CRASHIN_TRASHIN_ROBOT_ID    17299
 
-struct HELLGROUND_DLL_DECL npc_crashin_trashin_robotAI : public ScriptedAI
+struct npc_crashin_trashin_robotAI : public ScriptedAI
 {
     npc_crashin_trashin_robotAI(Creature *c) : ScriptedAI(c) {}
 
@@ -2113,7 +2113,7 @@ CreatureAI* GetAI_npc_crashin_trashin_robot(Creature* pCreature)
 
 #define GO_DARK_IRON_ALE_MUG    165578
 
-struct HELLGROUND_DLL_DECL pet_AleMugDrinkerAI : public ScriptedAI
+struct pet_AleMugDrinkerAI : public ScriptedAI
 {
     pet_AleMugDrinkerAI(Creature *c) : ScriptedAI(c) {}
 
@@ -2163,7 +2163,7 @@ CreatureAI* GetAI_pet_AleMugDrinker(Creature* pCreature)
 # brewfest triggers
 #########*/
 
-struct HELLGROUND_DLL_DECL trigger_appleAI : public ScriptedAI
+struct trigger_appleAI : public ScriptedAI
 {
     trigger_appleAI(Creature *c) : ScriptedAI(c) {}
 
@@ -2184,7 +2184,7 @@ CreatureAI* GetAI_trigger_apple(Creature* pCreature)
     return new trigger_appleAI(pCreature);
 }
 
-struct HELLGROUND_DLL_DECL trigger_deliveryAI : public ScriptedAI
+struct trigger_deliveryAI : public ScriptedAI
 {
     trigger_deliveryAI(Creature *c) : ScriptedAI(c) {}
 
@@ -2213,7 +2213,7 @@ CreatureAI* GetAI_trigger_delivery(Creature* pCreature)
     return new trigger_deliveryAI(pCreature);
 }
 
-struct HELLGROUND_DLL_DECL trigger_delivery_kegAI : public ScriptedAI
+struct trigger_delivery_kegAI : public ScriptedAI
 {
     trigger_delivery_kegAI(Creature *c) : ScriptedAI(c) {}
 
@@ -2260,7 +2260,7 @@ bool GossipSelect_npc_delivery_daily(Player *player, Creature *_Creature, uint32
     return true;
 }
 
-struct HELLGROUND_DLL_DECL trigger_barkerAI : public ScriptedAI
+struct trigger_barkerAI : public ScriptedAI
 {
     trigger_barkerAI(Creature *c) : ScriptedAI(c) {}
 
@@ -2330,7 +2330,7 @@ bool GossipSelectWithCode_npc_arena_spectator(Player *player, Creature *_Creatur
 # UPDATE `creature_template` SET `ScriptName` = 'npc_land_mine' WHERE `entry` = 7527;
 ###*/
 
-struct HELLGROUND_DLL_DECL npc_land_mineAI : public Scripted_NoMovementAI
+struct npc_land_mineAI : public Scripted_NoMovementAI
 {
     npc_land_mineAI(Creature *c) : Scripted_NoMovementAI(c), _done(false)
     {
@@ -2398,7 +2398,7 @@ enum MiniPetsInfo
     NPC_DISGUSTING_OOZELING     = 15429,
 };
 
-struct HELLGROUND_DLL_DECL npc_small_pet_handlerAI : public ScriptedAI
+struct npc_small_pet_handlerAI : public ScriptedAI
 {
     npc_small_pet_handlerAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 

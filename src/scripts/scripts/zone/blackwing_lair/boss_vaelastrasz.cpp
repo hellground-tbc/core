@@ -43,7 +43,7 @@ EndScriptData */
 #define QUEST_NEFARIUS_CORRUPTION	8730
 #define QUEST_THE_CHARGE_OF_THE_DRAGONFLIGHTS	8555
 
-struct HELLGROUND_DLL_DECL boss_vaelAI : public ScriptedAI
+struct boss_vaelAI : public ScriptedAI
 {
     boss_vaelAI(Creature *c) : ScriptedAI(c)
     {

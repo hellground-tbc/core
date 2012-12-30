@@ -196,10 +196,10 @@ class ScriptMgr
 
 #define sScriptMgr (*ACE_Singleton<ScriptMgr, ACE_Null_Mutex>::instance())
 
-HELLGROUND_DLL_SPEC uint32 GetAreaTriggerScriptId(uint32 triggerId);
-HELLGROUND_DLL_SPEC uint32 GetCompletedCinematicScriptId(uint32 triggerId);
-HELLGROUND_DLL_SPEC uint32 GetScriptId(const char *name);
-HELLGROUND_DLL_SPEC uint32 GetEventIdScriptId(uint32 eventId);
-HELLGROUND_DLL_SPEC uint32 GetSpellIdScriptId(uint32 eventId);
+HELLGROUND_IMPORT_EXPORT uint32 GetAreaTriggerScriptId(uint32 triggerId);
+HELLGROUND_IMPORT_EXPORT uint32 GetCompletedCinematicScriptId(uint32 triggerId);
+HELLGROUND_IMPORT_EXPORT uint32 GetScriptId(const char *name);
+HELLGROUND_IMPORT_EXPORT uint32 GetEventIdScriptId(uint32 eventId);
+HELLGROUND_IMPORT_EXPORT uint32 GetSpellIdScriptId(uint32 eventId);
 
 #endif

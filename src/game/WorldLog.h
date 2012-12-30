@@ -33,7 +33,7 @@
 #include <stdarg.h>
 
 /// %Log packets to a file
-class HELLGROUND_DLL_DECL WorldLog
+class WorldLog
 {
     friend class ACE_Singleton<WorldLog, ACE_Thread_Mutex>;
     WorldLog() : i_file(NULL) { Initialize(); }

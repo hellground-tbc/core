@@ -20,7 +20,7 @@ EndScriptData */
 #define THADDIUS_LAMENT_3   8875
 #define THADDIUS_LAMENT_4   8876
 
-struct HELLGROUND_DLL_DECL instance_naxxramas : public ScriptedInstance
+struct instance_naxxramas : public ScriptedInstance
 {
     instance_naxxramas(Map *map) : ScriptedInstance(map) { Initialize(); };
 

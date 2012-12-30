@@ -69,7 +69,7 @@ enum UNIT_EVENT_TYPE
 
 //==============================================================
 
-class HELLGROUND_DLL_SPEC UnitBaseEvent
+class HELLGROUND_IMPORT_EXPORT UnitBaseEvent
 {
     private:
         uint32 iType;
@@ -84,7 +84,7 @@ class HELLGROUND_DLL_SPEC UnitBaseEvent
 
 //==============================================================
 
-class HELLGROUND_DLL_SPEC ThreatRefStatusChangeEvent : public UnitBaseEvent
+class HELLGROUND_IMPORT_EXPORT ThreatRefStatusChangeEvent : public UnitBaseEvent
 {
     private:
         HostilReference* iHostilReference;
@@ -121,7 +121,7 @@ class HELLGROUND_DLL_SPEC ThreatRefStatusChangeEvent : public UnitBaseEvent
 
 //==============================================================
 
-class HELLGROUND_DLL_SPEC ThreatManagerEvent : public ThreatRefStatusChangeEvent
+class HELLGROUND_IMPORT_EXPORT ThreatManagerEvent : public ThreatRefStatusChangeEvent
 {
     private:
         ThreatContainer* iThreatContainer;

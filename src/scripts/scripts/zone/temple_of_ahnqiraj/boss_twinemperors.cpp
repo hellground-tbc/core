@@ -57,7 +57,7 @@ EndScriptData */
 #define SPELL_BLIZZARD              26607
 #define SPELL_ARCANEBURST           568
 
-struct HELLGROUND_DLL_DECL boss_twinemperorsAI : public ScriptedAI
+struct boss_twinemperorsAI : public ScriptedAI
 {
     ScriptedInstance *pInstance;
     uint32 Heal_Timer;
@@ -408,14 +408,14 @@ struct HELLGROUND_DLL_DECL boss_twinemperorsAI : public ScriptedAI
     }
 };
 
-class HELLGROUND_DLL_DECL BugAura : public Aura
+class BugAura : public Aura
 {
     public:
         BugAura(SpellEntry *spell, uint32 eff, int32 *bp, Unit *target, Unit *caster) : Aura(spell, eff, bp, target, caster, NULL)
             {}
 };
 
-struct HELLGROUND_DLL_DECL boss_veknilashAI : public boss_twinemperorsAI
+struct boss_veknilashAI : public boss_twinemperorsAI
 {
     bool IAmVeklor() {return false;}
     boss_veknilashAI(Creature *c) : boss_twinemperorsAI(c) {}
@@ -495,7 +495,7 @@ struct HELLGROUND_DLL_DECL boss_veknilashAI : public boss_twinemperorsAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_veklorAI : public boss_twinemperorsAI
+struct boss_veklorAI : public boss_twinemperorsAI
 {
     bool IAmVeklor() {return true;}
     boss_veklorAI(Creature *c) : boss_twinemperorsAI(c) {}

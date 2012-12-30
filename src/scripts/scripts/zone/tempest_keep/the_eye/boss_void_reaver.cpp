@@ -39,7 +39,7 @@ EndScriptData */
 
 #define TRIGGER                     29530
 
-struct HELLGROUND_DLL_DECL boss_void_reaverAI : public ScriptedAI
+struct boss_void_reaverAI : public ScriptedAI
 {
     boss_void_reaverAI(Creature *c) : ScriptedAI(c)
     {

@@ -39,7 +39,7 @@ EndScriptData */
 9 - Edge of Madness Event
 */
 
-struct HELLGROUND_DLL_DECL instance_zulgurub : public ScriptedInstance
+struct instance_zulgurub : public ScriptedInstance
 {
     instance_zulgurub(Map *map) : ScriptedInstance(map) {Initialize();};
 

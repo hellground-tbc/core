@@ -37,7 +37,7 @@ EndScriptData */
 #define SPELL_ARCANEEXPLOSION   25679
 #define SPELL_COUNTERSPELL      15122
 
-struct HELLGROUND_DLL_DECL boss_moamAI : public ScriptedAI
+struct boss_moamAI : public ScriptedAI
 {
     boss_moamAI(Creature *c) : ScriptedAI(c)
     {
@@ -168,7 +168,7 @@ CreatureAI* GetAI_boss_moam(Creature *_Creature)
     return new boss_moamAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL mana_fiendAI : public ScriptedAI
+struct mana_fiendAI : public ScriptedAI
 {
     mana_fiendAI(Creature *c) : ScriptedAI(c) {}
 

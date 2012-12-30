@@ -77,7 +77,7 @@ enum PhaseMask
     PHASE_3 = 0x04
 };
 
-struct HELLGROUND_DLL_DECL boss_onyxiaAI : public ScriptedAI
+struct boss_onyxiaAI : public ScriptedAI
 {
     boss_onyxiaAI(Creature* c) : ScriptedAI(c)
     {
@@ -377,7 +377,7 @@ CreatureAI* GetAI_boss_onyxiaAI(Creature *_Creature)
     return new boss_onyxiaAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL mob_onyxiawhelpAI : public ScriptedAI
+struct mob_onyxiawhelpAI : public ScriptedAI
 {
     mob_onyxiawhelpAI(Creature* c) : ScriptedAI(c) {}
 

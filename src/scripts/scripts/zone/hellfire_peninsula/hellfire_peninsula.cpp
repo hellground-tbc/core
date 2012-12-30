@@ -65,7 +65,7 @@ EndContentData */
 
 #define C_AERANAS                       17085
 
-struct HELLGROUND_DLL_DECL npc_aeranasAI : public ScriptedAI
+struct npc_aeranasAI : public ScriptedAI
 {
     npc_aeranasAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -286,7 +286,7 @@ bool GossipSelect_npc_wing_commander_brack(Player *player, Creature *creature, u
 
 #define QUEST_ROAD_TO_FALCON_WATCH  9375
 
-struct HELLGROUND_DLL_DECL npc_wounded_blood_elfAI : public npc_escortAI
+struct npc_wounded_blood_elfAI : public npc_escortAI
 {
     npc_wounded_blood_elfAI(Creature *creature) : npc_escortAI(creature) {}
 
@@ -388,7 +388,7 @@ enum
     SPELL_SUCKER_DESPAWN_MOB        = 38691,
 };
 
-struct HELLGROUND_DLL_DECL npc_demoniac_scryerAI : public ScriptedAI
+struct npc_demoniac_scryerAI : public ScriptedAI
 {
     npc_demoniac_scryerAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -591,7 +591,7 @@ enum
     NPC_BUTTRES     = 22267
 };
 
-struct HELLGROUND_DLL_DECL npc_magic_sucker_device_spawnerAI : public ScriptedAI
+struct npc_magic_sucker_device_spawnerAI : public ScriptedAI
 {
     npc_magic_sucker_device_spawnerAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -646,7 +646,7 @@ enum AncestralSpiritWolf
     SPELL_ANCESTRAL_SPIRIT_WOLF_BUFF_TIMER  = 29981,
 };
 
-struct HELLGROUND_DLL_DECL npc_earthcaller_rygaAI : public npc_escortAI
+struct npc_earthcaller_rygaAI : public npc_escortAI
 {
     npc_earthcaller_rygaAI(Creature *creature) : npc_escortAI(creature) {}
 
@@ -669,7 +669,7 @@ CreatureAI* GetAI_npc_earthcaller_ryga(Creature *creature)
     return newAI;
 }
 
-struct HELLGROUND_DLL_DECL npc_ancestral_spirit_wolfAI : public npc_escortAI
+struct npc_ancestral_spirit_wolfAI : public npc_escortAI
 {
     npc_ancestral_spirit_wolfAI(Creature *creature) : npc_escortAI(creature) {}
 
@@ -752,7 +752,7 @@ float FirePos[3][3] =
     {826.5, 2513.4, 291.7}
 };
 
-struct HELLGROUND_DLL_DECL npc_living_flareAI : public FollowerAI
+struct npc_living_flareAI : public FollowerAI
 {
     npc_living_flareAI(Creature *creature) : FollowerAI(creature) {}
 
@@ -837,7 +837,7 @@ CreatureAI* GetAI_npc_living_flare(Creature *creature)
     return newAI;
 }
 
-struct HELLGROUND_DLL_DECL npc_abyssal_shelf_questAI : public ScriptedAI
+struct npc_abyssal_shelf_questAI : public ScriptedAI
 {
     npc_abyssal_shelf_questAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -888,7 +888,7 @@ const char* YellSiphon[4] =
     "Your life force is my nourishment, demon... Kil'jaeden's gift to us!"
 };
 
-struct HELLGROUND_DLL_DECL npc_felblood_initiateAI : public ScriptedAI
+struct npc_felblood_initiateAI : public ScriptedAI
 {
     npc_felblood_initiateAI(Creature *creature) : ScriptedAI(creature) { }
 
@@ -1056,7 +1056,7 @@ enum
     NPC_BUNNY               = 22444
 };
 
-struct HELLGROUND_DLL_DECL npc_hand_berserkerAI : public ScriptedAI
+struct npc_hand_berserkerAI : public ScriptedAI
 {
     npc_hand_berserkerAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1110,7 +1110,7 @@ enum
     SAY_SP                  = -1900130
 };
 
-struct HELLGROUND_DLL_DECL npc_anchorite_relic_bunnyAI : public ScriptedAI
+struct npc_anchorite_relic_bunnyAI : public ScriptedAI
 {
     npc_anchorite_relic_bunnyAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1243,7 +1243,7 @@ static Points P[]=
     {-710.924f, 2754.683f, 105.0f}
 };
 
-struct HELLGROUND_DLL_DECL npc_anchorite_baradaAI : public ScriptedAI
+struct npc_anchorite_baradaAI : public ScriptedAI
 {
     npc_anchorite_baradaAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1427,7 +1427,7 @@ static Move M[]=
     {-708.558f, 2744.923f, 105.0f}
 };
 
-struct HELLGROUND_DLL_DECL npc_darkness_releasedAI : public ScriptedAI
+struct npc_darkness_releasedAI : public ScriptedAI
 {
     npc_darkness_releasedAI(Creature* creature) : ScriptedAI(creature) 
 	{
@@ -1503,7 +1503,7 @@ CreatureAI* GetAI_npc_darkness_released(Creature* creature)
 ## npc_foul_purge
 ######*/
 
-struct HELLGROUND_DLL_DECL npc_foul_purgeAI : public ScriptedAI
+struct npc_foul_purgeAI : public ScriptedAI
 {
     npc_foul_purgeAI(Creature* creature) : ScriptedAI(creature) 
     {
@@ -1562,7 +1562,7 @@ enum
     NPC_SEDAI      = 17404
 };
 
-struct HELLGROUND_DLL_DECL npc_sedai_quest_credit_markerAI : public ScriptedAI
+struct npc_sedai_quest_credit_markerAI : public ScriptedAI
 {
     npc_sedai_quest_credit_markerAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1611,7 +1611,7 @@ enum
     SPELL_HOLYFIRE    = 17141
 };
 
-struct HELLGROUND_DLL_DECL npc_vindicator_sedaiAI : public ScriptedAI
+struct npc_vindicator_sedaiAI : public ScriptedAI
 {
     npc_vindicator_sedaiAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1837,7 +1837,7 @@ static Pos S[]=
     {60.14f, 4830.46f, 77.83f}
 };
 
-struct HELLGROUND_DLL_DECL npc_pathaleon_imageAI : public ScriptedAI
+struct npc_pathaleon_imageAI : public ScriptedAI
 {
     npc_pathaleon_imageAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1971,7 +1971,7 @@ CreatureAI* GetAI_npc_pathaleon_image(Creature* creature)
 
 #define NPC_CAT                          17230
 
-struct HELLGROUND_DLL_DECL npc_vieraAI : public npc_escortAI
+struct npc_vieraAI : public npc_escortAI
 {
     npc_vieraAI(Creature* creature) : npc_escortAI(creature) {}
 
@@ -2067,7 +2067,7 @@ enum
     NPC_FEL_GUARD_HOUND                            = 21847
 };
 
-struct HELLGROUND_DLL_DECL npc_deranged_helboarAI : public ScriptedAI
+struct npc_deranged_helboarAI : public ScriptedAI
 {
     npc_deranged_helboarAI(Creature* creature) : ScriptedAI(creature) {}
 

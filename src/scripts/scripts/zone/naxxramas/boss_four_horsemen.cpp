@@ -57,7 +57,7 @@ enum BlaumeuxEvents
 
 #define SPIRIT_OF_BLAUMEUX_ID   16776
 
-struct HELLGROUND_DLL_DECL boss_lady_blaumeuxAI : public BossAI
+struct boss_lady_blaumeuxAI : public BossAI
 {
     boss_lady_blaumeuxAI(Creature *c) : BossAI(c, DATA_THE_FOUR_HORSEMEN) { }
 
@@ -181,7 +181,7 @@ enum MograineEvents
 
 #define SPIRIT_OF_MOGRAINE_ID   16775
 
-struct HELLGROUND_DLL_DECL boss_highlord_mograineAI : public BossAI
+struct boss_highlord_mograineAI : public BossAI
 {
     boss_highlord_mograineAI(Creature *c) : BossAI(c, DATA_THE_FOUR_HORSEMEN) { }
 
@@ -299,7 +299,7 @@ enum KorthazzEvents
 
 #define SPIRIT_OF_KORTHAZZ_ID   16778
 
-struct HELLGROUND_DLL_DECL boss_thane_korthazzAI : public BossAI
+struct boss_thane_korthazzAI : public BossAI
 {
     boss_thane_korthazzAI(Creature *c) : BossAI(c, DATA_THE_FOUR_HORSEMEN) { }
 
@@ -419,7 +419,7 @@ enum ZeliekEvents
 
 #define SPIRIT_OF_ZELIEK_ID     16777
 
-struct HELLGROUND_DLL_DECL boss_sir_zeliekAI : public BossAI
+struct boss_sir_zeliekAI : public BossAI
 {
     boss_sir_zeliekAI(Creature *c) : BossAI(c, DATA_THE_FOUR_HORSEMEN) {}
 
