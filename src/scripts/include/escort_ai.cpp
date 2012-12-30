@@ -42,6 +42,15 @@ void npc_escortAI::AttackStart(Unit* pWho)
 
     if (m_creature->Attack(pWho, true))
     {
+        //stop movement and attack the target && set the correct wp
+        if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+        {
+            m_creature->StopMoving();
+
+            if (CurrentWP->id != NULL)
+                --CurrentWP;
+        }
+
         if (IsCombatMovement())
             m_creature->GetMotionMaster()->MoveChase(pWho);
     }
@@ -323,6 +332,7 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
         else if (!m_bIsRunning && !m_creature->IsWalking())
             m_creature->SetWalk(true);
 
+        m_creature->GetUnitStateMgr().InitDefaults(false);
         RemoveEscortState(STATE_ESCORT_RETURNING);
 
         if (!m_uiWPWaitTimer)
@@ -345,11 +355,6 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
         }
 
         debug_log("TSCR: EscortAI Waypoint %u reached", CurrentWP->id);
-
-        //evade back to combat start position
-        m_creature->SetHomePosition(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation());
-        m_creature->GetUnitStateMgr().InitDefaults(true);
-        m_creature->GetMotionMaster()->MoveIdle();
 
         //Call WP function
         WaypointReached(CurrentWP->id);
