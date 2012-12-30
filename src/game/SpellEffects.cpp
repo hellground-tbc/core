@@ -1814,7 +1814,7 @@ void Spell::EffectDummy(uint32 i)
                         for (uint8 i=0;i<6;++i)
                         {
                             Creature *pCreature = NULL;
-                            Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_caster, LunarEntry[i], true, 7.0);
+                            Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_caster, LunarEntry[i], true, 7.0, false);
                             Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
                             Cell::VisitGridObjects(m_caster, searcher, 7.0);
 

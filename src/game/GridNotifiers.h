@@ -736,16 +736,16 @@ namespace Hellground
             float i_range;
     };
 
-    // Success at unit in range, range update for next check (this can be use with CreatureLastSearcher to find nearest creature)
+    // Success at unit in range, in LoS if needed, range update for next check (this can be use with CreatureLastSearcher to find nearest creature)
     class NearestCreatureEntryWithLiveStateInObjectRangeCheck
     {
         public:
-            NearestCreatureEntryWithLiveStateInObjectRangeCheck(WorldObject const& obj,uint32 entry, bool alive, float range)
-                : i_obj(obj), i_entry(entry), i_alive(alive), i_range(range) {}
+            NearestCreatureEntryWithLiveStateInObjectRangeCheck(WorldObject const& obj,uint32 entry, bool alive, float range, bool inLoS)
+                : i_obj(obj), i_entry(entry), i_alive(alive), i_range(range), i_inLoS(inLoS) {}
 
             bool operator()(Creature* u)
             {
-                if (u->GetEntry() == i_entry && u->isAlive()==i_alive && i_obj.IsWithinDistInMap(u, i_range))
+                if (u->GetEntry() == i_entry && u->isAlive()==i_alive && i_obj.IsWithinDistInMap(u, i_range) && i_inLoS ? i_obj.IsWithinLOSInMap(u) : true)
                 {
                     i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
                     return true;
@@ -758,6 +758,7 @@ namespace Hellground
             uint32 i_entry;
             bool   i_alive;
             float  i_range;
+            bool   i_inLoS;
 
             // prevent clone this object
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(NearestCreatureEntryWithLiveStateInObjectRangeCheck const&);

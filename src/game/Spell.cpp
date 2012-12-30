@@ -1616,7 +1616,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
                     {
                         Creature *p_Creature = NULL;
 
-                        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range);
+                        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*m_caster,i_spellST->second.targetEntry,i_spellST->second.type!=SPELL_TARGET_TYPE_DEAD,range,false);
                         Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(p_Creature, u_check);
                         Cell::VisitAllObjects(m_caster, searcher, range);
 

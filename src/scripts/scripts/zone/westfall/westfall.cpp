@@ -404,17 +404,7 @@ bool QuestAccept_npc_Mikhail(Player* player, Creature* creature, Quest const* qu
 {
     if (quest->GetQuestId() == 1249)
     {
-        Creature* trigger = NULL;
-
-        float x, y, z;
-        creature->GetPosition(x, y, z);
-
-        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck check(*creature, 4962, true, 10);
-        Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(trigger, check);
-
-        Cell::VisitGridObjects(creature, searcher, 10.0);
-
-        if(trigger)
+        if(Creature* trigger = GetClosestCreatureWithEntry(creature, 4962, 10))
         {
             trigger->setFaction(14);
             trigger->Attack(player, true);

@@ -549,12 +549,7 @@ CreatureAI* GetAI_npc_secondTrial(Creature *_Creature)
 bool GOUse_go_second_trial(Player *player, GameObject* _GO)
 {
     // find spawn :: master_kelerun_bloodmourn
-    Creature* event_controller = NULL;
-    Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck u_check(*_GO, MASTER_KELERUN_BLOODMOURN, true, 30);
-    Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(event_controller, u_check);
-    Cell::VisitGridObjects(player, searcher,30.0);
-
-    if ( event_controller )
+    if (Creature* event_controller = GetClosestCreatureWithEntry(_GO, MASTER_KELERUN_BLOODMOURN, 30))
     {
        ((master_kelerun_bloodmournAI*)event_controller->AI())->StartEvent();
         ((master_kelerun_bloodmournAI*)event_controller->AI())->toReset = true;

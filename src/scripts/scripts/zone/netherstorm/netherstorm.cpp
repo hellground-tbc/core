@@ -397,19 +397,6 @@ struct npc_commander_dawnforgeAI : public ScriptedAI
 
     void EnterCombat(Unit *who) { }
 
-    //Select any creature in a grid
-    Creature* SelectCreatureInGrid(uint32 entry, float range)
-    {
-        Creature* pCreature = NULL;
-
-        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
-        Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-        Cell::VisitGridObjects(me, searcher, range);
-
-        return pCreature;
-    }
-
     void JustSummoned(Creature *summoned)
     {
         pathaleonGUID = summoned->GetGUID();
@@ -471,7 +458,7 @@ struct npc_commander_dawnforgeAI : public ScriptedAI
     {
         if (!isEvent)
         {
-            Creature *ardonis = SelectCreatureInGrid(CreatureEntry[0][0], 10.0f);
+            Creature *ardonis = GetClosestCreatureWithEntry(me, CreatureEntry[0][0], 10.0f);
             if (!ardonis)
                 return false;
 
@@ -625,18 +612,6 @@ CreatureAI* GetAI_npc_commander_dawnforge(Creature* _Creature)
     return new npc_commander_dawnforgeAI(_Creature);
 }
 
-Creature* SearchDawnforge(Player *source, uint32 entry, float range)
-{
-    Creature* pCreature = NULL;
-
-    Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*source, entry, true, range);
-    Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-    Cell::VisitGridObjects(source, searcher, range);
-
-    return pCreature;
-}
-
 bool AreaTrigger_at_commander_dawnforge(Player *player, AreaTriggerEntry const*at)
 {
     //if player lost aura or not have at all, we should not try start event.
@@ -645,7 +620,7 @@ bool AreaTrigger_at_commander_dawnforge(Player *player, AreaTriggerEntry const*a
 
     if (player->isAlive() && player->GetQuestStatus(QUEST_INFO_GATHERING) == QUEST_STATUS_INCOMPLETE)
     {
-        Creature* Dawnforge = SearchDawnforge(player, CreatureEntry[1][0], 30.0f);
+        Creature* Dawnforge = GetClosestCreatureWithEntry(player, CreatureEntry[1][0], 30.0f);
 
         if (!Dawnforge)
             return false;

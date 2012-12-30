@@ -147,18 +147,6 @@ struct boss_warlord_kalithreshAI : public ScriptedAI
         DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
     }
 
-    Creature* SelectCreatureInGrid(uint32 entry, float range)
-    {
-        Creature* pCreature = NULL;
-
-        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
-        Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-        Cell::VisitGridObjects(me, searcher, range);
-
-        return pCreature;
-    }
-
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
         //hack :(
@@ -208,7 +196,7 @@ struct boss_warlord_kalithreshAI : public ScriptedAI
 
         if (Rage_Timer < diff)
         {
-            Creature* distiller = SelectCreatureInGrid(17954, 100);
+            Creature* distiller = GetClosestCreatureWithEntry(me, 17954, 100);
             if (distiller)
             {
                 CurrentDistiller = distiller->GetGUID();

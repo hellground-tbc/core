@@ -103,14 +103,7 @@ struct boss_selin_fireheartAI : public ScriptedAI
 
     void SelectNearestCrystal()
     {
-        Creature* CrystalChosen = NULL;
-
-        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, CREATURE_FEL_CRYSTAL, true, 100.0f);
-        Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(CrystalChosen, creature_check);
-
-        Cell::VisitGridObjects(me, searcher, 100.0f);
-
-        if( CrystalChosen )
+        if(Creature* CrystalChosen = GetClosestCreatureWithEntry(me, CREATURE_FEL_CRYSTAL, 100.0f))
         {
             CrystalGUID = CrystalChosen->GetGUID();
 

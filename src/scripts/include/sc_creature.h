@@ -427,7 +427,7 @@ struct BossAI : public ScriptedAI
 };
 
 // SD2 grid searchers
-Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange, bool alive = true);
+Creature* GetClosestCreatureWithEntry(WorldObject* pSource, uint32 Entry, float MaxSearchRange, bool alive = true, bool inLoS = false);
 GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange);
 Player* GetClosestPlayer(WorldObject* source, float maxSearchRange);
 #endif
