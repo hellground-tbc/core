@@ -5370,7 +5370,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Flame of Azzinoth Blaze
         case 40609:
         {
-            m_caster->CastSpell(unitTarget, 40637, true, 0, 0, m_caster->GetGUID());
+            unitTarget->CastSpell(unitTarget, 40637, true, 0, 0, m_caster->GetGUID());
             break;
         }
         case 38530:

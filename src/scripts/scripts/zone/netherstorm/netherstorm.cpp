@@ -402,7 +402,7 @@ struct npc_commander_dawnforgeAI : public ScriptedAI
     {
         Creature* pCreature = NULL;
 
-        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range);
+        Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*m_creature, entry, true, range, false);
         Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
         Cell::VisitGridObjects(me, searcher, range);
@@ -629,7 +629,7 @@ Creature* SearchDawnforge(Player *source, uint32 entry, float range)
 {
     Creature* pCreature = NULL;
 
-    Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*source, entry, true, range);
+    Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*source, entry, true, range, false);
     Hellground::ObjectLastSearcher<Creature, Hellground::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
 
     Cell::VisitGridObjects(source, searcher, range);

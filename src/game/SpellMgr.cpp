@@ -3326,9 +3326,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 29200: // Purify Helboar Meat
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
                 break;
-            case 40637: // Flame of Azzinoth Blaze summon on target
-                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
-                break;
             case 31790: // Righteous Defense taunt
                 spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MELEE;
                 break;
