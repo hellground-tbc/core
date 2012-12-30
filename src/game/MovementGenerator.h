@@ -28,7 +28,7 @@
 #include "MotionMaster.h"
 #include "StateMgr.h"
 
-class HELLGROUND_DLL_SPEC MovementGenerator : public UnitAction
+class HELLGROUND_IMPORT_EXPORT MovementGenerator : public UnitAction
 {
     public:
         virtual ~MovementGenerator();
@@ -66,7 +66,7 @@ class HELLGROUND_DLL_SPEC MovementGenerator : public UnitAction
 };
 
 template<class T, class D>
-class HELLGROUND_DLL_SPEC MovementGeneratorMedium : public MovementGenerator
+class HELLGROUND_IMPORT_EXPORT MovementGeneratorMedium : public MovementGenerator
 {
     public:
         void Initialize(Unit &u)

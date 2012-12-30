@@ -66,7 +66,7 @@ enum SCEquip
     EQUIP_UNEQUIP   = 0
 };
 
-class HELLGROUND_DLL_SPEC CreatureAI : public UnitAI
+class HELLGROUND_IMPORT_EXPORT CreatureAI : public UnitAI
 {
     protected:
         Creature * const me;

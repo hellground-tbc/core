@@ -57,7 +57,7 @@ namespace VMAP
         LockType m_lock;
     };
 
-    class HELLGROUND_DLL_DECL VMapClusterManager
+    class VMapClusterManager
     {
     public:
         explicit VMapClusterManager(uint32 processNumber);
@@ -89,7 +89,7 @@ namespace VMAP
 
     typedef UNORDERED_MAP<uint32, bool*> GridLoadedMap;
 
-    class HELLGROUND_DLL_DECL VMapClusterProcess
+    class VMapClusterProcess
     {
     public:
         explicit VMapClusterProcess(uint32 processId);

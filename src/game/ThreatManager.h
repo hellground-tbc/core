@@ -46,7 +46,7 @@ class ThreatCalcHelper
 
 //==============================================================
 
-class HELLGROUND_DLL_SPEC HostilReference : public Reference<Unit, ThreatManager>
+class HELLGROUND_IMPORT_EXPORT HostilReference : public Reference<Unit, ThreatManager>
 {
     public:
         HostilReference(Unit* pUnit, ThreatManager *pThreatManager, float pThreat);
@@ -132,7 +132,7 @@ class HELLGROUND_DLL_SPEC HostilReference : public Reference<Unit, ThreatManager
 //==============================================================
 class ThreatManager;
 
-class HELLGROUND_DLL_SPEC ThreatContainer
+class HELLGROUND_IMPORT_EXPORT ThreatContainer
 {
     private:
         std::list<HostilReference*> iThreatList;
@@ -170,7 +170,7 @@ class HELLGROUND_DLL_SPEC ThreatContainer
 
 //=================================================
 
-class HELLGROUND_DLL_SPEC ThreatManager
+class HELLGROUND_IMPORT_EXPORT ThreatManager
 {
     public:
         friend class HostilReference;

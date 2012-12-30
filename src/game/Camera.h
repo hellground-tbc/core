@@ -29,7 +29,7 @@ class WorldPacket;
 class Player;
 
 /// Camera - object-receiver. Receives broadcast packets from nearby worldobjects, object visibility changes and sends them to client
-class HELLGROUND_DLL_SPEC Camera
+class HELLGROUND_IMPORT_EXPORT Camera
 {
     friend class ViewPoint;
     public:
@@ -77,7 +77,7 @@ class HELLGROUND_DLL_SPEC Camera
 };
 
 /// Object-observer, notifies farsight object state to cameras that attached to it
-class HELLGROUND_DLL_SPEC ViewPoint
+class HELLGROUND_IMPORT_EXPORT ViewPoint
 {
     friend class Camera;
 

@@ -32,7 +32,7 @@
 
 class Transport;
 
-struct HELLGROUND_DLL_DECL MapID
+struct MapID
 {
     explicit MapID(uint32 id) : nMapId(id), nInstanceId(0) {}
     MapID(uint32 id, uint32 instid) : nMapId(id), nInstanceId(instid) {}
@@ -51,7 +51,7 @@ struct HELLGROUND_DLL_DECL MapID
     uint32 nInstanceId;
 };
 
-class HELLGROUND_DLL_DECL MapManager
+class MapManager
 {
     friend class ACE_Singleton<MapManager, ACE_Thread_Mutex>;
     public:

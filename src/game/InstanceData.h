@@ -73,7 +73,7 @@ struct DoorData
     DoorType type;
 };
 
-class HELLGROUND_DLL_SPEC InstanceData : public ZoneScript
+class HELLGROUND_IMPORT_EXPORT InstanceData : public ZoneScript
 {
     public:
 

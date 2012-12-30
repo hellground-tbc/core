@@ -39,7 +39,7 @@ uint32 GetTalentSpellCost(TalentSpellPos const* pos);
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId);
 
 int32 GetAreaFlagByAreaID(uint32 area_id);                  // -1 if not found
-HELLGROUND_DLL_SPEC AreaTableEntry const* GetAreaEntryByAreaID(uint32 area_id);
+HELLGROUND_IMPORT_EXPORT AreaTableEntry const* GetAreaEntryByAreaID(uint32 area_id);
 AreaTableEntry const* GetAreaEntryByAreaFlagAndMap(uint32 area_flag,uint32 map_id);
 uint32 GetAreaFlagByMapId(uint32 mapid);
 
@@ -142,10 +142,10 @@ extern DBCStorage <WorldSafeLocsEntry>           sWorldSafeLocsStore;
 void LoadDBCStores(const std::string& dataPath);
 
 // script support functions
-HELLGROUND_DLL_SPEC DBCStorage <SoundEntriesEntry>          const* GetSoundEntriesStore();
-HELLGROUND_DLL_SPEC DBCStorage <SpellEntry>                 const* GetSpellStore();
-HELLGROUND_DLL_SPEC DBCStorage <SpellRangeEntry>            const* GetSpellRangeStore();
-HELLGROUND_DLL_SPEC DBCStorage <FactionEntry>               const* GetFactionStore();
-HELLGROUND_DLL_SPEC DBCStorage <ItemEntry>                  const* GetItemDisplayStore();
-HELLGROUND_DLL_SPEC DBCStorage <CreatureDisplayInfoEntry>   const* GetCreatureDisplayStore();
+HELLGROUND_IMPORT_EXPORT DBCStorage <SoundEntriesEntry>          const* GetSoundEntriesStore();
+HELLGROUND_IMPORT_EXPORT DBCStorage <SpellEntry>                 const* GetSpellStore();
+HELLGROUND_IMPORT_EXPORT DBCStorage <SpellRangeEntry>            const* GetSpellRangeStore();
+HELLGROUND_IMPORT_EXPORT DBCStorage <FactionEntry>               const* GetFactionStore();
+HELLGROUND_IMPORT_EXPORT DBCStorage <ItemEntry>                  const* GetItemDisplayStore();
+HELLGROUND_IMPORT_EXPORT DBCStorage <CreatureDisplayInfoEntry>   const* GetCreatureDisplayStore();
 #endif

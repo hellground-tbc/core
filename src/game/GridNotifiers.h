@@ -57,7 +57,7 @@ namespace Hellground
         void SendToSelf(void);
     };
 
-    struct HELLGROUND_DLL_DECL VisibleChangesNotifier
+    struct HELLGROUND_EXPORT VisibleChangesNotifier
     {
         WorldObject &_object;
 
@@ -93,7 +93,7 @@ namespace Hellground
         void Visit(GridRefManager<NOT_INTERESTED>&) {}
     };
 
-    struct HELLGROUND_DLL_DECL PacketBroadcaster
+    struct HELLGROUND_EXPORT PacketBroadcaster
     {
         WorldObject &_source;
         WorldPacket *_message;
@@ -114,7 +114,7 @@ namespace Hellground
         void Visit(GridRefManager<SKIP>&) {}
     };
 
-    struct HELLGROUND_DLL_DECL ObjectUpdater
+    struct HELLGROUND_EXPORT ObjectUpdater
     {
         uint32 i_timeDiff;
         explicit ObjectUpdater(const uint32 &diff) : i_timeDiff(diff) {}
@@ -128,7 +128,7 @@ namespace Hellground
         void Visit(GridRefManager<T> &m);
     };
 
-    struct HELLGROUND_DLL_DECL DynamicObjectUpdater
+    struct HELLGROUND_EXPORT DynamicObjectUpdater
     {
         DynamicObject &i_dynobject;
         Unit* i_check;
@@ -149,7 +149,7 @@ namespace Hellground
 
 #pragma region Searchers
     template<class T, class Check>
-    struct HELLGROUND_DLL_DECL ObjectSearcher
+    struct HELLGROUND_EXPORT ObjectSearcher
     {
         T* &_object;
         Check &_check;
@@ -163,7 +163,7 @@ namespace Hellground
     };
 
     template<class T, class Check>
-    struct HELLGROUND_DLL_DECL ObjectLastSearcher
+    struct HELLGROUND_EXPORT ObjectLastSearcher
     {
         T* &_object;
         Check &_check;
@@ -177,7 +177,7 @@ namespace Hellground
     };
 
     template<class T, class Check>
-    struct HELLGROUND_DLL_DECL ObjectListSearcher
+    struct HELLGROUND_EXPORT ObjectListSearcher
     {
         std::list<T*> &_objects;
         Check& _check;
@@ -191,7 +191,7 @@ namespace Hellground
     };
 
     template<class Check>
-    struct HELLGROUND_DLL_DECL UnitSearcher
+    struct HELLGROUND_EXPORT UnitSearcher
     {
         Unit* &i_object;
         Check & i_check;
@@ -205,7 +205,7 @@ namespace Hellground
     };
 
     template<class Check>
-    struct HELLGROUND_DLL_DECL UnitLastSearcher
+    struct HELLGROUND_EXPORT UnitLastSearcher
     {
         Unit* &i_object;
         Check & i_check;
@@ -220,7 +220,7 @@ namespace Hellground
     };
 
     template<class Check>
-    struct HELLGROUND_DLL_DECL UnitListSearcher
+    struct HELLGROUND_EXPORT UnitListSearcher
     {
         std::list<Unit*> &i_objects;
         Check& i_check;
@@ -237,7 +237,7 @@ namespace Hellground
 
 #pragma region Workers
     template<class T, class Do>
-    struct HELLGROUND_DLL_DECL ObjectWorker
+    struct HELLGROUND_EXPORT ObjectWorker
     {
         Do& _do;
 
@@ -254,7 +254,7 @@ namespace Hellground
     };
 
     template<class Do>
-    struct HELLGROUND_DLL_DECL CameraDistWorker
+    struct HELLGROUND_EXPORT CameraDistWorker
     {
         WorldObject const* i_searcher;
         float i_dist;

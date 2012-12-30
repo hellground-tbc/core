@@ -27,7 +27,7 @@
 
 // Note. All times are in milliseconds here.
 
-class HELLGROUND_DLL_SPEC BasicEvent
+class HELLGROUND_IMPORT_EXPORT BasicEvent
 {
     public:
         BasicEvent() { to_Abort = false; }
@@ -54,7 +54,7 @@ class HELLGROUND_DLL_SPEC BasicEvent
 
 typedef std::multimap<uint64, BasicEvent*> EventList;
 
-class HELLGROUND_DLL_SPEC EventProcessor
+class HELLGROUND_IMPORT_EXPORT EventProcessor
 {
     public:
         EventProcessor();

@@ -27,7 +27,7 @@
 class Creature;
 
 template<class UNIT>
-class HELLGROUND_DLL_SPEC PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMovementGenerator<UNIT> >
+class PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMovementGenerator<UNIT> >
 {
     public:
         PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath = false) : _id(id),
@@ -50,7 +50,7 @@ class HELLGROUND_DLL_SPEC PointMovementGenerator : public MovementGeneratorMediu
         bool _generatePath;
 };
 
-class HELLGROUND_DLL_SPEC AssistanceMovementGenerator : public PointMovementGenerator<Creature>
+class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
 {
     public:
         AssistanceMovementGenerator(float _x, float _y, float _z) :
@@ -62,7 +62,7 @@ class HELLGROUND_DLL_SPEC AssistanceMovementGenerator : public PointMovementGene
 };
 
 // Does almost nothing - just doesn't allows previous movegen interrupt current effect.
-class HELLGROUND_DLL_SPEC EffectMovementGenerator : public MovementGenerator
+class HELLGROUND_IMPORT_EXPORT EffectMovementGenerator : public MovementGenerator
 {
     public:
         explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) {}
