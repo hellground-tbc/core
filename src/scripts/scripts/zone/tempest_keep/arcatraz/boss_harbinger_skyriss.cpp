@@ -56,7 +56,7 @@ EndContentData */
 #define NPC_MILLHOUSE           20977
 #define QUEST_10886             10886
 
-struct HELLGROUND_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
+struct boss_harbinger_skyrissAI : public ScriptedAI
 {
     boss_harbinger_skyrissAI(Creature *c) : ScriptedAI(c)
     {
@@ -313,7 +313,7 @@ CreatureAI* GetAI_boss_harbinger_skyriss(Creature *_Creature)
 #define SPELL_MIND_REND_IMAGE   36929
 #define H_SPELL_MIND_REND_IMAGE 39021
 
-struct HELLGROUND_DLL_DECL boss_harbinger_skyriss_illusionAI : public ScriptedAI
+struct boss_harbinger_skyriss_illusionAI : public ScriptedAI
 {
     boss_harbinger_skyriss_illusionAI(Creature *c) : ScriptedAI(c)
     {

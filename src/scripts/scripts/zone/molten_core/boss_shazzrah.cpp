@@ -29,7 +29,7 @@ EndScriptData */
 #define SPELL_DEADENMAGIC               19714
 #define SPELL_COUNTERSPELL              19715
 
-struct HELLGROUND_DLL_DECL boss_shazzrahAI : public ScriptedAI
+struct boss_shazzrahAI : public ScriptedAI
 {
     boss_shazzrahAI(Creature *c) : ScriptedAI(c)
     {

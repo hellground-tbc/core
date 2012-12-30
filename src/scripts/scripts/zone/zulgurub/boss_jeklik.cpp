@@ -52,7 +52,7 @@ float batLocations[BAT_COUNT][3] = {
         {-12289.6220, -1380.2640, 144.8304},
         {-12293.6220, -1380.2640, 144.8304}};
 
-struct HELLGROUND_DLL_DECL boss_jeklikAI : public ScriptedAI
+struct boss_jeklikAI : public ScriptedAI
 {
     boss_jeklikAI(Creature *c) : ScriptedAI(c)
     {
@@ -232,7 +232,7 @@ struct HELLGROUND_DLL_DECL boss_jeklikAI : public ScriptedAI
 };
 
 //Flying Bat
-struct HELLGROUND_DLL_DECL mob_batriderAI : public ScriptedAI
+struct mob_batriderAI : public ScriptedAI
 {
     mob_batriderAI(Creature *c) : ScriptedAI(c)
     {

@@ -116,7 +116,7 @@ enum verasSpells
     // Spell Envenom triggered by Deadly Poison in Aura::HandlePeriodicDamage
 };
 
-struct HELLGROUND_DLL_DECL mob_blood_elf_council_voice_triggerAI : public ScriptedAI
+struct mob_blood_elf_council_voice_triggerAI : public ScriptedAI
 {
     mob_blood_elf_council_voice_triggerAI(Creature* c) : ScriptedAI(c)
     {
@@ -192,7 +192,7 @@ struct HELLGROUND_DLL_DECL mob_blood_elf_council_voice_triggerAI : public Script
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_illidari_councilAI : public ScriptedAI
+struct mob_illidari_councilAI : public ScriptedAI
 {
     mob_illidari_councilAI(Creature *c) : ScriptedAI(c)
     {
@@ -253,7 +253,7 @@ struct HELLGROUND_DLL_DECL mob_illidari_councilAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL illidari_council_baseAI : public ScriptedAI
+struct illidari_council_baseAI : public ScriptedAI
 {
     illidari_council_baseAI(Creature* c) : ScriptedAI(c)
     {
@@ -381,7 +381,7 @@ struct HELLGROUND_DLL_DECL illidari_council_baseAI : public ScriptedAI
 };
 
 // Gathios the Shatterer's AI
-struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_council_baseAI
+struct boss_gathios_the_shattererAI : public illidari_council_baseAI
 {
     boss_gathios_the_shattererAI(Creature *c) : illidari_council_baseAI(c)
     {
@@ -524,7 +524,7 @@ struct HELLGROUND_DLL_DECL boss_gathios_the_shattererAI : public illidari_counci
 };
 
 // High Nethermancer Zerevor's AI
-struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_council_baseAI
+struct boss_high_nethermancer_zerevorAI : public illidari_council_baseAI
 {
     boss_high_nethermancer_zerevorAI(Creature *c) : illidari_council_baseAI(c)
     {
@@ -670,7 +670,7 @@ struct HELLGROUND_DLL_DECL boss_high_nethermancer_zerevorAI : public illidari_co
 };
 
 // Lady Malande's AI
-struct HELLGROUND_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
+struct boss_lady_malandeAI : public illidari_council_baseAI
 {
     boss_lady_malandeAI(Creature *c) : illidari_council_baseAI(c)
     {
@@ -760,7 +760,7 @@ struct HELLGROUND_DLL_DECL boss_lady_malandeAI : public illidari_council_baseAI
 };
 
 // Veras Darkshadow's AI
-struct HELLGROUND_DLL_DECL boss_veras_darkshadowAI : public illidari_council_baseAI
+struct boss_veras_darkshadowAI : public illidari_council_baseAI
 {
     boss_veras_darkshadowAI(Creature *c) : illidari_council_baseAI(c)
     {

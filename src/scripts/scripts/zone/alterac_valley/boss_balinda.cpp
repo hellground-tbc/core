@@ -35,7 +35,7 @@ EndScriptData */
 #define SPELL_HYPOTHERMIA                 41425
 
 
-struct HELLGROUND_DLL_DECL boss_balindaAI : public ScriptedAI
+struct boss_balindaAI : public ScriptedAI
 {
     boss_balindaAI(Creature *c) : ScriptedAI(c), summons(c)
     {
@@ -177,7 +177,7 @@ CreatureAI* GetAI_boss_balinda(Creature *_Creature)
 
 #define SPELL_WATER_BOLT                46983
 
-struct HELLGROUND_DLL_DECL mob_av_water_elementalAI : public ScriptedAI
+struct mob_av_water_elementalAI : public ScriptedAI
 {
     mob_av_water_elementalAI(Creature *c) : ScriptedAI(c) {}
 

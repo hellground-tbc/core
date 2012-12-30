@@ -48,7 +48,7 @@ EndScriptData */
 
 #define ENCOUNTERS              6
 
-struct HELLGROUND_DLL_DECL instance_stratholme : public ScriptedInstance
+struct instance_stratholme : public ScriptedInstance
 {
     instance_stratholme(Map *map) : ScriptedInstance(map) {Initialize();};
 

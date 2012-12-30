@@ -126,7 +126,7 @@ bool GossipSelect_npcs_ashyen_and_keleth(Player *player, Creature *creature, uin
 
 #define SPELL_LIGHTNING_BOLT    9532
 
-struct HELLGROUND_DLL_DECL npc_cooshcooshAI : public ScriptedAI
+struct npc_cooshcooshAI : public ScriptedAI
 {
     npc_cooshcooshAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -266,7 +266,7 @@ bool GossipSelect_npc_mortog_steamhead(Player *player, Creature *creature, uint3
 #define QUEST_EFU   9752
 #define MOB_AMBUSH  18042
 
-struct HELLGROUND_DLL_DECL npc_kayra_longmaneAI : public npc_escortAI
+struct npc_kayra_longmaneAI : public npc_escortAI
 {
     npc_kayra_longmaneAI(Creature* creature) : npc_escortAI(creature) {}
 
@@ -359,7 +359,7 @@ static Pos M[]=
     {1216.511f, 8188.199f, 18.70f}
 };
 
-struct HELLGROUND_DLL_DECL npc_baby_murlocAI : public ScriptedAI
+struct npc_baby_murlocAI : public ScriptedAI
 {
     npc_baby_murlocAI(Creature* creature) : ScriptedAI(creature) {}
 

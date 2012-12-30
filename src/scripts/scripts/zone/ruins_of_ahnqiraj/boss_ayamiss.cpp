@@ -46,7 +46,7 @@ static float position[3] =
     22.05
 };
 
-struct HELLGROUND_DLL_DECL boss_ayamissAI : public ScriptedAI
+struct boss_ayamissAI : public ScriptedAI
 {
     boss_ayamissAI(Creature *c) : ScriptedAI(c)
     {
@@ -142,7 +142,7 @@ CreatureAI* GetAI_boss_ayamiss(Creature *_Creature)
     return new boss_ayamissAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL larvaAI : public ScriptedAI
+struct larvaAI : public ScriptedAI
 {
     larvaAI(Creature *c) : ScriptedAI(c){}
 

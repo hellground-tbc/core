@@ -174,7 +174,7 @@ static PlayerAbilityStruct PlayerAbility[][3] =
     {SPELL_DR_MOONFIRE, ABILITY_TARGET_ENEMY, 5000, 8000}}
 };
 
-struct HELLGROUND_DLL_DECL boss_hexlord_addAI : public ScriptedAI
+struct boss_hexlord_addAI : public ScriptedAI
 {
     ScriptedInstance* pInstance;
 
@@ -209,7 +209,7 @@ struct HELLGROUND_DLL_DECL boss_hexlord_addAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
+struct boss_hex_lord_malacrassAI : public ScriptedAI
 {
     boss_hex_lord_malacrassAI(Creature *c) : ScriptedAI(c)
     {
@@ -495,7 +495,7 @@ struct HELLGROUND_DLL_DECL boss_hex_lord_malacrassAI : public ScriptedAI
 #define SPELL_BLOODLUST       43578
 #define SPELL_CLEAVE          15496
 
-struct HELLGROUND_DLL_DECL boss_thurgAI : public boss_hexlord_addAI
+struct boss_thurgAI : public boss_hexlord_addAI
 {
 
     boss_thurgAI(Creature *c) : boss_hexlord_addAI(c) {}
@@ -540,7 +540,7 @@ struct HELLGROUND_DLL_DECL boss_thurgAI : public boss_hexlord_addAI
 #define SPELL_FLASH_HEAL     43575
 #define SPELL_DISPEL_MAGIC   43577
 
-struct HELLGROUND_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
+struct boss_alyson_antilleAI : public boss_hexlord_addAI
 {
     //Holy Priest
     boss_alyson_antilleAI(Creature *c) : boss_hexlord_addAI(c) {}
@@ -614,7 +614,7 @@ struct HELLGROUND_DLL_DECL boss_alyson_antilleAI : public boss_hexlord_addAI
 
 #define SPELL_FIREBOLT        43584
 
-struct HELLGROUND_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
+struct boss_gazakrothAI : public boss_hexlord_addAI
 {
     boss_gazakrothAI(Creature *c) : boss_hexlord_addAI(c)  {}
 
@@ -662,7 +662,7 @@ struct HELLGROUND_DLL_DECL boss_gazakrothAI : public boss_hexlord_addAI
 #define SPELL_FLAME_BREATH    43582
 #define SPELL_THUNDERCLAP     43583
 
-struct HELLGROUND_DLL_DECL boss_lord_raadanAI : public boss_hexlord_addAI
+struct boss_lord_raadanAI : public boss_hexlord_addAI
 {
     boss_lord_raadanAI(Creature *c) : boss_hexlord_addAI(c)  {}
 
@@ -700,7 +700,7 @@ struct HELLGROUND_DLL_DECL boss_lord_raadanAI : public boss_hexlord_addAI
 
 #define SPELL_PSYCHIC_WAIL   43590
 
-struct HELLGROUND_DLL_DECL boss_darkheartAI : public boss_hexlord_addAI
+struct boss_darkheartAI : public boss_hexlord_addAI
 {
     boss_darkheartAI(Creature *c) : boss_hexlord_addAI(c)  {}
 
@@ -730,7 +730,7 @@ struct HELLGROUND_DLL_DECL boss_darkheartAI : public boss_hexlord_addAI
 
 #define SPELL_VENOM_SPIT    43579
 
-struct HELLGROUND_DLL_DECL boss_slitherAI : public boss_hexlord_addAI
+struct boss_slitherAI : public boss_hexlord_addAI
 {
     boss_slitherAI(Creature *c) : boss_hexlord_addAI(c) {}
 
@@ -777,7 +777,7 @@ struct HELLGROUND_DLL_DECL boss_slitherAI : public boss_hexlord_addAI
 //Fenstalker
 #define SPELL_VOLATILE_INFECTION 43586
 
-struct HELLGROUND_DLL_DECL boss_fenstalkerAI : public boss_hexlord_addAI
+struct boss_fenstalkerAI : public boss_hexlord_addAI
 {
     boss_fenstalkerAI(Creature *c) : boss_hexlord_addAI(c) {}
 
@@ -811,7 +811,7 @@ struct HELLGROUND_DLL_DECL boss_fenstalkerAI : public boss_hexlord_addAI
 #define SPELL_MIGHTY_BLOW     43592
 
 
-struct HELLGROUND_DLL_DECL boss_koraggAI : public boss_hexlord_addAI
+struct boss_koraggAI : public boss_hexlord_addAI
 {
     boss_koraggAI(Creature *c) : boss_hexlord_addAI(c) {}
 

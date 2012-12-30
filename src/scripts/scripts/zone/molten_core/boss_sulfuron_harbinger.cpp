@@ -35,7 +35,7 @@ EndScriptData */
 #define SPELL_SHADOWWORDPAIN        19776
 #define SPELL_IMMOLATE              20294
 
-struct HELLGROUND_DLL_DECL boss_sulfuronAI : public ScriptedAI
+struct boss_sulfuronAI : public ScriptedAI
 {
     boss_sulfuronAI(Creature *c) : ScriptedAI(c)
     {
@@ -133,7 +133,7 @@ struct HELLGROUND_DLL_DECL boss_sulfuronAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_flamewaker_priestAI : public ScriptedAI
+struct mob_flamewaker_priestAI : public ScriptedAI
 {
     mob_flamewaker_priestAI(Creature *c) : ScriptedAI(c)
     {

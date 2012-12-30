@@ -49,7 +49,7 @@ enum Akilzon
 
 //SAY_EVENT1 (-1568024) and SAY_EVENT2 (-1568025) to be used later
 
-struct HELLGROUND_DLL_DECL boss_akilzonAI : public ScriptedAI
+struct boss_akilzonAI : public ScriptedAI
 {
     boss_akilzonAI(Creature *c) : ScriptedAI(c)
     {
@@ -263,7 +263,7 @@ struct HELLGROUND_DLL_DECL boss_akilzonAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
+struct mob_soaring_eagleAI : public ScriptedAI
 {
     mob_soaring_eagleAI(Creature *c) : ScriptedAI(c)
     {

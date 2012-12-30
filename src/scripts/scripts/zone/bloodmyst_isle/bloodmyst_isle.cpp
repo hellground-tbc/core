@@ -38,7 +38,7 @@ EndContentData */
 //possible creatures to be spawned
 const uint32 possibleSpawns[32] = {17322, 17661, 17496, 17522, 17340, 17352, 17333, 17524, 17654, 17348, 17339, 17345, 17359, 17353, 17336, 17550, 17330, 17701, 17321, 17680, 17325, 17320, 17683, 17342, 17715, 17334, 17341, 17338, 17337, 17346, 17344, 17327};
 
-struct HELLGROUND_DLL_DECL mob_webbed_creatureAI : public ScriptedAI
+struct mob_webbed_creatureAI : public ScriptedAI
 {
     mob_webbed_creatureAI(Creature *c) : ScriptedAI(c) {}
 
@@ -165,7 +165,7 @@ bool GossipSelect_npc_exarch_admetius(Player *player, Creature *_Creature, uint3
 /*########
 ## Quest: Saving Princess Stillpine
 ########*/
-struct HELLGROUND_DLL_DECL npc_princess_stillpineAI : public ScriptedAI
+struct npc_princess_stillpineAI : public ScriptedAI
 {
         npc_princess_stillpineAI(Creature *c) : ScriptedAI(c){}
 

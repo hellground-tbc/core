@@ -51,7 +51,7 @@ enum RiftSpawn
     BEING_SUCKED                            =    1
 };
 
-struct HELLGROUND_DLL_DECL mob_rift_spawnAI : public ScriptedAI
+struct mob_rift_spawnAI : public ScriptedAI
 {
     mob_rift_spawnAI(Creature *c) : ScriptedAI(c) {}
 
@@ -252,7 +252,7 @@ float HighborneLoc[4][3]=
 #define HIGHBORNE_LOC_Y             -61.00
 #define HIGHBORNE_LOC_Y_NEW         -55.50
 
-struct HELLGROUND_DLL_DECL npc_lady_sylvanas_windrunnerAI : public ScriptedAI
+struct npc_lady_sylvanas_windrunnerAI : public ScriptedAI
 {
     npc_lady_sylvanas_windrunnerAI(Creature *c) : ScriptedAI(c) {}
 
@@ -345,7 +345,7 @@ bool ChooseReward_npc_lady_sylvanas_windrunner(Player *player, Creature *_Creatu
 ## npc_highborne_lamenter
 ######*/
 
-struct HELLGROUND_DLL_DECL npc_highborne_lamenterAI : public ScriptedAI
+struct npc_highborne_lamenterAI : public ScriptedAI
 {
     npc_highborne_lamenterAI(Creature *c) : ScriptedAI(c) {}
 

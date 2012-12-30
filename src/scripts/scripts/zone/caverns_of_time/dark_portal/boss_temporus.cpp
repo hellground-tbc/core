@@ -37,7 +37,7 @@ EndScriptData */
 #define H_SPELL_WING_BUFFET     38593
 #define SPELL_REFLECT           38592
 
-struct HELLGROUND_DLL_DECL boss_temporusAI : public ScriptedAI
+struct boss_temporusAI : public ScriptedAI
 {
     boss_temporusAI(Creature *c) : ScriptedAI(c)
     {

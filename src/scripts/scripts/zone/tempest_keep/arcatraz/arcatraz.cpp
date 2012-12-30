@@ -59,7 +59,7 @@ EndContentData */
 #define SPELL_FROSTBOLT             15497
 #define SPELL_PYROBLAST             33975
 
-struct HELLGROUND_DLL_DECL npc_millhouse_manastormAI : public ScriptedAI
+struct npc_millhouse_manastormAI : public ScriptedAI
 {
     npc_millhouse_manastormAI(Creature *c) : ScriptedAI(c)
     {
@@ -245,7 +245,7 @@ CreatureAI* GetAI_npc_millhouse_manastorm(Creature *_Creature)
 #define SPELL_TARGET_OMEGA  36852
 #define SPELL_BUBBLE_VISUAL 36849
 
-struct HELLGROUND_DLL_DECL npc_warden_mellicharAI : public ScriptedAI
+struct npc_warden_mellicharAI : public ScriptedAI
 {
     npc_warden_mellicharAI(Creature *c) : ScriptedAI(c)
     {
@@ -464,7 +464,7 @@ CreatureAI* GetAI_npc_warden_mellichar(Creature *_Creature)
 
 #define SPELL_VOID_ZONE_DAMAGE 36120
 
-struct HELLGROUND_DLL_DECL mob_zerekethvoidzoneAI : public Scripted_NoMovementAI
+struct mob_zerekethvoidzoneAI : public Scripted_NoMovementAI
 {
     mob_zerekethvoidzoneAI(Creature *c) : Scripted_NoMovementAI(c) {}
 

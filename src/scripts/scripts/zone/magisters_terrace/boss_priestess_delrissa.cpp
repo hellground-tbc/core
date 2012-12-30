@@ -93,7 +93,7 @@ struct Add
     uint64 guid;
 };
 
-struct HELLGROUND_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
+struct boss_priestess_delrissaAI : public ScriptedAI
 {
     boss_priestess_delrissaAI(Creature* c) : ScriptedAI(c)
     {
@@ -470,7 +470,7 @@ struct HELLGROUND_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
 #define SPELL_HEALING_POTION        15503
 
-struct HELLGROUND_DLL_DECL boss_priestess_guestAI : public ScriptedAI
+struct boss_priestess_guestAI : public ScriptedAI
 {
     boss_priestess_guestAI(Creature* c) : ScriptedAI(c)
     {
@@ -623,7 +623,7 @@ struct HELLGROUND_DLL_DECL boss_priestess_guestAI : public ScriptedAI
 #define SPELL_DUALWIELD          29651
 #define SPELL_CRIPPLING_POISON   44289
 
-struct HELLGROUND_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_guestAI
+struct boss_kagani_nightstrikeAI : public boss_priestess_guestAI
 {
     //Rogue
     boss_kagani_nightstrikeAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -781,7 +781,7 @@ struct HELLGROUND_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_gue
 
 #define NPC_FIZZLE                   24656
 
-struct HELLGROUND_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_guestAI
+struct boss_ellris_duskhallowAI : public boss_priestess_guestAI
 {
     //Warlock
     boss_ellris_duskhallowAI(Creature *c) : boss_priestess_guestAI(c) { }
@@ -902,7 +902,7 @@ struct HELLGROUND_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_gues
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_fizzleAI : public ScriptedAI
+struct mob_fizzleAI : public ScriptedAI
 {
     mob_fizzleAI(Creature *c) : ScriptedAI(c) { }
 
@@ -948,7 +948,7 @@ struct HELLGROUND_DLL_DECL mob_fizzleAI : public ScriptedAI
 #define SPELL_FISTS_OF_ARCANE_FURY 44120
 #define SPELL_CHACRA_DRAIN         44121
 
-struct HELLGROUND_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_guestAI
+struct boss_eramas_brightblazeAI : public boss_priestess_guestAI
 {
     //Monk
     boss_eramas_brightblazeAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -1027,7 +1027,7 @@ struct HELLGROUND_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_gue
 #define SPELL_CONE_OF_COLD          (HeroicMode?38384:12611)
 #define SPELL_FROSTBOLT             (HeroicMode?15530:15043)
 
-struct HELLGROUND_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
+struct boss_yazzaiAI : public boss_priestess_guestAI
 {
     //Mage
     boss_yazzaiAI(Creature *c) : boss_priestess_guestAI(c)  {}
@@ -1220,7 +1220,7 @@ struct HELLGROUND_DLL_DECL boss_yazzaiAI : public boss_priestess_guestAI
 #define SPELL_HAMSTRING              27584
 #define SPELL_MORTAL_STRIKE          44268
 
-struct HELLGROUND_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestAI
+struct boss_warlord_salarisAI : public boss_priestess_guestAI
 {
     //Warrior
     boss_warlord_salarisAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -1340,7 +1340,7 @@ struct HELLGROUND_DLL_DECL boss_warlord_salarisAI : public boss_priestess_guestA
 
 #define NPC_SLIVER                  24552
 
-struct HELLGROUND_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
+struct boss_garaxxasAI : public boss_priestess_guestAI
 {
     //Hunter
     boss_garaxxasAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -1502,7 +1502,7 @@ struct HELLGROUND_DLL_DECL boss_garaxxasAI : public boss_priestess_guestAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_sliverAI : public ScriptedAI
+struct mob_sliverAI : public ScriptedAI
 {
     mob_sliverAI(Creature *c) : ScriptedAI(c) { }
 
@@ -1532,7 +1532,7 @@ struct HELLGROUND_DLL_DECL mob_sliverAI : public ScriptedAI
 #define SPELL_WINDFURY_WEAPON         32911
 #define AURA_WINDFURY                 32912
 
-struct HELLGROUND_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
+struct boss_apokoAI : public boss_priestess_guestAI
 {
     //Shaman
     boss_apokoAI(Creature *c) : boss_priestess_guestAI(c), summons(c) {}
@@ -1652,7 +1652,7 @@ struct HELLGROUND_DLL_DECL boss_apokoAI : public boss_priestess_guestAI
 
 #define CREATURE_EXPLOSIVE_SHEEP        24715
 
-struct HELLGROUND_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
+struct boss_zelfanAI : public boss_priestess_guestAI
 {
     //Engineer
     boss_zelfanAI(Creature *c) : boss_priestess_guestAI(c) {}
@@ -1758,7 +1758,7 @@ struct HELLGROUND_DLL_DECL boss_zelfanAI : public boss_priestess_guestAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_high_explosive_sheepAI : public ScriptedAI
+struct mob_high_explosive_sheepAI : public ScriptedAI
 {
     mob_high_explosive_sheepAI(Creature *c) : ScriptedAI(c) {}
 

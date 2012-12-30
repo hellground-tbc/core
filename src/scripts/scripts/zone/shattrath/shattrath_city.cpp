@@ -46,7 +46,7 @@ EndContentData */
 
 #define SPELL_UPPERCUT          10966
 
-struct HELLGROUND_DLL_DECL npc_raliq_the_drunkAI : public ScriptedAI
+struct npc_raliq_the_drunkAI : public ScriptedAI
 {
     npc_raliq_the_drunkAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -109,7 +109,7 @@ bool GossipSelect_npc_raliq_the_drunk(Player *player, Creature *creature, uint32
 
 #define SPELL_MAGNETIC_PULL             31705
 
-struct HELLGROUND_DLL_DECL npc_salsalabimAI : public ScriptedAI
+struct npc_salsalabimAI : public ScriptedAI
 {
     npc_salsalabimAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -292,7 +292,7 @@ enum
     QUEST_CITY_LIGHT        = 10211
 };
 
-struct HELLGROUND_DLL_DECL npc_kservantAI : public npc_escortAI
+struct npc_kservantAI : public npc_escortAI
 {
     npc_kservantAI(Creature *creature) : npc_escortAI(creature) {}
 
@@ -540,7 +540,7 @@ CreatureAI* GetAI_npc_kservant(Creature* creature)
 #define NPC_CREEPJACK   19726
 #define NPC_MALONE      19725
 
-struct HELLGROUND_DLL_DECL npc_dirty_larryAI : public ScriptedAI
+struct npc_dirty_larryAI : public ScriptedAI
 {
     npc_dirty_larryAI(Creature* creature) : ScriptedAI(creature)
     {
@@ -850,7 +850,7 @@ bool GossipSelect_npc_khadgar(Player *player, Creature *creature, uint32 sender,
 
 
 
-struct HELLGROUND_DLL_DECL npc_kaelthas_imageAI : public ScriptedAI
+struct npc_kaelthas_imageAI : public ScriptedAI
 {
     npc_kaelthas_imageAI(Creature* creature) : ScriptedAI(creature) {}
 

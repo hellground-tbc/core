@@ -46,7 +46,7 @@ EndContentData */
 ## mob_shattered_rumbler - this should be done with ACID
 ######*/
 
-struct HELLGROUND_DLL_DECL mob_shattered_rumblerAI : public ScriptedAI
+struct mob_shattered_rumblerAI : public ScriptedAI
 {
     bool Spawn;
 
@@ -83,7 +83,7 @@ CreatureAI* GetAI_mob_shattered_rumbler(Creature *creature)
 ## mob_ancient_orc_ancestor - this should be done with ACID also
 ######*/
 
-struct HELLGROUND_DLL_DECL mob_ancient_orc_ancestorAI : public ScriptedAI
+struct mob_ancient_orc_ancestorAI : public ScriptedAI
 {
     bool Spawn;
 
@@ -130,7 +130,7 @@ CreatureAI* GetAI_mob_ancient_orc_ancestor(Creature *creature)
 #define GOSSIP_SL2 "And you think you can just eat anything you want? You're obviously trying to eat the Broken of Telaar."
 #define GOSSIP_SL3 "This means war, Lump! War I say!"
 
-struct HELLGROUND_DLL_DECL mob_lumpAI : public ScriptedAI
+struct mob_lumpAI : public ScriptedAI
 {
     mob_lumpAI(Creature *creature) : ScriptedAI(creature)
     {
@@ -526,7 +526,7 @@ bool GossipSelect_npc_lantresor_of_the_blade(Player *player, Creature *creature,
 ## npc_creditmarker_visist_with_ancestors
 ######*/
 
-struct HELLGROUND_DLL_DECL npc_creditmarker_visit_with_ancestorsAI : public ScriptedAI
+struct npc_creditmarker_visit_with_ancestorsAI : public ScriptedAI
 {
     npc_creditmarker_visit_with_ancestorsAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -565,7 +565,7 @@ CreatureAI* GetAI_npc_creditmarker_visit_with_ancestors(Creature *creature)
 #define SPELL_SPARROWHAWK_NET 39810
 #define SPELL_ITEM_CAPTIVE_SPARROWHAWK 39812
 
-struct HELLGROUND_DLL_DECL mob_sparrowhawkAI : public ScriptedAI
+struct mob_sparrowhawkAI : public ScriptedAI
 {
 
     mob_sparrowhawkAI(Creature *creature) : ScriptedAI(creature) {}
@@ -1321,7 +1321,7 @@ static Move Z[]=
     {-875.16f, 7717.15f, 34.39f}
 };
 
-struct HELLGROUND_DLL_DECL npc_warmaul_pyreAI : public ScriptedAI
+struct npc_warmaul_pyreAI : public ScriptedAI
 {
     npc_warmaul_pyreAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1549,7 +1549,7 @@ enum
     OBJECT_LARGE_FIRE         = 187084,
 };
 
-struct HELLGROUND_DLL_DECL npc_fel_cannonAI : public ScriptedAI
+struct npc_fel_cannonAI : public ScriptedAI
 {
     npc_fel_cannonAI(Creature *creature) : ScriptedAI(creature) {}
 

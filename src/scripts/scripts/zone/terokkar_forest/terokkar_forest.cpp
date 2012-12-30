@@ -65,7 +65,7 @@ EndContentData */
 #define SPELL_PULVERIZE                 2676
 //#define SPELL_QUID9889                32174
 
-struct HELLGROUND_DLL_DECL mob_unkor_the_ruthlessAI : public ScriptedAI
+struct mob_unkor_the_ruthlessAI : public ScriptedAI
 {
     mob_unkor_the_ruthlessAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -165,7 +165,7 @@ CreatureAI* GetAI_mob_unkor_the_ruthless(Creature *creature)
 ## mob_infested_root_walker
 ######*/
 
-struct HELLGROUND_DLL_DECL mob_infested_root_walkerAI : public ScriptedAI
+struct mob_infested_root_walkerAI : public ScriptedAI
 {
     mob_infested_root_walkerAI(Creature *creature) : ScriptedAI(creature) {}
 
@@ -190,7 +190,7 @@ CreatureAI* GetAI_mob_infested_root_walker(Creature *creature)
 ## mob_rotting_forest_rager
 ######*/
 
-struct HELLGROUND_DLL_DECL mob_rotting_forest_ragerAI : public ScriptedAI
+struct mob_rotting_forest_ragerAI : public ScriptedAI
 {
     mob_rotting_forest_ragerAI(Creature *creature) : ScriptedAI(creature) {}
 
@@ -222,7 +222,7 @@ const uint32 netherwebVictims[6] =
 {
     18470, 16805, 21242, 18452, 22482, 21285
 };
-struct HELLGROUND_DLL_DECL mob_netherweb_victimAI : public ScriptedAI
+struct mob_netherweb_victimAI : public ScriptedAI
 {
     mob_netherweb_victimAI(Creature *creature) : ScriptedAI(creature) {}
 
@@ -271,7 +271,7 @@ CreatureAI* GetAI_mob_netherweb_victim(Creature *creature)
 #define SPELL_FROSTBOLT         9672
 #define SPELL_FROST_NOVA        11831
 
-struct HELLGROUND_DLL_DECL npc_floonAI : public ScriptedAI
+struct npc_floonAI : public ScriptedAI
 {
     npc_floonAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -389,7 +389,7 @@ bool GossipSelect_npc_skyguard_handler_deesak(Player *player, Creature *creature
 #define GO_CAGE         182794
 #define SPELL_CAT       32447
 
-struct HELLGROUND_DLL_DECL npc_isla_starmaneAI : public npc_escortAI
+struct npc_isla_starmaneAI : public npc_escortAI
 {
     npc_isla_starmaneAI(Creature* creature) : npc_escortAI(creature) {}
 
@@ -607,7 +607,7 @@ float skyguardWPs[6][2] = {
     { -3811, 3494 }
 };
 
-struct HELLGROUND_DLL_DECL mob_terokkAI : public ScriptedAI
+struct mob_terokkAI : public ScriptedAI
 {
     mob_terokkAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -789,7 +789,7 @@ CreatureAI* GetAI_mob_terokk(Creature *creature)
 * npc_skyguard_ace
 */
 
-struct HELLGROUND_DLL_DECL npc_skyguard_aceAI : public ScriptedAI
+struct npc_skyguard_aceAI : public ScriptedAI
 {
 
     npc_skyguard_aceAI(Creature* creature) : ScriptedAI(creature) {}
@@ -910,7 +910,7 @@ CreatureAI* GetAI_npc_skyguard_ace(Creature *creature)
 /***
 Script for Quest: Hungry Nether Rays (11093)
 ***/
-struct HELLGROUND_DLL_DECL npc_blackwing_warp_chaser : public ScriptedAI
+struct npc_blackwing_warp_chaser : public ScriptedAI
 {
     npc_blackwing_warp_chaser(Creature *creature) : ScriptedAI(creature) {}
 
@@ -954,7 +954,7 @@ CreatureAI* GetAI_npc_blackwing_warp_chaser(Creature *creature)
 #define QUEST_ESC   11085
 #define SKETTIS_AMBUSH  21644
 
-struct HELLGROUND_DLL_DECL npc_skyguard_prisonerAI : public npc_escortAI
+struct npc_skyguard_prisonerAI : public npc_escortAI
 {
     npc_skyguard_prisonerAI(Creature* creature) : npc_escortAI(creature) {}
 
@@ -1348,7 +1348,7 @@ enum eSarthis
     NPC_ARCANE_ELEMENTAL                    = 23100
 };
 
-struct HELLGROUND_DLL_DECL npc_sarthisAI : public npc_escortAI
+struct npc_sarthisAI : public npc_escortAI
 {
     npc_sarthisAI(Creature* creature) : npc_escortAI(creature) {}
 
@@ -1529,7 +1529,7 @@ CreatureAI* GetAI_npc_sarthisAI(Creature* creature)
     return new npc_sarthisAI(creature);
 }
 
-struct HELLGROUND_DLL_DECL npc_sarthis_elementalAI : public ScriptedAI
+struct npc_sarthis_elementalAI : public ScriptedAI
 {
     npc_sarthis_elementalAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1557,7 +1557,7 @@ CreatureAI* GetAI_npc_sarthis_elementalAI(Creature* creature)
     return new npc_sarthis_elementalAI(creature);
 }
 
-struct HELLGROUND_DLL_DECL npc_minion_of_sarthisAI : public ScriptedAI
+struct npc_minion_of_sarthisAI : public ScriptedAI
 {
     npc_minion_of_sarthisAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -1630,7 +1630,7 @@ enum RazorthornRavager
     GAMEOBJECT_RAZORTHORN_DIRT_MOUND    = 187073
 };
 
-struct HELLGROUND_DLL_DECL npc_razorthorn_ravagerAI : public ScriptedAI
+struct npc_razorthorn_ravagerAI : public ScriptedAI
 {
     npc_razorthorn_ravagerAI(Creature* creature) : ScriptedAI(creature) { }
 
@@ -1813,7 +1813,7 @@ CreatureAI* GetAI_npc_razorthorn_ravagerAI(Creature *creature)
     return new npc_razorthorn_ravagerAI(creature);
 }
 
-struct HELLGROUND_DLL_DECL quest_the_vengeful_harbringerAI : public ScriptedAI
+struct quest_the_vengeful_harbringerAI : public ScriptedAI
 {
     quest_the_vengeful_harbringerAI(Creature* creature) : ScriptedAI(creature){}
 
@@ -2068,7 +2068,7 @@ CreatureAI* GetAI_quest_the_vengeful_harbringer(Creature *creature)
 }
 
 
-struct HELLGROUND_DLL_DECL mob_vengeful_draeneiAI : public ScriptedAI
+struct mob_vengeful_draeneiAI : public ScriptedAI
 {
     mob_vengeful_draeneiAI(Creature* creature) : ScriptedAI(creature) { }
     bool start;
@@ -2208,7 +2208,7 @@ enum
     SPELL_FROST_SHOCK          = 12548
 };
 
-struct HELLGROUND_DLL_DECL npc_empoorAI : public ScriptedAI
+struct npc_empoorAI : public ScriptedAI
 {
     npc_empoorAI(Creature* creature) : ScriptedAI(creature) {}
 
@@ -2323,7 +2323,7 @@ static WP W[]=
     {-2526.76f, 5384.53f, 28.09f}
 };
 
-struct HELLGROUND_DLL_DECL npc_captive_childAI : public npc_escortAI
+struct npc_captive_childAI : public npc_escortAI
 {
     npc_captive_childAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 
@@ -2486,7 +2486,7 @@ enum
 
 static const float LuangaSpawnCoords[3] = { -3507.203f, 4084.619f, 92.947f};
 
-struct HELLGROUND_DLL_DECL npc_skywingAI : public npc_escortAI
+struct npc_skywingAI : public npc_escortAI
 {
     npc_skywingAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 

@@ -46,7 +46,7 @@ EndScriptData */
 4 - Harbinger Skyriss event, 5 sub-events
 */
 
-struct HELLGROUND_DLL_DECL instance_arcatraz : public ScriptedInstance
+struct instance_arcatraz : public ScriptedInstance
 {
     instance_arcatraz(Map *map) : ScriptedInstance(map) {Initialize();};
 

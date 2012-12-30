@@ -197,7 +197,7 @@ float KaelthasWeapons[7][5] =
 #define HP_TELONICUS    274999
 
 //Base AI for Advisors
-struct HELLGROUND_DLL_DECL advisorbase_ai : public ScriptedAI
+struct advisorbase_ai : public ScriptedAI
 {
     advisorbase_ai(Creature *c) : ScriptedAI(c)
     {
@@ -308,7 +308,7 @@ struct HELLGROUND_DLL_DECL advisorbase_ai : public ScriptedAI
 };
 
 //Kael'thas AI
-struct HELLGROUND_DLL_DECL boss_kaelthasAI : public ScriptedAI
+struct boss_kaelthasAI : public ScriptedAI
 {
     boss_kaelthasAI(Creature *c) : ScriptedAI(c), summons(m_creature)
     {
@@ -1290,7 +1290,7 @@ struct HELLGROUND_DLL_DECL boss_kaelthasAI : public ScriptedAI
 };
 
 //Thaladred the Darkener AI
-struct HELLGROUND_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
+struct boss_thaladred_the_darkenerAI : public advisorbase_ai
 {
     boss_thaladred_the_darkenerAI(Creature *c) : advisorbase_ai(c) {}
 
@@ -1424,7 +1424,7 @@ struct HELLGROUND_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
 };
 
 //Lord Sanguinar AI
-struct HELLGROUND_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
+struct boss_lord_sanguinarAI : public advisorbase_ai
 {
     boss_lord_sanguinarAI(Creature *c) : advisorbase_ai(c){}
 
@@ -1488,7 +1488,7 @@ struct HELLGROUND_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
 };
 
 //Grand Astromancer Capernian AI
-struct HELLGROUND_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_ai
+struct boss_grand_astromancer_capernianAI : public advisorbase_ai
 {
     boss_grand_astromancer_capernianAI(Creature *c) : advisorbase_ai(c){}
 
@@ -1616,7 +1616,7 @@ struct HELLGROUND_DLL_DECL boss_grand_astromancer_capernianAI : public advisorba
 };
 
 //Master Engineer Telonicus AI
-struct HELLGROUND_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
+struct boss_master_engineer_telonicusAI : public advisorbase_ai
 {
     boss_master_engineer_telonicusAI(Creature *c) : advisorbase_ai(c)
     {
@@ -1727,7 +1727,7 @@ struct HELLGROUND_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase
 };
 
 //Flame Strike AI
-struct HELLGROUND_DLL_DECL mob_kael_flamestrikeAI : public Scripted_NoMovementAI
+struct mob_kael_flamestrikeAI : public Scripted_NoMovementAI
 {
     mob_kael_flamestrikeAI(Creature *c) : Scripted_NoMovementAI(c) {}
 
@@ -1781,7 +1781,7 @@ struct HELLGROUND_DLL_DECL mob_kael_flamestrikeAI : public Scripted_NoMovementAI
 };
 
 //Phoenix AI
-struct HELLGROUND_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
+struct mob_phoenix_tkAI : public ScriptedAI
 {
     mob_phoenix_tkAI(Creature *c) : ScriptedAI(c)
     {
@@ -1859,7 +1859,7 @@ struct HELLGROUND_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_phoenix_egg_tkAI : public ScriptedAI
+struct mob_phoenix_egg_tkAI : public ScriptedAI
 {
     mob_phoenix_egg_tkAI(Creature *c) : ScriptedAI(c)
     {
@@ -1944,7 +1944,7 @@ struct HELLGROUND_DLL_DECL mob_phoenix_egg_tkAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_nether_vaporAI : public ScriptedAI
+struct mob_nether_vaporAI : public ScriptedAI
 {
     mob_nether_vaporAI(Creature *c) : ScriptedAI(c)
     {
@@ -2012,7 +2012,7 @@ enum WEAPON_ADVISOR
     STAFF_OF_DISINTEGRATION = 21274,
 };
 
-struct HELLGROUND_DLL_DECL weapon_advisorAI : public ScriptedAI
+struct weapon_advisorAI : public ScriptedAI
 {
     weapon_advisorAI(Creature *c) : ScriptedAI(c)
     {

@@ -223,7 +223,7 @@ class GlaiveTargetRespawner
         void operator()(Corpse*) const {}
 };
 
-struct HELLGROUND_DLL_DECL boss_illidan_stormrageAI : public BossAI
+struct boss_illidan_stormrageAI : public BossAI
 {
     boss_illidan_stormrageAI(Creature* c) : BossAI(c, 1)
     {
@@ -1046,7 +1046,7 @@ enum AkamaPath
     PATH_AKAMA_DOOR_EVENT_BEFORE  = 2110
 };
 
-struct HELLGROUND_DLL_DECL boss_illidan_akamaAI : public BossAI
+struct boss_illidan_akamaAI : public BossAI
 {
     boss_illidan_akamaAI(Creature* c) : BossAI(c, 2){}
 
@@ -1437,7 +1437,7 @@ enum MaievSpells
 #define SPELL_SHADOW_STRIKE             40685 // 4375 to 5625 every 3 seconds for 12 seconds
 #define SPELL_FAN_BLADES                39954 // bugged visual
 
-struct HELLGROUND_DLL_DECL boss_illidan_maievAI : public BossAI
+struct boss_illidan_maievAI : public BossAI
 {
     boss_illidan_maievAI(Creature *c) : BossAI(c, 3){};
 
@@ -1613,7 +1613,7 @@ enum GlaiveSpells
     SPELL_GLAIVE_CHANNEL          = 39857
 };
 
-struct HELLGROUND_DLL_DECL boss_illidan_glaiveAI : public Scripted_NoMovementAI
+struct boss_illidan_glaiveAI : public Scripted_NoMovementAI
 {
     boss_illidan_glaiveAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -1684,7 +1684,7 @@ enum FlameSpells
     SPELL_FLAME_ENRAGE      = 45078
 };
 
-struct HELLGROUND_DLL_DECL boss_illidan_flameofazzinothAI : public ScriptedAI
+struct boss_illidan_flameofazzinothAI : public ScriptedAI
 {
     boss_illidan_flameofazzinothAI(Creature *c) : ScriptedAI(c), summons(me)
     {
@@ -1807,7 +1807,7 @@ enum ShadowDemonSpells
     SPELL_SHADOW_DEMON_PARALYZE     = 41083
 };
 
-struct HELLGROUND_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
+struct boss_illidan_shadowdemonAI : public ScriptedAI
 {
     boss_illidan_shadowdemonAI(Creature *c) : ScriptedAI(c)
     {
@@ -1889,7 +1889,7 @@ struct HELLGROUND_DLL_DECL boss_illidan_shadowdemonAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_illidan_parasite_shadowfiendAI : public ScriptedAI
+struct boss_illidan_parasite_shadowfiendAI : public ScriptedAI
 {
     boss_illidan_parasite_shadowfiendAI(Creature *c) : ScriptedAI(c)
     {
@@ -1961,7 +1961,7 @@ bool GOUse_boss_illidan_cage_trap(Player* pPlayer, GameObject* pGo)
     return true;
 }
 
-struct HELLGROUND_DLL_DECL boss_illidan_cage_beamerAI : public ScriptedAI
+struct boss_illidan_cage_beamerAI : public ScriptedAI
 {
     boss_illidan_cage_beamerAI(Creature *c) : ScriptedAI(c), summons(c){}
 

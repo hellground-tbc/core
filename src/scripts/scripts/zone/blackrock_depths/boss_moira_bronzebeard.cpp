@@ -30,7 +30,7 @@ EndScriptData */
 #define SPELL_SHADOWWORDPAIN    10894
 #define SPELL_SMITE             10934
 
-struct HELLGROUND_DLL_DECL boss_moira_bronzebeardAI : public ScriptedAI
+struct boss_moira_bronzebeardAI : public ScriptedAI
 {
     boss_moira_bronzebeardAI(Creature *c) : ScriptedAI(c) {}
 

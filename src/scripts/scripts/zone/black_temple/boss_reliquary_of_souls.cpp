@@ -92,7 +92,7 @@ struct cPosition
     float x,y;
 };
 
-struct HELLGROUND_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
+struct npc_enslaved_soulAI : public ScriptedAI
 {
     npc_enslaved_soulAI(Creature *c) : ScriptedAI(c)
     {
@@ -156,7 +156,7 @@ struct HELLGROUND_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
+struct boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 {
     boss_reliquary_of_soulsAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -431,7 +431,7 @@ struct HELLGROUND_DLL_DECL boss_reliquary_of_soulsAI : public Scripted_NoMovemen
     }
 };
 
-struct HELLGROUND_DLL_DECL npc_ros_triggerAI : public ScriptedAI
+struct npc_ros_triggerAI : public ScriptedAI
 {
     npc_ros_triggerAI(Creature *c) : ScriptedAI(c)
     {
@@ -478,7 +478,7 @@ struct HELLGROUND_DLL_DECL npc_ros_triggerAI : public ScriptedAI
     void UpdateAI(const uint32 diff){}
 };
 
-struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
+struct boss_essence_of_sufferingAI : public ScriptedAI
 {
     boss_essence_of_sufferingAI(Creature *c) : ScriptedAI(c)
     {
@@ -636,7 +636,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
+struct boss_essence_of_desireAI : public ScriptedAI
 {
     boss_essence_of_desireAI(Creature *c) : ScriptedAI(c) {}
 
@@ -766,7 +766,7 @@ struct HELLGROUND_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
+struct boss_essence_of_angerAI : public ScriptedAI
 {
     boss_essence_of_angerAI(Creature *c) : ScriptedAI(c) {}
 

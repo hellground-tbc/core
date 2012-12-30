@@ -19,7 +19,7 @@
 #define NPC_H_STONESKIN_TOTEM           19900
 
 
-struct HELLGROUND_DLL_DECL boss_mennu_the_betrayerAI : public ScriptedAI
+struct boss_mennu_the_betrayerAI : public ScriptedAI
 {
     boss_mennu_the_betrayerAI(Creature *c) : ScriptedAI(c), Summons(m_creature)
     {
@@ -140,7 +140,7 @@ CreatureAI* GetAI_boss_mennu_the_betrayer(Creature *_Creature)
     return new boss_mennu_the_betrayerAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL npc_corrupted_nova_totemAI : public Scripted_NoMovementAI
+struct npc_corrupted_nova_totemAI : public Scripted_NoMovementAI
 {
     npc_corrupted_nova_totemAI(Creature *c) : Scripted_NoMovementAI(c)
     {
@@ -200,7 +200,7 @@ CreatureAI* GetAI_npc_corrupted_nova_totem(Creature *_Creature)
     return new npc_corrupted_nova_totemAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL npc_mennu_healing_wardAI : public ScriptedAI
+struct npc_mennu_healing_wardAI : public ScriptedAI
 {
     npc_mennu_healing_wardAI(Creature *c) : ScriptedAI(c)
     {
@@ -240,7 +240,7 @@ CreatureAI* GetAI_npc_mennu_healing_ward(Creature *_Creature)
     return new npc_mennu_healing_wardAI (_Creature);
 }
 
-struct HELLGROUND_DLL_DECL npc_earthgrab_totemAI : public Scripted_NoMovementAI
+struct npc_earthgrab_totemAI : public Scripted_NoMovementAI
 {
     npc_earthgrab_totemAI(Creature *c) : Scripted_NoMovementAI(c)
     {

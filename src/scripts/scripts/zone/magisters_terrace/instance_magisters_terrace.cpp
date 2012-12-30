@@ -57,7 +57,7 @@ uint32 TrashPackEntry[8] =
 5  - Kalecgos event
 */
 
-struct HELLGROUND_DLL_DECL instance_magisters_terrace : public ScriptedInstance
+struct instance_magisters_terrace : public ScriptedInstance
 {
     instance_magisters_terrace(Map* map) : ScriptedInstance(map) {Initialize();}
 

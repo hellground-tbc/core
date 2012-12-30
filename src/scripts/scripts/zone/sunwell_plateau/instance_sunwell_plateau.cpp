@@ -41,7 +41,7 @@ uint32 GauntletNPC[6] =
 7 - Trash gauntlet event
 */
 
-struct HELLGROUND_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
+struct instance_sunwell_plateau : public ScriptedInstance
 {
     instance_sunwell_plateau(Map *map) : ScriptedInstance(map) {Initialize();};
 

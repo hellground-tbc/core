@@ -16,7 +16,7 @@
 #define GO_CHAIR                    183776
 
 
-struct HELLGROUND_DLL_DECL mob_phantom_guestAI : public ScriptedAI
+struct mob_phantom_guestAI : public ScriptedAI
 {
     mob_phantom_guestAI(Creature* c) : ScriptedAI(c) 
     {
@@ -133,7 +133,7 @@ CreatureAI* GetAI_mob_phantom_guest(Creature *_Creature)
 #define SENTRY_SAY_DEATH1   "I have failed..." 
 #define SENTRY_SAY_RANDOM   "It's great assigment, yeah, but \"all looking and no touching\" gets old after a while."
 
-struct HELLGROUND_DLL_DECL mob_spectral_sentryAI : public ScriptedAI
+struct mob_spectral_sentryAI : public ScriptedAI
 {
     mob_spectral_sentryAI(Creature* c) : ScriptedAI(c) {}
 
@@ -218,7 +218,7 @@ CreatureAI* GetAI_mob_spectral_sentry(Creature *_Creature)
 #define NPC_ASTRAL_SPARK    17283
 
 
-struct HELLGROUND_DLL_DECL mob_arcane_protectorAI : public ScriptedAI
+struct mob_arcane_protectorAI : public ScriptedAI
 {
     mob_arcane_protectorAI(Creature* c) : ScriptedAI(c) {}
 
@@ -300,7 +300,7 @@ CreatureAI* GetAI_mob_arcane_protector(Creature *_Creature)
 #define SPELL_WARP_BREACH_AOE       29919
 #define SPELL_WARP_BREACH_VISUAL    37079
 
-struct HELLGROUND_DLL_DECL mob_mana_warpAI : public ScriptedAI
+struct mob_mana_warpAI : public ScriptedAI
 {
     mob_mana_warpAI(Creature* c) : ScriptedAI(c) {}
 
@@ -352,7 +352,7 @@ bool Spell_charge(const Aura* aura, bool apply)
 #define SPELL_IMMOLATE          29928
 #define SPELL_CURSE_OF_AGONY    29930
 
-struct HELLGROUND_DLL_DECL mob_shadow_pillagerAI : public ScriptedAI
+struct mob_shadow_pillagerAI : public ScriptedAI
 {
     mob_shadow_pillagerAI(Creature* c) : ScriptedAI(c) {}
 
@@ -395,7 +395,7 @@ CreatureAI* GetAI_mob_shadow_pillager(Creature *_Creature)
 
 #define SPELL_FIREBOLT    30180
 
-struct HELLGROUND_DLL_DECL mob_homunculusAI : public ScriptedAI
+struct mob_homunculusAI : public ScriptedAI
 {
     mob_homunculusAI(Creature* c) : ScriptedAI(c) {}
 

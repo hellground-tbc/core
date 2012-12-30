@@ -109,7 +109,7 @@ struct mob_ancient_wispAI : public ScriptedAI
 };
 
 /* This is the script for the Doomfire Targetting Mob. This mob simply follows players and/or travels in random directions and spawns Doomfire Persistent Area Aura which deals dmg to players in range.  */
-struct HELLGROUND_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
+struct mob_doomfire_targettingAI : public NullCreatureAI
 {
     mob_doomfire_targettingAI(Creature* c) : NullCreatureAI(c)
     {
@@ -289,7 +289,7 @@ struct HELLGROUND_DLL_DECL mob_doomfire_targettingAI : public NullCreatureAI
    is NOT the main tank (creature's victim), then we aggro that player and they become the new victim.
 */
 
-struct HELLGROUND_DLL_DECL boss_archimondeAI : public hyjal_trashAI
+struct boss_archimondeAI : public hyjal_trashAI
 {
     boss_archimondeAI(Creature *c) : hyjal_trashAI(c)
     {

@@ -7,7 +7,7 @@
 
 #define GENERIC_CREATURE_COOLDOWN 5000
 
-struct HELLGROUND_DLL_DECL guardAI : public ScriptedAI
+struct guardAI : public ScriptedAI
 {
     guardAI(Creature *c) : ScriptedAI(c) {}
 

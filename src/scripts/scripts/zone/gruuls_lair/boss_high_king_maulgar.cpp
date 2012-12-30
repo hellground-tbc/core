@@ -62,7 +62,7 @@ enum ePhase
 };
 
 //High King Maulgar AI
-struct HELLGROUND_DLL_DECL boss_high_king_maulgarAI : public BossAI
+struct boss_high_king_maulgarAI : public BossAI
 {
     boss_high_king_maulgarAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
 
@@ -208,7 +208,7 @@ enum eOlmSpells
 };
 
 //Olm The Summoner AI
-struct HELLGROUND_DLL_DECL boss_olm_the_summonerAI : public BossAI
+struct boss_olm_the_summonerAI : public BossAI
 {
     boss_olm_the_summonerAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
 
@@ -289,7 +289,7 @@ enum eKigglerEvents
 };
 
 //Kiggler The Crazed AI
-struct HELLGROUND_DLL_DECL boss_kiggler_the_crazedAI : public BossAI
+struct boss_kiggler_the_crazedAI : public BossAI
 {
     boss_kiggler_the_crazedAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
 
@@ -376,7 +376,7 @@ enum eBlindSpells
 };
 
 //Blindeye The Seer AI
-struct HELLGROUND_DLL_DECL boss_blindeye_the_seerAI : public BossAI
+struct boss_blindeye_the_seerAI : public BossAI
 {
     boss_blindeye_the_seerAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
 
@@ -449,7 +449,7 @@ enum eKroshSpells
 };
 
 //Krosh Firehand AI
-struct HELLGROUND_DLL_DECL boss_krosh_firehandAI : public BossAI
+struct boss_krosh_firehandAI : public BossAI
 {
     boss_krosh_firehandAI(Creature *c) : BossAI(c, DATA_MAULGAREVENT) {}
 

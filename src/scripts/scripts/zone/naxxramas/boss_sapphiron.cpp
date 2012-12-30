@@ -57,7 +57,7 @@ enum SapphironPhase
     SAPPHIRON_AIR_PHASE     = 2
 };
 
-struct HELLGROUND_DLL_DECL boss_sapphironAI : public BossAI
+struct boss_sapphironAI : public BossAI
 {
     boss_sapphironAI(Creature* c) : BossAI(c, DATA_SAPPHIRON) { }
 

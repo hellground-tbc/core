@@ -37,7 +37,7 @@ EndContentData */
 ## mobs_spitelashes
 ######*/
 
-struct HELLGROUND_DLL_DECL mobs_spitelashesAI : public ScriptedAI
+struct mobs_spitelashesAI : public ScriptedAI
 {
     mobs_spitelashesAI(Creature *c) : ScriptedAI(c) {}
 
@@ -237,7 +237,7 @@ float WPs[58][4] =
 {1873.57, -3695.32, 33.9118, 3.44}
 };
 
-struct HELLGROUND_DLL_DECL mob_rizzle_sprysprocketAI : public ScriptedAI
+struct mob_rizzle_sprysprocketAI : public ScriptedAI
 {
     mob_rizzle_sprysprocketAI(Creature *c) : ScriptedAI(c) {}
 
@@ -426,7 +426,7 @@ CreatureAI* GetAI_mob_rizzle_sprysprocket(Creature *_Creature)
 # mob_depth_charge
 ####*/
 
-struct HELLGROUND_DLL_DECL mob_depth_chargeAI : public ScriptedAI
+struct mob_depth_chargeAI : public ScriptedAI
 {
     mob_depth_chargeAI(Creature *c) : ScriptedAI(c) {}
 

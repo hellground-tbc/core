@@ -70,7 +70,7 @@ class ChaseEvent : public BasicEvent
         Unit& _owner;
 };
 
-struct HELLGROUND_DLL_DECL boss_gruulAI : public ScriptedAI
+struct boss_gruulAI : public ScriptedAI
 {
     boss_gruulAI(Creature *c) : ScriptedAI(c)
     {

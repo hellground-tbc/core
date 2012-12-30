@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_karazhan.h"
 
-struct HELLGROUND_DLL_DECL boss_operaAI : public ScriptedAI
+struct boss_operaAI : public ScriptedAI
 {
     boss_operaAI(Creature* c) : ScriptedAI(c)
     {
@@ -192,7 +192,7 @@ void SummonCroneIfReady(ScriptedInstance* pInstance, Creature *_Creature)
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_dorotheeAI : public boss_operaAI
+struct boss_dorotheeAI : public boss_operaAI
 {
     boss_dorotheeAI(Creature* c) : boss_operaAI(c) {}
 
@@ -282,7 +282,7 @@ struct HELLGROUND_DLL_DECL boss_dorotheeAI : public boss_operaAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_titoAI : public ScriptedAI
+struct mob_titoAI : public ScriptedAI
 {
     mob_titoAI(Creature* c) : ScriptedAI(c) {}
 
@@ -343,7 +343,7 @@ void boss_dorotheeAI::SummonTito()
     }
 }
 
-struct HELLGROUND_DLL_DECL boss_strawmanAI : public boss_operaAI
+struct boss_strawmanAI : public boss_operaAI
 {
     boss_strawmanAI(Creature* c) : boss_operaAI(c){}
 
@@ -426,7 +426,7 @@ struct HELLGROUND_DLL_DECL boss_strawmanAI : public boss_operaAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_tinheadAI : public boss_operaAI
+struct boss_tinheadAI : public boss_operaAI
 {
     boss_tinheadAI(Creature* c) : boss_operaAI(c){}
 
@@ -510,7 +510,7 @@ struct HELLGROUND_DLL_DECL boss_tinheadAI : public boss_operaAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_roarAI : public boss_operaAI
+struct boss_roarAI : public boss_operaAI
 {
     boss_roarAI(Creature* c) : boss_operaAI(c){}
 
@@ -596,7 +596,7 @@ struct HELLGROUND_DLL_DECL boss_roarAI : public boss_operaAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_croneAI : public boss_operaAI
+struct boss_croneAI : public boss_operaAI
 {
     boss_croneAI(Creature* c) : boss_operaAI(c){}
 
@@ -659,7 +659,7 @@ struct HELLGROUND_DLL_DECL boss_croneAI : public boss_operaAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_cycloneAI : public ScriptedAI
+struct mob_cycloneAI : public ScriptedAI
 {
     mob_cycloneAI(Creature* c) : ScriptedAI(c) {}
 
@@ -784,7 +784,7 @@ bool GossipSelect_npc_grandmother(Player* player, Creature* _Creature, uint32 se
     return true;
 }
 
-struct HELLGROUND_DLL_DECL boss_bigbadwolfAI : public boss_operaAI
+struct boss_bigbadwolfAI : public boss_operaAI
 {
     boss_bigbadwolfAI(Creature* c) : boss_operaAI(c) { eventStarted = true; }
 
@@ -983,7 +983,7 @@ void Resurrect(Creature* target)
         target->GetMotionMaster()->Initialize();
 };
 
-struct HELLGROUND_DLL_DECL boss_julianneAI : public boss_operaAI
+struct boss_julianneAI : public boss_operaAI
 {
     boss_julianneAI(Creature* c) : boss_operaAI(c)
     {
@@ -1065,7 +1065,7 @@ struct HELLGROUND_DLL_DECL boss_julianneAI : public boss_operaAI
     void UpdateAI(const uint32 diff);
 };
 
-struct HELLGROUND_DLL_DECL boss_romuloAI : public boss_operaAI
+struct boss_romuloAI : public boss_operaAI
 {
     boss_romuloAI(Creature* c) : boss_operaAI(c)
     {
@@ -1546,7 +1546,7 @@ float StageLocations[7][2]=
 #define SPAWN_Y             -1758
 #define SPAWN_O             4.738
 
-struct HELLGROUND_DLL_DECL npc_barnesAI : public ScriptedAI
+struct npc_barnesAI : public ScriptedAI
 {
     npc_barnesAI(Creature* c) : ScriptedAI(c), operaAdds(me)
     {

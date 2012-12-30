@@ -391,7 +391,7 @@ const int offsetTab20[24][2] = {{-3, -2}, {-3, -1}, {-3, 0}, {-3, 1}, {-3, 2}, {
 
 const int offsetTab25[4][2] = {{-3, -3}, {3, -3}, {3, 3}, {-3, 3}};
 
-class HELLGROUND_DLL_DECL move_triggerAI : public ScriptedAI
+class move_triggerAI : public ScriptedAI
 {
 private:
     ScriptedInstance* pInstance;
@@ -419,7 +419,7 @@ public:
     void UpdateAI(const uint32 diff);
 };
 
-class HELLGROUND_DLL_DECL npc_chesspieceAI : public Scripted_NoMovementAI
+class npc_chesspieceAI : public Scripted_NoMovementAI
 {
 private:
     ScriptedInstance* pInstance;
@@ -482,7 +482,7 @@ public:
     void UpdateAI(const uint32 diff);
 };
 
-class HELLGROUND_DLL_DECL boss_MedivhAI : public ScriptedAI
+class boss_MedivhAI : public ScriptedAI
 {
 private:
     instance_karazhan* pInstance;
@@ -622,7 +622,7 @@ public:
     void UpdateAI(const uint32 diff);
 };
 
-class HELLGROUND_DLL_DECL npc_chess_statusAI : public ScriptedAI
+class npc_chess_statusAI : public ScriptedAI
 {
 public:
     npc_chess_statusAI(Creature *c) : ScriptedAI(c) {}

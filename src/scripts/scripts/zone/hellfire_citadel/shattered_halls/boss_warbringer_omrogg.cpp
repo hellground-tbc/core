@@ -95,7 +95,7 @@ static Yell KillingDelay[]=
 #define SPELL_BURNING_MAUL          30598
 #define H_SPELL_BURNING_MAUL        36056
 
-struct HELLGROUND_DLL_DECL mob_omrogg_headsAI : public ScriptedAI
+struct mob_omrogg_headsAI : public ScriptedAI
 {
     mob_omrogg_headsAI(Creature *c) : ScriptedAI(c) {}
 
@@ -125,7 +125,7 @@ struct HELLGROUND_DLL_DECL mob_omrogg_headsAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
+struct boss_warbringer_omroggAI : public ScriptedAI
 {
     boss_warbringer_omroggAI(Creature *c) : ScriptedAI(c)
     {

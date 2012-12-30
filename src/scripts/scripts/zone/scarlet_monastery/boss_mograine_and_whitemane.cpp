@@ -42,7 +42,7 @@ EndScriptData */
 #define SPELL_BLESSINGOFPROTECTION3 10278
 #define SPELL_FLASHHEAL6            10916
 
-struct HELLGROUND_DLL_DECL boss_scarlet_commander_mograineAI : public ScriptedAI
+struct boss_scarlet_commander_mograineAI : public ScriptedAI
 {
     boss_scarlet_commander_mograineAI(Creature *c) : ScriptedAI(c)
     {
@@ -185,7 +185,7 @@ struct HELLGROUND_DLL_DECL boss_scarlet_commander_mograineAI : public ScriptedAI
 #define SPELL_RENEW                     6078
 #define SPELL_FLASHHEAL6                10916
 
-struct HELLGROUND_DLL_DECL boss_high_inquisitor_whitemaneAI : public ScriptedAI
+struct boss_high_inquisitor_whitemaneAI : public ScriptedAI
 {
     boss_high_inquisitor_whitemaneAI(Creature *c) : ScriptedAI(c)
     {

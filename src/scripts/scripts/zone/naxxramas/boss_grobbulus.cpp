@@ -42,7 +42,7 @@ enum GrobbulusEvents
     EVENT_ENRAGE                = 4
 };
 
-struct HELLGROUND_DLL_DECL boss_grobbulusAI : public BossAI
+struct boss_grobbulusAI : public BossAI
 {
     boss_grobbulusAI(Creature *c) : BossAI(c, DATA_GROBBULUS) { }
 

@@ -61,7 +61,7 @@ uint32 GhostSpell[5] =
 };
 
 
-struct HELLGROUND_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
+struct mob_doom_blossomAI : public NullCreatureAI
 {
     mob_doom_blossomAI(Creature *c) : NullCreatureAI(c)
     {
@@ -147,7 +147,7 @@ struct HELLGROUND_DLL_DECL mob_doom_blossomAI : public NullCreatureAI
     }
 };
 
-struct HELLGROUND_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
+struct mob_shadowy_constructAI : public ScriptedAI
 {
     mob_shadowy_constructAI(Creature* c) : ScriptedAI(c)
     {
@@ -275,7 +275,7 @@ struct HELLGROUND_DLL_DECL mob_shadowy_constructAI : public ScriptedAI
     }
 };
 
-struct HELLGROUND_DLL_DECL boss_teron_gorefiendAI : public ScriptedAI
+struct boss_teron_gorefiendAI : public ScriptedAI
 {
     boss_teron_gorefiendAI(Creature *c) : ScriptedAI(c)
     {
