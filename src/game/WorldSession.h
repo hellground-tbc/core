@@ -186,10 +186,12 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         void SetPlayer(Player *plr) { _player = plr; }
         uint8 Expansion() const { return m_expansion; }
 
+        void SaveAccountFlags();
         bool IsAccountFlagged(AccountFlags flag) const { return m_accFlags & flag; }
-        void AddAccountFlag(AccountFlags flag) { m_accFlags |= flag; }
-        void RemoveAccountFlag(AccountFlags flag) { m_accFlags &= ~flag; }
+        void AddAccountFlag(AccountFlags flag);
+        void RemoveAccountFlag(AccountFlags flag);
 
+        void SaveOpcodesDisableFlags();
         void SetOpcodeDisableFlag(uint16 flag);
         void RemoveOpcodeDisableFlag(uint16 flag);
         uint16 GetOpcodesDisabledFlag() { return m_opcodesDisabled;}

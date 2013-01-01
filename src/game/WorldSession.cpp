@@ -148,16 +148,42 @@ char const* WorldSession::GetPlayerName() const
     return GetPlayer() ? GetPlayer()->GetName() : "<none>";
 }
 
+void WorldSession::SaveOpcodesDisableFlags()
+{
+    SqlStatementID saveOpcodesDisabled;
+    SqlStatement stmt = AccountsDatabase.CreateStatement(saveOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?");
+    stmt.PExecute(m_opcodesDisabled, GetAccountId());
+}
+
 void WorldSession::SetOpcodeDisableFlag(uint16 flag)
 {
     m_opcodesDisabled |= flag;
-    AccountsDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
+    SaveOpcodesDisableFlags();
 }
 
 void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
 {
     m_opcodesDisabled &= ~flag;
-    AccountsDatabase.PExecute("UPDATE account SET opcodesDisabled ='%u' WHERE id = '%u'", m_opcodesDisabled, GetAccountId());
+    SaveOpcodesDisableFlags();
+}
+
+void WorldSession::SaveAccountFlags()
+{
+    SqlStatementID saveAccountFlags;
+    SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE id = ?");
+    stmt.PExecute(m_accFlags, GetAccountId());
+}
+
+void WorldSession::AddAccountFlag(AccountFlags flag)
+{
+    m_accFlags |= flag;
+    SaveAccountFlags();
+}
+
+void WorldSession::RemoveAccountFlag(AccountFlags flag)
+{
+    m_accFlags &= ~flag;
+    SaveAccountFlags();
 }
 
 /// Send a packet to the client

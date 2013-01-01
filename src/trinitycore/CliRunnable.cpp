@@ -329,15 +329,9 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
         }
 
         if (accFlags & ACC_SPECIAL_LOG)
-        {
-            AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_SPECIAL_LOG, account_id);
             PSendSysMessage("SpecialLog have been disabled for account: %u.", account_id);
-        }
         else
-        {
-            AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_SPECIAL_LOG, account_id);
             PSendSysMessage("SpecialLog have been enabled for account: %u.", account_id);
-        }
     }
     else
     {
@@ -373,15 +367,9 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
         }
 
         if (accFlags & ACC_WHISPER_LOG)
-        {
-            AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_WHISPER_LOG, account_id);
             PSendSysMessage("WhispLog have been disabled for account: %u.", account_id);
-        }
         else
-        {
-            AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_WHISPER_LOG, account_id);
             PSendSysMessage("WhispLog have been enabled for account: %u.", account_id);
-        }
     }
     else
     {
