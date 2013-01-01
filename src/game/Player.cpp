@@ -7209,7 +7209,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             }
 
             // Righteous Weapon Coating can only proc in selected areas
-            if(spell_id = 45401)
+            if(spell_id == 45401)
             {
                 if(GetMapId() != 580 && GetMapId() != 585 &&    // Sunwell Plateau, Magisters' Terrace
                     (GetMapId() == 530 && GetZoneId() != 4080)) // Isle of Quel'Danas
