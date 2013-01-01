@@ -196,7 +196,7 @@ struct boss_warlord_kalithreshAI : public ScriptedAI
 
         if (Rage_Timer < diff)
         {
-            Creature* distiller = GetClosestCreatureWithEntry(me, 17954, 100);
+            Creature* distiller = NULL;//GetClosestCreatureWithEntry(me, 17954, 100);
             if (distiller)
             {
                 CurrentDistiller = distiller->GetGUID();

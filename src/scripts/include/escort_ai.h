@@ -71,44 +71,45 @@ struct npc_escortAI : public ScriptedAI
         void SetRun(bool bRun = true);
         void SetEscortPaused(bool uPaused);
 
-        bool HasEscortState(uint32 uiEscortState) { return (m_uiEscortState & uiEscortState); }
-        virtual bool IsEscorted() { return (m_uiEscortState & STATE_ESCORT_ESCORTING); }
+        bool HasEscortState(uint32 uiEscortState) { return (EscortState & uiEscortState); }
+        virtual bool IsEscorted() { return (EscortState & STATE_ESCORT_ESCORTING); }
 
         void SetMaxPlayerDistance(float newMax) { MaxPlayerDistance = newMax; }
         float GetMaxPlayerDistance() { return MaxPlayerDistance; }
 
         void SetDespawnAtEnd(bool despawn) { DespawnAtEnd = despawn; }
         void SetDespawnAtFar(bool despawn) { DespawnAtFar = despawn; }
-        bool GetAttack() { return m_bIsActiveAttacker; }//used in EnterEvadeMode override
-        void SetCanAttack(bool attack) { m_bIsActiveAttacker = attack; }
-        uint64 GetEventStarterGUID() { return m_uiPlayerGUID; }
+        bool GetAttack() { return IsActiveAttacker; }//used in EnterEvadeMode override
+        void SetCanAttack(bool attack) { IsActiveAttacker = attack; }
+        uint64 GetEventStarterGUID() { return PlayerGUID; }
 
     protected:
-        Player* GetPlayerForEscort() { return (Player*)Unit::GetUnit(*m_creature, m_uiPlayerGUID); }
+        Player* GetPlayerForEscort() { return (Player*)Unit::GetUnit(*m_creature, PlayerGUID); }
 
     private:
         bool AssistPlayerInCombat(Unit* pWho);
         bool IsPlayerOrGroupInRange();
         void FillPointMovementListForCreature();
 
-        void AddEscortState(uint32 uiEscortState) { m_uiEscortState |= uiEscortState; }
-        void RemoveEscortState(uint32 uiEscortState) { m_uiEscortState &= ~uiEscortState; }
+        void AddEscortState(uint32 uiEscortState) { EscortState |= uiEscortState; }
+        void RemoveEscortState(uint32 uiEscortState) { EscortState &= ~uiEscortState; }
 
-        uint64 m_uiPlayerGUID;
-        uint32 m_uiWPWaitTimer;
-        uint32 m_uiPlayerCheckTimer;
-        uint32 m_uiEscortState;
+        uint64 PlayerGUID;
+        uint32 WPWaitTimer;
+        uint32 PlayerCheckTimer;
+        uint32 EscortState;
         float MaxPlayerDistance;
 
-        const Quest* m_pQuestForEscort;                     //generally passed in Start() when regular escort script.
+        const Quest* QuestForEscort;                     //generally passed in Start() when regular escort script.
 
         std::list<Escort_Waypoint> WaypointList;
         std::list<Escort_Waypoint>::iterator CurrentWP;
+        std::list<Escort_Waypoint>::iterator ReachedLastWP;
 
-        bool m_bIsActiveAttacker;                           //obsolete, determined by faction.
-        bool m_bIsRunning;                                  //all creatures are walking by default (has flag MOVEMENTFLAG_WALK)
-        bool m_bCanInstantRespawn;                          //if creature should respawn instantly after escort over (if not, database respawntime are used)
-        bool m_bCanReturnToStart;                           //if creature can walk same path (loop) without despawn. Not for regular escort quests.
+        bool IsActiveAttacker;                           //obsolete, determined by faction.
+        bool IsRunning;                                  //all creatures are walking by default (has flag MOVEMENTFLAG_WALK)
+        bool CanInstantRespawn;                          //if creature should respawn instantly after escort over (if not, database respawntime are used)
+        bool CanReturnToStart;                           //if creature can walk same path (loop) without despawn. Not for regular escort quests.
         bool DespawnAtEnd;
         bool DespawnAtFar;
         bool ScriptWP;
