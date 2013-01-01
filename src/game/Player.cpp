@@ -7053,6 +7053,14 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     // Additional check for weapons
                     if (proto->Class == ITEM_CLASS_WEAPON)
                     {
+                        // exception for Righteous Weapon Coating, enchant on main hand should also proc from ranged attacks
+                        if(uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
+                        {
+                            SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                            if(pEnchant && pEnchant->ID == 3266) // Blessed Weapon Coating
+                                ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
+                            break;
+                        }
                         // offhand item cannot proc from main hand hit etc
                         EquipmentSlots slot;
                         switch (attType)
@@ -7198,6 +7206,14 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                 // Can do effect if any damage done to target
                 if (!(procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE))
                     continue;
+            }
+
+            // Righteous Weapon Coating can only proc in selected areas
+            if(spell_id = 45401)
+            {
+                if(GetMapId() != 580 && GetMapId() != 585 &&    // Sunwell Plateau, Magisters' Terrace
+                    (GetMapId() == 530 && GetZoneId() != 4080)) // Isle of Quel'Danas
+                    return;
             }
 
             if (!spell_id)

@@ -2458,20 +2458,25 @@ void Spell::cast(bool skipCheck)
         }
 
         // proc item enchantment spell cast for Blessed Weapon Coating enchantment, not needed more general method for now
-        if (m_caster->GetTypeId() == TYPEID_PLAYER && roll_chance_f(3)) // ~3% chance on proc
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
         {
-            Player* plr = m_caster->ToPlayer();
-            if(plr->getPowerType() == POWER_MANA)
+            if(roll_chance_f(3) &&                          // ~3% chance on proc, can only proc in selected areas:
+               (m_caster->GetMapId() == 580 || m_caster->GetMapId() == 585 ||   // Sunwell Plateau, Magisters' Terrace
+               (m_caster->GetMapId() == 530 && m_caster->GetZoneId() == 4080)))  // Isle of Quel'Danas
             {
-                // should off-hand procs be implemented in future? no hidden cooldown core support for this procs, so ignore it for now
-                Item * item = plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                if (item && !item->IsBroken())
+                Player* plr = m_caster->ToPlayer();
+                if(plr->getPowerType() == POWER_MANA)
                 {
-                    if(uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
+                    // should off-hand procs be implemented in future? no hidden cooldown core support for this procs, so ignore it for now
+                    Item * item = plr->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                    if (item && !item->IsBroken())
                     {
-                        SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                        if(pEnchant && pEnchant->ID == 3265) // Blessed Weapon Coating
-                            plr->CastSpell(plr, 45403, true, item); // Blessedness spell proc
+                        if(uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
+                        {
+                            SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                            if(pEnchant && pEnchant->ID == 3265) // Blessed Weapon Coating
+                                plr->CastSpell(plr, 45403, true, item); // Blessedness spell proc
+                        }
                     }
                 }
             }
