@@ -7081,7 +7081,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                         /*if (IsInFeralForm(true))
                             continue;*/
                     }
-                    
+
                     bool canProcInFeralForm = false;
                     // check for exception combat item spells that can proc in feral form
                     for (int e_slot = 0; e_slot < MAX_ENCHANTMENT_SLOT; ++e_slot)
@@ -14261,7 +14261,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
         uint64 guid = sObjectMgr.GetPlayerGUIDByName(name);
         if (guid && sObjectMgr.GetPlayerAccountIdByGUID(guid) == GetSession()->GetAccountId())
-        { 
+        {
             // & will clear class and rest of stuff
             uint32 newBytes0 = GetUInt32ValueFromDB(UNIT_FIELD_BYTES_0, guid) & 0x00FF00FF;
 
@@ -16199,7 +16199,6 @@ void Player::_SaveInventory()
     static SqlStatementID deleteCharInvByItem;
     static SqlStatementID deleteItemInstance;
     static SqlStatementID deleteCharInvByPlace;
-    static SqlStatementID updateAccountFlags;
     static SqlStatementID insertBan;
     static SqlStatementID insertCharInv;
     static SqlStatementID updateCharInv;
@@ -16265,11 +16264,7 @@ void Player::_SaveInventory()
 
                 AccountsDatabase.BeginTransaction();
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
-                {
                     GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
-                    stmt = AccountsDatabase.CreateStatement(updateAccountFlags, "UPDATE account SET accounts_flag = accounts_flag | ? WHERE id = ?");
-                    stmt.PExecute(uint32(ACC_SPECIAL_LOG), GetSession()->GetAccountId());
-                }
 
                 stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
                 stmt.PExecute(GetSession()->GetAccountId());
@@ -16291,11 +16286,7 @@ void Player::_SaveInventory()
                 stmt.PExecute(GetSession()->GetAccountId());
 
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
-                {
                     GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
-                    stmt = AccountsDatabase.CreateStatement(updateAccountFlags, "UPDATE account SET account_flags = account_flags | ? WHERE id = ?");
-                    stmt.PExecute(uint32(ACC_SPECIAL_LOG), GetSession()->GetAccountId());
-                }
 
                 AccountsDatabase.CommitTransaction();
                 GetSession()->KickPlayer();
@@ -18868,7 +18859,7 @@ void Player::SendInitialPacketsAfterAddToMap()
 
     UpdateVisibilityAndView();
     AddEvent(new VisibilityAndViewUpdateEvent(*this), 3000);
-        
+
     ResetTimeSync();
     SendTimeSync();
 
