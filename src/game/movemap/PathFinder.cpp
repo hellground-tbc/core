@@ -32,7 +32,7 @@ PathFinder::PathFinder(const Unit* owner) :
 {
     //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathFinder::PathInfo for %u \n", m_sourceUnit->GetGUIDLow());
 
-    if (m_sourceUnit->GetTerrain()->IsPathFindingEnabled())
+    if (m_sourceUnit->GetTerrain() && m_sourceUnit->GetTerrain()->IsPathFindingEnabled())
     {
         uint32 mapId = m_sourceUnit->GetMapId();
         MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
