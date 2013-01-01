@@ -43,8 +43,8 @@ void npc_escortAI::AttackStart(Unit* pWho)
     if (me->Attack(pWho, true))
     {
         //stop movement and attack the target && set the correct wp
-        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-            CurrentWP = ReachedLastWP;
+        //if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+        //    CurrentWP = ReachedLastWP;
 
         if (IsCombatMovement())
             me->GetMotionMaster()->MoveChase(pWho);

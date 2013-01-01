@@ -2682,7 +2682,7 @@ struct npc_dimensiusAI : public ScriptedAI
             if (me->HasAura(37450))
             {
                 if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f))
-                    DoCast(target, RAND(SPELL_PAIN35, SPELL_PAIN25, SPELL_PAIN5, SPELL_PAIN10, SPELL_PAIN15));
+                    DoCast(target, RAND<uint32>(SPELL_PAIN35, SPELL_PAIN25, SPELL_PAIN5, SPELL_PAIN10, SPELL_PAIN15));
             }
                 
             ShadowRainTimer = 10000;
