@@ -2699,6 +2699,198 @@ CreatureAI* GetAI_npc_dimensius(Creature* creature)
 }
 
 /*######
+## npc_king_salhadaar
+######*/
+
+enum
+{
+    FACTION_HOSTILE     = 90,
+    FACTION_FRIENDLY    = 35,
+
+    SPELL_TESLA         = 35515,
+    SPELL_OVERSPARK     = 35684,
+    SPELL_FLUX          = 36533,
+    SPELL_STASIS        = 36527,
+    SPELL_IMAGE         = 36848,
+    SPELL_IMAGEI        = 36847,
+    SPELL_STATISI       = 35514,
+
+    NPC_BALL            = 20769,
+    NPC_IMAGE           = 21425
+};
+//don't support kite. i didn't like what happened :P
+struct npc_king_salhadaarAI : public ScriptedAI
+{
+    npc_king_salhadaarAI(Creature *creature) : ScriptedAI(creature), summons(me) {}
+
+    bool Spawn;
+
+    SummonList summons;
+    std::list<uint64> Balls;
+    uint32 Count;
+    uint32 FluxTimer;
+    uint32 StasisTimer;
+	
+    void Reset()
+    {
+
+        me->setFaction(FACTION_FRIENDLY);
+        Count = 0;
+        FluxTimer = 6000;
+        StasisTimer = 22000;
+        Spawn = true;
+
+        Creature * ball;
+        Map * tmpMap = me->GetMap();
+
+        if (!tmpMap)
+            return;
+
+        if (!Balls.empty())
+        {
+            for (std::list<uint64>::iterator itr = Balls.begin(); itr != Balls.end(); ++itr)
+            {
+                if (ball = tmpMap->GetCreature((*itr)))
+                    me->CastSpell(ball, SPELL_STATISI, false);
+            }
+        }
+    }
+
+    void NoEnergy()
+    {
+        ++Count;
+
+        if (Count == 3)
+            PartyTime();
+    }
+
+    void PartyTime()
+    {
+        //DoScriptText(YELL_INTRO, me);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->setFaction(FACTION_HOSTILE);		  
+        me->RemoveAllAuras();
+        DoCast(me, SPELL_OVERSPARK);
+    }
+
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if(spell->Id == SPELL_TESLA)
+            Balls.push_back(caster->GetGUID());
+
+        return;
+    }
+
+    void DamageTaken(Unit* doneby, uint32 & damage)
+    {
+        if (Spawn)
+        {
+            if ((me->GetHealth()*100 - damage) / me->GetMaxHealth() < 60)
+            {
+                me->InterruptNonMeleeSpells(true);
+                DoCast(me, SPELL_IMAGE);
+                DoCast(me, SPELL_IMAGEI);
+                Spawn = false;
+            }
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        summons.Summon(summoned);
+
+        summoned->CastSpell(summoned, SPELL_OVERSPARK, false);
+
+        if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f))
+            summoned->AI()->AttackStart(target);
+    }
+
+    void JustReachedHome()
+    {
+        summons.DespawnAll();
+        Reset();
+    }
+
+    void JustDied(Unit* killer)
+    {
+        summons.DespawnAll();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (FluxTimer <= diff)
+        {
+            DoCast(me->getVictim(), SPELL_FLUX);
+
+            FluxTimer = 12000;
+        }
+        else FluxTimer -= diff;
+
+        if (StasisTimer <= diff)
+        {
+            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f))
+                DoCast(target, SPELL_STASIS);
+
+            StasisTimer = 22000;
+        }
+        else StasisTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_king_salhadaar(Creature *creature)
+{
+    return new npc_king_salhadaarAI (creature);
+}
+
+/*######
+## npc_energy_ball
+######*/
+
+enum
+{
+    SPELL_DISRUPTOR    = 35683,
+
+    NPC_KING           = 20454,
+};
+
+struct npc_energy_ballAI : public ScriptedAI
+{
+    npc_energy_ballAI(Creature *creature) : ScriptedAI(creature) {}
+
+    void Reset() 
+    {
+        DoCast(me, SPELL_TESLA);
+    }
+
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if(spell->Id == SPELL_DISRUPTOR)
+        {
+            me->InterruptNonMeleeSpells(true);
+
+            if (Creature* king = GetClosestCreatureWithEntry(me, NPC_KING, 75.0f))
+                CAST_AI(npc_king_salhadaarAI, king->AI())->NoEnergy();
+        }
+
+        if(spell->Id == SPELL_STATISI)
+            DoCast(me, SPELL_TESLA);
+
+        return;
+    }
+};
+
+CreatureAI* GetAI_npc_energy_ball(Creature *creature)
+{
+    return new npc_energy_ballAI (creature);
+}
+
+/*######
 ## AddSC_netherstrom
 ######*/
 
@@ -2834,6 +3026,16 @@ void AddSC_netherstorm()
     newscript = new Script;
     newscript->Name = "npc_dimensius";
     newscript->GetAI = &GetAI_npc_dimensius;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_king_salhadaar";
+    newscript->GetAI = &GetAI_npc_king_salhadaar;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_energy_ball";
+    newscript->GetAI = &GetAI_npc_energy_ball;
     newscript->RegisterSelf();
 }
 
