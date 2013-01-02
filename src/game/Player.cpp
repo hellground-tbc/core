@@ -5272,17 +5272,27 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
 void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool defence)
 {
     uint32 plevel = getLevel();                             // if defense than pVictim == attacker
-    uint32 greylevel = Hellground::XP::GetGrayLevel(plevel);
+    //uint32 greylevel = Hellground::XP::GetGrayLevel(plevel);
     uint32 moblevel = pVictim->getLevelForTarget(this);
-    if (moblevel < greylevel)
-        return;
+    //if (moblevel < greylevel)
+    //    return;
 
     if (moblevel > plevel + 5)
         moblevel = plevel + 5;
 
-    uint32 lvldif = moblevel - greylevel;
-    if (lvldif < 3)
-        lvldif = 3;
+    uint32 lvldif = 0;
+    if (moblevel >= plevel)
+    {
+        lvldif = moblevel - plevel;
+        if (lvldif < 3)
+            lvldif = 3;
+    }
+    else
+    {
+        lvldif = plevel - moblevel;
+        if (lvldif > 3)
+            lvldif = 3;
+    }
 
     uint32 skilldif = 5 * plevel - (defence ? GetBaseDefenseSkillValue() : GetBaseWeaponSkillValue(attType));
     if (skilldif <= 0)
