@@ -7063,10 +7063,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                             default: slot = EQUIPMENT_SLOT_END; break;
                         }
 
-                        if (slot != i)
-                            continue;
-
-                        if (attType == RANGED_ATTACK)
+                        if (attType == RANGED_ATTACK && slot == EQUIPMENT_SLOT_MAINHAND)
                         {
                             // exception for Righteous Weapon Coating, enchant on main hand should also proc from ranged attacks
                             if(uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
@@ -7079,6 +7076,9 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                                 }
                             }
                         }
+
+                        if (slot != i)
+                            continue;
 
                         // Check if item is useable (forms or disarm)
                         if (attType == BASE_ATTACK && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED))
