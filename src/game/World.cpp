@@ -2314,14 +2314,14 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
             break;
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
-            resultAccounts = AccountsDatabase.PQuery("SELECT id FROM account WHERE username = '%s'",nameIPOrMail.c_str());
+            resultAccounts = AccountsDatabase.PQuery("SELECT id, gmlevel FROM account WHERE username = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_CHARACTER:
             //No SQL injection as string is escaped
-            resultAccounts = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
+            resultAccounts = RealmDataDatabase.PQuery("SELECT account, gmlevel FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_EMAIL:
-            resultAccounts = AccountsDatabase.PQuery("SELECT id FROM account WHERE email = '%s'",nameIPOrMail.c_str());
+            resultAccounts = AccountsDatabase.PQuery("SELECT id, gmlevel FROM account WHERE email = '%s'",nameIPOrMail.c_str());
             AccountsDatabase.PExecute("INSERT INTO email_banned VALUES ('%s',UNIX_TIMESTAMP(),'%s','%s')",nameIPOrMail.c_str(),safe_author.c_str(),reason.c_str());
             break;
         default:
@@ -2330,17 +2330,25 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
 
     if (!resultAccounts)
     {
-        if (mode == BAN_IP || mode == BAN_EMAIL)
-            return BAN_SUCCESS;                             // ip correctly banned but nobody affected (yet)
-        else
-            return BAN_NOTFOUND;                            // Nobody to ban
+        switch (mode)
+        {
+            case BAN_EMAIL:
+            case BAN_IP:
+                return BAN_SUCCESS;
+            default:
+                return BAN_NOTFOUND;                            // Nobody to ban
+        }
     }
 
     ///- Disconnect all affected players (for IP it can be several)
     do
     {
         Field* fieldsAccount = resultAccounts->Fetch();
-        uint32 account = fieldsAccount->GetUInt32();
+        uint32 account = fieldsAccount[0].GetUInt32();
+        uint8 gmlevel = fieldsAccount[1].GetUInt8();
+
+        if (gmlevel > 0)
+            continue;
 
         if (mode != BAN_IP && mode != BAN_EMAIL)
         {
