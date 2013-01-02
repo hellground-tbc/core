@@ -103,7 +103,7 @@ struct boss_selin_fireheartAI : public ScriptedAI
 
     void SelectNearestCrystal()
     {
-        if(Creature* CrystalChosen = GetClosestCreatureWithEntry(me, CREATURE_FEL_CRYSTAL, 100.0f))
+        if(Creature* CrystalChosen = GetClosestCreatureWithEntry(me, CREATURE_FEL_CRYSTAL, 100.0f, true))
         {
             CrystalGUID = CrystalChosen->GetGUID();
 
