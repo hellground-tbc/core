@@ -745,7 +745,7 @@ namespace Hellground
 
             bool operator()(Creature* u)
             {
-                if (u->GetEntry() == i_entry && u->isAlive()==i_alive && i_obj.IsWithinDistInMap(u, i_range) && i_inLoS ? i_obj.IsWithinLOSInMap(u) : true)
+                if (u->GetEntry() == i_entry && u->isAlive()==i_alive && i_obj.IsWithinDistInMap(u, i_range) && (!i_inLoS || i_obj.IsWithinLOSInMap(u)))
                 {
                     i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
                     return true;

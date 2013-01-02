@@ -5188,7 +5188,7 @@ void Spell::EffectHealMaxHealth(uint32 /*i*/)
     // Lay on Hands
     if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_PALADIN && GetSpellInfo()->SpellFamilyFlags & 0x0000000000008000)
     {
-        if (!m_originalCaster)
+        if (!m_originalCaster || m_originalCaster->IsHostileTo(unitTarget))
             return;
 
         addhealth = addhealth > m_originalCaster->GetMaxHealth() ? m_originalCaster->GetMaxHealth() : addhealth;
