@@ -450,6 +450,20 @@ bool GOUse_go_ethereum_transponder_zeta(Player* pPlayer, GameObject* pGO)
     return true;
 }
 
+/*######
+## go_ethereal_teleport_pad
+######*/
+
+#define NPC_MARID  20518
+
+bool GOUse_go_ethereal_teleport_pad(Player* pPlayer, GameObject* pGO)
+{
+    pGO->UseDoorOrButton(60);
+    pPlayer->SummonCreature(NPC_MARID, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+1, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 60000);
+	
+    return true;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -554,6 +568,11 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_ethereum_transponder_zeta";
     newscript->pGOUse = &GOUse_go_ethereum_transponder_zeta;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_ethereal_teleport_pad";
+    newscript->pGOUse = &GOUse_go_ethereal_teleport_pad;
     newscript->RegisterSelf();
 }
 
