@@ -7053,14 +7053,6 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     // Additional check for weapons
                     if (proto->Class == ITEM_CLASS_WEAPON)
                     {
-                        // exception for Righteous Weapon Coating, enchant on main hand should also proc from ranged attacks
-                        if(uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
-                        {
-                            SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                            if(pEnchant && pEnchant->ID == 3266) // Blessed Weapon Coating
-                                ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
-                            break;
-                        }
                         // offhand item cannot proc from main hand hit etc
                         EquipmentSlots slot;
                         switch (attType)
@@ -7073,6 +7065,20 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
 
                         if (slot != i)
                             continue;
+
+                        if (attType == RANGED_ATTACK)
+                        {
+                            // exception for Righteous Weapon Coating, enchant on main hand should also proc from ranged attacks
+                            if(uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
+                            {
+                                SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                                if(pEnchant && pEnchant->ID == 3266) // Blessed Weapon Coating
+                                {
+                                    ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
+                                    break;
+                                }
+                            }
+                        }
 
                         // Check if item is useable (forms or disarm)
                         if (attType == BASE_ATTACK && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED))
