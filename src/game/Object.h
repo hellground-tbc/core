@@ -220,7 +220,7 @@ class HELLGROUND_IMPORT_EXPORT Object
 
         void ApplyPercentModFloatValue(uint16 index, float val, bool apply)
         {
-            val = val != -100.0f ? val : -99.9f ;
+            val = val > -100.0f ? val : -99.9f ;
             SetFloatValue(index, GetFloatValue(index) * (apply?(100.0f+val)/100.0f : 100.0f / (100.0f+val)));
         }
 

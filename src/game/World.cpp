@@ -2318,7 +2318,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
             break;
         case BAN_CHARACTER:
             //No SQL injection as string is escaped
-            resultAccounts = RealmDataDatabase.PQuery("SELECT account, gmlevel FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
+            resultAccounts = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_EMAIL:
             resultAccounts = AccountsDatabase.PQuery("SELECT id, gmlevel FROM account WHERE email = '%s'",nameIPOrMail.c_str());
@@ -2345,9 +2345,22 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
     {
         Field* fieldsAccount = resultAccounts->Fetch();
         uint32 account = fieldsAccount[0].GetUInt32();
-        uint8 gmlevel = fieldsAccount[1].GetUInt8();
+        uint8 gmlevel = 0;
 
-        if (gmlevel > 0)
+        if (mode == BAN_CHARACTER)
+        {
+            QueryResultAutoPtr resultAccId = AccountsDatabase.PQuery("SELECT gmlevel FROM account WHERE id = '%u'", account);
+            if (resultAccId)
+            {
+                Field* fieldsAccId = resultAccId->Fetch();
+                if (fieldsAccId)
+                    gmlevel = fieldsAccId[0].GetUInt8();
+            }
+        }
+        else
+            gmlevel = fieldsAccount[1].GetUInt8();
+
+        if (gmlevel > SEC_PLAYER)
             continue;
 
         if (mode != BAN_IP && mode != BAN_EMAIL)
