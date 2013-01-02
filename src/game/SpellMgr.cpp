@@ -3606,6 +3606,17 @@ bool SpellMgr::IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_i
     // special cases zone check (maps checked by multimap common id)
     switch (spellInfo->Id)
     {
+        case 45403:
+        case 45401:
+        {
+            if (map_id == 580 || map_id == 585)
+                return true;
+
+            if (map_id == 530 && zone_id == 4080)
+                return true;
+
+            return false;
+        }
         case 23333:                                         // Warsong Flag
         case 23335:                                         // Silverwing Flag
         case 46392:                                         // Focused Assault
