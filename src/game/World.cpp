@@ -2314,14 +2314,14 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
             break;
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
-            resultAccounts = AccountsDatabase.PQuery("SELECT id, gmlevel FROM account WHERE username = '%s'",nameIPOrMail.c_str());
+            resultAccounts = AccountsDatabase.PQuery("SELECT a.id,aa.gmlevel FROM account a LEFT JOIN account_access aa ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) WHERE a.username = '%s'",realmID, nameIPOrMail.c_str());
             break;
         case BAN_CHARACTER:
             //No SQL injection as string is escaped
             resultAccounts = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_EMAIL:
-            resultAccounts = AccountsDatabase.PQuery("SELECT id, gmlevel FROM account WHERE email = '%s'",nameIPOrMail.c_str());
+            resultAccounts = AccountsDatabase.PQuery("SELECT a.id,aa.gmlevel FROM account a LEFT JOIN account_access aa ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) WHERE a.email = '%s'",realmID, nameIPOrMail.c_str());
             AccountsDatabase.PExecute("INSERT INTO email_banned VALUES ('%s',UNIX_TIMESTAMP(),'%s','%s')",nameIPOrMail.c_str(),safe_author.c_str(),reason.c_str());
             break;
         default:
@@ -2349,7 +2349,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
 
         if (mode == BAN_CHARACTER)
         {
-            QueryResultAutoPtr resultAccId = AccountsDatabase.PQuery("SELECT gmlevel FROM account WHERE id = '%u'", account);
+            QueryResultAutoPtr resultAccId = AccountsDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u' AND (RealmID = '%d' OR RealmID = '-1')", account, realmID);
             if (resultAccId)
             {
                 Field* fieldsAccId = resultAccId->Fetch();

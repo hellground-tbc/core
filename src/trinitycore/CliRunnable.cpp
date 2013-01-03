@@ -134,7 +134,7 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     /// Commands not recommended call from chat, but support anyway
     if(m_session)
     {
-        uint32 targetSecurity = AccountMgr::GetSecurity(account_id);
+        uint32 targetSecurity = AccountMgr::GetSecurity(account_id, realmID);
 
         /// can delete only for account with less security
         /// This is also reject self apply in fact
@@ -243,8 +243,11 @@ bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
 
         ///- Get the username, last IP and GM level of each account
         // No SQL injection. account is uint32.
-        //                                                      0         1        2        3
-        QueryResultAutoPtr resultLogin = AccountsDatabase.PQuery("SELECT username, last_ip, gmlevel, expansion FROM account WHERE id = '%u'", account);
+        QueryResultAutoPtr resultLogin = AccountsDatabase.PQuery("SELECT a.username,a.last_ip,aa.gmlevel,a.expansion "
+            "FROM account a "
+            "LEFT JOIN account_access aa "
+            "ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) "
+            "WHERE a.id = '%u'",realmID, account);
 
         if(resultLogin)
         {

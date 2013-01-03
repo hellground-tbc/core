@@ -591,7 +591,7 @@ void WorldSession::HandleAddFriendOpcodeCallBack(QueryResultAutoPtr result, uint
         team = Player::TeamForRace((*result)[1].GetUInt8());
         friendAcctid = (*result)[2].GetUInt32();
 
-        if (session->GetSecurity() >= SEC_MODERATOR || sWorld.getConfig(CONFIG_ALLOW_GM_FRIEND) || AccountMgr::GetSecurity(friendAcctid) < SEC_MODERATOR)
+        if (session->GetSecurity() >= SEC_MODERATOR || sWorld.getConfig(CONFIG_ALLOW_GM_FRIEND) || AccountMgr::GetSecurity(friendAcctid, realmID) < SEC_MODERATOR)
             if (friendGuid)
             {
                 if (friendGuid==session->GetPlayer()->GetGUID())

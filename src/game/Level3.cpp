@@ -886,7 +886,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         /// can set security level only for target with less security and to less security that we have
         /// This is also reject self apply in fact
-        targetSecurity = AccountMgr::GetSecurity(targetAccountId);
+        targetSecurity = AccountMgr::GetSecurity(targetAccountId, realmID);
         if (targetSecurity >= plSecurity || gm >= plSecurity)
         {
             SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
@@ -895,7 +895,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         }
 
         PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
-        AccountsDatabase.PExecute("UPDATE account SET gmlevel = '%d' WHERE id = '%u'", gm, targetAccountId);
+        AccountsDatabase.PExecute("INSERT INTO account_access VALUES ('%u', '%d', '%d', NULL)", targetAccountId, gm, realmID);
         return true;
     }
 }
@@ -930,7 +930,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
         return false;
     }
 
-    uint32 targetSecurity = AccountMgr::GetSecurity(targetAccountId);
+    uint32 targetSecurity = AccountMgr::GetSecurity(targetAccountId, realmID);
 
     /// m_session==NULL only for console
     uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_CONSOLE;
@@ -6416,7 +6416,7 @@ bool ChatHandler::HandleInstanceResetEncountersCommand(const char* args)
 bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
 {
     ///- Get the accounts with GM Level >0
-    QueryResultAutoPtr result = AccountsDatabase.Query("SELECT username,gmlevel FROM account WHERE gmlevel > 0");
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT a.username,aa.gmlevel FROM account a, account_access aa WHERE a.id=aa.id AND aa.gmlevel > 0 AND (RealmID = '%d' OR RealmID = '-1')", realmID);
     if (result)
     {
         SendSysMessage(LANG_GMLIST);

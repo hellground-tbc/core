@@ -416,7 +416,11 @@ bool AuthSocket::_HandleLogonChallenge()
         ///- Get the account details from the account table
         // No SQL injection (escaped user name)
 
-        result = AccountsDatabase.PQuery("SELECT sha_pass_hash,id,locked,last_ip,gmlevel,v,s,email FROM account WHERE username = '%s'",_safelogin.c_str ());
+        result = AccountsDatabase.PQuery("SELECT a.sha_pass_hash,a.id,a.locked,a.last_ip,aa.gmlevel,a.v,a.s,a.email "
+                                         "FROM account a "
+                                         "LEFT JOIN account_access aa "
+                                         "ON (a.id = aa.id ) "
+                                         "WHERE username = '%s'", _safelogin.c_str());
         if( result )
         {
             ///- If the IP is 'locked', check that the player comes indeed from the correct IP address

@@ -37,6 +37,7 @@
 #include "TicketMgr.h"
 #include "GridMap.h"
 #include "Guild.h"
+#include "AccountMgr.h"
 
 #ifdef _DEBUG_VMAPS
 #include "VMapFactory.h"
@@ -664,8 +665,9 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     }
     uint64 tarGUID = sObjectMgr.GetPlayerGUIDByName(targm.c_str());
     uint64 accid = sObjectMgr.GetPlayerAccountIdByGUID(tarGUID);
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT `gmlevel` FROM `account` WHERE `id` = '%u'", accid);
-    if (!tarGUID|| !result || result->Fetch()->GetUInt32() < SEC_MODERATOR)
+    uint32 targetGmLevel = AccountMgr::GetSecurity(accid, realmID);
+    
+    if (!tarGUID || targetGmLevel < SEC_MODERATOR)
     {
         SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);
         return true;

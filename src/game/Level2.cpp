@@ -114,7 +114,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     else
     {
         account_id = sObjectMgr.GetPlayerAccountIdByGUID(guid);
-        security = AccountMgr::GetSecurity(account_id);
+        security = AccountMgr::GetSecurity(account_id, realmID);
     }
 
     if (m_session && security >= m_session->GetSecurity())
@@ -194,7 +194,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
     else
     {
         account_id = sObjectMgr.GetPlayerAccountIdByGUID(guid);
-        security = AccountMgr::GetSecurity(account_id);
+        security = AccountMgr::GetSecurity(account_id, realmID);
     }
 
     if (m_session && security >= m_session->GetSecurity())
@@ -1889,7 +1889,12 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 security = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username,gmlevel,email,last_ip,last_login FROM account WHERE id = '%u'",accId);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT a.username,aa.gmlevel,a.email,a.last_ip,a.last_login "
+                                                        "FROM account a "
+                                                        "LEFT JOIN account_access aa "
+                                                        "ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) "
+                                                        "WHERE a.id = '%u'",realmID, accId);
+
     if (result)
     {
         Field* fields = result->Fetch();

@@ -720,22 +720,24 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     QueryResultAutoPtr result =
           AccountsDatabase.PQuery("SELECT "
-                                "id, "                      //0
-                                "gmlevel, "                 //1
-                                "sessionkey, "              //2
-                                "last_ip, "                 //3
-                                "locked, "                  //4
-                                "v, "                       //5
-                                "s, "                       //6
-                                "expansion, "               //7
-                                "locale, "                  //8
-                                "account_flags, "           //9
-                                "opcodesDisabled, "         //10
-                                "operatingSystem, "         //11
-                                "last_local_ip "            //12
-                                "FROM account "
-                                "WHERE username = '%s'",
-                                safe_account.c_str());
+                                "a.id, "                      //0
+                                "aa.gmlevel, "                //1
+                                "a.sessionkey, "              //2
+                                "a.last_ip, "                 //3
+                                "a.locked, "                  //4
+                                "a.v, "                       //5
+                                "a.s, "                       //6
+                                "a.expansion, "               //7
+                                "a.locale, "                  //8
+                                "a.account_flags, "           //9
+                                "a.opcodesDisabled, "         //10
+                                "a.operatingSystem, "         //11
+                                "a.last_local_ip "            //12
+                                "FROM account a "
+                                "LEFT JOIN account_access aa "
+                                "ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) "
+                                "WHERE a.username = '%s'",
+                                realmID, safe_account.c_str());
 
     // Stop if the account is not found
     if (!result)
