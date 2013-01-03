@@ -2402,7 +2402,7 @@ struct npc_saeedAI : public npc_escortAI
                     DoScriptText(SAY_SAEED_2, me, player);
                  break;
              case 22:
-                 me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
+                 me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                  break;
              case 24:
                  EventTimer = 8000;
@@ -2992,6 +2992,110 @@ bool GossipSelect_npc_trader_marid(Player* player, Creature* creature, uint32 se
 }
 
 /*######
+## npc_doctor_vomisa
+######*/
+
+enum
+{
+    QUEST_YOU_ROBOT    = 10248,
+
+    NPC_X6000          = 19849,
+    NPC_NEGATRON       = 19851
+};
+
+struct npc_doctor_vomisaAI : public ScriptedAI
+{
+    npc_doctor_vomisaAI(Creature *creature) : ScriptedAI(creature) {}
+
+    ObjectGuid X6000GUID;
+    ObjectGuid NegatronGUID;
+    uint32 CheckTimer;
+
+    void Reset() 
+    {
+        X6000GUID = 0;
+        NegatronGUID = 0;
+        CheckTimer = 0;
+    }
+
+    void RockAndRool()
+    {
+        if (NegatronGUID == 0)
+        {
+            CheckTimer = 5000;
+
+            float fx, fy, fz;
+            me->GetNearPoint(me, fx, fy, fz, 0.0f, 5.0f, 4.7f);
+            me->SummonCreature(NPC_X6000, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 61000);
+            me->GetNearPoint(me, fx, fy, fz, 0.0f, 56.0f, 4.7f);
+            me->SummonCreature(NPC_NEGATRON, fx, fy, fz, 2.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 50000);
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        if (summoned->GetEntry() == NPC_X6000)
+            X6000GUID = summoned->GetGUID();
+        else
+        {
+            if (summoned->GetEntry() == NPC_NEGATRON)
+            {
+                NegatronGUID = summoned->GetGUID();
+                //DoScriptText(YELL_INTRO, summoned);
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (CheckTimer <= diff)
+        {
+            if (Creature* negatron = GetClosestCreatureWithEntry(me, NPC_NEGATRON, 100.0f, true, true))
+                return;
+            else
+            {
+                Map* tmpMap = me->GetMap();
+
+                if (!tmpMap)
+                    return;
+
+                if (Creature* reaver = tmpMap->GetCreature(X6000GUID))
+                    reaver->ForcedDespawn(5000);
+
+                Reset();
+            }
+
+            CheckTimer = 5000;
+        }
+        else CheckTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_doctor_vomisa(Creature *creature)
+{
+    return new npc_doctor_vomisaAI (creature);
+}
+
+bool GossipHello_npc_doctor_vomisa(Player *player, Creature *creature)
+{
+    if(creature->isQuestGiver())
+        player->PrepareQuestMenu( creature->GetGUID());
+    player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
+
+    return true;
+}
+
+bool QuestAccept_npc_doctor_vomisa(Player* player, Creature* creature, const Quest* quest)
+{
+    if (quest->GetQuestId() == QUEST_YOU_ROBOT)
+        CAST_AI(npc_doctor_vomisaAI, creature->AI())->RockAndRool();
+
+    return true;
+}
+
+/*######
 ## AddSC_netherstrom
 ######*/
 
@@ -3144,6 +3248,13 @@ void AddSC_netherstorm()
     newscript->GetAI = &GetAI_npc_trader_marid;
     newscript->pGossipHello =  &GossipHello_npc_trader_marid;
     newscript->pGossipSelect = &GossipSelect_npc_trader_marid;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_doctor_vomisa";
+    newscript->GetAI = &GetAI_npc_doctor_vomisa;
+    newscript->pGossipHello =  &GossipHello_npc_doctor_vomisa;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_doctor_vomisa;
     newscript->RegisterSelf();
 }
 
