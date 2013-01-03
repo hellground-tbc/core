@@ -2891,6 +2891,107 @@ CreatureAI* GetAI_npc_energy_ball(Creature *creature)
 }
 
 /*######
+# npc_trader_marid
+######*/
+
+#define GOSSIP_ITEM_GO         "I am prepared to offer a deal!"
+
+enum
+{
+    FACTION_HOSTILE_           = 90,
+    MY_FACTION                 = 1731,
+
+    SAY_START_1                = -1900223,
+    SAY_GUARD                  = -1900224,
+
+    QUEST_TROUBLE              = 10273,
+    NPC_BODYGUARD              = 20101,
+};
+
+struct npc_trader_maridAI : public npc_escortAI
+{
+    npc_trader_maridAI(Creature* creature) : npc_escortAI(creature) {}
+
+    void Reset()
+    {
+        me->setFaction(MY_FACTION);
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        float fx, fy, fz;
+        me->GetNearPoint(me, fx, fy, fz, 0.0f, 4.0f, 0.0f);
+        me->SummonCreature(NPC_BODYGUARD, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+        me->GetNearPoint(me, fx, fy, fz, 0.0f, 4.0f, M_PI);
+        me->SummonCreature(NPC_BODYGUARD, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        summoned->setFaction(FACTION_HOSTILE_);
+        summoned->AI()->AttackStart(me->getVictim());
+
+        if (Player* player = GetPlayerForEscort())
+            DoScriptText(SAY_GUARD, summoned, player);
+    }
+
+    void WaypointReached(uint32 i)
+    {
+        switch(i)
+        {
+            case 6:
+                me->setFaction(FACTION_HOSTILE_);
+                if (Player* player = GetPlayerForEscort())
+                    me->AI()->AttackStart(player);
+                break;
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        npc_escortAI::UpdateAI(diff);
+
+        if(!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_trader_marid(Creature *creature)
+{
+    return new npc_trader_maridAI (creature);
+}
+
+bool GossipHello_npc_trader_marid(Player *player, Creature *creature)
+{
+    if( player->GetQuestStatus(QUEST_TROUBLE) == QUEST_STATUS_INCOMPLETE)
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
+    }
+    else
+    {
+        if(creature->isQuestGiver())
+            player->PrepareQuestMenu( creature->GetGUID());
+        player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
+    }
+    return true;
+}
+
+bool GossipSelect_npc_trader_marid(Player* player, Creature* creature, uint32 sender, uint32 action)
+{
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        DoScriptText(SAY_START_1, creature);
+        ((npc_trader_maridAI*)creature->AI())->Start(false, false, player->GetGUID(), 0, true);
+        player->CLOSE_GOSSIP_MENU();
+    }
+
+    return true;
+}
+
+/*######
 ## AddSC_netherstrom
 ######*/
 
@@ -3036,6 +3137,13 @@ void AddSC_netherstorm()
     newscript = new Script;
     newscript->Name="npc_energy_ball";
     newscript->GetAI = &GetAI_npc_energy_ball;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_trader_marid";
+    newscript->GetAI = &GetAI_npc_trader_marid;
+    newscript->pGossipHello =  &GossipHello_npc_trader_marid;
+    newscript->pGossipSelect = &GossipSelect_npc_trader_marid;
     newscript->RegisterSelf();
 }
 
