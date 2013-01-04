@@ -752,12 +752,19 @@ void WorldSession::SendAuthWaitQue(uint32 position)
 
 void WorldSession::InitWarden(BigNumber* K, std::string os)
 {
-    if(os == "Win")                                         // Windows
+    if (os == "Win")                                         // Windows
         m_Warden = (WardenBase*)new WardenWin();
-    else                                                    // MacOS
+
+    if (os == "OSX")                                         // MacOS
         m_Warden = (WardenBase*)new WardenMac();
 
-    m_Warden->Init(this, K);
+    if (m_Warden)
+        m_Warden->Init(this, K);
+    else{
+        sLog.outLog(LOG_WARDEN, "Client %u got unsupported operating system (%s)", GetAccountId(), os.c_str());
+        if (sWorld.getConfig(CONFIG_WARDEN_KICK))
+            KickPlayer();
+    }
 }
 
 uint32 WorldSession::RecordSessionTimeDiff(const char *text, ...)

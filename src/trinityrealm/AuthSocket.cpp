@@ -372,11 +372,13 @@ bool AuthSocket::_HandleLogonChallenge()
     _build = ch->build;
     _os = (const char*)ch->os;
 
-    if(_os.size() > 4)
-        return false;
-
     // Restore string order as its byte order is reversed
     std::reverse(_os.begin(), _os.end());
+
+    if(_os.size() > 4 || (_os != "Win" && _os != "OSX")){
+        sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _login.c_str(), _os.c_str());
+        return false;
+    }
 
     ///- Normalize account name
     //utf8ToUpperOnlyLatin(_login); -- client already send account in expected form
