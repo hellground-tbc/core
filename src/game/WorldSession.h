@@ -196,7 +196,7 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         void RemoveOpcodeDisableFlag(uint16 flag);
         uint16 GetOpcodesDisabledFlag() { return m_opcodesDisabled;}
 
-        void InitWarden(BigNumber *K, uint8& OperatingSystem);
+        void InitWarden(BigNumber *K, std::string os);
 
         /// Session in auth.queue currently
         void SetInQueue(bool state) { m_inQueue = state; }

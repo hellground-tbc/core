@@ -1733,10 +1733,16 @@ VMSS.MapFreezeDetectTime = 1000
 #        If Mail.OldReturnMode is set to 1 then this value contains time beatween each old mails return attempt (in seconds).
 #        Default: 60
 #
+#    Warden.Enabled
+#		 Enable warden anticheat
+#		 Default: 1 (Enabled)
+#				  0 (Disabled)
+#
 #    Warden.Kick
 #        Kick player on failed check
 #        Default: 0 (Disabled)
 #                 1 (Enabled)
+#
 #    Warden.Ban
 #        Ban player on failed check
 #        Default: 0 (Disabled)
@@ -1767,6 +1773,7 @@ Auction.EnableSort = 1
 Mail.OldReturnMode = 0
 Mail.OldReturnTimer = 60
 
+Warden.Enabled = 1
 Warden.Kick = 0
 Warden.Ban = 0
 

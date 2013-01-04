@@ -90,7 +90,7 @@ class AuthSocket: public BufferedSocket
 
         std::string _login;
         std::string _safelogin;
-        std::string operatingSystem;
+        std::string _os;
         std::string localIp;
 
         // Since GetLocaleByName() is _NOT_ bijective, we have to store the locale as a string. Otherwise we can't differ

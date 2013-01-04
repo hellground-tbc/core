@@ -731,7 +731,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
                                 "a.locale, "                  //8
                                 "a.account_flags, "           //9
                                 "a.opcodesDisabled, "         //10
-                                "a.operatingSystem, "         //11
+                                "a.os, "                      //11
                                 "a.last_local_ip "            //12
                                 "FROM account a "
                                 "LEFT JOIN account_access aa "
@@ -754,7 +754,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     Field* fields = result->Fetch();
 
     std::string lastLocalIp = fields[12].GetString();
-    uint8 operatingSystem = fields[11].GetUInt8();
+    std::string os = fields[11].GetString();
     expansion =((sWorld.getConfig(CONFIG_EXPANSION) > fields[7].GetUInt8()) ? fields[7].GetUInt8() : sWorld.getConfig(CONFIG_EXPANSION));
 
     N.SetHexStr("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7");
@@ -914,8 +914,10 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     AccountsDatabase.escape_string(lastLocalIp);
 
     AccountsDatabase.PExecute("INSERT INTO account_login VALUES('%u', NOW(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
-
-    m_Session->InitWarden(&K, operatingSystem);
+    
+    // Initialize Warden system only if it is enabled by config
+    if (sWorld.getConfig(CONFIG_WARDEN_ENABLED))
+        m_Session->InitWarden(&K, os);
 
     // In case needed sometime the second arg is in microseconds 1 000 000 = 1 sec
     ACE_OS::sleep(ACE_Time_Value(0, 10000));

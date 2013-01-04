@@ -59,6 +59,14 @@ void WardenDataStorage::Cleanup()
 
 void WardenDataStorage::LoadWardenDataResult(bool reload)
 {
+    // Check if Warden is enabled by config before loading anything
+    if (!sWorld.getConfig(CONFIG_WARDEN_ENABLED))
+    {
+        sLog.outString(">> Warden disabled, loading data skipped.");
+        sLog.outString();
+        return;
+    }
+
     if (reload)
         Cleanup();
 

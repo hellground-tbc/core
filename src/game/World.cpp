@@ -1077,6 +1077,7 @@ void World::LoadConfigSettings(bool reload)
     delete[] forbiddenMaps;
 
     m_configs[CONFIG_MIN_GM_TEXT_LVL] = sConfig.GetIntDefault("MinGMTextLevel", 1);
+    m_configs[CONFIG_WARDEN_ENABLED] = sConfig.GetBoolDefault("Warden.Enabled", true);
     m_configs[CONFIG_WARDEN_KICK] = sConfig.GetBoolDefault("Warden.Kick", true);
     m_configs[CONFIG_WARDEN_BAN] = sConfig.GetBoolDefault("Warden.Ban", true);
     m_configs[CONFIG_DONT_DELETE_CHARS] = sConfig.GetBoolDefault("DontDeleteChars", false);

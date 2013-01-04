@@ -361,11 +361,6 @@ bool AuthSocket::_HandleLogonChallenge()
     EndianConvert(ch->timezone_bias);
     EndianConvert(*((uint32*)(&ch->ip[0])));
 
-    if (ch->os[3]) operatingSystem.push_back(ch->os[3]);
-    if (ch->os[2]) operatingSystem.push_back(ch->os[2]);
-    if (ch->os[1]) operatingSystem.push_back(ch->os[1]);
-    if (ch->os[0]) operatingSystem.push_back(ch->os[0]);
-
     std::stringstream tmpLocalIp;
     tmpLocalIp << (uint32)ch->ip[0] << "." << (uint32)ch->ip[1] << "." << (uint32)ch->ip[2] << "." << (uint32)ch->ip[3];
 
@@ -375,6 +370,13 @@ bool AuthSocket::_HandleLogonChallenge()
 
     _login = (const char*)ch->I;
     _build = ch->build;
+    _os = (const char*)ch->os;
+
+    if(_os.size() > 4)
+        return false;
+
+    // Restore string order as its byte order is reversed
+    std::reverse(_os.begin(), _os.end());
 
     ///- Normalize account name
     //utf8ToUpperOnlyLatin(_login); -- client already send account in expected form
@@ -707,26 +709,12 @@ bool AuthSocket::_HandleLogonProof()
     {
         sLog.outBasic("User '%s' successfully authenticated", _login.c_str());
 
-        uint8 OS;
-
-        if (!strcmp(operatingSystem.c_str(), "Win"))
-            OS = 0;
-        else if (!strcmp(operatingSystem.c_str(), "OSX"))
-            OS = 1;
-        else
-        {
-            OS = 2;
-            AccountsDatabase.escape_string(operatingSystem);
-            sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _safelogin.c_str(), operatingSystem.c_str());
-        }
-
-        AccountsDatabase.escape_string(localIp);
-
         ///- Update the sessionkey, last_ip, last login time and reset number of failed logins in the account table for this account
         // No SQL injection (escaped user name) and IP address as received by socket
         const char* K_hex = K.AsHexStr();
 
-        AccountsDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_local_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0, operatingSystem = '%u' WHERE username = '%s'", K_hex, get_remote_address().c_str(), localIp.c_str(), GetLocaleByName(_localizationName), OS, _safelogin.c_str());
+        AccountsDatabase.escape_string(localIp);
+        AccountsDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_local_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0, os = '%s' WHERE username = '%s'", K_hex, get_remote_address().c_str(), localIp.c_str(), GetLocaleByName(_localizationName), _os.c_str(), _safelogin.c_str());
 
         OPENSSL_free((void*)K_hex);
 
