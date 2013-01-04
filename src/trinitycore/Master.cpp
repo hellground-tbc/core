@@ -148,6 +148,9 @@ int Master::Run()
     if (!_StartDB())
         return 1;
 
+    // set server offline (not connectable)
+    AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = (realmflags & ~%u) | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, REALM_FLAG_INVALID, realmID);
+
     ///- Initialize the World
     sWorld.SetInitialWorldSettings();
 
@@ -188,12 +191,8 @@ int Master::Run()
     ACE_Based::Thread world_thread(new WorldRunnable);
     world_thread.setPriority(ACE_Based::Highest);
 
-    // set realmbuilds depend on mangosd expected builds, and set server online
-    {
-        std::string builds = AcceptableClientBuildsListStr();
-        AccountsDatabase.escape_string(builds);
-        AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0, realmbuilds = '%s'  WHERE id = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
-    }
+    // set server online (allow connecting now)
+    AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0  WHERE id = '%u'", REALM_FLAG_INVALID, realmID);
 
     // console should be disabled in service/daemon mode
     if (sConfig.GetBoolDefault("Console.Enable", true) && (runMode == MODE_NORMAL))
@@ -277,7 +276,7 @@ int Master::Run()
 
     sWorldSocketMgr->Wait();
 
-    ///- Set server offline in realmlist
+    // set server offline
     AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
 
     // when the main thread closes the singletons get unloaded

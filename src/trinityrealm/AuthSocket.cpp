@@ -964,11 +964,9 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
                 else
                     AmountOfCharacters = 0;
 
-                bool ok_build = std::find(i->second.realmbuilds.begin(), i->second.realmbuilds.end(), _build) != i->second.realmbuilds.end();
+                bool ok_build = i->second.gamebuild == _build;
 
                 RealmBuildInfo const* buildInfo = ok_build ? FindBuildInfo(_build) : NULL;
-                if (!buildInfo)
-                    buildInfo = &i->second.realmBuildInfo;
 
                 RealmFlags realmflags = i->second.realmflags;
 
@@ -1024,11 +1022,9 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
                 else
                     AmountOfCharacters = 0;
 
-                bool ok_build = std::find(i->second.realmbuilds.begin(), i->second.realmbuilds.end(), _build) != i->second.realmbuilds.end();
+                bool ok_build = i->second.gamebuild == _build;
 
                 RealmBuildInfo const* buildInfo = ok_build ? FindBuildInfo(_build) : NULL;
-                if (!buildInfo)
-                    buildInfo = &i->second.realmBuildInfo;
 
                 uint8 lock = (i->second.allowedSecurityLevel > _accountSecurityLevel) ? 1 : 0;
 

@@ -78,7 +78,7 @@ void RealmList::Initialize(uint32 updateInterval)
     UpdateRealms(true);
 }
 
-void RealmList::UpdateRealm( uint32 ID, const std::string& name, const std::string& address, uint32 port, uint8 icon, RealmFlags realmflags, uint8 timezone, AccountTypes allowedSecurityLevel, float popu, const std::string& builds)
+void RealmList::UpdateRealm( uint32 ID, const std::string& name, const std::string& address, uint32 port, uint8 icon, RealmFlags realmflags, uint8 timezone, AccountTypes allowedSecurityLevel, float popu, uint32 build)
 {
     ///- Create new if not exist or update existed
     Realm& realm = m_realms[name];
@@ -89,28 +89,7 @@ void RealmList::UpdateRealm( uint32 ID, const std::string& name, const std::stri
     realm.timezone   = timezone;
     realm.allowedSecurityLevel = allowedSecurityLevel;
     realm.populationLevel      = popu;
-
-    Tokens tokens = StrSplit(builds, " ");
-    Tokens::iterator iter;
-
-    for (iter = tokens.begin(); iter != tokens.end(); ++iter)
-    {
-        uint32 build = atol((*iter).c_str());
-        realm.realmbuilds.insert(build);
-    }
-
-    uint16 first_build = !realm.realmbuilds.empty() ? *realm.realmbuilds.begin() : 0;
-
-    realm.realmBuildInfo.build = first_build;
-    realm.realmBuildInfo.major_version = 0;
-    realm.realmBuildInfo.minor_version = 0;
-    realm.realmBuildInfo.bugfix_version = 0;
-    realm.realmBuildInfo.hotfix_version = ' ';
-
-    if (first_build)
-        if (RealmBuildInfo const* bInfo = FindBuildInfo(first_build))
-            if (bInfo->build == first_build)
-                realm.realmBuildInfo = *bInfo;
+    realm.gamebuild = build;
 
     ///- Append port to IP address.
     std::ostringstream ss;
@@ -138,7 +117,7 @@ void RealmList::UpdateRealms(bool init)
     sLog.outDetail("Updating Realm List...");
 
     ////                                               0   1     2        3     4     5           6         7                     8           9
-    QueryResultAutoPtr result = AccountsDatabase.Query( "SELECT id, name, address, port, icon, realmflags, timezone, allowedSecurityLevel, population, realmbuilds FROM realmlist WHERE (realmflags & 1) = 0 ORDER BY name" );
+    QueryResultAutoPtr result = AccountsDatabase.Query( "SELECT id, name, address, port, icon, realmflags, timezone, allowedSecurityLevel, population, gamebuild FROM realmlist WHERE (realmflags & 1) = 0 ORDER BY name" );
 
     ///- Circle through results and add them to the realm map
     if(result)
@@ -161,7 +140,7 @@ void RealmList::UpdateRealms(bool init)
                 fields[0].GetUInt32(), fields[1].GetCppString(),fields[2].GetCppString(),fields[3].GetUInt32(),
                 fields[4].GetUInt8(), RealmFlags(realmflags), fields[6].GetUInt8(),
                 (allowedSecurityLevel <= SEC_ADMINISTRATOR ? AccountTypes(allowedSecurityLevel) : SEC_ADMINISTRATOR),
-                fields[8].GetFloat(), fields[9].GetCppString());
+                fields[8].GetFloat(), fields[9].GetUInt32());
 
             if(init)
                 sLog.outString("Added realm \"%s\"", fields[1].GetString());
