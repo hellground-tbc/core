@@ -4393,7 +4393,8 @@ bool ChatHandler::HandleMmapOffsetCreateCommand(const char* /*args*/)
     if (file.fail())
         return false;
 
-    file << player->GetMapId() << " " << gx << "," << gy << " ("
+    // YEP THEY are swapped itnernally, mmap filename is mapidgxgy.mmap offmesh use gygx order
+    file << player->GetMapId() << " " << gy << "," << gx << " ("
          << player->GetPositionX() << " "
          << player->GetPositionY() << " "
          << player->GetPositionZ() << ")" << " " << "("
