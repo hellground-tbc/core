@@ -135,13 +135,16 @@ bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
 
 void GameEventMgr::StopEvent(uint16 event_id, bool overwrite)
 {
-    if (event_id==15){
+    if (event_id == 15)
         RealmDataDatabase.Execute("DELETE FROM character_inventory WHERE item_template=19807");
-    }
+
     bool serverwide_evt = mGameEvent[event_id].state != GAMEEVENT_NORMAL;
 
     RemoveActiveEvent(event_id);
     UnApplyEvent(event_id);
+
+    static SqlStatementID deleteGameEventSave;
+    static SqlStatementID deleteGameEventCondSave;
 
     if (overwrite && !serverwide_evt)
     {
@@ -160,9 +163,13 @@ void GameEventMgr::StopEvent(uint16 event_id, bool overwrite)
             std::map<uint32 /*condition id*/, GameEventFinishCondition>::iterator itr;
             for (itr = mGameEvent[event_id].conditions.begin(); itr != mGameEvent[event_id].conditions.end(); ++itr)
                 itr->second.done = 0;
+
             RealmDataDatabase.BeginTransaction();
-            RealmDataDatabase.PExecute("DELETE FROM game_event_save WHERE event_id = '%u'",event_id);
-            RealmDataDatabase.PExecute("DELETE FROM game_event_condition_save WHERE event_id = '%u'",event_id);
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteGameEventSave, "DELETE FROM game_event_save WHERE event_id = ?");
+            stmt.PExecute(event_id);
+
+            stmt = RealmDataDatabase.CreateStatement(deleteGameEventCondSave, "DELETE FROM game_event_condition_save WHERE event_id = ?");
+            stmt.PExecute(event_id);
             RealmDataDatabase.CommitTransaction();
         }
     }
@@ -208,7 +215,7 @@ void GameEventMgr::LoadFromDB()
         uint16 event_id = fields[0].GetUInt16();
         if (event_id==0)
         {
-            sLog.outErrorDb("`game_event` game event id (%i) is reserved and can't be used.",event_id);
+            sLog.outLog(LOG_DB_ERR, "`game_event` game event id (%i) is reserved and can't be used.",event_id);
             continue;
         }
 
@@ -225,7 +232,7 @@ void GameEventMgr::LoadFromDB()
 
         if (pGameEvent.length==0 && pGameEvent.state == GAMEEVENT_NORMAL)                            // length>0 is validity check
         {
-            sLog.outErrorDb("`game_event` game event id (%i) isn't a world event and has length = 0, thus it can't be used.",event_id);
+            sLog.outLog(LOG_DB_ERR, "`game_event` game event id (%i) isn't a world event and has length = 0, thus it can't be used.",event_id);
             continue;
         }
 
@@ -261,7 +268,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEvent.size())
             {
-                sLog.outErrorDb("`game_event_save` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_save` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -272,7 +279,7 @@ void GameEventMgr::LoadFromDB()
             }
             else
             {
-                sLog.outErrorDb("game_event_save includes event save for non-worldevent id %u",event_id);
+                sLog.outLog(LOG_DB_ERR, "game_event_save includes event save for non-worldevent id %u",event_id);
                 continue;
             }
 
@@ -307,7 +314,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEvent.size())
             {
-                sLog.outErrorDb("`game_event_prerequisite` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_prerequisite` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -317,14 +324,14 @@ void GameEventMgr::LoadFromDB()
                 uint16 prerequisite_event = fields[1].GetUInt16();
                 if (prerequisite_event >= mGameEvent.size())
                 {
-                    sLog.outErrorDb("`game_event_prerequisite` game event prerequisite id (%i) is out of range compared to max event id in `game_event`",prerequisite_event);
+                    sLog.outLog(LOG_DB_ERR, "`game_event_prerequisite` game event prerequisite id (%i) is out of range compared to max event id in `game_event`",prerequisite_event);
                     continue;
                 }
                 mGameEvent[event_id].prerequisite_events.insert(prerequisite_event);
             }
             else
             {
-                sLog.outErrorDb("game_event_prerequisiste includes event entry for non-worldevent id %u",event_id);
+                sLog.outLog(LOG_DB_ERR, "game_event_prerequisiste includes event entry for non-worldevent id %u",event_id);
                 continue;
             }
 
@@ -366,7 +373,7 @@ void GameEventMgr::LoadFromDB()
 
             if (internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
             {
-                sLog.outErrorDb("`game_event_creature` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_creature` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -410,7 +417,7 @@ void GameEventMgr::LoadFromDB()
 
             if (internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
             {
-                sLog.outErrorDb("`game_event_gameobject` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_gameobject` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -453,7 +460,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEventModelEquip.size())
             {
-                sLog.outErrorDb("`game_event_model_equip` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_model_equip` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -469,7 +476,7 @@ void GameEventMgr::LoadFromDB()
             {
                 if (!sObjectMgr.GetEquipmentInfo(newModelEquipSet.equipment_id))
                 {
-                    sLog.outErrorDb("Table `game_event_model_equip` have creature (Guid: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", guid, newModelEquipSet.equipment_id);
+                    sLog.outLog(LOG_DB_ERR, "Table `game_event_model_equip` have creature (Guid: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", guid, newModelEquipSet.equipment_id);
                     continue;
                 }
             }
@@ -509,7 +516,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEventCreatureQuests.size())
             {
-                sLog.outErrorDb("`game_event_creature_quest` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_creature_quest` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -550,7 +557,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEventGameObjectQuests.size())
             {
-                sLog.outErrorDb("`game_event_gameobject_quest` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_gameobject_quest` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -592,7 +599,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEvent.size())
             {
-                sLog.outErrorDb("`game_event_quest_condition` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_quest_condition` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -633,7 +640,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEvent.size())
             {
-                sLog.outErrorDb("`game_event_condition` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_condition` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -676,7 +683,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEvent.size())
             {
-                sLog.outErrorDb("`game_event_condition_save` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_condition_save` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -687,7 +694,7 @@ void GameEventMgr::LoadFromDB()
             }
             else
             {
-                sLog.outErrorDb("game_event_condition_save contains not present condition evt id %u cond id %u",event_id, condition);
+                sLog.outLog(LOG_DB_ERR, "game_event_condition_save contains not present condition evt id %u cond id %u",event_id, condition);
                 continue;
             }
 
@@ -727,7 +734,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEvent.size())
             {
-                sLog.outErrorDb("`game_event_npcflag` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_npcflag` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -766,7 +773,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEventVendors.size())
             {
-                sLog.outErrorDb("`game_event_npc_vendor` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_npc_vendor` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -833,7 +840,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEvent.size())
             {
-                sLog.outErrorDb("`game_event_npc_gossip` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_npc_gossip` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -875,7 +882,7 @@ void GameEventMgr::LoadFromDB()
 
             if (event_id >= mGameEvent.size())
             {
-                sLog.outErrorDb("`game_event_battleground_holiday` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_battleground_holiday` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -926,13 +933,13 @@ void GameEventMgr::LoadFromDB()
 
             if (internal_event_id < 0 || internal_event_id >= mGameEventPoolIds.size())
             {
-                sLog.outErrorDb("`game_event_pool` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                sLog.outLog(LOG_DB_ERR, "`game_event_pool` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
             if (!sPoolMgr.CheckPool(entry))
             {
-                sLog.outErrorDb("Pool Id (%u) has all creatures or gameobjects with explicit chance sum <>100 and no equal chance defined. The pool system cannot pick one to spawn.", entry);
+                sLog.outLog(LOG_DB_ERR, "Pool Id (%u) has all creatures or gameobjects with explicit chance sum <>100 and no equal chance defined. The pool system cannot pick one to spawn.", entry);
                 continue;
             }
 
@@ -997,7 +1004,7 @@ uint32 GameEventMgr::Update()                                  // return the nex
     {
         // must do the activating first, and after that the deactivating
         // so first queue it
-        //sLog.outErrorDb("Checking event %u",itr);
+        //sLog.outLog(LOG_DB_ERR, "Checking event %u",itr);
         if (CheckOneGameEvent(itr))
         {
             // if the world event is in NEXTPHASE state, and the time has passed to finish this event, then do so
@@ -1075,7 +1082,7 @@ void GameEventMgr::UnApplyEvent(uint16 event_id)
     UpdateEventNPCVendor(event_id, false);
 }
 
-const char *GameEventMgr::getActiveEventsString()
+char const* GameEventMgr::getActiveEventsString()
 {
     std::stringstream eventstring;
     eventstring << "Active events:\n";
@@ -1157,7 +1164,7 @@ void GameEventMgr::GameEventSpawn(int16 event_id)
 
     if (internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
     {
-        sLog.outError("GameEventMgr::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)",internal_event_id,mGameEventCreatureGuids.size());
+        sLog.outLog(LOG_DEFAULT, "ERROR: GameEventMgr::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)",internal_event_id,mGameEventCreatureGuids.size());
         return;
     }
 
@@ -1187,7 +1194,7 @@ void GameEventMgr::GameEventSpawn(int16 event_id)
 
     if (internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
-        sLog.outError("GameEventMgr::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)",internal_event_id,mGameEventGameobjectGuids.size());
+        sLog.outLog(LOG_DEFAULT, "ERROR: GameEventMgr::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)",internal_event_id,mGameEventGameobjectGuids.size());
         return;
     }
 
@@ -1221,7 +1228,7 @@ void GameEventMgr::GameEventSpawn(int16 event_id)
 
     if (internal_event_id < 0 || internal_event_id >= mGameEventPoolIds.size())
     {
-        sLog.outError("GameEventMgr::GameEventSpawn attempt access to out of range mGameEventPoolIds element %i (size: %u)", internal_event_id, mGameEventPoolIds.size());
+        sLog.outLog(LOG_DEFAULT, "ERROR: GameEventMgr::GameEventSpawn attempt access to out of range mGameEventPoolIds element %i (size: %u)", internal_event_id, mGameEventPoolIds.size());
         return;
     }
 
@@ -1235,7 +1242,7 @@ void GameEventMgr::GameEventUnspawn(int16 event_id)
 
     if (internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
     {
-        sLog.outError("GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)",internal_event_id,mGameEventCreatureGuids.size());
+        sLog.outLog(LOG_DEFAULT, "ERROR: GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)",internal_event_id,mGameEventCreatureGuids.size());
         return;
     }
 
@@ -1258,7 +1265,7 @@ void GameEventMgr::GameEventUnspawn(int16 event_id)
 
     if (internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
-        sLog.outError("GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)",internal_event_id,mGameEventGameobjectGuids.size());
+        sLog.outLog(LOG_DEFAULT, "ERROR: GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)",internal_event_id,mGameEventGameobjectGuids.size());
         return;
     }
 
@@ -1281,7 +1288,7 @@ void GameEventMgr::GameEventUnspawn(int16 event_id)
 
     if (internal_event_id < 0 || internal_event_id >= mGameEventPoolIds.size())
     {
-        sLog.outError("GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventPoolIds element %i (size: %u)", internal_event_id, mGameEventPoolIds.size());
+        sLog.outLog(LOG_DEFAULT, "ERROR: GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventPoolIds element %i (size: %u)", internal_event_id, mGameEventPoolIds.size());
         return;
     }
 
@@ -1519,11 +1526,19 @@ void GameEventMgr::HandleQuestComplete(uint32 quest_id)
                 // check max limit
                 if (citr->second.done > citr->second.reqNum)
                     citr->second.done = citr->second.reqNum;
+
+                static SqlStatementID deleteGECondSave;
+                static SqlStatementID insertGECondSave;
+
                 // save the change to db
                 RealmDataDatabase.BeginTransaction();
-                RealmDataDatabase.PExecute("DELETE FROM game_event_condition_save WHERE event_id = '%u' AND condition_id = '%u'",event_id,condition);
-                RealmDataDatabase.PExecute("INSERT INTO game_event_condition_save (event_id, condition_id, done) VALUES (%u,%u,%f)",event_id,condition,citr->second.done);
+                SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteGECondSave, "DELETE FROM game_event_condition_save WHERE event_id = ? AND condition_id = ?");
+                stmt.PExecute(event_id, condition);
+
+                stmt = RealmDataDatabase.CreateStatement(insertGECondSave, "INSERT INTO game_event_condition_save (event_id, condition_id, done) VALUES (?, ?, ?)");
+                stmt.PExecute(event_id, condition, citr->second.done);
                 RealmDataDatabase.CommitTransaction();
+
                 // check if all conditions are met, if so, update the event state
                 if (CheckOneGameEventConditions(event_id))
                 {
@@ -1556,12 +1571,28 @@ bool GameEventMgr::CheckOneGameEventConditions(uint16 event_id)
 
 void GameEventMgr::SaveWorldEventStateToDB(uint16 event_id)
 {
+    static SqlStatementID deleteGESave;
+    static SqlStatementID insertGESave1;
+    static SqlStatementID insertGESave2;
+
     RealmDataDatabase.BeginTransaction();
-    RealmDataDatabase.PExecute("DELETE FROM game_event_save WHERE event_id = '%u'",event_id);
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteGESave, "DELETE FROM game_event_save WHERE event_id = ?");
+    stmt.PExecute(event_id);
+
     if (mGameEvent[event_id].nextstart)
-        RealmDataDatabase.PExecute("INSERT INTO game_event_save (event_id, state, next_start) VALUES ('%u','%u',FROM_UNIXTIME("UI64FMTD"))",event_id,mGameEvent[event_id].state,(uint64)(mGameEvent[event_id].nextstart));
+    {
+        stmt = RealmDataDatabase.CreateStatement(insertGESave1, "INSERT INTO game_event_save (event_id, state, next_start) VALUES (?, ?, FROM_UNIXTIME(?))");
+        stmt.addUInt32(event_id);
+        stmt.addUInt32(uint32(mGameEvent[event_id].state));
+        stmt.addUInt64(uint64(mGameEvent[event_id].nextstart));
+        stmt.Execute();
+    }
     else
-        RealmDataDatabase.PExecute("INSERT INTO game_event_save (event_id, state, next_start) VALUES ('%u','%u','0000-00-00 00:00:00')",event_id,mGameEvent[event_id].state);
+    {
+        stmt = RealmDataDatabase.CreateStatement(insertGESave2, "INSERT INTO game_event_save (event_id, state, next_start) VALUES (?, ?, '0000-00-00 00:00:00')");
+        stmt.PExecute(event_id, uint32(mGameEvent[event_id].state));
+    }
+
     RealmDataDatabase.CommitTransaction();
 }
 
@@ -1597,7 +1628,7 @@ void GameEventMgr::SendWorldStateUpdate(Player * plr, uint16 event_id)
     }
 }
 
-HELLGROUND_DLL_SPEC bool isGameEventActive(uint16 event_id)
+HELLGROUND_EXPORT bool isGameEventActive(uint16 event_id)
 {
     GameEventMgr::ActiveEvents const& ae = sGameEventMgr.GetActiveEventList();
 
@@ -1608,7 +1639,7 @@ HELLGROUND_DLL_SPEC bool isGameEventActive(uint16 event_id)
     return false;
 }
 
-HELLGROUND_DLL_SPEC void HandleWorldEventGossip(Player* p, Creature* c)
+HELLGROUND_EXPORT void HandleWorldEventGossip(Player* p, Creature* c)
 {
     sGameEventMgr.HandleWorldEventGossip(p, c);
 }

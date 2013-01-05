@@ -18,12 +18,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "Common.h"
 #include "Log.h"
+
+#include <cstdarg>
+
+#include "Common.h"
 #include "Config/Config.h"
 #include "Util.h"
-
-#include <stdarg.h>
 
 enum LogType
 {
@@ -34,6 +35,27 @@ enum LogType
 };
 
 const int LogType_count = int(LogError) +1;
+
+const char* logToStr[LOG_MAX_FILES][3] =
+{     // file name conf    mode  timestamp conf name
+    { "GMLogFile",          "a", "GmLogTimestamp" },    // LOG_GM
+    { "LogFile",            "w", "LogTimestamp" },      // LOG_DEFAULT
+    { "StatusParserFile",   "w", NULL },                // LOG_STATUS
+    { "CharLogFile",        "a", "CharLogTimestamp" },  // LOG_CHAR
+    { "DBErrorLogFile",     "a", NULL },                // LOG_DB_ERR
+    { "ArenaLogFile",       "a", NULL },                // LOG_ARENA
+    { "CheatLogFile",       "a", NULL },                // LOG_CHEAT
+    { "SpecialLogFile",     "a", NULL },                // LOG_SPECIAL
+    { "MailLogFile",        "a", NULL },                // LOG_MAIL
+    { "GannLogFile",        "a", NULL },                // LOG_GUILD_ANN
+    { "BossLogFile",        "a", NULL },                // LOG_BOSS
+    { "WardenLogFile",      "a", NULL },                // LOG_WARDEN
+    { "AuctionLogFile",     "a", NULL },                // LOG_AUCTION
+    { "DiffLogFile",        "a", NULL },                // LOG_DIFF
+    { "SessionDiffLogFile", "a", NULL },                // LOG_SESSION_DIFF
+    { "CrashLogFile",       "a", NULL },                // LOG_CRASH
+    { "DBDiffFile",         "a", NULL }                 // LOG_DB_DIFF
+};
 
 Log::Log() : m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
 {
@@ -190,36 +212,14 @@ void Log::Initialize()
 
     m_logsTimestamp = "_" + GetTimestampStr();
 
-    const char* logToStr[LOG_MAX_FILES] =
-    {
-        "LogFile",          //LOG_DEFAULT
-        "unused",           //LOG_IRC
-        "GMLogFile",        //LOG_GM
-        "CharLogFile",      //LOG_CHAR
-        "DBErrorLogFile",   //LOG_DB_ERR
-        "ArenaLogFile",     //LOG_ARENA
-        "CheatLogFile",     //LOG_CHEAT
-        "ACLogFile",        //LOG_AC
-        "SpecialLogFile",   //LOG_SPECIAL
-        "MailLogFile",      //LOG_MAIL
-        "GannLogFile",      //LOG_GUILD_ANN
-        "BossLogFile",      //LOG_BOSS
-        "WardenLogFile",    //LOG_WARDEN
-        "AuctionLogFile",   //LOG_AUCTION
-        "DiffLogFile",      //LOG_DIFF
-        "CrashLogFile",     //LOG_CRASH
-    };
-
     /// Open specific log files
-    logFile[LOG_DEFAULT] = openLogFile(logToStr[LOG_DEFAULT],"LogTimestamp","w");
-
     m_gmlog_per_account = sConfig.GetBoolDefault("GmLogPerAccount",false);
     if(!m_gmlog_per_account)
-        logFile[LOG_GM] = openLogFile(logToStr[LOG_GM],"GmLogTimestamp","a");
+        logFile[LOG_GM] = openLogFile(LOG_GM);
     else
     {
         // GM log settings for per account case
-        m_gmlog_filename_format = sConfig.GetStringDefault(logToStr[LOG_GM], "");
+        m_gmlog_filename_format = sConfig.GetStringDefault(logToStr[LOG_GM][0], logToStr[LOG_GM][2]);
         if(!m_gmlog_filename_format.empty())
         {
             bool m_gmlog_timestamp = sConfig.GetBoolDefault("GmLogTimestamp",false);
@@ -246,10 +246,8 @@ void Log::Initialize()
 
     m_whisplog_filename_format = (m_logsDir.empty() ? "." : m_logsDir) + sConfig.GetStringDefault("WhispLogDir", "whisps/") + "whisp_%u_.log";
 
-    logFile[LOG_CHAR] = openLogFile(logToStr[LOG_CHAR],"CharLogTimestamp","a");
-
-    for (uint8 i = LOG_DB_ERR; i < LOG_MAX_FILES; i++)
-        logFile[i] = openLogFile(logToStr[i], NULL, "a");
+    for (uint8 i = LOG_DEFAULT; i < LOG_MAX_FILES; ++i)
+        logFile[i] = openLogFile(LogNames(i));
 
     // Main log file settings
     m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
@@ -271,22 +269,23 @@ void Log::Initialize()
 
 }
 
-FILE* Log::openLogFile(char const* configFileName,char const* configTimeStampFlag, char const* mode)
+FILE* Log::openLogFile(LogNames log)
 {
-    std::string logfn=sConfig.GetStringDefault(configFileName, "");
-    if(logfn.empty())
+    std::string logfn = sConfig.GetStringDefault(logToStr[log][0], "");
+    if (logfn.empty())
         return NULL;
 
-    if(configTimeStampFlag && sConfig.GetBoolDefault(configTimeStampFlag,false))
+    if (logToStr[log][2] && sConfig.GetBoolDefault(logToStr[log][2], false))
     {
         size_t dot_pos = logfn.find_last_of(".");
-        if(dot_pos!=logfn.npos)
-            logfn.insert(dot_pos,m_logsTimestamp);
+        if (dot_pos != logfn.npos)
+            logfn.insert(dot_pos, m_logsTimestamp);
         else
             logfn += m_logsTimestamp;
     }
 
-    return fopen((m_logsDir+logfn).c_str(), mode);
+    logFileNames[log] = m_logsDir + logfn;
+    return fopen(logFileNames[log].c_str(), logToStr[log][1]);
 }
 
 FILE* Log::openGmlogPerAccount(uint32 account)
@@ -299,6 +298,20 @@ FILE* Log::openGmlogPerAccount(uint32 account)
     return fopen(namebuf, "a");
 }
 
+void Log::outPacket(uint32 glow, const char * str, ...)
+{
+    char namebuf[HELLGROUND_PATH_MAX];
+    snprintf(namebuf, HELLGROUND_PATH_MAX, "packets//%u.txt", glow);
+
+    FILE* per_file = fopen(namebuf, "a");
+    va_list ap;
+    va_start(ap, str);
+    vfprintf(per_file, str, ap);
+    fprintf(per_file, "\n" );
+    va_end(ap);
+    fclose(per_file);
+}
+
 FILE* Log::openWhisplogPerAccount(uint32 account)
 {
     if(m_whisplog_filename_format.empty())
@@ -309,7 +322,7 @@ FILE* Log::openWhisplogPerAccount(uint32 account)
     return fopen(namebuf, "a");
 }
 
-void Log::outTimestamp(FILE* file)
+bool Log::outTimestamp(FILE* file)
 {
     time_t t = time(NULL);
     tm* aTm = localtime(&t);
@@ -319,7 +332,10 @@ void Log::outTimestamp(FILE* file)
     //       HH     hour (2 digits 00-23)
     //       MM     minutes (2 digits 00-59)
     //       SS     seconds (2 digits 00-59)
-    fprintf(file,"%-4d-%02d-%02d %02d:%02d:%02d ",aTm->tm_year+1900,aTm->tm_mon+1,aTm->tm_mday,aTm->tm_hour,aTm->tm_min,aTm->tm_sec);
+    if (fprintf(file, "%-4d-%02d-%02d %02d:%02d:%02d ", aTm->tm_year+1900, aTm->tm_mon+1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec) < 0)
+        return false;
+
+    return true;
 }
 
 void Log::outTime()
@@ -421,149 +437,6 @@ void Log::outString( const char * str, ... )
     fflush(stdout);
 }
 
-void Log::outError(const char * err, ...)
-{
-    if( !err )
-        return;
-
-    if(m_colored)
-        SetColor(false,m_colors[LogError]);
-
-    if(m_includeTime)
-        outTime();
-
-    //UTF8PRINTF(stderr,err,);
-
-    if(m_colored)
-        ResetColor(false);
-
-    //fprintf( stderr, "\n" );
-    if(logFile[LOG_DEFAULT])
-    {
-        outTimestamp(logFile[LOG_DEFAULT]);
-        fprintf(logFile[LOG_DEFAULT], "ERROR:" );
-
-        va_list ap;
-        va_start(ap, err);
-        vfprintf(logFile[LOG_DEFAULT], err, ap);
-        va_end(ap);
-
-        fprintf(logFile[LOG_DEFAULT], "\n" );
-        fflush(logFile[LOG_DEFAULT]);
-    }
-    //fflush(stderr);
-}
-
-void Log::outBoss(const char *str, ...)
-{
-    if (!str)
-        return;
-
-    if (logFile[LOG_BOSS])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_BOSS]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_BOSS], str, ap);
-        fprintf(logFile[LOG_BOSS], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_BOSS]);
-    }
-}
-
-void Log::outArena(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (logFile[LOG_ARENA])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_ARENA]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_ARENA], str, ap);
-        fprintf(logFile[LOG_ARENA], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_ARENA]);
-    }
-}
-
-void Log::outCheat(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (logFile[LOG_CHEAT])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_CHEAT]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_CHEAT], str, ap);
-        fprintf(logFile[LOG_CHEAT], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_CHEAT]);
-    }
-}
-
-void Log::outAC(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (logFile[LOG_AC])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_AC]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_AC], str, ap);
-        fprintf(logFile[LOG_AC], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_AC]);
-    }
-}
-
-void Log::outErrorDb(const char * err, ...)
-{
-    if (!err)
-        return;
-
-    if (m_colored)
-        SetColor(false,m_colors[LogError]);
-
-    if (m_includeTime)
-        outTime();
-
-    if (m_colored)
-        ResetColor(false);
-
-    if (logFile[LOG_DEFAULT])
-    {
-        outTimestamp(logFile[LOG_DEFAULT]);
-        fprintf(logFile[LOG_DEFAULT], "ERROR:" );
-
-        va_list ap;
-        va_start(ap, err);
-        vfprintf(logFile[LOG_DEFAULT], err, ap);
-        va_end(ap);
-
-        fprintf(logFile[LOG_DEFAULT], "\n" );
-        fflush(logFile[LOG_DEFAULT]);
-    }
-
-    if (logFile[LOG_DB_ERR])
-    {
-        outTimestamp(logFile[LOG_DB_ERR]);
-
-        va_list ap;
-        va_start(ap, err);
-        vfprintf(logFile[LOG_DB_ERR], err, ap);
-        va_end(ap);
-
-        fprintf(logFile[LOG_DB_ERR], "\n" );
-        fflush(logFile[LOG_DB_ERR]);
-    }
-}
-
 void Log::outBasic(const char * str, ...)
 {
     if (!str)
@@ -590,22 +463,6 @@ void Log::outBasic(const char * str, ...)
         fprintf(logFile[LOG_DEFAULT], "\n" );
         va_end(ap);
         fflush(logFile[LOG_DEFAULT]);
-    }
-}
-void Log::outIrc(const char * str, ... )
-{
-    if (!str)
-        return;
-
-    if (logFile[LOG_IRC] = openLogFile("IrcParser",NULL,"w"))
-    {
-        va_list ap;
-        va_start(ap, str);
-        vfprintf(logFile[LOG_IRC], str, ap);
-        fprintf(logFile[LOG_IRC], "\n" );
-        va_end(ap);
-        fclose(logFile[LOG_IRC]);
-        logFile[LOG_IRC] = NULL;
     }
 }
 
@@ -746,40 +603,6 @@ void Log::outCommand(uint32 account, const char * str, ...)
     }
 }
 
-void Log::outChar(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (logFile[LOG_CHAR])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_CHAR]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_CHAR], str, ap);
-        fprintf(logFile[LOG_CHAR], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_CHAR]);
-    }
-}
-
-void Log::outSpecial(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if(logFile[LOG_SPECIAL])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_SPECIAL]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_SPECIAL], str, ap);
-        fprintf(logFile[LOG_SPECIAL], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_SPECIAL]);
-    }
-}
-
 void Log::outWhisp(uint32 account, const char * str, ...)
 {
     if (FILE* per_file = openWhisplogPerAccount(account))
@@ -794,147 +617,25 @@ void Log::outWhisp(uint32 account, const char * str, ...)
     }
 }
 
-void Log::outMail(const char * str, ...)
+void Log::outLog(LogNames log, const char * str, ...)
 {
     if (!str)
         return;
 
-    if (logFile[LOG_MAIL])
+    if (logFile[log])
     {
-        va_list ap;
-        outTimestamp(logFile[LOG_MAIL]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_MAIL], str, ap);
-        fprintf(logFile[LOG_MAIL], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_MAIL]);
-    }
-}
-
-void Log::outWarden(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (logFile[LOG_WARDEN])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_WARDEN]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_WARDEN], str, ap);
-        fprintf(logFile[LOG_WARDEN], "\n");
-        va_end(ap);
-        fflush(logFile[LOG_WARDEN]);
-    }
-}
-
-void Log::outAuction(const char * str, ...)
-{
-    if (!str)
-         return;
-
-
-    if (logFile[LOG_AUCTION])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_AUCTION]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_AUCTION], str, ap);
-        fprintf(logFile[LOG_AUCTION], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_AUCTION]);
-    }
-}
-
-void Log::outGann(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (logFile[LOG_GUILD_ANN])
-    {
-        va_list ap;
-        outTimestamp(logFile[LOG_GUILD_ANN]);
-        va_start(ap, str);
-        vfprintf(logFile[LOG_GUILD_ANN], str, ap);
-        fprintf(logFile[LOG_GUILD_ANN], "\n" );
-        va_end(ap);
-        fflush(logFile[LOG_GUILD_ANN]);
-    }
-}
-
-void Log::outDiff(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if(logFile[LOG_DIFF])
-    {
-        outTimestamp(logFile[LOG_DIFF]);
-
-        va_list ap;
-        va_start(ap, str);
-        vfprintf(logFile[LOG_DIFF], str, ap);
-        va_end(ap);
-
-        fprintf(logFile[LOG_DIFF], "\n" );
-        fflush(logFile[LOG_DIFF]);
-    }
-}
-
-void Log::outCrash(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if(logFile[LOG_CRASH])
-    {
-        outTimestamp(logFile[LOG_CRASH]);
-
-        va_list ap;
-        va_start(ap, str);
-        vfprintf(logFile[LOG_CRASH], str, ap);
-        va_end(ap);
-
-        fprintf(logFile[LOG_CRASH], "\n" );
-        fflush(logFile[LOG_CRASH]);
-    }
-}
-
-void Log::outMenu( const char * str, ... )
-{
-    if( !str )
-        return;
-
-    SetColor(true,m_colors[LogNormal]);
-
-    if(m_includeTime)
-        outTime();
-
-    ResetColor(true);
-
-    if (logFile[LOG_DEFAULT])
-    {
-        outTimestamp(logFile[LOG_DEFAULT]);
-
-        va_list ap;
-        va_start(ap, str);
-        vfprintf(logFile[LOG_DEFAULT], str, ap);
-        va_end(ap);
-
-        fprintf(logFile[LOG_DEFAULT], "\n" );
-        fflush(logFile[LOG_DEFAULT]);
-    }
-}
-
-void Log::OutLogToFile(logFiles log, const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if(logFile[log])
-    {
-        outTimestamp(logFile[log]);
+        // check for errors
+        if (log == LOG_STATUS)
+        {
+            // we need to reopen file
+            logFile[log] = freopen(logFileNames[log].c_str(), logToStr[log][1], logFile[log]);
+        }
+        else if (!outTimestamp(logFile[log]))
+        {
+            // if error reopen file
+            logFile[log] = freopen(logFileNames[log].c_str(), logToStr[log][1], logFile[log]);
+            outTimestamp(logFile[log]);
+        }
 
         va_list ap;
         va_start(ap, str);
@@ -999,7 +700,7 @@ void error_log(const char * str, ...)
     vsnprintf(buf,256, str, ap);
     va_end(ap);
 
-    sLog.outError(buf);
+    sLog.outLog(LOG_DEFAULT, buf);
 }
 
 void error_db_log(const char * str, ...)
@@ -1013,5 +714,5 @@ void error_db_log(const char * str, ...)
     vsnprintf(buf,256, str, ap);
     va_end(ap);
 
-    sLog.outErrorDb(buf);
+    sLog.outLog(LOG_DB_ERR, buf);
 }

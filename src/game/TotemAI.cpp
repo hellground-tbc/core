@@ -81,7 +81,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if (!victim || (!SpellMgr::SpellIgnoreLOS(spellInfo, 0) && !i_totem.IsWithinLOSInMap(victim)) ||
         !victim->isTargetableForAttack() || !i_totem.IsWithinDistInMap(victim, max_range) ||
-        (i_totem.IsFriendlyTo(victim) && victim != &i_totem) || !victim->isVisibleForOrDetect(&i_totem,false))
+        (i_totem.IsFriendlyTo(victim) && victim != &i_totem) || !victim->isVisibleForOrDetect(&i_totem, &i_totem, false))
     {
         victim = NULL;
 
@@ -98,7 +98,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
         i_victimGuid = victim->GetGUID();
 
         // attack
-        i_totem.SetInFront(victim);                         // client change orientation by self
+        //i_totem.SetInFront(victim);                         // client change orientation by self
         i_totem.CastSpell(victim, i_totem.GetSpell(), false);
     }
     else
@@ -119,7 +119,7 @@ void TotemAI::AttackStart(Unit *)
         data << i_totem.GetGUID();
         data << i_totem.GetPositionX();
         data << i_totem.GetPositionY();
-        ((Player*)i_totem.GetOwner())->GetSession()->SendPacket(&data);
+        ((Player*)i_totem.GetOwner())->SendPacketToSelf(&data);
     }
 }
 

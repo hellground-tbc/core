@@ -284,7 +284,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recv_data)
     // do not allow to sell already auctioned items
     if (sAuctionMgr.GetAItem(itemGuid.GetCounter()))
     {
-        sLog.outError("AuctionError, Player %s (guid: %u) is sending %s, but item is already in another auction", pl->GetName(), pl->GetGUIDLow(), itemGuid.GetString().c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: AuctionError, Player %s (guid: %u) is sending %s, but item is already in another auction", pl->GetName(), pl->GetGUIDLow(), itemGuid.GetString().c_str());
         SendAuctionCommandResult(NULL, AUCTION_STARTED, AUCTION_ERR_INVENTORY, EQUIP_ERR_ITEM_NOT_FOUND);
         return;
     }
@@ -330,12 +330,12 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recv_data)
 
     if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
     {
-        sLog.outSpecial("Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
+        sLog.outLog(LOG_SPECIAL, "Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
             GetPlayerName(), GetAccountId(), it->GetProto()->Name1, it->GetEntry(), it->GetCount());
     }
 /*  else
     {
-        sLog.outAuction("Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
+        sLog.outLog(LOG_AUCTION, "Player %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
             GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount());
     }
 */
@@ -454,14 +454,14 @@ void WorldSession::HandleAuctionRemoveItem(WorldPacket & recv_data)
     if (!auction || auction->owner != pl->GetGUIDLow())
     {
         SendAuctionCommandResult(NULL, AUCTION_REMOVED, AUCTION_ERR_DATABASE);
-        sLog.outError("CHEATER : %u, he tried to cancel auction (id: %u) of another player, or auction is NULL", pl->GetGUIDLow(), auctionId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: CHEATER : %u, he tried to cancel auction (id: %u) of another player, or auction is NULL", pl->GetGUIDLow(), auctionId);
         return;
     }
 
     Item *pItem = sAuctionMgr.GetAItem(auction->itemGuidLow);
     if (!pItem)
     {
-        sLog.outError("Auction id: %u has nonexistent item (item guid : %u)!!!", auction->Id, auction->itemGuidLow);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Auction id: %u has nonexistent item (item guid : %u)!!!", auction->Id, auction->itemGuidLow);
         SendAuctionCommandResult(NULL, AUCTION_REMOVED, AUCTION_ERR_INVENTORY, EQUIP_ERR_ITEM_NOT_FOUND);
         return;
     }
@@ -513,7 +513,7 @@ void WorldSession::HandleAuctionListBidderItems(WorldPacket & recv_data)
     recv_data >> outbiddedCount;
     if (recv_data.size() != (16 + outbiddedCount * 4))
     {
-        sLog.outError("Client sent bad opcode!!! with count: %u and size : %u (must be: %u)", outbiddedCount, (uint32)recv_data.size(), (16 + outbiddedCount * 4));
+        sLog.outLog(LOG_DEFAULT, "ERROR: Client sent bad opcode!!! with count: %u and size : %u (must be: %u)", outbiddedCount, (uint32)recv_data.size(), (16 + outbiddedCount * 4));
         outbiddedCount = 0;
     }
 

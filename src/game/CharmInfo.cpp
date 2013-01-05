@@ -19,6 +19,10 @@ bool GlobalCooldownMgr::HasGlobalCooldown(SpellEntry const* spellInfo) const
 
 void GlobalCooldownMgr::AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd)
 {
+    // HACKFIX: find bugged mechanic
+    if (spellInfo->Id == 15473)
+        return;
+
     m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = GlobalCooldown(gcd, WorldTimer::getMSTime());
 }
 
@@ -385,7 +389,7 @@ void CharmInfo::HandleSpellActCommand(uint64 targetGUID, uint32 spellId)
             }
 
             Player *pPlayer = m_unit->GetCharmer()->ToPlayer();
-            pPlayer->GetSession()->SendPacket(&data);
+            pPlayer->SendPacketToSelf(&data);
         }
         else
             m_unit->SendPetCastFail(spellId, result);

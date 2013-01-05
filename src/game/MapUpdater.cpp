@@ -164,7 +164,7 @@ void MapUpdater::FreezeDetect()
         {
             if ((WorldTimer::getMSTime() - itr->second.GetUpdateTime()) > freezeDetectTime)
             {
-                sLog.outCrash("MapUpdater::FreezeDetect thread "I64FMT" possible freezed (is update map %u instance %u). Killing.",itr->first, itr->second.GetId(), itr->second.GetInstanceId());
+                sLog.outLog(LOG_CRASH, "MapUpdater::FreezeDetect thread "I64FMT" possible freezed (is update map %u instance %u). Killing.",itr->first, itr->second.GetId(), itr->second.GetInstanceId());
                 DEBUG_LOG("MapUpdater::FreezeDetect thread "I64FMT" possible freezed (is update map %u instance %u). Killing.",itr->first, itr->second.GetId(), itr->second.GetInstanceId());
 
                 if (Map *brokenMap = sMapMgr.FindMap(itr->second.GetId(), itr->second.GetInstanceId()))

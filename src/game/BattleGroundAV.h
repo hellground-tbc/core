@@ -1563,7 +1563,7 @@ class BattleGroundAV : public BattleGround
         int32 m_Team_Scores[2];
         uint32 m_Team_QuestStatus[2][9]; //[x][y] x=team y=questcounter
 
-        BG_AV_NodeInfo m_Nodes[BG_AV_NODES_MAX];
+        BG_AV_NodeInfo m_Nodes[BG_AV_NODES_MAX+1];
 
         uint32 m_Mine_Owner[2];
         uint32 m_Mine_PrevOwner[2]; //only for worldstates needed

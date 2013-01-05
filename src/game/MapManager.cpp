@@ -36,7 +36,6 @@
 
 MapManager::MapManager() : i_gridCleanUpDelay(sWorld.getConfig(CONFIG_INTERVAL_GRIDCLEAN))
 {
-    i_timer.SetInterval(sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
 
 MapManager::~MapManager()
@@ -60,7 +59,7 @@ void MapManager::Initialize()
     // Start mtmaps if needed.
     if (m_updater.activate(num_threads) == -1)
     {
-        sLog.outError("MapUpdater cannot be activated !!!!!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: MapUpdater cannot be activated !!!!!");
         abort();
     }
 }
@@ -71,7 +70,7 @@ void MapManager::InitializeVisibilityDistanceInfo()
         (*iter).second->InitVisibilityDistance();
 }
 
-Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
+Map* MapManager::CreateMap(uint32 id, WorldObject const* obj)
 {
     ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
 
@@ -122,7 +121,7 @@ Map* MapManager::FindMap(uint32 mapid, uint32 instanceId) const
     //this is a small workaround for transports
     if(instanceId == 0 && iter->second->Instanceable())
     {
-        assert(false);
+        ASSERT(false);
         return NULL;
     }
 
@@ -226,16 +225,15 @@ void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
     }
 }
 
+typedef std::list<std::pair<Map*, uint32> > DelayedMapList;
 void MapManager::Update(uint32 diff)
 {
-    i_timer.Update(diff);
-    if (!i_timer.Passed())
-        return;
+    DiffRecorder diffRecorder(__FUNCTION__, sWorld.getConfig(CONFIG_MIN_LOG_UPDATE));
 
-    sWorld.RecordTimeDiff(NULL);
+    DelayedMapList delayedUpdate;
     for (MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end();)
     {
-        if (iter->second->CanUnload(i_timer.GetCurrent()))
+        if (iter->second->CanUnload(diff))
         {
             iter->second->UnloadAll();
             delete iter->second;
@@ -244,29 +242,32 @@ void MapManager::Update(uint32 diff)
         }
         else
         {
-            m_updater.schedule_update(*iter->second, uint32(i_timer.GetCurrent()));
+            Map::UpdateHelper helper(iter->second);
+            if (helper.ProcessUpdate())
+                helper.Update(delayedUpdate);
+
             ++iter;
         }
     }
 
     m_updater.wait();
 
-    sWorld.RecordTimeDiff("UpdateMaps");
+    diffRecorder.RecordTimeFor("UpdateMaps");
 
-    for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
-        iter->second->DelayedUpdate(i_timer.GetCurrent());
+    for (DelayedMapList::iterator iter = delayedUpdate.begin(); iter != delayedUpdate.end(); ++iter)
+        iter->first->DelayedUpdate(iter->second);
 
-    sWorld.RecordTimeDiff("Delayed update");
+    delayedUpdate.clear();
+
+    diffRecorder.RecordTimeFor("Delayed update");
 
     for (TransportSet::iterator iter = m_Transports.begin(); iter != m_Transports.end(); ++iter)
     {
-        WorldObject::UpdateHelper helper((*iter));
-        helper.Update(uint32(i_timer.GetCurrent()));
+        WorldObject::UpdateHelper helper(*iter);
+        helper.Update(diff);
     }
 
-    sWorld.RecordTimeDiff("UpdateTransports");
-
-    i_timer.SetCurrent(0);
+     diffRecorder.RecordTimeFor("UpdateTransports");
 }
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
@@ -313,7 +314,7 @@ void MapManager::InitMaxInstanceId()
 
 uint32 MapManager::GetNumInstances()
 {
-    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
+    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, 0);
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
@@ -329,7 +330,7 @@ uint32 MapManager::GetNumInstances()
 
 uint32 MapManager::GetNumPlayersInInstances()
 {
-    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
+    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, 0);
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
@@ -396,13 +397,13 @@ InstanceMap* MapManager::CreateInstanceMap(uint32 id, uint32 InstanceId, Dungeon
     const MapEntry* entry = sMapStore.LookupEntry(id);
     if (!entry)
     {
-        sLog.outError("CreateInstanceMap: no entry for map %d", id);
+        sLog.outLog(LOG_DEFAULT, "ERROR: CreateInstanceMap: no entry for map %d", id);
         ASSERT(false);
     }
 
     if (!ObjectMgr::GetInstanceTemplate(id))
     {
-        sLog.outError("CreateInstanceMap: no instance template for map %d", id);
+        sLog.outLog(LOG_DEFAULT, "ERROR: CreateInstanceMap: no instance template for map %d", id);
         ASSERT(false);
     }
 

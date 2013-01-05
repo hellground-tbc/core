@@ -106,6 +106,8 @@ class ChatHandler
         bool HandleAccountSpecialLogCommand(const char* args);
         bool HandleAccountWhispLogCommand(const char* args);
         bool HandleAccountGuildAnnToggleCommand(const char* args);
+        bool HandleAccountBonesHideCommand(const char* args);
+        bool HandleAccountBattleGroundAnnCommand(const char* args);
 
         bool HandleBanAccountCommand(const char* args);
         bool HandleBanCharacterCommand(const char* args);
@@ -198,6 +200,9 @@ class ChatHandler
         bool HandleGuildRankCommand(const char* args);
         bool HandleGuildDeleteCommand(const char* args);
 
+        bool HandleGuildDisableAnnounceCommand(const char *args);
+        bool HandleGuildEnableAnnounceCommand(const char *args);
+
         bool HandleHonorAddCommand(const char* args);
         bool HandleHonorAddKillCommand(const char* args);
         bool HandleHonorUpdateCommand(const char* args);
@@ -207,11 +212,14 @@ class ChatHandler
         bool HandleInstanceSelfUnbindCommand(const char* args);
         bool HandleInstanceStatsCommand(const char* args);
         bool HandleInstanceSaveDataCommand(const char * args);
+        bool HandleInstanceBindCommand(const char* args);
+        bool HandleInstanceResetEncountersCommand(const char* args);
 
         bool HandleMmapPathCommand(const char* args);
         bool HandleMmapLocCommand(const char* args);
         bool HandleMmapLoadedTilesCommand(const char* args);
         bool HandleMmapStatsCommand(const char* args);
+        bool HandleMmapOffsetCreateCommand(const char* /*args*/);
         bool HandleMmap(const char* args);
         bool HandleMmapTestArea(const char* args);
 
@@ -397,6 +405,7 @@ class ChatHandler
         bool HandleServerIdleRestartCommand(const char* args);
         bool HandleServerIdleShutDownCommand(const char* args);
         bool HandleServerInfoCommand(const char* args);
+        bool HandleServerEventsCommand(const char* args);
         bool HandleServerMotdCommand(const char* args);
         bool HandleServerMuteCommand(const char* args);
         bool HandleServerRestartCommand(const char* args);
@@ -441,6 +450,7 @@ class ChatHandler
         bool HandleNameAnnounceCommand(const char* args);
         bool HandleNotifyCommand(const char* args);
         bool HandleGPSCommand(const char* args);
+        bool HandleInfoCommand(const char* args);
         bool HandleTaxiCheatCommand(const char* args);
         bool HandleWhispersCommand(const char* args);
         bool HandleModifyDrunkCommand(const char* args);

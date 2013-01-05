@@ -124,7 +124,7 @@ void WorldSession::SendDoFlight(uint16 mountDisplayId, uint32 path, uint32 pathN
         GetPlayer()->GetUnitStateMgr().PushAction(UNIT_ACTION_TAXI, GetPlayer()->GetUnitStateMgr().CreateStandartState(UNIT_ACTION_TAXI, mountDisplayId, path, pathNode));
     else
     {
-        sLog.outError("WorldSession::SendDoFlight %s attempt taxi to (nonexistent Path %u node %u)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::SendDoFlight %s attempt taxi to (nonexistent Path %u node %u)",
         GetPlayer()->GetGuidStr().c_str(), path, pathNode);
     }
 }
@@ -213,7 +213,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     // far teleport case
     if (curDestNode && curDestNode->map_id != GetPlayer()->GetMapId())
     {
-        if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType()==FLIGHT_MOTION_TYPE)
+        if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
         {
             // short preparations to continue flight
             FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
@@ -240,7 +240,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
             if (GetPlayer()->m_taxi.SetTaximaskNode(sourcenode))
             {
                 WorldPacket data(SMSG_NEW_TAXI_PATH, 0);
-                _player->GetSession()->SendPacket(&data);
+                _player->SendPacketToSelf(&data);
             }
         }
 

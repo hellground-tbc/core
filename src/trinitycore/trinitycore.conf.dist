@@ -2,7 +2,7 @@
 # Trinity Core worldd configuration file #
 ##########################################
 [CoreConf]
-ConfVersion=2012062101
+ConfVersion=2012070901
 
 ###################################################################################################################
 # CONNECTIONS AND DIRECTORIES
@@ -214,13 +214,21 @@ EAIErrorLevel = 2
 #         Number of threads to update maps.
 #         Default: 1
 #
+#    MapUpdate.CumulativeLogMethod
+#        Activate a more detailed Log Feature for Map Update
+#        Requires define MAP_UPDATE_DIFF_INFO
+#        Default: 0 Log will be Printed as Sum on each RecordUpdateTimeDiffInterval
+#                 1 Log will be Printed on each Map Update Cycle
+#
 #    SessionUpdate.Threads
 #         Number of threads to update sessions (0 - disable).
-#         Default: 1
+#         WARNING: DON'T use if you don't know what you are doing ... this feature waits for
+#         necessary improvements.
+#         Default: 0
 #
 #    SessionUpdate.MaxTime
-#         Max time to update sessions. If session update time will be greater then method from SessionUpdate.Method
-#         will be called. Time in ms.
+#         Max time to update sessions. If session update time will be greater then method from
+#         SessionUpdate.Method will be called. Time in ms.
 #         Default: 1000
 #
 #    SessionUpdate.Method
@@ -230,6 +238,12 @@ EAIErrorLevel = 2
 #         2 - Kick player + log
 #         3 - Ban account + log (Default)
 #         4 - Ban ip and account + log
+#
+#    SessionUpdate.VerboseLog
+#         Enables session verbose log (prints to session diff log file if max time was exceeded)
+#         Default: 0 (disabled)
+#                  1 Log if diff is greater then SessionUpdate.MaxTime
+#                  2 Log if diff is greater then MinRecordUpdateTimeSessionDiff
 #
 ###################################################################################################################
 
@@ -261,8 +275,29 @@ mmap.ignoreMapIds = ""
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
 AddonChannel = 1
+
 MapUpdate.Threads = 1
+MapUpdate.UpdateVisitorsMax = 20
+MapUpdate.CumulativeLogMethod = 0
+
 SessionUpdate.Threads = 1
+SessionUpdate.MaxTime = 1000
+SessionUpdate.Method = 3
+SessionUpdate.VerboseLog = 0
+
+#    SessionUpdate.IdleKickTimer
+#         Max time that user can spend in character selection screen
+#         Default: 900000 (ms) - 15 min
+#
+
+SessionUpdate.IdleKickTimer = 900000
+
+#    DBDiffLog.LogTime
+#         Query who reaches the Time will be Logged
+#         Is a kind of SlowQueryLog. Time in ms.
+#         Default: 10
+
+DBDiffLog.LogTime = 10
 
 ###################################################################################################################
 # SERVER LOGGING
@@ -329,13 +364,6 @@ SessionUpdate.Threads = 1
 #        Logfile with timestamp of server start in name
 #        Default: 0 - no timestamp in name
 #                 1 - add timestamp in name in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
-#
-#    CharLogDump
-#        Write character dump before deleting in Char.log
-#        For restoration, cut character data from log starting from
-#        line == START DUMP == to line == END DUMP == (without its) in file and load it using loadpdump command
-#        Default: 0 - don't include dumping chars to log
-#                 1 - include dumping chars to log
 #
 #    GmLogFile
 #        Log file of gm commands
@@ -405,14 +433,24 @@ SessionUpdate.Threads = 1
 #        Default: "diff.log"
 #                 "" - Empty name for disable
 #
+#    SessionDiffLogFile
+#        Session update Diff log file
+#        Default: "sessiondiff.log"
+#                 "" - Empty name for disable
+#
 #    CrashLogFile
 #        Log file for crash stacktrace
 #        Default: "crash.log"
 #                 "" - Empty name for disable
 #
-#    IrcParser
-#        Log file for third party parsers (to provide irc/gg/etc server status)
-#        Default: "parser.irc"
+#    DBDiffFile
+#        Log file for DB Query Duration
+#        Default: "querydiff.log"
+#                 "" - Empty name for disable
+#
+#    StatusParserFile
+#        Log file for third party parsers
+#        Default: "parser.prsr"
 #                 "" - Empty name for disable
 #
 ###################################################################################################################
@@ -431,7 +469,6 @@ WorldLogFile = ""
 DBErrorLogFile = "db_errors.log"
 CharLogFile = "characters.log"
 CharLogTimestamp = 0
-CharLogDump = 0
 GmLogFile = "gm_commands.log"
 GmLogTimestamp = 0
 GmLogPerAccount = 0
@@ -439,7 +476,6 @@ GmLogMinLevel = 1
 ArenaLogFile = ""
 ArenaLogExtendedInfo = 1
 CheatLogFile = "cheat.log"
-ACLogFile = "AC.log"
 MailLogFile = "sendmail.log"
 GannLogFile = "guildann.log"
 WhispLogDir = "whisps/"
@@ -447,9 +483,11 @@ LogColors = ""
 WardenLogFile = "warden.log"
 AuctionLogFile = "auction.log"
 DiffLogFile = "diff.log"
+SessionDiffLogFile = "sessiondiff.log"
 CrashLogFile = "crash.log"
+DBDiffFile = "querydiff.log"
 
-IrcParser = "parser.irc"
+StatusParserFile = "parser.prsr"
 
 ###################################################################################################################
 # SERVER SETTINGS
@@ -974,6 +1012,14 @@ DisablePVP = 0
 #		 Default: 0
 #
 #
+#    MonsterSight
+#        Dist from which monster can see.
+#        Default: 50
+#
+#    GuarderSight
+#        Dist from which guard can see.
+#        Default: 50
+#
 ###################################################################################################################
 
 ThreatRadius = 60
@@ -1184,15 +1230,6 @@ GM.TrustedLevel   = 3
 
 Visibility.GroupMode = 0
 
-Visibility.Distance.Object        = 132
-Visibility.Distance.InFlight      = 132
-Visibility.Distance.Grey.Unit   = 1
-Visibility.Distance.Grey.Object = 10
-
-Visibility.Notify.Period.OnContinents = 1000
-Visibility.Notify.Period.InInstances  = 1000
-Visibility.Notify.Period.InBGArenas   = 1000
-
 Visibility.Distance.ActiveObjectUpdate.Continents = 132
 Visibility.Distance.ActiveObjectUpdate.Instances = 132
 
@@ -1212,6 +1249,13 @@ Visibility.Distance.ActiveObjectUpdate.Instances = 132
 
 Movement.RecalculateRange = 1
 Movement.RecheckTimer = 100
+
+#    Movement..WaypointPathfinding.*
+#        Decides if WaypointMovegen have to generate movepath between nodes ot go in straight line
+#        Default: 1 (on)
+
+Movement.WaypointPathfinding.Continents = 1
+Movement.WaypointPathfinding.Instances = 1
 
 ###################################################################################################################
 # COREBALANCER
@@ -1467,6 +1511,9 @@ Death.Bones.BattlegroundOrArena = 1
 # EnableFakeWho: Enables/Disables fake who list to fake real position of players in arena
 #             Default: 0 (disabled)
 #
+# EnableFakeWho.ForGuild: Adds guild roster support for above option
+#             Default: 0 (disabled)
+#
 ###################################################################################################################
 
 Arena.MaxRatingDifference = 0
@@ -1480,6 +1527,7 @@ Arena.MMRPenalty = 150
 Arena.MMRSpecialLossCalc = 0
 
 Arena.EnableFakeWho = 0
+Arena.EnableFakeWho.ForGuild = 0
 
 ###################################################################################################################
 #
@@ -1490,10 +1538,19 @@ Arena.EnableFakeWho = 0
 #              Default: 300000
 #                       0 - disable
 #
+# BattleGround.AnnounceStart: Accounces bg start.
+#              Default: 0 - disable
+#                       1 - enable
+#
+# BattleGround.QueueInfo: sends info about queue on queue join
+#              Default: 0 - disable
+#                       1 - enable
+#
 ###################################################################################################################
 
 BattleGround.PrematureFinishTimer = 300000
-
+BattleGround.AnnounceStart = 0
+BattleGround.QueueInfo = 0
 
 ###################################################################################################################
 #
@@ -1599,6 +1656,9 @@ Network.KickOnBadPacket = 1
 #   MinRecordUpdateTimeDiff
 #        only record update time diff which is greater than this value
 #
+#   MinRecordUpdateTimeSessionDiff
+#        only record session update time diff which is greater than this value
+#
 #   PlayerStart.String
 #       If set to anything else than "", this string will be displayed to players when they login
 #       to a newly created character.
@@ -1620,6 +1680,7 @@ NoResetTalentsCost = 0
 ShowKickInWorld = 0
 RecordUpdateTimeDiffInterval = 60000
 MinRecordUpdateTimeDiff = 10
+MinRecordUpdateTimeSessionDiff = 25
 PlayerStart.String = ""
 
 ###################################################################################################################
@@ -1672,10 +1733,16 @@ VMSS.MapFreezeDetectTime = 1000
 #        If Mail.OldReturnMode is set to 1 then this value contains time beatween each old mails return attempt (in seconds).
 #        Default: 60
 #
+#    Warden.Enabled
+#		 Enable warden anticheat
+#		 Default: 1 (Enabled)
+#				  0 (Disabled)
+#
 #    Warden.Kick
 #        Kick player on failed check
 #        Default: 0 (Disabled)
 #                 1 (Enabled)
+#
 #    Warden.Ban
 #        Ban player on failed check
 #        Default: 0 (Disabled)
@@ -1686,6 +1753,18 @@ VMSS.MapFreezeDetectTime = 1000
 #        Default: 1 (Enabled)
 #                 0 (Disabled)
 #
+#    GuildAnnounce.Timer
+#        Interval beetwean guild announces (in minutes)
+#        Default: 1
+#
+#    GuildAnnounce.Cooldown
+#        Cooldown beetwean guild announces from same guild (in minutes)
+#        Default: 60
+#
+#    GuildAnnounce.Length
+#        Maximum length of guild announce message
+#        Default: 60
+#
 ###################################################################################################################
 
 AutoBroadcast.Timer = 0
@@ -1694,7 +1773,14 @@ Auction.EnableSort = 1
 Mail.OldReturnMode = 0
 Mail.OldReturnTimer = 60
 
+Warden.Enabled = 1
 Warden.Kick = 0
 Warden.Ban = 0
 
 AntiCheat.Enable = 1
+
+#    Creature.RestoreStateTimer
+#        Timer after which creature will restore its original state from PASSIVE after reaching home
+#        Default: 5000
+
+Creature.RestoreStateTimer = 5000

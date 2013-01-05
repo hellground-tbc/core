@@ -33,6 +33,95 @@
 #include "SystemConfig.h"
 #include "revision.h"
 #include "Util.h"
+#include "GameEvent.h"
+
+bool ChatHandler::HandleAccountBonesHideCommand(const char* args)
+{
+    if (uint32 account_id = m_session->GetAccountId())
+    {
+        if (WorldSession *session = sWorld.FindSession(account_id))
+        {
+            if (session->IsAccountFlagged(ACC_HIDE_BONES))
+            {
+                session->RemoveAccountFlag(ACC_HIDE_BONES);
+                PSendSysMessage("Client will show bones for this account now.");
+            }
+            else
+            {
+                session->AddAccountFlag(ACC_HIDE_BONES);
+                PSendSysMessage("Client won't show bones for this account now.");
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleAccountGuildAnnToggleCommand(const char* args)
+{
+    if (uint32 account_id = m_session->GetAccountId())
+    {
+        if (WorldSession *session = sWorld.FindSession(account_id))
+        {
+            if (session->IsAccountFlagged(ACC_DISABLED_GANN))
+            {
+                session->RemoveAccountFlag(ACC_DISABLED_GANN);
+                PSendSysMessage("Guild announces have been enabled for this account.");
+            }
+            else
+            {
+                session->AddAccountFlag(ACC_DISABLED_GANN);
+                PSendSysMessage("Guild announces have been disabled for this account.");
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleAccountBattleGroundAnnCommand(const char* args)
+{
+    if (uint32 account_id = m_session->GetAccountId())
+    {
+        if (WorldSession *session = sWorld.FindSession(account_id))
+        {
+            if (session->IsAccountFlagged(ACC_DISABLED_BGANN))
+            {
+                session->RemoveAccountFlag(ACC_DISABLED_BGANN);
+
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_DISABLED_GANN, account_id);
+                PSendSysMessage("BattleGround announces have been enabled for this account.");
+            }
+            else
+            {
+                session->AddAccountFlag(ACC_DISABLED_BGANN);
+
+                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
+                PSendSysMessage("BattleGround announces have been disabled for this account.");
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
 
 bool ChatHandler::HandleHelpCommand(const char* args)
 {
@@ -122,8 +211,22 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     PSendSysMessage("Hellground.pl - rev: "_REVISION);
     PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
-    PSendSysMessage("Diff: %u.", updateTime);
+    PSendSysMessage("Update time diff: %u.", updateTime);
 
+    if (sWorld.IsShutdowning())
+    {
+        PSendSysMessage("");
+        PSendSysMessage("Server will %s in: %s", (sWorld.GetShutdownMask() & SHUTDOWN_MASK_RESTART ? "restart" : "be shutteddown"), secsToTimeString(sWorld.GetShutdownTimer()).c_str());
+        PSendSysMessage("Reason: %s.", sWorld.GetShutdownReason());
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleServerEventsCommand(const char*)
+{
+    std::string active_events = sGameEventMgr.getActiveEventsString();
+    PSendSysMessage(active_events.c_str());//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
     return true;
 }
 

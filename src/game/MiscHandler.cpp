@@ -991,7 +991,7 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recv_data)
             GetPlayer()->addActionButton(button,action,type,misc);
         }
         else
-            sLog.outError("MISC: Unknown action button type %u for action %u into button %u", type, action, button);
+            sLog.outLog(LOG_DEFAULT, "ERROR: MISC: Unknown action button type %u for action %u into button %u", type, action, button);
     }
 }
 
@@ -1009,7 +1009,8 @@ void WorldSession::HandleCompleteCinema(WorldPacket & recv_data)
         return;
     }
 
-    GetPlayer()->setWatchingCinematic(NULL);
+    GetPlayer()->setWatchingCinematic(0);
+    GetPlayer()->GetCamera().UpdateVisibilityForOwner();
 
     if (sScriptMgr.OnCompletedCinematic(GetPlayer(), cinematic))
         return;
@@ -1125,7 +1126,7 @@ void WorldSession::HandleSetActionBar(WorldPacket& recv_data)
     if (!GetPlayer())                                        // ignore until not logged (check needed because STATUS_AUTHED)
     {
         if (ActionBar!=0)
-            sLog.outError("WorldSession::HandleSetActionBar in not logged state with value: %u, ignored",uint32(ActionBar));
+            sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleSetActionBar in not logged state with value: %u, ignored",uint32(ActionBar));
         return;
     }
 
@@ -1151,7 +1152,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
     recv_data >> guid;
     DEBUG_LOG("Inspected guid is " UI64FMTD, guid);
 
-    _player->SetSelection(guid);
+    //_player->SetSelection(guid);
 
     Player *plr = sObjectMgr.GetPlayer(guid);
     if (!plr)                                                // wrong player
@@ -1243,7 +1244,7 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recv_data)
 
     if (!player)
     {
-        sLog.outError("InspectHonorStats: WTF, player not found...");
+        sLog.outLog(LOG_DEFAULT, "ERROR: InspectHonorStats: WTF, player not found...");
         return;
     }
 
@@ -1347,7 +1348,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recv_data)
 
     WorldPacket data(SMSG_WHOIS, msg.size()+1);
     data << msg;
-    _player->GetSession()->SendPacket(&data);
+    _player->SendPacketToSelf(&data);
 
     sLog.outDebug("Received whois command from player %s for character %s", GetPlayer()->GetName(), charname.c_str());
 }
@@ -1420,37 +1421,22 @@ void WorldSession::HandleRealmStateRequestOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleFarSightOpcode(WorldPacket & recv_data)
 {
-    CHECK_PACKET_SIZE(recv_data, 1);
-
-    sLog.outDebug("WORLD: CMSG_FAR_SIGHT");
-    //recv_data.hexlike();
-
     uint8 apply;
     recv_data >> apply;
 
-    CellPair pair;
+    WorldObject* obj = _player->GetFarsightTarget();
+    if (!obj)
+        return;
 
     switch (apply)
     {
         case 0:
-            _player->SetFarsightVision(false);
-            pair = Hellground::ComputeCellPair(_player->GetPositionX(), _player->GetPositionY());
-            sLog.outDebug("Player %u set vision to himself", _player->GetGUIDLow());
+            _player->GetCamera().ResetView(false);
             break;
         case 1:
-            _player->SetFarsightVision(true);
-            if (WorldObject* obj = _player->GetFarsightTarget())
-                pair = Hellground::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-            else
-                return;
-            sLog.outDebug("Added FarSight " I64FMT " to player %u", _player->GetFarSight(), _player->GetGUIDLow());
+            _player->GetCamera().SetView(obj, false);
             break;
-        default:
-            sLog.outDebug("Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
-            return;
     }
-
-    GetPlayer()->UpdateVisibilityForPlayer();
 }
 
 void WorldSession::HandleChooseTitleOpcode(WorldPacket & recv_data)
@@ -1512,14 +1498,14 @@ void WorldSession::HandleResetInstancesOpcode(WorldPacket & /*recv_data*/)
                 const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
                 if (mapEntry->IsDungeon() || mapEntry->IsRaid())
                 {
-                    sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d inside raid instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
                     _player->SendResetInstanceFailed(0, pl->GetMapId());
                     return;
                 }
             }
             else
             {
-                sLog.outError("WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d offline!", _player->GetGUIDLow(), citr->guid);
+                sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleResetInstancesOpcode: player %d tried to reset instances while player %d offline!", _player->GetGUIDLow(), citr->guid);
                 //_player->SendResetInstanceFailed(0, /* mapid pl ktorego nie ma ;] */);
                 return;
             }
@@ -1545,7 +1531,7 @@ void WorldSession::HandleDungeonDifficultyOpcode(WorldPacket & recv_data)
 
     if (mode > DIFFICULTY_HEROIC)
     {
-        sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d sent an invalid instance mode %d!", _player->GetGUIDLow(), mode);
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleDungeonDifficultyOpcode: player %d sent an invalid instance mode %d!", _player->GetGUIDLow(), mode);
         return;
     }
 
@@ -1553,7 +1539,7 @@ void WorldSession::HandleDungeonDifficultyOpcode(WorldPacket & recv_data)
     Map *map = _player->GetMap();
     if (map && map->IsDungeon())
     {
-        sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to reset the instance while inside!", _player->GetGUIDLow());
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleDungeonDifficultyOpcode: player %d tried to reset the instance while inside!", _player->GetGUIDLow());
         return;
     }
 
@@ -1564,7 +1550,7 @@ void WorldSession::HandleDungeonDifficultyOpcode(WorldPacket & recv_data)
     {
         if (pGroup->isRaidGroup())
         {
-            sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while in raid group!", _player->GetGUIDLow());
+            sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while in raid group!", _player->GetGUIDLow());
             ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_RAID);
             return;
         }
@@ -1579,14 +1565,14 @@ void WorldSession::HandleDungeonDifficultyOpcode(WorldPacket & recv_data)
                 const MapEntry *mapEntry = sMapStore.LookupEntry(pl->GetMapId());
                 if (mapEntry->IsDungeon())
                 {
-                    sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d inside the instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d inside the instance!", _player->GetGUIDLow(), pl->GetGUIDLow());
                     ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_INSIDE);
                     return;
                 }
             }
             else
             {
-                sLog.outError("WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d offline!", _player->GetGUIDLow(), citr->guid);
+                sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleDungeonDifficultyOpcode: player %d tried to change difficulty while player %d offline!", _player->GetGUIDLow(), citr->guid);
                 ChatHandler(this).SendSysMessage(LANG_CHANGE_DIFFICULTY_OFFLINE);
                 return;
             }

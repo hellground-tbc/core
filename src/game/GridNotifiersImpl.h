@@ -29,198 +29,166 @@
 #include "CreatureAI.h"
 #include "SpellAuras.h"
 
+namespace Hellground
+{
+
 template<class T>
-inline void
-Hellground::VisibleNotifier::Visit(GridRefManager<T> &m)
+inline void VisibleNotifier::Visit(GridRefManager<T> &m)
 {
     for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         vis_guids.erase(iter->getSource()->GetGUID());
-        i_player.UpdateVisibilityOf(iter->getSource(),i_data,i_visibleNow);
+        _camera.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow);
     }
 }
 
-inline void
-Hellground::ObjectUpdater::Visit(CreatureMapType &m)
+inline void PlayerCreatureRelocationWorker(Player* p, Creature* c)
 {
-    for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
-        if (iter->getSource()->IsInWorld() && !iter->getSource()->isSpiritService())
-        {
-            WorldObject::UpdateHelper helper(iter->getSource());
-            helper.Update(i_timeDiff);
-        }
-}
-
-// SEARCHERS & LIST SEARCHERS & WORKERS
-
-// WorldObject searchers & workers
-
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    // already found
-    if (i_object)
+    if (!p->isAlive() || !c->isAlive())
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    if (p->IsTaxiFlying() && !c->CanReactToPlayerOnTaxi())
+        return;
+
+    if (c->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_SIGHTLESS | UNIT_STAT_IGNORE_ATTACKERS))
+        return;
+
+    // Creature AI reaction
+    if (c->HasReactState(REACT_AGGRESSIVE) && !c->IsInEvadeMode() && c->IsAIEnabled)
+        c->AI()->MoveInLineOfSight_Safe(p);
+}
+
+inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
+{
+    if (c1->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_SIGHTLESS | UNIT_STAT_IGNORE_ATTACKERS))
+        return;
+
+    if (c2->hasUnitState(UNIT_STAT_IGNORE_ATTACKERS))
+        return;
+
+    // Creature AI reaction
+    if (c1->HasReactState(REACT_AGGRESSIVE) && !c1->IsInEvadeMode() && c1->IsAIEnabled)
+        c1->AI()->MoveInLineOfSight_Safe(c2);
+}
+/*
+inline void PlayerRelocationNotifier::Visit(CameraMapType &m)
+{
+    for(CameraMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (i_check(itr->getSource()))
+        iter->getSource()->UpdateVisibilityOf(&_player);
+
+        // need to choose this or below one (this should be faster :P
+        _player.GetCamera().UpdateVisibilityOf(iter->getSource()->GetBody());
+    }
+
+    //_player.GetCamera().UpdateVisibilityForOwner();
+}
+*/
+inline void PlayerRelocationNotifier::Visit(CreatureMapType &m)
+{
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        PlayerCreatureRelocationWorker(&_player, iter->getSource());
+}
+
+inline void CreatureRelocationNotifier::Visit(PlayerMapType &m)
+{
+    if (!_creature.isAlive())
+        return;
+
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        PlayerCreatureRelocationWorker(iter->getSource(), &_creature);
+}
+
+inline void CreatureRelocationNotifier::Visit(CreatureMapType &m)
+{
+    if (!_creature.isAlive())
+        return;
+
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        CreatureCreatureRelocationWorker(iter->getSource(), &_creature);
+        CreatureCreatureRelocationWorker(&_creature, iter->getSource());
+    }
+}
+
+typedef std::list<Creature*> UpdateList;
+
+struct UpdateListSorter : public std::binary_function<Creature*, Creature*, bool>
+{
+    // functor for operator ">"
+    bool operator()(Creature* left, Creature* right) const
+    {
+        return left->GetUpdateCounter().timeElapsed() > right->GetUpdateCounter().timeElapsed();
+    }
+};
+
+inline void ObjectUpdater::Visit(CreatureMapType &m)
+{
+    UpdateList updateList;
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    {
+        if (iter->getSource()->isSpiritGuide())
+            continue;
+
+        if (WorldObject::UpdateHelper::ProcessUpdate(iter->getSource()))
+            updateList.push_back(iter->getSource());
+    }
+
+    uint32 maxListSize = sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS);
+    if (maxListSize && maxListSize < updateList.size())
+    {
+        // sort list (objects updated old time ago will be first)
+        updateList.sort(UpdateListSorter());
+        updateList.resize(sWorld.getConfig(CONFIG_MAPUPDATE_MAXVISITORS), NULL); // set initial value for added elements to NULL
+    }
+
+    for (UpdateList::iterator it = updateList.begin(); it != updateList.end(); ++it)
+    {
+        WorldObject::UpdateHelper helper(*it);
+        helper.Update(i_timeDiff);
+    }
+}
+
+template<class T, class Check>
+void ObjectSearcher<T, Check>::Visit(GridRefManager<T>& m)
+{
+    // already found
+    if (_object)
+        return;
+
+    for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
+    {
+        if (_check(itr->getSource()))
         {
-            i_object = itr->getSource();
+            _object = itr->getSource();
             return;
         }
     }
 }
 
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(PlayerMapType &m)
+template<class T, class Check>
+void ObjectLastSearcher<T, Check>::Visit(GridRefManager<T>& m)
 {
-    // already found
-    if (i_object)
-        return;
-
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
+        if (_check(itr->getSource()))
+            _object = itr->getSource();
     }
 }
 
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(CreatureMapType &m)
+template<class T, class Check>
+void ObjectListSearcher<T, Check>::Visit(GridRefManager<T>& m)
 {
-    // already found
-    if (i_object)
-        return;
-
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (typename GridRefManager<T>::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
+        if (_check(itr->getSource()))
+            _objects.push_back(itr->getSource());
     }
-}
-
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(CorpseMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
-template<class Check>
-void Hellground::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
-{
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(CorpseMapType &m)
-{
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
-{
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-// Gameobject searchers
-
-template<class Check>
-void Hellground::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
-template<class Check>
-void Hellground::GameObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
-}
-
-template<class Check>
-void Hellground::GameObjectListSearcher<Check>::Visit(GameObjectMapType &m)
-{
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
 }
 
 // Unit searchers
-
 template<class Check>
-void Hellground::UnitSearcher<Check>::Visit(CreatureMapType &m)
+void UnitSearcher<Check>::Visit(CreatureMapType &m)
 {
     // already found
     if (i_object)
@@ -237,7 +205,7 @@ void Hellground::UnitSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
-void Hellground::UnitSearcher<Check>::Visit(PlayerMapType &m)
+void UnitSearcher<Check>::Visit(PlayerMapType &m)
 {
     // already found
     if (i_object)
@@ -254,7 +222,7 @@ void Hellground::UnitSearcher<Check>::Visit(PlayerMapType &m)
 }
 
 template<class Check>
-void Hellground::UnitLastSearcher<Check>::Visit(CreatureMapType &m)
+void UnitLastSearcher<Check>::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
@@ -264,7 +232,7 @@ void Hellground::UnitLastSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
-void Hellground::UnitLastSearcher<Check>::Visit(PlayerMapType &m)
+void UnitLastSearcher<Check>::Visit(PlayerMapType &m)
 {
     for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
     {
@@ -274,7 +242,7 @@ void Hellground::UnitLastSearcher<Check>::Visit(PlayerMapType &m)
 }
 
 template<class Check>
-void Hellground::UnitListSearcher<Check>::Visit(PlayerMapType &m)
+void UnitListSearcher<Check>::Visit(PlayerMapType &m)
 {
     for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
         if (i_check(itr->getSource()))
@@ -282,77 +250,15 @@ void Hellground::UnitListSearcher<Check>::Visit(PlayerMapType &m)
 }
 
 template<class Check>
-void Hellground::UnitListSearcher<Check>::Visit(CreatureMapType &m)
+void UnitListSearcher<Check>::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
         if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
-}
-
-// Creature searchers
-
-template<class Check>
-void Hellground::CreatureSearcher<Check>::Visit(CreatureMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
-
-template<class Check>
-void Hellground::CreatureLastSearcher<Check>::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
-}
-
-template<class Check>
-void Hellground::CreatureListSearcher<Check>::Visit(CreatureMapType &m)
-{
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::PlayerListSearcher<Check>::Visit(PlayerMapType &m)
-{
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void Hellground::PlayerSearcher<Check>::Visit(PlayerMapType &m)
-{
-    // already found
-    if (i_object)
-        return;
-
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
 }
 
 template<class Builder>
-void Hellground::LocalizedPacketDo<Builder>::operator()( Player* p )
+void LocalizedPacketDo<Builder>::operator()( Player* p )
 {
     uint32 loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
     uint32 cache_idx = loc_idx+1;
@@ -373,8 +279,8 @@ void Hellground::LocalizedPacketDo<Builder>::operator()( Player* p )
     else
         data = i_data_cache[cache_idx];
 
-    p->SendDirectMessage(data);
+    p->SendPacketToSelf(data);
+}
 }
 
-#endif                                                      // HELLGROUND_GRIDNOTIFIERSIMPL_H
-
+#endif

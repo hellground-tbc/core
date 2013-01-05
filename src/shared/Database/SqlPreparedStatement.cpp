@@ -60,8 +60,8 @@ bool SqlStatement::Execute()
     //verify amount of bound parameters
     if(args->boundParams() != arguments())
     {
-        sLog.outError("SQL ERROR: wrong amount of parameters (%i instead of %i)", args->boundParams(), arguments());
-        sLog.outError("SQL ERROR: statement: %s", m_pDB->GetStmtString(ID()).c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: wrong amount of parameters (%i instead of %i)", args->boundParams(), arguments());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: statement: %s", m_pDB->GetStmtString(ID()).c_str());
         ASSERT(false);
         return false;
     }
@@ -75,8 +75,8 @@ bool SqlStatement::DirectExecute()
     //verify amount of bound parameters
     if(args->boundParams() != arguments())
     {
-        sLog.outError("SQL ERROR: wrong amount of parameters (%i instead of %i)", args->boundParams(), arguments());
-        sLog.outError("SQL ERROR: statement: %s", m_pDB->GetStmtString(ID()).c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: wrong amount of parameters (%i instead of %i)", args->boundParams(), arguments());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: statement: %s", m_pDB->GetStmtString(ID()).c_str());
         ASSERT(false);
         return false;
     }
@@ -135,7 +135,7 @@ bool SqlPlainPreparedStatement::execute()
 }
 
 void SqlPlainPreparedStatement::DataToString( const SqlStmtFieldData& data, std::ostringstream& fmt )
-{  
+{
     switch (data.type())
     {
         case FIELD_BOOL:    fmt << "'" << uint32(data.toBool()) << "'";     break;
@@ -153,7 +153,7 @@ void SqlPlainPreparedStatement::DataToString( const SqlStmtFieldData& data, std:
         {
             std::string tmp = data.toStr();
             m_pConn.DB().escape_string(tmp);
-            fmt << "'" << tmp << "'";   
+            fmt << "'" << tmp << "'";
         }
         break;
     }

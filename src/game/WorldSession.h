@@ -64,10 +64,12 @@ enum OpcodeDisabled
 
 enum AccountFlags
 {
-    ACC_SPECIAL_LOG       = 0x0001, // all incoming/outgoing trade/mails/auctions etc. are logged to file
-    ACC_WHISPER_LOG       = 0x0002, // all incoming and outgoing whispers are logged o file
-    ACC_DISABLED_GANN     = 0x0004, // account flagged with this won't display messages related to guild announces system
-    ACC_BLIZZLIKE_RATES   = 0x0008  // enables fully blizzlike rates for account. ex: XP, QXP etc
+    ACC_SPECIAL_LOG         = 0x0001,   // all incoming/outgoing trade/mails/auctions etc. are logged to file
+    ACC_WHISPER_LOG         = 0x0002,   // all incoming and outgoing whispers are logged o file
+    ACC_DISABLED_GANN       = 0x0004,   // account flagged with this won't display messages related to guild announces system
+    ACC_BLIZZLIKE_RATES     = 0x0008,   // enables fully blizzlike rates for account. ex: XP, QXP etc
+    ACC_HIDE_BONES          = 0x0010,   // client won't show bones created from corpses
+    ACC_DISABLED_BGANN      = 0x0020,   // BG start announce will be disabled for this account
 };
 
 enum PartyOperation
@@ -107,8 +109,12 @@ class PacketFilter
 public:
     explicit PacketFilter(WorldSession * pSession) : m_pSession(pSession) {}
     virtual ~PacketFilter() {}
-    virtual bool Process(WorldPacket * packet) { return true; }
-    virtual bool ProcessLogout() const { return true; }
+
+    virtual bool Process(WorldPacket * packet) = 0;
+    virtual bool ProcessLogout() const  = 0;
+    virtual bool ProcessTimersUpdate() const = 0;
+    virtual bool ProcessWardenUpdate() const = 0;
+
 protected:
     WorldSession * const m_pSession;
 };
@@ -116,26 +122,33 @@ protected:
 //process only thread-safe packets in Map::Update()
 class MapSessionFilter : public PacketFilter
 {
-public:
-    explicit MapSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
-    ~MapSessionFilter() {}
-    virtual bool Process(WorldPacket * packet);
-    //in Map::Update() we do not process player logout!
-    virtual bool ProcessLogout() const { return false; }
+    public:
+        explicit MapSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
+        ~MapSessionFilter() {}
+
+        bool Process(WorldPacket * packet);
+        //in Map::Update() we do not process player logout!
+        bool ProcessLogout() const { return false; }
+        bool ProcessTimersUpdate() const { return false; }
+        bool ProcessWardenUpdate() const { return false; }
 };
 
 //class used to filer only thread-unsafe packets from queue
 //in order to update only be used in World::UpdateSessions()
 class WorldSessionFilter : public PacketFilter
 {
-public:
-    explicit WorldSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
-    ~WorldSessionFilter() {}
-    virtual bool Process(WorldPacket* packet);
+    public:
+        explicit WorldSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
+        ~WorldSessionFilter() {}
+
+        virtual bool Process(WorldPacket* packet);
+        bool ProcessLogout() const { return true; }
+        bool ProcessTimersUpdate() const { return true; }
+        bool ProcessWardenUpdate() const { return true; }
 };
 
 /// Player session in the World
-class HELLGROUND_DLL_SPEC WorldSession
+class HELLGROUND_IMPORT_EXPORT WorldSession
 {
     friend class CharacterHandler;
     public:
@@ -145,8 +158,6 @@ class HELLGROUND_DLL_SPEC WorldSession
         bool PlayerLoading() const { return m_playerLoading; }
         bool PlayerLogout() const { return m_playerLogout; }
         bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
-
-        bool CanMoveTo(MovementInfo & movementInfoPrev, MovementInfo & movementInfoNew);
 
         void SizeError(WorldPacket const& packet, uint32 size) const;
 
@@ -163,6 +174,9 @@ class HELLGROUND_DLL_SPEC WorldSession
         void SendPartyResult(PartyOperation operation, const std::string& member, PartyResult res);
         void SendAreaTriggerMessage(const char* Text, ...) ATTR_PRINTF(2,3);
 
+        uint32 RecordSessionTimeDiff(const char *text, ...);
+        uint32 RecordVerboseTimeDiff(bool reset);
+
         uint64 GetPermissions() const { return m_permissions; }
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return _player; }
@@ -172,12 +186,13 @@ class HELLGROUND_DLL_SPEC WorldSession
         void SetPlayer(Player *plr) { _player = plr; }
         uint8 Expansion() const { return m_expansion; }
 
+        void SaveAccountFlags();
         bool IsAccountFlagged(AccountFlags flag) const { return m_accFlags & flag; }
-        void AddAccountFlag(AccountFlags flag) { m_accFlags |= flag; }
-        void RemoveAccountFlag(AccountFlags flag) { m_accFlags &= ~flag; }
+        void AddAccountFlag(AccountFlags flag);
+        void RemoveAccountFlag(AccountFlags flag);
 
-        void SaveOpcodesDisabled();
-        void AddOpcodeDisableFlag(uint16 flag);
+        void SaveOpcodesDisableFlags();
+        void SetOpcodeDisableFlag(uint16 flag);
         void RemoveOpcodeDisableFlag(uint16 flag);
         uint16 GetOpcodesDisabledFlag() { return m_opcodesDisabled;}
 
@@ -242,7 +257,8 @@ class HELLGROUND_DLL_SPEC WorldSession
         bool SendItemInfo(uint32 itemid, WorldPacket data);
 
         // External Mail
-        static void SendExternalMails();
+        void SendExternalMails();
+        TimeTrackerSmall _mailSendTimer;
 
         //auction
         void SendAuctionHello(Unit *unit);
@@ -414,7 +430,8 @@ class HELLGROUND_DLL_SPEC WorldSession
         void HandleMoveWorldportAckOpcode();                // for server-side calls
 
         void HandleMovementOpcodes(WorldPacket& recvPacket);
-        void HandlePossessedMovement(WorldPacket& recv_data, MovementInfo& movementInfo);
+        void HandleMoverRelocation(MovementInfo&);
+
         void HandleSetActiveMoverOpcode(WorldPacket &recv_data);
         void HandleMoveNotActiveMoverOpcode(WorldPacket &recv_data);
         void HandleMoveTimeSkippedOpcode(WorldPacket &recv_data);
@@ -753,7 +770,8 @@ class HELLGROUND_DLL_SPEC WorldSession
         LocaleConstant m_sessionDbcLocale;
         int m_sessionDbLocaleIndex;
         uint32 m_latency;
-        uint32 m_kickTimer;
+
+        TimeTrackerSmall _kickTimer;
 
         bool m_customRates;
 
@@ -763,6 +781,16 @@ class HELLGROUND_DLL_SPEC WorldSession
         OpcodesCooldown _opcodesCooldown;
 
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
+
+        uint32 m_currentSessionTime;
+        uint32 m_currentVerboseTime;
+};
+
+struct VerboseLogInfo
+{
+    VerboseLogInfo(uint16 op, uint32 df) : opcode(op), diff(df) {}
+    uint16 opcode;
+    uint32 diff;
 };
 
 #endif

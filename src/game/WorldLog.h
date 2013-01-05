@@ -28,12 +28,12 @@
 #include "ace/Singleton.h"
 
 #include "Common.h"
-#include "Errors.h"
+#include "Log.h"
 
 #include <stdarg.h>
 
 /// %Log packets to a file
-class HELLGROUND_DLL_DECL WorldLog
+class WorldLog
 {
     friend class ACE_Singleton<WorldLog, ACE_Thread_Mutex>;
     WorldLog() : i_file(NULL) { Initialize(); }
@@ -60,7 +60,7 @@ class HELLGROUND_DLL_DECL WorldLog
             if (LogWorld())
             {
                 ACE_GUARD(ACE_Thread_Mutex, Guard, Lock);
-                ASSERT(i_file);
+                //ASSERT(i_file);
 
                 va_list args;
                 va_start(args, fmt);

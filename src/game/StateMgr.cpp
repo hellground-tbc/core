@@ -86,7 +86,7 @@ public:
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, target->GetPackGUID().size() + 4);
         data << target->GetPackGUID();
         data << uint32(0);
-        target->SendMessageToSet(&data, true);
+        target->BroadcastPacket(&data, true);
     }
 
     bool Update(Unit &unit, const uint32 &)
@@ -109,7 +109,7 @@ public:
         WorldPacket data(SMSG_FORCE_MOVE_UNROOT, target->GetPackGUID().size() + 4);
         data << target->GetPackGUID();
         data << uint32(0);
-        target->SendMessageToSet(&data, true);
+        target->BroadcastPacket(&data, true);
         target->m_movementInfo.RemoveMovementFlag(MOVEFLAG_ROOT);
 
         target->AddEvent(new AttackResumeEvent(*target), ATTACK_DISPLAY_DELAY);
@@ -150,14 +150,14 @@ public:
             WorldPacket data(SMSG_FORCE_MOVE_ROOT, target->GetPackGUID().size() + 4);
             data << target->GetPackGUID();
             data << target->GetUnitStateMgr().GetCounter(UNIT_ACTION_ROOT);
-            target->SendMessageToSet(&data, true);
+            target->BroadcastPacket(&data, true);
         }
         else
         {
             target->StopMoving();
             WorldPacket data(SMSG_SPLINE_MOVE_ROOT, target->GetPackGUID().size());
             data << target->GetPackGUID();
-            target->SendMessageToSet(&data, true);
+            target->BroadcastPacket(&data, true);
         }
 
     }
@@ -175,13 +175,13 @@ public:
             WorldPacket data(SMSG_FORCE_MOVE_UNROOT, target->GetPackGUID().size() + 4);
             data << target->GetPackGUID();
             data << target->GetUnitStateMgr().GetCounter(UNIT_ACTION_ROOT);
-            target->SendMessageToSet(&data, true);
+            target->BroadcastPacket(&data, true);
         }
         else
         {
             WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, target->GetPackGUID().size());
             data << target->GetPackGUID();
-            target->SendMessageToSet(&data, true);
+            target->BroadcastPacket(&data, true);
         }
         target->m_movementInfo.RemoveMovementFlag(MOVEFLAG_ROOT);
 

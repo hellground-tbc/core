@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include <sstream>
+
 #include "Common.h"
 #include "SharedDefines.h"
 #include "WorldPacket.h"
@@ -88,17 +90,14 @@ Object::~Object()
         if (IsInWorld())
         {
             ///- Do NOT call RemoveFromWorld here, if the object is a player it will crash
-            sLog.outError("Object::~Object - guid="UI64FMTD", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
-            assert(false);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Object::~Object - guid="UI64FMTD", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
+            ASSERT(false);
         }
 
-        assert(!m_objectUpdated);
+        ASSERT(!m_objectUpdated);
 
-        if (m_uint32Values)
-            delete [] m_uint32Values;
-
-        if (m_uint32Values_mirror)
-            delete [] m_uint32Values_mirror;
+        delete [] m_uint32Values;
+        delete [] m_uint32Values_mirror;
 
         m_uint32Values = NULL;
         m_uint32Values_mirror = NULL;
@@ -200,7 +199,8 @@ void Object::SendCreateUpdateToPlayer(Player* player)
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
     upd.BuildPacket(&packet);
-    player->GetSession()->SendPacket(&packet);
+
+    player->SendPacketToSelf(&packet);
 }
 
 void Object::BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) const
@@ -227,7 +227,7 @@ void Object::BuildFieldsUpdate(Player *pl, UpdateDataMapType &data_map) const
     if (iter == data_map.end())
     {
         std::pair<UpdateDataMapType::iterator, bool> p = data_map.insert(UpdateDataMapType::value_type(pl, UpdateData()));
-        assert(p.second);
+        ASSERT(p.second);
         iter = p.first;
     }
     BuildValuesUpdateBlockForPlayer(&iter->second, iter->first);
@@ -244,7 +244,7 @@ void Object::DestroyForPlayer(Player *target) const
 
     WorldPacket data(SMSG_DESTROY_OBJECT, 8);
     data << uint64(GetGUID());
-    target->GetSession()->SendPacket(&data);
+    target->SendPacketToSelf(&data);
 }
 
 void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
@@ -265,6 +265,9 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
                 player->m_movementInfo.RemoveMovementFlag(MOVEFLAG_ONTRANSPORT);
         }
 
+        if (unit->IsStopped() && unit->m_movementInfo.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
+            unit->m_movementInfo.RemoveMovementFlag(MovementFlags(MOVEFLAG_SPLINE_ENABLED|MOVEFLAG_FORWARD));
+
         // Update movement info time
         unit->m_movementInfo.UpdateTime(WorldTimer::getMSTime());
         // Write movement info
@@ -282,13 +285,7 @@ void Object::BuildMovementUpdate(ByteBuffer * data, uint8 updateFlags) const
 
         // 0x08000000
         if (unit->m_movementInfo.GetMovementFlags() & MOVEFLAG_SPLINE_ENABLED)
-        {
-            // How it is ever possible ? spline done but still MOVEFLAG_SPLINE_ENABLED present
-            if (unit->IsStopped())
-                unit->m_movementInfo.RemoveMovementFlag(MOVEFLAG_SPLINE_ENABLED);
-            else
-                Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
-        }
+            Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
     }
     // 0x40
     else if (updateFlags & UPDATEFLAG_HAS_POSITION)
@@ -405,7 +402,7 @@ void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask *
         }
     }
 
-    WPAssert(updateMask && updateMask->GetCount() == m_valuesCount);
+    ASSERT(updateMask && updateMask->GetCount() == m_valuesCount);
 
     *data << (uint8)updateMask->GetBlockCount();
     data->append(updateMask->GetMask(), updateMask->GetLength());
@@ -419,7 +416,7 @@ void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer * data, UpdateMask *
             {
                 // remove custom flag before send
                 if (index == UNIT_NPC_FLAGS)
-                    *data << uint32(m_uint32Values[ index ] & ~(UNIT_NPC_FLAG_GUARD + UNIT_NPC_FLAG_OUTDOORPVP));
+                    *data << uint32(m_uint32Values[ index ] & ~(UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_OUTDOORPVP));
                 // FIXME: Some values at server stored in float format but must be sent to client in uint32 format
                 else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
                 {
@@ -597,7 +594,7 @@ void Object::_SetUpdateBits(UpdateMask *updateMask, Player* /*target*/) const
         if (m_uint32Values_mirror[index]!= m_uint32Values[index])
             updateMask->SetBit(index);
     }
-    
+
     if (GetTypeId() == TYPEID_PLAYER)
         updateMask->SetBit(UNIT_FIELD_BYTES_2);
 }
@@ -693,7 +690,7 @@ void Object::SetByteValue(uint16 index, uint8 offset, uint8 value)
 
     if (offset > 4)
     {
-        sLog.outError("Object::SetByteValue: wrong offset %u", offset);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Object::SetByteValue: wrong offset %u", offset);
         return;
     }
 
@@ -719,7 +716,7 @@ void Object::SetUInt16Value(uint16 index, uint8 offset, uint16 value)
 
     if (offset > 2)
     {
-        sLog.outError("Object::SetUInt16Value: wrong offset %u", offset);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Object::SetUInt16Value: wrong offset %u", offset);
         return;
     }
 
@@ -835,7 +832,7 @@ void Object::SetByteFlag(uint16 index, uint8 offset, uint8 newFlag)
 
     if (offset > 4)
     {
-        sLog.outError("Object::SetByteFlag: wrong offset %u", offset);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Object::SetByteFlag: wrong offset %u", offset);
         return;
     }
 
@@ -860,7 +857,7 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
 
     if (offset > 4)
     {
-        sLog.outError("Object::RemoveByteFlag: wrong offset %u", offset);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Object::RemoveByteFlag: wrong offset %u", offset);
         return;
     }
 
@@ -881,10 +878,19 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
 
 bool Object::PrintIndexError(uint32 index, bool set) const
 {
-    sLog.outError("Attempt %s non-existed value field: %u (count: %u) for object typeid: %u type mask: %u",(set ? "set value to" : "get value from"),index,m_valuesCount,GetTypeId(),m_objectType);
+    sLog.outLog(LOG_DEFAULT, "ERROR: Attempt %s non-existed value field: %u (count: %u) for object typeid: %u type mask: %u",(set ? "set value to" : "get value from"),index,m_valuesCount,GetTypeId(),m_objectType);
 
     // assert must fail after function call
     return false;
+}
+
+std::string Object::GetUInt32ValuesString() const
+{
+    std::ostringstream ss;
+    for (uint16 i = 0; i < m_valuesCount; ++i)
+        ss << GetUInt32Value(i) << " ";
+
+    return ss.str();
 }
 
 WorldObject::WorldObject()
@@ -893,7 +899,6 @@ WorldObject::WorldObject()
     mSemaphoreTeleport(false)
     , m_map(NULL), m_zoneScript(NULL)
     , m_activeBy(0), IsTempWorldObject(false)
-    , m_notifyflags(0), m_executed_notifies(0)
 {
     mSemaphoreTeleport  = false;
 }
@@ -931,19 +936,9 @@ void WorldObject::setActive(bool on, ActiveObject activeBy)
         return;
 
     if (on)
-    {
-        if (GetTypeId() == TYPEID_UNIT)
-            map->AddToActive((Creature*)this);
-        else if (GetTypeId() == TYPEID_DYNAMICOBJECT)
-            map->AddToActive((DynamicObject*)this);
-    }
+        map->AddToActive(this);
     else
-    {
-        if (GetTypeId() == TYPEID_UNIT)
-            map->RemoveFromActive((Creature*)this);
-        else if (GetTypeId() == TYPEID_DYNAMICOBJECT)
-            map->RemoveFromActive((DynamicObject*)this);
-    }
+        map->RemoveFromActive(this);
 }
 
 void WorldObject::CleanupsBeforeDelete()
@@ -1027,7 +1022,7 @@ InstanceData* WorldObject::GetInstanceData()
 }
 
                                                             //slow
-float WorldObject::GetDistance(const WorldObject* obj) const
+float WorldObject::GetDistance(WorldObject const* obj) const
 {
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
@@ -1094,7 +1089,7 @@ float WorldObject::GetDistanceSq(const float &x, const float &y, const float &z)
     return dx*dx + dy*dy + dz*dz;
 }
 
-float WorldObject::GetDistance2d(const WorldObject* obj) const
+float WorldObject::GetDistance2d(WorldObject const* obj) const
 {
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
@@ -1103,7 +1098,7 @@ float WorldObject::GetDistance2d(const WorldObject* obj) const
     return (dist > 0 ? dist : 0);
 }
 
-float WorldObject::GetDistanceZ(const WorldObject* obj) const
+float WorldObject::GetDistanceZ(WorldObject const* obj) const
 {
     float dz = fabs(GetPositionZ() - obj->GetPositionZ());
     float sizefactor = GetObjectSize() + obj->GetObjectSize();
@@ -1167,9 +1162,11 @@ bool WorldObject::_IsWithinDist(WorldLocation const* wLoc, float dist2compare, b
     return distsq < maxdist * maxdist;
 }
 
-bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
+bool WorldObject::IsWithinLOSInMap(WorldObject const* obj) const
 {
-    if (!IsInMap(obj)) return false;
+    if (!IsInMap(obj))
+        return false;
+
     float ox,oy,oz;
     obj->GetPosition(ox,oy,oz);
     return(IsWithinLOS(ox, oy, oz));
@@ -1177,6 +1174,9 @@ bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
 
 bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz) const
 {
+    if (!GetTerrain()->IsLineOfSightEnabled())
+        return true;
+
     float x,y,z;
     GetPosition(x,y,z);
     VMAP::IVMapManager *vMapManager = VMAP::VMapFactory::createOrGetVMapManager();
@@ -1249,7 +1249,7 @@ bool WorldObject::IsInRange3d(float x, float y, float z, float minRange, float m
     return distsq < maxdist * maxdist;
 }
 
-float WorldObject::GetAngle(const WorldObject* obj) const
+float WorldObject::GetAngle(WorldObject const* obj) const
 {
     if (!obj) return 0;
     return GetAngle(obj->GetPositionX(), obj->GetPositionY());
@@ -1266,7 +1266,7 @@ float WorldObject::GetAngle(const float x, const float y) const
     return ang;
 }
 
-bool WorldObject::HasInArc(const float arcangle, const WorldObject* obj) const
+bool WorldObject::HasInArc(const float arcangle, WorldObject const* obj) const
 {
     // always have self in arc
     if (obj == this)
@@ -1367,7 +1367,9 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
 
     Hellground::NormalizeMapCoord(pos.x);
     Hellground::NormalizeMapCoord(pos.y);
-    pos.z = GetTerrain()->GetHeight(pos.x, pos.y, pos.z +2.0f, true) + 0.5f;
+    ground = _map->GetHeight(pos.x, pos.y, MAX_HEIGHT, true);
+    floor = _map->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
+    pos.z = 0.5f +fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
@@ -1450,21 +1452,21 @@ void WorldObject::MonsterSay(const char* text, uint32 language, uint64 TargetGui
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,CHAT_MSG_MONSTER_SAY,text,language,GetName(),TargetGuid);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
+    BroadcastPacketInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY),true);
 }
 
 void WorldObject::MonsterYell(const char* text, uint32 language, uint64 TargetGuid)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,CHAT_MSG_MONSTER_YELL,text,language,GetName(),TargetGuid);
-    SendMessageToSetInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
+    BroadcastPacketInRange(&data,sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL),true);
 }
 
 void WorldObject::MonsterTextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote)
 {
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, text, LANG_UNIVERSAL, GetName(), TargetGuid);
-    SendMessageToSetInRange(&data, sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE), true);
+    BroadcastPacketInRange(&data, sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE), true);
 }
 
 void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper)
@@ -1476,7 +1478,7 @@ void WorldObject::MonsterWhisper(const char* text, uint64 receiver, bool IsBossW
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER,text,LANG_UNIVERSAL,GetName(),receiver);
 
-    player->GetSession()->SendPacket(&data);
+    player->SendPacketToSelf(&data);
 }
 
 void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
@@ -1484,9 +1486,9 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << Sound;
     if (OnlySelf && GetTypeId() == TYPEID_PLAYER)
-        ((Player*)this)->GetSession()->SendPacket(&data);
+        ((Player*)this)->SendPacketToSelf(&data);
     else
-        SendMessageToSet(&data, true); // ToSelf ignored in this case
+        BroadcastPacket(&data, true); // ToSelf ignored in this case
 }
 
 void Object::ForceValuesUpdateAtIndex(uint32 i)
@@ -1531,8 +1533,8 @@ void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
     float range = sWorld.getConfig(CONFIG_LISTEN_RANGE_SAY);
     Hellground::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_SAY, textId, language, TargetGuid);
     Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
-    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
-    TypeContainerVisitor<Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
+    Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
+    TypeContainerVisitor<Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> >, WorldTypeMapContainer > message(say_worker);
     //cell_lock->Visit(cell_lock, message, *GetMap());
     Cell::VisitWorldObjects(this, say_worker, range);
 }
@@ -1542,7 +1544,7 @@ void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
     float range = sWorld.getConfig(CONFIG_LISTEN_RANGE_YELL);
     Hellground::MonsterChatBuilder say_build(*this, CHAT_MSG_MONSTER_YELL, textId, language, TargetGuid);
     Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
-    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
+    Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
     Cell::VisitWorldObjects(this, say_worker, range);
 }
 
@@ -1564,7 +1566,7 @@ void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossE
     float range = sWorld.getConfig(IsBossEmote ? CONFIG_LISTEN_RANGE_YELL : CONFIG_LISTEN_RANGE_TEXTEMOTE);
     Hellground::MonsterChatBuilder say_build(*this, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, textId, LANG_UNIVERSAL, TargetGuid, withoutPrename);
     Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> say_do(say_build);
-    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
+    Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::MonsterChatBuilder> > say_worker(this, range, say_do);
     Cell::VisitWorldObjects(this, say_worker, range);
 }
 
@@ -1593,7 +1595,7 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, text, LANG_UNIVERSAL, GetNameForLocaleIdx(loc_idx), receiver);
 
-    player->GetSession()->SendPacket(&data);
+    player->SendPacketToSelf(&data);
 }
 
 void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, int32 iTextEntry, uint32 language, char const* name, uint64 targetGuid, bool withoutPrename) const
@@ -1633,21 +1635,26 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
     *data << (uint8)0;                                      // ChatTag
 }
 
-void WorldObject::SendMessageToSet(WorldPacket *data, bool /*fake*/, bool bToPossessor)
+void WorldObject::BroadcastPacket(WorldPacket *data, bool toSelf)
 {
-    GetMap()->MessageBroadcast(this, data, bToPossessor);
+    GetMap()->BroadcastPacket(this, data, toSelf);
 }
 
-void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool /*bToSelf*/, bool bToPossessor)
+void WorldObject::BroadcastPacketInRange(WorldPacket *data, float dist, bool toSelf, bool ownTeamOnly)
 {
-    GetMap()->MessageDistBroadcast(this, data, dist, bToPossessor);
+    GetMap()->BroadcastPacketInRange(this, data, dist, toSelf, ownTeamOnly);
+}
+
+void WorldObject::BroadcastPacketExcept(WorldPacket* data, Player* except)
+{
+    GetMap()->BroadcastPacketExcept(this, data, except);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
 {
     WorldPacket data(SMSG_GAMEOBJECT_DESPAWN_ANIM, 8);
     data << uint64(guid);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void WorldObject::SendGameObjectCustomAnim(uint64 guid)
@@ -1655,7 +1662,7 @@ void WorldObject::SendGameObjectCustomAnim(uint64 guid)
     WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8+4);
     data << uint64(guid);
     data << uint32(0);
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 Map* WorldObject::_getMap()
@@ -1670,7 +1677,7 @@ TerrainInfo const* WorldObject::GetTerrain() const
 
 void WorldObject::AddObjectToRemoveList()
 {
-    assert(m_uint32Values);
+    ASSERT(m_uint32Values);
 
     GetMap()->AddObjectToRemoveList(this);
 }
@@ -1754,6 +1761,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             pet->clearUnitState(UNIT_STAT_FOLLOW);
             pet->SendPetAIReaction(pet->GetGUID());
         }
+        else if(entry == 510)
+            pet->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FROST, true);
 
         return NULL;
     }
@@ -1769,7 +1778,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     uint32 pet_number = sObjectMgr.GeneratePetNumber();
     if (!pet->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_PET), map, entry, pet_number))
     {
-        sLog.outError("no such creature entry %u", entry);
+        sLog.outLog(LOG_DEFAULT, "ERROR: no such creature entry %u", entry);
         delete pet;
         return NULL;
     }
@@ -1778,7 +1787,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     if (!pet->IsPositionValid())
     {
-        sLog.outError("ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
         delete pet;
         return NULL;
     }
@@ -1853,7 +1862,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
     GameObjectInfo const* goinfo = ObjectMgr::GetGameObjectInfo(entry);
     if (!goinfo)
     {
-        sLog.outErrorDb("Gameobject template %u not found in database!", entry);
+        sLog.outLog(LOG_DB_ERR, "Gameobject template %u not found in database!", entry);
         return NULL;
     }
     Map *map = GetMap();
@@ -1923,11 +1932,18 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
+void WorldObject::UpdateVisibilityAndView()
+{
+    GetViewPoint().Call_UpdateVisibilityForOwner();
+    UpdateObjectVisibility();
+    GetViewPoint().Event_ViewPointVisibilityChanged();
+}
+
 void WorldObject::UpdateObjectVisibility(bool /*forced*/)
 {
     //updates object's visibility for nearby players
     Hellground::VisibleChangesNotifier notifier(*this);
-    Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance());
+    Cell::VisitWorldObjects(this, notifier, GetMap()->GetVisibilityDistance() + World::GetVisibleObjectGreyDistance());
 }
 
 void WorldObject::AddToClientUpdateList()
@@ -1945,58 +1961,25 @@ struct WorldObjectChangeAccumulator
     UpdateDataMapType &i_updateDatas;
     WorldObject &i_object;
     std::set<uint64> plr_list;
-    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d) : i_updateDatas(d), i_object(obj) {}
-    void Visit(PlayerMapType &m)
+
+    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d) : i_updateDatas(d), i_object(obj)
     {
-        for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        if (i_object.isType(TYPEMASK_PLAYER))
+            i_object.BuildFieldsUpdate(i_object.ToPlayer(), i_updateDatas);
+    }
+
+    void Visit(CameraMapType &m)
+    {
+        for (CameraMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         {
-            BuildPacket(iter->getSource());
-            if (!iter->getSource()->GetSharedVisionList().empty())
-            {
-                SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-                for (; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                    BuildPacket(*it);
-            }
+            Player* owner = iter->getSource()->GetOwner();
+            if (owner != &i_object && owner->HaveAtClient(&i_object))
+                i_object.BuildFieldsUpdate(owner, i_updateDatas);
         }
     }
 
-    void Visit(CreatureMapType &m)
-    {
-        for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-        {
-            if (!iter->getSource()->GetSharedVisionList().empty())
-            {
-                SharedVisionList::const_iterator it = iter->getSource()->GetSharedVisionList().begin();
-                for (; it != iter->getSource()->GetSharedVisionList().end(); ++it)
-                    BuildPacket(*it);
-            }
-        }
-    }
-    void Visit(DynamicObjectMapType &m)
-    {
-        for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-        {
-            uint64 guid = iter->getSource()->GetCasterGUID();
-            if (IS_PLAYER_GUID(guid))
-            {
-                //Caster may be NULL if DynObj is in removelist
-                if (Player *caster = ObjectAccessor::FindPlayer(guid))
-                    if (caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->getSource()->GetGUID())
-                        BuildPacket(caster);
-            }
-        }
-    }
-    void BuildPacket(Player* plr)
-    {
-        // Only send update once to a player
-        if (plr_list.find(plr->GetGUID()) == plr_list.end() && plr->HaveAtClient(&i_object))
-        {
-            i_object.BuildFieldsUpdate(plr, i_updateDatas);
-            plr_list.insert(plr->GetGUID());
-        }
-    }
-
-    template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
+    template<class SKIP>
+    void Visit(GridRefManager<SKIP> &) {}
 };
 
 void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
@@ -2013,9 +1996,9 @@ void WorldObject::PlayDistanceSound( uint32 sound_id, Player* target /*= NULL*/ 
     data << uint32(sound_id);
     data << GetGUID();
     if (target)
-        target->SendDirectMessage( &data );
+        target->SendPacketToSelf( &data );
     else
-        SendMessageToSet( &data, true );
+        BroadcastPacket( &data, true );
 }
 
 void WorldObject::PlayDirectSound( uint32 sound_id, Player* target /*= NULL*/ )
@@ -2023,9 +2006,9 @@ void WorldObject::PlayDirectSound( uint32 sound_id, Player* target /*= NULL*/ )
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << uint32(sound_id);
     if (target)
-        target->SendDirectMessage( &data );
+        target->SendPacketToSelf( &data );
     else
-        SendMessageToSet( &data, true );
+        BroadcastPacket( &data, true );
 }
 
 Totem* WorldObject::ToTotem()
@@ -2058,4 +2041,19 @@ const Pet* WorldObject::ToPet() const
         return (const Pet*)((Pet*)this);
 
     return NULL;
+}
+
+bool WorldObject::UpdateHelper::ProcessUpdate(Creature* creature)
+{
+    if (!creature->IsInWorld() || creature->isSpiritService())
+        return false;
+
+    uint32 minUpdateTime = sWorld.getConfig(CONFIG_INTERVAL_MAPUPDATE);
+
+    return creature->m_updateTracker.timeElapsed() >= minUpdateTime;
+}
+
+bool WorldObject::UpdateHelper::ProcessUpdate(WorldObject* obj)
+{
+    return obj->IsInWorld();
 }

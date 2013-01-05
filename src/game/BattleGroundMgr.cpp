@@ -44,7 +44,14 @@
 /***            BATTLEGROUND QUEUE SYSTEM              ***/
 /*********************************************************/
 
-BattleGroundQueue::BattleGroundQueue() {}
+BattleGroundQueue::BattleGroundQueue()
+{
+    for (int i = 0; i < MAX_BATTLEGROUND_BRACKETS; ++i)
+    {
+        queuedPlayersCount[BG_TEAM_ALLIANCE][i] = 0;
+        queuedPlayersCount[BG_TEAM_HORDE][i] = 0;
+    }
+}
 
 BattleGroundQueue::~BattleGroundQueue()
 {
@@ -58,6 +65,9 @@ BattleGroundQueue::~BattleGroundQueue()
 
             m_QueuedGroups[i][j].clear();
         }
+
+        queuedPlayersCount[BG_TEAM_ALLIANCE][i] = 0;
+        queuedPlayersCount[BG_TEAM_HORDE][i] = 0;
     }
 }
 
@@ -160,6 +170,8 @@ GroupQueueInfo * BattleGroundQueue::AddGroup(Player *leader, BattleGroundTypeId 
 //add player to playermap
 void BattleGroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
 {
+    queuedPlayersCount[ginfo->GetBGTeam()][plr->GetBattleGroundBracketIdFromLevel(ginfo->BgTypeId)] += 1;
+
     //if player isn't in queue, he is added, if already is, then values are overwritten, no memory leak
     PlayerQueueInfo& info = m_QueuedPlayers[plr->GetGUID()];
     info.InviteTime                 = 0;
@@ -183,7 +195,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     itr = m_QueuedPlayers.find(guid);
     if (itr == m_QueuedPlayers.end())
     {
-        sLog.outError("BattleGroundQueue: couldn't find player to remove GUID: %u", GUID_LOPART(guid));
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundQueue: couldn't find player to remove GUID: %u", GUID_LOPART(guid));
         return;
     }
 
@@ -216,7 +228,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     //player can't be in queue without group, but just in case
     if (bracket_id == -1)
     {
-        sLog.outError("BattleGroundQueue: ERROR Cannot find groupinfo for player GUID: %u", GUID_LOPART(guid));
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundQueue: ERROR Cannot find groupinfo for player GUID: %u", GUID_LOPART(guid));
         return;
     }
     DEBUG_LOG("BattleGroundQueue: Removing player GUID %u, from bracket_id %u", GUID_LOPART(guid), (uint32)bracket_id);
@@ -225,6 +237,8 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     // We can ignore leveling up in queue - it should not cause crash
     // remove player from group
     // if only one player there, remove group
+
+    queuedPlayersCount[group->GetBGTeam()][bracket_id] -= 1;
 
     // remove player queue info from group queue info
     std::map<uint64, PlayerQueueInfo*>::iterator pitr = group->Players.find(guid);
@@ -264,7 +278,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
                                                             // queue->removeplayer, it causes bugs
             WorldPacket data;
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, plr2->GetTeam(), queueSlot, STATUS_NONE, 0, 0);
-            plr2->GetSession()->SendPacket(&data);
+            plr2->SendPacketToSelf(&data);
         }
         // then actually delete, this may delete the group as well!
         RemovePlayer(group->Players.begin()->first, decreaseInvitedCount);
@@ -307,7 +321,7 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
 
             // send status packet
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, side?side:plr->GetTeam(), queueSlot, STATUS_WAIT_JOIN, INVITE_ACCEPT_WAIT_TIME, 0);
-            plr->GetSession()->SendPacket(&data);
+            plr->SendPacketToSelf(&data);
         }
         return true;
     }
@@ -345,14 +359,14 @@ void BattleGroundQueue::BGEndedRemoveInvites(BattleGround *bg)
                     std::map<uint64, PlayerQueueInfo * >::iterator itr2 = ginfo->Players.begin();
                     if( itr2 == ginfo->Players.end() )
                     {
-                        sLog.outError("Empty Players in ginfo, this should never happen!");
+                        sLog.outLog(LOG_DEFAULT, "ERROR: Empty Players in ginfo, this should never happen!");
                         return;
                     }
                     // get the player
                     Player * plr = sObjectMgr.GetPlayer(itr2->first);
                     if( !plr )
                     {
-                        sLog.outError("Player offline when trying to remove from GroupQueueInfo, this should never happen.");
+                        sLog.outLog(LOG_DEFAULT, "ERROR: Player offline when trying to remove from GroupQueueInfo, this should never happen.");
                         continue;
                     }
 
@@ -365,7 +379,7 @@ void BattleGroundQueue::BGEndedRemoveInvites(BattleGround *bg)
                         RemovePlayer(itr2->first, true);
                         WorldPacket data;
                         sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, team, queueSlot, STATUS_NONE, 0, 0);
-                        plr->GetSession()->SendPacket(&data);
+                        plr->SendPacketToSelf(&data);
                     }
                 }
             }
@@ -669,7 +683,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
     BattleGround * bg_template = sBattleGroundMgr.GetBattleGroundTemplate(bgTypeId);
     if (!bg_template)
     {
-        sLog.outError("Battleground: Update: bg template not found for %u", bgTypeId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Battleground: Update: bg template not found for %u", bgTypeId);
         return;
     }
     // get the min. players per team, properly for larger arenas as well. (must have full teams for arena matches!)
@@ -704,7 +718,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
             BattleGround * bg2 = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, bracket_id, 0, false);
             if (!bg2)
             {
-                sLog.outError("BattleGroundQueue::Update - Cannot create battleground: %u", bgTypeId);
+                sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundQueue::Update - Cannot create battleground: %u", bgTypeId);
                 return;
             }
             //invite those selection pools
@@ -730,7 +744,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
             BattleGround * bg2 = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, bracket_id, arenaType, false);
             if (!bg2)
             {
-                sLog.outError("BattleGroundQueue::Update - Cannot create battleground: %u", bgTypeId);
+                sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundQueue::Update - Cannot create battleground: %u", bgTypeId);
                 return;
             }
 
@@ -831,11 +845,10 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
         {
             itr_team[BG_TEAM_HORDE] = itr_team[BG_TEAM_ALLIANCE];
             ++itr_team[BG_TEAM_HORDE];
-
-            uint32 arenaTeamRatingH = hiddenEnabled ? (*itr_team[BG_TEAM_HORDE])->HiddenRating : (*itr_team[BG_TEAM_HORDE])->ArenaTeamRating;
-
             for(; itr_team[BG_TEAM_HORDE] != m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].end(); ++(itr_team[BG_TEAM_HORDE]))
             {
+                uint32 arenaTeamRatingH = hiddenEnabled ? (*itr_team[BG_TEAM_HORDE])->HiddenRating : (*itr_team[BG_TEAM_HORDE])->ArenaTeamRating;
+
                 if( !(*itr_team[BG_TEAM_HORDE])->IsInvitedToBGInstanceGUID
                     && ((arenaTeamRatingH >= arenaMinRating && arenaTeamRatingH <= arenaMaxRating)
                         || (*itr_team[BG_TEAM_HORDE])->JoinTime < discardTime) )
@@ -852,7 +865,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
             BattleGround* arena = sBattleGroundMgr.CreateNewBattleGround(bgTypeId, bracket_id, arenaType, true);
             if (!arena)
             {
-                sLog.outError("BattlegroundQueue::Update couldn't create arena instance for rated arena match!");
+                sLog.outLog(LOG_DEFAULT, "ERROR: BattlegroundQueue::Update couldn't create arena instance for rated arena match!");
                 return;
             }
 
@@ -887,6 +900,15 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
         }
     }
 }
+
+uint32 BattleGroundQueue::GetQueuedPlayersCount(BattleGroundTeamId team, BattleGroundBracketId bracketId)
+{
+    if (bracketId >= MAX_BATTLEGROUND_BRACKETS || team >= BG_TEAMS_COUNT)
+        return 0;
+
+    return queuedPlayersCount[team][bracketId].value();
+}
+
 /*********************************************************/
 /***            BATTLEGROUND QUEUE EVENTS              ***/
 /*********************************************************/
@@ -914,7 +936,7 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
         {
             WorldPacket data;
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, qItr->second.GroupInfo->Team, queueSlot, STATUS_WAIT_JOIN, INVITATION_REMIND_TIME, 0);
-            plr->GetSession()->SendPacket(&data);
+            plr->SendPacketToSelf(&data);
         }
     }
     return true;                                            //event will be deleted
@@ -970,7 +992,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
             sBattleGroundMgr.ScheduleQueueUpdate(bgQueueTypeId, bg->GetTypeID(), bg->GetBracketId());
             WorldPacket data;
             sBattleGroundMgr.BuildBattleGroundStatusPacket(&data, bg, m_PlayersTeam, queueSlot, STATUS_NONE, 0, 0);
-            plr->GetSession()->SendPacket(&data);
+            plr->SendPacketToSelf(&data);
         }
     }
     else
@@ -1162,7 +1184,7 @@ void BattleGroundMgr::BuildBattleGroundStatusPacket(WorldPacket *data, BattleGro
             *data << uint8(0x1);                            // Lua_GetBattlefieldArenaFaction (bool)
             break;
         default:
-            sLog.outError("Unknown BG status!");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Unknown BG status!");
             break;
     }
 }
@@ -1389,7 +1411,7 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(BattleGroundTypeId bgTypeI
     BattleGround *bg_template = GetBattleGroundTemplate(bgTypeId);
     if (!bg_template)
     {
-        sLog.outError("BattleGround: CreateNewBattleGround - bg template not found for %u", bgTypeId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround: CreateNewBattleGround - bg template not found for %u", bgTypeId);
         return NULL;
     }
 
@@ -1402,7 +1424,7 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(BattleGroundTypeId bgTypeI
         bg_template = GetBattleGroundTemplate(bgTypeId);
         if (!bg_template)
         {
-            sLog.outError("BattleGround: CreateNewBattleGround - bg template not found for %u", bgTypeId);
+            sLog.outLog(LOG_DEFAULT, "ERROR: BattleGround: CreateNewBattleGround - bg template not found for %u", bgTypeId);
             return NULL;
         }
     }
@@ -1451,6 +1473,7 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(BattleGroundTypeId bgTypeI
     bg->SetBracketId(bracket_id);
     bg->SetArenaType(arenaType);
     bg->SetRated(isRated);
+    bg->CalculateBracketLevelRange();
 
     bg->SetHoliday(IsBGWeekend(bgTypeId));
 
@@ -1522,7 +1545,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
         bar.step();
 
         sLog.outString();
-        sLog.outErrorDb(">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
+        sLog.outLog(LOG_DB_ERR, ">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
         return;
     }
 
@@ -1539,7 +1562,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
         bl = sBattlemasterListStore.LookupEntry(bgTypeID_);
         if (!bl)
         {
-            sLog.outError("Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.", bgTypeID_);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.", bgTypeID_);
             continue;
         }
 
@@ -1581,7 +1604,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
         }
         else
         {
-            sLog.outErrorDb("Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.",bgTypeID,start1);
+            sLog.outLog(LOG_DB_ERR, "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.",bgTypeID,start1);
             continue;
         }
 
@@ -1604,7 +1627,7 @@ void BattleGroundMgr::CreateInitialBattleGrounds()
         }
         else
         {
-            sLog.outErrorDb("Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.",bgTypeID,start2);
+            sLog.outLog(LOG_DB_ERR, "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.",bgTypeID,start2);
             continue;
         }
 
@@ -1745,7 +1768,7 @@ void BattleGroundMgr::SendToBattleGround(Player *pl, uint32 instanceId, BattleGr
     }
     else
     {
-        sLog.outError("player %u trying to port to nonexistent bg instance %u",pl->GetGUIDLow(), instanceId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: player %u trying to port to nonexistent bg instance %u",pl->GetGUIDLow(), instanceId);
     }
 }
 
@@ -1756,7 +1779,7 @@ void BattleGroundMgr::SendAreaSpiritHealerQueryOpcode(Player *pl, BattleGround *
     if (time_ == uint32(-1))
         time_ = 0;
     data << guid << time_;
-    pl->GetSession()->SendPacket(&data);
+    pl->SendPacketToSelf(&data);
 }
 
 bool BattleGroundMgr::IsArenaType(BattleGroundTypeId bgTypeId)
@@ -1914,7 +1937,7 @@ void BattleGroundMgr::LoadBattleMastersEntry()
         uint32 bgTypeId  = fields[1].GetUInt32();
         if (!sBattlemasterListStore.LookupEntry(bgTypeId))
         {
-            sLog.outErrorDb("Table `battlemaster_entry` contain entry %u for not existed battleground type %u, ignored.",entry,bgTypeId);
+            sLog.outLog(LOG_DB_ERR, "Table `battlemaster_entry` contain entry %u for not existed battleground type %u, ignored.",entry,bgTypeId);
             continue;
         }
 

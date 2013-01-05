@@ -74,6 +74,9 @@ void BattleGroundEY::Update(uint32 diff)
             SpawnBGObject(BG_EY_OBJECT_DOOR_A, RESPAWN_IMMEDIATELY);
             SpawnBGObject(BG_EY_OBJECT_DOOR_H, RESPAWN_IMMEDIATELY);
 
+            DoorClose(BG_EY_OBJECT_DOOR_A);
+            DoorClose(BG_EY_OBJECT_DOOR_H);
+
 //            SpawnBGCreature(EY_SPIRIT_MAIN_ALLIANCE, RESPAWN_IMMEDIATELY);
 //            SpawnBGCreature(EY_SPIRIT_MAIN_HORDE, RESPAWN_IMMEDIATELY);
             for (uint32 i = BG_EY_OBJECT_A_BANNER_FEL_REALVER_CENTER; i < BG_EY_OBJECT_MAX; ++i)
@@ -99,6 +102,9 @@ void BattleGroundEY::Update(uint32 diff)
             m_Events |= 0x10;
             SpawnBGObject(BG_EY_OBJECT_DOOR_A, RESPAWN_ONE_DAY);
             SpawnBGObject(BG_EY_OBJECT_DOOR_H, RESPAWN_ONE_DAY);
+
+            DoorOpen(BG_EY_OBJECT_DOOR_A);
+            DoorOpen(BG_EY_OBJECT_DOOR_H);
 
             for (uint32 i = BG_EY_OBJECT_N_BANNER_FEL_REALVER_CENTER; i <= BG_EY_OBJECT_FLAG_NETHERSTORM; ++i)
                 SpawnBGObject(i, RESPAWN_IMMEDIATELY);
@@ -196,7 +202,7 @@ void BattleGroundEY::CheckSomeoneJoinedPoint()
                 Player *plr = sObjectMgr.GetPlayer(m_PlayersNearPoint[EY_POINTS_MAX][j]);
                 if (!plr)
                 {
-                    sLog.outError("BattleGroundEY: Player " UI64FMTD " not found!", m_PlayersNearPoint[EY_POINTS_MAX][j]);
+                    sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Player " UI64FMTD " not found!", m_PlayersNearPoint[EY_POINTS_MAX][j]);
                     m_PlayersNearPoint[EY_POINTS_MAX].erase(m_PlayersNearPoint[EY_POINTS_MAX].begin() + j);
                     ++j;
                     continue;
@@ -243,7 +249,7 @@ void BattleGroundEY::CheckSomeoneLeftPoint()
                 Player *plr = sObjectMgr.GetPlayer(m_PlayersNearPoint[i][j]);
                 if (!plr)
                 {
-                    sLog.outError("BattleGroundEY: Player " UI64FMTD " not found!", m_PlayersNearPoint[i][j]);
+                    sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Player " UI64FMTD " not found!", m_PlayersNearPoint[i][j]);
                     ////move not existed player to "free space" - this will cause many error showing in log, but it is a very important bug
                     //m_PlayersNearPoint[EY_POINTS_MAX].push_back(m_PlayersNearPoint[i][j]);
                     m_PlayersNearPoint[i].erase(m_PlayersNearPoint[i].begin() + j);
@@ -436,7 +442,7 @@ void BattleGroundEY::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 4571:
             break;
         default:
-            sLog.outError("WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            sLog.outLog(LOG_DEFAULT, "ERROR: WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -499,7 +505,7 @@ bool BattleGroundEY::SetupBattleGround()
         || !AddObject(BG_EY_OBJECT_TOWER_CAP_MAGE_TOWER, BG_OBJECT_HU_TOWER_CAP_EY_ENTRY, 2282.121582f, 1760.006958f, 1189.707153f, 1.919862f, 0, 0, 0.819152f, 0.573576f, RESPAWN_ONE_DAY)
        )
     {
-        sLog.outErrorDb("BatteGroundEY: Failed to spawn some object BattleGround not created!");
+        sLog.outLog(LOG_DB_ERR, "BatteGroundEY: Failed to spawn some object BattleGround not created!");
         return false;
     }
 
@@ -509,28 +515,28 @@ bool BattleGroundEY::SetupBattleGround()
         AreaTriggerEntry const* at = sAreaTriggerStore.LookupEntry(m_Points_Trigger[i]);
         if (!at)
         {
-            sLog.outError("BattleGroundEY: Unknown trigger: %u", m_Points_Trigger[i]);
+            sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Unknown trigger: %u", m_Points_Trigger[i]);
             continue;
         }
         if ( !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3, Buff_Entries[0], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             || !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3 + 1, Buff_Entries[1], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             || !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3 + 2, Buff_Entries[2], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
            )
-            sLog.outError("BattleGroundEY: Cannot spawn buff");
+            sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Cannot spawn buff");
     }
 
     WorldSafeLocsEntry const *sg = NULL;
     sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_ALLIANCE);
     if (!sg || !AddSpiritGuide(EY_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE))
     {
-        sLog.outErrorDb("BatteGroundEY: Failed to spawn spirit guide! BattleGround not created!");
+        sLog.outLog(LOG_DB_ERR, "BatteGroundEY: Failed to spawn spirit guide! BattleGround not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_HORDE);
     if (!sg || !AddSpiritGuide(EY_SPIRIT_MAIN_HORDE, sg->x, sg->y, sg->z, 3.193953f, HORDE))
     {
-        sLog.outErrorDb("BatteGroundEY: Failed to spawn spirit guide! BattleGround not created!");
+        sLog.outLog(LOG_DB_ERR, "BatteGroundEY: Failed to spawn spirit guide! BattleGround not created!");
         return false;
     }
 
@@ -595,7 +601,7 @@ void BattleGroundEY::RespawnFlagAfterDrop()
     if (obj)
         obj->Delete();
     else
-        sLog.outError("BattleGroundEY: Unknown dropped flag guid: %u",GUID_LOPART(GetDroppedFlagGUID()));
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Unknown dropped flag guid: %u",GUID_LOPART(GetDroppedFlagGUID()));
 
     SetDroppedFlagGUID(0);
 }
@@ -790,7 +796,7 @@ void BattleGroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     WorldSafeLocsEntry const *sg = NULL;
     sg = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[Point].GraveYardId);
     if (!sg || !AddSpiritGuide(Point, sg->x, sg->y, sg->z, 3.124139f, Team))
-        sLog.outError("BatteGroundEY: Failed to spawn spirit guide! point: %u, team: %u, graveyard_id: %u",
+        sLog.outLog(LOG_DEFAULT, "ERROR: BatteGroundEY: Failed to spawn spirit guide! point: %u, team: %u, graveyard_id: %u",
             Point, Team, m_CapturingPointTypes[Point].GraveYardId);
 
 //    SpawnBGCreature(Point,RESPAWN_IMMEDIATELY);
@@ -931,7 +937,7 @@ WorldSafeLocsEntry const *BattleGroundEY::GetClosestGraveYard(float x, float y, 
 
     if (!entry)
     {
-        sLog.outError("BattleGroundEY: Not found the main team graveyard. Graveyard system isn't working!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Not found the main team graveyard. Graveyard system isn't working!");
         return NULL;
     }
 
@@ -944,7 +950,7 @@ WorldSafeLocsEntry const *BattleGroundEY::GetClosestGraveYard(float x, float y, 
         {
             entry = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[i].GraveYardId);
             if (!entry)
-                sLog.outError("BattleGroundEY: Not found graveyard: %u",m_CapturingPointTypes[i].GraveYardId);
+                sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Not found graveyard: %u",m_CapturingPointTypes[i].GraveYardId);
             else
             {
                 distance = (entry->x - x)*(entry->x - x) + (entry->y - y)*(entry->y - y) + (entry->z - z)*(entry->z - z);

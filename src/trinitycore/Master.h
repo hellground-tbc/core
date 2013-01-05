@@ -25,7 +25,7 @@
 #ifndef _MASTER_H
 #define _MASTER_H
 
-#include "ace/Singleton.h"
+#include <ace/Singleton.h>
 
 #include "Common.h"
 

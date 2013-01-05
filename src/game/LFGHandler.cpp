@@ -190,7 +190,7 @@ void WorldSession::SendLFM(uint32 type, uint32 entry)
                         data << uint32(0x00);
                     break;
                 default:
-                    sLog.outError("WorldSession::SendLFM: wrong lfgtype (%u) for player %u (acc %u)", lfgType, plr->GetGUIDLow(), plr->GetSession()->GetAccountId());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::SendLFM: wrong lfgtype (%u) for player %u (acc %u)", lfgType, plr->GetGUIDLow(), plr->GetSession()->GetAccountId());
                     for (uint8 j = 0; j < MAX_LOOKING_FOR_GROUP_SLOT; ++j)
                         data << uint32(0x00);
                     break;
@@ -327,7 +327,7 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
             SendLFM(type, entry);
             break;
         default:
-            sLog.outError("WorldSession::SendLfgResult: Wrong lfg_type (%u) for player %u (acc: %u)", lfg_type, _player ? _player->GetGUIDLow() : 0, GetAccountId());
+            sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::SendLfgResult: Wrong lfg_type (%u) for player %u (acc: %u)", lfg_type, _player ? _player->GetGUIDLow() : 0, GetAccountId());
             break;
     }
 }

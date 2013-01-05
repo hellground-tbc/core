@@ -173,7 +173,7 @@
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -187,6 +187,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -211,7 +212,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist $(OutDir)..\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -222,7 +223,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -236,6 +237,8 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -248,9 +251,9 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>VCOMP.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
-      <GenerateMapFile>false</GenerateMapFile>
+      <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
       <SubSystem>Console</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -260,7 +263,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist $(OutDir)..\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -271,7 +274,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     <ClCompile>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -311,7 +314,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist $(OutDir)..\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -322,7 +325,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\shared\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;_DEBUG;TRINITY_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -359,7 +362,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist $(OutDir)..\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

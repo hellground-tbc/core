@@ -83,7 +83,7 @@ bool Corpse::Create(uint32 guidlow, Player *owner)
 
     if (!IsPositionValid())
     {
-        sLog.outError("ERROR: Corpse (guidlow %d, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: Corpse (guidlow %d, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
             guidlow,owner->GetName(),owner->GetPositionX(), owner->GetPositionY());
         return false;
     }
@@ -117,12 +117,7 @@ void Corpse::SaveToDB()
     stmt.addFloat(GetOrientation());
     stmt.addUInt32(GetZoneId());
     stmt.addUInt32(GetMapId());
-
-    std::ostringstream ss;
-    for (uint16 i = 0; i < m_valuesCount; i++)
-        ss << GetUInt32Value(i) << " ";
-
-    stmt.addString(ss);
+    stmt.addString(GetUInt32ValuesString());
     stmt.addUInt64(m_time);
     stmt.addUInt32(GetType());
     stmt.addInt32(GetInstanceId());
@@ -133,12 +128,12 @@ void Corpse::SaveToDB()
 
 void Corpse::DeleteBonesFromWorld()
 {
-    assert(GetType()==CORPSE_BONES);
+    ASSERT(GetType()==CORPSE_BONES);
     Corpse* corpse = ObjectAccessor::GetCorpse(*this, GetGUID());
 
     if (!corpse)
     {
-        sLog.outError("Bones %u not found in world.", GetGUIDLow());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Bones %u not found in world.", GetGUIDLow());
         return;
     }
 
@@ -147,23 +142,32 @@ void Corpse::DeleteBonesFromWorld()
 
 void Corpse::DeleteFromDB()
 {
+    static SqlStatementID deleteCorpse;
+    static SqlStatementID deleteCorpseByPlayer;
+
     if (GetType() == CORPSE_BONES)
+    {
         // only specific bones
-        RealmDataDatabase.PExecute("DELETE FROM corpse WHERE guid = '%d'", GetGUIDLow());
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCorpse, "DELETE FROM corpse WHERE guid = ?");
+        stmt.PExecute(GetGUIDLow());
+    }
     else
+    {
         // all corpses (not bones)
-        RealmDataDatabase.PExecute("DELETE FROM corpse WHERE player = '%d' AND corpse_type <> '0'",  GUID_LOPART(GetOwnerGUID()));
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCorpseByPlayer, "DELETE FROM corpse WHERE player = ? AND corpse_type <> '0'");
+        stmt.PExecute(GUID_LOPART(GetOwnerGUID()));
+    }
 }
 
 bool Corpse::LoadFromDB(uint32 guid, QueryResultAutoPtr result, uint32 InstanceId)
 {
-    if (result == NULL)
+    if (! result)
         //                                        0          1          2          3           4   5    6    7           8
         result = RealmDataDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,data,time,corpse_type,instance FROM corpse WHERE guid = '%u'",guid);
 
     if (! result)
     {
-        sLog.outError("ERROR: Corpse (GUID: %u) not found in table `corpse`, can't load. ",guid);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Corpse (GUID: %u) not found in table `corpse`, can't load. ",guid);
         return false;
     }
 
@@ -187,7 +191,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
 
     if (!LoadValues(fields[5].GetString()))
     {
-        sLog.outError("ERROR: Corpse #%d have broken data in `data` field. Can't be loaded.",guid);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Corpse #%d have broken data in `data` field. Can't be loaded.",guid);
         return false;
     }
 
@@ -195,7 +199,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     m_type             = CorpseType(fields[7].GetUInt32());
     if (m_type >= MAX_CORPSE_TYPE)
     {
-        sLog.outError("ERROR: Corpse (guidlow %d, owner %d) have wrong corpse type, not load.",GetGUIDLow(),GUID_LOPART(GetOwnerGUID()));
+        sLog.outLog(LOG_DEFAULT, "ERROR: Corpse (guidlow %d, owner %d) have wrong corpse type, not load.",GetGUIDLow(),GUID_LOPART(GetOwnerGUID()));
         return false;
     }
     uint32 instanceid  = fields[8].GetUInt32();
@@ -210,7 +214,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
 
     if (!IsPositionValid())
     {
-        sLog.outError("ERROR: Corpse (guidlow %d, owner %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: Corpse (guidlow %d, owner %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(),GUID_LOPART(GetOwnerGUID()),GetPositionX(),GetPositionY());
         return false;
     }
@@ -220,12 +224,15 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     return true;
 }
 
-bool Corpse::isVisibleForInState(Player const* u, bool inVisibleList) const
+bool Corpse::isVisibleForInState(Player const* player, WorldObject const* viewPoint, bool inVisibleList) const
 {
-    const WorldObject* viewPoint = u->GetFarsightTarget();
-    if (!viewPoint || !u->HasFarsightVision()) viewPoint = u;
+    if (m_type == CORPSE_BONES && player->GetSession()->IsAccountFlagged(ACC_HIDE_BONES))
+        return false;
 
-    return IsInWorld() && u->IsInWorld() && IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
+    if (!IsInWorld() || !player->IsInWorld())
+        return false;
+
+    return IsWithinDistInMap(viewPoint, viewPoint->GetMap()->GetVisibilityDistance(const_cast<Corpse*>(this), const_cast<Player*>(player)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
 
 bool Corpse::IsExpired(time_t t) const

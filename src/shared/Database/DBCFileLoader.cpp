@@ -101,7 +101,7 @@ DBCFileLoader::~DBCFileLoader()
 
 DBCFileLoader::Record DBCFileLoader::getRecord(size_t id)
 {
-    assert(data);
+    ASSERT(data);
     return Record(*this, data + id*recordSize);
 }
 

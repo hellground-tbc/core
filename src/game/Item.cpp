@@ -34,7 +34,7 @@ void AddItemsSetItem(Player*player,Item *item)
 
     if (!set)
     {
-        sLog.outErrorDb("Item set %u for item (id %u) not found, mods not applied.",setid,proto->ItemId);
+        sLog.outLog(LOG_DB_ERR, "Item set %u for item (id %u) not found, mods not applied.",setid,proto->ItemId);
         return;
     }
 
@@ -95,7 +95,7 @@ void AddItemsSetItem(Player*player,Item *item)
                 SpellEntry const *spellInfo = sSpellStore.LookupEntry(set->spells[x]);
                 if (!spellInfo)
                 {
-                    sLog.outError("WORLD: unknown spell id %u in items set %u effects", set->spells[x],setid);
+                    sLog.outLog(LOG_DEFAULT, "ERROR: WORLD: unknown spell id %u in items set %u effects", set->spells[x],setid);
                     break;
                 }
 
@@ -116,7 +116,7 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto)
 
     if (!set)
     {
-        sLog.outErrorDb("Item set #%u for item #%u not found, mods not removed.",setid,proto->ItemId);
+        sLog.outLog(LOG_DB_ERR, "Item set #%u for item #%u not found, mods not removed.",setid,proto->ItemId);
         return;
     }
 
@@ -160,7 +160,7 @@ void RemoveItemsSetItem(Player*player,ItemPrototype const *proto)
 
     if (!eff->item_count)                                    //all items of a set were removed
     {
-        assert(eff == player->ItemSetEff[setindex]);
+        ASSERT(eff == player->ItemSetEff[setindex]);
         delete eff;
         player->ItemSetEff[setindex] = NULL;
     }
@@ -391,7 +391,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResultAutoPtr result)
 
     if (!result)
     {
-        sLog.outError("ERROR: Item (GUID: %u owner: %u) not found in table `item_instance`, can't load. ",guid,GUID_LOPART(owner_guid));
+        sLog.outLog(LOG_DEFAULT, "ERROR: Item (GUID: %u owner: %u) not found in table `item_instance`, can't load. ",guid,GUID_LOPART(owner_guid));
         return false;
     }
 
@@ -399,7 +399,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResultAutoPtr result)
 
     if (!LoadValues(fields[0].GetString()))
     {
-        sLog.outError("ERROR: Item #%d have broken data in `data` field. Can't be loaded.",guid);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Item #%d have broken data in `data` field. Can't be loaded.",guid);
         return false;
     }
 
@@ -570,7 +570,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
     // item can have not null only one from field values
     if ((itemProto->RandomProperty) && (itemProto->RandomSuffix))
     {
-        sLog.outErrorDb("Item template %u have RandomProperty==%u and RandomSuffix==%u, but must have one from field =0",itemProto->ItemId,itemProto->RandomProperty,itemProto->RandomSuffix);
+        sLog.outLog(LOG_DB_ERR, "Item template %u have RandomProperty==%u and RandomSuffix==%u, but must have one from field =0",itemProto->ItemId,itemProto->RandomProperty,itemProto->RandomSuffix);
         return 0;
     }
 
@@ -581,7 +581,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
         ItemRandomPropertiesEntry const *random_id = sItemRandomPropertiesStore.LookupEntry(randomPropId);
         if (!random_id)
         {
-            sLog.outErrorDb("Enchantment id #%u used but it doesn't have records in 'ItemRandomProperties.dbc'",randomPropId);
+            sLog.outLog(LOG_DB_ERR, "Enchantment id #%u used but it doesn't have records in 'ItemRandomProperties.dbc'",randomPropId);
             return 0;
         }
 
@@ -594,7 +594,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
         ItemRandomSuffixEntry const *random_id = sItemRandomSuffixStore.LookupEntry(randomPropId);
         if (!random_id)
         {
-            sLog.outErrorDb("Enchantment id #%u used but it doesn't have records in sItemRandomSuffixStore.",randomPropId);
+            sLog.outLog(LOG_DB_ERR, "Enchantment id #%u used but it doesn't have records in sItemRandomSuffixStore.",randomPropId);
             return 0;
         }
 
@@ -917,7 +917,7 @@ void Item::SendTimeUpdate(Player* owner)
     WorldPacket data(SMSG_ITEM_TIME_UPDATE, (8+4));
     data << (uint64)GetGUID();
     data << (uint32)GetUInt32Value(ITEM_FIELD_DURATION);
-    owner->GetSession()->SendPacket(&data);
+    owner->SendPacketToSelf(&data);
 }
 
 Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)
@@ -931,7 +931,7 @@ Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)
         if (count > pProto->GetMaxStackSize())
             count = pProto->GetMaxStackSize();
 
-        assert(count !=0 && "pProto->Stackable==0 but checked at loading already");
+        ASSERT(count !=0 && "pProto->Stackable==0 but checked at loading already");
 
         Item *pItem = NewItemOrBag(pProto);
         if (pItem->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_ITEM), item, player))

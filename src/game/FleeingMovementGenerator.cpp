@@ -38,6 +38,7 @@ void FleeingMovementGenerator<UNIT>::_moveToNextLocation(UNIT &unit)
     init.SetWalk(false);
     init.Launch();
 
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = false;
     _nextCheckTime.Reset(urand(500,1000));
 }
 
@@ -46,7 +47,7 @@ bool FleeingMovementGenerator<UNIT>::_getPoint(UNIT &unit, Position &dest)
 {
     // _angle is orientation for running like hell from caster in straight line :p
     float angle = _angle;
-    if (roll_chance_i(33))
+    if (roll_chance_i(20))
         angle += RAND(M_PI/4.0f, M_PI/2.0f, -M_PI/4.0f, -M_PI/2.0f, M_PI*3/4.0f, -M_PI*3/4.0f, M_PI);
 
     // destination point
@@ -78,6 +79,11 @@ bool FleeingMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 & time_diff
     _nextCheckTime.Update(time_diff);
     if (_nextCheckTime.Passed() && unit.IsStopped())
         _moveToNextLocation(unit);
+    else
+    {
+        if (static_cast<MovementGenerator*>(this)->_recalculateTravel)
+            _moveToNextLocation(unit);
+    }
 
     return true;
 }

@@ -254,7 +254,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recv_data)
     QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT type FROM petition WHERE petitionguid = '%u'", petitionguid_low);
     if (!result)
     {
-        sLog.outError("any petition on server...");
+        sLog.outLog(LOG_DEFAULT, "ERROR: any petition on server...");
         return;
     }
     Field *fields = result->Fetch();
@@ -458,7 +458,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
 
     if (!result)
     {
-        sLog.outError("any petition on server...");
+        sLog.outLog(LOG_DEFAULT, "ERROR: any petition on server...");
         return;
     }
 
@@ -538,7 +538,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
 
         // update for owner if online
         if (Player *owner = sObjectMgr.GetPlayer(ownerguid))
-            owner->GetSession()->SendPacket(&data);
+            owner->SendPacketToSelf(&data);
         return;
     }
 
@@ -561,7 +561,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recv_data)
 
     // update for owner if online
     if (Player *owner = sObjectMgr.GetPlayer(ownerguid))
-        owner->GetSession()->SendPacket(&data);
+        owner->SendPacketToSelf(&data);
 }
 
 void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recv_data)
@@ -588,7 +588,7 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recv_data)
     {
         WorldPacket data(MSG_PETITION_DECLINE, 8);
         data << _player->GetGUID();
-        owner->GetSession()->SendPacket(&data);
+        owner->SendPacketToSelf(&data);
     }
 }
 
@@ -692,7 +692,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recv_data)
         result->NextRow();
     }
 
-    player->GetSession()->SendPacket(&data);
+    player->SendPacketToSelf(&data);
 }
 
 void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
@@ -724,7 +724,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
     }
     else
     {
-        sLog.outError("petition table has broken data!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: petition table has broken data!");
         return;
     }
 
@@ -734,7 +734,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         {
             data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
             data << (uint32)PETITION_TURN_ALREADY_IN_GUILD; // already in guild
-            _player->GetSession()->SendPacket(&data);
+            _player->SendPacketToSelf(&data);
             return;
         }
     }
@@ -748,7 +748,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         {
             //data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
             //data << (uint32)PETITION_TURN_ALREADY_IN_GUILD;                          // already in guild
-            //_player->GetSession()->SendPacket(&data);
+            //_player->BroadcastPacketToSelf(&data);
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ALREADY_IN_ARENA_TEAM);
             return;
         }
@@ -831,7 +831,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         ArenaTeam* at = new ArenaTeam;
         if (!at->Create(_player->GetGUID(), type, name))
         {
-            sLog.outError("PetitionsHandler: arena team create failed.");
+            sLog.outLog(LOG_DEFAULT, "ERROR: PetitionsHandler: arena team create failed.");
             delete at;
             return;
         }

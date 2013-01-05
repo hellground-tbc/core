@@ -231,7 +231,7 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry * auction)
     Item *pItem = GetAItem(auction->itemGuidLow);
     if (!pItem)
     {
-        sLog.outError("Auction item (GUID: %u) not found, and lost.", auction->itemGuidLow);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Auction item (GUID: %u) not found, and lost.", auction->itemGuidLow);
         return;
     }
 
@@ -300,7 +300,7 @@ void AuctionHouseMgr::LoadAuctionItems()
 
         if (!proto)
         {
-            sLog.outError("AuctionHouseMgr::LoadAuctionItems: Unknown item (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
+            sLog.outLog(LOG_DEFAULT, "ERROR: AuctionHouseMgr::LoadAuctionItems: Unknown item (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
             continue;
         }
 
@@ -405,7 +405,7 @@ void AuctionHouseMgr::LoadAuctions()
         if (!pItem)
         {
             auction->DeleteFromDB();
-            sLog.outError("Auction %u has not a existing item : %u, deleted", auction->Id, auction->itemGuidLow);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Auction %u has not a existing item : %u, deleted", auction->Id, auction->itemGuidLow);
             delete auction;
             continue;
         }
@@ -566,13 +566,16 @@ void AuctionHouseObject::Update()
 {
     time_t curTime = sWorld.GetGameTime();
     ///- Handle expired auctions
-    for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end(); )
+    for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end();)
     {
         if (curTime > itr->second->expireTime)
         {
             ///- perform the transaction if there was bidder
             if (itr->second->bid)
-                itr->second->AuctionBidWinning();
+            {
+                AuctionEntryMap::iterator current = itr++;
+                current->second->AuctionBidWinning();
+            }
             ///- cancel the auction if there was no bidder and clear the auction
             else
             {
@@ -582,11 +585,10 @@ void AuctionHouseObject::Update()
                 sAuctionMgr.RemoveAItem(itr->second->itemGuidLow);
                 delete itr->second;
                 AuctionsMap.erase(itr++);
-                continue;
             }
         }
-
-        ++itr;
+        else
+            ++itr;
     }
 }
 
@@ -611,7 +613,7 @@ void AuctionHouseObject::BuildListOwnerItems(WorldPacket& data, Player* player, 
         AuctionEntry *Aentry = itr->second;
         if (Aentry->owner == player->GetGUIDLow())
         {
-            if (Aentry->BuildAuctionInfo(data))
+            if (count < 240 && Aentry->BuildAuctionInfo(data))
                 ++count;
             ++totalcount;
         }
@@ -942,7 +944,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
     Item *pItem = sAuctionMgr.GetAItem(itemGuidLow);
     if (!pItem)
     {
-        sLog.outError("auction to item, that doesn't exist !!!!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: auction to item, that doesn't exist !!!!");
         return false;
     }
     data << uint32(Id);
@@ -993,7 +995,8 @@ void AuctionEntry::DeleteFromDB() const
 void AuctionEntry::SaveToDB() const
 {
     static SqlStatementID saveAuction;
-    SqlStatement stmt = RealmDataDatabase.CreateStatement(saveAuction, "INSERT INTO auctionhouse (id,houseid,itemguid,item_template,item_count,item_randompropertyid,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(saveAuction, "INSERT INTO auctionhouse (id,houseid,itemguid,item_template,item_count,item_randompropertyid,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit) "
+                                                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     stmt.addUInt32(Id);
     stmt.addUInt32(auctionHouseEntry->houseId);

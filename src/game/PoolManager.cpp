@@ -110,7 +110,7 @@ void PoolObject::CheckEventLinkAndReport<Creature>(uint32 poolId, int16 event_id
 {
     std::map<uint32, int16>::const_iterator itr = creature2event.find(guid);
     if (itr == creature2event.end() || itr->second != event_id)
-        sLog.outErrorDb("Creature (GUID: %u) expected to be listed in `game_event_creature` for event %u as part pool %u", guid, event_id, poolId);
+        sLog.outLog(LOG_DB_ERR, "Creature (GUID: %u) expected to be listed in `game_event_creature` for event %u as part pool %u", guid, event_id, poolId);
 }
 
 template<>
@@ -118,7 +118,7 @@ void PoolObject::CheckEventLinkAndReport<GameObject>(uint32 poolId, int16 event_
 {
     std::map<uint32, int16>::const_iterator itr = go2event.find(guid);
     if (itr == go2event.end() || itr->second != event_id)
-        sLog.outErrorDb("Gameobject (GUID: %u) expected to be listed in `game_event_gameobject` for event %u as part pool %u", guid, event_id, poolId);
+        sLog.outLog(LOG_DB_ERR, "Gameobject (GUID: %u) expected to be listed in `game_event_gameobject` for event %u as part pool %u", guid, event_id, poolId);
 }
 
 template<>
@@ -580,7 +580,7 @@ struct PoolMapChecker
         // pool spawns must be at single instanceable map
         if (mapEntry->Instanceable())
         {
-            sLog.outErrorDb("`%s` has %s spawned at instanceable map %u when one or several other spawned at different map %u in pool id %i, skipped.",
+            sLog.outLog(LOG_DB_ERR, "`%s` has %s spawned at instanceable map %u when one or several other spawned at different map %u in pool id %i, skipped.",
                 tableName, elementName, mapid, poolMapEntry->MapID, pool_id);
             return false;
         }
@@ -588,7 +588,7 @@ struct PoolMapChecker
         // pool spawns must be at single instanceable map
         if (poolMapEntry->Instanceable())
         {
-            sLog.outErrorDb("`%s` has %s spawned at map %u when one or several other spawned at different instanceable map %u in pool id %i, skipped.",
+            sLog.outLog(LOG_DB_ERR, "`%s` has %s spawned at map %u when one or several other spawned at different instanceable map %u in pool id %i, skipped.",
                 tableName, elementName, mapid, poolMapEntry->MapID, pool_id);
             return false;
         }
@@ -686,17 +686,17 @@ void PoolManager::LoadFromDB()
             CreatureData const* data = sObjectMgr.GetCreatureData(guid);
             if (!data)
             {
-                sLog.outErrorDb("`pool_creature` has a non existing creature spawn (GUID: %u) defined for pool id (%u), skipped.", guid, pool_id );
+                sLog.outLog(LOG_DB_ERR, "`pool_creature` has a non existing creature spawn (GUID: %u) defined for pool id (%u), skipped.", guid, pool_id );
                 continue;
             }
             if (pool_id > max_pool_id)
             {
-                sLog.outErrorDb("`pool_creature` pool id (%i) is out of range compared to max pool id in `pool_template`, skipped.",pool_id);
+                sLog.outLog(LOG_DB_ERR, "`pool_creature` pool id (%i) is out of range compared to max pool id in `pool_template`, skipped.",pool_id);
                 continue;
             }
             if (chance < 0 || chance > 100)
             {
-                sLog.outErrorDb("`pool_creature` has an invalid chance (%f) for creature guid (%u) in pool id (%i), skipped.", chance, guid, pool_id);
+                sLog.outLog(LOG_DB_ERR, "`pool_creature` has an invalid chance (%f) for creature guid (%u) in pool id (%i), skipped.", chance, guid, pool_id);
                 continue;
             }
 
@@ -751,7 +751,7 @@ void PoolManager::LoadFromDB()
             GameObjectData const* data = sObjectMgr.GetGOData(guid);
             if (!data)
             {
-                sLog.outErrorDb("`pool_gameobject` has a non existing gameobject spawn (GUID: %u) defined for pool id (%u), skipped.", guid, pool_id );
+                sLog.outLog(LOG_DB_ERR, "`pool_gameobject` has a non existing gameobject spawn (GUID: %u) defined for pool id (%u), skipped.", guid, pool_id );
                 continue;
             }
             GameObjectInfo const* goinfo = ObjectMgr::GetGameObjectInfo(data->id);
@@ -759,17 +759,17 @@ void PoolManager::LoadFromDB()
                 goinfo->type != GAMEOBJECT_TYPE_GOOBER &&
                 goinfo->type != GAMEOBJECT_TYPE_FISHINGHOLE)
             {
-                sLog.outErrorDb("`pool_gameobject` has a not lootable gameobject spawn (GUID: %u, type: %u) defined for pool id (%u), skipped.", guid, goinfo->type, pool_id );
+                sLog.outLog(LOG_DB_ERR, "`pool_gameobject` has a not lootable gameobject spawn (GUID: %u, type: %u) defined for pool id (%u), skipped.", guid, goinfo->type, pool_id );
                 continue;
             }
             if (pool_id > max_pool_id)
             {
-                sLog.outErrorDb("`pool_gameobject` pool id (%i) is out of range compared to max pool id in `pool_template`, skipped.",pool_id);
+                sLog.outLog(LOG_DB_ERR, "`pool_gameobject` pool id (%i) is out of range compared to max pool id in `pool_template`, skipped.",pool_id);
                 continue;
             }
             if (chance < 0 || chance > 100)
             {
-                sLog.outErrorDb("`pool_gameobject` has an invalid chance (%f) for gameobject guid (%u) in pool id (%i), skipped.", chance, guid, pool_id);
+                sLog.outLog(LOG_DB_ERR, "`pool_gameobject` has an invalid chance (%f) for gameobject guid (%u) in pool id (%i), skipped.", chance, guid, pool_id);
                 continue;
             }
 
@@ -822,22 +822,22 @@ void PoolManager::LoadFromDB()
 
             if (mother_pool_id > max_pool_id)
             {
-                sLog.outErrorDb("`pool_pool` mother_pool id (%i) is out of range compared to max pool id in `pool_template`, skipped.",mother_pool_id);
+                sLog.outLog(LOG_DB_ERR, "`pool_pool` mother_pool id (%i) is out of range compared to max pool id in `pool_template`, skipped.",mother_pool_id);
                 continue;
             }
             if (child_pool_id > max_pool_id)
             {
-                sLog.outErrorDb("`pool_pool` included pool_id (%i) is out of range compared to max pool id in `pool_template`, skipped.",child_pool_id);
+                sLog.outLog(LOG_DB_ERR, "`pool_pool` included pool_id (%i) is out of range compared to max pool id in `pool_template`, skipped.",child_pool_id);
                 continue;
             }
             if (mother_pool_id == child_pool_id)
             {
-                sLog.outErrorDb("`pool_pool` pool_id (%i) includes itself, dead-lock detected, skipped.",child_pool_id);
+                sLog.outLog(LOG_DB_ERR, "`pool_pool` pool_id (%i) includes itself, dead-lock detected, skipped.",child_pool_id);
                 continue;
             }
             if (chance < 0 || chance > 100)
             {
-                sLog.outErrorDb("`pool_pool` has an invalid chance (%f) for pool id (%u) in mother pool id (%i), skipped.", chance, child_pool_id, mother_pool_id);
+                sLog.outLog(LOG_DB_ERR, "`pool_pool` has an invalid chance (%f) for pool id (%u) in mother pool id (%i), skipped.", chance, child_pool_id, mother_pool_id);
                 continue;
             }
 
@@ -884,7 +884,7 @@ void PoolManager::LoadFromDB()
                         ss << *itr << " ";
                     ss << "create(s) a circular reference, which can cause the server to freeze.\nRemoving the last link between mother pool "
                         << poolItr->first << " and child pool " << poolItr->second;
-                    sLog.outErrorDb("%s", ss.str().c_str());
+                    sLog.outLog(LOG_DB_ERR, "%s", ss.str().c_str());
                     mPoolPoolGroups[poolItr->second].RemoveOneRelation(poolItr->first);
                     mPoolSearchMap.erase(poolItr);
                     --count;
@@ -909,7 +909,7 @@ void PoolManager::Initialize()
         {
             if (!CheckPool(pool_entry))
             {
-                sLog.outErrorDb("Pool Id (%u) has all creatures or gameobjects with explicit chance sum <>100 and no equal chance defined. The pool system cannot pick one to spawn.", pool_entry);
+                sLog.outLog(LOG_DB_ERR, "Pool Id (%u) has all creatures or gameobjects with explicit chance sum <>100 and no equal chance defined. The pool system cannot pick one to spawn.", pool_entry);
                 continue;
             }
             SpawnPool(pool_entry, true);

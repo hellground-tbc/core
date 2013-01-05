@@ -46,7 +46,7 @@ class WORLD_OBJECT_TYPES,
 class GRID_OBJECT_TYPES
 >
 
-class HELLGROUND_DLL_DECL Grid
+class Grid
 {
     // allows the GridLoader to access its internals
     template<class A, class T, class O> friend class GridLoader;
@@ -62,7 +62,7 @@ class HELLGROUND_DLL_DECL Grid
         template<class SPECIFIC_OBJECT> void AddWorldObject(SPECIFIC_OBJECT *obj)
         {
             if(!i_objects.template insert<SPECIFIC_OBJECT>(obj))
-                assert(false);
+                ASSERT(false);
         }
 
         /** an object of interested exits the grid
@@ -70,7 +70,7 @@ class HELLGROUND_DLL_DECL Grid
         template<class SPECIFIC_OBJECT> void RemoveWorldObject(SPECIFIC_OBJECT *obj)
         {
             if(!i_objects.template remove<SPECIFIC_OBJECT>(obj))
-                assert(false);
+                ASSERT(false);
         }
 
         /** Refreshes/update the grid. This required for remote grids.
@@ -108,7 +108,7 @@ class HELLGROUND_DLL_DECL Grid
         template<class SPECIFIC_OBJECT> void AddGridObject(SPECIFIC_OBJECT *obj)
         {
             if(!i_container.template insert<SPECIFIC_OBJECT>(obj))
-                assert(false);
+                ASSERT(false);
         }
 
         /** Removes a container type object from the grid
@@ -116,7 +116,7 @@ class HELLGROUND_DLL_DECL Grid
         template<class SPECIFIC_OBJECT> void RemoveGridObject(SPECIFIC_OBJECT *obj)
         {
             if(!i_container.template remove<SPECIFIC_OBJECT>(obj))
-                assert(false);
+                ASSERT(false);
         }
 
     private:

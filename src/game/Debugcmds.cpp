@@ -286,7 +286,7 @@ bool ChatHandler::HandleDebugSendOpcodeCommand(const char* /*args*/)
     ifs.close();
     sLog.outDebug("Sending opcode %u", data.GetOpcode());
     data.hexlike();
-    ((Player*)unit)->GetSession()->SendPacket(&data);
+    ((Player*)unit)->SendPacketToSelf(&data);
     PSendSysMessage(LANG_COMMAND_OPCODESENT, data.GetOpcode(), unit->GetName());
     return true;
 }
@@ -720,17 +720,20 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
         target = m_session->GetPlayer();
     HostilReference* ref = target->getHostilRefManager().getFirst();
     uint32 cnt = 0;
-    PSendSysMessage("Hostil reference list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
+    PSendSysMessage("Hostile reference list of %s (guid %u)",target->GetName(), target->GetGUIDLow());
     while (ref)
     {
-        if (Unit * unit = ref->getSource()->getOwner())
+        if (Unit* unit = ref->getSource()->getOwner())
         {
+            CellPair p = Hellground::ComputeCellPair(unit->GetPositionX(), unit->GetPositionY());
+            uint8 gridstate = unit->GetMap()->getNGrid(Cell(p).GridX(), Cell(p).GridY())->GetGridState();
+
             ++cnt;
-            PSendSysMessage("   %u.   %s   (guid %u)  - threat %f",cnt,unit->GetName(), unit->GetGUIDLow(), ref->getThreat());
+            PSendSysMessage("   %u.   %s   (guid %u)  - threat %f [GridState: %u]",cnt,unit->GetName(), unit->GetGUIDLow(), ref->getThreat(), gridstate);
         }
         ref = ref->next();
     }
-    SendSysMessage("End of hostil reference list.");
+    SendSysMessage("End of hostile reference list.");
     return true;
 }
 
@@ -860,7 +863,7 @@ bool ChatHandler::HandleGetPoolObjectStatsCommand(const char *args)
 
     std::list<GameObject*> pList;
     Hellground::AllGameObjectsWithEntryInGrid u_check(entry);
-    Hellground::GameObjectListSearcher<Hellground::AllGameObjectsWithEntryInGrid> searcher(pList, u_check);
+    Hellground::ObjectListSearcher<GameObject, Hellground::AllGameObjectsWithEntryInGrid> searcher(pList, u_check);
     Cell::VisitAllObjects(m_session->GetPlayer(), searcher, range, false);
 
     UNORDERED_MAP<uint16, uint32> map_unspawned;

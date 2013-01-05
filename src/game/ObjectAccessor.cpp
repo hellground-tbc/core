@@ -156,7 +156,7 @@ Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
     Player2CorpsesMapType::const_accessor a;
     if (i_player2corpse.find(a, guid))
     {
-        assert(a->second->GetType() != CORPSE_BONES);
+        ASSERT(a->second->GetType() != CORPSE_BONES);
         return a->second;
     }
 
@@ -165,7 +165,7 @@ Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 
 void ObjectAccessor::RemoveCorpse(Corpse *corpse)
 {
-    assert(corpse && corpse->GetType() != CORPSE_BONES);
+    ASSERT(corpse && corpse->GetType() != CORPSE_BONES);
 
     Player2CorpsesMapType::const_accessor a;
     if (!i_player2corpse.find(a, corpse->GetOwnerGUID()))
@@ -184,10 +184,10 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
 
 void ObjectAccessor::AddCorpse(Corpse *corpse)
 {
-    assert(corpse && corpse->GetType() != CORPSE_BONES);
+    ASSERT(corpse && corpse->GetType() != CORPSE_BONES);
 
     Player2CorpsesMapType::accessor a;
-    assert(!i_player2corpse.find(a, corpse->GetOwnerGUID()));
+    ASSERT(!i_player2corpse.find(a, corpse->GetOwnerGUID()));
     a.release();
 
     ACE_GUARD(LockType, g, i_corpseGuard);
@@ -226,7 +226,7 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia
     {
         //in fact this function is called from several places
         //even when player doesn't have a corpse, not an error
-        //sLog.outError("ERROR: Try remove corpse that not in map for GUID %ul", player_guid);
+        //sLog.outLog(LOG_DEFAULT, "ERROR: Try remove corpse that not in map for GUID %ul", player_guid);
         return NULL;
     }
 
@@ -294,14 +294,14 @@ Corpse * ObjectAccessor::GetCorpse(uint32 mapid, float x, float y, uint64 guid)
         CellPair p = Hellground::ComputeCellPair(x,y);
         if (p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         {
-            sLog.outError("ObjectAccessor::GetCorpse: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
+            sLog.outLog(LOG_DEFAULT, "ERROR: ObjectAccessor::GetCorpse: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
             return NULL;
         }
 
         CellPair q = Hellground::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
         if (q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         {
-            sLog.outError("ObjectAccessor::GetCorpse: object "UI64FMTD" has invalid coordinates X:%f Y:%f grid cell [%u:%u]", corpse->GetGUID(), corpse->GetPositionX(), corpse->GetPositionY(), q.x_coord, q.y_coord);
+            sLog.outLog(LOG_DEFAULT, "ERROR: ObjectAccessor::GetCorpse: object "UI64FMTD" has invalid coordinates X:%f Y:%f grid cell [%u:%u]", corpse->GetGUID(), corpse->GetPositionX(), corpse->GetPositionY(), q.x_coord, q.y_coord);
             return NULL;
         }
 

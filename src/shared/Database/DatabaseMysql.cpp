@@ -46,7 +46,7 @@ DatabaseMysql::DatabaseMysql()
 
         if (!mysql_thread_safe())
         {
-            sLog.outError("FATAL ERROR: Used MySQL library isn't thread-safe.");
+            sLog.outLog(LOG_DEFAULT, "ERROR: FATAL ERROR: Used MySQL library isn't thread-safe.");
             exit(1);
         }
     }
@@ -77,7 +77,7 @@ bool MySQLConnection::Initialize(const char *infoString)
     MYSQL * mysqlInit = mysql_init(NULL);
     if (!mysqlInit)
     {
-        sLog.outError( "Could not initialize Mysql connection" );
+        sLog.outLog(LOG_DEFAULT, "ERROR: Could not initialize Mysql connection");
         return false;
     }
 
@@ -137,10 +137,10 @@ bool MySQLConnection::Initialize(const char *infoString)
 
     if (mMysql)
     {
-        sLog.outDetail( "Connected to MySQL database at %s",
-            host.c_str());
-        sLog.outString( "MySQL client library: %s", mysql_get_client_info());
-        sLog.outString( "MySQL server ver: %s ", mysql_get_server_info( mMysql));
+        //sLog.outString( "Connected to MySQL database at %s",
+        //    host.c_str());
+        //sLog.outString( "MySQL client library: %s", mysql_get_client_info());
+        //sLog.outString( "MySQL server ver: %s ", mysql_get_server_info( mMysql));
 
         /*----------SET AUTOCOMMIT ON---------*/
         // It seems mysql 5.0.x have enabled this feature
@@ -164,12 +164,22 @@ bool MySQLConnection::Initialize(const char *infoString)
         Execute("SET NAMES `utf8`");
         Execute("SET CHARACTER SET `utf8`");
 
+    #if MYSQL_VERSION_ID >= 50003
+        my_bool my_true = (my_bool)1;
+        if (mysql_options(mMysql, MYSQL_OPT_RECONNECT, &my_true))
+            sLog.outDetail("Failed to turn on MYSQL_OPT_RECONNECT.");
+        else
+           sLog.outDetail("Successfully turned on MYSQL_OPT_RECONNECT.");
+    #else
+        #warning "Your mySQL client lib version does not support reconnecting after a timeout.\nIf this causes you any trouble we advice you to upgrade your mySQL client libs to at least mySQL 5.0.13 to resolve this problem."
+    #endif
+
         return true;
     }
     else
     {
-        sLog.outError( "Could not connect to MySQL database at %s: %s\n",
-            host.c_str(),mysql_error(mysqlInit));
+        sLog.outLog(LOG_DEFAULT, "Could not connect to MySQL database at %s\n",
+            host.c_str());
         mysql_close(mysqlInit);
         return false;
     }
@@ -184,20 +194,24 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
 
     if(mysql_query(mMysql, sql))
     {
-        sLog.outErrorDb( "SQL: %s", sql );
-        sLog.outErrorDb("query ERROR: %s", mysql_error(mMysql));
+        sLog.outLog(LOG_DB_ERR, "SQL: %s", sql );
+        sLog.outLog(LOG_DB_ERR, "query ERROR: %s", mysql_error(mMysql));
         return false;
     }
     else
     {
-        sLog.outDebug("[%u ms] SQL: %s", WorldTimer::getMSTimeDiff(_s,WorldTimer::getMSTime()), sql );
+        uint32 queryDiff = WorldTimer::getMSTimeDiff(_s, WorldTimer::getMSTime());
+        if (m_db.CheckMinLogTime(queryDiff))
+            sLog.outLog(LOG_DB_DIFF, "[%u ms] SQL: %s", queryDiff, sql);
+
+        sLog.outDebug("[%u ms] SQL: %s", queryDiff, sql);
     }
 
     *pResult = mysql_store_result(mMysql);
     *pRowCount = mysql_affected_rows(mMysql);
     *pFieldCount = mysql_field_count(mMysql);
 
-    if (!*pResult )
+    if (!*pResult)
         return false;
 
     if (!*pRowCount)
@@ -256,13 +270,17 @@ bool MySQLConnection::Execute(const char* sql)
 
         if(mysql_query(mMysql, sql))
         {
-            sLog.outErrorDb("SQL: %s", sql);
-            sLog.outErrorDb("SQL ERROR: %s", mysql_error(mMysql));
+            sLog.outLog(LOG_DB_ERR, "SQL: %s", sql);
+            sLog.outLog(LOG_DB_ERR, "SQL ERROR: %s", mysql_error(mMysql));
             return false;
         }
         else
         {
-            sLog.outDebug("[%u ms] SQL: %s", WorldTimer::getMSTimeDiff(_s,WorldTimer::getMSTime()), sql );
+            uint32 queryDiff = WorldTimer::getMSTimeDiff(_s, WorldTimer::getMSTime());
+            if (m_db.CheckMinLogTime(queryDiff))
+                sLog.outLog(LOG_DB_DIFF, "[%u ms] SQL: %s", queryDiff, sql);
+
+            sLog.outDebug("[%u ms] SQL: %s", queryDiff, sql);
         }
         // end guarded block
     }
@@ -274,8 +292,8 @@ bool MySQLConnection::_TransactionCmd(const char *sql)
 {
     if (mysql_query(mMysql, sql))
     {
-        sLog.outError("SQL: %s", sql);
-        sLog.outError("SQL ERROR: %s", mysql_error(mMysql));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: %s", sql);
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_error(mMysql));
         return false;
     }
     else
@@ -338,15 +356,15 @@ bool MySqlPreparedStatement::prepare()
     m_stmt = mysql_stmt_init(m_pMySQLConn);
     if (!m_stmt)
     {
-        sLog.outError("SQL: mysql_stmt_init()() failed ");
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: mysql_stmt_init()() failed ");
         return false;
     }
 
     //prepare statement
     if (mysql_stmt_prepare(m_stmt, m_szFmt.c_str(), m_szFmt.length()))
     {
-        sLog.outError("SQL: mysql_stmt_prepare() failed for '%s'", m_szFmt.c_str());
-        sLog.outError("SQL ERROR: %s", mysql_stmt_error(m_stmt));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: mysql_stmt_prepare() failed for '%s'", m_szFmt.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
         return false;
     }
 
@@ -358,8 +376,8 @@ bool MySqlPreparedStatement::prepare()
     //if we do not have result metadata
     if (!m_pResultMetadata && strnicmp(m_szFmt.c_str(), "select", 6) == 0)
     {
-        sLog.outError("SQL: no meta information for '%s'", m_szFmt.c_str());
-        sLog.outError("SQL ERROR: %s", mysql_stmt_error(m_stmt));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: no meta information for '%s'", m_szFmt.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
         return false;
     }
 
@@ -417,8 +435,8 @@ void MySqlPreparedStatement::bind( const SqlStmtParameters& holder )
     //bind input arguments
     if(mysql_stmt_bind_param(m_stmt, m_pInputArgs))
     {
-        sLog.outError("SQL ERROR: mysql_stmt_bind_param() failed\n");
-        sLog.outError("SQL ERROR: %s", mysql_stmt_error(m_stmt));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: mysql_stmt_bind_param() failed\n");
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
     }
 }
 
@@ -464,11 +482,21 @@ bool MySqlPreparedStatement::execute()
     if(!isPrepared())
         return false;
 
+    uint32 _s = WorldTimer::getMSTime();
+
     if(mysql_stmt_execute(m_stmt))
     {
-        sLog.outError("SQL: cannot execute '%s'", m_szFmt.c_str());
-        sLog.outError("SQL ERROR: %s", mysql_stmt_error(m_stmt));
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL: cannot execute '%s'", m_szFmt.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL ERROR: %s", mysql_stmt_error(m_stmt));
         return false;
+    }
+    else
+    {
+        uint32 queryDiff = WorldTimer::getMSTimeDiff(_s, WorldTimer::getMSTime());
+        if (this->m_pConn.DB().CheckMinLogTime(queryDiff))
+            sLog.outLog(LOG_DB_DIFF, "[%u ms] SQL: %s", queryDiff, m_szFmt.c_str());
+
+        sLog.outDebug("[%u ms] SQL: %s", queryDiff, m_szFmt.c_str());
     }
 
     return true;

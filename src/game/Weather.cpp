@@ -189,24 +189,22 @@ bool Weather::ReGenerate()
 
 void Weather::SendWeatherUpdateToPlayer(Player *player)
 {
-    if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
-        return;
-
     WorldPacket data(SMSG_WEATHER, (4+4+4));
 
-    data << uint32(GetWeatherState()) << (float)m_grade << uint8(0);
-    player->GetSession()->SendPacket(&data);
+    if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
+        data << (uint32)WEATHER_STATE_FINE << (float)0.0f << uint8(0);
+    else
+        data << uint32(GetWeatherState()) << (float)m_grade << uint8(0);
+
+    player->SendPacketToSelf(&data);
 }
 
 void Weather::SendFineWeatherUpdateToPlayer(Player *player)
 {
-    if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
-        return;
-
     WorldPacket data(SMSG_WEATHER, (4+4+4));
 
     data << (uint32)WEATHER_STATE_FINE << (float)0.0f << uint8(0);
-    player->GetSession()->SendPacket(&data);
+    player->SendPacketToSelf(&data);
 }
 
 /// Send the new weather to all players in the zone
@@ -227,9 +225,15 @@ bool Weather::UpdateWeather()
 
     WeatherState state = GetWeatherState();
 
+    if (player->GetSession()->GetOpcodesDisabledFlag() & OPC_DISABLE_WEATHER)
+    {
+        m_grade = 0.0f;
+        state = WEATHER_STATE_FINE;
+    }
+
     WorldPacket data(SMSG_WEATHER, (4+4+4));
     data << uint32(state) << (float)m_grade << uint8(0);
-    player->SendMessageToSet(&data, true);
+    player->BroadcastPacket(&data, true);
 
     ///- Log the event
     char const* wthstr;

@@ -162,7 +162,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
     // ok, we do it
     WorldPacket data(SMSG_GROUP_INVITE, 10);                // guess size
     data << GetPlayer()->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->SendPacketToSelf(&data);
 
     SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_OK);
 }
@@ -174,7 +174,7 @@ void WorldSession::HandleGroupAcceptOpcode(WorldPacket & /*recv_data*/)
 
     if (group->GetLeaderGUID() == GetPlayer()->GetGUID())
     {
-        sLog.outError("HandleGroupAcceptOpcode: player %s(%d) tried to accept an invite to his own group", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        sLog.outLog(LOG_DEFAULT, "ERROR: HandleGroupAcceptOpcode: player %s(%d) tried to accept an invite to his own group", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -230,7 +230,7 @@ void WorldSession::HandleGroupDeclineOpcode(WorldPacket & /*recv_data*/)
 
     WorldPacket data(SMSG_GROUP_DECLINE, 10);             // guess size
     data << GetPlayer()->GetName();
-    leader->GetSession()->SendPacket(&data);
+    leader->SendPacketToSelf(&data);
 }
 
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recv_data)
@@ -243,7 +243,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recv_data)
     //can't uninvite yourself
     if (guid == GetPlayer()->GetGUID())
     {
-        sLog.outError("WorldSession::HandleGroupUninviteGuidOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleGroupUninviteGuidOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -290,7 +290,7 @@ void WorldSession::HandleGroupUninviteNameOpcode(WorldPacket & recv_data)
     // can't uninvite yourself
     if (GetPlayer()->GetName() == membername)
     {
-        sLog.outError("WorldSession::HandleGroupUninviteNameOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandleGroupUninviteNameOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -656,9 +656,6 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player *player, WorldPacke
 {
     uint32 mask = player->GetGroupUpdateFlag();
 
-    if (mask == GROUP_UPDATE_FLAG_NONE)
-        return;
-
     if (mask & GROUP_UPDATE_FLAG_POWER_TYPE)                // if update power type, update current/max power also
         mask |= (GROUP_UPDATE_FLAG_CUR_POWER | GROUP_UPDATE_FLAG_MAX_POWER);
 
@@ -928,11 +925,11 @@ void WorldSession::HandleGroupPassOnLootOpcode(WorldPacket & recv_data)
     if (!GetPlayer())                                        // needed because STATUS_AUTHED
     {
         if (unkn!=0)
-            sLog.outError("CMSG_GROUP_PASS_ON_LOOT value<>0 for not-loaded character!");
+            sLog.outLog(LOG_DEFAULT, "ERROR: CMSG_GROUP_PASS_ON_LOOT value<>0 for not-loaded character!");
         return;
     }
 
     if (unkn!=0)
-        sLog.outError("CMSG_GROUP_PASS_ON_LOOT: activation not implemented!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: CMSG_GROUP_PASS_ON_LOOT: activation not implemented!");
 }
 

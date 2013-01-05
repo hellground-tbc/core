@@ -95,7 +95,7 @@ class GameEventMgr
     GameEventMgr();
 
     public:
-        const char *getActiveEventsString();
+        char const* getActiveEventsString();
         ~GameEventMgr() {};
         typedef std::set<uint16> ActiveEvents;
         typedef std::vector<GameEventData> GameEventDataMap;
@@ -170,5 +170,5 @@ class GameEventMgr
 #define sGameEventMgr (*ACE_Singleton<GameEventMgr, ACE_Null_Mutex>::instance())
 #endif
 
-HELLGROUND_DLL_SPEC bool isGameEventActive(uint16 event_id);
-HELLGROUND_DLL_SPEC void HandleWorldEventGossip(Player*, Creature*);
+HELLGROUND_IMPORT_EXPORT bool isGameEventActive(uint16 event_id);
+HELLGROUND_IMPORT_EXPORT void HandleWorldEventGossip(Player*, Creature*);

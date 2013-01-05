@@ -122,13 +122,13 @@ bool SqlQueryHolder::SetQuery(size_t index, const char *sql)
 {
     if(m_queries.size() <= index)
     {
-        sLog.outError("Query index (" SIZEFMTD ") out of range (size: " SIZEFMTD ") for query: %s", index, m_queries.size(), sql);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Query index (" SIZEFMTD ") out of range (size: " SIZEFMTD ") for query: %s", index, m_queries.size(), sql);
         return false;
     }
 
     if(m_queries[index].first != NULL)
     {
-        sLog.outError("Attempt assign query to holder index (" SIZEFMTD ") where other query stored (Old: [%s] New: [%s])",
+        sLog.outLog(LOG_DEFAULT, "ERROR: Attempt assign query to holder index (" SIZEFMTD ") where other query stored (Old: [%s] New: [%s])",
             index,m_queries[index].first,sql);
         return false;
     }
@@ -142,7 +142,7 @@ bool SqlQueryHolder::SetPQuery(size_t index, const char *format, ...)
 {
     if(!format)
     {
-        sLog.outError("Query (index: " SIZEFMTD ") is empty.",index);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Query (index: " SIZEFMTD ") is empty.",index);
         return false;
     }
 
@@ -154,7 +154,7 @@ bool SqlQueryHolder::SetPQuery(size_t index, const char *format, ...)
 
     if(res==-1)
     {
-        sLog.outError("SQL Query truncated (and not execute) for format: %s",format);
+        sLog.outLog(LOG_DEFAULT, "ERROR: SQL Query truncated (and not execute) for format: %s",format);
         return false;
     }
 

@@ -126,7 +126,7 @@ void WorldSession::HandleLearnTalentOpcode(WorldPacket & recv_data)
     uint32 spellid = talentInfo->RankID[requested_rank];
     if (spellid == 0)
     {
-        sLog.outError("Talent.dbc have for talent: %u Rank: %u spell id = 0", talent_id, requested_rank);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Talent.dbc have for talent: %u Rank: %u spell id = 0", talent_id, requested_rank);
         return;
     }
 

@@ -278,7 +278,7 @@ void BattleGroundAB::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 4021:                                          // Unk2
             //break;
         default:
-            //sLog.outError("WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            //sLog.outLog(LOG_DEFAULT, "ERROR: WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             //Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -401,7 +401,7 @@ void BattleGroundAB::_SendNodeUpdate(uint8 node)
 void BattleGroundAB::_NodeOccupied(uint8 node,Team team)
 {
    if (!AddSpiritGuide(node, BG_AB_SpiritGuidePos[node][0], BG_AB_SpiritGuidePos[node][1], BG_AB_SpiritGuidePos[node][2], BG_AB_SpiritGuidePos[node][3], team))
-        sLog.outError("Failed to spawn spirit guide! point: %u, team: %u,", node, team);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Failed to spawn spirit guide! point: %u, team: %u,", node, team);
 //   SpawnBGCreature(node,RESPAWN_IMMEDIATELY);
 
     uint8 capturedNodes = 0;
@@ -570,7 +570,7 @@ bool BattleGroundAB::SetupBattleGround()
             || !AddObject(BG_AB_OBJECT_AURA_CONTESTED + 8*i,BG_AB_OBJECTID_AURA_C,BG_AB_NodePositions[i][0],BG_AB_NodePositions[i][1],BG_AB_NodePositions[i][2],BG_AB_NodePositions[i][3], 0, 0, sin(BG_AB_NodePositions[i][3]/2), cos(BG_AB_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
        )
         {
-            sLog.outErrorDb("BatteGroundAB: Failed to spawn some object BattleGround not created!");
+            sLog.outLog(LOG_DB_ERR, "BatteGroundAB: Failed to spawn some object BattleGround not created!");
             return false;
         }
     }
@@ -578,7 +578,7 @@ bool BattleGroundAB::SetupBattleGround()
         || !AddObject(BG_AB_OBJECT_GATE_H,BG_AB_OBJECTID_GATE_H,BG_AB_DoorPositions[1][0],BG_AB_DoorPositions[1][1],BG_AB_DoorPositions[1][2],BG_AB_DoorPositions[1][3],BG_AB_DoorPositions[1][4],BG_AB_DoorPositions[1][5],BG_AB_DoorPositions[1][6],BG_AB_DoorPositions[1][7],RESPAWN_IMMEDIATELY)
        )
     {
-        sLog.outErrorDb("BatteGroundAB: Failed to spawn door object BattleGround not created!");
+        sLog.outLog(LOG_DB_ERR, "BatteGroundAB: Failed to spawn door object BattleGround not created!");
         return false;
     }
     //buffs
@@ -588,7 +588,7 @@ bool BattleGroundAB::SetupBattleGround()
             || !AddObject(BG_AB_OBJECT_SPEEDBUFF_STABLES + 3 * i + 1, Buff_Entries[1], BG_AB_BuffPositions[i][0], BG_AB_BuffPositions[i][1], BG_AB_BuffPositions[i][2], BG_AB_BuffPositions[i][3], 0, 0, sin(BG_AB_BuffPositions[i][3]/2), cos(BG_AB_BuffPositions[i][3]/2), RESPAWN_ONE_DAY)
             || !AddObject(BG_AB_OBJECT_SPEEDBUFF_STABLES + 3 * i + 2, Buff_Entries[2], BG_AB_BuffPositions[i][0], BG_AB_BuffPositions[i][1], BG_AB_BuffPositions[i][2], BG_AB_BuffPositions[i][3], 0, 0, sin(BG_AB_BuffPositions[i][3]/2), cos(BG_AB_BuffPositions[i][3]/2), RESPAWN_ONE_DAY)
            )
-            sLog.outErrorDb("BatteGroundAB: Failed to spawn buff object!");
+            sLog.outLog(LOG_DB_ERR, "BatteGroundAB: Failed to spawn buff object!");
     }
 
     return true;

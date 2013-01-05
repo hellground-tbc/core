@@ -28,6 +28,7 @@
 #include "GameObject.h"
 #include "Opcodes.h"
 #include "Chat.h"
+#include "Guild.h"
 #include "ObjectAccessor.h"
 #include "MapManager.h"
 #include "Language.h"
@@ -36,7 +37,7 @@
 #include "SpellMgr.h"
 #include "PoolManager.h"
 #include "AccountMgr.h"
-#include "WaypointManager.h"
+#include "WaypointMgr.h"
 #include "Util.h"
 #include <cctype>
 #include <iostream>
@@ -599,7 +600,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     // User wants to teleport to the NPC's template entry
     if (strcmp(pParam1, "id") == 0)
     {
-        //sLog.outError("DEBUG: ID found");
+        //sLog.outLog(LOG_DEFAULT, "DEBUG: ID found");
 
         // Get the "creature_template.entry"
         // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
@@ -611,7 +612,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
             return false;
 
         int32 tEntry = atoi(cId);
-        //sLog.outError("DEBUG: ID value: %d", tEntry);
+        //sLog.outLog(LOG_DEFAULT, "DEBUG: ID value: %d", tEntry);
         if (!tEntry)
             return false;
 
@@ -619,7 +620,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     }
     else
     {
-        //sLog.outError("DEBUG: ID *not found*");
+        //sLog.outLog(LOG_DEFAULT, "DEBUG: ID *not found*");
 
         int32 guid = atoi(pParam1);
 
@@ -635,7 +636,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
             whereClause <<  "WHERE guid = '" << guid << "'";
         }
     }
-    //sLog.outError("DEBUG: %s", whereClause.c_str());
+    //sLog.outLog(LOG_DEFAULT, "DEBUG: %s", whereClause.c_str());
 
     QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map FROM creature %s", whereClause.str().c_str());
     if (!result)
@@ -1452,7 +1453,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 
     if (dontdel_str)
     {
-        //sLog.outError("DEBUG: All 3 params are set");
+        //sLog.outLog(LOG_DEFAULT, "DEBUG: All 3 params are set");
 
         // All 3 params are set
         // GUID
@@ -1460,7 +1461,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         // doNotDEL
         if (stricmp(dontdel_str, "NODEL") == 0)
         {
-            //sLog.outError("DEBUG: doNotDelete = true;");
+            //sLog.outLog(LOG_DEFAULT, "DEBUG: doNotDelete = true;");
             doNotDelete = true;
         }
     }
@@ -1469,10 +1470,10 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         // Only 2 params - but maybe NODEL is set
         if (type_str)
         {
-            sLog.outError("DEBUG: Only 2 params ");
+            sLog.outLog(LOG_DEFAULT, "DEBUG: Only 2 params ");
             if (stricmp(type_str, "NODEL") == 0)
             {
-                //sLog.outError("DEBUG: type_str, NODEL ");
+                //sLog.outLog(LOG_DEFAULT, "DEBUG: type_str, NODEL ");
                 doNotDelete = true;
                 type_str = NULL;
             }
@@ -1899,7 +1900,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         if (!m_session || m_session->GetPermissions() >= security)
         {
             if (sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL) & m_session->GetPermissions())
-              email = fields[2].GetCppString();
+                email = fields[2].GetCppString();
 
             last_ip = fields[3].GetCppString();
             last_login = fields[4].GetCppString();
@@ -2197,7 +2198,7 @@ bool ChatHandler::HandleWpReloadPath(const char* args)
         return false;
 
     PSendSysMessage("%s%s|r|cff00ffff%u|r", "|cff00ff00", "Loading Path: ", id);
-    WaypointMgr.UpdatePath(id);
+    sWaypointMgr.UpdatePath(id);
 
     return true;
 }
@@ -3761,7 +3762,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
 
     if (!pet->InitStatsForLevel(creatureTarget->getLevel()))
     {
-        sLog.outError("ERROR: InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
+        sLog.outLog(LOG_DEFAULT, "ERROR: InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
         PSendSysMessage("Error 2");
         delete pet;
         return false;
@@ -3948,7 +3949,7 @@ bool ChatHandler::HandleGameObjectAddTempCommand(const char* args)
     Player *chr = m_session->GetPlayer();
 
     char* spawntime = strtok(NULL, " ");
-    uint32 spawntm;
+    uint32 spawntm = 60;
 
     if (spawntime)
         spawntm = atoi((char*)spawntime);
@@ -4364,6 +4365,71 @@ bool ChatHandler::HandleMmapStatsCommand(const char* /*args*/)
     PSendSysMessage(" %u polygons (%u vertices)", polyCount, vertCount);
     PSendSysMessage(" %u triangles (%u vertices)", triCount, triVertCount);
     PSendSysMessage(" %.2f MB of data (not including pointers)", ((float)dataSize / sizeof(unsigned char)) / 1048576);
+
+    return true;
+}
+
+bool ChatHandler::HandleMmapOffsetCreateCommand(const char* /*args*/)
+{
+    Unit* target = getSelectedUnit();
+    if (target == NULL)
+        return false;
+
+    Player* player = m_session->GetPlayer();
+    int32 gx = 32 - player->GetPositionX() / SIZE_OF_GRIDS;
+    int32 gy = 32 - player->GetPositionY() / SIZE_OF_GRIDS;
+
+    char fileName[25];
+    sprintf(fileName, "%03u%02i%02i.offmesh", player->GetMapId(), gy, gx);
+
+    std::ofstream file;
+    file.open(fileName, std::ios_base::out | std::ios_base::app);
+    if (file.fail())
+        return false;
+
+    file << player->GetMapId() << " " << gy << "," << gx << "("
+         << player->GetPositionX() << " "
+         << player->GetPositionY() << " "
+         << player->GetPositionZ() << ")" << " " << "("
+         << target->GetPositionX() << " "
+         << target->GetPositionY() << " "
+         << target->GetPositionZ() << ") 2.5" << std::endl;
+
+    return true;
+}
+
+bool ChatHandler::HandleGuildDisableAnnounceCommand(const char *args)
+{
+    if (!args)
+        return false;
+
+    std::string guildName = args;
+
+    Guild* guild = sObjectMgr.GetGuildByName(guildName);
+    if (!guild)
+        return false;
+
+    guild->AddFlag(GUILD_FLAG_DISABLE_ANN);
+    guild->BroadcastToGuild(m_session, "Guild announce system has been disabled for that guild");
+    PSendSysMessage("Guild announce system has been disabled for guild %s", guildName.c_str());
+
+    return true;
+}
+
+bool ChatHandler::HandleGuildEnableAnnounceCommand(const char *args)
+{
+    if (!args)
+        return false;
+
+    std::string guildName = args;
+
+    Guild* guild = sObjectMgr.GetGuildByName(guildName);
+    if (!guild)
+        return false;
+
+    guild->RemoveFlag(GUILD_FLAG_DISABLE_ANN);
+    guild->BroadcastToGuild(m_session, "Guild announce system has been enabled for that guild");
+    PSendSysMessage("Guild announce system has been enabled for guild %s", guildName.c_str());
 
     return true;
 }

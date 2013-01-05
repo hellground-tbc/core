@@ -37,7 +37,7 @@ class Database;
 #define MAX_QUERY_LEN   32*1024
 
 //
-class HELLGROUND_DLL_SPEC SqlConnection
+class SqlConnection
 {
     public:
         virtual ~SqlConnection() {}
@@ -99,7 +99,7 @@ class HELLGROUND_DLL_SPEC SqlConnection
         StmtHolder m_holder;
 };
 
-class HELLGROUND_DLL_SPEC Database
+class Database
 {
     public:
         virtual ~Database();
@@ -210,6 +210,7 @@ class HELLGROUND_DLL_SPEC Database
 
         bool CheckRequiredField(char const* table_name, char const* required_name);
         uint32 GetPingIntervall() { return m_pingIntervallms; }
+        bool CheckMinLogTime(uint32 time);
 
         //function to ping database connections
         void Ping();
@@ -218,12 +219,14 @@ class HELLGROUND_DLL_SPEC Database
         //you should call it explicitly after your server successfully started up
         //NO ASYNC TRANSACTIONS DURING SERVER STARTUP - ONLY DURING RUNTIME!!!
         void AllowAsyncTransactions() { m_bAllowAsyncTransactions = true; }
+        void EnableLogging() { m_enableLogging = true; }
 
     protected:
         Database() : m_pAsyncConn(NULL), m_pResultQueue(NULL), m_threadBody(NULL), m_delayThread(NULL),
             m_logSQL(false), m_pingIntervallms(0), m_nQueryConnPoolSize(1), m_bAllowAsyncTransactions(false), m_iStmtIndex(-1)
         {
             m_nQueryCounter = -1;
+            m_enableLogging = false;
         }
 
         void StopServer();
@@ -233,7 +236,7 @@ class HELLGROUND_DLL_SPEC Database
         //factory method to create SqlDelayThread objects
         virtual SqlDelayThread * CreateDelayThread();
 
-        class HELLGROUND_DLL_SPEC TransHelper
+        class TransHelper
         {
             public:
                 TransHelper() : m_pTrans(NULL) {}
@@ -304,6 +307,8 @@ class HELLGROUND_DLL_SPEC Database
         bool m_logSQL;
         std::string m_logsDir;
         uint32 m_pingIntervallms;
+        uint32 m_minLogTimems;
+        bool m_enableLogging;
 };
 
 #endif

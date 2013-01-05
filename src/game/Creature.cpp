@@ -243,8 +243,9 @@ void Creature::RemoveCorpse()
         return;
 
     setDeathState(DEAD);
-    m_deathTimer = 0;
     UpdateObjectVisibility();
+
+    m_deathTimer = 0;
     loot.clear();
     m_respawnTime = time(NULL) + m_respawnDelay;
 
@@ -262,7 +263,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data)
     CreatureInfo const *normalInfo = ObjectMgr::GetCreatureTemplate(Entry);
     if (!normalInfo)
     {
-        sLog.outErrorDb("Creature::UpdateEntry creature entry %u does not exist.", Entry);
+        sLog.outLog(LOG_DB_ERR, "Creature::UpdateEntry creature entry %u does not exist.", Entry);
         return false;
     }
 
@@ -277,7 +278,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data)
             cinfo = ObjectMgr::GetCreatureTemplate(normalInfo->HeroicEntry);
             if (!cinfo)
             {
-                sLog.outErrorDb("Creature::UpdateEntry creature heroic entry %u does not exist.", actualEntry);
+                sLog.outLog(LOG_DB_ERR, "Creature::UpdateEntry creature heroic entry %u does not exist.", actualEntry);
                 return false;
             }
         }
@@ -289,7 +290,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data)
     // Cancel load if no model defined
     if (!(cinfo->GetFirstValidModelId()))
     {
-        sLog.outErrorDb("Creature (Entry: %u) has no model defined in table `creature_template`, can't load. ",Entry);
+        sLog.outLog(LOG_DB_ERR, "Creature (Entry: %u) has no model defined in table `creature_template`, can't load. ",Entry);
         return false;
     }
 
@@ -297,7 +298,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data)
     CreatureModelInfo const *minfo = sObjectMgr.GetCreatureModelRandomGender(display_id);
     if (!minfo)
     {
-        sLog.outErrorDb("Creature (Entry: %u) has model %u not found in table `creature_model_info`, can't load. ", Entry, display_id);
+        sLog.outLog(LOG_DB_ERR, "Creature (Entry: %u) has model %u not found in table `creature_model_info`, can't load. ", Entry, display_id);
         return false;
     }
     else
@@ -467,11 +468,11 @@ void Creature::Update(uint32 update_diff, uint32 diff)
     {
         case JUST_ALIVED:
             // Don't must be called, see Creature::setDeathState JUST_ALIVED -> ALIVE promoting.
-            sLog.outError("Creature (GUIDLow: %u Entry: %u) in wrong state: JUST_ALIVED (4)",GetGUIDLow(),GetEntry());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Creature (GUIDLow: %u Entry: %u) in wrong state: JUST_ALIVED (4)",GetGUIDLow(),GetEntry());
             break;
         case JUST_DIED:
             // Don't must be called, see Creature::setDeathState JUST_DIED -> CORPSE promoting.
-            sLog.outError("Creature (GUIDLow: %u Entry: %u) in wrong state: JUST_DEAD (1)",GetGUIDLow(),GetEntry());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Creature (GUIDLow: %u Entry: %u) in wrong state: JUST_DEAD (1)",GetGUIDLow(),GetEntry());
             break;
         case DEAD:
         {
@@ -716,7 +717,7 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 team, float
     Relocate(x, y, z, ang);
     if (!IsPositionValid())
     {
-        sLog.outError("Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",guidlow,Entry,x,y);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Creature (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",guidlow,Entry,x,y);
         return false;
     }
 
@@ -764,7 +765,7 @@ bool Creature::isCanTrainingOf(Player* pPlayer, bool msg) const
 
     if (!trainer_spells || trainer_spells->spellList.empty())
     {
-        sLog.outErrorDb("Creature %u (Entry: %u) have UNIT_NPC_FLAG_TRAINER but have empty trainer spell list.",
+        sLog.outLog(LOG_DB_ERR, "Creature %u (Entry: %u) have UNIT_NPC_FLAG_TRAINER but have empty trainer spell list.",
             GetGUIDLow(),GetEntry());
         return false;
     }
@@ -929,7 +930,7 @@ void Creature::prepareGossipMenu(Player *pPlayer,uint32 gossipid)
                         VendorItemData const* vItems = GetVendorItems();
                         if (!vItems || vItems->Empty())
                         {
-                            sLog.outErrorDb("Creature %u (Entry: %u) have UNIT_NPC_FLAG_VENDOR but have empty trading item list.",
+                            sLog.outLog(LOG_DB_ERR, "Creature %u (Entry: %u) have UNIT_NPC_FLAG_VENDOR but have empty trading item list.",
                                 GetGUIDLow(),GetEntry());
                             cantalking=false;
                         }
@@ -968,7 +969,7 @@ void Creature::prepareGossipMenu(Player *pPlayer,uint32 gossipid)
                             cantalking = false;
                         break;
                     default:
-                        sLog.outErrorDb("Creature %u (entry: %u) have unknown gossip option %u",GetDBTableGUIDLow(),GetEntry(),gso->Action);
+                        sLog.outLog(LOG_DB_ERR, "Creature %u (entry: %u) have unknown gossip option %u",GetDBTableGUIDLow(),GetEntry(),gso->Action);
                         break;
                 }
             }
@@ -1281,7 +1282,7 @@ void Creature::SaveToDB()
     CreatureData const *data = sObjectMgr.GetCreatureData(m_DBTableGuid);
     if (!data)
     {
-        sLog.outError("Creature::SaveToDB failed, cannot get creature data!");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Creature::SaveToDB failed, cannot get creature data!");
         return;
     }
 
@@ -1483,7 +1484,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
     CreatureInfo const *cinfo = ObjectMgr::GetCreatureTemplate(Entry);
     if (!cinfo)
     {
-        sLog.outErrorDb("Error: creature entry %u does not exist.", Entry);
+        sLog.outLog(LOG_DB_ERR, "Error: creature entry %u does not exist.", Entry);
         return false;
     }
     m_originalEntry = Entry;
@@ -1502,7 +1503,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
 
     if (!data)
     {
-        sLog.outErrorDb("Creature (GUID: %u) not found in table `creature`, can't load. ",guid);
+        sLog.outLog(LOG_DB_ERR, "Creature (GUID: %u) not found in table `creature`, can't load. ",guid);
         return false;
     }
 
@@ -1619,15 +1620,27 @@ void Creature::DeleteFromDB()
     sObjectMgr.SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),0);
     sObjectMgr.DeleteCreatureData(m_DBTableGuid);
 
+    static SqlStatementID deleteCreature;
+    static SqlStatementID deleteCreatureAddon;
+    static SqlStatementID deleteGECreature;
+    static SqlStatementID deleteGEModelEquip;
+
     GameDataDatabase.BeginTransaction();
-    GameDataDatabase.PExecuteLog("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
-    GameDataDatabase.PExecuteLog("DELETE FROM creature_addon WHERE guid = '%u'", m_DBTableGuid);
-    GameDataDatabase.PExecuteLog("DELETE FROM game_event_creature WHERE guid = '%u'", m_DBTableGuid);
-    GameDataDatabase.PExecuteLog("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_DBTableGuid);
+    SqlStatement stmt = GameDataDatabase.CreateStatement(deleteCreature, "DELETE FROM creature WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
+
+    stmt = GameDataDatabase.CreateStatement(deleteCreatureAddon, "DELETE FROM creature_addon WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
+
+    stmt = GameDataDatabase.CreateStatement(deleteGECreature, "DELETE FROM game_event_creature WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
+
+    stmt = GameDataDatabase.CreateStatement(deleteGEModelEquip, "DELETE FROM game_event_model_equip WHERE guid = ?");
+    stmt.PExecute(m_DBTableGuid);
     GameDataDatabase.CommitTransaction();
 }
 
-bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
+bool Creature::canSeeOrDetect(Unit const* u, WorldObject const* viewPoint, bool detect, bool inVisibleList, bool is3dDistance) const
 {
     // not in world
     if (!IsInWorld() || !u->IsInWorld())
@@ -1649,7 +1662,7 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
         return false;
 
     // invisible aura
-    if ((m_invisibilityMask || u->m_invisibilityMask) && !canDetectInvisibilityOf(u))
+    if ((m_invisibilityMask || u->m_invisibilityMask) && !canDetectInvisibilityOf(u, viewPoint))
         return false;
 
     // unit got in stealth in this moment and must ignore old detected state
@@ -1660,7 +1673,7 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
     if (u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
         //do not know what is the use of this detect
-        if (!detect || !canDetectStealthOf(u, GetDistance(u)))
+        if (!detect || !canDetectStealthOf(u, viewPoint, viewPoint->GetDistance(u)))
             return false;
     }
 
@@ -1671,10 +1684,10 @@ bool Creature::canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
 
 bool Creature::IsWithinSightDist(Unit const* u) const
 {
-    if (!IsWithinLOSInMap(u))
+    if (!IsWithinDistInMap(u, sWorld.getConfig(CONFIG_SIGHT_MONSTER)))
         return false;
 
-    return IsWithinDistInMap(u, sWorld.getConfig(CONFIG_SIGHT_MONSTER));
+    return IsWithinLOSInMap(u);
 }
 
 bool Creature::canStartAttack(Unit const* who) const
@@ -1823,9 +1836,7 @@ void Creature::Respawn()
     // forced recreate creature object at clients
     UnitVisibility currentVis = GetVisibility();
     SetVisibility(VISIBILITY_RESPAWN);
-    UpdateObjectVisibility();
     SetVisibility(currentVis);                              // restore visibility state
-    UpdateObjectVisibility();
 
     if (getDeathState()==DEAD)
     {
@@ -1915,7 +1926,7 @@ SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_spells[i]);
         if (!spellInfo)
         {
-            sLog.outError("WORLD: unknown spell id %i\n", m_spells[i]);
+            sLog.outLog(LOG_DEFAULT, "ERROR: WORLD: unknown spell id %i\n", m_spells[i]);
             continue;
         }
 
@@ -1965,7 +1976,7 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(m_spells[i]);
         if (!spellInfo)
         {
-            sLog.outError("WORLD: unknown spell id %i\n", m_spells[i]);
+            sLog.outLog(LOG_DEFAULT, "ERROR: WORLD: unknown spell id %i\n", m_spells[i]);
             continue;
         }
 
@@ -2048,7 +2059,7 @@ void Creature::DoFleeToGetAssistance()
         Creature* pCreature = NULL;
 
         Hellground::NearestAssistCreatureInCreatureRangeCheck u_check(this, getVictim(), radius);
-        Hellground::CreatureLastSearcher<Hellground::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
+        Hellground::ObjectLastSearcher<Creature, Hellground::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
 
         Cell::VisitGridObjects(this, searcher, radius);
 
@@ -2097,7 +2108,7 @@ void Creature::CallAssistance()
             std::list<Creature*> assistList;
             {
                 Hellground::AnyAssistCreatureInRangeCheck u_check(this, getVictim(), radius);
-                Hellground::CreatureListSearcher<Hellground::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
+                Hellground::ObjectListSearcher<Creature, Hellground::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
 
                 Cell::VisitGridObjects(this, searcher, radius);
             }
@@ -2123,9 +2134,9 @@ void Creature::CallForHelp(float fRadius)
         return;
 
     Hellground::CallOfHelpCreatureInRangeDo u_do(this, getVictim(), fRadius);
-    Hellground::CreatureWorker<Hellground::CallOfHelpCreatureInRangeDo> worker(this, u_do);
+    Hellground::ObjectWorker<Creature, Hellground::CallOfHelpCreatureInRangeDo> worker(u_do);
 
-    Cell::VisitGridObjects(this,worker, fRadius);
+    Cell::VisitGridObjects(this, worker, fRadius);
 }
 
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /*= true*/) const
@@ -2196,8 +2207,9 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     float AttackDist = GetAttackDistance(pVictim);
     uint32 ThreatRadius = sWorld.getConfig(CONFIG_THREAT_RADIUS);
 
+    float dist = (ThreatRadius > AttackDist ? ThreatRadius : AttackDist);
     //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return !IsWithinDistInMap(&homeLocation, (ThreatRadius > AttackDist ? ThreatRadius : AttackDist));
+    return !IsWithinDistInMap(&homeLocation, dist) || !pVictim->IsWithinDistInMap(&homeLocation, 1.5f*dist);
 }
 
 CreatureDataAddon const* Creature::GetCreatureAddon() const
@@ -2248,7 +2260,7 @@ bool Creature::LoadCreaturesAddon(bool reload)
             SpellEntry const *AdditionalSpellInfo = sSpellStore.LookupEntry(cAura->spell_id);
             if (!AdditionalSpellInfo)
             {
-                sLog.outErrorDb("Creature (GUIDLow: %u Entry: %u) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id);
+                sLog.outLog(LOG_DB_ERR, "Creature (GUIDLow: %u Entry: %u) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id);
                 continue;
             }
 
@@ -2283,7 +2295,7 @@ void Creature::SetInCombatWithZone()
 {
     if (!CanHaveThreatList())
     {
-        sLog.outError("Creature entry %u call SetInCombatWithZone but creature cannot have threat list.", GetEntry());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Creature entry %u call SetInCombatWithZone but creature cannot have threat list.", GetEntry());
         return;
     }
 
@@ -2291,7 +2303,7 @@ void Creature::SetInCombatWithZone()
 
     if (!pMap->IsDungeon())
     {
-        sLog.outError("Creature entry %u call SetInCombatWithZone for map (id: %u) that isn't an instance.", GetEntry(), pMap->GetId());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Creature entry %u call SetInCombatWithZone for map (id: %u) that isn't an instance.", GetEntry(), pMap->GetId());
         return;
     }
 
@@ -2430,8 +2442,8 @@ void Creature::GetRespawnCoord(float &x, float &y, float &z, float* ori, float* 
     //lets check if our creatures have valid spawn coordinates
     if(!Hellground::IsValidMapCoord(x, y, z))
     {
-        sLog.outError("Creature with invalid respawn coordinates: mapid = %u, guid = %u, x = %f, y = %f, z = %f", GetMapId(), GetGUIDLow(), x, y, z);
-        assert(false);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Creature with invalid respawn coordinates: mapid = %u, guid = %u, x = %f, y = %f, z = %f", GetMapId(), GetGUIDLow(), x, y, z);
+        ASSERT(false);
     }
 }
 
@@ -2617,19 +2629,25 @@ void Creature::SetWalk(bool enable)
 
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_WALK_MODE : SMSG_SPLINE_MOVE_SET_RUN_MODE, 9);
     data << GetPackGUID();
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 void Creature::SetLevitate(bool enable)
 {
     if (enable)
+    {
         AddUnitMovementFlag(MOVEFLAG_LEVITATING);
+        addUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+    }
     else
+    {
         RemoveUnitMovementFlag(MOVEFLAG_LEVITATING);
+        clearUnitState(UNIT_STAT_IGNORE_PATHFINDING);
+    }
 
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
-    SendMessageToSet(&data, true);
+    BroadcastPacket(&data, true);
 }
 
 bool Creature::CanReactToPlayerOnTaxi()
@@ -2645,6 +2663,12 @@ bool Creature::CanReactToPlayerOnTaxi()
             return false;
     }
 }
+
+bool Creature::CanFly() const
+{
+    return GetCreatureInfo()->InhabitType & INHABIT_AIR || IsLevitating();
+}
+
 
 bool AttackResumeEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
@@ -2679,8 +2703,29 @@ bool AttackResumeEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                 m_owner.ToPlayer()->AI()->AttackStart(victim);
             break;
         default:
-            sLog.outError("AttackResumeEvent::Execute try execute for unsupported owner %s!", m_owner.GetObjectGuid().GetString().c_str());
+            sLog.outLog(LOG_DEFAULT, "ERROR: AttackResumeEvent::Execute try execute for unsupported owner %s!", m_owner.GetObjectGuid().GetString().c_str());
             break;
     }
+    return true;
+}
+
+RestoreReactState::RestoreReactState(Creature& owner) : BasicEvent(), _owner(owner)
+{
+    if (_owner.ToPet())
+        return;
+
+    _owner.addUnitState(UNIT_STAT_IGNORE_ATTACKERS);
+
+    _oldState = _owner.GetReactState();
+    _owner.SetReactState(REACT_PASSIVE);
+}
+
+bool RestoreReactState::Execute(uint64 e_time, uint32 p_time)
+{
+    if (_owner.ToPet())
+        return true;
+
+    _owner.clearUnitState(UNIT_STAT_IGNORE_ATTACKERS);
+    _owner.SetReactState(_oldState);
     return true;
 }

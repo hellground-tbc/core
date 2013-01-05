@@ -65,7 +65,7 @@ MailSender::MailSender( Object* sender, MailStationery stationery ) : m_statione
         default:
             m_messageType = MAIL_NORMAL;
             m_senderId = 0;                                 // will show mail from nonexistent player
-            sLog.outError( "MailSender::MailSender - Mail have unexpected sender typeid (%u)", sender->GetTypeId());
+            sLog.outLog(LOG_DEFAULT, "ERROR: MailSender::MailSender - Mail have unexpected sender typeid (%u)", sender->GetTypeId());
             break;
     }
 }
@@ -95,7 +95,7 @@ MailReceiver::MailReceiver(Player* receiver) : m_receiver(receiver), m_receiver_
  */
 MailReceiver::MailReceiver(Player* receiver, ObjectGuid receiver_guid) : m_receiver(receiver), m_receiver_guid(receiver_guid)
 {
-    assert(!receiver || receiver->GetObjectGuid() == receiver_guid);
+    ASSERT(!receiver || receiver->GetObjectGuid() == receiver_guid);
 }
 
 /**
@@ -114,7 +114,7 @@ MailDraft& MailDraft::SetSubjectAndBody(std::string subject, std::string text)
 {
     m_subject = subject;
 
-    assert(!m_bodyId);
+    ASSERT(!m_bodyId);
     m_bodyId = !text.empty() ? sObjectMgr.CreateItemText(text) : 0;
 
     return *this;
@@ -195,7 +195,7 @@ void MailDraft::CloneFrom(MailDraft const& draft)
 
     m_subject = draft.GetSubject();
 
-    assert(!m_bodyId);
+    ASSERT(!m_bodyId);
     if (uint32 bodyId = draft.GetBodyId())
     {
         std::string text = sObjectMgr.GetItemText(bodyId);
@@ -417,25 +417,27 @@ void Mail::prepareTemplateItems( Player* receiver )
 
 void WorldSession::SendExternalMails()
 {
-    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT id, receiver, subject, message, money, item, item_count FROM mail_external");
+    if (!sWorld.getConfig(CONFIG_EXTERNAL_MAIL))
+        return;
+
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT id, subject, message, money, item, item_count FROM mail_external WHERE receiver = %u", GetPlayer()->GetGUIDLow());
     if (result)
     {
         do
         {
             Field *fields = result->Fetch();
             uint32 id = fields[0].GetUInt32();
-            uint64 receiver_guid = fields[1].GetUInt64();
-            std::string subject = fields[2].GetString();
-            std::string message = fields[3].GetString();
-            uint32 money = fields[4].GetUInt32();
-            uint32 ItemID = fields[5].GetUInt32();
-            uint32 ItemCount = fields[6].GetUInt32();
+            std::string subject = fields[1].GetString();
+            std::string message = fields[2].GetString();
+            uint32 money = fields[3].GetUInt32();
+            uint32 ItemID = fields[4].GetUInt32();
+            uint32 ItemCount = fields[5].GetUInt32();
 
-            Player *receiver = sObjectMgr.GetPlayer(receiver_guid);
+            Player *receiver = GetPlayer();
 
             if (receiver != 0)
             {
-                sLog.outDebug("EXTERNAL MAIL> Sending mail to %u, Item:%u", receiver_guid, ItemID);
+                sLog.outDebug("EXTERNAL MAIL> Sending mail to %u, Item:%u", receiver->GetGUIDLow(), ItemID);
                 uint32 itemTextId = !message.empty() ? sObjectMgr.CreateItemText(message) : 0;
                 if (ItemID != 0)
                 {

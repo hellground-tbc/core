@@ -233,7 +233,7 @@ int WorldSocketMgr::StartReactiveIO(ACE_UINT16 port, const char* address)
 
     if (num_threads <= 0)
     {
-        sLog.outError ("Network.Threads is wrong in your config file");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Network.Threads is wrong in your config file");
         return -1;
     }
 
@@ -250,7 +250,7 @@ int WorldSocketMgr::StartReactiveIO(ACE_UINT16 port, const char* address)
 
     if (m_SockOutUBuff <= 0)
     {
-        sLog.outError ("Network.OutUBuff is wrong in your config file");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Network.OutUBuff is wrong in your config file");
         return -1;
     }
 
@@ -261,7 +261,7 @@ int WorldSocketMgr::StartReactiveIO(ACE_UINT16 port, const char* address)
 
     if (acc->open (listen_addr, m_NetThreads[0].GetReactor(), ACE_NONBLOCK) == -1)
     {
-        sLog.outError ("Failed to open acceptor, check if the port is free");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Failed to open acceptor, check if the port is free");
         return -1;
     }
 
@@ -317,7 +317,7 @@ int WorldSocketMgr::OnSocketOpen(WorldSocket* sock)
     {
         if (sock->peer().set_option(SOL_SOCKET, SO_SNDBUF, (void*)&m_SockOutKBuff, sizeof(int)) == -1 && errno != ENOTSUP)
         {
-            sLog.outError ("WorldSocketMgr::OnSocketOpen set_option SO_SNDBUF");
+            sLog.outLog(LOG_DEFAULT, "ERROR: WorldSocketMgr::OnSocketOpen set_option SO_SNDBUF");
             return -1;
         }
     }
@@ -329,7 +329,7 @@ int WorldSocketMgr::OnSocketOpen(WorldSocket* sock)
     {
         if (sock->peer().set_option(ACE_IPPROTO_TCP, TCP_NODELAY, (void*)&ndoption, sizeof (int)) == -1)
         {
-            sLog.outError("WorldSocketMgr::OnSocketOpen: peer().set_option TCP_NODELAY errno = %s", ACE_OS::strerror(errno));
+            sLog.outLog(LOG_DEFAULT, "ERROR: WorldSocketMgr::OnSocketOpen: peer().set_option TCP_NODELAY errno = %s", ACE_OS::strerror(errno));
             return -1;
         }
     }

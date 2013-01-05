@@ -2,8 +2,8 @@
 #define __CHARMINFO_H
 
 #include "Common.h"
+#include "Unit.h"
 
-class Unit;
 struct SpellEntry;
 
 enum ReactStates
@@ -68,7 +68,7 @@ class GlobalCooldownMgr
         GlobalCooldownList m_GlobalCooldowns;
 };
 
-struct HELLGROUND_DLL_SPEC CharmInfo
+struct HELLGROUND_IMPORT_EXPORT CharmInfo
 {
     public:
         explicit CharmInfo(Unit* unit);
@@ -101,7 +101,7 @@ struct HELLGROUND_DLL_SPEC CharmInfo
     private:
         Unit* m_unit;
         UnitActionBarEntry PetActionBar[10];
-        CharmSpellEntry m_charmspells[4];
+        CharmSpellEntry m_charmspells[CREATURE_MAX_SPELLS];
 
         CommandStates   m_CommandState;
 

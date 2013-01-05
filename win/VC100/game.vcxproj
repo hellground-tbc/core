@@ -163,7 +163,7 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\movemap;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\g3dlite\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;TRINITY_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -218,6 +218,7 @@
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>Default</CompileAs>
       <AdditionalOptions>/D_CRT_SECURE_NO_DEPRECATE /D_CRT_SECURE_NO_WARNING %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -253,10 +254,11 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>Default</CompileAs>
-      <AdditionalOptions>/D_CRT_SECURE_NO_DEPRECATE /D_CRT_SECURE_NO_WARNING /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/D_CRT_SECURE_NO_DEPRECATE /D_CRT_SECURE_NO_WARNING /MP /Zm1000 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeaderFile>pchdef.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>pchdef.h</ForcedIncludeFiles>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -462,6 +464,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\game\AntiCheat.cpp" />
+    <ClCompile Include="..\..\src\game\Camera.cpp" />
     <ClCompile Include="..\..\src\game\Channel.cpp" />
     <ClCompile Include="..\..\src\game\CharmInfo.cpp" />
     <ClCompile Include="..\..\src\game\Chat.cpp" />
@@ -620,7 +623,7 @@
     <ClCompile Include="..\..\src\game\TicketHandler.cpp" />
     <ClCompile Include="..\..\src\game\TradeHandler.cpp" />
     <ClCompile Include="..\..\src\game\VoiceChatHandler.cpp" />
-    <ClCompile Include="..\..\src\game\WaypointManager.cpp" />
+    <ClCompile Include="..\..\src\game\WaypointMgr.cpp" />
     <ClCompile Include="..\..\src\game\AccountMgr.cpp" />
     <ClCompile Include="..\..\src\game\AuctionHouseMgr.cpp" />
     <ClCompile Include="..\..\src\game\ItemEnchantmentMgr.cpp" />
@@ -631,6 +634,7 @@
     <ClCompile Include="..\..\src\game\MapUpdater.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\game\Camera.h" />
     <ClInclude Include="..\..\src\game\Channel.h" />
     <ClInclude Include="..\..\src\game\CharmInfo.h" />
     <ClInclude Include="..\..\src\game\Chat.h" />
@@ -788,7 +792,7 @@
     <ClInclude Include="..\..\src\game\Weather.h" />
     <ClInclude Include="..\..\src\game\AddonHandler.h" />
     <ClInclude Include="..\..\src\game\NPCHandler.h" />
-    <ClInclude Include="..\..\src\game\WaypointManager.h" />
+    <ClInclude Include="..\..\src\game\WaypointMgr.h" />
     <ClInclude Include="..\..\src\game\AccountMgr.h" />
     <ClInclude Include="..\..\src\game\AuctionHouseMgr.h" />
     <ClInclude Include="..\..\src\game\ChannelMgr.h" />

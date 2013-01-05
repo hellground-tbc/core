@@ -90,7 +90,6 @@ enum WorldTimers
     WUPDATE_GUILD_ANNOUNCES = 8,
     WUPDATE_DELETECHARS     = 9,
     WUPDATE_OLDMAILS        = 10,
-    WUPDATE_EXTERNALMAILS   = 11,
 
     WUPDATE_COUNT
 };
@@ -222,6 +221,8 @@ enum WorldConfigs
     CONFIG_BATTLEGROUND_INVITATION_TYPE,
     CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH,
     CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER,
+    CONFIG_BATTLEGROUND_ANNOUNCE_START,
+    CONFIG_BATTLEGROUND_QUEUE_INFO,
 
     CONFIG_MAX_WHO,
     CONFIG_BG_START_MUSIC,
@@ -238,18 +239,22 @@ enum WorldConfigs
     CONFIG_SHOW_KICK_IN_WORLD,
     CONFIG_INTERVAL_LOG_UPDATE,
     CONFIG_MIN_LOG_UPDATE,
+    CONFIG_MIN_LOG_SESSION_UPDATE,
     CONFIG_ENABLE_SINFO_LOGIN,
     CONFIG_PREMATURE_BG_REWARD,
     CONFIG_PET_LOS,
     CONFIG_VMAP_TOTEM,
     CONFIG_NUMTHREADS,
-    CONFIG_ANNOUNCE_BG_START,
+    CONFIG_CUMULATIVE_LOG_METHOD,
+    CONFIG_MAPUPDATE_MAXVISITORS,
     CONFIG_AUTOBROADCAST_INTERVAL,
     CONFIG_GUILD_ANN_INTERVAL,
     CONFIG_GUILD_ANN_COOLDOWN,
+    CONFIG_GUILD_ANN_LENGTH,
     CONFIG_DISABLE_DUEL,
     CONFIG_DISABLE_PVP,
     CONFIG_MIN_GM_TEXT_LVL,
+    CONFIG_WARDEN_ENABLED,
     CONFIG_WARDEN_KICK,
     CONFIG_WARDEN_BAN,
 
@@ -271,6 +276,7 @@ enum WorldConfigs
     CONFIG_ENABLE_HIDDEN_RATING_LOWER_LOSS,
 
     CONFIG_ENABLE_FAKE_WHO_ON_ARENA,
+    CONFIG_ENABLE_FAKE_WHO_IN_GUILD,
 
     CONFIG_VMSS_MAPFREEMETHOD,
     CONFIG_VMSS_FREEZECHECKPERIOD,
@@ -283,6 +289,8 @@ enum WorldConfigs
 
     CONFIG_SESSION_UPDATE_MAX_TIME,
     CONFIG_SESSION_UPDATE_OVERTIME_METHOD,
+    CONFIG_SESSION_UPDATE_VERBOSE_LOG,
+    CONFIG_SESSION_UPDATE_IDLE_KICK,
 
     CONFIG_KICK_PLAYER_ON_BAD_PACKET,
 
@@ -294,9 +302,11 @@ enum WorldConfigs
     CONFIG_COMBAT_ACTIVE_IN_INSTANCES,
     CONFIG_COMBAT_ACTIVE_FOR_PLAYERS_ONLY,
 
+    CONFIG_WAYPOINT_MOVEMENT_PATHFINDING_ON_CONTINENTS,
+    CONFIG_WAYPOINT_MOVEMENT_PATHFINDING_IN_INSTANCES,
+
     CONFIG_TARGET_POS_RECALCULATION_RANGE,
     CONFIG_TARGET_POS_RECHECK_TIMER,
-
 
     CONFIG_PRIVATE_CHANNEL_LIMIT,
 
@@ -307,6 +317,8 @@ enum WorldConfigs
     CONFIG_COREBALANCER_PLAYABLE_DIFF,
     CONFIG_COREBALANCER_INTERVAL,
     CONFIG_COREBALANCER_VISIBILITY_PENALTY,
+
+    CONFIG_CREATURE_RESTORE_STATE,
 
     CONFIG_VALUE_COUNT
 };
@@ -488,6 +500,8 @@ enum CumulateMapDiff
     DIFF_MAX_CUMULATIVE_INFO     = 11
 };
 
+typedef ACE_Atomic_Op<ACE_Thread_Mutex, uint32> atomic_uint;
+
 struct MapUpdateDiffInfo
 {
 
@@ -501,7 +515,6 @@ struct MapUpdateDiffInfo
 
     void ClearDiffInfo()
     {
-        InitializeMapData();
         for (CumulativeDiffMap::iterator itr = _cumulativeDiffInfo.begin(); itr != _cumulativeDiffInfo.end(); ++itr)
         {
             for (int i = DIFF_SESSION_UPDATE; i < DIFF_MAX_CUMULATIVE_INFO; i++)
@@ -516,7 +529,6 @@ struct MapUpdateDiffInfo
 
     void PrintCumulativeMapUpdateDiff();
 
-    typedef ACE_Atomic_Op<ACE_Thread_Mutex, uint32> atomic_uint;
     typedef std::map<uint32, atomic_uint*> CumulativeDiffMap;
 
     CumulativeDiffMap _cumulativeDiffInfo;
@@ -533,6 +545,19 @@ enum CBTresholds
     CB_TRESHOLD_MAX,
 };
 
+
+inline
+bool operator>(FeaturePriority rhs, CBTresholds lhs)
+{
+    return static_cast<int>(rhs) > static_cast<int>(lhs);
+}
+
+inline
+bool operator<=(FeaturePriority rhs, CBTresholds lhs)
+{
+    return !(rhs > lhs);
+}
+
 class CoreBalancer
 {
     public:
@@ -547,12 +572,13 @@ class CoreBalancer
 
     private:
         uint32 _diffSum;
+        uint32 _diffCount;
         CBTresholds _treshold;
         TimeTrackerSmall _balanceTimer;
 };
 
 /// The World
-class World
+class HELLGROUND_EXPORT World
 {
     friend class ACE_Singleton<World, ACE_Null_Mutex>;
 
@@ -570,11 +596,17 @@ class World
         void AddSession(WorldSession *s);
         bool RemoveSession(uint32 id);
         void AddSessionToRemove(SessionMap::iterator itr) { removedSessions.push_back(itr); }
+
         /// Get the number of current active sessions
         void UpdateMaxSessionCounters();
         uint32 GetActiveAndQueuedSessionCount() const { return m_sessions.size(); }
         uint32 GetActiveSessionCount() const { return m_sessions.size() - m_QueuedPlayer.size(); }
         uint32 GetQueuedSessionCount() const { return m_QueuedPlayer.size(); }
+
+        uint32 GetLoggedInCharsCount(TeamId team);
+        uint32 ModifyLoggedInCharsCount(TeamId team, int val);
+        void SetLoggedInCharsCount(TeamId team, uint32 val);
+
         /// Get the maximum number of parallel sessions on the server since last reboot
         uint32 GetMaxQueuedSessionCount() const { return m_maxQueuedSessionCount; }
         uint32 GetMaxActiveSessionCount() const { return m_maxActiveSessionCount; }
@@ -645,7 +677,7 @@ class World
         void SendGuildAnnounce(uint32 team, ...);
 
         void SendWorldText(int32 string_id, ...);
-        void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, int32 string_id, ...);
+        void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, uint32 preventFlags, int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
         void SendGMText(int32 string_id, ...);
         void SendGlobalMessage(WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);
@@ -656,7 +688,11 @@ class World
 
         /// Are we in the middle of a shutdown?
         bool IsShutdowning() const { return m_ShutdownTimer > 0; }
-        void ShutdownServ(uint32 time, uint32 options, uint8 exitcode);
+        uint32 GetShutdownMask() const { return m_ShutdownMask; }
+        uint32 GetShutdownTimer() const { return m_ShutdownTimer; }
+        char const* GetShutdownReason() { return m_ShutdownReason.c_str(); }
+
+        void ShutdownServ(uint32 time, uint32 options, uint8 exitcode, char const* = "no reason");
         void ShutdownCancel();
         void ShutdownMsg(bool show = false, Player* player = NULL);
         static uint8 GetExitCode() { return m_ExitCode; }
@@ -705,15 +741,7 @@ class World
 
         bool IsAllowedMap(uint32 mapid) { return m_forbiddenMapIds.count(mapid) == 0 ;}
 
-        static float GetMaxVisibleDistanceForObject()       { return m_MaxVisibleDistanceForObject; }
-
-        static float GetMaxVisibleDistanceInFlight()        { return m_MaxVisibleDistanceInFlight;    }
-        static float GetVisibleUnitGreyDistance()           { return m_VisibleUnitGreyDistance;       }
         static float GetVisibleObjectGreyDistance()         { return m_VisibleObjectGreyDistance;     }
-
-        static int32 GetVisibilityNotifyPeriodOnContinents(){ return m_visibility_notify_periodOnContinents; }
-        static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances;  }
-        static int32 GetVisibilityNotifyPeriodInBGArenas()  { return m_visibility_notify_periodInBGArenas;   }
 
         static int32 GetActiveObjectUpdateDistanceOnContinents() { return m_activeObjectUpdateDistanceOnContinents; }
         static int32 GetActiveObjectUpdateDistanceInInstances() { return m_activeObjectUpdateDistanceInInstances; }
@@ -740,8 +768,6 @@ class World
         void SetScriptsVersion(char const* version) { m_ScriptsVersion = version ? version : "unknown scripting library"; }
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
-        uint32 RecordSessionTimeDiff(const char *text, ...);
-        uint32 RecordTimeDiff(const char * text, ...);
         void addDisconnectTime(std::pair<uint32,time_t> tPair){ m_disconnects.insert(tPair); }
 
         void CleanupDeletedChars();
@@ -759,7 +785,7 @@ class World
             if (reason)
                 m_massMuteReason = reason;
             else
-                m_massMuteReason = "";
+                m_massMuteReason = "no-reason";
         }
 
         uint64 GetMassMuteTime() { return m_massMuteTime; }
@@ -794,6 +820,7 @@ class World
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;
+        std::string m_ShutdownReason;
 
         uint32 sessionThreads;
 
@@ -808,9 +835,8 @@ class World
         uint32 mail_timer;
         uint32 mail_timer_expires;
         uint32 m_updateTime, m_updateTimeSum, m_avgUpdateTime, m_curAvgUpdateTime;
+
         uint32 m_updateTimeCount;
-        uint32 m_currentTime;
-        uint32 m_currentSessionTime;
 
         MAP_UPDATE_DIFF(MapUpdateDiffInfo m_mapUpdateDiffInfo)
         uint64 m_serverUpdateTimeSum, m_serverUpdateTimeCount;
@@ -842,17 +868,13 @@ class World
         uint64 m_massMuteTime;
         std::string m_massMuteReason;
 
-        static float m_MaxVisibleDistanceForObject;
-        static float m_MaxVisibleDistanceInFlight;
-        static float m_VisibleUnitGreyDistance;
         static float m_VisibleObjectGreyDistance;
-
-        static int32 m_visibility_notify_periodOnContinents;
-        static int32 m_visibility_notify_periodInInstances;
-        static int32 m_visibility_notify_periodInBGArenas;
 
         static int32 m_activeObjectUpdateDistanceOnContinents;
         static int32 m_activeObjectUpdateDistanceInInstances;
+
+        static uint32 m_relocationLowerLimitSq;
+        static uint32 m_relocationAINotifyDelay;
 
         // CLI command holder to be thread safe
         ACE_Based::LockedQueue<CliCommandHolder*, ACE_Thread_Mutex> cliCmdQueue;
@@ -860,10 +882,14 @@ class World
         // next daily quests reset time
         time_t m_NextDailyQuestReset;
 
-        //Player Queue
+        // Player Queue
         Queue m_QueuedPlayer;
 
-        //sessions that are added async
+        // characters count
+        atomic_uint loggedInAlliances;
+        atomic_uint loggedInHordes;
+
+        // sessions that are added async
         void AddSession_(WorldSession* s);
         ACE_Based::LockedQueue<WorldSession*, ACE_Thread_Mutex> addSessQueue;
 

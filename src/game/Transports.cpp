@@ -65,14 +65,14 @@ void MapManager::LoadTransports()
 
         if (!goinfo)
         {
-            sLog.outErrorDb("Transport ID:%u, Name: %s, will not be loaded, gameobject_template missing", entry, name.c_str());
+            sLog.outLog(LOG_DB_ERR, "Transport ID:%u, Name: %s, will not be loaded, gameobject_template missing", entry, name.c_str());
             delete t;
             continue;
         }
 
         if (goinfo->type != GAMEOBJECT_TYPE_MO_TRANSPORT)
         {
-            sLog.outErrorDb("Transport ID:%u, Name: %s, will not be loaded, gameobject_template type wrong", entry, name.c_str());
+            sLog.outLog(LOG_DB_ERR, "Transport ID:%u, Name: %s, will not be loaded, gameobject_template type wrong", entry, name.c_str());
             delete t;
             continue;
         }
@@ -84,7 +84,7 @@ void MapManager::LoadTransports()
         if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
             // skip transports with empty waypoints list
         {
-            sLog.outErrorDb("Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.",goinfo->moTransport.taxiPathId);
+            sLog.outLog(LOG_DB_ERR, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.",goinfo->moTransport.taxiPathId);
             delete t;
             continue;
         }
@@ -133,7 +133,7 @@ void MapManager::LoadTransports()
             uint32 guid  = fields[0].GetUInt32();
             uint32 entry = fields[1].GetUInt32();
             std::string name = fields[2].GetCppString();
-            sLog.outErrorDb("Transport %u '%s' have record (GUID: %u) in `gameobject`. Transports DON'T must have any records in `gameobject` or its behavior will be unpredictable/bugged.",entry,name.c_str(),guid);
+            sLog.outLog(LOG_DB_ERR, "Transport %u '%s' have record (GUID: %u) in `gameobject`. Transports DON'T must have any records in `gameobject` or its behavior will be unpredictable/bugged.",entry,name.c_str(),guid);
         }
         while (result->NextRow());
     }
@@ -153,7 +153,7 @@ bool Transport::Create(uint32 guidlow, uint32 mapid, float x, float y, float z, 
 
     if (!IsPositionValid())
     {
-        sLog.outError("ERROR: Transport (GUID: %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: Transport (GUID: %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
             guidlow,x,y);
         return false;
     }
@@ -164,7 +164,7 @@ bool Transport::Create(uint32 guidlow, uint32 mapid, float x, float y, float z, 
 
     if (!goinfo)
     {
-        sLog.outErrorDb("Transport not created: entry in `gameobject_template` not found, guidlow: %u map: %u  (X: %f Y: %f Z: %f) ang: %f",guidlow, mapid, x, y, z, ang);
+        sLog.outLog(LOG_DB_ERR, "Transport not created: entry in `gameobject_template` not found, guidlow: %u map: %u  (X: %f Y: %f Z: %f) ang: %f",guidlow, mapid, x, y, z, ang);
         return false;
     }
 
@@ -468,7 +468,7 @@ void Transport::TeleportTransport(uint32 newMapid, float x, float y, float z)
 
         //WorldPacket data(SMSG_811, 4);
         //data << uint32(0);
-        //plr->GetSession()->SendPacket(&data);
+        //plr->BroadcastPacketToSelf(&data);
     }
 
     Map* newMap = sMapMgr.CreateMap(newMapid, this);
@@ -591,7 +591,7 @@ void Transport::UpdateForMap(Map const* targetMap)
                 BuildCreateUpdateBlockForPlayer(&transData, itr->getSource());
                 WorldPacket packet;
                 transData.BuildPacket(&packet, true);
-                itr->getSource()->SendDirectMessage(&packet);
+                itr->getSource()->SendPacketToSelf(&packet);
             }
         }
     }
@@ -604,6 +604,6 @@ void Transport::UpdateForMap(Map const* targetMap)
 
         for (Map::PlayerList::const_iterator itr = pl.begin(); itr != pl.end(); ++itr)
             if (this != itr->getSource()->GetTransport())
-                itr->getSource()->SendDirectMessage(&out_packet);
+                itr->getSource()->SendPacketToSelf(&out_packet);
     }
 }

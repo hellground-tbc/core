@@ -249,7 +249,7 @@ typedef std::set<uint64> GuardianPetList;
 struct EnchantDuration
 {
     EnchantDuration() : item(NULL), slot(MAX_ENCHANTMENT_SLOT), leftduration(0) {};
-    EnchantDuration(Item * _item, EnchantmentSlot _slot, uint32 _leftduration) : item(_item), slot(_slot), leftduration(_leftduration) { assert(item); };
+    EnchantDuration(Item * _item, EnchantmentSlot _slot, uint32 _leftduration) : item(_item), slot(_slot), leftduration(_leftduration) { ASSERT(item); };
 
     Item * item;
     EnchantmentSlot slot;
@@ -540,10 +540,11 @@ enum PlayerExtraFlags
 // 2^n values
 enum AtLoginFlags
 {
-    AT_LOGIN_NONE          = 0,
-    AT_LOGIN_RENAME        = 1,
-    AT_LOGIN_RESET_SPELLS  = 2,
-    AT_LOGIN_RESET_TALENTS = 4
+    AT_LOGIN_NONE           = 0x0,
+    AT_LOGIN_RENAME         = 0x1,
+    AT_LOGIN_RESET_SPELLS   = 0x2,
+    AT_LOGIN_RESET_TALENTS  = 0x4,
+    AT_LOGIN_DISPLAY_CHANGE = 0x8
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
@@ -849,7 +850,7 @@ struct AccessRequirement
     std::string missingAuraText;
 };
 
-class HELLGROUND_DLL_SPEC PlayerTaxi
+class HELLGROUND_IMPORT_EXPORT PlayerTaxi
 {
     public:
         PlayerTaxi();
@@ -864,6 +865,7 @@ class HELLGROUND_DLL_SPEC PlayerTaxi
             uint32 submask = 1<<((nodeidx-1)%32);
             return (m_taximask[field] & submask) == submask;
         }
+
         bool SetTaximaskNode(uint32 nodeidx)
         {
             uint8  field   = uint8((nodeidx - 1) / 32);
@@ -876,6 +878,16 @@ class HELLGROUND_DLL_SPEC PlayerTaxi
             else
                 return false;
         }
+
+        std::string GetTaxiMaskString()
+        {
+            std::ostringstream ss;
+            for(int i = 0; i < TaxiMaskSize; ++i)
+                ss << m_taximask[i] << " ";
+
+            return ss.str();
+        }
+
         void AppendTaximaskTo(ByteBuffer& data,bool all);
 
         // Destinations
@@ -901,7 +913,7 @@ class HELLGROUND_DLL_SPEC PlayerTaxi
         std::deque<uint32> m_TaxiDestinations;
 };
 
-class HELLGROUND_DLL_SPEC Player : public Unit
+class HELLGROUND_EXPORT Player : public Unit
 {
     friend class WorldSession;
     friend void Item::AddToUpdateQueueOf(Player *player);
@@ -920,7 +932,6 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         void AddToWorld();
         void RemoveFromWorld();
 
-        void SetViewport(uint64 guid, bool movable);
         void StopCastingCharm() { Uncharm(); }
         void StopCastingBindSight();
         WorldObject* GetFarsightTarget() const;
@@ -971,8 +982,10 @@ class HELLGROUND_DLL_SPEC Player : public Unit
 
         bool ToggleAFK();
         bool ToggleDND();
+
         bool isAFK() const { return HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_AFK); };
         bool isDND() const { return HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_DND); };
+
         uint8 chatTag() const;
         std::string afkMsg;
         std::string dndMsg;
@@ -1513,11 +1526,11 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         bool isRessurectRequested() const { return m_resurrectGUID != 0; }
         void ResurectUsingRequestData();
 
-        int getCinematic()
+        bool getCinematic()
         {
             return m_cinematic;
         }
-        void setCinematic(int cine)
+        void setCinematic(bool cine)
         {
             m_cinematic = cine;
         }
@@ -1681,10 +1694,6 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         bool SetPosition(float x, float y, float z, float orientation, bool teleport = false);
         void UpdateUnderwaterState(Map * m, float x, float y, float z);
 
-        void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true);// overwrite Object::SendMessageToSet
-        void SendMessageToSetInRange(WorldPacket *data, float fist, bool self, bool to_possessor = true);// overwrite Object::SendMessageToSetInRange
-        void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only);
-
         static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true);
         static void DeleteCharacterInfoFromDB(uint32 playerGUIDLow);
 
@@ -1840,7 +1849,8 @@ class HELLGROUND_DLL_SPEC Player : public Unit
 
         void SendInitWorldStates(bool force = false, uint32 forceZoneId = 0);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
-        void SendDirectMessage(WorldPacket *data);
+
+        void SendPacketToSelf(WorldPacket*);
 
         void SendAuraDurationsForTarget(Unit* target);
 
@@ -2040,7 +2050,12 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         void HandleFallDamage(MovementInfo& movementInfo);
         void HandleFallUnderMap(float);
 
+        void SetMover(Unit* target) { m_mover = target ? target : this; }
+        Unit* GetMover() const { return m_mover; }
+        bool IsSelfMover() const { return m_mover == this; }// normal case for player not controlling other unit
         void SetClientControl(Unit* target, uint8 allowMove);
+
+        Unit* m_mover;
 
         uint64 GetFarSight() const { return GetUInt64Value(PLAYER_FARSIGHT); }
         void SetFarSight(uint64 guid) { SetUInt64Value(PLAYER_FARSIGHT, guid); }
@@ -2058,13 +2073,10 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         uint32 GetSaveTimer() const { return m_nextSave; }
         void   SetSaveTimer(uint32 timer) { m_nextSave = timer; }
 
+        void SaveRecallPosition(TaxiNodesEntry const* = NULL);
+
         // Recall position
-        uint32 m_recallMap;
-        float  m_recallX;
-        float  m_recallY;
-        float  m_recallZ;
-        float  m_recallO;
-        void   SaveRecallPosition();
+        WorldLocation _recallPosition;
 
         // Homebind coordinates
         uint32 m_homebindMapId;
@@ -2080,19 +2092,17 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         typedef std::set<uint64> ClientGUIDs;
         ClientGUIDs m_clientGUIDs;
 
-        bool HaveAtClient(WorldObject const* u) const { return u==this || m_clientGUIDs.find(u->GetGUID())!=m_clientGUIDs.end(); }
+        bool HaveAtClient(WorldObject const* u) const { return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end(); }
 
-        bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool canSeeOrDetect(Unit const* u, WorldObject const*, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsVisibleInGridForPlayer(Player const* pl) const;
         bool IsVisibleGloballyfor (Player* pl) const;
 
-        void UpdateVisibilityOf(WorldObject* target);
         void SendInitialVisiblePackets(Unit* target);
-        void UpdateObjectVisibility(bool forced = true);
-        void UpdateVisibilityForPlayer();
 
         template<class T>
-            void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
+        void UpdateVisibilityOf(WorldObject const*, T*, UpdateData&, std::set<WorldObject*>&);
+        void UpdateVisibilityOf(WorldObject const*, WorldObject*);
 
         // Stealth detection system
         uint32 m_DetectInvTimer;
@@ -2197,6 +2207,8 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         uint32 GetCachedArea() const { return m_areaUpdateId; }
 
         void InterruptTaxiFlying();
+
+        Camera& GetCamera() { return m_camera; }
 
     protected:
 
@@ -2343,7 +2355,7 @@ class HELLGROUND_DLL_SPEC Player : public Unit
 
         bool m_dontMove;
 
-        int m_cinematic;
+        bool m_cinematic;
         uint32 m_watchingCinematicId;
 
         Player *pTrader;
@@ -2464,7 +2476,12 @@ class HELLGROUND_DLL_SPEC Player : public Unit
         GlobalCooldownMgr m_GlobalCooldownMgr;
 
         ReputationMgr  m_reputationMgr;
+
+        Camera m_camera;
 };
+
+typedef std::set<Player*> PlayerSet;
+typedef std::list<Player*> PlayerList;
 
 void AddItemsSetItem(Player*player,Item *item);
 void RemoveItemsSetItem(Player*player,ItemPrototype const *proto);

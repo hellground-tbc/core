@@ -49,7 +49,6 @@ InstanceSaveManager::InstanceSaveManager() : lock_instLists(false)
 
 InstanceSaveManager::~InstanceSaveManager()
 {
-    UnbindBeforeDelete();
 }
 
 void InstanceSaveManager::UnbindBeforeDelete()
@@ -87,7 +86,7 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
     const MapEntry* entry = sMapStore.LookupEntry(mapId);
     if (!entry || instanceId == 0)
     {
-        sLog.outError("InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d!", mapId, instanceId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d!", mapId, instanceId);
         return NULL;
     }
 
@@ -108,7 +107,8 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
     sLog.outDebug("InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d", mapId, instanceId);
 
     save = new InstanceSave(mapId, instanceId, difficulty, resetTime, canReset);
-    if (!load) save->SaveToDB();
+    if (!load)
+        save->SaveToDB();
 
     m_instanceSaveById[instanceId] = save;
     return save;
@@ -156,7 +156,7 @@ InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, uint8 difficulty,
 InstanceSave::~InstanceSave()
 {
     // the players and groups must be unbound before deleting the save
-    assert(m_playerList.empty() && m_groupList.empty());
+    ASSERT(m_playerList.empty() && m_groupList.empty());
 }
 
 /*
@@ -170,7 +170,7 @@ void InstanceSave::SaveToDB()
     Map *map = sMapMgr.FindMap(GetMapId(), m_instanceid);
     if (map)
     {
-        assert(map->IsDungeon());
+        ASSERT(map->IsDungeon());
         if (InstanceData *iData = ((InstanceMap*)map)->GetInstanceData())
         {
             data = iData->GetSaveData();
@@ -179,7 +179,15 @@ void InstanceSave::SaveToDB()
         }
     }
 
-    RealmDataDatabase.PExecute("INSERT INTO instance VALUES ('%u', '%u', '"UI64FMTD"', '%u', '%s')", m_instanceid, GetMapId(), (uint64)GetResetTimeForDB(), GetDifficulty(), data.c_str());
+    static SqlStatementID insertInstance;
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(insertInstance, "INSERT INTO instance VALUES (?, ?, ?, ?, ?)");
+    stmt.addUInt32(m_instanceid);
+    stmt.addUInt32(GetMapId());
+    stmt.addUInt64(uint64(GetResetTimeForDB()));
+    stmt.addUInt8(GetDifficulty());
+    stmt.addString(data);
+    stmt.Execute();
 }
 
 time_t InstanceSave::GetResetTimeForDB()
@@ -225,7 +233,7 @@ bool InstanceSave::UnloadIfEmpty()
 void InstanceSaveManager::_DelHelper(DatabaseType &db, const char *fields, const char *table, const char *queryTail,...)
 {
     Tokens fieldTokens = StrSplit(fields, ", ");
-    assert(fieldTokens.size() != 0);
+    ASSERT(fieldTokens.size() != 0);
 
     va_list ap;
     char szQueryTail [MAX_QUERY_LEN];
@@ -398,7 +406,7 @@ void InstanceSaveManager::LoadResetTimes()
             uint32 mapid = fields[0].GetUInt32();
             if (!ObjectMgr::GetInstanceTemplate(mapid))
             {
-                sLog.outError("InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
+                sLog.outLog(LOG_DEFAULT, "ERROR: InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
                 RealmDataDatabase.DirectPExecute("DELETE FROM instance_reset WHERE mapid = '%u'", mapid);
                 continue;
             }
@@ -429,7 +437,7 @@ void InstanceSaveManager::LoadResetTimes()
             continue;
 
         uint32 period = temp->reset_delay * DAY;
-        assert(period != 0);
+        ASSERT(period != 0);
         time_t t = m_resetTimeByMapId[temp->map];
         if (!t)
         {
@@ -475,7 +483,7 @@ void InstanceSaveManager::ScheduleReset(bool add, time_t time, InstResetEvent ev
             for (itr = m_resetTimeQueue.begin(); itr != m_resetTimeQueue.end(); ++itr)
                 if (itr->second == event) { m_resetTimeQueue.erase(itr); return; }
             if (itr == m_resetTimeQueue.end())
-                sLog.outError("InstanceSaveManager::ScheduleReset: cannot cancel the reset, the event(%d,%d,%d) was not found!", event.type, event.mapid, event.instanceId);
+                sLog.outLog(LOG_DEFAULT, "ERROR: InstanceSaveManager::ScheduleReset: cannot cancel the reset, the event(%d,%d,%d) was not found!", event.type, event.mapid, event.instanceId);
         }
     }
 }
@@ -527,6 +535,8 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
         group->UnbindInstance(itr->second->GetMapId(), itr->second->GetDifficulty(), true);
     }
 
+    RealmDataDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceid = '%u'", itr->second->GetInstanceId());
+
     delete itr->second;
     m_instanceSaveById.erase(itr++);
 
@@ -546,7 +556,7 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
     {
         const MapEntry *mapEntry = sMapStore.LookupEntry(mapid);
         if (mapEntry->IsRaid())
-            sLog.outError("Called _ResetInstance for mapid: %u, canreset: %B", mapid, itr->second->CanReset());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Called _ResetInstance for mapid: %u, canreset: %B", mapid, itr->second->CanReset());
 
         _ResetSave(itr);
     }
@@ -576,7 +586,7 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLe
         InstanceTemplate const* temp = sObjectMgr.GetInstanceTemplate(mapid);
         if (!temp || !temp->reset_delay)
         {
-            sLog.outError("InstanceSaveManager::ResetOrWarnAll: no instance template or reset delay for map %d", mapid);
+            sLog.outLog(LOG_DEFAULT, "ERROR: InstanceSaveManager::ResetOrWarnAll: no instance template or reset delay for map %d", mapid);
             return;
         }
 

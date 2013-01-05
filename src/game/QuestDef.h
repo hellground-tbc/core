@@ -193,7 +193,7 @@ class Quest
         uint32 GetSrcItemId() const { return SrcItemId; }
         uint32 GetSrcItemCount() const { return SrcItemCount; }
         uint32 GetSrcSpell() const { return SrcSpell; }
-        std::string GetTitle() const { return Title; }
+        std::string GetName() const { return Name; }
         std::string GetDetails() const { return Details; }
         std::string GetObjectives() const { return Objectives; }
         std::string GetOfferRewardText() const { return OfferRewardText; }
@@ -284,7 +284,7 @@ class Quest
         uint32 SrcItemId;
         uint32 SrcItemCount;
         uint32 SrcSpell;
-        std::string Title;
+        std::string Name;
         std::string Details;
         std::string Objectives;
         std::string OfferRewardText;

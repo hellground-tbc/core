@@ -174,60 +174,7 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\tbb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
-      <WarningLevel>Level3</WarningLevel>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <CompileAs>Default</CompileAs>
-    </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Culture>0x0409</Culture>
-    </ResourceCompile>
-    <Link>
-      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>Detour.lib;ACE.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(TargetPath)</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>VCOMP.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
-      <GenerateMapFile>false</GenerateMapFile>
-      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
-      <SubSystem>Console</SubSystem>
-      <LargeAddressAware>true</LargeAddressAware>
-      <LinkTimeCodeGeneration>
-      </LinkTimeCodeGeneration>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
-    </Link>
-    <PostBuildEvent>
-      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll $(OutDir)..
-if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.dist</Command>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">
-    <Midl>
-      <TypeLibraryName>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
-    </Midl>
-    <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -249,7 +196,7 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>Detour.lib;ACE.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Detour.lib;ACE.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -268,9 +215,63 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll $(OutDir)..
+      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll ..\..\bin\$(Platform)_$(Configuration)\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.dist</Command>
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityCore.conf.dist</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">
+    <Midl>
+      <TypeLibraryName>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Detour.lib;ACE.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>VCOMP.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+      <SubSystem>Console</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>
+      </LinkTimeCodeGeneration>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy ..\..\dep\lib\precompiled\Release\*.dll ..\..\bin\$(Platform)_$(Configuration)
+if exist $(TargetPath) move $(TargetPath) $(OutDir)..
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">
@@ -281,7 +282,7 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -304,7 +305,7 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>Detour.lib;ACEd.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Detour.lib;ACEd.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -323,9 +324,9 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\dep\lib\precompiled\Debug\*.dll $(OutDir)..
+      <Command>copy ..\..\dep\lib\precompiled\Debug\*.dll ..\..\bin\$(Platform)_$(Configuration)\lib\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.dist</Command>
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -336,7 +337,7 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\shared\Database;..\..\src\game\vmap;..\..\dep\ACE_wrappers;..\..\src\game\;..\..\dep\tbb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;_DEBUG;TRINITY_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -356,7 +357,7 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>Detour.lib;ACEd.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;msvcrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Detour.lib;ACEd.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <Version>
       </Version>
@@ -375,9 +376,9 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.di
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\dep\lib\precompiled\Debug\*.dll $(OutDir)..
+      <Command>copy ..\..\dep\lib\precompiled\Debug\*.dll ..\..\bin\$(Platform)_$(Configuration)\lib\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist $(OutDir)..\TrinityCore.conf.dist</Command>
+copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -581,14 +582,8 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\..\Authors" />
-    <None Include="..\..\ChangeLog" />
-    <None Include="..\..\Copying" />
-    <None Include="..\..\Install" />
-    <None Include="..\..\News" />
     <None Include="..\..\Readme" />
     <None Include="..\..\src\trinitycore\trinitycore.conf.dist" />
-    <None Include="..\..\Thanks" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\trinitycore\CliRunnable.cpp" />

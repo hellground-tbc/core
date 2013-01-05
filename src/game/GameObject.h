@@ -434,7 +434,7 @@ class Unit;
 // 5 sec for bobber catch
 #define FISHING_BOBBER_READY_TIME 5
 
-class HELLGROUND_DLL_SPEC GameObject : public WorldObject
+class HELLGROUND_IMPORT_EXPORT GameObject : public WorldObject
 {
     public:
         explicit GameObject();
@@ -630,7 +630,7 @@ class HELLGROUND_DLL_SPEC GameObject : public WorldObject
 
         void TriggeringLinkedGameObject(uint32 trapEntry, Unit* target);
 
-        bool isVisibleForInState(Player const* u, bool inVisibleList) const;
+        bool isVisibleForInState(Player const*, WorldObject const*, bool) const;
         bool canDetectTrap(Player const* u, float distance) const;
 
         GameObject* LookupFishingHoleAround(float range);

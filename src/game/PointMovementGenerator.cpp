@@ -19,7 +19,7 @@
  */
 
 #include "PointMovementGenerator.h"
-#include "Errors.h"
+#include "Log.h"
 #include "Creature.h"
 #include "Player.h"
 #include "CreatureAI.h"
@@ -47,6 +47,8 @@ void PointMovementGenerator<UNIT>::Initialize(UNIT &unit)
 
     init.MoveTo(_x, _y, _z, _generatePath);
     init.Launch();
+
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = false;
 }
 
 template<class UNIT>
@@ -65,6 +67,9 @@ void PointMovementGenerator<UNIT>::Reset(UNIT &unit)
 template<class UNIT>
 bool PointMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
 {
+    if (static_cast<MovementGenerator*>(this)->_recalculateTravel)
+        Initialize(unit);
+
     return !unit.IsStopped();
 }
 

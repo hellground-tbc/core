@@ -129,7 +129,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
     // TODO: what to do in such cases? problem is in input data (all points are at same coords)
     if (spline.length() < minimal_duration)
     {
-        sLog.outError("MoveSpline::init_spline: zero length spline, wrong input data?");
+        sLog.outLog(LOG_DEFAULT, "ERROR: MoveSpline::init_spline: zero length spline, wrong input data?");
         spline.set_length(spline.last(), spline.isCyclic() ? 1000 : 1);
     }
     point_Idx = spline.first();
@@ -158,7 +158,7 @@ bool MoveSplineInitArgs::Validate() const
 #define CHECK(exp) \
     if (!(exp))\
     {\
-        sLog.outError("MoveSplineInitArgs::Validate: expression '%s' failed", #exp);\
+        sLog.outLog(LOG_DEFAULT, "ERROR: MoveSplineInitArgs::Validate: expression '%s' failed", #exp);\
         return false;\
     }
     CHECK(path.size() > 1);
@@ -184,7 +184,7 @@ bool MoveSplineInitArgs::_checkPathBounds() const
             offset = path[i] - middle;
             if (fabs(offset.x) >= MAX_OFFSET || fabs(offset.y) >= MAX_OFFSET || fabs(offset.z) >= MAX_OFFSET)
             {
-                sLog.outError("MoveSplineInitArgs::_checkPathBounds check failed");
+                sLog.outLog(LOG_DEFAULT, "ERROR: MoveSplineInitArgs::_checkPathBounds check failed");
                 return false;
             }
         }

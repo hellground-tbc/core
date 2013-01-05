@@ -3,7 +3,7 @@ file(GLOB_RECURSE EXECUTABLE_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.h
 
 if(WIN32)
   list(APPEND EXECUTABLE_SRCS
-    realmd.rc
+    TrinityRealm.rc
   )
 endif()
 
@@ -32,14 +32,13 @@ target_link_libraries(${EXECUTABLE_NAME}
   shared
   framework
   ${ACE_LIBRARIES}
+  ${OPENSSL_LIBRARIES}
 )
 
 if(WIN32)
   target_link_libraries(${EXECUTABLE_NAME}
     optimized ${MYSQL_LIBRARY}
-    optimized ${OPENSSL_LIBRARIES}
     debug ${MYSQL_DEBUG_LIBRARY}
-    debug ${OPENSSL_DEBUG_LIBRARIES}
   )
   if(PLATFORM MATCHES X86)
     target_link_libraries(${EXECUTABLE_NAME})
@@ -49,9 +48,8 @@ endif()
 if(UNIX)
   target_link_libraries(${EXECUTABLE_NAME}
     ${MYSQL_LIBRARY}
-    ${OPENSSL_LIBRARIES}
+    ${Boost_REGEX_LIBRARY}
     ${OPENSSL_EXTRA_LIBRARIES}
-    /usr/lib/libboost_regex-mt.so
   )
 endif()
 

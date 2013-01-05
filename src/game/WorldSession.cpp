@@ -22,6 +22,8 @@
     \ingroup u2w
 */
 
+#include <sstream>
+
 #include "WorldSocket.h"                                    // must be first to make ACE happy with ACE includes in it
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -91,8 +93,12 @@ LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mu
 _player(NULL), m_Socket(sock), m_permissions(permissions), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
-m_kickTimer(MINUTE * 15 * 1000), m_accFlags(accFlags), m_Warden(NULL)
+m_accFlags(accFlags), m_Warden(NULL)
 {
+    _mailSendTimer.Reset(5*IN_MILISECONDS);
+
+    _kickTimer.Reset(sWorld.getConfig(CONFIG_SESSION_UPDATE_IDLE_KICK));
+
     if (sock)
     {
         m_Address = sock->GetRemoteAddress();
@@ -141,7 +147,7 @@ WorldSession::~WorldSession()
 
 void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
 {
-    sLog.outError("Client (account %u) send packet %s (%u) with size %u but expected %u (attempt crash server?), skipped",
+    sLog.outLog(LOG_DEFAULT, "ERROR: Client (account %u) send packet %s (%u) with size %u but expected %u (attempt crash server?), skipped",
         GetAccountId(),LookupOpcodeName(packet.GetOpcode()),packet.GetOpcode(),packet.size(),size);
 }
 
@@ -151,23 +157,42 @@ char const* WorldSession::GetPlayerName() const
     return GetPlayer() ? GetPlayer()->GetName() : "<none>";
 }
 
-void WorldSession::SaveOpcodesDisabled()
+void WorldSession::SaveOpcodesDisableFlags()
 {
-    static SqlStatementID updateOpcodesDisabled;
-    SqlStatement stmt = AccountsDatabase.CreateStatement(updateOpcodesDisabled, "UPDATE account SET opcodes_disabled = ? WHERE account_id = ?");
+    SqlStatementID saveOpcodesDisabled;
+    SqlStatement stmt = AccountsDatabase.CreateStatement(saveOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?");
     stmt.PExecute(m_opcodesDisabled, GetAccountId());
 }
 
-void WorldSession::AddOpcodeDisableFlag(uint16 flag)
+void WorldSession::SetOpcodeDisableFlag(uint16 flag)
 {
     m_opcodesDisabled |= flag;
-    SaveOpcodesDisabled();
+    SaveOpcodesDisableFlags();
 }
 
 void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
 {
     m_opcodesDisabled &= ~flag;
-    SaveOpcodesDisabled();
+    SaveOpcodesDisableFlags();
+}
+
+void WorldSession::SaveAccountFlags()
+{
+    SqlStatementID saveAccountFlags;
+    SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE id = ?");
+    stmt.PExecute(m_accFlags, GetAccountId());
+}
+
+void WorldSession::AddAccountFlag(AccountFlags flag)
+{
+    m_accFlags |= flag;
+    SaveAccountFlags();
+}
+
+void WorldSession::RemoveAccountFlag(AccountFlags flag)
+{
+    m_accFlags &= ~flag;
+    SaveAccountFlags();
 }
 
 /// Send a packet to the client
@@ -222,11 +247,11 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
     if (!new_packet)
         return;
 
-    Opcodes op = Opcodes(new_packet->GetOpcode());
-    if (_opcodesCooldown.count(op))
+    OpcodesCooldown::iterator opItr = _opcodesCooldown.find(new_packet->GetOpcode());
+    if (opItr != _opcodesCooldown.end())
     {
-        if (_opcodesCooldown[op].Passed())
-            _opcodesCooldown[op].Reset();
+        if (opItr->second.Passed())
+            opItr->second.Reset();
         else
             return;
     }
@@ -250,7 +275,7 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
 
     if (packet->GetOpcode() >= NUM_MSG_TYPES)
     {
-        sLog.outError("SESSION: received non-existed opcode %s (0x%.4X)",
+        sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received non-existed opcode %s (0x%.4X)",
             LookupOpcodeName(packet->GetOpcode()),
             packet->GetOpcode());
     }
@@ -294,7 +319,7 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
                 break;
             case STATUS_NEVER:
                 if (packet->GetOpcode() != CMSG_MOVE_NOT_ACTIVE_MOVER)
-                    sLog.outError("SESSION: received not allowed opcode %s (0x%.4X)",
+                    sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received not allowed opcode %s (0x%.4X)",
                         LookupOpcodeName(packet->GetOpcode()),
                         packet->GetOpcode());
                 break;
@@ -305,20 +330,34 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
 /// Update the WorldSession (triggered by World update)
 bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 {
-    if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
+    RecordSessionTimeDiff(NULL);
+    uint32 verbose = sWorld.getConfig(CONFIG_SESSION_UPDATE_VERBOSE_LOG);
+    std::vector<VerboseLogInfo> packetOpcodeInfo;
+
+    if (updater.ProcessTimersUpdate())
     {
-        if (m_kickTimer < diff)
-            KickPlayer();
+        if (!m_inQueue && !m_playerLoading && (!_player || !_player->IsInWorld()))
+        {
+            _kickTimer.Update(diff);
+            if (_kickTimer.Passed())
+                KickPlayer();
+        }
         else
-            m_kickTimer -= diff;
+            _kickTimer.Reset(sWorld.getConfig(CONFIG_SESSION_UPDATE_IDLE_KICK));
+
+        if (GetPlayer() && GetPlayer()->IsInWorld())
+        {
+            _mailSendTimer.Update(diff);
+            if (_mailSendTimer.Passed())
+            {
+                SendExternalMails();
+                _mailSendTimer.Reset(sWorld.getConfig(CONFIG_EXTERNAL_MAIL_INTERVAL)*MINUTE*IN_MILISECONDS);
+            }
+        }
+
+        for (OpcodesCooldown::iterator itr = _opcodesCooldown.begin(); itr != _opcodesCooldown.end(); ++itr)
+            itr->second.Update(diff);
     }
-    else
-        m_kickTimer = MINUTE * 15 * 1000;
-
-    sWorld.RecordSessionTimeDiff(NULL);
-
-    for (OpcodesCooldown::iterator itr = _opcodesCooldown.begin(); itr != _opcodesCooldown.end(); ++itr)
-        itr->second.Update(diff);
 
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not proccess packets if socket already closed
@@ -328,27 +367,40 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     {
         while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
         {
-            ProcessPacket(packet);
+            if (verbose > 0)
+            {
+                RecordVerboseTimeDiff(true);
+                ProcessPacket(packet);
+                packetOpcodeInfo.push_back(VerboseLogInfo(packet->GetOpcode(), RecordVerboseTimeDiff(false)));
+            }
+            else
+                ProcessPacket(packet);
+
             delete packet;
         }
     }
     catch (...)
     {
-        sLog.outSpecial("WPE NOOB: packet doesn't contains required data, %s(%u), acc: %u", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetAccountId());
+        sLog.outLog(LOG_SPECIAL, "WPE NOOB: packet doesn't contains required data, %s(%u), acc: %u", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), GetAccountId());
         KickPlayer();
     }
 
     bool overtime = false;
-    if (sWorld.RecordSessionTimeDiff("WorldSession:Update: packets. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+    uint32 overtimediff = RecordSessionTimeDiff("[%s]: packets. Accid %u ", __FUNCTION__, GetAccountId());
+
+    if (overtimediff > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
         overtime = true;
 
-    if (m_Socket && m_Warden)
-        m_Warden->Update();
+    if (updater.ProcessWardenUpdate())
+    {
+        if (m_Socket && m_Warden)
+            m_Warden->Update();
 
-    if (sWorld.RecordSessionTimeDiff("WorldSession:Update: warden. Accid %u | ", GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
-        overtime = true;
+        if (RecordSessionTimeDiff("[%s]: warden. Accid %u ", __FUNCTION__, GetAccountId()) > sWorld.getConfig(CONFIG_SESSION_UPDATE_MAX_TIME))
+            overtime = true;
+    }
 
-    if (overtime)
+    if (overtime && GetSecurity() < SEC_MODERATOR)
     {
         switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
         {
@@ -359,10 +411,35 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             case OVERTIME_KICK:
                 KickPlayer();
             case OVERTIME_LOG:
-                sLog.outError("WorldSession::Update: session for account %u was too long", GetAccountId());
+                sLog.outLog(LOG_DEFAULT, "ERROR: %s: session for account %u was too long", __FUNCTION__, GetAccountId());
             default:
                 break;
         }
+    }
+
+    bool logverbose = false;
+    if (verbose == 1) // log only if overtime
+        if (overtime && GetSecurity() < SEC_MODERATOR && sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD) >= OVERTIME_LOG)
+            logverbose = true;
+
+    if (verbose == 2) // log if session update is logged as slow
+        if (overtimediff > sWorld.getConfig(CONFIG_MIN_LOG_SESSION_UPDATE))
+            logverbose = true;
+
+    if (logverbose)
+    {
+        std::stringstream overtimeText;
+        overtimeText << "\n#################################################\n";
+        overtimeText << "Overtime verbose info for account " << GetAccountId();
+        overtimeText << "\nPacket Processing Time: " << overtimediff;
+        overtimeText << "\nPacket count: " << packetOpcodeInfo.size();
+        overtimeText << "\nPacket info:\n";
+
+        for (std::vector<VerboseLogInfo>::const_iterator itr = packetOpcodeInfo.begin(); itr != packetOpcodeInfo.end(); ++itr)
+            overtimeText << "  " << (*itr).opcode << " (" << (*itr).diff << ")\n";
+
+        overtimeText << "#################################################";
+        sLog.outLog(LOG_SESSION_DIFF, overtimeText.str().c_str());
     }
 
     //check if we are safe to proceed with logout
@@ -426,7 +503,7 @@ void WorldSession::LogoutPlayer(bool Save)
                 _player->RemoveAllAurasOnDeath();
 
                 // build set of player who attack _player or who have pet attacking of _player
-                std::set<Player*> aset;
+                PlayerSet aset;
                 if (!_player->getAttackers().empty())
                 {
                     for (Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
@@ -449,7 +526,7 @@ void WorldSession::LogoutPlayer(bool Save)
                 _player->RepopAtGraveyard();
 
                 // give honor to all attackers from set like group case
-                for (std::set<Player*>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
+                for (PlayerSet::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
                     (*itr)->RewardHonor(_player,aset.size());
 
                 // give bg rewards and update counters like kill by first from attackers
@@ -549,6 +626,7 @@ void WorldSession::LogoutPlayer(bool Save)
 
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
         sObjectAccessor.RemovePlayer(_player);
+        sWorld.ModifyLoggedInCharsCount(_player->GetTeamId(), -1);
 
         delete _player;
         _player = NULL;
@@ -576,7 +654,7 @@ void WorldSession::LogoutPlayer(bool Save)
 void WorldSession::KickPlayer()
 {
     if (m_Socket)
-        m_Socket->CloseSocket ();
+        m_Socket->CloseSocket();
 }
 
 /// Cancel channeling handler
@@ -647,21 +725,21 @@ void WorldSession::Handle_NULL(WorldPacket& recvPacket)
 
 void WorldSession::Handle_EarlyProccess(WorldPacket& recvPacket)
 {
-    sLog.outError("SESSION: received opcode %s (0x%.4X) that must be processed in WorldSocket::OnRead",
+    sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received opcode %s (0x%.4X) that must be processed in WorldSocket::OnRead",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
 
 void WorldSession::Handle_ServerSide(WorldPacket& recvPacket)
 {
-    sLog.outError("SESSION: received server-side opcode %s (0x%.4X)",
+    sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received server-side opcode %s (0x%.4X)",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
 
 void WorldSession::Handle_Deprecated(WorldPacket& recvPacket)
 {
-    sLog.outError("SESSION: received deprecated opcode %s (0x%.4X)",
+    sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received deprecated opcode %s (0x%.4X)",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
@@ -702,4 +780,46 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
 
     if (m_Warden)
         m_Warden->Init(this, K);
+}
+
+uint32 WorldSession::RecordSessionTimeDiff(const char *text, ...)
+{
+    if (!text)
+    {
+        m_currentSessionTime = WorldTimer::getMSTime();
+        return 0;
+    }
+
+    uint32 thisTime = WorldTimer::getMSTime();
+    uint32 diff = WorldTimer::getMSTimeDiff(m_currentSessionTime, thisTime);
+
+    if (diff > sWorld.getConfig(CONFIG_MIN_LOG_SESSION_UPDATE))
+    {
+        va_list ap;
+        char str [256];
+        va_start(ap, text);
+        vsnprintf(str,256,text, ap);
+        va_end(ap);
+        sLog.outLog(LOG_SESSION_DIFF, "Session Difftime %s: %u.", str, diff);
+    }
+
+    m_currentSessionTime = thisTime;
+
+    return diff;
+}
+
+uint32 WorldSession::RecordVerboseTimeDiff(bool reset)
+{
+    if (reset)
+    {
+        m_currentVerboseTime = WorldTimer::getMSTime();
+        return 0;
+    }
+
+    uint32 thisTime = WorldTimer::getMSTime();
+    uint32 diff = WorldTimer::getMSTimeDiff(m_currentVerboseTime, thisTime);
+
+    m_currentVerboseTime = thisTime;
+
+    return diff;
 }

@@ -30,8 +30,12 @@ void InstanceData::SaveToDB()
     if (data.empty())
         return;
 
-    RealmDataDatabase.escape_string(data);
-    RealmDataDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
+    static SqlStatementID updateInstance;
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(updateInstance, "UPDATE instance SET data = ? WHERE id = ?");
+    stmt.addString(data);
+    stmt.addUInt32(instance->GetInstanceId());
+    stmt.Execute();
 }
 
 void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go)
@@ -170,4 +174,10 @@ std::string InstanceData::GetBossSaveData()
     for (std::vector<BossInfo>::iterator i = bosses.begin(); i != bosses.end(); ++i)
         saveStream << (uint32)i->state << " ";
     return saveStream.str();
+}
+
+void InstanceData::ResetEncounterInProgress()
+{
+    // this will only reset encounter state to NOT_STARTED, it won't evade creatures inside of map, better option is to override it in instance script
+    Load(GetSaveData().c_str());
 }

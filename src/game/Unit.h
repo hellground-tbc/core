@@ -24,7 +24,6 @@
 #include "Common.h"
 #include "Object.h"
 #include "Opcodes.h"
-#include "Mthread.h"
 #include "SpellAuraDefines.h"
 #include "UpdateFields.h"
 #include "SharedDefines.h"
@@ -62,6 +61,7 @@ enum SpellChannelInterruptFlags
 
 enum SpellAuraInterruptFlags
 {
+    AURA_INTERRUPT_FLAG_NONE                = 0x00000000,
     AURA_INTERRUPT_FLAG_HITBYSPELL          = 0x00000001,   // 0    removed when getting hit by a negative spell?
     AURA_INTERRUPT_FLAG_DAMAGE              = 0x00000002,   // 1    removed by any damage
     AURA_INTERRUPT_FLAG_CC                  = 0x00000004,   // 2    crowd control
@@ -377,29 +377,29 @@ enum DeathState
 
 enum UnitState
 {
-    UNIT_STAT_DIED            = 0x00000001,
-    UNIT_STAT_MELEE_ATTACKING = 0x00000002,                     // player is melee attacking someone
-    //UNIT_STAT_MELEE_ATTACK_BY = 0x00000004,                   // player is melee attack by someone
-    UNIT_STAT_STUNNED         = 0x00000008,
-    UNIT_STAT_ROAMING         = 0x00000010,
-    UNIT_STAT_CHASE           = 0x00000020,
-    //UNIT_STAT_SEARCHING       = 0x00000040,
-    UNIT_STAT_FLEEING         = 0x00000080,
-    UNIT_STAT_TAXI_FLIGHT     = 0x00000100,                     // player is in flight mode
-    UNIT_STAT_FOLLOW          = 0x00000200,
-    UNIT_STAT_ROOT            = 0x00000400,
-    UNIT_STAT_CONFUSED        = 0x00000800,
-    UNIT_STAT_DISTRACTED      = 0x00001000,
-    UNIT_STAT_ISOLATED        = 0x00002000,                     // area auras do not affect other players
-    UNIT_STAT_ATTACK_PLAYER   = 0x00004000,
-    UNIT_STAT_CASTING         = 0x00008000,
-    UNIT_STAT_POSSESSED       = 0x00010000,
-    UNIT_STAT_CHARGING        = 0x00020000,
-    UNIT_STAT_JUMPING         = 0x00040000,
-    UNIT_STAT_MOVE            = 0x00100000,
-    UNIT_STAT_ROTATING        = 0x00200000,
-    UNIT_STAT_CASTING_NOT_MOVE= 0x00400000,
-    UNIT_STAT_IGNORE_PATHFINDING= 0x00800000,
+    UNIT_STAT_DIED               = 0x00000001,        // unit is dead
+    UNIT_STAT_MELEE_ATTACKING    = 0x00000002,        // player is melee attacking someone
+    UNIT_STAT_IGNORE_ATTACKERS   = 0x00000004,        // unit will ignore all attackers and won't add them to threat list(NYI)
+    UNIT_STAT_STUNNED            = 0x00000008,        // unit is stunned
+    UNIT_STAT_ROAMING            = 0x00000010,        // unit is moving
+    UNIT_STAT_CHASE              = 0x00000020,        // unit is chasing someone
+    //UNIT_STAT_UNUSED           = 0x00000040,
+    UNIT_STAT_FLEEING            = 0x00000080,        // unit is feared
+    UNIT_STAT_TAXI_FLIGHT        = 0x00000100,        // player is flying using taxi mode
+    UNIT_STAT_FOLLOW             = 0x00000200,        // unit is following someone
+    UNIT_STAT_ROOT               = 0x00000400,        // unit is rooted
+    UNIT_STAT_CONFUSED           = 0x00000800,        // unit is disoriented
+    UNIT_STAT_DISTRACTED         = 0x00001000,        // unit is distracted
+    UNIT_STAT_ISOLATED           = 0x00002000,        // area auras do not affect other players
+    UNIT_STAT_ATTACK_PLAYER      = 0x00004000,        // unit is attacking a player
+    UNIT_STAT_CASTING            = 0x00008000,        // unit is casting a spell with cast time
+    UNIT_STAT_POSSESSED          = 0x00010000,        // unit is possessed
+    UNIT_STAT_CHARGING           = 0x00020000,        // unit is charging
+    //UNIT_STAT_UNUSED           = 0x00040000,
+    //UNIT_STAT_UNUSED           = 0x00100000,
+    UNIT_STAT_ROTATING           = 0x00200000,        // unit is rotating
+    UNIT_STAT_CASTING_NOT_MOVE   = 0x00400000,        // unit is casting a spell and can NOT move
+    UNIT_STAT_IGNORE_PATHFINDING = 0x00800000,        // unit won't generate path
 
     UNIT_STAT_CAN_NOT_MOVE    = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED),
     UNIT_STAT_LOST_CONTROL    = (UNIT_STAT_CONFUSED | UNIT_STAT_STUNNED | UNIT_STAT_FLEEING | UNIT_STAT_CHARGING),
@@ -408,7 +408,7 @@ enum UnitState
     UNIT_STAT_NOT_MOVE        = (UNIT_STAT_ROOT | UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_DISTRACTED),
     UNIT_STAT_CANNOT_AUTOATTACK = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_CASTING | UNIT_STAT_CASTING_NOT_MOVE),
     UNIT_STAT_CANNOT_TURN     = (UNIT_STAT_LOST_CONTROL | UNIT_STAT_ROTATING),
-    UNIT_STAT_ALL_STATE       = 0xffffffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_TAXI_FLIGHT)
+    UNIT_STAT_ALL_STATE       = 0xffffffff
 };
 
 enum UnitStandStateType
@@ -826,7 +826,7 @@ enum ReactiveType
 
 struct SpellProcEventEntry;                                 // used only privately
 
-class HELLGROUND_DLL_SPEC Unit : public WorldObject
+class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
 {
     public:
         typedef std::set<Unit*> AttackerSet;
@@ -1198,8 +1198,10 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
 
         void SetPet(Pet* pet);
         void SetCharm(Unit* pet);
-        void SetCharmedOrPossessedBy(Unit* charmer, bool possess);
+
+        void SetCharmedOrPossessedBy(Unit*, bool possess);
         void RemoveCharmedOrPossessedBy(Unit* charmer);
+
         void RestoreFaction();
 
         bool isCharmed() const { return GetCharmerGUID() != 0; }
@@ -1218,10 +1220,7 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         CharmInfo* InitCharmInfo();
         void       DeleteCharmInfo();
         void UpdateCharmAI();
-        SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
-        void AddPlayerToVision(Player* plr);
-        void RemovePlayerFromVision(Player* plr);
-        bool HasSharedVision() const { return !m_sharedVision.empty(); }
+
         void RemoveBindSightAuras();
         void RemoveCharmAuras();
 
@@ -1367,23 +1366,40 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
 
         bool isBetween(WorldObject *s, WorldObject *e, float offset = 1.5f) const;
 
-        // Visibility system
+#pragma region VisibilityRelocation
+
         UnitVisibility GetVisibility() const { return m_Visibility; }
         void SetVisibility(UnitVisibility x);
         void DestroyForNearbyPlayers();
 
+        void UpdateVisibilityAndView();
+
         // common function for visibility checks for player/creatures with detection code
-        virtual bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool canDetectInvisibilityOf(Unit const* u) const;
-        bool canDetectStealthOf(Unit const* u, float distance) const;
-        void UpdateObjectVisibility(bool forced = true);
+        virtual bool canSeeOrDetect(Unit const* u, WorldObject const*, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+
+        bool canDetectInvisibilityOf(Unit const* u, WorldObject const*) const;
+        bool canDetectStealthOf(Unit const* u, WorldObject const*, float distance) const;
 
         // virtual functions for all world objects types
-        bool isVisibleForInState(Player const* u, bool inVisibleList) const;
+        bool isVisibleForInState(Player const*, WorldObject const*, bool) const;
+        bool isVisibleForOrDetect(Unit const*, WorldObject const*, bool, bool = false, bool = true) const;
+
         // function for low level grid visibility checks in player/creature cases
         virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
 
+        void OnRelocated();
+        void ScheduleAINotify(uint32 delay);
+        bool IsAINotifyScheduled() const { return _AINotifyScheduled;}
+        void _SetAINotifyScheduled(bool on) { _AINotifyScheduled = on;}
+
+        Position _notifiedPosition;
+
+    private:
+        bool _AINotifyScheduled;
+
+#pragma endregion VisibilityRelocation
+
+    public:
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
         SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
@@ -1395,10 +1411,12 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         void DeleteThreatList();
         void TauntApply(Unit* pVictim);
         void TauntFadeOut(Unit *taunter);
-        ThreatManager& getThreatManager() { return m_ThreatManager; }
-        void addHatedBy(HostilReference* pHostilReference) { m_HostilRefManager.insertFirst(pHostilReference); };
+
+        HostilRefManager& getHostilRefManager() { return _hostilRefManager; }
+        ThreatManager& getThreatManager() { return _threatManager; }
+
+        void addHatedBy(HostilReference* pHostilReference) { getHostilRefManager().insertFirst(pHostilReference); };
         void removeHatedBy(HostilReference* /*pHostilReference*/) { /* nothing to do yet */ }
-        HostilRefManager& getHostilRefManager() { return m_HostilRefManager; }
 
         Aura* GetAura(uint32 spellId, uint32 effindex);
         AuraMap      & GetAuras()       { return m_Auras; }
@@ -1478,7 +1496,7 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
                                                             // redefined in Creature
 
         uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage);
-        void CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist);
+        void CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 & damage, uint32 *absorb, uint32 *resist);
         void CalcAbsorb(Unit *pVictim, SpellSchoolMask schoolMask, const uint32 damage, uint32 *absorb, uint32 *resist);
         bool CalcBinaryResist(Unit *pVictim, SpellSchoolMask schoolMask);
 
@@ -1640,7 +1658,6 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         float m_max_speed_rate[MAX_MOVE_TYPE];                  // max possible speed
 
         CharmInfo *m_charmInfo;
-        SharedVisionList m_sharedVision;
 
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;
 
@@ -1649,8 +1666,6 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
 
         uint32 m_reactiveTimer[MAX_REACTIVE];
         uint32 m_regenTimer;
-
-        ThreatManager m_ThreatManager;
 
         int32 m_meleeAPAttackerBonus;
 
@@ -1673,10 +1688,10 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         UnitVisibility m_Visibility;
 
         Diminishing m_Diminishing;
-        // Manage all Units threatening us
-//        ThreatManager m_ThreatManager;
+
         // Manage all Units that are threatened by us
-        HostilRefManager m_HostilRefManager;
+        HostilRefManager _hostilRefManager;
+        ThreatManager _threatManager;
 
         FollowerRefManager m_FollowingRefManager;
 
@@ -1693,6 +1708,9 @@ class HELLGROUND_DLL_SPEC Unit : public WorldObject
         void UpdateSplineMovement(uint32 t_diff);
         TimeTrackerSmall m_movesplineTimer;
 };
+
+typedef std::set<Unit*> UnitSet;
+typedef std::list<Unit*> UnitList;
 
 namespace Hellground
 {

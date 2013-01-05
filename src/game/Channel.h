@@ -160,6 +160,7 @@ class Channel
     uint64      m_ownerGUID;
 
     private:
+        void ChangeOwner();
         // initial packet data (notify type and channel name)
         void MakeNotifyPacket(WorldPacket *data, uint8 notify_type);
         // type specific packet data

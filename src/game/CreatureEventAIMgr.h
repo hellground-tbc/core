@@ -36,8 +36,7 @@ class CreatureEventAIMgr
 
         void LoadCreatureEventAI_Texts(bool check_entry_use);
         void LoadCreatureEventAI_Summons(bool check_entry_use);
-        void LoadCreatureEventAI_Scripts();
-        void LoadCreatureEventAI_Scripts(uint32 creatureId);
+        void LoadCreatureEventAI_Scripts(uint32 creatureId = 0);
 
         CreatureEventAI_Event_Map  const& GetCreatureEventAIMap()       const { return m_CreatureEventAI_Event_Map; }
         CreatureEventAI_Summon_Map const& GetCreatureEventAISummonMap() const { return m_CreatureEventAI_Summon_Map; }

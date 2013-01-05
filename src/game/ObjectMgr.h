@@ -248,7 +248,7 @@ SkillRangeType GetSkillRangeType(SkillLineEntry const *pSkill, bool racial);
 
 bool normalizePlayerName(std::string& name);
 
-struct HELLGROUND_DLL_SPEC LanguageDesc
+struct HELLGROUND_IMPORT_EXPORT LanguageDesc
 {
     Language lang_id;
     uint32   spell_id;
@@ -256,9 +256,9 @@ struct HELLGROUND_DLL_SPEC LanguageDesc
 };
 
 extern LanguageDesc lang_description[LANGUAGES_COUNT];
-HELLGROUND_DLL_SPEC LanguageDesc const* GetLanguageDescByID(uint32 lang);
+HELLGROUND_IMPORT_EXPORT LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
-class HELLGROUND_DLL_DECL ObjectMgr
+class ObjectMgr
 {
     friend class ACE_Singleton<ObjectMgr, ACE_Null_Mutex>;
     ObjectMgr();
@@ -532,7 +532,7 @@ class HELLGROUND_DLL_DECL ObjectMgr
         void LoadTrainerSpell();
 
         void LoadOpcodesCooldown();
-        OpcodesCooldown& GetOpcodesCooldown() { return _opcodesCooldown; }
+        OpcodesCooldown GetOpcodesCooldown() { return _opcodesCooldown; }
 
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint32 level);
@@ -898,10 +898,10 @@ class HELLGROUND_DLL_DECL ObjectMgr
 #define sObjectMgr (*ACE_Singleton<ObjectMgr, ACE_Null_Mutex>::instance())
 
 // scripting access functions
-HELLGROUND_DLL_SPEC bool LoadHellgroundStrings(DatabaseType& db, char const* table,int32 start_value = MAX_CREATURE_AI_TEXT_STRING_ID, int32 end_value = std::numeric_limits<int32>::min());
-HELLGROUND_DLL_SPEC GameObjectInfo const *GetGameObjectInfo(uint32 id);
-HELLGROUND_DLL_SPEC CreatureInfo const *GetCreatureInfo(uint32 id);
-HELLGROUND_DLL_SPEC CreatureInfo const* GetCreatureTemplateStore(uint32 entry);
-HELLGROUND_DLL_SPEC Quest const* GetQuestTemplateStore(uint32 entry);
+HELLGROUND_IMPORT_EXPORT bool LoadHellgroundStrings(DatabaseType& db, char const* table,int32 start_value = MAX_CREATURE_AI_TEXT_STRING_ID, int32 end_value = std::numeric_limits<int32>::min());
+HELLGROUND_IMPORT_EXPORT GameObjectInfo const *GetGameObjectInfo(uint32 id);
+HELLGROUND_IMPORT_EXPORT CreatureInfo const *GetCreatureInfo(uint32 id);
+HELLGROUND_IMPORT_EXPORT CreatureInfo const* GetCreatureTemplateStore(uint32 entry);
+HELLGROUND_IMPORT_EXPORT Quest const* GetQuestTemplateStore(uint32 entry);
 
 #endif

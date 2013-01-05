@@ -830,7 +830,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         gm = atoi(arg1);
 
         // Check for invalid specified GM level.
-        if (gm & PERM_ALL)
+        if (!(gm & PERM_ALL))
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -873,7 +873,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         // Check for invalid specified GM level.
         gm = atoi(arg2);
-        if (gm & PERM_ALL)
+        if (!(gm & PERM_ALL))
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -895,7 +895,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         }
 
         PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
-        AccountsDatabase.PExecute("UPDATE account SET gmlevel = '%d' WHERE id = '%u'", gm, targetAccountId);
+        AccountsDatabase.PExecute("UPDATE account_permissions SET permission_mask = '%u' WHERE account_id = '%u' AND realm_id = '%u'", gm, targetAccountId, realmID);
         return true;
     }
 }
@@ -2926,9 +2926,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
             {
                 if (il->Title.size() > loc_idx && !il->Title[loc_idx].empty())
                 {
-                    std::string title = il->Title[loc_idx];
+                    std::string name = il->Title[loc_idx];
 
-                    if (Utf8FitTo(title, wnamepart))
+                    if (Utf8FitTo(name, wnamepart))
                     {
                         char const* statusStr = "";
 
@@ -2948,9 +2948,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                         }
 
                         if (m_session)
-                            PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),title.c_str(),statusStr);
+                            PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),name.c_str(),statusStr);
                         else
-                            PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
+                            PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),name.c_str(),statusStr);
                         ++counter;
                         continue;
                     }
@@ -2958,11 +2958,11 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
             }
         }
 
-        std::string title = qinfo->GetTitle();
-        if (title.empty())
+        std::string name = qinfo->GetName();
+        if (name.empty())
             continue;
 
-        if (Utf8FitTo(title, wnamepart))
+        if (Utf8FitTo(name, wnamepart))
         {
             char const* statusStr = "";
 
@@ -2982,9 +2982,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
             }
 
             if (m_session)
-                PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),title.c_str(),statusStr);
+                PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),name.c_str(),statusStr);
             else
-                PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
+                PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),name.c_str(),statusStr);
 
             ++counter;
         }
@@ -3295,13 +3295,9 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
     if (!*args)
         return false;
 
-    char* par1 = strtok ((char*)args, " ");
-    if (!par1)
-        return false;
+    std::string gld = args;
 
-    std::string gld = par1;
-
-    Guild* targetGuild = sObjectMgr.GetGuildByName (gld);
+    Guild* targetGuild = sObjectMgr.GetGuildByName(gld);
     if (!targetGuild)
         return false;
 
@@ -3995,7 +3991,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
         name = chr->GetName();
     }
 
-    assert(chr || chr_guid);
+    ASSERT(chr || chr_guid);
 
     int32 oldlevel = chr ? chr->getLevel() : Player::GetUInt32ValueFromDB(UNIT_FIELD_LEVEL,chr_guid);
     int32 newlevel = oldlevel + addlevel;
@@ -4022,7 +4018,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
     else
     {
         // update level and XP at level, all other will be updated at loading
-        RealmDataDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, chr->GetGUIDLow());
+        RealmDataDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, chr_guid);
     }
 
     if (m_session->GetPlayer() != chr)                       // including chr==NULL
@@ -4523,7 +4519,7 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
     ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(player->getClass());
     if (!cEntry)
     {
-        sLog.outError("Class %u not found in DBC (Wrong DBC files?)",player->getClass());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Class %u not found in DBC (Wrong DBC files?)",player->getClass());
         return false;
     }
 
@@ -4538,7 +4534,7 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
         unitfield = 0x0000EE00;
     else
     {
-        sLog.outError("Invalid default powertype %u for player (class %u)",powertype,player->getClass());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Invalid default powertype %u for player (class %u)",powertype,player->getClass());
         return false;
     }
 
@@ -4835,32 +4831,19 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
     if (!*args)
         return false;
 
-    char* time_str = strtok ((char*) args, " ");
-    char* exitcode_str = strtok (NULL, "");
+    const char* time_str = strtok ((char*) args, " ");
+    const char* exitmsg = strtok(NULL, "");
 
     int32 time = atoi (time_str);
 
     if (time <= 0)
         return false;
 
-    if (exitcode_str)
-    {
-        int32 exitcode = atoi (exitcode_str);
-
-        // Handle atoi() errors
-        if (exitcode == 0 && (exitcode_str[0] != '0' || exitcode_str[1] != '\0'))
-            return false;
-
-        // Exit code should be in range of 0-125, 126-255 is used
-        // in many shells for their own return codes and code > 255
-        // is not supported in many others
-        if (exitcode < 0 || exitcode > 125)
-            return false;
-
-        sWorld.ShutdownServ (time, 0, exitcode);
-    }
+    if (exitmsg)
+        sWorld.ShutdownServ(time,0,SHUTDOWN_EXIT_CODE, exitmsg);
     else
         sWorld.ShutdownServ(time,0,SHUTDOWN_EXIT_CODE);
+
     return true;
 }
 
@@ -4869,8 +4852,8 @@ bool ChatHandler::HandleServerRollShutDownCommand(const char* args)
     if (!*args)
         return false;
 
-    char* time_str = strtok((char*) args, " ");
-    char* exitmsg = strtok(NULL, "");
+    const char* time_str = strtok((char*) args, " ");
+    const char* exitmsg = strtok(NULL, "");
 
     int time;
     int roll = atoi(time_str);
@@ -4885,7 +4868,7 @@ bool ChatHandler::HandleServerRollShutDownCommand(const char* args)
 
     sWorld.SendWorldText(LANG_ROLLSHUTDOWN, roll, time, exitmsg);
 
-    sWorld.ShutdownServ(time, 0, SHUTDOWN_EXIT_CODE);
+    sWorld.ShutdownServ(time, 0, SHUTDOWN_EXIT_CODE, exitmsg);
     return true;
 }
 
@@ -4894,8 +4877,8 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
     if (!*args)
         return false;
 
-    char* time_str = strtok ((char*) args, " ");
-    char* exitcode_str = strtok (NULL, "");
+    char const* time_str = strtok ((char*) args, " ");
+    char const* exitcode_str = strtok (NULL, "");
 
     int32 time = atoi (time_str);
 
@@ -4903,21 +4886,7 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
         return false;
 
     if (exitcode_str)
-    {
-        int32 exitcode = atoi (exitcode_str);
-
-        // Handle atoi() errors
-        if (exitcode == 0 && (exitcode_str[0] != '0' || exitcode_str[1] != '\0'))
-            return false;
-
-        // Exit code should be in range of 0-125, 126-255 is used
-        // in many shells for their own return codes and code > 255
-        // is not supported in many others
-        if (exitcode < 0 || exitcode > 125)
-            return false;
-
-        sWorld.ShutdownServ (time, SHUTDOWN_MASK_RESTART, exitcode);
-    }
+        sWorld.ShutdownServ(time, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE, exitcode_str);
     else
         sWorld.ShutdownServ(time, SHUTDOWN_MASK_RESTART, RESTART_EXIT_CODE);
     return true;
@@ -4928,8 +4897,8 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
     if (!*args)
         return false;
 
-    char* time_str = strtok ((char*) args, " ");
-    char* exitcode_str = strtok (NULL, "");
+    char const* time_str = strtok ((char*) args, " ");
+    char const* exitcode_str = strtok (NULL, "");
 
     int32 time = atoi (time_str);
 
@@ -4937,21 +4906,7 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
         return false;
 
     if (exitcode_str)
-    {
-        int32 exitcode = atoi (exitcode_str);
-
-        // Handle atoi() errors
-        if (exitcode == 0 && (exitcode_str[0] != '0' || exitcode_str[1] != '\0'))
-            return false;
-
-        // Exit code should be in range of 0-125, 126-255 is used
-        // in many shells for their own return codes and code > 255
-        // is not supported in many others
-        if (exitcode < 0 || exitcode > 125)
-            return false;
-
-        sWorld.ShutdownServ (time, SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE, exitcode);
-    }
+        sWorld.ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,RESTART_EXIT_CODE, exitcode_str);
     else
         sWorld.ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,RESTART_EXIT_CODE);
     return true;
@@ -4962,8 +4917,8 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
     if (!*args)
         return false;
 
-    char* time_str = strtok ((char*) args, " ");
-    char* exitcode_str = strtok (NULL, "");
+    char const* time_str = strtok ((char*) args, " ");
+    char const* exitcode_str = strtok (NULL, "");
 
     int32 time = atoi (time_str);
 
@@ -4971,21 +4926,7 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
         return false;
 
     if (exitcode_str)
-    {
-        int32 exitcode = atoi (exitcode_str);
-
-        // Handle atoi() errors
-        if (exitcode == 0 && (exitcode_str[0] != '0' || exitcode_str[1] != '\0'))
-            return false;
-
-        // Exit code should be in range of 0-125, 126-255 is used
-        // in many shells for their own return codes and code > 255
-        // is not supported in many others
-        if (exitcode < 0 || exitcode > 125)
-            return false;
-
-        sWorld.ShutdownServ (time, SHUTDOWN_MASK_IDLE, exitcode);
-    }
+        sWorld.ShutdownServ(time,SHUTDOWN_MASK_IDLE,SHUTDOWN_EXIT_CODE, exitcode_str);
     else
         sWorld.ShutdownServ(time,SHUTDOWN_MASK_IDLE,SHUTDOWN_EXIT_CODE);
     return true;
@@ -5764,7 +5705,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
     }
 
     Hellground::RespawnDo u_do;
-    Hellground::WorldObjectWorker<Hellground::RespawnDo> worker(u_do);
+    Hellground::ObjectWorker<Creature, Hellground::RespawnDo> worker(u_do);
 
     Cell::VisitGridObjects(pl, worker, pl->GetMap()->GetVisibilityDistance());
     return true;
@@ -5791,7 +5732,7 @@ bool ChatHandler::HandleGMFlyCommand(const char* args)
     }
     data << unit->GetPackGUID();
     data << uint32(0);                                      // unknown
-    unit->SendMessageToSet(&data, true);
+    unit->BroadcastPacket(&data, true);
     PSendSysMessage(LANG_COMMAND_FLYMODE_STATUS, unit->GetName(), args);
     return true;
 }
@@ -6412,6 +6353,56 @@ bool ChatHandler::HandleInstanceSaveDataCommand(const char * /*args*/)
 
     ((InstanceMap*)map)->GetInstanceData()->SaveToDB();
     return true;
+}
+
+bool ChatHandler::HandleInstanceBindCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    int32 InstanceId = atoi((char*)args);
+
+    Player* player = m_session->GetPlayer();
+    if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(InstanceId))
+        player->BindToInstance(save, true, false);
+    else
+    {
+        PSendSysMessage("There is no such instance save");
+        return false;
+    }
+
+    PSendSysMessage("You have been binded successfully");
+    return true;
+}
+
+bool ChatHandler::HandleInstanceResetEncountersCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    int32 InstanceId = atoi((char*)args);
+
+    Player* player = m_session->GetPlayer();
+    if (InstanceSave *save = sInstanceSaveManager.GetInstanceSave(InstanceId))
+    {
+        if (Map* map = sMapMgr.FindMap(save->GetMapId(), save->GetInstanceId()))
+        {
+            if (InstanceData* data = reinterpret_cast<InstanceMap*>(map)->GetInstanceData())
+            {
+                data->ResetEncounterInProgress();
+                PSendSysMessage("You have called ResetEncounters successfully.");
+                return true;
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("There is no instance save for that instance id!");
+        return false;
+    }
+
+    PSendSysMessage("Something went wrong, there were no such map or map didn't have instance data.");
+    return false;
 }
 
 /// Display the list of GMs
@@ -7161,7 +7152,7 @@ bool ChatHandler::HandleGameObjectGridCommand(const char* /*args*/)
 {
     std::list<GameObject*> tmpL;
     Hellground::AllGameObjectsInRange go_check(m_session->GetPlayer(), 20.0f);
-    Hellground::GameObjectListSearcher<Hellground::AllGameObjectsInRange> searcher(tmpL, go_check);
+    Hellground::ObjectListSearcher<GameObject, Hellground::AllGameObjectsInRange> searcher(tmpL, go_check);
 
     Cell::VisitGridObjects(m_session->GetPlayer(), searcher, 20.0f);
 
@@ -7375,7 +7366,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
     std::list<Creature*> creatureList;
 
     Hellground::AnyUnitInObjectRangeCheck go_check(m_session->GetPlayer(), radius);
-    Hellground::CreatureListSearcher<Hellground::AnyUnitInObjectRangeCheck> go_search(creatureList, go_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::AnyUnitInObjectRangeCheck> go_search(creatureList, go_check);
     // Get Creatures
     Cell::VisitGridObjects(m_session->GetPlayer(), go_search, radius);
 

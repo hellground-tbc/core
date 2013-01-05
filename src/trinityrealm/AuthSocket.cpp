@@ -319,7 +319,9 @@ void AuthSocket::SendProof(Sha1Hash sha)
     }
 }
 
+#ifdef REGEX_NAMESPACE
 PatternList AuthSocket::pattern_banned = PatternList();
+#endif
 
 /// Logon Challenge command handler
 bool AuthSocket::_HandleLogonChallenge()
@@ -880,7 +882,7 @@ bool AuthSocket::_HandleReconnectChallenge()
     // Stop if the account is not found
     if (!result)
     {
-        sLog.outError("[ERROR] user %s tried to login and we cannot find his session key in the database.", _login.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: [ERROR] user %s tried to login and we cannot find his session key in the database.", _login.c_str());
         close_connection();
         return false;
     }
@@ -936,7 +938,7 @@ bool AuthSocket::_HandleReconnectProof()
     }
     else
     {
-        sLog.outError("[ERROR] user %s tried to login, but session invalid.", _login.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: [ERROR] user %s tried to login, but session invalid.", _login.c_str());
         close_connection();
         return false;
     }
@@ -957,7 +959,7 @@ bool AuthSocket::_HandleRealmList()
     QueryResultAutoPtr  result = AccountsDatabase.PQuery("SELECT account_id, pass_hash FROM account WHERE username = '%s'", _safelogin.c_str());
     if (!result)
     {
-        sLog.outError("[ERROR] user %s tried to login and we cannot find him in the database.",_login.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: [ERROR] user %s tried to login and we cannot find him in the database.",_login.c_str());
         close_connection();
         return false;
     }

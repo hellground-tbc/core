@@ -77,7 +77,7 @@ class WORLD_OBJECT_TYPES,
 class GRID_OBJECT_TYPES
 >
 
-class HELLGROUND_DLL_DECL NGrid
+class NGrid
 {
     public:
 

@@ -64,11 +64,40 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
     if (type >= MAX_CHAT_MSG_TYPE)
     {
-        sLog.outError("CHAT: Wrong message type received: %u", type);
+        sLog.outLog(LOG_DEFAULT, "ERROR: CHAT: Wrong message type received: %u", type);
         return;
     }
 
-    //sLog.outDebug("CHAT: packet received. type %u, lang %u", type, lang);
+    // check if addon channel is disabled
+    if (lang == LANG_ADDON && !sWorld.getConfig(CONFIG_ADDON_CHANNEL))
+        return;
+
+    std::string channel = "";
+    std::string msg = "";
+    std::string to = "";
+
+    switch (type)
+    {
+        case CHAT_MSG_WHISPER:
+            recv_data >> to;
+            // no-break
+        case CHAT_MSG_CHANNEL:
+            if (type != CHAT_MSG_WHISPER)
+                recv_data >> channel;
+            // no-break
+        default:
+        {
+            recv_data >> msg;
+            if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
+            {
+                if (msg.empty())
+                    return;
+
+                if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+                    return;
+            }
+        }
+    }
 
     // prevent talking at unknown language (cheating)
     LanguageDesc const* langDesc = GetLanguageDescByID(lang);
@@ -99,21 +128,17 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         }
     }
 
-    if (sWorld.GetMassMuteTime() > time(NULL))
+    // mass mute for players check
+    if (GetSecurity() < SEC_MODERATOR && sWorld.GetMassMuteTime() && sWorld.GetMassMuteTime() > time(NULL))
     {
         if (sWorld.GetMassMuteReason())
             ChatHandler(_player).PSendSysMessage("Mass mute reason: %s", sWorld.GetMassMuteReason());
+
         return;
     }
 
-    if (lang == LANG_ADDON)
-    {
-        // Disabled addon channel?
-        if (!sWorld.getConfig(CONFIG_ADDON_CHANNEL))
-            return;
-    }
     // LANG_ADDON should not be changed nor be affected by flood control
-    else
+    if (lang != LANG_ADDON)
     {
         // send in universal language if player in .gmon mode (ignore spell effects)
         if (_player->isGameMaster())
@@ -150,16 +175,20 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
                 lang = ModLangAuras.front()->GetModifier()->m_miscvalue;
         }
 
-        if (!_player->CanSpeak())
+        if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
+            GetPlayer()->UpdateSpeakTime();
+    }
+
+    if (!_player->CanSpeak())
+    {
+        if (lang != LANG_ADDON)
         {
             std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
             SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
             ChatHandler(_player).PSendSysMessage(LANG_YOUR_CHAT_IS_DISABLED, timeStr.c_str(), m_muteReason.c_str());
-            return;
         }
 
-        if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
-            GetPlayer()->UpdateSpeakTime();
+        return;
     }
 
     if (GetPlayer()->getLevel() < sWorld.getConfig(CONFIG_CHAT_MINIMUM_LVL))
@@ -222,15 +251,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         case CHAT_MSG_EMOTE:
         case CHAT_MSG_YELL:
         {
-            std::string msg = "";
-            recv_data >> msg;
-
-            if (msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -251,11 +271,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
         case CHAT_MSG_WHISPER:
         {
-            std::string to, msg;
-            recv_data >> to;
-            CHECK_PACKET_SIZE(recv_data,4+4+(to.size()+1)+1);
-            recv_data >> msg;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -303,15 +318,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
         case CHAT_MSG_PARTY:
         {
-            std::string msg = "";
-            recv_data >> msg;
-
-            if (msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -333,15 +339,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         break;
         case CHAT_MSG_GUILD:
         {
-            std::string msg = "";
-            recv_data >> msg;
-
-            if (msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -363,15 +360,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         }
         case CHAT_MSG_OFFICER:
         {
-            std::string msg = "";
-            recv_data >> msg;
-
-            if (msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -393,15 +381,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         }
         case CHAT_MSG_RAID:
         {
-            std::string msg="";
-            recv_data >> msg;
-
-            if (msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -422,15 +401,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         } break;
         case CHAT_MSG_RAID_LEADER:
         {
-            std::string msg="";
-            recv_data >> msg;
-
-            if (msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -451,9 +421,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         } break;
         case CHAT_MSG_RAID_WARNING:
         {
-            std::string msg="";
-            recv_data >> msg;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -472,9 +439,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
         case CHAT_MSG_BATTLEGROUND:
         {
-            std::string msg="";
-            recv_data >> msg;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -493,9 +457,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
         case CHAT_MSG_BATTLEGROUND_LEADER:
         {
-            std::string msg="";
-            recv_data >> msg;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -514,14 +475,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
         case CHAT_MSG_CHANNEL:
         {
-            std::string channel = "", msg = "";
-            recv_data >> channel;
-
-            // recheck
-            CHECK_PACKET_SIZE(recv_data,4+4+(channel.size()+1)+1);
-
-            recv_data >> msg;
-
             // strip invisible characters for non-addon messages
             if (lang != LANG_ADDON && sWorld.getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
                 stripLineInvisibleChars(msg);
@@ -541,9 +494,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
         case CHAT_MSG_AFK:
         {
-            std::string msg;
-            recv_data >> msg;
-
             if ((msg.empty() || !_player->isAFK()) && !_player->isInCombat())
             {
                 if (!_player->isAFK())
@@ -560,9 +510,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
         case CHAT_MSG_DND:
         {
-            std::string msg;
-            recv_data >> msg;
-
             if (msg.empty() || !_player->isDND())
             {
                 if (!_player->isDND())
@@ -578,7 +525,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         } break;
 
         default:
-            sLog.outError("CHAT: unknown message type %u, lang: %u", type, lang);
+            sLog.outLog(LOG_DEFAULT, "ERROR: CHAT: unknown message type %u, lang: %u", type, lang);
             break;
     }
 }
@@ -675,7 +622,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
 
     Hellground::EmoteChatBuilder emote_builder(*player, text_emote, emoteNum, unit);
     Hellground::LocalizedPacketDo<Hellground::EmoteChatBuilder > emote_do(emote_builder);
-    Hellground::PlayerDistWorker<Hellground::LocalizedPacketDo<Hellground::EmoteChatBuilder > > emote_worker(player, sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), emote_do);
+    Hellground::CameraDistWorker<Hellground::LocalizedPacketDo<Hellground::EmoteChatBuilder > > emote_worker(player, sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), emote_do);
     Cell::VisitWorldObjects(player, emote_worker,  sWorld.getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE));
 
     //Send scripted event call
@@ -705,11 +652,10 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recv_data)
 
     WorldPacket data;
     ChatHandler::FillMessageData(&data, this, CHAT_MSG_IGNORED, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), GetPlayer()->GetName(),NULL);
-    player->GetSession()->SendPacket(&data);
+    player->SendPacketToSelf(&data);
 }
 
 void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)
 {
     sLog.outDebug("Opcode %u", recvPacket.GetOpcode());
 }
-

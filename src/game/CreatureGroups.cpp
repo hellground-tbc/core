@@ -79,7 +79,7 @@ void CreatureGroupManager::LoadCreatureFormations()
 
     if (!result)
     {
-        sLog.outErrorDb(" ...an error occured while loading the table `creature_formations` (maybe it doesn't exist ?)\n");
+        sLog.outLog(LOG_DB_ERR, " ...an error occured while loading the table `creature_formations` (maybe it doesn't exist ?)\n");
         return;
     }
 
@@ -88,7 +88,7 @@ void CreatureGroupManager::LoadCreatureFormations()
 
     if (!result)
     {
-        sLog.outErrorDb("The table `creature_formations` is empty or corrupted");
+        sLog.outLog(LOG_DB_ERR, "The table `creature_formations` is empty or corrupted");
         return;
     }
 
@@ -120,7 +120,7 @@ void CreatureGroupManager::LoadCreatureFormations()
         const CreatureData* member = sObjectMgr.GetCreatureData(memberGUID);
         if (!leader || !member || leader->mapid != member->mapid)
         {
-            sLog.outErrorDb("Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
+            sLog.outLog(LOG_DB_ERR, "Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
             delete group_member;
             continue;
         }
@@ -232,18 +232,25 @@ void CreatureGroup::RespawnFormation(Creature *member)
 
     m_Respawned = true;
 
-    for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    if (Map* map = member->GetMap())
     {
-        // Called at EnterEvadeMode, do not check self
-        if (itr->first == member->GetGUID())
-            continue;
-
-        if (Creature *mem = member->GetMap()->GetCreature(itr->first))
+        for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
         {
-            if (mem->isAlive())
+            // Called at EnterEvadeMode, do not check self
+            if (itr->first == member->GetGUID())
                 continue;
 
-            mem->Respawn();
+            if (Creature* mem = map->GetCreature(itr->first))
+            {
+                if (mem->isAlive())
+                    continue;
+
+                if (map->IsDungeon() && (map->IsRaid() || map->IsHeroic()))
+                    if (mem->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
+                        continue;
+
+                mem->Respawn();
+            }
         }
     }
 }
@@ -298,18 +305,24 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
         member->UpdateGroundPositionZ(dx, dy, dz);
 
         if (member->IsWithinDistInMap(m_leader, dist + MAX_DESYNC))
-            member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
+        {
+            uint32 moveFlags = m_leader->GetUnitMovementFlags();
+            if (!member->m_movementInfo.HasMovementFlag(MOVEFLAG_SPLINE_ENABLED))
+                moveFlags &= ~MOVEFLAG_SPLINE_ENABLED;
+
+            member->SetUnitMovementFlags(moveFlags);
+        }
         else
         {
             // jak sie za bardzo rozjada xO
             if (!member->IsWithinDistInMap(m_leader, 40.0f))
-                member->Relocate(m_leader->GetPositionX(), m_leader->GetPositionY(), m_leader->GetPositionZ(), 0.0f);
+                member->NearTeleportTo(m_leader->GetPositionX(), m_leader->GetPositionY(), m_leader->GetPositionZ(), 0.0f);
             else
                 member->SetWalk(false);
         }
 
-        member->GetMotionMaster()->MovePoint(0, dx, dy, dz);
-        member->SetHomePosition(dx, dy, dz, pathangle);
+        member->GetMotionMaster()->MovePoint(0, dx, dy, dz, true, UNIT_ACTION_HOME);
+        member->SetHomePosition(m_leader->GetPositionX(), m_leader->GetPositionY(), m_leader->GetPositionZ(), pathangle);
         m_movingUnits++;
     }
 }

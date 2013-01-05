@@ -281,7 +281,7 @@ std::list<Creature*> UnitAI::FindAllCreaturesWithEntry(uint32 entry, float range
 {
     std::list<Creature*> pList;
     Hellground::AllCreaturesOfEntryInRange u_check(me, entry, range);
-    Hellground::CreatureListSearcher<Hellground::AllCreaturesOfEntryInRange> searcher(pList, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::AllCreaturesOfEntryInRange> searcher(pList, u_check);
     Cell::VisitAllObjects(me, searcher, range);
     return pList;
 }
@@ -292,7 +292,7 @@ std::list<Player*> UnitAI::FindAllPlayersInRange(float range, Unit * finder)
         finder = me;
     std::list<Player*> pList;
     Hellground::AnyPlayerInObjectRangeCheck checker(finder, range);
-    Hellground::PlayerListSearcher<Hellground::AnyPlayerInObjectRangeCheck> searcher(finder, pList, checker);
+    Hellground::ObjectListSearcher<Player, Hellground::AnyPlayerInObjectRangeCheck> searcher(pList, checker);
     Cell::VisitWorldObjects(finder, searcher, range);
     return pList;
 }
@@ -301,7 +301,7 @@ std::list<Creature*> UnitAI::FindAllFriendlyInGrid(float range)
 {
     std::list<Creature*> pList;
     Hellground::AllFriendlyCreaturesInGrid u_check(me);
-    Hellground::CreatureListSearcher<Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::AllFriendlyCreaturesInGrid> searcher(pList, u_check);
     Cell::VisitGridObjects(me, searcher, range);
     return pList;
 }
@@ -310,7 +310,7 @@ std::list<Creature*> UnitAI::FindFriendlyCC(float range)
 {
     std::list<Creature*> pList;
     Hellground::FriendlyCCedInRange u_check(me, range);
-    Hellground::CreatureListSearcher<Hellground::FriendlyCCedInRange> searcher(pList, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::FriendlyCCedInRange> searcher(pList, u_check);
 
     Cell::VisitAllObjects(me, searcher, range);
     return pList;
@@ -320,7 +320,7 @@ std::list<Creature*> UnitAI::FindFriendlyMissingBuff(float range, uint32 spellid
 {
     std::list<Creature*> pList;
     Hellground::FriendlyMissingBuffInRange u_check(me, range, spellid);
-    Hellground::CreatureListSearcher<Hellground::FriendlyMissingBuffInRange> searcher(pList, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::FriendlyMissingBuffInRange> searcher(pList, u_check);
 
     Cell::VisitAllObjects(me, searcher, range);
     return pList;
@@ -344,7 +344,7 @@ float UnitAI::DoGetSpellMaxRange(uint32 spellId, bool positive)
 void UnitAI::DoCast(uint32 spellId)
 {
     Unit *target = NULL;
-    //sLog.outError("aggre %u %u", spellId, (uint32)AISpellInfo[spellId].target);
+    //sLog.outLog(LOG_DEFAULT, "ERROR: aggre %u %u", spellId, (uint32)AISpellInfo[spellId].target);
     switch (AISpellInfo[spellId].target)
     {
         default:

@@ -30,7 +30,7 @@
 #define MAX_RANDOM_POINTS  6
 
 template<class UNIT>
-class HELLGROUND_DLL_SPEC ConfusedMovementGenerator : public MovementGeneratorMedium< UNIT, ConfusedMovementGenerator<UNIT> >
+class HELLGROUND_EXPORT ConfusedMovementGenerator : public MovementGeneratorMedium< UNIT, ConfusedMovementGenerator<UNIT> >
 {
     public:
         explicit ConfusedMovementGenerator() : _nextMoveTime(0) {}

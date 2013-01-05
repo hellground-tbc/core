@@ -30,6 +30,7 @@
 #include "ObjectAccessor.h"
 #include "MapManager.h"
 #include "BattleGroundMgr.h"
+#include "InstanceSaveMgr.h"
 
 #include "Database/DatabaseEnv.h"
 
@@ -61,7 +62,7 @@ void WorldRunnable::run()
         // we want that next d1 + t1 == WORLD_SLEEP_CONST
         // we can't know next t1 and then can use (t0 + d1) == WORLD_SLEEP_CONST requirement
         // d1 = WORLD_SLEEP_CONST - t0 = WORLD_SLEEP_CONST - (D0 - d0) = WORLD_SLEEP_CONST + d0 - D0
-        if (diff <= WORLD_SLEEP_CONST+prevSleepTime)
+        if (diff <= WORLD_SLEEP_CONST + prevSleepTime)
         {
             prevSleepTime = WORLD_SLEEP_CONST + prevSleepTime - diff;
             ACE_Based::Thread::Sleep(prevSleepTime);
@@ -76,6 +77,8 @@ void WorldRunnable::run()
 
     // unload battleground templates before different singletons destroyed
     sBattleGroundMgr.DeleteAllBattleGrounds();
+    sInstanceSaveManager.UnbindBeforeDelete();
+
     sWorldSocketMgr->StopNetwork();
     sMapMgr.UnloadAll();                                    // unload all grids (including locked in memory)
 

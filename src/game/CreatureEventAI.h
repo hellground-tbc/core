@@ -434,9 +434,7 @@ struct CreatureEventAI_Action
 struct CreatureEventAI_Event
 {
     uint32 event_id;
-
-    int64 entryOrGUID;
-
+    int64 entryOrGUID; // needs to be int64 for correct work
     uint32 event_inverse_phase_mask;
 
     EventAI_Type event_type : 16;
@@ -577,7 +575,7 @@ struct CreatureEventAI_Event
 
 //Event_Map
 typedef std::vector<CreatureEventAI_Event> CreatureEventAI_Event_Vec;
-typedef UNORDERED_MAP<int64, CreatureEventAI_Event_Vec > CreatureEventAI_Event_Map;
+typedef UNORDERED_MAP<int64, CreatureEventAI_Event_Vec> CreatureEventAI_Event_Map;
 
 struct CreatureEventAI_Summon
 {
@@ -605,7 +603,7 @@ struct CreatureEventAIHolder
     bool UpdateRepeatTimer(Creature* creature, uint32 repeatMin, uint32 repeatMax);
 };
 
-class HELLGROUND_DLL_SPEC CreatureEventAI : public CreatureAI
+class HELLGROUND_IMPORT_EXPORT CreatureEventAI : public CreatureAI
 {
 
     public:

@@ -87,7 +87,7 @@ bool GridMap::loadData(char *filename)
         // loadup area data
         if (header.areaMapOffset && !loadAreaData(in, header.areaMapOffset, header.areaMapSize))
         {
-            sLog.outError("Error loading map area data\n");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Error loading map area data\n");
             fclose(in);
             return false;
         }
@@ -95,7 +95,7 @@ bool GridMap::loadData(char *filename)
         // loadup height data
         if (header.heightMapOffset && !loadHeightData(in, header.heightMapOffset, header.heightMapSize))
         {
-            sLog.outError("Error loading map height data\n");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Error loading map height data\n");
             fclose(in);
             return false;
         }
@@ -103,7 +103,7 @@ bool GridMap::loadData(char *filename)
         // loadup liquid data
         if (header.liquidMapOffset && !loadGridMapLiquidData(in, header.liquidMapOffset, header.liquidMapSize))
         {
-            sLog.outError("Error loading map liquids data\n");
+            sLog.outLog(LOG_DEFAULT, "ERROR: Error loading map liquids data\n");
             fclose(in);
             return false;
         }
@@ -112,7 +112,7 @@ bool GridMap::loadData(char *filename)
         return true;
     }
 
-    sLog.outError("Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.", filename);
+    sLog.outLog(LOG_DEFAULT, "ERROR: Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.", filename);
     fclose(in);
     return false;
 }
@@ -571,7 +571,7 @@ bool GridMap::ExistMap(uint32 mapid,int gx,int gy)
 
     if(!pf)
     {
-        sLog.outError("Check existing of map file '%s': not exist!",tmp);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Check existing of map file '%s': not exist!",tmp);
         delete[] tmp;
         return false;
     }
@@ -582,7 +582,7 @@ bool GridMap::ExistMap(uint32 mapid,int gx,int gy)
         header.versionMagic != *((uint32 const*)(MAP_VERSION_MAGIC)) ||
         !IsAcceptableClientBuild(header.buildMagic))
     {
-        sLog.outError("Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.",tmp);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Map file '%s' is non-compatible version (outdated?). Please, create new using ad.exe program.",tmp);
         delete [] tmp;
         fclose(pf);                                         //close file before return
         return false;
@@ -601,7 +601,7 @@ bool GridMap::ExistVMap(uint32 mapid,int gx,int gy)
         if (!exists)
         {
             std::string name = vmgr->getDirFileName(mapid,gx,gy);
-            sLog.outError("VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld.GetDataPath()+"vmaps/"+name).c_str());
+            sLog.outLog(LOG_DEFAULT, "ERROR: VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld.GetDataPath()+"vmaps/"+name).c_str());
             return false;
         }
     }
@@ -986,11 +986,17 @@ float TerrainInfo::GetWaterOrGroundLevel(float x, float y, float z, float* pGrou
     return VMAP_INVALID_HEIGHT_VALUE;
 }
 
-GridMap * TerrainInfo::GetGrid(const float x, const float y)
+GridMap* TerrainInfo::GetGrid(const float x, const float y)
 {
     // half opt method
-    int gx=(int)(32-x/SIZE_OF_GRIDS);                       //grid x
-    int gy=(int)(32-y/SIZE_OF_GRIDS);                       //grid y
+    uint32 gx = uint32(32 - x / SIZE_OF_GRIDS);                       //grid x
+    uint32 gy = uint32(32 - y / SIZE_OF_GRIDS);                       //grid y
+
+    if (gx > MAX_NUMBER_OF_GRIDS)
+        return NULL;
+
+    if (gy > MAX_NUMBER_OF_GRIDS)
+        return NULL;
 
     //quick check if GridMap already loaded
     GridMap * pMap = m_GridMaps[gx][gy];
@@ -1000,7 +1006,7 @@ GridMap * TerrainInfo::GetGrid(const float x, const float y)
     return pMap;
 }
 
-GridMap * TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
+GridMap* TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
 {
     //double checked lock pattern
     if(!m_GridMaps[x][y])
@@ -1020,7 +1026,7 @@ GridMap * TerrainInfo::LoadMapAndVMap(const uint32 x, const uint32 y)
 
             if(!map->loadData(tmp))
             {
-                sLog.outError("Error load map file: \n %s\n", tmp);
+                sLog.outLog(LOG_DEFAULT, "ERROR: Error load map file: \n %s\n", tmp);
                 //ASSERT(false);
             }
 
@@ -1074,18 +1080,36 @@ float TerrainInfo::GetWaterLevel(float x, float y, float z, float* pGround /*= N
 
 bool TerrainInfo::IsLineOfSightEnabled() const
 {
-    if (GetSpecifics()->lineofsight <= sWorld.GetCoreBalancerTreshold())
+    if (GetSpecifics()->lineofsight == F_ALWAYS_DISABLED)
         return false;
 
-    return sWorld.getConfig(CONFIG_VMAP_LOS_ENABLED);
+    if (GetSpecifics()->lineofsight == F_ALWAYS_ENABLED)
+        return sWorld.getConfig(CONFIG_VMAP_LOS_ENABLED);
+
+    if (sWorld.getConfig(CONFIG_COREBALANCER_ENABLED))
+    {
+        if (GetSpecifics()->lineofsight <= sWorld.GetCoreBalancerTreshold())
+            return false;
+    }
+
+    return GetSpecifics()->lineofsight != F_ALWAYS_DISABLED && sWorld.getConfig(CONFIG_VMAP_LOS_ENABLED);
 }
 
 bool TerrainInfo::IsPathFindingEnabled() const
 {
-    if (GetSpecifics()->pathfinding <= sWorld.GetCoreBalancerTreshold())
+    if (GetSpecifics()->pathfinding == F_ALWAYS_DISABLED)
         return false;
 
-    return sWorld.getConfig(CONFIG_MMAP_ENABLED);
+    if (GetSpecifics()->pathfinding == F_ALWAYS_ENABLED)
+        return sWorld.getConfig(CONFIG_MMAP_ENABLED);
+
+    if (sWorld.getConfig(CONFIG_COREBALANCER_ENABLED))
+    {
+        if (GetSpecifics()->pathfinding <= sWorld.GetCoreBalancerTreshold())
+            return false;
+    }
+
+    return GetSpecifics()->pathfinding != F_ALWAYS_DISABLED && sWorld.getConfig(CONFIG_MMAP_ENABLED);
 }
 
 float TerrainInfo::GetVisibilityDistance()
@@ -1112,7 +1136,7 @@ void TerrainManager::LoadTerrainSpecifics()
 {
     i_TerrainSpecifics.clear();
 
-    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT `entry`, `visibility`, `pathfinding`, `lineofsight` FROM `map_template`");
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT `entry`, `visibility`, `pathfinding`, `lineofsight`, `ainotifyperiod`, `viewupdatedistance` FROM `map_template`");
     if (!result)
     {
         BarGoLink bar(1);
@@ -1138,6 +1162,10 @@ void TerrainManager::LoadTerrainSpecifics()
         info.visibility = fields[1].GetFloat();
         info.pathfinding = FeaturePriority(fields[2].GetUInt8());
         info.lineofsight = FeaturePriority(fields[3].GetUInt8());
+
+        info.ainotifyperiod = fields[4].GetUInt32();
+        // in database we have this in yards, but in core that is as square
+        info.viewupdatedistance = fields[5].GetUInt32()*fields[5].GetUInt32();
 
     }
     while (result->NextRow());

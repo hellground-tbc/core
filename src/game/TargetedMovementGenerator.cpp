@@ -18,7 +18,7 @@
 
 #include "ByteBuffer.h"
 #include "TargetedMovementGenerator.h"
-#include "Errors.h"
+#include "Log.h"
 #include "Player.h"
 #include "Creature.h"
 #include "CreatureAI.h"
@@ -50,7 +50,12 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     else if (!_offset)
     {
         if (_target->IsWithinMeleeRange(&owner))
+        {
+            if (!owner.IsStopped())
+                owner.StopMoving();
+
             return;
+        }
 
         // this should prevent weird behavior on tight spaces like lines between columns and bridge on BEM
         if (Pet* pet = owner.ToPet())
@@ -61,8 +66,13 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     }
     else
     {
-        if (_target->IsWithinDistInMap(&owner, _offset + 1.0f))
+        if (_target->IsWithinDistInMap(&owner, _offset))
+        {
+            if (!owner.IsStopped())
+                owner.StopMoving();
+
             return;
+        }
 
         // to at _offset distance from target and _angle from target facing
         _target->GetClosePoint(x, y, z, owner.GetObjectSize(), _offset, _angle);
@@ -72,13 +82,13 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
         _path = new PathFinder(&owner);
 
     // allow pets following their master to cheat while generating paths
-    bool forceDest = (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet() && owner.hasUnitState(UNIT_STAT_FOLLOW));
+    bool forceDest = (owner.GetObjectGuid().IsPet() && owner.hasUnitState(UNIT_STAT_FOLLOW));
     _path->calculate(x, y, z, forceDest);
     if (_path->getPathType() & PATHFIND_NOPATH)
         return;
 
     _targetReached = false;
-    _recalculateTravel = false;
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = false;
 
     Movement::MoveSplineInit init(owner);
     init.MovebyPath(_path->getPath());
@@ -102,14 +112,14 @@ template<>
 void TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >::UpdateFinalDistance(float fDistance)
 {
     _offset = fDistance;
-    _recalculateTravel = true;
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = true;
 }
 
 template<>
 void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::UpdateFinalDistance(float fDistance)
 {
     _offset = fDistance;
-    _recalculateTravel = true;
+    static_cast<MovementGenerator*>(this)->_recalculateTravel = true;
 }
 
 template<class T, typename D>
@@ -128,22 +138,30 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     _recheckDistance.Update(time_diff);
     if (_recheckDistance.Passed())
     {
-        _recheckDistance.Reset(sWorld.getConfig(CONFIG_TARGET_POS_RECHECK_TIMER));
+        uint32 recheckTimer = sWorld.getConfig(CONFIG_TARGET_POS_RECHECK_TIMER);
+        uint32 recalculateRange = sWorld.getConfig(CONFIG_TARGET_POS_RECALCULATION_RANGE);
 
-        //float allowed_dist = 0.0f;
-        bool targetIsVictim = owner.getVictimGUID() == _target->GetGUID();
+         if (owner.GetObjectGuid().IsPet())
+         {
+             recheckTimer /= 2;
+             recalculateRange /= 2;
+         }
 
-        float allowed_dist = owner.GetObjectBoundingRadius() + sWorld.getConfig(CONFIG_TARGET_POS_RECALCULATION_RANGE);    
+        _recheckDistance.Reset(recheckTimer);
+
+        float allowed_dist = _offset + owner.GetObjectBoundingRadius() + recalculateRange;
+
         G3D::Vector3 dest = owner.movespline->FinalDestination();
+        
         bool targetMoved = !_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
-
-        if (targetIsVictim && owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->isPet())
+        if (owner.getVictimGUID() == _target->GetGUID())
         {
-            if ((!owner.getVictim() || !owner.getVictim()->isAlive()) && owner.IsStopped())
+            Unit* victim = owner.getVictim();
+            if (!victim || !victim->isAlive())
                 return false;
 
-            if (!_offset && owner.IsStopped() && !owner.IsWithinMeleeRange(owner.getVictim()))
-                targetMoved = true;
+            if (owner.GetObjectGuid().IsPet() || owner.GetObjectGuid().IsCreature() && owner.IsStopped())
+                targetMoved = !owner.IsWithinMeleeRange(victim, MELEE_RANGE + _offset);
         }
 
         if (targetMoved)
@@ -163,9 +181,10 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
     }
     else
     {
-        if (_recalculateTravel)
+        if (static_cast<MovementGenerator*>(this)->_recalculateTravel)
             _setTargetLocation(owner);
     }
+
     return true;
 }
 

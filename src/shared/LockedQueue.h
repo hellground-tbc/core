@@ -22,8 +22,7 @@
 #include <ace/Guard_T.h>
 #include <ace/Thread_Mutex.h>
 #include <deque>
-#include <assert.h>
-#include "Errors.h"
+#include "Log.h"
 
 namespace ACE_Based
 {

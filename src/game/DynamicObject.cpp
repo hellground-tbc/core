@@ -60,6 +60,7 @@ void DynamicObject::RemoveFromWorld()
     {
         WorldObject::RemoveFromWorld();
         GetMap()->RemoveFromObjMap(GetGUID());
+        GetViewPoint().Event_RemovedFromWorld();
     }
 }
 
@@ -72,7 +73,7 @@ bool DynamicObject::Create(uint32 guidlow, Unit *caster, uint32 spellId, uint32 
 
     if (!IsPositionValid())
     {
-        sLog.outError("ERROR: DynamicObject (spell %u eff %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",spellId,effIndex,GetPositionX(),GetPositionY());
+        sLog.outLog(LOG_DEFAULT, "ERROR: DynamicObject (spell %u eff %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",spellId,effIndex,GetPositionX(),GetPositionY());
         return false;
     }
 
@@ -155,12 +156,13 @@ void DynamicObject::Delay(int32 delaytime)
             (*iunit)->DelayAura(m_spellId, m_effIndex, delaytime);
 }
 
-bool DynamicObject::isVisibleForInState(Player const* u, bool inVisibleList) const
+bool DynamicObject::isVisibleForInState(Player const* player, WorldObject const* viewPoint, bool inVisibleList) const
 {
-    const WorldObject* viewPoint = u->GetFarsightTarget();
-    if (!viewPoint || !u->HasFarsightVision()) viewPoint = u;
+    if (!IsInWorld() || !player->IsInWorld())
+        return false;
 
-    return IsInWorld() && u->IsInWorld() && (IsWithinDistInMap(viewPoint, World::GetMaxVisibleDistanceForObject()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false)
-        || GetCasterGUID() == u->GetGUID());
+    if (GetCasterGUID() == player->GetGUID())
+        return true;
+
+    return IsWithinDistInMap(viewPoint, GetMap()->GetVisibilityDistance(const_cast<DynamicObject*>(this), const_cast<Player*>(player)) + (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
-

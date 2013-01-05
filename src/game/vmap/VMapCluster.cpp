@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <ace/Process.h>
 #include <ace/OS_NS_sys_wait.h>
+#include <ace/OS_NS_unistd.h>
 #include <ace/Thread.h>
 
 #include "Log.h"
@@ -42,7 +43,7 @@ namespace VMAP
             options.command_line("%s -c \"%s\" -p %s", runnable, cfg_file, name);
 
         if(process.spawn(options) == -1)
-            sMLog.outError("SpawnVMapProcess: failed to create process %s with id %d because of error %d", name, id, ACE_OS::last_error());
+            sLog.outLog(LOG_DEFAULT, "ERROR: SpawnVMapProcess: failed to create process %s with id %d because of error %d", name, id, ACE_OS::last_error());
 
         return 0;
     }
@@ -52,13 +53,13 @@ namespace VMAP
         m_coreStream.Accept(VMAP_CLUSTER_MANAGER_PROCESS);
         ByteBuffer packet = m_coreStream.RecvPacket();
         if(packet.size() != 1+sizeof(pid_t))
-            sMLog.outError("VMapClusterManager: failed to receive master pid, invalid packet size %d (%d)", packet.size(), 1+sizeof(pid_t));
+            sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterManager: failed to receive master pid, invalid packet size %d (%d)", packet.size(), 1+sizeof(pid_t));
         else
         {
             packet.read_skip(1);
             packet >> m_masterPid;
         }
-        
+
         for(int32 i = 0; i < processNumber; i++)
         {
             packet.rpos(0);
@@ -92,7 +93,7 @@ namespace VMAP
         Guard g(m_processLock);
         if(!g.locked())
         {
-            sMLog.outError("FindProcess: failed to aquire lock");
+            sLog.outLog(LOG_DEFAULT, "ERROR: FindProcess: failed to aquire lock");
             return NULL;
         }
         std::list<LoSProcess*>::iterator it;
@@ -123,13 +124,13 @@ namespace VMAP
 
     int VMapClusterManager::Start()
     {
-        sMLog.outString("VMapClusterManager process started");
+        sLog.outString("VMapClusterManager process started");
         ACE_thread_t tids[100];
         ACE_hthread_t htids[100];
 
         int n = ACE_Thread::spawn_n(tids, m_processNumber, &VMapClusterManager::RunThread, this, THR_NEW_LWP|THR_JOINABLE, 0, 0, 0, htids);
         if(n != m_processNumber)
-            sMLog.outError("VMapClusterManager::Start(): started only %d out of %d threads because of error %d", n, m_processNumber, ACE_OS::last_error());
+            sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterManager::Start(): started only %d out of %d threads because of error %d", n, m_processNumber, ACE_OS::last_error());
 
         if (m_masterPid)    // end when master ends
         {
@@ -141,9 +142,9 @@ namespace VMAP
         {
             for(int i = 0; i < n; i++)
                 if(ACE_Thread::join(htids[i]) == -1)
-                    sMLog.outError("VMapClusterManager::Start(): failed to join thread id=%d tid=%d because of error %d", i, tids[i], ACE_OS::last_error());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterManager::Start(): failed to join thread id=%d tid=%d because of error %d", i, tids[i], ACE_OS::last_error());
         }
-        
+
         return 0;
     }
 
@@ -177,7 +178,7 @@ namespace VMAP
 
             if (packet.size() != 1+4+4+sizeof(float)*6)
             {
-                sMLog.outError("VMapClusterManager::Run(): received packet with invalid size %d (%d)", packet.size(),  1+4+4+sizeof(float)*6);
+                sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterManager::Run(): received packet with invalid size %d (%d)", packet.size(),  1+4+4+sizeof(float)*6);
                 return;
             }
             packet.read_skip<uint8>();
@@ -185,10 +186,10 @@ namespace VMAP
 
             packet.rpos(0);
             process = FindProcess();
-            if(!process) 
+            if(!process)
             {
                 SendFailCode(tid);
-                sMLog.outError("VMapClusterManager::Run(): failed to find free vmap process", packet.size());
+                sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterManager::Run(): failed to find free vmap process", packet.size());
                 return;
             }
 
@@ -206,7 +207,7 @@ namespace VMAP
             if(packet.size() != 2)
             {
                 SendFailCode(tid);
-                sMLog.outError("VMapClusterManager::Run(): received packet with invalid size %d (2)", packet.size());
+                sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterManager::Run(): received packet with invalid size %d (2)", packet.size());
                 return;
             }
 
@@ -227,7 +228,7 @@ namespace VMAP
         m_outPipe.Connect(VMAP_CLUSTER_PROCESS_REPLY, (int32*)&processId);
         ByteBuffer packet = m_inPipe.RecvPacket();
         if(packet.size() != 1+sizeof(pid_t))
-            sMLog.outError("VMapClusterProcess: failed to receive master pid, invalid packet size %d (%d)", packet.size(), 1+sizeof(pid_t));
+            sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterProcess: failed to receive master pid, invalid packet size %d (%d)", packet.size(), 1+sizeof(pid_t));
         else
         {
             packet.read_skip(1);
@@ -256,7 +257,7 @@ namespace VMAP
             for(int i = 0; i < MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS; i++)
                 grid[i] = false;
             m_gridLoaded.insert(GridLoadedMap::value_type(mapId, grid));
-        } 
+        }
         else
             grid = it->second;
 
@@ -279,12 +280,12 @@ namespace VMAP
     }
 
     int VMapClusterProcess::Start()
-    {   
-        sMLog.outString("VMapClusterProcess process no %d started", m_processId);
+    {
+        sLog.outString("VMapClusterProcess process no %d started", m_processId);
         ACE_thread_t tid;
         ACE_hthread_t htid;
         if(ACE_Thread::spawn(&VMapClusterProcess::RunThread, this, THR_NEW_LWP|THR_JOINABLE, &tid, &htid) == -1)
-            sMLog.outError("VMapClusterProcess::Start(): failed to start thread because of error %d", ACE_OS::last_error());
+            sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterProcess::Start(): failed to start thread because of error %d", ACE_OS::last_error());
 
         if (m_masterPid)    // end when master ends
         {
@@ -294,9 +295,9 @@ namespace VMAP
         else // no master, just wait for thread to finish
         {
             if(ACE_Thread::join(htid) == -1)
-                sMLog.outError("VMapClusterProcess::Start(): failed to join thread because of error %d",  ACE_OS::last_error());
+                sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterProcess::Start(): failed to join thread because of error %d",  ACE_OS::last_error());
         }
-        
+
         return 0;
     }
 
@@ -315,7 +316,7 @@ namespace VMAP
                 return 0;
             if(packet.size() != 1+4+4+sizeof(float)*6)
             {
-                sMLog.outError("VMapClusterProcess::Run(): received packet with invalid size %d (%d)", packet.size(), 1+4+4+sizeof(float)*6);
+                sLog.outLog(LOG_DEFAULT, "ERROR: VMapClusterProcess::Run(): received packet with invalid size %d (%d)", packet.size(), 1+4+4+sizeof(float)*6);
                 return 0;
             }
             packet.read_skip(1+4);
@@ -346,11 +347,11 @@ namespace VMAP
 
     void LoSProxy::Init()
     {
-        m_requester.Connect(VMAP_CLUSTER_MANAGER_PROCESS);       
+        m_requester.Connect(VMAP_CLUSTER_MANAGER_PROCESS);
     }
 
     bool LoSProxy::isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2)
-    { 
+    {
         ACE_thread_t tid = ACE_Thread::self();
 
         ByteBuffer packet;
@@ -365,7 +366,7 @@ namespace VMAP
         {
             Guard g(m_lock);
             if(!g.locked())
-                 sLog.outError("LoSProxy::isInLineOfSight: failed to aquire callback lock, unintended bahaviour possible\n");
+                 sLog.outLog(LOG_DEFAULT, "ERROR: LoSProxy::isInLineOfSight: failed to aquire callback lock, unintended bahaviour possible\n");
             ThreadRecvCallback::iterator it = m_callbacks.find(tid);
             if (it == m_callbacks.end())
             {
@@ -380,7 +381,7 @@ namespace VMAP
         uint8 response;
         if (packet.size() != 2)
         {
-            sLog.outError("LoSProxy::isInLineOfSight: received packet with invalid size %d (2)", packet.size());
+            sLog.outLog(LOG_DEFAULT, "ERROR: LoSProxy::isInLineOfSight: received packet with invalid size %d (2)", packet.size());
             response = 2;
         }
         else
@@ -391,7 +392,7 @@ namespace VMAP
 
         if (response == 2)
         {
-            sLog.outError("LoSProxy::isInLineOfSight: cluster failed to check line of sight, checking locally");
+            sLog.outLog(LOG_DEFAULT, "ERROR: LoSProxy::isInLineOfSight: cluster failed to check line of sight, checking locally");
             return VMapFactory::createOrGetVMapManager()->isInLineOfSight2(pMapId, x1, y1, z1, x2, y2, z2);
         }
         return response;

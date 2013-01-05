@@ -28,7 +28,7 @@ namespace Movement
 {
     /*  Initializes and launches spline movement
      */
-    class HELLGROUND_DLL_SPEC MoveSplineInit
+    class HELLGROUND_IMPORT_EXPORT MoveSplineInit
     {
     public:
 

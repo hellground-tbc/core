@@ -54,13 +54,13 @@ typedef std::map<uint32,ReputationRank> ForcedReactions;
 
 class Player;
 
-class HELLGROUND_DLL_SPEC ReputationMgr
+class HELLGROUND_EXPORT ReputationMgr
 {
     public:                                                 // constructors and global modifiers
         explicit ReputationMgr(Player* owner) : m_player(owner) {}
         ~ReputationMgr() {}
 
-        void SaveToDB();
+        void SaveToDB(bool transaction = true);
         void LoadFromDB(QueryResultAutoPtr result);
     public:                                                 // statics
         static const int32 PointsInRank[MAX_REPUTATION_RANK];

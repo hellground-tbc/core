@@ -23,6 +23,7 @@
 
 #include "GridDefines.h"
 #include "SharedDefines.h"
+#include "PathFinder.h"
 
 #define MAX_SPELL_ID    60000
 
@@ -381,7 +382,7 @@ class Spell
         SpellCastResult CheckPower();
         SpellCastResult CheckCasterAuras() const;
 
-        int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(m_spellInfo,i,m_currentBasePoints[i],target); }
+        int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(GetSpellInfo(),i,m_currentBasePoints[i],target); }
 
         bool HaveTargetsForEffect(uint8 effect) const;
         void Delayed();
@@ -421,7 +422,6 @@ class Spell
         void HandleThreatSpells(uint32 spellId);
         //void HandleAddAura(Unit* Target);
 
-        const SpellEntry * const m_spellInfo;
         int32 m_currentBasePoints[3];                       // cache SpellEntry::EffectBasePoints and use for set custom base points
         Item* m_CastItem;
         uint64 m_castItemGUID;
@@ -434,15 +434,19 @@ class Spell
         void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
         bool IsNextMeleeSwingSpell() const
         {
-            return m_spellInfo->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
+            return GetSpellInfo()->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
         }
         bool IsRangedSpell() const
         {
-            return  m_spellInfo->Attributes & SPELL_ATTR_RANGED;
+            return  GetSpellInfo()->Attributes & SPELL_ATTR_RANGED;
+        }
+        bool IsDelayedSpell() const
+        {
+            return GetSpellInfo()->speed > 0.0f || GetSpellInfo()->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY;
         }
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
-        bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK);  }
-        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && /*IsRangedSpell() &&*/ !(m_spellInfo->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT); }
+        bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (GetSpellInfo()->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK);  }
+        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && /*IsRangedSpell() &&*/ !(GetSpellInfo()->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT); }
 
         bool IsDeletable() const { return !m_referencedFromCurrentSpell && !m_executedCurrently; }
         void SetReferencedFromCurrent(bool yes) { m_referencedFromCurrentSpell = yes; }
@@ -478,13 +482,15 @@ class Spell
 
         bool CheckTargetCreatureType(Unit* target) const;
 
-        void AddTriggeredSpell(SpellEntry const* spell) { m_TriggerSpells.push_back(spell); }
+        void AddTriggeredSpell(SpellEntry const* spell) { if (spell) m_TriggerSpells.push_back(spell); }
 
         void CleanupTargetList();
 
         void SetSpellValue(SpellValueMod mod, int32 value);
-    protected:
 
+        SpellEntry const* GetSpellInfo() const { return m_spellInfo; }
+
+    protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();
         void CancelGlobalCooldown();
@@ -547,6 +553,8 @@ class Spell
         bool   m_canTrigger;                  // Can start trigger (m_IsTriggeredSpell can`t use for this)
         uint32 m_procAttacker;                // Attacker trigger flags
         uint32 m_procVictim;                  // Victim   trigger flags
+        uint32 m_procCastEnd;
+
         void   prepareDataForTriggerSystem();
 
         //*****************************************
@@ -628,13 +636,16 @@ class Spell
         // we can't store original aura link to prevent access to deleted auras
         // and in same time need aura data and after aura deleting.
         SpellEntry const* m_triggeredByAuraSpell;
+        SpellEntry const* m_spellInfo;
 
         bool m_skipCheck;
+
+        PathFinder _path;
 };
 
 namespace Hellground
 {
-    struct HELLGROUND_DLL_DECL SpellNotifierGameObject
+    struct SpellNotifierGameObject
     {
         std::list<GameObject*> *i_data;
         Spell &i_spell;
@@ -653,9 +664,10 @@ namespace Hellground
             i_caster = spell.GetCaster();
         }
 
-        template<class T> inline void Visit(GridRefManager<T>  &m)
+        template<class T>
+        inline void Visit(GridRefManager<T>  &m)
         {
-            assert(i_data);
+            ASSERT(i_data);
 
             if (!i_caster)
                 return;
@@ -673,7 +685,7 @@ namespace Hellground
                             continue;
                     }break;
                     default:
-                        sLog.outError("Game Object can only have SPELL_TARGETS_ENTRY (%i) type not %i", SPELL_TARGETS_ENTRY, i_TargetType);
+                        sLog.outLog(LOG_DEFAULT, "ERROR: Game Object can only have SPELL_TARGETS_ENTRY (%i) type not %i", SPELL_TARGETS_ENTRY, i_TargetType);
                         continue;
                 }
 
@@ -704,10 +716,11 @@ namespace Hellground
         template<> inline void Visit(PlayerMapType &) {}
         template<> inline void Visit(GameObjectMapType &) {}
         template<> inline void Visit(DynamicObjectMapType &) {}
+        template<> inline void Visit(CameraMapType & ) {}
         #endif
     };
 
-    struct HELLGROUND_DLL_DECL SpellNotifierCreatureAndPlayer
+    struct SpellNotifierCreatureAndPlayer
     {
         std::list<Unit*> *i_data;
         Spell &i_spell;
@@ -726,9 +739,10 @@ namespace Hellground
             i_caster = spell.GetCaster();
         }
 
-        template<class T> inline void Visit(GridRefManager<T>  &m)
+        template<class T>
+        inline void Visit(GridRefManager<T>  &m)
         {
-            assert(i_data);
+            ASSERT(i_data);
 
             if (!i_caster)
                 return;
@@ -738,7 +752,7 @@ namespace Hellground
                 if (!itr->getSource()->isAlive() || (itr->getSource()->GetTypeId() == TYPEID_PLAYER && ((Player*)itr->getSource())->IsTaxiFlying()))
                     continue;
 
-                if (itr->getSource()->m_invisibilityMask && itr->getSource()->m_invisibilityMask & (1 << 10) && !i_caster->canDetectInvisibilityOf(itr->getSource()))
+                if (itr->getSource()->m_invisibilityMask && itr->getSource()->m_invisibilityMask & (1 << 10) && !i_caster->canDetectInvisibilityOf(itr->getSource(), i_caster))
                     continue;
 
                 switch (i_TargetType)
@@ -809,11 +823,12 @@ namespace Hellground
         template<> inline void Visit(CorpseMapType &) {}
         template<> inline void Visit(GameObjectMapType &) {}
         template<> inline void Visit(DynamicObjectMapType &) {}
+        template<> inline void Visit(CameraMapType & ) {}
         #endif
     };
 
 
-    struct HELLGROUND_DLL_DECL SpellNotifierDeadCreature
+    struct SpellNotifierDeadCreature
     {
         std::list<Unit*> *i_data;
         Spell &i_spell;
@@ -834,7 +849,7 @@ namespace Hellground
 
         template<class T> inline void Visit(GridRefManager<T>  &m)
         {
-            assert(i_data);
+            ASSERT(i_data);
 
             if (!i_caster)
                 return;
@@ -914,6 +929,7 @@ namespace Hellground
         template<> inline void Visit(CorpseMapType &) {}
         template<> inline void Visit(GameObjectMapType &) {}
         template<> inline void Visit(PlayerMapType &) {}
+        template<> inline void Visit(CameraMapType &) {}
         template<> inline void Visit(DynamicObjectMapType &) {}
         #endif
     };
@@ -923,15 +939,18 @@ namespace Hellground
     template<> inline void SpellNotifierGameObject::Visit(CreatureMapType&) {}
     template<> inline void SpellNotifierGameObject::Visit(PlayerMapType&) {}
     template<> inline void SpellNotifierGameObject::Visit(DynamicObjectMapType&) {}
+    template<> inline void SpellNotifierGameObject::Visit(CameraMapType&) {}
 
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(CorpseMapType&) {}
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(GameObjectMapType&) {}
     template<> inline void SpellNotifierCreatureAndPlayer::Visit(DynamicObjectMapType&) {}
+    template<> inline void SpellNotifierCreatureAndPlayer::Visit(CameraMapType&) {}
 
     template<> inline void SpellNotifierDeadCreature::Visit(CorpseMapType&) {}
     template<> inline void SpellNotifierDeadCreature::Visit(GameObjectMapType&) {}
     template<> inline void SpellNotifierDeadCreature::Visit(PlayerMapType&) {}
     template<> inline void SpellNotifierDeadCreature::Visit(DynamicObjectMapType&) {}
+    template<> inline void SpellNotifierDeadCreature::Visit(CameraMapType&) {}
     #endif
 }
 

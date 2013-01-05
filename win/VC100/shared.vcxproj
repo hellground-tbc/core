@@ -184,6 +184,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>Default</CompileAs>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -222,6 +223,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -242,7 +245,7 @@
     <ClCompile>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;TRINITY_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -282,7 +285,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;TRINITY_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -485,8 +488,6 @@
     <ClCompile Include="..\..\src\shared\Database\SqlPreparedStatement.cpp" />
     <ClCompile Include="..\..\src\shared\Database\SQLStorage.cpp" />
     <ClCompile Include="..\..\src\shared\Log.cpp" />
-    <ClCompile Include="..\..\src\shared\Base.cpp" />
-    <ClCompile Include="..\..\src\shared\Mthread.cpp" />
     <ClCompile Include="..\..\src\shared\ProgressBar.cpp" />
     <ClCompile Include="..\..\src\shared\Util.cpp" />
     <ClCompile Include="..\..\src\shared\Config\Config.cpp" />
@@ -517,11 +518,8 @@
     <ClInclude Include="..\..\src\shared\Database\SQLStorage.h" />
     <ClInclude Include="..\..\src\shared\Database\SQLStorageImpl.h" />
     <ClInclude Include="..\..\src\shared\Log.h" />
-    <ClInclude Include="..\..\src\shared\Base.h" />
     <ClInclude Include="..\..\src\shared\ByteBuffer.h" />
-    <ClInclude Include="..\..\src\shared\Errors.h" />
     <ClInclude Include="..\..\dep\include\mersennetwister\MersenneTwister.h" />
-    <ClInclude Include="..\..\src\shared\Mthread.h" />
     <ClInclude Include="..\..\src\shared\ProgressBar.h" />
     <ClInclude Include="..\..\src\shared\Timer.h" />
     <ClInclude Include="..\..\src\shared\Util.h" />
@@ -535,12 +533,12 @@
     <CustomBuild Include="..\..\src\shared\revision.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Getting Version... :)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cd ..\..\src\shared
-"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">revision.h;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Getting Version... :)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cd %(RootDir)%(Directory)
-"$(TargetDir)\..\genrevision__$(Platform)_$(Configuration)\genrevision.exe" "..\.."
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">revision.h;%(Outputs)</Outputs>
@@ -548,11 +546,11 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">Getting Version... :)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">Getting Version... :)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cd ..\..\src\shared
-"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">cd ..\..\src\shared
-"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">cd ..\..\src\shared
-"..\..\bin\$(Platform)_$(Configuration)\genrevision.exe" "..\.."</Command>
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
@@ -563,13 +561,13 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">Getting Version... :)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">Getting Version... :)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cd %(RootDir)%(Directory)
-"$(TargetDir)\..\genrevision__$(Platform)_$(Configuration)\genrevision.exe" "..\.."
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">cd %(RootDir)%(Directory)
-"$(TargetDir)\..\genrevision__$(Platform)_$(Configuration)\genrevision.exe" "..\.."
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">cd %(RootDir)%(Directory)
-"$(TargetDir)\..\genrevision__$(Platform)_$(Configuration)\genrevision.exe" "..\.."
+"$(ProjectDir)$(Platform)_$(Configuration)\genrevision\genrevision.exe" "..\.."
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">$(SolutionDir)../.hg/branch.cache;%(AdditionalInputs)</AdditionalInputs>

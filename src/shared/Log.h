@@ -55,24 +55,25 @@ enum Color
     WHITE
 };
 
-enum logFiles
+enum LogNames
 {
-    LOG_DEFAULT     = 0,
-    LOG_IRC         = 1,
-    LOG_GM          = 2,
-    LOG_CHAR        = 3,
-    LOG_DB_ERR      = 4,
-    LOG_ARENA       = 5,
-    LOG_CHEAT       = 6,
-    LOG_AC          = 7,
-    LOG_SPECIAL     = 8,
-    LOG_MAIL        = 9,
-    LOG_GUILD_ANN   = 10,
-    LOG_BOSS        = 11,
-    LOG_WARDEN      = 12,
-    LOG_AUCTION     = 13,
-    LOG_DIFF        = 14,
-    LOG_CRASH       = 15,
+    LOG_GM              = 0,
+    LOG_DEFAULT         = 1,
+    LOG_STATUS          = 2,
+    LOG_CHAR            = 3,
+    LOG_DB_ERR          = 4,
+    LOG_ARENA           = 5,
+    LOG_CHEAT           = 6,
+    LOG_SPECIAL         = 7,
+    LOG_MAIL            = 8,
+    LOG_GUILD_ANN       = 9,
+    LOG_BOSS            = 10,
+    LOG_WARDEN          = 11,
+    LOG_AUCTION         = 12,
+    LOG_DIFF            = 13,
+    LOG_SESSION_DIFF    = 14,
+    LOG_CRASH           = 15,
+    LOG_DB_DIFF         = 16,
 
     LOG_MAX_FILES
 };
@@ -99,58 +100,41 @@ class Log
         void Initialize();
         void InitColors(const std::string& init_str);
         void outTitle(const char * str);
-        void outCommand( uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
-        void outString();                                   // any log level
+        void outCommand(uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
                                                             // any log level
-        void outString(const char * str, ...)      ATTR_PRINTF(2,3);
-                                                            // any log level
-        void outError(const char * err, ...)       ATTR_PRINTF(2,3);
+        void outString();
+        void outString(const char * str, ...)       ATTR_PRINTF(2, 3);
+        void outLog(LogNames log, const char * str, ...) ATTR_PRINTF(3, 4);
                                                             // log level >= 1
-        void outBasic(const char * str, ...)       ATTR_PRINTF(2,3);
+        void outBasic(const char * str, ...)        ATTR_PRINTF(2, 3);
                                                             // log level >= 2
-        void outDetail(const char * str, ...)      ATTR_PRINTF(2,3);
+        void outDetail(const char * str, ...)       ATTR_PRINTF(2, 3);
                                                             // log level >= 3
-        void outDebugInLine(const char * str, ...) ATTR_PRINTF(2,3);
+        void outDebugInLine(const char * str, ...)  ATTR_PRINTF(2, 3);
                                                             // log level >= 3
-        void outDebug(const char * str, ...)       ATTR_PRINTF(2,3);
+        void outDebug(const char * str, ...)        ATTR_PRINTF(2, 3);
                                                             // any log level
-        void outMenu(const char * str, ...)        ATTR_PRINTF(2,3);
-                                                            // any log level
-        void outErrorDb(const char * str = "", ...)     ATTR_PRINTF(2,3);
-                                                            // any log level
-        void outChar(const char * str, ...)        ATTR_PRINTF(2,3);
-        void outSpecial(const char * str, ...)     ATTR_PRINTF(2,3);
-        void outMail(const char * str, ...)     ATTR_PRINTF(2,3);
-        void outWhisp(uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
-        void outArena(const char * str, ...)       ATTR_PRINTF(2,3);
-        void outCheat(const char * str, ...)       ATTR_PRINTF(2,3);
-        void outAC(const char * str, ...)       ATTR_PRINTF(2,3);
-        void outIrc(const char * str, ...)         ATTR_PRINTF(2,3);
-        void outBoss(const char * str, ...)        ATTR_PRINTF(2,3);
-        void outWarden(const char * str, ...)      ATTR_PRINTF(2,3);
-        void outAuction(const char * str, ...)     ATTR_PRINTF(2,3);
-        void outGann(const char * str, ...)        ATTR_PRINTF(2,3);
-        void outDiff(const char * str, ...)        ATTR_PRINTF(2,3);
-        void outCrash(const char * err, ...)       ATTR_PRINTF(2,3);
-
-        void OutLogToFile(logFiles log, const char * str, ...)    ATTR_PRINTF(3,4);
+        void outWhisp(uint32 account, const char * str, ...) ATTR_PRINTF(3, 4);
+        void outPacket(uint32 glow, const char * str, ...) ATTR_PRINTF(3, 4);
 
         void SetLogLevel(char * Level);
         void SetLogFileLevel(char * Level);
         void SetColor(bool stdout_stream, Color color);
         void ResetColor(bool stdout_stream);
         void outTime();
-        static void outTimestamp(FILE* file);
+        static bool outTimestamp(FILE* file);
         static std::string GetTimestampStr();
         uint32 getLogFilter() const { return m_logFilter; }
         bool IsOutDebug() const { return m_logLevel > 2 || (m_logFileLevel > 2 && logFile[LOG_DEFAULT]); }
         bool IsOutCharDump() const { return m_charLog_Dump; }
         bool IsIncludeTime() const { return m_includeTime; }
+
     private:
-        FILE* openLogFile(char const* configFileName,char const* configTimeStampFlag, char const* mode);
+        FILE* openLogFile(LogNames log);
         FILE* openGmlogPerAccount(uint32 account);
 
         FILE *logFile[LOG_MAX_FILES];
+        std::string logFileNames[LOG_MAX_FILES];
 
         FILE* openWhisplogPerAccount(uint32 account);
 
@@ -186,10 +170,16 @@ class Log
 #endif
 
 // primary for script library
-void HELLGROUND_DLL_SPEC outstring_log(const char * str, ...) ATTR_PRINTF(1,2);
-void HELLGROUND_DLL_SPEC detail_log(const char * str, ...) ATTR_PRINTF(1,2);
-void HELLGROUND_DLL_SPEC debug_log(const char * str, ...) ATTR_PRINTF(1,2);
-void HELLGROUND_DLL_SPEC error_log(const char * str, ...) ATTR_PRINTF(1,2);
-void HELLGROUND_DLL_SPEC error_db_log(const char * str, ...) ATTR_PRINTF(1,2);
+void outstring_log(const char * str, ...) ATTR_PRINTF(1,2);
+void detail_log(const char * str, ...) ATTR_PRINTF(1,2);
+void debug_log(const char * str, ...) ATTR_PRINTF(1,2);
+void error_log(const char * str, ...) ATTR_PRINTF(1,2);
+void error_db_log(const char * str, ...) ATTR_PRINTF(1,2);
+
+// old clean assert from Errors.h
+//#define ASSERT(assertion) { if(!(assertion)) { fprintf(stderr, "\n%s:%i ASSERTION FAILED:\n  %s\n", __FILE__, __LINE__, #assertion); assert(#assertion &&0); } }
+
+// i think we should use this assert, cause we see asserts in log files, not only on console (mostly we dont't see it cause the server restarts)
+#define ASSERT(assertion) { if(!(assertion)) { error_log("ERROR: %s:%i ASSERTION FAILED:\n  %s\n", __FILE__, __LINE__, #assertion); assert(#assertion &&0); } }
 
 #endif

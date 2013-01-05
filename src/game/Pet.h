@@ -194,6 +194,8 @@ class Pet : public Creature
         void UpdateAttackPowerAndDamage(bool ranged = false);
         void UpdateDamagePhysical(WeaponAttackType attType);
 
+        bool canSeeOrDetect(Unit const* u, WorldObject const*, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+
         bool   CanTakeMoreActiveSpells(uint32 SpellIconID);
         void   ToggleAutocast(uint32 spellid, bool apply);
         bool   HasTPForSpell(uint32 spellid);
@@ -257,11 +259,11 @@ class Pet : public Creature
     private:
         void SaveToDB(uint32, uint8)                        // overwrited of Creature::SaveToDB     - don't must be called
         {
-            assert(false);
+            ASSERT(false);
         }
         void DeleteFromDB()                                 // overwrited of Creature::DeleteFromDB - don't must be called
         {
-            assert(false);
+            ASSERT(false);
         }
 };
 #endif

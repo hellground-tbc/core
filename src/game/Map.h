@@ -117,70 +117,77 @@ enum GetCreatureGuidType
     GET_ALIVE_CREATURE_GUID     = 3
 };
 
-class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
+typedef std::list<std::pair<Map*, uint32> > DelayedMapList;
+
+class HELLGROUND_IMPORT_EXPORT Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
+        class UpdateHelper
+        {
+            public:
+                explicit UpdateHelper(Map* m) : m_map(m) {}
+                ~UpdateHelper() {}
+
+                bool ProcessUpdate() const;
+
+                void Update(DelayedMapList& delayedUpdate);
+
+                time_t GetTimeElapsed() const;
+
+            private:
+                UpdateHelper& operator=(const UpdateHelper&);
+                UpdateHelper(const UpdateHelper& o);
+
+                Map* m_map;
+        };
+
         Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
         virtual ~Map();
 
         // currently unused for normal maps
-        bool CanUnload(uint32 diff)
-        {
-            if (!m_unloadTimer) return false;
-            if (m_unloadTimer <= diff) return true;
-            m_unloadTimer -= diff;
-            return false;
-        }
+        bool CanUnload(uint32 diff);
 
         virtual bool Add(Player *);
         virtual void Remove(Player *, bool);
+
         template<class T> void Add(T *);
         template<class T> void Remove(T *, bool);
 
-        void InsertIntoCreatureGUIDList(Creature * obj);
-        void RemoveFromCreatureGUIDList(Creature * obj);
+        void InsertIntoCreatureGUIDList(Creature* obj);
+        void RemoveFromCreatureGUIDList(Creature* obj);
 
         void InsertIntoObjMap(Object * obj);
         void RemoveFromObjMap(uint64 guid);
         void RemoveFromObjMap(Object * obj);
 
         virtual void Update(const uint32&);
+        virtual void DelayedUpdate(const uint32);
 
-        void MessageBroadcast(Player *, WorldPacket *, bool to_self, bool to_possessor);
-        void MessageBroadcast(WorldObject *, WorldPacket *, bool to_possessor);
-        void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
-        void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
+        void BroadcastPacket(WorldObject*, WorldPacket*, bool = false);
+        void BroadcastPacketInRange(WorldObject*, WorldPacket*, float, bool = false, bool = false);
+        void BroadcastPacketExcept(WorldObject*, WorldPacket*, Player*);
 
-        float GetVisibilityDistance(WorldObject* obj = NULL) const;
-        float GetActiveObjectUpdateDistance() const { return m_ActiveObjectUpdateDistance; }
         virtual void InitVisibilityDistance();
 
-        void PlayerRelocation(Player *, float x, float y, float z, float angl);
-        void CreatureRelocation(Creature *creature, float x, float y, float, float);
+        float GetVisibilityDistance(WorldObject* = NULL, Player* = NULL) const;
+        float GetActiveObjectUpdateDistance() const { return m_ActiveObjectUpdateDistance; }
 
-        template<class T, class CONTAINER> void Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor);
+        void PlayerRelocation(Player*, float, float, float, float);
+        void CreatureRelocation(Creature*, float, float, float, float);
 
-        bool IsRemovalGrid(float x, float y) const
-        {
-            GridPair p = Hellground::ComputeGridPair(x, y);
-            return(!getNGrid(p.x_coord, p.y_coord) || getNGrid(p.x_coord, p.y_coord)->GetGridState() == GRID_STATE_REMOVAL);
-        }
+        template<class T, class CONTAINER>
+        void Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor);
 
-        bool IsLoaded(float x, float y) const
-        {
-            GridPair p = Hellground::ComputeGridPair(x, y);
-            return loaded(p);
-        }
+        bool IsRemovalGrid(float x, float y) const;
+        bool IsLoaded(float x, float y) const;
 
         void LoadGrid(float x, float y);
         bool UnloadGrid(const uint32 &x, const uint32 &y, bool pForce);
+
         virtual void UnloadAll();
 
-        void ResetGridExpiry(NGridType &grid, float factor = 1) const
-        {
-            grid.ResetTimeTracker((time_t)((float)i_gridExpiry*factor));
-        }
+        void ResetGridExpiry(NGridType &grid, float factor = 1) const;
 
         time_t GetGridExpiry(void) const { return i_gridExpiry; }
         uint32 GetId(void) const { return i_id; }
@@ -200,8 +207,10 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         uint32 GetInstanceId() const { return i_InstanceId; }
         uint8 GetSpawnMode() const { return (i_spawnMode); }
+
         virtual bool CanEnter(Player* /*player*/) { return true; }
         virtual bool EncounterInProgress(Player*) { return false; }
+
         const char* GetMapName() const;
 
         bool Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
@@ -212,25 +221,11 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         bool IsBattleGround() const { return i_mapEntry && i_mapEntry->IsBattleGround(); }
         bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
         bool IsBattleGroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattleGroundOrArena(); }
-        bool GetEntrancePos(int32 &mapid, float &x, float &y)
-        {
-            if (!i_mapEntry)
-                return false;
-            if (i_mapEntry->entrance_map < 0)
-                return false;
-            mapid = i_mapEntry->entrance_map;
-            x = i_mapEntry->entrance_x;
-            y = i_mapEntry->entrance_y;
-            return true;
-        }
+
+        bool GetEntrancePos(int32 &mapid, float &x, float &y);
 
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);
-        virtual void DelayedUpdate(const uint32 diff);
-
-        void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair);
-        void UpdatePlayerVisibility( Player* player, Cell cell, CellPair cellpair );
-        void UpdateObjectsVisibilityFor(Player* player, Cell cell, CellPair cellpair );
 
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
@@ -238,30 +233,20 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
-        bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
+        uint32 GetAlivePlayersCountExceptGMs() const;
 
-        void SendToPlayers(WorldPacket const* data) const;
+        bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
 
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }
 
         // must called with AddToWorld
-        template<class T>
-        void AddToActive(T* obj) { AddToActiveHelper(obj); }
-
-        void AddToActive(Creature* obj);
-
-        //per-map script storage
-        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);
-        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
-
+        void AddToActive(WorldObject* obj);
         // must called with RemoveFromWorld
+        void RemoveFromActive(WorldObject* obj);
+
         template<class T>
-        void RemoveFromActive(T* obj) { RemoveFromActiveHelper(obj); }
-
-        void RemoveFromActive(Creature* obj);
-
-        template<class T> void SwitchGridContainers(T* obj, bool active);
+        void SwitchGridContainers(T* obj, bool active);
 
         CreatureGroupHolderType CreatureGroupHolder;
 
@@ -296,6 +281,17 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         const TerrainInfo * GetTerrain() const { return m_TerrainData; }
 
         bool WaypointMovementAutoActive() const;
+        bool WaypointMovementPathfinding() const;
+
+        void setNGrid(NGridType* grid, uint32 x, uint32 y);
+        NGridType* getNGrid(uint32 x, uint32 y) const
+        {
+            return i_grids[x][y];
+        }
+
+        //per-map script storage
+        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);
+        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
 
     private:
         void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
@@ -318,20 +314,16 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(this); }
 
-        NGridType* getNGrid(uint32 x, uint32 y) const
-        {
-            return i_grids[x][y];
-        }
-
         bool isGridObjectDataLoaded(uint32 x, uint32 y) const { return getNGrid(x,y)->isGridObjectDataLoaded(); }
         void setGridObjectDataLoaded(bool pLoaded, uint32 x, uint32 y) { getNGrid(x,y)->setGridObjectDataLoaded(pLoaded); }
 
         void ScriptsProcess();
-        void setNGrid(NGridType* grid, uint32 x, uint32 y);
 
+        void CheckHostileRefFor(Player*);
         void SendObjectUpdates();
 
-        std::set<Object *> i_objectsToClientUpdate;
+        typedef std::set<Object*> ObjectSet;
+        ObjectSet i_objectsToClientUpdate;
 
         GObjectMapType                  gameObjectsMap;
         DObjectMapType                  dynamicObjectsMap;
@@ -354,32 +346,23 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
 
-        int32 m_VisibilityNotifyPeriod;
-
         typedef std::set<WorldObject*> ActiveNonPlayers;
         ActiveNonPlayers m_activeNonPlayers;
         ActiveNonPlayers::iterator m_activeNonPlayersIter;
-
-        uint32 RecordTimeDiff();
 
     private:
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
 
         //Shared geodata object with map coord info...
-        TerrainInfo * const m_TerrainData;
+        TerrainInfo* const m_TerrainData;
         bool m_bLoadedGrids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
 
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
-        //these functions used to process player/mob aggro reactions and
-        //visibility calculations. Highly optimized for massive calculations
-        void ProcessRelocationNotifies(const uint32 &diff);
-
         time_t i_gridExpiry;
+        WorldUpdateCounter m_updateTracker;
 
         bool i_scriptLock;
-
-        uint32 m_currentTime;
 
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
@@ -394,29 +377,6 @@ class HELLGROUND_DLL_SPEC Map : public GridRefManager<NGridType>
 
         template<class T>
         void DeleteFromWorld(T*);
-
-        template<class T>
-        void AddToActiveHelper(T* obj)
-        {
-            m_activeNonPlayers.insert(obj);
-        }
-
-        template<class T>
-        void RemoveFromActiveHelper(T* obj)
-        {
-            // Map::Update for active object in proccess
-            if (m_activeNonPlayersIter != m_activeNonPlayers.end())
-            {
-                ActiveNonPlayers::iterator itr = m_activeNonPlayers.find(obj);
-                if (itr == m_activeNonPlayers.end())
-                    return;
-                if (itr==m_activeNonPlayersIter)
-                    ++m_activeNonPlayersIter;
-                m_activeNonPlayers.erase(itr);
-            }
-            else
-                m_activeNonPlayers.erase(obj);
-        }
 };
 
 enum InstanceResetMethod
@@ -429,7 +389,7 @@ enum InstanceResetMethod
     INSTANCE_RESET_RESPAWN_DELAY
 };
 
-class HELLGROUND_DLL_SPEC InstanceMap : public Map
+class HELLGROUND_IMPORT_EXPORT InstanceMap : public Map
 {
     public:
         InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
@@ -459,7 +419,7 @@ class HELLGROUND_DLL_SPEC InstanceMap : public Map
         uint32 i_script_id;
 };
 
-class HELLGROUND_DLL_SPEC BattleGroundMap : public Map
+class HELLGROUND_IMPORT_EXPORT BattleGroundMap : public Map
 {
     public:
         BattleGroundMap(uint32 id, time_t, uint32 InstanceId, BattleGround *bg);

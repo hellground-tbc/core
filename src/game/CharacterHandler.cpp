@@ -121,7 +121,9 @@ class CharacterHandler
 void WorldSession::HandleCharEnum(QueryResultAutoPtr result)
 {
     // keys can be non cleared if player open realm list and close it by 'cancel'
-    AccountsDatabase.PExecute("UPDATE account_session SET v = '0', s = '0' WHERE account_id = '%u'", GetAccountId());
+    static SqlStatementID clearKeys;
+    SqlStatement stmt = AccountsDatabase.CreateStatement(clearKeys, "UPDATE account_session SET v = '0', s = '0' WHERE account_id = ?");
+    stmt.PExecute(GetAccountId());
 
     WorldPacket data(SMSG_CHAR_ENUM, 100);                  // we guess size
 
@@ -223,7 +225,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     {
         data << uint8(CHAR_CREATE_FAILED);
         SendPacket(&data);
-        sLog.outError("Class: %u or Race %u not found in DBC (Wrong DBC files?) or Cheater?", class_, race_);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Class: %u or Race %u not found in DBC (Wrong DBC files?) or Cheater?", class_, race_);
         return;
     }
 
@@ -231,7 +233,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     if (raceEntry->addon > Expansion())
     {
         data << uint8(CHAR_CREATE_EXPANSION);
-        sLog.outError("Expansion %u account:[%d] tried to Create character with expansion %u race (%u)", Expansion(), GetAccountId(), raceEntry->addon, race_);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Expansion %u account:[%d] tried to Create character with expansion %u race (%u)",Expansion(),GetAccountId(),raceEntry->addon,race_);
         SendPacket(&data);
         return;
     }
@@ -241,7 +243,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     if (Expansion() < 2 && class_ == CLASS_DEATH_KNIGHT)
     {
         data << uint8(CHAR_CREATE_EXPANSION);
-        sLog.outError("Not Expansion 2 account:[%d] but tried to Create character with expansion 2 class (%u)",GetAccountId(),class_);
+        sLog.outLog(LOG_DEFAULT, "ERROR: Not Expansion 2 account:[%d] but tried to Create character with expansion 2 class (%u)",GetAccountId(),class_);
         SendPacket(&data);
         return;
     }
@@ -251,7 +253,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     {
         data << uint8(CHAR_NAME_INVALID_CHARACTER);
         SendPacket(&data);
-        sLog.outError("Account:[%d] but tried to Create character with empty [name] ",GetAccountId());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Account:[%d] but tried to Create character with empty [name] ",GetAccountId());
         return;
     }
 
@@ -367,7 +369,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     }
 
     if ((have_same_race && skipCinematics == 1) || skipCinematics == 2)
-        pNewChar->setCinematic(1);                          // not show intro
+        pNewChar->setCinematic(true);                       // not show intro
 
     // Player created, save it now
     pNewChar->SaveToDB();
@@ -388,7 +390,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 
     std::string IP_str = GetRemoteAddress();
     sLog.outDetail("Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
-    sLog.outChar("Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
+    sLog.outLog(LOG_CHAR, "Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
 }
 
 void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
@@ -437,7 +439,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
 
     std::string IP_str = GetRemoteAddress();
     sLog.outDetail("Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
-    sLog.outChar("Account: %d (IP: %s) Delete Character:[%s] (guid: %u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
+    sLog.outLog(LOG_CHAR, "Account: %d (IP: %s) Delete Character:[%s] (guid: %u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
 
     Player::DeleteFromDB(guid, GetAccountId());
 
@@ -452,7 +454,7 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
 
     if (PlayerLoading() || GetPlayer() != NULL)
     {
-        sLog.outError("Player tryes to login again, AccountId = %d",GetAccountId());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Player tryes to login again, AccountId = %d",GetAccountId());
         return;
     }
 
@@ -555,8 +557,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     {
         // active game events info
-        const char *active_events = sGameEventMgr.getActiveEventsString();
-        ChatHandler(this).SendSysMessage(active_events);//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
+        std::string active_events = sGameEventMgr.getActiveEventsString();
+        ChatHandler(this).SendSysMessage(active_events.c_str());//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
     }
 
     QueryResultAutoPtr resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);
@@ -599,7 +601,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         else
         {
             // remove wrong guild data
-            sLog.outError("Player %s (GUID: %u) marked as member not existed guild (id: %u), removing guild membership for player.",pCurrChar->GetName(),pCurrChar->GetGUIDLow(),pCurrChar->GetGuildId());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Player %s (GUID: %u) marked as member not existed guild (id: %u), removing guild membership for player.",pCurrChar->GetName(),pCurrChar->GetGUIDLow(),pCurrChar->GetGuildId());
             pCurrChar->SetInGuild(0);
         }
     }
@@ -612,7 +614,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     //Show cinematic at the first time that player login
     if (!pCurrChar->getCinematic())
     {
-        pCurrChar->setCinematic(1);
+        pCurrChar->setCinematic(true);
 
         if(ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(pCurrChar->getRace()))
         {
@@ -640,8 +642,15 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     pCurrChar->SendInitialPacketsAfterAddToMap();
 
-    RealmDataDatabase.PExecute("UPDATE characters SET online = 1 WHERE guid = '%u'", pCurrChar->GetGUIDLow());
-    AccountsDatabase.PExecute("UPDATE account SET online = 1 WHERE account_id = '%u'", GetAccountId());
+    static SqlStatementID setCharOnline;
+    static SqlStatementID setAccountOnline;
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(setCharOnline, "UPDATE characters SET online = 1 WHERE guid = ?");
+    stmt.PExecute(pCurrChar->GetGUIDLow());
+
+    stmt = AccountsDatabase.CreateStatement(setAccountOnline, "UPDATE account SET online = 1 WHERE account_id = ?");
+    stmt.PExecute(GetAccountId());
+
     pCurrChar->SetInGameTime(WorldTimer::getMSTime());
 
     // announce group about member online (must be after add to player list to receive announce to self)
@@ -756,10 +765,13 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     pCurrChar->CreateCharmAI();
 
     std::string IP_str = GetRemoteAddress();
-    sLog.outChar("Account: %d (IP: %s) Login Character:[%s] (guid:%u)",
+    sLog.outLog(LOG_CHAR, "Account: %d (IP: %s) Login Character:[%s] (guid:%u)",
         GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUIDLow());
 
     m_playerLoading = false;
+
+    sWorld.ModifyLoggedInCharsCount(_player->GetTeamId(), 1);
+
     delete holder;
 }
 
@@ -797,7 +809,7 @@ void WorldSession::HandleTutorialFlag(WorldPacket & recv_data)
     uint32 wInt = (iFlag / 32);
     if (wInt >= 8)
     {
-        //sLog.outError("CHEATER? Account:[%d] Guid[%u] tried to send wrong CMSG_TUTORIAL_FLAG", GetAccountId(),GetGUID());
+        //sLog.outLog(LOG_DEFAULT, "ERROR: CHEATER? Account:[%d] Guid[%u] tried to send wrong CMSG_TUTORIAL_FLAG", GetAccountId(),GetGUID());
         return;
     }
     uint32 rInt = (iFlag % 32);
@@ -921,12 +933,23 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(QueryResultAutoPtr resul
     uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
     std::string oldname = result->Fetch()[1].GetCppString();
 
+    static SqlStatementID changeCharName;
+    static SqlStatementID deleteDeclinedName;
+
     RealmDataDatabase.BeginTransaction();
-    RealmDataDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_RENAME), guidLow);
-    RealmDataDatabase.PExecute("DELETE FROM character_declinedname WHERE guid ='%u'", guidLow);
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(changeCharName, "UPDATE characters set name = ?, at_login = at_login & ~ ? WHERE guid = ?");
+    stmt.addString(newname);
+    stmt.addUInt32(uint32(AT_LOGIN_RENAME));
+    stmt.addUInt32(guidLow);
+    stmt.Execute();
+
+    stmt = RealmDataDatabase.CreateStatement(deleteDeclinedName, "DELETE FROM character_declinedname WHERE guid = ?");
+    stmt.PExecute(guidLow);
+
     RealmDataDatabase.CommitTransaction();
 
-    sLog.outChar("Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s", session->GetAccountId(), session->GetRemoteAddress().c_str(), oldname.c_str(), guidLow, newname.c_str());
+    sLog.outLog(LOG_CHAR, "Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s", session->GetAccountId(), session->GetRemoteAddress().c_str(), oldname.c_str(), guidLow, newname.c_str());
 
     WorldPacket data(SMSG_CHAR_RENAME, 1+8+(newname.size()+1));
     data << uint8(RESPONSE_SUCCESS);
@@ -1010,13 +1033,23 @@ void WorldSession::HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data)
         return;
     }
 
-    for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-        RealmDataDatabase.escape_string(declinedname.name[i]);
+    static SqlStatementID deleteDeclinedName;
+    static SqlStatementID insertDeclinedName;
 
     RealmDataDatabase.BeginTransaction();
-    RealmDataDatabase.PExecute("DELETE FROM character_declinedname WHERE guid = '%u'", GUID_LOPART(guid));
-    RealmDataDatabase.PExecute("INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES ('%u','%s','%s','%s','%s','%s')",
-        GUID_LOPART(guid), declinedname.name[0].c_str(), declinedname.name[1].c_str(), declinedname.name[2].c_str(), declinedname.name[3].c_str(), declinedname.name[4].c_str());
+
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteDeclinedName, "DELETE FROM character_declinedname WHERE guid = ?");
+    stmt.PExecute(GUID_LOPART(guid));
+
+    stmt = RealmDataDatabase.CreateStatement(insertDeclinedName, "INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES (?, ?, ?, ?, ?, ?)");
+    stmt.addUInt32(GUID_LOPART(guid));
+    stmt.addString(declinedname.name[0]);
+    stmt.addString(declinedname.name[1]);
+    stmt.addString(declinedname.name[2]);
+    stmt.addString(declinedname.name[3]);
+    stmt.addString(declinedname.name[4]);
+    stmt.Execute();
+
     RealmDataDatabase.CommitTransaction();
 
     WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
@@ -1024,4 +1057,3 @@ void WorldSession::HandleDeclinedPlayerNameOpcode(WorldPacket& recv_data)
     data << uint64(guid);
     SendPacket(&data);
 }
-

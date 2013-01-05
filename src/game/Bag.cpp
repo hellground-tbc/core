@@ -41,8 +41,9 @@ Bag::~Bag()
 {
     for (int i = 0; i < MAX_BAG_SIZE; ++i)
     {
-        if (Item *item = m_bagslot[i])
+        if (m_bagslot[i] && m_bagslot[i] != this)
         {
+            Item *item = m_bagslot[i];
             if (item->IsInWorld())
                 item->RemoveFromWorld();
 
@@ -60,7 +61,7 @@ void Bag::AddToWorld()
         {
             if (m_bagslot[i] == this)
             {
-                sLog.outError("Bag has self in slot: %u, bag size: %u, owner: " I64FMT, GetSlotByItemGUID(m_bagslot[i]->GetGUID()), GetBagSize(), GetOwnerGUID());
+                sLog.outLog(LOG_DEFAULT, "ERROR: Bag has self in slot: %u, bag size: %u, owner: " I64FMT, GetSlotByItemGUID(m_bagslot[i]->GetGUID()), GetBagSize(), GetOwnerGUID());
                 continue;
             }
             m_bagslot[i]->AddToWorld();
@@ -154,7 +155,7 @@ uint32 Bag::GetFreeSlots() const
 
 void Bag::RemoveItem(uint8 slot, bool /*update*/)
 {
-    assert(slot < MAX_BAG_SIZE);
+    ASSERT(slot < MAX_BAG_SIZE);
 
     if (m_bagslot[slot])
         m_bagslot[slot]->SetContainer(NULL);
@@ -167,7 +168,7 @@ void Bag::StoreItem(uint8 slot, Item *pItem, bool /*update*/)
 {
     if (slot > MAX_BAG_SIZE)
     {
-        sLog.outError("Player GUID " UI64FMTD " tried to manipulate packets and crash the server.", GetOwnerGUID());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Player GUID " UI64FMTD " tried to manipulate packets and crash the server.", GetOwnerGUID());
         return;
     }
 

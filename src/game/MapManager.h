@@ -32,7 +32,7 @@
 
 class Transport;
 
-struct HELLGROUND_DLL_DECL MapID
+struct MapID
 {
     explicit MapID(uint32 id) : nMapId(id), nInstanceId(0) {}
     MapID(uint32 id, uint32 instid) : nMapId(id), nInstanceId(instid) {}
@@ -51,13 +51,13 @@ struct HELLGROUND_DLL_DECL MapID
     uint32 nInstanceId;
 };
 
-class HELLGROUND_DLL_DECL MapManager
+class MapManager
 {
     friend class ACE_Singleton<MapManager, ACE_Thread_Mutex>;
     public:
         typedef std::map<MapID, Map* > MapMapType;
 
-        Map* CreateMap(uint32, const WorldObject* obj);
+        Map* CreateMap(uint32, WorldObject const* obj);
         Map* CreateBgMap(uint32 mapid, uint32, BattleGround* bg);
         Map* FindMap(uint32 mapid, uint32 instanceId = 0) const;
 
@@ -75,16 +75,7 @@ class HELLGROUND_DLL_DECL MapManager
                 i_gridCleanUpDelay = t;
         }
 
-        void SetMapUpdateInterval(uint32 t)
-        {
-            if (t < MIN_MAP_UPDATE_DELAY)
-                t = MIN_MAP_UPDATE_DELAY;
-
-            i_timer.SetInterval(t);
-            i_timer.Reset();
-        }
-
-        //void LoadGrid(int mapid, float x, float y, const WorldObject* obj, bool no_unload = false);
+        //void LoadGrid(int mapid, float x, float y, WorldObject const* obj, bool no_unload = false);
         void UnloadAll();
 
         static bool ExistMapAndVMap(uint32 mapid, float x, float y);
@@ -166,7 +157,6 @@ class HELLGROUND_DLL_DECL MapManager
 
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
-        IntervalTimer i_timer;
 
         MapUpdater m_updater;
         uint32 i_MaxInstanceId;

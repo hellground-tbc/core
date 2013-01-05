@@ -108,12 +108,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\bin\$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)$(Platform)_$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\bin\$(Platform)_$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">$(SolutionDir)..\bin\$(Platform)_$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">$(SolutionDir)..\bin\$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)$(Platform)_$(Configuration)\$(ProjectName)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">$(ProjectDir)$(Platform)_$(Configuration)\$(ProjectName)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">$(ProjectDir)$(Platform)_$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">$(ProjectDir)$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">$(ProjectDir)$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
@@ -178,7 +178,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -199,7 +199,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">
     <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -209,6 +209,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>Cdecl</CallingConvention>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -222,7 +223,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>

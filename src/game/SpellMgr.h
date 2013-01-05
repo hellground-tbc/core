@@ -145,43 +145,48 @@ typedef std::map<uint32, uint64> SpellAffectMap;
 // Spell proc event related declarations (accessed using SpellMgr functions)
 enum ProcFlags
 {
-   PROC_FLAG_NONE                          = 0x00000000,
+   PROC_FLAG_NONE                            = 0x00000000,
 
-   PROC_FLAG_KILLED                        = 0x00000001,    // 00 Killed by agressor
-   PROC_FLAG_KILL_AND_GET_XP               = 0x00000002,    // 01 Kill that yields experience or honor
+   PROC_FLAG_KILLED                          = 0x00000001,    // 00 Killed by agressor
+   PROC_FLAG_KILL_AND_GET_XP                 = 0x00000002,    // 01 Kill that yields experience or honor
 
-   PROC_FLAG_SUCCESSFUL_MELEE_HIT          = 0x00000004,    // 02 Successful melee attack
-   PROC_FLAG_TAKEN_MELEE_HIT               = 0x00000008,    // 03 Taken damage from melee strike hit
+   PROC_FLAG_SUCCESSFUL_MELEE_HIT            = 0x00000004,    // 02 Successful melee attack
+   PROC_FLAG_TAKEN_MELEE_HIT                 = 0x00000008,    // 03 Taken damage from melee strike hit
 
-   PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT    = 0x00000010,    // 04 Successful attack by Spell that use melee weapon
-   PROC_FLAG_TAKEN_MELEE_SPELL_HIT         = 0x00000020,    // 05 Taken damage by Spell that use melee weapon
+   PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT      = 0x00000010,    // 04 Successful attack by Spell that use melee weapon
+   PROC_FLAG_TAKEN_MELEE_SPELL_HIT           = 0x00000020,    // 05 Taken damage by Spell that use melee weapon
 
-   PROC_FLAG_SUCCESSFUL_RANGED_HIT         = 0x00000040,    // 06 Successful Ranged attack (all ranged attack deal as spell so newer set :()
-   PROC_FLAG_TAKEN_RANGED_HIT              = 0x00000080,    // 07 Taken damage from ranged attack (all ranged attack deal as spell so newer set :()
+   PROC_FLAG_SUCCESSFUL_RANGED_HIT           = 0x00000040,    // 06 Successful Ranged attack (all ranged attack deal as spell so newer set :()
+   PROC_FLAG_TAKEN_RANGED_HIT                = 0x00000080,    // 07 Taken damage from ranged attack (all ranged attack deal as spell so newer set :()
 
-   PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT   = 0x00000100,    // 08 Successful Ranged attack by Spell that use ranged weapon
-   PROC_FLAG_TAKEN_RANGED_SPELL_HIT        = 0x00000200,    // 09 Taken damage by Spell that use ranged weapon
+   PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT     = 0x00000100,    // 08 Successful Ranged attack by Spell that use ranged weapon
+   PROC_FLAG_TAKEN_RANGED_SPELL_HIT          = 0x00000200,    // 09 Taken damage by Spell that use ranged weapon
 
-   PROC_FLAG_SUCCESSFUL_POSITIVE_AOE_HIT   = 0x00000400,    // 10 Successful AoE (not 100% shure unused)
-   PROC_FLAG_TAKEN_POSITIVE_AOE            = 0x00000800,    // 11 Taken AoE      (not 100% shure unused)
+   PROC_FLAG_SUCCESSFUL_POSITIVE_AOE_HIT     = 0x00000400,    // 10 Successful AoE (not 100% shure unused)
+   PROC_FLAG_TAKEN_POSITIVE_AOE              = 0x00000800,    // 11 Taken AoE      (not 100% shure unused)
 
-   PROC_FLAG_SUCCESSFUL_AOE_SPELL_HIT      = 0x00001000,    // 12 Successful AoE damage spell hit (not 100% shure unused)
-   PROC_FLAG_TAKEN_AOE_SPELL_HIT           = 0x00002000,    // 13 Taken AoE damage spell hit      (not 100% shure unused)
+   PROC_FLAG_SUCCESSFUL_AOE_SPELL_HIT        = 0x00001000,    // 12 Successful AoE damage spell hit (not 100% shure unused)
+   PROC_FLAG_TAKEN_AOE_SPELL_HIT             = 0x00002000,    // 13 Taken AoE damage spell hit      (not 100% shure unused)
 
-   PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL     = 0x00004000,    // 14 Successful cast positive spell (by default only on healing)
-   PROC_FLAG_TAKEN_POSITIVE_SPELL          = 0x00008000,    // 15 Taken positive spell hit (by default only on healing)
+   PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL       = 0x00004000,    // 14 Successful cast positive spell (by default only on healing)
+   PROC_FLAG_TAKEN_POSITIVE_SPELL            = 0x00008000,    // 15 Taken positive spell hit (by default only on healing)
 
-   PROC_FLAG_SUCCESSFUL_NEGATIVE_SPELL_HIT = 0x00010000,    // 16 Successful negative spell cast (by default only on damage)
-   PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT      = 0x00020000,    // 17 Taken negative spell (by default only on damage)
+   PROC_FLAG_SUCCESSFUL_NEGATIVE_SPELL_HIT   = 0x00010000,    // 16 Successful negative spell cast (by default only on damage)
+   PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT        = 0x00020000,    // 17 Taken negative spell (by default only on damage)
 
-   PROC_FLAG_ON_DO_PERIODIC                = 0x00040000,    // 18 Successful do periodic (damage / healing, determined from 14-17 flags)
-   PROC_FLAG_ON_TAKE_PERIODIC              = 0x00080000,    // 19 Taken spell periodic (damage / healing, determined from 14-17 flags)
+   PROC_FLAG_ON_DO_PERIODIC                  = 0x00040000,    // 18 Successful do periodic (damage / healing, determined from 14-17 flags)
+   PROC_FLAG_ON_TAKE_PERIODIC                = 0x00080000,    // 19 Taken spell periodic (damage / healing, determined from 14-17 flags)
 
-   PROC_FLAG_TAKEN_ANY_DAMAGE              = 0x00100000,    // 20 Taken any damage
-   PROC_FLAG_ON_TRAP_ACTIVATION            = 0x00200000,    // 21 On trap activation
+   PROC_FLAG_TAKEN_ANY_DAMAGE                = 0x00100000,    // 20 Taken any damage
+   PROC_FLAG_ON_TRAP_ACTIVATION              = 0x00200000,    // 21 On trap activation
 
-   PROC_FLAG_TAKEN_OFFHAND_HIT             = 0x00400000,    // 22 Taken off-hand melee attacks(not used)
-   PROC_FLAG_SUCCESSFUL_OFFHAND_HIT        = 0x00800000     // 23 Successful off-hand melee attacks
+   PROC_FLAG_TAKEN_OFFHAND_HIT               = 0x00400000,    // 22 Taken off-hand melee attacks(not used)
+   PROC_FLAG_SUCCESSFUL_OFFHAND_HIT          = 0x00800000,    // 23 Successful off-hand melee attacks
+
+   PROC_FLAG_DELAYED_NEGATIVE_SPELL_CAST_END = 0x01000000,    // 24 end of negative delayed spell cast
+   PROC_FLAG_DELAYED_POSITIVE_SPELL_CAST_END = 0x02000000,    // 25 end of positive delayed spell cast
+   PROC_FLAG_DELAYED_RANGED_SPELL_CAST_END   = 0x04000000,    // 26 end of ranged delayed spell cast
+   PROC_FLAG_DELAYED_MELEE_SPELL_CAST_END    = 0x04000000,    // 27 end of melee delayed spell cast
 };
 
 #define MELEE_BASED_TRIGGER_MASK (PROC_FLAG_SUCCESSFUL_MELEE_HIT        | \
@@ -354,6 +359,7 @@ struct SpellChainNode
     uint32 next;
     uint32 first;
     uint32 last;
+    uint32 cur;
     uint8  rank;
 };
 
@@ -386,23 +392,27 @@ typedef std::multimap<uint32, SkillLineAbilityEntry const*> SkillLineAbilityMap;
 
 enum AttributesCu
 {
-    SPELL_ATTR_CU_IGNORE_ARMOR    = 0x00000001,
-    SPELL_ATTR_CU_CONE_BACK       = 0x00000002,
-    SPELL_ATTR_CU_CONE_LINE       = 0x00000004,
-    SPELL_ATTR_CU_SHARE_DAMAGE    = 0x00000008,
-    SPELL_ATTR_CU_AURA_HOT        = 0x00000010,
-    SPELL_ATTR_CU_AURA_DOT        = 0x00000020,
-    SPELL_ATTR_CU_AURA_CC         = 0x00000040,
-    SPELL_ATTR_CU_AURA_SPELL      = 0x00000080,
-    SPELL_ATTR_CU_DIRECT_DAMAGE   = 0x00000100,
-    SPELL_ATTR_CU_CHARGE          = 0x00000200,
-    SPELL_ATTR_CU_LINK_CAST       = 0x00000400,     // after cast bar
-    SPELL_ATTR_CU_LINK_HIT        = 0x00000800,
-    SPELL_ATTR_CU_LINK_AURA       = 0x00001000,
-    SPELL_ATTR_CU_LINK_REMOVE     = 0x00002000,
-    SPELL_ATRR_CU_LINK_PRECAST    = 0x00004000,     // before cast barem
-    SPELL_ATTR_CU_MOVEMENT_IMPAIR = 0x00008000,
-    SPELL_ATTR_CU_FAKE_DELAY      = 0x00010000
+    SPELL_ATTR_CU_IGNORE_ARMOR          = 0x00000001,
+    SPELL_ATTR_CU_CONE_BACK             = 0x00000002,
+    SPELL_ATTR_CU_CONE_LINE             = 0x00000004,
+    SPELL_ATTR_CU_SHARE_DAMAGE          = 0x00000008,
+    SPELL_ATTR_CU_AURA_HOT              = 0x00000010,
+    SPELL_ATTR_CU_AURA_DOT              = 0x00000020,
+    SPELL_ATTR_CU_AURA_CC               = 0x00000040,
+    SPELL_ATTR_CU_AURA_SPELL            = 0x00000080,
+    SPELL_ATTR_CU_DIRECT_DAMAGE         = 0x00000100,
+    SPELL_ATTR_CU_CHARGE                = 0x00000200,
+    SPELL_ATTR_CU_LINK_CAST             = 0x00000400,     // after cast bar
+    SPELL_ATTR_CU_LINK_HIT              = 0x00000800,
+    SPELL_ATTR_CU_LINK_AURA             = 0x00001000,
+    SPELL_ATTR_CU_LINK_REMOVE           = 0x00002000,
+    SPELL_ATRR_CU_LINK_PRECAST          = 0x00004000,     // before cast barem
+    SPELL_ATTR_CU_MOVEMENT_IMPAIR       = 0x00008000,
+    SPELL_ATTR_CU_FAKE_DELAY            = 0x00010000,
+    SPELL_ATTR_CU_FIXED_DAMAGE          = 0x00020000, // ignore all %dmg done, %dmg taken auras
+    SPELL_ATTR_CU_NO_SPELL_DMG_COEFF    = 0x00040000, // to those spells won't be applied and bonuses from spell dmg
+    SPELL_ATTR_CU_TREAT_AS_WELL_FEED    = 0x00080000,
+    SPELL_ATTR_CU_NO_SCROLL_STACK       = 0x00100000  // for spells which can't stack with scrolls (must be also applied to scroll spells)
 };
 
 #define SPELL_FAKE_DELAY 200LL
@@ -411,7 +421,7 @@ typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
 extern bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 
-class HELLGROUND_DLL_SPEC SpellMgr
+class HELLGROUND_IMPORT_EXPORT SpellMgr
 {
     friend class ACE_Singleton<SpellMgr, ACE_Null_Mutex >;
 
@@ -423,29 +433,11 @@ class HELLGROUND_DLL_SPEC SpellMgr
         // Accessors (const or static functions)
     public:
         // Spell affects
-        uint64 GetSpellAffectMask(uint16 spellId, uint8 effectId) const
-        {
-            SpellAffectMap::const_iterator itr = mSpellAffectMap.find((spellId<<8) + effectId);
-            if (itr != mSpellAffectMap.end())
-                return itr->second;
-            return 0;
-        }
+        uint64 GetSpellAffectMask(uint16 spellId, uint8 effectId) const;
 
         bool IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const;
 
-        bool IsPositionTarget(uint32 target)
-        {
-            switch (SpellTargetType[target])
-            {
-                case TARGET_TYPE_DEST_CASTER:
-                case TARGET_TYPE_DEST_TARGET:
-                case TARGET_TYPE_DEST_DEST:
-                    return true;
-                default:
-                    break;
-            }
-            return false;
-        }
+        bool IsPositionTarget(uint32 target);
 
         SpellElixirMap const& GetSpellElixirMap() const { return mSpellElixirs; }
 
@@ -513,7 +505,7 @@ class HELLGROUND_DLL_SPEC SpellMgr
         {
             SpellRequiredMap::const_iterator itr = mSpellReq.find(spell_id);
             if (itr == mSpellReq.end())
-                return NULL;
+                return 0;
 
             return itr->second;
         }
@@ -573,10 +565,11 @@ class HELLGROUND_DLL_SPEC SpellMgr
         }
 
         bool IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const;
+
         static bool canStackSpellRanks(SpellEntry const *spellInfo);
-        bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster) const;
-        bool IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
-        bool IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true) const;
+        static bool IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool sameCaster);
+        static bool IsSpecialStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true);
+        static bool IsSpecialNoStackCase(SpellEntry const *spellInfo_1, SpellEntry const *spellInfo_2, bool sameCaster, bool recur = true);
 
         SpellEntry const* SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel) const;
 
@@ -752,6 +745,9 @@ class HELLGROUND_DLL_SPEC SpellMgr
 
         static bool IsPrimaryProfessionSkill(uint32 skill);
         static bool IsProfessionSkill(uint32 skill);
+
+        static bool EffectCanScaleWithLevel(const SpellEntry* spellInfo, uint8 eff);
+        static bool CanSpellCrit(const SpellEntry* spellInfo);
 
         static SpellEntry const *GetHighestSpellRankForPlayer(uint32, Player*);
 

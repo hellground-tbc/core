@@ -204,7 +204,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
                 }
 
-                sLog.outMail("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
+                sLog.outLog(LOG_MAIL, "Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                     _player->GetName(),_player->GetSession()->GetAccountId(),
                     myItems[i]->GetProto()->Name1,myItems[i]->GetEntry(),myItems[i]->GetCount(),
                     _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
@@ -224,7 +224,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->GetName(),_player->GetSession()->GetAccountId());
                 }
 
-                sLog.outMail("Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
+                sLog.outLog(LOG_MAIL, "Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                     _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
                     hisItems[i]->GetProto()->Name1,hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
                     _player->GetName(),_player->GetSession()->GetAccountId());
@@ -240,21 +240,21 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
             if (myItems[i])
             {
                 if (!traderCanTrade)
-                    sLog.outError("trader can't store item: %u",myItems[i]->GetGUIDLow());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: trader can't store item: %u",myItems[i]->GetGUIDLow());
                 if (_player->CanStoreItem(NULL_BAG, NULL_SLOT, playerDst, myItems[i], false) == EQUIP_ERR_OK)
                     _player->MoveItemToInventory(playerDst, myItems[i], true, true);
                 else
-                    sLog.outError("player can't take item back: %u",myItems[i]->GetGUIDLow());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: player can't take item back: %u",myItems[i]->GetGUIDLow());
             }
             // return the already removed items to the original owner
             if (hisItems[i])
             {
                 if (!playerCanTrade)
-                    sLog.outError("player can't store item: %u",hisItems[i]->GetGUIDLow());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: player can't store item: %u",hisItems[i]->GetGUIDLow());
                 if (_player->pTrader->CanStoreItem(NULL_BAG, NULL_SLOT, traderDst, hisItems[i], false) == EQUIP_ERR_OK)
                     _player->pTrader->MoveItemToInventory(traderDst, hisItems[i], true, true);
                 else
-                    sLog.outError("trader can't take item back: %u",hisItems[i]->GetGUIDLow());
+                    sLog.outLog(LOG_DEFAULT, "ERROR: trader can't take item back: %u",hisItems[i]->GetGUIDLow());
             }
         }
     }
@@ -445,14 +445,14 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
 
         if (_player->tradeGold > 0)
         {
-            sLog.outMail("Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
+            sLog.outLog(LOG_MAIL, "Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
                 _player->GetName(),_player->GetSession()->GetAccountId(),
                 _player->tradeGold,
                 _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
         }
         if (_player->pTrader->tradeGold > 0)
         {
-            sLog.outMail("Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
+            sLog.outLog(LOG_MAIL, "Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
                 _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
                 _player->pTrader->tradeGold,
                 _player->GetName(),_player->GetSession()->GetAccountId());
@@ -616,7 +616,7 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
     WorldPacket data(SMSG_TRADE_STATUS, 12);
     data << (uint32) TRADE_STATUS_BEGIN_TRADE;
     data << (uint64)_player->GetGUID();
-    _player->pTrader->GetSession()->SendPacket(&data);
+    _player->pTrader->SendPacketToSelf(&data);
 }
 
 void WorldSession::HandleSetTradeGoldOpcode(WorldPacket& recvPacket)

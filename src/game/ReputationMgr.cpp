@@ -42,7 +42,7 @@ int32 ReputationMgr::GetReputation(uint32 faction_id) const
 
     if (!factionEntry)
     {
-        sLog.outError("ReputationMgr::GetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.",m_player->GetName(), faction_id);
+        sLog.outLog(LOG_DEFAULT, "ERROR: ReputationMgr::GetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.",m_player->GetName(), faction_id);
         return 0;
     }
 
@@ -123,7 +123,7 @@ void ReputationMgr::SendForceReactions()
         data << uint32(itr->first);                         // faction_id (Faction.dbc)
         data << uint32(itr->second);                        // reputation rank
     }
-    m_player->SendDirectMessage(&data);
+    m_player->SendPacketToSelf(&data);
 }
 
 void ReputationMgr::SendState(FactionState const* faction)
@@ -154,7 +154,7 @@ void ReputationMgr::SendState(FactionState const* faction)
     }
 
     data.put<uint32>(p_count, count);
-    m_player->SendDirectMessage(&data);
+    m_player->SendPacketToSelf(&data);
 }
 
 void ReputationMgr::SendInitialReputations()
@@ -189,7 +189,7 @@ void ReputationMgr::SendInitialReputations()
         data << uint32(0x00000000);
     }
 
-    m_player->SendDirectMessage(&data);
+    m_player->SendPacketToSelf(&data);
 }
 
 void ReputationMgr::SendVisible(FactionState const* faction) const
@@ -200,7 +200,7 @@ void ReputationMgr::SendVisible(FactionState const* faction) const
     // make faction visible in reputation list at client
     WorldPacket data(SMSG_SET_FACTION_VISIBLE, 4);
     data << faction->ReputationListID;
-    m_player->SendDirectMessage(&data);
+    m_player->SendPacketToSelf(&data);
 }
 
 void ReputationMgr::Initialize()
@@ -294,7 +294,7 @@ bool ReputationMgr::SetReputation(uint32 factionId, int32 standing)
 
     if (!factionEntry)
     {
-        sLog.outError("ReputationMgr::SetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.", m_player->GetName(), factionId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: ReputationMgr::SetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.", m_player->GetName(), factionId);
         return false;
     }
 
@@ -307,7 +307,7 @@ bool ReputationMgr::ModifyReputation(uint32 factionId, int32 standing)
 
     if (!factionEntry)
     {
-        sLog.outError("ReputationMgr::SetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.", m_player->GetName(), factionId);
+        sLog.outLog(LOG_DEFAULT, "ERROR: ReputationMgr::SetReputation: Can't get reputation of %s for unknown faction (faction id) #%u.", m_player->GetName(), factionId);
         return false;
     }
 
@@ -466,24 +466,28 @@ void ReputationMgr::LoadFromDB(QueryResultAutoPtr result)
     }
 }
 
-void ReputationMgr::SaveToDB()
+void ReputationMgr::SaveToDB(bool transaction)
 {
-//    static SqlStatementID delRep;
-//    static SqlStatementID insRep;
+    static SqlStatementID delRep;
+    static SqlStatementID insRep;
 
-//    SqlStatement stmtDel = CharacterDatabase.CreateStatement(delRep, "DELETE FROM character_reputation WHERE guid = ? AND faction=?");
-//    SqlStatement stmtIns = CharacterDatabase.CreateStatement(insRep, "INSERT INTO character_reputation (guid,faction,standing,flags) VALUES (?, ?, ?, ?)");
+    if (transaction)
+        RealmDataDatabase.BeginTransaction();
 
     for (FactionStateList::iterator itr = m_factions.begin(); itr != m_factions.end(); ++itr)
     {
         if (itr->second.needSave)
         {
-            RealmDataDatabase.PExecute("REPLACE INTO character_reputation (guid, faction, standing, flags) VALUES ('%u', '%u', '%i', '%u')", m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
+            SqlStatement stmt = RealmDataDatabase.CreateStatement(delRep, "DELETE FROM character_reputation WHERE guid = ? AND faction = ?");
+            stmt.PExecute(m_player->GetGUIDLow(), itr->second.ID);
 
-//            stmtDel.PExecute(m_player->GetGUIDLow(), itr->second.ID);
-//            stmtIns.PExecute(m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
+            stmt = RealmDataDatabase.CreateStatement(insRep, "INSERT INTO character_reputation (guid,faction,standing,flags) VALUES (?, ?, ?, ?)");
+            stmt.PExecute(m_player->GetGUIDLow(), itr->second.ID, itr->second.Standing, itr->second.Flags);
 
             itr->second.needSave = false;
         }
     }
+
+    if (transaction)
+        RealmDataDatabase.CommitTransaction();
 }

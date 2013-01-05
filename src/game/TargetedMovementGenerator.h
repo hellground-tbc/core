@@ -44,7 +44,7 @@ class TargetedMovementGeneratorMedium
     protected:
         TargetedMovementGeneratorMedium(Unit &target, float offset, float angle) :
             TargetedMovementGeneratorBase(target), _offset(offset), _angle(angle),
-            _recalculateTravel(false), _targetReached(false), _recheckDistance(0),
+            _targetReached(false), _recheckDistance(0),
             _path(NULL)
         {
         }
@@ -60,7 +60,6 @@ class TargetedMovementGeneratorMedium
 
         Unit* GetTarget() const { return _target.getTarget(); }
 
-        void unitSpeedChanged() { _recalculateTravel=true; }
         void UpdateFinalDistance(float fDistance);
 
     protected:
@@ -69,7 +68,6 @@ class TargetedMovementGeneratorMedium
         TimeTracker _recheckDistance;
         float _offset;
         float _angle;
-        bool _recalculateTravel : 1;
         bool _targetReached : 1;
 
         PathFinder* _path;
@@ -121,7 +119,7 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
         void _reachTarget(T &) {}
 
     private:
-        void _updateSpeed(T &u);
+        void _updateSpeed(T&);
 };
 
 #endif

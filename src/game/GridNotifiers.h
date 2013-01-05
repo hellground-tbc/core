@@ -41,143 +41,94 @@ namespace Hellground
 {
     struct VisibleNotifier
     {
-        Player &i_player;
+        Camera& _camera;
+
         UpdateData i_data;
-        std::set<Unit*> i_visibleNow;
+        std::set<WorldObject*> i_visibleNow;
         Player::ClientGUIDs vis_guids;
 
-        VisibleNotifier(Player &player) : i_player(player), vis_guids(player.m_clientGUIDs) {}
+        VisibleNotifier(Camera &c) : _camera(c), vis_guids(c.GetOwner()->m_clientGUIDs) {}
 
-        template<class T> void Visit(GridRefManager<T> &m);
+        void Visit(CameraMapType &m) {}
+
+        template<class T>
+        void Visit(GridRefManager<T> &m);
+
         void SendToSelf(void);
     };
 
-    struct HELLGROUND_DLL_DECL VisibleChangesNotifier
+    struct HELLGROUND_EXPORT VisibleChangesNotifier
     {
-        WorldObject &i_object;
+        WorldObject &_object;
 
-        explicit VisibleChangesNotifier(WorldObject &object) : i_object(object) {}
-        template<class T> void Visit(GridRefManager<T> &) {}
-        void Visit(PlayerMapType &);
-        void Visit(CreatureMapType &);
-        void Visit(DynamicObjectMapType &);
+        explicit VisibleChangesNotifier(WorldObject &object) : _object(object) {}
+
+        void Visit(CameraMapType &);
+
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-    struct PlayerRelocationNotifier : public VisibleNotifier
+    struct PlayerRelocationNotifier
     {
-        PlayerRelocationNotifier(Player &pl) : VisibleNotifier(pl) {}
+        Player &_player;
+        PlayerRelocationNotifier(Player &pl) : _player(pl) {}
 
-        template<class T> void Visit(GridRefManager<T> &m) { VisibleNotifier::Visit(m); }
-        void Visit(CreatureMapType &);
-        void Visit(PlayerMapType &);
+        //void Visit(CameraMapType&);
+        void Visit(CreatureMapType&);
+
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED>&) {}
     };
 
     struct CreatureRelocationNotifier
     {
-        Creature &i_creature;
-        CreatureRelocationNotifier(Creature &c) : i_creature(c) {}
-        template<class T> void Visit(GridRefManager<T> &) {}
-        void Visit(CreatureMapType &);
-        void Visit(PlayerMapType &);
+        Creature &_creature;
+        CreatureRelocationNotifier(Creature& c) : _creature(c) {}
+
+        void Visit(PlayerMapType&);
+        void Visit(CreatureMapType&);
+
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED>&) {}
     };
 
-    struct DelayedUnitRelocation
+    struct HELLGROUND_EXPORT PacketBroadcaster
     {
-        Map &i_map;
-        Cell &cell;
-        CellPair &p;
-        const float i_radius;
-        DelayedUnitRelocation(Cell &c, CellPair &pair, Map &map, float radius) :
-            cell(c), p(pair), i_map(map), i_radius(radius) {}
-        template<class T> void Visit(GridRefManager<T> &) {}
-        void Visit(CreatureMapType &);
-        void Visit(PlayerMapType   &);
+        WorldObject &_source;
+        WorldPacket *_message;
+
+        typedef std::set<uint64> GUIDSet;
+        GUIDSet playerGUIDS;
+
+        float _dist;
+        bool _ownTeam;
+
+        PacketBroadcaster(WorldObject&, WorldPacket*, Player* = NULL, float = 0.0f, bool = false);
+
+        void BroadcastPacketTo(Player*);
+
+        void Visit(CameraMapType &);
+
+        template<class SKIP>
+        void Visit(GridRefManager<SKIP>&) {}
     };
 
-    struct AIRelocationNotifier
-    {
-       Unit &i_unit;
-       bool isCreature;
-       explicit AIRelocationNotifier(Unit &unit) : i_unit(unit), isCreature(unit.GetTypeId() == TYPEID_UNIT)  {}
-       template<class T> void Visit(GridRefManager<T> &) {}
-       void Visit(CreatureMapType &);
-    };
-
-    struct HELLGROUND_DLL_DECL GridUpdater
-    {
-        GridType &i_grid;
-        uint32 i_timeDiff;
-        GridUpdater(GridType &grid, uint32 diff) : i_grid(grid), i_timeDiff(diff) {}
-
-        template<class T> void updateObjects(GridRefManager<T> &m)
-        {
-            for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
-            {
-                WorldObject::UpdateHelper helper(iter->getSource());
-                helper.Update(i_timeDiff);
-            }
-        }
-
-        void Visit(PlayerMapType &m) { updateObjects<Player>(m); }
-        void Visit(CreatureMapType &m){ updateObjects<Creature>(m); }
-        void Visit(GameObjectMapType &m) { updateObjects<GameObject>(m); }
-        void Visit(DynamicObjectMapType &m) { updateObjects<DynamicObject>(m); }
-        void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
-    };
-
-    struct HELLGROUND_DLL_DECL Deliverer
-    {
-        WorldObject &i_source;
-        WorldPacket *i_message;
-        std::set<uint64> plr_list;
-        bool i_toPossessor;
-        bool i_toSelf;
-        float i_dist;
-        Deliverer(WorldObject &src, WorldPacket *msg, bool to_possessor, bool to_self, float dist = 0.0f) : i_source(src), i_message(msg), i_toPossessor(to_possessor), i_toSelf(to_self), i_dist(dist) {}
-        void Visit(PlayerMapType &m);
-        void Visit(CreatureMapType &m);
-        void Visit(DynamicObjectMapType &m);
-        virtual void VisitObject(Player* plr) = 0;
-        void SendPacket(Player* plr);
-        template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
-    };
-
-    struct HELLGROUND_DLL_DECL MessageDeliverer : public Deliverer
-    {
-        MessageDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, bool to_self) : Deliverer(pl, msg, to_possessor, to_self) {}
-        void VisitObject(Player* plr);
-    };
-
-    struct HELLGROUND_DLL_DECL ObjectMessageDeliverer : public Deliverer
-    {
-        explicit ObjectMessageDeliverer(WorldObject &src, WorldPacket *msg, bool to_possessor) : Deliverer(src, msg, to_possessor, false) {}
-        void VisitObject(Player* plr) { SendPacket(plr); }
-    };
-
-    struct HELLGROUND_DLL_DECL MessageDistDeliverer : public Deliverer
-    {
-        bool i_ownTeamOnly;
-        MessageDistDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, float dist, bool to_self, bool ownTeamOnly) : Deliverer(pl, msg, to_possessor, to_self, dist), i_ownTeamOnly(ownTeamOnly) {}
-        void VisitObject(Player* plr);
-    };
-
-    struct HELLGROUND_DLL_DECL ObjectMessageDistDeliverer : public Deliverer
-    {
-        ObjectMessageDistDeliverer(WorldObject &obj, WorldPacket *msg, bool to_possessor, float dist) : Deliverer(obj, msg, to_possessor, false, dist) {}
-        void VisitObject(Player* plr) { SendPacket(plr); }
-    };
-
-    struct HELLGROUND_DLL_DECL ObjectUpdater
+    struct HELLGROUND_EXPORT ObjectUpdater
     {
         uint32 i_timeDiff;
         explicit ObjectUpdater(const uint32 &diff) : i_timeDiff(diff) {}
-        template<class T> void Visit(GridRefManager<T> &m);
-        void Visit(PlayerMapType &) {}
-        void Visit(CorpseMapType &) {}
+
+        void Visit(PlayerMapType&) {}
+        void Visit(CorpseMapType&) {}
+        void Visit(CameraMapType&) {}
         void Visit(CreatureMapType &);
+
+        template<class T>
+        void Visit(GridRefManager<T> &m);
     };
 
-    struct HELLGROUND_DLL_DECL DynamicObjectUpdater
+    struct HELLGROUND_EXPORT DynamicObjectUpdater
     {
         DynamicObject &i_dynobject;
         Unit* i_check;
@@ -196,130 +147,51 @@ namespace Hellground
         void VisitHelper(Unit* target);
     };
 
-    // SEARCHERS & LIST SEARCHERS & WORKERS
-
-    // WorldObject searchers & workers
-
-    template<class Check>
-        struct HELLGROUND_DLL_DECL WorldObjectSearcher
+#pragma region Searchers
+    template<class T, class Check>
+    struct HELLGROUND_EXPORT ObjectSearcher
     {
-        WorldObject* &i_object;
-        Check &i_check;
+        T* &_object;
+        Check &_check;
 
-        WorldObjectSearcher(WorldObject* & result, Check& check) : i_object(result),i_check(check) {}
+        ObjectSearcher(T* &result, Check& check) : _object(result), _check(check) {}
 
-        void Visit(GameObjectMapType &m);
-        void Visit(PlayerMapType &m);
-        void Visit(CreatureMapType &m);
-        void Visit(CorpseMapType &m);
-        void Visit(DynamicObjectMapType &m);
+        void Visit(GridRefManager<T> &);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template <class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
+    template<class T, class Check>
+    struct HELLGROUND_EXPORT ObjectLastSearcher
+    {
+        T* &_object;
+        Check &_check;
+
+        ObjectLastSearcher(T* &result, Check& check) : _object(result), _check(check) {}
+
+        void Visit(GridRefManager<T> &);
+
+        template <class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
+    template<class T, class Check>
+    struct HELLGROUND_EXPORT ObjectListSearcher
+    {
+        std::list<T*> &_objects;
+        Check& _check;
+
+        ObjectListSearcher(std::list<T*> &objects, Check& check) : _objects(objects), _check(check) {}
+
+        void Visit(GridRefManager<T> &);
+
+        template <class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
     template<class Check>
-        struct HELLGROUND_DLL_DECL WorldObjectListSearcher
-    {
-        std::list<WorldObject*> &i_objects;
-        Check& i_check;
-
-        WorldObjectListSearcher(std::list<WorldObject*> &objects, Check & check) : i_objects(objects),i_check(check) {}
-
-        void Visit(PlayerMapType &m);
-        void Visit(CreatureMapType &m);
-        void Visit(CorpseMapType &m);
-        void Visit(GameObjectMapType &m);
-        void Visit(DynamicObjectMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    template<class Do>
-        struct HELLGROUND_DLL_DECL WorldObjectWorker
-    {
-        Do const& i_do;
-
-        explicit WorldObjectWorker(Do const& _do) : i_do(_do) {}
-
-        void Visit(GameObjectMapType &m)
-        {
-            for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
-        }
-
-        void Visit(PlayerMapType &m)
-        {
-            for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
-        }
-        void Visit(CreatureMapType &m)
-        {
-            for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
-        }
-
-        void Visit(CorpseMapType &m)
-        {
-            for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
-        }
-
-        void Visit(DynamicObjectMapType &m)
-        {
-            for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
-        }
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    // Gameobject searchers
-
-    template<class Check>
-        struct HELLGROUND_DLL_DECL GameObjectSearcher
-    {
-        GameObject* &i_object;
-        Check &i_check;
-
-        GameObjectSearcher(GameObject* & result, Check& check) : i_object(result),i_check(check) {}
-
-        void Visit(GameObjectMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    // Last accepted by Check GO if any (Check can change requirements at each call)
-    template<class Check>
-        struct HELLGROUND_DLL_DECL GameObjectLastSearcher
-    {
-        GameObject* &i_object;
-        Check& i_check;
-
-        GameObjectLastSearcher(GameObject* & result, Check& check) : i_object(result),i_check(check) {}
-
-        void Visit(GameObjectMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    template<class Check>
-        struct HELLGROUND_DLL_DECL GameObjectListSearcher
-    {
-        std::list<GameObject*> &i_objects;
-        Check& i_check;
-
-        GameObjectListSearcher(std::list<GameObject*> &objects, Check & check) : i_objects(objects),i_check(check) {}
-
-        void Visit(GameObjectMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    // Unit searchers
-
-    // First accepted by Check Unit if any
-    template<class Check>
-        struct HELLGROUND_DLL_DECL UnitSearcher
+    struct HELLGROUND_EXPORT UnitSearcher
     {
         Unit* &i_object;
         Check & i_check;
@@ -332,9 +204,8 @@ namespace Hellground
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-    // Last accepted by Check Unit if any (Check can change requirements at each call)
     template<class Check>
-        struct HELLGROUND_DLL_DECL UnitLastSearcher
+    struct HELLGROUND_EXPORT UnitLastSearcher
     {
         Unit* &i_object;
         Check & i_check;
@@ -344,12 +215,12 @@ namespace Hellground
         void Visit(CreatureMapType &m);
         void Visit(PlayerMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-    // All accepted by Check units if any
     template<class Check>
-        struct HELLGROUND_DLL_DECL UnitListSearcher
+    struct HELLGROUND_EXPORT UnitListSearcher
     {
         std::list<Unit*> &i_objects;
         Check& i_check;
@@ -359,132 +230,47 @@ namespace Hellground
         void Visit(PlayerMapType &m);
         void Visit(CreatureMapType &m);
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
+#pragma endregion Searchers
 
-    // Creature searchers
-
-    template<class Check>
-        struct HELLGROUND_DLL_DECL CreatureSearcher
+#pragma region Workers
+    template<class T, class Do>
+    struct HELLGROUND_EXPORT ObjectWorker
     {
-        Creature* &i_object;
-        Check & i_check;
+        Do& _do;
 
-        CreatureSearcher(Creature* & result, Check & check) : i_object(result),i_check(check) {}
+        explicit ObjectWorker(Do& ddo) : _do(ddo) {}
 
-        void Visit(CreatureMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    // Last accepted by Check Creature if any (Check can change requirements at each call)
-    template<class Check>
-        struct HELLGROUND_DLL_DECL CreatureLastSearcher
-    {
-        Creature* &i_object;
-        Check & i_check;
-
-        CreatureLastSearcher(Creature* & result, Check & check) : i_object(result),i_check(check) {}
-
-        void Visit(CreatureMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    template<class Check>
-    struct HELLGROUND_DLL_DECL CreatureListSearcher
-    {
-        std::list<Creature*> &i_objects;
-        Check& i_check;
-
-        CreatureListSearcher(std::list<Creature*> &objects, Check & check) : i_objects(objects),i_check(check) {}
-
-        void Visit(CreatureMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    template<class Do>
-    struct HELLGROUND_DLL_DECL CreatureWorker
-    {
-        Do& i_do;
-
-        CreatureWorker(WorldObject const* searcher, Do& _do)
-            : i_do(_do) {}
-
-        void Visit(CreatureMapType &m)
+        void Visit(GridRefManager<T> &m)
         {
-            for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                    i_do(itr->getSource());
+            for (typename GridRefManager<T>::iterator itr= m.begin(); itr != m.end(); ++itr)
+                _do(itr->getSource());
         }
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    // Player searchers
-
-    template<class Check>
-    struct HELLGROUND_DLL_DECL PlayerSearcher
-    {
-        Player* &i_object;
-        Check & i_check;
-
-        PlayerSearcher(Player* & result, Check & check) : i_object(result),i_check(check) {}
-
-        void Visit(PlayerMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    template<class Check>
-    struct HELLGROUND_DLL_DECL PlayerListSearcher
-    {
-        uint32 i_phaseMask;
-        std::list<Player*> &i_objects;
-        Check& i_check;
-
-        PlayerListSearcher(WorldObject const* searcher, std::list<Player*> &objects, Check & check)
-            : i_objects(objects),i_check(check) {}
-
-        void Visit(PlayerMapType &m);
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template <class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
     template<class Do>
-    struct HELLGROUND_DLL_DECL PlayerWorker
-    {
-        Do& i_do;
-
-        explicit PlayerWorker(Do& _do) : i_do(_do) {}
-
-        void Visit(PlayerMapType &m)
-        {
-            for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->getSource());
-        }
-
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
-    };
-
-    template<class Do>
-    struct HELLGROUND_DLL_DECL PlayerDistWorker
+    struct HELLGROUND_EXPORT CameraDistWorker
     {
         WorldObject const* i_searcher;
         float i_dist;
         Do& i_do;
 
-        PlayerDistWorker(WorldObject const* searcher, float _dist, Do& _do)
-            : i_searcher(searcher), i_dist(_dist), i_do(_do) {}
+        CameraDistWorker(WorldObject const* searcher, float _dist, Do& _do) : i_searcher(searcher), i_dist(_dist), i_do(_do) {}
 
-        void Visit(PlayerMapType &m)
+        void Visit(CameraMapType &m)
         {
-            for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                if(itr->getSource()->GetDistance(i_searcher) <= i_dist)
-                    i_do(itr->getSource());
+            for(CameraMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+                if (itr->getSource()->GetBody()->IsWithinDist(i_searcher, i_dist))
+                    i_do(itr->getSource()->GetOwner());
         }
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED>
+        void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
     // CHECKS && DO classes
@@ -627,7 +413,7 @@ namespace Hellground
             {
                 if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)   // cant target when out of phase -> invisibility 10
                 {
-                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf((Unit*)i_obj, u))
                         return false;
                 }
 
@@ -653,7 +439,7 @@ namespace Hellground
 
                 if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)   // cant target when out of phase -> invisibility 10
                 {
-                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf((Unit*)i_obj, u))
                         return false;
                 }
 
@@ -742,7 +528,7 @@ namespace Hellground
             bool operator()(Unit* u)
             {
                 if (u->isTargetableForAttack() && i_obj->IsWithinDistInMap(u, i_range) &&
-                    !i_funit->IsFriendlyTo(u) && u->isVisibleForOrDetect(i_funit,false) )
+                    !i_funit->IsFriendlyTo(u) && u->isVisibleForOrDetect(i_funit, i_funit, false) )
                 {
                     i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
                     return true;
@@ -778,7 +564,7 @@ namespace Hellground
                     return false;
                 if (i_obj->GetTypeId()==TYPEID_UNIT || i_obj->GetTypeId()==TYPEID_PLAYER)   // cant target when out of phase -> invisibility 10
                 {
-                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf(((Unit*)i_obj)))
+                    if (u->m_invisibilityMask && u->m_invisibilityMask & (1 << 10) && !u->canDetectInvisibilityOf((Unit*)i_obj, u))
                         return false;
                 }
                 if (u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isTotem())
@@ -827,9 +613,9 @@ namespace Hellground
             Unit* const i_enemy;
             float i_range;
     };
+#pragma endregion Workers
 
-    // Player checks and do
-
+#pragma region Checks
     // Prepare using Builder localized packets with caching and send to player
     template<class Builder>
     class LocalizedPacketDo
@@ -858,8 +644,6 @@ namespace Hellground
     {
         bool operator()(Unit* u) { return u->GetVisibility()==VISIBILITY_GROUP_STEALTH; }
     };
-
-    // Creature checks
 
     class NearestHostileUnitInAttackDistanceCheck
     {
@@ -952,16 +736,16 @@ namespace Hellground
             float i_range;
     };
 
-    // Success at unit in range, range update for next check (this can be use with CreatureLastSearcher to find nearest creature)
+    // Success at unit in range, in LoS if needed, range update for next check (this can be use with CreatureLastSearcher to find nearest creature)
     class NearestCreatureEntryWithLiveStateInObjectRangeCheck
     {
         public:
-            NearestCreatureEntryWithLiveStateInObjectRangeCheck(WorldObject const& obj,uint32 entry, bool alive, float range)
-                : i_obj(obj), i_entry(entry), i_alive(alive), i_range(range) {}
+            NearestCreatureEntryWithLiveStateInObjectRangeCheck(WorldObject const& obj,uint32 entry, bool alive, float range, bool inLoS)
+                : i_obj(obj), i_entry(entry), i_alive(alive), i_range(range), i_inLoS(inLoS) {}
 
             bool operator()(Creature* u)
             {
-                if (u->GetEntry() == i_entry && u->isAlive()==i_alive && i_obj.IsWithinDistInMap(u, i_range))
+                if (u->GetEntry() == i_entry && u->isAlive()==i_alive && i_obj.IsWithinDistInMap(u, i_range) && (!i_inLoS || i_obj.IsWithinLOSInMap(u)))
                 {
                     i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
                     return true;
@@ -974,6 +758,7 @@ namespace Hellground
             uint32 i_entry;
             bool   i_alive;
             float  i_range;
+            bool   i_inLoS;
 
             // prevent clone this object
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(NearestCreatureEntryWithLiveStateInObjectRangeCheck const&);
@@ -1226,7 +1011,9 @@ namespace Hellground
             WorldObject *_source;
             bool _within;
     };
+#pragma endregion Checks
 
+#pragma region Sorters
     // sorter
     struct ObjectDistanceOrder : public std::binary_function<const Unit *, const Unit *, bool>
     {
@@ -1239,5 +1026,6 @@ namespace Hellground
         }
     };
 }
+#pragma endregion Sorters
 
 #endif

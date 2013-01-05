@@ -21,6 +21,7 @@
 
 #include "spline.h"
 #include "MoveSplineInitArgs.h"
+#include "Log.h"
 
 namespace Movement
 {

@@ -333,6 +333,8 @@ class EventMap : private std::map<uint32, uint32>
                 m_phase = (1 << (phase + 24));
         }
 
+        uint32 GetPhase() { return m_phase; }
+
         void ScheduleEvent(uint32 eventId, uint32 time, uint32 gcd = 0, uint32 phase = 0)
         {
             time += m_time;
@@ -481,7 +483,7 @@ struct AISpellInfoType
     float maxRange;
 };
 
-HELLGROUND_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i);
+HELLGROUND_IMPORT_EXPORT AISpellInfoType * GetAISpellInfo(uint32 i);
 
 
 inline void CreatureAI::SetGazeOn(Unit *target)
@@ -534,7 +536,7 @@ inline bool CreatureAI::UpdateCombatState()
 
 inline bool CreatureAI::UpdateVictim()
 {
-    if (!me->isInCombat())
+    if (!me->isInCombat() || !me->isAlive())
         return false;
 
     if (me->hasUnitState(UNIT_STAT_LOST_CONTROL))
@@ -555,8 +557,6 @@ inline bool CreatureAI::UpdateVictim()
     {
         if (Unit *pVictim = me->SelectVictim())
             AttackStart(pVictim);
-
-        return me->getVictim();
     }
     else if (me->getThreatManager().isThreatListEmpty())
     {
@@ -564,8 +564,10 @@ inline bool CreatureAI::UpdateVictim()
         me->SetReactState(REACT_PASSIVE);
         return false;
     }
+    else if (me->IsInEvadeMode())
+        return false;
 
-    return true;
+    return me->getVictim();
 }
 
 /*

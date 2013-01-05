@@ -160,7 +160,7 @@ void WorldSession::HandleArenaTeamAddMemberOpcode(WorldPacket & recv_data)
     WorldPacket data(SMSG_ARENA_TEAM_INVITE, (8+10));
     data << GetPlayer()->GetName();
     data << arenateam->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->SendPacketToSelf(&data);
 
     sLog.outDebug("WORLD: Sent SMSG_ARENA_TEAM_INVITE");
 }
@@ -390,7 +390,7 @@ void WorldSession::BuildArenaTeamEventPacket(WorldPacket *data, uint8 eventid, u
             *data << str3;
             break;
         default:
-            sLog.outError("Unhandled str_count %u in SendArenaTeamEvent()", str_count);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Unhandled str_count %u in SendArenaTeamEvent()", str_count);
             return;
     }
 }

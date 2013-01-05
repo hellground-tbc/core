@@ -274,7 +274,7 @@ void BattleGroundWS::RespawnFlagAfterDrop(uint32 team)
     if (obj)
         obj->Delete();
     else
-        sLog.outError("unknown droped flag bg, guid: %u",GUID_LOPART(GetDroppedFlagGUID(team)));
+        sLog.outLog(LOG_DEFAULT, "ERROR: unknown droped flag bg, guid: %u",GUID_LOPART(GetDroppedFlagGUID(team)));
 
     SetDroppedFlagGUID(0,team);
     m_BothFlagsKept = false;
@@ -587,7 +587,7 @@ void BattleGroundWS::RemovePlayer(Player *plr, uint64 guid)
     {
         if (!plr)
         {
-            sLog.outError("BattleGroundWS: Removing offline player who has the FLAG!!");
+            sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundWS: Removing offline player who has the FLAG!!");
             SetAllianceFlagPicker(0);
             RespawnFlag(ALLIANCE, false);
         }
@@ -598,7 +598,7 @@ void BattleGroundWS::RemovePlayer(Player *plr, uint64 guid)
     {
         if (!plr)
         {
-            sLog.outError("BattleGroundWS: Removing offline player who has the FLAG!!");
+            sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundWS: Removing offline player who has the FLAG!!");
             SetHordeFlagPicker(0);
             RespawnFlag(HORDE, false);
         }
@@ -667,7 +667,7 @@ void BattleGroundWS::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 4629:                                          // unk4
             break;
         default:
-            sLog.outError("WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            sLog.outLog(LOG_DEFAULT, "ERROR: WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -702,21 +702,21 @@ bool BattleGroundWS::SetupBattleGround()
         || !AddObject(BG_WS_OBJECT_DOOR_H_4, BG_OBJECT_DOOR_H_4_WS_ENTRY, 950.7952f, 1459.583f, 342.1523f, 0.05235988f, 0, 0, 0.02617695f, 0.9996573f, RESPAWN_IMMEDIATELY)
        )
     {
-        sLog.outErrorDb("BatteGroundWS: Failed to spawn some object BattleGround not created!");
+        sLog.outLog(LOG_DB_ERR, "BatteGroundWS: Failed to spawn some object BattleGround not created!");
         return false;
     }
 
     WorldSafeLocsEntry const *sg = sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_ALLIANCE);
     if (!sg || !AddSpiritGuide(WS_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE))
     {
-        sLog.outErrorDb("BatteGroundWS: Failed to spawn Alliance spirit guide! BattleGround not created!");
+        sLog.outLog(LOG_DB_ERR, "BatteGroundWS: Failed to spawn Alliance spirit guide! BattleGround not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_HORDE);
     if (!sg || !AddSpiritGuide(WS_SPIRIT_MAIN_HORDE, sg->x, sg->y, sg->z, 3.193953f, HORDE))
     {
-        sLog.outErrorDb("BatteGroundWS: Failed to spawn Horde spirit guide! BattleGround not created!");
+        sLog.outLog(LOG_DB_ERR, "BatteGroundWS: Failed to spawn Horde spirit guide! BattleGround not created!");
         return false;
     }
 
@@ -774,6 +774,29 @@ void BattleGroundWS::UpdatePlayerScore(Player *Source, uint32 type, uint32 value
         default:
             BattleGround::UpdatePlayerScore(Source, type, value);
             break;
+    }
+}
+
+WorldSafeLocsEntry const* BattleGroundWS::GetClosestGraveYard(float x, float y, float /*z*/, uint32 team)
+{
+    //if status in progress, it returns main graveyards with spiritguides
+    //else it will return the graveyard in the flagroom - this is especially good
+    //if a player dies in preparation phase - then the player can't cheat
+    //and teleport to the graveyard outside the flagroom
+    //and start running around, while the doors are still closed
+    if (team == ALLIANCE)
+    {
+        if (GetStatus() == STATUS_IN_PROGRESS)
+            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_ALLIANCE);
+        else
+            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_FLAGROOM_ALLIANCE);
+    }
+    else
+    {
+        if (GetStatus() == STATUS_IN_PROGRESS)
+            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_HORDE);
+        else
+            return sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_FLAGROOM_HORDE);
     }
 }
 

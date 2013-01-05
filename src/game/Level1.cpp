@@ -37,6 +37,7 @@
 #include "TicketMgr.h"
 #include "GridMap.h"
 #include "Guild.h"
+#include "AccountMgr.h"
 
 #ifdef _DEBUG_VMAPS
 #include "VMapFactory.h"
@@ -146,13 +147,25 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
     {
         if (sObjectMgr.GetGuildAnnCooldown(gId) < time(NULL))
         {
-            if (msg.size() > 65) //
+            if (msg.size() > sWorld.getConfig(CONFIG_GUILD_ANN_LENGTH))
             {
-                PSendSysMessage("Your message is to long, limit: 65 chars");
+                PSendSysMessage("Your message is to long, limit: %i chars", sWorld.getConfig(CONFIG_GUILD_ANN_LENGTH));
                 return false;
             }
 
             Guild * pGuild = sObjectMgr.GetGuildById(gId);
+            if (!pGuild)
+            {
+                PSendSysMessage("Error occured while sending guild announce.");
+                return false;
+            }
+
+            if (pGuild->IsFlagged(GUILD_FLAG_DISABLE_ANN))
+            {
+                PSendSysMessage("Guild announce system has been blocked for your guild.");
+                return false;
+            }
+
             if (!pGuild->HasRankRight(m_session->GetPlayer()->GetRank(), GR_RIGHT_OFFCHATLISTEN))
             {
                 PSendSysMessage("Your guild rank is to low to use that command.");
@@ -168,7 +181,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
             PSendSysMessage("Your message has been queued and will be displayed soon, please wait: %u seconds before sending another one.", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
 
             sObjectMgr.SaveGuildAnnCooldown(gId);
-            sLog.outGann("Player %s ("UI64FMTD") - guild: %s (%u) append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), pGuild->GetName().c_str(), gId, msg.c_str());
+            sLog.outLog(LOG_GUILD_ANN, "Player %s ("UI64FMTD") - guild: %s (%u) append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), pGuild->GetName().c_str(), gId, msg.c_str());
             sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
             return true;
         }
@@ -553,7 +566,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     // send abandon ticket
     WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
     data << uint32(9);
-    plr->GetSession()->SendPacket(&data);
+    plr->SendPacketToSelf(&data);
     return true;
 }
 
@@ -619,7 +632,7 @@ bool ChatHandler::HandleGMTicketResponseCommand(const char* args)
     // send abandon ticket
     WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
     data << uint32(9);
-    plr->GetSession()->SendPacket(&data);
+    plr->SendPacketToSelf(&data);
 
     return true;
 }
@@ -652,8 +665,9 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     }
     uint64 tarGUID = sObjectMgr.GetPlayerGUIDByName(targm.c_str());
     uint64 accid = sObjectMgr.GetPlayerAccountIdByGUID(tarGUID);
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT `gmlevel` FROM `account` WHERE `id` = '%u'", accid);
-    if (!tarGUID|| !result || !(result->Fetch()->GetUInt64() & PERM_GMT))
+    uint64 targetPermissions = AccountMgr::GetPermissions(accid, realmID);
+    
+    if (!tarGUID || !(targetPermissions & PERM_GMT))
     {
         SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);
         return true;
@@ -796,7 +810,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
         // Force abandon ticket
         WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
         data << uint32(9);
-        plr->GetSession()->SendPacket(&data);
+        plr->SendPacketToSelf(&data);
     }
 
     ticket = NULL;
@@ -932,6 +946,45 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         cell.GridX(), cell.GridY(), cell.CellX(), cell.CellY(), obj->GetInstanceId(),
         zone_x, zone_y, ground_z, floor_z, have_map, have_vmap, have_vmap);
 
+    return true;
+}
+
+bool ChatHandler::HandleInfoCommand(const char* args)
+{
+    Player* _player = m_session->GetPlayer();
+
+    MapEntry const* mapEntry = sMapStore.LookupEntry(_player->GetMapId());
+    PSendSysMessage("MapId: %u, Name: %s", _player->GetMapId(), mapEntry->name);
+    PSendSysMessage("- cached data -");
+
+    const AreaTableEntry* zEntry = GetAreaEntryByAreaID(_player->GetCachedZone());
+    const AreaTableEntry* aEntry = GetAreaEntryByAreaID(_player->GetCachedArea());
+    if (!aEntry || !zEntry)
+        return false;
+
+    PSendSysMessage("*zone: %s [%u]", zEntry->area_name, _player->GetCachedZone());
+    PSendSysMessage("*area: %s [%u]", aEntry->area_name, _player->GetCachedArea());
+
+    const AreaTableEntry* zEntry2 = GetAreaEntryByAreaID(_player->GetZoneId());
+    const AreaTableEntry* aEntry2 = GetAreaEntryByAreaID(_player->GetAreaId());
+    if (!aEntry2 || !zEntry2)
+        return false;
+
+    PSendSysMessage("- real data -");
+    PSendSysMessage("*zone: %s [%u]", zEntry2->area_name, _player->GetZoneId());
+    PSendSysMessage("*area: %s [%u]", aEntry2->area_name, _player->GetAreaId());
+
+    TerrainInfo const *terrain = _player->GetTerrain();
+    PSendSysMessage("- terrain data -");
+
+    PSendSysMessage("*ground Z: %u", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), MAX_HEIGHT));
+    PSendSysMessage("*floor Z: %u", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()));
+    PSendSysMessage("*los: %s", terrain->IsLineOfSightEnabled() ? "enabled" : "disabled");
+    PSendSysMessage("*mmaps: %s", terrain->IsPathFindingEnabled() ? "enabled" : "disabled");
+    PSendSysMessage("*outdoors: %s", terrain->IsOutdoors(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()) ? "yes" : "no");
+    PSendSysMessage("*visibility: %f", terrain->GetSpecifics()->visibility);
+    PSendSysMessage("*ainotify: %u", terrain->GetSpecifics()->ainotifyperiod);
+    PSendSysMessage("*viewupdateafter: %f", sqrt(float(terrain->GetSpecifics()->viewupdatedistance)));
     return true;
 }
 
@@ -1204,9 +1257,14 @@ bool ChatHandler::HandleRecallCommand(const char* args)
     }
 
     // stop flight if need
-    chr->InterruptTaxiFlying();
+    if (chr->IsTaxiFlying())
+    {
+        chr->GetUnitStateMgr().DropAction(UNIT_ACTION_TAXI);
+        chr->m_taxi.ClearTaxiDestinations();
+        chr->GetUnitStateMgr().InitDefaults(false);
+    }
 
-    if (!chr->TeleportTo(chr->m_recallMap, chr->m_recallX, chr->m_recallY, chr->m_recallZ, chr->m_recallO))
+    if (!chr->TeleportTo(chr->_recallPosition))
         PSendSysMessage("Error on recall");
     else
         PSendSysMessage("Recalled successfully");
@@ -1550,7 +1608,7 @@ bool ChatHandler::HandleModifySpellCommand(const char* args)
     data << uint8(op);
     data << uint16(val);
     data << uint16(mark);
-    chr->GetSession()->SendPacket(&data);
+    chr->SendPacketToSelf(&data);
 
     return true;
 }
@@ -2087,13 +2145,13 @@ bool ChatHandler::HandleModifyMountCommand(const char* args)
     data << (uint32)0;
     data << (uint8)0;                                       //new 2.1.0
     data << float(speed);
-    chr->SendMessageToSet(&data, true);
+    chr->BroadcastPacket(&data, true);
 
     data.Initialize(SMSG_FORCE_SWIM_SPEED_CHANGE, (8+4+4));
     data << chr->GetPackGUID();
     data << (uint32)0;
     data << float(speed);
-    chr->SendMessageToSet(&data, true);
+    chr->BroadcastPacket(&data, true);
 
     return true;
 }

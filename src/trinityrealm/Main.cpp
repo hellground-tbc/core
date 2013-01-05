@@ -59,7 +59,7 @@ char serviceDescription[] = "Massive Network Game Object Server";
  *  6 - linux daemon
  */
 
-extern RunModes runMode = MODE_NORMAL;
+RunModes runMode = MODE_NORMAL;
 
 bool StartDB();
 void UnhookSignals();
@@ -192,11 +192,11 @@ extern int main(int argc, char **argv)
     uint32 confVersion = sConfig.GetIntDefault("ConfVersion", 0);
     if (confVersion < _REALMDCONFVERSION)
     {
-        sLog.outError("*****************************************************************************");
-        sLog.outError(" WARNING: Your trinityrealm.conf version indicates your conf file is out of date!");
-        sLog.outError("          Please check for updates, as your current default values may cause");
-        sLog.outError("          strange behavior.");
-        sLog.outError("*****************************************************************************");
+        sLog.outLog(LOG_DEFAULT, "ERROR: **********************************************************************************");
+        sLog.outLog(LOG_DEFAULT, "ERROR:  WARNING: Your trinityrealm.conf version indicates your conf file is out of date!");
+        sLog.outLog(LOG_DEFAULT, "ERROR:           Please check for updates, as your current default values may cause");
+        sLog.outLog(LOG_DEFAULT, "ERROR:           strange behavior.");
+        sLog.outLog(LOG_DEFAULT, "ERROR: **********************************************************************************");
         clock_t pause = 3000 + clock();
 
         while (pause > clock()) {}
@@ -226,11 +226,11 @@ extern int main(int argc, char **argv)
         uint32 pid = CreatePIDFile(pidfile);
         if( !pid )
         {
-            sLog.outError( "Cannot create PID file %s.\n", pidfile.c_str() );
+            sLog.outLog(LOG_DEFAULT, "ERROR: Cannot create PID file %s.\n", pidfile.c_str());
             return 1;
         }
 
-        sLog.outString( "Daemon PID: %u\n", pid );
+        sLog.outString("Daemon PID: %u\n", pid);
     }
 
     ///- Initialize the database connection
@@ -241,7 +241,7 @@ extern int main(int argc, char **argv)
     sRealmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
     if (sRealmList.size() == 0)
     {
-        sLog.outError("No valid realms specified.");
+        sLog.outLog(LOG_DEFAULT, "ERROR: No valid realms specified.");
         return 1;
     }
 
@@ -258,7 +258,7 @@ extern int main(int argc, char **argv)
         while (result->NextRow());
     }
 #else
-        sLog.outError("No Valid Regex Library for your Compiler, the pattern_banned feature will be disabled");
+        sLog.outLog(LOG_DEFAULT, "ERROR: No Valid Regex Library for your Compiler, the pattern_banned feature will be disabled");
 #endif
 
     // cleanup query
@@ -275,7 +275,7 @@ extern int main(int argc, char **argv)
 
     if (acceptor.open(bind_addr, ACE_Reactor::instance(), ACE_NONBLOCK) == -1)
     {
-        sLog.outError("Realm daemon can not bind to %s:%d", bind_ip.c_str(), rmport);
+        sLog.outLog(LOG_DEFAULT, "ERROR: TrinityRealm can not bind to %s:%d", bind_ip.c_str(), rmport);
         return 1;
     }
 
@@ -299,17 +299,16 @@ extern int main(int argc, char **argv)
 
                 if(!curAff )
                 {
-                    sLog.outError("Processors marked in UseProcessors bitmask (hex) %x not accessible for realmd. Accessible processors bitmask (hex): %x",Aff,appAff);
+                    sLog.outLog(LOG_DEFAULT, "ERROR: Processors marked in UseProcessors bitmask (hex) %x not accessible for realmd. Accessible processors bitmask (hex): %x",Aff,appAff);
                 }
                 else
                 {
                     if(SetProcessAffinityMask(hProcess,curAff))
                         sLog.outString("Using processors (bitmask, hex): %x", curAff);
                     else
-                        sLog.outError("Can't set used processors (hex): %x", curAff);
+                        sLog.outLog(LOG_DEFAULT, "ERROR: Can't set used processors (hex): %x", curAff);
                 }
             }
-            sLog.outString();
         }
 
         bool Prio = sConfig.GetBoolDefault("ProcessPriority", false);
@@ -319,17 +318,17 @@ extern int main(int argc, char **argv)
             if(SetPriorityClass(hProcess,HIGH_PRIORITY_CLASS))
                 sLog.outString("TrinityRealm process priority class set to HIGH");
             else
-                sLog.outError("ERROR: Can't set realmd process priority class.");
-            sLog.outString();
+                sLog.outLog(LOG_DEFAULT, "ERROR: Can't set TrinityRealm process priority class.");
         }
     }
     #endif
 
     //server has started up successfully => enable async DB requests
     AccountsDatabase.AllowAsyncTransactions();
+    AccountsDatabase.EnableLogging();
 
     // maximum counter for next ping
-    uint32 numLoops = (sConfig.GetIntDefault( "MaxPingTime", 30 ) * (MINUTE * 1000000 / 100000));
+    uint32 numLoops = (sConfig.GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000000 / 100000));
     uint32 loopCounter = 0;
 
 #ifndef WIN32
@@ -366,7 +365,7 @@ extern int main(int argc, char **argv)
     ///- Remove signal handling before leaving
     UnhookSignals();
 
-    sLog.outString ("Halting process...");
+    sLog.outString("Halting process...");
     return 0;
 }
 
@@ -396,15 +395,15 @@ bool StartDB()
     std::string dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
     if(dbstring.empty())
     {
-        sLog.outError("Database not specified");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Database not specified");
         return false;
     }
 
-    sLog.outString("Database: %s", dbstring.c_str() );
+    //sLog.outString("Database: %s", dbstring.c_str() );
 
     if(!AccountsDatabase.Initialize(dbstring.c_str()))
     {
-        sLog.outError("Cannot connect to database");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to database");
         return false;
     }
 

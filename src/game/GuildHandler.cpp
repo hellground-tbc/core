@@ -142,7 +142,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
     WorldPacket data(SMSG_GUILD_INVITE, (8+10));            // guess size
     data << GetPlayer()->GetName();
     data << guild->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->SendPacketToSelf(&data);
 
     //sLog.outDebug("WORLD: Sent (SMSG_GUILD_INVITE)");
 }
@@ -983,7 +983,7 @@ void WorldSession::HandleGuildBankDeposit(WorldPacket & recv_data)
 
     if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
     {
-        sLog.outSpecial("Player %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
+        sLog.outLog(LOG_SPECIAL, "Player %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
             _player->GetName(),_player->GetSession()->GetAccountId(),money,GuildId);
     }
 
@@ -1029,6 +1029,12 @@ void WorldSession::HandleGuildBankWithdraw(WorldPacket & recv_data)
 
     if (!pGuild->HasRankRight(GetPlayer()->GetRank(), GR_RIGHT_WITHDRAW_GOLD))
         return;
+
+    if (GetPlayer()->GetMoney() + money >= MAX_MONEY_AMOUNT)
+    {
+        GetPlayer()->SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD,NULL,NULL);
+        return;
+    }
 
     RealmDataDatabase.BeginTransaction();
 
@@ -1396,7 +1402,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
 
                     if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                     {
-                        sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
+                        sLog.outLog(LOG_SPECIAL, "Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
                             _player->GetName(),_player->GetSession()->GetAccountId(),
                             pItemChar->GetProto()->Name1,pItemChar->GetEntry(),pItemChar->GetCount(),
                             GuildId);
@@ -1472,7 +1478,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
 
         if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
         {
-            sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
+            sLog.outLog(LOG_SPECIAL, "Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
                 _player->GetName(),_player->GetSession()->GetAccountId(),
                 pItemChar->GetProto()->Name1,pItemChar->GetEntry(),SplitedAmount,GuildId);
         }
@@ -1506,7 +1512,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
 
             if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
             {
-                sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
+                sLog.outLog(LOG_SPECIAL, "Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
                     _player->GetName(),_player->GetSession()->GetAccountId(),
                     pItemChar->GetProto()->Name1,pItemChar->GetEntry(),pItemChar->GetCount(),
                     GuildId);
@@ -1564,7 +1570,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
 
             if (_player->GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
             {
-                sLog.outSpecial("Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
+                sLog.outLog(LOG_SPECIAL, "Player %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
                     _player->GetName(),_player->GetSession()->GetAccountId(),
                     pItemChar->GetProto()->Name1,pItemChar->GetEntry(),pItemChar->GetCount(),
                     GuildId);
@@ -1624,7 +1630,7 @@ void WorldSession::HandleGuildBankBuyTab(WorldPacket & recv_data)
 
     if (TabId != pGuild->GetPurchasedTabs())                // purchased_tabs = 0 when buying Tab 0, that is why this check can be made
     {
-        sLog.outError("Error: trying to buy a tab non contigous to owned ones");
+        sLog.outLog(LOG_DEFAULT, "ERROR: trying to buy a tab non contigous to owned ones");
         return;
     }
 
@@ -1634,6 +1640,8 @@ void WorldSession::HandleGuildBankBuyTab(WorldPacket & recv_data)
     // Go on with creating tab
     pGuild->CreateNewBankTab();
     GetPlayer()->ModifyMoney(-int(TabCost));
+    GetPlayer()->SaveGoldToDB();
+
     pGuild->SetBankMoneyPerDay(GetPlayer()->GetRank(), WITHDRAW_MONEY_UNLIMITED);
     pGuild->SetBankRightsAndSlots(GetPlayer()->GetRank(), TabId, GUILD_BANK_RIGHT_FULL, WITHDRAW_SLOT_UNLIMITED, true);
     pGuild->Roster(this);

@@ -32,7 +32,7 @@ PathFinder::PathFinder(const Unit* owner) :
 {
     //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathFinder::PathInfo for %u \n", m_sourceUnit->GetGUIDLow());
 
-    if (m_sourceUnit->GetTerrain()->IsPathFindingEnabled())
+    if (m_sourceUnit->GetTerrain() && m_sourceUnit->GetTerrain()->IsPathFindingEnabled())
     {
         uint32 mapId = m_sourceUnit->GetMapId();
         MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
@@ -180,8 +180,22 @@ void PathFinder::BuildPolyPath(const Vector3 &startPos, const Vector3 &endPos)
     {
         //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ BuildPolyPath :: (startPoly == 0 || endPoly == 0)\n");
         BuildShortcut();
-        m_type = (m_sourceUnit->GetTypeId() == TYPEID_UNIT && ((Creature*)m_sourceUnit)->CanFly())
-                    ? PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH) : PATHFIND_NOPATH;
+
+        bool path = m_sourceUnit->GetTypeId() == TYPEID_UNIT && m_sourceUnit->ToCreature()->CanFly();
+        bool waterPath = m_sourceUnit->GetTypeId() == TYPEID_UNIT && m_sourceUnit->ToCreature()->CanSwim();
+        if (waterPath)
+        {
+            // Check both start and end points, if they're both in water, then we can *safely* let the creature move
+            for (int i = 0; i < m_pathPoints.size(); ++i)
+            {
+                if (waterPath = m_sourceUnit->GetTerrain()->IsInWater(m_pathPoints[i].x, m_pathPoints[i].y, m_pathPoints[i].z))
+                    continue;
+
+                break;
+            }
+        }
+
+        m_type = (path || waterPath) ? PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH) : PATHFIND_NOPATH;
         return;
     }
 
@@ -197,7 +211,7 @@ void PathFinder::BuildPolyPath(const Vector3 &startPos, const Vector3 &endPos)
             Creature* owner = (Creature*)m_sourceUnit;
 
             Vector3 p = (distToStartPoly > 7.0f) ? startPos : endPos;
-            if (m_sourceUnit->GetTerrain()->IsUnderWater(p.x, p.y, p.z))
+            if (m_sourceUnit->GetTerrain()->IsInWater(p.x, p.y, p.z))
             {
                 //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ BuildPolyPath :: underWater case\n");
                 if (owner->CanSwim())
@@ -343,7 +357,7 @@ void PathFinder::BuildPolyPath(const Vector3 &startPos, const Vector3 &endPos)
             // this is probably an error state, but we'll leave it
             // and hopefully recover on the next Update
             // we still need to copy our preffix
-            sLog.outError("%u's Path Build failed: 0 length path", m_sourceUnit->GetGUIDLow());
+            sLog.outLog(LOG_DEFAULT, "ERROR: %u's Path Build failed: 0 length path", m_sourceUnit->GetGUIDLow());
         }
 
         //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++  m_polyLength=%u prefixPolyLength=%u suffixPolyLength=%u \n",m_polyLength, prefixPolyLength, suffixPolyLength);
@@ -375,7 +389,7 @@ void PathFinder::BuildPolyPath(const Vector3 &startPos, const Vector3 &endPos)
         if (!m_polyLength || dtResult != DT_SUCCESS)
         {
             // only happens if we passed bad data to findPath(), or navmesh is messed up
-            sLog.outError("%u's Path Build failed: 0 length path", m_sourceUnit->GetGUIDLow());
+            sLog.outLog(LOG_DEFAULT, "ERROR: %u's Path Build failed: 0 length path", m_sourceUnit->GetGUIDLow());
             BuildShortcut();
             m_type = PATHFIND_NOPATH;
             return;
@@ -430,6 +444,12 @@ void PathFinder::BuildPointPath(const float *startPoint, const float *endPoint)
         //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathFinder::BuildPointPath FAILED! path sized %d returned\n", pointCount);
         BuildShortcut();
         m_type = PATHFIND_NOPATH;
+        return;
+    }
+    else if (pointCount == m_pointPathLimit)
+    {
+        BuildShortcut();
+        m_type = PATHFIND_SHORT;
         return;
     }
 

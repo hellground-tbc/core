@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#pragma warning(disable:4996)
+#pragma warning(disable:4996) //sprintf is unsave warnings
 
 struct RawData
 {
@@ -249,7 +249,7 @@ void extractDataFromGit(FILE* EntriesFile, std::string path, bool url, RawData& 
     }
 }
 
-bool extractDataFromSvn(std::string filename, bool url, RawData& data)
+bool extractDataFromSvn(std::string filename, std::string path, bool url, RawData& data)
 {
     FILE* EntriesFile = fopen(filename.c_str(), "r");
     if(!EntriesFile)
@@ -291,6 +291,66 @@ bool extractDataFromArchive(std::string filename, std::string path, bool url, Ra
     extractDataFromArchive(EntriesFile,path,url,data);
     fclose(EntriesFile);
     return true;
+}
+
+bool extractDataFromSvn(std::string path, bool use_url, RawData& data)
+{
+    bool res = false;
+
+    res = extractDataFromSvn(path+".svn/entries",path,use_url,data);
+    if (!res)
+        res = extractDataFromSvn(path+"_svn/entries",path,use_url,data);
+
+    return res;
+}
+
+bool extractDataFromGit(std::string path, bool use_url, RawData& data)
+{
+    bool res = false;
+
+    res = extractDataFromGit(path+".git/FETCH_HEAD",path,use_url,data);
+    if (!res)
+        res = extractDataFromGit(path+"_git/FETCH_HEAD",path,use_url,data);
+
+    return res;
+}
+
+bool extractDataFromHG(std::string path, bool use_url, RawData& data)
+{
+    bool res = false;
+
+    res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/branchheads.cache",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/branchheads.cache",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/branch.cache",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/branch.cache",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/cache/branch",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/cache/branch",path,use_url,data);
+
+    return res;
+}
+
+bool extractDataFromArchive(std::string path, bool use_url, RawData& data)
+{
+    bool res = false;
+
+    res = extractDataFromArchive(path+".hg_archival.txt",path,use_url,data);
+    if (!res)
+        res = extractDataFromArchive(path+"_hg_archival.txt",path,use_url,data);
+
+    return res;
 }
 
 std::string generateHeader(char const* rev_str, char const* date_str, char const* time_str, char const* hash_str)
@@ -386,108 +446,34 @@ int main(int argc, char **argv)
 
         if(svn_prefered)
         {
-            /// SVN data
-            res = extractDataFromSvn(path+".svn/entries",use_url,data);
+            res = extractDataFromSvn(path,use_url,data);
             if (!res)
-                res = extractDataFromSvn(path+"_svn/entries",use_url,data);
-            // HG data
+                res = extractDataFromHG(path,use_url,data);
             if (!res)
-                res = extractDataFromHG(path+".hg/branchheads.cache",path,use_url,data);
+                res = extractDataFromGit(path,use_url,data);
             if (!res)
-                res = extractDataFromHG(path+"_hg/branchheads.cache",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+".hg/branch.cache",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+"_hg/branch.cache",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+".hg/cache/branch",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+"_hg/cache/branch",path,use_url,data);
-            // GIT data
-            if (!res)
-                res = extractDataFromGit(path+".git/FETCH_HEAD",path,use_url,data);
-            if (!res)
-                res = extractDataFromGit(path+"_git/FETCH_HEAD",path,use_url,data);
-            // Archive data
-            if (!res)
-                res = extractDataFromArchive(path+".hg_archival.txt",path,use_url,data);
-            if (!res)
-                res = extractDataFromArchive(path+"_hg_archival.txt",path,use_url,data);
+                res = extractDataFromArchive(path,use_url,data);
         }
         else if(git_prefered)
         {
-            // GIT data
-            res = extractDataFromGit(path+".git/FETCH_HEAD",path,use_url,data);
+            res = extractDataFromGit(path,use_url,data);
             if (!res)
-                res = extractDataFromGit(path+"_git/FETCH_HEAD",path,use_url,data);
-            // HG data
+                res = extractDataFromHG(path,use_url,data);
             if (!res)
-                res = extractDataFromHG(path+".hg/branchheads.cache",path,use_url,data);
+                res = extractDataFromSvn(path,use_url,data);
             if (!res)
-                res = extractDataFromHG(path+"_hg/branchheads.cache",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+".hg/branch.cache",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+"_hg/branch.cache",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+".hg/cache/branch",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+"_hg/cache/branch",path,use_url,data);
-           /// SVN data
-            if (!res)
-                res = extractDataFromSvn(path+".svn/entries",use_url,data);
-            if (!res)
-                res = extractDataFromSvn(path+"_svn/entries",use_url,data);
-            // Archive data
-            if (!res)
-                res = extractDataFromArchive(path+".hg_archival.txt",path,use_url,data);
-            if (!res)
-                res = extractDataFromArchive(path+"_hg_archival.txt",path,use_url,data);
+                res = extractDataFromArchive(path,use_url,data);
         }
-
         else if(hg_prefered)
         {
-            // HG data
-            res = extractDataFromHG(path+".hg/branchheads.cache",path,use_url,data);
+            res = extractDataFromHG(path,use_url,data);
             if (!res)
-                res = extractDataFromHG(path+"_hg/branchheads.cache",path,use_url,data);
+                res = extractDataFromSvn(path,use_url,data);
             if (!res)
-                res = extractDataFromHG(path+".hg/branch.cache",path,use_url,data);
+                res = extractDataFromGit(path,use_url,data);
             if (!res)
-                res = extractDataFromHG(path+"_hg/branch.cache",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+".hg/cache/branch",path,use_url,data);
-            if (!res)
-                res = extractDataFromHG(path+"_hg/cache/branch",path,use_url,data);
-            /// SVN data
-            if (!res)
-                res = extractDataFromSvn(path+".svn/entries",use_url,data);
-            if (!res)
-                res = extractDataFromSvn(path+"_svn/entries",use_url,data);
-            // GIT data
-            if (!res)
-                res = extractDataFromGit(path+".git/FETCH_HEAD",path,use_url,data);
-            if (!res)
-                res = extractDataFromGit(path+"_git/FETCH_HEAD",path,use_url,data);
-            // Archive data
-            if (!res)
-                res = extractDataFromArchive(path+".hg_archival.txt",path,use_url,data);
-            if (!res)
-                res = extractDataFromArchive(path+"_hg_archival.txt",path,use_url,data);
+                res = extractDataFromArchive(path,use_url,data);
         }
-
         if(res)
             newData = generateHeader(data.rev_str,data.date_str,data.time_str,data.hash_str);
         else

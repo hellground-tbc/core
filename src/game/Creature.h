@@ -438,7 +438,7 @@ extern std::map<uint32, uint32> CreatureAIReInitialize;
 
 #define MAX_VENDOR_ITEMS 255                                // Limitation in item count field size in SMSG_LIST_INVENTORY
 
-class HELLGROUND_DLL_SPEC Creature : public Unit
+class HELLGROUND_IMPORT_EXPORT Creature : public Unit
 {
     public:
 
@@ -470,7 +470,7 @@ class HELLGROUND_DLL_SPEC Creature : public Unit
 
         bool CanWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
         bool CanSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
-        bool CanFly()  const { return GetCreatureInfo()->InhabitType & INHABIT_AIR; }
+        bool CanFly()  const;
 
         void SetWalk(bool enable);
         void SetLevitate(bool enable);
@@ -608,7 +608,7 @@ class HELLGROUND_DLL_SPEC Creature : public Unit
         CreatureSpellCooldowns m_CreatureSpellCooldowns;
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
 
-        bool canSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool canSeeOrDetect(Unit const* u, WorldObject const*, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsWithinSightDist(Unit const* u) const;
         bool canStartAttack(Unit const* u) const;
         float GetAttackDistance(Unit const* pl) const;
@@ -820,7 +820,7 @@ class ForcedDespawnDelayEvent : public BasicEvent
 class AttackResumeEvent : public BasicEvent
 {
     public:
-        AttackResumeEvent(Unit& owner) : m_owner(owner), b_force(false) {};
+        AttackResumeEvent(Unit& owner) : BasicEvent(), m_owner(owner), b_force(false) {};
         AttackResumeEvent(Unit& owner, bool force) : m_owner(owner), b_force(force) {};
         bool Execute(uint64 e_time, uint32 p_time);
 
@@ -828,6 +828,17 @@ class AttackResumeEvent : public BasicEvent
         AttackResumeEvent();
         Unit& m_owner;
         bool  b_force;
+};
+
+class RestoreReactState : public BasicEvent
+{
+    public:
+        RestoreReactState(Creature& owner);
+        bool Execute(uint64 e_time, uint32 p_time);
+
+    private:
+        ReactStates _oldState;
+        Creature& _owner;
 };
 
 #endif

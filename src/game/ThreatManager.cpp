@@ -36,9 +36,6 @@
 // The pHatingUnit is not used yet
 float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pThreat, SpellSchoolMask schoolMask, SpellEntry const *pThreatSpell)
 {
-    if (!pHatedUnit->IsInMap(pHatingUnit))
-        return 0.0f;
-
     if (pThreatSpell)
     {
         if (pThreatSpell->AttributesEx & SPELL_ATTR_EX_NO_THREAT)
@@ -106,6 +103,7 @@ void HostilReference::addThreat(float pMod)
     // if the link was cut before relink it again
     if (!isOnline())
         updateOnlineStatus();
+
     if (pMod != 0.0f)
     {
         ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, pMod);
@@ -140,9 +138,7 @@ void HostilReference::updateOnlineStatus()
     // target is not in flight
     if (isValid()
         && (getTarget()->GetTypeId() != TYPEID_PLAYER || !((Player*)getTarget())->isGameMaster())
-        && !getTarget()->hasUnitState(UNIT_STAT_TAXI_FLIGHT)
-        && getTarget()->IsInMap(getSourceUnit())
-        )
+        && !getTarget()->hasUnitState(UNIT_STAT_TAXI_FLIGHT))
     {
         Creature* creature = (Creature*) getSourceUnit();
         online = getTarget()->isInAccessiblePlacefor (creature);
@@ -300,9 +296,9 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     {
         SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NONE;
         if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_GENERIC_SPELL])
-            schoolMask = SpellSchoolMask(pSpell->m_spellInfo->SchoolMask);
+            schoolMask = SpellSchoolMask(pSpell->GetSpellInfo()->SchoolMask);
         else if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_CHANNELED_SPELL])
-            schoolMask = SpellSchoolMask(pSpell->m_spellInfo->SchoolMask);
+            schoolMask = SpellSchoolMask(pSpell->GetSpellInfo()->SchoolMask);
 
         if (target->IsImmunedToDamage(schoolMask, false))
             return true;
@@ -361,7 +357,7 @@ HostilReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostilRe
         currentRef = (*iter);
 
         Unit* target = currentRef->getTarget();
-        assert(target);                                     // if the ref has status online the target must be there !
+        ASSERT(target);                                     // if the ref has status online the target must be there !
 
         // some units are preferred in comparison to others
         if (!noPriorityTargetFound && DropAggro(pAttacker, target))
@@ -455,7 +451,7 @@ void ThreatManager::addThreat(Unit* pVictim, float pThreat, SpellSchoolMask scho
     if (!pVictim->isAlive() || !getOwner()->isAlive())
         return;
 
-    assert(getOwner()->GetTypeId() == TYPEID_UNIT);
+    ASSERT(getOwner()->GetTypeId() == TYPEID_UNIT);
 
     float threat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, schoolMask, pThreatSpell);
 

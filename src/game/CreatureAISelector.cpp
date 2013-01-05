@@ -101,7 +101,7 @@ namespace FactorySelector
             {
                 const CreatureAICreator *factory = iter->second;
                 const SelectableAI *p = dynamic_cast<const SelectableAI *>(factory);
-                assert(p != NULL);
+                ASSERT(p != NULL);
                 int val = p->Permit(creature);
                 if (val > best_val)
                 {

@@ -27,9 +27,8 @@
 
 #include <vector>
 #include <list>
-#include <assert.h>
 #include "Common.h"
-#include "Errors.h"
+#include "Log.h"
 
 namespace ACE_Based
 {

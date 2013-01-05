@@ -21,6 +21,7 @@
 
 #include "typedefs.h"
 #include <G3D/Vector3.h>
+#include "Log.h"
 
 namespace Movement {
 

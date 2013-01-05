@@ -60,6 +60,11 @@ struct GroupQueueInfo                                       // stores informatio
     uint32  HiddenRating;                                   // if rated match, inited to the rating of the team
     uint32  OpponentsTeamRating;                            // for rated arena matches
     uint32  OpponentsHiddenRating;                          // for rated arena matches
+
+    BattleGroundTeamId GetBGTeam()
+    {
+        return Team == HORDE ? BG_TEAM_HORDE : BG_TEAM_ALLIANCE;
+    }
 };
 
 enum BattleGroundQueueGroupTypes
@@ -89,6 +94,8 @@ class BattleGroundQueue
         void RemovePlayer(const uint64& guid, bool decreaseInvitedCount);
         void DecreaseGroupLength(uint32 queueId, uint32 AsGroup);
         void BGEndedRemoveInvites(BattleGround * bg);
+
+        uint32 GetQueuedPlayersCount(BattleGroundTeamId team, BattleGroundBracketId bracketId);
 
         typedef std::map<uint64, PlayerQueueInfo> QueuedPlayersMap;
         QueuedPlayersMap m_QueuedPlayers;
@@ -123,6 +130,9 @@ class BattleGroundQueue
 
         //one selection pool for horde, other one for alliance
         SelectionPool m_SelectionPools[BG_TEAMS_COUNT];
+
+        typedef ACE_Atomic_Op<ACE_Thread_Mutex, uint32> atomicUInt32;
+        atomicUInt32 queuedPlayersCount[BG_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS];
 
     private:
 

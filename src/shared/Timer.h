@@ -22,6 +22,7 @@
 #define HELLGROUND_TIMER_H
 
 #include "Common.h"
+#include "Log.h"
 #include <ace/OS_NS_sys_time.h>
 
 class WorldTimer
@@ -178,6 +179,68 @@ struct PeriodicTimer
     private:
         int32 i_period;
         int32 i_expireTime;
+};
+
+class WorldUpdateCounter
+{
+    public:
+        WorldUpdateCounter() : m_tmStart(0) {}
+
+        time_t timeElapsed()
+        {
+            if (!m_tmStart)
+                m_tmStart = WorldTimer::tickPrevTime();
+
+            return WorldTimer::getMSTimeDiff(m_tmStart, WorldTimer::tickTime());
+        }
+
+        void Reset() { m_tmStart = WorldTimer::tickTime(); }
+
+    private:
+        uint32 m_tmStart;
+};
+
+class DiffRecorder
+{
+    public:
+        DiffRecorder(std::string funcName, uint32 treshold = 0)
+        {
+            ownerName = funcName;
+            _diffTresholdForFile = treshold;
+
+            _startTime = WorldTimer::getMSTime();
+        }
+
+        inline uint32 RecordTimeFor(char const* fmt, ...)
+        {
+            uint32 diffTime = WorldTimer::getMSTimeDiffToNow(_startTime);
+
+            _startTime = WorldTimer::getMSTime();
+
+            if (_diffTresholdForFile && diffTime >= _diffTresholdForFile)
+            {
+                va_list ap;
+                char str [256];
+                va_start(ap, fmt);
+                vsnprintf(str, 256, fmt, ap);
+                va_end(ap);
+
+                sLog.outLog(LOG_DIFF, "[%s]: %s [diff: %u].", ownerName.c_str(), str, diffTime);
+            }
+
+            return diffTime;
+        }
+
+        inline void ResetDiff()
+        {
+            _startTime = WorldTimer::getMSTime();
+        }
+
+    private:
+
+        std::string ownerName;
+        uint32 _startTime;
+        uint32 _diffTresholdForFile;
 };
 
 #endif

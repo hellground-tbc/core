@@ -40,7 +40,7 @@ bool CreatureEventAIHolder::UpdateRepeatTimer(Creature* creature, uint32 repeatM
         Time = urand(repeatMin, repeatMax);
     else
     {
-        sLog.outErrorDb("CreatureEventAI: Creature %u using Event %u (Type = %u) has RandomMax < RandomMin. Event repeating disabled.", creature->GetEntry(), Event.event_id, Event.event_type);
+        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using Event %u (Type = %u) has RandomMax < RandomMin. Event repeating disabled.", creature->GetEntry(), Event.event_id, Event.event_type);
         Enabled = false;
         return false;
     }
@@ -112,7 +112,7 @@ CreatureEventAI::CreatureEventAI(Creature *c) : CreatureAI(c)
 
     // EventMap had events but they were not added because they must be for instance
     if (CreatureEventAIList.empty())
-        sLog.outError("CreatureEventAI: Creature %u has events but no events added to list because of instance flags.", m_creature->GetEntry());
+        sLog.outLog(LOG_DEFAULT, "ERROR: CreatureEventAI: Creature %u has events but no events added to list because of instance flags.", m_creature->GetEntry());
 
     bEmptyList = CreatureEventAIList.empty();
     Phase = 0;
@@ -362,7 +362,7 @@ bool CreatureEventAI::ProcessEvent(CreatureEventAIHolder& pHolder, Unit* pAction
             break;
         }
         default:
-            sLog.outErrorDb("CreatureEventAI: Creature %u using Event %u has invalid Event Type(%u), missing from ProcessEvent() Switch.", m_creature->GetEntry(), pHolder.Event.event_id, pHolder.Event.event_type);
+            sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Creature %u using Event %u has invalid Event Type(%u), missing from ProcessEvent() Switch.", m_creature->GetEntry(), pHolder.Event.event_id, pHolder.Event.event_type);
             break;
     }
 
@@ -519,7 +519,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                         //Melee current victim if flag not set
                         if (!(action.cast.castFlags & CAST_NO_MELEE_IF_OOM))
                         {
-                            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
+                            //if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
                             {
                                 AttackDistance = 0.0f;
                                 AttackAngle = 0.0f;
@@ -532,7 +532,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                     else
                     {
                         //Interrupt any previous spell
-                        if (caster->IsNonMeleeSpellCasted(false) && action.cast.castFlags & CAST_INTURRUPT_PREVIOUS)
+                        if (action.cast.castFlags & CAST_INTURRUPT_PREVIOUS && caster->IsNonMeleeSpellCasted(false))
                             caster->InterruptNonMeleeSpells(false);
 
                         caster->CastSpell(target, action.cast.spellId, (action.cast.castFlags & CAST_TRIGGERED));
@@ -540,7 +540,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
 
                 }
                 else
-                    sLog.outErrorDb("CreatureEventAI: event %d creature %d attempt to cast spell that doesn't exist %d", EventId, m_creature->GetEntry(), action.cast.spellId);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI: event %d creature %d attempt to cast spell that doesn't exist %d", EventId, m_creature->GetEntry(), action.cast.spellId);
             }
             break;
         }
@@ -553,7 +553,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
 
             if (!target)
             {
-                sLog.outErrorDb("CreatureEventAI: event %d creature %d attempt to cast spell on targetGUID %d that doesn't exists in map", EventId, m_creature->GetEntry(), action.castguid.targetGUID);
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: event %d creature %d attempt to cast spell on targetGUID %d that doesn't exists in map", EventId, m_creature->GetEntry(), action.castguid.targetGUID);
                 return;
             }
 
@@ -601,7 +601,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                     }
                 }
                 else
-                    sLog.outErrorDb("CreatureEventAI: event %d creature %d attempt to cast spell that doesn't exist %d", EventId, m_creature->GetEntry(), action.castguid.spellId);
+                    sLog.outLog(LOG_DB_ERR, "CreatureEventAI: event %d creature %d attempt to cast spell that doesn't exist %d", EventId, m_creature->GetEntry(), action.castguid.spellId);
             }
             break;
         }
@@ -620,7 +620,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                 pCreature = m_creature->SummonCreature(action.summon.creatureId, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
 
             if (!pCreature)
-                sLog.outErrorDb("CreatureEventAI: failed to spawn creature %u. Spawn event %d is on creature %d", action.summon.creatureId, EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: failed to spawn creature %u. Spawn event %d is on creature %d", action.summon.creatureId, EventId, m_creature->GetEntry());
             else if (action.summon.target != TARGET_T_SELF && target)
                 pCreature->AI()->AttackStart(target);
             break;
@@ -712,12 +712,12 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             int32 new_phase = int32(Phase)+action.set_inc_phase.step;
             if (new_phase < 0)
             {
-                sLog.outErrorDb("CreatureEventAI: Event %d decrease Phase under 0. CreatureEntry = %d", EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %d decrease Phase under 0. CreatureEntry = %d", EventId, m_creature->GetEntry());
                 Phase = 0;
             }
             else if (new_phase >= MAX_PHASE)
             {
-                sLog.outErrorDb("CreatureEventAI: Event %d incremented Phase above %u. Phase mask cannot be used with phases past %u. CreatureEntry = %d", EventId, MAX_PHASE-1, MAX_PHASE-1, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %d incremented Phase above %u. Phase mask cannot be used with phases past %u. CreatureEntry = %d", EventId, MAX_PHASE-1, MAX_PHASE-1, m_creature->GetEntry());
                 Phase = MAX_PHASE-1;
             }
             else
@@ -767,7 +767,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             if (action.random_phase_range.phaseMax > action.random_phase_range.phaseMin)
                 Phase = action.random_phase_range.phaseMin + (rnd % (action.random_phase_range.phaseMax - action.random_phase_range.phaseMin));
             else
-                sLog.outErrorDb("CreatureEventAI: ACTION_T_RANDOM_PHASE_RANGE cannot have Param2 <= Param1. Divide by Zero. Event = %d. CreatureEntry = %d", EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: ACTION_T_RANDOM_PHASE_RANGE cannot have Param2 <= Param1. Divide by Zero. Event = %d. CreatureEntry = %d", EventId, m_creature->GetEntry());
             break;
         case ACTION_T_SUMMON_ID:
         {
@@ -779,7 +779,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             CreatureEventAI_Summon_Map::const_iterator i = sCreatureEAIMgr.GetCreatureEventAISummonMap().find(action.summon_id.spawnId);
             if (i == sCreatureEAIMgr.GetCreatureEventAISummonMap().end())
             {
-                sLog.outErrorDb("CreatureEventAI: failed to spawn creature %u. Summon map index %u does not exist. EventID %d. CreatureID %d", action.summon_id.creatureId, action.summon_id.spawnId, EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: failed to spawn creature %u. Summon map index %u does not exist. EventID %d. CreatureID %d", action.summon_id.creatureId, action.summon_id.spawnId, EventId, m_creature->GetEntry());
                 return;
             }
 
@@ -790,7 +790,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                 pCreature = m_creature->SummonCreature(action.summon_id.creatureId, (*i).second.position_x, (*i).second.position_y, (*i).second.position_z, (*i).second.orientation, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
 
             if (!pCreature)
-                sLog.outErrorDb("CreatureEventAI: failed to spawn creature %u. EventId %d.Creature %d", action.summon_id.creatureId, EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: failed to spawn creature %u. EventId %d.Creature %d", action.summon_id.creatureId, EventId, m_creature->GetEntry());
             else if (action.summon_id.target != TARGET_T_SELF && target)
                 pCreature->AI()->AttackStart(target);
 
@@ -813,7 +813,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             InstanceData* pInst = (InstanceData*)m_creature->GetInstanceData();
             if (!pInst)
             {
-                sLog.outErrorDb("CreatureEventAI: Event %d attempt to set instance data without instance script. Creature %d", EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %d attempt to set instance data without instance script. Creature %d", EventId, m_creature->GetEntry());
                 return;
             }
 
@@ -825,14 +825,14 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             Unit* target = GetTargetByType(action.set_inst_data64.target, pActionInvoker);
             if (!target)
             {
-                sLog.outErrorDb("CreatureEventAI: Event %d attempt to set instance data64 but Target == NULL. Creature %d", EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %d attempt to set instance data64 but Target == NULL. Creature %d", EventId, m_creature->GetEntry());
                 return;
             }
 
             InstanceData* pInst = (InstanceData*)m_creature->GetInstanceData();
             if (!pInst)
             {
-                sLog.outErrorDb("CreatureEventAI: Event %d attempt to set instance data64 without instance script. Creature %d", EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %d attempt to set instance data64 without instance script. Creature %d", EventId, m_creature->GetEntry());
                 return;
             }
 
@@ -843,7 +843,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             if (m_creature->GetEntry() == action.update_template.creatureId)
             {
 
-                sLog.outErrorDb("CreatureEventAI: Event %d ACTION_T_UPDATE_TEMPLATE call with param1 == current entry. Creature %d", EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %d ACTION_T_UPDATE_TEMPLATE call with param1 == current entry. Creature %d", EventId, m_creature->GetEntry());
                 return;
             }
 
@@ -853,7 +853,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             if (m_creature->isDead())
             {
 
-                sLog.outErrorDb("CreatureEventAI: Event %d ACTION_T_DIE on dead creature. Creature %d", EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "CreatureEventAI: Event %d ACTION_T_DIE on dead creature. Creature %d", EventId, m_creature->GetEntry());
                 return;
             }
             m_creature->Kill(m_creature, false);
@@ -905,7 +905,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             pObject = m_creature->SummonGameObject(action.raw.param1, x, y, z, 0, 0, 0, 0, 0, action.raw.param2);
             if (!pObject)
             {
-                sLog.outErrorDb("TSCR: EventAI failed to spawn object %u. Spawn event %d is on creature %d", action.raw.param1, EventId, m_creature->GetEntry());
+                sLog.outLog(LOG_DB_ERR, "TSCR: EventAI failed to spawn object %u. Spawn event %d is on creature %d", action.raw.param1, EventId, m_creature->GetEntry());
             }
             break;
         }
@@ -1229,14 +1229,7 @@ void CreatureEventAI::UpdateAI(const uint32 diff)
                             if (m_creature->IsInMap(m_creature->getVictim()))
                             {
                                 if (m_creature->IsInRange(m_creature->getVictim(),(float)(*i).Event.range.minDist,(float)(*i).Event.range.maxDist))
-                                {
-                                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != IDLE_MOTION_TYPE)
-                                        m_creature->GetMotionMaster()->MoveIdle();
-
                                     ProcessEvent(*i);
-                                }
-                                else if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE)
-                                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
                             }
                         }
                         break;
@@ -1323,7 +1316,7 @@ Unit* CreatureEventAI::SelectLowestHpFriendly(float range, uint32 MinHPDiff)
 void CreatureEventAI::FindFriendlyCC(std::list<Creature*>& _list, float range)
 {
     Hellground::FriendlyCCedInRange u_check(m_creature, range);
-    Hellground::CreatureListSearcher<Hellground::FriendlyCCedInRange> searcher(_list, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::FriendlyCCedInRange> searcher(_list, u_check);
 
     Cell::VisitGridObjects(m_creature, searcher, range);
 }
@@ -1331,7 +1324,7 @@ void CreatureEventAI::FindFriendlyCC(std::list<Creature*>& _list, float range)
 void CreatureEventAI::FindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid)
 {
     Hellground::FriendlyMissingBuffInRange u_check(m_creature, range, spellid);
-    Hellground::CreatureListSearcher<Hellground::FriendlyMissingBuffInRange> searcher(_list, u_check);
+    Hellground::ObjectListSearcher<Creature, Hellground::FriendlyMissingBuffInRange> searcher(_list, u_check);
 
     Cell::VisitGridObjects(m_creature,searcher, range);
 }
@@ -1343,13 +1336,13 @@ void CreatureEventAI::DoScriptText(int32 textEntry, WorldObject* pSource, Unit* 
 {
     if (!pSource)
     {
-        sLog.outErrorDb("CreatureEventAI: DoScriptText entry %i, invalid Source pointer.",textEntry);
+        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: DoScriptText entry %i, invalid Source pointer.",textEntry);
         return;
     }
 
     if (textEntry >= 0)
     {
-        sLog.outErrorDb("CreatureEventAI: DoScriptText with source entry %u (TypeId=%u, guid=%u) attempts to process text entry %i, but text entry must be negative.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUIDLow(),textEntry);
+        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: DoScriptText with source entry %u (TypeId=%u, guid=%u) attempts to process text entry %i, but text entry must be negative.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUIDLow(),textEntry);
         return;
     }
 
@@ -1357,7 +1350,7 @@ void CreatureEventAI::DoScriptText(int32 textEntry, WorldObject* pSource, Unit* 
 
     if (i == sCreatureEAIMgr.GetCreatureEventAITextMap().end())
     {
-        sLog.outErrorDb("CreatureEventAI: DoScriptText with source entry %u (TypeId=%u, guid=%u) could not find text entry %i.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUIDLow(),textEntry);
+        sLog.outLog(LOG_DB_ERR, "CreatureEventAI: DoScriptText with source entry %u (TypeId=%u, guid=%u) could not find text entry %i.",pSource->GetEntry(),pSource->GetTypeId(),pSource->GetGUIDLow(),textEntry);
         return;
     }
 
@@ -1368,7 +1361,7 @@ void CreatureEventAI::DoScriptText(int32 textEntry, WorldObject* pSource, Unit* 
         if (GetSoundEntriesStore()->LookupEntry((*i).second.SoundId))
             pSource->SendPlaySound((*i).second.SoundId,false);
         else
-            sLog.outErrorDb("CreatureEventAI: DoScriptText entry %i tried to process invalid sound id %u.",textEntry,(*i).second.SoundId);
+            sLog.outLog(LOG_DB_ERR, "CreatureEventAI: DoScriptText entry %i tried to process invalid sound id %u.",textEntry,(*i).second.SoundId);
     }
 
     if ((*i).second.Emote)
@@ -1378,7 +1371,7 @@ void CreatureEventAI::DoScriptText(int32 textEntry, WorldObject* pSource, Unit* 
             ((Unit*)pSource)->HandleEmoteCommand((*i).second.Emote);
         }
         else
-            sLog.outErrorDb("CreatureEventAI: DoScriptText entry %i tried to process emote for invalid TypeId (%u).",textEntry,pSource->GetTypeId());
+            sLog.outLog(LOG_DB_ERR, "CreatureEventAI: DoScriptText entry %i tried to process emote for invalid TypeId (%u).",textEntry,pSource->GetTypeId());
     }
 
     switch ((*i).second.Type)
@@ -1399,13 +1392,13 @@ void CreatureEventAI::DoScriptText(int32 textEntry, WorldObject* pSource, Unit* 
         {
             if (target && target->GetTypeId() == TYPEID_PLAYER)
                 pSource->MonsterWhisper(textEntry, target->GetGUID());
-            else sLog.outErrorDb("CreatureEventAI: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
+            else sLog.outLog(LOG_DB_ERR, "CreatureEventAI: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
         }break;
         case CHAT_TYPE_BOSS_WHISPER:
         {
             if (target && target->GetTypeId() == TYPEID_PLAYER)
                 pSource->MonsterWhisper(textEntry, target->GetGUID(), true);
-            else sLog.outErrorDb("CreatureEventAI: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
+            else sLog.outLog(LOG_DB_ERR, "CreatureEventAI: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
         }break;
         case CHAT_TYPE_ZONE_YELL:
             pSource->MonsterYellToZone(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);

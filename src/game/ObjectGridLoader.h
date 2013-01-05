@@ -29,7 +29,7 @@
 
 class ObjectWorldLoader;
 
-class HELLGROUND_DLL_DECL ObjectGridLoader
+class ObjectGridLoader
 {
     friend class ObjectWorldLoader;
 
@@ -56,7 +56,7 @@ class HELLGROUND_DLL_DECL ObjectGridLoader
         uint32 i_corpses;
 };
 
-class HELLGROUND_DLL_DECL ObjectGridUnloader
+class ObjectGridUnloader
 {
     public:
         ObjectGridUnloader(NGridType &grid) : i_grid(grid) {}
@@ -80,7 +80,7 @@ class HELLGROUND_DLL_DECL ObjectGridUnloader
         NGridType &i_grid;
 };
 
-class HELLGROUND_DLL_DECL ObjectGridStoper
+class ObjectGridStoper
 {
     public:
         ObjectGridStoper(NGridType &grid) : i_grid(grid) {}
@@ -100,12 +100,14 @@ class HELLGROUND_DLL_DECL ObjectGridStoper
         void Stop(GridType &grid);
         void Visit(CreatureMapType &m);
 
-        template<class NONACTIVE> void Visit(GridRefManager<NONACTIVE> &) {}
+        template<class NONACTIVE>
+        void Visit(GridRefManager<NONACTIVE> &) {}
+
     private:
         NGridType &i_grid;
 };
 
-class HELLGROUND_DLL_DECL ObjectGridCleaner
+class ObjectGridCleaner
 {
     public:
         ObjectGridCleaner(NGridType &grid) : i_grid(grid) {}

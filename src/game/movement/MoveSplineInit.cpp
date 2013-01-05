@@ -91,7 +91,7 @@ namespace Movement
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
         data << unit.GetPackGUID();
         PacketBuilder::WriteMonsterMove(move_spline, data);
-        unit.SendMessageToSet(&data,true);
+        unit.BroadcastPacket(&data,true);
 
         return move_spline.Duration();
     }

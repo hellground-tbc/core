@@ -34,19 +34,19 @@ void CreatureAI::OnCharmed(bool apply)
 }
 
 AISpellInfoType * UnitAI::AISpellInfo;
-HELLGROUND_DLL_SPEC AISpellInfoType * GetAISpellInfo(uint32 i) { return &CreatureAI::AISpellInfo[i]; }
+HELLGROUND_EXPORT AISpellInfoType * GetAISpellInfo(uint32 i) { return &CreatureAI::AISpellInfo[i]; }
 
 void CreatureAI::DoZoneInCombat(float max_dist)
 {
      Unit *creature = me;
 
-    if (!me->CanHaveThreatList() || me->IsInEvadeMode())
+    if (!me->CanHaveThreatList() || me->IsInEvadeMode() || !me->isAlive())
         return;
 
     Map *pMap = me->GetMap();
     if (!pMap->IsDungeon())                                  //use IsDungeon instead of Instanceable, in case battlegrounds will be instantiated
     {
-        sLog.outError("DoZoneInCombat call for map that isn't an instance (creature entry = %d)", creature->GetTypeId() == TYPEID_UNIT ? ((Creature*)creature)->GetEntry() : 0);
+        sLog.outLog(LOG_DEFAULT, "ERROR: DoZoneInCombat call for map that isn't an instance (creature entry = %d)", creature->GetTypeId() == TYPEID_UNIT ? ((Creature*)creature)->GetEntry() : 0);
         return;
     }
 
@@ -112,10 +112,7 @@ void CreatureAI::EnterEvadeMode()
 
     sLog.outDebug("Creature %u enters evade mode.", me->GetEntry());
 
-    if (Unit *owner = me->GetCharmerOrOwner())
-        me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, m_creature->GetFollowAngle());
-    else
-        me->GetMotionMaster()->MoveTargetedHome();
+    me->GetMotionMaster()->MoveTargetedHome();
 
     if (CreatureGroup *formation = me->GetFormation())
         formation->EvadeFormation(me);

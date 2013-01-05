@@ -40,7 +40,6 @@
 #include "CliRunnable.h"
 #include "ScriptMgr.h"
 #include "Util.h"
-#include "InstanceSaveMgr.h"
 #include "DBCStores.h"
 
 #ifdef WIN32
@@ -94,7 +93,7 @@ public:
             {
                 if(WorldTimer::getMSTimeDiff(w_lastchange,curtime) > _delaytime)
                 {
-                    sLog.outError("World Thread hangs, kicking out server!");
+                    sLog.outLog(LOG_DEFAULT, "ERROR: World Thread hangs, kicking out server!");
                     *((uint32 volatile*)NULL) = 0;                       // bang crash
                 }
             }
@@ -134,7 +133,7 @@ int Master::Run()
         uint32 pid = CreatePIDFile(pidfile);
         if(!pid)
         {
-            sLog.outError("Cannot create PID file %s.\n", pidfile.c_str());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Cannot create PID file %s.\n", pidfile.c_str());
             return 1;
         }
 
@@ -149,6 +148,9 @@ int Master::Run()
     if (!_StartDB())
         return 1;
 
+    // set server offline (not connectable)
+    AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = (realmflags & ~%u) | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, REALM_FLAG_INVALID, realmID);
+
     ///- Initialize the World
     sWorld.SetInitialWorldSettings();
 
@@ -157,6 +159,10 @@ int Master::Run()
     RealmDataDatabase.AllowAsyncTransactions();
     GameDataDatabase.AllowAsyncTransactions();
     AccountsDatabase.AllowAsyncTransactions();
+
+    RealmDataDatabase.EnableLogging();
+    GameDataDatabase.EnableLogging();
+    AccountsDatabase.EnableLogging();
 
     ACE_SIGACTION action;
     action.sa_handler = _OnSignal;
@@ -216,17 +222,16 @@ int Master::Run()
 
                 if(!curAff)
                 {
-                    sLog.outError("Processors marked in UseProcessors bitmask (hex) %x not accessible for Trinityd. Accessible processors bitmask (hex): %x", Aff, appAff);
+                    sLog.outLog(LOG_DEFAULT, "ERROR: Processors marked in UseProcessors bitmask (hex) %x not accessible for Trinityd. Accessible processors bitmask (hex): %x", Aff, appAff);
                 }
                 else
                 {
                     if(SetProcessAffinityMask(hProcess,curAff))
                         sLog.outString("Using processors (bitmask, hex): %x", curAff);
                     else
-                        sLog.outError("Can't set used processors (hex): %x", curAff);
+                        sLog.outLog(LOG_DEFAULT, "ERROR: Can't set used processors (hex): %x", curAff);
                 }
             }
-            sLog.outString();
         }
 
         bool Prio = sConfig.GetBoolDefault("ProcessPriority", false);
@@ -237,8 +242,7 @@ int Master::Run()
             if(SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
                 sLog.outString("TrinityCore process priority class set to HIGH");
             else
-                sLog.outError("ERROR: Can't set Trinityd process priority class.");
-            sLog.outString();
+                sLog.outLog(LOG_DEFAULT, "ERROR: Can't set TrinityCore process priority class.");
         }
     }
     #endif
@@ -247,9 +251,6 @@ int Master::Run()
     realCurrTime = realPrevTime = WorldTimer::getMSTime();
 
     uint32 socketSelecttime = sWorld.getConfig(CONFIG_SOCKET_SELECTTIME);
-
-    //server has started up successfully => enable async DB requests
-    AccountsDatabase.AllowAsyncTransactions();
 
     // maximum counter for next ping
     uint32 numLoops = (sConfig.GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000000 / socketSelecttime));
@@ -261,7 +262,7 @@ int Master::Run()
     if(freeze_delay)
     {
         FreezeDetectorRunnable *fdr = new FreezeDetectorRunnable();
-        fdr->SetDelayTime(freeze_delay*1000);
+        fdr->SetDelayTime(freeze_delay * 1000);
         freeze_thread = new ACE_Based::Thread(fdr);
         freeze_thread->setPriority(ACE_Based::Highest);
     }
@@ -272,7 +273,7 @@ int Master::Run()
 
     if (sWorldSocketMgr->StartNetwork(wsport, bind_ip) == -1)
     {
-        sLog.outError("Failed to start network");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Failed to start network");
         World::StopNow(ERROR_EXIT_CODE);
         // go down and shutdown the server
     }
@@ -331,8 +332,6 @@ int Master::Run()
     }
     #endif
 
-    sInstanceSaveManager.UnbindBeforeDelete();
-
     ///- Wait for delay threads to end
     RealmDataDatabase.HaltDelayThread();
     GameDataDatabase.HaltDelayThread();
@@ -349,33 +348,33 @@ bool Master::_StartDB()
     std::string dbstring = sConfig.GetStringDefault("WorldDatabaseInfo", "");
     if(dbstring.empty())
     {
-        sLog.outError("Database not specified in configuration file");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Database not specified in configuration file");
         return false;
     }
 
     int nConnections = sConfig.GetIntDefault("WorldDatabaseConnections", 1);
-    sLog.outString("World Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+    sLog.outString("World Database: total connections: %i", nConnections + 1);
 
     ///- Initialise the world database
     if(!GameDataDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outError("Cannot connect to world database %s", dbstring.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to world database.");
         return false;
     }
 
     dbstring = sConfig.GetStringDefault("CharacterDatabaseInfo", "");
     if(dbstring.empty())
     {
-        sLog.outError("Character Database not specified in configuration file");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Character Database not specified in configuration file");
         return false;
     }
     nConnections = sConfig.GetIntDefault("CharacterDatabaseConnections", 1);
-    sLog.outDetail("Character Database: %s", dbstring.c_str());
+    sLog.outString("Character Database: total connections: %i", nConnections + 1);
 
     ///- Initialise the Character database
     if(!RealmDataDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outString("Character Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+         sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to characters database.");
         return false;
     }
 
@@ -383,15 +382,15 @@ bool Master::_StartDB()
     dbstring = sConfig.GetStringDefault("LoginDatabaseInfo", "");
     if(dbstring.empty())
     {
-        sLog.outError("Login database not specified in configuration file");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Login database not specified in configuration file");
         return false;
     }
     nConnections = sConfig.GetIntDefault("LoginDatabaseConnections", 1);
     ///- Initialise the login database
-    sLog.outString("Login Database: %s, total connections: %i", dbstring.c_str(), nConnections + 1);
+    sLog.outString("Login Database: total connections: %i", nConnections + 1);
     if(!AccountsDatabase.Initialize(dbstring.c_str(), nConnections))
     {
-        sLog.outError("Cannot connect to login database %s", dbstring.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Cannot connect to login database.");
         return false;
     }
 
@@ -399,7 +398,7 @@ bool Master::_StartDB()
     realmID = sConfig.GetIntDefault("RealmID", 0);
     if(!realmID)
     {
-        sLog.outError("Realm ID not defined in configuration file");
+        sLog.outLog(LOG_DEFAULT, "ERROR: Realm ID not defined in configuration file");
         return false;
     }
     sLog.outString("Realm running as realm ID %d", realmID);
@@ -412,7 +411,7 @@ bool Master::_StartDB()
 
     sWorld.LoadDBVersion();
 
-    sLog.outString("Using %s", sWorld.GetDBVersion());
+    //sLog.outString("Using %s", sWorld.GetDBVersion());
     return true;
 }
 
@@ -453,8 +452,8 @@ void Master::_OnSignal(int s)
             if (MapUpdateInfo const* mapUpdateInfo = sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
             {
                 ACE_Stack_Trace stackTrace;
-                sLog.outCrash("CRASH[%i]: mapid: %u, instanceid: %u", s, mapUpdateInfo->GetId(), mapUpdateInfo->GetInstanceId());
-                sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
+                sLog.outLog(LOG_CRASH, "CRASH[%i]: mapid: %u, instanceid: %u", s, mapUpdateInfo->GetId(), mapUpdateInfo->GetInstanceId());
+                sLog.outLog(LOG_CRASH, "\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
 
                 if (Map *map = sMapMgr.FindMap(mapUpdateInfo->GetId(), mapUpdateInfo->GetInstanceId()))
                     map->SetBroken(true);
@@ -467,8 +466,8 @@ void Master::_OnSignal(int s)
             }
 
             ACE_Stack_Trace stackTrace;
-            sLog.outCrash("Signal Handler: Thread is not virtual map server. Stopping world.");
-            sLog.outCrash("\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
+            sLog.outLog(LOG_CRASH, "Signal Handler: Thread is not virtual map server. Stopping world.");
+            sLog.outLog(LOG_CRASH, "\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
 
             ACE_SIGACTION action;
             action.sa_handler = SIG_DFL;

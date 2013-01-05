@@ -130,6 +130,8 @@ class UnitAction
     virtual void Initialize(Unit &) = 0;
     virtual void Finalize(Unit &) = 0;
 
+    virtual void UnitSpeedChanged() {}
+
     virtual bool IsReachable() const { return true; };
     virtual const char* Name() const { return "<Uninitialized>"; };
     virtual MovementGeneratorType GetMovementGeneratorType() const = 0;

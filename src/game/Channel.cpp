@@ -175,10 +175,7 @@ void Channel::Leave(uint64 p, bool send)
         LeaveNotify(p);
 
         if (changeowner)
-        {
-            uint64 newowner = !players.empty() ? players.begin()->second.player : 0;
-            SetOwner(newowner);
-        }
+            ChangeOwner();
     }
 }
 
@@ -235,10 +232,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
             bad->LeftChannel(this);
 
             if (changeowner)
-            {
-                uint64 newowner = !players.empty() ? good : false;
-                SetOwner(newowner);
-            }
+                ChangeOwner();
         }
     }
 }
@@ -444,6 +438,10 @@ void Channel::SendWhoOwner(uint64 p)
 
 void Channel::List(Player* player)
 {
+    // exploit fix
+    if (player->InArena())
+        return;
+
     uint64 p = player->GetGUID();
 
     if (!IsOn(p))
@@ -467,11 +465,13 @@ void Channel::List(Player* player)
         uint32 count  = 0;
         for (PlayerList::iterator i = players.begin(); i != players.end(); ++i)
         {
-            Player *plr = sObjectMgr.GetPlayer(i->first);
+            Player *user = sObjectMgr.GetPlayer(i->first);
+            if (!user)
+                continue;
 
             // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
             // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
-            if (plr && (!(plr->GetSession()->GetPermissions() & PERM_GMT) || gmInWhoList))
+            if (!(plr->GetSession()->GetPermissions() & PERM_GMT) || gmInWhoList)
             {
                 data << uint64(i->first);
                 data << uint8(i->second.flags);             // flags seems to be changed...
@@ -684,7 +684,7 @@ void Channel::SendToAll(WorldPacket *data, uint64 p)
         if (plr)
         {
             if (!p || !plr->GetSocial()->HasIgnore(GUID_LOPART(p)))
-                plr->GetSession()->SendPacket(data);
+                plr->SendPacketToSelf(data);
         }
     }
 }
@@ -697,7 +697,7 @@ void Channel::SendToAllButOne(WorldPacket *data, uint64 who)
         {
             Player *plr = sObjectMgr.GetPlayer(i->first);
             if (plr)
-                plr->GetSession()->SendPacket(data);
+                plr->SendPacketToSelf(data);
         }
     }
 }
@@ -706,7 +706,7 @@ void Channel::SendToOne(WorldPacket *data, uint64 who)
 {
     Player *plr = sObjectMgr.GetPlayer(who);
     if (plr)
-        plr->GetSession()->SendPacket(data);
+        plr->SendPacketToSelf(data);
 }
 
 void Channel::Voice(uint64 /*guid1*/, uint64 /*guid2*/)
@@ -1014,4 +1014,22 @@ std::list<uint64> Channel::GetPlayers()
         tmpList.push_back(itr->second.player);
 
     return tmpList;
+}
+
+void Channel::ChangeOwner()
+{
+    uint64 newOwner = 0;
+
+    // ignore GM for automatic owner change ;)
+    for (PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+    {
+        Player * tmpPlr = ObjectAccessor::GetPlayer(itr->second.player);
+        if (tmpPlr && !(tmpPlr->GetSession()->GetPermissions() & PERM_GM))
+        {
+            newOwner = itr->second.player;
+            break;
+        }
+    }
+
+    SetOwner(newOwner);
 }

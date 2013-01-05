@@ -260,7 +260,7 @@ This class is used to:
 3. some certain cases, same for all battlegrounds
 4. It has properties same for all battlegrounds
 */
-class HELLGROUND_DLL_SPEC BattleGround
+class HELLGROUND_IMPORT_EXPORT BattleGround
 {
     friend class BattleGroundMgr;
 
@@ -318,10 +318,17 @@ class HELLGROUND_DLL_SPEC BattleGround
         void SetMaxPlayers(uint32 MaxPlayers) { m_MaxPlayers = MaxPlayers; }
         void SetMinPlayers(uint32 MinPlayers) { m_MinPlayers = MinPlayers; }
         void SetLevelRange(uint32 min, uint32 max) { m_LevelMin = min; m_LevelMax = max; }
+        void SetBracketLevelRange(uint32 min, uint32 max) { m_BracketLevelMin = min; m_BracketLevelMax = max; }
         void SetRated(bool state)           { m_IsRated = state; }
         void SetArenaType(uint8 type)       { m_ArenaType = type; }
         void SetArenaorBGType(bool _isArena) { m_IsArena = _isArena; }
         void SetWinner(uint8 winner)        { m_Winner = winner; }
+
+        void CalculateBracketLevelRange()
+        {
+            m_BracketLevelMin = 10 * m_BracketId+ m_LevelMin;
+            m_BracketLevelMax = (m_BracketLevelMin == 70 ? 70 : m_BracketLevelMin + 9);
+        }
 
         void AnnounceBGStart();
 
@@ -562,6 +569,8 @@ class HELLGROUND_DLL_SPEC BattleGround
         /* Limits */
         uint32 m_LevelMin;
         uint32 m_LevelMax;
+        uint32 m_BracketLevelMin;
+        uint32 m_BracketLevelMax;
         uint32 m_MaxPlayersPerTeam;
         uint32 m_MaxPlayers;
         uint32 m_MinPlayersPerTeam;
