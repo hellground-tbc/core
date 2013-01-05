@@ -2397,6 +2397,13 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (GetTypeId() == TYPEID_UNIT && ((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
         block_chance = 0;
+    
+    if (Player* player = ToPlayer())
+    {
+        Item *tmpitem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+        if (!tmpitem || !tmpitem->GetProto()->Block)
+            block_chance = 0;
+    }
 
     if (block_chance)
     {
@@ -2624,6 +2631,13 @@ bool Unit::isSpellBlocked(Unit *pVictim, SpellEntry const *spellProto, WeaponAtt
         if (spellProto && spellProto->Attributes & SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK)
             return false;
 
+        if (Player* player = pVictim->ToPlayer())
+        {
+            Item *tmpitem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+            if (!tmpitem || !tmpitem->GetProto()->Block)
+                return false;
+        }
+
         float blockChance = pVictim->GetUnitBlockChance();
         blockChance += (GetWeaponSkillValue(attackType) - pVictim->GetMaxSkillValueForLevel())*0.04;
         if (roll_chance_f(blockChance))
@@ -2735,6 +2749,13 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     bool canDodge = !isCasting && !lostControl;
     bool canParry = !isCasting && !lostControl;
     bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3 && !isCasting && !lostControl;
+
+    if (Player* player = ToPlayer())
+    {
+        Item *tmpitem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+        if (!tmpitem || !tmpitem->GetProto()->Block)
+            canBlock = false;
+    }
 
     // Creature has un-blockable attack info
     if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
@@ -3064,11 +3085,8 @@ float Unit::GetUnitBlockChance() const
     {
         Player const* player = (Player const*)this;
         if (player->CanBlock())
-        {
-            Item *tmpitem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            if (tmpitem && !tmpitem->IsBroken() && tmpitem->GetProto()->Block)
-                return GetFloatValue(PLAYER_BLOCK_PERCENTAGE);
-        }
+            return GetFloatValue(PLAYER_BLOCK_PERCENTAGE);
+
         // is player but has no block ability or no not broken shield equipped
         return 0.0f;
     }
