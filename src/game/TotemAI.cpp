@@ -42,6 +42,7 @@ TotemAI::Permissible(const Creature *creature)
 
 TotemAI::TotemAI(Creature *c) : CreatureAI(c), i_totem(static_cast<Totem&>(*c)), i_victimGuid(0)
 {
+    c->addUnitState(UNIT_STAT_CANNOT_TURN);
 }
 
 void TotemAI::MoveInLineOfSight(Unit *)
