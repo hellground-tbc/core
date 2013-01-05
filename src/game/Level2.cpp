@@ -4388,15 +4388,12 @@ bool ChatHandler::HandleMmapOffsetCreateCommand(const char* /*args*/)
     int32 gx = 32 - player->GetPositionX() / SIZE_OF_GRIDS;
     int32 gy = 32 - player->GetPositionY() / SIZE_OF_GRIDS;
 
-    char fileName[25];
-    sprintf(fileName, "%03u%02i%02i.offmesh", player->GetMapId(), gy, gx);
-
     std::ofstream file;
-    file.open(fileName, std::ios_base::out | std::ios_base::app);
+    file.open("mmaps.offmesh", std::ios_base::out | std::ios_base::app);
     if (file.fail())
         return false;
 
-    file << player->GetMapId() << " " << gy << "," << gx << "("
+    file << player->GetMapId() << " " << gx << "," << gy << " ("
          << player->GetPositionX() << " "
          << player->GetPositionY() << " "
          << player->GetPositionZ() << ")" << " " << "("
