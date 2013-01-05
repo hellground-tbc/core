@@ -35,6 +35,34 @@
 #include "Util.h"
 #include "GameEvent.h"
 
+bool ChatHandler::HandleAccountXPToggleCommand(const char* args)
+{
+    if (uint32 account_id = m_session->GetAccountId())
+    {
+        if (WorldSession *session = sWorld.FindSession(account_id))
+        {
+            if (session->IsAccountFlagged(ACC_BLIZZLIKE_RATES))
+            {
+                session->RemoveAccountFlag(ACC_BLIZZLIKE_RATES);
+                PSendSysMessage("Now your rates are serverlike: x2.");
+            }
+            else
+            {
+                session->AddAccountFlag(ACC_BLIZZLIKE_RATES);
+                PSendSysMessage("Now your rates are blizzlike: x1.");
+            }
+        }
+    }
+    else
+    {
+        PSendSysMessage("Specified account not found.");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleAccountBonesHideCommand(const char* args)
 {
     if (uint32 account_id = m_session->GetAccountId())
