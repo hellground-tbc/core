@@ -829,7 +829,7 @@ int32 Pet::GetTPForSpell(uint32 spellid)
 uint32 Pet::GetMaxLoyaltyPoints(uint32 level)
 {
     //numbers represent minutes * 100 while happy (you get 100 loyalty points per min while happy)
-    uint32 LevelUpLoyalty[6] =
+    const uint32 LevelUpLoyalty[6] =
     {
         5500,
         11500,

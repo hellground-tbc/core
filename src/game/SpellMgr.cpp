@@ -2889,6 +2889,8 @@ void SpellMgr::LoadSpellCustomAttr()
             // Heart of Wyrmthalak: Flame Lash proc
             case 27655:
             case 45055:
+            // Arcane Torrent
+            case 28733:
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                 break;
             /* WELL FEED */

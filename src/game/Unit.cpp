@@ -8097,7 +8097,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         case SPELLFAMILY_MAGE:
             // Mana Tap(Racial)
             if (spellProto->Id == 28734)
-                pdamage += getLevel();
+                return pdamage += getLevel();
             // Ice Lance
             else if ((spellProto->SpellFamilyFlags & 0x20000LL) && spellProto->SpellIconID == 186)
             {
