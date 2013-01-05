@@ -265,5 +265,7 @@ class Pet : public Creature
         {
             ASSERT(false);
         }
+
+        TimeTrackerSmall focusTimer;
 };
 #endif

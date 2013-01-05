@@ -59,7 +59,6 @@ Pet::Pet(PetType type) : Creature()
 
     m_loading = false;
     m_removed = false;
-    m_regenTimer = 4000;
     m_happinessTimer = 7500;
     m_loyaltyTimer = 12000;
     m_duration = 0;
@@ -86,7 +85,8 @@ Pet::Pet(PetType type) : Creature()
     m_CreatureCategoryCooldowns.clear();
     m_autospells.clear();
     m_declinedname = NULL;
-    //m_isActive = true;
+    
+    focusTimer.Reset(4000);
 }
 
 Pet::~Pet()
@@ -581,24 +581,25 @@ void Pet::Update(uint32 update_diff, uint32 p_diff)
             if (getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK)
             {
                 for (PetAuraSet::iterator i = owner->m_petAuras.begin(); i != owner->m_petAuras.end(); i++)
+                {
                     if ((*i)->GetAura(GetEntry()) == 35696)
                     {
                         CastPetAura(*i);
                         break;
                     }
+                }
             }
 
             if (getPetType() != HUNTER_PET)
                 break;
 
             //regenerate Focus
-            if (m_regenTimer <= update_diff)
+            focusTimer.Update(update_diff);
+            if (focusTimer.Passed())
             {
                 RegenerateFocus();
-                m_regenTimer = 4000;
+                focusTimer.Reset(4000);
             }
-            else
-                m_regenTimer -= update_diff;
 
             if (m_happinessTimer <= update_diff)
             {
