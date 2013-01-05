@@ -3163,7 +3163,7 @@ uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) 
     uint32 value = 0;
     if (GetTypeId() == TYPEID_PLAYER)
     {
-        if (target->isCharmedOwnedByPlayerOrPlayer())
+        if (target && target->isCharmedOwnedByPlayerOrPlayer())
             return GetMaxSkillValueForLevel();
 
         Item* item = ((Player*)this)->GetWeaponForAttack(attType,true);
