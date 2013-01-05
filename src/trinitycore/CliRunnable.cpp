@@ -243,10 +243,10 @@ bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
 
         ///- Get the username, last IP and GM level of each account
         // No SQL injection. account is uint32.
-        //    
-
-todo laksdj                                                  0         1        2        3
-        QueryResultAutoPtr resultLogin = AccountsDatabase.PQuery("SELECT username, last_ip, gmlevel, expansion FROM account WHERE id = '%u'", account);
+        //                                                                  0         1          2              3
+        QueryResultAutoPtr resultLogin = AccountsDatabase.PQuery("SELECT username, last_ip, permission_mask, expansion_id "
+                                                                 "FROM account JOIN account_permissions ON account.account_id = account_permissions.account_id "
+                                                                 "WHERE account_id = '%u' AND realm_id = '%u'", account, realmID);
 
         if(resultLogin)
         {

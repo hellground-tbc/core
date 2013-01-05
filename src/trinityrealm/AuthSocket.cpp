@@ -729,7 +729,7 @@ bool AuthSocket::_HandleLogonProof()
         {
             OS = CLIENT_OS_UNKNOWN;
             AccountsDatabase.escape_string(operatingSystem);
-            sLog.outWarden("Client %s got unsupported operating system (%s)", _safelogin.c_str(), operatingSystem.c_str());
+            sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _safelogin.c_str(), operatingSystem.c_str());
         }
 
         ///- Update the sessionkey, last_ip, last login time and reset number of failed logins in the account table for this account
