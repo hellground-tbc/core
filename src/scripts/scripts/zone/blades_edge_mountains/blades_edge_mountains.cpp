@@ -1273,63 +1273,79 @@ bool OnGossipSelect_go_apexis_relic(Player* player, GameObject* go, uint32 /*sen
     return true;
 }
 
+/*#########
+# Q 10674 && 10859
+#########*/
+
 enum Entries
 {
-    NPC_LIGHT_ORB = 20635,
-    NPC_QUEST_CREDIT2 = 21929,
+    NPC_LIGHT_ORB         = 20635,
+    NPC_QUEST_CREDIT2     = 21929,
 };
 
 struct AttractOrbs
 {
     AttractOrbs(Creature* t) : totem(t) {}
+    Creature* totem;
+
     void operator()(Creature* orb)
     {
         if (orb->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
             orb->GetMotionMaster()->MovePoint(0, totem->GetPositionX(), totem->GetPositionY(), totem->GetPositionZ(), true);
-    }
 
-    Creature* totem;
-};
-
-struct npc_light_orb_attracterAI : public Scripted_NoMovementAI
-{
-    npc_light_orb_attracterAI(Creature *c) : Scripted_NoMovementAI(c)
-    {
-        me->SetReactState(REACT_PASSIVE);
-        attractTimer.Reset(1000);
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if (who->GetEntry() == NPC_LIGHT_ORB)
+        if (orb->IsWithinDistInMap(totem, 2.0f))
         {
-            if (who->IsWithinDistInMap(me, 2.0f))
-            {
-                who->ToCreature()->DisappearAndDie();
-                if (Player* player = me->GetCharmerOrOwnerPlayerOrPlayerItself())
-                    player->KilledMonster(NPC_QUEST_CREDIT2, who->GetGUID());
-            }
+            orb->ForcedDespawn();
+            KillCredit();
         }
     }
 
+    void KillCredit()
+    { 
+        Map* map = totem->GetMap();
+        Map::PlayerList const &PlayerList = map->GetPlayers();
+
+        for(Map::PlayerList::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+        {
+            if (Player* player = itr->getSource())
+            {
+                if(totem->IsWithinDistInMap(player, 15.0f) && (player->GetQuestStatus(10674) || player->GetQuestStatus(10859) == QUEST_STATUS_INCOMPLETE))
+                    player->KilledMonster(NPC_QUEST_CREDIT2, totem->GetGUID());
+            }
+        }
+    }
+};
+
+struct npc_orb_attracterAI : public Scripted_NoMovementAI
+{
+    npc_orb_attracterAI(Creature *c) : Scripted_NoMovementAI(c) {}
+
     TimeTrackerSmall attractTimer;
+
+    void Reset()
+    {
+        me->SetReactState(REACT_PASSIVE);
+        attractTimer.Reset(1500);
+        me->ForcedDespawn(10000);
+	}
 
     void UpdateAI(const uint32 diff)
     {
         attractTimer.Update(diff);
+
         if (attractTimer.Passed())
         {
             std::list<Creature*> orbs = FindAllCreaturesWithEntry(NPC_LIGHT_ORB, 35.0f);
             std::for_each(orbs.begin(), orbs.end(), AttractOrbs(me));
 
-            attractTimer.Reset(2000);
+            attractTimer.Reset(1000);
         }
     }
 };
 
-CreatureAI* Get_orb_attracterAI(Creature* creature)
+CreatureAI* Get_npc_orb_attracterAI(Creature* creature)
 {
-    return new npc_light_orb_attracterAI(creature);
+    return new npc_orb_attracterAI(creature);
 }
 
 /*######
@@ -1422,12 +1438,12 @@ void AddSC_blades_edge_mountains()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_orb_attracter";
-    newscript->GetAI = &Get_orb_attracterAI;
+    newscript->Name="npc_simmon_bunny";
+    newscript->GetAI = &Get_npc_simmon_bunnyAI;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_simmon_bunny";
-    newscript->GetAI = &Get_npc_simmon_bunnyAI;
+    newscript->Name="npc_orb_attracter";
+    newscript->GetAI = &Get_npc_orb_attracterAI;
     newscript->RegisterSelf();
 }
