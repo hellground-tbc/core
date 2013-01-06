@@ -3120,7 +3120,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         }
     }
 
-    switch (GetId())
+    /*switch (GetId())
     {
         case 44867:     // Spectral Exhaustion
             if(m_target->GetTypeId() == TYPEID_PLAYER)
@@ -3128,7 +3128,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             return;
         default:
             break;
-    }
+    }*/
 
     // pet auras
     if (PetAura const* petSpell = sSpellMgr.GetPetAura(GetId()))
