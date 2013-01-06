@@ -1154,7 +1154,7 @@ struct npc_simon_bunnyAI : public ScriptedAI
 
         if (rewSpell)
             if (Player* player = me->GetPlayer(playerGUID))
-                DoCast(player, rewSpell, true);
+                player->CastSpell(player, rewSpell, true);
     }
 
     /*
@@ -1219,15 +1219,15 @@ struct npc_simon_bunnyAI : public ScriptedAI
     }
 };
 
-CreatureAI* Get_npc_simmon_bunnyAI(Creature* creature)
+CreatureAI* Get_npc_simon_bunnyAI(Creature* creature)
 {
     return new npc_simon_bunnyAI(creature);
 }
 
 bool OnGossipHello_go_simon_cluster(Player* player, GameObject* go)
 {
-    if (Creature* bunny = GetClosestCreatureWithEntry(go, NPC_SIMON_BUNNY, 12.0f, true))
-        bunny->AI()->SetData(go->GetEntry(), 0);
+    if (Creature* bunny = GetClosestCreatureWithEntry(go, NPC_SIMON_BUNNY, 13.0f, true))
+        CAST_AI(npc_simon_bunnyAI, bunny->AI())->SetData(go->GetEntry(), 0);
 
     player->CastSpell(player, go->GetGOInfo()->goober.spellId, true);
     go->AddUse();
@@ -1236,38 +1236,53 @@ bool OnGossipHello_go_simon_cluster(Player* player, GameObject* go)
 
 enum ApexisRelic
 {
-    QUEST_CRYSTALS            = 11025,
-    GOSSIP_TEXT_ID            = 10948,
+    QUEST_APEXIS                 = 11058,
+    QUEST_EMANATION              = 11080,
+    QUEST_GUARDIAN               = 11059,
+    GOSSIP_TEXT_ID               = 10948,
 
-    ITEM_APEXIS_SHARD         = 32569,
-    SPELL_TAKE_REAGENTS_SOLO  = 41145,
-    SPELL_TAKE_REAGENTS_GROUP = 41146,
+    ITEM_APEXIS_SHARD            = 32569,
+    SPELL_TAKE_REAGENTS_SOLO     = 41145,
+    SPELL_TAKE_REAGENTS_GROUP    = 41146,
 };
 
-#define GOSSIP_ITEM_1 "Insert shard"
+#define GOSSIP_ITEM_1 "Insert an Apexis Shard, and begin!"
+#define GOSSIP_ITEM_2 "Insert Apexis Shards, and begin!"
+
 bool OnGossipHello_go_apexis_relic(Player* player, GameObject* go)
 {
-    bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
+    if (go->GetEntry() == GO_APEXIS_RELIC)
+    {
+        if (player->GetQuestStatus(QUEST_APEXIS) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_EMANATION) == QUEST_STATUS_INCOMPLETE)
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());
+    }
+    
+    if (go->GetEntry() == GO_APEXIS_MONUMENT)
+    {
+        if (player->GetQuestStatus(QUEST_GUARDIAN) == QUEST_STATUS_INCOMPLETE)
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());
+    }
 
-    if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-
-    player->Kill(player, false);
-    player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());
-    return true;
+    return false;
 }
 
-bool OnGossipSelect_go_apexis_relic(Player* player, GameObject* go, uint32 /*sender*/, uint32 /*action*/)
+bool OnGossipSelect_go_apexis_relic(Player* player, GameObject* go, uint32 sender, uint32 action)
 {
-    player->CLOSE_GOSSIP_MENU();
-
-    bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
-    if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
+    if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        player->CastSpell(player, large ? SPELL_TAKE_REAGENTS_GROUP : SPELL_TAKE_REAGENTS_SOLO, false);
+        bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
 
-        if (Creature* bunny = player->SummonCreature(NPC_SIMON_BUNNY, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0))
-             bunny->AI()->SetGUID(player->GetGUID(), large);
+        if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
+        {
+            player->CastSpell(player, large ? SPELL_TAKE_REAGENTS_GROUP : SPELL_TAKE_REAGENTS_SOLO, false);
+
+            if (Creature* bunny = player->SummonCreature(NPC_SIMON_BUNNY, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0))
+                CAST_AI(npc_simon_bunnyAI, bunny->AI())->SetGUID(player->GetGUID(), large);
+        }
+
+        player->CLOSE_GOSSIP_MENU();
     }
 
     return true;
@@ -1438,12 +1453,12 @@ void AddSC_blades_edge_mountains()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_simmon_bunny";
-    newscript->GetAI = &Get_npc_simmon_bunnyAI;
+    newscript->Name="npc_orb_attracter";
+    newscript->GetAI = &Get_npc_orb_attracterAI;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_orb_attracter";
-    newscript->GetAI = &Get_npc_orb_attracterAI;
+    newscript->Name="npc_simon_bunny";
+    newscript->GetAI = &Get_npc_simon_bunnyAI;
     newscript->RegisterSelf();
 }
