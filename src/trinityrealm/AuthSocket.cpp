@@ -453,8 +453,11 @@ bool AuthSocket::_HandleLogonChallenge()
             {
                 //set expired bans to inactive
                 AccountsDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+
                 ///- If the account is banned, reject the logon attempt
-                QueryResultAutoPtr  banresult = AccountsDatabase.PQuery("SELECT bandate,unbandate FROM account_banned WHERE id = %u AND active = 1", (*result)[1].GetUInt32());
+                bool isRealmBans = sConfig.GetBoolDefault("RealmBans", false);
+                QueryResultAutoPtr banresult = AccountsDatabase.PQuery(isRealmBans ? "SELECT bandate,unbandate FROM account_banned WHERE id = %u AND realm = 0 AND active = 1"
+                                                                                   : "SELECT bandate,unbandate FROM account_banned WHERE id = %u AND active = 1", (*result)[1].GetUInt32());
                 if(banresult)
                 {
                     if((*banresult)[0].GetUInt64() == (*banresult)[1].GetUInt64())
@@ -764,7 +767,7 @@ bool AuthSocket::_HandleLogonProof()
                     if(WrongPassBanType)
                     {
                         uint32 acc_id = fields[0].GetUInt32();
-                        AccountsDatabase.PExecute("INSERT INTO account_banned VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','Realm','Incorrect password for: %u times. Ban for: %u seconds',1)",
+                        AccountsDatabase.PExecute("INSERT INTO account_banned VALUES ('%u',0,UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','Realm','Incorrect password for: %u times. Ban for: %u seconds',1)",
                             acc_id, WrongPassBanTime, failed_logins, WrongPassBanTime);
                         sLog.outBasic("[AuthChallenge] account %s got banned for '%u' seconds because it failed to authenticate '%u' times",
                             _login.c_str(), WrongPassBanTime, failed_logins);

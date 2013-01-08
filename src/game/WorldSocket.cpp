@@ -801,17 +801,19 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     uint64 accFlags = fields[9].GetUInt64();
     uint16 opcDis = fields[10].GetUInt16();
 
-    // Re-check account ban(same check as in realmd)
-    QueryResultAutoPtr banresult =
-          AccountsDatabase.PQuery("SELECT "
-                                "bandate, "
-                                "unbandate "
-                                "FROM account_banned "
-                                "WHERE id = '%u' "
-                                "AND active = 1",
-                                id);
+    // Re-check account and ip address ban(same check as in realmd)
+    QueryResultAutoPtr banresult = 
+        sWorld.getConfig(CONFIG_REALM_BANS) ? AccountsDatabase.PQuery("SELECT 1 FROM account_banned WHERE id = '%u' AND (realm = '%u' OR realm = 0) AND active = 1 "
+                                                                      "UNION "
+                                                                      "SELECT 1 FROM ip_banned WHERE ip = '%s'",
+                                                                      id, realmID, GetRemoteAddress().c_str())
 
-    if (banresult) // if account banned
+                                            : AccountsDatabase.PQuery("SELECT 1 FROM account_banned WHERE id = '%u' AND active = 1 "
+                                                                      "UNION "
+                                                                      "SELECT 1 FROM ip_banned WHERE ip = '%s'",
+                                                                      id, GetRemoteAddress().c_str());
+
+    if (banresult) // if banned
     {
         packet.Initialize(SMSG_AUTH_RESPONSE, 1);
         packet << uint8(AUTH_BANNED);

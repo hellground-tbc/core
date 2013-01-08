@@ -16275,8 +16275,8 @@ void Player::_SaveInventory()
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                     GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);
 
-                stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
-                stmt.PExecute(GetSession()->GetAccountId());
+                stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_banned VALUES (?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
+                stmt.PExecute(GetSession()->GetAccountId(), realmID);
 
                 AccountsDatabase.CommitTransaction();
                 //GetSession()->KickPlayer();
@@ -16291,8 +16291,8 @@ void Player::_SaveInventory()
 
                 AccountsDatabase.BeginTransaction();
 
-                SqlStatement stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_banned VALUES (?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
-                stmt.PExecute(GetSession()->GetAccountId());
+                SqlStatement stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_banned VALUES (?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
+                stmt.PExecute(GetSession()->GetAccountId(), realmID);
 
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
                     GetSession()->AddAccountFlag(ACC_SPECIAL_LOG);

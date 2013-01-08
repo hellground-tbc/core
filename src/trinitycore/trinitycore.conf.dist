@@ -792,6 +792,14 @@ StatusParserFile = "parser.prsr"
 #        Minimum gm lvl for SendGMText.
 #        Default: 1
 #
+#    RealmBans
+#        Enable/Disable realm specific account bans system
+#        While enabled, .ban command bans account only for specific realm, .unban command can unban accounts, which were banned for this realm only.
+#        Main disadvantage is absence of correct client message if account banned for specific realm. In this case just disconnect client.
+#        NOTE: For correct work, must be enabled in auth server config also.
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
+#
 ###################################################################################################################
 
 GameType = 1
@@ -849,6 +857,7 @@ DontDeleteChars = 0
 DontDeleteCharsLvl = 40
 KeepDeletedCharsTime = 31
 MinGMTextLevel = 1
+RealmBans = 0
 
 ###################################################################################################################
 # PLAYER INTERACTION

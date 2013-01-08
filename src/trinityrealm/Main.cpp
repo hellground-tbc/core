@@ -240,10 +240,7 @@ extern int main(int argc, char **argv)
     ///- Get the list of realms for the server
     sRealmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
     if (sRealmList.size() == 0)
-    {
         sLog.outLog(LOG_DEFAULT, "ERROR: No valid realms specified.");
-        return 1;
-    }
 
 #ifdef REGEX_NAMESPACE
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT ip_pattern, localip_pattern FROM pattern_banned");

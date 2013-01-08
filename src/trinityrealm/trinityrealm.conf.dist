@@ -97,6 +97,14 @@ ConfVersion=2011092901
 #        Default: 0 (Ban IP)
 #                 1 (Ban Account)
 #
+#    RealmBans
+#        Enable/Disable realm specific account bans system
+#        While enabled, .ban command bans account only for specific realm, .unban command can unban accounts, which were banned for this realm only.
+#        Main disadvantage is absence of correct client message if account banned for specific realm. In this case just disconnect client.
+#        NOTE: For correct work, must be enabled in world server config also.
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
+#
 ###################################################################################################################
 
 LoginDatabaseInfo = "127.0.0.1;3306;trinity;trinity;realmd"
@@ -117,3 +125,4 @@ RealmsStateUpdateDelay = 20
 WrongPass.MaxCount = 0
 WrongPass.BanTime = 600
 WrongPass.BanType = 0
+RealmBans = 0

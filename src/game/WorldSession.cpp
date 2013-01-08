@@ -398,7 +398,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             case OVERTIME_IPBAN:
                 AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', NOW(), NOW(), 'CONSOLE', 'bye bye')", GetRemoteAddress().c_str());
             case OVERTIME_ACCBAN:
-                AccountsDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', NOW(), NOW(), 'CONSOLE', 'bye bye', 1)", GetAccountId());
+                AccountsDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', '%u', NOW(), NOW(), 'CONSOLE', 'bye bye', 1)", GetAccountId(), realmID);
             case OVERTIME_KICK:
                 KickPlayer();
             case OVERTIME_LOG:

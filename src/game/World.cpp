@@ -1076,6 +1076,7 @@ void World::LoadConfigSettings(bool reload)
     }
     delete[] forbiddenMaps;
 
+    m_configs[CONFIG_REALM_BANS] = sConfig.GetBoolDefault("RealmBans", false);
     m_configs[CONFIG_MIN_GM_TEXT_LVL] = sConfig.GetIntDefault("MinGMTextLevel", 1);
     m_configs[CONFIG_WARDEN_ENABLED] = sConfig.GetBoolDefault("Warden.Enabled", true);
     m_configs[CONFIG_WARDEN_KICK] = sConfig.GetBoolDefault("Warden.Kick", true);
@@ -2367,8 +2368,8 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
         if (mode != BAN_IP && mode != BAN_EMAIL)
         {
             //No SQL injection as strings are escaped
-            AccountsDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
-                account,duration_secs,safe_author.c_str(),reason.c_str());
+            AccountsDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
+                account,realmID,duration_secs,safe_author.c_str(),reason.c_str());
         }
 
         if (WorldSession* sess = FindSession(account))
@@ -2405,7 +2406,8 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
                 return false;
 
             //NO SQL injection as account is uint32
-            AccountsDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
+            sWorld.getConfig(CONFIG_REALM_BANS) ? AccountsDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u' AND realm = '%u'",account,realmID) 
+                                                : AccountsDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
             break;
     }
     return true;

@@ -5358,7 +5358,7 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
 
 bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 {
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate,banreason,bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC",accountid);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate,banreason,bannedby,realm FROM account_banned WHERE id = '%u' ORDER BY bandate ASC",accountid);
     if (!result)
     {
         PSendSysMessage(LANG_BANINFO_NOACCOUNTBAN, accountname);
@@ -5377,7 +5377,7 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
         bool permanent = (fields[1].GetUInt64() == (uint64)0);
         std::string bantime = permanent?GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[1].GetUInt64(), true);
         PSendSysMessage(LANG_BANINFO_HISTORYENTRY,
-            fields[0].GetString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES):GetTrinityString(LANG_BANINFO_NO), fields[4].GetString(), fields[5].GetString());
+            fields[0].GetString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES):GetTrinityString(LANG_BANINFO_NO), fields[4].GetString(), fields[5].GetString(), fields[6].GetUInt32());
     }while (result->NextRow());
 
     return true;
@@ -5531,7 +5531,7 @@ bool ChatHandler::HandleBanListHelper(QueryResultAutoPtr result)
                 AccountMgr::GetName (account_id,account_name);
 
             // No SQL injection. id is uint32.
-            QueryResultAutoPtr banInfo = AccountsDatabase.PQuery("SELECT bandate,unbandate,bannedby,banreason FROM account_banned WHERE id = %u ORDER BY unbandate", account_id);
+            QueryResultAutoPtr banInfo = AccountsDatabase.PQuery("SELECT bandate,unbandate,bannedby,banreason,realm FROM account_banned WHERE id = %u ORDER BY unbandate", account_id);
             if (banInfo)
             {
                 Field *fields2 = banInfo->Fetch();
@@ -5540,18 +5540,21 @@ bool ChatHandler::HandleBanListHelper(QueryResultAutoPtr result)
                     time_t t_ban = fields2[0].GetUInt64();
                     tm* aTm_ban = localtime(&t_ban);
 
+                    std::stringstream realmAsStr;
+                    realmAsStr << fields2[4].GetUInt32();
+
                     if (fields2[0].GetUInt64() == fields2[1].GetUInt64())
                     {
-                        PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|   permanent  |%-15.15s|%-15.15s|",
-                            account_name.c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
-                            fields2[2].GetString(),fields2[3].GetString());
+                        PSendSysMessage("|%-13.13s|%-3.3s|%02d-%02d-%02d %02d:%02d|   permanent  |%-13.13s|%-15.15s|",
+                            account_name.c_str(),realmAsStr.str().c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
+                            fields2[2].GetString(),fields2[3].GetString(),fields2[4].GetUInt32());
                     }
                     else
                     {
                         time_t t_unban = fields2[1].GetUInt64();
                         tm* aTm_unban = localtime(&t_unban);
-                        PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|%02d-%02d-%02d %02d:%02d|%-15.15s|%-15.15s|",
-                            account_name.c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
+                        PSendSysMessage("|%-13.13s|%-3.3s|%02d-%02d-%02d %02d:%02d|%02d-%02d-%02d %02d:%02d|%-13.13s|%-15.15s|",
+                            account_name.c_str(),realmAsStr.str().c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
                             aTm_unban->tm_year%100, aTm_unban->tm_mon+1, aTm_unban->tm_mday, aTm_unban->tm_hour, aTm_unban->tm_min,
                             fields2[2].GetString(),fields2[3].GetString());
                     }
