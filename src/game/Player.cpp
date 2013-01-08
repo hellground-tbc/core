@@ -14274,7 +14274,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             uint32 newBytes0 = GetUInt32ValueFromDB(UNIT_FIELD_BYTES_0, guid) & 0x00FF00FF;
 
             // same race, continue
-            if (newBytes0 & fields[4].GetUInt8())
+            if ((newBytes0 & 0x000000FF) == fields[4].GetUInt8())
             {
                 newBytes0 |= fields[5].GetUInt8() << 8;  // class
                 newBytes0 |= bytes0 & 0xFF000000; // powertype
