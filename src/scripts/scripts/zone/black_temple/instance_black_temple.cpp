@@ -176,6 +176,7 @@ struct instance_black_temple : public ScriptedInstance
             case 22950:
             case 22951:
             case 22952:
+            case 23426: // The Illidari Council - main creature link
                 return EVENT_ILLIDARICOUNCIL;
             case 22856:
             case 23418:
