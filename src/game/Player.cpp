@@ -18476,7 +18476,7 @@ bool Player::canSeeOrDetect(Unit const* u, WorldObject const* viewPoint, bool de
         if (isGameMaster())
         {
             if (u->GetTypeId() == TYPEID_PLAYER)
-                return ((Player *)u)->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
+                return ((Player *)u)->GetSession()->GetPermissions() <= GetSession()->GetPermissions();
             else
                 return true;
         }
@@ -18489,7 +18489,7 @@ bool Player::canSeeOrDetect(Unit const* u, WorldObject const* viewPoint, bool de
         if (isGameMaster())
         {
             if (u->GetTypeId() == TYPEID_PLAYER)
-                return ((Player*)u)->GetSession()->GetSecurity() <= GetSession()->GetSecurity();
+                return ((Player*)u)->GetSession()->GetPermissions() <= GetSession()->GetPermissions();
             else
                 return true;
         }

@@ -129,7 +129,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
     }
 
     // mass mute for players check
-    if (GetSecurity() < SEC_MODERATOR && sWorld.GetMassMuteTime() && sWorld.GetMassMuteTime() > time(NULL))
+    if (!(GetPermissions() & PERM_GMT) && sWorld.GetMassMuteTime() && sWorld.GetMassMuteTime() > time(NULL))
     {
         if (sWorld.GetMassMuteReason())
             ChatHandler(_player).PSendSysMessage("Mass mute reason: %s", sWorld.GetMassMuteReason());
@@ -290,9 +290,9 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
             }
 
             Player *player = sObjectMgr.GetPlayer(to.c_str());
-            uint64 tSecurity = GetPermissions();
-            uint64 pSecurity = player ? player->GetSession()->GetPermissions() : 0;
-            if (!player || (!(tSecurity & PERM_GMT) && !(pSecurity & PERM_GMT) && !player->isAcceptWhispers()))
+            uint64 tPermissions = GetPermissions();
+            uint64 pPermissions = player ? player->GetSession()->GetPermissions() : 0;
+            if (!player || (!(tPermissions & PERM_GMT) && !(pPermissions & PERM_GMT) && !player->isAcceptWhispers()))
             {
                 WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
                 data<<to;
@@ -300,7 +300,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
                 return;
             }
 
-            if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && !(tSecurity & PERM_GMT) && !(pSecurity & PERM_GMT))
+            if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && !(tPermissions & PERM_GMT) && !(pPermissions & PERM_GMT))
             {
                 uint32 sidea = GetPlayer()->GetTeam();
                 uint32 sideb = player->GetTeam();

@@ -817,7 +817,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
     std::string targetAccountName;
     uint32 targetAccountId = 0;
-    uint32 targetSecurity = 0;
+    uint32 targetPermissions = 0;
     uint32 gm = 0;
     char* arg1 = strtok((char*)args, " ");
     char* arg2 = strtok(NULL, " ");
@@ -838,8 +838,8 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         }
 
         // Check if targets GM level and specified GM level is not higher than current gm level
-        targetSecurity = targetPlayer->GetSession()->GetPermissions();
-        if (targetSecurity >= m_session->GetPermissions() || gm >= m_session->GetPermissions())
+        targetPermissions = targetPlayer->GetSession()->GetPermissions();
+        if (targetPermissions >= m_session->GetPermissions() || gm >= m_session->GetPermissions())
         {
             SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
             SetSentErrorMessage(true);
@@ -886,8 +886,8 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         /// can set security level only for target with less security and to less security that we have
         /// This is also reject self apply in fact
-        targetSecurity = AccountMgr::GetPermissions(targetAccountId);
-        if (targetSecurity >= plSecurity || gm >= plSecurity)
+        targetPermissions = AccountMgr::GetPermissions(targetAccountId);
+        if (targetPermissions >= plSecurity || gm >= plSecurity)
         {
             SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
             SetSentErrorMessage(true);
@@ -930,14 +930,14 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
         return false;
     }
 
-    uint32 targetSecurity = AccountMgr::GetPermissions(targetAccountId);
+    uint32 targetPermissions = AccountMgr::GetPermissions(targetAccountId);
 
     /// m_session==NULL only for console
-    uint32 plSecurity = m_session ? m_session->GetPermissions() : PERM_CONSOLE;
+    uint32 plPermiossions = m_session ? m_session->GetPermissions() : PERM_CONSOLE;
 
     /// can set password only for target with less security
     /// This is also reject self apply in fact
-    if (targetSecurity >= plSecurity)
+    if (targetPermissions >= plPermiossions)
     {
         SendSysMessage (LANG_YOURS_SECURITY_IS_LOW);
         SetSentErrorMessage (true);

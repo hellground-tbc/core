@@ -104,20 +104,20 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     // check security
     uint32 account_id = 0;
-    uint32 security = 0;
+    uint32 permissions = 0;
 
     if (chr)
     {
         account_id = chr->GetSession()->GetAccountId();
-        security = chr->GetSession()->GetPermissions();
+        permissions = chr->GetSession()->GetPermissions();
     }
     else
     {
         account_id = sObjectMgr.GetPlayerAccountIdByGUID(guid);
-        security = AccountMgr::GetPermissions(account_id);
+        permissions = AccountMgr::GetPermissions(account_id);
     }
 
-    if (m_session && security >= m_session->GetPermissions())
+    if (m_session && permissions >= m_session->GetPermissions())
     {
         SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
         SetSentErrorMessage(true);
@@ -183,20 +183,20 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
 
     // check security
     uint32 account_id = 0;
-    uint32 security = 0;
+    uint32 permissions = 0;
 
     if (chr)
     {
         account_id = chr->GetSession()->GetAccountId();
-        security = chr->GetSession()->GetPermissions();
+        permissions = chr->GetSession()->GetPermissions();
     }
     else
     {
         account_id = sObjectMgr.GetPlayerAccountIdByGUID(guid);
-        security = AccountMgr::GetPermissions(account_id);
+        permissions = AccountMgr::GetPermissions(account_id);
     }
 
-    if (m_session && security >= m_session->GetPermissions())
+    if (m_session && permissions >= m_session->GetPermissions())
     {
         SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
         SetSentErrorMessage(true);
@@ -1878,7 +1878,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     std::string username = GetTrinityString(LANG_ERROR);
     std::string email = GetTrinityString(LANG_ERROR);
     std::string last_ip = GetTrinityString(LANG_ERROR);
-    uint32 security = 0;
+    uint32 permissions = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
 
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username, permission_mask, email, ip, login_date"
@@ -1892,12 +1892,12 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     {
         Field* fields = result->Fetch();
         username = fields[0].GetCppString();
-        security = fields[1].GetUInt32();
+        permissions = fields[1].GetUInt32();
 
         if (email.empty())
             email = "-";
 
-        if (!m_session || m_session->GetPermissions() >= security)
+        if (!m_session || m_session->GetPermissions() >= permissions)
         {
             if (sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL) & m_session->GetPermissions())
                 email = fields[2].GetCppString();
@@ -1913,7 +1913,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         }
     }
 
-    PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetTrinityString(LANG_OFFLINE)), GetNameLink(name).c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), security, last_ip.c_str(), last_login.c_str(), latency);
+    PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetTrinityString(LANG_OFFLINE)), GetNameLink(name).c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), permissions, last_ip.c_str(), last_login.c_str(), latency);
 
     std::string race_s, Class_s;
     switch(race)

@@ -106,7 +106,7 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
 
     uint32 ownerAccId = sObjectMgr.GetPlayerAccountIdByGUID(ownerGuid);
 
-    sLog.outAuction("Player %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
+    sLog.outLog(LOG_AUCTION, "Player %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
         bidderName.c_str(), bidderAccId, pItem->GetProto()->Name1, pItem->GetEntry(), pItem->GetCount(), auction->bid, ownerName.c_str(), ownerAccId);
 
     // gm.log

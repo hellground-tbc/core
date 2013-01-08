@@ -903,7 +903,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY] = sConfig.GetBoolDefault("SaveRespawnTimeImmediately",true);
     m_configs[CONFIG_WEATHER] = sConfig.GetBoolDefault("ActivateWeather",true);
 
-    m_configs[CONFIG_DISABLE_BREATHING] = sConfig.GetIntDefault("DisableWaterBreath", SEC_CONSOLE);
+    m_configs[CONFIG_DISABLE_BREATHING] = sConfig.GetIntDefault("DisableWaterBreath", PERM_CONSOLE);
 
     m_configs[CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL] = sConfig.GetBoolDefault("AlwaysMaxSkillForLevel", false);
 
@@ -2346,22 +2346,17 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
     {
         Field* fieldsAccount = resultAccounts->Fetch();
         uint32 account = fieldsAccount[0].GetUInt32();
-        uint32 permissions = 0;
+        uint32 permissions = PERM_PLAYER;
 
-        if (mode == BAN_CHARACTER)
+        QueryResultAutoPtr resultAccPerm = AccountsDatabase.PQuery("SELECT permiossion_mask FROM account_permissions WHERE account_id = '%u' AND realm_id = '%u')", account, realmID);
+        if (resultAccPerm)
         {
-            QueryResultAutoPtr resultAccId = AccountsDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u' AND (RealmID = '%d' OR RealmID = '-1')", account, realmID);
-            if (resultAccId)
-            {
-                Field* fieldsAccId = resultAccId->Fetch();
-                if (fieldsAccId)
-                    permissions = fieldsAccId[0].GetUInt8();
-            }
+            Field* fieldsAccId = resultAccPerm->Fetch();
+            if (fieldsAccId)
+                permissions = fieldsAccId[0].GetUInt32();
         }
-        else
-            gmlevel = fieldsAccount[1].GetUInt8();
 
-        if (gmlevel > SEC_PLAYER)
+        if (permissions & PERM_GMT)
             continue;
 
         if (mode != BAN_IP && mode != BAN_EMAIL)

@@ -134,11 +134,11 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     /// Commands not recommended call from chat, but support anyway
     if(m_session)
     {
-        uint32 targetSecurity = AccountMgr::GetPermissions(account_id);
+        uint32 targetPermissions = AccountMgr::GetPermissions(account_id);
 
         /// can delete only for account with less security
         /// This is also reject self apply in fact
-        if (targetSecurity >= m_session->GetPermissions())
+        if (targetPermissions >= m_session->GetPermissions())
         {
             SendSysMessage (LANG_YOURS_SECURITY_IS_LOW);
             SetSentErrorMessage (true);

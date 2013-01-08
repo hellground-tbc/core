@@ -159,7 +159,7 @@ char const* WorldSession::GetPlayerName() const
 
 void WorldSession::SaveOpcodesDisableFlags()
 {
-    SqlStatementID saveOpcodesDisabled;
+    static SqlStatementID saveOpcodesDisabled;
     SqlStatement stmt = AccountsDatabase.CreateStatement(saveOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?");
     stmt.PExecute(m_opcodesDisabled, GetAccountId());
 }
@@ -178,7 +178,7 @@ void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
 
 void WorldSession::SaveAccountFlags()
 {
-    SqlStatementID saveAccountFlags;
+    static SqlStatementID saveAccountFlags;
     SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE id = ?");
     stmt.PExecute(m_accFlags, GetAccountId());
 }
@@ -400,7 +400,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             overtime = true;
     }
 
-    if (overtime && GetSecurity() < SEC_MODERATOR)
+    if (overtime && !(GetPermissions() & PERM_GMT))
     {
         switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
         {
@@ -419,7 +419,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     bool logverbose = false;
     if (verbose == 1) // log only if overtime
-        if (overtime && GetSecurity() < SEC_MODERATOR && sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD) >= OVERTIME_LOG)
+        if (overtime && !(GetPermissions() & PERM_GMT) && sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD) >= OVERTIME_LOG)
             logverbose = true;
 
     if (verbose == 2) // log if session update is logged as slow
@@ -772,7 +772,7 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
 //            m_Warden = (WardenBase*)new WardenMac();
             break;
         default:
-            sLog.outWarden("Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
+            sLog.outLog(LOG_WARDEN, "Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
             if (sWorld.getConfig(CONFIG_WARDEN_KICK))
                 KickPlayer();
             return;

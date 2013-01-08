@@ -471,7 +471,7 @@ void Channel::List(Player* player)
 
             // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
             // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
-            if (!(plr->GetSession()->GetPermissions() & PERM_GMT) || gmInWhoList)
+            if (!(user->GetSession()->GetPermissions() & PERM_GMT) || gmInWhoList)
             {
                 data << uint64(i->first);
                 data << uint8(i->second.flags);             // flags seems to be changed...
@@ -1024,7 +1024,7 @@ void Channel::ChangeOwner()
     for (PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
     {
         Player * tmpPlr = ObjectAccessor::GetPlayer(itr->second.player);
-        if (tmpPlr && !(tmpPlr->GetSession()->GetPermissions() & PERM_GM))
+        if (tmpPlr && !(tmpPlr->GetSession()->GetPermissions() & PERM_GMT))
         {
             newOwner = itr->second.player;
             break;
