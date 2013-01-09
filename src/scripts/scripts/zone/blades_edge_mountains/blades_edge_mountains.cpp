@@ -1364,6 +1364,182 @@ CreatureAI* Get_npc_orb_attracterAI(Creature* creature)
 }
 
 /*######
+## npc_razaan_event
+######*/
+
+enum
+{
+    QUEST_MERCY        = 10675,
+    QUEST_RESPONSE     = 10867,
+
+    GO_SOULS           = 185033,
+
+    YELL_RAZAAN        = -1900225,
+
+    NPC_RAZAAN         = 21057
+};
+
+struct npc_razaan_eventAI : public ScriptedAI
+{
+    npc_razaan_eventAI(Creature* creature) : ScriptedAI(creature) {}
+
+    bool Check;
+
+    uint32 CheckTimer;
+    uint32 Count;
+
+    void Reset()
+    {
+        Check = false;
+        CheckTimer = 0;
+        Count = 0;
+    }
+
+    void HeyYa()
+    {
+        ++Count;
+
+        if (Count == 6)
+        {
+            me->SummonCreature(NPC_RAZAAN, me->GetPositionX()+2.9f, me->GetPositionY()-5.8f, me->GetPositionZ()-8.9f, me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+            Check = true;
+            CheckTimer = 5000;
+            Count = 0;
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        DoScriptText(YELL_RAZAAN, summoned);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (Check)
+        {
+            if (CheckTimer <= diff)
+            {
+                if (Creature* razaan = GetClosestCreatureWithEntry(me, NPC_RAZAAN, 75.0f, true))
+                {
+                    CheckTimer = 5000;
+                    return;
+                }
+                else
+                {
+                    if (Creature* razaan = GetClosestCreatureWithEntry(me, NPC_RAZAAN, 75.0f, false))
+                        me->SummonGameObject(GO_SOULS, razaan->GetPositionX(), razaan->GetPositionY(), razaan->GetPositionZ()+3.0f, razaan->GetOrientation(), 0, 0, 0, 0, 50);
+
+                    Reset();
+                }
+            }
+            else CheckTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_razaan_event(Creature* creature)
+{
+    return new npc_razaan_eventAI (creature);
+}
+
+/*######
+## npc_razaani_raider
+######*/
+
+enum
+{
+    SPELL_FLARE        = 35922,
+    SPELL_WARP         = 32920,
+
+    NPC_EORB           = 21025,
+    NPC_DEADSOUL       = 20845
+};
+
+struct npc_razaani_raiderAI : public ScriptedAI
+{
+    npc_razaani_raiderAI(Creature* creature) : ScriptedAI(creature) {}
+
+    uint64 PlayerGUID;
+    uint32 FlareTimer;
+    uint32 WarpTimer;
+
+    void Reset()
+    {
+        PlayerGUID = 0;
+        FlareTimer = urand(4000, 8000);
+        WarpTimer = urand(8000, 13000);
+    }
+
+    void AttackStart(Unit* who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (((Player*)who)->GetQuestStatus(QUEST_MERCY)== QUEST_STATUS_INCOMPLETE || ((Player*)who)->GetQuestStatus(QUEST_RESPONSE) == QUEST_STATUS_INCOMPLETE)
+                PlayerGUID = who->GetGUID();
+        }
+
+        ScriptedAI::AttackStart(who);
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        Map* tmpMap = me->GetMap();
+
+        if (!tmpMap)
+            return;
+
+        if (Creature * eorb = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_EORB)))
+        {
+            summoned->SetLevitate(true);
+            summoned->GetMotionMaster()->MovePoint(0, eorb->GetPositionX(), eorb->GetPositionY(), eorb->GetPositionZ());
+        }
+    }
+
+    void JustDied(Unit* who)
+    {
+        if (PlayerGUID != NULL)
+        {
+            me->SummonCreature(NPC_DEADSOUL, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()+3, me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 20000);
+
+            Map* tmpMap = me->GetMap();
+
+            if (!tmpMap)
+                return;
+
+            if (Creature * eorb = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_EORB)))
+                CAST_AI(npc_razaan_eventAI, eorb->AI())->HeyYa();
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (FlareTimer <= diff)
+        {
+            DoCast (me->getVictim(), SPELL_FLARE);
+            FlareTimer = urand(9000, 14000);
+        }
+        else FlareTimer -= diff;
+
+        if (WarpTimer <= diff)
+        {
+            DoCast (me->getVictim(), SPELL_WARP);
+            WarpTimer = urand(14000, 18000);
+        }
+        else WarpTimer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_razaani_raider(Creature* creature)
+{
+    return new npc_razaani_raiderAI (creature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -1453,12 +1629,22 @@ void AddSC_blades_edge_mountains()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name="npc_simon_bunny";
+    newscript->GetAI = &Get_npc_simon_bunnyAI;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name="npc_orb_attracter";
     newscript->GetAI = &Get_npc_orb_attracterAI;
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_simon_bunny";
-    newscript->GetAI = &Get_npc_simon_bunnyAI;
+    newscript->Name="npc_razaan_event";
+    newscript->GetAI = &GetAI_npc_razaan_event;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_razaani_raider";
+    newscript->GetAI = &GetAI_npc_razaani_raider;
     newscript->RegisterSelf();
 }
