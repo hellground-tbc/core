@@ -1839,21 +1839,17 @@ struct npc_captured_vanguardAI : public npc_escortAI
 {
     npc_captured_vanguardAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 
-    bool CanStart;
     bool CantStart;
 
     uint32 GlaiveTimer;
     uint32 HamstringTimer;
-    uint32 CheckTimer;
     uint32 EndTimer;
 
     void Reset()
     {
-        CanStart = true;
         CantStart = false;
         GlaiveTimer = urand(4000, 8000);
         HamstringTimer = urand(8000, 13000);
-        CheckTimer = 2000;
         EndTimer = 0;
     }
 
@@ -1880,27 +1876,20 @@ struct npc_captured_vanguardAI : public npc_escortAI
         }
     }
 
+    void JustReachedHome()
+    {
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
+        {
+            DoScriptText(SAY_VANGUARD_INTRO, me);
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+            EndTimer = 40000;
+            CantStart = true;
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         npc_escortAI::UpdateAI(diff);
-
-        if (CanStart)
-        {
-            if (CheckTimer <= diff)              //for any case with timer.
-            {
-                if (Creature* Gladiator = GetClosestCreatureWithEntry(me, NPC_GLADIATOR, 40.0f, false))
-                {
-                    DoScriptText(SAY_VANGUARD_INTRO, me);
-                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-                    CanStart = false;
-                    EndTimer = 40000;
-                    CantStart = true;
-                }
-
-                CheckTimer = 2000;
-            }
-            else CheckTimer -= diff;
-        }
 
         if (CantStart)
         {
@@ -1909,7 +1898,6 @@ struct npc_captured_vanguardAI : public npc_escortAI
                 if (HasEscortState(STATE_ESCORT_ESCORTING))
                 {
                     CantStart = false;
-                    return;
                 }
                 else
                 {
@@ -1974,6 +1962,7 @@ struct npc_controllerAI : public ScriptedAI
     void Reset()
     {
         CanSpawn = true;
+        me->setFaction(35);
         me->SetVisibility(VISIBILITY_OFF);
     }
 
@@ -2502,7 +2491,7 @@ bool GossipSelect_npc_saeed(Player* player, Creature* creature, uint32 sender, u
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        creature->setFaction(231);
+        creature->setFaction(FACTION_ESCORT_N_NEUTRAL_ACTIVE);
         ((npc_saeedAI*)creature->AI())->Start(true, true, player->GetGUID());
         player->KilledMonster(20985, creature->GetGUID());
         player->CLOSE_GOSSIP_MENU();
@@ -3058,7 +3047,7 @@ struct npc_doctor_vomisaAI : public ScriptedAI
     {
         if (CheckTimer <= diff)
         {
-            if (Creature* negatron = GetClosestCreatureWithEntry(me, NPC_NEGATRON, 100.0f, true, true))
+            if (Creature* negatron = GetClosestCreatureWithEntry(me, NPC_NEGATRON, 100.0f, true))
                 return;
             else
             {
