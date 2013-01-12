@@ -1540,6 +1540,294 @@ CreatureAI* GetAI_npc_razaani_raider(Creature* creature)
 }
 
 /*######
+## npc_rally_zapnabber
+######*/
+
+enum
+{
+    SPELL_10557              = 37910,
+    SPELL_10710              = 37962,
+    SPELL_10711              = 36812,
+    SPELL_10712              = 37968,
+    //SPELL_10716            = 37940,
+    SPELL_CANNON_CHANNEL     = 36795,
+    SPELL_PORT               = 38213,
+    SPELL_CHARGED            = 37108,
+    SPELL_STATE1             = 36790,
+    SPELL_STATE2             = 36792,
+    SPELL_STATE3             = 36800,
+
+    QUEST_JAGGED             = 10557,
+    QUEST_SINGING            = 10710,
+    QUEST_RAZAAN             = 10711,
+    QUEST_RUUAN              = 10712,
+
+    ITEM_WAIVER_SIGNED       = 30539,
+
+    NPC_CHANNELER            = 21393,
+    NPC_CH_TARGET            = 21394
+};
+
+float Port[3] =
+{
+    1920.163,
+    5581.826,
+    269.222
+};
+
+struct npc_rally_zapnabberAI : public ScriptedAI
+{
+    npc_rally_zapnabberAI(Creature* creature) : ScriptedAI(creature) {}
+
+    bool Flight;
+
+    uint64 playerGUID;
+    uint32 FlightTimer;
+    uint32 EffectTimer;
+    uint8 flights;
+    uint8 Count;
+
+    void Reset() 
+    {
+        Flight = false;
+        playerGUID = 0;
+        FlightTimer = 0;
+        EffectTimer = 0;
+        flights = 0;
+        Count = 0;
+        me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+    }
+
+    void TestFlight(uint64 guid, uint8 flight)
+    {
+        playerGUID = guid;
+        flights = flight;
+
+        if (Player* player = me->GetPlayer(playerGUID))
+        {
+            if (player->IsMounted())
+            {
+                player->Unmount();
+                player->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
+            }
+
+            player->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
+
+            switch(flights)
+            {
+                 case 1:
+                     DoTeleportPlayer(player, Port[0], Port[1], Port[2], 5.1f);
+                     break;
+                 case 2:
+                     DoTeleportPlayer(player, Port[0], Port[1], Port[2], 1.1f);
+                     break;
+                 case 3:
+                     DoTeleportPlayer(player, Port[0], Port[1], Port[2], 2.7f);
+                     break;
+                 case 4:
+                     DoTeleportPlayer(player, Port[0], Port[1], Port[2], 3.0f);
+                     break;
+            }
+
+            player->CastSpell(player, SPELL_PORT, true);
+
+            Map* tmpMap = me->GetMap();
+
+            if (!tmpMap)
+                return;
+ 
+            if (Creature * channeler = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_CHANNELER)))
+                channeler->CastSpell(channeler, SPELL_CANNON_CHANNEL, true);
+
+            Flight = true;
+            EffectTimer = 3000;
+            FlightTimer = 10000;
+        }
+    }
+
+    void Flights()
+    {
+        if (Player* player = me->GetPlayer(playerGUID))
+        {
+            switch(flights)
+            {
+                case 1:
+                    player->GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
+                    player->CastSpell(player, SPELL_10557, true);
+                    player->CastSpell(player, SPELL_CHARGED, true);
+                    Reset();
+                    break;
+                case 2:
+                    player->GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
+                    player->CastSpell(player, SPELL_10710, true);
+                    player->CastSpell(player, SPELL_CHARGED, true);
+                    Reset();
+                    break;
+                case 3:
+                    player->GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
+                    player->CastSpell(player, SPELL_10711, true);
+                    player->CastSpell(player, SPELL_CHARGED, true);
+                    Reset();
+                    break;
+                case 4:
+                    player->GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
+                    player->CastSpell(player, SPELL_10712, true);
+                    player->CastSpell(player, SPELL_CHARGED, true);
+                    Reset();
+                    break;
+            }
+        }
+    }
+
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (Flight)
+        {
+            if (EffectTimer <= diff)
+            {
+                Map* tmpMap = me->GetMap();
+
+                if (!tmpMap)
+                    return;
+
+                if (Creature * target = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_CH_TARGET)))
+                {
+                    ++Count;
+
+                    switch(Count)
+                    {
+                        case 1:
+                            target->CastSpell(target, SPELL_STATE1, true);
+                            break;
+                        case 2:
+                            target->CastSpell(target, SPELL_STATE2, true);
+                            break;
+                        case 3:
+                            target->CastSpell(target, SPELL_STATE3, true);
+                            break;
+                    }
+                }
+
+                EffectTimer = 3000;
+ 
+            }
+            else EffectTimer -= diff;
+
+            if (FlightTimer <= diff)
+            {
+                Flights();
+            }
+            else FlightTimer -= diff;
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_rally_zapnabber(Creature* creature)
+{
+    return new npc_rally_zapnabberAI (creature);
+}
+
+#define GOSSIP_ITEM_FLIGHT1 "I'm ready for my test flight!"
+#define GOSSIP_ITEM_FLIGHT2 "Take me to Singing Ridge."
+#define GOSSIP_ITEM_FLIGHT3 "Take me to Razaan's Landing."
+#define GOSSIP_ITEM_FLIGHT4 "Take me to Ruuan Weald."
+#define GOSSIP_ITEM_FLIGHT5 "I have the signed waiver! Fire me into the Singing Ridge!"
+#define GOSSIP_ITEM_FLIGHT6 "I want to fly to an old location!"
+#define GOSSIP_ITEM_FLIGHT7 "Take me to Jagged Ridge!"
+#define GOSSIP_ITEM_FLIGHT8 "Take me to The Singing Ridge!"
+#define GOSSIP_ITEM_FLIGHT9 "Take me to Razaan's Landing!"
+#define GOSSIP_ITEM_FLIGHT10 "Take me to Ruuan Weald!"
+
+bool GossipHello_npc_rally_zapnabber(Player* player, Creature* creature)
+{
+    if (player->GetQuestStatus(QUEST_JAGGED) == QUEST_STATUS_INCOMPLETE && !player->HasAura(SPELL_CHARGED))
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+    if (player->GetQuestStatus(QUEST_SINGING) == QUEST_STATUS_INCOMPLETE && !player->HasAura(SPELL_CHARGED))
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+
+    if (player->GetQuestStatus(QUEST_RAZAAN) == QUEST_STATUS_INCOMPLETE && !player->HasAura(SPELL_CHARGED))
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+
+    if (player->GetQuestStatus(QUEST_RUUAN) == QUEST_STATUS_INCOMPLETE && !player->HasAura(SPELL_CHARGED))
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+
+    if ((player->GetQuestRewardStatus(QUEST_JAGGED) || player->GetQuestRewardStatus(QUEST_SINGING) || player->GetQuestRewardStatus(QUEST_RAZAAN) || player->GetQuestRewardStatus(QUEST_RUUAN)) && !player->HasAura(SPELL_CHARGED))
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT6, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+
+    player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_rally_zapnabber(Player* player, Creature* creature, uint32 sender, uint32 action )
+{
+    uint8 flight;
+    flight = 0;
+
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            flight = 1;
+            creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+            CAST_AI(npc_rally_zapnabberAI, creature->AI())->TestFlight(player->GetGUID(), flight);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            if (player->HasItemCount(ITEM_WAIVER_SIGNED, 1))
+            {
+                flight = 2;
+                creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                CAST_AI(npc_rally_zapnabberAI, creature->AI())->TestFlight(player->GetGUID(), flight);
+                player->CLOSE_GOSSIP_MENU();
+            }
+            else player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 3:
+            flight = 3;
+            creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+            CAST_AI(npc_rally_zapnabberAI, creature->AI())->TestFlight(player->GetGUID(), flight);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 4:
+            flight = 4;
+            creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+            CAST_AI(npc_rally_zapnabberAI, creature->AI())->TestFlight(player->GetGUID(), flight);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 5:
+            flight = 2;
+            creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+            CAST_AI(npc_rally_zapnabberAI, creature->AI())->TestFlight(player->GetGUID(), flight);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 6:
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            player->SEND_GOSSIP_MENU(10561, creature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF + 7:
+            if (player->GetQuestRewardStatus(QUEST_JAGGED) && !player->HasAura(SPELL_CHARGED))
+                player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT7, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+            if (player->GetQuestRewardStatus(QUEST_SINGING) && !player->HasAura(SPELL_CHARGED))
+                player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT8, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+
+            if (player->GetQuestRewardStatus(QUEST_RAZAAN) && !player->HasAura(SPELL_CHARGED))
+                player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT9, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+
+            if (player->GetQuestRewardStatus(QUEST_RUUAN) && !player->HasAura(SPELL_CHARGED))
+                player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_FLIGHT10, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+            player->SEND_GOSSIP_MENU(10562, creature->GetGUID());
+            break;
+    }
+
+    return true;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -1646,5 +1934,12 @@ void AddSC_blades_edge_mountains()
     newscript = new Script;
     newscript->Name="npc_razaani_raider";
     newscript->GetAI = &GetAI_npc_razaani_raider;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_rally_zapnabber";
+    newscript->GetAI = &GetAI_npc_rally_zapnabber;
+    newscript->pGossipHello =   &GossipHello_npc_rally_zapnabber;
+    newscript->pGossipSelect =  &GossipSelect_npc_rally_zapnabber;
     newscript->RegisterSelf();
 }
