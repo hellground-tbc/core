@@ -124,6 +124,8 @@ struct boss_brutallusAI : public ScriptedAI
 
     void EnterCombat(Unit* /*pWho*/)
     {
+        if (pInstance && pInstance->GetData(DATA_KALECGOS_EVENT) == IN_PROGRESS)
+            return;
         if (pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
         {
             DoScriptText(YELL_AGGRO, me);

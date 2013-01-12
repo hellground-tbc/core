@@ -88,6 +88,14 @@ enum Creatures
     MOB_SHADOW_IMAGE        =   25214,
     LADY_SACROLASH          =   25165
 };
+/*
+enum NPCPath
+{
+    PATH_TRASH_WAVE1        =  ??,
+    PATH_TRASH_WAVE2        =  ??,
+    PATH_TRASH_WAVE3        =  ??,
+    PATH_TRASH_WAVE4        =  ??
+};*/
 
 struct boss_sacrolashAI : public ScriptedAI
 {
@@ -125,7 +133,7 @@ struct boss_sacrolashAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-        //pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+        pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -240,7 +248,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
 
     InstanceData *pInstance;
 
-    bool IntroDone;
+    bool IntroDone, TrashWaveDone;
 
     uint32 IntroStepCounter;
     uint32 IntroYellTimer;
@@ -262,6 +270,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         IntroStepCounter = 10;
 
         IntroDone = false;
+        TrashWaveDone = false;
 
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -276,13 +285,22 @@ struct boss_alythessAI : public Scripted_NoMovementAI
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
-        //pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
+        pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
     }
 
     void MoveInLineOfSight(Unit *who)
     {
-        // TODO: this should be moved to some trigger at doors
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 30))
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !TrashWaveDone &&
+            !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 100))
+        {
+            if(Creature* Vanquisher = GetClosestCreatureWithEntry(me, 25486, 40, true))
+            {
+                Vanquisher->Yell("Intruders! Do not let them into the Sanctum!", 0, who->GetGUID());
+                //Vanquisher->GetMotionMaster()->MovePath(PATH_TRASH_WAVE1, false);
+            }
+            TrashWaveDone = true;
+        }
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 45))
         {
             IntroStepCounter = 0;
             pInstance->SetData(DATA_EREDAR_TWINS_INTRO, IN_PROGRESS);

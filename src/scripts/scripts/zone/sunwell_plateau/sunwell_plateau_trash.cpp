@@ -405,6 +405,7 @@ enum SunbladeProtector
 };
 
 #define PROTECTOR_YELL "Unit entering energy conservation mode."
+#define PROTECTOR_AGGRO "Enemy presence detected."
 
 struct mob_sunblade_protectorAI : public ScriptedAI
 {
@@ -438,7 +439,12 @@ struct mob_sunblade_protectorAI : public ScriptedAI
         CreatureAI::EnterEvadeMode();
     }
 
-    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+    void EnterCombat(Unit*)
+    {
+        if(!isInactive)
+            DoYell(PROTECTOR_AGGRO, 0, me);
+        DoZoneInCombat(80.0f);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -747,8 +753,6 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 * ============================*/
 
 /* Content Data
-    * Blazing Infernal (??)
-    * Felguard Slayer (??)
     * Shadowsword Assassin
     * Shadowsword Commander - responsible for gauntlet
     * Shadowsword Deathbringer - gauntlet
@@ -758,14 +762,6 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
     * Shadowsword Vanquisher
     * Volatile Fiend - gauntlet
 */
-
-/****************
-* Blazing Infernal - id
-*****************/
-
-/****************
-* Felguard Slayer - id
-*****************/
 
 /****************
 * Shadowsword Assassin - id 25484
@@ -840,7 +836,7 @@ struct mob_shadowsword_assassinAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(who->GetTypeId() != TYPEID_PLAYER || me->getVictim() || me->IsInEvadeMode())
+        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE || who->GetTypeId() != TYPEID_PLAYER || me->getVictim() || me->IsInEvadeMode())
             return;
         if(me->IsWithinDistInMap(who, 50))
             DoRandomShadowstep(who);
@@ -945,6 +941,12 @@ struct mob_shadowsword_commanderAI : public ScriptedAI
         DoCast(me, SPELL_BATTLE_SHOUT);
     }
 
+    void MoveInLineOfSight(Unit*)
+    {
+        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
+            return;
+    }
+
     void JustDied(Unit* killer)
     {
         if(Creature* ImpTrigger = me->GetCreature(TriggerGUID))
@@ -1043,12 +1045,7 @@ struct mob_shadowsword_deathbringerAI : public ScriptedAI
             pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
     }
 
-    void EnterCombat(Unit*)
-    {
-        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
-            return;
-        DoZoneInCombat(80.0f);
-    }
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
 
     void IsSummonedBy(Unit *summoner)
     {
@@ -1132,8 +1129,6 @@ struct mob_shadowsword_lifeshaperAI : public ScriptedAI
 
     void EnterEvadeMode()
     {
-        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
-            return;
         if (CreatureGroup *formation = me->GetFormation())
             formation->RespawnFormation(me);
         if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
@@ -1141,8 +1136,16 @@ struct mob_shadowsword_lifeshaperAI : public ScriptedAI
         ScriptedAI::EnterEvadeMode();
     }
 
+    void MoveInLineOfSight(Unit*)
+    {
+        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
+            return;
+    }
+
     void EnterCombat(Unit*)
-    { 
+    {
+        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
+            return;
         if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == NOT_STARTED)
             pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, IN_PROGRESS);
         DoZoneInCombat(80.0f); 
@@ -1242,8 +1245,14 @@ struct mob_shadowsword_manafiendAI : public ScriptedAI
         ScriptedAI::EnterEvadeMode();
     }
 
+    void MoveInLineOfSight(Unit*)
+    {
+        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
+            return;
+    }
+
     void EnterCombat(Unit*)
-    { 
+    {
         if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
             return;
         if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == NOT_STARTED)
@@ -1333,6 +1342,12 @@ struct mob_shadowsword_soulbinderAI : public ScriptedAI
         if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
             pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
         ScriptedAI::EnterEvadeMode();
+    }
+
+    void MoveInLineOfSight(Unit*)
+    {
+        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
+            return;
     }
 
     void EnterCombat(Unit*)
@@ -1430,6 +1445,12 @@ struct mob_shadowsword_vanquisherAI : public ScriptedAI
         if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
             pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
         ScriptedAI::EnterEvadeMode();
+    }
+
+    void MoveInLineOfSight(Unit*)
+    {
+        if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE)
+            return;
     }
 
     void EnterCombat(Unit*)

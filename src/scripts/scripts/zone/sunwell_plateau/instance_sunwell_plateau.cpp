@@ -120,8 +120,11 @@ struct instance_sunwell_plateau : public ScriptedInstance
     {
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounters[i] == IN_PROGRESS)
+            {
+                if(i == 1)
+                    continue;
                 return true;
-
+            }
         return false;
     }
 
@@ -269,7 +272,6 @@ struct instance_sunwell_plateau : public ScriptedInstance
             case 188524: Collision_2    = gobj->GetGUID(); break;
             case 188075: FireBarrier    = gobj->GetGUID(); break;
             case 188119: IceBarrier     = gobj->GetGUID(); break;
-            // TODO: make door handling at bosses fights and on reset
             // Eredar Twins Up - door 4
             case 187770: Gate[0]        = gobj->GetGUID(); break;
             case 187990: // door 7
@@ -376,7 +378,18 @@ struct instance_sunwell_plateau : public ScriptedInstance
                 break;
             case DATA_EREDAR_TWINS_EVENT:
                 if(Encounters[4] != DONE)
+                {
+                    if(data == IN_PROGRESS)
+                        HandleGameObject(Gate[0], CLOSE);
+                    else
+                        HandleGameObject(Gate[0], OPEN);
                     Encounters[4] = data;
+                }
+                else
+                {
+                    HandleGameObject(Gate[0], OPEN);
+                    HandleGameObject(Gate[2], OPEN);
+                }
                 break;
             case DATA_MURU_EVENT:
                 if(Encounters[5] != DONE)
