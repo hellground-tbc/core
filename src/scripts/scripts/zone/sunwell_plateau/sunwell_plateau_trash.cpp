@@ -838,7 +838,7 @@ struct mob_shadowsword_assassinAI : public ScriptedAI
     {
         if(pInstance->GetData(DATA_FELMYST_EVENT) != DONE || who->GetTypeId() != TYPEID_PLAYER || me->getVictim() || me->IsInEvadeMode())
             return;
-        if(me->IsWithinDistInMap(who, 50))
+        if(me->IsWithinDistInMap(who, 50) && me->IsWithinLOSInMap(who))
             DoRandomShadowstep(who);
     }
 
