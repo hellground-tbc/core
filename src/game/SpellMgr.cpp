@@ -3077,6 +3077,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 38281: // Static Charge (LV)
             case 39992: // Najentus: Needle Spine
+            case 46019: // Teleport: Spectral Realm
                 spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_PLAYERS_ONLY;
             case 41357: // L1 Acane Charge
             case 41376: // Spite
