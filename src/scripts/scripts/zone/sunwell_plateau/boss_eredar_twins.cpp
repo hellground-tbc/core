@@ -300,7 +300,8 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             }
             TrashWaveDone = true;
         }
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 45))
+        // to be redone
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE && pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 45))
         {
             IntroStepCounter = 0;
             pInstance->SetData(DATA_EREDAR_TWINS_INTRO, IN_PROGRESS);

@@ -2232,6 +2232,10 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo) const
 
     // stunned target cannot dodge and this is check in GetUnitDodgeChance() (returned 0 in this case)
     float dodge_chance = damageInfo->target->GetUnitDodgeChance();
+    if(HasAuraType(SPELL_AURA_MOD_ENEMY_DODGE))
+        dodge_chance += GetTotalAuraModifier(SPELL_AURA_MOD_ENEMY_DODGE);
+    if(dodge_chance < 0)
+        dodge_chance = 0;
     float block_chance = damageInfo->target->GetUnitBlockChance();
     float parry_chance = damageInfo->target->GetUnitParryChance();
 
