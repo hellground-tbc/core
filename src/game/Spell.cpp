@@ -4791,18 +4791,26 @@ SpellCastResult Spell::CheckRange(bool strict)
 
     // NOTE(asj) For now, let as be as selective as possible, so call this only
     // in case of Traps. In future this might be also required by other GO.
-    if (pGoTarget && pGoTarget->GetGoType() == GAMEOBJECT_TYPE_TRAP)
+    if (pGoTarget)
     {
         // distance from target in checks
         float dist = m_caster->GetDistance(pGoTarget);
 
-        if(dist > max_range)
-            return SPELL_FAILED_OUT_OF_RANGE;
-        if(min_range && dist < min_range)
-            return SPELL_FAILED_TOO_CLOSE;
-        if( m_caster->GetTypeId() == TYPEID_PLAYER &&
-            (GetSpellInfo()->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT) && !m_caster->HasInArc( M_PI, pGoTarget ) )
-            return SPELL_FAILED_NOT_INFRONT;
+        switch (pGoTarget->GetGoType())
+        {
+            case GAMEOBJECT_TYPE_TRAP:
+                if (dist > max_range)
+                    return SPELL_FAILED_OUT_OF_RANGE;
+                if (min_range && dist < min_range)
+                    return SPELL_FAILED_TOO_CLOSE;
+                if ( m_caster->GetTypeId() == TYPEID_PLAYER && (GetSpellInfo()->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT) && !m_caster->HasInArc(M_PI, pGoTarget))
+                    return SPELL_FAILED_NOT_INFRONT;
+                break;
+           case GAMEOBJECT_TYPE_CHEST:
+               if (dist > max_range)
+                   return SPELL_FAILED_OUT_OF_RANGE;
+               break;
+        }
     }
 
     // TODO verify that such spells really use bounding radius
