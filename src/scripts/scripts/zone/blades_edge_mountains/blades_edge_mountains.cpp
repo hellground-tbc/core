@@ -1828,6 +1828,70 @@ bool GossipSelect_npc_rally_zapnabber(Player* player, Creature* creature, uint32
 }
 
 /*######
+## Q 10821
+######*/
+
+enum
+{
+    SPELL_BEAM        = 35846,
+
+    QUEST_FIRED       = 10821,
+
+    NPC_ANGER         = 22422,
+    NPC_INVISB        = 20736,
+    NPC_DOOMCRYER     = 19963
+};
+
+struct npc_anger_campAI : public ScriptedAI
+{
+    npc_anger_campAI(Creature* creature) : ScriptedAI(creature) {}
+
+    uint8 Count;
+
+    void Reset() 
+    {
+        Count = 0;
+    }
+
+    void Activate()
+    {
+        ++Count;
+
+        if (Count == 5)
+        {
+            me->SummonCreature(NPC_DOOMCRYER, me->GetPositionX()+26.8f, me->GetPositionY()+9.1f, me->GetPositionZ()-9.6f, me->GetOrientation()/2.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+            Reset();
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_anger_camp(Creature* creature)
+{
+    return new npc_anger_campAI (creature);
+}
+
+bool GOUse_go_obeliks(Player *player, GameObject* go)
+{
+    if (player->GetQuestStatus(QUEST_FIRED) == QUEST_STATUS_INCOMPLETE)
+    {
+        Map* tmpMap = go->GetMap();
+
+        if (!tmpMap)
+            return true;
+
+        if (Creature* anger = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_ANGER)))
+        {
+            if (Creature* bunny = go->SummonCreature(NPC_INVISB, go->GetPositionX()-2.0f, go->GetPositionY(), go->GetPositionZ(), go->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 181000))
+            {
+                bunny->CastSpell(anger, SPELL_BEAM, true);
+                CAST_AI(npc_anger_campAI, anger->AI())->Activate();
+            }
+        }
+    }
+    return false;
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -1941,5 +2005,15 @@ void AddSC_blades_edge_mountains()
     newscript->GetAI = &GetAI_npc_rally_zapnabber;
     newscript->pGossipHello =   &GossipHello_npc_rally_zapnabber;
     newscript->pGossipSelect =  &GossipSelect_npc_rally_zapnabber;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_anger_camp";
+    newscript->GetAI = &GetAI_npc_anger_camp;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_obeliks";
+    newscript->pGOUse = &GOUse_go_obeliks;
     newscript->RegisterSelf();
 }
