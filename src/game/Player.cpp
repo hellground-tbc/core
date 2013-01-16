@@ -6186,7 +6186,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
     // add honor points
     ModifyHonorPoints(int32(honor));
-    //UpdatePvpTitles();
+    UpdatePvpTitles();
     ApplyModUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, uint32(honor), true);
 
     if (sWorld.getConfig(CONFIG_PVP_TOKEN_ENABLE) && pvptoken)
@@ -14729,7 +14729,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
     // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
-    SetUInt32Value(PLAYER__FIELD_KNOWN_TITLES, (GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES) & ~PLAYER_TITLE_PVP));
+    SetUInt32Value(PLAYER__FIELD_KNOWN_TITLES, (GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES)/* & ~PLAYER_TITLE_PVP*/));
     if (uint32 curTitle = GetUInt32Value(PLAYER_CHOSEN_TITLE))
     {
         if (!HasTitle(curTitle))
@@ -18411,6 +18411,9 @@ bool Player::canSeeOrDetect(Unit const* u, WorldObject const* viewPoint, bool de
     // Always can see self
     if (u == this)
         return true;
+
+    if (u->GetObjectGuid().IsAnyTypeCreature() && !const_cast<Creature*>(u->ToCreature())->ToCreature()->AI()->IsVisible())
+        return false;
 
     // player visible for other player if not logout and at same transport
     // including case when player is out of world

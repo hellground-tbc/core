@@ -58,6 +58,8 @@ class HELLGROUND_EXPORT UnitAI
         // Called when unit is charmed
         virtual void OnCharmed(bool apply) = 0;
 
+        virtual bool IsVisible() { return true; }
+
         // Pass parameters between AI
         virtual void DoAction(const int32 param = 0) {}
         virtual uint32 GetData(uint32 id = 0) { return 0; }
