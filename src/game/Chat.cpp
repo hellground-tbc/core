@@ -384,13 +384,13 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand guildDisableCommandTable[] =
     {
-        { "announce",       PERM_GM,        true,   &ChatHandler::HandleGuildDisableAnnounceCommand,    "", NULL},
+        { "announce",       PERM_GMT,       true,   &ChatHandler::HandleGuildDisableAnnounceCommand,    "", NULL},
         { NULL,             0,                  false,  NULL,                                               "", NULL}
     };
 
     static ChatCommand guildEnableCommandTable[] =
     {
-        { "announce",       PERM_GM,        true,   &ChatHandler::HandleGuildEnableAnnounceCommand,     "", NULL},
+        { "announce",       PERM_GMT,       true,   &ChatHandler::HandleGuildEnableAnnounceCommand,     "", NULL},
         { NULL,             0,                  false,  NULL,                                               "", NULL}
     };
 
@@ -399,8 +399,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "ann",            PERM_PLAYER,    false,  &ChatHandler::HandleGuildAnnounceCommand,       "", NULL },
         { "create",         PERM_HIGH_GMT,  true,   &ChatHandler::HandleGuildCreateCommand,         "", NULL },
         { "delete",         PERM_HIGH_GMT,  true,   &ChatHandler::HandleGuildDeleteCommand,         "", NULL },
-        { "disable",        PERM_GM,        true,   NULL,                                           "", guildDisableCommandTable },
-        { "enable",         PERM_GM,        true,   NULL,                                           "", guildEnableCommandTable },
+        { "disable",        PERM_GMT,       true,   NULL,                                           "", guildDisableCommandTable },
+        { "enable",         PERM_GMT,       true,   NULL,                                           "", guildEnableCommandTable },
         { "invite",         PERM_HIGH_GMT,  true,   &ChatHandler::HandleGuildInviteCommand,         "", NULL },
         { "rank",           PERM_HIGH_GMT,  true,   &ChatHandler::HandleGuildRankCommand,           "", NULL },
         { "uninvite",       PERM_HIGH_GMT,  true,   &ChatHandler::HandleGuildUninviteCommand,       "", NULL },

@@ -439,6 +439,9 @@ void WorldSession::SendExternalMails()
             {
                 sLog.outDebug("EXTERNAL MAIL> Sending mail to %u, Item:%u", receiver->GetGUIDLow(), ItemID);
                 uint32 itemTextId = !message.empty() ? sObjectMgr.CreateItemText(message) : 0;
+
+                RealmDataDatabase.PExecute("DELETE FROM mail_external WHERE id=%u", id);
+
                 if (ItemID != 0)
                 {
                     Item* ToMailItem = Item::CreateItem(ItemID, ItemCount, receiver);
@@ -455,7 +458,6 @@ void WorldSession::SendExternalMails()
                         .SetMoney(money)
                         .SendMailTo(MailReceiver(receiver), MailSender(MAIL_NORMAL, uint32(0), MAIL_STATIONERY_GM), MAIL_CHECK_MASK_RETURNED);
                 }
-                RealmDataDatabase.PExecute("DELETE FROM mail_external WHERE id=%u", id);
             }
         }
         while(result -> NextRow());
