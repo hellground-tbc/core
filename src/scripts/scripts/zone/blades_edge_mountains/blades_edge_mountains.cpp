@@ -1892,6 +1892,130 @@ bool GOUse_go_obeliks(Player *player, GameObject* go)
 }
 
 /*######
+## npc_cannon_target
+######*/
+
+enum
+{
+    SPELL_ARTILLERY      = 39221,
+    SPELL_IMP_AURA       = 39227,
+    SPELL_HOUND_AURA     = 39275,
+
+    NPC_IMP              = 22474,
+    NPC_HOUND            = 22500,
+    NPC_SOUTH_GATE       = 22472,
+    NPC_NORTH_GATE       = 22471,
+    CREDIT_SOUTH         = 22504,
+    CREDIT_NORTH         = 22503,
+
+    GO_FIRE              = 185317,
+    GO_BIG_FIRE          = 185319
+};
+
+struct npc_cannon_targetAI : public ScriptedAI
+{
+    npc_cannon_targetAI(Creature* creature) : ScriptedAI(creature) {}
+
+    bool PartyTime;
+
+    uint64 PlayerGUID;
+    uint64 CannonGUID;
+    uint32 PartyTimer;
+    uint8 Count;
+
+    void Reset() 
+    {
+        PartyTime= false;
+        PlayerGUID = 0;
+        CannonGUID = 0;
+        PartyTimer = 0;
+        Count = 0;
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if (spell->Id ==  SPELL_ARTILLERY)
+        {
+            ++Count;
+
+            if (Count == 1)
+            {
+                if (Player* player = caster->GetCharmerOrOwnerPlayerOrPlayerItself())
+                    PlayerGUID = player->GetGUID();
+
+                CannonGUID = caster->GetGUID();
+                PartyTime = true;
+                PartyTimer = 3000;
+            }
+
+            if (Count == 3)
+                me->SummonGameObject(GO_FIRE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 130);
+
+            if (Count == 7)
+            {
+                if (Player* player = me->GetPlayer(PlayerGUID))
+                {
+                    if (Creature* bunny = GetClosestCreatureWithEntry(me, NPC_SOUTH_GATE, 20.0f))
+                        player->KilledMonster(CREDIT_SOUTH, me->GetGUID());
+                    else
+                    {   
+                        if (Creature* bunny = GetClosestCreatureWithEntry(me, NPC_NORTH_GATE, 20.0f))
+                            player->KilledMonster(CREDIT_NORTH, me->GetGUID());
+                    }
+                }
+
+                me->SummonGameObject(GO_BIG_FIRE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 60);
+                Reset();
+            }
+        }
+
+        return;
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        if (summoned->GetEntry() == NPC_IMP)
+            summoned->CastSpell(summoned, SPELL_IMP_AURA, true);
+        else
+        {
+            if (summoned->GetEntry() == NPC_HOUND)
+                summoned->CastSpell(summoned, SPELL_HOUND_AURA, true);
+        }
+
+        if (Creature* cannon = me->GetCreature(CannonGUID))
+            summoned->AI()->AttackStart(cannon); 
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (PartyTime)
+        {
+            if (PartyTimer <= diff)
+            {
+                if (Creature* cannon = me->GetCreature(CannonGUID))
+                {
+                    if (cannon->isDead())
+                        Reset();
+                }
+
+                if (roll_chance_i(20))
+                    me->SummonCreature(NPC_HOUND, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+                else
+                    me->SummonCreature(NPC_IMP, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+
+                PartyTimer = 3000;
+            }
+            else PartyTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_cannon_target(Creature* creature)
+{
+    return new npc_cannon_targetAI (creature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -2015,5 +2139,10 @@ void AddSC_blades_edge_mountains()
     newscript = new Script;
     newscript->Name = "go_obeliks";
     newscript->pGOUse = &GOUse_go_obeliks;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_cannon_target";
+    newscript->GetAI = &GetAI_npc_cannon_target;
     newscript->RegisterSelf();
 }
