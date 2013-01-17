@@ -510,7 +510,7 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
 
         bool AIM_Initialize(CreatureAI* ai = NULL);
 
-        CreatureAI* AI() { return (CreatureAI*)i_AI; }
+        CreatureAI* AI() const { return (CreatureAI*)i_AI; }
 
         uint32 GetShieldBlockValue() const                  //dunno mob block value
         {

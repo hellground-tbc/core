@@ -1661,7 +1661,7 @@ bool Creature::canSeeOrDetect(Unit const* u, WorldObject const* viewPoint, bool 
     if (u->GetVisibility() == VISIBILITY_OFF) //GM
         return false;
 
-    if (u->GetObjectGuid().IsAnyTypeCreature() && !const_cast<Creature*>(u->ToCreature())->ToCreature()->AI()->IsVisible())
+    if (u->GetObjectGuid().IsAnyTypeCreature() && u->ToCreature()->IsAIEnabled && !u->ToCreature()->AI()->IsVisible())
         return false;
 
     // invisible aura
