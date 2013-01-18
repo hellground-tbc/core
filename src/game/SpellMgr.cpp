@@ -726,6 +726,7 @@ bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 30422:
         case 30423:
         case 47002:                                         // Noxious Fumes (not sure if needed, just in case)
+        case 41350:                                         // Aura of Desire
             return false;
     }
 
