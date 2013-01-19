@@ -1251,41 +1251,29 @@ enum ApexisRelic
 
 bool OnGossipHello_go_apexis_relic(Player* player, GameObject* go)
 {
-    if (go->GetEntry() == GO_APEXIS_RELIC)
-    {
-        if (player->GetQuestStatus(QUEST_APEXIS) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_EMANATION) == QUEST_STATUS_INCOMPLETE)
-            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-        player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());
-    }
-    
-    if (go->GetEntry() == GO_APEXIS_MONUMENT)
-    {
-        if (player->GetQuestStatus(QUEST_GUARDIAN) == QUEST_STATUS_INCOMPLETE)
-            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-        player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());
-    }
+    bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
 
-    return false;
+    if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1) && large ? player->GetQuestStatus(QUEST_GUARDIAN) == QUEST_STATUS_INCOMPLETE : (player->GetQuestStatus(QUEST_APEXIS) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(QUEST_EMANATION) == QUEST_STATUS_INCOMPLETE))
+        player->ADD_GOSSIP_ITEM(0, large ? GOSSIP_ITEM_2 : GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    player->SEND_GOSSIP_MENU(GOSSIP_TEXT_ID, go->GetGUID());
+
+    return true;
 }
 
 bool OnGossipSelect_go_apexis_relic(Player* player, GameObject* go, uint32 sender, uint32 action)
 {
-    if (action == GOSSIP_ACTION_INFO_DEF+1)
+    bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
+
+    if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
     {
-        bool large = (go->GetEntry() == GO_APEXIS_MONUMENT);
+        player->CastSpell(player, large ? SPELL_TAKE_REAGENTS_GROUP : SPELL_TAKE_REAGENTS_SOLO, false);
 
-        if (player->HasItemCount(ITEM_APEXIS_SHARD, large ? 35 : 1))
-        {
-            player->CastSpell(player, large ? SPELL_TAKE_REAGENTS_GROUP : SPELL_TAKE_REAGENTS_SOLO, false);
-
-            if (Creature* bunny = player->SummonCreature(NPC_SIMON_BUNNY, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0))
-                CAST_AI(npc_simon_bunnyAI, bunny->AI())->SetGUID(player->GetGUID(), large);
-        }
+        if (Creature* bunny = player->SummonCreature(NPC_SIMON_BUNNY, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 0))
+            CAST_AI(npc_simon_bunnyAI, bunny->AI())->SetGUID(player->GetGUID(), large);
 
         player->CLOSE_GOSSIP_MENU();
-    }
-
-    return true;
+    } 
+    return false;
 }
 
 /*#########
