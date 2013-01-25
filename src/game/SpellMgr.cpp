@@ -4025,6 +4025,9 @@ DiminishingGroup SpellMgr::GetDiminishingReturnsGroupForSpell(SpellEntry const* 
             // Freezing trap
             if (spellproto->SpellFamilyFlags & 0x00000000008LL)
                 return DIMINISHING_FREEZE;
+            // Intimidation
+            else if (spellproto->Id == 24394)
+                return DIMINISHING_CONTROL_STUN;
             break;
         }
         case SPELLFAMILY_WARLOCK:
@@ -4041,7 +4044,7 @@ DiminishingGroup SpellMgr::GetDiminishingReturnsGroupForSpell(SpellEntry const* 
             // Curses/etc
             else if (spellproto->SpellFamilyFlags & 0x00080000000LL)
                 return DIMINISHING_LIMITONLY;
-            // Unstable affliction dispel silence
+            // Unstable Affliction dispel silence
             else if (spellproto->Id == 31117)
                 return DIMINISHING_UNSTABLE_AFFLICTION;
             // Enslave deamon
