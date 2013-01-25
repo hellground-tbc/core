@@ -311,7 +311,7 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
         void SetBracketId(BattleGroundBracketId ID) { m_BracketId = ID; }
         void SetQueueType(uint32 ID)        { m_Queue_type = ID; }
         void SetInstanceID(uint32 InstanceID) { m_InstanceID = InstanceID; }
-        void SetStatus(uint32 Status)       { m_Status = Status; }
+        void SetStatus(uint32 Status);
         void SetStartTime(uint32 Time)      { m_StartTime = Time; }
         void SetEndTime(uint32 Time)        { m_EndTime = Time; }
         void SetLastResurrectTime(uint32 Time) { m_LastResurrectTime = Time; }
@@ -541,6 +541,7 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
         uint32 m_PrematureCountDownTimer;
         char const *m_Name;
 
+        uint64 m_progressStart;
 
         /* Player lists */
         std::vector<uint64> m_ResurrectQueue;               // Player GUID
