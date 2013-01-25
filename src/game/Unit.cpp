@@ -6982,6 +6982,18 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             else if (!(procFlags & (PROC_FLAG_TAKEN_MELEE_HIT | PROC_FLAG_TAKEN_MELEE_SPELL_HIT)))
                 return false;
         }
+        // Trinket - Hand of Justice
+        case 15600:
+        {
+            float chance = 0;
+            chance = 6.02-0.067*getLevel();
+            if (!roll_chance_f(chance))
+                return false;
+            
+            trigger_spell_id = 15601;
+            
+            break;
+        }
     }
 
     // Custom basepoints/target for exist spell
