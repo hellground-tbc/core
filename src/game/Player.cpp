@@ -14729,7 +14729,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
     // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
-    SetUInt32Value(PLAYER__FIELD_KNOWN_TITLES, fields[42].GetUInt32());
+    SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES, fields[42].GetUInt64());
     if (uint32 curTitle = GetUInt32Value(PLAYER_CHOSEN_TITLE))
     {
         if (!HasTitle(curTitle))
@@ -16008,7 +16008,7 @@ void Player::SaveToDB()
     stmt.addString(m_taxi.SaveTaxiDestinationsToString());
     stmt.addUInt32(0);
     stmt.addUInt32(GetSession()->GetLatency());
-    stmt.addUInt32(GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES));
+    stmt.addUInt64(GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES));
     stmt.Execute();
 
     if (m_mailsUpdated)                                      //save mails only when needed
