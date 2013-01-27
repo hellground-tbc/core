@@ -14729,7 +14729,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
     // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
-    SetUInt32Value(PLAYER__FIELD_KNOWN_TITLES, (GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES)/* & ~PLAYER_TITLE_PVP*/));
+    SetUInt32Value(PLAYER__FIELD_KNOWN_TITLES, fields[42].GetUInt32());
     if (uint32 curTitle = GetUInt32Value(PLAYER_CHOSEN_TITLE))
     {
         if (!HasTitle(curTitle))
@@ -15924,13 +15924,13 @@ void Player::SaveToDB()
                                             "taximask, online, cinematic, "
                                             "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
                                             "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
-                                            "death_expire_time, taxi_path, arena_pending_points, latency) "
+                                            "death_expire_time, taxi_path, arena_pending_points, latency, title) "
                                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
                                                 "?, ?, ?, ?, ?, ?, ?, ?, "
                                                 "?, ?, ?, "
                                                 "?, ?, ?, ?, ?, ?, ?, "
                                                 "?, ?, ?, ?, ?, ?, ?, ?, ?, "
-                                                "?, ?, ?, ?)");
+                                                "?, ?, ?, ?, ?)");
 
     stmt.addUInt32(GetGUIDLow());
     stmt.addUInt32(GetSession()->GetAccountId());
@@ -16008,6 +16008,7 @@ void Player::SaveToDB()
     stmt.addString(m_taxi.SaveTaxiDestinationsToString());
     stmt.addUInt32(0);
     stmt.addUInt32(GetSession()->GetLatency());
+    stmt.addUInt32(GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES));
     stmt.Execute();
 
     if (m_mailsUpdated)                                      //save mails only when needed
