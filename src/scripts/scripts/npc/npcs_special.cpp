@@ -2574,6 +2574,23 @@ CreatureAI* GetAI_npc_small_pet_handler(Creature* pCreature)
     return new npc_small_pet_handlerAI(pCreature);
 }
 
+bool GossipHello_npc_combatstop(Player* player, Creature* _Creature) 
+{ 
+    player->ADD_GOSSIP_ITEM(0, "Clear in combat state.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1); 
+
+    // Hey there, $N. How can I help you?
+    player->SEND_GOSSIP_MENU(2, _Creature->GetGUID()); 
+    return true; 
+} 
+
+bool GossipSelect_npc_combatstop(Player* player, Creature* _Creature, uint32 sender, uint32 action) 
+{ 
+    if (action == GOSSIP_ACTION_INFO_DEF + 1)
+        player->CombatStop(true); 
+
+    return true; 
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2741,5 +2758,11 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_small_pet_handler";
     newscript->GetAI = &GetAI_npc_small_pet_handler;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_combatstop";
+    newscript->pGossipHello =  &GossipHello_npc_combatstop;
+    newscript->pGossipSelect = &GossipSelect_npc_combatstop;
     newscript->RegisterSelf();
 }
