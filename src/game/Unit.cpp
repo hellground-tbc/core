@@ -6753,9 +6753,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  return false;
              }
              // percent stored in effect 1 (class scripts) base points
-             int32 manaRestore = originalSpell->manaCost * (auraSpellInfo->EffectBasePoints[1] + 1) / 100;
-             // Reduce mana restore when having Divine Illumination
-             basepoints0 = HasAura(31842, 0) ? (manaRestore / 2) : manaRestore;
+             basepoints0 = originalSpell->manaCost*(auraSpellInfo->EffectBasePoints[1]+1)/100;
              trigger_spell_id = 20272;
              target = this;
          }
