@@ -2618,6 +2618,17 @@ struct npc_resurrectAI : public ScriptedAI
     void AttackStart(Unit* who) {}
     void EnterCombat(Unit *who) {}
 
+    struct PlayerRemove
+    {
+        PlayerRemove(Creature* c) : me(c) {}
+
+        Creature* me;
+        bool operator()(Player* plr)
+        {
+            return plr->isAlive() || me->IsHostileTo(plr);
+        }
+    };
+
     void UpdateAI(const uint32 uiDiff)
     {
         timer.Update(uiDiff);
@@ -2629,7 +2640,7 @@ struct npc_resurrectAI : public ScriptedAI
 
             Cell::VisitAllObjects(me, searcher, 15.0f);
 
-            players.remove_if([this](Player* plr) -> bool { return plr->isAlive() || me->IsHostileTo(plr); });
+            players.remove_if(PlayerRemove(me));
 
             while (!players.empty())
             {
