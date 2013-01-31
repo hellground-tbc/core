@@ -70,7 +70,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
     CharmInfo *pCharmInfo = pCharm->GetCharmInfo();
     if (!pCharmInfo)
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandlePetAction: object "UI64FMTD" is considered pet-like but doesn't have a charminfo!", charmGUID);
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandlePetAction: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", charmGUID);
         return;
     }
 
@@ -213,7 +213,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recv_data)
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if (!charmInfo)
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandlePetSetAction: object "UI64FMTD" is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandlePetSetAction: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
         return;
     }
 
@@ -382,7 +382,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if (!charmInfo)
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandlePetUnlearnOpcode: object "UI64FMTD" is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandlePetUnlearnOpcode: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
         return;
     }
 
@@ -451,7 +451,7 @@ void WorldSession::HandlePetSpellAutocastOpcode(WorldPacket& recvPacket)
     CharmInfo *charmInfo = pet->GetCharmInfo();
     if (!charmInfo)
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandlePetSpellAutocastOpcod: object "UI64FMTD" is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
+        sLog.outLog(LOG_DEFAULT, "ERROR: WorldSession::HandlePetSpellAutocastOpcod: object " UI64FMTD " is considered pet-like but doesn't have a charminfo!", pet->GetGUID());
         return;
     }
 

@@ -90,7 +90,7 @@ Object::~Object()
         if (IsInWorld())
         {
             ///- Do NOT call RemoveFromWorld here, if the object is a player it will crash
-            sLog.outLog(LOG_DEFAULT, "ERROR: Object::~Object - guid="UI64FMTD", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
+            sLog.outLog(LOG_DEFAULT, "ERROR: Object::~Object - guid=" UI64FMTD ", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
             ASSERT(false);
         }
 

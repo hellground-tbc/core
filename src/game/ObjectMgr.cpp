@@ -5505,7 +5505,7 @@ void ObjectMgr::SaveGuildAnnCooldown(uint32 guild_id)
 {
     time_t tmpTime = time_t(time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
     mGuildCooldownTimes[guild_id] = tmpTime;
-    RealmDataDatabase.PExecute("REPLACE INTO guild_announce_cooldown VALUES ('%u', '"UI64FMTD"')", guild_id, uint64(tmpTime));
+    RealmDataDatabase.PExecute("REPLACE INTO guild_announce_cooldown VALUES ('%u', '" UI64FMTD "')", guild_id, uint64(tmpTime));
 }
 
 void ObjectMgr::DeleteCreatureData(uint32 guid)

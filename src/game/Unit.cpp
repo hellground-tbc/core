@@ -12690,7 +12690,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
             if (GetCharmInfo())
                 GetCharmInfo()->SetPetNumber(0, true);
             else
-                sLog.outLog(LOG_DEFAULT, "ERROR: Aura::HandleModCharm: target="UI64FMTD" with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
+                sLog.outLog(LOG_DEFAULT, "ERROR: Aura::HandleModCharm: target=" UI64FMTD " with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
         }
     }
 

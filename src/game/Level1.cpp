@@ -181,7 +181,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
             PSendSysMessage("Your message has been queued and will be displayed soon, please wait: %u seconds before sending another one.", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
 
             sObjectMgr.SaveGuildAnnCooldown(gId);
-            sLog.outLog(LOG_GUILD_ANN, "Player %s ("UI64FMTD") - guild: %s (%u) append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), pGuild->GetName().c_str(), gId, msg.c_str());
+            sLog.outLog(LOG_GUILD_ANN, "Player %s (" UI64FMTD ") - guild: %s (%u) append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), pGuild->GetName().c_str(), gId, msg.c_str());
             sWorld.QueueGuildAnnounce(gId, m_session->GetPlayer()->GetTeam(), msg);
             return true;
         }

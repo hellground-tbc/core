@@ -301,7 +301,7 @@ Corpse * ObjectAccessor::GetCorpse(uint32 mapid, float x, float y, uint64 guid)
         CellPair q = Hellground::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
         if (q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         {
-            sLog.outLog(LOG_DEFAULT, "ERROR: ObjectAccessor::GetCorpse: object "UI64FMTD" has invalid coordinates X:%f Y:%f grid cell [%u:%u]", corpse->GetGUID(), corpse->GetPositionX(), corpse->GetPositionY(), q.x_coord, q.y_coord);
+            sLog.outLog(LOG_DEFAULT, "ERROR: ObjectAccessor::GetCorpse: object " UI64FMTD " has invalid coordinates X:%f Y:%f grid cell [%u:%u]", corpse->GetGUID(), corpse->GetPositionX(), corpse->GetPositionY(), q.x_coord, q.y_coord);
             return NULL;
         }
 

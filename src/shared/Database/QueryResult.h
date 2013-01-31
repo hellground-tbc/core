@@ -19,6 +19,7 @@
 #ifndef QUERYRESULT_H
 #define QUERYRESULT_H
 
+#undef ACE_HAS_STANDARD_CPP_LIBRARY
 #include <ace/Refcounted_Auto_Ptr.h>
 #include <ace/Null_Mutex.h>
 

@@ -192,7 +192,7 @@ extern int main(int argc, char **argv)
 #ifdef USING_FIFO_PIPES
     if(vmapCluster)
     {
-        ACE_OS::system("rm -f "VMAP_CLUSTER_PREFIX"*");
+        ACE_OS::system("rm -f " VMAP_CLUSTER_PREFIX "*");
     }
 #endif
 

@@ -2585,7 +2585,7 @@ Creature * Map::GetCreature(uint64 guid, float x, float y)
         CellPair q = Hellground::ComputeCellPair(a->second->GetPositionX(), a->second->GetPositionY());
         if (q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
         {
-            sLog.outLog(LOG_DEFAULT, "ERROR: Map::GetCorpse: object "UI64FMTD" has invalid coordinates X:%f Y:%f grid cell [%u:%u]", a->second->GetGUID(), a->second->GetPositionX(), a->second->GetPositionY(), q.x_coord, q.y_coord);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Map::GetCorpse: object " UI64FMTD " has invalid coordinates X:%f Y:%f grid cell [%u:%u]", a->second->GetGUID(), a->second->GetPositionX(), a->second->GetPositionY(), q.x_coord, q.y_coord);
             return NULL;
         }
 

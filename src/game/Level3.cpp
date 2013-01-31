@@ -5448,7 +5448,7 @@ bool ChatHandler::HandleBanListCharacterCommand(const char* args)
 
     std::string filter = cFilter;
     AccountsDatabase.escape_string(filter);
-    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'"),filter.c_str());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name " _LIKE_ " " _CONCAT3_("'%%'","'%s'","'%%'") ,filter.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANLIST_NOCHARACTER);
@@ -5476,7 +5476,7 @@ bool ChatHandler::HandleBanListAccountCommand(const char* args)
     else
     {
         result = AccountsDatabase.PQuery("SELECT account.id, username FROM account, account_banned"
-            " WHERE account.id = account_banned.id AND active = 1 AND username "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'")" GROUP BY account.id",
+            " WHERE account.id = account_banned.id AND active = 1 AND username " _LIKE_ " " _CONCAT3_("'%%'","'%s'","'%%'") " GROUP BY account.id",
             filter.c_str());
     }
 
@@ -5586,7 +5586,7 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
     else
     {
         result = AccountsDatabase.PQuery("SELECT ip,bandate,unbandate,bannedby,banreason FROM ip_banned"
-            " WHERE (bandate=unbandate OR unbandate>UNIX_TIMESTAMP()) AND ip "_LIKE_" "_CONCAT3_("'%%'","'%s'","'%%'")
+            " WHERE (bandate=unbandate OR unbandate>UNIX_TIMESTAMP()) AND ip " _LIKE_ " " _CONCAT3_("'%%'","'%s'","'%%'")
             " ORDER BY unbandate",filter.c_str());
     }
 
