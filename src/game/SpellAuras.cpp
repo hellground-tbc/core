@@ -6683,6 +6683,26 @@ void Aura::CleanupTriggeredSpells()
     {
         m_target->RemoveAurasDueToSpell(m_spellProto->EffectTriggerSpell[1]);  // remove triggered effect of shattrath flask, when removing it
         return;
+    } 
+
+    // Check if Shadow Embrace should be removed                                                 
+    if (m_spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellProto->SpellFamilyFlags & 0x0000001100000402LL)
+    {
+        Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+        for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end();)
+        {
+            SpellEntry const* itr_spell = (*itr)->GetSpellProto();
+            if (itr_spell && itr_spell->SpellFamilyName == SPELLFAMILY_WARLOCK && (itr_spell->SpellFamilyFlags & 0x0000000080000000LL) && 
+                !m_target->HasAuraByCasterWithFamilyFlags((*itr)->GetCaster(),SPELLFAMILY_WARLOCK,0x0000001100000402LL))
+            {
+                m_target->RemoveAurasDueToSpell(itr_spell->Id);
+                itr = auras.begin();
+            }
+            else
+            {
+                itr++;
+            }
+        }
     }
 
     uint32 tSpellId = m_spellProto->EffectTriggerSpell[GetEffIndex()];

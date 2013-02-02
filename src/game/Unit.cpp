@@ -743,6 +743,16 @@ uint32 Unit::GetAurasAmountByMiscValue(AuraType auraType, uint32 misc)
     return count;
 }
 
+bool Unit::HasAuraByCasterWithFamilyFlags(Unit *pCaster, uint32 familyName,  uint64 familyFlags) const
+{
+    for (AuraMap::const_iterator itr = GetAuras().begin(); itr != GetAuras().end(); ++itr)
+        if (SpellEntry const *spellInfo = itr->second->GetSpellProto())
+            if (spellInfo->SpellFamilyName == familyName && spellInfo->SpellFamilyFlags & familyFlags && (itr->second->GetCaster() == pCaster))
+                return true;
+
+    return false;
+}
+
 /* Called by DealDamage for auras that have a chance to be dispelled on damage taken. */
 void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spell)
 {

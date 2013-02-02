@@ -1095,6 +1095,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         uint32 GetAurasAmountByMiscValue(AuraType auraType, uint32 misc);
         bool hasNegativeAuraWithInterruptFlag(uint32 flag);
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
+        bool HasAuraByCasterWithFamilyFlags(Unit *pCaster, uint32 familyName,  uint64 familyFlags) const;
         bool HasAura(uint32 spellId, uint32 effIndex) const
         {
             return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end();
