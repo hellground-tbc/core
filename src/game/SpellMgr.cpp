@@ -2956,6 +2956,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectImplicitTargetA[0] = spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_CASTER;
                 spellInfo->EffectImplicitTargetB[0] = spellInfo->EffectImplicitTargetB[1] = 0;
                 break;
+            /* WARLOCK CUSTOM ATTRIBUTES */
+            case 27285:                     // Seed of Corruption - final boom damage
+                spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_TRIGGER_PROC;
+                break;
             // Triggered spells that should be delayed
             case 20272:                     // Illumination
             case 32848:                     // Mana Restore
