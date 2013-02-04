@@ -667,7 +667,8 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     uint32 clientSeed;
     uint32 unk2;
     uint32 BuiltNumberClient;
-    uint32 id, security;
+    uint32 id;
+    uint64 permissionMask;
     uint8 expansion = 0;
     LocaleConstant locale;
     std::string account;
@@ -720,24 +721,23 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     QueryResultAutoPtr result =
           AccountsDatabase.PQuery("SELECT "
-                                "a.id, "                      //0
-                                "aa.gmlevel, "                //1
-                                "a.sessionkey, "              //2
-                                "a.last_ip, "                 //3
-                                "a.locked, "                  //4
-                                "a.v, "                       //5
-                                "a.s, "                       //6
-                                "a.expansion, "               //7
-                                "a.locale, "                  //8
-                                "a.account_flags, "           //9
-                                "a.opcodesDisabled, "         //10
-                                "a.os, "                      //11
-                                "a.last_local_ip "            //12
-                                "FROM account a "
-                                "LEFT JOIN account_access aa "
-                                "ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) "
-                                "WHERE a.username = '%s'",
-                                realmID, safe_account.c_str());
+                                "account.account_id, "          //0
+                                "permission_mask, "             //1
+                                "session_key, "                 //2
+                                "last_ip, "                     //3
+                                "account_state_id, "            //4
+                                "v, "                           //5
+                                "s, "                           //6
+                                "expansion_id, "                //7
+                                "locale_id, "                   //8
+                                "account_flags, "               //9
+                                "opcodes_disabled, "            //10
+                                "client_os_version_id, "        //11
+                                "last_local_ip "                //12
+                                "FROM account JOIN account_permissions ON account.account_id = account_permissions.account_id "
+                                "   JOIN account_session ON account.account_id = account_session.account_id "
+                                "WHERE username = '%s' AND realm_id = '%u'",
+                                safe_account.c_str(), realmID);
 
     // Stop if the account is not found
     if (!result)
@@ -754,7 +754,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     Field* fields = result->Fetch();
 
     std::string lastLocalIp = fields[12].GetString();
-    std::string os = fields[11].GetString();
+    uint8 operatingSystem = fields[11].GetUInt8();
     expansion =((sWorld.getConfig(CONFIG_EXPANSION) > fields[7].GetUInt8()) ? fields[7].GetUInt8() : sWorld.getConfig(CONFIG_EXPANSION));
 
     N.SetHexStr("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7");
@@ -788,9 +788,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     }
 
     id = fields[0].GetUInt32();
-    security = fields[1].GetUInt16();
-//    if (security > SEC_ADMINISTRATOR)                        // prevent invalid security settings in DB
-//        security = SEC_ADMINISTRATOR;
+    permissionMask = fields[1].GetUInt64();
 
     K.SetHexStr(fields[2].GetString());
 
@@ -801,19 +799,18 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     uint64 accFlags = fields[9].GetUInt64();
     uint16 opcDis = fields[10].GetUInt16();
 
-    // Re-check account and ip address ban(same check as in realmd)
-    QueryResultAutoPtr banresult = 
-        sWorld.getConfig(CONFIG_REALM_BANS) ? AccountsDatabase.PQuery("SELECT 1 FROM account_banned WHERE id = '%u' AND (realm = '%u' OR realm = 0) AND active = 1 "
-                                                                      "UNION "
-                                                                      "SELECT 1 FROM ip_banned WHERE ip = '%s'",
-                                                                      id, realmID, GetRemoteAddress().c_str())
+    // Re-check account ban(same check as in realmd)
+    QueryResultAutoPtr banresult =
+          AccountsDatabase.PQuery("SELECT "
+                                "punishment_date, "
+                                "expiration_date "
+                                "FROM account_punishment "
+                                "WHERE account_id = '%u' "
+                                "AND punishment_type_id = '%u' "
+                                "AND expiration_date > UNIX_TIMESTAMP()",
+                                id, PUNISHMENT_BAN);
 
-                                            : AccountsDatabase.PQuery("SELECT 1 FROM account_banned WHERE id = '%u' AND active = 1 "
-                                                                      "UNION "
-                                                                      "SELECT 1 FROM ip_banned WHERE ip = '%s'",
-                                                                      id, GetRemoteAddress().c_str());
-
-    if (banresult) // if banned
+    if (banresult) // if account banned
     {
         packet.Initialize(SMSG_AUTH_RESPONSE, 1);
         packet << uint8(AUTH_BANNED);
@@ -824,17 +821,17 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     }
 
     // Check locked state for server
-    sWorld.UpdateAllowedSecurity();
-    AccountTypes allowedAccountType = sWorld.GetPlayerSecurityLimit();
-    sLog.outDebug("Allowed Level: %u Player Level %u", allowedAccountType, AccountTypes(security));
-    if (allowedAccountType > SEC_PLAYER && AccountTypes(security) < allowedAccountType)
+    sWorld.UpdateRequiredPermissions();
+    uint64 minimumPermissions = sWorld.GetMinimumPermissionMask();
+    sLog.outDebug("Allowed Level: %u Player Level %u", minimumPermissions, permissionMask);
+    if (!(permissionMask & minimumPermissions))
     {
         WorldPacket Packet(SMSG_AUTH_RESPONSE, 1);
         Packet << uint8(AUTH_UNAVAILABLE);
 
         SendPacket(packet);
 
-        sLog.outDetail("WorldSocket::HandleAuthSession: User tries to login but his security level is not enough");
+        sLog.outDetail("WorldSocket::HandleAuthSession: User tries to login without permissions");
         return -1;
     }
 
@@ -877,19 +874,17 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // No SQL injection, username escaped.
     static SqlStatementID updAccount;
 
-    SqlStatement stmt = AccountsDatabase.CreateStatement(updAccount, "UPDATE account SET last_ip = ? WHERE username = ?");
-    stmt.PExecute(address.c_str(), account.c_str());
-
-    AccountsDatabase.Execute("UPDATE account_mute SET active = 0 WHERE unmutedate <= UNIX_TIMESTAMP()");
+    SqlStatement stmt = AccountsDatabase.CreateStatement(updAccount, "UPDATE account SET last_ip = ? WHERE account_id = ?");
+    stmt.PExecute(address.c_str(), id);
 
     QueryResultAutoPtr muteresult =
           AccountsDatabase.PQuery("SELECT "
-                                "unmutedate, "
-                                "mutereason "
-                                "FROM account_mute "
-                                "WHERE id = '%u' "
-                                "AND active = 1 "
-                                "ORDER BY unmutedate DESC LIMIT 1",
+                                "expiration_date, "
+                                "reason "
+                                "FROM account_punishment "
+                                "WHERE account_id = '%u' "
+                                "AND expiration_date > UNIX_TIMESTAMP() "
+                                "ORDER BY expiration_date DESC LIMIT 1",
                                 id);
 
     time_t mutetime;
@@ -908,18 +903,16 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     }
 
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN(m_Session, WorldSession(id, this, security, expansion, locale, mutetime, mutereason, accFlags, opcDis), -1);
+    ACE_NEW_RETURN(m_Session, WorldSession(id, this, permissionMask, expansion, locale, mutetime, mutereason, accFlags, opcDis), -1);
 
     m_Crypt.SetKey(&K);
     m_Crypt.Init();
 
     AccountsDatabase.escape_string(lastLocalIp);
 
-    AccountsDatabase.PExecute("INSERT INTO account_login VALUES('%u', NOW(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
-    
-    // Initialize Warden system only if it is enabled by config
-    if (sWorld.getConfig(CONFIG_WARDEN_ENABLED))
-        m_Session->InitWarden(&K, os);
+    AccountsDatabase.PExecute("INSERT INTO account_login VALUES ('%u', UNIX_TIMESTAMP(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
+
+    m_Session->InitWarden(&K, operatingSystem);
 
     // In case needed sometime the second arg is in microseconds 1 000 000 = 1 sec
     ACE_OS::sleep(ACE_Time_Value(0, 10000));
@@ -967,7 +960,7 @@ int WorldSocket::HandlePing(WorldPacket& recvPacket)
             {
                 ACE_GUARD_RETURN(LockType, Guard, m_SessionLock, -1);
 
-                if (m_Session && m_Session->GetSecurity() == SEC_PLAYER)
+                if (m_Session && !(m_Session->GetPermissions() & PERM_GMT))
                 {
                     sLog.outLog(LOG_DEFAULT, "ERROR: WorldSocket::HandlePing: Player kicked for "
                                     "overspeeded pings address = %s",

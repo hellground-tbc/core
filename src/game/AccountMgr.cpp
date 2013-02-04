@@ -42,20 +42,20 @@ AccountOpResult AccountMgr::CreateAccount(std::string username, std::string pass
     if (result)
         return AOR_NAME_ALREDY_EXIST;                       // username does already exist
 
-    if (!AccountsDatabase.PExecute("INSERT INTO account(username,sha_pass_hash,joindate) VALUES('%s',SHA1(CONCAT('%s',':','%s')),NOW())", username.c_str(), username.c_str(), password.c_str()))
+    if (!AccountsDatabase.PExecute("INSERT INTO account(username, pass_hash, join_date) "
+                                   "VALUES ('%s', SHA1(CONCAT('%s', ':', '%s')), NOW())", username.c_str(), username.c_str(), password.c_str()))
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
-    AccountsDatabase.Execute("INSERT INTO realmcharacters (realmid, acctid, numchars) SELECT realmlist.id, account.id, 0 FROM realmlist,account LEFT JOIN realmcharacters ON acctid=account.id WHERE acctid IS NULL");
 
     return AOR_OK;                                          // everything's fine
 }
 
 AccountOpResult AccountMgr::DeleteAccount(uint32 accid)
 {
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE account_id = '%u'", accid);
     if (!result)
         return AOR_NAME_NOT_EXIST;                          // account doesn't exist
 
-    result = RealmDataDatabase.PQuery("SELECT guid FROM characters WHERE account='%d'",accid);
+    result = RealmDataDatabase.PQuery("SELECT guid FROM characters WHERE account = '%u'",accid);
     if (result)
     {
         do
@@ -73,21 +73,14 @@ AccountOpResult AccountMgr::DeleteAccount(uint32 accid)
             }
 
             Player::DeleteFromDB(guid, accid, false);       // no need to update realm characters
-        } while (result->NextRow());
+        }
+        while (result->NextRow());
     }
 
     // table realm specific but common for all characters of account for realm
     RealmDataDatabase.PExecute("DELETE FROM character_tutorial WHERE account = '%u'",accid);
 
-    AccountsDatabase.BeginTransaction();
-
-    bool res =
-        AccountsDatabase.PExecute("DELETE FROM account WHERE id='%d'", accid) &&
-        AccountsDatabase.PExecute("DELETE FROM realmcharacters WHERE acctid='%d'", accid);
-
-    AccountsDatabase.CommitTransaction();
-
-    if (!res)
+    if (!AccountsDatabase.PExecute("DELETE FROM account WHERE account_id = '%u'", accid))
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error;
 
     return AOR_OK;
@@ -95,7 +88,7 @@ AccountOpResult AccountMgr::DeleteAccount(uint32 accid)
 
 AccountOpResult AccountMgr::ChangeUsername(uint32 accid, std::string new_uname, std::string new_passwd)
 {
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE accoun_id = '%u'", accid);
     if (!result)
         return AOR_NAME_NOT_EXIST;                          // account doesn't exist
 
@@ -110,7 +103,8 @@ AccountOpResult AccountMgr::ChangeUsername(uint32 accid, std::string new_uname, 
 
     AccountsDatabase.escape_string(new_uname);
     AccountsDatabase.escape_string(new_passwd);
-    if (!AccountsDatabase.PExecute("UPDATE account SET username='%s',sha_pass_hash=SHA1(CONCAT('%s',':','%s')) WHERE id='%d'", new_uname.c_str(), new_uname.c_str(), new_passwd.c_str(), accid))
+    if (!AccountsDatabase.PExecute("UPDATE account SET username = '%s', pass_hash = SHA1(CONCAT('%s', ':', '%s')) WHERE account_id = '%u'",
+                                   new_uname.c_str(), new_uname.c_str(), new_passwd.c_str(), accid))
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
 
     return AOR_OK;
@@ -118,7 +112,7 @@ AccountOpResult AccountMgr::ChangeUsername(uint32 accid, std::string new_uname, 
 
 AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
 {
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE id='%d'", accid);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE account_id = '%u'", accid);
     if (!result)
         return AOR_NAME_NOT_EXIST;                          // account doesn't exist
 
@@ -128,7 +122,7 @@ AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
     normilizeString(new_passwd);
 
     AccountsDatabase.escape_string(new_passwd);
-    if (!AccountsDatabase.PExecute("UPDATE account SET sha_pass_hash=SHA1(CONCAT(username,':','%s')) WHERE id='%d'", new_passwd.c_str(), accid))
+    if (!AccountsDatabase.PExecute("UPDATE account SET sha_pass_hash = SHA1(CONCAT(username, ':', '%s')) WHERE account_id = '%u'", new_passwd.c_str(), accid))
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
 
     return AOR_OK;
@@ -137,45 +131,25 @@ AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
 uint32 AccountMgr::GetId(std::string username)
 {
     AccountsDatabase.escape_string(username);
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT id FROM account WHERE username = '%s'", username.c_str());
-    if (!result)
-        return 0;
-    else
-    {
-        uint32 id = (*result)[0].GetUInt32();
-        return id;
-    }
-}
-
-uint32 AccountMgr::GetSecurity(uint32 acc_id)
-{
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u'", acc_id);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_id FROM account WHERE username = '%s'", username.c_str());
     if (result)
-    {
-        uint32 sec = (*result)[0].GetUInt32();
-        return sec;
-    }
+        return (*result)[0].GetUInt32();
 
     return 0;
 }
 
-uint32 AccountMgr::GetSecurity(uint64 acc_id, int32 realm_id)
+uint64 AccountMgr::GetPermissions(uint32 acc_id)
 {
-    QueryResultAutoPtr result = (realm_id == -1)
-        ? AccountsDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u' AND RealmID = '%d'", acc_id, realm_id)
-        : AccountsDatabase.PQuery("SELECT gmlevel FROM account_access WHERE id = '%u' AND (RealmID = '%d' OR RealmID = '-1')", acc_id, realm_id);
-    if(result)
-    {
-        uint32 sec = (*result)[0].GetUInt32();
-        return sec;
-    }
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT permission_mask FROM account_permissions WHERE account_id = '%u' AND realm_id = '%u'", acc_id, realmID);
+    if (result)
+        return (*result)[0].GetUInt64();
 
     return 0;
 }
 
 bool AccountMgr::GetName(uint32 acc_id, std::string &name)
 {
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", acc_id);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username FROM account WHERE account_id = '%u'", acc_id);
     if (result)
     {
         name = (*result)[0].GetCppString();
@@ -190,7 +164,7 @@ bool AccountMgr::CheckPassword(uint32 accid, std::string passwd)
     normilizeString(passwd);
     AccountsDatabase.escape_string(passwd);
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE id='%d' AND sha_pass_hash=SHA1(CONCAT(username,':','%s'))", accid, passwd.c_str());
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE account_id ='%u' AND sha_pass_hash=SHA1(CONCAT(username, ':', '%s'))", accid, passwd.c_str());
     if (result)
         return true;
 
@@ -209,4 +183,3 @@ bool AccountMgr::normilizeString(std::string& utf8str)
 
     return WStrToUtf8(wstr_buf,wstr_len,utf8str);
 }
-

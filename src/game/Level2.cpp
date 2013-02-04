@@ -104,20 +104,20 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     // check security
     uint32 account_id = 0;
-    uint32 security = 0;
+    uint32 permissions = 0;
 
     if (chr)
     {
         account_id = chr->GetSession()->GetAccountId();
-        security = chr->GetSession()->GetSecurity();
+        permissions = chr->GetSession()->GetPermissions();
     }
     else
     {
         account_id = sObjectMgr.GetPlayerAccountIdByGUID(guid);
-        security = AccountMgr::GetSecurity(account_id, realmID);
+        permissions = AccountMgr::GetPermissions(account_id);
     }
 
-    if (m_session && security >= m_session->GetSecurity())
+    if (m_session && permissions >= m_session->GetPermissions())
     {
         SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
         SetSentErrorMessage(true);
@@ -132,6 +132,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     {
         chr->GetSession()->m_muteTime = mutetime;
         chr->GetSession()->m_muteReason = mutereasonstr;
+        ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notspeaktime, mutereasonstr.c_str());
     }
 
     std::string author;
@@ -143,10 +144,8 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     AccountsDatabase.escape_string(author);
 
-    AccountsDatabase.PExecute("INSERT INTO account_mute VALUES ('%u', UNIX_TIMESTAMP(), '" UI64FMTD "', '%s', '%s', '1')", account_id, uint64(mutetime), author.c_str(), mutereasonstr.c_str());
-
-    if (chr)
-        ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notspeaktime, mutereasonstr.c_str());
+    AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), '%u', '%s', '%s')",
+                              account_id, PUNISHMENT_MUTE, uint64(mutetime), author.c_str(), mutereasonstr.c_str());
 
     SendGlobalGMSysMessage(LANG_GM_DISABLE_CHAT, author.c_str(), cname.c_str(), notspeaktime, mutereasonstr.c_str());
 
@@ -184,20 +183,20 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
 
     // check security
     uint32 account_id = 0;
-    uint32 security = 0;
+    uint32 permissions = 0;
 
     if (chr)
     {
         account_id = chr->GetSession()->GetAccountId();
-        security = chr->GetSession()->GetSecurity();
+        permissions = chr->GetSession()->GetPermissions();
     }
     else
     {
         account_id = sObjectMgr.GetPlayerAccountIdByGUID(guid);
-        security = AccountMgr::GetSecurity(account_id, realmID);
+        permissions = AccountMgr::GetPermissions(account_id);
     }
 
-    if (m_session && security >= m_session->GetSecurity())
+    if (m_session && permissions >= m_session->GetPermissions())
     {
         SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
         SetSentErrorMessage(true);
@@ -215,12 +214,10 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
 
         chr->GetSession()->m_muteTime = 0;
         chr->GetSession()->m_muteReason = "";
+        ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_ENABLED);
     }
 
-    AccountsDatabase.PExecute("UPDATE account_mute SET active = '0' WHERE id = '%u'", account_id);
-
-    if (chr)
-        ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_ENABLED);
+    AccountsDatabase.PExecute("UPDATE account_punishment SET expiration_date = UNIX_TIMESTAMP() WHERE account_id = '%u' AND punishment_type_id = '%u'", account_id, PUNISHMENT_MUTE);
 
     std::string author;
 
@@ -266,7 +263,11 @@ bool ChatHandler::HandleMuteInfoCommand(const char* args)
         return true;
     }
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(mutedate), unmutedate-mutedate, active, unmutedate, mutereason, mutedby FROM account_mute WHERE id = '%u' ORDER BY mutedate ASC", accountid);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(punishment_date), expiration_date-punishment_date, expiration_date, reason, punished_by "
+                                                        "FROM account_punishment "
+                                                        "WHERE account_id = '%u' AND punishment_type_id = '%u' "
+                                                        "ORDER BY punishment_date ASC", accountid, PUNISHMENT_MUTE);
+
     if (!result)
     {
         PSendSysMessage(LANG_MUTEINFO_NOACCOUNTMUTE, accountname.c_str());
@@ -278,16 +279,18 @@ bool ChatHandler::HandleMuteInfoCommand(const char* args)
     {
         Field* fields = result->Fetch();
 
-        time_t unmutedate = time_t(fields[3].GetUInt64());
+        time_t unmutedate = time_t(fields[2].GetUInt64());
+        uint64 muteLength = fields[1].GetUInt64();
+
         bool active = false;
-        if (fields[2].GetBool() && (fields[1].GetUInt64() == (uint64)0 ||unmutedate >= time(NULL)))
+        if (muteLength == 0 || unmutedate >= time(NULL))
             active = true;
 
-        std::string mutetime = secsToTimeString(fields[1].GetUInt64(), true);
+        std::string mutetime = secsToTimeString(muteLength, true);
         PSendSysMessage(LANG_MUTEINFO_HISTORYENTRY,
-            fields[0].GetString(), mutetime.c_str(), active ? GetTrinityString(LANG_MUTEINFO_YES):GetTrinityString(LANG_MUTEINFO_NO), fields[4].GetString(), fields[5].GetString());
+            fields[0].GetString(), mutetime.c_str(), active ? GetTrinityString(LANG_MUTEINFO_YES):GetTrinityString(LANG_MUTEINFO_NO), fields[3].GetString(), fields[4].GetString());
     }
-    while(result->NextRow());
+    while (result->NextRow());
 
     return true;
 }
@@ -1722,23 +1725,17 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
             return false;
         }
 
-        if (player == m_session->GetPlayer() || player->GetSession()->GetSecurity() > m_session->GetSecurity())
+        if (player == m_session->GetPlayer() || player->GetSession()->GetPermissions() > m_session->GetPermissions())
         {
             SendSysMessage(LANG_COMMAND_KICKSELF);
             SetSentErrorMessage(true);
             return false;
         }
 
-        if (sWorld.getConfig(CONFIG_SHOW_KICK_IN_WORLD) == 1)
-        {
-
+        if (sWorld.getConfig(CONFIG_SHOW_KICK_IN_WORLD))
             sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, player->GetName(), kicker.c_str(), reason.c_str());
-        }
         else
-        {
-
             PSendSysMessage(LANG_COMMAND_KICKMESSAGE, player->GetName(), kicker.c_str(), reason.c_str());
-        }
 
         player->GetSession()->KickPlayer();
     }
@@ -1767,7 +1764,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
             return false;
         }
 
-        if (m_session && player->GetSession()->GetSecurity() > m_session->GetSecurity())
+        if (m_session && player->GetSession()->GetPermissions() > m_session->GetPermissions())
         {
             SendSysMessage(LANG_YOURS_SECURITY_IS_LOW); //maybe replacement string for this later on
             SetSentErrorMessage(true);
@@ -1776,15 +1773,10 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
 
         if (sWorld.KickPlayer(name.c_str()))
         {
-            if (sWorld.getConfig(CONFIG_SHOW_KICK_IN_WORLD) == 1)
-            {
-
+            if (sWorld.getConfig(CONFIG_SHOW_KICK_IN_WORLD))
                 sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, name.c_str(), kicker.c_str(), reason.c_str());
-            }
             else
-            {
                 PSendSysMessage(LANG_COMMAND_KICKMESSAGE, name.c_str(), kicker.c_str(), reason.c_str());
-            }
         }
         else
         {
@@ -1886,28 +1878,29 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     std::string username = GetTrinityString(LANG_ERROR);
     std::string email = GetTrinityString(LANG_ERROR);
     std::string last_ip = GetTrinityString(LANG_ERROR);
-    uint32 security = 0;
+    uint32 permissions = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT a.username,aa.gmlevel,a.email,a.last_ip,a.last_login "
-                                                        "FROM account a "
-                                                        "LEFT JOIN account_access aa "
-                                                        "ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) "
-                                                        "WHERE a.id = '%u'",realmID, accId);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username, permission_mask, email, ip, login_date"
+                                                        "FROM account JOIN account_permissions ON account.account_id = account_permissions.account_id "
+                                                        "    JOIN account_login ON account.account_id = account_login.account_id "
+                                                        "WHERE account.account_id = '%u' AND realmd_id = '%u'"
+                                                        "ORDER BY login_date DESC "
+                                                        "LIMIT 1", accId, realmID);
 
     if (result)
     {
         Field* fields = result->Fetch();
         username = fields[0].GetCppString();
-        security = fields[1].GetUInt32();
+        permissions = fields[1].GetUInt32();
 
         if (email.empty())
             email = "-";
 
-        if (!m_session || m_session->GetSecurity() >= security)
+        if (!m_session || m_session->GetPermissions() >= permissions)
         {
-            if (sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL) <= m_session->GetSecurity())
-              email = fields[2].GetCppString();
+            if (sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL) & m_session->GetPermissions())
+                email = fields[2].GetCppString();
 
             last_ip = fields[3].GetCppString();
             last_login = fields[4].GetCppString();
@@ -1920,34 +1913,35 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         }
     }
 
-    PSendSysMessage(LANG_PINFO_ACCOUNT, (target?"":GetTrinityString(LANG_OFFLINE)), GetNameLink(name).c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), security, last_ip.c_str(), last_login.c_str(), latency);
+    PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetTrinityString(LANG_OFFLINE)), GetNameLink(name).c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), permissions, last_ip.c_str(), last_login.c_str(), latency);
 
     std::string race_s, Class_s;
-        switch(race)
-        {
-            case RACE_HUMAN:            race_s = "Human";       break;
-            case RACE_ORC:              race_s = "Orc";         break;
-            case RACE_DWARF:            race_s = "Dwarf";       break;
-            case RACE_NIGHTELF:         race_s = "Night Elf";   break;
-            case RACE_UNDEAD_PLAYER:    race_s = "Undead";      break;
-            case RACE_TAUREN:           race_s = "Tauren";      break;
-            case RACE_GNOME:            race_s = "Gnome";       break;
-            case RACE_TROLL:            race_s = "Troll";       break;
-            case RACE_BLOODELF:         race_s = "Blood Elf";   break;
-            case RACE_DRAENEI:          race_s = "Draenei";     break;
-        }
-        switch(Class)
-        {
-            case CLASS_WARRIOR:         Class_s = "Warrior";        break;
-            case CLASS_PALADIN:         Class_s = "Paladin";        break;
-            case CLASS_HUNTER:          Class_s = "Hunter";         break;
-            case CLASS_ROGUE:           Class_s = "Rogue";          break;
-            case CLASS_PRIEST:          Class_s = "Priest";         break;
-            case CLASS_SHAMAN:          Class_s = "Shaman";         break;
-            case CLASS_MAGE:            Class_s = "Mage";           break;
-            case CLASS_WARLOCK:         Class_s = "Warlock";        break;
-            case CLASS_DRUID:           Class_s = "Druid";          break;
-        }
+    switch(race)
+    {
+        case RACE_HUMAN:            race_s = "Human";       break;
+        case RACE_ORC:              race_s = "Orc";         break;
+        case RACE_DWARF:            race_s = "Dwarf";       break;
+        case RACE_NIGHTELF:         race_s = "Night Elf";   break;
+        case RACE_UNDEAD_PLAYER:    race_s = "Undead";      break;
+        case RACE_TAUREN:           race_s = "Tauren";      break;
+        case RACE_GNOME:            race_s = "Gnome";       break;
+        case RACE_TROLL:            race_s = "Troll";       break;
+        case RACE_BLOODELF:         race_s = "Blood Elf";   break;
+        case RACE_DRAENEI:          race_s = "Draenei";     break;
+    }
+
+    switch(Class)
+    {
+        case CLASS_WARRIOR:         Class_s = "Warrior";        break;
+        case CLASS_PALADIN:         Class_s = "Paladin";        break;
+        case CLASS_HUNTER:          Class_s = "Hunter";         break;
+        case CLASS_ROGUE:           Class_s = "Rogue";          break;
+        case CLASS_PRIEST:          Class_s = "Priest";         break;
+        case CLASS_SHAMAN:          Class_s = "Shaman";         break;
+        case CLASS_MAGE:            Class_s = "Mage";           break;
+        case CLASS_WARLOCK:         Class_s = "Warlock";        break;
+        case CLASS_DRUID:           Class_s = "Druid";          break;
+    }
 
     std::string timeStr = secsToTimeString(total_player_time,true,true);
     uint32 gold = money /GOLD;
@@ -3539,19 +3533,17 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
 
 bool ChatHandler::HandleLookupPlayerIpCommand(const char* args)
 {
-
     if (!*args)
         return false;
 
-    std::string ip = strtok ((char*)args, " ");
-    char* limit_str = strtok (NULL, " ");
-    int32 limit = limit_str ? atoi (limit_str) : -1;
+    std::string ip = strtok((char*)args, " ");
+    char* limit_str = strtok(NULL, " ");
+    int32 limit = limit_str ? atoi(limit_str) : -1;
 
-    AccountsDatabase.escape_string (ip);
+    AccountsDatabase.escape_string(ip);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_id, username FROM account WHERE last_ip = '%s'", ip.c_str());
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery ("SELECT id,username FROM account WHERE last_ip = '%s'", ip.c_str ());
-
-    return LookupPlayerSearchCommand (result,limit);
+    return LookupPlayerSearchCommand(result, limit);
 }
 
 bool ChatHandler::HandleLookupPlayerAccountCommand(const char* args)
@@ -3559,35 +3551,34 @@ bool ChatHandler::HandleLookupPlayerAccountCommand(const char* args)
     if (!*args)
         return false;
 
-    std::string account = strtok ((char*)args, " ");
-    char* limit_str = strtok (NULL, " ");
-    int32 limit = limit_str ? atoi (limit_str) : -1;
+    std::string account = strtok((char*)args, " ");
+    char* limit_str = strtok(NULL, " ");
+    int32 limit = limit_str ? atoi(limit_str) : -1;
 
-    if (!AccountMgr::normilizeString (account))
+    if (!AccountMgr::normilizeString(account))
         return false;
 
-    AccountsDatabase.escape_string (account);
+    AccountsDatabase.escape_string(account);
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery ("SELECT id,username FROM account WHERE username = '%s'", account.c_str ());
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_id, username FROM account WHERE username = '%s'", account.c_str());
 
-    return LookupPlayerSearchCommand (result,limit);
+    return LookupPlayerSearchCommand(result, limit);
 }
 
 bool ChatHandler::HandleLookupPlayerEmailCommand(const char* args)
 {
-
     if (!*args)
         return false;
 
-    std::string email = strtok ((char*)args, " ");
-    char* limit_str = strtok (NULL, " ");
-    int32 limit = limit_str ? atoi (limit_str) : -1;
+    std::string email = strtok((char*)args, " ");
+    char* limit_str = strtok(NULL, " ");
+    int32 limit = limit_str ? atoi(limit_str) : -1;
 
-    AccountsDatabase.escape_string (email);
+    AccountsDatabase.escape_string(email);
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery ("SELECT id,username FROM account WHERE email = '%s'", email.c_str ());
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_id, username FROM account WHERE email = '%s'", email.c_str());
 
-    return LookupPlayerSearchCommand (result,limit);
+    return LookupPlayerSearchCommand(result, limit);
 }
 
 bool ChatHandler::LookupPlayerSearchCommand(QueryResultAutoPtr result, int32 limit)

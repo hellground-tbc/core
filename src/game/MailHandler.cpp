@@ -227,7 +227,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
     }
 
     // test the receiver's Faction...
-    if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_MAIL) && pl->GetTeam() != rc_team && GetSecurity() == SEC_PLAYER)
+    if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_MAIL) && pl->GetTeam() != rc_team && !(GetPermissions() & PERM_GMT))
     {
         pl->SendMailResult(0, 0, MAIL_ERR_NOT_YOUR_TEAM);
         return;
@@ -309,7 +309,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                 if (!item)
                     continue;
 
-                if (GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+                if (GetPermissions() & PERM_GMT && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
                 {
                     sLog.outCommand(GetAccountId(), "GM %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
                         GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
@@ -335,7 +335,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
 
         if (money > 0)
         {
-            if (GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+            if (GetPermissions() & PERM_GMT && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
             {
                 sLog.outCommand(GetAccountId(),"GM %s (Account: %u) mail money: %u to player: %s (Account: %u)",
                     GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
@@ -356,7 +356,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
     uint32 deliver_delay = needItemDelay ? sWorld.getConfig(CONFIG_MAIL_DELIVERY_DELAY) : 0;
 
     // If GM sends mail to player - deliver_delay must be zero
-    if (deliver_delay && GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_MAIL))
+    if (deliver_delay && GetPermissions() & PERM_GMT && sWorld.getConfig(CONFIG_GM_MAIL))
         deliver_delay = 0;
 
     // will delete item or place to receiver mail list
@@ -566,7 +566,7 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
 
             uint32 sender_accId = 0;
 
-            if (IsAccountFlagged(ACC_SPECIAL_LOG) || (GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE)))
+            if (IsAccountFlagged(ACC_SPECIAL_LOG) || (GetPermissions() & PERM_GMT && sWorld.getConfig(CONFIG_GM_LOG_TRADE)))
             {
                 std::string sender_name;
                 if (sender)
@@ -583,16 +583,14 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
                         sender_name = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
                 }
 
-                if (GetSecurity() == SEC_PLAYER)
-                {
-                    sLog.outLog(LOG_MAIL, "Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
-                        GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
-                }
-                else
+                if (GetPermissions() & PERM_GMT)
                 {
                     sLog.outCommand(GetAccountId(),"GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
                         GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
                 }
+
+                sLog.outLog(LOG_MAIL, "Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                        GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
             }
             else if (!sender)
                 sender_accId = sObjectMgr.GetPlayerAccountIdByGUID(sender_guid);

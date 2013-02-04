@@ -686,7 +686,7 @@ bool ChatHandler::HandleDebugThreatList(const char * /*args*/)
         return false;
 
     uint32 max_count = 0;
-    if (m_session->GetSecurity() <= SEC_PLAYER)
+    if (!(m_session->GetPermissions() & (PERM_GMT | PERM_DEVELOPER)))
     {
         pOwner->AddSpellCooldown(COMMAND_COOLDOWN, 0, time(NULL) +10);
         max_count = 3;

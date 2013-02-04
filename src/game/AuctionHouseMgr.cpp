@@ -78,64 +78,49 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
     if (!pItem)
         return;
 
-    ObjectGuid bidder_guid = ObjectGuid(HIGHGUID_PLAYER, auction->bidder);
-    Player *bidder = sObjectMgr.GetPlayer(bidder_guid);
-
-    uint32 bidder_accId = 0;
+    ObjectGuid bidderGuid = ObjectGuid(HIGHGUID_PLAYER, auction->bidder);
+    Player *bidder = sObjectMgr.GetPlayer(bidderGuid);
+    uint32 bidderAccId = 0;
+    std::string bidderName;
+    uint64 bidderPermissions = PERM_PLAYER;
 
     ObjectGuid ownerGuid = ObjectGuid(HIGHGUID_PLAYER, auction->owner);
-    // data for gm.log
+
+    if (bidder)
+    {
+        bidderAccId = bidder->GetSession()->GetAccountId();
+        bidderName = bidder->GetName();
+        bidderPermissions = bidder->GetSession()->GetPermissions();
+    }
+    else
+    {
+        bidderAccId = sObjectMgr.GetPlayerAccountIdByGUID(bidderGuid);
+        bidderPermissions = bidderAccId ? AccountMgr::GetPermissions(bidderAccId) : PERM_PLAYER;
+        if (!sObjectMgr.GetPlayerNameByGUID(bidderGuid, bidderName))
+            bidderName = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+    }
+
+    std::string ownerName;
+    if (!sObjectMgr.GetPlayerNameByGUID(ownerGuid, ownerName))
+        ownerName = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+
+    uint32 ownerAccId = sObjectMgr.GetPlayerAccountIdByGUID(ownerGuid);
+
+    sLog.outLog(LOG_AUCTION, "Player %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
+        bidderName.c_str(), bidderAccId, pItem->GetProto()->Name1, pItem->GetEntry(), pItem->GetCount(), auction->bid, ownerName.c_str(), ownerAccId);
+
+    // gm.log
     if (sWorld.getConfig(CONFIG_GM_LOG_TRADE))
     {
-        uint32 bidder_security = SEC_PLAYER;
-        std::string bidder_name;
-        if (bidder)
+        if (bidderPermissions & PERM_GMT)
         {
-            bidder_accId = bidder->GetSession()->GetAccountId();
-            bidder_security = bidder->GetSession()->GetSecurity();
-            bidder_name = bidder->GetName();
+            sLog.outCommand(bidderAccId,"GM %s (Account: %u) won item in auction (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
+                bidderName.c_str(), bidderAccId, auction->itemTemplate, auction->itemCount, auction->bid, ownerName.c_str(), ownerAccId);
         }
-        else
-        {
-            bidder_accId = sObjectMgr.GetPlayerAccountIdByGUID(bidder_guid);
-            bidder_security = bidder_accId ? AccountMgr::GetSecurity(bidder_accId, realmID) : SEC_PLAYER;
-
-            if (bidder_security > SEC_PLAYER)               // not do redundant DB requests
-            {
-                if (!sObjectMgr.GetPlayerNameByGUID(bidder_guid, bidder_name))
-                    bidder_name = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
-            }
-        }
-
-        if (bidder_security > SEC_PLAYER)
-        {
-            std::string owner_name;
-            if (ownerGuid && !sObjectMgr.GetPlayerNameByGUID(ownerGuid, owner_name))
-                owner_name = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
-
-            uint32 owner_accid = sObjectMgr.GetPlayerAccountIdByGUID(ownerGuid);
-
-            sLog.outCommand(bidder_accId,"GM %s (Account: %u) won item in auction (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
-                bidder_name.c_str(), bidder_accId, auction->itemTemplate, auction->itemCount, auction->bid, owner_name.c_str(), owner_accid);
-        }
-        else
-        {
-            std::string owner_name;
-            if (!sObjectMgr.GetPlayerNameByGUID(auction->owner, owner_name))
-                owner_name = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
-
-            uint32 owner_accid = sObjectMgr.GetPlayerAccountIdByGUID(auction->owner);
-
-            sLog.outLog(LOG_AUCTION, "Player %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
-                bidder_name.c_str(), bidder_accId, pItem->GetProto()->Name1, pItem->GetEntry(), pItem->GetCount(), auction->bid, owner_name.c_str(), owner_accid);
-        }
-
     }
-    else if (!bidder)
-        bidder_accId = sObjectMgr.GetPlayerAccountIdByGUID(bidder_guid);
 
     // receiver exist
-    if (bidder || bidder_accId)
+    if (bidder || bidderAccId)
     {
         std::ostringstream msgAuctionWonSubject;
         msgAuctionWonSubject << auction->itemTemplate << ":" << auction->itemRandomPropertyId << ":" << AUCTION_WON;
@@ -159,7 +144,7 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
         // will delete item or place to receiver mail list
         MailDraft(msgAuctionWonSubject.str(), msgAuctionWonBody.str())
             .AddItem(pItem)
-            .SendMailTo(MailReceiver(bidder, bidder_guid), auction, MAIL_CHECK_MASK_COPIED);
+            .SendMailTo(MailReceiver(bidder, bidderGuid), auction, MAIL_CHECK_MASK_COPIED);
     }
     // receiver not exist
     else

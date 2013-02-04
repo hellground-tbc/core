@@ -254,7 +254,6 @@ enum WorldConfigs
     CONFIG_DISABLE_DUEL,
     CONFIG_DISABLE_PVP,
     CONFIG_MIN_GM_TEXT_LVL,
-    CONFIG_REALM_BANS,
     CONFIG_WARDEN_ENABLED,
     CONFIG_WARDEN_KICK,
     CONFIG_WARDEN_BAN,
@@ -619,10 +618,11 @@ class HELLGROUND_EXPORT World
 
         /// Get the active session server limit (or security level limitations)
         uint32 GetPlayerAmountLimit() const { return m_playerLimit >= 0 ? m_playerLimit : 0; }
-        AccountTypes GetPlayerSecurityLimit() const { return m_allowedSecurityLevel < 0 ? SEC_PLAYER : m_allowedSecurityLevel; }
+        uint64 GetMinimumPermissionMask() const { return m_requiredPermissionMask; }
 
         /// Set the active session server limit (or security level limitation)
         void SetPlayerLimit(int32 limit, bool needUpdate = false);
+        void SetMinimumPermissionMask(uint64 perms) { m_requiredPermissionMask = perms; }
 
         //player Queue
         typedef std::list<WorldSession*> Queue;
@@ -730,7 +730,7 @@ class HELLGROUND_EXPORT World
 
         bool KickPlayer(const std::string& playerName);
         void KickAll();
-        void KickAllLess(AccountTypes sec);
+        void KickAllWithoutPermissions(uint64 perms);
         BanReturn BanAccount(BanMode mode, std::string nameIPOrMail, std::string duration, std::string reason, std::string author);
         bool RemoveBanAccount(BanMode mode, std::string nameIPOrMail);
 
@@ -756,7 +756,7 @@ class HELLGROUND_EXPORT World
 
         void UpdateRealmCharCount(uint32 accid);
 
-        void UpdateAllowedSecurity();
+        void UpdateRequiredPermissions();
 
         LocaleConstant GetAvailableDbcLocale(LocaleConstant locale) const { if (m_availableDbcLocaleMask & (1 << locale)) return locale; else return m_defaultDbcLocale; }
 
@@ -812,9 +812,6 @@ class HELLGROUND_EXPORT World
 
     protected:
         void _UpdateGameTime();
-        // callback for UpdateRealmCharacters
-        void _UpdateRealmCharCount(QueryResultAutoPtr resultCharCount, uint32 accountId);
-
         void InitDailyQuestResetTime();
         void ResetDailyQuests();
 
@@ -859,7 +856,7 @@ class HELLGROUND_EXPORT World
         float rate_values[MAX_RATES];
         uint32 m_configs[CONFIG_VALUE_COUNT];
         int32 m_playerLimit;
-        AccountTypes m_allowedSecurityLevel;
+        uint64 m_requiredPermissionMask;
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales
         uint32 m_availableDbcLocaleMask;                       // by loaded DBC
         void DetectDBCLang();

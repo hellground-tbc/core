@@ -88,9 +88,9 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, uint64 accFlags, uint16 opcDisabled) :
+WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint64 permissions, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, uint64 accFlags, uint16 opcDisabled) :
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time), m_muteReason(mute_reason),
-_player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
+_player(NULL), m_Socket(sock), m_permissions(permissions), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
 m_accFlags(accFlags), m_Warden(NULL)
@@ -103,7 +103,10 @@ m_accFlags(accFlags), m_Warden(NULL)
     {
         m_Address = sock->GetRemoteAddress();
         sock->AddReference();
-        AccountsDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
+
+        static SqlStatementID updateAccOnline;
+        SqlStatement stmt = AccountsDatabase.CreateStatement(updateAccOnline, "UPDATE account SET online = 1 WHERE account_id = ?");
+        stmt.PExecute(GetAccountId());
 
         // create copy of base map :P
         _opcodesCooldown = sObjectMgr.GetOpcodesCooldown();
@@ -132,8 +135,14 @@ WorldSession::~WorldSession()
     while (_recvQueue.next(packet))
         delete packet;
 
-    AccountsDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
-    RealmDataDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
+    static SqlStatementID updateAccountOnline;
+    static SqlStatementID updateCharactersOnline;
+
+    SqlStatement stmt = AccountsDatabase.CreateStatement(updateAccountOnline, "UPDATE account SET online = 0 WHERE account_id = ?");
+    stmt.PExecute(GetAccountId());
+
+    stmt = RealmDataDatabase.CreateStatement(updateCharactersOnline, "UPDATE characters SET online = 0 WHERE account = ?");
+    stmt.PExecute(GetAccountId());
 }
 
 void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
@@ -150,12 +159,12 @@ char const* WorldSession::GetPlayerName() const
 
 void WorldSession::SaveOpcodesDisableFlags()
 {
-    SqlStatementID saveOpcodesDisabled;
+    static SqlStatementID saveOpcodesDisabled;
     SqlStatement stmt = AccountsDatabase.CreateStatement(saveOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?");
     stmt.PExecute(m_opcodesDisabled, GetAccountId());
 }
 
-void WorldSession::SetOpcodeDisableFlag(uint16 flag)
+void WorldSession::AddOpcodeDisableFlag(uint16 flag)
 {
     m_opcodesDisabled |= flag;
     SaveOpcodesDisableFlags();
@@ -169,8 +178,8 @@ void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
 
 void WorldSession::SaveAccountFlags()
 {
-    SqlStatementID saveAccountFlags;
-    SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE id = ?");
+    static SqlStatementID saveAccountFlags;
+    SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE account_id = ?");
     stmt.PExecute(m_accFlags, GetAccountId());
 }
 
@@ -391,14 +400,14 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             overtime = true;
     }
 
-    if (overtime && GetSecurity() < SEC_MODERATOR)
+    if (overtime && !(GetPermissions() & PERM_GMT))
     {
         switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
         {
             case OVERTIME_IPBAN:
-                AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', NOW(), NOW(), 'CONSOLE', 'bye bye')", GetRemoteAddress().c_str());
+                AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'CONSOLE', 'bye bye')", GetRemoteAddress().c_str());
             case OVERTIME_ACCBAN:
-                AccountsDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', '%u', NOW(), NOW(), 'CONSOLE', 'bye bye', 1)", GetAccountId(), realmID);
+                AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'CONSOLE', 'bye bye')", GetAccountId(), PUNISHMENT_BAN);
             case OVERTIME_KICK:
                 KickPlayer();
             case OVERTIME_LOG:
@@ -410,7 +419,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     bool logverbose = false;
     if (verbose == 1) // log only if overtime
-        if (overtime && GetSecurity() < SEC_MODERATOR && sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD) >= OVERTIME_LOG)
+        if (overtime && !(GetPermissions() & PERM_GMT) && sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD) >= OVERTIME_LOG)
             logverbose = true;
 
     if (verbose == 2) // log if session update is logged as slow
@@ -628,8 +637,10 @@ void WorldSession::LogoutPlayer(bool Save)
 
         ///- Since each account can only have one online character at any given time, ensure all characters for active account are marked as offline
         //No SQL injection as AccountId is uint32
-        RealmDataDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'",
-            GetAccountId());
+        static SqlStatementID updateCharacterOnline;
+        SqlStatement stmt = RealmDataDatabase.CreateStatement(updateCharacterOnline, "UPDATE characters SET online = 0 WHERE account = ?");
+        stmt.PExecute(GetAccountId());
+
         sLog.outDebug("SESSION: Sent SMSG_LOGOUT_COMPLETE Message");
     }
 
@@ -750,21 +761,25 @@ void WorldSession::SendAuthWaitQue(uint32 position)
     }
 }
 
-void WorldSession::InitWarden(BigNumber* K, std::string os)
+void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
 {
-    if (os == "Win")                                         // Windows
-        m_Warden = (WardenBase*)new WardenWin();
-
-    if (os == "OSX")                                         // MacOS
-        m_Warden = (WardenBase*)new WardenMac();
+    switch (OperatingSystem)
+    {
+        case CLIENT_OS_WIN:
+            m_Warden = (WardenBase*)new WardenWin();
+            break;
+        case CLIENT_OS_OSX:
+//            m_Warden = (WardenBase*)new WardenMac();
+            break;
+        default:
+            sLog.outLog(LOG_WARDEN, "Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
+            if (sWorld.getConfig(CONFIG_WARDEN_KICK))
+                KickPlayer();
+            return;
+    }
 
     if (m_Warden)
         m_Warden->Init(this, K);
-    else{
-        sLog.outLog(LOG_WARDEN, "Client %u got unsupported operating system (%s)", GetAccountId(), os.c_str());
-        if (sWorld.getConfig(CONFIG_WARDEN_KICK))
-            KickPlayer();
-    }
 }
 
 uint32 WorldSession::RecordSessionTimeDiff(const char *text, ...)

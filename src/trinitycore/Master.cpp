@@ -191,8 +191,12 @@ int Master::Run()
     ACE_Based::Thread world_thread(new WorldRunnable);
     world_thread.setPriority(ACE_Based::Highest);
 
-    // set server online (allow connecting now)
-    AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0  WHERE id = '%u'", REALM_FLAG_INVALID, realmID);
+    // set realmbuilds depend on realm expected builds, and set server online
+    {
+        std::string builds = AcceptableClientBuildsListStr();
+        AccountsDatabase.escape_string(builds);
+        AccountsDatabase.DirectPExecute("UPDATE realms SET flags = flags & ~(%u), population = 0, allowed_builds = '%s'  WHERE realm_id = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
+    }
 
     // console should be disabled in service/daemon mode
     if (sConfig.GetBoolDefault("Console.Enable", true) && (runMode == MODE_NORMAL))
@@ -276,8 +280,8 @@ int Master::Run()
 
     sWorldSocketMgr->Wait();
 
-    // set server offline
-    AccountsDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
+    ///- Set server offline in realms
+    AccountsDatabase.DirectPExecute("UPDATE realms SET flags = flags | %u WHERE realm_id = '%u'", REALM_FLAG_OFFLINE, realmID);
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
@@ -415,13 +419,24 @@ bool Master::_StartDB()
 void Master::clearOnlineAccounts()
 {
     // Cleanup online status for characters hosted at current realm
-    /// \todo Only accounts with characters logged on *this* realm should have online status reset. Move the online column from 'account' to 'realmcharacters'?
-    AccountsDatabase.PExecute(
-        "UPDATE account SET online = 0 WHERE online > 0 "
-        "AND id IN (SELECT acctid FROM realmcharacters WHERE realmid = '%d')",realmID);
+    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT DISTINCT account FROM characters WHERE online <> 0");
 
+    if (!result)
+        return;
 
-    RealmDataDatabase.Execute("UPDATE characters SET online = 0 WHERE online<>0");
+    Field * fields = result->Fetch();
+    SqlStatementID updateAccount;
+
+    AccountsDatabase.BeginTransaction();
+    do
+    {
+        SqlStatement stmt = AccountsDatabase.CreateStatement(updateAccount, "UPDATE account SET online = 0 WHERE account_id = ?");
+        stmt.PExecute(fields[0].GetUInt32());
+    }
+    while (result->NextRow());
+    AccountsDatabase.CommitTransaction();
+
+    RealmDataDatabase.Execute("UPDATE characters SET online = 0");
 }
 
 /// Handle termination signals

@@ -45,8 +45,7 @@ namespace AccountMgr
     bool CheckPassword(uint32 accid, std::string passwd);
 
     uint32 GetId(std::string username);
-    uint32 GetSecurity(uint32 acc_id);
-    uint32 GetSecurity(uint64 acc_id, int32 realm_id);
+    uint64 GetPermissions(uint32 acc_id);
     bool GetName(uint32 acc_id, std::string &name);
 
     bool normilizeString(std::string& utf8str);

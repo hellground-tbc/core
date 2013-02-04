@@ -30,7 +30,7 @@ ReputationRank ReputationMgr::ReputationToRank(int32 standing)
     for (int i = MAX_REPUTATION_RANK-1; i >= MIN_REPUTATION_RANK; --i)
     {
         limit -= PointsInRank[i];
-        if (standing >= limit )
+        if (standing >= limit)
             return ReputationRank(i);
     }
     return MIN_REPUTATION_RANK;
@@ -131,13 +131,13 @@ void ReputationMgr::SendState(FactionState const* faction)
     uint32 count = 1;
 
     WorldPacket data(SMSG_SET_FACTION_STANDING, (16));      // last check 2.4.0
-    data << (float) 0;                                      // unk 2.4.0
+    data << float(0);                                      // unk 2.4.0
 
     size_t p_count = data.wpos();
-    data << (uint32) count;                                 // placeholder
+    data << uint32(count);                                 // placeholder
 
-    data << (uint32) faction->ReputationListID;
-    data << (uint32) faction->Standing;
+    data << uint32(faction->ReputationListID);
+    data << uint32(faction->Standing);
 
     for (FactionStateList::iterator itr = m_factions.begin(); itr != m_factions.end(); ++itr)
     {
@@ -146,8 +146,8 @@ void ReputationMgr::SendState(FactionState const* faction)
             itr->second.needSend = false;
             if (itr->second.ReputationListID != faction->ReputationListID)
             {
-                data << (uint32) itr->second.ReputationListID;
-                data << (uint32) itr->second.Standing;
+                data << uint32(itr->second.ReputationListID);
+                data << uint32(itr->second.Standing);
                 ++count;
             }
         }
@@ -160,7 +160,7 @@ void ReputationMgr::SendState(FactionState const* faction)
 void ReputationMgr::SendInitialReputations()
 {
     WorldPacket data(SMSG_INITIALIZE_FACTIONS, (4+128*5));
-    data << uint32 (0x00000080);
+    data << uint32(0x00000080);
 
     RepListID a = 0;
 
@@ -169,13 +169,13 @@ void ReputationMgr::SendInitialReputations()
         // fill in absent fields
         for (; a != itr->first; a++)
         {
-            data << uint8  (0x00);
-            data << uint32 (0x00000000);
+            data << uint8(0x00);
+            data << uint32(0x00000000);
         }
 
         // fill in encountered data
-        data << uint8  (itr->second.Flags);
-        data << uint32 (itr->second.Standing);
+        data << uint8(itr->second.Flags);
+        data << uint32(itr->second.Standing);
 
         itr->second.needSend = false;
 
@@ -185,8 +185,8 @@ void ReputationMgr::SendInitialReputations()
     // fill in absent fields
     for (; a != 128; a++)
     {
-        data << uint8  (0x00);
-        data << uint32 (0x00000000);
+        data << uint8(0x00);
+        data << uint32(0x00000000);
     }
 
     m_player->SendPacketToSelf(&data);

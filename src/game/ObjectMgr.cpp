@@ -1336,7 +1336,7 @@ void ObjectMgr::LoadGuildAnnCooldowns()
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
     // remove outdated data
-    RealmDataDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP(NOW())");
+    RealmDataDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP()");
 
     uint32 count = 0;
 

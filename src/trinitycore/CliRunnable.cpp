@@ -134,11 +134,11 @@ bool ChatHandler::HandleAccountDeleteCommand(const char* args)
     /// Commands not recommended call from chat, but support anyway
     if(m_session)
     {
-        uint32 targetSecurity = AccountMgr::GetSecurity(account_id, realmID);
+        uint32 targetPermissions = AccountMgr::GetPermissions(account_id);
 
         /// can delete only for account with less security
         /// This is also reject self apply in fact
-        if (targetSecurity >= m_session->GetSecurity())
+        if (targetPermissions >= m_session->GetPermissions())
         {
             SendSysMessage (LANG_YOURS_SECURITY_IS_LOW);
             SetSentErrorMessage (true);
@@ -243,11 +243,10 @@ bool ChatHandler::HandleAccountOnlineListCommand(const char* args)
 
         ///- Get the username, last IP and GM level of each account
         // No SQL injection. account is uint32.
-        QueryResultAutoPtr resultLogin = AccountsDatabase.PQuery("SELECT a.username,a.last_ip,aa.gmlevel,a.expansion "
-            "FROM account a "
-            "LEFT JOIN account_access aa "
-            "ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) "
-            "WHERE a.id = '%u'",realmID, account);
+        //                                                                  0         1          2              3
+        QueryResultAutoPtr resultLogin = AccountsDatabase.PQuery("SELECT username, last_ip, permission_mask, expansion_id "
+                                                                 "FROM account JOIN account_permissions ON account.account_id = account_permissions.account_id "
+                                                                 "WHERE account_id = '%u' AND realm_id = '%u'", account, realmID);
 
         if(resultLogin)
         {
@@ -315,7 +314,7 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
 
     if(uint32 account_id = AccountMgr::GetId(args))
     {
-        QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
+        QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_flags FROM account WHERE account_id = '%u'", account_id);
         if (!result)
             return false;
 
@@ -353,7 +352,7 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
 
     if (uint32 account_id = AccountMgr::GetId(args))
     {
-        QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_flags FROM account WHERE id = '%u'", account_id);
+        QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_flags FROM account WHERE account_id = '%u'", account_id);
         if (!result)
             return false;
 

@@ -152,7 +152,7 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, uint32 sec, uint8 expansion, LocaleConstant locale, time_t mute_time = 0, std::string mute_reason = "", uint64 accFlags = 0, uint16 opcDisabled = 0);
+        WorldSession(uint32 id, WorldSocket *sock, uint64 permissions, uint8 expansion, LocaleConstant locale, time_t mute_time = 0, std::string mute_reason = "", uint64 accFlags = 0, uint16 opcDisabled = 0);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -177,11 +177,11 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         uint32 RecordSessionTimeDiff(const char *text, ...);
         uint32 RecordVerboseTimeDiff(bool reset);
 
-        uint32 GetSecurity() const { return _security; }
+        uint64 GetPermissions() const { return m_permissions; }
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return _player; }
         char const* GetPlayerName() const;
-        void SetSecurity(uint32 security) { _security = security; }
+        void SetSecurity(uint64 permissions) { m_permissions = permissions; }
         std::string const& GetRemoteAddress() { return m_Address; }
         void SetPlayer(Player *plr) { _player = plr; }
         uint8 Expansion() const { return m_expansion; }
@@ -192,11 +192,11 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         void RemoveAccountFlag(AccountFlags flag);
 
         void SaveOpcodesDisableFlags();
-        void SetOpcodeDisableFlag(uint16 flag);
+        void AddOpcodeDisableFlag(uint16 flag);
         void RemoveOpcodeDisableFlag(uint16 flag);
         uint16 GetOpcodesDisabledFlag() { return m_opcodesDisabled;}
 
-        void InitWarden(BigNumber *K, std::string os);
+        void InitWarden(BigNumber *K, uint8& OperatingSystem);
 
         /// Session in auth.queue currently
         void SetInQueue(bool state) { m_inQueue = state; }
@@ -751,7 +751,7 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         WorldSocket *m_Socket;
         std::string m_Address;
 
-        uint32 _security;
+        uint64 m_permissions;
         uint32 _accountId;
         uint8 m_expansion;
 

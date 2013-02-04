@@ -30,7 +30,7 @@ struct PlayerAI : public UnitAI
     PlayerAI(Player *pPlayer) : UnitAI((Unit *)pPlayer), me(pPlayer) {}
 
     bool UpdateVictim(float = /*20.0*/100.0f);   // test more range for Felmyst, if no problems, should stay
-    void OnCharmed(bool){}
+    virtual void OnCharmed(bool){}
 
     protected:
         Player *me;

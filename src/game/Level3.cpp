@@ -817,7 +817,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
     std::string targetAccountName;
     uint32 targetAccountId = 0;
-    uint32 targetSecurity = 0;
+    uint32 targetPermissions = 0;
     uint32 gm = 0;
     char* arg1 = strtok((char*)args, " ");
     char* arg2 = strtok(NULL, " ");
@@ -830,7 +830,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         gm = atoi(arg1);
 
         // Check for invalid specified GM level.
-        if ((gm < SEC_PLAYER || gm > SEC_ADMINISTRATOR))
+        if (!(gm & PERM_ALL))
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -838,8 +838,8 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         }
 
         // Check if targets GM level and specified GM level is not higher than current gm level
-        targetSecurity = targetPlayer->GetSession()->GetSecurity();
-        if (targetSecurity >= m_session->GetSecurity() || gm >= m_session->GetSecurity())
+        targetPermissions = targetPlayer->GetSession()->GetPermissions();
+        if (targetPermissions >= m_session->GetPermissions() || gm >= m_session->GetPermissions())
         {
             SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
             SetSentErrorMessage(true);
@@ -873,7 +873,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         // Check for invalid specified GM level.
         gm = atoi(arg2);
-        if ((gm < SEC_PLAYER || gm > SEC_ADMINISTRATOR))
+        if (!(gm & PERM_ALL))
         {
             SendSysMessage(LANG_BAD_VALUE);
             SetSentErrorMessage(true);
@@ -882,12 +882,12 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
         targetAccountId = AccountMgr::GetId(arg1);
         /// m_session==NULL only for console
-        uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_CONSOLE;
+        uint32 plSecurity = m_session ? m_session->GetPermissions() : PERM_CONSOLE;
 
         /// can set security level only for target with less security and to less security that we have
         /// This is also reject self apply in fact
-        targetSecurity = AccountMgr::GetSecurity(targetAccountId, realmID);
-        if (targetSecurity >= plSecurity || gm >= plSecurity)
+        targetPermissions = AccountMgr::GetPermissions(targetAccountId);
+        if (targetPermissions >= plSecurity || gm >= plSecurity)
         {
             SendSysMessage(LANG_YOURS_SECURITY_IS_LOW);
             SetSentErrorMessage(true);
@@ -895,7 +895,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         }
 
         PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
-        AccountsDatabase.PExecute("INSERT INTO account_access VALUES ('%u', '%d', '%d', NULL)", targetAccountId, gm, realmID);
+        AccountsDatabase.PExecute("UPDATE account_permissions SET permission_mask = '%u' WHERE account_id = '%u' AND realm_id = '%u'", gm, targetAccountId, realmID);
         return true;
     }
 }
@@ -930,14 +930,14 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
         return false;
     }
 
-    uint32 targetSecurity = AccountMgr::GetSecurity(targetAccountId, realmID);
+    uint32 targetPermissions = AccountMgr::GetPermissions(targetAccountId);
 
     /// m_session==NULL only for console
-    uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_CONSOLE;
+    uint32 plPermiossions = m_session ? m_session->GetPermissions() : PERM_CONSOLE;
 
     /// can set password only for target with less security
     /// This is also reject self apply in fact
-    if (targetSecurity >= plSecurity)
+    if (targetPermissions >= plPermiossions)
     {
         SendSysMessage (LANG_YOURS_SECURITY_IS_LOW);
         SetSentErrorMessage (true);
@@ -5358,7 +5358,11 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
 
 bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 {
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate,banreason,bannedby,realm FROM account_banned WHERE id = '%u' ORDER BY bandate ASC",accountid);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(punishment_date), expiration_date-punishment_date, expiration_date, reason, punished_by "
+                                                        "FROM account_punishment "
+                                                        "WHERE punishment_type_id = '%u' AND account_id = '%u' "
+                                                        "ORDER BY punishment_date ASC", PUNISHMENT_BAN, accountid);
+
     if (!result)
     {
         PSendSysMessage(LANG_BANINFO_NOACCOUNTBAN, accountname);
@@ -5370,15 +5374,20 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
     {
         Field* fields = result->Fetch();
 
-        time_t unbandate = time_t(fields[3].GetUInt64());
+        time_t unbandate = time_t(fields[2].GetUInt64());
+        uint64 banLength = fields[1].GetUInt64();
         bool active = false;
-        if (fields[2].GetBool() && (fields[1].GetUInt64() == (uint64)0 ||unbandate >= time(NULL)))
+        bool permanent = (banLength == 0);
+
+        if (permanent || unbandate >= time(NULL))
             active = true;
-        bool permanent = (fields[1].GetUInt64() == (uint64)0);
-        std::string bantime = permanent?GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[1].GetUInt64(), true);
+
+        std::string bantime = permanent ? GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(banLength, true);
+
         PSendSysMessage(LANG_BANINFO_HISTORYENTRY,
-            fields[0].GetString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES):GetTrinityString(LANG_BANINFO_NO), fields[4].GetString(), fields[5].GetString(), fields[6].GetUInt32());
-    }while (result->NextRow());
+            fields[0].GetString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES):GetTrinityString(LANG_BANINFO_NO), fields[3].GetString(), fields[4].GetString());
+    }
+    while (result->NextRow());
 
     return true;
 }
@@ -5398,7 +5407,7 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
     std::string IP = cIP;
 
     AccountsDatabase.escape_string(IP);
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT ip, FROM_UNIXTIME(bandate), FROM_UNIXTIME(unbandate), unbandate-UNIX_TIMESTAMP(), banreason,bannedby,unbandate-bandate FROM ip_banned WHERE ip = '%s'",IP.c_str());
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT ip, FROM_UNIXTIME(ban_date), FROM_UNIXTIME(unban_date), unban_date-UNIX_TIMESTAMP(), ban_reason, banned_by, unban_date-ban_date FROM ip_banned WHERE ip = '%s'", IP.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANINFO_NOIP);
@@ -5425,7 +5434,7 @@ bool ChatHandler::HandleBanInfoEmailCommand(const char* args)
     std::string email = cEmail;
 
     AccountsDatabase.escape_string(email);
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT email, FROM_UNIXTIME(bandate), banreason, bannedby FROM email_banned WHERE email = '%s'", email.c_str());
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT email, FROM_UNIXTIME(ban_date), ban_reason, banned_by FROM email_banned WHERE email = '%s'", email.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANINFO_NOEMAIL);
@@ -5440,15 +5449,13 @@ bool ChatHandler::HandleBanInfoEmailCommand(const char* args)
 
 bool ChatHandler::HandleBanListCharacterCommand(const char* args)
 {
-    AccountsDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
-
     char* cFilter = strtok ((char*)args, " ");
     if (!cFilter)
         return false;
 
     std::string filter = cFilter;
     AccountsDatabase.escape_string(filter);
-    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name " _LIKE_ " " _CONCAT3_("'%%'","'%s'","'%%'") ,filter.c_str());
+    QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name LIKE '%%%s%%'", filter.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANLIST_NOCHARACTER);
@@ -5460,8 +5467,6 @@ bool ChatHandler::HandleBanListCharacterCommand(const char* args)
 
 bool ChatHandler::HandleBanListAccountCommand(const char* args)
 {
-    AccountsDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
-
     char* cFilter = strtok((char*)args, " ");
     std::string filter = cFilter ? cFilter : "";
     AccountsDatabase.escape_string(filter);
@@ -5469,16 +5474,14 @@ bool ChatHandler::HandleBanListAccountCommand(const char* args)
     QueryResultAutoPtr result;
 
     if (filter.empty())
-    {
-        result = AccountsDatabase.Query("SELECT account.id, username FROM account, account_banned"
-            " WHERE account.id = account_banned.id AND active = 1 GROUP BY account.id");
-    }
+        result = AccountsDatabase.PQuery("SELECT account.account_id, username "
+                                        "FROM account JOIN account_punishment ON account.account_id = account_punishment.account_id "
+                                        "WHERE punishment_type_id = '%u' AND expiration_date > UNIX_TIMESTAMP() GROUP BY account.account_id", PUNISHMENT_BAN);
     else
-    {
-        result = AccountsDatabase.PQuery("SELECT account.id, username FROM account, account_banned"
-            " WHERE account.id = account_banned.id AND active = 1 AND username " _LIKE_ " " _CONCAT3_("'%%'","'%s'","'%%'") " GROUP BY account.id",
-            filter.c_str());
-    }
+        result = AccountsDatabase.PQuery("SELECT account.account_id, username "
+                                        "FROM account JOIN account_punishment ON account.account_id = account_punishment.account_id "
+                                        "WHERE punishment_type_id = '%u' AND username LIKE '%%%s%%' GROUP BY account.account_id", PUNISHMENT_BAN, filter.c_str());
+
 
     if (!result)
     {
@@ -5501,13 +5504,16 @@ bool ChatHandler::HandleBanListHelper(QueryResultAutoPtr result)
             Field* fields = result->Fetch();
             uint32 accountid = fields[0].GetUInt32();
 
-            QueryResultAutoPtr banresult = AccountsDatabase.PQuery("SELECT account.username FROM account,account_banned WHERE account_banned.id='%u' AND account_banned.id=account.id",accountid);
+            QueryResultAutoPtr banresult = AccountsDatabase.PQuery("SELECT account.username "
+                                                                    "FROM account JOIN account_punishment ON account.account_id = account_punishment.account_id "
+                                                                    "WHERE account.account_id = '%u' AND punishment_type_id = '%u'", accountid, PUNISHMENT_BAN);
             if (banresult)
             {
                 Field* fields2 = banresult->Fetch();
-                PSendSysMessage("%s",fields2[0].GetString());
+                PSendSysMessage("%s", fields2[0].GetString());
             }
-        } while (result->NextRow());
+        }
+        while (result->NextRow());
     }
     // Console wide output
     else
@@ -5531,7 +5537,11 @@ bool ChatHandler::HandleBanListHelper(QueryResultAutoPtr result)
                 AccountMgr::GetName (account_id,account_name);
 
             // No SQL injection. id is uint32.
-            QueryResultAutoPtr banInfo = AccountsDatabase.PQuery("SELECT bandate,unbandate,bannedby,banreason,realm FROM account_banned WHERE id = %u ORDER BY unbandate", account_id);
+            QueryResultAutoPtr banInfo = AccountsDatabase.PQuery("SELECT punishment_date, expiration_date, punished_by, reason "
+                                                                "FROM account_punishment "
+                                                                "WHERE account_id = '%u' AND punishment_type_id = '%u' "
+                                                                "ORDER BY expiration_date", account_id, PUNISHMENT_BAN);
+
             if (banInfo)
             {
                 Field *fields2 = banInfo->Fetch();
@@ -5540,27 +5550,26 @@ bool ChatHandler::HandleBanListHelper(QueryResultAutoPtr result)
                     time_t t_ban = fields2[0].GetUInt64();
                     tm* aTm_ban = localtime(&t_ban);
 
-                    std::stringstream realmAsStr;
-                    realmAsStr << fields2[4].GetUInt32();
-
                     if (fields2[0].GetUInt64() == fields2[1].GetUInt64())
                     {
-                        PSendSysMessage("|%-13.13s|%-3.3s|%02d-%02d-%02d %02d:%02d|   permanent  |%-13.13s|%-15.15s|",
-                            account_name.c_str(),realmAsStr.str().c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
-                            fields2[2].GetString(),fields2[3].GetString(),fields2[4].GetUInt32());
+                        PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|   permanent  |%-15.15s|%-15.15s|",
+                            account_name.c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
+                            fields2[2].GetString(),fields2[3].GetString());
                     }
                     else
                     {
                         time_t t_unban = fields2[1].GetUInt64();
                         tm* aTm_unban = localtime(&t_unban);
-                        PSendSysMessage("|%-13.13s|%-3.3s|%02d-%02d-%02d %02d:%02d|%02d-%02d-%02d %02d:%02d|%-13.13s|%-15.15s|",
-                            account_name.c_str(),realmAsStr.str().c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
+                        PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|%02d-%02d-%02d %02d:%02d|%-15.15s|%-15.15s|",
+                            account_name.c_str(),aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
                             aTm_unban->tm_year%100, aTm_unban->tm_mon+1, aTm_unban->tm_mday, aTm_unban->tm_hour, aTm_unban->tm_min,
                             fields2[2].GetString(),fields2[3].GetString());
                     }
-                }while (banInfo->NextRow());
+                }
+                while (banInfo->NextRow());
             }
-        }while (result->NextRow());
+        }
+        while (result->NextRow());
         SendSysMessage("===============================================================================");
     }
 
@@ -5569,8 +5578,6 @@ bool ChatHandler::HandleBanListHelper(QueryResultAutoPtr result)
 
 bool ChatHandler::HandleBanListIPCommand(const char* args)
 {
-    AccountsDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
-
     char* cFilter = strtok((char*)args, " ");
     std::string filter = cFilter ? cFilter : "";
     AccountsDatabase.escape_string(filter);
@@ -5578,17 +5585,13 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
     QueryResultAutoPtr result;
 
     if (filter.empty())
-    {
-        result = AccountsDatabase.Query ("SELECT ip,bandate,unbandate,bannedby,banreason FROM ip_banned"
-            " WHERE (bandate=unbandate OR unbandate>UNIX_TIMESTAMP())"
-            " ORDER BY unbandate");
-    }
+        result = AccountsDatabase.Query("SELECT ip, ban_date, unban_date, banned_by, ban_reason FROM ip_banned"
+            " WHERE (ban_date = unban_date OR unban_date > UNIX_TIMESTAMP())"
+            " ORDER BY unban_date");
     else
-    {
-        result = AccountsDatabase.PQuery("SELECT ip,bandate,unbandate,bannedby,banreason FROM ip_banned"
-            " WHERE (bandate=unbandate OR unbandate>UNIX_TIMESTAMP()) AND ip " _LIKE_ " " _CONCAT3_("'%%'","'%s'","'%%'")
-            " ORDER BY unbandate",filter.c_str());
-    }
+        result = AccountsDatabase.PQuery("SELECT ip, ban_date, unban_date, banned_by, ban_reason FROM ip_banned"
+            " WHERE (ban_date = unban_date OR unban_date > UNIX_TIMESTAMP()) AND ip LIKE '%%%s%%'"
+            " ORDER BY unban_date", filter.c_str());
 
     if (!result)
     {
@@ -5603,8 +5606,9 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
         do
         {
             Field* fields = result->Fetch();
-            PSendSysMessage("%s",fields[0].GetString());
-        } while (result->NextRow());
+            PSendSysMessage("%s", fields[0].GetString());
+        }
+        while (result->NextRow());
     }
     // Console wide output
     else
@@ -5633,7 +5637,8 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
                     aTm_unban->tm_year%100, aTm_unban->tm_mon+1, aTm_unban->tm_mday, aTm_unban->tm_hour, aTm_unban->tm_min,
                     fields[3].GetString(), fields[4].GetString());
             }
-        }while (result->NextRow());
+        }
+        while (result->NextRow());
         SendSysMessage("===============================================================================");
     }
 
@@ -5650,12 +5655,12 @@ bool ChatHandler::HandleBanListEmailCommand(const char* args)
 
     if (filter.empty())
     {
-        result = AccountsDatabase.Query ("SELECT email, bandate, bannedby, banreason FROM email_banned"
+        result = AccountsDatabase.Query ("SELECT email, ban_date, banned_by, ban_reason FROM email_banned"
             " ORDER BY bandate ASC");
     }
     else
     {
-        result = AccountsDatabase.PQuery("SELECT email, bandate, bannedby, banreason FROM email_banned"
+        result = AccountsDatabase.PQuery("SELECT email, ban_date, banned_by, ban_reason FROM email_banned"
             " WHERE email LIKE CONCAT('%', '%s', '%')"
             " ORDER BY bandate ASC" , filter.c_str());
     }
@@ -5672,7 +5677,8 @@ bool ChatHandler::HandleBanListEmailCommand(const char* args)
     {
         Field* fields = result->Fetch();
         PSendSysMessage("%s",fields[0].GetString());
-    } while (result->NextRow());
+    }
+    while (result->NextRow());
 
     return true;
 }
@@ -5858,42 +5864,26 @@ bool ChatHandler::HandlePLimitCommand(const char *args)
 
         int l = strlen(param);
 
-        if (   strncmp(param,"player",l) == 0)
-            sWorld.SetPlayerLimit(-SEC_PLAYER);
-        else if (strncmp(param,"moderator",l) == 0)
-            sWorld.SetPlayerLimit(-SEC_MODERATOR);
-        else if (strncmp(param,"gamemaster",l) == 0)
-            sWorld.SetPlayerLimit(-SEC_GAMEMASTER);
-        else if (strncmp(param,"administrator",l) == 0)
-            sWorld.SetPlayerLimit(-SEC_ADMINISTRATOR);
-        else if (strncmp(param,"reset",l) == 0)
+        if (strncmp(param,"reset",l) == 0)
             sWorld.SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT));
         else
         {
             int val = atoi(param);
-            if (val < -SEC_ADMINISTRATOR) val = -SEC_ADMINISTRATOR;
-
-            sWorld.SetPlayerLimit(val);
+            if (val < 0)
+                sWorld.SetMinimumPermissionMask(-val);
+            else
+                sWorld.SetPlayerLimit(val);
         }
 
         // kick all low security level players
-        if (sWorld.GetPlayerAmountLimit() > SEC_PLAYER)
-            sWorld.KickAllLess(sWorld.GetPlayerSecurityLimit());
+        if (!sWorld.GetMinimumPermissionMask() & PERM_PLAYER)
+            sWorld.KickAllWithoutPermissions(sWorld.GetMinimumPermissionMask());
     }
 
     uint32 pLimit = sWorld.GetPlayerAmountLimit();
-    AccountTypes allowedAccountType = sWorld.GetPlayerSecurityLimit();
-    char const* secName = "";
-    switch (allowedAccountType)
-    {
-        case SEC_PLAYER:        secName = "Player";        break;
-        case SEC_MODERATOR:     secName = "Moderator";     break;
-        case SEC_GAMEMASTER:    secName = "Gamemaster";    break;
-        case SEC_ADMINISTRATOR: secName = "Administrator"; break;
-        default:                secName = "<unknown>";     break;
-    }
+    uint64 requiredPermissions = sWorld.GetMinimumPermissionMask();
 
-    PSendSysMessage("Player limits: amount %u, min. security level %s.",pLimit,secName);
+    PSendSysMessage("Player limits: amount %u, required permissions %u.", pLimit, requiredPermissions);
 
     return true;
 }
@@ -6419,7 +6409,7 @@ bool ChatHandler::HandleInstanceResetEncountersCommand(const char* args)
 bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
 {
     ///- Get the accounts with GM Level >0
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT a.username,aa.gmlevel FROM account a, account_access aa WHERE a.id=aa.id AND aa.gmlevel > 0 AND (RealmID = '%d' OR RealmID = '-1')", realmID);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username, permission_mask FROM account JOIN account_permission WHERE permission_mask & '%u' AND realm_id = '%u'", PERM_GMT, realmID);
     if (result)
     {
         SendSysMessage(LANG_GMLIST);
@@ -6497,8 +6487,8 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
         return false;
 
     // No SQL injection
-    AccountsDatabase.PExecute("UPDATE account SET expansion = '%d' WHERE id = '%u'",lev,account_id);
-    PSendSysMessage(LANG_ACCOUNT_SETADDON,account_name.c_str(),account_id,lev);
+    AccountsDatabase.PExecute("UPDATE account SET expansion_id = '%u' WHERE account_id = '%u'", lev, account_id);
+    PSendSysMessage(LANG_ACCOUNT_SETADDON, account_name.c_str(), account_id, lev);
     return true;
 }
 
@@ -6898,7 +6888,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         return true;
     }
 
-    if (player == m_session->GetPlayer() || player->GetSession()->GetSecurity() > m_session->GetSecurity())
+    if (player == m_session->GetPlayer() || player->GetSession()->GetPermissions() > m_session->GetPermissions())
     {
         SendSysMessage(LANG_COMMAND_FREEZE_ERROR);
         return true;

@@ -170,13 +170,47 @@ enum TimeConstants
     IN_MILISECONDS = 1000
 };
 
-enum AccountTypes
+enum AccountPermissionMasks
 {
-    SEC_PLAYER         = 0,
-    SEC_MODERATOR      = 1,
-    SEC_GAMEMASTER     = 2,
-    SEC_ADMINISTRATOR  = 3,
-    SEC_CONSOLE        = 4                                  // must be always last in list, accounts must have less security level always also
+    PERM_PLAYER         = 0x000001,
+    PERM_DEVELOPER      = 0x000002,
+
+    PERM_GM_TRIAL       = 0x000100,
+    PERM_GM_HELPER      = 0x000200,
+
+    PERM_GM_HEAD        = 0x000800,
+
+    PERM_ADM_NORM       = 0x001000,
+    PERM_ADM_HEAD       = 0x002000,
+
+    PERM_CONSOLE        = 0x800000,
+
+    PERM_GMT            = PERM_GM_TRIAL | PERM_GM_HELPER | PERM_GM_HEAD,
+    PERM_ADM            = PERM_GMT | PERM_ADM_NORM | PERM_ADM_HEAD,
+    PERM_HIGH_GMT       = PERM_ADM | PERM_GM_HEAD,
+    PERM_GMT_DEV        = PERM_GMT | PERM_DEVELOPER,
+    PERM_HIGH_DEV       = PERM_HIGH_GMT | PERM_DEVELOPER,
+    PERM_ALL            = PERM_PLAYER | PERM_GMT_DEV | PERM_ADM
+};
+
+enum AccountStates
+{
+    ACCOUNT_STATE_ACTIVE    = 1,
+    ACCOUNT_STATE_IP_LOCKED = 2,
+    ACCOUNT_STATE_FROZEN    = 3
+};
+
+enum PunishmentTypes
+{
+    PUNISHMENT_MUTE     = 1,
+    PUNISHMENT_BAN      = 2
+};
+
+enum ClientOSVersion
+{
+    CLIENT_OS_UNKNOWN   = 0,
+    CLIENT_OS_WIN       = 1,
+    CLIENT_OS_OSX       = 2
 };
 
 // Used in mangosd/realmd

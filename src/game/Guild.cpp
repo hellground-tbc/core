@@ -565,7 +565,7 @@ void Guild::SetOFFNOTE(uint64 guid,std::string offnote)
 
 void Guild::BroadcastToGuild(WorldSession *session, const std::string& msg, uint32 language)
 {
-    if (session && (session->GetSecurity() > SEC_PLAYER || (session->GetPlayer() && HasRankRight(session->GetPlayer()->GetRank(),GR_RIGHT_GCHATSPEAK))))
+    if (session && (session->GetPermissions() & PERM_GMT || (session->GetPlayer() && HasRankRight(session->GetPlayer()->GetRank(),GR_RIGHT_GCHATSPEAK))))
     {
         WorldPacket data;
         ChatHandler(session).FillMessageData(&data, CHAT_MSG_GUILD, language, 0, msg.c_str());
@@ -769,7 +769,7 @@ void Guild::WriteMemberRosterPacket(Player *sessionPlayer, const MemberSlot &mem
 
 void Guild::Roster(WorldSession *session)
 {
-    // Blizz proof: While approximately 500 members were visible in the UI, there was no real need to limit guild size. That is no longer the case. Guild leveling in Cataclysm features ... 
+    // Blizz proof: While approximately 500 members were visible in the UI, there was no real need to limit guild size. That is no longer the case. Guild leveling in Cataclysm features ...
     // I guess 2.4.3 client cant show more than 500 members on guild tab, otherwise throw #132 error
     uint32 membersSize = members.size() > MAX_ROSTER_MEMBERS ? MAX_ROSTER_MEMBERS : members.size();
                                                             // we can only guess size

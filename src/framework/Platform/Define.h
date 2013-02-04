@@ -82,11 +82,12 @@ typedef ACE_SHLIB_HANDLE HELLGROUND_LIBRARY_HANDLE;
 #if PLATFORM == PLATFORM_WINDOWS
 #  ifndef THIS_IS_SCRIPT_DLL
 #    define HELLGROUND_IMPORT_EXPORT  __declspec(dllexport)
-#  else 
+#  else
 #    define HELLGROUND_IMPORT_EXPORT __declspec(dllimport)
 #  endif
 #else //PLATFORM != PLATFORM_WINDOWS
 #  define HELLGROUND_IMPORT_EXPORT
+#  define DECLSPEC_NORETURN
 #endif //PLATFORM
 
 
