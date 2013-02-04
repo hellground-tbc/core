@@ -238,13 +238,13 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
     if (!new_packet)
         return;
 
-    OpcodesCooldown::iterator opItr = _opcodesCooldown.find(new_packet->GetOpcode());
-    if (opItr != _opcodesCooldown.end())
+    auto i = _opcodesCooldown.find(new_packet->GetOpcode());
+    if (i != _opcodesCooldown.end())
     {
-        if (opItr->second.Passed())
-            opItr->second.Reset();
-        else
+        if (!i->second.Passed())
             return;
+
+        i->second.SetCurrent(0);
     }
 
     _recvQueue.add(new_packet);

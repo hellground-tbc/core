@@ -1485,7 +1485,7 @@ struct npc_razaani_raiderAI : public ScriptedAI
 
     void JustDied(Unit* who)
     {
-        if (PlayerGUID != NULL)
+        if (PlayerGUID != 0)
         {
             me->SummonCreature(NPC_DEADSOUL, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()+3, me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 20000);
 

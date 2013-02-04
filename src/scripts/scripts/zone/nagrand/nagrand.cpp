@@ -695,7 +695,7 @@ struct npc_corki_capitiveAI : public ScriptedAI
 
     void Reset()
     {
-        PlayerGUID = NULL;
+        PlayerGUID = 0;
         me->SetWalk(false);
     }
 
@@ -707,7 +707,7 @@ struct npc_corki_capitiveAI : public ScriptedAI
             {
                 return;
             }
-            else PlayerGUID = NULL;
+            else PlayerGUID = 0;
 
             switch (urand(0,4))
             {
@@ -1102,7 +1102,7 @@ struct npc_maghar_prisonerAI : public ScriptedAI
             {
                 return;
             }
-            else PlayerGUID = NULL;
+            else PlayerGUID = 0;
 
             switch (urand(0,3))
             {

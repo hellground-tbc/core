@@ -2891,7 +2891,7 @@ CreatureAI* GetAI_npc_energy_ball(Creature* creature)
 # npc_trader_marid
 ######*/
 
-#define GOSSIP_ITEM_GO         "I am prepared to offer a deal!"
+#define GOSSIP_ITEM_GO1         "I am prepared to offer a deal!"
 
 enum
 {
@@ -2964,7 +2964,7 @@ bool GossipHello_npc_trader_marid(Player* player, Creature* creature)
 {
     if( player->GetQuestStatus(QUEST_TROUBLE) == QUEST_STATUS_INCOMPLETE)
     {
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GO1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
     }
     else
