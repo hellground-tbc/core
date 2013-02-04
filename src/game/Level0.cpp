@@ -214,7 +214,7 @@ bool ChatHandler::HandleAccountWeatherCommand(const char* args)
 
     std::string argstr = (char*)args;
     if (argstr == "on")
-        m_session->AddOpcodeDisableFlag(OPC_DISABLE_WEATHER);
+        m_session->SetOpcodeDisableFlag(OPC_DISABLE_WEATHER);
     else if (argstr == "off")
         m_session->RemoveOpcodeDisableFlag(OPC_DISABLE_WEATHER);
     else
