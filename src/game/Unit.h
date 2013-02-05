@@ -1095,7 +1095,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         uint32 GetAurasAmountByMiscValue(AuraType auraType, uint32 misc);
         bool hasNegativeAuraWithInterruptFlag(uint32 flag);
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
-        bool HasAuraByCasterWithFamilyFlags(Unit *pCaster, uint32 familyName,  uint64 familyFlags) const;
+        bool HasAuraByCasterWithFamilyFlags(uint64 pCaster, uint32 familyName,  uint64 familyFlags, const Aura * except = NULL) const;
         bool HasAura(uint32 spellId, uint32 effIndex) const
         {
             return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end();
@@ -1244,6 +1244,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         void RemoveAurasDueToSpellByCancel(uint32 spellId);
         void RemoveAurasAtChanneledTarget(SpellEntry const* spellInfo, Unit * caster);
         void RemoveNotOwnSingleTargetAuras();
+        void RemoveAurasWithFamilyFlagsAndTypeByCaster(uint32 familyName,  uint64 familyFlags, AuraType aurType, uint64 casterGUID);
 
         void RemoveSpellsCausingAura(AuraType auraType);
         void RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID);
@@ -1603,7 +1604,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         Player* GetGMToSendCombatStats() const { return m_GMToSendCombatStats ? GetPlayer(m_GMToSendCombatStats) : NULL; }
         void SetGMToSendCombatStats(uint64 guid) { m_GMToSendCombatStats = guid; }
         void SendCombatStats(const char* str, Unit *pVictim, ...) const;
-        
+
         bool RollPRD(float baseChance, float extraChance, uint32 spellId);
 
         // Movement info
@@ -1705,7 +1706,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
 
         uint64 m_GMToSendCombatStats;
         UNORDERED_MAP<uint32, uint32> m_PRDMap;
-        
+
         void UpdateSplineMovement(uint32 t_diff);
         TimeTrackerSmall m_movesplineTimer;
 };

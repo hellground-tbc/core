@@ -743,12 +743,15 @@ uint32 Unit::GetAurasAmountByMiscValue(AuraType auraType, uint32 misc)
     return count;
 }
 
-bool Unit::HasAuraByCasterWithFamilyFlags(Unit *pCaster, uint32 familyName,  uint64 familyFlags) const
+bool Unit::HasAuraByCasterWithFamilyFlags(uint64 pCaster, uint32 familyName,  uint64 familyFlags, const Aura * except) const
 {
-    for (AuraMap::const_iterator itr = GetAuras().begin(); itr != GetAuras().end(); ++itr)
-        if (SpellEntry const *spellInfo = itr->second->GetSpellProto())
-            if (spellInfo->SpellFamilyName == familyName && spellInfo->SpellFamilyFlags & familyFlags && (itr->second->GetCaster() == pCaster))
-                return true;
+    const AuraMap & tmpMap = GetAuras();
+    SpellEntry const * tmpSpellInfo;
+    for (AuraMap::const_iterator itr = tmpMap.begin(); itr != tmpMap.end(); ++itr)
+        if ((!except || except != *itr))
+            if (tmpSpellInfo = itr->second->GetSpellProto())
+                if (spellInfo->SpellFamilyName == familyName && spellInfo->SpellFamilyFlags & familyFlags && (itr->second->GetCasterGUID() == pCaster))
+                    return true;
 
     return false;
 }
@@ -2411,7 +2414,7 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
 
     if (GetTypeId() == TYPEID_UNIT && ((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_BLOCK_ON_ATTACK)
         block_chance = 0;
-    
+
     if (Player* player = const_cast<Player*>(ToPlayer()))
     {
         Item *tmpitem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
@@ -4134,6 +4137,27 @@ void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID)
             }
             else
                 ++iter;
+        }
+    }
+}
+
+void Unit::RemoveAurasWithFamilyFlagsAndTypeByCaster(uint32 familyName,  uint64 familyFlags, AuraType aurType, uint64 casterGUID)
+{
+    Unit::AuraList const& auras = m_target->GetAurasByType(aurType);
+    for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end();)
+    {
+        if ((*itr)->GetCasterGUID() == casterGUID)
+        {
+            SpellEntry const* itr_spell = (*itr)->GetSpellProto();
+            if (itr_spell && itr_spell->SpellFamilyName == familyName && (itr_spell->SpellFamilyFlags & familyFlags))
+            {
+                m_target->RemoveAurasDueToSpell(itr_spell->Id);
+                itr = auras.begin();
+            }
+            else
+            {
+                itr++;
+            }
         }
     }
 }
@@ -6997,9 +7021,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             chance = 6.02-0.067*getLevel();
             if (!roll_chance_f(chance))
                 return false;
-            
+
             trigger_spell_id = 15601;
-            
+
             break;
         }
     }
