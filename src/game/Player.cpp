@@ -7073,7 +7073,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                             default: slot = EQUIPMENT_SLOT_END; break;
                         }
 
-                        if (attType == RANGED_ATTACK && slot == EQUIPMENT_SLOT_MAINHAND)
+                        if (attType == RANGED_ATTACK && i == EQUIPMENT_SLOT_MAINHAND)
                         {
                             // exception for Righteous Weapon Coating, enchant on main hand should also proc from ranged attacks
                             if(uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
@@ -7082,7 +7082,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                                 if(pEnchant && pEnchant->ID == 3266) // Blessed Weapon Coating
                                 {
                                     ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
-                                    break;
+                                    continue;
                                 }
                             }
                         }
