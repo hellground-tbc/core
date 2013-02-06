@@ -748,10 +748,16 @@ bool Unit::HasAuraByCasterWithFamilyFlags(uint64 pCaster, uint32 familyName,  ui
     const AuraMap & tmpMap = GetAuras();
     SpellEntry const * tmpSpellInfo;
     for (AuraMap::const_iterator itr = tmpMap.begin(); itr != tmpMap.end(); ++itr)
-        if ((!except || except != *itr))
+    {
+        if ((!except || except != itr->second))
+        {
             if (tmpSpellInfo = itr->second->GetSpellProto())
-                if (spellInfo->SpellFamilyName == familyName && spellInfo->SpellFamilyFlags & familyFlags && (itr->second->GetCasterGUID() == pCaster))
+            {
+                if (tmpSpellInfo->SpellFamilyName == familyName && tmpSpellInfo->SpellFamilyFlags & familyFlags && (itr->second->GetCasterGUID() == pCaster))
                     return true;
+            }
+        }
+    }
 
     return false;
 }
@@ -4143,7 +4149,7 @@ void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID)
 
 void Unit::RemoveAurasWithFamilyFlagsAndTypeByCaster(uint32 familyName,  uint64 familyFlags, AuraType aurType, uint64 casterGUID)
 {
-    Unit::AuraList const& auras = m_target->GetAurasByType(aurType);
+    Unit::AuraList const& auras = GetAurasByType(aurType);
     for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end();)
     {
         if ((*itr)->GetCasterGUID() == casterGUID)
@@ -4151,7 +4157,7 @@ void Unit::RemoveAurasWithFamilyFlagsAndTypeByCaster(uint32 familyName,  uint64 
             SpellEntry const* itr_spell = (*itr)->GetSpellProto();
             if (itr_spell && itr_spell->SpellFamilyName == familyName && (itr_spell->SpellFamilyFlags & familyFlags))
             {
-                m_target->RemoveAurasDueToSpell(itr_spell->Id);
+                RemoveAurasDueToSpell(itr_spell->Id);
                 itr = auras.begin();
             }
             else
