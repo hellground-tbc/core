@@ -2629,7 +2629,7 @@ struct npc_resurrectAI : public ScriptedAI
         }
     };
 
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(const uint32 uiDiff) override
     {
         timer.Update(uiDiff);
         if (timer.Passed())
@@ -2659,6 +2659,78 @@ struct npc_resurrectAI : public ScriptedAI
 CreatureAI* GetAI_npc_resurrect(Creature* pCreature)
 {
     return new npc_resurrectAI(pCreature);
+}
+
+enum TargetDummySpells
+{
+    TARGET_DUMMY_PASSIVE = 4044,
+    TARGET_DUMMY_SPAWN_EFFECT = 4507,
+
+    ADVANCED_TARGET_DUMMY_PASSIVE = 4048,
+    ADVANCED_TARGET_DUMMY_SPAWN_EFFECT = 4092,
+
+    MASTER_TARGET_DUMMY_PASSIVE = 19809,
+};
+
+enum TargetDummyEntry
+{
+    TARGET_DUMMY = 2673,
+    ADV_TARGET_DUMMY = 2674,
+    MASTER_TARGET_DUMMY = 12426
+};
+
+struct npc_target_dummyAI : public Scripted_NoMovementAI
+{
+    npc_target_dummyAI(Creature* c) : Scripted_NoMovementAI(c) {}
+
+    void Reset()
+    {
+        me->SetReactState(REACT_PASSIVE);
+
+        ClearCastQueue();
+
+        TargetDummySpells spawneffect;
+        TargetDummySpells passive;
+
+        switch (me->GetEntry())
+        {
+            case TARGET_DUMMY:
+            {
+                spawneffect = TARGET_DUMMY_SPAWN_EFFECT;
+                passive = TARGET_DUMMY_PASSIVE;
+                break;
+            }
+            case ADV_TARGET_DUMMY:
+            {
+                spawneffect = ADVANCED_TARGET_DUMMY_SPAWN_EFFECT;
+                passive = ADVANCED_TARGET_DUMMY_PASSIVE;
+                break;
+            }
+            case MASTER_TARGET_DUMMY:
+            {
+                spawneffect = ADVANCED_TARGET_DUMMY_SPAWN_EFFECT;
+                passive = MASTER_TARGET_DUMMY_PASSIVE;
+                break;
+            }
+        }
+
+        AddSpellToCast(passive, CAST_SELF);
+        AddSpellToCast(spawneffect, CAST_SELF);
+    }
+
+    void AttackStart(Unit* who) {}
+    void EnterCombat(Unit *who) {}
+    void MoveInLineOfSight(Unit* who) {}
+
+    void UpdateAI(const uint32 diff) override
+    {
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_npc_target_dummy(Creature* pCreature)
+{
+    return new npc_target_dummyAI(pCreature);
 }
 
 void AddSC_npcs_special()
@@ -2839,5 +2911,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_resurrect";
     newscript->GetAI = &GetAI_npc_resurrect;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_target_dummy";
+    newscript->GetAI = &GetAI_npc_target_dummy;
     newscript->RegisterSelf();
 }
