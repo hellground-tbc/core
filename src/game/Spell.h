@@ -630,6 +630,10 @@ class Spell
         uint32 m_timer;
 
         Position m_cast;
+
+        bool IsTriggeredSpell() const { return m_IsTriggeredSpell; }
+        bool IsAutoShootSpell() const { return IsAutoRepeat() && IsRangedSpell(); }
+
         bool m_IsTriggeredSpell;
 
         // if need this can be replaced by Aura copy
