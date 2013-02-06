@@ -2683,7 +2683,7 @@ struct npc_target_dummyAI : public Scripted_NoMovementAI
 {
     npc_target_dummyAI(Creature* c) : Scripted_NoMovementAI(c) {}
 
-    void Reset()
+    void Reset() override
     {
         me->SetReactState(REACT_PASSIVE);
 
@@ -2718,9 +2718,9 @@ struct npc_target_dummyAI : public Scripted_NoMovementAI
         AddSpellToCast(spawneffect, CAST_SELF);
     }
 
-    void AttackStart(Unit* who) {}
-    void EnterCombat(Unit *who) {}
-    void MoveInLineOfSight(Unit* who) {}
+    void AttackStart(Unit* who) override {}
+    void EnterCombat(Unit *who) override {}
+    void MoveInLineOfSight(Unit* who) override {}
 
     void UpdateAI(const uint32 diff) override
     {
@@ -2731,6 +2731,74 @@ struct npc_target_dummyAI : public Scripted_NoMovementAI
 CreatureAI* GetAI_npc_target_dummy(Creature* pCreature)
 {
     return new npc_target_dummyAI(pCreature);
+}
+
+enum ExplosiveSheepExplosion
+{
+    EXPLOSIVE_SHEEP_EXPLOSION = 4050,
+    HIGH_EXPLOSIVE_SHEEP_EXPLOSION = 44279,
+};
+
+enum ExplosiveSheepEntry
+{
+    EXPLOSIVE_SHEEP = 2675,
+    HIGH_EXPLOSIVE_SHEEP = 24715
+};
+
+struct npc_explosive_sheepAI : public ScriptedAI
+{
+    npc_explosive_sheepAI(Creature* c) : ScriptedAI(c) {}
+
+    TimeTrackerSmall explosionTimer;
+
+    void JustRespawned() override
+    {
+        explosionTimer.Reset(10000);
+    }
+
+    void Reset() override
+    {
+        me->SetReactState(REACT_PASSIVE);
+
+        ClearCastQueue();
+    }
+
+    void AttackStart(Unit* who) override {}
+    void EnterCombat(Unit *who) override {}
+    void MoveInLineOfSight(Unit* who) override {}
+
+    void UpdateAI(const uint32 diff) override
+    {
+        explosionTimer.Update(diff);
+        if (explosionTimer.Passed())
+        {
+            ForceSpellCast(me->GetEntry() == EXPLOSIVE_SHEEP ? EXPLOSIVE_SHEEP_EXPLOSION : HIGH_EXPLOSIVE_SHEEP_EXPLOSION, CAST_SELF, INTERRUPT_AND_CAST, true);
+            me->ForcedDespawn();
+            return;
+        }
+
+        if (me->getVictim() == nullptr)
+        {
+            if (Unit* target = me->SelectNearestTarget())
+                ScriptedAI::AttackStart(target);
+        }
+        else
+        {
+            if (me->IsWithinDistInMap(me->getVictim(), 2.0f))
+            {
+                ForceSpellCast(me->GetEntry() == EXPLOSIVE_SHEEP ? EXPLOSIVE_SHEEP_EXPLOSION : HIGH_EXPLOSIVE_SHEEP_EXPLOSION, CAST_SELF, INTERRUPT_AND_CAST, true);
+                me->ForcedDespawn();
+                return;
+            }
+        }
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_npc_explosive_sheep(Creature* pCreature)
+{
+    return new npc_explosive_sheepAI(pCreature);
 }
 
 void AddSC_npcs_special()
@@ -2916,5 +2984,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_target_dummy";
     newscript->GetAI = &GetAI_npc_target_dummy;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_explosive_sheep";
+    newscript->GetAI = &GetAI_npc_explosive_sheep;
     newscript->RegisterSelf();
 }
