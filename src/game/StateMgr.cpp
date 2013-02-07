@@ -87,6 +87,8 @@ public:
         data << target->GetPackGUID();
         data << uint32(0);
         target->BroadcastPacket(&data, true);
+
+        target->SetFacingTo(target->GetOrientation());
     }
 
     bool Update(Unit &unit, const uint32 &)
