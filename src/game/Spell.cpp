@@ -761,7 +761,7 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex, bool redirected)
     // Calculate hit result
     if (m_originalCaster)
     {
-        bool canMiss = (m_triggeredByAuraSpell || !IsTriggeredSpell()) || IsAutoShootSpell());
+        bool canMiss = m_triggeredByAuraSpell || !IsTriggeredSpell() || IsAutoShootSpell();
         target.missCondition = m_originalCaster->SpellHitResult(pVictim, GetSpellInfo(), m_canReflect, canMiss);
         if (m_skipCheck && target.missCondition != SPELL_MISS_IMMUNE)
             target.missCondition = SPELL_MISS_NONE;
