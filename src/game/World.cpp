@@ -2311,20 +2311,26 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
     {
         case BAN_IP:
             //No SQL injection as strings are escaped
-            resultAccounts = AccountsDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameIPOrMail.c_str());
-            AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameIPOrMail.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
+            resultAccounts = AccountsDatabase.PQuery("SELECT a.id, aa.gmlevel "
+                                                     "FROM account AS a LEFT JOIN account_access AS aa "
+                                                     "      ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) "
+                                                     "WHERE last_ip = '%s'", realmID, nameIPOrMail.c_str());
+            AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')", nameIPOrMail.c_str(), duration_secs, safe_author.c_str(), reason.c_str());
             break;
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
-            resultAccounts = AccountsDatabase.PQuery("SELECT a.id,aa.gmlevel FROM account a LEFT JOIN account_access aa ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) WHERE a.username = '%s'",realmID, nameIPOrMail.c_str());
+            resultAccounts = AccountsDatabase.PQuery("SELECT a.id, aa.gmlevel FROM account a LEFT JOIN account_access aa ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) WHERE a.username = '%s'", realmID, nameIPOrMail.c_str());
             break;
         case BAN_CHARACTER:
             //No SQL injection as string is escaped
             resultAccounts = RealmDataDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameIPOrMail.c_str());
             break;
         case BAN_EMAIL:
-            resultAccounts = AccountsDatabase.PQuery("SELECT a.id,aa.gmlevel FROM account a LEFT JOIN account_access aa ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) WHERE a.email = '%s'",realmID, nameIPOrMail.c_str());
-            AccountsDatabase.PExecute("INSERT INTO email_banned VALUES ('%s',UNIX_TIMESTAMP(),'%s','%s')",nameIPOrMail.c_str(),safe_author.c_str(),reason.c_str());
+            resultAccounts = AccountsDatabase.PQuery("SELECT a.id, aa.gmlevel "
+                                                     "FROM account a LEFT JOIN account_access aa "
+                                                     "      ON (a.id = aa.id AND (aa.RealmID = '%d' OR aa.RealmID = '-1')) "
+                                                     "WHERE a.email = '%s'", realmID, nameIPOrMail.c_str());
+            AccountsDatabase.PExecute("INSERT INTO email_banned VALUES ('%s',UNIX_TIMESTAMP(),'%s','%s')", nameIPOrMail.c_str(), safe_author.c_str(), reason.c_str());
             break;
         default:
             return BAN_SYNTAX_ERROR;
@@ -2406,7 +2412,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
                 return false;
 
             //NO SQL injection as account is uint32
-            sWorld.getConfig(CONFIG_REALM_BANS) ? AccountsDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u' AND realm = '%u'",account,realmID) 
+            sWorld.getConfig(CONFIG_REALM_BANS) ? AccountsDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u' AND realm = '%u'",account,realmID)
                                                 : AccountsDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
             break;
     }
