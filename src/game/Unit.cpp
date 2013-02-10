@@ -4159,12 +4159,10 @@ void Unit::RemoveAurasWithFamilyFlagsAndTypeByCaster(uint32 familyName,  uint64 
             {
                 RemoveAurasDueToSpell(itr_spell->Id);
                 itr = auras.begin();
-            }
-            else
-            {
-                itr++;
+                continue;
             }
         }
+        ++itr;
     }
 }
 
