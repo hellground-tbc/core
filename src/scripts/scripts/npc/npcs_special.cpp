@@ -2591,43 +2591,21 @@ bool GossipSelect_npc_combatstop(Player* player, Creature* _Creature, uint32 sen
     return true; 
 }
 
-struct npc_resurrectAI : public ScriptedAI
+struct npc_resurrectAI : public Scripted_NoMovementAI
 {
-    npc_resurrectAI(Creature* c) : ScriptedAI(c) {}
+    npc_resurrectAI(Creature* c) : Scripted_NoMovementAI(c) {}
 
     TimeTrackerSmall timer;
 
-    void Reset()
+    void Reset() override
     {
-        me->setDeathState(DEAD);
-
-        me->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, me->GetGUID());
-        // aura
-        me->SetUInt32Value(UNIT_FIELD_AURA, SPELL_SPIRIT_HEAL_CHANNEL);
-        me->SetUInt32Value(UNIT_FIELD_AURAFLAGS, 0x00000009);
-        me->SetUInt32Value(UNIT_FIELD_AURALEVELS, 0x0000003C);
-        me->SetUInt32Value(UNIT_FIELD_AURAAPPLICATIONS, 0x000000FF);
-        // casting visual effect
-        me->SetUInt32Value(UNIT_CHANNEL_SPELL, SPELL_SPIRIT_HEAL_CHANNEL);
-        // correct cast speed
-        me->SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
-
+        me->SetReactState(REACT_PASSIVE);
         timer.Reset(2000);
     }
 
-    void AttackStart(Unit* who) {}
-    void EnterCombat(Unit *who) {}
-
-    struct PlayerRemove
-    {
-        PlayerRemove(Creature* c) : me(c) {}
-
-        Creature* me;
-        bool operator()(Player* plr)
-        {
-            return plr->isAlive() || me->IsHostileTo(plr);
-        }
-    };
+    void MoveInLineOfSight(Unit *who) override {}
+    void AttackStart(Unit* who) override {}
+    void EnterCombat(Unit *who) override {}
 
     void UpdateAI(const uint32 uiDiff) override
     {
@@ -2640,7 +2618,7 @@ struct npc_resurrectAI : public ScriptedAI
 
             Cell::VisitAllObjects(me, searcher, 15.0f);
 
-            players.remove_if(PlayerRemove(me));
+            players.remove_if([this](Player* plr) -> bool { return plr->isAlive() || me->IsHostileTo(plr); });
 
             while (!players.empty())
             {
