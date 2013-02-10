@@ -770,7 +770,7 @@ namespace Hellground
         AnyPlayerInObjectRangeCheck(WorldObject const* obj, float range, bool alive = true) : i_obj(obj), i_range(range), i_alive(alive) {}
         bool operator()(Player* u)
         {
-            if ((i_alive &&u->isAlive() || !i_alive && !u->isAlive()) && i_obj->IsWithinDistInMap(u, i_range))
+            if ((i_alive && u->isAlive() || !i_alive && !u->isAlive()) && i_obj->IsWithinDistInMap(u, i_range))
                 return true;
 
             return false;
