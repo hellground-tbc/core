@@ -57,6 +57,13 @@ endif()
 #   )
 # endif()
 
+if(NOT WIN32)
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+    if (GCC_VERSION VERSION_LESS 4.7)
+        message(FATAL_ERROR "Your GCC have to be >= 4.7")
+    endif()
+endif()
+
 # Output description of this script
 message(
   "\nThis script builds the HellGround project server.
