@@ -2716,10 +2716,12 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
 
     SpellCastTargets targets;
 
-    if (triggered_spell_id == 44008)     // Static Disruption needs direct targeting
+    if (!spellInfo->IsDestTargetEffect(effect_idx))
+//    if (triggered_spell_id == 44008)     // Static Disruption needs direct targeting
         targets.setUnitTarget(unitTarget);
     else
         targets.setDestination(m_targets.m_destX,m_targets.m_destY,m_targets.m_destZ);
+
     spell->m_CastItem = m_CastItem;
     spell->prepare(&targets, NULL);
 }
