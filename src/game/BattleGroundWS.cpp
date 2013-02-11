@@ -55,6 +55,8 @@ BattleGroundWS::BattleGroundWS()
     m_BothFlagsKept = false;
     m_BgObjects.resize(BG_WS_OBJECT_MAX);
     m_BgCreatures.resize(BG_CREATURES_MAX_WS);
+    m_AllianceFlagUpdate = 0;
+    m_HordeFlagUpdate = 0;
 }
 
 BattleGroundWS::~BattleGroundWS()
@@ -228,11 +230,13 @@ void BattleGroundWS::RespawnFlag(uint32 Team, bool captured)
     {
         sLog.outDebug("Respawn Alliance flag");
         m_FlagState[BG_TEAM_ALLIANCE] = BG_WS_FLAG_STATE_ON_BASE;
+        m_AllianceFlagUpdate = 0;
     }
     else
     {
         sLog.outDebug("Respawn Horde flag");
         m_FlagState[BG_TEAM_HORDE] = BG_WS_FLAG_STATE_ON_BASE;
+        m_HordeFlagUpdate = 0;
     }
 
     if (captured)
@@ -466,11 +470,12 @@ void BattleGroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
 
     const char *message;
     uint8 type = 0;
-
+ 
     //alliance flag picked up from base
     if (Source->GetTeam() == HORDE && this->GetFlagState(ALLIANCE) == BG_WS_FLAG_STATE_ON_BASE
         && this->m_BgObjects[BG_WS_OBJECT_A_FLAG] == target_obj->GetGUID())
     {
+        m_AllianceFlagUpdate = time(NULL); // Set the time
         message = GetTrinityString(LANG_BG_WS_PICKEDUP_AF);
         type = CHAT_MSG_BG_SYSTEM_HORDE;
         PlaySoundToAll(BG_WS_SOUND_ALLIANCE_FLAG_PICKED_UP);
@@ -482,13 +487,14 @@ void BattleGroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         UpdateWorldState(BG_WS_FLAG_UNK_ALLIANCE, 1);
         Source->CastSpell(Source, BG_WS_SPELL_SILVERWING_FLAG, true);
         if (m_FlagState[1] == BG_WS_FLAG_STATE_ON_PLAYER)
-          m_BothFlagsKept = true;
+            m_BothFlagsKept = true;
     }
 
     //horde flag picked up from base
     if (Source->GetTeam() == ALLIANCE && this->GetFlagState(HORDE) == BG_WS_FLAG_STATE_ON_BASE
         && this->m_BgObjects[BG_WS_OBJECT_H_FLAG] == target_obj->GetGUID())
     {
+        m_HordeFlagUpdate = time(NULL); // Set the time
         message = GetTrinityString(LANG_BG_WS_PICKEDUP_HF);
         type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
         PlaySoundToAll(BG_WS_SOUND_HORDE_FLAG_PICKED_UP);
@@ -500,7 +506,7 @@ void BattleGroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         UpdateWorldState(BG_WS_FLAG_UNK_HORDE, 1);
         Source->CastSpell(Source, BG_WS_SPELL_WARSONG_FLAG, true);
         if (m_FlagState[0] == BG_WS_FLAG_STATE_ON_PLAYER)
-          m_BothFlagsKept = true;
+            m_BothFlagsKept = true;
     }
 
     //Alliance flag on ground(not in base) (returned or picked up again from ground!)

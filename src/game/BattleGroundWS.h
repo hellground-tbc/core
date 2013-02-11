@@ -29,7 +29,7 @@ enum BG_WS_TimerOrScore
     BG_WS_FLAG_RESPAWN_TIME = 23000,
     BG_WS_FLAG_DROP_TIME    = 10000,
     BG_WS_SPELL_FORCE_TIME  = 600000,
-    BG_WS_SPELL_BRUTAL_TIME = 900000 
+    BG_WS_SPELL_BRUTAL_TIME = 900000
 };
 
 enum BG_WS_Sound
@@ -198,6 +198,8 @@ class BattleGroundWS : public BattleGround
         void SetTeamPoint(uint32 TeamID, uint32 Points = 0) { m_TeamScores[GetTeamIndexByTeamId(TeamID)] = Points; m_score[GetTeamIndexByTeamId(TeamID)] =  m_TeamScores[GetTeamIndexByTeamId(TeamID)];}
         void RemovePoint(uint32 TeamID, uint32 Points = 1)  { m_TeamScores[GetTeamIndexByTeamId(TeamID)] -= Points; m_score[GetTeamIndexByTeamId(TeamID)] =  m_TeamScores[GetTeamIndexByTeamId(TeamID)]; }
 
+        uint64 m_AllianceFlagUpdate;
+        uint64 m_HordeFlagUpdate;
     private:
         uint64 m_FlagKeepers[2];                            // 0 - alliance, 1 - horde
         uint64 m_DroppedFlagGUID[2];
@@ -205,7 +207,7 @@ class BattleGroundWS : public BattleGround
         uint32 m_TeamScores[2];
         int32 m_FlagsTimer[2];
         int32 m_FlagsDropTimer[2];
-        
+
         int32 m_FlagSpellForceTimer;
         int32 m_FlagSpellBrutalTimer;
         bool m_BothFlagsKept;

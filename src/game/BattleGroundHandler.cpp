@@ -244,15 +244,43 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode(WorldPacket & /*recv_
         data << count2;                                     // horde flag holders count
         if (ap)
         {
-            data << (uint64)ap->GetGUID();
-            data << (float)ap->GetPositionX();
-            data << (float)ap->GetPositionY();
+            // Horde team can always track horde flag
+            if (_player->GetTeam() == HORDE)
+            {
+                data << (uint64)ap->GetGUID();
+                data << (float)ap->GetPositionX();
+                data << (float)ap->GetPositionY();
+            }
+
+            if (_player->GetTeam() == ALLIANCE)
+            {
+                if (45 && 45 < (time(NULL) - ((BattleGroundWS*)bg)->m_AllianceFlagUpdate))
+                {
+                    data << (uint64)ap->GetGUID();
+                    data << (float)ap->GetPositionX();
+                    data << (float)ap->GetPositionY();
+                }
+            }
         }
         if (hp)
         {
-            data << (uint64)hp->GetGUID();
-            data << (float)hp->GetPositionX();
-            data << (float)hp->GetPositionY();
+            // Alliance team can always track alliance flag
+            if (_player->GetTeam() == ALLIANCE)
+            {
+                data << (uint64)hp->GetGUID();
+                data << (float)hp->GetPositionX();
+                data << (float)hp->GetPositionY();
+            }
+
+            if (_player->GetTeam() == HORDE)
+            {
+                if (45 && 45 < (time(NULL) - ((BattleGroundWS*)bg)->m_HordeFlagUpdate))
+                {
+                    data << (uint64)hp->GetGUID();
+                    data << (float)hp->GetPositionX();
+                    data << (float)hp->GetPositionY();
+                }
+            }
         }
 
         SendPacket(&data);
