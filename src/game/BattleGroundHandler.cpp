@@ -254,7 +254,7 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode(WorldPacket & /*recv_
 
             if (_player->GetTeam() == ALLIANCE)
             {
-                if (45 && 45 < (time(NULL) - ((BattleGroundWS*)bg)->m_AllianceFlagUpdate))
+                if (BG_WS_FLAG_UPDATE_TIME < (time(NULL) - ((BattleGroundWS*)bg)->m_AllianceFlagUpdate))
                 {
                     data << (uint64)ap->GetGUID();
                     data << (float)ap->GetPositionX();
@@ -274,7 +274,7 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode(WorldPacket & /*recv_
 
             if (_player->GetTeam() == HORDE)
             {
-                if (45 && 45 < (time(NULL) - ((BattleGroundWS*)bg)->m_HordeFlagUpdate))
+                if (BG_WS_FLAG_UPDATE_TIME < (time(NULL) - ((BattleGroundWS*)bg)->m_HordeFlagUpdate))
                 {
                     data << (uint64)hp->GetGUID();
                     data << (float)hp->GetPositionX();
