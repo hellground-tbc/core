@@ -42,10 +42,6 @@ void npc_escortAI::AttackStart(Unit* pWho)
 
     if (me->Attack(pWho, true))
     {
-        //stop movement and attack the target && set the correct wp
-        //if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-        //    CurrentWP = ReachedLastWP;
-
         if (IsCombatMovement())
             me->GetMotionMaster()->MoveChase(pWho);
     }
@@ -177,6 +173,10 @@ void npc_escortAI::EnterEvadeMode()
 
     if (HasEscortState(STATE_ESCORT_ESCORTING))
     {
+        //check the wp
+        if (CurrentWP->id != ReachedLastWP->id && ReachedLastWP->WaitTimeMs == 0)
+            CurrentWP = ReachedLastWP;
+
         AddEscortState(STATE_ESCORT_RETURNING);
         ReturnToLastPoint();
     }
@@ -362,16 +362,7 @@ void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 Wait
 
     WaypointList.push_back(t);
 
-    // i think SD2 no longer uses this function
     ScriptWP = true;
-    /*PointMovement wp;
-    wp.CreatureEntry = me->GetEntry();
-    wp.PointId = id;
-    wp.m_fX = x;
-    wp.m_fY = y;
-    wp.m_fZ = z;
-    wp.WaitTime = WaitTimeMs;
-    PointMovementMap[wp.CreatureEntry].push_back(wp);*/
 }
 
 void npc_escortAI::FillPointMovementListForCreature()

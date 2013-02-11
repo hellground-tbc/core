@@ -1916,7 +1916,7 @@ uint8 Guild::_CanStoreItem_InSpecificSlot(uint8 tab, uint8 slot, GuildItemPosCou
 
 uint8 Guild::_CanStoreItem_InTab(uint8 tab, GuildItemPosCountVec &dest, uint32& count, bool merge, Item* pSrcItem, uint8 skip_slot) const
 {
-    for (uint32 j = 0; j < GUILD_BANK_MAX_SLOTS; j++)
+    for (uint32 j = 0; j < GUILD_BANK_MAX_SLOTS; ++j)
     {
         // skip specific slot already processed in first called _CanStoreItem_InSpecificSlot
         if (j==skip_slot)
