@@ -1779,6 +1779,9 @@ void Creature::setDeathState(DeathState s)
         //Dismiss group if is leader
         if (m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
+
+        if (m_zoneScript)
+            m_zoneScript->OnCreatureDeath(this);
     }
 
     Unit::setDeathState(s);
