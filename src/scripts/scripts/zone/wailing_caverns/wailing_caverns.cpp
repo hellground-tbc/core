@@ -82,8 +82,8 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
         eventTimer = 0;
         currentEvent = 0;
         eventProgress = 0;
+        Point = 0;
         me->setActive(true);
-        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
     }
 
     uint32 eventTimer;
@@ -91,6 +91,7 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
     uint32 eventProgress;
     uint32 sleepTimer;
     uint32 potionTimer;
+    uint32 Point;
     bool potCooldown;
     ScriptedInstance *pInstance;
 
@@ -111,6 +112,7 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
                 pInstance->SetData(TYPE_NARALEX_PART1, DONE);
             break;
             case 11:
+                Point = i;
                 eventProgress = 1;
                 currentEvent = TYPE_NARALEX_PART2;
                 pInstance->SetData(TYPE_NARALEX_PART2, IN_PROGRESS);
@@ -119,6 +121,7 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
                 DoScriptText(SAY_BEYOND_THIS_CORRIDOR, me);
             break;
             case 24:
+                Point = i;
                 eventProgress = 1;
                 currentEvent = TYPE_NARALEX_PART3;
                 pInstance->SetData(TYPE_NARALEX_PART3, IN_PROGRESS);
@@ -136,6 +139,19 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
     void EnterCombat(Unit* who)
     {
         DoScriptText(SAY_ATTACKED, me, who);
+    }
+
+    void EnterEvadeMode()
+    {
+        // Do not stop casting
+        if (Point == 11 || Point == 24)
+        {
+            m_creature->SetLootRecipient(NULL);
+            m_creature->DeleteThreatList();
+            m_creature->CombatStop(false);
+        }
+        else
+            npc_escortAI::EnterEvadeMode();
     }
 
     void JustDied(Unit * /*slayer*/)
@@ -183,7 +199,6 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
                             ++eventProgress;
                             DoScriptText(SAY_BANISH_THE_SPIRITS, me);
                             DoCast(me, SPELL_SERPENTINE_CLEANSING);
-                            //CAST_AI(npc_escortAI, me->AI())->SetCanDefend(false);
                             eventTimer = 30000;
                             me->SummonCreature(NPC_DEVIATE_VIPER, -61.5261, 273.676, -92.8442, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                             me->SummonCreature(NPC_DEVIATE_VIPER, -58.4658, 280.799, -92.8393, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
@@ -192,7 +207,6 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
                         else
                         if (eventProgress == 2)
                         {
-                            //CAST_AI(npc_escortAI, me->AI())->SetCanDefend(true);
                             DoScriptText(SAY_CAVERNS_PURIFIED, me);
                             pInstance->SetData(TYPE_NARALEX_PART2, DONE);
                             if (me->HasAura(SPELL_SERPENTINE_CLEANSING, 0))
@@ -212,7 +226,6 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
                         {
                             ++eventProgress;
                             eventTimer = 15000;
-                            //CAST_AI(npc_escortAI, me->AI())->SetCanDefend(false);
                             if (Creature* naralex = pInstance->instance->GetCreature(pInstance->GetData64(DATA_NARALEX)))
                                 DoCast(naralex, SPELL_NARALEXS_AWAKENING, true);
                             DoScriptText(EMOTE_AWAKENING_RITUAL, me);
@@ -224,9 +237,9 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
                             eventTimer = 15000;
                             if (Creature* naralex = pInstance->instance->GetCreature(pInstance->GetData64(DATA_NARALEX)))
                                 DoScriptText(EMOTE_TROUBLED_SLEEP, naralex);
-                            me->SummonCreature(NPC_DEVIATE_MOCCASIN, 135.943, 199.701, -103.529, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                            me->SummonCreature(NPC_DEVIATE_MOCCASIN, 151.08,  221.13,  -103.609, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                            me->SummonCreature(NPC_DEVIATE_MOCCASIN, 128.007, 227.428, -97.421, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_DEVIATE_MOCCASIN, 131.486, 218.504, -101.094, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_DEVIATE_MOCCASIN, 146.517, 233.378, -100.830, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_DEVIATE_MOCCASIN, 135.440, 253.692, -100.067, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
                         }
                         else
                         if (eventProgress == 4)
@@ -235,13 +248,13 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
                             eventTimer = 30000;
                             if (Creature* naralex = pInstance->instance->GetCreature(pInstance->GetData64(DATA_NARALEX)))
                                 DoScriptText(EMOTE_WRITHE_IN_AGONY, naralex);
-                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 133.413, 207.188, -102.469, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 142.857, 218.645, -102.905, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 105.102, 227.211, -102.752, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 153.372, 235.149, -102.826, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 149.524, 251.113, -102.558, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 136.208, 266.466, -102.977, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
-                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 126.167, 274.759, -102.962, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 131.486, 218.504, -101.094, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 146.517, 233.378, -100.830, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 135.440, 253.692, -100.067, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 144.752, 243.089, -100.219, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 127.191, 261.635, -99.542, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 117.289, 267.770, -99.667, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
+                            me->SummonCreature(NPC_NIGHTMARE_ECTOPLASM, 101.216, 260.543, -99.718, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000);
                         }
                         else
                         if (eventProgress == 5)
@@ -249,7 +262,7 @@ struct npc_disciple_of_naralexAI : public npc_escortAI
                             ++eventProgress;
                             if (Creature* naralex = pInstance->instance->GetCreature(pInstance->GetData64(DATA_NARALEX)))
                                 DoScriptText(EMOTE_HORRENDOUS_VISION, naralex);
-                            me->SummonCreature(NPC_MUTANUS_THE_DEVOURER, 150.872, 262.905, -103.503, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000);
+                            me->SummonCreature(NPC_MUTANUS_THE_DEVOURER, 144.752, 243.089, -100.219, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300000);
                             DoScriptText(SAY_MUTANUS_THE_DEVOURER, me);
                             pInstance->SetData(TYPE_MUTANUS_THE_DEVOURER, IN_PROGRESS);
                         }
@@ -398,7 +411,6 @@ bool GossipSelect_npc_disciple_of_naralex(Player* pPlayer, Creature* pCreature, 
         DoScriptText(SAY_MAKE_PREPARATIONS, pCreature);
 
         pCreature->setFaction(250);
-        pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
 
         CAST_AI(npc_escortAI, (pCreature->AI()))->Start(false, false, pPlayer->GetGUID());
         CAST_AI(npc_escortAI, (pCreature->AI()))->SetDespawnAtFar(false);
