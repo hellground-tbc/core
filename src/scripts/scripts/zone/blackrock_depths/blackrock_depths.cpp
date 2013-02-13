@@ -568,10 +568,10 @@ struct npc_dughal_stormwingAI : public npc_escortAI
                 m_creature->Say(SAY_DUGHAL_FREE, LANG_UNIVERSAL, player->GetGUID());
                 break;
             case 2:
+                pInstance->SetData(DATA_DUGHAL, DONE);
                 m_creature->SetVisibility(VISIBILITY_OFF);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                pInstance->SetData(DATA_DUGHAL, DONE);
             break;
         }
     }
@@ -583,13 +583,10 @@ struct npc_dughal_stormwingAI : public npc_escortAI
 
     void JustDied(Unit* killer)
     {
-        if( HasEscortState(STATE_ESCORT_ESCORTING) && killer == m_creature)
-        {
-            m_creature->SetVisibility(VISIBILITY_OFF);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            pInstance->SetData(DATA_DUGHAL, DONE);
-        }
+        pInstance->SetData(DATA_DUGHAL, DONE);
+        m_creature->SetVisibility(VISIBILITY_OFF);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -686,10 +683,12 @@ struct npc_marshal_windsorAI : public npc_escortAI
     npc_marshal_windsorAI(Creature *c) : npc_escortAI(c)
     {
         pInstance = (c->GetInstanceData());
+        startFaction = c->getFaction()
     }
 
     ScriptedInstance *pInstance;
     uint8 WaitEvent;
+    uint32 startFaction;
 
     void WaypointReached(uint32 i)
     {
@@ -766,24 +765,24 @@ struct npc_marshal_windsorAI : public npc_escortAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!pInstance || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
+        if (!pInstance || pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
             return;
 
         Player *player = GetPlayerForEscort();
-        if(!player)
+        if (!player)
             return;
 
-        switch(WaitEvent)
+        switch (WaitEvent)
         {
             case DUGHAL:
             {
-                if(pInstance->GetData(DATA_DUGHAL) == NOT_STARTED)
+                if (pInstance->GetData(DATA_DUGHAL) == NOT_STARTED)
                 {
                     SetEscortPaused(true);
                     pInstance->SetData(DATA_DUGHAL, IN_PROGRESS);
                 }
 
-                if(pInstance->GetData(DATA_DUGHAL) == DONE)
+                if (pInstance->GetData(DATA_DUGHAL) == DONE)
                 {
                     SetEscortPaused(false);
                     m_creature->Say(SAY_WINDSOR_4_3, LANG_UNIVERSAL, player->GetGUID());
@@ -793,7 +792,7 @@ struct npc_marshal_windsorAI : public npc_escortAI
             break;
         }
 
-        if(pInstance->GetData(DATA_QUEST_JAIL_BREAK) && pInstance->GetData(DATA_SUPPLY_ROOM) == DONE )
+        if (pInstance->GetData(DATA_QUEST_JAIL_BREAK) && pInstance->GetData(DATA_SUPPLY_ROOM) == DONE)
         {
             m_creature->SetVisibility(VISIBILITY_OFF);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -829,7 +828,7 @@ CreatureAI* GetAI_npc_marshal_windsor(Creature *_Creature)
     marshal_windsorAI->AddWaypoint(12, 400.98,-72.01, -62.31,0);
     marshal_windsorAI->AddWaypoint(13, 404.22,-62.30, -63.50,2300);
     marshal_windsorAI->AddWaypoint(14, 404.22,-62.30, -63.50,1500);
-    marshal_windsorAI->AddWaypoint(154, 407.65,-51.86, -63.96,0);
+    marshal_windsorAI->AddWaypoint(15, 407.65,-51.86, -63.96,0);
     marshal_windsorAI->AddWaypoint(16, 403.61,-51.71, -63.92,1000);
     marshal_windsorAI->AddWaypoint(17, 403.61,-51.71, -63.92,2000);
     marshal_windsorAI->AddWaypoint(18, 403.61,-51.71, -63.92,1000);
@@ -838,7 +837,7 @@ CreatureAI* GetAI_npc_marshal_windsor(Creature *_Creature)
     return (CreatureAI*)marshal_windsorAI;
 }
 
-bool QuestAccept_npc_marshal_windsor(Player *player, Creature *creature, Quest const *quest )
+bool QuestAccept_npc_marshal_windsor(Player *player, Creature *creature, Quest const *quest)
 {
     if( quest->GetQuestId() == QUEST_JAIL_BREAK )
     {
