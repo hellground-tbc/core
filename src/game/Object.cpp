@@ -1761,8 +1761,11 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             pet->clearUnitState(UNIT_STAT_FOLLOW);
             pet->SendPetAIReaction(pet->GetGUID());
         }
-        else if(entry == 510)
+        else if (entry == 510)
+        {
             pet->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FROST, true);
+            pet->ApplySpellImmune(0, IMMUNITY_DISPEL, DISPEL_POISON, true);
+        }
 
         return NULL;
     }
