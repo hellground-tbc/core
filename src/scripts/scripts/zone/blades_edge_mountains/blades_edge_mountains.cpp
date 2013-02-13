@@ -2004,6 +2004,49 @@ CreatureAI* GetAI_npc_cannon_target(Creature* creature)
 }
 
 /*######
+## npc_gargrom
+######*/
+
+#define GO_TEMP    185232
+
+struct Pos
+{
+    float x, y, z;
+};
+
+static Pos sum[]=
+{
+    {3610.64f, 7180.36f, 139.98f},
+    {3611.35f, 7179.39f, 140.10f}
+};
+
+struct npc_gargromAI : public ScriptedAI
+{
+    npc_gargromAI(Creature* creature) : ScriptedAI(creature) {}
+
+    void Reset() 
+    {
+        me->SetWalk(true);
+        me->GetMotionMaster()->MovePoint(0, sum[0].x, sum[0].y, sum[0].z);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type == POINT_MOTION_TYPE)
+        {
+            me->setDeathState(JUST_DIED);
+            me->SummonGameObject(GO_TEMP, sum[1].x, sum[1].y, sum[1].z, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 25);
+            me->SummonGameObject(GO_TEMP, sum[1].x-(rand()%4), sum[1].y-(rand()%4), sum[1].z, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 25);
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_gargrom(Creature* creature)
+{
+    return new npc_gargromAI (creature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -2132,5 +2175,10 @@ void AddSC_blades_edge_mountains()
     newscript = new Script;
     newscript->Name="npc_cannon_target";
     newscript->GetAI = &GetAI_npc_cannon_target;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_gargrom";
+    newscript->GetAI = &GetAI_npc_gargrom;
     newscript->RegisterSelf();
 }
