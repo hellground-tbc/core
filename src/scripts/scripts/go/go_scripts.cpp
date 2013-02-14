@@ -220,12 +220,11 @@ bool GOUse_go_sacred_fire_of_life(Player* pPlayer, GameObject* pGO)
 ## go_crystalforge
 ######*/
 
-#define GOSSIP_ITEM_BEAST_1 "[PH] Create 1 x Flask of Beast"
-#define GOSSIP_ITEM_BEAST_5 "[PH] Create 5 x Flask of Beast"
-
-#define GOSSIP_ITEM_SORCERER_1 "[PH] Create 1 x Flask of Sorcerer"
-#define GOSSIP_ITEM_SORCERER_5 "[PH] Create 5 x Flask of Sorcerer"
-
+#define ITEM_APEXIS_SHARD 32569
+#define GOSSIP_ITEM_BEAST_1 "Purchase 1 Unstable Flask of the Beast for the cost of 10 Apexis Shards"
+#define GOSSIP_ITEM_BEAST_5 "Purchase 5 Unstable Flask of the Beast for the cost of 50 Apexis Shards"
+#define GOSSIP_ITEM_SORCERER_1 "Purchase 1 Unstable Flask of the Sorcerer for the cost of 10 Apexis Shards"
+#define GOSSIP_ITEM_SORCERER_5 "Purchase 5 Unstable Flask of the Sorcerer for the cost of 50 Apexis Shards"
 
 enum FELFORGE
 {
@@ -262,17 +261,23 @@ bool GOGossipSelect_go_crystalforge(Player* pPlayer, GameObject* pGO, uint32 Sen
     switch(action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
+            if (pPlayer->HasItemCount(ITEM_APEXIS_SHARD, 10))
+            {
+                pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
                                ? uint32(SPELL_CREATE_1_FLASK_OF_BEAST)
                                : uint32(SPELL_CREATE_1_FLASK_OF_SORCERER)
                                , false);
-        break;
+            }
+            break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
+            if (pPlayer->HasItemCount(ITEM_APEXIS_SHARD, 50))
+            {
+                pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
                                ? uint32(SPELL_CREATE_5_FLASK_OF_BEAST)
                                : uint32(SPELL_CREATE_5_FLASK_OF_SORCERER),
                                false);
-        break;
+            }
+            break;
     }
 
     pPlayer->CLOSE_GOSSIP_MENU();
