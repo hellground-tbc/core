@@ -683,7 +683,7 @@ struct npc_marshal_windsorAI : public npc_escortAI
     npc_marshal_windsorAI(Creature *c) : npc_escortAI(c)
     {
         pInstance = (c->GetInstanceData());
-        startFaction = c->getFaction()
+        startFaction = c->getFaction();
     }
 
     ScriptedInstance *pInstance;
