@@ -5272,25 +5272,16 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
 void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool defence)
 {
     uint32 plevel = getLevel();                             // if defense than pVictim == attacker
-    //uint32 greylevel = Hellground::XP::GetGrayLevel(plevel);
     uint32 moblevel = pVictim->getLevelForTarget(this);
-    //if (moblevel < greylevel)
-    //    return;
 
     if (moblevel > plevel + 5)
         moblevel = plevel + 5;
 
-    uint32 lvldif = 0;
+    float lvldif = 1.5f;
     if (moblevel >= plevel)
     {
         lvldif = moblevel - plevel;
         if (lvldif < 3)
-            lvldif = 3;
-    }
-    else
-    {
-        lvldif = plevel - moblevel;
-        if (lvldif > 3)
             lvldif = 3;
     }
 
@@ -5298,9 +5289,9 @@ void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool de
     if (skilldif <= 0)
         return;
 
-    float chance = float(3 * lvldif * skilldif) / plevel;
+    float chance = float(3 * lvldif * skilldif) / plevel*0.75f;
     if (!defence)
-        chance *= 0.1f * GetStat(STAT_INTELLECT);
+        chance += 0.1f * GetStat(STAT_INTELLECT);
 
     chance = chance < 1.0f ? 1.0f : chance;                 //minimum chance to increase skill is 1%
 

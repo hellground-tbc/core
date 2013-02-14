@@ -251,6 +251,9 @@ void CharmInfo::HandleStayCommand()
 
 void CharmInfo::HandleFollowCommand()
 {
+    if (HasCommandState(COMMAND_FOLLOW))
+        return;
+
     SetCommandState(COMMAND_FOLLOW);
 
     m_unit->AttackStop();
