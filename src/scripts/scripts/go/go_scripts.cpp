@@ -517,6 +517,44 @@ bool GOGossipSelect_go_fel_crystal_prism(Player* pPlayer, GameObject* pGO, uint3
     return true;
 }
 
+/*######
+## go_rule_skies
+######*/
+
+enum
+{
+    NPC_RIVENDARK    = 23061,
+    NPC_OBSIDIA      = 23282,
+    NPC_FURYWING     = 23261,
+    NPC_INSIDION     = 23281
+};
+
+bool GOUse_go_rule_skies(Player* pPlayer, GameObject* pGO)
+{
+    if (pPlayer->GetQuestStatus(11078) == QUEST_STATUS_INCOMPLETE)
+    {
+        switch(pGO->GetEntry())
+        {
+            case 185936:
+                pGO->SummonCreature(NPC_RIVENDARK, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 185932:
+                pGO->SummonCreature(NPC_OBSIDIA, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 185937:
+                pGO->SummonCreature(NPC_FURYWING, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 185938:
+                pGO->SummonCreature(NPC_INSIDION, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+        }
+        pGO->SetGoState(GO_STATE_ACTIVE);
+        pGO->SetRespawnTime(300);
+    }
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -632,6 +670,11 @@ void AddSC_go_scripts()
     newscript->Name = "go_fel_crystal_prism";
     newscript->pGOUse = &GOUse_go_fel_crystal_prism;
     newscript->pGossipSelectGO = &GOGossipSelect_go_fel_crystal_prism;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_rule_skies";
+    newscript->pGOUse = &GOUse_go_rule_skies;
     newscript->RegisterSelf();
 }
 
