@@ -469,6 +469,54 @@ bool GOUse_go_ethereal_teleport_pad(Player* pPlayer, GameObject* pGO)
     return true;
 }
 
+/*######
+## go_fel_crystal_prism
+######*/
+
+#define GOSSIP_ITEM_1 "Insert 35 Apexis Shards!"
+
+enum
+{
+    NPC_BRAXXUS        = 23353,
+    NPC_INCINERATOR    = 23354,
+    NPC_GALVANOTH      = 22281,
+    NPC_ZARCSIN        = 23355,
+
+    ITEM_APEX_SHARD    = 32569
+};
+
+bool GOUse_go_fel_crystal_prism(Player* pPlayer, GameObject* pGO)
+{
+    if (pPlayer->HasItemCount(ITEM_APEX_SHARD,  35) && pPlayer->GetQuestStatus(11079) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+    pPlayer->SEND_GOSSIP_MENU(pGO->GetGOInfo()->questgiver.gossipID, pGO->GetGUID());
+    return true;
+}
+
+bool GOGossipSelect_go_fel_crystal_prism(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
+{
+    switch (urand(0,3))
+    {
+        case 0:
+            pGO->SummonCreature(NPC_BRAXXUS, pGO->GetPositionX()+(rand()%4), pGO->GetPositionY()-(rand()%4), pGO->GetPositionZ()-(rand()%4), pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            break;
+        case 1: 
+            pGO->SummonCreature(NPC_INCINERATOR, pGO->GetPositionX()+(rand()%4), pGO->GetPositionY()-(rand()%4), pGO->GetPositionZ()-(rand()%4), pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            break;
+        case 2:
+            pGO->SummonCreature(NPC_GALVANOTH, pGO->GetPositionX()+(rand()%4), pGO->GetPositionY()-(rand()%4), pGO->GetPositionZ()-(rand()%4), pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            break;
+        case 3:
+            pGO->SummonCreature(NPC_ZARCSIN, pGO->GetPositionX()+(rand()%4), pGO->GetPositionY()-(rand()%4), pGO->GetPositionZ()-(rand()%4), pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            break;
+    }
+
+    pPlayer->DestroyItemCount(ITEM_APEX_SHARD, 35, true);
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -578,6 +626,12 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_ethereal_teleport_pad";
     newscript->pGOUse = &GOUse_go_ethereal_teleport_pad;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_fel_crystal_prism";
+    newscript->pGOUse = &GOUse_go_fel_crystal_prism;
+    newscript->pGossipSelectGO = &GOGossipSelect_go_fel_crystal_prism;
     newscript->RegisterSelf();
 }
 
