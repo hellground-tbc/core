@@ -158,6 +158,33 @@ bool Spell_throw_glaive(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTarg
     return true;
 }
 
+bool Spell_strong_fetish(Unit *caster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    if (caster->GetTypeId() != TYPEID_PLAYER)
+        return true;
+
+    if (Player* player = caster->ToPlayer())
+    {
+        if (player->GetQuestStatus(10544) == QUEST_STATUS_INCOMPLETE)
+        {
+            switch (player->GetAreaId())
+            {
+                case 3773:
+                    player->SummonCreature(21446, player->GetPositionX()+(rand()%4), player->GetPositionY()+(rand()%4), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                    return true;
+                    break;
+                case 3776:
+                    player->SummonCreature(21452, player->GetPositionX()+(rand()%4), player->GetPositionY()+(rand()%4), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                    return true;
+                    break;
+            }
+        }
+        return false;
+    }
+
+    return true;
+}
+
 void AddSC_spell_scripts()
 {
     Script *newscript;
@@ -185,5 +212,10 @@ void AddSC_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_throw_glaive";
     newscript->pSpellTargetMap = &Spell_throw_glaive;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "strong_fetish";
+    newscript->pSpellHandleEffect = &Spell_strong_fetish;
     newscript->RegisterSelf();
 }
