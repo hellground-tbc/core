@@ -173,10 +173,6 @@ void npc_escortAI::EnterEvadeMode()
 
     if (HasEscortState(STATE_ESCORT_ESCORTING))
     {
-        //check the wp
-        if (CurrentWP->id != ReachedLastWP->id && ReachedLastWP->WaitTimeMs == 0)
-            CurrentWP = ReachedLastWP;
-
         AddEscortState(STATE_ESCORT_RETURNING);
         ReturnToLastPoint();
     }
