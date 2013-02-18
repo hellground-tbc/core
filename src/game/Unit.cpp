@@ -10078,7 +10078,7 @@ Unit* Creature::SelectVictim()
         }
     }
 
-    if (target)
+    if (target && !IsOutOfThreatArea(target))
     {
         if (!hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CANNOT_TURN))
             SetInFront(target);
