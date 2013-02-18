@@ -548,7 +548,7 @@ inline bool CreatureAI::UpdateVictim()
             return true;
         else
         {
-            if (!me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID())
+            if (!me->isTotem() && !me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID())
                 me->SetSelection(me->getVictimGUID());
         }
     }
