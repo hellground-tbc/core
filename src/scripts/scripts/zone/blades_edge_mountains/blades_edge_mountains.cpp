@@ -568,29 +568,43 @@ CreatureAI* GetAI_mob_aetherray(Creature *_Creature)
 ####*/
 
 #define GOSSIP_ITEM_WILDLORD "Restore Felsworn Gas Mask."
+#define GOSSIP_ITEM2_WILDLORD "Restore Druid Signal"
 
 bool GossipHello_npc_wildlord_antelarion(Player *player, Creature *_Creature)
 {
     if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
-        if(player->GetQuestStatus(10819) || player->GetQuestStatus(10820) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(31366,1))
-           player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_WILDLORD, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO );
-           player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    {
+        player->PrepareQuestMenu(_Creature->GetGUID());
+
+        if (player->GetQuestStatus(10819) || player->GetQuestStatus(10820) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(31366,1))
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_WILDLORD, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO);
+
+         if (player->GetQuestStatus(10910) || player->GetQuestStatus(10910) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(31763,1))
+             player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM2_WILDLORD, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO+1);
+
+        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    }
     return true;
 }
 
 bool GossipSelect_npc_wildlord_antelarion(Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
-    if( action == GOSSIP_SENDER_INFO )
+    uint32 entry = 0;
+    if (action == GOSSIP_SENDER_INFO)
+        entry = 31366;
+    else if (action == GOSSIP_SENDER_INFO +1)
+        entry = 31763;
+
+    if (entry != 0)
     {
-            ItemPosCountVec dest;
-            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31366, 1);
-            if (msg == EQUIP_ERR_OK)
-            {
-                 Item* item = player->StoreNewItem(dest, 31366, true);
-                 player->SendNewItem(item,1,true,false,true);
-            }
-    player->CLOSE_GOSSIP_MENU();
+        ItemPosCountVec dest;
+        uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31366, 1);
+        if (msg == EQUIP_ERR_OK)
+        {
+            Item* item = player->StoreNewItem(dest, 31366, true);
+            player->SendNewItem(item,1,true,false,true);
+        }
+        player->CLOSE_GOSSIP_MENU();
     }
     return true;
 }
