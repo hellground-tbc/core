@@ -1208,13 +1208,15 @@ void BattleGround::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
             break;
         case SCORE_DEATHS:                                  // Deaths
             itr->second->Deaths += value;
+            if (itr->second->Deaths >= 50)
+                Source->LoseHonor = true;
             break;
         case SCORE_HONORABLE_KILLS:                         // Honorable kills
             itr->second->HonorableKills += value;
             break;
         case SCORE_BONUS_HONOR:                             // Honor bonus
             // do not add honor in arenas
-            if (isBattleGround())
+            if (isBattleGround() && !Source->LoseHonor)
             {
                 // reward honor instantly
                 if (Source->RewardHonor(NULL, 1, value))

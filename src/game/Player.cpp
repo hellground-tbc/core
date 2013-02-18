@@ -455,6 +455,8 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     _preventSave = false;
     _preventUpdate = false;
+
+    LoseHonor = false;
 }
 
 Player::~Player ()
@@ -6044,6 +6046,9 @@ void Player::UpdateHonorFields()
 ///An exact honor value can also be given (overriding the calcs)
 bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvptoken, bool killer)
 {
+    if (LoseHonor)
+        return true;
+
     // do not reward honor in arenas, but enable onkill spellproc
     if (InArena())
     {
