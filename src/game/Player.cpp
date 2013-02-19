@@ -19330,7 +19330,7 @@ bool Player::CanBeSummonedBy(const Unit * summoner)
     if (summoner->GetMap()->IsDungeon())
     {
         // check for permbinded id's
-        const InstanceSave * tmpInst = GetInstanceSave(summoner->GetMapId());
+        InstanceSave * tmpInst = GetInstanceSave(summoner->GetMapId());
         if (tmpInst)
         {
             if (tmpInst->GetInstanceId() != summoner->GetInstanceId())

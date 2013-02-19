@@ -6662,7 +6662,7 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
     if (!unitTarget->ToPlayer()->CanBeSummonedBy(m_caster->ToPlayer()))
         return;
 
-
+    const Player * pCaster = m_caster->ToPlayer();
     float x,y,z;
     m_caster->GetClosePoint(x,y,z,unitTarget->GetObjectSize());
 
