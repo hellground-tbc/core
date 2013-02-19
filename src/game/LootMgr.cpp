@@ -394,7 +394,7 @@ void Loot::AddItem(LootStoreItem const & item)
 bool Loot::IsPlayerAllowedToLoot(Player *player, WorldObject *object)
 {
     return players_allowed_to_loot.empty() ?
-        player->IsWithinDist(object, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false) :
+        player->IsWithinDistInMap(object, sWorld.getConfig(CONFIG_GROUP_XP_DISTANCE), false) :
         players_allowed_to_loot.find(player->GetGUID()) != players_allowed_to_loot.end();
 }
 
