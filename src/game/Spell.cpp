@@ -3813,7 +3813,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_TARGET_AURASTATE;
 
             // Not allow players casting on flying player
-            if (target->IsTaxiFlying() && m_caster->GetTypeId() == TYPEID_PLAYER && !SpellMgr::IsPassiveSpell(GetSpellInfo()->Id))
+            if (target->IsTaxiFlying() && m_caster->GetTypeId() == TYPEID_PLAYER && !SpellMgr::IsPositiveSpell(GetSpellInfo()->Id))
                 return SPELL_FAILED_BAD_TARGETS;
 
             if ((!IsTriggeredSpell() || IsAutoShootSpell()) && !SpellMgr::SpellIgnoreLOS(GetSpellInfo(), 0) && VMAP::VMapFactory::checkSpellForLoS(GetSpellInfo()->Id) && !m_caster->IsWithinLOSInMap(target))
