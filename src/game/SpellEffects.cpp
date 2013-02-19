@@ -6659,14 +6659,8 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
     if (unitTarget->GetDummyAura(23445))
         return;
 
-    const Player * pCaster = m_caster->ToPlayer();
-    // if is in instance and summoner and summoned have different instance id's don't summon
-    if (pCaster && pCaster->GetInstanceData())
-    {
-        const InstanceSave * tmpInst = unitTarget->ToPlayer()->GetInstanceSave(pCaster->GetMapId());
-        if (tmpInst && tmpInst->GetInstanceId() != pCaster->GetInstanceId())
-            return;
-    }
+    if (!unitTarget->ToPlayer()->CanBeSummonedBy(m_caster->ToPlayer()))
+        return;
 
 
     float x,y,z;

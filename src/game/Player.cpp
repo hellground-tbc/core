@@ -19321,6 +19321,34 @@ void Player::UpdateForQuestsGO()
     SendPacketToSelf(&packet);
 }
 
+bool Player::CanBeSummonedBy(const Unit * summoner)
+{
+    if (!summoner)
+        return false;
+
+    // if summoning to instance
+    if (summoner->GetMap()->IsDungeon())
+    {
+        // check for permbinded id's
+        const InstanceSave * tmpInst = GetInstanceSave(summoner->GetMapId());
+        if (tmpInst)
+        {
+            if (tmpInst->GetInstanceId() != summoner->GetInstanceId())
+                return false;
+        }
+        // check for temp id's
+        else if (GetMap()->IsDungeon() && GetMapId() == summoner->GetMapId() && GetInstanceId() != summoner->GetInstanceId())
+            return false;
+    }
+
+    return true;
+}
+
+bool Player::CanBeSummonedBy(uint64 summoner)
+{
+    return CanBeSummonedBy(GetUnit(summoner));
+}
+
 void Player::SummonIfPossible(bool agree, uint64 summonerGUID)
 {
     Unit* summoner = GetUnit(summonerGUID);
@@ -19332,13 +19360,8 @@ void Player::SummonIfPossible(bool agree, uint64 summonerGUID)
             summoner->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
         }
 
-        // if is in instance and summoner and summoned have different instance id's don't summon
-        if (summoner->GetInstanceData())
-        {
-            const InstanceSave * tmpInst = GetInstanceSave(summoner->GetMapId());
-            if (tmpInst && tmpInst->GetInstanceId() != summoner->GetInstanceId())
-                return;
-        }
+        if (!CanBeSummonedBy(summoner))
+            return;
     }
 
     if (!agree)

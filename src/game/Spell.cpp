@@ -4364,12 +4364,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                         return SPELL_FAILED_BAD_TARGETS;
 
                     // if is in instance and summoner and summoned have different instance id's don't summon
-                    if (pCaster && pCaster->GetInstanceData())
-                    {
-                        const InstanceSave * tmpInst = unitTarget->ToPlayer()->GetInstanceSave(pCaster->GetMapId());
-                        if (tmpInst && tmpInst->GetInstanceId() != pCaster->GetInstanceId())
-                            return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
-                    }
+                    if (!target->CanBeSummonedBy(pCaster))
+                        return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
                 }
                 break;
             }
