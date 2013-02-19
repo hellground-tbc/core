@@ -19323,12 +19323,21 @@ void Player::UpdateForQuestsGO()
 
 void Player::SummonIfPossible(bool agree, uint64 summonerGUID)
 {
-    if(Unit* summoner = GetUnit(summonerGUID))
+    Unit* summoner = GetUnit(summonerGUID);
+    if (summoner)
     {
         if (summoner->m_currentSpells[CURRENT_CHANNELED_SPELL])
         {
             summoner->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
             summoner->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+        }
+
+        // if is in instance and summoner and summoned have different instance id's don't summon
+        if (summoner->GetInstanceData())
+        {
+            const InstanceSave * tmpInst = GetInstanceSave(summoner->GetMapId());
+            if (tmpInst && tmpInst->GetInstanceId() != summoner->GetInstanceId())
+                return;
         }
     }
 

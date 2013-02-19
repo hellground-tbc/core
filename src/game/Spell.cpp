@@ -4341,14 +4341,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (m_caster->GetTypeId() != TYPEID_PLAYER)
                     return SPELL_FAILED_BAD_TARGETS;
 
-                if (!dynamic_cast<Player *>(m_caster)->GetSelection())
+                const Player * pCaster = m_caster->ToPlayer();
+
+                if (!pCaster->GetSelection())
                     return SPELL_FAILED_BAD_TARGETS;
 
                 Player* target = m_targets.getUnitTarget()->ToPlayer();
-                if (!target || m_caster == target || !target->IsInSameGroupWith(dynamic_cast<Player *>(m_caster)))
+                if (!target || m_caster == target || !target->IsInSameGroupWith(pCaster))
                     return SPELL_FAILED_BAD_TARGETS;
 
-                if (m_caster->ToPlayer() && m_caster->ToPlayer()->GetBattleGround())
+                if (pCaster->GetBattleGround())
                     return SPELL_FAILED_DONT_REPORT; // Ritual of Summoning Effect is triggered so don't report
 
                 // check if our map is dungeon
@@ -4357,8 +4359,17 @@ SpellCastResult Spell::CheckCast(bool strict)
                     InstanceTemplate const* instance = ObjectMgr::GetInstanceTemplate(m_caster->GetMapId());
                     if (!instance)
                         return SPELL_FAILED_TARGET_NOT_IN_INSTANCE;
+
                     if (!target->Satisfy(sObjectMgr.GetAccessRequirement(instance->access_id), m_caster->GetMapId()))
                         return SPELL_FAILED_BAD_TARGETS;
+
+                    // if is in instance and summoner and summoned have different instance id's don't summon
+                    if (pCaster && pCaster->GetInstanceData())
+                    {
+                        const InstanceSave * tmpInst = unitTarget->ToPlayer()->GetInstanceSave(pCaster->GetMapId());
+                        if (tmpInst && tmpInst->GetInstanceId() != pCaster->GetInstanceId())
+                            return SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE;
+                    }
                 }
                 break;
             }

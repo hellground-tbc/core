@@ -6659,18 +6659,28 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
     if (unitTarget->GetDummyAura(23445))
         return;
 
+    const Player * pCaster = m_caster->ToPlayer();
+    // if is in instance and summoner and summoned have different instance id's don't summon
+    if (pCaster && pCaster->GetInstanceData())
+    {
+        const InstanceSave * tmpInst = unitTarget->ToPlayer()->GetInstanceSave(pCaster->GetMapId());
+        if (tmpInst && tmpInst->GetInstanceId() != pCaster->GetInstanceId())
+            return;
+    }
+
+
     float x,y,z;
     m_caster->GetClosePoint(x,y,z,unitTarget->GetObjectSize());
 
-    ((Player*)unitTarget)->SetSummonPoint(m_caster->GetMapId(),x,y,z);
+    unitTarget->ToPlayer()->SetSummonPoint(m_caster->GetMapId(),x,y,z);
 
-    uint32 zoneid = m_caster->GetTypeId() == TYPEID_PLAYER ? ((Player*)m_caster)->GetCachedZone() : m_caster->GetZoneId();
+    uint32 zoneid = pCaster ? pCaster->GetCachedZone() : m_caster->GetZoneId();
 
     WorldPacket data(SMSG_SUMMON_REQUEST, 8+4+4);
     data << uint64(m_caster->GetGUID());                    // summoner guid
     data << uint32(zoneid);                                 // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
-    ((Player*)unitTarget)->SendPacketToSelf(&data);
+    unitTarget->ToPlayer()->SendPacketToSelf(&data);
 }
 
 static ScriptInfo generateActivateCommand()
