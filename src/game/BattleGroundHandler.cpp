@@ -244,7 +244,7 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode(WorldPacket & /*recv_
         data << count2;                                     // horde flag holders count
         if (ap)
         {
-            // Horde team can always track horde flag
+            // Horde team can always track alliance flag picker
             if (_player->GetTeam() == HORDE)
             {
                 data << (uint64)ap->GetGUID();
@@ -264,7 +264,7 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode(WorldPacket & /*recv_
         }
         if (hp)
         {
-            // Alliance team can always track alliance flag
+            // Alliance team can always track horde flag picker
             if (_player->GetTeam() == ALLIANCE)
             {
                 data << (uint64)hp->GetGUID();

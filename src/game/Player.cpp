@@ -6046,6 +6046,11 @@ void Player::UpdateHonorFields()
 ///An exact honor value can also be given (overriding the calcs)
 bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvptoken, bool killer)
 {
+    // Players that have the resurrection sickness debuff will be worth no honor
+    if (HasAura(SPELL_ID_PASSIVE_RESURRECTION_SICKNESS))
+        return true;
+
+    // Used for battlegrounds
     if (LoseHonor)
         return true;
 
