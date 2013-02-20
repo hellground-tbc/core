@@ -213,19 +213,15 @@ void InstanceData::HandleInitCreatureState(Creature * mob)
 
 void InstanceData::HandleRequiredEncounter(uint32 encounter)
 {
-    EncounterState state = GetData(encounter);
-
-    if (state != DONE)
+    if (GetData(encounter) != DONE)
         return;
 
-    std::unordered_map<uint32, std::vector<uint64> >::iterator itr;
-
-    itr = requiredEncounterToMobs.find(encounter);
+    auto itr = requiredEncounterToMobs.find(encounter);
     if (itr != requiredEncounterToMobs.end())
     {
         std::vector<uint64> & tmpVec = itr->second;
 
-        std::for_each(tmpVec.begin(), tmpVec.end(), [] (auto var)
+        std::for_each(tmpVec.begin(), tmpVec.end(), [this] (auto var)
                                                 {
                                                     Creature * tmp = GetCreature(var);
                                                     if (tmp != nullptr)
