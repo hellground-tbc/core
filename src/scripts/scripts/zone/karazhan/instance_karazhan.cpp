@@ -165,7 +165,7 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
             break;
     }
 
-    HandleInitCreatureState();
+    HandleInitCreatureState(creature);
 }
 
 uint64 instance_karazhan::GetData64(uint32 data)

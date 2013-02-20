@@ -118,7 +118,7 @@ struct instance_the_eye : public ScriptedInstance
                 break;
         }
 
-        HandleInitCreatureState();
+        HandleInitCreatureState(creature);
     }
 
     void OnObjectCreate(GameObject *go)

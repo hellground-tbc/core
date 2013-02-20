@@ -143,11 +143,12 @@ class HELLGROUND_IMPORT_EXPORT InstanceData : public ZoneScript
         std::string LoadBossState(const char * data);
         std::string GetBossSaveData();
 
+        std::unordered_map<uint32, std::vector<uint64> > requiredEncounterToMobs;
+
     private:
         std::vector<BossInfo> bosses;
         DoorInfoMap doors;
 
-        std::unordered_map<uint32, std::vector<uint64> > requiredEncounterToMobs;
 
         virtual void OnObjectCreate(GameObject *) {}
         virtual void OnCreatureCreate(Creature *, uint32 entry) {}

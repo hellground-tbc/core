@@ -227,7 +227,7 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                 break;
         }
 
-        HandleInitCreatureState();
+        HandleInitCreatureState(creature);
     }
 
     void SetData64(uint32 type, uint64 data)
