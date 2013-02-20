@@ -227,15 +227,7 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                 break;
         }
 
-        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
-        if (!tmp)
-            return;
-
-        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-        {
-            creature->setDeathState(JUST_DIED);
-            creature->RemoveCorpse();
-        }
+        HandleInitCreatureState();
     }
 
     void SetData64(uint32 type, uint64 data)

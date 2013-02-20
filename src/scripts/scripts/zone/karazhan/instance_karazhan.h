@@ -79,6 +79,8 @@ struct instance_karazhan : public ScriptedInstance
 
     void Load(const char* in);
 
+    void HandleInitCreatureState(Creature * mob);
+
     void Update(uint32 diff);
 };
 

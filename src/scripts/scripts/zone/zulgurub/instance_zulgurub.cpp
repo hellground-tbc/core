@@ -110,15 +110,7 @@ struct instance_zulgurub : public ScriptedInstance
                 break;
         }
 
-        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
-        if (!tmp)
-            return;
-
-        if (creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-        {
-            creature->setDeathState(JUST_DIED);
-            creature->RemoveCorpse();
-        }
+        HandleInitCreatureState(creature);
     }
 
     void Initialize()

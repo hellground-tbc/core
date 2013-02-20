@@ -104,15 +104,7 @@ struct instance_temple_of_ahnqiraj : public ScriptedInstance
             case 15275: VeknilashGUID = creature->GetGUID(); break;
         }
 
-        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
-        if (!tmp)
-            return;
-
-        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-        {
-            creature->setDeathState(JUST_DIED);
-            creature->RemoveCorpse();
-        }
+        HandleInitCreatureState(creature);
     }
 
     bool IsEncounterInProgress() const

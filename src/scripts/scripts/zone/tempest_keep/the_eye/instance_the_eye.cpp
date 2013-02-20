@@ -118,15 +118,7 @@ struct instance_the_eye : public ScriptedInstance
                 break;
         }
 
-        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
-        if (!tmp)
-            return;
-
-        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-        {
-            creature->setDeathState(JUST_DIED);
-            creature->RemoveCorpse();
-        }
+        HandleInitCreatureState();
     }
 
     void OnObjectCreate(GameObject *go)

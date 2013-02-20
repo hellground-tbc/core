@@ -205,9 +205,10 @@ void InstanceData::HandleInitCreatureState(Creature * mob)
     encounter = GetRequiredEncounterForEntry(tmp->id);
 
     if (encounter && mob->isAlive() && GetData(encounter) != DONE)
+    {
         mob->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-
-    requiredEncounterToMobs[encounter].push_back(mob->GetGUID());
+        requiredEncounterToMobs[encounter].push_back(mob->GetGUID());
+    }
 }
 
 void InstanceData::HandleRequiredEncounter(uint32 encounter)

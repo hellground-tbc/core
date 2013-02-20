@@ -128,6 +128,14 @@ uint32 GetEncounterForEntry(uint32 entry)
     }
 }
 
+void instance_karazhan::HandleInitCreatureState(Creature * mob)
+{
+    if (!mob->GetTerrain()->IsLineOfSightEnabled())
+        mob->SetAggroRange(15);
+
+    InstanceData::HandleInitCreatureState(mob);
+}
+
 void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
 {
     uint32 data = 0;
@@ -157,18 +165,7 @@ void instance_karazhan::OnCreatureCreate(Creature *creature, uint32 entry)
             break;
     }
 
-    if (!creature->GetTerrain()->IsLineOfSightEnabled())
-        creature->SetAggroRange(15);
-
-    const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
-    if (!tmp)
-        return;
-
-    if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-    {
-        creature->setDeathState(JUST_DIED);
-        creature->RemoveCorpse();
-    }
+    HandleInitCreatureState();
 }
 
 uint64 instance_karazhan::GetData64(uint32 data)
