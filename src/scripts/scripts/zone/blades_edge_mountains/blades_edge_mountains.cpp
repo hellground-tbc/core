@@ -2269,6 +2269,405 @@ CreatureAI* GetAI_npc_soulgrinder(Creature* creature)
 }
 
 /*######
+## Assault on Bash'ir Landing!
+######*/
+
+enum
+{
+    YELL_AETHER_1     = -1900226,
+    YELL_AETHER_2     = -1900227,
+    YELL_AETHER_3     = -1900230,
+    YELL_AETHER_4     = -1900232,
+    YELL_ASSISTANT    = -1900228,
+    YELL_ADEPT        = -1900229,
+    YELL_MASTER       = -1900231,
+
+    NPC_SSLAVE        = 23246,
+    NPC_FFIEND        = 23249,
+    NPC_SUBPRIMAL     = 23247,
+    NPC_CONTROLLER    = 23368,
+    NPC_HARBRINGER    = 23390,
+    NPC_INQUISITOR    = 23414,
+    NPC_RECKONER      = 23332,
+    NPC_GCOLLECTOR    = 23333,
+    NPC_DISRUPTORT    = 23250,
+    NPC_AETHER        = 23241,
+    NPC_ASSISTANT     = 23243,
+    NPC_ADEPT         = 23244,
+    NPC_MASTER        = 23245,
+    NPC_SRANGER       = 23242
+};
+
+struct Assault
+{
+    float x, y, z, o;
+};
+
+static Assault AssaultPos[]=
+{
+    { 4014.87f, 5891.27f, 267.870f, 0.608f },
+    { 4018.21f, 5888.22f, 267.870f, 1.271f },
+    { 4013.54f, 5895.92f, 267.870f, 6.138f }
+};
+
+static Assault AssaultPosone[]=
+{
+    { 3975.04f, 5860.19f, 266.310, 0.674f },
+    { 3974.83f, 5871.05f, 265.135, 0.674f },
+    { 3966.80f, 5874.23f, 265.294, 0.674f },
+    { 3969.07f, 5884.81f, 266.298, 0.674f },
+    { 3981.83f, 5856.02f, 266.298, 0.674f },
+    { 3981.12f, 5845.82f, 266.712, 0.674f },
+    { 3989.52f, 5845.91f, 266.793, 0.674f },
+    { 3968.80f, 5856.74f, 266.725, 0.674f }
+};
+
+static Assault AssaultPostwo[]=
+{
+    { 4005.12f, 5894.48f, 267.348, 4.926f },
+    { 4014.66f, 5880.12f, 267.871, 2.499f },
+    { 4011.16f, 5888.21f, 267.826, 3.779f }
+};
+
+struct npc_bashir_landingAI : public ScriptedAI
+{
+    npc_bashir_landingAI(Creature* creature) : ScriptedAI(creature), summons(me) {}
+
+    bool Assault;
+    bool CanStart;
+    bool Next;
+
+    SummonList summons;
+    std::list<uint64> attackers;
+
+    uint32 CheckTimer;
+    uint32 SpawnTimer;
+    uint32 StartSpawnTimer;
+    uint32 EndTimer;
+    uint8 Wave;
+    uint64 AetherGUID;
+    uint64 CollectorGUID;
+
+    void Reset() 
+    {
+        CanStart = true;
+        Assault = false;
+        Next = true;
+        CheckTimer = 3000;
+        SpawnTimer = 60000;
+        StartSpawnTimer = 240000;
+        EndTimer = 1500000;
+        attackers.clear();
+        Wave = 0;
+        AetherGUID = 0;
+        CollectorGUID = 0;
+        SpawnDefenders();
+    }
+
+    void SpawnDefenders()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            switch (i)
+            {
+                case 0:
+                    me->SummonCreature(NPC_AETHER, AssaultPos[i].x, AssaultPos[i].y, AssaultPos[i].z,  AssaultPos[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                    break;
+                case 1:
+                    me->SummonCreature(NPC_SRANGER, AssaultPos[i].x, AssaultPos[i].y, AssaultPos[i].z,  AssaultPos[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                    break;
+                case 2:
+                    me->SummonCreature(NPC_SRANGER, AssaultPos[i].x, AssaultPos[i].y, AssaultPos[i].z,  AssaultPos[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                    break;
+            }
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        summons.Summon(summoned);
+
+        if (summoned->GetEntry() == NPC_SRANGER)
+            summoned->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
+
+        if (summoned->GetEntry() == NPC_SUBPRIMAL ||
+            summoned->GetEntry() == NPC_CONTROLLER ||
+            summoned->GetEntry() == NPC_HARBRINGER ||
+            summoned->GetEntry() == NPC_INQUISITOR ||
+            summoned->GetEntry() == NPC_RECKONER)
+        {
+            attackers.push_back(summoned->GetGUID());
+            summoned->GetMotionMaster()->MoveFleeing(summoned, 3000);
+        }
+
+        if (summoned->GetEntry() == NPC_SSLAVE ||
+            summoned->GetEntry() == NPC_FFIEND)
+        {
+            attackers.push_back(summoned->GetGUID());
+            summoned->GetMotionMaster()->MoveFleeing(summoned, 3000);
+
+            if (Creature* Aether = me->GetCreature(AetherGUID))
+                summoned->AI()->AttackStart(Aether);
+        }
+
+        if (summoned->GetEntry() == NPC_GCOLLECTOR)
+        {
+            attackers.push_back(summoned->GetGUID());
+            CollectorGUID = summoned->GetGUID();
+            summoned->SetReactState(REACT_PASSIVE);
+        }
+		
+        if (summoned->GetEntry() == NPC_DISRUPTORT)
+        {
+            attackers.push_back(summoned->GetGUID());
+            if (Creature* Aether = me->GetCreature(AetherGUID))
+                Aether->AI()->AttackStart(summoned);
+        }
+
+        if (summoned->GetEntry() == NPC_AETHER)
+        {
+            AetherGUID = summoned->GetGUID();
+            DoScriptText(YELL_AETHER_1, summoned);
+            summoned->SetReactState(REACT_AGGRESSIVE);
+            summoned->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USESTANDING);
+        }
+
+        if (summoned->GetEntry() == NPC_ASSISTANT)
+            DoScriptText(YELL_ASSISTANT, summoned);
+
+        if (summoned->GetEntry() == NPC_ADEPT)
+            DoScriptText(YELL_ADEPT, summoned);
+
+        if (summoned->GetEntry() == NPC_MASTER)
+        {
+            DoScriptText(YELL_MASTER, summoned);
+            if (Creature* Aether = me->GetCreature(AetherGUID))
+                DoScriptText(YELL_AETHER_4, Aether);
+        }
+    }
+
+    void NextWave()
+    {
+        ++Wave;
+
+        switch (Wave)
+        {
+            case 1: //1.1
+                for (int i = 0; i < 7; i++)
+                    me->SummonCreature(NPC_SSLAVE, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                break;
+            case 2: //1.2
+                for (int i = 0; i < 7; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            me->SummonCreature(NPC_FFIEND, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                            me->SummonCreature(NPC_SSLAVE, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                    }
+                }
+                Next = false;
+                break;
+            case 3: //2.1
+                me->SummonCreature(NPC_ASSISTANT, AssaultPostwo[0].x, AssaultPostwo[0].y, AssaultPostwo[0].z,  AssaultPostwo[0].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+
+                for (int i = 0; i < 7; i++)
+                    me->SummonCreature(NPC_SUBPRIMAL, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+
+                for (int i = 0; i < 7; i++)
+                    me->SummonCreature(NPC_SSLAVE, AssaultPosone[i].x+(rand()%6), AssaultPosone[i].y+(rand()%6), AssaultPosone[i].z,  AssaultPos[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+
+                Next = true;
+                break;
+            case 4: //2.2
+                if (Creature* Aether = me->GetCreature(AetherGUID))
+                    DoScriptText(YELL_AETHER_2, Aether);
+
+                for (int i = 0; i < 7; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                        case 3:
+                        case 6:
+                            me->SummonCreature(NPC_DISRUPTORT, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                        case 1:
+                        case 2:
+                        case 4:
+                        case 5:
+                            me->SummonCreature(NPC_SUBPRIMAL, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                    }
+                }
+                Next = false;
+                break;
+            case 5: //3.1
+                me->SummonCreature(NPC_ADEPT, AssaultPostwo[1].x, AssaultPostwo[1].y, AssaultPostwo[1].z,  AssaultPostwo[1].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+
+                for (int i = 0; i < 7; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            me->SummonCreature(NPC_CONTROLLER, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                        case 3:
+                        case 6:
+                            me->SummonCreature(NPC_HARBRINGER, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                        case 1:
+                        case 4:
+                            me->SummonCreature(NPC_INQUISITOR, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                        case 2:
+                        case 5:
+                            me->SummonCreature(NPC_RECKONER, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                    }
+                }
+                Next = true;
+                break;
+            case 6: //3.2
+                if (Creature* Aether = me->GetCreature(AetherGUID))
+                    DoScriptText(YELL_AETHER_3, Aether);
+
+                for (int i = 0; i < 8; i++)
+                {
+                    switch (i)
+                    {
+                        case 1:
+                        case 4:
+                            me->SummonCreature(NPC_INQUISITOR, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                        case 2:
+                        case 5:
+                            me->SummonCreature(NPC_RECKONER, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                        case 0:
+                        case 3:
+                        case 6:
+                            me->SummonCreature(NPC_HARBRINGER, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                        case 7:
+                            me->SummonCreature(NPC_GCOLLECTOR, AssaultPosone[i].x, AssaultPosone[i].y, AssaultPosone[i].z,  AssaultPosone[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                            break;
+                    }
+                }
+                break;
+            case 7:
+                if (Creature* Aether = me->GetCreature(AetherGUID))
+                {
+                    if (Creature* Collector = me->GetCreature(CollectorGUID))
+                    {
+                        Collector->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                        Collector->SetReactState(REACT_AGGRESSIVE);
+                        Collector->AI()->AttackStart(Aether);
+                    }
+                }
+                Next = false;
+                break;
+            case 8:
+                me->SummonCreature(NPC_MASTER, AssaultPostwo[2].x, AssaultPostwo[2].y, AssaultPostwo[2].z,  AssaultPostwo[2].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                Assault = true;
+                break;
+        }
+    }
+
+    void EventFail()
+    {
+        summons.DespawnAll();
+        attackers.clear();
+        Assault = true;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!Assault)
+        {
+            if (CheckTimer <= diff)
+            {
+                Map* tmpMap = me->GetMap();
+
+                if (!tmpMap)
+                    return;
+
+                if (!attackers.empty())
+                {
+                    bool alive = false;
+                    for (std::list<uint64>::iterator itr = attackers.begin(); itr != attackers.end(); ++itr)
+                    {
+                        if (Creature* attacker = tmpMap->GetCreature((*itr)))
+                        {
+                            if (attacker->isAlive())
+                            {
+                                alive = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!alive)
+                    {
+                        NextWave();
+                        SpawnTimer = 180000;
+                    }
+                 }
+
+                 CheckTimer = 3000;
+
+                 if (Creature* Aether = me->GetCreature(AetherGUID))
+                 {
+                     if (Aether->isAlive())
+                         return;
+                     else EventFail();
+                 }
+            }
+            else CheckTimer -= diff;
+
+            if (Next)
+            {
+                if (SpawnTimer <= diff) 
+                {
+                    NextWave();
+                    SpawnTimer = 180000;
+                }
+                else SpawnTimer -= diff;
+            }
+        }
+
+        if (CanStart)
+        {
+            if (StartSpawnTimer <= diff) 
+            {
+                NextWave();
+                CanStart = false;
+            }
+            else StartSpawnTimer -= diff;
+        }
+
+        if (EndTimer <= diff) 
+        {
+            EventFail();
+        }
+        else EndTimer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_bashir_landing(Creature* creature)
+{
+    return new npc_bashir_landingAI (creature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -2407,5 +2806,10 @@ void AddSC_blades_edge_mountains()
     newscript = new Script;
     newscript->Name="npc_soulgrinder";
     newscript->GetAI = &GetAI_npc_soulgrinder;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_bashir_landing";
+    newscript->GetAI = &GetAI_npc_bashir_landing;
     newscript->RegisterSelf();
 }
