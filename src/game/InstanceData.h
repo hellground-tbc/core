@@ -21,9 +21,12 @@
 #ifndef HELLGROUND_INSTANCE_DATA_H
 #define HELLGROUND_INSTANCE_DATA_H
 
+#include <unordered_map>
+
 #include "ZoneScript.h"
 //#include "GameObject.h"
 #include "Map.h"
+
 
 class Map;
 class Unit;
@@ -125,6 +128,10 @@ class HELLGROUND_IMPORT_EXPORT InstanceData : public ZoneScript
         Creature *GetCreature(uint64 guid){ return instance->GetCreature(guid); }
 
         virtual uint32 GetEncounterForEntry(uint32 entry) { return 0; }
+        virtual uint32 GetRequiredEncounterForEntry(uint32 entry) { return 0; }
+
+        virtual void HandleInitCreatureState(Creature * mob);
+        virtual void HandleRequiredEncounter(uint32 encounter);
 
     protected:
         void SetBossNumber(uint32 number) { bosses.resize(number); }
@@ -135,9 +142,12 @@ class HELLGROUND_IMPORT_EXPORT InstanceData : public ZoneScript
 
         std::string LoadBossState(const char * data);
         std::string GetBossSaveData();
+
     private:
         std::vector<BossInfo> bosses;
         DoorInfoMap doors;
+
+        std::unordered_map<uint32, std::vector<uint64> > requiredEncounterToMobs;
 
         virtual void OnObjectCreate(GameObject *) {}
         virtual void OnCreatureCreate(Creature *, uint32 entry) {}

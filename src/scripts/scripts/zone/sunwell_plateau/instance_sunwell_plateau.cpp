@@ -114,6 +114,8 @@ struct instance_sunwell_plateau : public ScriptedInstance
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
         GauntletProgress = NOT_STARTED;
+
+        requiredEncounterToMobs.clear();
     }
 
     bool IsEncounterInProgress() const
@@ -200,6 +202,26 @@ struct instance_sunwell_plateau : public ScriptedInstance
         }
     }
 
+    uint32 GetRequiredEncounterForEntry(uint32 entry)
+    {
+        switch (entry)
+        {
+            // Kil'jeaden
+            case 25315:
+                return DATA_MURU_EVENT;
+            // M'uru
+            case 25741:
+            case 25840:
+                return DATA_EREDAR_TWINS_EVENT;
+            // Eredar Twins
+            case 25166:
+            case 25165:
+                return DATA_FELMYST_EVENT;
+            default:
+                return 0;
+        }
+    }
+
     void OnCreatureCreate(Creature* creature, uint32 entry)
     {
         switch(entry)
@@ -252,15 +274,7 @@ struct instance_sunwell_plateau : public ScriptedInstance
             case 19871: BrutallusTrigger    = creature->GetGUID(); break;
         }
 
-        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
-        if (!tmp)
-            return;
-
-        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-        {
-            creature->setDeathState(JUST_DIED);
-            creature->RemoveCorpse();
-        }
+        HandleInitCreatureState(creature);
     }
 
     void OnObjectCreate(GameObject* gobj)
@@ -456,6 +470,8 @@ struct instance_sunwell_plateau : public ScriptedInstance
 
         if(data == DONE || data == FAIL)
             SaveToDB();
+
+        HandleRequiredEncounter(id);
     }
 
     void SetData64(uint32 id, uint64 guid)

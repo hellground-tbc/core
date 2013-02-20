@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include <algorithm>
+
 #include "InstanceData.h"
 #include "Database/DatabaseEnv.h"
 #include "Map.h"
@@ -180,4 +182,53 @@ void InstanceData::ResetEncounterInProgress()
 {
     // this will only reset encounter state to NOT_STARTED, it won't evade creatures inside of map, better option is to override it in instance script
     Load(GetSaveData().c_str());
+}
+
+void InstanceData::HandleInitCreatureState(Creature * mob)
+{
+    if (mob == nullptr)
+        return;
+
+    const CreatureData *tmp = mob->GetLinkedRespawnCreatureData();
+    if (!tmp)
+        return;
+
+    uint32 encounter = GetEncounterForEntry(tmp->id);
+
+    if (encounter && mob->isAlive() && GetData(encounter) == DONE)
+    {
+        mob->setDeathState(JUST_DIED);
+        mob->RemoveCorpse();
+        return;
+    }
+
+    encounter = GetRequiredEncounterForEntry(tmp->id);
+
+    if (encounter && mob->isAlive() && GetData(encounter) != DONE)
+        mob->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+    requiredEncounterToMobs[encounter].push_back(mob->GetGUID());
+}
+
+void InstanceData::HandleRequiredEncounter(uint32 encounter)
+{
+    EncounterState state = GetData(encounter);
+
+    if (state != DONE)
+        return;
+
+    std::unordered_map<uint32, std::vector<uint64> >::iterator itr;
+
+    itr = requiredEncounterToMobs.find(encounter);
+    if (itr != requiredEncounterToMobs.end())
+    {
+        std::vector<uint64> & tmpVec = itr->second;
+
+        std::for_each(tmpVec.begin(), tmpVec.end(), [] (auto var)
+                                                {
+                                                    Creature * tmp = GetCreature(var);
+                                                    if (tmp != nullptr)
+                                                        tmp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                                                });
+    }
 }
