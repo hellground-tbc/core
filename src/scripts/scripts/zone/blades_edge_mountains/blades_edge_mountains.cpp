@@ -2136,7 +2136,7 @@ struct npc_soulgrinderAI : public ScriptedAI
         {
             if (Player* player = itr->getSource())
             {
-                if(me->IsWithinDistInMap(player, 10.0f) && player->GetQuestStatus(QUEST_SOULGRINGER))
+                if(me->IsWithinDistInMap(player, 10.0f) && player->GetQuestStatus(QUEST_SOULGRINGER) == QUEST_STATUS_INCOMPLETE)
                     PlayerGUID = player->GetGUID();
             }
         }
@@ -2295,7 +2295,8 @@ enum
     NPC_ASSISTANT     = 23243,
     NPC_ADEPT         = 23244,
     NPC_MASTER        = 23245,
-    NPC_SRANGER       = 23242
+    NPC_SRANGER       = 23242,
+    NPC_LIEUTENANT    = 23430
 };
 
 struct Assault
@@ -2307,7 +2308,9 @@ static Assault AssaultPos[]=
 {
     { 4014.87f, 5891.27f, 267.870f, 0.608f },
     { 4018.21f, 5888.22f, 267.870f, 1.271f },
-    { 4013.54f, 5895.92f, 267.870f, 6.138f }
+    { 4013.54f, 5895.92f, 267.870f, 6.138f },
+    { 2529.85f, 7323.99f, 375.353, 5.834f },
+    { 3063.00f, 6708.12f, 585.281, 5.834f },
 };
 
 static Assault AssaultPosone[]=
@@ -2366,7 +2369,7 @@ struct npc_bashir_landingAI : public ScriptedAI
 
     void SpawnDefenders()
     {
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             switch (i)
             {
@@ -2378,6 +2381,9 @@ struct npc_bashir_landingAI : public ScriptedAI
                     break;
                 case 2:
                     me->SummonCreature(NPC_SRANGER, AssaultPos[i].x, AssaultPos[i].y, AssaultPos[i].z,  AssaultPos[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
+                    break;
+                case 3:
+                    me->SummonCreature(NPC_LIEUTENANT, AssaultPos[i].x, AssaultPos[i].y, AssaultPos[i].z,  AssaultPos[i].o, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1500000);
                     break;
             }
         }
@@ -2443,6 +2449,15 @@ struct npc_bashir_landingAI : public ScriptedAI
             DoScriptText(YELL_MASTER, summoned);
             if (Creature* Aether = me->GetCreature(AetherGUID))
                 DoScriptText(YELL_AETHER_4, Aether);
+        }
+
+        if (summoned->GetEntry() == NPC_LIEUTENANT)
+        {
+            summoned->Mount(21152);
+            summoned->SetLevitate(true);
+            summoned->SetSpeed(MOVE_FLIGHT, 1.00f);
+            summoned->GetMotionMaster()->MovePoint(0, AssaultPos[4].x, AssaultPos[4].y, AssaultPos[4].z);
+            summoned->ForcedDespawn(40000);
         }
     }
 
@@ -2668,6 +2683,61 @@ CreatureAI* GetAI_npc_bashir_landing(Creature* creature)
 }
 
 /*######
+## npc_banishing_crystal
+######*/
+
+enum
+{
+    SPELL_MASTER        = 40828,
+    SPELL_BANISHMENT    = 40857,
+
+    NPC_BCREDIT         = 23327
+};
+
+struct npc_banishing_crystalAI : public ScriptedAI
+{
+    npc_banishing_crystalAI(Creature* creature) : ScriptedAI(creature) {}
+
+    uint64 PlayerGUID;
+
+    void Reset() 
+    {
+        PlayerGUID = 0;
+        DoCast(me, SPELL_BANISHMENT);
+        GetPlayer();
+    }
+
+    void GetPlayer()
+    { 
+        Map* map = me->GetMap();
+        Map::PlayerList const &PlayerList = map->GetPlayers();
+
+        for(Map::PlayerList::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+        {
+            if (Player* player = itr->getSource())
+            {
+                if(me->IsWithinDistInMap(player, 15.0f) && (player->GetQuestStatus(11026) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11051) == QUEST_STATUS_INCOMPLETE))
+                    PlayerGUID = player->GetGUID();
+            }
+        }
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if (spell->Id == SPELL_MASTER)
+        {
+            if (Player* player = me->GetPlayer(PlayerGUID))
+                player->KilledMonster(NPC_BCREDIT, me->GetGUID());
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_banishing_crystal(Creature* creature)
+{
+    return new npc_banishing_crystalAI (creature);
+}
+
+/*######
 ## AddSC
 ######*/
 
@@ -2811,5 +2881,10 @@ void AddSC_blades_edge_mountains()
     newscript = new Script;
     newscript->Name="npc_bashir_landing";
     newscript->GetAI = &GetAI_npc_bashir_landing;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_banishing_crystal";
+    newscript->GetAI = &GetAI_npc_banishing_crystal;
     newscript->RegisterSelf();
 }
