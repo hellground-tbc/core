@@ -221,11 +221,11 @@ void InstanceData::HandleRequiredEncounter(uint32 encounter)
     {
         std::vector<uint64> & tmpVec = itr->second;
 
-        std::for_each(tmpVec.begin(), tmpVec.end(), [this] (auto var)
-                                                {
-                                                    Creature * tmp = GetCreature(var);
-                                                    if (tmp != nullptr)
-                                                        tmp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                                                });
+        std::for_each(tmpVec.begin(), tmpVec.end(), [this] (uint64& var)
+                                                    {
+                                                        Creature * tmp = GetCreature(var);
+                                                        if (tmp != nullptr)
+                                                            tmp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                                                    });
     }
 }
