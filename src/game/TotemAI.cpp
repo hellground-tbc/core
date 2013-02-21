@@ -42,7 +42,6 @@ TotemAI::Permissible(const Creature *creature)
 
 TotemAI::TotemAI(Creature *c) : CreatureAI(c), i_totem(static_cast<Totem&>(*c)), i_victimGuid(0)
 {
-    c->addUnitState(UNIT_STAT_CANNOT_TURN);
 }
 
 void TotemAI::MoveInLineOfSight(Unit *)
@@ -51,6 +50,7 @@ void TotemAI::MoveInLineOfSight(Unit *)
 
 void TotemAI::EnterEvadeMode()
 {
+    i_totem.addUnitState(UNIT_STAT_CANNOT_TURN);
     i_totem.CombatStop();
 }
 
@@ -101,11 +101,12 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
         i_victimGuid = victim->GetGUID();
 
         // attack
-        //i_totem.SetInFront(victim);                         // client change orientation by self
         i_totem.CastSpell(victim, i_totem.GetSpell(), false);
     }
     else
         i_victimGuid = 0;
+
+    i_totem.SetFacingToObject(&i_totem);
 }
 
 bool TotemAI::IsVisible(Unit *) const
