@@ -927,11 +927,6 @@ DisablePVP = 0
 ###################################################################################################################
 # CREATURE SETTINGS
 #
-#    ThreatRadius
-#        Radius for creature to evade after being pulled away from combat start point
-#        If ThreatRadius is less than creature aggro radius then aggro radius will be used
-#        Default: 60 yards
-#
 #    Rate.Creature.Aggro
 #        Aggro radius percent or off.
 #        Default: 1   - 100%
@@ -1031,7 +1026,9 @@ DisablePVP = 0
 #
 ###################################################################################################################
 
-ThreatRadius = 60
+Creature.Evade.DistanceToHome = 40
+Creature.Evade.DistanceToTarget = 45
+
 Rate.Creature.Aggro = 1
 CreatureFamilyAssistanceRadius = 10
 CreatureFamilyAssistanceDelay = 1500

@@ -957,7 +957,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DEATH_BONES_WORLD]       = sConfig.GetBoolDefault("Death.Bones.World", true);
     m_configs[CONFIG_DEATH_BONES_BG_OR_ARENA] = sConfig.GetBoolDefault("Death.Bones.BattlegroundOrArena", true);
 
-    m_configs[CONFIG_THREAT_RADIUS] = sConfig.GetIntDefault("ThreatRadius", 60);
+    m_configs[CONFIG_EVADE_HOMEDIST] = sConfig.GetIntDefault("Creature.Evade.DistanceToHome", 50);
+    m_configs[CONFIG_EVADE_TARGETDIST] = sConfig.GetIntDefault("Creature.Evade.DistanceToTarget", 45);
 
     // always use declined names in the russian client
     m_configs[CONFIG_DECLINED_NAMES_USED] =

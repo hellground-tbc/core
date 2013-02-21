@@ -10074,11 +10074,14 @@ Unit* Creature::SelectVictim()
             if (!HasAuraType(SPELL_AURA_MOD_TAUNT))
                 target = getThreatManager().getHostilTarget();
             else
-                target = getVictim();
+                return getVictim();
         }
     }
 
-    if (target && !IsOutOfThreatArea(target))
+    if (IsOutOfThreatArea(target))
+        target = NULL;
+
+    if (target)
     {
         if (!hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_CANNOT_TURN))
             SetInFront(target);
@@ -10096,7 +10099,7 @@ Unit* Creature::SelectVictim()
     // search nearby enemy before enter evade mode
     if (HasReactState(REACT_AGGRESSIVE))
     {
-        target = SelectNearestTarget(45.0f);
+        target = SelectNearestTarget(25.0f);
         if (target && !IsOutOfThreatArea(target))
             return target;
     }

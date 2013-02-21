@@ -650,7 +650,7 @@ namespace Hellground
         public:
             explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool force = false) : m_creature(creature), m_force(force)
             {
-                m_range = (dist == 0 ? 9999 : dist);
+                m_range = (dist == 0 ? 80.0f : dist);
             }
             bool operator()(Unit* u)
             {

@@ -2210,12 +2210,24 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     if (sMapStore.LookupEntry(GetMapId())->IsDungeon())
         return false;
 
-    float AttackDist = GetAttackDistance(pVictim);
-    uint32 ThreatRadius = sWorld.getConfig(CONFIG_THREAT_RADIUS);
+    uint32 AttackDist = GetAttackDistance(pVictim);
 
-    float dist = (ThreatRadius > AttackDist ? ThreatRadius : AttackDist);
-    //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return !IsWithinDistInMap(&homeLocation, dist) || !pVictim->IsWithinDistInMap(&homeLocation, 1.5f*dist) || !pVictim->IsWithinDistInMap(this, 1.5f*dist);
+    uint32 distToHome = std::max(AttackDist, sWorld.getConfig(CONFIG_EVADE_HOMEDIST));
+    uint32 distToTarget = std::max(AttackDist, sWorld.getConfig(CONFIG_EVADE_TARGETDIST));
+
+    if (!IsWithinDistInMap(&homeLocation, distToHome))
+    {
+        AI()->EnterEvadeMode();
+        return true;
+    }
+
+    if (!IsWithinDistInMap(pVictim, distToTarget))
+        return true;
+
+    if (!pVictim->IsWithinDistInMap(&homeLocation, distToHome))
+        return true;
+
+    return  false;
 }
 
 CreatureDataAddon const* Creature::GetCreatureAddon() const

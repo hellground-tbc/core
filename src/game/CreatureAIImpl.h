@@ -539,16 +539,17 @@ inline bool CreatureAI::UpdateVictim()
     if (!me->isInCombat() || !me->isAlive())
         return false;
 
-    if (me->hasUnitState(UNIT_STAT_LOST_CONTROL))
+    bool outofthreat = me->IsOutOfThreatArea(me->getVictim());
+    if (me->hasUnitState(UNIT_STAT_LOST_CONTROL) && !outofthreat)
         return me->getVictim();
 
-    if (me->getVictim())
+    if (me->getVictim() && !outofthreat)
     {
         if (me->IsNonMeleeSpellCasted(false))
             return true;
         else
         {
-            if (!me->isTotem() && !me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID())
+            if (!me->hasUnitState(UNIT_STAT_CANNOT_TURN) && !me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID())
                 me->SetSelection(me->getVictimGUID());
         }
     }
@@ -558,7 +559,7 @@ inline bool CreatureAI::UpdateVictim()
         if (Unit *pVictim = me->SelectVictim())
             AttackStart(pVictim);
     }
-    else if (me->getThreatManager().isThreatListEmpty())
+    else if (me->getThreatManager().isThreatListEmpty() || outofthreat)
     {
         EnterEvadeMode();
         me->SetReactState(REACT_PASSIVE);
