@@ -16,13 +16,12 @@
 
 /* ScriptData
 SDName: Blades_Edge_Mountains
-SD%Complete: 90
-SDComment: Quest support: 10503, 10504, 10556, 10609, 10682, 10980. Ogri'la->Skettis Flight. (npc_daranelle needs bit more work before consider complete)
+SD%Complete: 98
+SDComment: Quest support: 10503, 10504, 10556, 10609, 10682, 10980, 10518, 10859, 10674, 11058 ,11080, 11059, 10675, 10867, 10557, 10710, 10711, 10712, 10821, 10911, 10723, 10802, 11000, 11026, 11051. Assault on Bash'ir Landing!. Ogri'la->Skettis Flight. (npc_daranelle needs bit more work before consider complete)
 SDCategory: Blade's Edge Mountains
 EndScriptData */
 
 /* ContentData
-mobs_bladespire_ogre
 mobs_nether_drake
 npc_daranelle
 npc_overseer_nuaar
@@ -30,9 +29,26 @@ npc_saikkal_the_elder
 npc_skyguard_handler_irena
 npc_bloodmaul_brutebane
 npc_ogre_brute
+npc_vim_bunny
 npc_aether_ray
 npc_wildlord_antelarion
 npc_kolphis_darkscale
+npc_prophecy_trigger
+go_thunderspike
+go_apexis_relic
+go_simon_cluster
+npc_simon_bunny
+npc_orb_attracter
+npc_razaan_event
+npc_razaani_raide
+npc_rally_zapnabber
+npc_anger_camp
+go_obeliks
+npc_cannon_target
+npc_gargrom
+npc_soulgrinder
+npc_bashir_landing
+npc_banishing_crystal
 EndContentData */
 
 #include "precompiled.h"
@@ -41,11 +57,11 @@ EndContentData */
 ## mobs_nether_drake
 ######*/
 
-#define SAY_NIHIL_1         -1000396
-#define SAY_NIHIL_2         -1000397
-#define SAY_NIHIL_3         -1000398
-#define SAY_NIHIL_4         -1000399
-#define SAY_NIHIL_INTERRUPT -1000400
+#define SAY_NIHIL_1                 -1000396
+#define SAY_NIHIL_2                 -1000397
+#define SAY_NIHIL_3                 -1000398
+#define SAY_NIHIL_4                 -1000399
+#define SAY_NIHIL_INTERRUPT         -1000400
 
 #define ENTRY_WHELP                 20021
 #define ENTRY_PROTO                 21821
@@ -61,7 +77,7 @@ EndContentData */
 
 struct mobs_nether_drakeAI : public ScriptedAI
 {
-    mobs_nether_drakeAI(Creature *c) : ScriptedAI(c) {}
+    mobs_nether_drakeAI(Creature* creature) : ScriptedAI(creature) {}
 
     bool IsNihil;
     uint32 NihilSpeech_Timer;
@@ -76,9 +92,9 @@ struct mobs_nether_drakeAI : public ScriptedAI
         NihilSpeech_Timer = 2000;
         IsNihil = false;
 
-        if( m_creature->GetEntry() == ENTRY_NIHIL )
+        if (me->GetEntry() == ENTRY_NIHIL)
         {
-            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             IsNihil = true;
         }
 
@@ -89,13 +105,13 @@ struct mobs_nether_drakeAI : public ScriptedAI
         IntangiblePresence_Timer = 15000;
     }
 
-    void SpellHit(Unit *caster, const SpellEntry *spell)
+    void SpellHit(Unit* caster, const SpellEntry* spell)
     {
-        if( spell->Id == SPELL_T_PHASE_MODULATOR && caster->GetTypeId() == TYPEID_PLAYER )
+        if (spell->Id == SPELL_T_PHASE_MODULATOR && caster->GetTypeId() == TYPEID_PLAYER)
         {
             uint32 cEntry = 0;
 
-            switch( m_creature->GetEntry() )
+            switch (me->GetEntry())
             {
                 case ENTRY_WHELP:
                     cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_MATUR, ENTRY_NIHIL);
@@ -110,25 +126,25 @@ struct mobs_nether_drakeAI : public ScriptedAI
                     cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_NIHIL);
                     break;
                 case ENTRY_NIHIL:
-                    if( NihilSpeech_Phase )
+                    if (NihilSpeech_Phase)
                     {
-                        DoScriptText(SAY_NIHIL_INTERRUPT, m_creature);
+                        DoScriptText(SAY_NIHIL_INTERRUPT, me);
                         IsNihil = false;
                         cEntry = RAND(ENTRY_PROTO, ENTRY_ADOLE, ENTRY_MATUR);
                     }
                     break;
             }
 
-            if( cEntry )
+            if (cEntry)
             {
-                m_creature->UpdateEntry(cEntry);
+                me->UpdateEntry(cEntry);
 
-                if( cEntry == ENTRY_NIHIL )
+                if (cEntry == ENTRY_NIHIL)
                 {
-                    m_creature->InterruptNonMeleeSpells(true);
-                    m_creature->RemoveAllAuras();
-                    m_creature->DeleteThreatList();
-                    m_creature->CombatStop(true);
+                    me->InterruptNonMeleeSpells(true);
+                    me->RemoveAllAuras();
+                    me->DeleteThreatList();
+                    me->CombatStop(true);
                     Reset();
                 }
             }
@@ -137,35 +153,35 @@ struct mobs_nether_drakeAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if( IsNihil )
+        if (IsNihil)
         {
-            if( NihilSpeech_Phase )
+            if (NihilSpeech_Phase)
             {
-                if(NihilSpeech_Timer <= diff)
+                if (NihilSpeech_Timer <= diff)
                 {
-                    switch( NihilSpeech_Phase )
+                    switch (NihilSpeech_Phase)
                     {
                         case 1:
-                            DoScriptText(SAY_NIHIL_1, m_creature);
+                            DoScriptText(SAY_NIHIL_1, me);
                             ++NihilSpeech_Phase;
                             break;
                         case 2:
-                            DoScriptText(SAY_NIHIL_2, m_creature);
+                            DoScriptText(SAY_NIHIL_2, me);
                             ++NihilSpeech_Phase;
                             break;
                         case 3:
-                            DoScriptText(SAY_NIHIL_3, m_creature);
+                            DoScriptText(SAY_NIHIL_3, me);
                             ++NihilSpeech_Phase;
                             break;
                         case 4:
-                            DoScriptText(SAY_NIHIL_4, m_creature);
+                            DoScriptText(SAY_NIHIL_4, me);
                             ++NihilSpeech_Phase;
                             break;
                         case 5:
-                            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                            m_creature->SetLevitate(true);
+                            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            me->SetLevitate(true);
                             //then take off to random location. creature is initially summoned, so don't bother do anything else.
-                            m_creature->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX()+100, m_creature->GetPositionY(), m_creature->GetPositionZ()+100);
+                            me->GetMotionMaster()->MovePoint(0, me->GetPositionX()+100, me->GetPositionY(), me->GetPositionZ()+100);
                             NihilSpeech_Phase = 0;
                             break;
                     }
@@ -177,30 +193,30 @@ struct mobs_nether_drakeAI : public ScriptedAI
             return;                                         //anything below here is not interesting for Nihil, so skip it
         }
 
-        if( !UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
-        if( IntangiblePresence_Timer <= diff )
+        if (IntangiblePresence_Timer <= diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
+            DoCast(me->getVictim(),SPELL_INTANGIBLE_PRESENCE);
             IntangiblePresence_Timer = 15000+rand()%15000;
         }
         else
             IntangiblePresence_Timer -= diff;
 
-        if( ManaBurn_Timer <= diff )
+        if (ManaBurn_Timer <= diff)
         {
-            Unit* target = m_creature->getVictim();
-            if( target && target->getPowerType() == POWER_MANA )
+            Unit* target = me->getVictim();
+            if (target && target->getPowerType() == POWER_MANA)
                 DoCast(target,SPELL_MANA_BURN);
             ManaBurn_Timer = 8000+rand()%8000;
         }
         else
             ManaBurn_Timer -= diff;
 
-        if( ArcaneBlast_Timer <= diff )
+        if (ArcaneBlast_Timer <= diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_ARCANE_BLAST);
+            DoCast(me->getVictim(),SPELL_ARCANE_BLAST);
             ArcaneBlast_Timer = 2500+rand()%5000;
         }
         else
@@ -209,9 +225,9 @@ struct mobs_nether_drakeAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_mobs_nether_drake(Creature *_Creature)
+CreatureAI* GetAI_mobs_nether_drake(Creature* creature)
 {
-    return new mobs_nether_drakeAI (_Creature);
+    return new mobs_nether_drakeAI (creature);
 }
 
 /*######
@@ -222,21 +238,21 @@ CreatureAI* GetAI_mobs_nether_drake(Creature *_Creature)
 
 struct npc_daranelleAI : public ScriptedAI
 {
-    npc_daranelleAI(Creature *c) : ScriptedAI(c) {}
+    npc_daranelleAI(Creature* creature) : ScriptedAI(creature) {}
 
     void Reset()
     {
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void MoveInLineOfSight(Unit* who)
     {
         if (who->GetTypeId() == TYPEID_PLAYER)
         {
-            if(who->HasAura(36904,0))
+            if (who->HasAura(36904,0))
             {
-                DoScriptText(SAY_DARANELLE, m_creature, who);
+                DoScriptText(SAY_DARANELLE, me, who);
                 //TODO: Move the below to updateAI and run if this statement == true
-                ((Player*)who)->KilledMonster(21511, m_creature->GetGUID());
+                ((Player*)who)->KilledMonster(21511, me->GetGUID());
                 ((Player*)who)->RemoveAurasDueToSpell(36904);
             }
         }
@@ -245,9 +261,9 @@ struct npc_daranelleAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_daranelle(Creature *_Creature)
+CreatureAI* GetAI_npc_daranelle(Creature* creature)
 {
-    return new npc_daranelleAI (_Creature);
+    return new npc_daranelleAI (creature);
 }
 
 /*######
@@ -256,21 +272,21 @@ CreatureAI* GetAI_npc_daranelle(Creature *_Creature)
 
 #define GOSSIP_HON "Overseer, I am here to negotiate on behalf of the Cenarion Expedition."
 
-bool GossipHello_npc_overseer_nuaar(Player *player, Creature *_Creature)
+bool GossipHello_npc_overseer_nuaar(Player* player, Creature* creature)
 {
     if (player->GetQuestStatus(10682) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_HON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(10532, _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(10532, creature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_overseer_nuaar(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_overseer_nuaar(Player* player, Creature* creature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
-        player->SEND_GOSSIP_MENU(10533, _Creature->GetGUID());
+        player->SEND_GOSSIP_MENU(10533, creature->GetGUID());
         player->AreaExploredOrEventHappens(10682);
     }
     return true;
@@ -283,27 +299,27 @@ bool GossipSelect_npc_overseer_nuaar(Player *player, Creature *_Creature, uint32
 #define GOSSIP_HSTE "Yes... yes, it's me."
 #define GOSSIP_SSTE "Yes elder. Tell me more of the book."
 
-bool GossipHello_npc_saikkal_the_elder(Player *player, Creature *_Creature)
+bool GossipHello_npc_saikkal_the_elder(Player* player, Creature* creature)
 {
     if (player->GetQuestStatus(10980) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_HSTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_HSTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(10794, _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(10794, creature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_saikkal_the_elder(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_saikkal_the_elder(Player* player, Creature* creature, uint32 sender, uint32 action)
 {
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_SSTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-            player->SEND_GOSSIP_MENU(10795, _Creature->GetGUID());
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_SSTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(10795, creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            player->TalkedToCreature(_Creature->GetEntry(), _Creature->GetGUID());
-            player->SEND_GOSSIP_MENU(10796, _Creature->GetGUID());
+            player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
+            player->SEND_GOSSIP_MENU(10796, creature->GetGUID());
             break;
     }
     return true;
@@ -315,20 +331,20 @@ bool GossipSelect_npc_saikkal_the_elder(Player *player, Creature *_Creature, uin
 
 #define GOSSIP_SKYGUARD "Fly me to Skettis please"
 
-bool GossipHello_npc_skyguard_handler_irena(Player *player, Creature *_Creature )
+bool GossipHello_npc_skyguard_handler_irena(Player* player, Creature* creature)
 {
-    if (_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
+    if (creature->isQuestGiver())
+        player->PrepareQuestMenu(creature->GetGUID());
 
     if (player->GetReputationMgr().GetRank(1031) >= REP_HONORED)
-        player->ADD_GOSSIP_ITEM( 2, GOSSIP_SKYGUARD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(2, GOSSIP_SKYGUARD, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
 
     return true;
 }
 
-bool GossipSelect_npc_skyguard_handler_irena(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_skyguard_handler_irena(Player* player, Creature* creature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
@@ -357,16 +373,16 @@ enum eBloodmaul
 
 struct npc_bloodmaul_brutebaneAI : public ScriptedAI
 {
-    npc_bloodmaul_brutebaneAI(Creature *c) : ScriptedAI(c){}
+    npc_bloodmaul_brutebaneAI(Creature* creature) : ScriptedAI(creature){}
 
-    void IsSummonedBy(Unit *pOwner)
+    void IsSummonedBy(Unit* pOwner)
     {
        if (Creature* pOgre = GetClosestCreatureWithEntry(me, NPC_OGRE_BRUTE, 50.0f))
        {
            pOgre->SetReactState(REACT_DEFENSIVE);
-           pOgre->GetMotionMaster()->MovePoint(1, m_creature->GetPositionX()-1, m_creature->GetPositionY()+1, m_creature->GetPositionZ());
+           pOgre->GetMotionMaster()->MovePoint(1, me->GetPositionX()-1, me->GetPositionY()+1, me->GetPositionZ());
 
-           if (Player *plOwner = pOwner->GetCharmerOrOwnerPlayerOrPlayerItself())
+           if (Player* plOwner = pOwner->GetCharmerOrOwnerPlayerOrPlayerItself())
                plOwner->KilledMonster(NPC_QUEST_CREDIT, pOgre->GetGUID());
        }
     }
@@ -374,9 +390,9 @@ struct npc_bloodmaul_brutebaneAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff){}
 };
 
-CreatureAI* GetAI_npc_bloodmaul_brutebane(Creature* pCreature)
+CreatureAI* GetAI_npc_bloodmaul_brutebane(Creature* creature)
 {
-    return new npc_bloodmaul_brutebaneAI (pCreature);
+    return new npc_bloodmaul_brutebaneAI (creature);
 }
 
 /*######
@@ -385,7 +401,7 @@ CreatureAI* GetAI_npc_bloodmaul_brutebane(Creature* pCreature)
 
 struct npc_ogre_bruteAI : public ScriptedAI
 {
-    npc_ogre_bruteAI(Creature *c) : ScriptedAI(c){}
+    npc_ogre_bruteAI(Creature* creature) : ScriptedAI(creature){}
 
     void MovementInform(uint32 type, uint32 id)
     {
@@ -413,9 +429,9 @@ struct npc_ogre_bruteAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_ogre_brute(Creature* pCreature)
+CreatureAI* GetAI_npc_ogre_brute(Creature* creature)
 {
-    return new npc_ogre_bruteAI(pCreature);
+    return new npc_ogre_bruteAI(creature);
 }
 
 /*######
@@ -429,7 +445,7 @@ CreatureAI* GetAI_npc_ogre_brute(Creature* pCreature)
 
 struct npc_vim_bunnyAI : public ScriptedAI
 {
-    npc_vim_bunnyAI(Creature *c) : ScriptedAI(c){}
+    npc_vim_bunnyAI(Creature* creature) : ScriptedAI(creature){}
 
     uint32 CheckTimer;
 
@@ -440,21 +456,21 @@ struct npc_vim_bunnyAI : public ScriptedAI
 
     bool GetPlayer()
     {
-        Player *pPlayer = NULL;
-        Hellground::AnyPlayerInObjectRangeCheck p_check(m_creature, 3.0f);
+        Player* pPlayer = NULL;
+        Hellground::AnyPlayerInObjectRangeCheck p_check(me, 3.0f);
         Hellground::ObjectSearcher<Player, Hellground::AnyPlayerInObjectRangeCheck> searcher(pPlayer, p_check);
 
-        Cell::VisitAllObjects(m_creature, searcher, 3.0f);
+        Cell::VisitAllObjects(me, searcher, 3.0f);
         return pPlayer;
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(CheckTimer < diff)
+        if (CheckTimer < diff)
         {
-            if(me->GetDistance2d(3279.80f, 4639.76f) < 5.0)
+            if (me->GetDistance2d(3279.80f, 4639.76f) < 5.0)
             {
-                if(GetClosestCreatureWithEntry(me, MAIN_SPAWN, 80.0f))
+                if (GetClosestCreatureWithEntry(me, MAIN_SPAWN, 80.0f))
                 {
                     CheckTimer = 20000;
                     return;
@@ -462,7 +478,7 @@ struct npc_vim_bunnyAI : public ScriptedAI
 
                 // WE NEED HERE TO BE SURE THAT SPAWN IS VALID !
                 std::list<Creature*> triggers = FindAllCreaturesWithEntry(PENTAGRAM_TRIGGER, 50.0);
-                if(triggers.size() >= 5)
+                if (triggers.size() >= 5)
                 {
                     DoSpawnCreature(MAIN_SPAWN,0,0,0,0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
                     CheckTimer = 20000;
@@ -472,9 +488,9 @@ struct npc_vim_bunnyAI : public ScriptedAI
             }
             else
             {
-                if(GetPlayer())
+                if (GetPlayer())
                 {
-                    Unit *temp = DoSpawnCreature(PENTAGRAM_TRIGGER,0,0,2.0,0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                    Unit* temp = DoSpawnCreature(PENTAGRAM_TRIGGER,0,0,2.0,0, TEMPSUMMON_TIMED_DESPAWN, 15000);
                     temp->CastSpell(temp, SPELL_PENTAGRAM, false);
                     CheckTimer = 16000;
                     return;
@@ -487,9 +503,9 @@ struct npc_vim_bunnyAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_vim_bunny(Creature *_Creature)
+CreatureAI* GetAI_npc_vim_bunny(Creature* creature)
 {
-    return new npc_vim_bunnyAI (_Creature);
+    return new npc_vim_bunnyAI (creature);
 }
 
 /*######
@@ -503,8 +519,7 @@ CreatureAI* GetAI_npc_vim_bunny(Creature *_Creature)
 
 struct mob_aetherrayAI : public ScriptedAI
 {
-
-    mob_aetherrayAI(Creature *c) : ScriptedAI(c) {}
+    mob_aetherrayAI(Creature* creature) : ScriptedAI(creature) {}
 
     bool Weak;
     uint64 PlayerGUID;
@@ -514,15 +529,15 @@ struct mob_aetherrayAI : public ScriptedAI
         Weak = false;
     }
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit* who)
     {
-        if(Player *player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
+        if (Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself())
             PlayerGUID = player->GetGUID();
     }
 
     void JustSummoned(Creature* summoned)
     {
-        summoned->GetMotionMaster()->MoveFollow(Unit::GetPlayer(PlayerGUID), PET_FOLLOW_DIST, m_creature->GetFollowAngle());
+        summoned->GetMotionMaster()->MoveFollow(Unit::GetPlayer(PlayerGUID), PET_FOLLOW_DIST, me->GetFollowAngle());
     }
 
     void UpdateAI(const uint32 diff)
@@ -531,24 +546,24 @@ struct mob_aetherrayAI : public ScriptedAI
     if (!UpdateVictim())
             return;
 
-    if(PlayerGUID) // start: support for quest 11066 and 11065
+    if (PlayerGUID) // start: support for quest 11066 and 11065
         {
             Player* target = Unit::GetPlayer(PlayerGUID);
 
-            if(target && !Weak && m_creature->GetHealth() < (m_creature->GetMaxHealth() / 100 * 40)
+            if (target && !Weak && me->GetHealth() < (me->GetMaxHealth() / 100 *40)
                 && (target->GetQuestStatus(11066) == QUEST_STATUS_INCOMPLETE || target->GetQuestStatus(11065) == QUEST_STATUS_INCOMPLETE))
             {
                 me->MonsterTextEmote(EMOTE_WEAK, 0, false);
                 Weak = true;
             }
 
-            if(Weak && m_creature->HasAura(40856, 0))
+            if (Weak && me->HasAura(40856, 0))
             {
                 me->CastSpell(target, SPELL_SUMMON_WRANGLED, false);
-                target->KilledMonster(23343, m_creature->GetGUID());
-                m_creature->AttackStop(); // delete the normal mob
-                m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                m_creature->RemoveCorpse();
+                target->KilledMonster(23343, me->GetGUID());
+                me->AttackStop(); // delete the normal mob
+                me->DealDamage(me, me->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                me->RemoveCorpse();
             }
         }
 
@@ -558,9 +573,9 @@ struct mob_aetherrayAI : public ScriptedAI
 
 };
 
-CreatureAI* GetAI_mob_aetherray(Creature *_Creature)
+CreatureAI* GetAI_mob_aetherray(Creature* creature)
 {
-    return new mob_aetherrayAI (_Creature);
+    return new mob_aetherrayAI (creature);
 }
 
 /*####
@@ -570,11 +585,11 @@ CreatureAI* GetAI_mob_aetherray(Creature *_Creature)
 #define GOSSIP_ITEM_WILDLORD "Restore Felsworn Gas Mask."
 #define GOSSIP_ITEM2_WILDLORD "Restore Druid Signal"
 
-bool GossipHello_npc_wildlord_antelarion(Player *player, Creature *_Creature)
+bool GossipHello_npc_wildlord_antelarion(Player* player, Creature* creature)
 {
-    if (_Creature->isQuestGiver())
+    if (creature->isQuestGiver())
     {
-        player->PrepareQuestMenu(_Creature->GetGUID());
+        player->PrepareQuestMenu(creature->GetGUID());
 
         if (player->GetQuestStatus(10819) || player->GetQuestStatus(10820) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(31366,1))
             player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_WILDLORD, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO);
@@ -582,12 +597,12 @@ bool GossipHello_npc_wildlord_antelarion(Player *player, Creature *_Creature)
          if (player->GetQuestStatus(10910) || player->GetQuestStatus(10910) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(31763,1))
              player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM2_WILDLORD, GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO+1);
 
-        player->SEND_GOSSIP_MENU(_Creature->GetNpcTextId(), _Creature->GetGUID());
+        player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
     }
     return true;
 }
 
-bool GossipSelect_npc_wildlord_antelarion(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_wildlord_antelarion(Player* player, Creature* creature, uint32 sender, uint32 action)
 {
     uint32 entry = 0;
     if (action == GOSSIP_SENDER_INFO)
@@ -619,42 +634,43 @@ bool GossipSelect_npc_wildlord_antelarion(Player *player, Creature *_Creature, u
 #define GOSSIP_ITEM_KOLPHIS4 "Impressive. When do we attack?"
 #define GOSSIP_ITEM_KOLPHIS5 "Absolutely!"
 
-bool GossipHello_npc_kolphis_darkscale(Player *player, Creature *_Creature)
+bool GossipHello_npc_kolphis_darkscale(Player* player, Creature* creature)
 {
-    if(_Creature->isQuestGiver())
-        player->PrepareQuestMenu( _Creature->GetGUID() );
-    if(player->GetQuestStatus(10722) == QUEST_STATUS_INCOMPLETE)
-        player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1 );
-        player->SEND_GOSSIP_MENU(25019, _Creature->GetGUID());
-return true;
+    if (creature->isQuestGiver())
+        player->PrepareQuestMenu(creature->GetGUID());
+    if (player->GetQuestStatus(10722) == QUEST_STATUS_INCOMPLETE)
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_KOLPHIS1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->SEND_GOSSIP_MENU(25019, creature->GetGUID());
+
+    return true;
 }
 
-bool GossipSelect_npc_kolphis_darkscale(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_kolphis_darkscale(Player* player, Creature* creature, uint32 sender, uint32 action)
 {
   switch (action)
   {
         case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-            player->SEND_GOSSIP_MENU(25020, _Creature->GetGUID());
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_KOLPHIS2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            player->SEND_GOSSIP_MENU(25020, creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-            player->SEND_GOSSIP_MENU(25021, _Creature->GetGUID());
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_KOLPHIS3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            player->SEND_GOSSIP_MENU(25021, creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
-            player->SEND_GOSSIP_MENU(25022, _Creature->GetGUID());
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_KOLPHIS4, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            player->SEND_GOSSIP_MENU(25022, creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
-            player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_KOLPHIS5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
-            player->SEND_GOSSIP_MENU(25023, _Creature->GetGUID());
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_KOLPHIS5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            player->SEND_GOSSIP_MENU(25023, creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
             player->CompleteQuest(10722);
-            player->SEND_GOSSIP_MENU(25024, _Creature->GetGUID());
+            player->SEND_GOSSIP_MENU(25024, creature->GetGUID());
             break;
   }
-return true;
+    return true;
 }
 
 /*#########
@@ -663,18 +679,18 @@ return true;
 
 struct npc_prophecy_triggerAI : public ScriptedAI
 {
-    npc_prophecy_triggerAI(Creature *c) : ScriptedAI(c)
+    npc_prophecy_triggerAI(Creature* creature) : ScriptedAI(creature)
     {
         me->SetReactState(REACT_AGGRESSIVE);
     }
 
-    void MoveInLineOfSight(Unit *pWho)
+    void MoveInLineOfSight(Unit* pWho)
     {
-        if (Player *plWho = pWho->GetCharmerOrOwnerPlayerOrPlayerItself())
+        if (Player* plWho = pWho->GetCharmerOrOwnerPlayerOrPlayerItself())
         {
             if (plWho->GetQuestStatus(10607) == QUEST_STATUS_INCOMPLETE && plWho->HasAura(37466,0) && plWho->GetDistance(me) < 20.0f)
             {
-                switch(me->GetEntry())
+                switch  (me->GetEntry())
                 {
                     case 22798:
                         me->Whisper("From the darkest night shall rise again the raven, shall take flight in the shadows, shall reveal the nature of its kind. Prepare yourself for its coming, for the faithful shall be elevated to take flight with the raven, the rest be forgotten to walk upon the ground, clipped wings and shame.", plWho->GetGUID());
@@ -697,9 +713,9 @@ struct npc_prophecy_triggerAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_npc_prophecy_trigger(Creature *_Creature)
+CreatureAI* GetAI_npc_prophecy_trigger(Creature* creature)
 {
-    return new npc_prophecy_triggerAI(_Creature);
+    return new npc_prophecy_triggerAI(creature);
 }
 
 /*#########
@@ -710,12 +726,12 @@ CreatureAI* GetAI_npc_prophecy_trigger(Creature *_Creature)
 #define Q_THE_THUNDERSPIKE 10526
 #define GOR_GRIMGUT_ENTRY  21319
 
-bool GOUse_go_thunderspike(Player *player, GameObject* _GO)
+bool GOUse_go_thunderspike(Player* player, GameObject* go)
 {
     if (player->GetQuestStatus(Q_THE_THUNDERSPIKE) == QUEST_STATUS_INCOMPLETE)
     {
         // to prevent spawn spam :)
-        if (Creature *pGor = GetClosestCreatureWithEntry(player, GOR_GRIMGUT_ENTRY, 50.0f))
+        if (Creature* pGor = GetClosestCreatureWithEntry(player, GOR_GRIMGUT_ENTRY, 50.0f))
         {
             if (!pGor->getVictim() && pGor->isAlive())
                 pGor->AI()->AttackStart(player);
@@ -1326,7 +1342,7 @@ struct AttractOrbs
         {
             if (Player* player = itr->getSource())
             {
-                if(totem->IsWithinDistInMap(player, 15.0f) && (player->GetQuestStatus(10674) || player->GetQuestStatus(10859) == QUEST_STATUS_INCOMPLETE))
+                if (totem->IsWithinDistInMap(player, 15.0f) && (player->GetQuestStatus(10674) || player->GetQuestStatus(10859) == QUEST_STATUS_INCOMPLETE))
                     player->KilledMonster(NPC_QUEST_CREDIT2, totem->GetGUID());
             }
         }
@@ -1335,7 +1351,7 @@ struct AttractOrbs
 
 struct npc_orb_attracterAI : public Scripted_NoMovementAI
 {
-    npc_orb_attracterAI(Creature *c) : Scripted_NoMovementAI(c) {}
+    npc_orb_attracterAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
     TimeTrackerSmall attractTimer;
 
@@ -1490,7 +1506,7 @@ struct npc_razaani_raiderAI : public ScriptedAI
         if (!tmpMap)
             return;
 
-        if (Creature * eorb = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_EORB)))
+        if (Creature*  eorb = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_EORB)))
         {
             summoned->SetLevitate(true);
             summoned->GetMotionMaster()->MovePoint(0, eorb->GetPositionX(), eorb->GetPositionY(), eorb->GetPositionZ());
@@ -1508,7 +1524,7 @@ struct npc_razaani_raiderAI : public ScriptedAI
             if (!tmpMap)
                 return;
 
-            if (Creature * eorb = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_EORB)))
+            if (Creature*  eorb = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_EORB)))
                 CAST_AI(npc_razaan_eventAI, eorb->AI())->HeyYa();
         }
     }
@@ -1615,7 +1631,7 @@ struct npc_rally_zapnabberAI : public ScriptedAI
 
             player->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
 
-            switch(flights)
+            switch  (flights)
             {
                  case 1:
                      DoTeleportPlayer(player, Port[0], Port[1], Port[2], 5.1f);
@@ -1638,7 +1654,7 @@ struct npc_rally_zapnabberAI : public ScriptedAI
             if (!tmpMap)
                 return;
  
-            if (Creature * channeler = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_CHANNELER)))
+            if (Creature*  channeler = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_CHANNELER)))
                 channeler->CastSpell(channeler, SPELL_CANNON_CHANNEL, true);
 
             Flight = true;
@@ -1651,7 +1667,7 @@ struct npc_rally_zapnabberAI : public ScriptedAI
     {
         if (Player* player = me->GetPlayer(playerGUID))
         {
-            switch(flights)
+            switch  (flights)
             {
                 case 1:
                     player->GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
@@ -1693,11 +1709,11 @@ struct npc_rally_zapnabberAI : public ScriptedAI
                 if (!tmpMap)
                     return;
 
-                if (Creature * target = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_CH_TARGET)))
+                if (Creature*  target = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_CH_TARGET)))
                 {
                     ++Count;
 
-                    switch(Count)
+                    switch  (Count)
                     {
                         case 1:
                             target->CastSpell(target, SPELL_STATE1, true);
@@ -1765,12 +1781,12 @@ bool GossipHello_npc_rally_zapnabber(Player* player, Creature* creature)
     return true;
 }
 
-bool GossipSelect_npc_rally_zapnabber(Player* player, Creature* creature, uint32 sender, uint32 action )
+bool GossipSelect_npc_rally_zapnabber(Player* player, Creature* creature, uint32 sender, uint32 action)
 {
     uint8 flight;
     flight = 0;
 
-    switch(action)
+    switch  (action)
     {
         case GOSSIP_ACTION_INFO_DEF + 1:
             flight = 1;
@@ -1872,7 +1888,7 @@ CreatureAI* GetAI_npc_anger_camp(Creature* creature)
     return new npc_anger_campAI (creature);
 }
 
-bool GOUse_go_obeliks(Player *player, GameObject* go)
+bool GOUse_go_obeliks(Player* player, GameObject* go)
 {
     if (player->GetQuestStatus(QUEST_FIRED) == QUEST_STATUS_INCOMPLETE)
     {
@@ -2136,7 +2152,7 @@ struct npc_soulgrinderAI : public ScriptedAI
         {
             if (Player* player = itr->getSource())
             {
-                if(me->IsWithinDistInMap(player, 10.0f) && player->GetQuestStatus(QUEST_SOULGRINGER) == QUEST_STATUS_INCOMPLETE)
+                if (me->IsWithinDistInMap(player, 10.0f) && player->GetQuestStatus(QUEST_SOULGRINGER) == QUEST_STATUS_INCOMPLETE)
                     PlayerGUID = player->GetGUID();
             }
         }
@@ -2716,7 +2732,7 @@ struct npc_banishing_crystalAI : public ScriptedAI
         {
             if (Player* player = itr->getSource())
             {
-                if(me->IsWithinDistInMap(player, 15.0f) && (player->GetQuestStatus(11026) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11051) == QUEST_STATUS_INCOMPLETE))
+                if (me->IsWithinDistInMap(player, 15.0f) && (player->GetQuestStatus(11026) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11051) == QUEST_STATUS_INCOMPLETE))
                     PlayerGUID = player->GetGUID();
             }
         }
@@ -2743,7 +2759,7 @@ CreatureAI* GetAI_npc_banishing_crystal(Creature* creature)
 
 void AddSC_blades_edge_mountains()
 {
-    Script *newscript;
+    Script* newscript;
 
     newscript = new Script;
     newscript->Name="mobs_nether_drake";
