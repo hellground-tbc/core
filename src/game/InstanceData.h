@@ -21,7 +21,7 @@
 #ifndef HELLGROUND_INSTANCE_DATA_H
 #define HELLGROUND_INSTANCE_DATA_H
 
-#include <unordered_map>
+#include <vector>
 
 #include "ZoneScript.h"
 //#include "GameObject.h"
@@ -143,7 +143,7 @@ class HELLGROUND_IMPORT_EXPORT InstanceData : public ZoneScript
         std::string LoadBossState(const char * data);
         std::string GetBossSaveData();
 
-        std::unordered_map<uint32, std::vector<uint64> > requiredEncounterToMobs;
+        UNORDERED_MAP<uint32, std::vector<uint64> > requiredEncounterToMobs;
 
     private:
         std::vector<BossInfo> bosses;
