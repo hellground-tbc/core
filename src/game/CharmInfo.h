@@ -44,28 +44,38 @@ struct UnitActionBarEntry
     uint32 SpellOrAction;
 };
 
-struct GlobalCooldown
+struct Cooldown
 {
-    explicit GlobalCooldown(uint32 _dur = 0, uint32 _time = 0) : duration(_dur), cast_time(_time) {}
+    explicit Cooldown(uint32 _dur = 0, uint32 _time = 0) : duration(_dur), cast_time(_time) {}
 
     uint32 duration;
     uint32 cast_time;
 };
 
-typedef UNORDERED_MAP<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
+typedef UNORDERED_MAP<uint32 /*category*/, Cooldown> CooldownList;
 
-class GlobalCooldownMgr
+class CooldownMgr
 {
     public:
-        GlobalCooldownMgr() {}
+        CooldownMgr() {}
 
     public:
         bool HasGlobalCooldown(SpellEntry const* spellInfo) const;
         void AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd);
         void CancelGlobalCooldown(SpellEntry const* spellInfo);
 
+        bool HasSpellCategoryCooldown(SpellEntry const* spellInfo) const;
+        void AddSpellCategoryCooldown(SpellEntry const* spellInfo, uint32 cd);
+        void CancelSpellCategoryCooldown(SpellEntry const* spellInfo);
+
+        bool HasSpellIdCooldown(SpellEntry const* spellInfo) const;
+        void AddSpellIdCooldown(SpellEntry const* spellInfo, uint32 cd);
+        void CancelSpellIdCooldown(SpellEntry const* spellInfo);
+
     private:
-        GlobalCooldownList m_GlobalCooldowns;
+        CooldownList m_GlobalCooldowns;
+        CooldownList m_CategoryCooldowns;
+        CooldownList m_SpellCooldowns;
 };
 
 struct HELLGROUND_IMPORT_EXPORT CharmInfo
@@ -91,7 +101,7 @@ struct HELLGROUND_IMPORT_EXPORT CharmInfo
         UnitActionBarEntry* GetActionBarEntry(uint8 index) { return &(PetActionBar[index]); }
         CharmSpellEntry* GetCharmSpell(uint8 index) { return &(m_charmspells[index]); }
 
-        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+        CooldownMgr& GetCooldownMgr() { return m_CooldownMgr; }
 
         void HandleStayCommand();
         void HandleFollowCommand();
@@ -111,7 +121,7 @@ struct HELLGROUND_IMPORT_EXPORT CharmInfo
         //for restoration after charmed
         ReactStates     m_oldReactState;
 
-        GlobalCooldownMgr m_GlobalCooldownMgr;
+        CooldownMgr m_CooldownMgr;
 };
 
 #endif

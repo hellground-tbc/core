@@ -1491,7 +1491,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void RemoveSpellMods(Spell const* spell);
         void RestoreSpellMods(Spell const* spell);
 
-        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+        CooldownMgr& GetCooldownMgr() { return m_CooldownMgr; }
 
         bool HasSpellCooldown(uint32 spell_id) const
         {
@@ -2476,7 +2476,7 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 m_temporaryUnsummonedPetNumber;
         uint32 m_oldpetspell;
 
-        GlobalCooldownMgr m_GlobalCooldownMgr;
+        CooldownMgr m_CooldownMgr;
 
         ReputationMgr  m_reputationMgr;
 

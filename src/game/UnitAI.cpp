@@ -444,7 +444,7 @@ bool UnitAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
     if (!Triggered && me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
         return false;
 
-    if (!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->GetGlobalCooldownMgr().HasGlobalCooldown(Spell))
+    if (!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->GetCooldownMgr().HasGlobalCooldown(Spell))
         return false;
 
     if (!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->HasSpellCooldown(Spell->Id))

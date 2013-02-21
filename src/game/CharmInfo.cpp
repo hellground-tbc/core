@@ -11,24 +11,56 @@
 
 ////////////////////////////////////////////////////////////
 // Methods of class GlobalCooldownMgr
-bool GlobalCooldownMgr::HasGlobalCooldown(SpellEntry const* spellInfo) const
+bool CooldownMgr::HasGlobalCooldown(SpellEntry const* spellInfo) const
 {
-    GlobalCooldownList::const_iterator itr = m_GlobalCooldowns.find(spellInfo->StartRecoveryCategory);
+    CooldownList::const_iterator itr = m_GlobalCooldowns.find(spellInfo->StartRecoveryCategory);
     return itr != m_GlobalCooldowns.end() && itr->second.duration && WorldTimer::getMSTimeDiff(itr->second.cast_time, WorldTimer::getMSTime()) < itr->second.duration;
 }
 
-void GlobalCooldownMgr::AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd)
+void CooldownMgr::AddGlobalCooldown(SpellEntry const* spellInfo, uint32 gcd)
 {
     // HACKFIX: find bugged mechanic
     if (spellInfo->Id == 15473)
         return;
 
-    m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = GlobalCooldown(gcd, WorldTimer::getMSTime());
+    m_GlobalCooldowns[spellInfo->StartRecoveryCategory] = Cooldown(gcd, WorldTimer::getMSTime());
 }
 
-void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
+void CooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
 {
     m_GlobalCooldowns[spellInfo->StartRecoveryCategory].duration = 0;
+}
+
+bool CooldownMgr::HasSpellCategoryCooldown(SpellEntry const* spellInfo) const
+{
+    CooldownList::const_iterator itr = m_CategoryCooldowns.find(spellInfo->Category);
+    return itr != m_CategoryCooldowns.end() && itr->second.duration && WorldTimer::getMSTimeDiff(itr->second.cast_time, WorldTimer::getMSTime()) < itr->second.duration;
+}
+
+void CooldownMgr::AddSpellCategoryCooldown(SpellEntry const* spellInfo, uint32 gcd)
+{
+    m_CategoryCooldowns[spellInfo->Category] = Cooldown(gcd, WorldTimer::getMSTime());
+}
+
+void CooldownMgr::CancelSpellCategoryCooldown(SpellEntry const* spellInfo)
+{
+    m_CategoryCooldowns[spellInfo->Category].duration = 0;
+}
+
+bool CooldownMgr::HasSpellIdCooldown(SpellEntry const* spellInfo) const
+{
+    CooldownList::const_iterator itr = m_SpellCooldowns.find(spellInfo->Id);
+    return itr != m_SpellCooldowns.end() && itr->second.duration && WorldTimer::getMSTimeDiff(itr->second.cast_time, WorldTimer::getMSTime()) < itr->second.duration;
+}
+
+void CooldownMgr::AddSpellIdCooldown(SpellEntry const* spellInfo, uint32 gcd)
+{
+    m_SpellCooldowns[spellInfo->Id] = Cooldown(gcd, WorldTimer::getMSTime());
+}
+
+void CooldownMgr::CancelSpellIdCooldown(SpellEntry const* spellInfo)
+{
+    m_SpellCooldowns[spellInfo->Id].duration = 0;
 }
 
 CharmInfo::CharmInfo(Unit* unit)
@@ -312,7 +344,7 @@ void CharmInfo::HandleSpellActCommand(uint64 targetGUID, uint32 spellId)
         return;
 
     // Global Cooldown, stop cast
-    if (spellInfo->StartRecoveryCategory > 0 && GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
+    if (spellInfo->StartRecoveryCategory > 0 && GetCooldownMgr().HasGlobalCooldown(spellInfo))
         return;
 
     for (uint32 i = 0; i < 3;i++)

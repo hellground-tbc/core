@@ -5942,9 +5942,9 @@ bool Spell::HasGlobalCooldown()
 {
     // Only player or controlled units have global cooldown
     if (m_caster->GetCharmInfo())
-        return m_caster->GetCharmInfo()->GetGlobalCooldownMgr().HasGlobalCooldown(GetSpellInfo());
+        return m_caster->GetCharmInfo()->GetCooldownMgr().HasGlobalCooldown(GetSpellInfo());
     else if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        return ((Player*)m_caster)->GetGlobalCooldownMgr().HasGlobalCooldown(GetSpellInfo());
+        return ((Player*)m_caster)->GetCooldownMgr().HasGlobalCooldown(GetSpellInfo());
     else
         return false;
 }
@@ -5974,9 +5974,9 @@ void Spell::TriggerGlobalCooldown()
 
     // Only players or controlled units have global cooldown
     if (m_caster->GetCharmInfo())
-        m_caster->GetCharmInfo()->GetGlobalCooldownMgr().AddGlobalCooldown(GetSpellInfo(), gcd);
+        m_caster->GetCharmInfo()->GetCooldownMgr().AddGlobalCooldown(GetSpellInfo(), gcd);
     else if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)m_caster)->GetGlobalCooldownMgr().AddGlobalCooldown(GetSpellInfo(), gcd);
+        ((Player*)m_caster)->GetCooldownMgr().AddGlobalCooldown(GetSpellInfo(), gcd);
 }
 
 void Spell::CancelGlobalCooldown()
@@ -5990,7 +5990,7 @@ void Spell::CancelGlobalCooldown()
 
     // Only players or controlled units have global cooldown
     if (m_caster->GetCharmInfo())
-        m_caster->GetCharmInfo()->GetGlobalCooldownMgr().CancelGlobalCooldown(GetSpellInfo());
+        m_caster->GetCharmInfo()->GetCooldownMgr().CancelGlobalCooldown(GetSpellInfo());
     else if (m_caster->GetTypeId() == TYPEID_PLAYER)
-        ((Player*)m_caster)->GetGlobalCooldownMgr().CancelGlobalCooldown(GetSpellInfo());
+        ((Player*)m_caster)->GetCooldownMgr().CancelGlobalCooldown(GetSpellInfo());
 }

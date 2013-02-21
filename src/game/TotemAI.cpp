@@ -59,6 +59,8 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
     if (i_totem.GetTotemType() != TOTEM_ACTIVE)
         return;
 
+    i_totem.SetSelection(0);
+
     if (!i_totem.isAlive() || i_totem.IsNonMeleeSpellCasted(false))
         return;
 
@@ -101,7 +103,6 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
         // attack
         //i_totem.SetInFront(victim);                         // client change orientation by self
         i_totem.CastSpell(victim, i_totem.GetSpell(), false);
-        i_totem.SetSelection(0);
     }
     else
         i_victimGuid = 0;
