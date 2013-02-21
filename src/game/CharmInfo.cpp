@@ -283,7 +283,7 @@ void CharmInfo::HandleStayCommand()
 
 void CharmInfo::HandleFollowCommand()
 {
-    if (HasCommandState(COMMAND_FOLLOW))
+    if (m_unit->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
         return;
 
     SetCommandState(COMMAND_FOLLOW);
