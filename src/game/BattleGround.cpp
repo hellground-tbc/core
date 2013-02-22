@@ -872,7 +872,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             if (isArena())
             {
                 plr->RemoveArenaAuras(true);    // removes debuffs / dots etc., we don't want the player to die after porting out
-                plr->GetMotionMaster()->MoveIdle();
+                plr->GetMotionMaster()->MovementExpired();
 
                 bgTypeId=BATTLEGROUND_AA;       // set the bg type to all arenas (it will be used for queue refreshing)
 

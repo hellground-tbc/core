@@ -10100,7 +10100,7 @@ Unit* Creature::SelectVictim()
     if (HasReactState(REACT_AGGRESSIVE))
     {
         target = SelectNearestTarget(25.0f);
-        if (target && !IsOutOfThreatArea(target))
+        if (target)
             return target;
     }
 

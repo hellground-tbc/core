@@ -2216,10 +2216,7 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     uint32 distToTarget = std::max(AttackDist, sWorld.getConfig(CONFIG_EVADE_TARGETDIST));
 
     if (!IsWithinDistInMap(&homeLocation, distToHome))
-    {
-        AI()->EnterEvadeMode();
         return true;
-    }
 
     if (!IsWithinDistInMap(pVictim, distToTarget))
         return true;
