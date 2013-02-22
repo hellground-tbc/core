@@ -94,6 +94,7 @@ public:
     bool Update(Unit &unit, const uint32 &)
     {
         unit.SetSelection(0);
+        unit.SetFacingToObject(&unit);
         return true;
     }
 
