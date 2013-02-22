@@ -888,7 +888,7 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
     //Script Event damage made on players by Unit
     if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->IsAIEnabled)
         if (damageInfo->damage)
-            ((Creature*)this)->AI()->DamageMade(pVictim, damageInfo->damage, damagetype == DIRECT_DAMAGE);
+            ((Creature*)this)->AI()->DamageMade(pVictim, damageInfo->damage, damagetype == DIRECT_DAMAGE, damageInfo->schoolMask);
 
     if (damageInfo->damage || damageInfo->absorb)
     {
