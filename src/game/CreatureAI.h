@@ -130,7 +130,7 @@ class HELLGROUND_IMPORT_EXPORT CreatureAI : public UnitAI
         virtual void SpellHitTarget(Unit* target, const SpellEntry*) {}
 
         //Called when creature deals damage to player
-        virtual void DamageMade(Unit* target, uint32 & , bool direct_damage) {}
+        virtual void DamageMade(Unit* target, uint32 & , bool direct_damage, uint8 school_mask) {}
 
         // Called when the creature is target of hostile action: swing, hostile spell landed, fear/etc)
         //virtual void AttackedBy(Unit* attacker);

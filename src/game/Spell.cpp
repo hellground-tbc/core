@@ -2202,6 +2202,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     unitList.remove_if(Hellground::UnitAuraCheck(true, 45034));
                     break;
                 case 41376:     // Spite
+                case 46771:     // Flame Sear
                     unitList.remove_if(Hellground::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
                 default:

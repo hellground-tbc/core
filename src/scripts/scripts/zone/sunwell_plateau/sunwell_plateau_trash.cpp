@@ -367,7 +367,7 @@ CreatureAI* GetAI_mob_sunblade_dusk_priest(Creature *_Creature)
 /****************
 * Sunblade Protector - id 25507
 
-  Immunities: bleed, snare, stun
+  Immunities: bleed, snare, stun, root
 
 *****************/
 
@@ -378,6 +378,7 @@ enum SunbladeProtector
 
 #define PROTECTOR_YELL "Unit entering energy conservation mode."
 #define PROTECTOR_AGGRO "Enemy presence detected."
+#define PROTECTOR_ACTIVATED "Unit is now operational and attacking targets."
 
 struct mob_sunblade_protectorAI : public ScriptedAI
 {
@@ -415,6 +416,8 @@ struct mob_sunblade_protectorAI : public ScriptedAI
     {
         if(!isInactive)
             DoYell(PROTECTOR_AGGRO, 0, me);
+        else
+            DoYell(PROTECTOR_ACTIVATED, 0, me);
         DoZoneInCombat(80.0f);
     }
 
@@ -855,6 +858,11 @@ struct mob_shadowsword_commanderAI : public ScriptedAI
     {
         me->SetAggroRange(AGGRO_RANGE);
         pInstance = c->GetInstanceData();
+        if(!TriggerGUID)
+        {
+            if(Creature* ImpTrigger = GetClosestCreatureWithEntry(me, MOB_GAUNTLET_IMP_TRIGGER, 70))
+                TriggerGUID = ImpTrigger->GetGUID();
+        }
     }
 
     ScriptedInstance* pInstance;

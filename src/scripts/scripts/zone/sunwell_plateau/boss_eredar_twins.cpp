@@ -59,6 +59,7 @@ enum Quotes
 enum Spells
 {
     //Lady Sacrolash spells
+    SPELL_SHADOWFORM        =   45455,
     SPELL_DARK_TOUCHED      =   45347,
     SPELL_SHADOW_BLADES     =   45248, //10 secs
     SPELL_DARK_STRIKE       =   45271,
@@ -75,6 +76,7 @@ enum Spells
     SPELL_DARK_FLAME        =   45345,
 
     //Grand Warlock Alythess spells
+    SPELL_FIREFORM          =   45457,
     SPELL_PYROGENICS        =   45230, //15secs
     SPELL_FLAME_TOUCHED     =   45348,
     SPELL_CONFLAGRATION     =   45342, //30-35 secs
@@ -118,9 +120,10 @@ struct boss_sacrolashAI : public ScriptedAI
         ShadowbladesTimer = 10000;
         ShadownovaTimer = 30000;
         ConfoundingblowTimer = 25000;
-        ShadowimageTimer = 20000;
+        ShadowimageTimer = 14000;
         ConflagrationTimer = 30000;
         EnrageTimer = 360000;
+        DoCast(me, SPELL_SHADOWFORM);
 
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -140,6 +143,25 @@ struct boss_sacrolashAI : public ScriptedAI
     {
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void DamageMade(Unit* target, uint32 &damage, bool direct_damage, uint8 school_mask)
+    {
+        if(target->GetTypeId() == TYPEID_PLAYER && damage)
+        {
+            if(school_mask == SPELL_SCHOOL_MASK_SHADOW)
+            {
+                if(target->HasAura(SPELL_FLAME_TOUCHED))
+                    target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
+                target->CastSpell(target, SPELL_DARK_TOUCHED, false);
+            }
+            if(school_mask == SPELL_SCHOOL_MASK_FIRE)
+            {
+                if(target->HasAura(SPELL_DARK_TOUCHED))
+                    target->RemoveAurasDueToSpell(SPELL_DARK_TOUCHED);
+                target->CastSpell(target, SPELL_FLAME_TOUCHED, false);
+            }
+        }
     }
 
     void KilledUnit(Unit *victim)
@@ -179,24 +201,24 @@ struct boss_sacrolashAI : public ScriptedAI
                 AddSpellToCast(SPELL_CONFLAGRATION, CAST_RANDOM);
                 ConflagrationTimer = urand(30000, 35000);
             }
-            else 
+            else
                 ConflagrationTimer -= diff;
         }
-        
-        if (ShadownovaTimer < diff)
-        {
-            AddSpellToCastWithScriptText(SPELL_SHADOW_NOVA, CAST_RANDOM, EMOTE_SHADOW_NOVA);
-            if (pInstance->GetData(DATA_ALYTHESS) != DONE)
-                DoScriptText(YELL_SHADOW_NOVA, me);
-
-            ShadownovaTimer = urand(30000,35000);
-        }
         else
-            ShadownovaTimer -= diff;
+        {
+            if (ShadownovaTimer < diff)
+            {
+                AddSpellToCastWithScriptText(SPELL_SHADOW_NOVA, CAST_RANDOM, EMOTE_SHADOW_NOVA);
+                DoScriptText(YELL_SHADOW_NOVA, me);
+                ShadownovaTimer = urand(30000,35000);
+            }
+            else
+                ShadownovaTimer -= diff;
+        }
 
         if (ConfoundingblowTimer < diff)
         {
-            AddSpellToCast(SPELL_CONFOUNDING_BLOW, CAST_RANDOM);
+            AddSpellToCast(SPELL_CONFOUNDING_BLOW, CAST_TANK);
             ConfoundingblowTimer = urand(20000, 25000);
         }
         else
@@ -204,9 +226,12 @@ struct boss_sacrolashAI : public ScriptedAI
 
         if (ShadowimageTimer < diff)
         {
+            float x, y, z;
             for (int i = 0; i < 3; i++)
-                DoSpawnCreature(MOB_SHADOW_IMAGE,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN, 15000);
-
+            {
+                me->GetNearPoint(me, x, y, z, 2.0, 3.0, frand(0, 2*M_PI));
+                me->SummonCreature(MOB_SHADOW_IMAGE,x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+            }
             ShadowimageTimer = 20000;
         }
         else
@@ -214,7 +239,7 @@ struct boss_sacrolashAI : public ScriptedAI
 
         if (ShadowbladesTimer < diff)
         {
-            AddSpellToCast(SPELL_SHADOW_BLADES, CAST_SELF);
+            AddSpellToCast(SPELL_SHADOW_BLADES, CAST_NULL);
             ShadowbladesTimer = 10000;
         }
         else
@@ -261,17 +286,18 @@ struct boss_alythessAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        ConflagrationTimer = 45000;
+        ConflagrationTimer = urand(15000, 19000);
         PyrogenicsTimer = 15000;
         ShadownovaTimer = 40000;
         EnrageTimer = 360000;
-        FlamesearTimer = 15000;
+        FlamesearTimer = urand(10000, 15000);
         IntroYellTimer = 10000;
         IntroStepCounter = 10;
 
         IntroDone = false;
         TrashWaveDone = false;
 
+        DoCast(me, SPELL_FIREFORM);
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         else
@@ -279,7 +305,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         pInstance->SetData(DATA_ALYTHESS, NOT_STARTED);
 
-        SetAutocast(SPELL_BLAZE, 3000, false);
+        SetAutocast(SPELL_BLAZE, 2500, true);
     }
 
     void EnterCombat(Unit *who)
@@ -309,6 +335,25 @@ struct boss_alythessAI : public Scripted_NoMovementAI
 
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             Scripted_NoMovementAI::MoveInLineOfSight(who);
+    }
+
+    void DamageMade(Unit* target, uint32 &damage, bool direct_damage, uint8 school_mask)
+    {
+        if(target->GetTypeId() == TYPEID_PLAYER && damage)
+        {
+            if(school_mask == SPELL_SCHOOL_MASK_SHADOW)
+            {
+                if(target->HasAura(SPELL_FLAME_TOUCHED))
+                    target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
+                target->CastSpell(target, SPELL_DARK_TOUCHED, false);
+            }
+            if(school_mask == SPELL_SCHOOL_MASK_FIRE)
+            {
+                if(target->HasAura(SPELL_DARK_TOUCHED))
+                    target->RemoveAurasDueToSpell(SPELL_DARK_TOUCHED);
+                target->CastSpell(target, SPELL_FLAME_TOUCHED, false);
+            }
+        }
     }
 
     void KilledUnit(Unit *victim)
@@ -403,23 +448,22 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             else 
                 ShadownovaTimer -= diff;
         }
-        
-        if (ConflagrationTimer < diff)
-        {
-            AddSpellToCastWithScriptText(SPELL_CONFLAGRATION, CAST_RANDOM, EMOTE_CONFLAGRATION);
-
-            if (pInstance->GetData(DATA_SACROLASH) != DONE)
-                DoScriptText(YELL_CANFLAGRATION, me);
-
-            ConflagrationTimer = urand(30000, 35000);
-        }
         else
-            ConflagrationTimer -= diff;
+        {
+            if (ConflagrationTimer < diff)
+            {
+                AddSpellToCastWithScriptText(SPELL_CONFLAGRATION, CAST_RANDOM, EMOTE_CONFLAGRATION);
+                DoScriptText(YELL_CANFLAGRATION, me);
+                ConflagrationTimer = urand(30000, 35000);
+            }
+            else
+                ConflagrationTimer -= diff;
+        }
 
         if (FlamesearTimer < diff)
         {
             AddSpellToCast(SPELL_FLAME_SEAR, CAST_SELF);
-            FlamesearTimer = 15000;
+            FlamesearTimer = 10000;
         }
         else
             FlamesearTimer -=diff;
@@ -459,7 +503,7 @@ struct mob_shadow_imageAI : public ScriptedAI
 
     void Reset()
     {
-        ShadowfuryTimer = urand(5000, 20000);
+        ShadowfuryTimer = 1500;
         DarkstrikeTimer = 3000;
     }
 
@@ -477,8 +521,18 @@ struct mob_shadow_imageAI : public ScriptedAI
         ForceSpellCast(SPELL_IMAGE_VISUAL, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
         DoZoneInCombat();
 
-        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true))
             AttackStart(pTarget);
+    }
+
+    void DamageMade(Unit* target, uint32 &damage, bool direct_damage, uint8 school_mask)
+    {
+        if(target->GetTypeId() == TYPEID_PLAYER && damage && school_mask == SPELL_SCHOOL_MASK_SHADOW)
+        {
+            if(target->HasAura(SPELL_FLAME_TOUCHED))
+                target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
+            target->CastSpell(target, SPELL_DARK_TOUCHED, false);
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -488,8 +542,12 @@ struct mob_shadow_imageAI : public ScriptedAI
 
         if (ShadowfuryTimer < diff)
         {
-            AddSpellToCast(SPELL_SHADOW_FURY, CAST_NULL);
-            ShadowfuryTimer = 10000;
+            if (me->IsWithinDistInMap(me->getVictim(), 8.0) && roll_chance_f(20))
+            {
+                AddSpellToCast(SPELL_SHADOW_FURY, CAST_NULL);
+                ShadowfuryTimer = 5000;
+            }
+            ShadowfuryTimer = 1000;
         }
         else
             ShadowfuryTimer -= diff;
