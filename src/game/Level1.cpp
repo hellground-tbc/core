@@ -954,7 +954,7 @@ bool ChatHandler::HandleInfoCommand(const char* args)
     Player* _player = m_session->GetPlayer();
 
     MapEntry const* mapEntry = sMapStore.LookupEntry(_player->GetMapId());
-    PSendSysMessage("MapId: %u, Name: /", _player->GetMapId(), /*mapEntry->name*/);
+    PSendSysMessage("MapId: %u, Name: /", _player->GetMapId() /*, mapEntry->name*/);
     PSendSysMessage("- cached data -");
 
     const AreaTableEntry* zEntry = GetAreaEntryByAreaID(_player->GetCachedZone());
