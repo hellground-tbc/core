@@ -1831,7 +1831,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 default:                            pos.o = rand_norm()*2*M_PI; break;
             }
 
-            m_caster->GetValidPointInAngle(pos, dist, pos.o, true);
+            m_caster->GetValidPointInAngle(pos, dist, pos.o, false);
             m_targets.setDestination(pos.x, pos.y, pos.z);
             break;
         }
