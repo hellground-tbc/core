@@ -388,7 +388,7 @@ struct boss_illidan_stormrageAI : public BossAI
                 me->AttackStop();
                 me->SetReactState(REACT_PASSIVE);
 
-                events.ScheduleEvent(EVENT_ILLIDAN_INPRISON_RAID, 1000, m_phase);
+                events.ScheduleEvent(EVENT_ILLIDAN_INPRISON_RAID, 500, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
             }

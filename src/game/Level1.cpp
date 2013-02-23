@@ -954,7 +954,7 @@ bool ChatHandler::HandleInfoCommand(const char* args)
     Player* _player = m_session->GetPlayer();
 
     MapEntry const* mapEntry = sMapStore.LookupEntry(_player->GetMapId());
-    PSendSysMessage("MapId: %u, Name: %s", _player->GetMapId(), mapEntry->name);
+    PSendSysMessage("MapId: %u, Name: /", _player->GetMapId(), /*mapEntry->name*/);
     PSendSysMessage("- cached data -");
 
     const AreaTableEntry* zEntry = GetAreaEntryByAreaID(_player->GetCachedZone());
@@ -962,8 +962,8 @@ bool ChatHandler::HandleInfoCommand(const char* args)
     if (!aEntry || !zEntry)
         return false;
 
-    PSendSysMessage("*zone: %s [%u]", zEntry->area_name, _player->GetCachedZone());
-    PSendSysMessage("*area: %s [%u]", aEntry->area_name, _player->GetCachedArea());
+    PSendSysMessage("*zone: / [%u]",/* zEntry->area_name,*/ _player->GetCachedZone());
+    PSendSysMessage("*area: / [%u]", /*aEntry->area_name,*/ _player->GetCachedArea());
 
     const AreaTableEntry* zEntry2 = GetAreaEntryByAreaID(_player->GetZoneId());
     const AreaTableEntry* aEntry2 = GetAreaEntryByAreaID(_player->GetAreaId());
@@ -971,14 +971,14 @@ bool ChatHandler::HandleInfoCommand(const char* args)
         return false;
 
     PSendSysMessage("- real data -");
-    PSendSysMessage("*zone: %s [%u]", zEntry2->area_name, _player->GetZoneId());
-    PSendSysMessage("*area: %s [%u]", aEntry2->area_name, _player->GetAreaId());
+    PSendSysMessage("*zone: / [%u]", /*zEntry2->area_name,*/ _player->GetZoneId());
+    PSendSysMessage("*area: / [%u]", /*aEntry2->area_name,*/ _player->GetAreaId());
 
     TerrainInfo const *terrain = _player->GetTerrain();
     PSendSysMessage("- terrain data -");
 
-    PSendSysMessage("*ground Z: %u", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), MAX_HEIGHT));
-    PSendSysMessage("*floor Z: %u", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()));
+    PSendSysMessage("*ground Z: %f", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), MAX_HEIGHT));
+    PSendSysMessage("*floor Z: %f", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()));
     PSendSysMessage("*los: %s", terrain->IsLineOfSightEnabled() ? "enabled" : "disabled");
     PSendSysMessage("*mmaps: %s", terrain->IsPathFindingEnabled() ? "enabled" : "disabled");
     PSendSysMessage("*outdoors: %s", terrain->IsOutdoors(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()) ? "yes" : "no");
