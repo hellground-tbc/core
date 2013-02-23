@@ -572,6 +572,13 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 IsAIEnabled = true;
             }
 
+            if (GetMap() && !GetMap()->IsDungeon())
+            {
+                uint32 distToHome = sWorld.getConfig(CONFIG_EVADE_HOMEDIST);
+                if (!IsWithinDistInMap(&homeLocation, distToHome))
+                    AI()->EnterEvadeMode();
+            }
+
             if (!IsInEvadeMode() && IsAIEnabled)
             {
                 // do not allow the AI to be changed during update
