@@ -1325,15 +1325,12 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     dest.y = pos.y + dist * sin(angle);
 
     TerrainInfo const* _map = GetTerrain();
-    float ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-    float floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
-
-    dest.z = 1.0f +fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
+    dest.z = _map->GetHeight(dest.x, dest.y, pos.z, true);
 
     // collision occured
     bool result = false;
     if (ignoreLOSOffset)
-        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +0.5f, dest.x, dest.y, dest.z, -1.5f);
+        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +0.5f, dest.x, dest.y, dest.z, -0.5f);
     else
         result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, -0.5f);
 
@@ -1353,11 +1350,8 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
         {
             dest.x -= step * cos(angle);
             dest.y -= step * sin(angle);
-            ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-            floor = _map->GetHeight(dest.x, dest.y, pos.z +2.0f, true);
-            dest.z = 1.0f +fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
+            dest.z = _map->GetHeight(dest.x, dest.y, dest.z, true);
         }
-        // we have correct destz now
         else
         {
             pos = dest;
@@ -1367,9 +1361,6 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
 
     Hellground::NormalizeMapCoord(pos.x);
     Hellground::NormalizeMapCoord(pos.y);
-    ground = _map->GetHeight(pos.x, pos.y, MAX_HEIGHT, true);
-    floor = _map->GetHeight(pos.x, pos.y, pos.z +2.0f, true);
-    pos.z = 0.5f +fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
