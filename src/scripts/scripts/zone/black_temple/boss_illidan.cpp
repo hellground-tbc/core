@@ -163,12 +163,13 @@ enum IllidanEvent
 
     // Phase: Maiev summon
     EVENT_ILLIDAN_SUMMON_MAIEV           = 28,
-    EVENT_ILLIDAN_CAGE_TRAP              = 29,
+    EVENT_ILLIDAN_INPRISON_RAID          = 29,
+    EVENT_ILLIDAN_CAGE_TRAP              = 30,
 
-    EVENT_ILLIDAN_KILL                   = 30,
-    EVENT_ILLIDAN_DEATH_SPEECH           = 31,
+    EVENT_ILLIDAN_KILL                   = 31,
+    EVENT_ILLIDAN_DEATH_SPEECH           = 32,
 
-    EVENT_ILLIDAN_FLAME_DEATH            = 32,
+    EVENT_ILLIDAN_FLAME_DEATH            = 33,
 
     EVENT_ILLIDAN_RANDOM_YELL
 };
@@ -387,7 +388,7 @@ struct boss_illidan_stormrageAI : public BossAI
                 me->AttackStop();
                 me->SetReactState(REACT_PASSIVE);
 
-                ForceSpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, CAST_SELF, YELL_ILLIDAN_INPRISON_RAID);
+                events.ScheduleEvent(EVENT_ILLIDAN_INPRISON_RAID, 1000, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
             }
@@ -732,6 +733,11 @@ struct boss_illidan_stormrageAI : public BossAI
         {
             switch (eventId)
             {
+                case EVENT_ILLIDAN_INPRISON_RAID:
+                {
+                    ForceSpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, CAST_SELF, YELL_ILLIDAN_INPRISON_RAID, INTERRUPT_AND_CAST_INSTANTLY, true);
+                    break;
+                }
                 case EVENT_ILLIDAN_SUMMON_MAIEV:
                 {
                     ForceSpellCast(me, SPELL_ILLIDAN_SUMMON_MAIEV);
