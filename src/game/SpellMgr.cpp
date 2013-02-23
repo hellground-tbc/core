@@ -3003,6 +3003,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
                 break;
             case 41350:
+            case 41337:
                 spellInfo->Attributes |= SPELL_ATTR_CANT_CANCEL;
                 break;
             // do NOT remove encapsulate on druid shapeshift, attribute is added higher, so is safe to remove it here
