@@ -1679,7 +1679,9 @@ void BattleGround::HandleKillPlayer(Player *player, Player *killer)
     // add +1 kills to group and +1 killing_blows to killer
     if (killer)
     {
-        UpdatePlayerScore(killer, SCORE_HONORABLE_KILLS, 1);
+        if (!player->ToUnit()->WorthHonor)
+            UpdatePlayerScore(killer, SCORE_HONORABLE_KILLS, 1);
+
         UpdatePlayerScore(killer, SCORE_KILLING_BLOWS, 1);
 
         for (BattleGroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
@@ -1689,7 +1691,7 @@ void BattleGround::HandleKillPlayer(Player *player, Player *killer)
             if (!plr || plr == killer)
                 continue;
 
-            if (plr->GetTeam() == killer->GetTeam() && plr->IsAtGroupRewardDistance(player))
+            if (plr->GetTeam() == killer->GetTeam() && plr->IsAtGroupRewardDistance(player) && !player->ToUnit()->WorthHonor)
                 UpdatePlayerScore(plr, SCORE_HONORABLE_KILLS, 1);
         }
     }
