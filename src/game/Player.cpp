@@ -5291,7 +5291,7 @@ void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool de
     if (skilldif <= 0)
         return;
 
-    float chance = float(3 * lvldif * skilldif) / plevel*0.75f;
+    float chance = float(4 * lvldif * skilldif) / plevel*0.75f;
     if (!defence)
         chance += 0.1f * GetStat(STAT_INTELLECT);
 
