@@ -35,7 +35,10 @@ void FleeingMovementGenerator<UNIT>::_moveToNextLocation(UNIT &unit)
 
     Movement::MoveSplineInit init(unit);
     init.MoveTo(dest.x, dest.y, dest.z);
-    init.SetWalk(false);
+    if (unit.GetObjectGuid().IsCreature() && unit.ToCreature()->CanFly())
+        init.SetFly();
+    else
+        init.SetWalk(false);
     init.Launch();
 
     static_cast<MovementGenerator*>(this)->_recalculateTravel = false;

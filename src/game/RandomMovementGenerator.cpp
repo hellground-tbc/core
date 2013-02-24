@@ -31,8 +31,6 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
     Position dest;
     creature.GetRespawnCoord(dest.x, dest.y, dest.z, &dest.o, &wander_distance);
 
-    bool is_air_ok = creature.CanFly();
-
     const float angle = frand(0.0f, M_PI*2.0f);
     const float range = frand(0.0f, wander_distance);
 
@@ -40,7 +38,10 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature &creature)
 
     Movement::MoveSplineInit init(creature);
     init.MoveTo(dest.x, dest.y, dest.z);
-    init.SetWalk(true);
+    if (creature.CanFly())
+        init.SetFly();
+    else
+        init.SetWalk(true);
     init.Launch();
 
     static_cast<MovementGenerator*>(this)->_recalculateTravel = false;

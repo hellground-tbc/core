@@ -70,7 +70,10 @@ bool ConfusedMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
 
         Movement::MoveSplineInit init(unit);
         init.MoveTo(_randomPosition[nextMove].x, _randomPosition[nextMove].y, _randomPosition[nextMove].z);
-        init.SetWalk(true);
+        if (unit.GetObjectGuid().IsCreature() && unit.ToCreature()->CanFly())
+            init.SetFly();
+        else
+            init.SetWalk(true);
         init.Launch();
 
         static_cast<MovementGenerator*>(this)->_recalculateTravel = false;

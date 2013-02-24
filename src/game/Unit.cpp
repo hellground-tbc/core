@@ -6380,7 +6380,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         ? ((Player*)this)->GetItemByGuid(triggeredByAura->GetCastItemGUID()) : NULL;
 
     if (castItem && !isAlive())
-        return;
+        return false;
 
     // Try handle unknown trigger spells
     if (sSpellStore.LookupEntry(trigger_spell_id) == NULL)
