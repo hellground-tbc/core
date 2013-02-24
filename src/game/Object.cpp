@@ -1332,10 +1332,15 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     if (ignoreLOSOffset)
         result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +0.5f, dest.x, dest.y, dest.z, -0.5f);
     else
-        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +1.5f, dest.x, dest.y, dest.z +2.0f, dest.x, dest.y, dest.z, -0.5f);
+        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, -0.5f);
 
     if (result)
+    {
+        // move back a bit
+        dest.x -= 0.5f * cos(angle);
+        dest.y -= 0.5f * sin(angle);
         dist = sqrt((pos.x - dest.x)*(pos.x - dest.x) + (pos.y - dest.y)*(pos.y - dest.y));
+    }
 
     float step = dist / 10.0f;
     for (int j = 0; j < 10; ++j)
