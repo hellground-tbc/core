@@ -1327,7 +1327,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     TerrainInfo const* _map = GetTerrain();
     dest.z = _map->GetHeight(dest.x, dest.y, pos.z, true);
 
-    // collision occured
+    // collision occurred
     bool result = false;
     if (ignoreLOSOffset)
         result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +0.5f, dest.x, dest.y, dest.z, -0.5f);

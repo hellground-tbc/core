@@ -2722,8 +2722,9 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 40251:        // Vengeful Spirit
             {
                 Map *pMap = m_target->GetMap();
-                if (((InstanceMap*)pMap)->GetInstanceData())
-                    ((InstanceMap*)pMap)->GetInstanceData()->SetData64(29, m_target->GetGUID());
+                InstanceData* data = ((InstanceMap*)pMap)->GetInstanceData();
+                if (data && data->GetData(20) == 1)
+                    data->SetData64(29, m_target->GetGUID());
                 else
                     break;
 
