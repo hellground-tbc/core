@@ -106,7 +106,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
     else
         i_victimGuid = 0;
 
-    i_totem.SetFacingToObject(&i_totem);
+    //i_totem.SetFacingToObject(&i_totem);
 }
 
 bool TotemAI::IsVisible(Unit *) const
