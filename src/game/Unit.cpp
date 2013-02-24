@@ -363,6 +363,8 @@ Unit::Unit() :
     m_GMToSendCombatStats = 0;
 
     _AINotifyScheduled = false;
+
+    WorthHonor = false;
 }
 
 ////////////////////////////////////////////////////////////

@@ -1397,6 +1397,8 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
 
         Position _notifiedPosition;
 
+        bool WorthHonor;
+
     private:
         bool _AINotifyScheduled;
 

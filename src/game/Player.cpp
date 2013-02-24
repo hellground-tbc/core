@@ -455,8 +455,6 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     _preventSave = false;
     _preventUpdate = false;
-
-    LoseHonor = false;
 }
 
 Player::~Player ()
@@ -6047,14 +6045,6 @@ void Player::UpdateHonorFields()
 ///An exact honor value can also be given (overriding the calcs)
 bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvptoken, bool killer)
 {
-    // Players that have the resurrection sickness debuff will be worth no honor
-    if (HasAura(SPELL_ID_PASSIVE_RESURRECTION_SICKNESS))
-        return true;
-
-    // Used for battlegrounds
-    if (LoseHonor)
-        return true;
-
     // do not reward honor in arenas, but enable onkill spellproc
     if (InArena())
     {
@@ -6084,7 +6074,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
     if (honor <= 0)
     {
-        if (!uVictim || uVictim == this || uVictim->HasAuraType(SPELL_AURA_NO_PVP_CREDIT))
+        if (!uVictim || uVictim == this || uVictim->HasAuraType(SPELL_AURA_NO_PVP_CREDIT) || uVictim->WorthHonor || uVictim->HasAura(SPELL_ID_PASSIVE_RESURRECTION_SICKNESS))
             return false;
 
         victim_guid = uVictim->GetGUID();
@@ -6193,7 +6183,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
     if (sWorld.getConfig(CONFIG_PVP_TOKEN_ENABLE) && pvptoken)
     {
-        if (!uVictim || uVictim == this || uVictim->HasAuraType(SPELL_AURA_NO_PVP_CREDIT))
+        if (!uVictim || uVictim == this || uVictim->HasAuraType(SPELL_AURA_NO_PVP_CREDIT) || uVictim->WorthHonor || uVictim->HasAura(SPELL_ID_PASSIVE_RESURRECTION_SICKNESS))
             return true;
 
         if (uVictim->GetTypeId() == TYPEID_PLAYER)

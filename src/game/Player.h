@@ -2212,7 +2212,6 @@ class HELLGROUND_EXPORT Player : public Unit
 
         Camera& GetCamera() { return m_camera; }
 
-        bool LoseHonor;
     protected:
 
         /*********************************************************/
