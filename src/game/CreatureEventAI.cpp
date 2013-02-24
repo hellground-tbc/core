@@ -1130,8 +1130,6 @@ void CreatureEventAI::AttackStart(Unit *who)
     {
         if (CombatMovementEnabled)
             m_creature->GetMotionMaster()->MoveChase(who, AttackDistance, AttackAngle);
-        else
-            m_creature->GetMotionMaster()->MoveIdle();
     }
 }
 
