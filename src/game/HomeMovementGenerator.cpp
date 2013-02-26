@@ -53,10 +53,7 @@ void HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
     init.SetFacing(o);
 
     init.MoveTo(x,y,z);
-    if (owner.CanFly())
-        init.SetFly();
-    else
-        init.SetWalk(false);
+    init.SetWalk(false);
     init.Launch();
 
     arrived = false;

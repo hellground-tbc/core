@@ -41,9 +41,7 @@ void PointMovementGenerator<UNIT>::Initialize(UNIT &unit)
 
     if (Creature *creature = unit.ToCreature())
     {
-        if (creature->CanFly())
-            init.SetFly();
-        else if (creature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK)
+        if (creature->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_ALWAYS_WALK)
             init.SetWalk(true);
     }
 
