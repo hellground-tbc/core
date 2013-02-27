@@ -1839,6 +1839,9 @@ void Creature::setDeathState(DeathState s)
 
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);
+
+        //reset map changes
+        GetMap()->CreatureRespawnRelocation(this);
     }
 }
 
