@@ -2311,26 +2311,20 @@ static WP W[]=
 {
     {-2464.39f, 5398.43f, 2.12f},
     {-2485.65f, 5382.77f, 0.11f},
-    {-2464.22f, 5402.19f, 2.16f},
     {-2542.65f, 5482.23f, 8.25f},
     {-2520.57f, 5447.79f, 0.12f},
-    {-2545.31f, 5484.29f, 8.34f},
     {-2582.34f, 5425.01f, 26.85f},
     {-2561.75f, 5439.09f, 27.16f},
-    {-2579.22f, 5430.93f, 28.04f},
     {-2528.63f, 5387.37f, 27.65f},
-    {-2550.72f, 5404.97f, 20.00f},
-    {-2526.76f, 5384.53f, 28.09f}
+    {-2550.72f, 5404.97f, 20.00f}
 };
 
 struct npc_captive_childAI : public npc_escortAI
 {
     npc_captive_childAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 
-    void Reset()
-    {
-        me->SetVisibility(VISIBILITY_ON); //???
-    }
+    void Reset() {}
+
     //if you add more children .add GUID here.
     uint32 WaypointID()
     {
@@ -2370,25 +2364,21 @@ struct npc_captive_childAI : public npc_escortAI
             case 1:
                 AddWaypoint(0, W[0].x+(rand()%4), W[0].y-(rand()%4), W[0].z, 3000);
                 AddWaypoint(1, W[1].x, W[1].y, W[1].z);
-                AddWaypoint(2, W[2].x, W[2].y, W[2].z);
                 Start(false, true, player->GetGUID());
                 break;
             case 2:
-                AddWaypoint(0, W[3].x+(rand()%4), W[3].y-(rand()%4), W[3].z, 3000);
-                AddWaypoint(1, W[4].x, W[4].y, W[4].z);
-                AddWaypoint(2, W[5].x, W[5].y, W[5].z);
+                AddWaypoint(0, W[2].x+(rand()%4), W[2].y-(rand()%4), W[2].z, 3000);
+                AddWaypoint(1, W[3].x, W[3].y, W[3].z);
                 Start(false, true, player->GetGUID());
                 break;
             case 3:
-                AddWaypoint(0, W[6].x+(rand()%4), W[6].y-(rand()%4), W[6].z, 3000);
-                AddWaypoint(1, W[7].x, W[7].y, W[7].z);
-                AddWaypoint(2, W[8].x, W[8].y, W[8].z);
+                AddWaypoint(0, W[4].x+(rand()%4), W[4].y-(rand()%4), W[4].z, 3000);
+                AddWaypoint(1, W[5].x, W[5].y, W[5].z);
                 Start(false, true, player->GetGUID());
                 break;
             case 4:
-                AddWaypoint(0, W[9].x+(rand()%4), W[9].y-(rand()%4), W[9].z, 3000);
-                AddWaypoint(1, W[10].x, W[10].y, W[10].z);
-                AddWaypoint(2, W[11].x, W[11].y, W[11].z);
+                AddWaypoint(0, W[6].x+(rand()%4), W[6].y-(rand()%4), W[6].z, 3000);
+                AddWaypoint(1, W[7].x, W[7].y, W[7].z);
                 Start(false, true, player->GetGUID());
                 break;
         }
@@ -2420,9 +2410,6 @@ struct npc_captive_childAI : public npc_escortAI
                 }
                 break;
             case 1:
-                me->SetVisibility(VISIBILITY_OFF); //??? strange bug and we need wp2(home).
-                break;
-            case 2:
                 me->ForcedDespawn();
                 break;
         }
