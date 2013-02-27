@@ -5450,6 +5450,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     }
                     return false;
                 }
+                // wolfshead helm energy
+                case 17770:
+                {
+                    triggered_spell_id = 29940;
+                    break;
+                }
             }
             break;
         }
