@@ -572,7 +572,9 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 IsAIEnabled = true;
             }
 
-            if (GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted())
+            if (GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted() &&
+                GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE &&
+                GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
             {
                 uint32 distToHome = sWorld.getConfig(CONFIG_EVADE_HOMEDIST);
                 if (!IsWithinDistInMap(&homeLocation, distToHome))
