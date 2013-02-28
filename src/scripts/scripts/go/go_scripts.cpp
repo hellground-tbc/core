@@ -531,8 +531,9 @@ enum
 
 bool GOUse_go_rule_skies(Player* pPlayer, GameObject* pGO)
 {
-    if (pPlayer->GetQuestStatus(11078) == QUEST_STATUS_INCOMPLETE)
+    if (pPlayer->HasItemCount(32569, 35))
     {
+        pPlayer->DestroyItemCount(32569, 35, true);
         switch(pGO->GetEntry())
         {
             case 185936:
