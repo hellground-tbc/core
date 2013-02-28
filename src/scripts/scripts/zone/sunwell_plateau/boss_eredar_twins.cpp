@@ -125,7 +125,7 @@ struct boss_sacrolashAI : public ScriptedAI
         EnrageTimer = 360000;
         DoCast(me, SPELL_SHADOWFORM);
 
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         else
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -298,7 +298,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         TrashWaveDone = false;
 
         DoCast(me, SPELL_FIREFORM);
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         else
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
