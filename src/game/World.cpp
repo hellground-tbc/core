@@ -1182,6 +1182,9 @@ void World::SetInitialWorldSettings()
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
 
+    sLog.outString("Loading Terrain specific data...");
+    sTerrainMgr.LoadTerrainSpecifics();
+
     sLog.outString("Loading Script Names...");
     sScriptMgr.LoadScriptNames();
 
@@ -1462,9 +1465,6 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Loading CreatureEventAI Scripts...");
     sCreatureEAIMgr.LoadCreatureEventAI_Scripts();
-
-    sLog.outString("Loading Terrain specific data...");
-    sTerrainMgr.LoadTerrainSpecifics();
 
     sLog.outString("Initializing Scripts...");
     sScriptMgr.LoadScriptLibrary(HELLGROUND_SCRIPT_NAME);
