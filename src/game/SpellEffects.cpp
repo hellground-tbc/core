@@ -1259,6 +1259,16 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster,spell_id,true,NULL);
                     return;
                 }
+                case 19250:                                 // Placing Smokey's Explosives
+                {
+                    if(i == 0)
+                    {
+                        focusObject->SetLootState(GO_JUST_DEACTIVATED);
+                        m_caster->CastSpell(m_caster, 19237, true);
+                        ((Player*)m_caster)->KilledMonster(12247, m_caster->GetMap()->GetCreatureGUID(12247));
+                    }
+                    return;
+                }
                 case 20577:                                 // Cannibalize
                     if (unitTarget)
                         m_caster->CastSpell(m_caster,20578,false,NULL);
