@@ -4978,7 +4978,7 @@ SpellCastResult Spell::CheckItems()
 
         Cell::VisitGridObjects(m_caster, checker, m_caster->GetMap()->GetVisibilityDistance());
 
-        if (!ok)
+        if (!ok || !ok->isSpawned())
             return SPELL_FAILED_REQUIRES_SPELL_FOCUS;
 
         focusObject = ok;                                   // game object found in range
