@@ -12009,8 +12009,29 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                 if (enchant_spell_id)
                 {
                     SpellEntry const *temp = sSpellStore.LookupEntry(enchant_spell_id);
-                    if (!temp)
+                    if (!temp) // unsupported enchant support
+                    {
+                        switch(enchant_spell_id)
+                        {
+                            case 22841: //arcanum of rapidity
+                                {
+                                    ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, 10, apply);
+                                    ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, 10, apply);
+                                }
+                            case 22847: //arcanum of protection
+                                    ((Player*)this)->ApplyRatingMod(CR_DODGE, 12, apply);
+                            case 22755: //elemental sharpening stone
+                                    ((Player*)this)->ApplyRatingMod(CR_CRIT_MELEE, 28, apply);
+/*                          case 22843: //TODO: arcanum of focus 8bsd 8bh
+                            case 28161: //savage guard 10nature resi
+                            case 28163: //ice guard 10frost resi
+                            case 28165: //shadow guard 10shadow resi
+*/
+                            default:
+                                break;
+                        }
                         break;
+                    }
 
                     if (apply)
                     {
