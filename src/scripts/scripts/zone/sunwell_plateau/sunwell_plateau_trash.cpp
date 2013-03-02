@@ -838,7 +838,7 @@ CreatureAI* GetAI_mob_shadowsword_assassin(Creature *_Creature)
 /****************
 * Shadowsword Commander - id 25837
 
-  Immunities: polytmorph, stun, fear, disarm, root, silence
+  Immunities: polymorph, stun, fear, disarm, root, silence
 
 *****************/
 
