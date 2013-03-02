@@ -11983,15 +11983,16 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
     if (!ignore_condition && pEnchant->EnchantmentCondition && !((Player*)this)->EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
         return;
 
-    if (!item->IsBroken())
-    for (int s=0; s<3; s++)
+    if (!item->IsBroken() || !apply)
     {
-        uint32 enchant_display_type = pEnchant->type[s];
-        uint32 enchant_amount = pEnchant->amount[s];
-        uint32 enchant_spell_id = pEnchant->spellid[s];
-
-        switch (enchant_display_type)
+        for (int s=0; s<3; s++)
         {
+            uint32 enchant_display_type = pEnchant->type[s];
+            uint32 enchant_amount = pEnchant->amount[s];
+            uint32 enchant_spell_id = pEnchant->spellid[s];
+
+            switch (enchant_display_type)
+            {
             case ITEM_ENCHANTMENT_TYPE_NONE:
                 break;
             case ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL:
@@ -12014,21 +12015,26 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         switch(enchant_spell_id)
                         {
                             case 22841: //arcanum of rapidity
-                                {
-                                    ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, 10, apply);
-                                    ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, 10, apply);
-                                }
+                            {
+                                ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, 10, apply);
+                                ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, 10, apply);
+                                break;
+                            }
                             case 22847: //arcanum of protection
-                                    ((Player*)this)->ApplyRatingMod(CR_DODGE, 12, apply);
+                            {
+                                ((Player*)this)->ApplyRatingMod(CR_DODGE, 12, apply);
+                                break;
+                            }
                             case 22755: //elemental sharpening stone
+                                {
                                     ((Player*)this)->ApplyRatingMod(CR_CRIT_MELEE, 28, apply);
-/*                          case 22843: //TODO: arcanum of focus 8bsd 8bh
+                                    break;
+                                }
+                            /*                          case 22843: //TODO: arcanum of focus 8bsd 8bh
                             case 28161: //savage guard 10nature resi
                             case 28163: //ice guard 10frost resi
                             case 28165: //shadow guard 10shadow resi
-*/
-                            default:
-                                break;
+                            */
                         }
                         break;
                     }
@@ -12083,26 +12089,26 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                 HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + enchant_spell_id), TOTAL_VALUE, float(enchant_amount), apply);
                 break;
             case ITEM_ENCHANTMENT_TYPE_STAT:
-            {
-                if (!enchant_amount)
                 {
-                    ItemRandomSuffixEntry const *item_rand_suffix = sItemRandomSuffixStore.LookupEntry(abs(item->GetItemRandomPropertyId()));
-                    if (item_rand_suffix)
+                    if (!enchant_amount)
                     {
-                        for (int k=0; k<3; k++)
+                        ItemRandomSuffixEntry const *item_rand_suffix = sItemRandomSuffixStore.LookupEntry(abs(item->GetItemRandomPropertyId()));
+                        if (item_rand_suffix)
                         {
-                            if (item_rand_suffix->enchant_id[k] == enchant_id)
+                            for (int k=0; k<3; k++)
                             {
-                                enchant_amount = uint32((item_rand_suffix->prefix[k]*item->GetItemSuffixFactor()) / 10000);
-                                break;
+                                if (item_rand_suffix->enchant_id[k] == enchant_id)
+                                {
+                                    enchant_amount = uint32((item_rand_suffix->prefix[k]*item->GetItemSuffixFactor()) / 10000);
+                                    break;
+                                }
                             }
                         }
                     }
-                }
 
-                sLog.outDebug("Adding %u to stat nb %u",enchant_amount,enchant_spell_id);
-                switch (enchant_spell_id)
-                {
+                    sLog.outDebug("Adding %u to stat nb %u",enchant_amount,enchant_spell_id);
+                    switch (enchant_spell_id)
+                    {
                     case ITEM_MOD_AGILITY:
                         sLog.outDebug("+ %u AGILITY",enchant_amount);
                         HandleStatModifier(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE, float(enchant_amount), apply);
@@ -12168,32 +12174,32 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         ((Player*)this)->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u SPELL_CRIT", enchant_amount);
                         break;
-//                    Values from ITEM_STAT_MELEE_HA_RATING to ITEM_MOD_HASTE_RANGED_RATING are never used
-//                    in Enchantments
-//                    case ITEM_MOD_HIT_TAKEN_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_HIT_TAKEN_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_HIT_TAKEN_SPELL_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_CRIT_TAKEN_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_CRIT_TAKEN_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_CRIT_TAKEN_SPELL_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_HASTE_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_HASTE_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, enchant_amount, apply);
-//                        break;
+                        //                    Values from ITEM_STAT_MELEE_HA_RATING to ITEM_MOD_HASTE_RANGED_RATING are never used
+                        //                    in Enchantments
+                        //                    case ITEM_MOD_HIT_TAKEN_MELEE_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_HIT_TAKEN_RANGED_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_HIT_TAKEN_SPELL_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_CRIT_TAKEN_MELEE_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_CRIT_TAKEN_RANGED_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_CRIT_TAKEN_SPELL_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_HASTE_MELEE_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_HASTE_RANGED_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, enchant_amount, apply);
+                        //                        break;
                     case ITEM_MOD_HASTE_SPELL_RATING:
                         ((Player*)this)->ApplyRatingMod(CR_HASTE_SPELL, enchant_amount, apply);
                         break;
@@ -12209,17 +12215,17 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         //((Player*)this)->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u CRITICAL", enchant_amount);
                         break;
-//                    Values ITEM_MOD_HIT_TAKEN_RATING and ITEM_MOD_CRIT_TAKEN_RATING are never used in Enchantment
-//                    case ITEM_MOD_HIT_TAKEN_RATING:
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_CRIT_TAKEN_RATING:
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
-//                        break;
+                        //                    Values ITEM_MOD_HIT_TAKEN_RATING and ITEM_MOD_CRIT_TAKEN_RATING are never used in Enchantment
+                        //                    case ITEM_MOD_HIT_TAKEN_RATING:
+                        //                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
+                        //                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
+                        //                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_CRIT_TAKEN_RATING:
+                        //                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
+                        //                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
+                        //                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
+                        //                        break;
                     case ITEM_MOD_RESILIENCE_RATING:
                         ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
                         ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
@@ -12238,32 +12244,33 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         break;
                     default:
                         break;
+                    }
+                    break;
                 }
-                break;
-            }
             case ITEM_ENCHANTMENT_TYPE_TOTEM:               // Shaman Rockbiter Weapon
-            {
-                if (getClass() == CLASS_SHAMAN)
                 {
-                    float addValue = 0.0f;
-                    if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                    if (getClass() == CLASS_SHAMAN)
                     {
-                        addValue = float(enchant_amount * item->GetProto()->Delay/1000.0f);
-                        HandleStatModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE, addValue, apply);
+                        float addValue = 0.0f;
+                        if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                        {
+                            addValue = float(enchant_amount * item->GetProto()->Delay/1000.0f);
+                            HandleStatModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE, addValue, apply);
+                        }
+                        else if (item->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
+                        {
+                            addValue = float(enchant_amount * item->GetProto()->Delay/1000.0f);
+                            HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE, addValue, apply);
+                        }
                     }
-                    else if (item->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
-                    {
-                        addValue = float(enchant_amount * item->GetProto()->Delay/1000.0f);
-                        HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE, addValue, apply);
-                    }
+                    break;
                 }
-                break;
-            }
             default:
                 sLog.outLog(LOG_DEFAULT, "ERROR: Unknown item enchantment display type: %d",enchant_display_type);
                 break;
-        }                                                   /*switch (enchant_display_type)*/
-    }                                                       /*for*/
+            }                                                   /*switch (enchant_display_type)*/
+        }                                                       /*for*/
+    }
 
     // visualize enchantment at player and equipped items
     if (slot < MAX_INSPECTED_ENCHANTMENT_SLOT)
