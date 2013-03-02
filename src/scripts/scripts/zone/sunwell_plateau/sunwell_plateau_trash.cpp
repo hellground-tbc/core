@@ -720,7 +720,7 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 /****************
 * Shadowsword Assassin - id 25484
 
-  Immunities: polymorph, disarm, stun
+  Immunities: disarm, fear, stun, polymorph
 
 *****************/
 
@@ -777,7 +777,7 @@ struct mob_shadowsword_assassinAI : public ScriptedAI
             {
                 if (plr->isGameMaster() || plr->IsFriendlyTo(me))
                     continue;
-                if (plr->isAlive() && me->IsWithinDistInMap(plr, 40))
+                if (plr->isAlive() && me->IsWithinDistInMap(plr, 35))
                 {
                     DoCast(plr, SPELL_ASSASSINS_MARK, true);
                     DoCast(plr, SPELL_SHADOWSTEP);
@@ -789,7 +789,9 @@ struct mob_shadowsword_assassinAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if(me->IsWithinDistInMap(who, 50) && me->IsWithinLOSInMap(who))
+        if(!me->isAlive())
+            return;
+        if(me->IsWithinLOSInMap(who) && !me->isInCombat())
             DoRandomShadowstep(who);
     }
 
@@ -836,7 +838,7 @@ CreatureAI* GetAI_mob_shadowsword_assassin(Creature *_Creature)
 /****************
 * Shadowsword Commander - id 25837
 
-  Immunities: polymorph, stun, fear
+  Immunities: polytmorph, stun, fear, disarm, root, silence
 
 *****************/
 
@@ -858,11 +860,6 @@ struct mob_shadowsword_commanderAI : public ScriptedAI
     {
         me->SetAggroRange(AGGRO_RANGE);
         pInstance = c->GetInstanceData();
-        if(!TriggerGUID)
-        {
-            if(Creature* ImpTrigger = GetClosestCreatureWithEntry(me, MOB_GAUNTLET_IMP_TRIGGER, 70))
-                TriggerGUID = ImpTrigger->GetGUID();
-        }
     }
 
     ScriptedInstance* pInstance;
@@ -919,7 +916,7 @@ struct mob_shadowsword_commanderAI : public ScriptedAI
                 if(Creature* ImpTrigger = GetClosestCreatureWithEntry(me, MOB_GAUNTLET_IMP_TRIGGER, 70))
                     TriggerGUID = ImpTrigger->GetGUID();
             }
-            if(Yell_timer)
+            if(Yell_timer && TriggerGUID)
             {
                 if(Yell_timer <= diff)
                 {
@@ -963,7 +960,7 @@ CreatureAI* GetAI_mob_shadowsword_commander(Creature *_Creature)
 /****************
 * Shadowsword Deathbringer - id 25485
 
-  Immunities: root, stun, polymorph, interrupt, silence
+  Immunities: stun, polymorph, interrupt, silence
 
 *****************/
 
@@ -1274,7 +1271,7 @@ struct mob_shadowsword_soulbinderAI : public ScriptedAI
         ClearCastQueue();
         CurseOfExhaustion = urand(4000, 8000);
         Domination = urand(6000, 10000);
-        FlashOfDarkness = urand(2000, 4000);
+        FlashOfDarkness = urand(2000, 6000);
     }
 
     void JustDied(Unit* killer)
@@ -1348,7 +1345,7 @@ CreatureAI* GetAI_mob_shadowsword_soulbinder(Creature *_Creature)
 /****************
 * Shadowsword Vanquisher - id 25486
 
-  Immunities: polymorph, fear, taunt
+  Immunities: stun, disarm, taunt
 
 *****************/
 
