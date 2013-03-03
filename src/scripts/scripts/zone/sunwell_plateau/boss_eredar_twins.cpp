@@ -242,8 +242,7 @@ struct boss_sacrolashAI : public ScriptedAI
         {
             if (ConflagrationTimer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 300, true, me->getVictimGUID()))
-                    AddSpellToCast(target, SPELL_CONFLAGRATION);
+                AddSpellToCast(SPELL_CONFLAGRATION, CAST_RANDOM_WITHOUT_TANK);
                 ConflagrationTimer = urand(30000, 35000);
             }
             else
@@ -253,8 +252,8 @@ struct boss_sacrolashAI : public ScriptedAI
         {
             if (ShadownovaTimer < diff)
             {
-                if(GetNovaTarget())
-                     AddSpellToCastWithScriptText(GetNovaTarget(), SPELL_SHADOW_NOVA, EMOTE_SHADOW_NOVA);
+                if(Unit* target = GetNovaTarget())
+                     AddSpellToCastWithScriptText(target, SPELL_SHADOW_NOVA, EMOTE_SHADOW_NOVA);
                 DoScriptText(YELL_SHADOW_NOVA, me);
                 ShadownovaTimer = urand(30000,35000);
             }
@@ -522,8 +521,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         {
             if (ShadownovaTimer < diff)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 300, true, me->getVictimGUID());
-                AddSpellToCast(target, SPELL_SHADOW_NOVA);
+                AddSpellToCast(SPELL_SHADOW_NOVA, CAST_RANDOM_WITHOUT_TANK);
                 ShadownovaTimer = urand(30000, 35000);
             }
             else 
@@ -533,8 +531,8 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         {
             if (ConflagrationTimer < diff)
             {
-                if(GetConflagTarget())
-                    AddSpellToCastWithScriptText(GetConflagTarget(), SPELL_CONFLAGRATION, EMOTE_CONFLAGRATION);
+                if(Unit* target = GetConflagTarget())
+                    AddSpellToCastWithScriptText(target , SPELL_CONFLAGRATION, EMOTE_CONFLAGRATION);
                 DoScriptText(YELL_CANFLAGRATION, me);
                 ConflagrationTimer = urand(30000, 35000);
             }
