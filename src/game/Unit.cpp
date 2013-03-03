@@ -7022,6 +7022,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             }
             else if (!(procFlags & (PROC_FLAG_TAKEN_MELEE_HIT | PROC_FLAG_TAKEN_MELEE_SPELL_HIT)))
                 return false;
+            break;
         }
         // Trinket - Hand of Justice
         case 15600:
