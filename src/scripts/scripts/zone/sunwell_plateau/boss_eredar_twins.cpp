@@ -59,6 +59,7 @@ enum Quotes
 enum Spells
 {
     //Lady Sacrolash spells
+    SPELL_DUAL_WIELD        =   29651,
     SPELL_SHADOWFORM        =   45455,
     SPELL_DARK_TOUCHED      =   45347,
     SPELL_SHADOW_BLADES     =   45248, //10 secs
@@ -124,6 +125,7 @@ struct boss_sacrolashAI : public ScriptedAI
         ConflagrationTimer = 30000;
         EnrageTimer = 360000;
         DoCast(me, SPELL_SHADOWFORM);
+        DoCast(me, SPELL_DUAL_WIELD);
 
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -131,6 +133,18 @@ struct boss_sacrolashAI : public ScriptedAI
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         pInstance->SetData(DATA_SACROLASH, NOT_STARTED);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
+        {
+            if(Unit* Alythess = me->GetUnit(pInstance->GetData64(DATA_ALYTHESS)))
+                Alythess->ToCreature()->Respawn();
+            pInstance->SetData(DATA_ALYTHESS, NOT_STARTED);
+        }
+
+        ScriptedAI::EnterEvadeMode();
     }
 
     void EnterCombat(Unit *who)
@@ -189,6 +203,36 @@ struct boss_sacrolashAI : public ScriptedAI
             AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_ALYTHESS_DEAD);
     }
 
+    // searches for one of 5 top threat targets from sisters' threat list, but not her main target
+    Unit* GetNovaTarget()
+    {
+        std::list<Unit*> NovaList;
+        NovaList.clear();
+        Unit* Alythess = me->GetUnit(pInstance->GetData64(DATA_ALYTHESS));
+
+        if(!Alythess || !Alythess->isAlive() || !Alythess->getVictim())
+            return NULL;
+
+        for(std::list<HostilReference*>::iterator iter = Alythess->getThreatManager().getThreatList().begin(); iter != Alythess->getThreatManager().getThreatList().end();)
+        {
+            Unit* pUnit = Unit::GetUnit((*me), (*iter)->getUnitGuid());
+            ++iter;
+            if(pUnit && pUnit->IsInWorld() && pUnit->IsInMap(me) &&
+               pUnit->GetTypeId() == TYPEID_PLAYER && !((Player*)pUnit)->isGameMaster() &&
+               pUnit->GetGUID() != Alythess->getVictimGUID())
+                NovaList.push_back(pUnit);
+            if(NovaList.size() >=5)
+                break;
+        }
+
+        if(NovaList.empty())
+            return NULL;
+
+        std::list<Unit*>::iterator itr = NovaList.begin();
+        std::advance(itr, urand(0, 4));
+        return *itr;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -198,7 +242,8 @@ struct boss_sacrolashAI : public ScriptedAI
         {
             if (ConflagrationTimer < diff)
             {
-                AddSpellToCast(SPELL_CONFLAGRATION, CAST_RANDOM);
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 300, true, me->getVictimGUID()))
+                    AddSpellToCast(target, SPELL_CONFLAGRATION);
                 ConflagrationTimer = urand(30000, 35000);
             }
             else
@@ -208,7 +253,8 @@ struct boss_sacrolashAI : public ScriptedAI
         {
             if (ShadownovaTimer < diff)
             {
-                AddSpellToCastWithScriptText(SPELL_SHADOW_NOVA, CAST_RANDOM, EMOTE_SHADOW_NOVA);
+                if(GetNovaTarget())
+                     AddSpellToCastWithScriptText(GetNovaTarget(), SPELL_SHADOW_NOVA, EMOTE_SHADOW_NOVA);
                 DoScriptText(YELL_SHADOW_NOVA, me);
                 ShadownovaTimer = urand(30000,35000);
             }
@@ -291,7 +337,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         ShadownovaTimer = 40000;
         EnrageTimer = 360000;
         FlamesearTimer = urand(10000, 15000);
-        IntroYellTimer = 10000;
+        IntroYellTimer = 500;
         IntroStepCounter = 10;
 
         IntroDone = false;
@@ -308,31 +354,35 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         SetAutocast(SPELL_BLAZE, 2500, true);
     }
 
+    void EnterEvadeMode()
+    {
+        if (pInstance->GetData(DATA_SACROLASH) == DONE)
+        {
+            if(Unit* Sacrolash = me->GetUnit(pInstance->GetData64(DATA_SACROLASH)))
+               Sacrolash->ToCreature()->Respawn();
+            pInstance->SetData(DATA_SACROLASH, NOT_STARTED);
+        }
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
     void EnterCombat(Unit *who)
     {
         DoZoneInCombat();
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void SetData(uint32 a, uint32 b)
     {
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !TrashWaveDone &&
-            !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 100))
-        {
-            if(Creature* Vanquisher = GetClosestCreatureWithEntry(me, 25486, 40, true))
-            {
-                Vanquisher->Yell("Intruders! Do not let them into the Sanctum!", 0, who->GetGUID());
-                //Vanquisher->GetMotionMaster()->MovePath(PATH_TRASH_WAVE1, false);
-            }
-            TrashWaveDone = true;
-        }
-        // to be redone
-        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE && pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 45))
+        if(a == 1 && b == 1 && pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED)
         {
             IntroStepCounter = 0;
             pInstance->SetData(DATA_EREDAR_TWINS_INTRO, IN_PROGRESS);
         }
+    }
 
+    void MoveInLineOfSight(Unit *who)
+    {
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             Scripted_NoMovementAI::MoveInLineOfSight(who);
     }
@@ -423,6 +473,36 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_SACROLASH_DEAD);
     }
 
+    // searches for one of 5 top threat targets from sisters' threat list, but not her main target
+    Unit* GetConflagTarget()
+    {
+        std::list<Unit*> ConflagList;
+        ConflagList.clear();
+        Unit* Sacrolash = me->GetUnit(pInstance->GetData64(DATA_SACROLASH));
+
+        if(!Sacrolash || !Sacrolash->isAlive() || !Sacrolash->getVictim())
+            return NULL;
+
+        for(std::list<HostilReference*>::iterator iter = Sacrolash->getThreatManager().getThreatList().begin(); iter != Sacrolash->getThreatManager().getThreatList().end();)
+        {
+            Unit* pUnit = Unit::GetUnit((*me), (*iter)->getUnitGuid());
+            ++iter;
+            if(pUnit && pUnit->IsInWorld() && pUnit->IsInMap(me) &&
+               pUnit->GetTypeId() == TYPEID_PLAYER && !((Player*)pUnit)->isGameMaster() &&
+               pUnit->GetGUID() != Sacrolash->getVictimGUID())
+                ConflagList.push_back(pUnit);
+            if(ConflagList.size() >=5)
+                break;
+        }
+
+        if(ConflagList.empty())
+            return NULL;
+
+        std::list<Unit*>::iterator itr = ConflagList.begin();
+        std::advance(itr, urand(0, 4));
+        return *itr;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (IntroStepCounter < 10)
@@ -442,7 +522,8 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         {
             if (ShadownovaTimer < diff)
             {
-                AddSpellToCast(SPELL_SHADOW_NOVA, CAST_RANDOM);
+                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 300, true, me->getVictimGUID());
+                AddSpellToCast(target, SPELL_SHADOW_NOVA);
                 ShadownovaTimer = urand(30000, 35000);
             }
             else 
@@ -452,7 +533,8 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         {
             if (ConflagrationTimer < diff)
             {
-                AddSpellToCastWithScriptText(SPELL_CONFLAGRATION, CAST_RANDOM, EMOTE_CONFLAGRATION);
+                if(GetConflagTarget())
+                    AddSpellToCastWithScriptText(GetConflagTarget(), SPELL_CONFLAGRATION, EMOTE_CONFLAGRATION);
                 DoScriptText(YELL_CANFLAGRATION, me);
                 ConflagrationTimer = urand(30000, 35000);
             }
