@@ -12015,28 +12015,41 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         switch(enchant_spell_id)
                         {
                             case 22841: //arcanum of rapidity
-                            {
-                                ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, 10, apply);
-                                ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, 10, apply);
-                                break;
-                            }
-                            case 22847: //arcanum of protection
-                            {
-                                ((Player*)this)->ApplyRatingMod(CR_DODGE, 12, apply);
-                                break;
-                            }
-                            case 22755: //elemental sharpening stone
                                 {
-                                    ((Player*)this)->ApplyRatingMod(CR_CRIT_MELEE, 28, apply);
+                                    enchant_spell_id=13928;
                                     break;
                                 }
-                            /*                          case 22843: //TODO: arcanum of focus 8bsd 8bh
-                            case 28161: //savage guard 10nature resi
-                            case 28163: //ice guard 10frost resi
-                            case 28165: //shadow guard 10shadow resi
-                            */
+                            case 22847: //arcanum of protection
+                                {
+                                    enchant_spell_id=13669;
+                                    break;
+                                }
+                            case 22755: //elemental sharpening stone
+                                {
+                                    enchant_spell_id=7598;
+                                    break;
+                                }
+                            case 22843: //arcanum of focus
+                                {
+                                    enchant_spell_id=9398;
+                                    break;
+                                }
+                            case 28162: //savage guard
+                                {
+                                    enchant_spell_id=14630;
+                                    break;
+                                }
+                            case 28164: //ice guard
+                                {
+                                    enchant_spell_id=14550;
+                                    break;
+                                }
+                            case 28166: //shadow guard 
+                                {
+                                    enchant_spell_id=14673;
+                                    break;
+                                }
                         }
-                        break;
                     }
 
                     if (apply)
