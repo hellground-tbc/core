@@ -1446,6 +1446,10 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
         return;
     }
 
+    const SpellEntry* spellInfo = sSpellStore.LookupEntry(spell);
+    if (SpellMgr::isSpellBreakStealth(spellInfo))
+        target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
+
     if (Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
