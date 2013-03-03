@@ -2868,6 +2868,8 @@ void SpellMgr::LoadSpellCustomAttr()
             /* NO SPELL DMG COEFF */
             // Enduring Light - T6 proc
             case 40471:
+            // Enduring Judgement - T6 proc
+            case 40472:
             // Judgement of Blood
             case 32221:
             case 32220:
@@ -2890,6 +2892,8 @@ void SpellMgr::LoadSpellCustomAttr()
             // Heart of Wyrmthalak: Flame Lash proc
             case 27655:
             case 45055:
+            // The Lightning Capacitor, lightning bolt spell
+            case 37661:
             // Arcane Torrent
             case 28733:
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
