@@ -167,13 +167,13 @@ struct boss_sacrolashAI : public ScriptedAI
             {
                 if(target->HasAura(SPELL_FLAME_TOUCHED))
                     target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
-                target->CastSpell(target, SPELL_DARK_TOUCHED, false);
+                target->CastSpell(target, SPELL_DARK_TOUCHED, true, 0, 0, me->GetGUID());
             }
             if(school_mask == SPELL_SCHOOL_MASK_FIRE)
             {
                 if(target->HasAura(SPELL_DARK_TOUCHED))
                     target->RemoveAurasDueToSpell(SPELL_DARK_TOUCHED);
-                target->CastSpell(target, SPELL_FLAME_TOUCHED, false);
+                target->CastSpell(target, SPELL_FLAME_TOUCHED, true, 0, 0, me->GetGUID());;
             }
         }
     }
@@ -206,31 +206,13 @@ struct boss_sacrolashAI : public ScriptedAI
     // searches for one of 5 top threat targets from sisters' threat list, but not her main target
     Unit* GetNovaTarget()
     {
-        std::list<Unit*> NovaList;
-        NovaList.clear();
-        Unit* Alythess = me->GetUnit(pInstance->GetData64(DATA_ALYTHESS));
-
-        if(!Alythess || !Alythess->isAlive() || !Alythess->getVictim())
-            return NULL;
-
-        for(std::list<HostilReference*>::iterator iter = Alythess->getThreatManager().getThreatList().begin(); iter != Alythess->getThreatManager().getThreatList().end();)
+        if(Unit* Alythess = me->GetUnit(pInstance->GetData64(DATA_ALYTHESS)))
         {
-            Unit* pUnit = Unit::GetUnit((*me), (*iter)->getUnitGuid());
-            ++iter;
-            if(pUnit && pUnit->IsInWorld() && pUnit->IsInMap(me) &&
-               pUnit->GetTypeId() == TYPEID_PLAYER && !((Player*)pUnit)->isGameMaster() &&
-               pUnit->GetGUID() != Alythess->getVictimGUID())
-                NovaList.push_back(pUnit);
-            if(NovaList.size() >=5)
-                break;
+            Unit* target = Alythess->ToCreature()->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, urand(0,4), 300.0f, true, Alythess->getVictimGUID());
+            if(target && target->isAlive())
+                return target;
         }
-
-        if(NovaList.empty())
-            return NULL;
-
-        std::list<Unit*>::iterator itr = NovaList.begin();
-        std::advance(itr, urand(0, 4));
-        return *itr;
+        return NULL;
     }
 
     void UpdateAI(const uint32 diff)
@@ -242,7 +224,7 @@ struct boss_sacrolashAI : public ScriptedAI
         {
             if (ConflagrationTimer < diff)
             {
-                AddSpellToCast(SPELL_CONFLAGRATION, CAST_RANDOM_WITHOUT_TANK);
+                AddSpellToCast(SPELL_CONFLAGRATION, CAST_RANDOM_WITHOUT_TANK, false, true);
                 ConflagrationTimer = urand(30000, 35000);
             }
             else
@@ -253,7 +235,7 @@ struct boss_sacrolashAI : public ScriptedAI
             if (ShadownovaTimer < diff)
             {
                 if(Unit* target = GetNovaTarget())
-                     AddSpellToCastWithScriptText(target, SPELL_SHADOW_NOVA, EMOTE_SHADOW_NOVA);
+                    AddSpellToCastWithScriptText(target, SPELL_SHADOW_NOVA, EMOTE_SHADOW_NOVA, false, true);
                 DoScriptText(YELL_SHADOW_NOVA, me);
                 ShadownovaTimer = urand(30000,35000);
             }
@@ -394,13 +376,13 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             {
                 if(target->HasAura(SPELL_FLAME_TOUCHED))
                     target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
-                target->CastSpell(target, SPELL_DARK_TOUCHED, false);
+                target->CastSpell(target, SPELL_DARK_TOUCHED, true, 0, 0, me->GetGUID());
             }
             if(school_mask == SPELL_SCHOOL_MASK_FIRE)
             {
                 if(target->HasAura(SPELL_DARK_TOUCHED))
                     target->RemoveAurasDueToSpell(SPELL_DARK_TOUCHED);
-                target->CastSpell(target, SPELL_FLAME_TOUCHED, false);
+                target->CastSpell(target, SPELL_FLAME_TOUCHED, true, 0, 0, me->GetGUID());
             }
         }
     }
@@ -475,31 +457,13 @@ struct boss_alythessAI : public Scripted_NoMovementAI
     // searches for one of 5 top threat targets from sisters' threat list, but not her main target
     Unit* GetConflagTarget()
     {
-        std::list<Unit*> ConflagList;
-        ConflagList.clear();
-        Unit* Sacrolash = me->GetUnit(pInstance->GetData64(DATA_SACROLASH));
-
-        if(!Sacrolash || !Sacrolash->isAlive() || !Sacrolash->getVictim())
-            return NULL;
-
-        for(std::list<HostilReference*>::iterator iter = Sacrolash->getThreatManager().getThreatList().begin(); iter != Sacrolash->getThreatManager().getThreatList().end();)
+        if(Unit* Sacrolash = me->GetUnit(pInstance->GetData64(DATA_SACROLASH)))
         {
-            Unit* pUnit = Unit::GetUnit((*me), (*iter)->getUnitGuid());
-            ++iter;
-            if(pUnit && pUnit->IsInWorld() && pUnit->IsInMap(me) &&
-               pUnit->GetTypeId() == TYPEID_PLAYER && !((Player*)pUnit)->isGameMaster() &&
-               pUnit->GetGUID() != Sacrolash->getVictimGUID())
-                ConflagList.push_back(pUnit);
-            if(ConflagList.size() >=5)
-                break;
+            Unit* target = Sacrolash->ToCreature()->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, urand(0,4), 300.0f, true, Sacrolash->getVictimGUID());
+            if(target && target->isAlive())
+                return target;
         }
-
-        if(ConflagList.empty())
-            return NULL;
-
-        std::list<Unit*>::iterator itr = ConflagList.begin();
-        std::advance(itr, urand(0, 4));
-        return *itr;
+        return NULL;
     }
 
     void UpdateAI(const uint32 diff)
@@ -521,7 +485,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         {
             if (ShadownovaTimer < diff)
             {
-                AddSpellToCast(SPELL_SHADOW_NOVA, CAST_RANDOM_WITHOUT_TANK);
+                AddSpellToCast(SPELL_SHADOW_NOVA, CAST_RANDOM_WITHOUT_TANK, false, true);
                 ShadownovaTimer = urand(30000, 35000);
             }
             else 
@@ -532,7 +496,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             if (ConflagrationTimer < diff)
             {
                 if(Unit* target = GetConflagTarget())
-                    AddSpellToCastWithScriptText(target , SPELL_CONFLAGRATION, EMOTE_CONFLAGRATION);
+                    AddSpellToCastWithScriptText(target , SPELL_CONFLAGRATION, EMOTE_CONFLAGRATION, false, true);
                 DoScriptText(YELL_CANFLAGRATION, me);
                 ConflagrationTimer = urand(30000, 35000);
             }
@@ -601,7 +565,7 @@ struct mob_shadow_imageAI : public ScriptedAI
         ForceSpellCast(SPELL_IMAGE_VISUAL, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
         DoZoneInCombat();
 
-        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true))
+        if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, urand(0, 4), 400, true))
             AttackStart(pTarget);
     }
 
