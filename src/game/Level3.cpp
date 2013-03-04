@@ -4002,6 +4002,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
 
     if (chr)
     {
+        chr->SetDifficulty(DIFFICULTY_NORMAL);
         chr->GiveLevel(newlevel);
         chr->InitTalentForLevel();
         chr->SetUInt32Value(PLAYER_XP,0);
