@@ -549,8 +549,7 @@ bool GOUse_go_rule_skies(Player* pPlayer, GameObject* pGO)
                 pGO->SummonCreature(NPC_INSIDION, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                 break;
         }
-        pGO->SetGoState(GO_STATE_ACTIVE);
-        pGO->SetRespawnTime(300);
+        pGO->SetLootState(GO_JUST_DEACTIVATED);
     }
     pPlayer->CLOSE_GOSSIP_MENU();
     return true;
