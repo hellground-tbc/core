@@ -725,8 +725,10 @@ bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 30421:                                         // Neterspite - Player buffs(3)
         case 30422:
         case 30423:
+        case 30457:                                         // Complete Vulnerability
         case 47002:                                         // Noxious Fumes (not sure if needed, just in case)
         case 41350:                                         // Aura of Desire
+        case 43501:                                         // Siphon Soul (Hexlord Spell)
             return false;
     }
 
