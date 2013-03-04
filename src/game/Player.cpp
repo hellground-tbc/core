@@ -19848,6 +19848,7 @@ void Player::UpdateAreaDependentAuras(uint32 newArea)
         case 3966:
         case 3939:
         case 3965:
+        case 3967:
             if (GetDummyAura(40214))
             {
                 if (!HasAura(40216,0))
