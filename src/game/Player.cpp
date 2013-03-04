@@ -4550,6 +4550,7 @@ void Player::TeleportToNearestGraveyard()
             case BATTLEGROUND_AB:
             case BATTLEGROUND_EY:
             case BATTLEGROUND_AV:
+            case BATTLEGROUND_WS:
                 ClosestGrave = bg->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetTeam());
                 break;
             default:
