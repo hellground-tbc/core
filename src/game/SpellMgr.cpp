@@ -2814,7 +2814,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Mana Burn
                 if (spellInfo->SpellFamilyFlags & 0x10LL && spellInfo->SpellIconID == 212)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
-
+                // Health Link T5 Hunter/Warlock bonus
+                else if (spellInfo->Id == 37382)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                 // Reflective Shield
                 else if (!spellInfo->SpellFamilyFlags && spellInfo->SpellIconID == 566)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
