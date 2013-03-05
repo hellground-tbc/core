@@ -208,7 +208,7 @@ struct boss_sacrolashAI : public ScriptedAI
     {
         if(Unit* Alythess = me->GetUnit(pInstance->GetData64(DATA_ALYTHESS)))
         {
-            Unit* target = Alythess->ToCreature()->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, urand(0,4), 300.0f, true, Alythess->getVictimGUID());
+            Unit* target = Alythess->ToCreature()->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, urand(0,2), 300.0f, true, Alythess->getVictimGUID());
             if(target && target->isAlive())
                 return target;
         }
@@ -235,7 +235,10 @@ struct boss_sacrolashAI : public ScriptedAI
             if (ShadownovaTimer < diff)
             {
                 if(Unit* target = GetNovaTarget())
+                {
+                    me->SetSelection(target->GetGUID());
                     AddSpellToCastWithScriptText(target, SPELL_SHADOW_NOVA, EMOTE_SHADOW_NOVA, false, true);
+                }
                 DoScriptText(YELL_SHADOW_NOVA, me);
                 ShadownovaTimer = urand(30000,35000);
             }
@@ -459,7 +462,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
     {
         if(Unit* Sacrolash = me->GetUnit(pInstance->GetData64(DATA_SACROLASH)))
         {
-            Unit* target = Sacrolash->ToCreature()->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, urand(0,4), 300.0f, true, Sacrolash->getVictimGUID());
+            Unit* target = Sacrolash->ToCreature()->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, urand(0,2), 300.0f, true, Sacrolash->getVictimGUID());
             if(target && target->isAlive())
                 return target;
         }
@@ -496,7 +499,10 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             if (ConflagrationTimer < diff)
             {
                 if(Unit* target = GetConflagTarget())
+                {
+                    me->SetSelection(target->GetGUID());
                     AddSpellToCastWithScriptText(target , SPELL_CONFLAGRATION, EMOTE_CONFLAGRATION, false, true);
+                }
                 DoScriptText(YELL_CANFLAGRATION, me);
                 ConflagrationTimer = urand(30000, 35000);
             }
