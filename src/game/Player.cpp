@@ -455,6 +455,8 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     _preventSave = false;
     _preventUpdate = false;
+
+    positionStatus.Reset(0);
 }
 
 Player::~Player ()
@@ -1169,6 +1171,8 @@ void Player::Update(uint32 update_diff, uint32 p_time)
         else
             m_AC_timer -= update_diff;
     }
+
+    positionStatus.Update(update_diff);
 
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -5658,13 +5662,18 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
     if (!Unit::SetPosition(x, y, z, orientation, teleport))
         return false;
 
+    if(GetTrader() && !IsWithinDistInMap(GetTrader(), 5.0f))
+        GetSession()->SendCancelTrade();
+
+    if (!positionStatus.Passed())
+        return true;
+
+    positionStatus.Reset(100);
+
     // code block for underwater state update
     // Unit::SetPosition() checks for validity and updates our coordinates
     // so we re-fetch them instead of using "raw" coordinates from function params
     UpdateUnderwaterState(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
-
-    if(GetTrader() && !IsWithinDistInMap(GetTrader(), 5.0f))
-        GetSession()->SendCancelTrade();
 
     // group update
     if (groupUpdate)
