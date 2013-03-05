@@ -5654,20 +5654,21 @@ void Player::removeActionButton(uint8 button)
 
 bool Player::SetPosition(float x, float y, float z, float orientation, bool teleport)
 {
+    bool groupUpdate = (GetGroup() && (teleport || abs(GetPositionX() - x) > 1.0f || abs(GetPositionY() - y) > 1.0f));
     if (!Unit::SetPosition(x, y, z, orientation, teleport))
         return false;
-
-    // group update
-    if (GetGroup())
-        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
 
     // code block for underwater state update
     // Unit::SetPosition() checks for validity and updates our coordinates
     // so we re-fetch them instead of using "raw" coordinates from function params
     UpdateUnderwaterState(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
 
-    if(GetTrader() && !IsWithinDistInMap(GetTrader(), 5))
+    if(GetTrader() && !IsWithinDistInMap(GetTrader(), 5.0f))
         GetSession()->SendCancelTrade();
+
+    // group update
+    if (groupUpdate)
+        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
 
     CheckAreaExploreAndOutdoor();
     return true;
