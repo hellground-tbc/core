@@ -6811,8 +6811,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
              if (ToPlayer()->HasSpellCooldown(trigger_spell_id))
                  return false;
 
-             ToPlayer()->AddSpellCooldown(trigger_spell_id,0, time(NULL) + cooldown);
-
              // stacking
              CastSpell(this, 37658, true, NULL, triggeredByAura);
              // counting
@@ -6826,7 +6824,6 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
              RemoveAurasDueToSpell(37658);
              target = pVictim;
 
-             cooldown = 0;
          }
          break;
      }
