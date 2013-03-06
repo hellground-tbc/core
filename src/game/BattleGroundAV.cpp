@@ -1065,7 +1065,11 @@ void BattleGroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
                     if (!plr)
                         continue;
                     if (!ClosestGrave)
+                    {
+                        m_Nodes[node].Owner=536-m_Nodes[node].Owner; // Ally <-> Horde swap, prevents from selecting this grave as closest one
                         ClosestGrave = GetClosestGraveYard(plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ(), plr->GetTeam());
+                        m_Nodes[node].Owner=536-m_Nodes[node].Owner; // return
+                    }
 
                     plr->NearTeleportTo(ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, plr->GetOrientation());
                 }
