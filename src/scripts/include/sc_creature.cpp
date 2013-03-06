@@ -332,9 +332,6 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
         if (!temp.spellId)
             return;
 
-        if (temp.scriptTextEntry)
-            DoScriptText(temp.scriptTextEntry, m_creature, m_creature->getVictim());
-
         if (temp.isDestCast)
         {
             m_creature->CastSpell(temp.castDest[0], temp.castDest[1], temp.castDest[2], temp.spellId, temp.triggered);
@@ -364,6 +361,10 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
             else
                 m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
         }
+
+        // script text after cast victim selection, sometimes it's used in emotes
+        if (temp.scriptTextEntry)
+            DoScriptText(temp.scriptTextEntry, m_creature, m_creature->getVictim());
 
         casted = true;
     }
@@ -506,14 +507,14 @@ void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode,
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode targetMode, int32 scriptTextEntry, bool triggered)
+void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode targetMode, int32 scriptTextEntry, bool triggered, bool visualTarget)
 {
     Unit *pTarget = SelectCastTarget(spellId, targetMode);
     if (!pTarget && targetMode != CAST_NULL)
         return;
 
     uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
-    SpellToCast temp(targetGUID, spellId, triggered, scriptTextEntry, false);
+    SpellToCast temp(targetGUID, spellId, triggered, scriptTextEntry, visualTarget);
 
     spellList.push_back(temp);
 }
