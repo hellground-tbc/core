@@ -2944,6 +2944,12 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (HitChance <  100) HitChance =  100;
     if (HitChance > 9900) HitChance = 9900;
 
+    if (pVictim->GetObjectGuid().IsCreature() && pVictim->ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_1PCT_TAUNT_RESIST)
+    {
+        if (SpellMgr::IsTauntSpell(spell))
+            HitChance = 9900;
+    }
+
     SendCombatStats("MagicSpellHitResult (id=%d): hit chance = %d", pVictim, spell->Id, HitChance);
     uint32 rand = urand(0,10000);
     if (rand > HitChance)

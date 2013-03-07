@@ -738,6 +738,7 @@ class HELLGROUND_IMPORT_EXPORT SpellMgr
         static bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
         static DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
 
+        static bool IsTauntSpell(SpellEntry const* spellInfo);
         static bool IsBinaryResistable(SpellEntry const* spellInfo);
         static bool IsPartialyResistable(SpellEntry const* spellInfo);
         static bool SpellIgnoreLOS(SpellEntry const* spellInfo, uint8 effIdx);

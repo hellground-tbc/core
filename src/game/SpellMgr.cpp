@@ -4270,3 +4270,15 @@ bool SpellMgr::IsPositionTarget(uint32 target)
     }
     return false;
 }
+
+bool SpellMgr::IsTauntSpell(SpellEntry const* spellInfo)
+{
+    for (uint8 i = 0; i < 3; ++i)
+    {
+        if (spellInfo->Effect[i] == SPELL_EFFECT_ATTACK_ME)
+            return true;
+        else if (spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA && spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_TAUNT)
+            return true;
+    }
+    return false;
+}

@@ -145,7 +145,8 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_HASTE_IMMUNE        = 0x00400000,       // 4194304
     CREATURE_FLAG_EXTRA_CANT_MISS           = 0x00800000,       // 8388608 creature melee attacks cant miss
     CREATURE_FLAG_EXTRA_NOT_REGEN_MANA      = 0x01000000,       // 16777216 creature has mana pool, but do not regenerates it when OOC
-    CREATURE_FLAG_EXTRA_NOT_REGEN_HEALTH    = 0x02000000        // 33554432 rare case that creature should not regen health when OOC
+    CREATURE_FLAG_EXTRA_NOT_REGEN_HEALTH    = 0x02000000,       // 33554432 rare case that creature should not regen health when OOC
+    CREATURE_FLAG_EXTRA_1PCT_TAUNT_RESIST   = 0x04000000        // 67108864 creature have only 1% chance to resist taunt like spell
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform

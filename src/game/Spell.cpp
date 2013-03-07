@@ -1114,13 +1114,10 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if (!unit || !effectMask)
         return;
 
-    for (int i = 0; i < 3; i++)
+    if (unit->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME, MECHANIC_NONE) && SpellMgr::IsTauntSpell(GetSpellInfo()))
     {
-        if (unit->IsImmunedToSpellEffect(SPELL_EFFECT_ATTACK_ME, MECHANIC_NONE) && GetSpellInfo()->Effect[i] == SPELL_EFFECT_ATTACK_ME)
-        {
-            m_caster->SendSpellMiss(unit, GetSpellInfo()->Id, SPELL_MISS_IMMUNE);
-            return;
-        }
+        m_caster->SendSpellMiss(unit, GetSpellInfo()->Id, SPELL_MISS_IMMUNE);
+        return;
     }
 
     // Recheck immune (only for delayed spells)
