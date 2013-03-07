@@ -3948,12 +3948,12 @@ bool SpellMgr::isSpellBreakStealth( SpellEntry const* spellInfo )
 
 bool SpellMgr::IsChanneledSpell( SpellEntry const* spellInfo )
 {
-    return (spellInfo->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2));
+    return spellInfo && spellInfo->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2);
 }
 
 bool SpellMgr::NeedsComboPoints( SpellEntry const* spellInfo )
 {
-    return (spellInfo->AttributesEx & (SPELL_ATTR_EX_REQ_COMBO_POINTS1 | SPELL_ATTR_EX_REQ_COMBO_POINTS2));
+    return spellInfo && spellInfo->AttributesEx & (SPELL_ATTR_EX_REQ_COMBO_POINTS1 | SPELL_ATTR_EX_REQ_COMBO_POINTS2);
 }
 
 SpellSchoolMask SpellMgr::GetSpellSchoolMask( SpellEntry const* spellInfo )

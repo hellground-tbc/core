@@ -8171,7 +8171,10 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             // Fireball - 100% of Fire Damage, DoT - 0% of Fire Damage
             else if ((spellProto->SpellFamilyFlags & 0x1LL) && spellProto->SpellIconID == 185)
             {
-                CastingTime = damagetype == DOT ? 0 : 3500;
+                if (damagetype == DOT)
+                    return pdamage;
+
+                CastingTime = 3500;
             }
             // Arcane Missiles triggered spell
             else if ((spellProto->SpellFamilyFlags & 0x200000LL) && spellProto->SpellIconID == 225)
