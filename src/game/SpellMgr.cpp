@@ -4273,6 +4273,9 @@ bool SpellMgr::IsPositionTarget(uint32 target)
 
 bool SpellMgr::IsTauntSpell(SpellEntry const* spellInfo)
 {
+    if (!spellInfo)
+        return false;
+
     for (uint8 i = 0; i < 3; ++i)
     {
         if (spellInfo->Effect[i] == SPELL_EFFECT_ATTACK_ME)

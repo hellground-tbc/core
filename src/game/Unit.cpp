@@ -2693,6 +2693,13 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
     // Spellmod from SPELLMOD_RESIST_MISS_CHANCE
     if (spellId)
     {
+        if (pVictim->GetObjectGuid().IsCreature() && pVictim->ToCreature()->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_1PCT_TAUNT_RESIST)
+        {
+            const SpellEntry* spellInfo = sSpellStore.LookupEntry(spellId);
+            if (SpellMgr::IsTauntSpell(spellInfo))
+                return 1.0f
+        }
+
         if (Player *modOwner = GetSpellModOwner())
             modOwner->ApplySpellMod(spellId, SPELLMOD_RESIST_MISS_CHANCE, HitChance);
     }
@@ -2701,7 +2708,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
     float miss_chance= 100.0f - HitChance;
 
     if (GetTypeId() == TYPEID_UNIT && ((Creature *)this)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_CANT_MISS)
-        return 0;
+        return 0.0f;
 
     // Bonuses from attacker aura and ratings
     if (attType == RANGED_ATTACK)
