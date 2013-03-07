@@ -3943,7 +3943,7 @@ bool SpellMgr::IsDispelSpell( SpellEntry const *spellInfo )
 
 bool SpellMgr::isSpellBreakStealth( SpellEntry const* spellInfo )
 {
-    return !(spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH);
+    return spellInfo && !(spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH);
 }
 
 bool SpellMgr::IsChanneledSpell( SpellEntry const* spellInfo )
