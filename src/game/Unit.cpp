@@ -2697,7 +2697,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
         {
             const SpellEntry* spellInfo = sSpellStore.LookupEntry(spellId);
             if (SpellMgr::IsTauntSpell(spellInfo))
-                return 1.0f
+                return 1.0f;
         }
 
         if (Player *modOwner = GetSpellModOwner())
