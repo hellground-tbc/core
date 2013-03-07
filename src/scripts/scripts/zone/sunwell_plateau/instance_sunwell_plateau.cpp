@@ -270,6 +270,8 @@ struct instance_sunwell_plateau : public ScriptedInstance
                         creature->SetFlag(UNIT_DYNAMIC_FLAGS, (UNIT_DYNFLAG_DEAD | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED));
                     }
                 }
+                else
+                    creature->SetReactState(REACT_PASSIVE);
                 break;
             case 19871: BrutallusTrigger    = creature->GetGUID(); break;
         }
