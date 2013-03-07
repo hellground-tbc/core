@@ -1320,25 +1320,29 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     if (meAsSourcePos)
         GetPosition(pos);
 
+    pos.z += 2.0f;
+
     Position dest;
     dest.x = pos.x + dist * cos(angle);
     dest.y = pos.y + dist * sin(angle);
 
     TerrainInfo const* _map = GetTerrain();
-    dest.z = _map->GetHeight(dest.x, dest.y, pos.z, true);
+    float ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+    float floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
+    dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
 
     // collision occurred
     bool result = false;
     if (ignoreLOSOffset)
-        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +0.5f, dest.x, dest.y, dest.z, -0.5f);
+        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +1.0f, dest.x, dest.y, dest.z, -0.5f);
     else
         result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, -0.5f);
 
     if (result)
     {
         // move back a bit
-        dest.x -= 0.5f * cos(angle);
-        dest.y -= 0.5f * sin(angle);
+        dest.x -= 0.25f * cos(angle);
+        dest.y -= 0.25f * sin(angle);
         dist = sqrt((pos.x - dest.x)*(pos.x - dest.x) + (pos.y - dest.y)*(pos.y - dest.y));
     }
 
@@ -1350,7 +1354,9 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
         {
             dest.x -= step * cos(angle);
             dest.y -= step * sin(angle);
-            dest.z = _map->GetHeight(dest.x, dest.y, dest.z, true);
+            ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+            floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
+            dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
         }
         else
         {
@@ -1361,6 +1367,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
 
     Hellground::NormalizeMapCoord(pos.x);
     Hellground::NormalizeMapCoord(pos.y);
+    UpdateAllowedPositionZ(pos.x, pos.y, pos.z);
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
