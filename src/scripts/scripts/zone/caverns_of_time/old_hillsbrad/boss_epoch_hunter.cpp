@@ -16,80 +16,326 @@
 
 /* ScriptData
 SDName: Boss_Epoch_Hunter
-SD%Complete: 60
-SDComment: Missing spawns pre-event, missing speech to be coordinated with rest of escort event.
+SD%Complete: 95
+SDComment:
 SDCategory: Caverns of Time, Old Hillsbrad Foothills
 EndScriptData */
 
 #include "precompiled.h"
 #include "def_old_hillsbrad.h"
 
-#define SAY_ENTER1                  -1560013
-#define SAY_ENTER2                  -1560014
-#define SAY_ENTER3                  -1560015
-#define SAY_AGGRO1                  -1560016
-#define SAY_AGGRO2                  -1560017
-#define SAY_SLAY1                   -1560018
-#define SAY_SLAY2                   -1560019
-#define SAY_BREATH1                 -1560020
-#define SAY_BREATH2                 -1560021
-#define SAY_DEATH                   -1560022
+#define SAY_AGGRO1                    -1560016
+#define SAY_AGGRO2                    -1560017
+#define SAY_SLAY1                     -1560018
+#define SAY_SLAY2                     -1560019
+#define SAY_BREATH1                   -1560020
+#define SAY_BREATH2                   -1560021
+#define SAY_DEATH                     -1560022
+#define SAY_INFINITE_AGGRO_1          -1560069
+#define SAY_INFINITE_AGGRO_2          -1560070
+#define SAY_INFINITE_AGGRO_3          -1560071
 
-#define SPELL_SAND_BREATH           31914
-#define SPELL_IMPENDING_DEATH       31916
-#define SPELL_MAGIC_DISRUPTION_AURA 33834
-#define SPELL_WING_BUFFET           HeroicMode ? 31475:38593
+#define NPC_TARREN_MILL_GUARDSMAN      18092
+#define NPC_TARREN_MILL_PROTECTOR      18093
+#define NPC_TARREN_MILL_LOOKOUT        18094
+#define NPC_INFINITE_SLAYER            18170
+#define NPC_INFINITE_DEFILER           18171
+#define NPC_INFINITE_SABOTEUR          18172
+#define NPC_THRALL                     17876
+
+#define SPELL_SAND_BREATH              31914
+#define SPELL_IMPENDING_DEATH          31916
+#define SPELL_MAGIC_DISRUPTION_AURA    33834
+#define SPELL_WING_BUFFET              HeroicMode ? 31475:38593
+#define SPELL_TRANSFORM                33133 // transform infinite defilers
 
 struct boss_epoch_hunterAI : public ScriptedAI
 {
-    boss_epoch_hunterAI(Creature *c) : ScriptedAI(c)
+    boss_epoch_hunterAI(Creature *creature) : ScriptedAI(creature)
     {
-        pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        pInstance = (creature->GetInstanceData());
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
 
     bool HeroicMode;
+    bool Intro;
+    bool Next;
 
+    std::list<uint64> attackers;
+
+    uint8 Wave;
+    uint32 IntroTimer;
+    uint32 NextTimer;
     uint32 SandBreath_Timer;
     uint32 ImpendingDeath_Timer;
     uint32 WingBuffet_Timer;
     uint32 Mda_Timer;
+    uint64 ThrallGUID;
 
     void Reset()
     {
+        Intro = true;
+        Next = true;
+        Wave = 0;
+        IntroTimer = 45000;
+        NextTimer = 51000;
         SandBreath_Timer = 25000;
         ImpendingDeath_Timer = 30000;
         WingBuffet_Timer = 35000;
         Mda_Timer = 40000;
+        attackers.clear();
+        me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+        Map* tmpMap = me->GetMap();
+
+        if (!tmpMap)
+            return;
+
+        if (Creature* Thrall = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_THRALL)))
+            ThrallGUID = Thrall->GetGUID();
     }
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2), m_creature);
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2), me);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
+    }
+
+    void EnterEvadeMode()
+    {
+        me->InterruptNonMeleeSpells(true);
+        me->RemoveAllAuras();
+        me->DeleteThreatList();
+        me->CombatStop(true);
+        me->ForcedDespawn();
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS)
             pInstance->SetData(TYPE_THRALL_PART4, DONE);
 
         if (pInstance->GetData(DATA_EPOCH_DEATH) == DONE)
-            m_creature->SetLootRecipient(NULL);
+            me->SetLootRecipient(NULL);
         else
+        {
             pInstance->SetData(DATA_EPOCH_DEATH, DONE);
+            pInstance->SetData(TYPE_THRALL_PART4, DONE);
+        }
+
+        attackers.clear();
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        attackers.push_back(summoned->GetGUID());
+        summoned->SetReactState(REACT_PASSIVE);
+        summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    }
+
+    void UpdateEntry()
+    {
+        Map* tmpMap = me->GetMap();
+
+        if (!tmpMap)
+            return;
+
+        if (!attackers.empty())
+        {
+            for (std::list<uint64>::iterator itr = attackers.begin(); itr != attackers.end(); ++itr)
+            {
+                if (Creature* attacker = tmpMap->GetCreature((*itr)))
+                {
+                    attacker->CastSpell(attacker, SPELL_TRANSFORM, true);
+
+                    switch (attacker->GetEntry())
+                    {
+                        case NPC_TARREN_MILL_GUARDSMAN:
+                            attacker->UpdateEntry(NPC_INFINITE_SLAYER);
+                            break;
+                        case NPC_TARREN_MILL_PROTECTOR:
+                            attacker->UpdateEntry(NPC_INFINITE_DEFILER);
+
+                            switch (Wave)
+                            {
+                                case 2:
+                                    DoScriptText(SAY_INFINITE_AGGRO_3, attacker);
+                                    break;
+                                case 4:
+                                    DoScriptText(SAY_INFINITE_AGGRO_1, attacker);
+                                    break;
+                                case 6:
+                                    DoScriptText(SAY_INFINITE_AGGRO_2, attacker);
+                                break;
+                            }
+                            break;
+                        case NPC_TARREN_MILL_LOOKOUT:
+                            attacker->UpdateEntry(NPC_INFINITE_SABOTEUR);
+                            break;
+                    }
+                            
+                    attacker->SetReactState(REACT_AGGRESSIVE);
+                    attacker->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+
+                    if (Creature* Thrall = me->GetMap()->GetCreature(ThrallGUID))
+                        attacker->AI()->AttackStart(Thrall);
+                }
+            }
+        }
+    }
+
+    void NextWave()
+    {
+        ++Wave;
+
+        switch (Wave)
+        {
+            case 1:
+                for (int i = 0; i < 3; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            me->SummonCreature(NPC_TARREN_MILL_GUARDSMAN, 2639.87f, 696.65f, 55.803f, 4.51f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                        case 1:
+                            me->SummonCreature(NPC_TARREN_MILL_LOOKOUT, 2635.31f, 697.35f, 56.024f, 4.51f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                        case 2:
+                            me->SummonCreature(NPC_TARREN_MILL_PROTECTOR, 2644.64f, 697.09f, 55.860f, 4.51f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                    }
+                }
+                break;
+            case 2:
+                UpdateEntry();
+                Next = false;
+                break;
+            case 3:
+                for (int i = 0; i < 3; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            me->SummonCreature(NPC_TARREN_MILL_GUARDSMAN, 2594.84f, 683.77f, 55.826f, 5.92f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                        case 1:
+                            me->SummonCreature(NPC_TARREN_MILL_LOOKOUT, 2599.79f, 686.86f, 55.774f, 5.92f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                        case 2:
+                            me->SummonCreature(NPC_TARREN_MILL_PROTECTOR, 2596.47f, 679.29f, 56.177f, 5.92f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                    }
+                }
+                Next = true;
+                break;
+             case 4:
+                UpdateEntry();
+                Next = false;
+                break;
+             case 5:
+                for (int i = 0; i < 4; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            me->SummonCreature(NPC_TARREN_MILL_GUARDSMAN, 2639.87f, 696.65f, 55.803f, 4.51f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                        case 1:
+                            me->SummonCreature(NPC_TARREN_MILL_LOOKOUT, 2635.31f, 697.35f, 56.024f, 4.51f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                        case 2:
+                            me->SummonCreature(NPC_TARREN_MILL_PROTECTOR, 2644.64f, 697.09f, 55.860f, 4.51f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                        case 3:
+                            me->SummonCreature(NPC_TARREN_MILL_GUARDSMAN, 2640.52f, 700.75f, 55.962f, 4.51f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                            break;
+                    }
+                }
+                Next = true;
+                break;
+            case 6:
+                UpdateEntry();
+                Next = false;
+                break;
+            case 7:
+                me->SetReactState(REACT_AGGRESSIVE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->GetMotionMaster()->MovePoint(0, 2638.60f, 686.948f, 58.245f);
+                if (Creature* Thrall = me->GetMap()->GetCreature(ThrallGUID))
+                    Thrall->AI()->AttackStart(me);
+                me->SetLevitate(false);
+                Intro = false;
+                break;
+        }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if (Intro)
+        {
+            if (IntroTimer < diff)
+            {
+                if (attackers.empty())
+                    NextWave();
+
+                Map* tmpMap = me->GetMap();
+
+                if (!tmpMap)
+                    return;
+
+                if (!attackers.empty())
+                {
+                    bool alive = false;
+                    for (std::list<uint64>::iterator itr = attackers.begin(); itr != attackers.end(); ++itr)
+                    {
+                        if (Creature* attacker = tmpMap->GetCreature((*itr)))
+                        {
+                            if (attacker->isAlive())
+                            {
+                                alive = true;
+                                break;
+                            }
+                        }
+                    }
+					
+                    if (!alive)
+                    {
+                        NextWave();
+                        NextTimer = 5000;
+                    }
+                }
+
+                if (Creature* Thrall = tmpMap->GetCreature(ThrallGUID))
+                {
+                    if (!Thrall->isAlive())
+                        me->ForcedDespawn();
+                }
+
+                IntroTimer = 5000;
+            }
+            else
+                IntroTimer -= diff;
+
+            if (Next)
+            {
+                if (NextTimer <= diff) 
+                {
+                    NextWave();
+                }
+                else NextTimer -= diff;
+            }
+        }
+
         //Return since we have no target
         if (!UpdateVictim() )
             return;
@@ -97,12 +343,12 @@ struct boss_epoch_hunterAI : public ScriptedAI
         //Sand Breath
         if (SandBreath_Timer < diff)
         {
-            if (m_creature->IsNonMeleeSpellCasted(false))
-                m_creature->InterruptNonMeleeSpells(false);
+            if (me->IsNonMeleeSpellCasted(false))
+                me->InterruptNonMeleeSpells(false);
 
-            DoCast(m_creature->getVictim(),SPELL_SAND_BREATH);
+            DoCast(me->getVictim(),SPELL_SAND_BREATH);
 
-            DoScriptText(RAND(SAY_BREATH1, SAY_BREATH2), m_creature);
+            DoScriptText(RAND(SAY_BREATH1, SAY_BREATH2), me);
 
             SandBreath_Timer = 25000+rand()%5000;
         }
@@ -120,7 +366,7 @@ struct boss_epoch_hunterAI : public ScriptedAI
 
         if(WingBuffet_Timer < diff)
         {
-            DoCast(m_creature,SPELL_WING_BUFFET);
+            DoCast(me,SPELL_WING_BUFFET);
             WingBuffet_Timer = 25000+rand()%10000;
         }
         else
@@ -128,7 +374,7 @@ struct boss_epoch_hunterAI : public ScriptedAI
 
         if(Mda_Timer < diff)
         {
-            DoCast(m_creature,SPELL_MAGIC_DISRUPTION_AURA);
+            DoCast(me,SPELL_MAGIC_DISRUPTION_AURA);
             Mda_Timer = 15000;
         }
         else
@@ -138,9 +384,9 @@ struct boss_epoch_hunterAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_epoch_hunter(Creature *_Creature)
+CreatureAI* GetAI_boss_epoch_hunter(Creature *creature)
 {
-    return new boss_epoch_hunterAI (_Creature);
+    return new boss_epoch_hunterAI (creature);
 }
 
 void AddSC_boss_epoch_hunter()

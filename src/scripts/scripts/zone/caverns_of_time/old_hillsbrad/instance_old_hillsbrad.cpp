@@ -16,41 +16,53 @@
 
 /* ScriptData
 SDName: Instance_Old_Hillsbrad
-SD%Complete: 75
-SDComment: If thrall escort fail, all parts will reset. In future, save sub-parts and continue from last known.
+SD%Complete: 99
+SDComment:
 SDCategory: Caverns of Time, Old Hillsbrad Foothills
 EndScriptData */
 
 #include "precompiled.h"
 #include "def_old_hillsbrad.h"
 
-#define ENCOUNTERS      9
+#define ENCOUNTERS               9
 
-#define THRALL_ENTRY    17876
-#define TARETHA_ENTRY   18887
-#define EPOCH_ENTRY    18096
+#define THRALL_ENTRY             17876
+#define TARETHA_ENTRY            18887
+#define EPOCH_ENTRY              18096
+#define ORC_PRISONER_ENTRY       18598
+#define DRAKE_ENTRY              17848
 
-#define DRAKE_ENTRY             17848
+#define QUEST_ENTRY_DIVERSION    10283
+#define LODGE_QUEST_TRIGGER      20155
 
-#define QUEST_ENTRY_DIVERSION   10283
-#define LODGE_QUEST_TRIGGER     20155
+#define GO_ROARING_FLAME         182592
+
+static const float OrcLoc[][4] =
+{
+    {2104.51f, 91.96f, 53.14f, 0},
+    {2192.58f, 238.44f, 52.44f, 0}
+};
 
 struct instance_old_hillsbrad : public ScriptedInstance
 {
     instance_old_hillsbrad(Map *map) : ScriptedInstance(map) {Initialize();};
 
     uint32 Encounter[ENCOUNTERS];
-    uint32 mBarrelCount;
-    uint32 mThrallEventCount;
+    uint32 BarrelCount;
+    uint32 ThrallEventCount;
 
     uint64 ThrallGUID;
     uint64 TarethaGUID;
     uint64 EpochGUID;
 
+    std::list<GameObject*> RoaringFlamesList;
+    std::list<uint64> LeftPrisonersList;
+    std::list<uint64> RightPrisonersList;
+
     void Initialize()
     {
-        mBarrelCount        = 0;
-        mThrallEventCount   = 0;
+        BarrelCount         = 0;
+        ThrallEventCount    = 0;
         ThrallGUID          = 0;
         TarethaGUID         = 0;
         EpochGUID           = 0;
@@ -94,10 +106,10 @@ struct instance_old_hillsbrad : public ScriptedInstance
             {
                 if (Player* player = itr->getSource())
                 {
-                    player->SendUpdateWorldState(WORLD_STATE_OH,mBarrelCount);
+                    player->SendUpdateWorldState(WORLD_STATE_OH, BarrelCount);
 
-                    if (mBarrelCount == 5)
-                        player->KilledMonster(LODGE_QUEST_TRIGGER,0);
+                    if (BarrelCount == 5)
+                        player->KilledMonster(LODGE_QUEST_TRIGGER, 0);
                 }
             }
         }
@@ -118,7 +130,22 @@ struct instance_old_hillsbrad : public ScriptedInstance
             case EPOCH_ENTRY:
                 EpochGUID = creature->GetGUID();
                 break;
+            case ORC_PRISONER_ENTRY:
+            if (creature->GetPositionZ() > 53.4f)
+            {
+                if (creature->GetPositionY() > 150.0f)
+                    LeftPrisonersList.push_back(creature->GetGUID());
+                else
+                    RightPrisonersList.push_back(creature->GetGUID());
+            }
+            break;
         }
+    }
+
+    void OnObjectCreate(GameObject* go)
+    {
+        if (go->GetEntry() == GO_ROARING_FLAME)
+            RoaringFlamesList.push_back(go);
     }
 
     void SetData(uint32 type, uint32 data)
@@ -137,20 +164,50 @@ struct instance_old_hillsbrad : public ScriptedInstance
             {
                 if (data == IN_PROGRESS)
                 {
-                    if (mBarrelCount >= 5)
+                    if (BarrelCount >= 5)
                         return;
 
-                    ++mBarrelCount;
+                    ++BarrelCount;
                     UpdateOHWorldState();
 
-                    debug_log("TSCR: Instance Old Hillsbrad: go_barrel_old_hillsbrad count %u",mBarrelCount);
+                    debug_log("TSCR: Instance Old Hillsbrad: go_barrel_old_hillsbrad count %u", BarrelCount);
 
                     Encounter[0] = IN_PROGRESS;
 
-                    if (mBarrelCount == 5)
+                    if (BarrelCount == 5)
                     {
-                        player->SummonCreature(DRAKE_ENTRY,2128.43,71.01,64.42,1.74,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,1800000);
+                        player->SummonCreature(DRAKE_ENTRY, 2128.43f, 71.01f, 64.42,1.74f, TEMPSUMMON_DEAD_DESPAWN, 15000);
+                        player->SummonCreature(THRALL_ENTRY, 2231.51f, 119.84f, 82.297f, 4.15f, TEMPSUMMON_DEAD_DESPAWN, 15000);
+
                         Encounter[0] = DONE;
+
+                        for (std::list<GameObject*>::iterator itr = RoaringFlamesList.begin(); itr != RoaringFlamesList.end(); ++itr)
+                        {
+                            // move the orcs outside the houses
+                            float x, y, z;
+                            for (std::list<uint64>::iterator it = RightPrisonersList.begin(); it != RightPrisonersList.end(); ++it)
+                            {
+                                if (Creature* Orc = instance->GetCreature(*it))
+                                {
+                                    Orc->GetRandomPoint(OrcLoc[0][0], OrcLoc[0][1], OrcLoc[0][2], 10.0f, x, y, z);
+                                    Orc->SetWalk(false);
+                                    Orc->GetMotionMaster()->MovePoint(0, x, y, z);
+                                }
+                            }
+
+                            for (std::list<uint64>::iterator il = LeftPrisonersList.begin(); il != LeftPrisonersList.end(); ++il)
+                            {
+                                if (Creature* Orc = instance->GetCreature(*il))
+                                {
+                                    Orc->GetRandomPoint(OrcLoc[1][0], OrcLoc[1][1], OrcLoc[1][2], 10.0f, x, y, z);
+                                    Orc->SetWalk(false);
+                                    Orc->GetMotionMaster()->MovePoint(0, x, y, z);
+                                }
+                            }
+
+                            (*itr)->SetRespawnTime(1800);
+                            (*itr)->UpdateObjectVisibility();
+                        }
                     }
                 }
                 break;
@@ -159,46 +216,57 @@ struct instance_old_hillsbrad : public ScriptedInstance
             {
                 if (data == FAIL)
                 {
-                    if (mThrallEventCount <= 20)
+                    if (ThrallEventCount <= 20)
                     {
-                        mThrallEventCount++;
-                        Encounter[1] = NOT_STARTED;
-                        debug_log("TSCR: Instance Old Hillsbrad: Thrall event failed %u times. Resetting all sub-events.",mThrallEventCount);
-                        Encounter[2] = NOT_STARTED;
-                        Encounter[3] = NOT_STARTED;
-                        Encounter[4] = NOT_STARTED;
-                        Encounter[5] = NOT_STARTED;
+                        ThrallEventCount++;
+                        debug_log("TSCR: Instance Old Hillsbrad: Thrall event failed %u times.", ThrallEventCount);
+
+                        if (Encounter[2] == IN_PROGRESS)
+                            Encounter[2] = NOT_STARTED;
+
+                        if (Encounter[3] == IN_PROGRESS)
+                            Encounter[3] = NOT_STARTED;
+
+                        if (Encounter[4] == IN_PROGRESS)
+                            Encounter[4] = NOT_STARTED;
+
+                        if (Encounter[5] == IN_PROGRESS)
+                            Encounter[5] = NOT_STARTED;
                     }
-                    else if (mThrallEventCount > 20)
+                    else if (ThrallEventCount > 20)
                     {
-                        Encounter[1] = data;
-                        Encounter[2] = data;
-                        Encounter[3] = data;
-                        Encounter[4] = data;
-                        Encounter[5] = data;
-                        debug_log("TSCR: Instance Old Hillsbrad: Thrall event failed %u times. Resetting all sub-events.",mThrallEventCount);
+					    Encounter[0] = DONE;
+                        Encounter[1] = DONE;
+                        Encounter[2] = DONE;
+                        Encounter[3] = DONE;
+                        Encounter[4] = DONE;
+                        Encounter[5] = DONE;
+						Encounter[6] = DONE;
+						Encounter[7] = DONE;
+						Encounter[8] = DONE;
+                        debug_log("TSCR: Instance Old Hillsbrad: Thrall event failed %u times. This is the end.", ThrallEventCount);
                     }
                 }
                 else
                     Encounter[1] = data;
-                debug_log("TSCR: Instance Old Hillsbrad: Thrall escort event adjusted to data %u.",data);
+                debug_log("TSCR: Instance Old Hillsbrad: Thrall escort event adjusted to data %u.", data);
                 break;
             }
             case TYPE_THRALL_PART1:
                 Encounter[2] = data;
-                debug_log("TSCR: Instance Old Hillsbrad: Thrall event part I adjusted to data %u.",data);
+                debug_log("TSCR: Instance Old Hillsbrad: Thrall event part I adjusted to data %u.", data);
                 break;
             case TYPE_THRALL_PART2:
                 Encounter[3] = data;
-                debug_log("TSCR: Instance Old Hillsbrad: Thrall event part II adjusted to data %u.",data);
+                debug_log("TSCR: Instance Old Hillsbrad: Thrall event part II adjusted to data %u.", data);
                 break;
             case TYPE_THRALL_PART3:
                 Encounter[4] = data;
-                debug_log("TSCR: Instance Old Hillsbrad: Thrall event part III adjusted to data %u.",data);
+                debug_log("TSCR: Instance Old Hillsbrad: Thrall event part III adjusted to data %u.", data);
                 break;
             case TYPE_THRALL_PART4:
                 Encounter[5] = data;
-                 debug_log("TSCR: Instance Old Hillsbrad: Thrall event part IV adjusted to data %u.",data);
+                 debug_log("TSCR: Instance Old Hillsbrad: Thrall event part IV adjusted to data %u.", data);
                 break;
             case DATA_SKARLOC_DEATH:
                 if (Encounter[6] != DONE)

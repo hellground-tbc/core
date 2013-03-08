@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Luetenant_Drake
-SD%Complete: 70
-SDComment: Missing proper code for patrolling area after being spawned. Script for GO (barrels) quest 10283
+SD%Complete: 99
+SDComment:
 SDCategory: Caverns of Time, Old Hillsbrad Foothills
 EndScriptData */
 
@@ -29,9 +29,9 @@ EndScriptData */
 ## go_barrel_old_hillsbrad
 ######*/
 
-bool GOUse_go_barrel_old_hillsbrad(Player *player, GameObject* _GO)
+bool GOUse_go_barrel_old_hillsbrad(Player *player, GameObject* go)
 {
-    ScriptedInstance* pInstance = (ScriptedInstance*)_GO->GetInstanceData();
+    ScriptedInstance* pInstance = (ScriptedInstance*)go->GetInstanceData();
 
     if (!pInstance)
         return false;
@@ -41,6 +41,8 @@ bool GOUse_go_barrel_old_hillsbrad(Player *player, GameObject* _GO)
 
     pInstance->SetData(TYPE_BARREL_DIVERSION, IN_PROGRESS);
 
+    go->UseDoorOrButton(1800);
+
     return false;
 }
 
@@ -48,18 +50,18 @@ bool GOUse_go_barrel_old_hillsbrad(Player *player, GameObject* _GO)
 ## boss_lieutenant_drake
 ######*/
 
-#define SAY_ENTER               -1560006
-#define SAY_AGGRO               -1560007
-#define SAY_SLAY1               -1560008
-#define SAY_SLAY2               -1560009
-#define SAY_MORTAL              -1560010
-#define SAY_SHOUT               -1560011
-#define SAY_DEATH               -1560012
+#define SAY_ENTER                  -1560006
+#define SAY_AGGRO                  -1560007
+#define SAY_SLAY1                  -1560008
+#define SAY_SLAY2                  -1560009
+#define SAY_MORTAL                 -1560010
+#define SAY_SHOUT                  -1560011
+#define SAY_DEATH                  -1560012
 
-#define SPELL_WHIRLWIND         31909
-#define SPELL_HAMSTRING         9080
-#define SPELL_MORTAL_STRIKE     31911
-#define SPELL_FRIGHTENING_SHOUT 33789
+#define SPELL_WHIRLWIND            31909
+#define SPELL_HAMSTRING            9080
+#define SPELL_MORTAL_STRIKE        31911
+#define SPELL_FRIGHTENING_SHOUT    33789
 
 struct Location
 {
@@ -87,16 +89,14 @@ static Location DrakeWP[]=
     {13, 2093.61, 139.441, 52.7616},
     {14, 2086.29, 104.950, 52.9246},
     {15, 2094.23, 81.2788, 52.6946},
-    {16, 2108.70, 85.3075, 53.3294},
-    {17, 2125.50, 88.9481, 54.7953},
-    {18, 2128.20, 70.9763, 64.4221}
+    {16, 2108.70, 85.3075, 53.3294}
 };
 
 struct boss_lieutenant_drakeAI : public ScriptedAI
 {
-    boss_lieutenant_drakeAI(Creature *c) : ScriptedAI(c)
+    boss_lieutenant_drakeAI(Creature *creature) : ScriptedAI(creature)
     {
-        pInstance = c->GetInstanceData();
+        pInstance = creature->GetInstanceData();
     }
 
     ScriptedInstance * pInstance;
@@ -113,42 +113,66 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
     {
         CanPatrol = true;
         wpId = 0;
-
+        me->SetWalk(true);
+        me->GetMotionMaster()->MovePoint(DrakeWP[wpId].wpId, DrakeWP[wpId].x, DrakeWP[wpId].y, DrakeWP[wpId].z);
+        DoScriptText(SAY_ENTER, me);
         Whirlwind_Timer = 20000;
         Fear_Timer = 30000;
         MortalStrike_Timer = 45000;
         ExplodingShout_Timer = 25000;
     }
 
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type == POINT_MOTION_TYPE)
+        {
+            if (CanPatrol)
+            {
+                ++wpId;
+                me->GetMotionMaster()->MovePoint(DrakeWP[wpId].wpId, DrakeWP[wpId].x, DrakeWP[wpId].y, DrakeWP[wpId].z);
+            
+                if (wpId == 16)
+                    wpId = 2;
+            }
+        }
+    }
+
     void EnterCombat(Unit *who)
     {
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, me);
+        CanPatrol = false;
+        me->SetWalk(false);
+    }
+
+    void EnterEvadeMode()
+    {
+        me->InterruptNonMeleeSpells(true);
+        me->RemoveAllAuras();
+        me->DeleteThreatList();
+        me->CombatStop(true);
+        CanPatrol = true;
+        me->SetWalk(true);
+        me->GetMotionMaster()->MovePoint(0, me->GetPositionX()-1.0f, me->GetPositionY()+1.0f, me->GetPositionZ());
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance->GetData(DATA_DRAKE_DEATH) == DONE)
-            m_creature->SetLootRecipient(NULL);
+            me->SetLootRecipient(NULL);
         else
             pInstance->SetData(DATA_DRAKE_DEATH, DONE);
+
     }
 
     void UpdateAI(const uint32 diff)
     {
-        //TODO: make this work
-        if (CanPatrol && wpId == 0)
-        {
-            m_creature->GetMotionMaster()->MovePoint(DrakeWP[0].wpId, DrakeWP[0].x, DrakeWP[0].y, DrakeWP[0].z);
-            wpId++;
-        }
-
         //Return since we have no target
         if (!UpdateVictim())
             return;
@@ -156,23 +180,23 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
         //Whirlwind
         if (Whirlwind_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_WHIRLWIND);
+            DoCast(me->getVictim(), SPELL_WHIRLWIND);
             Whirlwind_Timer = 20000+rand()%5000;
         }else Whirlwind_Timer -= diff;
 
         //Fear
         if (Fear_Timer < diff)
         {
-            DoScriptText(SAY_SHOUT, m_creature);
-            DoCast(m_creature->getVictim(), SPELL_FRIGHTENING_SHOUT);
+            DoScriptText(SAY_SHOUT, me);
+            DoCast(me->getVictim(), SPELL_FRIGHTENING_SHOUT);
             Fear_Timer = 30000+rand()%10000;
         }else Fear_Timer -= diff;
 
         //Mortal Strike
         if (MortalStrike_Timer < diff)
         {
-            DoScriptText(SAY_MORTAL, m_creature);
-            DoCast(m_creature->getVictim(), SPELL_MORTAL_STRIKE);
+            DoScriptText(SAY_MORTAL, me);
+            DoCast(me->getVictim(), SPELL_MORTAL_STRIKE);
             MortalStrike_Timer = 45000+rand()%5000;
         }else MortalStrike_Timer -= diff;
 
@@ -180,9 +204,9 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_lieutenant_drake(Creature *_Creature)
+CreatureAI* GetAI_boss_lieutenant_drake(Creature *creature)
 {
-    return new boss_lieutenant_drakeAI (_Creature);
+    return new boss_lieutenant_drakeAI (creature);
 }
 
 void AddSC_boss_lieutenant_drake()
