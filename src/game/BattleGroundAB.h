@@ -63,7 +63,7 @@ enum BG_AB_WorldStates
 const uint32 BG_AB_OP_NODESTATES[5] =    {1767, 1782, 1772, 1792, 1787};
 
 const uint32 BG_AB_OP_NODEICONS[5]  =    {1842, 1846, 1845, 1844, 1843};
-
+const uint32 BG_AB_CREDITMARKER[5]  =    {15001, 15002, 15003, 15004, 15005};
 /* Note: code uses that these IDs follow each other */
 enum BG_AB_NodeObjectId
 {

@@ -1811,3 +1811,29 @@ void BattleGround::SetStatus(uint32 Status)
     if (Status == STATUS_IN_PROGRESS)
         m_progressStart = time(NULL);
 }
+
+void BattleGround::SendObjectiveComplete(uint32 id, uint32 TeamID, float x, float y)
+{
+    float distance =45.0f;
+    distance= distance*distance;
+    for (BattleGroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
+        Player *plr = sObjectMgr.GetPlayer(itr->first);
+
+        if (!plr)
+        {
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
+            continue;
+        }
+
+        uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
+        if (!team) team = plr->GetTeam();
+
+        if (team == TeamID && plr->IsInWorld())
+        {
+            float dist = (plr->GetPositionX() - x)*(plr->GetPositionX() - x)+(plr->GetPositionY() - y)*(plr->GetPositionY() - y);
+            if (dist < distance)
+                plr->KilledMonster(id, 0);
+        }
+    }
+}

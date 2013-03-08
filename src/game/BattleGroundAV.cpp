@@ -115,9 +115,15 @@ void BattleGroundAV::HandleKillUnit(Creature *unit, Player *killer)
             YellToAll(creature,GetTrinityString(LANG_BG_AV_H_CAPTAIN_DEAD),LANG_UNIVERSAL);
     }
     else if (entry == BG_AV_CreatureInfo[AV_NPC_N_MINE_N_4][0] || entry == BG_AV_CreatureInfo[AV_NPC_N_MINE_A_4][0] || entry == BG_AV_CreatureInfo[AV_NPC_N_MINE_H_4][0])
+    {
         ChangeMineOwner(AV_NORTH_MINE,killer->GetTeam());
+        SendObjectiveComplete(BG_AV_MINE_CREDITMARKER, killer->GetTeam(),BG_AV_CreaturePos[AV_CPLACE_MINE_N_3][1],BG_AV_ObjectPos[AV_CPLACE_MINE_N_3][2]);
+    }
     else if (entry == BG_AV_CreatureInfo[AV_NPC_S_MINE_N_4][0] || entry == BG_AV_CreatureInfo[AV_NPC_S_MINE_A_4][0] || entry == BG_AV_CreatureInfo[AV_NPC_S_MINE_H_4][0])
+    {
         ChangeMineOwner(AV_SOUTH_MINE,killer->GetTeam());
+        SendObjectiveComplete(BG_AV_MINE_CREDITMARKER, killer->GetTeam(),BG_AV_CreaturePos[AV_CPLACE_MINE_S_3][1],BG_AV_ObjectPos[AV_CPLACE_MINE_S_3][2]);
+    }
 }
 
 void BattleGroundAV::HandleQuestComplete(uint32 questid, Player *player)
@@ -1005,6 +1011,7 @@ void BattleGroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
             else
                 SpawnBGObject(BG_AV_OBJECT_FLAG_C_H_SNOWFALL_GRAVE, RESPAWN_IMMEDIATELY);
             SpawnBGObject(BG_AV_OBJECT_AURA_N_FIRSTAID_STATION+3*node,RESPAWN_IMMEDIATELY); //neutral aura spawn
+            SendObjectiveComplete(BG_AV_GY_CREDITMARKER, team,BG_AV_ObjectPos[node][1],BG_AV_ObjectPos[node][2]);
         }
         else if (m_Nodes[node].TotalOwner == AV_NEUTRAL_TEAM) //recapping, when no team owns this node realy
         {
@@ -1047,6 +1054,7 @@ void BattleGroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
             SpawnBGObject(BG_AV_OBJECT_TAURA_H_DUNBALDAR_SOUTH+(2*(node-BG_AV_NODES_DUNBALDAR_SOUTH)),(team==HORDE)? RESPAWN_IMMEDIATELY : RESPAWN_ONE_DAY);
             SpawnBGObject(BG_AV_OBJECT_TFLAG_A_DUNBALDAR_SOUTH+(2*(node-BG_AV_NODES_DUNBALDAR_SOUTH)),(team==ALLIANCE)? RESPAWN_IMMEDIATELY : RESPAWN_ONE_DAY);
             SpawnBGObject(BG_AV_OBJECT_TFLAG_H_DUNBALDAR_SOUTH+(2*(node-BG_AV_NODES_DUNBALDAR_SOUTH)),(team==HORDE)? RESPAWN_IMMEDIATELY : RESPAWN_ONE_DAY);
+            SendObjectiveComplete(BG_AV_TOWER_CREDITMARKER, team,BG_AV_ObjectPos[node][1],BG_AV_ObjectPos[node][2]);
         }
         else
         {

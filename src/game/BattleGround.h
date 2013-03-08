@@ -413,6 +413,7 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
 
         void SendMessageToAll(char const* text);
         void SendMessageToAll(int32 entry);
+        void SendObjectiveComplete(uint32 id, uint32 TeamID, float x, float y);
 
         /* Raid Group */
         Group *GetBgRaid(uint32 TeamID) const { return TeamID == ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE]; }
