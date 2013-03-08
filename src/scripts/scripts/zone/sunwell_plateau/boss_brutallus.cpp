@@ -493,8 +493,8 @@ struct npc_death_cloudAI : public ScriptedAI
                     }
                     else if (!me->IsWithinDist(pMadrigosa, 10.0f))
                     {
+                        me->GetNearPoint(NULL, x, y, z, 0.0f, 10.0f, me->GetAngle(pMadrigosa));
                         z = me->GetPositionZ();
-                        me->GetNearPoint2D(x, y, 10, me->GetAngle(pMadrigosa));
                         me->UpdateAllowedPositionZ(x, y, z);
                         me->GetMap()->CreatureRelocation(me, x, y, z, 0);
                         Creature* Trigger = me->SummonTrigger(x, y, z, 0, SummonTimer*4);

@@ -1288,159 +1288,6 @@ bool WorldObject::HasInArc(const float arcangle, WorldObject const* obj) const
     return ((angle >= lborder) && (angle <= rborder));
 }
 
-void WorldObject::GetRandomPoint(float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const
-{
-    if (distance==0)
-    {
-        rand_x = x;
-        rand_y = y;
-        rand_z = z;
-        return;
-    }
-
-    // angle to face `obj` to `this`
-    float angle = frand(0.0f, 2*M_PI);
-    // random dist in range 0 - distance;
-    float new_dist = frand(0.0f, distance);
-
-    rand_x = x + new_dist * cos(angle);
-    rand_y = y + new_dist * sin(angle);
-    rand_z = z;
-
-    Hellground::NormalizeMapCoord(rand_x);
-    Hellground::NormalizeMapCoord(rand_y);
-    UpdateGroundPositionZ(rand_x, rand_y, rand_z);          // update to LOS height if available
-}
-
-// this will find point in LOS before collision occur
-void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePos, bool ignoreLOSOffset)
-{
-    angle += GetOrientation();
-
-    if (meAsSourcePos)
-        GetPosition(pos);
-
-    pos.z += 2.0f;
-
-    Position dest;
-    dest.x = pos.x + dist * cos(angle);
-    dest.y = pos.y + dist * sin(angle);
-
-    TerrainInfo const* _map = GetTerrain();
-    float ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-    float floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
-    dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
-
-    // collision occurred
-    bool result = false;
-    if (ignoreLOSOffset)
-        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +1.0f, dest.x, dest.y, dest.z, -0.5f);
-    else
-        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, -0.5f);
-
-    if (result)
-    {
-        // move back a bit
-        dest.x -= 0.25f * cos(angle);
-        dest.y -= 0.25f * sin(angle);
-        dist = sqrt((pos.x - dest.x)*(pos.x - dest.x) + (pos.y - dest.y)*(pos.y - dest.y));
-    }
-
-    float step = dist / 10.0f;
-    for (int j = 0; j < 10; ++j)
-    {
-        // do not allow too big z changes
-        if (fabs(pos.z - dest.z) > 4.3f)
-        {
-            dest.x -= step * cos(angle);
-            dest.y -= step * sin(angle);
-            ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
-            floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
-            dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
-        }
-        else
-        {
-            pos = dest;
-            break;
-        }
-    }
-
-    Hellground::NormalizeMapCoord(pos.x);
-    Hellground::NormalizeMapCoord(pos.y);
-    UpdateAllowedPositionZ(pos.x, pos.y, pos.z);
-}
-
-void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
-{
-    float new_z = GetTerrain()->GetHeight(x,y,z,true);
-    if (new_z > INVALID_HEIGHT)
-        z = new_z + 0.06f;                                  // just to be sure that we are not a few pixel under the surface
-}
-
-void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
-{
-    switch (GetTypeId())
-    {
-        case TYPEID_UNIT:
-        {
-            // non fly unit don't must be in air
-            // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
-            if (!((Creature const*)this)->CanFly())
-            {
-                bool CanSwim = ((Creature const*)this)->CanSwim();
-                float ground_z = z;
-                float max_z = CanSwim
-                    ? GetTerrain()->GetWaterOrGroundLevel(x, y, z, &ground_z, !((Unit const*)this)->HasAuraType(SPELL_AURA_WATER_WALK))
-                    : ((ground_z = GetTerrain()->GetHeight(x, y, z, true)));
-                if (max_z > INVALID_HEIGHT)
-                {
-                    if (z > max_z)
-                        z = max_z;
-                    else if (z < ground_z)
-                        z = ground_z;
-                }
-            }
-            else
-            {
-                float ground_z = GetTerrain()->GetHeight(x, y, z, true);
-                if (z < ground_z)
-                    z = ground_z;
-            }
-            break;
-        }
-        case TYPEID_PLAYER:
-        {
-            // for server controlled moves playr work same as creature (but it can always swim)
-            if (!((Player const*)this)->CanFly())
-            {
-                float ground_z = z;
-                float max_z = GetTerrain()->GetWaterOrGroundLevel(x, y, z, &ground_z, !((Unit const*)this)->HasAuraType(SPELL_AURA_WATER_WALK));
-                if (max_z > INVALID_HEIGHT)
-                {
-                    if (z > max_z)
-                        z = max_z;
-                    else if (z < ground_z)
-                        z = ground_z;
-                }
-            }
-            else
-            {
-                float ground_z = GetTerrain()->GetHeight(x, y, z, true);
-                if (z < ground_z)
-                    z = ground_z;
-            }
-            break;
-        }
-        default:
-        {
-            float ground_z = GetTerrain()->GetHeight(x, y, z, true);
-            if (ground_z > INVALID_HEIGHT)
-                z = ground_z;
-            break;
-        }
-    }
-}
-
 bool WorldObject::IsPositionValid() const
 {
     return Hellground::IsValidMapCoord(m_positionX,m_positionY,m_positionZ,m_orientation);
@@ -1902,25 +1749,13 @@ Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint3
     return summon;
 }
 
-void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float absAngle) const
-{
-    x = GetPositionX() + (GetObjectSize() + distance2d) * cos(absAngle);
-    y = GetPositionY() + (GetObjectSize() + distance2d) * sin(absAngle);
-
-    Hellground::NormalizeMapCoord(x);
-    Hellground::NormalizeMapCoord(y);
-}
-
 void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_bounding_radius, float distance2d, float absAngle) const
 {
-    GetNearPoint2D(x, y, distance2d+searcher_bounding_radius, absAngle);
-    const float init_z = z = GetPositionZ();
-
-    // if detection disabled, return first point
-    if (searcher)
-        searcher->UpdateAllowedPositionZ(x,y,z);        // update to LOS height if available
-    else
-        UpdateGroundPositionZ(x,y,z);
+    Position pos;
+    GetValidPointInAngle(pos, distance2d+searcher_bounding_radius, absAngle, true);
+    x = pos.x;
+    y = pos.y;
+    z = pos.z;
 }
 
 void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float angle)
@@ -2057,4 +1892,157 @@ bool WorldObject::UpdateHelper::ProcessUpdate(Creature* creature)
 bool WorldObject::UpdateHelper::ProcessUpdate(WorldObject* obj)
 {
     return obj->IsInWorld();
+}
+
+//
+
+void WorldObject::GetRandomPoint(float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const
+{
+    if (distance == 0)
+    {
+        rand_x = x;
+        rand_y = y;
+        rand_z = z;
+        return;
+    }
+
+    Position pos;
+    pos.x = x;
+    pos.y = y;
+    pos.z = z;
+
+    GetValidPointInAngle(pos, frand(0.0f, distance), frand(0.0f, 2*M_PI), false);
+
+    rand_x = pos.x;
+    rand_y = pos.y;
+    rand_z = pos.z;
+}
+
+// this will find point in LOS before collision occur
+void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePos, bool ignoreLOSOffset) const
+{
+    angle += GetOrientation();
+
+    if (meAsSourcePos)
+        GetPosition(pos);
+
+    pos.z += 2.0f;
+
+    Position dest;
+    dest.x = pos.x + dist * cos(angle);
+    dest.y = pos.y + dist * sin(angle);
+
+    TerrainInfo const* _map = GetTerrain();
+    float ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+    float floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
+    dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
+
+    // collision occurred
+    bool result = false;
+    if (ignoreLOSOffset)
+        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +0.5f, dest.x, dest.y, dest.z +1.0f, dest.x, dest.y, dest.z, -0.5f);
+    else
+        result = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.x, pos.y, pos.z +3.0f, dest.x, dest.y, dest.z +7.0f, dest.x, dest.y, dest.z, -0.5f);
+
+    if (result)
+    {
+        // move back a bit
+        dest.x -= 0.25f * cos(angle);
+        dest.y -= 0.25f * sin(angle);
+        dist = sqrt((pos.x - dest.x)*(pos.x - dest.x) + (pos.y - dest.y)*(pos.y - dest.y));
+    }
+
+    float step = dist / 10.0f;
+    for (int j = 0; j < 10; ++j)
+    {
+        // do not allow too big z changes
+        if (fabs(pos.z - dest.z) > 4.3f)
+        {
+            dest.x -= step * cos(angle);
+            dest.y -= step * sin(angle);
+            ground = _map->GetHeight(dest.x, dest.y, MAX_HEIGHT, true);
+            floor = _map->GetHeight(dest.x, dest.y, pos.z, true);
+            dest.z = fabs(ground - pos.z) <= fabs(floor - pos.z) ? ground : floor;
+        }
+        else
+        {
+            pos = dest;
+            break;
+        }
+    }
+
+    Hellground::NormalizeMapCoord(pos.x);
+    Hellground::NormalizeMapCoord(pos.y);
+    UpdateAllowedPositionZ(pos.x, pos.y, pos.z);
+}
+
+void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
+{
+    float new_z = GetTerrain()->GetHeight(x,y,z,true);
+    if (new_z > INVALID_HEIGHT)
+        z = new_z + 0.06f;                                  // just to be sure that we are not a few pixel under the surface
+}
+
+void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
+{
+    switch (GetTypeId())
+    {
+    case TYPEID_UNIT:
+        {
+            // non fly unit don't must be in air
+            // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
+            if (!((Creature const*)this)->CanFly())
+            {
+                bool CanSwim = ((Creature const*)this)->CanSwim();
+                float ground_z = z;
+                float max_z = CanSwim
+                    ? GetTerrain()->GetWaterOrGroundLevel(x, y, z, &ground_z, !((Unit const*)this)->HasAuraType(SPELL_AURA_WATER_WALK))
+                    : ((ground_z = GetTerrain()->GetHeight(x, y, z, true)));
+                if (max_z > INVALID_HEIGHT)
+                {
+                    if (z > max_z)
+                        z = max_z;
+                    else if (z < ground_z)
+                        z = ground_z;
+                }
+            }
+            else
+            {
+                float ground_z = GetTerrain()->GetHeight(x, y, z, true);
+                if (z < ground_z)
+                    z = ground_z;
+            }
+            break;
+        }
+    case TYPEID_PLAYER:
+        {
+            // for server controlled moves playr work same as creature (but it can always swim)
+            if (!((Player const*)this)->CanFly())
+            {
+                float ground_z = z;
+                float max_z = GetTerrain()->GetWaterOrGroundLevel(x, y, z, &ground_z, !((Unit const*)this)->HasAuraType(SPELL_AURA_WATER_WALK));
+                if (max_z > INVALID_HEIGHT)
+                {
+                    if (z > max_z)
+                        z = max_z;
+                    else if (z < ground_z)
+                        z = ground_z;
+                }
+            }
+            else
+            {
+                float ground_z = GetTerrain()->GetHeight(x, y, z, true);
+                if (z < ground_z)
+                    z = ground_z;
+            }
+            break;
+        }
+    default:
+        {
+            float ground_z = GetTerrain()->GetHeight(x, y, z, true);
+            if (ground_z > INVALID_HEIGHT)
+                z = ground_z;
+            break;
+        }
+    }
 }

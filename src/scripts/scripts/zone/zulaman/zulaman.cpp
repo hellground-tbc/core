@@ -186,8 +186,8 @@ struct npc_hostageAI : public ScriptedAI
                     GameObject *target = me->GetMap()->GetGameObject(pInstance->GetData64(DATA_CHEST_0 + i));
                     if(target)
                     {
-                        float x, y;
-                        target->GetNearPoint2D(x, y, dist, angle);
+                        float x, y, z;
+                        target->GetNearPoint(NULL, x, y, z, 0.0f, dist, angle);
                         me->GetMotionMaster()->MovePoint(1, x, y, me->GetPositionZ());
                     }
                     EventStarted = true;

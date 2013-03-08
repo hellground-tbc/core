@@ -416,12 +416,23 @@ class HELLGROUND_IMPORT_EXPORT WorldObject : public Object//, public WorldLocati
         void GetPosition(Position &pos) const
             { pos.x = m_positionX; pos.y = m_positionY; pos.z = m_positionZ; pos.o = m_orientation; }
 
-        void GetNearPoint2D(float &x, float &y, float distance, float absAngle) const;
+        virtual float GetObjectBoundingRadius() const { return DEFAULT_WORLD_OBJECT_SIZE; }
+
+        float GetObjectSize() const
+        {
+            return (m_valuesCount > UNIT_FIELD_COMBATREACH) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
+        }
+        bool IsPositionValid() const;
+
+#pragma region Move all this shit to Position struct
+        void UpdateGroundPositionZ(float x, float y, float &z) const;
+        void UpdateAllowedPositionZ(float x, float y, float &z) const;
+
         void GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d,float absAngle) const;
         void GetClosePoint(float &x, float &y, float &z, float size, float distance2d = 0, float angle = 0) const
         {
             // angle calculated from current orientation
-            GetNearPoint(NULL,x,y,z,size,distance2d,GetOrientation() + angle);
+            GetNearPoint(this,x,y,z,size,distance2d,GetOrientation() + angle);
         }
         void GetGroundPoint(float &x, float &y, float &z, float dist, float angle);
         void GetGroundPointAroundUnit(float &x, float &y, float &z, float dist, float angle)
@@ -435,19 +446,10 @@ class HELLGROUND_IMPORT_EXPORT WorldObject : public Object//, public WorldLocati
             GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle(obj));
         }
 
-        virtual float GetObjectBoundingRadius() const { return DEFAULT_WORLD_OBJECT_SIZE; }
-
-        float GetObjectSize() const
-        {
-            return (m_valuesCount > UNIT_FIELD_COMBATREACH) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
-        }
-        bool IsPositionValid() const;
-
-        void UpdateGroundPositionZ(float x, float y, float &z) const;
-        void UpdateAllowedPositionZ(float x, float y, float &z) const;
-
         void GetRandomPoint(float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const;
-        void GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePo, bool ignoreLOSOffset = false);
+        void GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePo, bool ignoreLOSOffset = false) const;
+
+#pragma endregion Move all this shit to Position struct
 
         void SetMapId(uint32 newMap) { m_mapId = newMap; m_map = NULL; }
         uint32 GetMapId() const { return m_mapId; }
