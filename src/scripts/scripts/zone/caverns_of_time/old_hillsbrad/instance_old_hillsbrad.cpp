@@ -235,15 +235,15 @@ struct instance_old_hillsbrad : public ScriptedInstance
                     }
                     else if (ThrallEventCount > 20)
                     {
-					    Encounter[0] = DONE;
+                        Encounter[0] = DONE;
                         Encounter[1] = DONE;
                         Encounter[2] = DONE;
                         Encounter[3] = DONE;
                         Encounter[4] = DONE;
                         Encounter[5] = DONE;
-						Encounter[6] = DONE;
-						Encounter[7] = DONE;
-						Encounter[8] = DONE;
+                        Encounter[6] = DONE;
+                        Encounter[7] = DONE;
+                        Encounter[8] = DONE;
                         debug_log("TSCR: Instance Old Hillsbrad: Thrall event failed %u times. This is the end.", ThrallEventCount);
                     }
                 }
