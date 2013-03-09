@@ -7107,6 +7107,13 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 return false;
             break;
         }
+        //Gift of the Doomsayer
+        case 36174:
+        case 39011:
+        {
+            target = triggeredByAura ? triggeredByAura->GetCaster() : NULL;
+            break;
+        }
         case 41914:
         case 41917:
         {
