@@ -164,8 +164,8 @@ void CharmInfo::InitPossessCreateSpells()
             else
             {
                 // add spell only if there are cooldown or global cooldown // TODO: find proper solution
-                const SpellEntry * tmpSpellEntry = sSpellStore.LookupEntry(spellid);
-                if (tmpSpellEntry && (tmpSpellEntry->RecoveryTime || tmpSpellEntry->StartRecoveryTime || tmpSpellEntry->CategoryRecoveryTime))
+                //const SpellEntry * tmpSpellEntry = sSpellStore.LookupEntry(spellid);
+                //if (tmpSpellEntry && (tmpSpellEntry->RecoveryTime || tmpSpellEntry->StartRecoveryTime || tmpSpellEntry->CategoryRecoveryTime))
                     AddSpellToActionBar(0, spellid, ACT_CAST);
             }
         }
@@ -221,7 +221,7 @@ void CharmInfo::InitCharmCreateSpells()
                 newstate = ACT_CAST;
 
             // add spell only if there are cooldown or global cooldown // TODO: find proper solution
-            if (spellInfo && (spellInfo->RecoveryTime || spellInfo->StartRecoveryTime || spellInfo->CategoryRecoveryTime))
+            //if (spellInfo && (spellInfo->RecoveryTime || spellInfo->StartRecoveryTime || spellInfo->CategoryRecoveryTime))
                 AddSpellToActionBar(0, spellId, newstate);
         }
     }
