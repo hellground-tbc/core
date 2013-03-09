@@ -165,15 +165,31 @@ struct boss_sacrolashAI : public ScriptedAI
         {
             if(school_mask == SPELL_SCHOOL_MASK_SHADOW)
             {
+                SpellEntry* DarkTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DARK_TOUCHED);
                 if(target->HasAura(SPELL_FLAME_TOUCHED))
+                {
                     target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
-                target->CastSpell(target, SPELL_DARK_TOUCHED, true, 0, 0, me->GetGUID());
+                    target->CastSpell(target, SPELL_DARK_FLAME, true);
+                }
+                if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(DarkTouched))
+                {
+                    target->CastSpell(target, SPELL_DARK_TOUCHED, true);
+                    target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(DarkTouched, 1000);
+                }
             }
             if(school_mask == SPELL_SCHOOL_MASK_FIRE)
             {
+                SpellEntry* FlameTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_FLAME_TOUCHED);
                 if(target->HasAura(SPELL_DARK_TOUCHED))
+                {
                     target->RemoveAurasDueToSpell(SPELL_DARK_TOUCHED);
-                target->CastSpell(target, SPELL_FLAME_TOUCHED, true, 0, 0, me->GetGUID());;
+                    target->CastSpell(target, SPELL_DARK_FLAME, true);
+                }
+                if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(FlameTouched))
+                {
+                    target->CastSpell(target, SPELL_FLAME_TOUCHED, true);;
+                    target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(FlameTouched, 1000);
+                }
             }
         }
     }
@@ -253,12 +269,8 @@ struct boss_sacrolashAI : public ScriptedAI
 
         if (ShadowimageTimer < diff)
         {
-            float x, y, z;
             for (int i = 0; i < 3; i++)
-            {
-                me->GetNearPoint(me, x, y, z, 2.0, 3.0, frand(0, 2*M_PI));
-                me->SummonCreature(MOB_SHADOW_IMAGE,x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
-            }
+                DoSpawnCreature(MOB_SHADOW_IMAGE, 0, 0 , 0, frand(0, 2*M_PI), TEMPSUMMON_TIMED_DESPAWN, 15000);
             ShadowimageTimer = 20000;
         }
         else
@@ -374,15 +386,31 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         {
             if(school_mask == SPELL_SCHOOL_MASK_SHADOW)
             {
+                SpellEntry* DarkTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DARK_TOUCHED);
                 if(target->HasAura(SPELL_FLAME_TOUCHED))
+                {
                     target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
-                target->CastSpell(target, SPELL_DARK_TOUCHED, true, 0, 0, me->GetGUID());
+                    target->CastSpell(target, SPELL_DARK_FLAME, true);
+                }
+                if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(DarkTouched))
+                {
+                    target->CastSpell(target, SPELL_DARK_TOUCHED, true);
+                    target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(DarkTouched, 1000);
+                }
             }
             if(school_mask == SPELL_SCHOOL_MASK_FIRE)
             {
+                SpellEntry* FlameTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_FLAME_TOUCHED);
                 if(target->HasAura(SPELL_DARK_TOUCHED))
+                {
                     target->RemoveAurasDueToSpell(SPELL_DARK_TOUCHED);
-                target->CastSpell(target, SPELL_FLAME_TOUCHED, true, 0, 0, me->GetGUID());
+                    target->CastSpell(target, SPELL_DARK_FLAME, true);
+                }
+                if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(FlameTouched))
+                {
+                    target->CastSpell(target, SPELL_FLAME_TOUCHED, true);;
+                    target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(FlameTouched, 1000);
+                }
             }
         }
     }
@@ -574,9 +602,17 @@ struct mob_shadow_imageAI : public ScriptedAI
     {
         if(target->GetTypeId() == TYPEID_PLAYER && damage && school_mask == SPELL_SCHOOL_MASK_SHADOW)
         {
+            SpellEntry* DarkTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DARK_TOUCHED);
             if(target->HasAura(SPELL_FLAME_TOUCHED))
+            {
                 target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
-            target->CastSpell(target, SPELL_DARK_TOUCHED, false);
+                target->CastSpell(target, SPELL_DARK_FLAME, true);
+            }
+            if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(DarkTouched))
+            {
+                target->CastSpell(target, SPELL_DARK_TOUCHED, true);
+                target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(DarkTouched, 1000);
+            }
         }
     }
 
@@ -587,7 +623,7 @@ struct mob_shadow_imageAI : public ScriptedAI
 
         if (ShadowfuryTimer < diff)
         {
-            if (me->IsWithinDistInMap(me->getVictim(), 8.0) && roll_chance_f(20))
+            if (me->IsWithinMeleeRange(me->getVictim()) && roll_chance_f(15))
             {
                 AddSpellToCast(SPELL_SHADOW_FURY, CAST_NULL);
                 ShadowfuryTimer = 5000;

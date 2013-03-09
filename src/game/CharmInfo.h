@@ -54,7 +54,7 @@ struct Cooldown
 
 typedef UNORDERED_MAP<uint32 /*category*/, Cooldown> CooldownList;
 
-class CooldownMgr
+class HELLGROUND_IMPORT_EXPORT CooldownMgr
 {
     public:
         CooldownMgr() {}
