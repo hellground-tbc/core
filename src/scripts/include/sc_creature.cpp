@@ -339,6 +339,17 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
             return;
         }
 
+        if (temp.scriptTextEntry)
+        {
+            if (temp.targetGUID && temp.setAsTarget)
+            {
+                if (Unit* target = m_creature->GetUnit(temp.targetGUID))
+                    DoScriptText(temp.scriptTextEntry, m_creature, target);
+            }
+            else
+                DoScriptText(temp.scriptTextEntry, m_creature, m_creature->getVictim());
+        }
+
         if (temp.targetGUID)
         {
             Unit * tempU = m_creature->GetUnit(*m_creature, temp.targetGUID);
@@ -361,10 +372,6 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
             else
                 m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
         }
-
-        // script text after cast victim selection, sometimes it's used in emotes
-        if (temp.scriptTextEntry)
-            DoScriptText(temp.scriptTextEntry, m_creature, m_creature->getVictim());
 
         casted = true;
     }
