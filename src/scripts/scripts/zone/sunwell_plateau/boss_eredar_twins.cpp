@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Eredar_Twins
-SD%Complete: 80
-SDComment: make gobj 187366 casting SPELL_BLAZE_BURN, make order with xxx_Touched spells
+SD%Complete: 95
+SDComment: final debugging
 EndScriptData */
 
 #include "precompiled.h"
@@ -110,19 +110,17 @@ struct boss_sacrolashAI : public ScriptedAI
     InstanceData *pInstance;
 
     uint32 ShadowbladesTimer;
-    uint32 ShadownovaTimer;
+    uint32 SpecialTimer;
     uint32 ConfoundingblowTimer;
     uint32 ShadowimageTimer;
-    uint32 ConflagrationTimer;
     uint32 EnrageTimer;
 
     void Reset()
     {
         ShadowbladesTimer = 10000;
-        ShadownovaTimer = 30000;
+        SpecialTimer = 30000;
         ConfoundingblowTimer = 25000;
         ShadowimageTimer = 14000;
-        ConflagrationTimer = 30000;
         EnrageTimer = 360000;
         DoCast(me, SPELL_SHADOWFORM);
         DoCast(me, SPELL_DUAL_WIELD);
@@ -236,28 +234,23 @@ struct boss_sacrolashAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
+        if (SpecialTimer < diff)
         {
-            if (ConflagrationTimer < diff)
+            if (pInstance->GetData(DATA_ALYTHESS) == DONE)
             {
                 AddSpellToCastWithScriptText(SPELL_CONFLAGRATION, CAST_RANDOM_WITHOUT_TANK, EMOTE_CONFLAGRATION, false, true);
-                ConflagrationTimer = urand(30000, 35000);
+                SpecialTimer = urand(14000, 16000);
             }
             else
-                ConflagrationTimer -= diff;
-        }
-        else
-        {
-            if (ShadownovaTimer < diff)
             {
                 if(Unit* target = GetNovaTarget())
                     AddSpellToCastWithScriptText(target, SPELL_SHADOW_NOVA, EMOTE_SHADOW_NOVA, false, true);
                 DoScriptText(YELL_SHADOW_NOVA, me);
-                ShadownovaTimer = urand(30000,35000);
+                SpecialTimer = urand(30000,35000);
             }
-            else
-                ShadownovaTimer -= diff;
         }
+        else
+            SpecialTimer -= diff;
 
         if (ConfoundingblowTimer < diff)
         {
@@ -278,7 +271,7 @@ struct boss_sacrolashAI : public ScriptedAI
 
         if (ShadowbladesTimer < diff)
         {
-            AddSpellToCast(SPELL_SHADOW_BLADES, CAST_NULL);
+            AddSpellToCast(SPELL_SHADOW_BLADES, CAST_SELF);
             ShadowbladesTimer = 10000;
         }
         else
@@ -317,17 +310,15 @@ struct boss_alythessAI : public Scripted_NoMovementAI
     uint32 IntroStepCounter;
     uint32 IntroYellTimer;
 
-    uint32 ConflagrationTimer;
+    uint32 SpecialTimer;
     uint32 PyrogenicsTimer;
-    uint32 ShadownovaTimer;
     uint32 FlamesearTimer;
     uint32 EnrageTimer;
 
     void Reset()
     {
-        ConflagrationTimer = urand(15000, 19000);
+        SpecialTimer = urand(15000, 19000);
         PyrogenicsTimer = 15000;
-        ShadownovaTimer = 40000;
         EnrageTimer = 360000;
         FlamesearTimer = urand(10000, 15000);
         IntroYellTimer = 500;
@@ -510,28 +501,23 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         if (!UpdateVictim())
             return;
 
-        if (pInstance->GetData(DATA_SACROLASH) == DONE)
+        if (SpecialTimer < diff)
         {
-            if (ShadownovaTimer < diff)
+            if (pInstance->GetData(DATA_SACROLASH) == DONE)
             {
                 AddSpellToCastWithScriptText(SPELL_SHADOW_NOVA, CAST_RANDOM_WITHOUT_TANK, EMOTE_SHADOW_NOVA, false, true);
-                ShadownovaTimer = urand(30000, 35000);
+                SpecialTimer = urand(14000, 16000);
             }
-            else 
-                ShadownovaTimer -= diff;
-        }
-        else
-        {
-            if (ConflagrationTimer < diff)
+            else
             {
                 if(Unit* target = GetConflagTarget())
                     AddSpellToCastWithScriptText(target , SPELL_CONFLAGRATION, EMOTE_CONFLAGRATION, false, true);
                 DoScriptText(YELL_CANFLAGRATION, me);
-                ConflagrationTimer = urand(30000, 35000);
+                SpecialTimer = urand(30000,35000);
             }
-            else
-                ConflagrationTimer -= diff;
         }
+        else
+            SpecialTimer -= diff;
 
         if (FlamesearTimer < diff)
         {
@@ -674,13 +660,3 @@ void AddSC_boss_eredar_twins()
     newscript->GetAI = &GetAI_mob_shadow_image;
     newscript->RegisterSelf();
 }
-
-/* SQLe do wrzucenia
-
--- formation for sacrolash and alythess
-REPLACE INTO creature_formations VALUES
-(53687, 53668, 0, 0, 2),
-(53687, 53687, 0, 0, 2);
-
-
-*/
