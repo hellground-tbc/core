@@ -809,7 +809,7 @@ void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket & recv_data)
     }
 
     // no-op: placed in same slot
-    if (dest.size()==1 && dest[0].pos==src)
+    if (dest.size()==1 && (dest[0].pos==src || (dest[0].pos >> 8) == srcslot))
     {
         // just remove grey item state
         _player->SendEquipError(EQUIP_ERR_NONE, pItem, NULL);
