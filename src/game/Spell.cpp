@@ -953,7 +953,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     {
         // drop reflect aura charges on spell_hit
         caster->ProcDamageAndSpell(unit, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT, PROC_EX_REFLECT, 1, BASE_ATTACK,GetSpellInfo());
-        if (target->reflectResult == SPELL_MISS_NONE)       // If reflected spell hit caster -> do all effect on him
+        if (target->reflectResult == SPELL_MISS_NONE && CheckTargetCreatureType(m_caster))       // If reflected spell hit caster -> do all effect on him, also check type again
             DoSpellHitOnUnit(m_caster, mask);
     }
 
