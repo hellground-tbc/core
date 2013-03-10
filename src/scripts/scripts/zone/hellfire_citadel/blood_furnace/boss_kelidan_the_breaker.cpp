@@ -198,7 +198,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
         {
             if (Firenova_Timer < diff)
             {
-                AddSpellToCast(m_creature,SPELL_FIRE_NOVA);
+                ForceSpellCast(me, SPELL_FIRE_NOVA, INTERRUPT_AND_CAST_INSTANTLY);
                 Firenova = false;
                 ShadowVolley_Timer = 2000;
             }
@@ -247,7 +247,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
             }
 
             BurningNova_Timer = urand(20000, 28000);
-            Firenova_Timer= 6500;
+            Firenova_Timer= 5000;
             Firenova = true;
         }
         else
