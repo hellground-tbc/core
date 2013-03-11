@@ -416,7 +416,7 @@ class HELLGROUND_IMPORT_EXPORT WorldObject : public Object//, public WorldLocati
         void GetPosition(Position &pos) const
             { pos.x = m_positionX; pos.y = m_positionY; pos.z = m_positionZ; pos.o = m_orientation; }
 
-        Position GetPosition() { Position pos; pos.x = m_positionX; pos.y = m_positionY; pos.z = m_positionZ; pos.o = m_orientation; }
+        Position GetPosition() { Position pos; pos.x = m_positionX; pos.y = m_positionY; pos.z = m_positionZ; pos.o = m_orientation; return pos; }
 
         virtual float GetObjectBoundingRadius() const { return DEFAULT_WORLD_OBJECT_SIZE; }
 

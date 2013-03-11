@@ -23,17 +23,14 @@ Waypoint::Waypoint(const Waypoint& b)
 
 void EscortAI::AttackStart(Unit* who)
 {
-    if (flags & FLAG_CAN_ATTACK)
+    if (flags & (FLAG_IS_AGGRESSIVE | FLAG_IS_DEFENSIVE))
         CreatureAI::AttackStart(who);
 }
 
 void EscortAI::MoveInLineOfSight(Unit* who)
 {
-    if (flags & FLAG_IS_AGGRESSIVE && !me->HasReactState(REACT_PASSIVE))
+    if (flags & FLAG_IS_AGGRESSIVE)
         CreatureAI::MoveInLineOfSight(who);
-
-    if (flags & FLAG_ASSIST_IN_COMBAT && who->getVictimGUID() == escort.GetRawValue())
-        CreatureAI::AttackStart(who);
 }
 
 void EscortAI::JustDied(Unit* killer)
@@ -88,21 +85,21 @@ void EscortAI::UpdateAI(const uint32 diff)
         case ESCORT_NEXT_POINT:
         {
             // don't start next waypoint if we can fight and are in combat
-            if (flags & (FLAG_CAN_DEFEND_SELF | FLAG_IS_AGGRESSIVE) && me->isInCombat())
+            if (flags & (FLAG_IS_DEFENSIVE | FLAG_IS_AGGRESSIVE) && me->isInCombat())
                 break;
 
             delayTimer.Update(diff);
             if (!delayTimer.Passed())
                 break;
 
+            Waypoint& wp = path[pathIndex];
             if (!startDone)
             {
-                WaypointStart(destPointId);
+                WaypointStart(wp.Id);
                 startDone = true;
             }
 
             // pointId already incremented in MovementInform
-            Waypoint& wp = path[destPointId];
             me->GetMotionMaster()->MovePoint(wp.Id, wp.Pos.x, wp.Pos.y, wp.Pos.z, UNIT_ACTION_ESCORT);
 
             SetState(ESCORT_IN_PROGRESS);
@@ -137,15 +134,20 @@ void EscortAI::MovementInform(uint32 type, uint32 data)
         return;
     }
 
-    WaypointReached(destPointId);
+    Waypoint& wp = path[pathIndex];
+    // different shitty PointMovegen were called, ignore :P
+    if (data != wp.Id)
+        return;
 
-    if (++destPointId > path.size())
+    WaypointReached(wp.Id);
+
+    if (++pathIndex > path.size())
     {
         SetState(ESCORT_DONE);
         return;
     }
 
-    Waypoint& wp = path[destPointId];
+    wp = path[pathIndex];
     delayTimer.Reset(wp.Delay);
 
     startDone = false;
@@ -159,7 +161,7 @@ void EscortAI::Reset()
 
     me->GetPosition(origin);
 
-    destPointId = 0;
+    pathIndex = 0;
     delayTimer.Reset(0);
 
     SetState(ESCORT_NOT_STARTED);
@@ -220,4 +222,9 @@ void EscortAI::JustRespawned()
     me->SetHomePosition(me->GetPosition());
 
     EscortAI::Reset();
+}
+
+void EscortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 delay)
+{
+    path.push_back(Waypoint(id, delay, x, y, z));
 }

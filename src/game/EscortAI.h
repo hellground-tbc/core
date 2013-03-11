@@ -32,14 +32,13 @@ struct EscortAI : public CreatureAI
     enum Flags
     {
         FLAG_RESPAWN_AT_END   = 0x01, // it will respawn creature in place where escort was started
-        FLAG_CAN_DEFEND_SELF  = 0x02, // it allows creature to defend self and chase enemies when attacked
+        FLAG_IS_DEFENSIVE     = 0x02, // it allows creature to defend self and chase enemies when attacked
         FLAG_IS_AGGRESSIVE    = 0x04, // it allows creature to attack every enemy that moves in line of sight
-        FLAG_ASSIST_IN_COMBAT = 0x08, // it allows creature to go with help if any of escorting players were attacked
-        FLAG_DESPAWN_AT_END   = 0x10  // it forces creature to disappear on last waypoint without respawning (use it for summoned creatures)
+        FLAG_DESPAWN_AT_END   = 0x08  // it forces creature to disappear on last waypoint without respawning (use it for summoned creatures)
     };
 
     public:
-        explicit EscortAI(Creature* owner) : CreatureAI(owner) {}
+        explicit EscortAI(Creature* owner) : CreatureAI(owner), pathIndex(0) {}
 
         void AttackStart(Unit* who) override;
         void MoveInLineOfSight(Unit* who) override;
@@ -57,6 +56,8 @@ struct EscortAI : public CreatureAI
         bool EscortInRange() const;
         void DespawnOrRespawn();
 
+        void AddWaypoint(uint32 id, float x, float y, float z, uint32 delay);
+
         void UpdateAI(const uint32 diff) override final;
         virtual void UpdateEscortAI(const uint32 diff);
 
@@ -69,7 +70,7 @@ struct EscortAI : public CreatureAI
         State GetState() { return state; }
 
     private:
-        uint32 destPointId;
+        uint32 pathIndex;
         std::vector<Waypoint> path;
 
         uint32 questId;

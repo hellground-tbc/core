@@ -44,6 +44,8 @@ EndContentData */
 #include "BattleGround.h"
 #include "Totem.h"
 #include "PetAI.h"
+#include "EscortAI.h"
+
 #include <list>
 
 #include <cstring>
@@ -2779,6 +2781,26 @@ CreatureAI* GetAI_npc_explosive_sheep(Creature* pCreature)
     return new npc_explosive_sheepAI(pCreature);
 }
 
+struct test_escortai : public EscortAI
+{
+    test_escortai(Creature* c) : EscortAI(c) {}
+
+    void WaypointReached(uint32 pointId)
+    {
+
+    }
+
+    void UpdateEscortAI(const uint32 diff)
+    {
+        EscortAI::UpdateEscortAI(diff);
+    }
+};
+
+CreatureAI* GetAI_test_escortai(Creature* creature)
+{
+    return new test_escortai(creature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2967,5 +2989,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_explosive_sheep";
     newscript->GetAI = &GetAI_npc_explosive_sheep;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "test_escortai";
+    newscript->GetAI = &GetAI_test_escortai;
     newscript->RegisterSelf();
 }
