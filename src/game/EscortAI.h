@@ -26,15 +26,16 @@ struct EscortAI : public CreatureAI
         ESCORT_NEXT_POINT  = 1,
         ESCORT_PAUSED      = 2,
         ESCORT_NOT_STARTED = 3,
+        ESCORT_DONE        = 4
     };
 
     enum Flags
     {
-        FLAG_RESPAWN_AT_END   = 0x01,
-        FLAG_CAN_ATTACK       = 0x02,
-        FLAG_IS_AGGRESSIVE    = 0x04,
-        FLAG_ASSIST_IN_COMBAT = 0x08,
-        FLAG_DESPAWN_AT_END   = 0x10
+        FLAG_RESPAWN_AT_END   = 0x01, // it will respawn creature in place where escort was started
+        FLAG_CAN_DEFEND_SELF  = 0x02, // it allows creature to defend self and chase enemies when attacked
+        FLAG_IS_AGGRESSIVE    = 0x04, // it allows creature to attack every enemy that moves in line of sight
+        FLAG_ASSIST_IN_COMBAT = 0x08, // it allows creature to go with help if any of escorting players were attacked
+        FLAG_DESPAWN_AT_END   = 0x10  // it forces creature to disappear on last waypoint without respawning (use it for summoned creatures)
     };
 
     public:
@@ -44,14 +45,20 @@ struct EscortAI : public CreatureAI
         void MoveInLineOfSight(Unit* who) override;
 
         void JustDied(Unit* killer) override;
+        void JustRespawned();
+
         void Reset() override;
 
         void EnterCombat(Unit* who) override;
-        void EnterEvadeMode() override;
+        void EnterEvadeMode() override final;
 
         void MovementInform(uint32 type, uint32 data) override;
 
-        virtual void UpdateAI(const uint32 diff) override;
+        bool EscortInRange() const;
+        void DespawnOrRespawn();
+
+        void UpdateAI(const uint32 diff) override final;
+        virtual void UpdateEscortAI(const uint32 diff);
 
         virtual void WaypointReached(uint32 pointId) = 0;
         virtual void WaypointStart(uint32 pointId) {}
@@ -62,7 +69,7 @@ struct EscortAI : public CreatureAI
         State GetState() { return state; }
 
     private:
-        uint32 pointId;
+        uint32 destPointId;
         std::vector<Waypoint> path;
 
         uint32 questId;
@@ -70,6 +77,7 @@ struct EscortAI : public CreatureAI
         State state;
         Flags flags;
 
+        bool startDone;
         TimeTrackerSmall delayTimer;
 
         ObjectGuid escort;
