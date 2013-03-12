@@ -1,4 +1,6 @@
 #include "EscortAI.h"
+#include "Creature.h"
+#include "Player.h"
 #include "Group.h"
 
 Waypoint::Waypoint(uint32 id, uint32 delay, float x, float y, float z)
@@ -35,6 +37,8 @@ void EscortAI::MoveInLineOfSight(Unit* who)
 
 void EscortAI::JustDied(Unit* killer)
 {
+    EscortJustDied(killer);
+
     if (GetState() != ESCORT_IN_PROGRESS)
         return;
 
@@ -74,7 +78,7 @@ void EscortAI::UpdateAI(const uint32 diff)
         case ESCORT_IN_PROGRESS:
         {
             if (!EscortInRange())
-                SetState(ESCORT_DONE);
+                setState(ESCORT_DONE);
 
             // to be sure, we always have ESCORT movement if allowed
             if (me->GetUnitStateMgr().GetAction(UNIT_ACTION_PRIORITY_ESCORT) != nullptr)
@@ -102,7 +106,7 @@ void EscortAI::UpdateAI(const uint32 diff)
             // pointId already incremented in MovementInform
             me->GetMotionMaster()->MovePoint(wp.Id, wp.Pos.x, wp.Pos.y, wp.Pos.z, UNIT_ACTION_ESCORT);
 
-            SetState(ESCORT_IN_PROGRESS);
+            setState(ESCORT_IN_PROGRESS);
             break;
         }
         case ESCORT_DONE:
@@ -112,14 +116,15 @@ void EscortAI::UpdateAI(const uint32 diff)
         }
     }
 
-    UpdateEscortAI(diff);
+    EscortUpdateAI(diff);
 }
 
 void EscortAI::EnterCombat(Unit* who)
 {
     me->SetHomePosition(me->GetPosition());
 
-    CreatureAI::EnterCombat(who);
+    if (EscortEnterCombat(who))
+      CreatureAI::EnterCombat(who);
 }
 
 void EscortAI::MovementInform(uint32 type, uint32 data)
@@ -130,7 +135,7 @@ void EscortAI::MovementInform(uint32 type, uint32 data)
     // we just returned from combat to last position
     if (data == 0xFF)
     {
-        SetState(ESCORT_NEXT_POINT);
+        setState(ESCORT_NEXT_POINT);
         return;
     }
 
@@ -143,7 +148,7 @@ void EscortAI::MovementInform(uint32 type, uint32 data)
 
     if (++pathIndex > path.size())
     {
-        SetState(ESCORT_DONE);
+        setState(ESCORT_DONE);
         return;
     }
 
@@ -152,7 +157,7 @@ void EscortAI::MovementInform(uint32 type, uint32 data)
 
     startDone = false;
 
-    SetState(ESCORT_NEXT_POINT);
+    setState(ESCORT_NEXT_POINT);
 }
 
 void EscortAI::Reset()
@@ -164,7 +169,9 @@ void EscortAI::Reset()
     pathIndex = 0;
     delayTimer.Reset(0);
 
-    SetState(ESCORT_NOT_STARTED);
+    setState(ESCORT_NOT_STARTED);
+
+    EscortReset();
 }
 
 void EscortAI::EnterEvadeMode()
@@ -175,6 +182,8 @@ void EscortAI::EnterEvadeMode()
         return;
 
     me->GetMotionMaster()->MovePoint(0xFF, me->GetHomePosition().coord_x, me->GetHomePosition().coord_y, me->GetHomePosition().coord_z, UNIT_ACTION_ESCORT);
+
+    EscortEnterEvadeMode();
 }
 
 bool EscortAI::EscortInRange() const
@@ -209,14 +218,6 @@ void EscortAI::DespawnOrRespawn()
         me->ForcedDespawn();
 }
 
-void EscortAI::UpdateEscortAI(const uint32 diff)
-{
-    if (!UpdateVictim())
-        return;
-
-    DoMeleeAttackIfReady();
-}
-
 void EscortAI::JustRespawned()
 {
     me->SetHomePosition(me->GetPosition());
@@ -227,4 +228,17 @@ void EscortAI::JustRespawned()
 void EscortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 delay)
 {
     path.push_back(Waypoint(id, delay, x, y, z));
+}
+
+void EscortAI::WaypointStart(uint32 pointId)
+{
+
+}
+
+void EscortAI::EscortUpdateAI(const uint32 diff)
+{
+    if (!UpdateVictim())
+        return;
+
+    DoMeleeAttackIfReady();
 }

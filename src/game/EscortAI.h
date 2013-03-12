@@ -31,10 +31,10 @@ struct EscortAI : public CreatureAI
 
     enum Flags
     {
-        FLAG_RESPAWN_AT_END   = 0x01, // it will respawn creature in place where escort was started
+        FLAG_RESPAWN_AT_END   = 0x01, // it will de-spawn creature and re-spawn it in place where escort was started
         FLAG_IS_DEFENSIVE     = 0x02, // it allows creature to defend self and chase enemies when attacked
         FLAG_IS_AGGRESSIVE    = 0x04, // it allows creature to attack every enemy that moves in line of sight
-        FLAG_DESPAWN_AT_END   = 0x08  // it forces creature to disappear on last waypoint without respawning (use it for summoned creatures)
+        FLAG_DESPAWN_AT_END   = 0x08  // it forces creature to disappear on last way point without re-spawning (use it for summoned creatures)
     };
 
     public:
@@ -43,12 +43,12 @@ struct EscortAI : public CreatureAI
         void AttackStart(Unit* who) override;
         void MoveInLineOfSight(Unit* who) override;
 
-        void JustDied(Unit* killer) override;
+        void JustDied(Unit* killer) override final;
         void JustRespawned();
 
         void Reset() override;
 
-        void EnterCombat(Unit* who) override;
+        void EnterCombat(Unit* who) override final;
         void EnterEvadeMode() override final;
 
         void MovementInform(uint32 type, uint32 data) override;
@@ -59,17 +59,22 @@ struct EscortAI : public CreatureAI
         void AddWaypoint(uint32 id, float x, float y, float z, uint32 delay);
 
         void UpdateAI(const uint32 diff) override final;
-        virtual void UpdateEscortAI(const uint32 diff);
 
         virtual void WaypointReached(uint32 pointId) = 0;
-        virtual void WaypointStart(uint32 pointId) {}
-
-        void SetState(State st) { state = st; }
-        bool HasState(State st) { return state == st; }
+        virtual void WaypointStart(uint32 pointId);
+        
+        virtual bool EscortEnterCombat(Unit* who) { return true; }
+        virtual void EscortUpdateAI(const uint32 diff);
+        virtual void EscortEnterEvadeMode() {}
+        virtual void EscortReset() {}
+        virtual void EscortJustDied(Unit* killer) {}
 
         State GetState() { return state; }
+        bool HasState(State st) { return GetState() == st; }
 
     private:
+        void setState(State st) { state = st; }
+
         uint32 pathIndex;
         std::vector<Waypoint> path;
 
