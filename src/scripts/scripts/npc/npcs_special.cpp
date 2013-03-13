@@ -2787,6 +2787,22 @@ struct test_escortai : public EscortAI
 
     void WaypointReached(uint32) override {}
 
+    bool FillWaypointsList() override
+    {
+        // by default it loads waypoints from database
+        bool result = EscortAI::FillWaypointsList();
+
+        // there were no waypoints in database for this NPC so we can add them manualy
+        if (!result)
+        {
+//             AddWaypoint(0,);
+//             AddWaypoint(1,);
+//             AddWaypoint(2,);
+//             AddWaypoint(3,);
+//             AddWaypoint(4,);
+        }
+    }
+
     void EscortUpdateAI(const uint32 diff) override
     {
         EscortAI::EscortUpdateAI(diff);

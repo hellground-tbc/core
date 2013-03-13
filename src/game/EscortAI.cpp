@@ -307,3 +307,9 @@ void EscortAI::EscortPause()
 
     setState(ESCORT_PAUSED);
 }
+
+void EscortAI::ClearWaypoints()
+{
+    path.clear();
+    pathIndex = 0;
+}

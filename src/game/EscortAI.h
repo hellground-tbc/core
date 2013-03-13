@@ -97,6 +97,7 @@ class HELLGROUND_IMPORT_EXPORT EscortAI : public CreatureAI
         virtual void EscortJustDied(Unit* killer) {}
 
         virtual bool FillWaypointsList();
+        void ClearWaypoints();
 
         State GetState() { return state; }
         bool HasState(State st) { return GetState() == st; }
