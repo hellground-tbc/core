@@ -1457,6 +1457,8 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading Scripts text locales...");    // must be after Load*Scripts calls
     sScriptMgr.LoadDbScriptStrings();
 
+    sScriptMgr.LoadScriptWaypoints();
+
     sLog.outString("Loading CreatureEventAI Texts...");
     sCreatureEAIMgr.LoadCreatureEventAI_Texts(false);       // false, will checked in LoadCreatureEventAI_Scripts
 

@@ -22,6 +22,7 @@
 #include "ObjectMgr.h"
 #include "WaypointMgr.h"
 #include "World.h"
+#include "EscortAI.h"
 
 #include "../shared/Config/Config.h"
 
@@ -1026,4 +1027,74 @@ uint32 GetCompletedCinematicScriptId(uint32 cinematic_id)
 uint32 GetScriptId(const char *name)
 {
     return sScriptMgr.GetScriptId(name);
+}
+
+void ScriptMgr::LoadScriptWaypoints()
+{
+    // Drop Existing Waypoint list
+    m_Waypoints.clear();
+
+    uint64 uiCreatureCount = 0;
+
+    // Load Waypoints
+    QueryResultAutoPtr pResult = GameDataDatabase.PQuery("SELECT COUNT(entry) FROM script_waypoint GROUP BY entry");
+    if (pResult)
+    {
+        uiCreatureCount = pResult->GetRowCount();
+    }
+
+    outstring_log("TSCR: Loading Script Waypoints for %u creature(s)...", uiCreatureCount);
+
+    pResult = GameDataDatabase.PQuery("SELECT entry, pointid, location_x, location_y, location_z, waittime FROM script_waypoint ORDER BY pointid");
+
+    if (pResult)
+    {
+        BarGoLink bar(pResult->GetRowCount());
+        uint32 uiNodeCount = 0;
+
+        do
+        {
+            bar.step();
+            Field* pFields = pResult->Fetch();
+            Waypoint wp(pFields[1].GetUInt32(), pFields[5].GetUInt32(), pFields[2].GetFloat(), pFields[3].GetFloat(), pFields[4].GetFloat());
+
+            uint32 uiEntry = pFields[0].GetUInt32();
+
+            CreatureInfo const* pCInfo = GetCreatureTemplateStore(uiEntry);
+
+            if (!pCInfo)
+            {
+                error_db_log("TSCR: DB table script_waypoint has waypoint for non-existant creature entry %u", uiEntry);
+                continue;
+            }
+
+            if (!pCInfo->ScriptID)
+                error_db_log("TSCR: DB table script_waypoint has waypoint for creature entry %u, but creature does not have ScriptName defined and then useless.", uiEntry);
+
+            m_Waypoints[uiEntry].push_back(wp);
+            ++uiNodeCount;
+        } while (pResult->NextRow());
+
+        outstring_log("");
+        outstring_log(">> Loaded %u Script Waypoint nodes.", uiNodeCount);
+    }
+    else
+    {
+        BarGoLink bar(1);
+        bar.step();
+        outstring_log("");
+        outstring_log(">> Loaded 0 Script Waypoints. DB table `script_waypoint` is empty.");
+    }
+}
+
+std::vector<Waypoint> const & ScriptMgr::GetWaypointsForEntry( uint32 uiCreatureEntry ) const
+{
+    static std::vector<Waypoint> vEmpty;
+
+    WaypointsMap::const_iterator itr = m_Waypoints.find(uiCreatureEntry);
+
+    if (itr == m_Waypoints.end())
+        return vEmpty;
+
+    return itr->second;
 }

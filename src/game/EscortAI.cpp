@@ -22,6 +22,9 @@
 #include "Creature.h"
 #include "Player.h"
 #include "Group.h"
+#include "ScriptMgr.h"
+#include "StateMgr.h"
+#include "StateMgrImpl.h"
 
 Waypoint::Waypoint(uint32 id, uint32 delay, float x, float y, float z)
 {
@@ -188,6 +191,8 @@ void EscortAI::Reset()
     pathIndex = 0;
     delayTimer.Reset(0);
 
+    path.clear();
+
     setState(ESCORT_NOT_STARTED);
 
     EscortReset();
@@ -203,6 +208,8 @@ void EscortAI::EnterEvadeMode()
         return;
 
     me->GetMotionMaster()->MovePoint(0xFF, me->GetHomePosition().coord_x, me->GetHomePosition().coord_y, me->GetHomePosition().coord_z, UNIT_ACTION_ESCORT);
+
+    EscortReset();
 }
 
 bool EscortAI::EscortInRange() const
@@ -270,4 +277,33 @@ void EscortAI::EscortUpdateAI(const uint32 diff)
 EscortAI::EscortAI(Creature* owner) : CreatureAI(owner), pathIndex(0)
 {
 
+}
+
+void EscortAI::EscortStart(uint32 quest, Player* invoker, Flags flag)
+{
+    if (!HasState(ESCORT_NOT_STARTED))
+        return;
+
+    if (!FillWaypointsList())
+        return;
+
+    flags = flag;
+    questId = quest;
+
+    escort = invoker->GetObjectGuid();
+
+    setState(ESCORT_NEXT_POINT);
+}
+
+bool EscortAI::FillWaypointsList()
+{
+    path = sScriptMgr.GetWaypointsForEntry(me->GetEntry());
+    return !path.empty();
+}
+
+void EscortAI::EscortPause()
+{
+    me->GetUnitStateMgr().DropAction(UNIT_ACTION_ESCORT);
+
+    setState(ESCORT_PAUSED);
 }

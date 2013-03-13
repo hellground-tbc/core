@@ -29,7 +29,7 @@
 
 class Unit;
 
-struct Waypoint
+struct HELLGROUND_IMPORT_EXPORT Waypoint
 {
     Waypoint(uint32 id, uint32 delay, float x, float y, float z);
     Waypoint(const Waypoint&);
@@ -83,6 +83,10 @@ class HELLGROUND_IMPORT_EXPORT EscortAI : public CreatureAI
 
         void UpdateAI(const uint32 diff) override/* final*/;
 
+        void EscortStart(uint32 questId, Player* invoker, Flags flags);
+
+        void EscortPause();
+
         virtual void WaypointReached(uint32 pointId) = 0;
         virtual void WaypointStart(uint32 pointId);
         
@@ -91,6 +95,8 @@ class HELLGROUND_IMPORT_EXPORT EscortAI : public CreatureAI
         virtual void EscortEnterEvadeMode() {}
         virtual void EscortReset() {}
         virtual void EscortJustDied(Unit* killer) {}
+
+        virtual bool FillWaypointsList();
 
         State GetState() { return state; }
         bool HasState(State st) { return GetState() == st; }

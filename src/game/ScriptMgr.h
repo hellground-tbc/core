@@ -22,6 +22,7 @@
 #include "ace/Singleton.h"
 
 #include "Common.h"
+#include "EscortAI.h"
 
 struct AreaTriggerEntry;
 struct CinematicSequencesEntry;
@@ -60,6 +61,7 @@ struct ScriptInfo
 
 typedef std::multimap<uint32, ScriptInfo> ScriptMap;
 typedef std::map<uint32, ScriptMap > ScriptMapMap;
+
 extern ScriptMapMap sQuestEndScripts;
 extern ScriptMapMap sQuestStartScripts;
 extern ScriptMapMap sSpellScripts;
@@ -67,7 +69,7 @@ extern ScriptMapMap sGameObjectScripts;
 extern ScriptMapMap sEventScripts;
 extern ScriptMapMap sWaypointScripts;
 
-class ScriptMgr
+class HELLGROUND_IMPORT_EXPORT ScriptMgr
 {
     friend class ACE_Singleton<ScriptMgr, ACE_Null_Mutex>;
     ScriptMgr();
@@ -85,6 +87,9 @@ class ScriptMgr
         void LoadSpellIdScripts();
         void LoadSpellScripts();
         void LoadWaypointScripts();
+        void LoadScriptWaypoints();
+
+        std::vector<Waypoint> const &GetWaypointsForEntry(uint32 uiCreatureEntry) const;
 
         void LoadDbScriptStrings();
 
@@ -148,11 +153,13 @@ class ScriptMgr
         typedef UNORDERED_MAP<uint32, uint32> CompletedCinematicScriptMap;
         typedef UNORDERED_MAP<uint32, uint32> EventIdScriptMap;
         typedef UNORDERED_MAP<uint32, uint32> SpellIdScriptMap;
+        typedef UNORDERED_MAP<uint32, std::vector<Waypoint> > WaypointsMap;
 
         AreaTriggerScriptMap            m_AreaTriggerScripts;
         CompletedCinematicScriptMap     m_CompletedCinematicScripts;
         EventIdScriptMap                m_EventIdScripts;
         SpellIdScriptMap                m_SpellIdScripts;
+        WaypointsMap                    m_Waypoints;
 
         ScriptNameMap           m_scriptNames;
 

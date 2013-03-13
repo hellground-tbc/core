@@ -62,13 +62,11 @@ class SystemMgr
 
         //Maps and lists
         typedef UNORDERED_MAP<int32, StringTextData> TextDataMap;
-        typedef UNORDERED_MAP<uint32, std::vector<ScriptPointMove> > PointMoveMap;
 
         //Database
         void LoadVersion();
         void LoadScriptTexts();
         void LoadScriptTextsCustom();
-        void LoadScriptWaypoints();
 
         //Retrive from storage
         StringTextData const* GetTextData(int32 uiTextId) const
@@ -81,20 +79,7 @@ class SystemMgr
             return &itr->second;
         }
 
-        std::vector<ScriptPointMove> const &GetPointMoveList(uint32 uiCreatureEntry) const
-        {
-            static std::vector<ScriptPointMove> vEmpty;
-
-            PointMoveMap::const_iterator itr = m_mPointMoveMap.find(uiCreatureEntry);
-
-            if (itr == m_mPointMoveMap.end())
-                return vEmpty;
-
-            return itr->second;
-        }
-
     protected:
         TextDataMap     m_mTextDataMap;                     //additional data for text strings
-        PointMoveMap    m_mPointMoveMap;                    //coordinates for waypoints
 };
 #endif
