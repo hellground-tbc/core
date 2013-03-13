@@ -1,4 +1,24 @@
+/*
+ * Copyright (C) 2012 HellGround <http://hellground.net/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
 #include "EscortAI.h"
+
+#include "CreatureAI.h"
 #include "Creature.h"
 #include "Player.h"
 #include "Group.h"
@@ -123,8 +143,7 @@ void EscortAI::EnterCombat(Unit* who)
 {
     me->SetHomePosition(me->GetPosition());
 
-    if (EscortEnterCombat(who))
-      CreatureAI::EnterCombat(who);
+    EscortEnterCombat(who);
 }
 
 void EscortAI::MovementInform(uint32 type, uint32 data)
@@ -178,12 +197,12 @@ void EscortAI::EnterEvadeMode()
 {
     CreatureAI::_EnterEvadeMode();
 
+    EscortEnterEvadeMode();
+
     if (HasState(ESCORT_PAUSED) || HasState(ESCORT_DONE) || HasState(ESCORT_NOT_STARTED))
         return;
 
     me->GetMotionMaster()->MovePoint(0xFF, me->GetHomePosition().coord_x, me->GetHomePosition().coord_y, me->GetHomePosition().coord_z, UNIT_ACTION_ESCORT);
-
-    EscortEnterEvadeMode();
 }
 
 bool EscortAI::EscortInRange() const
@@ -235,10 +254,17 @@ void EscortAI::WaypointStart(uint32 pointId)
 
 }
 
+void EscortAI::EscortEnterCombat(Unit* who)
+{
+    CreatureAI::EnterCombat(who);
+}
+
 void EscortAI::EscortUpdateAI(const uint32 diff)
 {
-    if (!UpdateVictim())
-        return;
+    CreatureAI::UpdateAI(diff);
+}
 
-    DoMeleeAttackIfReady();
+EscortAI::EscortAI( Creature* owner ) : CreatureAI(owner), pathIndex(0)
+{
+
 }

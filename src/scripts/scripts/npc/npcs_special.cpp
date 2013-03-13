@@ -2792,7 +2792,7 @@ struct test_escortai : public EscortAI
 
     void UpdateEscortAI(const uint32 diff)
     {
-        EscortAI::UpdateEscortAI(diff);
+        EscortAI::EscortUpdateAI(diff);
     }
 };
 

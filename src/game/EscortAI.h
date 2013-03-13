@@ -1,11 +1,33 @@
+/*
+ * Copyright (C) 2012 HellGround <http://hellground.net/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
 #ifndef H_ESCORTAI
 #define H_ESCORTAI
 
 #include <vector>
 
+#include "Common.h"
 #include "CreatureAI.h"
 #include "Object.h"
 #include "ObjectGuid.h"
+#include "Timer.h"
+
+class Unit;
 
 struct Waypoint
 {
@@ -18,7 +40,7 @@ struct Waypoint
     Position Pos;
 };
 
-struct EscortAI : public CreatureAI
+class HELLGROUND_IMPORT_EXPORT EscortAI : public CreatureAI
 {
     enum State
     {
@@ -38,18 +60,19 @@ struct EscortAI : public CreatureAI
     };
 
     public:
-        explicit EscortAI(Creature* owner) : CreatureAI(owner), pathIndex(0) {}
+        explicit EscortAI(Creature* owner);
+        ~EscortAI() {}
 
         void AttackStart(Unit* who) override;
         void MoveInLineOfSight(Unit* who) override;
 
-        void JustDied(Unit* killer) override final;
+        void JustDied(Unit* killer) override/* final*/;
         void JustRespawned();
 
-        void Reset() override;
+        void Reset() override/* final*/;
 
-        void EnterCombat(Unit* who) override final;
-        void EnterEvadeMode() override final;
+        void EnterCombat(Unit* who) override;
+        void EnterEvadeMode() override/* final*/;
 
         void MovementInform(uint32 type, uint32 data) override;
 
@@ -58,12 +81,12 @@ struct EscortAI : public CreatureAI
 
         void AddWaypoint(uint32 id, float x, float y, float z, uint32 delay);
 
-        void UpdateAI(const uint32 diff) override final;
+        void UpdateAI(const uint32 diff) override/* final*/;
 
         virtual void WaypointReached(uint32 pointId) = 0;
         virtual void WaypointStart(uint32 pointId);
         
-        virtual bool EscortEnterCombat(Unit* who) { return true; }
+        virtual void EscortEnterCombat(Unit* who);
         virtual void EscortUpdateAI(const uint32 diff);
         virtual void EscortEnterEvadeMode() {}
         virtual void EscortReset() {}

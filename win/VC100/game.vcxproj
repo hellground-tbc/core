@@ -469,6 +469,7 @@
     <ClCompile Include="..\..\src\game\CharmInfo.cpp" />
     <ClCompile Include="..\..\src\game\Chat.cpp" />
     <ClCompile Include="..\..\src\game\DBCStores.cpp" />
+    <ClCompile Include="..\..\src\game\EscortAI.cpp" />
     <ClCompile Include="..\..\src\game\GameEvent.cpp" />
     <ClCompile Include="..\..\src\game\GossipDef.cpp" />
     <ClCompile Include="..\..\src\game\Mail.cpp" />
@@ -642,6 +643,7 @@
     <ClInclude Include="..\..\src\game\DBCfmt.h" />
     <ClInclude Include="..\..\src\game\DBCStores.h" />
     <ClInclude Include="..\..\src\game\DBCStructure.h" />
+    <ClInclude Include="..\..\src\game\EscortAI.h" />
     <ClInclude Include="..\..\src\game\GameEvent.h" />
     <ClInclude Include="..\..\src\game\GossipDef.h" />
     <ClInclude Include="..\..\src\game\Mail.h" />

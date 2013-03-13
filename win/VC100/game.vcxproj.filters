@@ -567,6 +567,9 @@
     <ClCompile Include="..\..\src\game\MapUpdater.cpp">
       <Filter>Maps/Grids</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\EscortAI.cpp">
+      <Filter>Artificial Intelligence</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\Channel.h">
@@ -1075,6 +1078,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\MapUpdater.h">
       <Filter>Maps/Grids</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\EscortAI.h">
+      <Filter>Artificial Intelligence</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
