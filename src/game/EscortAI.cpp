@@ -261,10 +261,13 @@ void EscortAI::EscortEnterCombat(Unit* who)
 
 void EscortAI::EscortUpdateAI(const uint32 diff)
 {
-    CreatureAI::UpdateAI(diff);
+    if (!UpdateVictim())
+        return;
+
+	DoMeleeAttackIfReady();
 }
 
-EscortAI::EscortAI( Creature* owner ) : CreatureAI(owner), pathIndex(0)
+EscortAI::EscortAI(Creature* owner) : CreatureAI(owner), pathIndex(0)
 {
 
 }

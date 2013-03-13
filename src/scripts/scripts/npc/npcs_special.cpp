@@ -2785,12 +2785,9 @@ struct test_escortai : public EscortAI
 {
     test_escortai(Creature* c) : EscortAI(c) {}
 
-    void WaypointReached(uint32 pointId)
-    {
+    void WaypointReached(uint32) override {}
 
-    }
-
-    void UpdateEscortAI(const uint32 diff)
+    void EscortUpdateAI(const uint32 diff) override
     {
         EscortAI::EscortUpdateAI(diff);
     }
