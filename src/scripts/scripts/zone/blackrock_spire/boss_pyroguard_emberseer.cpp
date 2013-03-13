@@ -22,6 +22,7 @@ SDCategory: Blackrock Spire
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackrock_spire.h"
 
 #define SPELL_FIRENOVA          23462
 #define SPELL_FLAMEBUFFET       23341
@@ -29,7 +30,12 @@ EndScriptData */
 
 struct boss_pyroguard_emberseerAI : public ScriptedAI
 {
-    boss_pyroguard_emberseerAI(Creature *c) : ScriptedAI(c) {}
+    boss_pyroguard_emberseerAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 FireNova_Timer;
     uint32 FlameBuffet_Timer;
@@ -40,10 +46,12 @@ struct boss_pyroguard_emberseerAI : public ScriptedAI
         FireNova_Timer = 6000;
         FlameBuffet_Timer = 3000;
         PyroBlast_Timer = 14000;
+        pInstance->SetData(DATA_EMBERSEER, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
+        pInstance->SetData(DATA_EMBERSEER, IN_PROGRESS);
     }
 
     void JustDied(Unit* killer)
@@ -52,6 +60,7 @@ struct boss_pyroguard_emberseerAI : public ScriptedAI
         {
             door->Use(killer);
         }
+        pInstance->SetData(DATA_EMBERSEER, DONE);
     }
 
     void UpdateAI(const uint32 diff)

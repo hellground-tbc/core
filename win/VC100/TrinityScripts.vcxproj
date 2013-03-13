@@ -497,6 +497,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\arathi_highlands\arathi_highlands.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_depths\boss_coren_direbrew.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_depths\boss_theldren.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_spire\instance_blackrock_spire.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\coilfang_resevoir\serpent_shrine\serpent_shrine_trash.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\deadmines\deadmines.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\desolace\desolace.cpp" />
@@ -855,6 +856,7 @@
     <ClInclude Include="..\..\src\scripts\scripts\creature\simple_ai.h" />
     <ClInclude Include="..\..\src\scripts\scripts\guard\guard_ai.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\aunchindoun\mana_tombs\def_mana_tombs.h" />
+    <ClInclude Include="..\..\src\scripts\scripts\zone\blackrock_spire\def_blackrock_spire.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\deadmines\def_deadmines.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\gruuls_lair\def_gruuls_lair.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\karazhan\chess_event.h" />

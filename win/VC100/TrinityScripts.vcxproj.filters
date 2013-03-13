@@ -1528,6 +1528,9 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\karazhan\karazhan_trash.cpp">
       <Filter>Scripts\zone\Karazhan</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_spire\instance_blackrock_spire.cpp">
+      <Filter>Scripts\zone\Blackrock Spire</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\scripts\scripts\creature\simple_ai.h">
@@ -1662,6 +1665,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\scripts\include\follower_ai.h">
       <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\scripts\scripts\zone\blackrock_spire\def_blackrock_spire.h">
+      <Filter>Scripts\zone\Blackrock Spire</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

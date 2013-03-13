@@ -144,6 +144,7 @@ extern void AddSC_boss_quatermasterzigris();
 extern void AddSC_boss_pyroguard_emberseer();
 extern void AddSC_boss_gyth();
 extern void AddSC_boss_rend_blackhand();
+extern void AddSC_instance_blackrock_spire();
 
 //Blackwing lair
 extern void AddSC_boss_razorgore();
@@ -757,7 +758,8 @@ void AddScripts()
     AddSC_boss_pyroguard_emberseer();
     AddSC_boss_gyth();
     AddSC_boss_rend_blackhand();
-
+    AddSC_instance_blackrock_spire();
+    
     //Blackwing lair
     AddSC_boss_razorgore();
     AddSC_boss_vael();
