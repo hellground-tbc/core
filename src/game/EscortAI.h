@@ -42,24 +42,24 @@ struct HELLGROUND_IMPORT_EXPORT Waypoint
 
 class HELLGROUND_IMPORT_EXPORT EscortAI : public CreatureAI
 {
-    enum State
-    {
-        ESCORT_IN_PROGRESS = 0,
-        ESCORT_NEXT_POINT  = 1,
-        ESCORT_PAUSED      = 2,
-        ESCORT_NOT_STARTED = 3,
-        ESCORT_DONE        = 4
-    };
-
-    enum Flags
-    {
-        FLAG_RESPAWN_AT_END   = 0x01, // it will de-spawn creature and re-spawn it in place where escort was started
-        FLAG_IS_DEFENSIVE     = 0x02, // it allows creature to defend self and chase enemies when attacked
-        FLAG_IS_AGGRESSIVE    = 0x04, // it allows creature to attack every enemy that moves in line of sight
-        FLAG_DESPAWN_AT_END   = 0x08  // it forces creature to disappear on last way point without re-spawning (use it for summoned creatures)
-    };
-
     public:
+        enum State
+        {
+            ESCORT_IN_PROGRESS = 0, // Escort is currently in progress
+            ESCORT_NEXT_POINT  = 1, // Internal state when we about to start journey to next wp
+            ESCORT_PAUSED      = 2, // Escort has been paused by script
+            ESCORT_NOT_STARTED = 3, // Escort is currently paused by script
+            ESCORT_DONE        = 4  // Escort is done(successful or failed) so we can de-spawn or r-espawn
+        };
+
+        enum Flags
+        {
+            FLAG_RESPAWN_AT_END   = 0x01, // it will de-spawn creature and re-spawn it in place where escort was started
+            FLAG_IS_DEFENSIVE     = 0x02, // it allows creature to defend self and chase enemies when attacked
+            FLAG_IS_AGGRESSIVE    = 0x04, // it allows creature to attack every enemy that moves in line of sight
+            FLAG_DESPAWN_AT_END   = 0x08  // it forces creature to disappear on last way point without re-spawning (use it for summoned creatures)
+        };
+
         explicit EscortAI(Creature* owner);
         ~EscortAI() {}
 
@@ -69,6 +69,7 @@ class HELLGROUND_IMPORT_EXPORT EscortAI : public CreatureAI
         void JustDied(Unit* killer) override/* final*/;
         void JustRespawned();
 
+        // Hard reset for EscortState, should be called only at creature create/respawn
         void Reset() override/* final*/;
 
         void EnterCombat(Unit* who) override;
@@ -87,12 +88,16 @@ class HELLGROUND_IMPORT_EXPORT EscortAI : public CreatureAI
 
         void EscortPause();
 
+        void SetGUID(uint64 guid, int32 questId) override;
+
         virtual void WaypointReached(uint32 pointId) = 0;
         virtual void WaypointStart(uint32 pointId);
         
         virtual void EscortEnterCombat(Unit* who);
         virtual void EscortUpdateAI(const uint32 diff);
         virtual void EscortEnterEvadeMode() {}
+
+        // soft reset called on EnterEvadeMode/Respawn/Create
         virtual void EscortReset() {}
         virtual void EscortJustDied(Unit* killer) {}
 

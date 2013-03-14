@@ -65,7 +65,7 @@ void EscortAI::JustDied(Unit* killer)
     if (GetState() != ESCORT_IN_PROGRESS)
         return;
 
-    if (escort.IsEmpty())
+    if (escort.IsEmpty() || !questId)
         return;
 
     Player* player = me->GetPlayer(escort.GetRawValue());
@@ -104,7 +104,7 @@ void EscortAI::UpdateAI(const uint32 diff)
                 setState(ESCORT_DONE);
 
             // to be sure, we always have ESCORT movement if allowed
-            if (me->GetUnitStateMgr().GetAction(UNIT_ACTION_PRIORITY_ESCORT) != nullptr)
+            if (me->GetUnitStateMgr().GetAction(UNIT_ACTION_PRIORITY_ESCORT))
                 break;
 
             // no break
@@ -291,9 +291,8 @@ void EscortAI::EscortStart(uint32 quest, Player* invoker, Flags flag)
         return;
 
     flags = flag;
-    questId = quest;
 
-    escort = invoker->GetObjectGuid();
+    SetGUID(invoker->GetGUID(), quest);
 
     setState(ESCORT_NEXT_POINT);
 }
@@ -315,4 +314,10 @@ void EscortAI::ClearWaypoints()
 {
     path.clear();
     pathIndex = 0;
+}
+
+void EscortAI::SetGUID(uint64 guid, int32 quest)
+{
+    escort = ObjectGuid(guid);
+    questId = quest;
 }

@@ -2789,10 +2789,10 @@ struct test_escortai : public EscortAI
 
     bool FillWaypointsList() override
     {
-        // by default it loads waypoints from database
+        // by default it loads way points from database
         bool result = EscortAI::FillWaypointsList();
 
-        // there were no waypoints in database for this NPC so we can add them manualy
+        // there were no way points in database for this NPC so we can add them manually
         if (!result)
         {
 //             AddWaypoint(0,);
@@ -2800,7 +2800,10 @@ struct test_escortai : public EscortAI
 //             AddWaypoint(2,);
 //             AddWaypoint(3,);
 //             AddWaypoint(4,);
+//            result = true;
         }
+
+        return result;
     }
 
     void EscortUpdateAI(const uint32 diff) override
@@ -2808,6 +2811,22 @@ struct test_escortai : public EscortAI
         EscortAI::EscortUpdateAI(diff);
     }
 };
+
+bool GossipHello_test_escortai(Player* player, Creature* creature) 
+{ 
+    player->ADD_GOSSIP_ITEM(0, "Begin EscortAI test.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1); 
+
+    // Hey there, $N. How can I help you?
+    player->SEND_GOSSIP_MENU(2, creature->GetGUID()); 
+    return true; 
+} 
+
+bool GossipSelect_test_escortai(Player* player, Creature* creature, uint32 sender, uint32 action) 
+{ 
+    if (action == GOSSIP_ACTION_INFO_DEF + 1)
+        CAST_AI(EscortAI, creature->AI())->EscortStart(1234, player, EscortAI::Flags(EscortAI::FLAG_IS_AGGRESSIVE | EscortAI::FLAG_RESPAWN_AT_END));
+    return true; 
+}
 
 CreatureAI* GetAI_test_escortai(Creature* creature)
 {
@@ -3007,5 +3026,7 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "test_escortai";
     newscript->GetAI = &GetAI_test_escortai;
+    newscript->pGossipHello =  &GossipHello_test_escortai;
+    newscript->pGossipSelect = &GossipSelect_test_escortai;
     newscript->RegisterSelf();
 }
