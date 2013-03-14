@@ -115,9 +115,12 @@ void EscortAI::UpdateAI(const uint32 diff)
             if (flags & (FLAG_IS_DEFENSIVE | FLAG_IS_AGGRESSIVE) && me->isInCombat())
                 break;
 
-            delayTimer.Update(diff);
-            if (!delayTimer.Passed())
-                break;
+            if (HasState(ESCORT_NEXT_POINT))
+            {
+                delayTimer.Update(diff);
+                if (!delayTimer.Passed())
+                    break;
+            }
 
             Waypoint& wp = path[pathIndex];
             if (!startDone)
