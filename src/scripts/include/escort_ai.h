@@ -32,8 +32,8 @@ enum eEscortState
 {
     STATE_ESCORT_NONE       = 0x000,                        //nothing in progress
     STATE_ESCORT_ESCORTING  = 0x001,                        //escort are in progress
-    STATE_ESCORT_RETURNING  = 0x002,                        //escort is returning after being in combat
-    STATE_ESCORT_PAUSED     = 0x004                         //will not proceed with waypoints before state is removed
+    STATE_ESCORT_INCOMBAT   = 0x002,                        //escort is in combat
+    STATE_ESCORT_PAUSED     = 0x004,                        //will not proceed with waypoints before state is removed
 };
 
 struct npc_escortAI : public ScriptedAI
@@ -105,7 +105,6 @@ struct npc_escortAI : public ScriptedAI
 
         std::list<Escort_Waypoint> WaypointList;
         std::list<Escort_Waypoint>::iterator CurrentWP;
-        std::list<Escort_Waypoint>::iterator ReachedLastWP;
 
         bool IsActiveAttacker;                           //obsolete, determined by faction.
         bool IsRunning;                                  //all creatures are walking by default (has flag MOVEMENTFLAG_WALK)

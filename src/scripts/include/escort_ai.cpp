@@ -12,6 +12,8 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "escort_ai.h"
+#include "EscortAI.h"
+#include "../game/ScriptMgr.h"
 
 enum ePoints
 {
@@ -43,12 +45,12 @@ void npc_escortAI::AttackStart(Unit* pWho)
 
     if (me->Attack(pWho, true))
     {
-        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-            CurrentWP = ReachedLastWP;
+        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE && !HasEscortState(STATE_ESCORT_INCOMBAT))
+            AddEscortState(STATE_ESCORT_INCOMBAT);
 
         if (IsCombatMovement())
         {
-            me->StopMoving(); // please don't remove before fix the issue
+            me->StopMoving();
             me->GetMotionMaster()->MoveChase(pWho);
         }
     }
@@ -168,7 +170,7 @@ void npc_escortAI::ReturnToLastPoint()
 {
     float x, y, z, o;
     me->GetHomePosition(x, y, z, o);
-    me->GetMotionMaster()->MovePoint(POINT_LAST_POINT, x, y, z);
+    me->GetMotionMaster()->MovePoint(POINT_LAST_POINT, CurrentWP->x, CurrentWP->y, CurrentWP->z);
 }
 
 void npc_escortAI::EnterEvadeMode()
@@ -180,7 +182,6 @@ void npc_escortAI::EnterEvadeMode()
 
     if (HasEscortState(STATE_ESCORT_ESCORTING))
     {
-        AddEscortState(STATE_ESCORT_RETURNING);
         ReturnToLastPoint();
     }
     else
@@ -220,7 +221,7 @@ bool npc_escortAI::IsPlayerOrGroupInRange()
 void npc_escortAI::UpdateAI(const uint32 uiDiff)
 {
     //Waypoint Updating
-    if (HasEscortState(STATE_ESCORT_ESCORTING) && !me->getVictim() && WPWaitTimer && !HasEscortState(STATE_ESCORT_RETURNING))
+    if (HasEscortState(STATE_ESCORT_ESCORTING) && !me->isInCombat() && WPWaitTimer && !HasEscortState(STATE_ESCORT_INCOMBAT))
     {
         if (WPWaitTimer <= uiDiff)
         {
@@ -281,7 +282,7 @@ void npc_escortAI::UpdateAI(const uint32 uiDiff)
     }
 
     //Check if player or any member of his group is within range
-    if (HasEscortState(STATE_ESCORT_ESCORTING) && PlayerGUID && !me->getVictim() && !HasEscortState(STATE_ESCORT_RETURNING))
+    if (HasEscortState(STATE_ESCORT_ESCORTING) && PlayerGUID && !me->isInCombat() && !HasEscortState(STATE_ESCORT_INCOMBAT))
     {
         if (PlayerCheckTimer < uiDiff)
         {
@@ -333,17 +334,13 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
             me->SetWalk(true);
 
         me->GetUnitStateMgr().InitDefaults(false);
-        RemoveEscortState(STATE_ESCORT_RETURNING);
-
-        if (!WPWaitTimer)
-            WPWaitTimer = 1;
+        RemoveEscortState(STATE_ESCORT_INCOMBAT);
     }
     else if (uiPointId == POINT_HOME)
     {
         debug_log("TSCR: EscortAI has returned to original home location and will continue from beginning of waypoint list.");
 
         CurrentWP = WaypointList.begin();
-        ReachedLastWP = WaypointList.begin();
         WPWaitTimer = 1;
     }
     else
@@ -357,21 +354,12 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
 
         debug_log("TSCR: EscortAI Waypoint %u reached", CurrentWP->id);
 
-        if (CurrentWP == ReachedLastWP)
-        {
-            WPWaitTimer = CurrentWP->WaitTimeMs + 1;
-            ReachedLastWP = CurrentWP++;
+        //Call WP function
+        WaypointReached(CurrentWP->id);
 
-            debug_log("TSCR: Don't recall WP function", CurrentWP->id);
-        }
-        else
-        {
-            //Call WP function
-            WaypointReached(CurrentWP->id);
+        WPWaitTimer = CurrentWP->WaitTimeMs + 1;
 
-            WPWaitTimer = CurrentWP->WaitTimeMs + 1;
-            ReachedLastWP = CurrentWP++;
-        }
+        ++CurrentWP;
     }
 }
 
@@ -386,16 +374,16 @@ void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 Wait
 
 void npc_escortAI::FillPointMovementListForCreature()
 {
-    std::vector<ScriptPointMove> const &pPointsEntries = pSystemMgr.GetPointMoveList(me->GetEntry());
+    std::vector<Waypoint> const &pPointsEntries = sScriptMgr.GetWaypointsForEntry(me->GetEntry());
 
     if (pPointsEntries.empty())
         return;
 
-    std::vector<ScriptPointMove>::const_iterator itr;
+    std::vector<Waypoint>::const_iterator itr;
 
     for (itr = pPointsEntries.begin(); itr != pPointsEntries.end(); ++itr)
     {
-        Escort_Waypoint pPoint(itr->uiPointId, itr->fX, itr->fY, itr->fZ, itr->uiWaitTime);
+        Escort_Waypoint pPoint(itr->Id, itr->Pos.x, itr->Pos.y, itr->Pos.z, itr->Delay);
         WaypointList.push_back(pPoint);
     }
 }
