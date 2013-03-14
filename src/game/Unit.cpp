@@ -8148,7 +8148,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     CastingTime = GetCastingTimeForBonus(spellProto, damagetype, CastingTime);
     if (spellProto->HasApplyAura(SPELL_AURA_PERIODIC_LEECH) || spellProto->HasEffect(SPELL_EFFECT_HEALTH_LEECH))
         CastingTime /= 2;
-    else if (spellProto->AttributesCu & SPELL_ATTR_CU_NO_SPELL_DMG_COEFF)
+    if (spellProto->AttributesCu & SPELL_ATTR_CU_NO_SPELL_DMG_COEFF)
         CastingTime = 0;
 
     switch (spellProto->SpellFamilyName)
