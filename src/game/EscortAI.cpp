@@ -104,27 +104,24 @@ void EscortAI::UpdateAI(const uint32 diff)
                 setState(ESCORT_DONE);
 
             // to be sure, we always have ESCORT movement if allowed
-            if (me->GetUnitStateMgr().GetAction(UNIT_ACTION_PRIORITY_ESCORT))
-                break;
+            if (!me->hasUnitState(UNIT_STAT_ROAMING) && (!me->isInCombat() || (flags & (FLAG_IS_DEFENSIVE | FLAG_IS_AGGRESSIVE)) == 0))
+                setState(ESCORT_NEXT_POINT);
 
-            // no break
+           break;
         }
         case ESCORT_NEXT_POINT:
         {
-            // don't start next waypoint if we can fight and are in combat
+            // don't start next way point if we can fight and are in combat
             if (flags & (FLAG_IS_DEFENSIVE | FLAG_IS_AGGRESSIVE) && me->isInCombat())
                 break;
-
-            if (HasState(ESCORT_NEXT_POINT))
-            {
-                delayTimer.Update(diff);
-                if (!delayTimer.Passed())
-                    break;
-            }
 
             Waypoint& wp = path[pathIndex];
             if (!startDone)
             {
+                delayTimer.Update(diff);
+                if (!delayTimer.Passed())
+                    break;
+
                 WaypointStart(wp.Id);
                 startDone = true;
             }
