@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Moira_Bronzbeard
-SD%Complete: 90
+SD%Complete: 92
 SDComment: Healing of Emperor NYI
 SDCategory: Blackrock Depths
 EndScriptData */
@@ -40,10 +40,12 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
     uint32 Smite_Timer;
     Unit* PlayerHolder;
     Unit* Target;
+    Unit* Emperor;
     bool Heal;
 
     void Reset()
     {
+        Emperor = FindCreature(9019, 100, m_creature);
         Target = NULL;
         Heal_Timer = 12000;                                 //These times are probably wrong
         MindBlast_Timer = 16000;
@@ -60,7 +62,14 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
-
+        if (!Emperor)
+            Emperor = FindCreature(9019, 100, m_creature);
+        if (!Emperor || !(Emperor->isAlive()))
+        {
+            m_creature->setFaction(35);
+            m_creature->CombatStop(true);
+            m_creature->DeleteThreatList();
+        }
         //MindBlast_Timer
         if (MindBlast_Timer < diff)
         {
@@ -88,6 +97,7 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
         else
             Smite_Timer -= diff;
 
+        DoMeleeAttackIfReady();
     }
 };
 CreatureAI* GetAI_boss_moira_bronzebeard(Creature *_Creature)
