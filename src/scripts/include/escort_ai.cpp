@@ -12,8 +12,6 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "escort_ai.h"
-#include "EscortAI.h"
-#include "../game/ScriptMgr.h"
 
 enum ePoints
 {
@@ -170,7 +168,7 @@ void npc_escortAI::ReturnToLastPoint()
 {
     float x, y, z, o;
     me->GetHomePosition(x, y, z, o);
-    me->GetMotionMaster()->MovePoint(POINT_LAST_POINT, CurrentWP->x, CurrentWP->y, CurrentWP->z);
+    me->GetMotionMaster()->MovePoint(POINT_LAST_POINT, x, y, z);
 }
 
 void npc_escortAI::EnterEvadeMode()
@@ -320,7 +318,7 @@ void npc_escortAI::UpdateEscortAI(const uint32 uiDiff)
 
 void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
 {
-    if (uiMoveType != POINT_MOTION_TYPE || !HasEscortState(STATE_ESCORT_ESCORTING))
+    if (uiMoveType != POINT_MOTION_TYPE || !HasEscortState(STATE_ESCORT_ESCORTING) || me->isInCombat())
         return;
 
     //Combat start position reached, continue waypoint movement
@@ -335,6 +333,9 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
 
         me->GetUnitStateMgr().InitDefaults(false);
         RemoveEscortState(STATE_ESCORT_INCOMBAT);
+
+        if (!WPWaitTimer)
+            WPWaitTimer = 1;
     }
     else if (uiPointId == POINT_HOME)
     {
@@ -374,16 +375,16 @@ void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 Wait
 
 void npc_escortAI::FillPointMovementListForCreature()
 {
-    std::vector<Waypoint> const &pPointsEntries = sScriptMgr.GetWaypointsForEntry(me->GetEntry());
+    std::vector<ScriptPointMove> const &pPointsEntries = pSystemMgr.GetPointMoveList(me->GetEntry());
 
     if (pPointsEntries.empty())
         return;
 
-    std::vector<Waypoint>::const_iterator itr;
+    std::vector<ScriptPointMove>::const_iterator itr;
 
     for (itr = pPointsEntries.begin(); itr != pPointsEntries.end(); ++itr)
     {
-        Escort_Waypoint pPoint(itr->Id, itr->Pos.x, itr->Pos.y, itr->Pos.z, itr->Delay);
+        Escort_Waypoint pPoint(itr->uiPointId, itr->fX, itr->fY, itr->fZ, itr->uiWaitTime);
         WaypointList.push_back(pPoint);
     }
 }
