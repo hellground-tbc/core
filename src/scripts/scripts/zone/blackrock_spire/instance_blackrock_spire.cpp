@@ -102,10 +102,6 @@ struct instance_blackrock_spire : public ScriptedInstance
 
             if(runesUsed) 
             {
-                for(std::set<uint64>::iterator i = runesDoorGUID.begin(); i != runesDoorGUID.end(); ++i)
-                {
-                    HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
-                }
                 SetData(DATA_RUNE_DOOR, DONE);
             }
             runesTimer = 3000;
@@ -133,6 +129,14 @@ struct instance_blackrock_spire : public ScriptedInstance
             case DATA_RUNE_DOOR:
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
+
+                if(data == DONE)
+                {
+                    for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
+                    {
+                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
+                    }
+                }
                 break;
             case DATA_EMBERSEER:
                 if(Encounters[1] != DONE)
