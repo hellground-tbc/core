@@ -1055,7 +1055,7 @@ struct npc_snake_trap_serpentsAI : public ScriptedAI
 
     Timer checkTimer;
 
-    void Reset()
+    void EnterCombat(Unit*)
     {
         if (roll_chance_f(66.0f))
         {
@@ -1074,7 +1074,7 @@ struct npc_snake_trap_serpentsAI : public ScriptedAI
         if (ScriptedAI::UpdateVictim())
             return true;
 
-        if (Unit* target = me->SelectNearbyTarget(15.0f))
+        if (Unit* target = me->SelectNearbyTarget(5.0f))
             AttackStart(target);
 
         return me->getVictim();
