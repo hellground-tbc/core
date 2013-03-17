@@ -3428,6 +3428,9 @@ void SpellMgr::LoadCustomSpellCooldowns(SpellEntry* spellInfo)
         case 16054: // Flames of the Black Flight
             spellInfo->RecoveryTime = 10800000;
             break;
+        case 44935: //Expose Razorthorn Root
+            spellInfo->RecoveryTime = 1080;
+            break;
         default:
             break;
     }
