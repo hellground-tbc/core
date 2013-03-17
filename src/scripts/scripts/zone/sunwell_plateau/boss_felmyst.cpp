@@ -363,6 +363,7 @@ struct boss_felmystAI : public ScriptedAI
                 Timer[EVENT_ENCAPSULATE] = 30000;
                 Timer[EVENT_FLIGHT] = 60000;
                 Timer[EVENT_CHECK] = 1000;
+                DoResetThreat();
                 break;
             case PHASE_FLIGHT:
                 side = RAND(LEFT_SIDE, RIGHT_SIDE);
