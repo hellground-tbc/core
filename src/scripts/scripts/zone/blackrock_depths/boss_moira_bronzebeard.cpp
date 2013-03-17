@@ -38,15 +38,10 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
     uint32 MindBlast_Timer;
     uint32 ShadowWordPain_Timer;
     uint32 Smite_Timer;
-    Unit* PlayerHolder;
-    Unit* Target;
-    Unit* Emperor;
     bool Heal;
 
     void Reset()
     {
-        Emperor = FindCreature(9019, 100, m_creature);
-        Target = NULL;
         Heal_Timer = 12000;                                 //These times are probably wrong
         MindBlast_Timer = 16000;
         ShadowWordPain_Timer = 2000;
@@ -62,14 +57,7 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
-        if (!Emperor)
-            Emperor = FindCreature(9019, 100, m_creature);
-        if (!Emperor || !(Emperor->isAlive()))
-        {
-            m_creature->setFaction(35);
-            m_creature->CombatStop(true);
-            m_creature->DeleteThreatList();
-        }
+
         //MindBlast_Timer
         if (MindBlast_Timer < diff)
         {

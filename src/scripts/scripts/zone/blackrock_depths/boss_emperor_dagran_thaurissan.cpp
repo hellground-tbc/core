@@ -53,6 +53,15 @@ struct boss_draganthaurissanAI : public ScriptedAI
     {
         DoYell(SAY_SLAY, LANG_UNIVERSAL, NULL);
     }
+    void JustDied(Unit*)
+    {
+        Unit* moira=FindCreature(8929,300,m_creature);
+        if (moira && moira->isAlive())
+        {
+            moira->setFaction(35);
+            moira->ToCreature()->AI()->_EnterEvadeMode();
+        }
+    }
 
     void UpdateAI(const uint32 diff)
     {
