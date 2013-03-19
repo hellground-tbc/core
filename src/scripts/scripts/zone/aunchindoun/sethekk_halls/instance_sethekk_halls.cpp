@@ -60,7 +60,7 @@ struct instance_sethekk_halls : public ScriptedInstance
 
     void OnPlayerEnter(Player* player)
     {
-        if (player->GetQuestStatus(QUEST_BROTHER) == QUEST_STATUS_INCOMPLETE && !SummonLakka)
+        if (player->GetQuestStatus(QUEST_BROTHER) == QUEST_STATUS_INCOMPLETE && !SummonLakka && !player->GetMap()->IsHeroic())
         {
             player->SummonCreature(NPC_LAKKA, -158.226f, 158.690f, 0.0f, 1.21f, TEMPSUMMON_DEAD_DESPAWN, 10000);
             SummonLakka = true;
