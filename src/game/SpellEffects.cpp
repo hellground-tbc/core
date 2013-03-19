@@ -4023,6 +4023,7 @@ void Spell::EffectDispel(uint32 i)
                 if (aur->IsPositive() == unitTarget->IsFriendlyTo(m_caster))
                     continue;
             }
+
             // Add every aura stack to dispel list
             for (uint32 stack_amount = 0; stack_amount < aur->GetStackAmount(); ++stack_amount)
                 dispel_list.push_back(aur);

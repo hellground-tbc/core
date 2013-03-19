@@ -2785,11 +2785,17 @@ void SpellMgr::LoadSpellCustomAttr()
                  // Goblin Rocket Launcher
                  if (spellInfo->SpellIconID == 184 && spellInfo->Attributes == 4259840)
                      spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
-                 // Siphon Essence
-                 else if (spellInfo->AttributesEx == 268435456 && spellInfo->SpellIconID == 2027)
-                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+                 else if (spellInfo->Id == 15852)
+                     spellInfo->Dispel = DISPEL_NONE;
 
                  break;
+            }
+            case SPELLFAMILY_SHAMAN:
+            {
+                // Flametongue weapon proc
+                if (spellInfo->SpellFamilyFlags & 2097152 && spellInfo->SpellVisual == 0)
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+                break;
             }
             case SPELLFAMILY_PALADIN:
             {
