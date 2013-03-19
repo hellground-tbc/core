@@ -8148,13 +8148,17 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     CastingTime = GetCastingTimeForBonus(spellProto, damagetype, CastingTime);
     if (spellProto->HasApplyAura(SPELL_AURA_PERIODIC_LEECH) || spellProto->HasEffect(SPELL_EFFECT_HEALTH_LEECH))
         CastingTime /= 2;
-    if (spellProto->AttributesCu & SPELL_ATTR_CU_NO_SPELL_DMG_COEFF)
+    else if (spellProto->AttributesCu & SPELL_ATTR_CU_NO_SPELL_DMG_COEFF)
         CastingTime = 0;
 
     switch (spellProto->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
             // Siphon Essence - 0%
+            if (spellProto->Id == 40293)
+            {
+                CastingTime = 0;
+            }
             // Darkmoon Card: Vengeance - 0.1%
             if (spellProto->SpellVisual == 9850 && spellProto->SpellIconID == 2230)
             {
