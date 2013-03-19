@@ -35,6 +35,9 @@ EndScriptData */
 
 #define SAY_DEATH                   -1556006
 
+#define SAY_LAKKA                  -1900253
+#define NPC_LAKKA                   18956
+
 #define SPELL_FROST_SHOCK           21401 //37865
 #define SPELL_FLAME_SHOCK           34354
 #define SPELL_SHADOW_SHOCK          30138
@@ -100,6 +103,9 @@ struct boss_darkweaver_sythAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (Creature* lakka = GetClosestCreatureWithEntry(me, NPC_LAKKA, 25.0f))
+            DoScriptText(SAY_LAKKA, lakka);
 
         if(pInstance)
             pInstance->SetData(DATA_DARKWEAVEREVENT, DONE);

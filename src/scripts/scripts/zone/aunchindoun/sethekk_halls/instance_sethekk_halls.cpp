@@ -23,10 +23,13 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "def_sethekk_halls.h"
+#include "escort_ai.h"
 
 #define ENCOUNTERS          3
 
 #define IKISS_DOOR          177203
+#define NPC_LAKKA           18956
+#define QUEST_BROTHER       10097
 
 struct instance_sethekk_halls : public ScriptedInstance
 {
@@ -34,11 +37,14 @@ struct instance_sethekk_halls : public ScriptedInstance
 
     uint32 Encounter[ENCOUNTERS];
 
+    bool SummonLakka;
+
     uint64 IkissDoorGUID;
 
     void Initialize()
     {
         IkissDoorGUID = 0;
+        SummonLakka = false;
 
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounter[i] = NOT_STARTED;
@@ -50,6 +56,15 @@ struct instance_sethekk_halls : public ScriptedInstance
             if(Encounter[i] == IN_PROGRESS) return true;
 
         return false;
+    }
+
+    void OnPlayerEnter(Player* player)
+    {
+        if (player->GetQuestStatus(QUEST_BROTHER) == QUEST_STATUS_INCOMPLETE && !SummonLakka)
+        {
+            player->SummonCreature(NPC_LAKKA, -158.226f, 158.690f, 0.0f, 1.21f, TEMPSUMMON_DEAD_DESPAWN, 10000);
+            SummonLakka = true;
+        }
     }
 
     void OnCreatureCreate(Creature *creature, uint32 entry)
@@ -155,26 +170,47 @@ InstanceData* GetInstanceData_instance_sethekk_halls(Map* map)
     return new instance_sethekk_halls(map);
 }
 
-#define GOSSIP_FREE "Free me, hero."
-#define Q_BAB 10097
+/*#####
+## npc_lakka
+#####*/
 
-bool GossipHello_npc_lakka(Player *player, Creature *_Creature)
+struct npc_lakkaAI : public npc_escortAI
 {
-    if(player->GetQuestStatus(Q_BAB) == QUEST_STATUS_INCOMPLETE)
+    npc_lakkaAI(Creature *creature) : npc_escortAI(creature) {}
+
+    void Reset() {}
+
+    void WaypointReached(uint32 i) {}
+};
+
+CreatureAI* GetAI_npc_lakka(Creature* pCreature)
+{
+    return new npc_lakkaAI(pCreature);
+}
+
+#define GOSSIP_FREE "I'll have you out of here in just a moment."
+#define SAY_FREE            -1900254
+#define GO_SETHEKK_CAGE     183051
+
+bool GossipHello_npc_lakka(Player *player, Creature *creature)
+{
+    if(player->GetQuestStatus(QUEST_BROTHER) == QUEST_STATUS_INCOMPLETE)
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FREE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    player->SEND_GOSSIP_MENU(68, _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(9636, creature->GetGUID());
     return true;
 }
 
-bool GossipSelect_npc_lakka(Player *player, Creature *_Creature, uint32 sender, uint32 action)
+bool GossipSelect_npc_lakka(Player* player, Creature* creature, uint32 sender, uint32 action)
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
         player->CLOSE_GOSSIP_MENU();
-        player->GroupEventHappens(Q_BAB, _Creature);
-        player->DealDamage(_Creature, _Creature->GetMaxHealth());
-        _Creature->RemoveCorpse();
+        if (GameObject* cage = FindGameObject(GO_SETHEKK_CAGE, INTERACTION_DISTANCE, creature))
+            cage->UseDoorOrButton(5);
+        player->KilledMonster(NPC_LAKKA, creature->GetGUID());
+        DoScriptText(SAY_FREE, creature, player);
+        ((npc_lakkaAI*)creature->AI())->Start(false, false, player->GetGUID());
     }
 
     return true;
@@ -190,6 +226,7 @@ void AddSC_instance_sethekk_halls()
 
     newscript = new Script;
     newscript->Name = "npc_lakka";
+    newscript->GetAI = &GetAI_npc_lakka;
     newscript->pGossipHello =  &GossipHello_npc_lakka;
     newscript->pGossipSelect = &GossipSelect_npc_lakka;
     newscript->RegisterSelf();
