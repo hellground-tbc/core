@@ -464,7 +464,8 @@ void WardenWin::HandleData(ByteBuffer &buff)
                         sLog.outLog(LOG_WARDEN, "RESULT MODULE_CHECK fail, CheckId %u account Id %u", *itr, Client->GetAccountId());
                     if (type == DRIVER_CHECK)
                         sLog.outLog(LOG_WARDEN, "RESULT DRIVER_CHECK fail, CheckId %u account Id %u", *itr, Client->GetAccountId());
-                    //found = true;
+                    ids << *itr << " ";
+                    found = true;
                     buff.rpos(buff.rpos() + 1);
                     continue;
                 }
