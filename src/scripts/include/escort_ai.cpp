@@ -257,6 +257,7 @@ void npc_escortAI::UpdateAI(const uint32 uiDiff)
                     {
                         WaypointList.clear();
                         RemoveEscortState(STATE_ESCORT_ESCORTING);
+                        ScriptWP = false;
                     }
 
                     debug_log("TSCR: EscortAI reached end of waypoints with Despawn off");

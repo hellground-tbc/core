@@ -1,7 +1,7 @@
 #include "precompiled.h"
 #include "def_mana_tombs.h"
 
-#define ENCOUNTERS 3
+#define ENCOUNTERS 4
 
 struct instance_mana_tombs : public ScriptedInstance
 {
@@ -50,6 +50,10 @@ struct instance_mana_tombs : public ScriptedInstance
                 if(Encounter[2] != DONE)
                     Encounter[2] = data;
                 break;
+            case DATA_SHAHEENEVENT:
+                if(Encounter[3] != DONE)
+                    Encounter[3] = data;
+                break;
         }
 
         if (data == DONE)
@@ -64,6 +68,7 @@ struct instance_mana_tombs : public ScriptedInstance
             case DATA_YOREVENT:         return Encounter[0];
             case DATA_PANDEMONIUSEVENT: return Encounter[1];
             case DATA_NEXUSPRINCEEVENT: return Encounter[2];
+            case DATA_SHAHEENEVENT:     return Encounter[3];
                         
         }
         return false;
@@ -76,7 +81,8 @@ struct instance_mana_tombs : public ScriptedInstance
         std::ostringstream stream;
         stream << Encounter[0] << " "
                 << Encounter[1] << " "
-                << Encounter[2];
+                << Encounter[2] << " "
+                << Encounter[3];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 

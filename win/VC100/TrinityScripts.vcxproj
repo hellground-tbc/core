@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_PCH|Win32">
@@ -490,6 +490,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\alterac_valley\boss_galvangar.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\alterac_valley\boss_vanndar.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\aunchindoun\mana_tombs\instance_mana_tombs.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\aunchindoun\mana_tombs\mana_tombs.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\aunchindoun\sethekk_halls\boss_anzu.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\azshara\azshara.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\azshara\boss_azuregos.cpp" />
