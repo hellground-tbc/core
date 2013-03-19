@@ -3539,6 +3539,14 @@ bool Player::resetTalents(bool no_cost)
                             if (spellInfo->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL && HasAura(spellInfo->EffectTriggerSpell[i]))
                                 RemoveAurasDueToSpell(spellInfo->EffectTriggerSpell[i]);
                         }
+                    // for dual wield
+                    if (itrFirstId == 30798)
+                        if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND)) // off hand here needed
+                        {
+                            uint16 dest;
+                            if (CanEquipItem(EQUIPMENT_SLOT_OFFHAND, dest, item, false, false) != EQUIP_ERR_OK)
+                            _ApplyItemMods(item,EQUIPMENT_SLOT_OFFHAND, false);
+                        }
                     removeSpell(itr->first,!SpellMgr::IsPassiveSpell(itr->first));
                     itr = GetSpellMap().begin();
                     continue;
