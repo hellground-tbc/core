@@ -12977,6 +12977,9 @@ void Unit::KnockBack(float angle, float horizontalSpeed, float verticalSpeed)
     }
     else
     {
+        if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE) || !CanFreeMove())
+            return;
+
         float dis = horizontalSpeed;
 
         float ox, oy, oz;

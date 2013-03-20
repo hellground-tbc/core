@@ -2124,7 +2124,7 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     Player* player = m_session->GetPlayer();
     Map *map = player->GetMap();
 
-    GameDataDatabase.PExecuteLog("INSERT INTO waypoint_data (id, point, position_x, position_y, position_z, move_flag, delay) VALUES ('%u','%u','%f', '%f', '%f', '%u', '%u')",
+    GameDataDatabase.PExecuteLog("INSERT INTO waypoint_data (id, point, position_x, position_y, position_z, move_type, delay) VALUES ('%u','%u','%f', '%f', '%f', '%u', '%u')",
         pathid, point+1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), moveflag, delay);
 
     PSendSysMessage("%s%s%u%s%u%s|r", "|cff00ff00", "PathID: |r|cff00ffff", pathid, "|r|cff00ff00: Waypoint |r|cff00ffff", point,"|r|cff00ff00 created. ");
@@ -2480,7 +2480,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
     // Check
     // Remember: "show" must also be the name of a column!
     if ((show != "delay") && (show != "action") && (show != "action_chance")
-        && (show != "move_flag") && (show != "del") && (show != "move") && (show != "wpadd")
+        && (show != "move_type") && (show != "del") && (show != "move") && (show != "wpadd")
       )
     {
         return false;
@@ -2726,7 +2726,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             return false;
         }
 
-        QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT id, point, delay, move_flag, action, action_chance FROM waypoint_data WHERE wpguid = '%u'", target->GetDBTableGUIDLow());
+        QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT id, point, delay, move_type, action, action_chance FROM waypoint_data WHERE wpguid = '%u'", target->GetDBTableGUIDLow());
 
         if (!result)
 

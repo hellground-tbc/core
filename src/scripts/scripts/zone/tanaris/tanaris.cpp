@@ -765,6 +765,7 @@ struct npc_anachronosAI : public ScriptedAI
 
     void Reset()
     {
+        m_creature->SetVisibility(VISIBILITY_ON);
         checkTimer = 3000;
     }
 
