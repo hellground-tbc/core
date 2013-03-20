@@ -6153,7 +6153,8 @@ void Aura::HandleModDamageDone(bool apply, bool Real)
     {
         for (int i = 0; i < MAX_ATTACK; ++i)
             if (Item* pItem = ((Player*)m_target)->GetWeaponForAttack(WeaponAttackType(i)))
-                ((Player*)m_target)->_ApplyWeaponDependentAuraDamageMod(pItem,WeaponAttackType(i),this,apply);
+                if (!pItem->IsBroken())
+                    ((Player*)m_target)->_ApplyWeaponDependentAuraDamageMod(pItem,WeaponAttackType(i),this,apply);
     }
 
     // m_modifier.m_miscvalue is bitmask of spell schools
@@ -6236,7 +6237,8 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
     {
         for (int i = 0; i < MAX_ATTACK; ++i)
             if (Item* pItem = ((Player*)m_target)->GetWeaponForAttack(WeaponAttackType(i)))
-                ((Player*)m_target)->_ApplyWeaponDependentAuraDamageMod(pItem,WeaponAttackType(i),this,apply);
+                if (!pItem->IsBroken())
+                    ((Player*)m_target)->_ApplyWeaponDependentAuraDamageMod(pItem,WeaponAttackType(i),this,apply);
     }
 
     // m_modifier.m_miscvalue is bitmask of spell schools
