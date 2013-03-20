@@ -3593,8 +3593,10 @@ bool SpellMgr::IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_i
 {
     // hack moved from Player::UpdateAreaDependentAuras <--- is still needed ? Oo i don't think so ...
     if (spellInfo->Id == 38157)
+    {
         if (area_id == 3522 || area_id == 3785)
             return true;
+    }
 
     // normal case
     if (spellInfo->AreaId && spellInfo->AreaId != zone_id && spellInfo->AreaId != area_id)
@@ -3646,6 +3648,19 @@ bool SpellMgr::IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_i
                 return true;
 
             return false;
+        }
+        // Swift Magic Broom
+        case 42684:
+        case 42683:
+        {
+            MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
+            if (!mapEntry)
+                return false;
+
+            if (!mapEntry->IsMountAllowed())
+                return false;
+
+            return true;
         }
         case 23333:                                         // Warsong Flag
         case 23335:                                         // Silverwing Flag
