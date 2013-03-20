@@ -31,20 +31,27 @@ EndScriptData */
 #define NPC_LAKKA           18956
 #define QUEST_BROTHER       10097
 
+enum LakkaStatus
+{
+    LAKKA_NOT_SUMMONED    = 0,
+    LAKKA_WAIT_FOR_SUMMON = 1,
+    LAKKA_SUMMONED        = 2
+};
+
 struct instance_sethekk_halls : public ScriptedInstance
 {
     instance_sethekk_halls(Map *map) : ScriptedInstance(map) {Initialize();};
 
     uint32 Encounter[ENCOUNTERS];
 
-    bool SummonLakka;
+    LakkaStatus Lakka;
 
     uint64 IkissDoorGUID;
 
     void Initialize()
     {
         IkissDoorGUID = 0;
-        SummonLakka = false;
+        Lakka = LAKKA_NOT_SUMMONED;
 
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounter[i] = NOT_STARTED;
@@ -60,11 +67,8 @@ struct instance_sethekk_halls : public ScriptedInstance
 
     void OnPlayerEnter(Player* player)
     {
-        if (player->GetQuestStatus(QUEST_BROTHER) == QUEST_STATUS_INCOMPLETE && !SummonLakka && !player->GetMap()->IsHeroic())
-        {
-            player->SummonCreature(NPC_LAKKA, -158.226f, 158.690f, 0.0f, 1.21f, TEMPSUMMON_DEAD_DESPAWN, 10000);
-            SummonLakka = true;
-        }
+        if (player->GetQuestStatus(QUEST_BROTHER) == QUEST_STATUS_INCOMPLETE && Lakka == LAKKA_NOT_SUMMONED && !player->GetMap()->IsHeroic())
+           Lakka = LAKKA_WAIT_FOR_SUMMON;
     }
 
     void OnCreatureCreate(Creature *creature, uint32 entry)
@@ -161,6 +165,19 @@ struct instance_sethekk_halls : public ScriptedInstance
                 Encounter[i] = NOT_STARTED;
 
         OUT_LOAD_INST_DATA_COMPLETE;
+    }
+
+    void Update(uint32 diff)
+    {
+        if (Lakka == LAKKA_WAIT_FOR_SUMMON)
+        {
+            if (instance->GetPlayers().isEmpty())
+                return;
+
+            Player* player = instance->GetPlayers().begin()->getSource();
+            player->SummonCreature(NPC_LAKKA, -158.226f, 158.690f, 0.0f, 1.21f, TEMPSUMMON_DEAD_DESPAWN, 10000);
+            Lakka = LAKKA_SUMMONED;
+        }
     }
 
 };
