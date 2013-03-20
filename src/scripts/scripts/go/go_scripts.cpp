@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: GO_Scripts
 SD%Complete: 100
-SDComment: Quest support: 4285,4287,4288(crystal pylons), 4296. Field_Repair_Bot->Teaches spell 22704. Barov_journal->Teaches spell 26089
+SDComment: Quest support: 4285,4287,4288(crystal pylons), 4296. Field_Repair_Bot->Teaches spell 22704. Barov_journal->Teaches spell 26089, 8620
 SDCategory: Game Objects
 EndScriptData */
 
@@ -42,6 +42,7 @@ go_field_repair_bot_74A
 go_teleporter
 go_hive_pod
 go_ethereum_transponder_zeta
+go_draconic_for_dummies
 EndContentData */
 
 #include "precompiled.h"
@@ -587,6 +588,84 @@ bool GOUse_go_beer_keg(Player* pPlayer, GameObject* pGO)
     return true;
 }
 
+/*######
+## go_draconic_for_dummies
+######*/
+
+#define GOSSIP_BOOK_HELLO       "<Take this book for the good of Azeroth!>"
+#define QUEST_THE_ONLY_PRESCRIPTION     8620
+#define GOB_DRACONIC_BOOK_STORMWIND     180665
+#define GOB_DRACONIC_BOOK_UNDERCITY     180666
+#define GOB_DRACONIC_BOOK_BLACKWING_LAIR 180667
+#define ITEM_DRACONIC_BOOK_STORMWIND     21107
+#define ITEM_DRACONIC_BOOK_UNDERCITY     21106
+#define ITEM_DRACONIC_BOOK_BLACKWING_LAIR 21109
+
+bool GOUse_go_draconic_for_dummies(Player* pPlayer, GameObject* pGO)
+{
+    if (pPlayer->GetQuestStatus(QUEST_THE_ONLY_PRESCRIPTION) == QUEST_STATUS_INCOMPLETE)
+    {
+        switch (pGO->GetEntry())
+        {
+            case GOB_DRACONIC_BOOK_STORMWIND:
+                if (!pPlayer->HasItemCount(ITEM_DRACONIC_BOOK_STORMWIND,1))
+                    break;
+                else 
+                    return true;
+            case GOB_DRACONIC_BOOK_UNDERCITY:
+                if (!pPlayer->HasItemCount(ITEM_DRACONIC_BOOK_UNDERCITY,1))
+                    break;
+                else 
+                    return true;
+            case GOB_DRACONIC_BOOK_BLACKWING_LAIR:
+                if (!pPlayer->HasItemCount(ITEM_DRACONIC_BOOK_BLACKWING_LAIR,1))
+                    break;
+                else 
+                    return true;
+            default:
+                return true;
+        }
+        pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_BOOK_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->SEND_GOSSIP_MENU(50010, pGO->GetGUID());
+    }
+    return true;
+}
+
+bool GOGossipSelect_go_draconic_for_dummies(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+        {
+            uint32 ItemId;
+            switch (pGO->GetEntry())
+            {
+                case GOB_DRACONIC_BOOK_STORMWIND:
+                    ItemId = ITEM_DRACONIC_BOOK_STORMWIND;
+                    break;
+                case GOB_DRACONIC_BOOK_UNDERCITY:
+                    ItemId = ITEM_DRACONIC_BOOK_UNDERCITY;
+                    break;
+                case GOB_DRACONIC_BOOK_BLACKWING_LAIR:
+                    ItemId = ITEM_DRACONIC_BOOK_BLACKWING_LAIR;
+                    break;
+                default:
+                    return true;
+            }
+            ItemPosCountVec dest;
+            uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ItemId, 1);
+            if (msg == EQUIP_ERR_OK)
+            {
+                Item* item = pPlayer->StoreNewItem(dest, ItemId, true);
+                pPlayer->SendNewItem(item,1,true,false,true);
+            }
+            break;
+        }            
+    }
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
@@ -712,6 +791,12 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_beer_keg";
     newscript->pGOUse = &GOUse_go_beer_keg;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_draconic_for_dummies";
+    newscript->pGOUse =           &GOUse_go_draconic_for_dummies;
+    newscript->pGossipSelectGO =  &GOGossipSelect_go_draconic_for_dummies;
     newscript->RegisterSelf();
 }
 
