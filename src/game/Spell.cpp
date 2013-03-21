@@ -2413,13 +2413,16 @@ void Spell::cast(bool skipCheck)
     // update pointers base at GUIDs to prevent access to non-existed already object
     UpdatePointers();
 
-    if (Unit *pTarget = m_targets.getUnitTarget())
+    if (!IsTriggeredSpell()) // reflective shields, molten armor etc. are not checked for it. They should ignore stealth. (as of reflective shields ignore stealth 100% sure)
     {
-        if (pTarget->isAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, m_caster, true))
+        if (Unit *pTarget = m_targets.getUnitTarget())
         {
-            SendCastResult(SPELL_FAILED_BAD_TARGETS);
-            finish(false);
-            return;
+            if (pTarget->isAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->isVisibleForOrDetect(m_caster, m_caster, true))
+            {
+                SendCastResult(SPELL_FAILED_BAD_TARGETS);
+                finish(false);
+                return;
+            }
         }
     }
 

@@ -1251,7 +1251,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
         void RemoveAurasWithAttribute(uint32 flags, bool notPassiveOnly = false);
-        void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0);
+        void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0, bool PositiveOnly = false);
         void RemoveAurasWithDispelType(DispelType type);
         void RemoveAurasDueToRaidTeleport();
         void RemoveAllAurasButPermanent();    // WARLOCK PET unbuff after resummon with current PET

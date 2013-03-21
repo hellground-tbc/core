@@ -665,7 +665,7 @@ bool Unit::hasNegativeAuraWithInterruptFlag(uint32 flag)
     return false;
 }
 
-void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
+void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except, bool PositiveOnly)
 {
     if (!(m_interruptMask & flag))
         return;
@@ -677,7 +677,7 @@ void Unit::RemoveAurasWithInterruptFlags(uint32 flag, uint32 except)
         Aura *aur = *iter;
         ++iter;
 
-        if (aur && (aur->GetSpellProto()->AuraInterruptFlags & flag))
+        if (aur && (aur->GetSpellProto()->AuraInterruptFlags & flag) && (!PositiveOnly || aur->IsPositive()))
         {
             if (aur->IsInUse())
                 sLog.outLog(LOG_DEFAULT, "ERROR: Aura %u is trying to remove itself! Flag %u. May cause crash!", aur->GetId(), flag);
@@ -913,11 +913,11 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
     if (damageInfo->damage || damageInfo->absorb)
     {
-        if (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_DAMAGE_DOESNT_BREAK_AURAS))
-        {
-            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto ? spellProto->Id : 0);
-            pVictim->RemoveSpellbyDamageTaken(damageInfo->damage, spellProto ? spellProto->Id : 0);
-        }
+        if (!spellProto)
+            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE);
+        else if (spellProto->AttributesEx4 & SPELL_ATTR_EX4_DAMAGE_DOESNT_BREAK_AURAS)
+            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto->Id, true);
+        pVictim->RemoveSpellbyDamageTaken(damageInfo->damage, spellProto ? spellProto->Id : 0);
 
         // Rage from any damage taken
         if (pVictim->GetTypeId() == TYPEID_PLAYER && (pVictim->getPowerType() == POWER_RAGE))
@@ -1034,8 +1034,10 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
 
             if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
             {
-                if (!spellProto || !(spellProto->AttributesEx4 & SPELL_ATTR_EX4_DAMAGE_DOESNT_BREAK_AURAS))
-                    pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE, spellProto ? spellProto->Id : 0);
+                if (!spellProto)
+                    pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE);
+                else if (spellProto->AttributesEx4 & SPELL_ATTR_EX4_DAMAGE_DOESNT_BREAK_AURAS)
+                    pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE, spellProto->Id, true);
             }
 
             if (pVictim->GetTypeId() != TYPEID_PLAYER)
