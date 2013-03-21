@@ -3358,6 +3358,16 @@ void SpellMgr::LoadSpellCustomAttr()
             case 31790: // Righteous Defense taunt
                 spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MELEE;
                 break;
+            case 28509: // Greater Mana Regeneration - Elixir of Major Mageblood
+            case 24363: // Mana Regeneration - Mageblood Potion
+            case 31462: // Moonwell Restoration
+            case 36746: // Shadowy Fortitude
+            case 36749: // Arcane Might
+            case 42965: // Tricky Treat
+                spellInfo->Attributes = 0x28000000LL; // Remove when entering arena - Originally has flag 0x28000100LL but the attribute 0x100 makes them non-removable on arena.
+                // Not known for sure, but logically these spells should be removed. How that was on blizz? Don't know for sure, but i think everyone would use that if so. (or maybe it wasn't used cause it's pretty expensive)
+                // Anyway on free-realms it's abused - so remove it on arena.
+                break;
             default:
                 break;
         }
