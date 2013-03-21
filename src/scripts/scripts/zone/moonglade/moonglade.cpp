@@ -674,21 +674,24 @@ struct npc_remulosAI : public npc_escortAI
 
     void Reset()
     {
-        PhantasmPhase = false;
-        EranikusPhase = false;
-        EventTimer = 0;
-        uiPhase = 0;
-        FindVictimTimer = 2000;
-        DeadPhantasmsCount = 0;
-        StarfireTimer = urand(7000, 10000);
-        HealingTouchTimer = 4000;
-        RegrowthTimer = urand(5000, 10000);
-        RejuvenationTimer = urand(5000, 10000);
-        TranquilityTimer = urand(15000, 30000);
-        EranikusGUID = 0;
+        if (!GetPlayerForEscort())
+        {
+            PhantasmPhase = false;
+            EranikusPhase = false;
+            EventTimer = 0;
+            uiPhase = 0;
+            FindVictimTimer = 2000;
+            DeadPhantasmsCount = 0;
+            StarfireTimer = urand(7000, 10000);
+            HealingTouchTimer = 4000;
+            RegrowthTimer = urand(5000, 10000);
+            RejuvenationTimer = urand(5000, 10000);
+            TranquilityTimer = urand(15000, 30000);
+            EranikusGUID = 0;
 
-        PhantasmsList.clear();
-        MoongladeWardenList.clear();
+            PhantasmsList.clear();
+            MoongladeWardenList.clear();
+        }
     }
 
     void JustSummoned(Creature* pSummoned)
