@@ -202,9 +202,6 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
             }else Intro_Timer -=diff;
         }
 
-        if( !UpdateVictim() )
-            return;
-
         if (checkTimer < diff)
         {
             bool alive = false;
@@ -226,8 +223,11 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
 
             if (!alive)
             {
-                me->Kill(me->getVictim(), false);
+                if(Unit* millhouse = (Unit*)FindCreature(NPC_MILLHOUSE, 100, m_creature))
+                    millhouse->ToCreature()->ForcedDespawn(0);
                 EnterEvadeMode();
+                me->ForcedDespawn(5000);
+                pInstance->SetData(TYPE_HARBINGERSKYRISS,FAIL);
                 return;
             }
 
@@ -235,6 +235,9 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
         }
         else
             checkTimer -= diff;
+
+        if( !UpdateVictim() )
+            return;
 
         if( !IsImage66 && ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() <= 66) )
         {

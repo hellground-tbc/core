@@ -273,6 +273,18 @@ struct npc_warden_mellicharAI : public ScriptedAI
 
         if( pInstance )
             pInstance->SetData(TYPE_HARBINGERSKYRISS,NOT_STARTED);
+        if(Unit* remove = FindCreature(ENTRY_AKKIRIS,100,m_creature))
+            remove->ToCreature()->ForcedDespawn(0);
+        if(Unit* remove = FindCreature(ENTRY_TRICKSTER,100,m_creature))
+            remove->ToCreature()->ForcedDespawn(0);
+        if(Unit* remove = FindCreature(ENTRY_TW_DRAK,100,m_creature))
+            remove->ToCreature()->ForcedDespawn(0);
+        if(Unit* remove = FindCreature(ENTRY_BL_DRAK,100,m_creature))
+            remove->ToCreature()->ForcedDespawn(0);
+        if(Unit* remove = FindCreature(ENTRY_PH_HUNTER,100,m_creature))
+            remove->ToCreature()->ForcedDespawn(0);
+        if(Unit* remove = FindCreature(ENTRY_SULFURON,100,m_creature))
+            remove->ToCreature()->ForcedDespawn(0);
     }
 
     void AttackStart(Unit* who) { }
