@@ -2836,7 +2836,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Power Word: Fortitude/Prayer of Fortitude
                 else if (spellInfo->SpellFamilyFlags & 0x08 && spellInfo->SpellVisual == 278)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
-
+                // surge of light
+                else if (spellInfo->Id == 33151)
+                    spellInfo->EffectApplyAuraName[2] = SPELLMOD_FLAT;
                 break;
             }
             case SPELLFAMILY_MAGE:
