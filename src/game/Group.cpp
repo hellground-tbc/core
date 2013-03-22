@@ -1552,6 +1552,7 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGroundTypeId bgTypeId, BattleGround
 {
     // check for min / max count
     uint32 memberscount = GetMembersCount();
+    uint32 onlinememberscount = 0;
     if (memberscount < MinPlayerCount)
         return BG_JOIN_ERR_GROUP_NOT_ENOUGH;
     if (memberscount > MaxPlayerCount)
@@ -1574,6 +1575,7 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGroundTypeId bgTypeId, BattleGround
         // offline member? don't let join
         if (!member)
             return BG_JOIN_ERR_OFFLINE_MEMBER;
+        onlinememberscount++;
         // don't allow cross-faction join as group
         if (member->GetTeam() != team)
             return BG_JOIN_ERR_MIXED_FACTION;
@@ -1593,6 +1595,8 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGroundTypeId bgTypeId, BattleGround
         if (!member->HasFreeBattleGroundQueueId())
             return BG_JOIN_ERR_ALL_QUEUES_USED;
     }
+    if (memberscount != onlinememberscount)
+        return BG_JOIN_ERR_OFFLINE_MEMBER;
     return BG_JOIN_ERR_OK;
 }
 
