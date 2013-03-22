@@ -2754,7 +2754,7 @@ void SpellMgr::LoadSpellCustomAttr()
         if (spellInfo->SpellVisual == 3879)
             spellInfo->AttributesCu |= SPELL_ATTR_CU_CONE_BACK;
 
-        if (spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x1000LL && spellInfo->SpellIconID == 494)
+        if ((spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags & 0x1000LL && spellInfo->SpellIconID == 494) || spellInfo->Id == 33745 /* Lacerate */)
             spellInfo->AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
 
         // Modify SchoolMask to allow them critically heal
