@@ -3368,6 +3368,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Not known for sure, but logically these spells should be removed. How that was on blizz? Don't know for sure, but i think everyone would use that if so. (or maybe it wasn't used cause it's pretty expensive)
                 // Anyway on free-realms it's abused - so remove it on arena.
                 break;
+            case 20271: // Paladins Judgement
+                spellInfo->AttributesEx3 &= ~SPELL_ATTR_EX3_CANT_TRIGGER_PROC;
+                break;
             default:
                 break;
         }
