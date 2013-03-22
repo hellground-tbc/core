@@ -3447,6 +3447,7 @@ void SpellMgr::LoadCustomSpellCooldowns(SpellEntry* spellInfo)
             spellInfo->RecoveryTime = 10800000;
             break;
         case 44935: //Expose Razorthorn Root
+        case 29992: //Quest spell - needs cooldown to be able to add to possessed unit
             spellInfo->RecoveryTime = 1080;
             break;
         default:
