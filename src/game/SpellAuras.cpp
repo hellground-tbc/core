@@ -4257,6 +4257,8 @@ void Aura::HandleInvisibilityDetect(bool apply, bool Real)
         // set 10 invisibility mask for Phase Wyrm together with detection aura
         if(m_target->GetTypeId() == TYPEID_UNIT && m_target->GetEntry() == 24917)
             m_target->m_invisibilityMask |= (1 << 10);
+        if (GetId() == 34709) // arena shadow sight
+            m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
     }
     else
     {
