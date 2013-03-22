@@ -674,7 +674,7 @@ struct npc_remulosAI : public npc_escortAI
 
     void Reset()
     {
-        if (!GetPlayerForEscort())
+        if (!HasEscortState(STATE_ESCORT_ESCORTING))
         {
             PhantasmPhase = false;
             EranikusPhase = false;
