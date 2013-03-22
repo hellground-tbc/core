@@ -190,17 +190,20 @@ void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
 
 bool Totem::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
 {
-    for (int i=0;i<3;i++)
+    if (!(spellInfo->AttributesCu & SPELL_ATTR_CU_DIRECT_DAMAGE))
     {
-        switch (spellInfo->EffectApplyAuraName[i])
+        for (int i=0;i<3;i++)
         {
-            case SPELL_AURA_PERIODIC_DAMAGE:
-            case SPELL_AURA_PERIODIC_LEECH:
-            case SPELL_AURA_MOD_FEAR:
-            case SPELL_AURA_TRANSFORM:
-                return true;
-            default:
-                continue;
+            switch (spellInfo->EffectApplyAuraName[i])
+            {
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_MOD_FEAR:
+                case SPELL_AURA_TRANSFORM:
+                    return true;
+                default:
+                    continue;
+            }
         }
     }
     return Creature::IsImmunedToSpell(spellInfo, useCharges);
