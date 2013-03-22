@@ -988,7 +988,7 @@ void Spell::EffectDummy(uint32 i)
                     }
                 }
                 // Encapsulate Voidwalker
-                case 29364:
+                /*case 29364: // It's never used. The spell has other effects
                 {
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || ((Creature*)unitTarget)->isPet())
                         return;
@@ -1019,7 +1019,7 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->BroadcastPacket(&data,true);
 
                     return;
-                }
+                }*/
                 case 8063:                                  // Deviate Fish
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
