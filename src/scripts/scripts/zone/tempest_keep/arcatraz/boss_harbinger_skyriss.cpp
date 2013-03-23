@@ -176,9 +176,8 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
                 switch( Intro_Phase )
                 {
                     case 1:
-                         DoScriptText(SAY_INTRO, m_creature);
-                        if (GameObject* Sphere = GameObject::GetGameObject(*m_creature,pInstance->GetData64(DATA_SPHERE_SHIELD)))
-                            Sphere->SetGoState(GO_STATE_ACTIVE);
+                        DoScriptText(SAY_INTRO, m_creature);
+                        pInstance->HandleGameObject(pInstance->GetData64(DATA_SPHERE_SHIELD),true);
                         ++Intro_Phase;
                         Intro_Timer = 25000;
                         break;
@@ -189,7 +188,6 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
                             //should have a better way to do this. possibly spell exist.
                             mellic->SetHealth(0);
                             mellic->setDeathState(JUST_DIED);
-                            pInstance->SetData(TYPE_SHIELD_OPEN,IN_PROGRESS);
                         }
                         ++Intro_Phase;
                         Intro_Timer = 3000;
@@ -223,8 +221,6 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
 
             if (!alive)
             {
-                if(Unit* millhouse = (Unit*)FindCreature(NPC_MILLHOUSE, 100, m_creature))
-                    millhouse->ToCreature()->ForcedDespawn(0);
                 EnterEvadeMode();
                 me->ForcedDespawn(5000);
                 pInstance->SetData(TYPE_HARBINGERSKYRISS,FAIL);

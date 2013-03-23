@@ -271,20 +271,10 @@ struct npc_warden_mellicharAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
         DoCast(m_creature,SPELL_TARGET_OMEGA);
 
-        if( pInstance )
+        if( pInstance && !(pInstance->GetData(TYPE_HARBINGERSKYRISS) == DONE))
             pInstance->SetData(TYPE_HARBINGERSKYRISS,NOT_STARTED);
-        if(Unit* remove = FindCreature(ENTRY_AKKIRIS,100,m_creature))
-            remove->ToCreature()->ForcedDespawn(0);
-        if(Unit* remove = FindCreature(ENTRY_TRICKSTER,100,m_creature))
-            remove->ToCreature()->ForcedDespawn(0);
-        if(Unit* remove = FindCreature(ENTRY_TW_DRAK,100,m_creature))
-            remove->ToCreature()->ForcedDespawn(0);
-        if(Unit* remove = FindCreature(ENTRY_BL_DRAK,100,m_creature))
-            remove->ToCreature()->ForcedDespawn(0);
-        if(Unit* remove = FindCreature(ENTRY_PH_HUNTER,100,m_creature))
-            remove->ToCreature()->ForcedDespawn(0);
-        if(Unit* remove = FindCreature(ENTRY_SULFURON,100,m_creature))
-            remove->ToCreature()->ForcedDespawn(0);
+        if(Unit* millhouse = (Unit*)FindCreature(ENTRY_MILLHOUSE, 100, m_creature)) // despawn only him, others are despawned on evade by their eventAI
+            millhouse->ToCreature()->ForcedDespawn(0);
     }
 
     void AttackStart(Unit* who) { }
@@ -309,14 +299,13 @@ struct npc_warden_mellicharAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
+        if (!IsRunning)
         DoScriptText(YELL_INTRO1, m_creature);
         DoCast(m_creature,SPELL_BUBBLE_VISUAL);
 
         if( pInstance )
         {
-            pInstance->SetData(TYPE_HARBINGERSKYRISS,IN_PROGRESS);
-            if (GameObject* Sphere = GameObject::GetGameObject(*m_creature,pInstance->GetData64(DATA_SPHERE_SHIELD)))
-                Sphere->SetGoState(GO_STATE_READY);
+            pInstance->HandleGameObject(pInstance->GetData64(DATA_SPHERE_SHIELD),false);
             IsRunning = true;
         }
     }
@@ -331,13 +320,9 @@ struct npc_warden_mellicharAI : public ScriptedAI
                 return true;
             if( Phase == 5 && pInstance->GetData(TYPE_WARDEN_2) == DONE )
                 return true;
-            if( Phase == 4 )
+            if( Phase == 4 || Phase == 1 || Phase == 2)
                 return true;
             if( Phase == 3 && pInstance->GetData(TYPE_WARDEN_1) == DONE )
-                return true;
-            if( Phase == 2 && pInstance->GetData(TYPE_HARBINGERSKYRISS) == IN_PROGRESS )
-                return true;
-            if( Phase == 1 && pInstance->GetData(TYPE_HARBINGERSKYRISS) == IN_PROGRESS )
                 return true;
             return false;
         }
@@ -355,24 +340,23 @@ struct npc_warden_mellicharAI : public ScriptedAI
             {
                 case 2:
                     DoCast(m_creature,SPELL_TARGET_ALPHA);
-                    pInstance->SetData(TYPE_WARDEN_1,IN_PROGRESS);
-                    if (GameObject *Sphere = GameObject::GetGameObject(*m_creature,pInstance->GetData64(DATA_SPHERE_SHIELD)))
-                        Sphere->SetGoState(GO_STATE_READY);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_A),true);
                     break;
                 case 3:
                     DoCast(m_creature,SPELL_TARGET_BETA);
-                    pInstance->SetData(TYPE_WARDEN_2,IN_PROGRESS);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_B),true);
                     break;
                 case 5:
                     DoCast(m_creature,SPELL_TARGET_DELTA);
-                    pInstance->SetData(TYPE_WARDEN_3,IN_PROGRESS);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_D),true);
                     break;
                 case 6:
                     DoCast(m_creature,SPELL_TARGET_GAMMA);
-                    pInstance->SetData(TYPE_WARDEN_4,IN_PROGRESS);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_G),true);
                     break;
                 case 7:
-                    pInstance->SetData(TYPE_WARDEN_5,IN_PROGRESS);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_O),true);
+                    pInstance->SetData(TYPE_HARBINGERSKYRISS,IN_PROGRESS);
                     break;
             }
             CanSpawn = true;
@@ -470,30 +454,6 @@ CreatureAI* GetAI_npc_warden_mellichar(Creature *_Creature)
     return new npc_warden_mellicharAI (_Creature);
 }
 
-/*#####
-# mob_zerekethvoidzone (this script probably not needed in future -> `creature_template_addon`.`auras`='36120 0')
-#####*/
-
-#define SPELL_VOID_ZONE_DAMAGE 36120
-
-struct mob_zerekethvoidzoneAI : public Scripted_NoMovementAI
-{
-    mob_zerekethvoidzoneAI(Creature *c) : Scripted_NoMovementAI(c) {}
-
-    void Reset()
-    {
-        m_creature->SetUInt32Value(UNIT_NPC_FLAGS,0);
-        m_creature->setFaction(16);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-
-        DoCast(m_creature,SPELL_VOID_ZONE_DAMAGE);
-    }
-};
-CreatureAI* GetAI_mob_zerekethvoidzoneAI(Creature *_Creature)
-{
-    return new mob_zerekethvoidzoneAI (_Creature);
-}
-
 void AddSC_arcatraz()
 {
     Script *newscript;
@@ -506,11 +466,6 @@ void AddSC_arcatraz()
     newscript = new Script;
     newscript->Name="npc_warden_mellichar";
     newscript->GetAI = &GetAI_npc_warden_mellichar;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="mob_zerekethvoidzone";
-    newscript->GetAI = &GetAI_mob_zerekethvoidzoneAI;
     newscript->RegisterSelf();
 }
 
