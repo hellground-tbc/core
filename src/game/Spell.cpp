@@ -4434,21 +4434,6 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 break;
             }
-            case SPELL_EFFECT_INSTAKILL:
-            {
-                if (m_spellInfo->Id == 29364) // Encapsulate Voidwalker
-                {
-                    Unit *unitTarget = m_targets.getUnitTarget();
-                    if (!unitTarget)
-                        return SPELL_FAILED_BAD_TARGETS;
-
-                    Creature* creatureTarget = (Creature*)unitTarget;
-
-                    if (!creatureTarget || creatureTarget->GetEntry() != 16975) // It's not quest target
-                        return SPELL_FAILED_BAD_TARGETS;
-                }
-                break;
-            }
             default:break;
         }
     }
