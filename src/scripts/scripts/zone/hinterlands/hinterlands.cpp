@@ -54,33 +54,7 @@ struct npc_00x09hlAI : public npc_escortAI
 {
     npc_00x09hlAI(Creature* pCreature) : npc_escortAI(pCreature) { }
 
-    void Reset() { }
-
-    void WaypointReached(uint32 uiPointId)
-    {
-        Player* pPlayer = GetPlayerForEscort();
-        if (!pPlayer)
-            return;
-
-        switch(uiPointId)
-        {
-            case 26:
-                DoScriptText(SAY_OOX_AMBUSH, me);
-                for (uint8 i = 0; i < 3; ++i)
-                    me->SummonCreature(NPC_MARAUDING_OWL, 178.111f, -3801.58f, 128.37f, 0.0f,    TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30000);
-                break;
-            case 43:
-                DoScriptText(SAY_OOX_AMBUSH, me);
-                for (uint8 i = 0; i < 3; ++i)
-                    me->SummonCreature(NPC_VILE_AMBUSHER, -116.258f, -4211.96f, 121.878f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30000);
-                break;
-            case 64:
-                DoScriptText(SAY_OOX_END, me);
-                if (Player* pPlayer = GetPlayerForEscort())
-                    pPlayer->GroupEventHappens(QUEST_RESQUE_OOX_09, me);
-                break;
-        }
-    }
+	void Reset() { }
 
     void EnterCombat(Unit* pWho)
     {
@@ -94,6 +68,70 @@ struct npc_00x09hlAI : public npc_escortAI
     {
         pSummoned->AI()->AttackStart(me);
     }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        Player* pPlayer = GetPlayerForEscort();
+        if (!pPlayer)
+            return;
+
+        switch(uiPointId)
+        {
+            case 26:
+                DoScriptText(SAY_OOX_AMBUSH, me);
+                break;
+            case 27:
+                for (uint8 i = 0; i < 3; ++i)
+                {
+                    float x, y, z;
+                    switch (i)
+                    {
+                        case 0:
+                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 0.0f);
+                            me->SummonCreature(NPC_MARAUDING_OWL, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            break;
+                        case 1:
+                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 2.0f);
+                            me->SummonCreature(NPC_MARAUDING_OWL, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            break;
+                        case 2:
+                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 4.0f);
+                            me->SummonCreature(NPC_MARAUDING_OWL, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            break;
+                    }
+                }
+                break;
+            case 44:
+                DoScriptText(SAY_OOX_AMBUSH, me);
+                break;
+            case 45:
+                for (uint8 i = 0; i < 3; ++i)
+                {
+                    float x, y, z;
+                    switch (i)
+                    {
+                        case 0:
+                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 0.0f);
+                            me->SummonCreature(NPC_VILE_AMBUSHER, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            break;
+                        case 1:
+                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 2.0f);
+                            me->SummonCreature(NPC_VILE_AMBUSHER, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            break;
+                        case 2:
+                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 4.0f);
+                            me->SummonCreature(NPC_VILE_AMBUSHER, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                            break;
+                    }
+                }
+                break;
+            case 66:
+                DoScriptText(SAY_OOX_END, me);
+                if (Player* pPlayer = GetPlayerForEscort())
+                    pPlayer->GroupEventHappens(QUEST_RESQUE_OOX_09, me);
+                break;
+        }
+    }
 };
 
 bool QuestAccept_npc_00x09hl(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
@@ -101,14 +139,10 @@ bool QuestAccept_npc_00x09hl(Player* pPlayer, Creature* pCreature, const Quest* 
     if (pQuest->GetQuestId() == QUEST_RESQUE_OOX_09)
     {
         pCreature->SetStandState(UNIT_STAND_STATE_STAND);
-        pCreature->setFaction(113);
-        pCreature->SetHealth(pCreature->GetMaxHealth());
-        pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
-
         DoScriptText(SAY_OOX_START, pCreature);
 
         if (npc_00x09hlAI* pEscortAI = CAST_AI(npc_00x09hlAI, pCreature->AI()))
-            pEscortAI->Start(false, true, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(true, true, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }

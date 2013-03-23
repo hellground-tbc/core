@@ -163,7 +163,7 @@ bool QuestAccept_npc_prospector_remtravel(Player* player, Creature* creature, Qu
         creature->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
         creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
         DoScriptText(SAY_prospector_ACC, creature, player);
-        ((npc_escortAI*)creature->AI())->Start(true, true, player->GetGUID(), quest);
+        ((npc_escortAI*)creature->AI())->Start(true, false, player->GetGUID(), quest);
     }
     return true;
 }
