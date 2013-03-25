@@ -2787,6 +2787,8 @@ void SpellMgr::LoadSpellCustomAttr()
                      spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                  else if (spellInfo->Id == 15852)
                      spellInfo->Dispel = DISPEL_NONE;
+                 else if (spellInfo->Id == 39635)
+                     spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENTRY_SRC;
 
                  break;
             }
