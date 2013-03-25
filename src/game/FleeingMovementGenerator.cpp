@@ -33,8 +33,19 @@ void FleeingMovementGenerator<UNIT>::_moveToNextLocation(UNIT &unit)
     if (!_getPoint(unit, dest))
         return;
 
+    PathFinder path(&unit);
+    path.setPathLengthLimit(30.0f);
+    path.calculate(dest.x, dest.y, dest.z);
+
+    if (path.getPathType() & PATHFIND_NOPATH)
+        unit.GetPosition(dest);
+
     Movement::MoveSplineInit init(unit);
-    init.MoveTo(dest.x, dest.y, dest.z);
+    if (path.getPathType() & PATHFIND_NOPATH)
+        init.MoveTo(dest.x, dest.y, dest.z);
+    else
+        init.MovebyPath(path.getPath());
+
     init.SetWalk(false);
     init.Launch();
 
