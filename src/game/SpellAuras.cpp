@@ -3528,8 +3528,30 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
 {
     if (apply)
     {
+        if (m_target->HasAura(36897) || GetId() == 36897) // transporter malfuction special, other transform effect only changes between models
+        {
+            uint32 rand = urand(1,4);
+            switch (rand)
+            {
+                case 1: m_target->SetDisplayId(20322); break;
+                case 2: m_target->SetDisplayId(20321); break;
+                case 3: m_target->SetDisplayId(20319); break;
+                case 4: m_target->SetDisplayId(20316); break;
+            }
+        }
+        else if (m_target->HasAura(36899) || GetId() == 36899)
+        {
+            uint32 rand = urand(1,4);
+            switch (rand)
+            {
+                case 1: m_target->SetDisplayId(20323); break;
+                case 2: m_target->SetDisplayId(20320); break;
+                case 3: m_target->SetDisplayId(20318); break;
+                case 4: m_target->SetDisplayId(20317); break;
+            }
+        }
         // special case (spell specific functionality)
-        if (m_modifier.m_miscvalue==0)
+        else if (m_modifier.m_miscvalue==0)
         {
             // player applied only
             if (m_target->GetTypeId() != TYPEID_PLAYER)
