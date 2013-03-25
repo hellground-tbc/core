@@ -99,7 +99,12 @@ static InfernalPoint InfernalPoints[] =
 struct netherspite_infernalAI : public Scripted_NoMovementAI
 {
     netherspite_infernalAI(Creature *c) : Scripted_NoMovementAI(c) ,
-        malchezaarGUID(0), HellfireTimer(0), CleanupTimer(0), point(NULL) {}
+        malchezaarGUID(0), HellfireTimer(0), CleanupTimer(0), point(NULL)
+    {
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CASTING_SPEED, true);
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
+    }
 
     uint32 HellfireTimer;
     uint32 CleanupTimer;
