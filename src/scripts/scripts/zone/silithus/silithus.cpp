@@ -294,6 +294,64 @@ bool GossipSelect_npc_cenarion_scout_landion(Player *player, Creature *_Creature
     return true;
 }
 
+
+///////
+/// Lesser Wind Stone
+///////
+
+#define GOSSIP_LESSER_WIND_STONE         "I am no cultist, you monster! Come to me and face your destruction!"
+
+#define EARTHEN_TEMPLAR         15307
+#define CRIMSON_TEMPLAR         15209
+#define AZURE_TEMPLAR           15211
+#define HOARY_TEMPLAR           15212
+
+bool GossipHello_go_lesser_wind_stone(Player *player, GameObject* _GO)
+{
+    if(player->HasEquiped(20406) && player->HasEquiped(20408) && player->HasEquiped(20407))
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_LESSER_WIND_STONE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
+    }
+    else
+    {
+        player->CastSpell(player, 24803, false);
+    }
+
+    return true;
+}
+
+void SendActionMenu_go_lesser_wind_stone(Player *player, GameObject* _GO, uint32 action)
+{
+    _GO->SetGoState(GO_STATE_ACTIVE);
+    _GO->SetRespawnTime(600);
+    player->CLOSE_GOSSIP_MENU();
+
+    float x,y,z;
+    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
+
+    switch(action)
+    {
+    case GOSSIP_ACTION_INFO_DEF:
+        player->CastSpell(player,24762,false);
+        player->SummonCreature(RAND(EARTHEN_TEMPLAR, CRIMSON_TEMPLAR, AZURE_TEMPLAR, HOARY_TEMPLAR), x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
+        player->DestroyItemCount(20406, 1, true, true);
+        player->DestroyItemCount(20407, 1, true, true);
+        player->DestroyItemCount(20408, 1, true, true);
+        break;
+    }
+}
+
+bool GossipSelect_go_lesser_wind_stone(Player *player, GameObject* _GO, uint32 sender, uint32 action )
+{
+    switch(sender)
+    {
+        case GOSSIP_SENDER_MAIN:    SendActionMenu_go_lesser_wind_stone(player, _GO, action); break;
+    }
+    return true;
+}
+
+
 ///////
 /// Wind Stone
 ///////
@@ -307,19 +365,23 @@ bool GossipSelect_npc_cenarion_scout_landion(Player *player, Creature *_Creature
 
 bool GossipHello_go_wind_stone(Player *player, GameObject* _GO)
 {
-    if(player->HasEquiped(20406) && player->HasEquiped(20408) && player->HasEquiped(20407) && player->HasEquiped(20422))
+    if(player->HasEquiped(20406) && player->HasEquiped(20408) && player->HasEquiped(20407) && player->HasEquiped(20422) && player->GetReputationRank(609) >= REP_FRIENDLY)
     {
         player->ADD_GOSSIP_ITEM(0, GOSSIP_WIND_STONE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
+    }
+    else
+    {
+        player->CastSpell(player, 24803, false);
     }
 
-    player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
     return true;
 }
 
 void SendActionMenu_go_wind_stone(Player *player, GameObject* _GO, uint32 action)
 {
     _GO->SetGoState(GO_STATE_ACTIVE);
-    _GO->SetRespawnTime(600);
+    _GO->SetRespawnTime(900);
     player->CLOSE_GOSSIP_MENU();
 
     float x,y,z;
@@ -331,6 +393,9 @@ void SendActionMenu_go_wind_stone(Player *player, GameObject* _GO, uint32 action
         player->CastSpell(player,24762,false);
         player->SummonCreature(RAND(DUKE_OF_CYNDERS, DUKE_OF_FATHOMS, DUKE_OF_SHARDS, DUKE_OF_ZEPHYRS), x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
         player->DestroyItemCount(20422, 1, true, true);
+        player->DestroyItemCount(20406, 1, true, true);
+        player->DestroyItemCount(20407, 1, true, true);
+        player->DestroyItemCount(20408, 1, true, true);
         break;
     }
 }
@@ -340,6 +405,64 @@ bool GossipSelect_go_wind_stone(Player *player, GameObject* _GO, uint32 sender, 
     switch(sender)
     {
         case GOSSIP_SENDER_MAIN:    SendActionMenu_go_wind_stone(player, _GO, action); break;
+    }
+    return true;
+}
+
+///////
+/// Greater Wind Stone
+///////
+
+#define GOSSIP_GREATER_WIND_STONE         "The day of judgement has come, fiend! I challenge you to battle!"
+
+#define BARON_KAZUM             15205
+#define HIGH_MARSHAL_WHIRLAXIS  15204
+#define LORD_SKWOL              15305
+#define PRINCE_SKALDRENOX       15203
+
+bool GossipHello_go_greater_wind_stone(Player *player, GameObject* _GO)
+{
+    if(player->HasEquiped(20406) && player->HasEquiped(20408) && player->HasEquiped(20407) && player->HasEquiped(20422) && player->HasEquiped(20451) && player->GetReputationRank(609) >= REP_REVERED)
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_GREATER_WIND_STONE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->SEND_GOSSIP_MENU(_GO->GetGOInfo()->questgiver.gossipID, _GO->GetGUID());
+    }
+    else
+    {
+        player->CastSpell(player, 24803, false);
+    }
+
+    return true;
+}
+
+void SendActionMenu_go_greater_wind_stone(Player *player, GameObject* _GO, uint32 action)
+{
+    _GO->SetGoState(GO_STATE_ACTIVE);
+    _GO->SetRespawnTime(18000);
+    player->CLOSE_GOSSIP_MENU();
+
+    float x,y,z;
+    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
+
+    switch(action)
+    {
+    case GOSSIP_ACTION_INFO_DEF:
+        player->CastSpell(player,24762,false);
+        player->SummonCreature(RAND(BARON_KAZUM, HIGH_MARSHAL_WHIRLAXIS, LORD_SKWOL, PRINCE_SKALDRENOX), x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
+        player->DestroyItemCount(20406, 1, true, true);
+        player->DestroyItemCount(20407, 1, true, true);
+        player->DestroyItemCount(20408, 1, true, true);
+        player->DestroyItemCount(20422, 1, true, true);
+        player->DestroyItemCount(20451, 1, true, true);
+        break;
+    }
+}
+
+bool GossipSelect_go_greater_wind_stone(Player *player, GameObject* _GO, uint32 sender, uint32 action )
+{
+    switch(sender)
+    {
+        case GOSSIP_SENDER_MAIN:    SendActionMenu_go_greater_wind_stone(player, _GO, action); break;
     }
     return true;
 }
@@ -1344,9 +1467,21 @@ void AddSC_silithus()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name="go_lesser_wind_stone";
+    newscript->pGOUse  = &GossipHello_go_lesser_wind_stone;
+    newscript->pGossipSelectGO = &GossipSelect_go_lesser_wind_stone;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name="go_wind_stone";
     newscript->pGOUse  = &GossipHello_go_wind_stone;
     newscript->pGossipSelectGO = &GossipSelect_go_wind_stone;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="go_greater_wind_stone";
+    newscript->pGOUse  = &GossipHello_go_greater_wind_stone;
+    newscript->pGossipSelectGO = &GossipSelect_go_greater_wind_stone;
     newscript->RegisterSelf();
 
     newscript = new Script;
