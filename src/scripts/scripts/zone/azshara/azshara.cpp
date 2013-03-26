@@ -172,7 +172,7 @@ bool GossipSelect_npc_loramus_thalipedes(Player *player, Creature *_Creature, ui
 #define GOSSIP_GET_MOONSTONE "Hand over the Southfury moonstone and I'll let you go."
 
 //next message must be send to player when Rizzle jump into river, not implemented
-#define MSG_ESCAPE_NOTICE "Rizzle Sprysprocket takes the Southfury moonstone and escapes into the river. Follow her!"
+#define MSG_ESCAPE_NOTICE "     Rizzle Sprysprocket takes the Southfury moonstone and escapes into the river. Follow her!"
 
 float WPs[58][4] =
 {
@@ -278,6 +278,10 @@ struct mob_rizzle_sprysprocketAI : public ScriptedAI
         m_creature->RemoveCorpse();
     }
 
+    void EnterEvadeMode()
+    {
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(Must_Die)
@@ -325,7 +329,7 @@ struct mob_rizzle_sprysprocketAI : public ScriptedAI
         if(Grenade_Timer < diff)
         {
             Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
-            if(player)
+            if(player && Reached == false)
             {
                DoScriptText(SAY_RIZZLE_GRENADE, m_creature, player);
                DoCast(player, SPELL_RIZZLE_FROST_GRENADE, true);
@@ -335,7 +339,7 @@ struct mob_rizzle_sprysprocketAI : public ScriptedAI
 
         if(Check_Timer < diff)
         {
-            Player *player = (Player *)Unit::GetUnit((*m_creature), PlayerGUID);
+            Unit *player = m_creature->GetUnit(PlayerGUID);
             if(!player)
             {
                 Despawn();
@@ -347,7 +351,6 @@ struct mob_rizzle_sprysprocketAI : public ScriptedAI
                 DoScriptText(SAY_RIZZLE_FINAL, m_creature);
                 m_creature->SetUInt32Value(UNIT_NPC_FLAGS, 1);
                 m_creature->setFaction(35);
-                m_creature->GetMotionMaster()->MovementExpired();
                 m_creature->RemoveAurasDueToSpell(SPELL_PERIODIC_DEPTH_CHARGE);
                 Reached = true;
             }
@@ -381,7 +384,7 @@ struct mob_rizzle_sprysprocketAI : public ScriptedAI
 
     void MovementInform(uint32 type, uint32 id)
     {
-        if (type != POINT_MOTION_TYPE)
+        if ((type != POINT_MOTION_TYPE) || Reached == true)
             return;
 
         if(id == 57)
