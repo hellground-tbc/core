@@ -1,4 +1,5 @@
 /* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -16,8 +17,8 @@
 
 /* ScriptData
 SDName: Boss_Warbringer_Omrogg
-SD%Complete: 85
-SDComment: Heroic enabled. Spell timing may need additional tweaks
+SD%Complete: 95
+SDComment:Spell timing may need additional tweaks
 SDCategory: Hellfire Citadel, Shattered Halls
 EndScriptData */
 
@@ -117,7 +118,7 @@ struct mob_omrogg_headsAI : public ScriptedAI
 
         if (Death_Timer < diff)
         {
-            DoScriptText(YELL_DIE_R, m_creature);
+            DoScriptText(YELL_DIE_R, me);
             DeathYell = false;
         }
         else
@@ -130,7 +131,7 @@ struct boss_warbringer_omroggAI : public ScriptedAI
     boss_warbringer_omroggAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
@@ -174,15 +175,15 @@ struct boss_warbringer_omroggAI : public ScriptedAI
         ResetThreat_Timer = 30000;
 
         if (pInstance)
-            pInstance->SetData(TYPE_OMROGG, NOT_STARTED);   //End boss can use this later. O'mrogg must be defeated(DONE) or he will come to aid.
+            pInstance->SetData(TYPE_WARBRINGER, NOT_STARTED);
     }
 
     void DoYellForThreat()
     {
         if (LeftHead && RightHead)
         {
-            Unit *Left  = Unit::GetUnit(*m_creature,LeftHead);
-            Unit *Right = Unit::GetUnit(*m_creature,RightHead);
+            Unit *Left  = Unit::GetUnit(*me,LeftHead);
+            Unit *Right = Unit::GetUnit(*me,RightHead);
 
             if (!Left || !Right)
                 return;
@@ -203,7 +204,7 @@ struct boss_warbringer_omroggAI : public ScriptedAI
         DoSpawnCreature(ENTRY_LEFT_HEAD,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN,1800000);
         DoSpawnCreature(ENTRY_RIGHT_HEAD,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN,1800000);
 
-        if (Unit *Left = Unit::GetUnit(*m_creature,LeftHead))
+        if (Unit *Left = Unit::GetUnit(*me,LeftHead))
         {
             iaggro = rand()%3;
 
@@ -214,7 +215,7 @@ struct boss_warbringer_omroggAI : public ScriptedAI
         }
 
         if (pInstance)
-            pInstance->SetData(TYPE_OMROGG, IN_PROGRESS);
+            pInstance->SetData(TYPE_WARBRINGER, IN_PROGRESS);
     }
 
     void JustSummoned(Creature *summoned)
@@ -234,8 +235,8 @@ struct boss_warbringer_omroggAI : public ScriptedAI
     {
         if (LeftHead && RightHead)
         {
-            Unit *Left  = Unit::GetUnit(*m_creature,LeftHead);
-            Unit *Right = Unit::GetUnit(*m_creature,RightHead);
+            Unit *Left  = Unit::GetUnit(*me,LeftHead);
+            Unit *Right = Unit::GetUnit(*me,RightHead);
 
             if (!Left || !Right)
                 return;
@@ -263,8 +264,8 @@ struct boss_warbringer_omroggAI : public ScriptedAI
     {
         if (LeftHead && RightHead)
         {
-            Unit *Left  = Unit::GetUnit(*m_creature,LeftHead);
-            Unit *Right = Unit::GetUnit(*m_creature,RightHead);
+            Unit *Left  = Unit::GetUnit(*me,LeftHead);
+            Unit *Right = Unit::GetUnit(*me,RightHead);
 
             if (!Left || !Right)
                 return;
@@ -275,7 +276,7 @@ struct boss_warbringer_omroggAI : public ScriptedAI
         }
 
         if (pInstance)
-            pInstance->SetData(TYPE_OMROGG, DONE);
+            pInstance->SetData(TYPE_WARBRINGER, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -287,8 +288,8 @@ struct boss_warbringer_omroggAI : public ScriptedAI
             if (!LeftHead || !RightHead)
                 return;
 
-            Unit *Left  = Unit::GetUnit(*m_creature,LeftHead);
-            Unit *Right = Unit::GetUnit(*m_creature,RightHead);
+            Unit *Left  = Unit::GetUnit(*me,LeftHead);
+            Unit *Right = Unit::GetUnit(*me,RightHead);
 
             if (!Left || !Right)
                 return;
@@ -330,7 +331,7 @@ struct boss_warbringer_omroggAI : public ScriptedAI
 
         if (BlastCount && BlastWave_Timer <= diff)
         {
-            DoCast(m_creature,SPELL_BLAST_WAVE);
+            DoCast(me,SPELL_BLAST_WAVE);
             BlastWave_Timer = 5000;
             ++BlastCount;
 
@@ -340,8 +341,8 @@ struct boss_warbringer_omroggAI : public ScriptedAI
 
         if (BurningMaul_Timer < diff)
         {
-            DoScriptText(EMOTE_ENRAGE, m_creature);
-            DoCast(m_creature,HeroicMode ? H_SPELL_BURNING_MAUL : SPELL_BURNING_MAUL);
+            DoScriptText(EMOTE_ENRAGE, me);
+            DoCast(me,HeroicMode ? H_SPELL_BURNING_MAUL : SPELL_BURNING_MAUL);
             BurningMaul_Timer = 40000;
             BlastWave_Timer = 16000;
             BlastCount = 1;
@@ -353,20 +354,20 @@ struct boss_warbringer_omroggAI : public ScriptedAI
             {
                 DoYellForThreat();
                 DoResetThreat();
-                m_creature->AddThreat(target, 0.0f);
+                me->AddThreat(target, 0.0f);
             }
             ResetThreat_Timer = 35000+rand()%10000;
         }else ResetThreat_Timer -= diff;
 
         if (Fear_Timer < diff)
         {
-            DoCast(m_creature,SPELL_FEAR);
+            DoCast(me,SPELL_FEAR);
             Fear_Timer = 15000+rand()%25000;
         }else Fear_Timer -= diff;
 
         if (ThunderClap_Timer < diff)
         {
-            DoCast(m_creature,SPELL_THUNDERCLAP);
+            DoCast(me,SPELL_THUNDERCLAP);
             ThunderClap_Timer = 25000+rand()%15000;
         }else ThunderClap_Timer -= diff;
 

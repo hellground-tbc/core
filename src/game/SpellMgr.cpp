@@ -3375,6 +3375,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 20271: // Paladins Judgement
                 spellInfo->AttributesEx3 &= ~SPELL_ATTR_EX3_CANT_TRIGGER_PROC;
                 break;
+            case 30502: // Dark Spin
+                spellInfo->Effect[0] = 0;
+                spellInfo->Effect[1] = 0;
+                spellInfo->Effect[2] = 0;
+                break;
             default:
                 break;
         }
