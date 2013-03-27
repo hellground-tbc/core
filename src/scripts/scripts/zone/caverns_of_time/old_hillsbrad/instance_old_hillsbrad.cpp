@@ -43,6 +43,13 @@ static const float OrcLoc[][4] =
     {2192.58f, 238.44f, 52.44f, 0}
 };
 
+enum Summon
+{
+    NOT_SUMMONED    = 0,
+    WAIT_FOR_SUMMON = 1,
+    SUMMONED        = 2
+};
+
 struct instance_old_hillsbrad : public ScriptedInstance
 {
     instance_old_hillsbrad(Map *map) : ScriptedInstance(map) {Initialize();};
@@ -59,6 +66,8 @@ struct instance_old_hillsbrad : public ScriptedInstance
     std::list<uint64> LeftPrisonersList;
     std::list<uint64> RightPrisonersList;
 
+    Summon summon;
+
     void Initialize()
     {
         BarrelCount         = 0;
@@ -66,6 +75,8 @@ struct instance_old_hillsbrad : public ScriptedInstance
         ThrallGUID          = 0;
         TarethaGUID         = 0;
         EpochGUID           = 0;
+
+        summon = NOT_SUMMONED;
 
         for (uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounter[i] = NOT_STARTED;
@@ -77,6 +88,14 @@ struct instance_old_hillsbrad : public ScriptedInstance
             if (Encounter[i] == IN_PROGRESS)
                 return true;
         return false;
+    }
+
+    void OnPlayerEnter(Player* player)
+    {
+        if (player->isGameMaster())
+            return;
+
+        summon = WAIT_FOR_SUMMON;
     }
 
     Player* GetPlayerInMap()
@@ -177,7 +196,6 @@ struct instance_old_hillsbrad : public ScriptedInstance
                     if (BarrelCount == 5)
                     {
                         player->SummonCreature(DRAKE_ENTRY, 2128.43f, 71.01f, 64.42,1.74f, TEMPSUMMON_DEAD_DESPAWN, 15000);
-                        player->SummonCreature(THRALL_ENTRY, 2231.51f, 119.84f, 82.297f, 4.15f, TEMPSUMMON_DEAD_DESPAWN, 15000);
 
                         Encounter[0] = DONE;
 
@@ -325,6 +343,34 @@ struct instance_old_hillsbrad : public ScriptedInstance
                 return EpochGUID;
         }
         return 0;
+    }
+
+    void Update(uint32 diff)
+    {
+        if (summon == WAIT_FOR_SUMMON)
+        {
+            if (instance->GetPlayers().isEmpty())
+                return;
+
+            Player* player = instance->GetPlayers().begin()->getSource();
+
+            if (GetData(TYPE_THRALL_PART1) == NOT_STARTED)
+                player->SummonCreature(THRALL_ENTRY, 2231.51f, 119.84f, 82.297f, 4.15f,TEMPSUMMON_DEAD_DESPAWN,15000);
+
+            if (GetData(TYPE_THRALL_PART1) == DONE && GetData(TYPE_THRALL_PART2) == NOT_STARTED)
+            {
+                player->SummonCreature(THRALL_ENTRY, 2063.40f, 229.512f, 64.488f, 2.18f,TEMPSUMMON_DEAD_DESPAWN,15000);
+                player->SummonCreature(18798, 2047.90f, 254.85f, 62.822f, 5.94f, TEMPSUMMON_DEAD_DESPAWN, 15000);
+            }
+
+            if (GetData(TYPE_THRALL_PART2) == DONE && GetData(TYPE_THRALL_PART3) == NOT_STARTED)
+                player->SummonCreature(THRALL_ENTRY, 2486.91f, 626.357f, 58.076f, 4.66f,TEMPSUMMON_DEAD_DESPAWN,15000);
+
+            if (GetData(TYPE_THRALL_PART3) == DONE && GetData(TYPE_THRALL_PART4) == NOT_STARTED)
+                player->SummonCreature(THRALL_ENTRY, 2660.48f, 659.409f, 61.937f, 5.83f,TEMPSUMMON_DEAD_DESPAWN,15000);
+
+            summon = SUMMONED;
+        }
     }
 
     std::string GetSaveData()

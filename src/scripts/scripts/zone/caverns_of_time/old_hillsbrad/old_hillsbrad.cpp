@@ -307,6 +307,27 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
         }
         else
             DoScriptText(RAND(SAY_TH_LEAVE_COMBAT1, SAY_TH_LEAVE_COMBAT2, SAY_TH_LEAVE_COMBAT3), me);
+
+        if (pInstance && pInstance->GetData(TYPE_THRALL_PART1) == NOT_STARTED)
+        {
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, 0);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+1, 0);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 0);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+2, 0);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+3, 0);
+            me->SetUInt32Value(UNIT_FIELD_DISPLAYID, THRALL_MODEL_UNEQUIPPED);
+        }
+        else
+        {
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, THRALL_WEAPON_MODEL);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, THRALL_WEAPON_INFO);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+1, 781);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, THRALL_SHIELD_MODEL);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+2, THRALL_SHIELD_INFO);
+            me->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+3, 1038);
+            me->SetUInt32Value(UNIT_FIELD_DISPLAYID, THRALL_MODEL_EQUIPPED);
+        }
     }
 
     void WaypointReached(uint32 i)
@@ -1145,33 +1166,6 @@ struct erozion_imageAI : public ScriptedAI
         Intro = true;
         Steps = 0;
         StepsTimer = 0;
-    }
-
-    void JustSummoned(Creature* summoned)
-    {
-        if (summoned->GetEntry() == NPC_THRALL)
-        {
-            if (pInstance->GetData(TYPE_THRALL_PART1) == NOT_STARTED)
-            {
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, 0);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, 0);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+1, 0);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, 0);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+2, 0);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+3, 0);
-                summoned->SetUInt32Value(UNIT_FIELD_DISPLAYID, THRALL_MODEL_UNEQUIPPED);
-            }
-            else
-            {
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY, THRALL_WEAPON_MODEL);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO, THRALL_WEAPON_INFO);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+1, 781);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1, THRALL_SHIELD_MODEL);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+2, THRALL_SHIELD_INFO);
-                summoned->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO+3, 1038);
-                summoned->SetUInt32Value(UNIT_FIELD_DISPLAYID, THRALL_MODEL_EQUIPPED);
-            }
-        }
     }
 
     int32 NextStep(uint32 Steps)

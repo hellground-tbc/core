@@ -132,7 +132,7 @@ struct boss_grand_warlock_nethekurseAI : public ScriptedAI
         ++PeonEngagedCount;
     }
 
-    void DoYellForPeonDeath(Unit* orc)
+    void DoYellForPeonDeath()
     {
         if (PeonKilledCount >= 4)
             return;
@@ -150,12 +150,7 @@ struct boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void PeonsAreDead()
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_TAUNT_1, me); break;
-            case 1: DoScriptText(SAY_TAUNT_2, me); break;
-            case 2: DoScriptText(SAY_TAUNT_3, me); break;
-        }
+        DoScriptText(RAND(SAY_TAUNT_1, SAY_TAUNT_2, SAY_TAUNT_3), me);
 
         IsIntroEvent = false;
         PeonEngagedCount = 4;
@@ -198,12 +193,7 @@ struct boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        switch(rand()%3)
-        {
-            case 0: DoScriptText(SAY_AGGRO_1, me); break;
-            case 1: DoScriptText(SAY_AGGRO_2, me); break;
-            case 2: DoScriptText(SAY_AGGRO_3, me); break;
-        }
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
     }
 
     void JustSummoned(Creature *summoned)
@@ -216,11 +206,7 @@ struct boss_grand_warlock_nethekurseAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        switch(rand()%2)
-        {
-            case 0: DoScriptText(SAY_SLAY_1, me); break;
-            case 1: DoScriptText(SAY_SLAY_2, me); break;
-        }
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
     }
 
     void EnterEvadeMode()
@@ -399,7 +385,7 @@ struct mob_fel_orc_convertAI : public ScriptedAI
             {
                 Creature *pKurse = Unit::GetCreature(*me,pInstance->GetData64(DATA_NETHEKURSE));
                 if (pKurse)
-                    ((boss_grand_warlock_nethekurseAI*)pKurse->AI())->DoYellForPeonDeath(me);
+                    ((boss_grand_warlock_nethekurseAI*)pKurse->AI())->DoYellForPeonDeath();
             }
         }
     }
