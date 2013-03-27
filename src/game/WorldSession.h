@@ -187,6 +187,8 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         uint8 Expansion() const { return m_expansion; }
 
         void SaveAccountFlags();
+        static void SaveAccountFlags(uint32 accountId, uint64 flags);
+
         bool IsAccountFlagged(AccountFlags flag) const { return m_accFlags & flag; }
         void AddAccountFlag(AccountFlags flag);
         void RemoveAccountFlag(AccountFlags flag);
