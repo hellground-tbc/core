@@ -851,7 +851,7 @@ void Spell::EffectDummy(uint32 i)
                 // Illidan Stormrage: Return Glaive
                 case 39873:
                 {
-                    if (unitTarget->GetTypeId() != TYPEID_PLAYER)
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
                         return;
 
                     m_caster->CastSpell(unitTarget, 39635, true);

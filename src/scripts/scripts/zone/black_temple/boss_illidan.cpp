@@ -242,11 +242,14 @@ struct boss_illidan_stormrageAI : public BossAI
 
     IllidanPhase m_phase;
 
+    std::list<uint64> glaives;
+
     void Reset()
     {
         events.Reset();
         ClearCastQueue();
         summons.DespawnAll();
+        glaives.clear();
 
         m_combatTimer = 1000;
         m_enrageTimer = 25*60000 +34000; // DBM value
@@ -565,15 +568,18 @@ struct boss_illidan_stormrageAI : public BossAI
                 {
                     me->SetLevitate(false);
                     me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     me->SetReactState(REACT_AGGRESSIVE);
                     ChangePhase(PHASE_THREE);
                     break;
                 }
                 case EVENT_ILLIDAN_RETURN_GLAIVE:
                 {
-                    // implement SPELL_ILLIDAN_GLAIVE_RETURN visual. The spell is fixed.
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    for (std::list<uint64>::iterator itr = glaives.begin(); itr != glaives.end(); ++itr)
+                    {
+                        if (Creature* glaive = instance->GetCreature(*itr))
+                            glaive->CastSpell(me, SPELL_ILLIDAN_GLAIVE_RETURN, true);
+                    }
                     summons.DespawnEntry(BLADE_OF_AZZINOTH);
                     events.ScheduleEvent(EVENT_ILLIDAN_LAND, 1000, m_phase);
                     break;
@@ -793,6 +799,11 @@ struct boss_illidan_stormrageAI : public BossAI
             default:
                 return true;
         }
+    }
+
+    void GlaiveSummoned(Unit* glaive)
+    {
+        glaives.push_back(glaive->GetGUID());
     }
 
     void JustDied(Unit* killer)
@@ -1632,6 +1643,12 @@ struct boss_illidan_glaiveAI : public Scripted_NoMovementAI
     uint32 m_summonTimer;
 
     uint64 m_tearGUID;
+
+    void Reset()
+    {
+        if (Creature *pIllidan = pInstance->GetCreature(pInstance->GetData64(DATA_ILLIDANSTORMRAGE)))
+            CAST_AI(boss_illidan_stormrageAI, pIllidan->AI())->GlaiveSummoned(me);
+    }
 
     void MoveInLineOfSight(Unit *pWho){}
 
