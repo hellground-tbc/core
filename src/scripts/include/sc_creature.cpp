@@ -27,6 +27,18 @@ void SummonList::DoAction(uint32 entry, uint32 info)
              summon->AI()->DoAction(info);
     }
 }
+
+void SummonList::Cast(uint32 entry, uint32 spell, Unit* target)
+{
+    for (iterator i = begin(); i != end(); )
+    {
+         Creature *summon = Unit::GetCreature(*m_creature, *i);
+         i++;
+         if(summon && (!entry || summon->GetEntry() == entry))
+             summon->CastSpell(target, spell, true);
+    }
+}
+
 void SummonList::Despawn(Creature *summon)
 {
     uint64 guid = summon->GetGUID();

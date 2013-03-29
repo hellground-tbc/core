@@ -38,6 +38,7 @@ public:
     bool isEmpty();
     void AuraOnEntry(uint32 entry, uint32 spellId, bool apply);
     void DoAction(uint32 entry, uint32 info);
+    void Cast(uint32 entry, uint32 spell, Unit* target);
 private:
     Creature *m_creature;
 };
