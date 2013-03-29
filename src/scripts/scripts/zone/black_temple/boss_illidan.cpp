@@ -102,7 +102,7 @@ enum IllidanSpell
     SPELL_ILLIDAN_ENRAGE                 = 40683,
 
     // Phase 2 spells
-    SPELL_ILLIDAN_THROW_GLAIVE           = 39635,
+    SPELL_ILLIDAN_THROW_GLAIVE           = 39849,
     SPELL_ILLIDAN_GLAIVE_RETURN          = 39873,
     SPELL_ILLIDAN_FIREBALL               = 40598,
     SPELL_ILLIDAN_DARK_BARRAGE           = 40585,
@@ -573,7 +573,7 @@ struct boss_illidan_stormrageAI : public BossAI
                 }
                 case EVENT_ILLIDAN_RETURN_GLAIVE:
                 {
-                    // implement SPELL_ILLIDAN_GLAIVE_RETURN visual
+                    // implement SPELL_ILLIDAN_GLAIVE_RETURN visual. The spell is fixed.
                     summons.DespawnEntry(BLADE_OF_AZZINOTH);
                     events.ScheduleEvent(EVENT_ILLIDAN_LAND, 1000, m_phase);
                     break;

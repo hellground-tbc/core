@@ -838,7 +838,7 @@ void Spell::EffectDummy(uint32 i)
                     break;
                 }
                 // Illidan Stormrage: Throw Glaive (Summon Glaive after throw;p
-                case 39635:
+                case 39849:
                 {
                     unitTarget->CastSpell(unitTarget, 41466, true);
                     if (unitTarget->GetTypeId() == TYPEID_UNIT)
@@ -847,6 +847,14 @@ void Spell::EffectDummy(uint32 i)
                         ((Creature*)unitTarget)->RemoveCorpse();
                     }
                     return;
+                }
+                // Illidan Stormrage: Return Glaive
+                case 39873:
+                {
+                    if (unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    m_caster->CastSpell(unitTarget, 39635, true);
                 }
                 case 38002:
                 {
