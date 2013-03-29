@@ -1337,6 +1337,7 @@ struct boss_illidan_akamaAI : public BossAI
                         me->SetSelection(pIllidan->GetGUID());
                         pIllidan->SetSelection(me->GetGUID());
                         pIllidan->RemoveAurasDueToSpell(SPELL_ILLIDAN_KNEEL_INTRO);
+                        me->SetFacingToObject(pIllidan);
                         DoScriptText(SAY_ILLIDAN_NO1, pIllidan);
                     }
 
