@@ -327,14 +327,11 @@ void SendActionMenu_go_lesser_wind_stone(Player *player, GameObject* _GO, uint32
     _GO->SetRespawnTime(600);
     player->CLOSE_GOSSIP_MENU();
 
-    float x,y,z;
-    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
-
     switch(action)
     {
     case GOSSIP_ACTION_INFO_DEF:
         player->CastSpell(player,24762,false);
-        player->SummonCreature(RAND(EARTHEN_TEMPLAR, CRIMSON_TEMPLAR, AZURE_TEMPLAR, HOARY_TEMPLAR), x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
+        player->SummonCreature(RAND(EARTHEN_TEMPLAR, CRIMSON_TEMPLAR, AZURE_TEMPLAR, HOARY_TEMPLAR), _GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
         player->DestroyItemCount(20406, 1, true, true);
         player->DestroyItemCount(20407, 1, true, true);
         player->DestroyItemCount(20408, 1, true, true);
@@ -384,14 +381,11 @@ void SendActionMenu_go_wind_stone(Player *player, GameObject* _GO, uint32 action
     _GO->SetRespawnTime(900);
     player->CLOSE_GOSSIP_MENU();
 
-    float x,y,z;
-    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
-
     switch(action)
     {
     case GOSSIP_ACTION_INFO_DEF:
         player->CastSpell(player,24762,false);
-        player->SummonCreature(RAND(DUKE_OF_CYNDERS, DUKE_OF_FATHOMS, DUKE_OF_SHARDS, DUKE_OF_ZEPHYRS), x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
+        player->SummonCreature(RAND(DUKE_OF_CYNDERS, DUKE_OF_FATHOMS, DUKE_OF_SHARDS, DUKE_OF_ZEPHYRS), _GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
         player->DestroyItemCount(20422, 1, true, true);
         player->DestroyItemCount(20406, 1, true, true);
         player->DestroyItemCount(20407, 1, true, true);
@@ -441,14 +435,11 @@ void SendActionMenu_go_greater_wind_stone(Player *player, GameObject* _GO, uint3
     _GO->SetRespawnTime(18000);
     player->CLOSE_GOSSIP_MENU();
 
-    float x,y,z;
-    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
-
     switch(action)
     {
     case GOSSIP_ACTION_INFO_DEF:
         player->CastSpell(player,24762,false);
-        player->SummonCreature(RAND(BARON_KAZUM, HIGH_MARSHAL_WHIRLAXIS, LORD_SKWOL, PRINCE_SKALDRENOX), x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
+        player->SummonCreature(RAND(BARON_KAZUM, HIGH_MARSHAL_WHIRLAXIS, LORD_SKWOL, PRINCE_SKALDRENOX),_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
         player->DestroyItemCount(20406, 1, true, true);
         player->DestroyItemCount(20407, 1, true, true);
         player->DestroyItemCount(20408, 1, true, true);
