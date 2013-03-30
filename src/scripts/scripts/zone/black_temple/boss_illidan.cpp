@@ -214,10 +214,7 @@ class GlaiveTargetRespawner
         void operator()(Creature* u) const
         {
             if (u->GetEntry() == GLAIVE_TARGET)
-            {
-                u->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
                 u->Respawn();
-            }
         }
         void operator()(GameObject* u) const { }
         void operator()(WorldObject*) const {}

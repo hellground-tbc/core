@@ -130,34 +130,6 @@ bool Spell_arcane_torrent(Unit* caster, std::list<Unit*> &, SpellCastTargets con
     return true;
 }
 
-bool Spell_throw_glaive(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effect_index)
-{
-    if (effect_index != 0)
-        return true;
-
-    if (unitList.empty())
-        return true;
-
-    Unit* target = NULL;
-    for (std::list<Unit*>::iterator it = unitList.begin(); it != unitList.end(); ++it)
-    {
-        if (!(*it)->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER))
-        {
-            target = *it;
-            break;
-        }
-    }
-
-    unitList.clear();
-
-    if (target)
-    {
-        target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
-        unitList.push_back(target);
-    }
-    return true;
-}
-
 bool Spell_strong_fetish(Unit *caster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
 {
     if (caster->GetTypeId() != TYPEID_PLAYER)
@@ -207,11 +179,6 @@ void AddSC_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_arcane_torrent";
     newscript->pSpellTargetMap = &Spell_arcane_torrent;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "spell_throw_glaive";
-    newscript->pSpellTargetMap = &Spell_throw_glaive;
     newscript->RegisterSelf();
 
     newscript = new Script;
