@@ -640,89 +640,89 @@ void AddSC_go_scripts()
 
     newscript = new Script;
     newscript->Name="go_northern_crystal_pylon";
-    newscript->pGOUse =           &GOUse_go_northern_crystal_pylon;
+    newscript->pGOUse = &GOUse_go_northern_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_eastern_crystal_pylon";
-    newscript->pGOUse =           &GOUse_go_eastern_crystal_pylon;
+    newscript->pGOUse = &GOUse_go_eastern_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_western_crystal_pylon";
-    newscript->pGOUse =           &GOUse_go_western_crystal_pylon;
+    newscript->pGOUse = &GOUse_go_western_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_barov_journal";
-    newscript->pGOUse =           &GOUse_go_barov_journal;
+    newscript->pGOUse = &GOUse_go_barov_journal;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_field_repair_bot_74A";
-    newscript->pGOUse =           &GOUse_go_field_repair_bot_74A;
+    newscript->pGOUse = &GOUse_go_field_repair_bot_74A;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_orb_of_command";
-    newscript->pGOUse =           &GOUse_go_orb_of_command;
+    newscript->pGOUse = &GOUse_go_orb_of_command;
     newscript->pGossipSelectGO =  &GOGossipSelect_go_orb_of_command;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_tablet_of_madness";
-    newscript->pGOUse =           &GOUse_go_tablet_of_madness;
+    newscript->pGOUse = &GOUse_go_tablet_of_madness;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_tablet_of_the_seven";
-    newscript->pGOUse =           &GOUse_go_tablet_of_the_seven;
+    newscript->pGOUse = &GOUse_go_tablet_of_the_seven;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_jump_a_tron";
-    newscript->pGOUse =           &GOUse_go_jump_a_tron;
+    newscript->pGOUse = &GOUse_go_jump_a_tron;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_sacred_fire_of_life";
-    newscript->pGOUse =           &GOUse_go_sacred_fire_of_life;
+    newscript->pGOUse = &GOUse_go_sacred_fire_of_life;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_crystalforge";
-    newscript->pGOUse =           &GOUse_go_crystalforge;
+    newscript->pGOUse = &GOUse_go_crystalforge;
     newscript->pGossipSelectGO =  &GOGossipSelect_go_crystalforge;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_matrix_punchograph";
-    newscript->pGOUse =           &GOUse_go_matrix_punchograph;
+    newscript->pGOUse = &GOUse_go_matrix_punchograph;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_cat_figurine";
-    newscript->pGOUse =           &GOUse_go_cat_figurine;
+    newscript->pGOUse = &GOUse_go_cat_figurine;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_blood_filled_orb";
-    newscript->pGOUse =           &GOUse_go_blood_filled_orb;
+    newscript->pGOUse = &GOUse_go_blood_filled_orb;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_ethereum_stasis";
-    newscript->pGOUse =           &GOUse_go_ethereum_stasis;
+    newscript->pGOUse = &GOUse_go_ethereum_stasis;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_resonite_cask";
-    newscript->pGOUse =           &GOUse_go_resonite_cask;
+    newscript->pGOUse = &GOUse_go_resonite_cask;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_darkmoon_cannon";
-    newscript->pGOUse =           &GOUse_go_darkmoon_cannon;
+    newscript->pGOUse = &GOUse_go_darkmoon_cannon;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -758,7 +758,7 @@ void AddSC_go_scripts()
 
     newscript = new Script;
     newscript->Name = "go_draconic_for_dummies";
-    newscript->pGOUse =           &GOUse_go_draconic_for_dummies;
+    newscript->pGOUse = &GOUse_go_draconic_for_dummies;
     newscript->pGossipSelectGO =  &GOGossipSelect_go_draconic_for_dummies;
     newscript->RegisterSelf();
 }
