@@ -118,6 +118,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "events",         SEC_PLAYER,         true,   &ChatHandler::HandleServerEventsCommand,        "", NULL },
         { "motd",           SEC_PLAYER,         true,   &ChatHandler::HandleServerMotdCommand,          "", NULL },
         { "mute",           SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerMuteCommand,          "", NULL },
+        { "pvp",            SEC_PLAYER,         false,  &ChatHandler::HandleServerPVPCommand,           "", NULL },
         { "restart",        SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverRestartCommandTable },
         { "rollshutdown",   SEC_ADMINISTRATOR,  true,   &ChatHandler::HandleServerRollShutDownCommand,  "", NULL},
         { "set",            SEC_ADMINISTRATOR,  true,   NULL,                                           "", serverSetCommandTable },

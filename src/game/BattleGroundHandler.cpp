@@ -206,7 +206,7 @@ void WorldSession::HandleBattleGroundJoinOpcode(WorldPacket & recv_data )
 
     if (sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_INFO))
     {
-        uint32 queuedHorde = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetQueuedPlayersCount(BG_TEAM_ALLIANCE, bgBracketId);
+        uint32 queuedHorde = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetQueuedPlayersCount(BG_TEAM_HORDE, bgBracketId);
         uint32 queuedAlliance = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetQueuedPlayersCount(BG_TEAM_ALLIANCE, bgBracketId);
         uint32 minPlayers = bg->GetMinPlayersPerTeam();
         ChatHandler(_player).PSendSysMessage("Horde queued: %u, Alliance queued: %u. Minimum per team: %u", queuedHorde, queuedAlliance, minPlayers);

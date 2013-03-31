@@ -416,6 +416,7 @@ class ChatHandler
         bool HandleServerShutDownCommand(const char* args);
         bool HandleServerRollShutDownCommand(const char* args);
         bool HandleServerShutDownCancelCommand(const char* args);
+        bool HandleServerPVPCommand(const char* args);
 
         bool HandleTeleCommand(const char * args);
         bool HandleTeleAddCommand(const char * args);

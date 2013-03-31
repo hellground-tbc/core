@@ -34,6 +34,8 @@
 #include "revision.h"
 #include "Util.h"
 #include "GameEvent.h"
+#include "BattleGroundMgr.h"
+#include "OutdoorPvPMgr.h"
 
 bool ChatHandler::HandleAccountXPToggleCommand(const char* args)
 {
@@ -385,3 +387,69 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleServerPVPCommand(const char* /*args*/)
+{
+    Player *player=m_session->GetPlayer();
+    
+    if (!sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_INFO))
+    {
+        PSendSysMessage("Battleground queue info is disabled");
+        return true;
+    }
+
+    if (!(player->InBattleGroundQueue()))
+        PSendSysMessage("You aren't in any battleground queue");
+    else
+    {
+        BattleGroundQueueTypeId qtype;
+        BattleGroundTypeId bgtype;
+        bool isbg;
+        for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        {
+            qtype = player->GetBattleGroundQueueTypeId(i);
+            isbg = false;
+            switch (qtype)
+            {
+            case BATTLEGROUND_QUEUE_AB:
+                {
+                    PSendSysMessage("You are queued for Arathi Basin");
+                    isbg = true;
+                    bgtype = BATTLEGROUND_AB;
+                    break;
+                }
+            case BATTLEGROUND_QUEUE_AV:
+                {
+                    PSendSysMessage("You are queued for Alterac Valley");
+                    isbg = true;
+                    bgtype = BATTLEGROUND_AV;
+                    break;
+                }
+            case BATTLEGROUND_QUEUE_WS:
+                {
+                    PSendSysMessage("You are queued for Warsong Gulch");
+                    isbg = true;
+                    bgtype = BATTLEGROUND_WS;
+                    break;
+                }
+            case BATTLEGROUND_QUEUE_EY:
+                {
+                    PSendSysMessage("You are queued for Eye of the storm");
+                    isbg = true;
+                    bgtype = BATTLEGROUND_EY;
+                    break;
+                }
+            default:
+                break;
+            }
+
+            if (isbg)
+            {
+                uint32 minPlayers = sBattleGroundMgr.GetBattleGroundTemplate(bgtype)->GetMinPlayersPerTeam();
+                uint32 queuedHorde = sBattleGroundMgr.m_BattleGroundQueues[qtype].GetQueuedPlayersCount(BG_TEAM_HORDE, player->GetBattleGroundBracketIdFromLevel(bgtype));
+                uint32 queuedAlliance = sBattleGroundMgr.m_BattleGroundQueues[qtype].GetQueuedPlayersCount(BG_TEAM_ALLIANCE, player->GetBattleGroundBracketIdFromLevel(bgtype));
+                PSendSysMessage("Horde queued: %u, Alliance queued: %u. Minimum per team: %u", queuedHorde, queuedAlliance, minPlayers);
+            }
+        }
+    }
+    return true;
+}
