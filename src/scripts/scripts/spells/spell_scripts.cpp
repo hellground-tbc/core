@@ -157,6 +157,24 @@ bool Spell_strong_fetish(Unit *caster, Unit* pUnit, Item* pItem, GameObject* pGa
     return true;
 }
 
+bool Spell_coax_marmot(Unit *caster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    if (caster->GetTypeId() != TYPEID_PLAYER)
+        return true;
+
+    if (Player* player = caster->ToPlayer())
+    {
+        if (player->GetQuestStatus(10720) == QUEST_STATUS_INCOMPLETE)
+        {
+            if (Creature* marmot = GetClosestCreatureWithEntry(player, 22189, 15.0f))
+                player->CastSpell(marmot, 530, true); // not the correct spell, workaround
+        }
+        return false;
+    }
+
+    return true;
+}
+
 void AddSC_spell_scripts()
 {
     Script *newscript;
@@ -184,5 +202,10 @@ void AddSC_spell_scripts()
     newscript = new Script;
     newscript->Name = "strong_fetish";
     newscript->pSpellHandleEffect = &Spell_strong_fetish;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "coax_marmot";
+    newscript->pSpellHandleEffect = &Spell_coax_marmot;
     newscript->RegisterSelf();
 }

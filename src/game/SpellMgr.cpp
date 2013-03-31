@@ -3377,6 +3377,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effect[1] = 0;
                 spellInfo->Effect[2] = 0;
                 break;
+            case 38629: // Poison Keg
+                spellInfo->RecoveryTime = 1080;
+                break;
             default:
                 break;
         }

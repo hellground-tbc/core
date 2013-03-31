@@ -557,38 +557,6 @@ bool GOUse_go_rule_skies(Player* pPlayer, GameObject* pGO)
 }
 
 /*######
-## go_beer_keg
-######*/
-
-enum
-{
-    NPC_CREDIT_FERMENTED    = 22368,
-    NPC_CREDIT_GREEN        = 22356,
-    NPC_CREDIT_MOONSHINE    = 22367
-};
-
-bool GOUse_go_beer_keg(Player* pPlayer, GameObject* pGO)
-{
-    if (pPlayer->GetQuestStatus(10720) == QUEST_STATUS_INCOMPLETE)
-    {
-        switch(pGO->GetEntry())
-        {
-            case 185214:
-                pPlayer->KilledMonster(NPC_CREDIT_FERMENTED, pGO->GetGUID());
-                break;
-            case 185206:
-                pPlayer->KilledMonster(NPC_CREDIT_GREEN, pGO->GetGUID());
-                break;
-            case 185213:
-                pPlayer->KilledMonster(NPC_CREDIT_MOONSHINE, pGO->GetGUID());
-                break;
-        }
-    }
-
-    return true;
-}
-
-/*######
 ## go_draconic_for_dummies
 ######*/
 
@@ -786,11 +754,6 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_rule_skies";
     newscript->pGOUse = &GOUse_go_rule_skies;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "go_beer_keg";
-    newscript->pGOUse = &GOUse_go_beer_keg;
     newscript->RegisterSelf();
 
     newscript = new Script;
