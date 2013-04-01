@@ -114,7 +114,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     if (!GetPlayer()->GetMap()->Add(GetPlayer()))
     {
         // Teleport to previous place, if cannot be ported back TP to homebind place
-        GetPlayer()->SetDontMove(false);
         if (!GetPlayer()->TeleportTo(old_loc))
             GetPlayer()->TeleportToHomebind();
 
@@ -150,7 +149,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         if (!_player->InBattleGround())
         {
             // short preparations to continue flight
-            GetPlayer()->SetDontMove(false);
             FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
             flight->Reset(*GetPlayer());
             return;
@@ -198,8 +196,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
         GetPlayer()->m_temporaryUnsummonedPetNumber = 0;
     }
-
-    GetPlayer()->SetDontMove(false);
 }
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recv_data)

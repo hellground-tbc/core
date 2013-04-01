@@ -334,8 +334,6 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     m_atLoginFlags = AT_LOGIN_NONE;
 
-    m_dontMove = false;
-
     pTrader = 0;
 
     ClearTrade();
@@ -1939,22 +1937,12 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             SetFallInformation(0, final_z);
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
-
-            // move packet sent by client always after far teleport
-            // SetPosition(final_x, final_y, final_z, final_o, true);
-            SetDontMove(true);
-            // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
         }
         else
             return false;
     }
 
     return true;
-}
-
-void Player::SetDontMove(bool dontMove)
-{
-    m_dontMove = dontMove;
 }
 
 void Player::AddToWorld()

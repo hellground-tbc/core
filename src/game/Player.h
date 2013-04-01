@@ -1758,9 +1758,6 @@ class HELLGROUND_EXPORT Player : public Unit
         void learnSkillRewardedSpells(uint32 id);
         void learnSkillRewardedSpells();
 
-        void SetDontMove(bool dontMove);
-        bool GetDontMove() const { return m_dontMove; }
-
         void CheckAreaExploreAndOutdoor(void);
 
         static uint32 TeamForRace(uint8 race);
@@ -2355,8 +2352,6 @@ class HELLGROUND_EXPORT Player : public Unit
 
         typedef std::list<Channel*> JoinedChannelsList;
         JoinedChannelsList m_channels;
-
-        bool m_dontMove;
 
         bool m_cinematic;
         uint32 m_watchingCinematicId;
