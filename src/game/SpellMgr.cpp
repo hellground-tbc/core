@@ -706,6 +706,7 @@ bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 41625:                                         // Fel Rage 3
         case 46787:                                         // Fel Rage scale
         case 32375:                                         // Mass Dispell on friendly targets
+        case 38318:                                         // Orb of Blackwhelp
             return true;
         case 46392:                                         // Focused Assault
         case 46393:                                         // Brutal Assault
