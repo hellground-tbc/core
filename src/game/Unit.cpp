@@ -7083,7 +7083,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         case 14157: // Ruthlessness
         {
             // avoid double proc, and dont proc from deadly throw
-            if (procSpell->Id == 26679 || pVictim == this)
+            if (procSpell->Id == 26679 || !pVictim || pVictim == this)
                 return false;
             break;
         }
