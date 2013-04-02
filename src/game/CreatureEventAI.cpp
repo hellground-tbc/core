@@ -607,9 +607,6 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         }
         case ACTION_T_SUMMON:
         {
-            if (HasEventAISummonedUnits())
-                break;
-
             Unit* target = GetTargetByType(action.summon.target, pActionInvoker);
 
             Creature* pCreature = NULL;
@@ -772,9 +769,6 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             break;
         case ACTION_T_SUMMON_ID:
         {
-            if (HasEventAISummonedUnits())
-                break;
-
             Unit* target = GetTargetByType(action.summon_id.target, pActionInvoker);
 
             CreatureEventAI_Summon_Map::const_iterator i = sCreatureEAIMgr.GetCreatureEventAISummonMap().find(action.summon_id.spawnId);
