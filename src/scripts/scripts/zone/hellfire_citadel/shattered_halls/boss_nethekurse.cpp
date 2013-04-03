@@ -414,14 +414,14 @@ struct mob_fel_orc_convertAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_grand_warlock_nethekurse(Creature* pCreature)
+CreatureAI* GetAI_boss_grand_warlock_nethekurse(Creature* creature)
 {
-    return new boss_grand_warlock_nethekurseAI (pCreature);
+    return new boss_grand_warlock_nethekurseAI (creature);
 }
 
-CreatureAI* GetAI_mob_fel_orc_convert(Creature* pCreature)
+CreatureAI* GetAI_mob_fel_orc_convert(Creature* creature)
 {
-    return new mob_fel_orc_convertAI (pCreature);
+    return new mob_fel_orc_convertAI (creature);
 }
 
 void AddSC_boss_grand_warlock_nethekurse()
