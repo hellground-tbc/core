@@ -187,6 +187,7 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
     uint32 InnderDemon_Count;
     uint64 Demon;
     uint64 SpellBinderGUID[3];
+    uint64 actualtarget;
 
     void Reset()
     {
@@ -444,11 +445,15 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
             else
                 Whirlwind_Timer =  15000;
 
-            NeedThreatReset = false;
-            DoResetThreat();
-            m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
-            m_creature->SetReactState(REACT_AGGRESSIVE);
+            actualtarget = m_creature->getVictimGUID();
+            if (actualtarget)
+            {
+                NeedThreatReset = false;
+                DoResetThreat();
+                m_creature->GetMotionMaster()->Clear();
+                m_creature->GetMotionMaster()->MoveChase(m_creature->GetUnit(actualtarget));
+                m_creature->SetReactState(REACT_AGGRESSIVE);
+            }
         }
 
         //Enrage_Timer ( 10 min )
