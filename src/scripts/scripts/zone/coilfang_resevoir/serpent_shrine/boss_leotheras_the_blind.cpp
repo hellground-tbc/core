@@ -452,6 +452,7 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
                 DoResetThreat();
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveChase(m_creature->GetUnit(actualtarget));
+                DoZoneInCombat();
                 m_creature->SetReactState(REACT_AGGRESSIVE);
             }
         }
