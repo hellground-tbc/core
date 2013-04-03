@@ -1388,6 +1388,8 @@ void Creature::SelectLevel(const CreatureInfo *cinfo)
     uint32 minhealth = std::min(cinfo->maxhealth, cinfo->minhealth);
     uint32 maxhealth = std::max(cinfo->maxhealth, cinfo->minhealth);
     uint32 health = uint32(healthmod * (minhealth + uint32(rellevel*(maxhealth - minhealth))));
+    if (health < 1)
+        health = 1;
 
     SetCreateHealth(health);
     SetMaxHealth(health);
