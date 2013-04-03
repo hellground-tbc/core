@@ -3055,6 +3055,17 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
 {
     switch (GetSpellInfo()->Id)
     {
+        // Emberseer Start
+        case 16533:
+        {
+            uint64 emberGUID = m_caster->GetMap()->GetCreatureGUID(9816);
+            Creature *ember = m_caster->GetMap()->GetCreature(emberGUID);
+            if(ember)
+            {
+                ember->AI()->DoAction(1);
+            }
+            break;
+        }
         // Summon Arcane Elemental
         case 40134:
         {

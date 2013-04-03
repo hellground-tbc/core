@@ -19,6 +19,8 @@
 
 #define EMBERSEER_IN    175244
 #define EMBERSEER_OUT   175153
+#define BLACKROCK_ALTAR 175706
+#define BLACKHAND_INCARCERATOR  10316
 
 #define ENCOUNTERS 3
 
@@ -33,6 +35,7 @@ struct instance_blackrock_spire : public ScriptedInstance
     std::set<uint64> emberseerInDoorsGUID;
     std::set<uint64> runesDoorGUID;
     std::set<uint64> runesEmberGUID;
+    std::set<uint64> channelersGUID;
 
     void Initialize()
     {
@@ -42,6 +45,7 @@ struct instance_blackrock_spire : public ScriptedInstance
         runesDoorGUID.clear();
         runesEmberGUID.clear();
         emberseerInDoorsGUID.clear();
+        channelersGUID.clear();
         emberseerOut = 0;
         runesTimer = 3000;
     }
@@ -80,6 +84,22 @@ struct instance_blackrock_spire : public ScriptedInstance
                 emberseerOut = go->GetGUID();
                 if(GetData(DATA_EMBERSEER) == DONE)
                     HandleGameObject(emberseerOut, true);
+                break;
+            case BLACKROCK_ALTAR:
+                if(GetData(DATA_EMBERSEER) != NOT_STARTED)
+                    go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+                break;
+            default:
+                break;
+        }
+    }
+
+    void OnCreatureCreate(Creature *creature, uint32 entry)
+    {
+        switch (entry)
+        {
+            case BLACKHAND_INCARCERATOR:      
+                channelersGUID.insert(creature->GetGUID());
                 break;
             default:
                 break;
@@ -141,6 +161,55 @@ struct instance_blackrock_spire : public ScriptedInstance
             case DATA_EMBERSEER:
                 if(Encounters[1] != DONE)
                     Encounters[1] = data;
+                else return;
+
+                if(data == IN_PROGRESS && Encounters[0] != DONE)
+                {
+                    //someone is cheating
+                }
+                if(data == IN_PROGRESS)
+                {
+                    for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
+                    {
+                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), false);
+                    }
+                    for(std::set<uint64>::iterator channeler = channelersGUID.begin(); channeler != channelersGUID.end(); ++channeler)
+                    {
+                        instance->GetCreature(*channeler)->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
+                        instance->GetCreature(*channeler)->FinishSpell(CURRENT_CHANNELED_SPELL);
+                    }
+                    for(std::set<uint64>::iterator i = runesEmberGUID.begin(); i != runesEmberGUID.end(); ++i)
+                    {
+                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
+                    }
+                }
+                else if(data == FAIL)
+                {
+                    for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
+                    {
+                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
+                    }
+                    for(std::set<uint64>::iterator channeler = channelersGUID.begin(); channeler != channelersGUID.end(); ++channeler)
+                    {
+                        instance->GetCreature(*channeler)->ForcedDespawn();
+                    }
+                    for(std::set<uint64>::iterator i = runesEmberGUID.begin(); i != runesEmberGUID.end(); ++i)
+                    {
+                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), false);
+                    }
+                }
+                else if(data == DONE)
+                {
+                    HandleGameObject(emberseerOut, true);
+                    for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
+                    {
+                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
+                    }
+                    for(std::set<uint64>::iterator i = runesEmberGUID.begin(); i != runesEmberGUID.end(); ++i)
+                    {
+                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), false);
+                    }
+                }
                 break;
         }
 

@@ -27,10 +27,22 @@ EndScriptData */
 #define SPELL_FIRENOVA          23462
 #define SPELL_FLAMEBUFFET       23341
 #define SPELL_PYROBLAST         17274
+#define SPELL_GROWING           16048
+#define SPELL_TRANSFORM         16052
+#define SPELL_DESPAWN           16078
 
-struct boss_pyroguard_emberseerAI : public ScriptedAI
+enum EmberseerEvents
 {
-    boss_pyroguard_emberseerAI(Creature *c) : ScriptedAI(c)
+    EMBERSEER_EVENT_GROWING       = 1,
+    EMBERSEER_EVENT_TRANSFORM     = 2,
+    EMBERSEER_EVENT_FIRENOVA      = 3,
+    EMBERSEER_EVENT_FLAMEBUFFET   = 4,
+    EMBERSEER_EVENT_PYROBLAST     = 5
+};
+
+struct boss_pyroguard_emberseerAI : public BossAI
+{
+    boss_pyroguard_emberseerAI(Creature *c) : BossAI(c, DATA_EMBERSEER)
     {
         pInstance = (c->GetInstanceData());
     }
@@ -46,52 +58,92 @@ struct boss_pyroguard_emberseerAI : public ScriptedAI
         FireNova_Timer = 6000;
         FlameBuffet_Timer = 3000;
         PyroBlast_Timer = 14000;
-        pInstance->SetData(DATA_EMBERSEER, NOT_STARTED);
+        pInstance->SetData(bossId, NOT_STARTED);
+        events.Reset();
+
+        events.SetPhase(0);
     }
 
-    void EnterCombat(Unit *who)
+    void DoAction(const int32 param)
     {
-        pInstance->SetData(DATA_EMBERSEER, IN_PROGRESS);
+        switch(param)
+        {
+            case 1:         //start event
+            {
+                pInstance->SetData(bossId, IN_PROGRESS);
+                events.SetPhase(1);
+                events.ScheduleEvent(EMBERSEER_EVENT_GROWING, 500, 0, 1);
+                events.ScheduleEvent(EMBERSEER_EVENT_TRANSFORM, 60000, 0, 1);
+                break;
+            }
+        }
+        BossAI::DoAction(param);
     }
 
     void JustDied(Unit* killer)
     {
-        if(GameObject* door = FindGameObject(175153, 100, killer))
-        {
-            door->Use(killer);
-        }
         pInstance->SetData(DATA_EMBERSEER, DONE);
+    }
+
+    void EnterEvadeMode()
+    {
+        me->CastSpell(me, SPELL_DESPAWN, false);
+        me->ForcedDespawn();
+        pInstance->SetData(DATA_EMBERSEER, FAIL);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        //Return since we have no target
-        if (!UpdateVictim() )
+        events.Update(diff);
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EMBERSEER_EVENT_GROWING:
+                {
+                    me->CastSpell(me, SPELL_GROWING, true);
+                    break;
+                }
+                case EMBERSEER_EVENT_TRANSFORM:
+                {
+                    DoScriptText(-2100023, me);
+                    DoScriptText(-2100024, me);
+                    me->CastSpell(me, SPELL_TRANSFORM, true);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
+                    events.SetPhase(2);
+                    events.ScheduleEvent(EMBERSEER_EVENT_FIRENOVA, 6000, 0, 2);
+                    events.ScheduleEvent(EMBERSEER_EVENT_FLAMEBUFFET, 3000, 0, 2);
+                    events.ScheduleEvent(EMBERSEER_EVENT_PYROBLAST, 14000, 0, 2);
+                    break;
+                }
+                case EMBERSEER_EVENT_FIRENOVA:
+                {
+                    AddSpellToCast(SPELL_FIRENOVA, CAST_SELF);
+                    events.ScheduleEvent(EMBERSEER_EVENT_FIRENOVA, 6000, 0, 2);
+                    break;
+                }
+                case EMBERSEER_EVENT_FLAMEBUFFET:
+                {
+                    AddSpellToCast(SPELL_FLAMEBUFFET, CAST_TANK);
+                    events.ScheduleEvent(EMBERSEER_EVENT_FLAMEBUFFET, 3000, 0, 2);
+                    break;
+                }
+                case EMBERSEER_EVENT_PYROBLAST:
+                {
+                    AddSpellToCast(SPELL_PYROBLAST, CAST_RANDOM);
+                    events.ScheduleEvent(EMBERSEER_EVENT_PYROBLAST, 14000, 0, 2);
+                    break;
+                }
+            }
+        }
+
+        if (!UpdateVictim())
+        {
             return;
+        }
 
-        //FireNova_Timer
-        if (FireNova_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(),SPELL_FIRENOVA);
-            FireNova_Timer = 6000;
-        }else FireNova_Timer -= diff;
-
-        //FlameBuffet_Timer
-        if (FlameBuffet_Timer < diff)
-        {
-            DoCast(m_creature->getVictim(),SPELL_FLAMEBUFFET);
-            FlameBuffet_Timer = 14000;
-        }else FlameBuffet_Timer -= diff;
-
-        //PyroBlast_Timer
-        if (PyroBlast_Timer < diff)
-        {
-            Unit* target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM,0);
-            if (target) DoCast(target,SPELL_PYROBLAST);
-            PyroBlast_Timer = 15000;
-        }else PyroBlast_Timer -= diff;
-
+        CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
     }
 };
