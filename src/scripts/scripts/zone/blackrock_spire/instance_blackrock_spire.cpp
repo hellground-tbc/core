@@ -20,7 +20,8 @@
 #define EMBERSEER_IN    175244
 #define EMBERSEER_OUT   175153
 #define BLACKROCK_ALTAR 175706
-#define BLACKHAND_INCARCERATOR  10316
+#define BLACKHAND_INCARCERATOR      10316
+#define PYROGUARD_EMBERSEER         9816
 
 #define ENCOUNTERS 3
 
@@ -30,6 +31,7 @@ struct instance_blackrock_spire : public ScriptedInstance
 
     uint32 Encounters[ENCOUNTERS];
     uint64 emberseerOut;
+    uint64 pyroguard_emberseerGUID;
 
     uint32 runesTimer;
     std::set<uint64> emberseerInDoorsGUID;
@@ -47,6 +49,7 @@ struct instance_blackrock_spire : public ScriptedInstance
         emberseerInDoorsGUID.clear();
         channelersGUID.clear();
         emberseerOut = 0;
+        pyroguard_emberseerGUID = 0;
         runesTimer = 3000;
     }
 
@@ -98,6 +101,9 @@ struct instance_blackrock_spire : public ScriptedInstance
     {
         switch (entry)
         {
+            case PYROGUARD_EMBERSEER:
+                pyroguard_emberseerGUID = creature->GetGUID();
+                break;
             case BLACKHAND_INCARCERATOR:      
                 channelersGUID.insert(creature->GetGUID());
                 break;
@@ -169,6 +175,11 @@ struct instance_blackrock_spire : public ScriptedInstance
                 }
                 if(data == IN_PROGRESS)
                 {
+                    Creature *ember = GetCreature(pyroguard_emberseerGUID);
+                    if(ember)
+                    {
+                        ember->AI()->DoAction(1);
+                    }
                     for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
                     {
                         HandleGameObject(instance->GetGameObject(*i)->GetGUID(), false);

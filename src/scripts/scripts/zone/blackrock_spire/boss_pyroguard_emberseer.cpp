@@ -70,7 +70,6 @@ struct boss_pyroguard_emberseerAI : public BossAI
         {
             case 1:         //start event
             {
-                pInstance->SetData(bossId, IN_PROGRESS);
                 events.SetPhase(1);
                 events.ScheduleEvent(EMBERSEER_EVENT_GROWING, 500, 0, 1);
                 events.ScheduleEvent(EMBERSEER_EVENT_TRANSFORM, 60000, 0, 1);
@@ -82,6 +81,7 @@ struct boss_pyroguard_emberseerAI : public BossAI
 
     void JustDied(Unit* killer)
     {
+        events.Reset();
         pInstance->SetData(DATA_EMBERSEER, DONE);
     }
 
