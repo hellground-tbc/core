@@ -454,6 +454,7 @@ enum RealmZone
 #define SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT   17              // datalong scriptid, lowguid datalong2, dataint table
 #define SCRIPT_COMMAND_PLAY_SOUND           18              // source = any object, target=any/player, datalong (sound_id), datalong2 (bitmask: 0/1=anyone/target, 0/2=with distance dependent, so 1|2 = 3 is target with distance dependent)
 #define SCRIPT_COMMAND_KILL                 19              // datalong removecorpse
+#define SCRIPT_COMMAND_SET_INST_DATA        20              // source = any, datalong = type, datalong2 = data
 
 
 /// Storage class for commands issued for delayed execution

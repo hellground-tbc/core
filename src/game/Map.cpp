@@ -2050,6 +2050,21 @@ void Map::ScriptsProcess()
                 }
                 break;
             }
+            case SCRIPT_COMMAND_SET_INST_DATA:
+            {
+                if (!source)
+                    break;
+
+                InstanceData* pInst = (InstanceData*)((WorldObject*)source)->GetInstanceData();
+                if (!pInst)
+                {
+                    sLog.outLog(LOG_DEFAULT, "ERROR: SCRIPT_COMMAND_SET_INST_DATA %d attempt to set instance data without instance script.", step.script->id);
+                    return;
+                }
+
+                pInst->SetData(step.script->datalong, step.script->datalong2);
+                break;
+            }
 
             default:
                 sLog.outLog(LOG_DEFAULT, "ERROR: Unknown script command %u called.",step.script->command);
