@@ -406,69 +406,6 @@ CreatureAI* GetAI_mob_stonekeepers(Creature *_Creature)
     return new mob_stonekeepersAI (_Creature);
 }
 
-/* ScriptData
-SDName: go_altar_of_the_keepers
-SD%Complete: 100
-SDComment: Need 3 people to activate to open the altar.  One by one the StoneKeepers will activate.  After all four are dead than the door will open.
-SDCategory: Uldaman
-EndScriptData */
-
-
-#define SPELL_BOSS_OBJECT_VISUAL    11206
-
-#define NUMBER_NEEDED_TO_ACTIVATE 3
-
-static uint64 altarOfTheKeeperCount[5];
-static uint32 altarOfTheKeeperCounter=0;
-
-bool GOUse_go_altar_of_the_keepers(Player *player, GameObject* go)
-{
-    ScriptedInstance* pInstance = (player->GetInstanceData());
-    if (!pInstance) return true;
-
-    bool alreadyUsed;
-
-    go->AddUse ();
-
-    alreadyUsed = false;
-    for (uint32 loop=0; loop<5; ++loop)
-    {
-        if (altarOfTheKeeperCount[loop] == player->GetGUID())
-            alreadyUsed = true;
-    }
-    if (!alreadyUsed && altarOfTheKeeperCounter < 5)
-        altarOfTheKeeperCount[altarOfTheKeeperCounter++] = player->GetGUID();
-    player->CastSpell (player, SPELL_BOSS_OBJECT_VISUAL, false);
-
-    if (altarOfTheKeeperCounter < NUMBER_NEEDED_TO_ACTIVATE)
-    {
-        //error_log ("not enough people yet, altarOfTheKeeperCounter = %d", altarOfTheKeeperCounter);
-        return false;        // not enough people yet
-    }
-
-    // Check to make sure at least three people are still casting
-    uint32 count=0;
-    Unit *pTarget;
-    for (uint32 x = 0; x < 5; ++x)
-    {
-        pTarget = Unit::GetUnit(*player, altarOfTheKeeperCount[x]);
-        //error_log ("number of people currently activating it: %d", x+1);
-        if (!pTarget) continue;
-        if (pTarget->IsNonMeleeSpellCasted(true)) count++;
-        if (count >= NUMBER_NEEDED_TO_ACTIVATE) break;
-    }
-
-    if (count < NUMBER_NEEDED_TO_ACTIVATE)
-    {
-        // error_log ("still not enough people");
-        return true;            // not enough people
-    }
-
-    //error_log ("activating stone keepers");
-    pInstance->SetData(DATA_STONE_KEEPERS, IN_PROGRESS);        // activate the Stone Keepers
-    return true;
-}
-
 void AddSC_boss_archaedas()
 {
     Script *newscript;
@@ -485,11 +422,6 @@ void AddSC_boss_archaedas()
     newscript = new Script;
     newscript->Name="mob_archaedas_minions";
     newscript->GetAI = &GetAI_mob_archaedas_minions;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="go_altar_of_the_keepers";
-    newscript->pGOUse = &GOUse_go_altar_of_the_keepers;
     newscript->RegisterSelf();
 
     newscript = new Script;
