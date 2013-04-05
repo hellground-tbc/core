@@ -572,7 +572,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 IsAIEnabled = true;
             }
 
-            if (GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted() &&
+            if (!(GetObjectGuid().IsTotem() || GetObjectGuid().IsPet()) && GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted() &&
                 GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE &&
                 GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
             {
