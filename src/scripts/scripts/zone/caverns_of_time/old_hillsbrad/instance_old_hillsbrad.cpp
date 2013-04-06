@@ -95,7 +95,8 @@ struct instance_old_hillsbrad : public ScriptedInstance
         if (player->isGameMaster())
             return;
 
-        summon = WAIT_FOR_SUMMON;
+        if (summon == NOT_SUMMONED)
+            summon = WAIT_FOR_SUMMON;
     }
 
     Player* GetPlayerInMap()

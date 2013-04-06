@@ -135,7 +135,8 @@ struct instance_shattered_halls : public ScriptedInstance
         if (!instance->IsHeroic())
             return;
 
-        summon = WAIT_FOR_SUMMON;
+        if (summon == NOT_SUMMONED)
+            summon = WAIT_FOR_SUMMON;
     }
 
     bool IsEncounterInProgress() const
