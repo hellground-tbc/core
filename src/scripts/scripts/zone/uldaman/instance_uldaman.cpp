@@ -48,9 +48,9 @@ struct instance_uldaman : public ScriptedInstance
     {
         archaedasGUID = 0;
         ironayaGUID = 0;
-        whoWokeArchaedasGUID = 0;
 
         altarOfTheKeeperTempleDoor = 0;
+        altarOfArcheadas = 0;
         archaedasTempleDoor = 0;
         ancientVaultDoor = 0;
         ironayaSealDoor = 0;
@@ -67,9 +67,9 @@ struct instance_uldaman : public ScriptedInstance
 
     uint64 archaedasGUID;
     uint64 ironayaGUID;
-    uint64 whoWokeArchaedasGUID;
     
     uint64 altarOfTheKeeperTempleDoor;
+    uint64 altarOfArcheadas;
     uint64 archaedasTempleDoor;
     uint64 ancientVaultDoor;
     uint64 ironayaSealDoor;
@@ -95,41 +95,47 @@ struct instance_uldaman : public ScriptedInstance
                 altarOfTheKeeperTempleDoor = go->GetGUID();
 
                 if (Encounters[0] == DONE) 
-                    HandleGameObject(0,true,go);
+                    HandleGameObject(0, true, go);
+                break;
+
+            case ALTAR_OF_ARCHAEDAS:         // lock the door
+                altarOfArcheadas = go->GetGUID();
+                if (Encounters[2] == DONE) 
+                    go->SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                 break;
 
             case ARCHAEDAS_TEMPLE_DOOR:
                 archaedasTempleDoor = go->GetGUID();
 
                 if (Encounters[0] == DONE) 
-                    HandleGameObject(0,true,go);
+                    HandleGameObject(0, true, go);
                 break;
 
             case ANCIENT_VAULT_DOOR:
-                go->SetUInt32Value(GAMEOBJECT_STATE,1);
+                go->SetUInt32Value(GAMEOBJECT_STATE, 1);
                 go->SetUInt32Value(GAMEOBJECT_FLAGS, 33);
                 ancientVaultDoor = go->GetGUID();
                 
                 if (Encounters[1] == DONE) 
-                    HandleGameObject(0,true,go);
+                    HandleGameObject(0, true, go);
                 break;
         
-        case IRONAYA_SEAL_DOOR:
+            case IRONAYA_SEAL_DOOR:
                 ironayaSealDoor = go->GetGUID();
 
                 if (Encounters[2] == DONE) 
-                    HandleGameObject(0,true,go);
-            break;
+                    HandleGameObject(0, true, go);
+                break;
         
-        case KEYSTONE_GO:
-            keystoneGUID = go->GetGUID();
+            case KEYSTONE_GO:
+                keystoneGUID = go->GetGUID();
 
                 if (Encounters[2] == DONE)
                 {
-                    HandleGameObject(0,true,go);
+                    HandleGameObject(0, true, go);
                     go->SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
-        }
-            break;
+                }
+                break;
         }
     }
 
@@ -228,17 +234,13 @@ struct instance_uldaman : public ScriptedInstance
         }
     }
 
-    void ActivateArchaedas(uint64 target)
+    void ActivateArchaedas()
     {
         Creature *archaedas = instance->GetCreature(archaedasGUID);
         if(!archaedas)
             return;
 
-        if(Unit *victim = Unit::GetUnit(*archaedas, target))
-        {
-            archaedas->CastSpell(archaedas, SPELL_ARCHAEDAS_AWAKEN,false);
-            whoWokeArchaedasGUID = target;
-        }
+        archaedas->CastSpell(archaedas, SPELL_ARCHAEDAS_AWAKEN,false);
     }
     
     void ActivateIronaya()
@@ -321,13 +323,24 @@ struct instance_uldaman : public ScriptedInstance
                 break;
         
         case DATA_ANCIENT_DOOR:
+            if(Encounters[1] == DONE)
+                return;
+
             Encounters[1] = data;
+            if(data == NOT_STARTED)
+            {
+                instance->GetGameObject(altarOfArcheadas)->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+            }
+            if(data == IN_PROGRESS)
+            {
+                ActivateArchaedas();
+            }
             if(data == DONE) //archeadas defeat
-                {
-                    SetDoor (archaedasTempleDoor, true); //re open enter door
-                    SetDoor (ancientVaultDoor, true);
-                }
-                break;
+            {
+                SetDoor (archaedasTempleDoor, true); //re open enter door
+                SetDoor (ancientVaultDoor, true);
+            }
+            break;
         
         case DATA_IRONAYA_DOOR:
             Encounters[2] = data;
@@ -363,17 +376,6 @@ struct instance_uldaman : public ScriptedInstance
         if (data == DONE)
             SaveToDB();
     }
-
-    void SetData64 (uint32 type, uint64 data)
-    {
-        // Archaedas
-        if (type==0 )
-        {
-            ActivateArchaedas (data);
-            SetDoor (archaedasTempleDoor, false); //close when event is started
-        }
-    }
-
 
     void OnCreatureCreate (Creature *creature, uint32 creature_entry)
     {
@@ -416,7 +418,7 @@ struct instance_uldaman : public ScriptedInstance
 
     uint64 GetData64 (uint32 identifier)
     {
-        if (identifier == 0) return whoWokeArchaedasGUID;
+        if (identifier == 0) return archaedasGUID;
         if (identifier == 1) return vaultWalker[0];    // VaultWalker1
         if (identifier == 2) return vaultWalker[1];    // VaultWalker2
         if (identifier == 3) return vaultWalker[2];    // VaultWalker3

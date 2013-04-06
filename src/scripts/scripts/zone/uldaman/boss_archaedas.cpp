@@ -74,6 +74,7 @@ struct boss_archaedasAI : public ScriptedAI
         guardiansAwake = false;
         vaultWalkersAwake = false;
 
+        if (pInstance) pInstance->SetData (DATA_ANCIENT_DOOR, NOT_STARTED);
         if (pInstance) pInstance->SetData (DATA_MINIONS, NOT_STARTED);    // respawn any dead minions
         m_creature->setFaction(35);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -90,14 +91,6 @@ struct boss_archaedasAI : public ScriptedAI
             DoCast (minion, SPELL_AWAKEN_VAULT_WALKER, flag);
             minion->CastSpell(minion, SPELL_ARCHAEDAS_AWAKEN,true);
         }
-    }
-
-
-    void EnterCombat(Unit *who)
-    {
-        m_creature->setFaction (14);
-        m_creature->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->RemoveFlag (UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE);
     }
 
     void SpellHit (Unit* caster, const SpellEntry *spell)
@@ -127,7 +120,9 @@ struct boss_archaedasAI : public ScriptedAI
             return;        // dont do anything until we are done
         } else if (wakingUp && Awaken_Timer <= 0) {
             wakingUp = false;
-            AttackStart(Unit::GetUnit(*m_creature, pInstance->GetData64(0)));
+            m_creature->setFaction (14);
+            m_creature->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            m_creature->RemoveFlag (UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE);
             return;     // dont want to continue until we finish the AttackStart method
         }
 
@@ -240,7 +235,6 @@ struct mob_archaedas_minionsAI : public ScriptedAI
         m_creature->RemoveAllAuras();
         m_creature->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-        amIAwake = true;
     }
 
     void SpellHit (Unit* caster, const SpellEntry *spell) {
@@ -266,7 +260,7 @@ struct mob_archaedas_minionsAI : public ScriptedAI
         } else if (wakingUp && Awaken_Timer <= 0) {
             wakingUp = false;
             amIAwake = true;
-            AttackStart(Unit::GetUnit(*m_creature, pInstance->GetData64(0))); // whoWokeArchaedasGUID
+            AttackStart(me->GetCreature(pInstance->GetData64(0))->getVictim());
             return;     // dont want to continue until we finish the AttackStart method
         }
 
@@ -282,69 +276,6 @@ struct mob_archaedas_minionsAI : public ScriptedAI
 CreatureAI* GetAI_mob_archaedas_minions(Creature *_Creature)
 {
     return new mob_archaedas_minionsAI (_Creature);
-}
-
-/* ScriptData
-SDName: go_altar_archaedas
-SD%Complete: 100
-SDComment: Needs 3 people to activate the Archaedas script
-SDCategory: Uldaman
-EndScriptData */
-
-
-#define OBJECT_ALTAR_OF_ARCHAEDAS   133234
-
-#define NUMBER_NEEDED_TO_ACTIVATE 3
-
-#define SPELL_BOSS_OBJECT_VISUAL    11206
-
-uint64 altarOfArchaedasCount[5];
-int32 altarOfArchaedasCounter=0;
-
-
-bool GOUse_go_altar_of_archaedas(Player *player, GameObject* go)
-{
-    bool alreadyUsed;
-    // avoid crash
-    if(altarOfArchaedasCounter >= 4)
-        return false;
-
-    go->AddUse ();
-
-    alreadyUsed = false;
-    for (uint32 loop=0; loop<5; loop++)
-    {
-        if (altarOfArchaedasCount[loop] == player->GetGUID()) alreadyUsed = true;
-    }
-    if (!alreadyUsed)
-        altarOfArchaedasCount[altarOfArchaedasCounter++] = player->GetGUID();
-
-    player->CastSpell (player, SPELL_BOSS_OBJECT_VISUAL, false);
-
-    if (altarOfArchaedasCounter < NUMBER_NEEDED_TO_ACTIVATE) {
-        return false;        // not enough people yet
-    }
-
-    // Check to make sure at least three people are still casting
-    uint32 count=0;
-    Unit *pTarget;
-    for (uint32 x=0; x<=5; x++)
-    {
-        pTarget = Unit::GetUnit(*player, altarOfArchaedasCount[x]);
-        if (!pTarget) continue;
-        if (pTarget->IsNonMeleeSpellCasted(true)) count++;
-        if (count >= NUMBER_NEEDED_TO_ACTIVATE) break;
-    }
-
-    if (count < NUMBER_NEEDED_TO_ACTIVATE) {
-        return false;            // not enough people
-    }
-
-    ScriptedInstance* pInstance = (player->GetInstanceData());
-    if (!pInstance) return false;
-    pInstance->SetData64(0,player->GetGUID());     // activate archaedas
-
-    return false;
 }
 
 /* ScriptData
@@ -412,11 +343,6 @@ void AddSC_boss_archaedas()
     newscript = new Script;
     newscript->Name="boss_archaedas";
     newscript->GetAI = &GetAI_boss_archaedas;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="go_altar_of_archaedas";
-    newscript->pGOUse = &GOUse_go_altar_of_archaedas;
     newscript->RegisterSelf();
 
     newscript = new Script;
