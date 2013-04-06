@@ -3975,6 +3975,9 @@ void Aura::HandleModFear(bool apply, bool Real)
 
     if (!apply && GetTarget()->HasAuraType(GetModifier()->m_auraname))
         return;
+    
+    if (GetTarget()->HasAuraTypeWithFamilyFlags(SPELL_AURA_PREVENTS_FLEEING,5,2147483648) || GetTarget()->HasAura(16231)) //Curse of Recklessnes
+        return;
 
     m_target->SetFeared(apply, GetCaster());
 }
@@ -7901,6 +7904,16 @@ void Aura::HandlePreventFleeing(bool apply, bool Real)
 {
     if (!Real)
         return;
+    
+    if (apply && ((GetSpellProto()->SpellFamilyName == 5 && GetSpellProto()->SpellFamilyFlags == 2147483648) || GetId() == (16231)))
+    GetTarget()->SetFeared(false,GetTarget());
+    
+    if (!apply && GetTarget()->HasAuraType(SPELL_AURA_MOD_FEAR))
+    {
+        Unit::AuraList list = GetTarget()->GetAurasByType(SPELL_AURA_MOD_FEAR);
+        Unit::AuraList::iterator iter = list.end();
+        GetTarget()->SetFeared(true, (*iter)->GetCaster());
+    }
 }
 
 void Aura::HandleManaShield(bool apply, bool Real)
