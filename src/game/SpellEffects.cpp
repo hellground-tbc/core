@@ -6071,25 +6071,24 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                     return;
 
-                //if (unitTarget->GetMap()-> IsDungeon() || unitTarget->GetMap()->IsRaid())
-                //    return;
+                unitTarget->Mount(22653);
 
-                if (GetVirtualMapForMapAndZone(unitTarget->GetMapId(),((Player*)unitTarget)->GetCachedZone()) != 530)
+                if (GetVirtualMapForMapAndZone(unitTarget->GetMapId(), ((Player*)unitTarget)->GetCachedZone()) != 530)
                 {
-                    switch (((Player*)unitTarget)->GetBaseSkillValue(762))
+                    switch (((Player*)unitTarget)->GetBaseSkillValue(SKILL_RIDING))
                     {
-                    case 75: unitTarget->CastSpell(unitTarget, 51621, false); break;;
-                    case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 48024, false); break;
+                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
+                    case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 48024, true); break;
                     default: break;
                     }
                 }else
                 {
-                    switch (((Player*)unitTarget)->GetBaseSkillValue(762))
+                    switch (((Player*)unitTarget)->GetBaseSkillValue(SKILL_RIDING))
                     {
-                    case 75: unitTarget->CastSpell(unitTarget, 51621, false); break;;
-                    case 150: unitTarget->CastSpell(unitTarget, 48024, false); break;
-                    case 225: unitTarget->CastSpell(unitTarget, 51617, false); break;
-                    case 300: unitTarget->CastSpell(unitTarget, 48023, false); break;
+                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
+                    case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
+                    case 225: unitTarget->CastSpell(unitTarget, 51617, true); break;
+                    case 300: unitTarget->CastSpell(unitTarget, 48023, true); break;
                     default: break;
                     }
                 }
@@ -6100,9 +6099,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            if (GetVirtualMapForMapAndZone(unitTarget->GetMapId(),((Player*)unitTarget)->GetCachedZone()) != 530)
+            if (GetVirtualMapForMapAndZone(unitTarget->GetMapId(), ((Player*)unitTarget)->GetCachedZone()) != 530)
             {
-                switch (((Player*)unitTarget)->GetBaseSkillValue(762))
+                switch (((Player*)unitTarget)->GetBaseSkillValue(SKILL_RIDING))
                 {
                 case 75: unitTarget->CastSpell(unitTarget, 42681, true); break;;
                 case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 42683, true); break;
@@ -6111,7 +6110,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             else
             {
-                switch (((Player*)unitTarget)->GetBaseSkillValue(762))
+                switch (((Player*)unitTarget)->GetBaseSkillValue(SKILL_RIDING))
                 {
                 case 75: unitTarget->CastSpell(unitTarget, 42681, true); break;;
                 case 150: unitTarget->CastSpell(unitTarget, 42684, true); break;

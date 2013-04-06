@@ -3675,8 +3675,8 @@ bool SpellMgr::IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_i
 
             return false;
         }
-        // Swift Magic Broom
-        case 42684:
+        case 48025: // Headless Horseman's Mount
+        case 42684: // Swift Magic Broom
         case 42683:
         {
             MapEntry const* mapEntry = sMapStore.LookupEntry(map_id);
