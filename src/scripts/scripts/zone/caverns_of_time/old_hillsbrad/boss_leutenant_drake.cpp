@@ -50,7 +50,6 @@ bool GOUse_go_barrel_old_hillsbrad(Player *player, GameObject* go)
 ## boss_lieutenant_drake
 ######*/
 
-#define SAY_ENTER                  -1560006
 #define SAY_AGGRO                  -1560007
 #define SAY_SLAY1                  -1560008
 #define SAY_SLAY2                  -1560009
@@ -115,7 +114,6 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
         wpId = 0;
         me->SetWalk(true);
         me->GetMotionMaster()->MovePoint(DrakeWP[wpId].wpId, DrakeWP[wpId].x, DrakeWP[wpId].y, DrakeWP[wpId].z);
-        DoScriptText(SAY_ENTER, me);
         Whirlwind_Timer = 20000;
         Fear_Timer = 30000;
         MortalStrike_Timer = 45000;
