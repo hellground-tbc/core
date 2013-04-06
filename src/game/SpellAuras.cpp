@@ -6400,6 +6400,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             break;
         case FORM_FLIGHT:
             spellId = 33948;
+            spellId2 = 34764;
             break;
         case FORM_FLIGHT_EPIC:
             spellId  = 40122;
