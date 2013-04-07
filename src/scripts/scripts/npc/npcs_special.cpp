@@ -1837,34 +1837,7 @@ bool GossipSelect_npc_master_omarion(Player *player, Creature *_Creature, uint32
     player->CLOSE_GOSSIP_MENU();
     return true;
 }
-/*########
-# npc_meridith_the_mermaiden
-#########*/
 
-#define GOSSIP_MERIDITH "Thank you for your help."
-#define SAY_MERIDITH "Farewell!"
-#define SIREN_SONG 25678
-
-bool GossipHello_npc_meridith_the_mermaiden(Player *player, Creature *_Creature)
-{
-    if(player->GetQuestStatus(8599) == QUEST_STATUS_COMPLETE )
-    {
-        player->ADD_GOSSIP_ITEM(0,GOSSIP_MERIDITH,GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);  
-    }
-    player->SEND_GOSSIP_MENU(7916, _Creature->GetGUID());
-    
-    return true;
-}
-
-bool GossipSelect_npc_meridith_the_mermaiden(Player *player, Creature *_Creature, uint32 sender, uint32 action)
-{
-    if( action == GOSSIP_ACTION_INFO_DEF + 1 )
-    {
-        _Creature->CastSpell(player,SIREN_SONG,false);
-        _Creature->Say(SAY_MERIDITH, LANG_UNIVERSAL, 0);
-    }
-    return true;
-}
 
 /*########
 # npc_lorekeeper_lydros
@@ -2994,11 +2967,5 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_explosive_sheep";
     newscript->GetAI = &GetAI_npc_explosive_sheep;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "npc_meridith_the_mermaiden";
-    newscript->pGossipHello = &GossipHello_npc_meridith_the_mermaiden;
-    newscript->pGossipSelect = &GossipSelect_npc_meridith_the_mermaiden;
     newscript->RegisterSelf();
 }
