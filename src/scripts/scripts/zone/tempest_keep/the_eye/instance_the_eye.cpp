@@ -46,6 +46,8 @@ struct instance_the_eye : public ScriptedInstance
     std::set<uint64> ExplodeObjectGUID;
     uint64 Astromancer;
     uint64 Alar;
+    std::list<uint64> AstromancerTrash;
+    std::list<uint64> VoidTrash;
 
     uint32 Encounters[ENCOUNTERS];
 
@@ -60,6 +62,8 @@ struct instance_the_eye : public ScriptedInstance
         ExplodeObjectGUID.clear();
         Astromancer = 0;
         Alar = 0;
+        AstromancerTrash.clear();
+        VoidTrash.clear();
 
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
@@ -116,6 +120,21 @@ struct instance_the_eye : public ScriptedInstance
             case 19514:
                 Alar = creature->GetGUID();
                 break;
+            case 20031:
+            case 20036:
+            case 20043:
+            case 20044:
+            case 20045:
+                if (creature->GetDistance(433,-373,18)<150)
+                    AstromancerTrash.push_front(creature->GetGUID());
+                break;
+            case 20040:
+            case 20041:
+            case 20042:
+            case 20052:
+                if (creature->GetDistance(425,404,15)<150)
+                    VoidTrash.push_front(creature->GetGUID());
+                break;
         }
 
         HandleInitCreatureState(creature);
@@ -160,12 +179,30 @@ struct instance_the_eye : public ScriptedInstance
                     Encounters[0] = data;
                 break;
             case DATA_HIGHASTROMANCERSOLARIANEVENT:
-                 if(Encounters[1] != DONE)
+                if(Encounters[1] != DONE)
+                {
                     Encounters[1] = data;
+                    if (data == IN_PROGRESS && !AstromancerTrash.empty())
+                        for(std::list<uint64>::iterator i = AstromancerTrash.begin(); i != AstromancerTrash.end(); ++i)
+                        {
+                            Creature* trashmob = GetCreature(*i);
+                            if (trashmob && trashmob->isAlive())
+                                trashmob->AI()->DoZoneInCombat();
+                        }
+                }
                 break;
             case DATA_VOIDREAVEREVENT:
                 if(Encounters[2] != DONE)
+                {
                     Encounters[2] = data;
+                    if (data == IN_PROGRESS && !VoidTrash.empty())
+                        for(std::list<uint64>::iterator i = VoidTrash.begin(); i != VoidTrash.end(); ++i)
+                        {
+                            Creature* trashmob = GetCreature(*i);
+                            if (trashmob && trashmob->isAlive())
+                                trashmob->AI()->DoZoneInCombat();
+                        }
+                }
                 break;
             case DATA_KAELTHASEVENT:
                 if(data == NOT_STARTED || data == DONE)
