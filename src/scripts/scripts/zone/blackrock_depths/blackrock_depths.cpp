@@ -646,9 +646,10 @@ bool GossipSelect_npc_dughal_stormwing(Player *player, Creature *_Creature, uint
     if(action == GOSSIP_ACTION_INFO_DEF + 1)
     {
         player->CLOSE_GOSSIP_MENU();
+        ((npc_escortAI*)(_Creature->AI()))->SetDespawnAtFar(false);
         CAST_AI(npc_escortAI, (_Creature->AI()))->Start(false, false, player->GetGUID());
         _Creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-        pInstance->SetData(DATA_QUEST_JAIL_BREAK, IN_PROGRESS);
+        pInstance->SetData(DATA_DUGHAL, IN_PROGRESS);
     }
     return true;
 }
@@ -1235,6 +1236,7 @@ bool GossipSelect_npc_tobias_seecher(Player *player, Creature *_Creature, uint32
     if (action == GOSSIP_ACTION_INFO_DEF + 1)
     {
         player->CLOSE_GOSSIP_MENU();
+        ((npc_escortAI*)(_Creature->AI()))->SetDespawnAtFar(false);
         CAST_AI(npc_escortAI, (_Creature->AI()))->Start(false, false, player->GetGUID());
         _Creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         pInstance->SetData(DATA_TOBIAS,IN_PROGRESS);
