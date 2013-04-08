@@ -3381,6 +3381,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 38629: // Poison Keg
                 spellInfo->RecoveryTime = 1080;
                 break;
+            case 25678:
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ANY;
+                break;
             default:
                 break;
         }

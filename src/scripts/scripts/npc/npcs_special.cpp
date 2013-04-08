@@ -2779,6 +2779,35 @@ CreatureAI* GetAI_npc_explosive_sheep(Creature* pCreature)
     return new npc_explosive_sheepAI(pCreature);
 }
 
+/*######
+## Meridith the Mermaiden
+######*/
+
+#define GOSSIP_HELLO "Thank you for your help"
+#define LOVE_SONG_QUEST_ID 8599
+#define SIREN_SONG 25678
+
+bool GossipHello_npc_meridith_the_mermaiden(Player *player, Creature *creature)
+{
+    if( player->GetQuestStatus(LOVE_SONG_QUEST_ID) == QUEST_STATUS_COMPLETE )
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    }
+    player->PlayerTalkClass->SendGossipMenu(7916,creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_meridith_the_mermaiden(Player *player, Creature * creature, uint32 sender, uint32 action )
+{
+    if(action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        creature->Say("Farewell!", LANG_UNIVERSAL, 0);
+        creature->CastSpell(player, SIREN_SONG, false);
+        player->CLOSE_GOSSIP_MENU();
+    }
+    return true;
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -2967,5 +2996,11 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_explosive_sheep";
     newscript->GetAI = &GetAI_npc_explosive_sheep;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_meridith_the_mermaiden";
+    newscript->pGossipHello = &GossipHello_npc_meridith_the_mermaiden;
+    newscript->pGossipSelect = &GossipSelect_npc_meridith_the_mermaiden;
     newscript->RegisterSelf();
 }
