@@ -23,8 +23,8 @@
 
 #include "Platform/Define.h"
 
-#include<map>
-
+#include <map>
+#include <typeinfo>
 // Note. All times are in milliseconds here.
 
 class HELLGROUND_IMPORT_EXPORT BasicEvent
@@ -63,6 +63,12 @@ class HELLGROUND_IMPORT_EXPORT EventProcessor
         void Update(uint32 p_time);
         void KillAllEvents(bool force);
         void AddEvent(BasicEvent* Event, uint64 e_time, bool set_addtime = true);
+
+        bool HasEventOfType(BasicEvent* type)
+        {
+            return std::any_of(m_events.begin(), m_events.end(), [&type](std::pair<uint64, BasicEvent*> i) { return typeid(*i.second) == typeid(*type); });
+        };
+
         uint64 CalculateTime(uint64 t_offset);
     protected:
         uint64 m_time;
