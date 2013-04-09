@@ -130,7 +130,7 @@ struct npc_torekAI : public npc_escortAI
 
 bool QuestAccept_npc_torek(Player* pPlayer, Creature* pCreature, Quest const* quest)
 {
-    if (quest->GetQuestId() == QUEST_TOREK_ASSULT)
+    if (pPlayer && quest->GetQuestId() == QUEST_TOREK_ASSULT)
     {
         //TODO: find companions, make them follow Torek, at any time (possibly done by mangos/database in future?)
         DoScriptText(SAY_READY, pCreature, pPlayer);
