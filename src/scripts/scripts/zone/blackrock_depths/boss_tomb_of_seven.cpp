@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Tomb_Of_Seven
-SD%Complete: 50
-SDComment: Learning Smelt Dark Iron if tribute quest rewarded. Missing event and re-spawn GO Spectral Chalice
+SD%Complete: 95
+SDComment:
 SDCategory: Blackrock Depths
 EndScriptData */
 
@@ -33,7 +33,12 @@ EndScriptData */
 
 struct boss_angerrelAI : public ScriptedAI
 {
-    boss_angerrelAI(Creature *c) : ScriptedAI(c) {}
+    boss_angerrelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 SunderArmor_Timer;
     uint32 ShieldBlock_Timer;
@@ -44,10 +49,26 @@ struct boss_angerrelAI : public ScriptedAI
         SunderArmor_Timer = 8000;
         ShieldBlock_Timer = 15000;
         Strike_Timer = 12000;
+
+        m_creature->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
     {
+    }
+
+    void EnterEvadeMode()
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, FAIL);
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit *slayer)
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, SPECIAL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -97,7 +118,12 @@ CreatureAI* GetAI_boss_angerrel(Creature *_Creature)
 
 struct boss_doperelAI : public ScriptedAI
 {
-    boss_doperelAI(Creature *c) : ScriptedAI(c) {}
+    boss_doperelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 SinisterStrike_Timer;
     uint32 BackStab_Timer;
@@ -108,10 +134,26 @@ struct boss_doperelAI : public ScriptedAI
         SinisterStrike_Timer = 8000;
         BackStab_Timer = 12000;
         Gouge_Timer = 6000;
+
+        m_creature->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
     {
+    }
+
+    void EnterEvadeMode()
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, FAIL);
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit *slayer)
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, SPECIAL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -161,7 +203,12 @@ CreatureAI* GetAI_boss_doperel(Creature *_Creature)
 
 struct boss_haterelAI : public ScriptedAI
 {
-    boss_haterelAI(Creature *c) : ScriptedAI(c) {}
+    boss_haterelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 ShadowBolt_Timer;
     uint32 ManaBurn_Timer;
@@ -174,10 +221,26 @@ struct boss_haterelAI : public ScriptedAI
         ManaBurn_Timer = 3000;
         ShadowShield_Timer = 8000;
         Strike_Timer = 12000;
+
+        m_creature->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
     {
+    }
+
+    void EnterEvadeMode()
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, FAIL);
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit *slayer)
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, SPECIAL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -241,7 +304,12 @@ CreatureAI* GetAI_boss_haterel(Creature *_Creature)
 
 struct boss_vilerelAI : public ScriptedAI
 {
-    boss_vilerelAI(Creature *c) : ScriptedAI(c) {}
+    boss_vilerelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 MindBlast_Timer;
     uint32 Heal_Timer;
@@ -254,10 +322,26 @@ struct boss_vilerelAI : public ScriptedAI
         Heal_Timer = 35000;
         PrayerOfHealing_Timer = 25000;
         Shield_Timer = 3000;
+
+        m_creature->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
     {
+    }
+
+    void EnterEvadeMode()
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, FAIL);
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit *slayer)
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, SPECIAL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -318,7 +402,12 @@ CreatureAI* GetAI_boss_vilerel(Creature *_Creature)
 
 struct boss_seethrelAI : public ScriptedAI
 {
-    boss_seethrelAI(Creature *c) : ScriptedAI(c) {}
+    boss_seethrelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 FrostArmor_Timer;
     uint32 Frostbolt_Timer;
@@ -335,10 +424,25 @@ struct boss_seethrelAI : public ScriptedAI
         FrostWard_Timer = 25000;
 
         m_creature->CastSpell(m_creature,SPELL_FROSTARMOR,true);
+        m_creature->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
     {
+    }
+
+    void EnterEvadeMode()
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, FAIL);
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit *slayer)
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, SPECIAL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -408,7 +512,12 @@ CreatureAI* GetAI_boss_seethrel(Creature *_Creature)
 
 struct boss_gloomrelAI : public ScriptedAI
 {
-    boss_gloomrelAI(Creature *c) : ScriptedAI(c) {}
+    boss_gloomrelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 Hamstring_Timer;
     uint32 Cleave_Timer;
@@ -425,6 +534,20 @@ struct boss_gloomrelAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
+    }
+
+    void EnterEvadeMode()
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, FAIL);
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit *slayer)
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, SPECIAL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -517,20 +640,26 @@ bool GossipSelect_boss_gloomrel(Player *player, Creature *_Creature, uint32 send
 #define SPELL_IMMOLATE                       15505
 #define SPELL_CURSEOFWEAKNESS                17227
 #define SPELL_DEMONARMOR                     11735
+#define SPELL_SUMMON_VOIDS                   15092
+#define GO_CHEST_SEVEN                       169243
 
 struct boss_doomrelAI : public ScriptedAI
 {
-    boss_doomrelAI(Creature *c) : ScriptedAI(c) {}
+    boss_doomrelAI(Creature *c) : ScriptedAI(c), voids(me) 
+    {
+        pInstance = (c->GetInstanceData());
+    }
 
+    ScriptedInstance* pInstance;
+
+    SummonList voids;
     uint32 ShadowVolley_Timer;
     uint32 Immolate_Timer;
     uint32 CurseOfWeakness_Timer;
     uint32 DemonArmor_Timer;
     bool Voidwalkers;
-    int Rand;
-    int RandX;
-    int RandY;
-    Creature* Summoned;
+
+    uint64 DoomGUID;
 
     void Reset()
     {
@@ -540,6 +669,8 @@ struct boss_doomrelAI : public ScriptedAI
         DemonArmor_Timer = 16000;
         Voidwalkers = false;
 
+        DoomGUID = 0;
+
         m_creature->setFaction(FACTION_NEUTRAL);
     }
 
@@ -547,30 +678,68 @@ struct boss_doomrelAI : public ScriptedAI
     {
     }
 
-    void SummonVoidwalkers(Unit* victim)
+    void JustSummoned(Creature* summoned)
     {
-        Rand = rand()%5;
-        switch (rand()%2)
+        voids.Summon(summoned);
+        summoned->AI()->AttackStart(me->getVictim());
+    }
+
+    void EnterEvadeMode()
+    {
+        voids.DespawnAll();
+
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, FAIL);
+
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustDied(Unit *slayer)
+    {
+        if(pInstance)
+            pInstance->SetData(TYPE_TOMB_OF_SEVEN, DONE);
+
+        slayer->SummonGameObject(GO_CHEST_SEVEN, 1265.96f, -284.121f, -78.2191, 3.8531f, 0, 0, 0, 0, 0);
+    }
+
+    void DoAction(const int32 param)
+    {
+        switch (param)
         {
-            case 0: RandX = 0 - Rand; break;
-            case 1: RandX = 0 + Rand; break;
+            case 1:
+                DoomGUID = pInstance->GetData64(DATA_ANGERREL);
+                break;
+            case 2:
+                DoomGUID = pInstance->GetData64(DATA_SEETHREL);
+                break;
+            case 3:
+                DoomGUID = pInstance->GetData64(DATA_DOPEREL);
+                break;
+            case 4:
+                DoomGUID = pInstance->GetData64(DATA_GLOOMREL);
+                break;
+            case 5:
+                DoomGUID = pInstance->GetData64(DATA_VILEREL);
+                break;
+            case 6:
+                DoomGUID = pInstance->GetData64(DATA_HATEREL);
+                break;
+            default:
+                me->setFaction(FACTION_HOSTILE);
+                DoZoneInCombat();
+                return;
         }
-        Rand = 0;
-        Rand = rand()%5;
-        switch (rand()%2)
+
+        if (Creature *boss = me->GetCreature(DoomGUID))
         {
-            case 0: RandY = 0 - Rand; break;
-            case 1: RandY = 0 + Rand; break;
+            boss->setFaction(FACTION_HOSTILE);
+            boss->AI()->DoZoneInCombat();
         }
-        Rand = 0;
-        Summoned = DoSpawnCreature(16119, RandX, RandY, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000);
-        if(Summoned)
-            ((CreatureAI*)Summoned->AI())->AttackStart(victim);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
         //ShadowVolley_Timer
@@ -614,9 +783,7 @@ struct boss_doomrelAI : public ScriptedAI
         //Summon Voidwalkers
         if (!Voidwalkers && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 51 )
         {
-            SummonVoidwalkers(m_creature->getVictim());
-            SummonVoidwalkers(m_creature->getVictim());
-            SummonVoidwalkers(m_creature->getVictim());
+            DoCast(me->getVictim(), SPELL_SUMMON_VOIDS);
             Voidwalkers = true;
         }
 
@@ -630,29 +797,32 @@ CreatureAI* GetAI_boss_doomrel(Creature *_Creature)
 }
 
 #define GOSSIP_ITEM_CHALLENGE   "Your bondage is at an end, Doom'rel. I challenge you!"
+#define SAY_START    "You have challenged the Seven, and now you will die!"
 
 bool GossipHello_boss_doomrel(Player *player, Creature *_Creature)
 {
-    player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_CHALLENGE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-    player->SEND_GOSSIP_MENU(2601, _Creature->GetGUID());
+    ScriptedInstance *pInstance = (_Creature->GetInstanceData());
+
+    if (pInstance->GetData(TYPE_TOMB_OF_SEVEN) == NOT_STARTED || pInstance->GetData(TYPE_TOMB_OF_SEVEN) == FAIL)
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_CHALLENGE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->SEND_GOSSIP_MENU(2601, _Creature->GetGUID());
+    }
 
     return true;
 }
 
 bool GossipSelect_boss_doomrel(Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
-    switch (action)
+    ScriptedInstance *pInstance = (_Creature->GetInstanceData());
+
+    if (action == GOSSIP_ACTION_INFO_DEF + 1)
     {
-        case GOSSIP_ACTION_INFO_DEF+1:
-            player->ADD_GOSSIP_ITEM( 0, "[PH] Continue...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-            player->SEND_GOSSIP_MENU(2605, _Creature->GetGUID());
-            break;
-        case GOSSIP_ACTION_INFO_DEF+2:
-            player->CLOSE_GOSSIP_MENU();
-            //start event here, below code just temporary
-            _Creature->setFaction(FACTION_HOSTILE);
-            break;
+        player->CLOSE_GOSSIP_MENU();
+        _Creature->Say(SAY_START, LANG_UNIVERSAL, player->GetGUID());
+        pInstance->SetData(TYPE_TOMB_OF_SEVEN, IN_PROGRESS);
     }
+
     return true;
 }
 

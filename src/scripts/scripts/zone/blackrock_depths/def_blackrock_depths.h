@@ -11,7 +11,7 @@
 #define TYPE_TOMB_OF_SEVEN      4
 #define TYPE_LYCEUM             5
 #define TYPE_IRON_HALL          6
-#define TYPE_THELDREN            7
+#define TYPE_THELDREN           7
 
 #define DATA_EMPEROR            10
 #define DATA_PHALANX            11
@@ -35,5 +35,12 @@
 #define DATA_CREST              25
 
 #define Q_STARTER               26
+#define DATA_ANGERREL           27
+#define DATA_DOPEREL            28
+#define DATA_HATEREL            29
+#define DATA_VILEREL            30
+#define DATA_SEETHREL           31
+#define DATA_GLOOMREL           32
+#define DATA_DOOMREL            33
 
 #endif
