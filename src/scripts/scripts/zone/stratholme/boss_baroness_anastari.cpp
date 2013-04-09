@@ -53,12 +53,14 @@ struct boss_baroness_anastariAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
+         if (pInstance)
+             pInstance->SetData(TYPE_BARONESS,IN_PROGRESS);
     }
 
      void JustDied(Unit* Killer)
      {
          if (pInstance)
-             pInstance->SetData(TYPE_BARONESS,IN_PROGRESS);
+             pInstance->SetData(TYPE_BARONESS,SPECIAL);
      }
 
     void UpdateAI(const uint32 diff)
