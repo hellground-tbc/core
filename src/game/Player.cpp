@@ -16286,7 +16286,16 @@ void Player::_SaveInventory()
         if (!item)
             continue;
 
+        // Some checks to keep it safety !
+        if (item->GetState() > 3 || item->GetState() < 0)
+            continue;
+
         Bag *container = item->GetContainer();
+
+        // A null container recheck
+        if (container == NULL) 
+            continue;
+
         uint32 bag_guid = container ? container->GetGUIDLow() : 0;
 
         if (item->GetState() != ITEM_REMOVED)
