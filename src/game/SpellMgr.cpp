@@ -3015,6 +3015,12 @@ void SpellMgr::LoadSpellCustomAttr()
                spellInfo->EffectBasePoints[1] = 2;
                break;
             /****************/
+            case 24311: // Powerful Healing Ward
+                spellInfo->CastingTimeIndex = 14;
+                break;
+            case 24178: // Will of Hakkar
+                spellInfo->AttributesEx |= SPELL_ATTR_EX_CHANNELED_1;
+                break;
             // Leggins of BeastMastery
             case 38297:
                 spellInfo->Effect[0] = 0;
