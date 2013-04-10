@@ -180,9 +180,9 @@ void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
     SpellEntry const * totemSpell = sSpellStore.LookupEntry(GetSpell());
     if (totemSpell)
     {
-        // If spell have cast time -> so its active totem
-        if (SpellMgr::GetSpellCastTime(totemSpell))
+        if(~totemSpell->Attributes & SPELL_ATTR_PASSIVE)
             m_type = TOTEM_ACTIVE;
+        
     }
     if (spellProto->SpellIconID==2056)
         m_type = TOTEM_STATUE;                              //Jewelery statue
