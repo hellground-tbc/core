@@ -1361,11 +1361,13 @@ struct mob_shadowsword_vanquisherAI : public ScriptedAI
     {
         me->SetAggroRange(AGGRO_RANGE);
         pInstance = c->GetInstanceData();
+        emote = false;
     }
 
     ScriptedInstance* pInstance;
     uint32 Cleave;
     uint32 MeltArmor;
+    bool emote;
 
     void Reset()
     {
@@ -1392,6 +1394,16 @@ struct mob_shadowsword_vanquisherAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* who)
     {
+        if ((me->GetDBTableGUIDLow() == 44465 || me->GetDBTableGUIDLow() == 44468) &&
+            who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDistInMap(who, 35) && !emote)
+        {
+            if (Creature* Manafiend = GetClosestCreatureWithEntry(me, 25483, 20))
+                Manafiend->SetUInt32Value(UNIT_NPC_EMOTESTATE,EMOTE_STATE_READY1H);
+            if (me->GetDBTableGUIDLow() == 44465)
+                me->Yell("Intruders! Do not let the into the Sanctum!", 0, who->GetGUID());
+            me->SetUInt32Value(UNIT_NPC_EMOTESTATE,EMOTE_STATE_READY1H);
+            emote = true;
+        }
         ScriptedAI::MoveInLineOfSight(who);
     }
 

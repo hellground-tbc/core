@@ -3116,8 +3116,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 41376: // Spite
             case 29576: // Multi-Shot
             case 37790: // Spread Shot
-            case 46771: // Flame Sear
-            case 45248: // Shadow Blades
             case 41303: // Soul Drain
             case 31298: // Anetheron: Sleep
             case 30004: // Aran: Flame Wreath
@@ -3141,6 +3139,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 37676: // Insidious Whisper
             case 46008: // Negative Energy
             case 45641: // Fire Bloom
+            case 46771: // Flame Sear
                 spellInfo->MaxAffectedTargets = 5;
                 break;
             case 40827: // Sinful Beam
