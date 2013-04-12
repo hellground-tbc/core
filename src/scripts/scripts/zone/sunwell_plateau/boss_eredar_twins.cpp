@@ -335,7 +335,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         pInstance->SetData(DATA_ALYTHESS, NOT_STARTED);
 
-        SetAutocast(SPELL_BLAZE, 2500, true);
+        SetAutocast(SPELL_BLAZE, 2700, true);
     }
 
     void EnterEvadeMode()
