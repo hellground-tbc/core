@@ -5290,9 +5290,9 @@ void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool de
     if (skilldif <= 0)
         return;
 
-    float chance = (float(4 * lvldif * skilldif) / plevel) * 0.75f;
+    float chance = (float(3 * lvldif * skilldif) / plevel) * 0.5f;
     if (!defence)
-        chance += 0.1f * GetStat(STAT_INTELLECT);
+        chance += 0.02f * GetStat(STAT_INTELLECT);
 
     chance = chance < 1.0f ? 1.0f : chance;                 //minimum chance to increase skill is 1%
 
