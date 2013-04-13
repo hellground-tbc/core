@@ -555,10 +555,11 @@ CreatureAI* GetAI_boss_alythess(Creature *_Creature)
 
 struct mob_shadow_imageAI : public ScriptedAI
 {
-    mob_shadow_imageAI(Creature *c) : ScriptedAI(c) {}
+    mob_shadow_imageAI(Creature *c) : ScriptedAI(c) { pInstance = c->GetInstanceData(); }
 
     uint32 ShadowfuryTimer;
     uint32 DarkstrikeTimer;
+    InstanceData *pInstance;
 
     void Reset()
     {
@@ -580,8 +581,12 @@ struct mob_shadow_imageAI : public ScriptedAI
         ForceSpellCast(SPELL_IMAGE_VISUAL, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
         DoZoneInCombat();
 
-        if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, urand(0, 4), 400, true))
-            AttackStart(pTarget);
+        //if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, urand(0, 4), 400, true))
+        if(Creature* Alythess = me->GetCreature(pInstance->GetData64(DATA_ALYTHESS)))
+        {
+            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true, Alythess->getVictimGUID(), 10.0f))
+                AttackStart(pTarget);
+        }
     }
 
     void DamageMade(Unit* target, uint32 &damage, bool direct_damage, uint8 school_mask)
@@ -614,7 +619,7 @@ struct mob_shadow_imageAI : public ScriptedAI
                 AddSpellToCast(SPELL_SHADOW_FURY, CAST_NULL);
                 ShadowfuryTimer = 5000;
             }
-            ShadowfuryTimer = 1000;
+            ShadowfuryTimer = 1500;
         }
         else
             ShadowfuryTimer -= diff;
