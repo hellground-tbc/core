@@ -20,6 +20,13 @@ SD%Complete: 80
 SDComment: all sounds, black hole effect triggers to often (46228)
 */
 
+/* Additional scripts
+    * Shadowsword Berserker
+    * Shadowsword Fury Mage
+    * Void Sentinel
+    * Void Spawn
+*/
+
 #include "precompiled.h"
 #include "def_sunwell_plateau.h"
 

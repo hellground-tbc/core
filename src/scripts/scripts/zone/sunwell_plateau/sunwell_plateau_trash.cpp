@@ -1447,9 +1447,9 @@ CreatureAI* GetAI_mob_shadowsword_vanquisher(Creature *_Creature)
 }
 
 /****************
-* Volatile Fiend - id 25486
+* Volatile Fiend - id 25851
 
-  Immunities:
+  Immunities: banish, enslave, turn, fear, horror
 
 *****************/
 
@@ -1458,15 +1458,20 @@ enum VolatileFiend
     SPELL_BURNING_WINGS                 = 46308,
     SPELL_BURNING_DESTRUCTION           = 47287,
     SPELL_BURNING_DESTRUCTION_EXPLOSION = 46218,
-    SPELL_FELFIRE_FISSION               = 45779 // used in KJ fight?
+    SPELL_FELFIRE_FISSION               = 45779
 };
 
 struct mob_volatile_fiendAI : public ScriptedAI
 {
-    mob_volatile_fiendAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
+    mob_volatile_fiendAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+        me->SetAggroRange(AGGRO_RANGE);
+    }
 
     bool summoned, exploding;
     uint32 explosion_timer;
+    ScriptedInstance* pInstance;
 
     void Reset()
     {
@@ -1478,8 +1483,11 @@ struct mob_volatile_fiendAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         DoZoneInCombat(80.0f);
-        DoCast(me, SPELL_BURNING_DESTRUCTION);
-        exploding = true;
+        if (summoned)
+        {
+            DoCast(me, SPELL_BURNING_DESTRUCTION);
+            exploding = true;
+        }
     }
 
     void IsSummonedBy(Unit *summoner)
@@ -1490,9 +1498,18 @@ struct mob_volatile_fiendAI : public ScriptedAI
         me->GetMotionMaster()->MovePath(GAUNTLET_PATH, false);
     }
 
+    void DamageTaken(Unit* pDone_by, uint32& damage)
+    {
+        if (!summoned && damage > me->GetHealth())
+            DoCast(me, SPELL_FELFIRE_FISSION, true);
+    }
+
     void MoveInLineOfSight(Unit *who)
     {
-        if(who->GetTypeId() != TYPEID_PLAYER || !summoned || exploding)
+        if (!summoned && pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+
+        if(who->GetTypeId() != TYPEID_PLAYER || (summoned && exploding))
             return;
 
         ScriptedAI::MoveInLineOfSight(who);
@@ -1515,11 +1532,6 @@ struct mob_volatile_fiendAI : public ScriptedAI
             return;
 
         DoMeleeAttackIfReady();
-
-        if(!summoned)
-            return;
-
-        // AI here for normal, not gauntlet-type Fiend?
     }
 };
 
@@ -1543,17 +1555,650 @@ CreatureAI* GetAI_mob_volatile_fiend(Creature *_Creature)
     * Oblivion Mage
     * Painbringer
     * Priestess of Torment
-    * Volatile Fiend
-    * Volatile Felfire Fiend
-    * Shadowsword Berserker
-    * Shadowsword Fury Mage
-    * Void Sentinel
-    * Void Spawn
 */
 
 /****************
-* Apocalypse Guard - id
+* Apocalypse Guard - id 25593
+
+  Immunities: banish, enslave, turn, horror, confuse, stun, fear, horror, silence
+
 *****************/
+
+enum ApocalypseGuard
+{
+    SPELL_CLEAVE_3                  = 40504,
+    SPELL_CORRUPTING_STRIKE         = 45029,
+    SPELL_DEATH_COIL                = 46283,
+    SPELL_INFERNAL_DEFENSE          = 46287
+};
+
+struct mob_apocalypse_guardAI : public ScriptedAI
+{
+    mob_apocalypse_guardAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+    uint32 Cleave;
+    uint32 CorruptingStrike;
+    uint32 DeathCoil;
+    bool InfernalDefense;
+
+    void Reset()
+    {
+        Cleave = urand(3500, 5500);
+        CorruptingStrike = urand(7000, 12000);
+        DeathCoil = urand(5000, 10000);
+        InfernalDefense = false;
+    }
+
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        // return here until Rohendor, the second gate will be opened
+        //return;
+
+        if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(HealthBelowPct(7.0f) && !InfernalDefense)
+        {
+            DoCast(me, SPELL_INFERNAL_DEFENSE, true);
+            InfernalDefense = true;
+        }
+
+        if(Cleave < diff)
+        {
+            AddSpellToCast(SPELL_CLEAVE_3, CAST_TANK);
+            Cleave = urand(9000, 12000);
+        }
+        else
+            Cleave -= diff;
+
+        if(CorruptingStrike < diff)
+        {
+            AddSpellToCast(SPELL_CORRUPTING_STRIKE, CAST_TANK);
+            CorruptingStrike = urand(12000, 17000);
+        }
+        else
+            CorruptingStrike -= diff;
+
+        if(DeathCoil < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, me->getVictimGUID(), 5.0))
+                AddSpellToCast(target, SPELL_CORRUPTING_STRIKE, false, true);
+            DeathCoil = urand(4000, 8000);
+        }
+        else
+            DeathCoil -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_apocalypse_guard(Creature *_Creature)
+{
+    return new mob_apocalypse_guardAI(_Creature);
+}
+
+/****************
+* Cataclysm Hound - id 25599
+
+  Immunities: banish, enslave, turn, horror, root, confuse, stun, fear, horror, silence, taunt
+
+*****************/
+
+enum CataclysmHound
+{
+    SPELL_ENRAGE                    = 47399,
+    SPELL_CATACLYSM_BREATH          = 46292
+};
+
+struct mob_cataclysm_houndAI : public ScriptedAI
+{
+    mob_cataclysm_houndAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+    uint32 Enrage;
+    uint32 CataclysmBreath;
+
+    void Reset()
+    {
+        Enrage = urand(10000, 25000);
+        CataclysmBreath = urand(4000, 10000);
+    }
+
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        // return here until Rohendor, the second gate will be opened
+        //return;
+
+        if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(Enrage < diff)
+        {
+            AddSpellToCast(SPELL_ENRAGE, CAST_SELF);
+            Enrage = urand(9000, 12000);
+        }
+        else
+            Enrage -= diff;
+
+        if(CataclysmBreath < diff)
+        {
+            AddSpellToCast(SPELL_CATACLYSM_BREATH, CAST_TANK);
+            CataclysmBreath = 8000;
+        }
+        else
+            CataclysmBreath -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_cataclysm_hound(Creature *_Creature)
+{
+    return new mob_cataclysm_houndAI(_Creature);
+}
+
+/****************
+* Chaos Gazer - id 25595
+
+  Immunities: banish, enslave, turn, horror, confuse, stun, fear, horror, interrupt, silence
+
+*****************/
+
+enum ChaosGazer
+{
+    SPELL_DRAIN_LIFE_1              = 46291,
+    SPELL_PETRIFY                   = 46288,
+    SPELL_TENTACLE_SWEEP            = 46290
+};
+
+struct mob_chaos_gazerAI : public ScriptedAI
+{
+    mob_chaos_gazerAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+    uint32 DrainLifeCD;
+    uint32 Petrify;
+    uint32 TentacleSweep;
+    bool canDrainLife;
+
+    void Reset()
+    {
+        DrainLifeCD = urand(20000, 25000);
+        Petrify = urand(3000, 7000);
+        TentacleSweep = Petrify + urand(1000, 1500);
+        canDrainLife = true;
+    }
+
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        // return here until Rohendor, the second gate will be opened
+        //return;
+
+        if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(HealthBelowPct(75.0f) && canDrainLife)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 29.0, true, 0, 20.0))
+            {
+                ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
+                DrainLifeCD = urand(20000, 25000);
+            }
+            canDrainLife = false;
+            DrainLifeCD = 1000;
+        }
+
+        if(!canDrainLife)
+        {
+            if(DrainLifeCD <= diff)
+                canDrainLife = true;
+            else
+                DrainLifeCD -= diff;
+        }
+
+        if(Petrify < diff)
+        {
+            AddSpellToCast(SPELL_PETRIFY, CAST_TANK);
+            Petrify = urand(9000, 12000);
+        }
+        else
+            Petrify -= diff;
+
+        if(TentacleSweep < diff)
+        {
+            AddSpellToCast(SPELL_TENTACLE_SWEEP, CAST_TANK);
+            TentacleSweep = urand(7000, 12000);
+        }
+        else
+            TentacleSweep -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_chaos_gazer(Creature *_Creature)
+{
+    return new mob_chaos_gazerAI(_Creature);
+}
+
+
+/****************
+* Doomfire Destroyer - id 25592
+
+  Immunities: banish, enslave, turn, confuse, stun, fear, horror
+
+*****************/
+
+enum DoomfireDestroyer
+{
+    SPELL_CREATE_DOMMFIRE_SHARD     = 46306,
+    SPELL_IMMOLATION_AURA           = 31722
+};
+
+struct mob_doomfire_destroyerAI : public ScriptedAI
+{
+    mob_doomfire_destroyerAI(Creature *c) : ScriptedAI(c), summons(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+    uint32 SummonTimer;
+    SummonList summons;
+
+    void Reset()
+    {
+        DoCast(me, SPELL_IMMOLATION_AURA, true);
+        SummonTimer = 1000;
+        summons.DespawnAll();
+    }
+
+    void EnterEvadeMode()
+    {
+        summons.DespawnAll();
+        ScriptedAI::EnterEvadeMode();
+    }
+
+    void JustSummoned(Creature *summon)
+    {
+        summons.Summon(summon);
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterCombat(Unit*)
+    {
+        DoZoneInCombat(80.0f);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(SummonTimer < diff)
+        {
+            AddSpellToCast(SPELL_CREATE_DOMMFIRE_SHARD, CAST_NULL);
+            SummonTimer = urand(5500, 7000);
+        }
+        else
+            SummonTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_doomfire_destroyer(Creature *_Creature)
+{
+    return new mob_doomfire_destroyerAI(_Creature);
+}
+
+/****************
+* Doomfire Shard - id 25948
+
+  Immunities: banish, enslave, turn, confuse, stun, fear, horror
+
+*****************/
+
+enum DoomfireShard
+{
+    SPELL_AVENGING_RAGE             = 46305
+};
+
+struct mob_doomfire_shardAI : public ScriptedAI
+{
+    mob_doomfire_shardAI(Creature *c) : ScriptedAI(c)
+    {
+        DestroyerGUID = 0;
+    }
+
+    uint64 DestroyerGUID;
+
+    void Reset()
+    {
+        DoCast(me, SPELL_IMMOLATION_AURA, true);
+    }
+
+    void IsSummonedBy(Unit *pSummoner)
+    {
+        if (pSummoner)
+        {
+            DestroyerGUID = pSummoner->GetGUID();
+            DoZoneInCombat(80.0f);
+        }
+    }
+
+    void DamageTaken(Unit* pDone_by, uint32& damage)
+    {
+        if (damage > me->GetHealth())
+        {
+            if (Unit* Destroyer = me->GetUnit(DestroyerGUID))
+            {
+                if (Destroyer->isAlive())
+                    DoCast(Destroyer, SPELL_AVENGING_RAGE, true);
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_doomfire_shard(Creature *_Creature)
+{
+    return new mob_doomfire_shardAI(_Creature);
+}
+
+/****************
+* Oblivion Mage - id 25597
+
+  Immunities: silence, interrupt, spell haste reduction, polymorph, stun, fear, horror
+
+*****************/
+
+enum OblivionMage
+{
+    SPELL_FLAME_BUFFET              = 46279,
+    SPELL_POLYMORPH                 = 46280,
+    SPELL_FIRE_CHANNELING           = 46219,
+
+    NPC_DOOMFIRE_DESTROYER          = 25592
+};
+
+struct mob_oblivion_mageAI : public ScriptedAI
+{
+    mob_oblivion_mageAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+        channeling = false;
+    }
+
+    ScriptedInstance* pInstance;
+    uint32 Polymorph;
+    bool channeling;
+
+    void Reset()
+    {
+        SetAutocast(SPELL_FLAME_BUFFET, 2000, true);
+        Polymorph = 1000;
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterCombat(Unit*)
+    {
+        DoZoneInCombat(80.0f);
+        if(me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!me->isInCombat() && !channeling)
+        {
+            if (Unit* Destroyer = FindCreature(NPC_DOOMFIRE_DESTROYER, 20, me))
+                DoCast(me, SPELL_FIRE_CHANNELING, true);
+            channeling = true;
+        }
+
+        if(!UpdateVictim())
+            return;
+
+        if(Polymorph < diff)
+        {
+            ClearCastQueue();
+            AddSpellToCast(SPELL_POLYMORPH, CAST_RANDOM_WITHOUT_TANK, false, true);
+            Polymorph = urand(3000, 6000);
+        }
+        else
+            Polymorph -= diff;
+
+        CastNextSpellIfAnyAndReady(diff);
+    }
+};
+
+CreatureAI* GetAI_mob_oblivion_mage(Creature *_Creature)
+{
+    return new mob_oblivion_mageAI(_Creature);
+}
+
+/****************
+* Painbringer - id 25591
+
+  Immunities: banish, enslave, turn, horror, fear, disorient, root
+
+*****************/
+
+enum Painbringer
+{
+    SPELL_BRING_PAIN_AURA           = 46277
+};
+
+struct mob_painbringerAI : public ScriptedAI
+{
+    mob_painbringerAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+
+    void Reset()
+    {
+        DoCast(me, SPELL_BRING_PAIN_AURA, true);
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        // return here until Rohendor, the second gate will be opened
+        //return;
+
+        if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_painbringer(Creature *_Creature)
+{
+    return new mob_painbringerAI(_Creature);
+}
+
+/****************
+* Priestess of Torment - id 25509
+
+  Immunities: banish, enslave, turn, stun, fear, horror, confuse, root
+
+*****************/
+
+enum PriestessOfTorment
+{
+    SPELL_BURN_MANA_AURA            = 46267,
+    SPELL_WHIRLWIND                 = 46270,
+};
+
+struct mob_priestess_of_tormentAI : public ScriptedAI
+{
+    mob_priestess_of_tormentAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+    uint32 Whirlwind;
+    uint32 MoveTimer;
+    bool moving;
+
+    void Reset()
+    {
+        DoCast(me, SPELL_BURN_MANA_AURA, true);
+        Whirlwind = urand(2500, 4500);
+        MoveTimer = 1000;
+        moving = false;
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        // return here until Rohendor, the second gate will be opened
+        //return;
+
+        if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterCombat(Unit*) { DoZoneInCombat(80.0f); }
+
+    void OnAuraRemove(Aura* Aur, bool stack)
+    {
+        if(Aur->GetId() == SPELL_WHIRLWIND)
+        {
+            moving = false;
+            AttackStart(me->getVictim());
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if (moving)
+        {
+            if(MoveTimer < diff)
+            {
+                float x, y, z = 0;
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 40.0f, true))
+                {
+                    target->GetGroundPointAroundUnit(x, y, z, 5.0, 3.14*RAND(0, 1/6, 2/6, 3/6, 4/6, 5/6, 1));
+                    me->GetMotionMaster()->Clear(false);
+                    me->SetSpeed(MOVE_RUN, 1.5, true);
+                    me->GetMotionMaster()->MovePoint(0, x, y, z);
+                }
+                MoveTimer = urand(1000, 2500);
+            }
+            else
+                MoveTimer -= diff;
+        }
+
+        if(Whirlwind < diff)
+        {
+            DoCast(me, SPELL_WHIRLWIND);
+            moving = true;
+            Whirlwind = urand(8000, 15000);
+        }
+        else
+            Whirlwind -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_mob_priestess_of_torment(Creature *_Creature)
+{
+    return new mob_priestess_of_tormentAI(_Creature);
+}
 
 /* ============================
 *
@@ -1742,8 +2387,51 @@ void AddSC_sunwell_plateau_trash()
     newscript->GetAI = &GetAI_mob_volatile_fiend;
     newscript->RegisterSelf();
 
+    // M'uru
+    newscript = new Script;
+    newscript->Name = "mob_apocalypse_guard";
+    newscript->GetAI = &GetAI_mob_apocalypse_guard;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_cataclysm_hound";
+    newscript->GetAI = &GetAI_mob_cataclysm_hound;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_chaos_gazer";
+    newscript->GetAI = &GetAI_mob_chaos_gazer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_doomfire_destroyer";
+    newscript->GetAI = &GetAI_mob_doomfire_destroyer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_doomfire_shard";
+    newscript->GetAI = &GetAI_mob_doomfire_shard;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_oblivion_mage";
+    newscript->GetAI = &GetAI_mob_oblivion_mage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_painbringer";
+    newscript->GetAI = &GetAI_mob_painbringer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_priestess_of_torment";
+    newscript->GetAI = &GetAI_mob_priestess_of_torment;
+    newscript->RegisterSelf();
+
+    // others
     newscript = new Script;
     newscript->Name = "npc_gauntlet_imp_trigger";
     newscript->GetAI = &GetAI_npc_gauntlet_imp_trigger;
     newscript->RegisterSelf();
+
 }
