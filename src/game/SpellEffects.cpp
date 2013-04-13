@@ -7686,7 +7686,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
             if (m_caster->GetTypeId()==TYPEID_PLAYER)
             {
                 pGameObj->AddUniqueUse((Player*)m_caster);
-                //m_caster->AddGameObject(pGameObj);          // will removed at spell cancel
+                m_caster->AddGameObject(pGameObj);          // will removed at spell cancel
                 pGameObj->SetLootState(GO_ACTIVATED);
                 pGameObj->SetTarget(((Player*)m_caster)->GetSelection());
             }
