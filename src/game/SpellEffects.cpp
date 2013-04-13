@@ -778,7 +778,31 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget, spell_list[urand(0, 5)], true);
                     return;
                 }
-                case 46476:
+                case 46292:                                 // Cataclysm Breath
+                {
+                    // Cataclysm Spells
+                    const uint32 spell_list[8] =
+                    {
+                        46293,  // Corrosive Poison
+                        46294,  // Fevered Fatigue
+                        46295,  // Hex
+                        46296,  // Necrotic Poison
+                        46297,  // Piercing Shadow
+                        46298,  // Shrink
+                        46299,  // Wavering Will
+                        46300   // Withered Touch
+                    };
+
+                    std::vector<uint32> debuff_list;
+                    for (uint8 i = 0; i < 8; ++i)
+                        debuff_list.push_back(spell_list[i]);
+                    std::random_shuffle(debuff_list.begin(), debuff_list.end());
+                    debuff_list.resize(urand(5, 6));
+                    for (std::vector<uint32>::iterator itr = debuff_list.begin(); itr != debuff_list.end(); itr++)
+                        m_caster->CastSpell((Unit*)NULL, *itr, true);
+                    return;
+                }
+                case 46476:                                 // Sunblade Protector Activated
                 {
                     if(!m_originalCaster)
                         return;
@@ -7686,7 +7710,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
             if (m_caster->GetTypeId()==TYPEID_PLAYER)
             {
                 pGameObj->AddUniqueUse((Player*)m_caster);
-                m_caster->AddGameObject(pGameObj);          // will removed at spell cancel
+                //m_caster->AddGameObject(pGameObj);          // will removed at spell cancel
                 pGameObj->SetLootState(GO_ACTIVATED);
                 pGameObj->SetTarget(((Player*)m_caster)->GetSelection());
             }
