@@ -431,8 +431,7 @@ class HELLGROUND_IMPORT_EXPORT WorldObject : public Object//, public WorldLocati
         void GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d,float absAngle) const;
         void GetClosePoint(float &x, float &y, float &z, float size, float distance2d = 0, float angle = 0) const
         {
-            // angle calculated from current orientation
-            GetNearPoint(this,x,y,z,size,distance2d,GetOrientation() + angle);
+            GetNearPoint(this,x,y,z,size,distance2d,angle);
         }
         void GetGroundPoint(float &x, float &y, float &z, float dist, float angle);
         void GetGroundPointAroundUnit(float &x, float &y, float &z, float dist, float angle)
