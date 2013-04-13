@@ -153,6 +153,7 @@ struct instance_blackrock_spire : public ScriptedInstance
         switch(type)
         {
             case DATA_RUNE_DOOR:
+            {
                 if(Encounters[0] != DONE)
                     Encounters[0] = data;
 
@@ -164,67 +165,72 @@ struct instance_blackrock_spire : public ScriptedInstance
                     }
                 }
                 break;
+            }
             case DATA_EMBERSEER:
-                if(Encounters[1] != DONE)
-                    Encounters[1] = data;
-                else return;
+            {
+                if(Encounters[1] == DONE) return;
+                Encounters[1] = data;
 
                 if(data == IN_PROGRESS && Encounters[0] != DONE)
                 {
                     //someone is cheating
                 }
-                if(data == IN_PROGRESS)
+                switch(data)
                 {
-                    Creature *ember = GetCreature(pyroguard_emberseerGUID);
-                    if(ember)
+                    case IN_PROGRESS:
                     {
-                        ember->AI()->DoAction(1);
+                        if(Creature *ember = GetCreature(pyroguard_emberseerGUID))
+                        {
+                            ember->AI()->DoAction(1);
+                        }
+                        for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
+                        {
+                            HandleGameObject(*i , false);
+                        }
+                        for(std::set<uint64>::iterator i = channelersGUID.begin(); i != channelersGUID.end(); ++i)
+                        {
+                            if(Creature * channeler = instance->GetCreature(*i))
+                            {
+                                channeler->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
+                                channeler->FinishSpell(CURRENT_CHANNELED_SPELL);
+                                channeler->AI()->DoZoneInCombat();
+                            }
+                        }
+                        for(std::set<uint64>::iterator i = runesEmberGUID.begin(); i != runesEmberGUID.end(); ++i)
+                        {
+                            HandleGameObject(*i, true);
+                        }
+                        break;
                     }
-                    for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
+                    case DONE:
                     {
-                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), false);
+                        HandleGameObject(emberseerOut, true);
                     }
-                    for(std::set<uint64>::iterator channeler = channelersGUID.begin(); channeler != channelersGUID.end(); ++channeler)
+                    case FAIL:
                     {
-                        instance->GetCreature(*channeler)->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE);
-                        instance->GetCreature(*channeler)->FinishSpell(CURRENT_CHANNELED_SPELL);
-                    }
-                    for(std::set<uint64>::iterator i = runesEmberGUID.begin(); i != runesEmberGUID.end(); ++i)
-                    {
-                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
-                    }
-                }
-                else if(data == FAIL)
-                {
-                    for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
-                    {
-                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
-                    }
-                    for(std::set<uint64>::iterator channeler = channelersGUID.begin(); channeler != channelersGUID.end(); ++channeler)
-                    {
-                        instance->GetCreature(*channeler)->ForcedDespawn();
-                    }
-                    for(std::set<uint64>::iterator i = runesEmberGUID.begin(); i != runesEmberGUID.end(); ++i)
-                    {
-                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), false);
-                    }
-                }
-                else if(data == DONE)
-                {
-                    HandleGameObject(emberseerOut, true);
-                    for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
-                    {
-                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
-                    }
-                    for(std::set<uint64>::iterator i = runesEmberGUID.begin(); i != runesEmberGUID.end(); ++i)
-                    {
-                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), false);
+                        for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
+                        {
+                            HandleGameObject(*i, true);
+                        }
+                        for(std::set<uint64>::iterator i = channelersGUID.begin(); i != channelersGUID.end(); ++i)
+                        {
+                            if(Creature * channeler = instance->GetCreature(*i))
+                            {
+                                channeler->ForcedDespawn();
+                            }
+                        }
+                        for(std::set<uint64>::iterator i = runesEmberGUID.begin(); i != runesEmberGUID.end(); ++i)
+                        {
+                            HandleGameObject(*i, false);
+                        }
+                        break;
                     }
                 }
                 break;
+            }
         }
 
-        if (data == DONE)
+        if (data == DONE || data == FAIL)
             SaveToDB();
     }
 
