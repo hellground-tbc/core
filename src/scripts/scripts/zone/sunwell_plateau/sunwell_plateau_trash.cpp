@@ -1707,7 +1707,7 @@ struct mob_cataclysm_houndAI : public ScriptedAI
         if(Enrage < diff)
         {
             AddSpellToCast(SPELL_ENRAGE, CAST_SELF);
-            Enrage = urand(9000, 12000);
+            Enrage = urand(20000, 30000);
         }
         else
             Enrage -= diff;
@@ -1792,8 +1792,9 @@ struct mob_chaos_gazerAI : public ScriptedAI
                 ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
                 DrainLifeCD = urand(20000, 25000);
             }
+            else
+                DrainLifeCD = 1000;
             canDrainLife = false;
-            DrainLifeCD = 1000;
         }
 
         if(!canDrainLife)
@@ -1990,19 +1991,21 @@ struct mob_oblivion_mageAI : public ScriptedAI
 {
     mob_oblivion_mageAI(Creature *c) : ScriptedAI(c)
     {
-        me->SetAggroRange(AGGRO_RANGE);
+        me->SetAggroRange(20.0);
         pInstance = c->GetInstanceData();
-        channeling = false;
     }
 
     ScriptedInstance* pInstance;
     uint32 Polymorph;
+    uint32 EvadeTimer;
     bool channeling;
 
     void Reset()
     {
         SetAutocast(SPELL_FLAME_BUFFET, 2000, true);
         Polymorph = 1000;
+        EvadeTimer = 10000;
+        channeling = false;
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -2016,21 +2019,33 @@ struct mob_oblivion_mageAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         DoZoneInCombat(80.0f);
-        if(me->IsNonMeleeSpellCasted(false))
-            me->InterruptNonMeleeSpells(false);
+        me->CastStop();
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!me->isInCombat() && !channeling)
         {
-            if (Unit* Destroyer = FindCreature(NPC_DOOMFIRE_DESTROYER, 20, me))
-                DoCast(me, SPELL_FIRE_CHANNELING, true);
-            channeling = true;
+            if(EvadeTimer <= diff)
+            {
+                if (Unit* Destroyer = FindCreature(NPC_DOOMFIRE_DESTROYER, 20, me))
+                    DoCast(me, SPELL_FIRE_CHANNELING);
+                channeling = true;
+            }
+            else
+                EvadeTimer -= diff;
         }
 
         if(!UpdateVictim())
             return;
+
+        if(!me->getVictim()->IsWithinDistInMap(me, 20) && !me->IsNonMeleeSpellCasted(false))
+        {
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0, true))
+                AttackStart(target, false);
+            else
+                EnterEvadeMode();
+        }
 
         if(Polymorph < diff)
         {
@@ -2186,7 +2201,7 @@ struct mob_priestess_of_tormentAI : public ScriptedAI
         {
             DoCast(me, SPELL_WHIRLWIND);
             moving = true;
-            Whirlwind = urand(8000, 15000);
+            Whirlwind = urand(15000, 22000);
         }
         else
             Whirlwind -= diff;

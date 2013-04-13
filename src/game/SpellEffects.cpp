@@ -369,6 +369,13 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
 
                 switch (spellInfo->Id)                     // better way to check unknown
                 {
+                    // Priestess of Torment - whirlwind dmg should also mana burn
+                    case 46271:
+                    {
+                        if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
+                            m_caster->CastSpell(unitTarget, 46266, true);
+                        break;
+                    }
                     case 35354: //Hand of Death
                     {
                         if (unitTarget && unitTarget->HasAura(38528,0)) //Protection of Elune
@@ -7710,7 +7717,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
             if (m_caster->GetTypeId()==TYPEID_PLAYER)
             {
                 pGameObj->AddUniqueUse((Player*)m_caster);
-                //m_caster->AddGameObject(pGameObj);          // will removed at spell cancel
+                m_caster->AddGameObject(pGameObj);          // will removed at spell cancel
                 pGameObj->SetLootState(GO_ACTIVATED);
                 pGameObj->SetTarget(((Player*)m_caster)->GetSelection());
             }
