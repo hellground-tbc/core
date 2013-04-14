@@ -7905,14 +7905,20 @@ void Aura::HandlePreventFleeing(bool apply, bool Real)
     if (!Real)
         return;
     
+    Unit* target = GetTarget();
+    if (!target)
+        return;
+
     if (apply && ((GetSpellProto()->SpellFamilyName == 5 && GetSpellProto()->SpellFamilyFlags == 2147483648) || GetId() == (16231)))
-    GetTarget()->SetFeared(false,GetTarget());
+        target->SetFeared(false, target);
     
-    if (!apply && GetTarget()->HasAuraType(SPELL_AURA_MOD_FEAR))
+    if (!apply)
     {
-        Unit::AuraList list = GetTarget()->GetAurasByType(SPELL_AURA_MOD_FEAR);
-        Unit::AuraList::iterator iter = list.end();
-        GetTarget()->SetFeared(true, (*iter)->GetCaster());
+        Unit::AuraList list = target->GetAurasByType(SPELL_AURA_MOD_FEAR);
+        if (list.empty())
+            return;
+
+        target->SetFeared(true, (*list.begin())->GetCaster());
     }
 }
 
