@@ -52,7 +52,7 @@ struct boss_gorosh_the_dervishAI : public ScriptedAI
         //WhirlWind_Timer
         if (WhirlWind_Timer < diff)
         {
-            DoCast(m_creature,SPELL_WHIRLWIND);
+            DoCast(me,SPELL_WHIRLWIND);
             WhirlWind_Timer = 15000;
         }
         else
@@ -61,7 +61,7 @@ struct boss_gorosh_the_dervishAI : public ScriptedAI
         //MortalStrike_Timer
         if (MortalStrike_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MORTALSTRIKE);
+            DoCast(me->getVictim(),SPELL_MORTALSTRIKE);
             MortalStrike_Timer = 15000;
         }
         else
@@ -70,9 +70,9 @@ struct boss_gorosh_the_dervishAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_gorosh_the_dervish(Creature *_Creature)
+CreatureAI* GetAI_boss_gorosh_the_dervish(Creature *creature)
 {
-    return new boss_gorosh_the_dervishAI (_Creature);
+    return new boss_gorosh_the_dervishAI (creature);
 }
 
 void AddSC_boss_gorosh_the_dervish()

@@ -55,7 +55,7 @@ struct boss_draganthaurissanAI : public ScriptedAI
     }
     void JustDied(Unit*)
     {
-        Unit* moira=FindCreature(8929,300,m_creature);
+        Unit* moira=FindCreature(8929,300,me);
         if (moira && moira->isAlive())
         {
             moira->setFaction(35);
@@ -91,7 +91,7 @@ struct boss_draganthaurissanAI : public ScriptedAI
         //AvatarOfFlame_Timer
         if (AvatarOfFlame_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_AVATAROFFLAME);
+            DoCast(me->getVictim(),SPELL_AVATAROFFLAME);
             AvatarOfFlame_Timer = 18000;
         }
         else
@@ -100,9 +100,9 @@ struct boss_draganthaurissanAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_draganthaurissan(Creature *_Creature)
+CreatureAI* GetAI_boss_draganthaurissan(Creature *creature)
 {
-    return new boss_draganthaurissanAI (_Creature);
+    return new boss_draganthaurissanAI (creature);
 }
 
 void AddSC_boss_draganthaurissan()

@@ -50,7 +50,7 @@ struct boss_angerrelAI : public ScriptedAI
         ShieldBlock_Timer = 15000;
         Strike_Timer = 12000;
 
-        m_creature->setFaction(FACTION_NEUTRAL);
+        me->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
@@ -79,7 +79,7 @@ struct boss_angerrelAI : public ScriptedAI
         //SunderArmor_Timer
         if (SunderArmor_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SUNDERARMOR);
+            DoCast(me->getVictim(),SPELL_SUNDERARMOR);
             SunderArmor_Timer = 28000;
         }
         else
@@ -88,7 +88,7 @@ struct boss_angerrelAI : public ScriptedAI
         //ShieldBlock_Timer
         if (ShieldBlock_Timer < diff)
         {
-            DoCast(m_creature,SPELL_SHIELDBLOCK);
+            DoCast(me,SPELL_SHIELDBLOCK);
             ShieldBlock_Timer = 25000;
         }
         else
@@ -97,7 +97,7 @@ struct boss_angerrelAI : public ScriptedAI
         //Strike_Timer
         if (Strike_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_STRIKE);
+            DoCast(me->getVictim(),SPELL_STRIKE);
             Strike_Timer = 10000;
         }
         else
@@ -107,9 +107,9 @@ struct boss_angerrelAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_angerrel(Creature *_Creature)
+CreatureAI* GetAI_boss_angerrel(Creature *creature)
 {
-    return new boss_angerrelAI (_Creature);
+    return new boss_angerrelAI (creature);
 }
 
 #define SPELL_SINISTERSTRIKE        15581
@@ -135,7 +135,7 @@ struct boss_doperelAI : public ScriptedAI
         BackStab_Timer = 12000;
         Gouge_Timer = 6000;
 
-        m_creature->setFaction(FACTION_NEUTRAL);
+        me->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
@@ -164,7 +164,7 @@ struct boss_doperelAI : public ScriptedAI
         //SinisterStrike_Timer
         if (SinisterStrike_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SINISTERSTRIKE);
+            DoCast(me->getVictim(),SPELL_SINISTERSTRIKE);
             SinisterStrike_Timer = 7000;
         }
         else
@@ -173,7 +173,7 @@ struct boss_doperelAI : public ScriptedAI
         //BackStab_Timer
         if (BackStab_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_BACKSTAB);
+            DoCast(me->getVictim(),SPELL_BACKSTAB);
             BackStab_Timer = 6000;
         }
         else
@@ -182,7 +182,7 @@ struct boss_doperelAI : public ScriptedAI
         //Gouge_Timer
         if (Gouge_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_GOUGE);
+            DoCast(me->getVictim(),SPELL_GOUGE);
             Gouge_Timer = 8000;
         }
         else
@@ -192,9 +192,9 @@ struct boss_doperelAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_doperel(Creature *_Creature)
+CreatureAI* GetAI_boss_doperel(Creature *creature)
 {
-    return new boss_doperelAI (_Creature);
+    return new boss_doperelAI (creature);
 }
 
 #define SPELL_SHADOWBOLT        17483                       //Not sure if right ID
@@ -222,7 +222,7 @@ struct boss_haterelAI : public ScriptedAI
         ShadowShield_Timer = 8000;
         Strike_Timer = 12000;
 
-        m_creature->setFaction(FACTION_NEUTRAL);
+        me->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
@@ -273,7 +273,7 @@ struct boss_haterelAI : public ScriptedAI
         //ShadowShield_Timer
         if (ShadowShield_Timer < diff)
         {
-            DoCast(m_creature,SPELL_SHADOWSHIELD);
+            DoCast(me,SPELL_SHADOWSHIELD);
             ShadowShield_Timer = 25000;
         }
         else
@@ -282,7 +282,7 @@ struct boss_haterelAI : public ScriptedAI
         //Strike_Timer
         if (Strike_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_STRIKE);
+            DoCast(me->getVictim(),SPELL_STRIKE);
             Strike_Timer = 10000;
         }
         else
@@ -292,9 +292,9 @@ struct boss_haterelAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_haterel(Creature *_Creature)
+CreatureAI* GetAI_boss_haterel(Creature *creature)
 {
-    return new boss_haterelAI (_Creature);
+    return new boss_haterelAI (creature);
 }
 
 #define SPELL_MINDBLAST             15587
@@ -323,7 +323,7 @@ struct boss_vilerelAI : public ScriptedAI
         PrayerOfHealing_Timer = 25000;
         Shield_Timer = 3000;
 
-        m_creature->setFaction(FACTION_NEUTRAL);
+        me->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
@@ -352,7 +352,7 @@ struct boss_vilerelAI : public ScriptedAI
         //MindBlast_Timer
         if (MindBlast_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MINDBLAST);
+            DoCast(me->getVictim(),SPELL_MINDBLAST);
             MindBlast_Timer = 7000;
         }
         else
@@ -361,7 +361,7 @@ struct boss_vilerelAI : public ScriptedAI
         //Heal_Timer
         if (Heal_Timer < diff)
         {
-            DoCast(m_creature,SPELL_HEAL);
+            DoCast(me,SPELL_HEAL);
             Heal_Timer = 20000;
         }
         else
@@ -370,7 +370,7 @@ struct boss_vilerelAI : public ScriptedAI
         //PrayerOfHealing_Timer
         if (PrayerOfHealing_Timer < diff)
         {
-            DoCast(m_creature,SPELL_PRAYEROFHEALING);
+            DoCast(me,SPELL_PRAYEROFHEALING);
             PrayerOfHealing_Timer = 30000;
         }
         else
@@ -379,7 +379,7 @@ struct boss_vilerelAI : public ScriptedAI
         //Shield_Timer
         if (Shield_Timer < diff)
         {
-            DoCast(m_creature,SPELL_SHIELD);
+            DoCast(me,SPELL_SHIELD);
             Shield_Timer = 30000;
         }
         else
@@ -389,9 +389,9 @@ struct boss_vilerelAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_vilerel(Creature *_Creature)
+CreatureAI* GetAI_boss_vilerel(Creature *creature)
 {
-    return new boss_vilerelAI (_Creature);
+    return new boss_vilerelAI (creature);
 }
 
 #define SPELL_FROSTBOLT         16799
@@ -423,8 +423,8 @@ struct boss_seethrelAI : public ScriptedAI
         FrostNova_Timer = 12000;
         FrostWard_Timer = 25000;
 
-        m_creature->CastSpell(m_creature,SPELL_FROSTARMOR,true);
-        m_creature->setFaction(FACTION_NEUTRAL);
+        me->CastSpell(me,SPELL_FROSTARMOR,true);
+        me->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
@@ -453,7 +453,7 @@ struct boss_seethrelAI : public ScriptedAI
         //FrostArmor_Timer
         if (FrostArmor_Timer < diff)
         {
-            DoCast(m_creature, SPELL_FROSTARMOR);
+            DoCast(me, SPELL_FROSTARMOR);
             FrostArmor_Timer = 180000;
         }
         else
@@ -462,7 +462,7 @@ struct boss_seethrelAI : public ScriptedAI
         //Frostbolt_Timer
         if (Frostbolt_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FROSTBOLT);
+            DoCast(me->getVictim(),SPELL_FROSTBOLT);
             Frostbolt_Timer = 15000;
         }
         else
@@ -482,7 +482,7 @@ struct boss_seethrelAI : public ScriptedAI
         //FrostNova_Timer
         if (FrostNova_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FROSTNOVA);
+            DoCast(me->getVictim(),SPELL_FROSTNOVA);
             FrostNova_Timer = 14000;
         }
         else
@@ -491,7 +491,7 @@ struct boss_seethrelAI : public ScriptedAI
         //FrostWard_Timer
         if (FrostWard_Timer < diff)
         {
-            DoCast(m_creature,SPELL_FROSTWARD);
+            DoCast(me,SPELL_FROSTWARD);
             FrostWard_Timer = 68000;
         }
         else
@@ -501,9 +501,9 @@ struct boss_seethrelAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_seethrel(Creature *_Creature)
+CreatureAI* GetAI_boss_seethrel(Creature *creature)
 {
-    return new boss_seethrelAI (_Creature);
+    return new boss_seethrelAI (creature);
 }
 
 #define SPELL_HAMSTRING             9080
@@ -529,7 +529,7 @@ struct boss_gloomrelAI : public ScriptedAI
         Cleave_Timer = 6000;
         MortalStrike_Timer = 10000;
 
-        m_creature->setFaction(FACTION_NEUTRAL);
+        me->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
@@ -558,7 +558,7 @@ struct boss_gloomrelAI : public ScriptedAI
         //Hamstring_Timer
         if (Hamstring_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_HAMSTRING);
+            DoCast(me->getVictim(),SPELL_HAMSTRING);
             Hamstring_Timer = 14000;
         }
         else
@@ -567,7 +567,7 @@ struct boss_gloomrelAI : public ScriptedAI
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
+            DoCast(me->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 8000;
         }
         else
@@ -576,7 +576,7 @@ struct boss_gloomrelAI : public ScriptedAI
         //MortalStrike_Timer
         if (MortalStrike_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MORTALSTRIKE);
+            DoCast(me->getVictim(),SPELL_MORTALSTRIKE);
             MortalStrike_Timer = 12000;
         }
         else
@@ -586,48 +586,48 @@ struct boss_gloomrelAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_gloomrel(Creature *_Creature)
+CreatureAI* GetAI_boss_gloomrel(Creature *creature)
 {
-    return new boss_gloomrelAI (_Creature);
+    return new boss_gloomrelAI (creature);
 }
 
 #define GOSSIP_ITEM_TEACH_1 "Teach me the art of smelting dark iron"
 #define GOSSIP_ITEM_TEACH_2 "Continue..."
 #define GOSSIP_ITEM_TRIBUTE "I want to pay tribute"
 
-bool GossipHello_boss_gloomrel(Player *player, Creature *_Creature)
+bool GossipHello_boss_gloomrel(Player *player, Creature *creature)
 {
     if (player->GetQuestRewardStatus(4083) == 1 && player->GetSkillValue(SKILL_MINING) >= 230 && !player->HasSpell(14891) )
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TEACH_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
     if (player->GetQuestRewardStatus(4083) == 0 && player->GetSkillValue(SKILL_MINING) >= 230)
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TRIBUTE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-    player->SEND_GOSSIP_MENU(2601, _Creature->GetGUID());
+    player->SEND_GOSSIP_MENU(2601, creature->GetGUID());
     return true;
 }
 
-bool GossipSelect_boss_gloomrel(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_boss_gloomrel(Player *player, Creature *creature, uint32 sender, uint32 action )
 {
     static uint64 SpectralChaliceGUID = 0;
     switch (action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
             player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_TEACH_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
-            player->SEND_GOSSIP_MENU(2606, _Creature->GetGUID());
+            player->SEND_GOSSIP_MENU(2606, creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+11:
             player->CLOSE_GOSSIP_MENU();
-            _Creature->CastSpell(player, 14894, false);
+            creature->CastSpell(player, 14894, false);
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
             player->ADD_GOSSIP_ITEM(0, "[PH] Continue...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 22);
-            player->SEND_GOSSIP_MENU(2604, _Creature->GetGUID());
+            player->SEND_GOSSIP_MENU(2604, creature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+22:
             player->CLOSE_GOSSIP_MENU();
-            if(!_Creature->GetMap()->GetGameObject(SpectralChaliceGUID))
+            if(!creature->GetMap()->GetGameObject(SpectralChaliceGUID))
             {
-                GameObject *spectralChalice = _Creature->SummonGameObject(164869, 1232, -239, -85, 4.05, 0, 0, 0, 0, 0);
+                GameObject *spectralChalice = creature->SummonGameObject(164869, 1232, -239, -85, 4.05, 0, 0, 0, 0, 0);
                 if(spectralChalice)
                     SpectralChaliceGUID = spectralChalice->GetGUID();
             }
@@ -671,7 +671,7 @@ struct boss_doomrelAI : public ScriptedAI
 
         DoomGUID = 0;
 
-        m_creature->setFaction(FACTION_NEUTRAL);
+        me->setFaction(FACTION_NEUTRAL);
     }
 
     void EnterCombat(Unit *who)
@@ -745,7 +745,7 @@ struct boss_doomrelAI : public ScriptedAI
         //ShadowVolley_Timer
         if (ShadowVolley_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SHADOWBOLTVOLLEY);
+            DoCast(me->getVictim(),SPELL_SHADOWBOLTVOLLEY);
             ShadowVolley_Timer = 12000;
         }
         else
@@ -765,7 +765,7 @@ struct boss_doomrelAI : public ScriptedAI
         //CurseOfWeakness_Timer
         if (CurseOfWeakness_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CURSEOFWEAKNESS);
+            DoCast(me->getVictim(),SPELL_CURSEOFWEAKNESS);
             CurseOfWeakness_Timer = 45000;
         }
         else
@@ -774,14 +774,14 @@ struct boss_doomrelAI : public ScriptedAI
         //DemonArmor_Timer
         if (DemonArmor_Timer < diff)
         {
-            DoCast(m_creature,SPELL_DEMONARMOR);
+            DoCast(me,SPELL_DEMONARMOR);
             DemonArmor_Timer = 300000;
         }
         else
             DemonArmor_Timer -= diff;
 
         //Summon Voidwalkers
-        if (!Voidwalkers && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 51 )
+        if (!Voidwalkers && me->GetHealth()*100 / me->GetMaxHealth() < 51 )
         {
             DoCast(me->getVictim(), SPELL_SUMMON_VOIDS);
             Voidwalkers = true;
@@ -791,35 +791,35 @@ struct boss_doomrelAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_doomrel(Creature *_Creature)
+CreatureAI* GetAI_boss_doomrel(Creature *creature)
 {
-    return new boss_doomrelAI (_Creature);
+    return new boss_doomrelAI (creature);
 }
 
 #define GOSSIP_ITEM_CHALLENGE   "Your bondage is at an end, Doom'rel. I challenge you!"
 #define SAY_START    "You have challenged the Seven, and now you will die!"
 
-bool GossipHello_boss_doomrel(Player *player, Creature *_Creature)
+bool GossipHello_boss_doomrel(Player *player, Creature *creature)
 {
-    ScriptedInstance *pInstance = (_Creature->GetInstanceData());
+    ScriptedInstance *pInstance = (creature->GetInstanceData());
 
     if (pInstance->GetData(TYPE_TOMB_OF_SEVEN) == NOT_STARTED || pInstance->GetData(TYPE_TOMB_OF_SEVEN) == FAIL)
     {
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_CHALLENGE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        player->SEND_GOSSIP_MENU(2601, _Creature->GetGUID());
+        player->SEND_GOSSIP_MENU(2601, creature->GetGUID());
     }
 
     return true;
 }
 
-bool GossipSelect_boss_doomrel(Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool GossipSelect_boss_doomrel(Player *player, Creature *creature, uint32 sender, uint32 action )
 {
-    ScriptedInstance *pInstance = (_Creature->GetInstanceData());
+    ScriptedInstance *pInstance = (creature->GetInstanceData());
 
     if (action == GOSSIP_ACTION_INFO_DEF + 1)
     {
         player->CLOSE_GOSSIP_MENU();
-        _Creature->Say(SAY_START, LANG_UNIVERSAL, player->GetGUID());
+        creature->Say(SAY_START, LANG_UNIVERSAL, player->GetGUID());
         pInstance->SetData(TYPE_TOMB_OF_SEVEN, IN_PROGRESS);
     }
 

@@ -80,7 +80,7 @@ struct boss_high_interrogator_gerstahnAI : public ScriptedAI
         //PsychicScream_Timer
         if (PsychicScream_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_PSYCHICSCREAM);
+            DoCast(me->getVictim(),SPELL_PSYCHICSCREAM);
             PsychicScream_Timer = 30000;
         }
         else
@@ -89,7 +89,7 @@ struct boss_high_interrogator_gerstahnAI : public ScriptedAI
         //ShadowShield_Timer
         if (ShadowShield_Timer < diff)
         {
-            DoCast(m_creature,SPELL_SHADOWSHIELD);
+            DoCast(me,SPELL_SHADOWSHIELD);
             ShadowShield_Timer = 25000;
         }
         else
@@ -98,9 +98,9 @@ struct boss_high_interrogator_gerstahnAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_high_interrogator_gerstahn(Creature *_Creature)
+CreatureAI* GetAI_boss_high_interrogator_gerstahn(Creature *creature)
 {
-    return new boss_high_interrogator_gerstahnAI (_Creature);
+    return new boss_high_interrogator_gerstahnAI (creature);
 }
 
 void AddSC_boss_high_interrogator_gerstahn()

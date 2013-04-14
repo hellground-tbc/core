@@ -61,7 +61,7 @@ struct boss_anubshiahAI : public ScriptedAI
         //ShadowBolt_Timer
         if (ShadowBolt_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SHADOWBOLT);
+            DoCast(me->getVictim(),SPELL_SHADOWBOLT);
             ShadowBolt_Timer = 7000;
         }
         else
@@ -80,7 +80,7 @@ struct boss_anubshiahAI : public ScriptedAI
         //CurseOfWeakness_Timer
         if (CurseOfWeakness_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CURSEOFWEAKNESS);
+            DoCast(me->getVictim(),SPELL_CURSEOFWEAKNESS);
             CurseOfWeakness_Timer = 45000;
         }
         else
@@ -89,7 +89,7 @@ struct boss_anubshiahAI : public ScriptedAI
         //DemonArmor_Timer
         if (DemonArmor_Timer < diff)
         {
-            DoCast(m_creature,SPELL_DEMONARMOR);
+            DoCast(me,SPELL_DEMONARMOR);
             DemonArmor_Timer = 300000;
         }
         else
@@ -109,9 +109,9 @@ struct boss_anubshiahAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_anubshiah(Creature *_Creature)
+CreatureAI* GetAI_boss_anubshiah(Creature *creature)
 {
-    return new boss_anubshiahAI (_Creature);
+    return new boss_anubshiahAI (creature);
 }
 
 void AddSC_boss_anubshiah()

@@ -52,18 +52,18 @@ struct boss_grizzleAI : public ScriptedAI
         //GroundTremor_Timer
         if (GroundTremor_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_GROUNDTREMOR);
+            DoCast(me->getVictim(),SPELL_GROUNDTREMOR);
             GroundTremor_Timer = 8000;
         }
         else
             GroundTremor_Timer -= diff;
 
         //Frenzy_Timer
-        if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 51 )
+        if ( me->GetHealth()*100 / me->GetMaxHealth() < 51 )
         {
             if (Frenzy_Timer < diff)
             {
-                DoCast(m_creature,SPELL_FRENZY);
+                DoCast(me,SPELL_FRENZY);
                 DoTextEmote("goes into a killing frenzy!",NULL);
 
                 Frenzy_Timer = 15000;
@@ -75,9 +75,9 @@ struct boss_grizzleAI : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_grizzle(Creature *_Creature)
+CreatureAI* GetAI_boss_grizzle(Creature *creature)
 {
-    return new boss_grizzleAI (_Creature);
+    return new boss_grizzleAI (creature);
 }
 
 void AddSC_boss_grizzle()

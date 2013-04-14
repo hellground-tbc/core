@@ -808,6 +808,8 @@ struct npc_marshal_windsorAI : public npc_escortAI
 
     void Reset()
     {
+        me->setFaction(35);
+
         if (pInstance)
         {
             if (pInstance->GetData(DATA_QUEST_JAIL_BREAK) == NOT_STARTED)
@@ -1020,7 +1022,7 @@ struct npc_marshal_reginald_windsorAI : public npc_escortAI
             if (Unit *qstarter = Unit::GetUnit(*me, pInstance->GetData64(Q_STARTER)))
             {
                 ((npc_escortAI*)(me->AI()))->SetMaxPlayerDistance(88.0f);
-				CAST_AI(npc_escortAI, (me->AI()))->Start(true, true, qstarter->GetGUID());
+                CAST_AI(npc_escortAI, (me->AI()))->Start(true, true, qstarter->GetGUID());
                 me->setFaction(11);
             }
         }
