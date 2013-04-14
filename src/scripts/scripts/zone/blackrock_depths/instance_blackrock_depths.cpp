@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_blackrock_depths.h"
 
-#define ENCOUNTERS              14
+#define ENCOUNTERS              8
 
 #define C_EMPEROR               9019
 #define C_PHALANX               9502
@@ -35,6 +35,14 @@ EndScriptData */
 #define NPC_SEETHREL            9038
 #define NPC_GLOOMREL            9037
 #define NPC_DOOMREL             9039
+
+#define NPC_OGRABISI            9677
+#define NPC_SHILL               9678
+#define NPC_CREST               9680
+#define NPC_JAZ                 9681
+#define NPC_TOBIAS              9679
+#define NPC_DUGHAL              9022
+#define NPC_WINDSOR             9023
 
 #define GO_ARENA1               161525
 #define GO_ARENA2               161522
@@ -63,6 +71,14 @@ struct instance_blackrock_depths : public ScriptedInstance
     uint64 EmperorGUID;
     uint64 PhalanxGUID;
     uint64 DoomrelGUID;
+    uint64 OgrabisiGUID;
+    uint64 ShillGUID;
+    uint64 ChestGUID;
+    uint64 JazGUID;
+    uint64 TobiasGUID;
+    uint64 DughalGUID;
+    uint64 WindsorGUID;
+    uint64 ReginaldGUID;
 
     uint64 GoArena1GUID;
     uint64 GoArena2GUID;
@@ -94,6 +110,14 @@ struct instance_blackrock_depths : public ScriptedInstance
         EmperorGUID = 0;
         PhalanxGUID = 0;
         DoomrelGUID = 0;
+        OgrabisiGUID;
+        ShillGUID = 0;
+        ChestGUID = 0;
+        JazGUID = 0;
+        TobiasGUID = 0;
+        DughalGUID = 0;
+        WindsorGUID = 0;
+        ReginaldGUID = 0;
 
         GoArena1GUID = 0;
         GoArena2GUID = 0;
@@ -143,6 +167,13 @@ struct instance_blackrock_depths : public ScriptedInstance
         {
             case C_EMPEROR: EmperorGUID = creature->GetGUID(); break;
             case C_PHALANX: PhalanxGUID = creature->GetGUID(); break;
+            case NPC_WINDSOR: WindsorGUID = creature->GetGUID(); break;
+            case NPC_OGRABISI: OgrabisiGUID = creature->GetGUID(); break;
+            case NPC_SHILL: ShillGUID = creature->GetGUID(); break;
+            case NPC_CREST: ChestGUID = creature->GetGUID(); break;
+            case NPC_JAZ: JazGUID = creature->GetGUID(); break;
+            case NPC_TOBIAS: TobiasGUID = creature->GetGUID(); break;
+            case NPC_DUGHAL: DughalGUID = creature->GetGUID(); break;
             case NPC_DOOMREL: DoomrelGUID = creature->GetGUID(); break;
             case NPC_DOPEREL: TombBossGUIDs[0] = creature->GetGUID(); break;
             case NPC_HATEREL: TombBossGUIDs[1] = creature->GetGUID(); break;
@@ -250,28 +281,13 @@ struct instance_blackrock_depths : public ScriptedInstance
             Encounter[5] = data;
             break;
         case DATA_QUEST_JAIL_BREAK:
+            if (data == FAIL)
+                Encounter[6] = NOT_STARTED;
+
             Encounter[6] = data;
             break;
-        case DATA_SHILL:
-            Encounter[7] = data;
-            break;
-        case DATA_DUGHAL:
-            Encounter[8] = data;
-            break;
-        case DATA_CREST:
-            Encounter[9] = data;
-            break;
-        case DATA_JAZ:
-            Encounter[10] = data;
-            break;
-        case DATA_TOBIAS:
-            Encounter[11] = data;
-            break;
-        case DATA_SUPPLY_ROOM:
-            Encounter[12] = data;
-            break;
         case TYPE_THELDREN:
-            Encounter[13] = data;
+            Encounter[7] = data;
             break;
         }
 
@@ -281,8 +297,13 @@ struct instance_blackrock_depths : public ScriptedInstance
 
     void SetData64(uint32 type, uint64 data)
     {
-        if(type == Q_STARTER)
-            PlayerGUID = data;
+        switch (type)
+        {
+            case Q_STARTER:
+                PlayerGUID = data; break;
+            case DATA_REGINALD:
+                ReginaldGUID = data; break;
+        }
     }
 
     uint32 GetData(uint32 type)
@@ -306,20 +327,8 @@ struct instance_blackrock_depths : public ScriptedInstance
             return Encounter[5];
         case DATA_QUEST_JAIL_BREAK:
             return Encounter[6];
-        case DATA_SHILL:
-            return Encounter[7];
-        case DATA_DUGHAL:
-            return Encounter[8];
-        case DATA_CREST:
-            return Encounter[9];
-        case DATA_JAZ:
-            return Encounter[10];
-        case DATA_TOBIAS:
-            return Encounter[11];
-        case DATA_SUPPLY_ROOM:
-            return Encounter[12];
         case TYPE_THELDREN:
-            return Encounter[13];
+            return Encounter[7];
         }
         return 0;
     }
@@ -348,7 +357,23 @@ struct instance_blackrock_depths : public ScriptedInstance
             return GoBarDoorGUID;
         case Q_STARTER:
             return PlayerGUID;
-		case DATA_ANGERREL:
+        case DATA_WINDSOR:
+            return WindsorGUID;
+        case DATA_REGINALD:
+            return ReginaldGUID;
+        case DATA_OGRABISI:
+            return OgrabisiGUID;
+        case DATA_SHILL:
+            return ShillGUID;
+        case DATA_CREST:
+            return ChestGUID;
+        case DATA_JAZ:
+            return JazGUID;
+        case DATA_TOBIAS:
+            return TobiasGUID;
+        case DATA_DUGHAL:
+            return DughalGUID;
+        case DATA_ANGERREL:
             return TombBossGUIDs[5];
 		case DATA_DOPEREL:
             return TombBossGUIDs[0];
