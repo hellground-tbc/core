@@ -826,7 +826,7 @@ void Spell::EffectDummy(uint32 i)
                     if (i == 0)
                     {
                         float x,y,z;
-                        m_caster->GetClosePoint(x,y,z, 0.0f, 10.0f, 0.0f);
+                        m_caster->GetNearPoint(x,y,z, 0.0f, 10.0f, 0.0f);
                         if (Creature *pDruid = m_caster->SummonCreature(22423, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 40000))
                         {
                             pDruid->CastSpell(pDruid, 39158, true);
@@ -848,7 +848,7 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(unitTarget, 39123, true);
 
                     float x, y, z;
-                    unitTarget->GetClosePoint(x,y,z, 0.0f, 0.0f, unitTarget->GetAngle(m_caster));
+                    unitTarget->GetNearPoint(x,y,z, 0.0f, 0.0f, unitTarget->GetAngle(m_caster));
 
                     m_caster->GetMotionMaster()->MovePoint(0, x, y, z);
                     break;
@@ -3994,7 +3994,7 @@ void Spell::EffectSummon(uint32 i)
         z = m_targets.m_destZ;
     }
     else
-        m_caster->GetClosePoint(x,y,z,owner->GetObjectSize());
+        m_caster->GetNearPoint(x,y,z,owner->GetObjectSize());
 
     Pet *spawnCreature = owner->SummonPet(pet_entry, x, y, z, m_caster->GetOrientation(), SUMMON_PET, SpellMgr::GetSpellDuration(GetSpellInfo()));
     if (!spawnCreature)
@@ -4318,7 +4318,7 @@ void Spell::EffectSummonWild(uint32 i)
         }
         // Summon if dest location not present near caster
         else
-            m_caster->GetClosePoint(px,py,pz,3.0f);
+            m_caster->GetNearPoint(px,py,pz,3.0f);
 
         int32 duration = SpellMgr::GetSpellDuration(GetSpellInfo());
 
@@ -4357,7 +4357,7 @@ void Spell::EffectSummonGuardian(uint32 i)
             if (((Creature*)m_originalCaster)->GetEntry() == 15439 || ((Creature*)m_originalCaster)->GetEntry() == 15430)
             {
                 float px, py, pz;
-                m_caster->GetClosePoint(px,py,pz,m_caster->GetObjectSize());
+                m_caster->GetNearPoint(px,py,pz,m_caster->GetObjectSize());
                 if (caster = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself())
                 if (Pet *spawnCreature = caster->SummonPet(GetSpellInfo()->EffectMiscValue[i], px, py, pz, m_caster->GetOrientation(), GUARDIAN_PET, duration))
                 {
@@ -4432,7 +4432,7 @@ void Spell::EffectSummonGuardian(uint32 i)
         }
         // Summon if dest location not present near caster
         else
-            m_caster->GetClosePoint(px,py,pz,m_caster->GetObjectSize());
+            m_caster->GetNearPoint(px,py,pz,m_caster->GetObjectSize());
 
         Pet *spawnCreature = caster->SummonPet(GetSpellInfo()->EffectMiscValue[i], px, py, pz, m_caster->GetOrientation(), GUARDIAN_PET, duration);
         if (!spawnCreature)
@@ -4456,7 +4456,7 @@ void Spell::EffectSummonPossessed(uint32 i)
     uint32 level = m_caster->getLevel();
 
     float x, y, z;
-    m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
+    m_caster->GetNearPoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
 
     int32 duration = SpellMgr::GetSpellDuration(GetSpellInfo());
 
@@ -4483,7 +4483,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
         float dis = SpellMgr::GetSpellRadius(GetSpellInfo(),i,false);
 
         float fx,fy,fz;
-        m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
+        m_caster->GetNearPoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
 
         if (mapid == unitTarget->GetMapId())
             unitTarget->NearTeleportTo(fx, fy, fz, -m_caster->GetOrientation(), unitTarget == m_caster);
@@ -4798,7 +4798,7 @@ void Spell::EffectSummonPet(uint32 i)
                 pz = m_targets.m_destZ;
             }
             else
-                owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
+                owner->GetNearPoint(px, py, pz, OldSummon->GetObjectSize());
 
             OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
             owner->GetMap()->Add((Creature*)OldSummon);
@@ -4833,7 +4833,7 @@ void Spell::EffectSummonPet(uint32 i)
         z = m_targets.m_destZ;
     }
     else
-        owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+        owner->GetNearPoint(x, y, z, owner->GetObjectSize());
 
     Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
     if (!pet)
@@ -5301,7 +5301,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
         z = m_targets.m_destZ;
     }
     else
-        m_caster->GetClosePoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
+        m_caster->GetNearPoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
 
     Map *map = target->GetMap();
 
@@ -6713,7 +6713,7 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
 
     const Player * pCaster = m_caster->ToPlayer();
     float x,y,z;
-    m_caster->GetClosePoint(x,y,z,unitTarget->GetObjectSize());
+    m_caster->GetNearPoint(x,y,z,unitTarget->GetObjectSize());
 
     unitTarget->ToPlayer()->SetSummonPoint(m_caster->GetMapId(),x,y,z);
 
@@ -6975,7 +6975,7 @@ void Spell::EffectSummonObject(uint32 i)
     }
     // Summon in random point all other units if location present
     else
-        m_caster->GetClosePoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
+        m_caster->GetNearPoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
 
     Map *map = m_caster->GetMap();
     if (!pGameObj->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), go_id, map, x, y, z, m_caster->GetOrientation(), 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
@@ -7310,7 +7310,7 @@ void Spell::EffectSummonCritter(uint32 i)
      }
      // Summon if dest location not present near caster
      else
-         m_caster->GetClosePoint(x,y,z,critter->GetObjectSize());
+         m_caster->GetNearPoint(x,y,z,critter->GetObjectSize());
 
     critter->Relocate(x,y,z,m_caster->GetOrientation());
 
@@ -7639,7 +7639,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     else if (GetSpellInfo()->EffectRadiusIndex[effIndex] && GetSpellInfo()->speed==0)
     {
         float dis = SpellMgr::GetSpellRadius(GetSpellInfo(),effIndex,false);
-        m_caster->GetClosePoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
+        m_caster->GetNearPoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
     }
     else
     {
@@ -7647,7 +7647,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
         float max_dis = SpellMgr::GetSpellMaxRange(sSpellRangeStore.LookupEntry(GetSpellInfo()->rangeIndex));
         float dis = rand_norm() * (max_dis - min_dis) + min_dis;
 
-        m_caster->GetClosePoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
+        m_caster->GetNearPoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
     }
 
     Map *cMap = m_caster->GetMap();

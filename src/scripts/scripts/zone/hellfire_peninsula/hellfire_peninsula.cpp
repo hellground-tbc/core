@@ -445,7 +445,7 @@ struct npc_demoniac_scryerAI : public ScriptedAI
         }
 
         float fX, fY, fZ;
-        me->GetNearPoint(me, fX, fY, fZ, 0.0f, 5.0f, fAngle);
+        me->GetNearPoint(fX, fY, fZ, 0.0f, 5.0f, fAngle);
 
         uint32 m_Time = TIME_TOTAL - (SpawnButtressTimer * ButtressCount);
         me->SummonCreature(NPC_BUTTRESS, fX, fY, fZ, me->GetAngle(fX, fY), TEMPSUMMON_TIMED_DESPAWN, m_Time);
@@ -1024,7 +1024,7 @@ void SendActionMenu_go_ice_stone(Player *player, GameObject* go, uint32 action)
     player->CLOSE_GOSSIP_MENU();
 
     float x,y,z;
-    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
+    player->GetNearPoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
 
     switch(action)
     {

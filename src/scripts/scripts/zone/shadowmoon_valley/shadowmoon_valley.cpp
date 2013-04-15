@@ -219,7 +219,7 @@ struct mob_mature_netherwing_drakeAI : public npc_escortAI
             if (caster->ToPlayer()->GetQuestStatus(10804) == QUEST_STATUS_INCOMPLETE)
             {
                 float x, y, z;
-                caster->GetClosePoint(x, y, z, me->GetObjectSize());
+                caster->GetNearPoint(x, y, z, me->GetObjectSize());
                 AddWaypoint(0, x, y, z, 15000);
                 AddWaypoint(1, x+0.1f, y-0.1f, z, 1000);
                 me->GetRespawnCoord(x, y, z);
@@ -419,7 +419,7 @@ struct mob_dragonmaw_peonAI : public ScriptedAI
 
             Tapped = true;
             float x, y, z;
-            caster->GetClosePoint(x, y, z, m_creature->GetObjectSize());
+            caster->GetNearPoint(x, y, z, m_creature->GetObjectSize());
 
             m_creature->SetWalk(false);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);

@@ -1844,7 +1844,7 @@ struct quest_the_vengeful_harbringerAI : public ScriptedAI
 
         if (Creature * Boss = Portal_Trigger->SummonCreature(21638, Portal_Trigger->GetPositionX(), Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), Portal_Trigger->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000))
         {
-            Event_Trigger_B->GetClosePoint(x, y, z, 5.0f);
+            Event_Trigger_B->GetNearPoint(x, y, z, 5.0f);
             Boss->GetMotionMaster()->MovePoint(1,x,y,z);
         }
     }
@@ -1870,7 +1870,7 @@ struct quest_the_vengeful_harbringerAI : public ScriptedAI
             if (!Trash1 || !Trash2 || !Trash3)
                 return;
 
-            Event_Trigger_B->GetClosePoint(x, y, z, 5.0f);
+            Event_Trigger_B->GetNearPoint(x, y, z, 5.0f);
 
             Trash1->GetMotionMaster()->MovePoint(1, x, y, z);
             Trash2->GetMotionMaster()->MovePoint(1, x +5.0f, y, z);

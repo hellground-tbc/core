@@ -477,7 +477,7 @@ struct npc_flame_waveAI : public ScriptedAI
         float x, y, z;
         me->SetWalk(true);
         me->SetSpeed(MOVE_WALK, 1.7);
-        me->GetNearPoint(me, x, y, z, 0, 20, summoner->GetAngle(me));
+        me->GetNearPoint( x, y, z, 0, 20, summoner->GetAngle(me));
         me->UpdateAllowedPositionZ(x, y, z);
         me->GetMotionMaster()->MovePoint(1, x, y, z);
     }
@@ -797,7 +797,7 @@ struct npc_greengill_slaveAI : public ScriptedAI
             else
             {
                 float x, y, z;
-                me->GetNearPoint(me, x, y, z, 0, 50, frand(0,2*M_PI));
+                me->GetNearPoint( x, y, z, 0, 50, frand(0,2*M_PI));
                 me->UpdateAllowedPositionZ(x, y, z);
                 me->GetMotionMaster()->MovePoint(1, x, y, z);
             }
@@ -811,7 +811,7 @@ struct npc_greengill_slaveAI : public ScriptedAI
             {
                 me->CombatStop();
                 float x, y, z;
-                me->GetNearPoint(me, x, y, z, 0, 15, frand(0,2*M_PI));
+                me->GetNearPoint( x, y, z, 0, 15, frand(0,2*M_PI));
                 me->UpdateAllowedPositionZ(x, y, z);
                 me->GetMotionMaster()->MovePoint(1, x, y, z);
                 enrageTimer = 60000;

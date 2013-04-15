@@ -1749,8 +1749,10 @@ Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint3
     return summon;
 }
 
-void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_bounding_radius, float distance2d, float absAngle) const
+void WorldObject::GetNearPoint(float &x, float &y, float &z, float searcher_bounding_radius, float distance2d, float absAngle) const
 {
+    absAngle -= GetOrientation();
+
     Position pos;
     GetValidPointInAngle(pos, distance2d+searcher_bounding_radius, absAngle, true);
     x = pos.x;

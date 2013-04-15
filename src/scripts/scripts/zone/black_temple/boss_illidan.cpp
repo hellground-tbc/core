@@ -524,7 +524,7 @@ struct boss_illidan_stormrageAI : public BossAI
             if (Creature *pGlaive = GetClosestCreatureWithEntry(pTrigger, GLAIVE_TARGET, 70.0f, true))
             {
                 WorldLocation final;
-                pTrigger->GetClosePoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
+                pTrigger->GetNearPoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
                 final.coord_z = 354.519f;
                 pTrigger->SetSpeed(MOVE_RUN, 1.0f);
                 pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z, UNIT_ACTION_CONTROLLED);
@@ -1259,7 +1259,7 @@ struct boss_illidan_akamaAI : public BossAI
                 if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                 {
                     float x,y,z;
-                    pIllidan->GetClosePoint(x, y, z, 0.0f, 8.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                    pIllidan->GetNearPoint(x, y, z, 0.0f, 8.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
 
                     me->Relocate(x, y, z);
                     me->SendHeartBeat();
@@ -1482,7 +1482,7 @@ struct boss_illidan_maievAI : public BossAI
                     if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
                         float x, y, z;
-                        pIllidan->GetClosePoint(x, y, z, 0.0f, 45.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                        pIllidan->GetNearPoint(x, y, z, 0.0f, 45.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
                         z = 354.519;
 
                         me->Relocate(x, y, z);
@@ -1512,7 +1512,7 @@ struct boss_illidan_maievAI : public BossAI
                 me->GetMotionMaster()->Clear(false);
 
                 float x, y, z;
-                me->GetClosePoint(x, y, z, 0.0f, 25.0f, frand(0, 2*M_PI));
+                me->GetNearPoint(x, y, z, 0.0f, 25.0f, frand(0, 2*M_PI));
                 z = 354.519;
 
                 me->Relocate(x, y, z);
@@ -1533,7 +1533,7 @@ struct boss_illidan_maievAI : public BossAI
                 if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                 {
                     float x, y, z;
-                    pIllidan->GetClosePoint(x, y, z, 0.0f, 7.0f, pIllidan->GetOrientation());
+                    pIllidan->GetNearPoint(x, y, z, 0.0f, 7.0f, pIllidan->GetOrientation());
                     z = 354.519;
 
                     me->Relocate(x, y, z);

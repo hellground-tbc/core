@@ -536,7 +536,7 @@ bool GOUse_go_naga_brazier(Player* pPlayer, GameObject* pGo)
 bool ItemUse_item_Totemic_Beacon(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
     float x,y,z;
-    player->GetClosePoint(x,y,z, 0.0f, 3.0f, frand(0, 2*M_PI));
+    player->GetNearPoint(x,y,z, 0.0f, 3.0f, frand(0, 2*M_PI));
     player->SummonCreature(NPC_EARTHEN_RING_GUIDE, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 120000);
     return false;
 }

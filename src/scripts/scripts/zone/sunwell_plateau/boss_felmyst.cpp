@@ -236,7 +236,7 @@ struct boss_felmystAI : public ScriptedAI
         if(Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
         {
             float x, y, z;
-            target->GetNearPoint(target, x, y, z, 0, 2, me->GetAngle(target));
+            target->GetNearPoint(x, y, z, 0, 2, me->GetAngle(target));
             me->UpdateAllowedPositionZ(x, y, z);
             me->GetMotionMaster()->MovePoint(0, x, y, z);
         }

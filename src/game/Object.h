@@ -428,21 +428,13 @@ class HELLGROUND_IMPORT_EXPORT WorldObject : public Object//, public WorldLocati
         void UpdateGroundPositionZ(float x, float y, float &z) const;
         void UpdateAllowedPositionZ(float x, float y, float &z) const;
 
-        void GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d,float absAngle) const;
-        void GetClosePoint(float &x, float &y, float &z, float size, float distance2d = 0, float angle = 0) const
-        {
-            GetNearPoint(this,x,y,z,size,distance2d,angle);
-        }
+        void GetNearPoint(float &x, float &y, float &z, float searcher_size, float distance2d = 0.0f,float absAngle = 0.0f) const;
+
         void GetGroundPoint(float &x, float &y, float &z, float dist, float angle);
         void GetGroundPointAroundUnit(float &x, float &y, float &z, float dist, float angle)
         {
             GetPosition(x, y, z);
             GetGroundPoint(x, y, z, dist, angle);
-        }
-        void GetContactPoint(WorldObject const* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const
-        {
-            // angle to face `obj` to `this` using distance includes size of `obj`
-            GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle(obj));
         }
 
         void GetRandomPoint(float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const;

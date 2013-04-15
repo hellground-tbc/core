@@ -533,7 +533,7 @@ struct boss_sathrovarrAI : public ScriptedAI
     void EnterCombat(Unit* who)
     {
         float x, y, z, ori;
-        me->GetClosePoint(x, y, z, 0, 6, me->GetAngle(me));
+        me->GetNearPoint(x, y, z, 0, 6, me->GetAngle(me));
         me->UpdateAllowedPositionZ(x, y, z);
         ori = me->GetAngle(x, y);
         Creature* Kalec = me->SummonCreature(MOB_KALEC, x, y, z, ori, TEMPSUMMON_CORPSE_DESPAWN, 0);

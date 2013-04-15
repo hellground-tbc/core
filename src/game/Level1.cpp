@@ -1065,7 +1065,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,target->GetObjectSize());
+        m_session->GetPlayer()->GetNearPoint(x,y,z,target->GetObjectSize());
         target->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,target->GetOrientation());
     }
     else if (uint64 guid = sObjectMgr.GetPlayerGUIDByName(name))
@@ -2766,7 +2766,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,pl->GetObjectSize());
+        m_session->GetPlayer()->GetNearPoint(x,y,z,pl->GetObjectSize());
         pl->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,pl->GetOrientation());
     }
 

@@ -2162,20 +2162,20 @@ struct npc_soulgrinderAI : public ScriptedAI
     {
         float fx, fy, fz;
 
-        me->GetNearPoint(me, fx, fy, fz, 0.0f, 20.0f, 0.0f);
+        me->GetNearPoint(fx, fy, fz, 0.0f, 20.0f, 0.0f);
         me->SummonCreature(NPC_SSPIRIT, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-        me->GetNearPoint(me, fx, fy, fz, 0.0f, 20.0f, 4.6f);
+        me->GetNearPoint(fx, fy, fz, 0.0f, 20.0f, 4.6f);
         me->SummonCreature(NPC_SSPIRIT, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
 
         if (roll_chance_i(60))
         {
-            me->GetNearPoint(me, fx, fy, fz, 0.0f, 20.0f, 1.5f);
+            me->GetNearPoint(fx, fy, fz, 0.0f, 20.0f, 1.5f);
             me->SummonCreature(NPC_SSPIRIT, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
         }
 
         if (roll_chance_i(50))
         {
-            me->GetNearPoint(me, fx, fy, fz, 0.0f, 20.0f, 3.1f);
+            me->GetNearPoint(fx, fy, fz, 0.0f, 20.0f, 3.1f);
             me->SummonCreature(NPC_SSPIRIT, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
         }
     }

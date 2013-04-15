@@ -486,7 +486,7 @@ struct mob_sunblade_scoutAI : public ScriptedAI
                 DoYell(SCOUT_YELL, 0, who);
                 float x, y, z;
                 me->GetMotionMaster()->Clear();
-                Protector->GetNearPoint(Protector, x, y, z, 0, urand(10, 20), Protector->GetAngle(me));
+                Protector->GetNearPoint(x, y, z, 0, urand(10, 20), Protector->GetAngle(me));
                 Protector->UpdateAllowedPositionZ(x, y, z);
                 me->SetWalk(false);
                 me->GetMotionMaster()->MovePoint(0, x, y, z);

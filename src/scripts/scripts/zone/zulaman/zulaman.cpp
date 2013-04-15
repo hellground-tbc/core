@@ -187,7 +187,7 @@ struct npc_hostageAI : public ScriptedAI
                     if(target)
                     {
                         float x, y, z;
-                        target->GetNearPoint(NULL, x, y, z, 0.0f, dist, angle);
+                        target->GetNearPoint(x, y, z, 0.0f, dist, angle);
                         me->GetMotionMaster()->MovePoint(1, x, y, me->GetPositionZ());
                     }
                     EventStarted = true;

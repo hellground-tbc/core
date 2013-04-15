@@ -830,7 +830,7 @@ struct boss_shade_of_akamaAI : public ScriptedAI
                 m_sorcerers.push_back(pSorcerer->GetGUID());
 
                 WorldLocation sLoc;
-                me->GetClosePoint(sLoc.coord_x, sLoc.coord_y, sLoc.coord_z, 0, 10.0f, frand(4.30, 5.31));
+                me->GetNearPoint(sLoc.coord_x, sLoc.coord_y, sLoc.coord_z, 0, 10.0f, frand(4.30, 5.31));
                 pSorcerer->GetMotionMaster()->MovePoint(0, sLoc.coord_x, sLoc.coord_y, sLoc.coord_z);
             }
             m_sorcTimer = 30000;

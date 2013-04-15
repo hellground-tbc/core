@@ -1537,7 +1537,7 @@ void GameObject::HandleNonDbcSpell(uint32 spellId, Player* pUser)
             uint32 entry = spellId == 37639 ? 20021 : 21729;
 
             float x, y, z;
-            pUser->GetClosePoint(x, y, z, 0.0f, 3.0f, frand(0, 2*M_PI));
+            pUser->GetNearPoint(x, y, z, 0.0f, 3.0f, frand(0, 2*M_PI));
             if (Creature *pSummon = pUser->SummonCreature(entry, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
                 pSummon->AI()->AttackStart(pUser);
 

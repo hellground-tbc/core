@@ -1500,7 +1500,7 @@ struct npc_scrapped_reaverAI : public ScriptedAI
         float angle = RAND(2.3f, 3.4f, 4.8f);
         float x, y, z;
 
-        me->GetNearPoint(me, x, y, z, 0.0f, 35.0f, angle);
+        me->GetNearPoint( x, y, z, 0.0f, 35.0f, angle);
         me->SummonCreature(NPC_ZAXXIS, x, y, z+2, me->GetAngle(x, y), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 7000);
     }
 
@@ -2566,7 +2566,7 @@ struct npc_dimensiusAI : public ScriptedAI
         }
 
         float fx, fy, fz;
-        me->GetNearPoint(me, fx, fy, fz, 0.0f, 20.0f, fangle);
+        me->GetNearPoint( fx, fy, fz, 0.0f, 20.0f, fangle);
         me->SummonCreature(NPC_SPAWN, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_DEAD_DESPAWN, 5000);
     }
 
@@ -2917,9 +2917,9 @@ struct npc_trader_maridAI : public npc_escortAI
     void EnterCombat(Unit* who)
     {
         float fx, fy, fz;
-        me->GetNearPoint(me, fx, fy, fz, 0.0f, 4.0f, 0.0f);
+        me->GetNearPoint( fx, fy, fz, 0.0f, 4.0f, 0.0f);
         me->SummonCreature(NPC_BODYGUARD, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-        me->GetNearPoint(me, fx, fy, fz, 0.0f, 4.0f, M_PI);
+        me->GetNearPoint( fx, fy, fz, 0.0f, 4.0f, M_PI);
         me->SummonCreature(NPC_BODYGUARD, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
     }
 
@@ -3022,9 +3022,9 @@ struct npc_doctor_vomisaAI : public ScriptedAI
             CheckTimer = 5000;
 
             float fx, fy, fz;
-            me->GetNearPoint(me, fx, fy, fz, 0.0f, 5.0f, 4.7f);
+            me->GetNearPoint( fx, fy, fz, 0.0f, 5.0f, 4.7f);
             me->SummonCreature(NPC_X6000, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 61000);
-            me->GetNearPoint(me, fx, fy, fz, 0.0f, 56.0f, 4.7f);
+            me->GetNearPoint( fx, fy, fz, 0.0f, 56.0f, 4.7f);
             me->SummonCreature(NPC_NEGATRON, fx, fy, fz, 2.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 50000);
         }
     }

@@ -172,7 +172,7 @@ bool Pet::LoadPetFromDB(Unit* owner, uint32 petentry, uint32 petnumber, bool cur
 
     if (!x || !y)
     {
-        owner->GetClosePoint(x, y, z, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        owner->GetNearPoint(x, y, z, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
         ang = owner->GetOrientation();
     }
 

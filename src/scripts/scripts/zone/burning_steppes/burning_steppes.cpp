@@ -147,7 +147,7 @@ bool GOUse_go_proudtuskremains(Player *player, GameObject* _GO)
     if (!GetClosestCreatureWithEntry(_GO, NPC_SHANI_PROUDTUSK, 30.0f))
     {
         float x,y,z;
-        player->GetClosePoint(x,y,z, 0.0f, 5.0f, frand(0, 2*M_PI));
+        player->GetNearPoint(x,y,z, 0.0f, 5.0f, frand(0, 2*M_PI));
         player->SummonCreature(NPC_SHANI_PROUDTUSK, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 120000);
     }
     else

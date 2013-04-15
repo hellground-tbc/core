@@ -1861,7 +1861,7 @@ void Aura::TriggerSpell()
                             return;
 
                         float fX, fY, fZ;
-                        target->GetClosePoint(fX, fY, fZ, target->GetObjectBoundingRadius(), 20.0f);
+                        target->GetNearPoint(fX, fY, fZ, target->GetObjectBoundingRadius(), 20.0f);
                         target->SummonCreature(22408, fX, fY, fZ, target->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
                         return;
                     }

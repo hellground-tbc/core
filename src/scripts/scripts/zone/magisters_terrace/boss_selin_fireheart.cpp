@@ -125,7 +125,7 @@ struct boss_selin_fireheartAI : public ScriptedAI
                     z = 4;
                     break;
                 default:
-                    CrystalChosen->GetClosePoint(x, y, z, m_creature->GetObjectSize(), CONTACT_DISTANCE);
+                    CrystalChosen->GetNearPoint(x, y, z, m_creature->GetObjectSize(), CONTACT_DISTANCE);
             }
 
             m_creature->SetWalk(false);

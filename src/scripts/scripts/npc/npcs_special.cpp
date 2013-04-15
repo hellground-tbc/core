@@ -2023,7 +2023,7 @@ struct npc_crashin_trashin_robotAI : public ScriptedAI
 
                 Creature * tmp = *(itr);
 
-                tmp->GetNearPoint(tmp, x, y, z, 0, 5.0f, frand(0.0f, M_PI*2));
+                tmp->GetNearPoint(x, y, z, 0, 5.0f, frand(0.0f, M_PI*2));
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
             }

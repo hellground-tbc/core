@@ -635,14 +635,14 @@ inline Creature *CreatureAI::DoSummon(uint32 uiEntry, const WorldLocation &pos, 
 inline Creature *CreatureAI::DoSummon(uint32 uiEntry, WorldObject* obj, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
 {
     WorldLocation pos;
-    obj->GetClosePoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
+    obj->GetNearPoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
     return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
 inline Creature *CreatureAI::DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float _fZ, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
 {
     WorldLocation pos;
-    obj->GetClosePoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
+    obj->GetNearPoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
     pos.coord_z += _fZ;
     return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }

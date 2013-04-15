@@ -3567,7 +3567,7 @@ bool ChatHandler::HandleReviveGroupCommand(const char* args)
 
         // before GM
         float x,y,z;
-        gm->GetClosePoint(x, y, z, pl->GetObjectSize());
+        gm->GetNearPoint(x, y, z, pl->GetObjectSize());
         pl->TeleportTo(gm->GetMapId(), x, y, z, pl->GetOrientation());
 
         pl->ResurrectPlayer(0.5f);
@@ -6018,7 +6018,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
     bool triggered = (trig_str != NULL);
 
     float x,y,z;
-    m_session->GetPlayer()->GetClosePoint(x,y,z,dist);
+    m_session->GetPlayer()->GetNearPoint(x,y,z,dist);
 
     m_session->GetPlayer()->CastSpell(x,y,z,spell,triggered);
     return true;

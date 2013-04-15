@@ -398,15 +398,15 @@ struct npc_OOX17AI : public npc_escortAI
                     switch (i)
                     {
                         case 0:
-                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 0.0f);
+                            me->GetNearPoint(x, y, z, 0.0f, 15.0f, 0.0f);
                             me->SummonCreature(SPAWN_FIRST, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                             break;
                         case 1:
-                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 2.0f);
+                            me->GetNearPoint(x, y, z, 0.0f, 15.0f, 2.0f);
                             me->SummonCreature(SPAWN_FIRST, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                             break;
                         case 2:
-                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 4.0f);
+                            me->GetNearPoint(x, y, z, 0.0f, 15.0f, 4.0f);
                             me->SummonCreature(SPAWN_FIRST, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                             break;
                     }
@@ -422,15 +422,15 @@ struct npc_OOX17AI : public npc_escortAI
                     switch (i)
                     {
                         case 0:
-                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 0.0f);
+                            me->GetNearPoint(x, y, z, 0.0f, 15.0f, 0.0f);
                             me->SummonCreature(SPAWN_SECOND_1, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                             break;
                         case 1:
-                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 2.0f);
+                            me->GetNearPoint(x, y, z, 0.0f, 15.0f, 2.0f);
                             me->SummonCreature(SPAWN_SECOND_2, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                             break;
                         case 2:
-                            me->GetNearPoint(me, x, y, z, 0.0f, 15.0f, 4.0f);
+                            me->GetNearPoint(x, y, z, 0.0f, 15.0f, 4.0f);
                             me->SummonCreature(SPAWN_SECOND_2, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                             break;
                     }
