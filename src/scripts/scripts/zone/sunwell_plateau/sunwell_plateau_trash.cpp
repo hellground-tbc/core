@@ -7,7 +7,7 @@
 
 /* ScriptData
 SDName: Sunwell_Plateau_Trash
-SD%Complete: 27% (9/33)
+SD%Complete: 92% (25/27)
 SDComment: Trash NPCs divided by to boss links
 SDCategory: Sunwell Plateau
 EndScriptData */
@@ -1787,7 +1787,18 @@ struct mob_chaos_gazerAI : public ScriptedAI
 
         if(HealthBelowPct(75.0f) && canDrainLife)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 29.0, true, 0, 20.0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 29.5, true, 0, 20.0))
+            {
+                ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
+                DrainLifeCD = urand(20000, 25000);
+            }
+            else
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0, true, 0, 10.0))
+            {
+                ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
+                DrainLifeCD = urand(20000, 25000);
+            }
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 10.0, true, me->getVictimGUID()))
             {
                 ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
                 DrainLifeCD = urand(20000, 25000);
@@ -2043,8 +2054,6 @@ struct mob_oblivion_mageAI : public ScriptedAI
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0, true))
                 AttackStart(target, false);
-            else
-                EnterEvadeMode();
         }
 
         if(Polymorph < diff)
