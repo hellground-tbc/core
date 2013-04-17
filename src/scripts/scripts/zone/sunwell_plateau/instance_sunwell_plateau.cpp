@@ -295,10 +295,14 @@ struct instance_sunwell_plateau : public ScriptedInstance
             // Eredar Twins Up - door 4
             case 187770: Gate[0]        = gobj->GetGUID(); break;
             case 187990: // door 7
-                if(gobj->GetGUIDLow() == 50110) // M'uru
+                if(gobj->GetDBTableGUIDLow() == 50110) // M'uru
                     Gate[1] = gobj->GetGUID();
                 else    // Eredar Twins Down
+                {
                     Gate[2]  = gobj->GetGUID();
+                    if(GetData(DATA_EREDAR_TWINS_EVENT) == DONE)
+                        HandleGameObject(Gate[2], OPEN);
+                }
                 break;
         }
     }
@@ -405,7 +409,7 @@ struct instance_sunwell_plateau : public ScriptedInstance
                         HandleGameObject(Gate[0], OPEN);
                     Encounters[4] = data;
                 }
-                else
+                if(data == DONE)
                 {
                     HandleGameObject(Gate[0], OPEN);
                     HandleGameObject(Gate[2], OPEN);
@@ -478,6 +482,15 @@ struct instance_sunwell_plateau : public ScriptedInstance
             SaveToDB();
 
         HandleRequiredEncounter(id);
+    }
+
+    void OnPlayerEnter(Player* player)
+    {
+        if (GetData(DATA_FELMYST_EVENT) == DONE && GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+        {
+            player->GetMap()->PlayerRelocation(player, 1584.65, 630.3, 50.75, 3.00);
+            return;
+        }
     }
 
     void SetData64(uint32 id, uint64 guid)

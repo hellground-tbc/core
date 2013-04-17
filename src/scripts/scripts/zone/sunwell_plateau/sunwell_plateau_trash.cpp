@@ -980,6 +980,7 @@ struct mob_shadowsword_deathbringerAI : public ScriptedAI
 
     uint32 DiseaseBuffet;
     uint32 VolatileDisease;
+    uint32 DespawnTimer;
     ScriptedInstance* pInstance;
 
     void Reset()
@@ -987,6 +988,7 @@ struct mob_shadowsword_deathbringerAI : public ScriptedAI
         me->setActive(true);
         DiseaseBuffet = urand(5000, 10000);
         VolatileDisease = urand(3000, 6000);
+        DespawnTimer = 15000;
         DoCast(me, SPELL_DUAL_WIELD, true);
     }
 
@@ -1008,6 +1010,14 @@ struct mob_shadowsword_deathbringerAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE && !me->isInCombat())
+        {
+            if (DespawnTimer < diff)
+                me->ForcedDespawn();
+            else
+                DespawnTimer -= diff;
+        }
+
         if(!UpdateVictim())
             return;
 
@@ -1400,7 +1410,7 @@ struct mob_shadowsword_vanquisherAI : public ScriptedAI
             if (Creature* Manafiend = GetClosestCreatureWithEntry(me, 25483, 20))
                 Manafiend->SetUInt32Value(UNIT_NPC_EMOTESTATE,EMOTE_STATE_READY1H);
             if (me->GetDBTableGUIDLow() == 44465)
-                me->Yell("Intruders! Do not let the into the Sanctum!", 0, who->GetGUID());
+                me->Yell("Intruders! Do not let them into the Sanctum!", 0, who->GetGUID());
             me->SetUInt32Value(UNIT_NPC_EMOTESTATE,EMOTE_STATE_READY1H);
             emote = true;
         }
@@ -1517,6 +1527,10 @@ struct mob_volatile_fiendAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (summoned && me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE &&
+            !me->isInCombat() && pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == IN_PROGRESS)
+                pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
+
         if(exploding)
         {
             if(explosion_timer < diff)
@@ -2030,7 +2044,8 @@ struct mob_oblivion_mageAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         DoZoneInCombat(80.0f);
-        me->CastStop();
+        if (me->IsNonMeleeSpellCasted(false))
+            me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
@@ -2210,7 +2225,7 @@ struct mob_priestess_of_tormentAI : public ScriptedAI
         {
             DoCast(me, SPELL_WHIRLWIND);
             moving = true;
-            Whirlwind = urand(15000, 22000);
+            Whirlwind = urand(13000, 16000);
         }
         else
             Whirlwind -= diff;
