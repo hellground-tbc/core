@@ -290,7 +290,7 @@ void Group::RemoveAllInvites()
 {
     for (InvitesList::iterator itr=m_invitees.begin(); itr!=m_invitees.end(); ++itr)
     {
-        if ((*itr) && (*itr)->GetTypeId() == TYPEID_PLAYER)
+        if ((*itr)->GetTypeId() == TYPEID_PLAYER)
             (*itr)->SetGroupInvite(NULL);
     }
 
@@ -301,7 +301,7 @@ Player* Group::GetInvited(const uint64& guid) const
 {
     for (InvitesList::const_iterator itr = m_invitees.begin(); itr != m_invitees.end(); ++itr)
     {
-        if ((*itr) && (*itr)->GetGUID() == guid)
+        if ((*itr)->GetGUID() == guid)
             return (*itr);
     }
     return NULL;
@@ -311,7 +311,7 @@ Player* Group::GetInvited(const std::string& name) const
 {
     for (InvitesList::const_iterator itr = m_invitees.begin(); itr != m_invitees.end(); ++itr)
     {
-        if ((*itr) && (*itr)->GetName() == name)
+        if ((*itr)->GetName() == name)
             return (*itr);
     }
     return NULL;
