@@ -6248,6 +6248,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             break;
         }
+        case 40638: //Willy Focus
+        {
+            m_caster->CastSpell(unitTarget, damage ,false);
+            break;
+        }
     }
 
     if (!unitTarget || !unitTarget->isAlive()) // can we remove this check?

@@ -2379,6 +2379,7 @@ enum MiniPetsInfo
 
     NPC_WILLY                   = 23231,
     SPELL_WILLY_SLEEP           = 40663,
+    SPELL_WILLY_TRIGGER         = 40619,
 
     NPC_DRAGON_KITE             = 25110,
     SPELL_DRAGON_KITE_LIGHTNING = 45197,
@@ -2507,6 +2508,11 @@ struct npc_small_pet_handlerAI : public ScriptedAI
             case NPC_DRAGON_KITE:
             {
                 AddSpellToCast(me->GetOwner(), SPELL_DRAGON_KITE_STRING);
+                break;
+            }
+            case NPC_WILLY:
+            {
+                AddSpellToCast(me,SPELL_WILLY_TRIGGER);
                 break;
             }
             default:
