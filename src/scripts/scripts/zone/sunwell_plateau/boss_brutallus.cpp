@@ -124,7 +124,10 @@ struct boss_brutallusAI : public ScriptedAI
     void EnterCombat(Unit* /*pWho*/)
     {
         if (pInstance->GetData(DATA_KALECGOS_EVENT) == IN_PROGRESS)
+        {
+            EnterEvadeMode();
             return;
+        }
 
         if (pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
         {
