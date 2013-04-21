@@ -13027,7 +13027,7 @@ bool Unit::HasEventAISummonedUnits()
     return i_AI->HasEventAISummonedUnits();
 }
 
-Unit* Unit::GetNextRandomRaidMember(float radius)
+Unit* Unit::GetNextRandomRaidMember(float radius, bool PlayerOnly)
 {
     Player *pPlayer = GetCharmerOrOwnerPlayerOrPlayerItself();
     if (!pPlayer)
@@ -13053,7 +13053,7 @@ Unit* Unit::GetNextRandomRaidMember(float radius)
                     nearMembers.push_back(Target);
 
             if (Pet *pet = Target->GetPet())
-                if (pet != this && IsWithinDistInMap(pet, radius) &&
+                if (!PlayerOnly && pet != this && IsWithinDistInMap(pet, radius) &&
                     !pet->HasInvisibilityAura() && !IsHostileTo(pet) &&
                     !pet->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE) && pet->isAlive())
                     nearMembers.push_back(pet);
