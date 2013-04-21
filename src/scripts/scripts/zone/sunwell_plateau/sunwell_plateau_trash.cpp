@@ -1636,7 +1636,7 @@ struct mob_apocalypse_guardAI : public ScriptedAI
         if(Cleave < diff)
         {
             AddSpellToCast(SPELL_CLEAVE_3, CAST_TANK);
-            Cleave = urand(9000, 12000);
+            Cleave = urand(4000, 8000);
         }
         else
             Cleave -= diff;
@@ -1644,7 +1644,7 @@ struct mob_apocalypse_guardAI : public ScriptedAI
         if(CorruptingStrike < diff)
         {
             AddSpellToCast(SPELL_CORRUPTING_STRIKE, CAST_TANK);
-            CorruptingStrike = urand(12000, 17000);
+            CorruptingStrike = urand(10000, 14000);
         }
         else
             CorruptingStrike -= diff;
@@ -1653,7 +1653,7 @@ struct mob_apocalypse_guardAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, me->getVictimGUID(), 5.0))
                 AddSpellToCast(target, SPELL_CORRUPTING_STRIKE, false, true);
-            DeathCoil = urand(4000, 8000);
+            DeathCoil = urand(4000, 7000);
         }
         else
             DeathCoil -= diff;
@@ -1804,18 +1804,18 @@ struct mob_chaos_gazerAI : public ScriptedAI
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 29.5, true, 0, 20.0))
             {
                 ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
-                DrainLifeCD = urand(20000, 25000);
+                DrainLifeCD = urand(10000, 15000);
             }
             else
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0, true, 0, 10.0))
             {
                 ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
-                DrainLifeCD = urand(20000, 25000);
+                DrainLifeCD = urand(10000, 15000);
             }
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 10.0, true, me->getVictimGUID()))
             {
                 ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
-                DrainLifeCD = urand(20000, 25000);
+                DrainLifeCD = urand(10000, 15000);
             }
             else
                 DrainLifeCD = 1000;
@@ -2075,7 +2075,7 @@ struct mob_oblivion_mageAI : public ScriptedAI
         {
             ClearCastQueue();
             AddSpellToCast(SPELL_POLYMORPH, CAST_RANDOM_WITHOUT_TANK, false, true);
-            Polymorph = urand(3000, 6000);
+            Polymorph = urand(5000, 8000);
         }
         else
             Polymorph -= diff;

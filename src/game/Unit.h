@@ -978,7 +978,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         bool IsInRaidWith(Unit const* unit) const;
         void GetPartyMember(std::list<Unit*> &units, float dist);
         void GetRaidMember(std::list<Unit*> &units, float dist);
-        Unit* GetNextRandomRaidMember(float radius);
+        Unit* GetNextRandomRaidMember(float radius, bool PlayerOnly = false);
         bool IsContestedGuard() const
         {
             if (FactionTemplateEntry const* entry = getFactionTemplateEntry())

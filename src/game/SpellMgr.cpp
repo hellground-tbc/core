@@ -705,7 +705,7 @@ bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 40616:                                         // Fel Rage 2
         case 41625:                                         // Fel Rage 3
         case 46787:                                         // Fel Rage scale
-        case 32375:                                         // Mass Dispell on friendly targets
+        case 32375:                                         // Mass Dispel on friendly targets
         case 38318:                                         // Orb of Blackwhelp
             return true;
         case 46392:                                         // Focused Assault
@@ -2738,6 +2738,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_CHARGE;
                     break;
                 case SPELL_EFFECT_TRIGGER_SPELL:
+                    if (spellInfo->Id == 32375 && spellInfo->Id == 32375)   // Mass Dispel should not have effect_trigger_missile
+                        break;
                     if (IsPositionTarget(spellInfo->EffectImplicitTargetA[j]) ||
                         spellInfo->Targets & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
                         spellInfo->Effect[j] = SPELL_EFFECT_TRIGGER_MISSILE;

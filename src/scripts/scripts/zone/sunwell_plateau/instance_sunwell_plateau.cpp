@@ -69,7 +69,7 @@ struct instance_sunwell_plateau : public ScriptedInstance
     uint64 Collision_2;                                     // Kalecgos Encounter
     uint64 FireBarrier;                                     // Brutallus Encounter
     uint64 IceBarrier;                                      // Brutallus Encounter
-    uint64 Gate[3];
+    uint64 Gate[4];
 
     /*** Misc ***/
     uint32 KalecgosPhase;
@@ -295,7 +295,7 @@ struct instance_sunwell_plateau : public ScriptedInstance
             // Eredar Twins Up - door 4
             case 187770: Gate[0]        = gobj->GetGUID(); break;
             case 187990: // door 7
-                if(gobj->GetDBTableGUIDLow() == 50110) // M'uru
+                if(gobj->GetDBTableGUIDLow() == 50110) // M'uru - entrance
                     Gate[1] = gobj->GetGUID();
                 else    // Eredar Twins Down
                 {
@@ -303,6 +303,9 @@ struct instance_sunwell_plateau : public ScriptedInstance
                     if(GetData(DATA_EREDAR_TWINS_EVENT) == DONE)
                         HandleGameObject(Gate[2], OPEN);
                 }
+                break;
+            case 188118: // door 8 - Muru ramp to Kil'jaeden
+                Gate[3] = gobj->GetGUID();
                 break;
         }
     }
@@ -413,23 +416,32 @@ struct instance_sunwell_plateau : public ScriptedInstance
                 {
                     HandleGameObject(Gate[0], OPEN);
                     HandleGameObject(Gate[2], OPEN);
+                    if(Player* pl = GetPlayerInMap())
+                    {
+                        if(Unit* muru = pl->GetUnit(Muru))
+                        {
+                            muru->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            muru->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                        }
+                    }
                 }
                 break;
             case DATA_MURU_EVENT:
                 if(Encounters[5] != DONE)
                 {
-                    switch(data){
+                    switch(data)
+                    {
                         case DONE:
-                            HandleGameObject(Gate[4], OPEN);
+                            HandleGameObject(Gate[1], OPEN);
                             HandleGameObject(Gate[3], OPEN);
                             break;
                         case IN_PROGRESS:
-                            HandleGameObject(Gate[4], CLOSE);
+                            HandleGameObject(Gate[1], CLOSE);
                             HandleGameObject(Gate[3], CLOSE);
                             break;
                         case NOT_STARTED:
-                            HandleGameObject(Gate[4], CLOSE);
-                            HandleGameObject(Gate[3], OPEN);
+                            HandleGameObject(Gate[3], CLOSE);
+                            HandleGameObject(Gate[1], OPEN);
                             break;
                     }
                     Encounters[5] = data;
@@ -488,7 +500,7 @@ struct instance_sunwell_plateau : public ScriptedInstance
     {
         if (GetData(DATA_FELMYST_EVENT) == DONE && GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
         {
-            player->GetMap()->PlayerRelocation(player, 1584.65, 630.3, 50.75, 3.00);
+            player->NearTeleportTo(1584.65, 630.3, 50.75, 3.00);
             return;
         }
     }
