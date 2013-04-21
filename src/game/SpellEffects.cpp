@@ -6346,10 +6346,23 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             }
             return;
         }
-        // Negative Energy
+        // Negative Energy - Entropius
         case 46289:
-            m_caster->CastSpell(unitTarget, 46285, true);
+        {
+            if(unitTarget->GetTypeId() != TYPEID_PLAYER)
+                return;
+            int32 damage = irand(1885, 2115);
+            m_caster->CastCustomSpell(unitTarget, 46285, &damage, 0, 0, true, 0, 0, m_caster->GetGUID());
+            damage /= 2;
+            if(Unit* target_2 = unitTarget->ToPlayer()->GetNextRandomRaidMember(100.0f, true))
+            {
+                unitTarget->CastCustomSpell(target_2, 46285, &damage, 0, 0, true, 0, 0, m_caster->GetGUID());
+                damage /= 2;
+                if(Unit* target_3 = target_2->ToPlayer()->GetNextRandomRaidMember(100.0f, true))
+                    target_2->CastCustomSpell(target_3, 46285, &damage, 0, 0, true, 0, 0, m_caster->GetGUID());
+            }
             return;
+        }
         //5,000 Gold
         case 46642:
         {

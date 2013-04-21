@@ -2000,6 +2000,8 @@ void Aura::TriggerSpell()
 //                    case 44035: break;
 //                    // Curse of Boundless Agony
 //                    case 45050: break;
+                    // Open Portal Periodic
+                    case 45994: trigger_spell_id = 45976; break;
 //                    // Earthquake
 //                    case 46240: break;
                     // Personalized Weather
@@ -2301,7 +2303,7 @@ void Aura::TriggerSpell()
             // Negative Energy Periodic
             case 46284:
             {
-                caster->CastCustomSpell(trigger_spell_id, SPELLVALUE_MAX_TARGETS, m_tickNumber / 10 + 1, NULL, true, NULL, this, originalCasterGUID);
+                caster->CastCustomSpell(trigger_spell_id, SPELLVALUE_MAX_TARGETS, m_tickNumber / 15 + 1, NULL, true, NULL, this, originalCasterGUID);
                 return;
             }
             // Charge Rage & Deadly Strike random targeting
@@ -7836,18 +7838,53 @@ void Aura::PeriodicDummyTick()
             m_target->CastSpell(m_target, 45959, true);
             break;
         }
-//        // Darkness
-//        case 45996: break;
+//        // Darkness - summon Dark Fiends on tick no 2
+        case 45996:
+        {
+            Unit* caster = GetCaster();
+            if(!caster)
+                return;
+            if(GetTickNumber() == 2)
+            {
+                for(uint8 i = 0; i < 8; i++)
+                    caster->CastSpell((Unit*)NULL, 46000 + i, true);
+            }
+            break;
+        }
 //        // Summon Blood Elves Periodic
         case 46041:
         {
-            m_target->CastSpell(m_target, 46037, true, NULL, this);
-            m_target->CastSpell(m_target, roll_chance_i(50) ? 46038 : 46039, true, NULL, this);
-            m_target->CastSpell(m_target, 46040, true, NULL, this);
+            Unit* caster = GetCaster();
+            if(!caster)
+                return;
+            for (uint8 i = 0; i < 2; ++i)
+            {
+                caster->CastSpell((Unit*)NULL, 46037, true, 0, this);    // up ramp Berserkers
+                caster->CastSpell((Unit*)NULL, 46040, true, 0, this);    // down ramp Berserkers
+            }
+            caster->CastSpell((Unit*)NULL, 46038, true, 0, this);    // up ramp Fury Mages
+            caster->CastSpell((Unit*)NULL, 46039, true, 0, this);    // down ramp Fury Mages
             break;
         }
 //        // Transform Visual Missile Periodic
-//        case 46205: break;
+        case 46205:
+        {
+            Unit* caster = GetCaster();
+            if(!caster)
+                return;
+            if(GetTickNumber() > 12)
+            {
+                caster->RemoveAurasDueToSpell(46205);
+                caster->CombatStop();
+                return;
+            }
+            if(GetTickNumber() == 1 || roll_chance_i(33))
+            {
+                caster->CastSpell((Unit*)NULL, 46178, true, 0, this);
+                caster->CastSpell((Unit*)NULL, 46208, true, 0, this);
+            }
+            break;
+        }
 //        // Find Opening Beam End
 //        case 46333: break;
 //        // Ice Spear Control Aura
