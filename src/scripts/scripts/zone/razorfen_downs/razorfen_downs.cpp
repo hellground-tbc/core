@@ -16,19 +16,21 @@
 
 /* ScriptData
 SDName: Razorfen_Downs
-SD%Complete: 100
-SDComment: Support for Henry Stern(2 recipes)
+SD%Complete: 70
+SDComment: TODO: npc_belnistrasz - combat AI/spells
 SDCategory: Razorfen Downs
 EndScriptData */
 
 /* ContentData
 npc_henry_stern
+npc_belnistrasz
 EndContentData */
 
 //#include "ScriptedPch.h"
 #include "precompiled.h"
 #include "GossipDef.h"
 #include "razorfen_downs.h"
+#include "escort_ai.h"
 
 /*###
 # npc_henry_stern
@@ -180,6 +182,137 @@ CreatureAI* GetAI_npc_tomb_creature(Creature* pCreature)
     return new npc_tomb_creatureAI (pCreature);
 }
 
+/*######
+## npc_belnistrasz
+######*/
+enum belnistraszEnum
+{
+QUEST_BELNISTRASZ           = 3525,
+BELNISTRASZ_SAY_START       = -2100025,
+BELNISTRASZ_SAY_AGGRO       = -2100027,/* should be "You'll rue the day you crossed me, <mob name>" no idea how to do that.
+                                       also mobs does not pull on him on the way to event */
+BELNISTRASZ_SAY_IDOL        = -2100026,
+BELNISTRASZ_YELL_3MIN       = -2100028,
+BELNISTRASZ_YELL_2MIN       = -2100029,
+BELNISTRASZ_YELL_1MIN       = -2100030,
+BELNISTRASZ_YELL_COMPLETE   = -2100031,
+BELNISTRASZ_SAY_PLAGUEMAW   = -2100032,
+OVEN_TARGET                 = 8662,
+SPELL_BELNISTRASZ_VISUAL    = 12774,
+MOB_GEOMANCER               = 7335,
+MOB_BOAR                    = 7333,
+MOB_WARRIOR                 = 7327,
+BOSS_PLAGUEMAW              = 7356,
+GO_BELNISTRASZ_BRAZIER      = 152097,
+};
+
+struct npc_belnistraszAI : public npc_escortAI
+{
+    npc_belnistraszAI(Creature *c) : npc_escortAI(c){}
+
+    uint32 wavetimer;
+    uint8 waves;
+    bool onplace;
+
+    void Reset()
+    {
+        SetDespawnAtEnd(false);
+        SetDespawnAtFar(false);
+        onplace = false;
+        wavetimer = 0;
+        waves = 0;
+    }
+    void WaypointReached(uint32 i) 
+    {
+        if (i == 13)
+        {
+            DoScriptText(BELNISTRASZ_SAY_IDOL,m_creature);
+            Unit* bunny = FindCreature(OVEN_TARGET,50,m_creature);
+            if (bunny)
+                DoCast(bunny,SPELL_BELNISTRASZ_VISUAL);
+            onplace = true;
+            wavetimer = 10000;
+            SetCanAttack(false);            
+        }
+    }
+    void EnterCombat(Unit* who)
+    {
+        if (!onplace)
+        DoScriptText(BELNISTRASZ_SAY_AGGRO,m_creature,who);
+    }
+
+    void JustSummoned(Creature* summon)
+    {
+        summon->AI()->AttackStart(m_creature);
+        summon->AI()->DoZoneInCombat();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!onplace || waves > 10)
+        {
+            npc_escortAI::UpdateAI(diff);
+            if (!me->getVictim() && waves > 10)
+            {
+                m_creature->SummonGameObject(GO_BELNISTRASZ_BRAZIER,2578,946,53.3,0,0,0,0,0,30000);
+                GetPlayerForEscort()->GroupEventHappens(QUEST_BELNISTRASZ,m_creature);
+                if(InstanceData* pInstance = me->GetInstanceData())
+                    pInstance->SetData(DATA_BELNISTRASZ,DONE);
+                me->ForcedDespawn();
+            }
+        }
+        else if (wavetimer >= diff)
+            wavetimer -= diff;
+        else
+        {
+            waves ++;
+            switch (waves)
+            {
+            case 3: DoScriptText(BELNISTRASZ_YELL_3MIN,m_creature);break;
+            case 5: DoScriptText(BELNISTRASZ_YELL_2MIN,m_creature);break;
+            case 7: DoScriptText(BELNISTRASZ_YELL_1MIN,m_creature);break;
+            case 9: DoScriptText(BELNISTRASZ_YELL_COMPLETE,m_creature);break;
+            case 10: DoScriptText(BELNISTRASZ_SAY_PLAGUEMAW,m_creature);break;
+            default : break;
+            }
+            if (waves<9)
+            {
+                m_creature->SummonCreature(MOB_GEOMANCER,2565,961,51.7,5.48,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
+                m_creature->SummonCreature(MOB_BOAR,2568,961,51.7,5.48,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
+                m_creature->SummonCreature(MOB_WARRIOR,2585,960,52.3,3.86,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
+                m_creature->SummonCreature(MOB_BOAR,2585,950,52.3,3.86,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
+                wavetimer = 30000;
+            }
+            else if (waves == 9)
+            {
+                SetCanAttack(true);
+                m_creature->InterruptNonMeleeSpells(false,SPELL_BELNISTRASZ_VISUAL);
+                wavetimer = 5000;
+            }
+            else if (waves == 10)
+            {
+                m_creature->SummonCreature(BOSS_PLAGUEMAW,2585,956,52.3,3.86,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
+            }
+        }
+    }
+};
+
+bool QuestAccept_npc_belnistrasz(Player* pPlayer, Creature* pCreature, Quest const* quest)
+{
+    if (quest->GetQuestId() == QUEST_BELNISTRASZ)
+        if (npc_escortAI* pEscortAI = CAST_AI(npc_belnistraszAI, pCreature->AI()))
+        {
+            pEscortAI->Start(true, true, pPlayer->GetGUID());
+            DoScriptText(BELNISTRASZ_SAY_START,pCreature,pPlayer);
+        }
+    return true;
+}
+
+CreatureAI* GetAI_npc_belnistrasz(Creature* pCreature)
+{
+    return new npc_belnistraszAI(pCreature);
+}
+
 void AddSC_razorfen_downs()
 {
     Script* newscript;
@@ -198,5 +331,11 @@ void AddSC_razorfen_downs()
     newscript = new Script;
     newscript->Name = "npc_tomb_creature";
     newscript->GetAI = &GetAI_npc_tomb_creature;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_belnistrasz";
+    newscript->GetAI = &GetAI_npc_belnistrasz;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_belnistrasz;
     newscript->RegisterSelf();
 }

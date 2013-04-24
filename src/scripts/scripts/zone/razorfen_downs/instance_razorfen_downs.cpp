@@ -20,7 +20,7 @@
 #include "precompiled.h"
 #include "razorfen_downs.h"
 
-#define    MAX_ENCOUNTER  1
+#define    MAX_ENCOUNTER  2
 
 struct instance_razorfen_downs : public ScriptedInstance
 {
@@ -30,7 +30,7 @@ struct instance_razorfen_downs : public ScriptedInstance
     };
 
     uint64 uiGongGUID;
-
+    std::list<uint64> flamesGUID;
     uint32 m_auiEncounter[MAX_ENCOUNTER];
 
     uint8 uiGongWaves;
@@ -40,7 +40,7 @@ struct instance_razorfen_downs : public ScriptedInstance
         uiGongGUID = 0;
 
         uiGongWaves = 0;
-
+        flamesGUID.clear();
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
     }
 
@@ -51,7 +51,7 @@ struct instance_razorfen_downs : public ScriptedInstance
         std::ostringstream stream;
 
         stream << "T C ";
-        stream << m_auiEncounter[0]  << " ";
+        stream << m_auiEncounter[0]  << m_auiEncounter[1]  << " ";
         stream << uiGongWaves;
 
         OUT_SAVE_INST_DATA_COMPLETE;
@@ -70,20 +70,21 @@ struct instance_razorfen_downs : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
 
         char dataHead1, dataHead2;
-        uint16 data0, data1;
+        uint16 data0, data1, data2;
 
         std::istringstream loadStream(in);
-        loadStream >> dataHead1 >> dataHead2 >> data0 >> data1;
+        loadStream >> dataHead1 >> dataHead2 >> data0 >> data1 >> data2;
 
         if (dataHead1 == 'T' && dataHead2 == 'C')
         {
             m_auiEncounter[0] = data0;
+            m_auiEncounter[1] = data1;
 
             for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
                 if (m_auiEncounter[i] == IN_PROGRESS)
                     m_auiEncounter[i] = NOT_STARTED;
 
-            uiGongWaves = data1;
+            uiGongWaves = data2;
         } else OUT_LOAD_INST_DATA_FAIL;
 
         OUT_LOAD_INST_DATA_COMPLETE;
@@ -98,9 +99,19 @@ struct instance_razorfen_downs : public ScriptedInstance
                 if (m_auiEncounter[0] == DONE)
                     pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_NOTSELECTABLE);
                 break;
+            case GO_IDOL_MOUTH:
+            case GO_IDOL_CUP:
+            case GO_IDOL_OVEN:
+                    flamesGUID.push_back(pGo->GetGUID());break;
             default:
                 break;
         }
+    }
+
+    void OnCreatureCreate(Creature* c, uint32 id)
+    {
+        if (id == CREATURE_BELNISTRASZ && m_auiEncounter[1] == DONE)
+            c->ForcedDespawn();
     }
 
     void SetData(uint32 uiType, uint32 uiData)
@@ -167,12 +178,17 @@ struct instance_razorfen_downs : public ScriptedInstance
             }
         }
 
-        if (uiType == BOSS_TUTEN_KASH)
+        if (uiType == BOSS_TUTEN_KASH || uiType == DATA_BELNISTRASZ)
         {
-            m_auiEncounter[0] = uiData;
+            m_auiEncounter[uiType] = uiData;
 
             if (uiData == DONE)
                 SaveToDB();
+        }
+        if (uiType == DATA_BELNISTRASZ)
+        {
+            for( std::list<uint64>::iterator itr = flamesGUID.begin() ; itr != flamesGUID.end(); itr++)
+                instance->GetGameObject(*itr)->AddObjectToRemoveList();
         }
     }
 
