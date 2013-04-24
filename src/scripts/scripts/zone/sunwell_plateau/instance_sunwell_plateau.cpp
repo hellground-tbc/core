@@ -498,7 +498,8 @@ struct instance_sunwell_plateau : public ScriptedInstance
 
     void OnPlayerEnter(Player* player)
     {
-        if (GetData(DATA_FELMYST_EVENT) == DONE && GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+        if (GetData(DATA_KALECGOS_EVENT) == DONE && GetData(DATA_FELMYST_EVENT) == DONE &&
+            GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
         {
             player->NearTeleportTo(1584.65, 630.3, 50.75, 3.00);
             return;

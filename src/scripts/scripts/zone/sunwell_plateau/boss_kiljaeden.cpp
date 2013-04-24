@@ -559,6 +559,12 @@ struct boss_kiljaedenAI : public Scripted_NoMovementAI
 
     void EnterCombat(Unit* who)
     {
+        // temporary
+        if(pInstance->GetData(DATA_MURU_EVENT) != DONE)
+        {
+            EnterEvadeMode();
+            return;
+        }
         DoZoneInCombat();
         DoScriptText(SAY_KJ_EMERGE, m_creature);
 

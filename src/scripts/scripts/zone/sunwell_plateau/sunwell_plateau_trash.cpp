@@ -1080,6 +1080,8 @@ struct mob_shadowsword_lifeshaperAI : public ScriptedAI
         DrainLife = (4000, 10000);
         HealthFunnel = 8000;
         canFunnelHP = true;
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
     }
 
     void JustDied(Unit* killer)
@@ -1186,6 +1188,8 @@ struct mob_shadowsword_manafiendAI : public ScriptedAI
         DoCast(me, SPELL_CHILLING_TOUCH_AURA);
         DrainMana = urand(3000, 5000);
         CheckTimer = 1000;
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
     }
 
     void JustDied(Unit* killer)
@@ -1384,6 +1388,8 @@ struct mob_shadowsword_vanquisherAI : public ScriptedAI
         ClearCastQueue();
         Cleave = urand(5000, 16000);
         MeltArmor = urand(3000, 10000);
+        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+            pInstance->SetData(DATA_TRASH_GAUNTLET_EVENT, FAIL);
     }
 
     void JustDied(Unit* killer)

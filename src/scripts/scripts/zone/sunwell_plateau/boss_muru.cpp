@@ -280,6 +280,12 @@ struct boss_muruAI : public Scripted_NoMovementAI
     void EnterCombat(Unit *who)
     {
         //pInstance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
+        // temporary
+        if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+        {
+            EnterEvadeMode();
+            return;
+        }
         DoCastAOE(SPELL_NEGATIVE_ENERGY,false);
     }
 
