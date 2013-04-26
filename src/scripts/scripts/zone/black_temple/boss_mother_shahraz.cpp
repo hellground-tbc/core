@@ -219,7 +219,7 @@ struct boss_shahrazAI : public ScriptedAI
         if (m_checkTimer < diff)
         {
             if(me->GetDistance(wLoc.coord_x, wLoc.coord_y, wLoc.coord_z) > 110)
-                EnterEvadeMode();
+                EnterEvadeMode();return;
             DoZoneInCombat();
             me->SetSpeed(MOVE_RUN, 3.0);
 
