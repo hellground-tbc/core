@@ -13247,6 +13247,9 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
     if (qInfo->GetExclusiveGroup() <= 0)
         return true;
 
+    if (qInfo->IsDaily() && !sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return true;
+
     ObjectMgr::ExclusiveQuestGroups::iterator iter = sObjectMgr.mExclusiveQuestGroups.lower_bound(qInfo->GetExclusiveGroup());
     ObjectMgr::ExclusiveQuestGroups::iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qInfo->GetExclusiveGroup());
 
@@ -13344,7 +13347,7 @@ bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
         return true;
 
     bool have_slot = false;
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
     {
         uint32 id = GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx);
         if (qInfo->GetQuestId()==id)
@@ -15455,7 +15458,7 @@ void Player::_LoadQuestStatus(QueryResultAutoPtr result)
 
 void Player::_LoadDailyQuestStatus(QueryResultAutoPtr result)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
         SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
 
     //QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT quest,time FROM character_queststatus_daily WHERE guid = '%u'", GetGUIDLow());
@@ -15466,7 +15469,7 @@ void Player::_LoadDailyQuestStatus(QueryResultAutoPtr result)
 
         do
         {
-            if (quest_daily_idx >= PLAYER_MAX_DAILY_QUESTS)  // max amount with exist data in query
+            if (quest_daily_idx >= sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY))  // max amount with exist data in query
             {
                 sLog.outLog(LOG_DEFAULT, "ERROR: Player (GUID: %u) have more 25 daily quest records in `charcter_queststatus_daily`",GetGUIDLow());
                 break;
@@ -16538,7 +16541,7 @@ void Player::_SaveDailyQuestStatus()
     SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteDailies, "DELETE FROM character_queststatus_daily WHERE guid = ?");
     stmt.PExecute(GetGUIDLow());
 
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
     {
         if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
         {
@@ -19194,7 +19197,7 @@ void Player::SendAuraDurationsForTarget(Unit* target)
 
 void Player::SetDailyQuestStatus(uint32 quest_id)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
     {
         if (!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
         {
@@ -19208,7 +19211,7 @@ void Player::SetDailyQuestStatus(uint32 quest_id)
 
 void Player::ResetDailyQuestStatus()
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
         SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
 
     // DB data deleted in caller

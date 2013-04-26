@@ -61,7 +61,6 @@ struct PlayerAI;
 typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS       127
-#define PLAYER_MAX_DAILY_QUESTS 25
 
 // Note: SPELLMOD_* values is aura types in fact
 enum SpellModType

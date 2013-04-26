@@ -718,6 +718,16 @@ StatusParserFile = "parser.prsr"
 #        Default: 7
 #                -1 (show all available quests marks)
 #
+#    DailyQuest.Blizzlike
+#        Enable blizzlike random selection of a daily quest. If false - all daily quests will be available to complete once a day.
+#        Take effect after next daily quest reset (06.00 AM)
+#        Default: 1
+#
+#    DailyQuest.MaxPerDay
+#        The maximum number of daily quests, that can be completed in one day. 
+#        However, client will be show error messages, as if standart 25 daily quest would be available.
+#        Default: 25
+#
 #    MaxPrimaryTradeSkill
 #        Max count that player can learn the primary trade skill.
 #        Default: 2
@@ -839,6 +849,8 @@ Instance.ResetTimeHour = 4
 Instance.UnloadDelay = 1800000
 Quests.LowLevelHideDiff = 4
 Quests.HighLevelHideDiff = 7
+DailyQuest.Blizzlike = 1
+DailyQuest.MaxPerDay = 25
 MaxPrimaryTradeSkill = 2
 MinPetitionSigns = 9
 MaxGroupXPDistance = 74

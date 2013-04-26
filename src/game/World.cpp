@@ -1128,6 +1128,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_COREBALANCER_INTERVAL] = sConfig.GetIntDefault("CoreBalancer.BalanceInterval", 300000);
     m_configs[CONFIG_COREBALANCER_VISIBILITY_PENALTY] = sConfig.GetIntDefault("CoreBalancer.VisibilityPenalty", 25);
 
+    m_configs[CONFIG_DAILY_BLIZZLIKE] = sConfig.GetBoolDefault("DailyQuest.Blizzlike", true);
+    m_configs[CONFIG_DAILY_MAX_PER_DAY] = sConfig.GetIntDefault("DailyQuest.MaxPerDay", 25);
+
     m_configs[CONFIG_CREATURE_RESTORE_STATE] = sConfig.GetIntDefault("Creature.RestoreStateTimer", 5000);
 }
 
@@ -2648,8 +2651,16 @@ void World::SelectRandomHeroicDungeonDaily()
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId, true);
         }
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(HeroicEventStart, HeroicEventEnd);
     while (random == currentId)
@@ -2678,8 +2689,16 @@ void World::SelectRandomDungeonDaily()
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId, true);
         }
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(DungeonEventStart, DungeonEventEnd);
     while (random == currentId)
@@ -2708,8 +2727,16 @@ void World::SelectRandomCookingDaily()
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId, true);
         }
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(CookingEventStart, CookingEventEnd);
     while (random == currentId)
@@ -2733,14 +2760,21 @@ void World::SelectRandomFishingDaily()
     uint8 currentId = 0;
     for (uint8 eventId = FishingEventStart; eventId <= FishingEventEnd; ++eventId)
     {
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
-
         if (sGameEventMgr.IsActiveEvent(eventId))
         {
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId, true);
         }
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(FishingEventStart, FishingEventEnd);
     while (random == currentId)
@@ -2769,8 +2803,16 @@ void World::SelectRandomPvPDaily()
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId);
         }
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(PvPEventStart, PvPEventEnd);;
     while (random == currentId)
