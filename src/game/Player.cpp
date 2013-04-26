@@ -16945,8 +16945,11 @@ void Player::UpdatePvPFlag(time_t currTime)
 
 void Player::SetFFAPvP(bool state)
 {
-    if (state)
+    if (state){
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+        if (sWorld.getConfig(CONFIG_FFA_DISALLOWGROUP) && !GetMap()->IsBattleGroundOrArena())
+            RemoveFromGroup();
+    }
     else
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
 }

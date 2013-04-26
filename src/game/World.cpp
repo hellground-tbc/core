@@ -943,6 +943,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_TALENTS_INSPECTING] = sConfig.GetBoolDefault("TalentsInspecting", true);
     m_configs[CONFIG_DISABLE_DUEL] = sConfig.GetBoolDefault("DisableDuel", false);
     m_configs[CONFIG_DISABLE_PVP] = sConfig.GetBoolDefault("DisablePVP", false);
+    m_configs[CONFIG_FFA_DISALLOWGROUP] = sConfig.GetBoolDefault("FFA.DisallowGroup", false);
     m_configs[CONFIG_CHAT_FAKE_MESSAGE_PREVENTING] = sConfig.GetBoolDefault("ChatFakeMessagePreventing", false);
 
     m_configs[CONFIG_CORPSE_DECAY_NORMAL] = sConfig.GetIntDefault("Corpse.Decay.NORMAL", 60);

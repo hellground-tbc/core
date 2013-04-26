@@ -920,6 +920,10 @@ RealmBans = 0
 #        Default: 0 (enable)
 #                 1 (disable pvp)
 #
+#    FFA.DisallowGroup
+#        Disallow players to create groups while in FFA area
+#        Default: 0 
+#
 ###################################################################################################################
 
 AllowTwoSide.Accounts = 0
@@ -935,6 +939,7 @@ AllowTwoSide.Trade = 0
 TalentsInspecting = 1
 DisableDuel = 0
 DisablePVP = 0
+FFA.DisallowGroup = 0
 
 ###################################################################################################################
 # CREATURE SETTINGS
