@@ -2707,6 +2707,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case SPELL_AURA_MOD_ROOT:
                 case SPELL_AURA_MOD_DECREASE_SPEED:
+                    // Creature daze exception
+                    if (spellInfo->Id == 1604) 
+                        break;
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                     break;
                 case SPELL_AURA_MOD_POSSESS:
