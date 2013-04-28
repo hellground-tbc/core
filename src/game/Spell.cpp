@@ -1679,9 +1679,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     float min_dis = SpellMgr::GetSpellMinRange(sSpellRangeStore.LookupEntry(GetSpellInfo()->rangeIndex));
                     float max_dis = SpellMgr::GetSpellMaxRange(sSpellRangeStore.LookupEntry(GetSpellInfo()->rangeIndex));
                     float dis = rand_norm() * (max_dis - min_dis) + min_dis;
-                    float x, y, z;
-                    m_caster->GetNearPoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE, dis, frand(-0.7, 0.7));
-                    m_targets.setDestination(x, y, z);
+                    Position pos;
+                    m_caster->GetValidPointInAngle(pos, dis+DEFAULT_WORLD_OBJECT_SIZE,frand(-0.25,0.25), true);
+                    m_targets.setDestination(pos.x, pos.y, pos.z);
                     break;
                 }
                 case TARGET_UNIT_MASTER:
