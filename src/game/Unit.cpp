@@ -601,13 +601,7 @@ void Unit::RemoveMovementImpairingAuras()
     {
         SpellEntry const* spellInfo = iter->second->GetSpellProto();
         if (spellInfo->AttributesCu & SPELL_ATTR_CU_MOVEMENT_IMPAIR)
-        {
-            // do NOT remove Dazed effect on shape shift
-            if (spellInfo->Id == 1604)
-                ++iter;
-            else
-                RemoveAura(iter);
-        }
+            RemoveAura(iter);
         else
             ++iter;
     }
