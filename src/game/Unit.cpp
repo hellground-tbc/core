@@ -9035,7 +9035,7 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
     // SPELL_AURA_MOD_DAMAGE_PERCENT_DONE included in weapon damage. BUT for other spellschools than physical - must be applied. (example - paladins seal of command + sanctity aura)
     // SPELL_AURA_MOD_OFFHAND_DAMAGE_PCT  included in weapon damage
 
-    if (SpellMgr::GetSpellSchoolMask(spellProto) & ~GetMeleeDamageSchoolMask())
+    if (spellProto && (SpellMgr::GetSpellSchoolMask(spellProto) & GetMeleeDamageSchoolMask()) == 0)
     {
         AuraList const& mModDamagePercentDone = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
         for (AuraList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
