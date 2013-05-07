@@ -1082,6 +1082,8 @@ struct boss_kaelthasAI : public ScriptedAI
                         Arcane_Timer2 -= diff;
                 }
 
+                DoSpecialThings(diff, DO_SPEED_UPDATE);
+
                 //Phase 4 specific spells
                 if(Phase == 4)
                 {
