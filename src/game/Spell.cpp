@@ -5080,15 +5080,11 @@ SpellCastResult Spell::CheckItems()
                 if (targetItem->GetProto()->ItemLevel < GetSpellInfo()->baseLevel)
                     return SPELL_FAILED_LOWLEVEL;
                 // Not allow enchant in trade slot for some enchant type
-                if (targetItem->GetOwner() != m_caster)
-                {
-                    uint32 enchant_id = GetSpellInfo()->EffectMiscValue[i];
-                    SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                    if (!pEnchant)
-                        return SPELL_FAILED_ERROR;
-                    if (pEnchant->slot & ENCHANTMENT_CAN_SOULBOUND)
-                        return SPELL_FAILED_NOT_TRADEABLE;
-                }
+                SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(GetSpellInfo()->EffectMiscValue[0]);
+                if (!pEnchant)
+                    return SPELL_FAILED_ERROR;
+                if (targetItem->GetOwner() != m_caster && (GetSpellInfo()->AttributesEx2 & (SPELL_ATTR_EX2_NOT_USABLE_VIA_TRADE|SPELL_ATTR_EX2_UNK3)))
+                    return SPELL_FAILED_NOT_TRADEABLE;
                 break;
             }
             case SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY:
@@ -5097,15 +5093,11 @@ SpellCastResult Spell::CheckItems()
                 if (!item)
                     return SPELL_FAILED_ITEM_NOT_FOUND;
                 // Not allow enchant in trade slot for some enchant type
-                if (item->GetOwner() != m_caster)
-                {
-                    uint32 enchant_id = GetSpellInfo()->EffectMiscValue[i];
-                    SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-                    if (!pEnchant)
-                        return SPELL_FAILED_ERROR;
-                    if (pEnchant->slot & ENCHANTMENT_CAN_SOULBOUND)
-                        return SPELL_FAILED_NOT_TRADEABLE;
-                }
+                SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(GetSpellInfo()->EffectMiscValue[0]);
+                if (!pEnchant)
+                    return SPELL_FAILED_ERROR;
+                if (item->GetOwner() != m_caster && (GetSpellInfo()->AttributesEx2 & (SPELL_ATTR_EX2_NOT_USABLE_VIA_TRADE|SPELL_ATTR_EX2_UNK3)))
+                    return SPELL_FAILED_NOT_TRADEABLE;
                 break;
             }
             case SPELL_EFFECT_ENCHANT_HELD_ITEM:

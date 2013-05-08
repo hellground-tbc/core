@@ -309,7 +309,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX2_UNK0                       0x00000001            // 0
 #define SPELL_ATTR_EX2_UNK1                       0x00000002            // 1 ? many triggered spells have this flag
 #define SPELL_ATTR_EX2_IGNORE_LOS                 0x00000004            // 2 used to detect when ever spell can ignore los check
-#define SPELL_ATTR_EX2_UNK3                       0x00000008            // 3
+#define SPELL_ATTR_EX2_UNK3                       0x00000008            // 3 mostly used in shamans' elemental weapons & rogue poisons (sth like "my weapon enchant only")
 #define SPELL_ATTR_EX2_DISPLAY_IN_STANCE_BAR      0x00000010            // 4 client displays icon in stance bar when learned, even if not shapeshift
 #define SPELL_ATTR_EX2_AUTOREPEAT_FLAG            0x00000020            // 5
 #define SPELL_ATTR_EX2_CANT_TARGET_TAPPED         0x00000040            // 6 target must be tapped by caster
@@ -319,7 +319,7 @@ enum SpellCategory
 #define SPELL_ATTR_EX2_UNK10                      0x00000400            // 10
 #define SPELL_ATTR_EX2_HEALTH_FUNNEL              0x00000800            // 11
 #define SPELL_ATTR_EX2_UNK12                      0x00001000            // 12
-#define SPELL_ATTR_EX2_UNK13                      0x00002000            // 13
+#define SPELL_ATTR_EX2_NOT_USABLE_VIA_TRADE       0x00002000            // 13 enchants that cannot be done via trade window (plus disenchanting and prospecting)
 #define SPELL_ATTR_EX2_UNK14                      0x00004000            // 14
 #define SPELL_ATTR_EX2_UNK15                      0x00008000            // 15 not set in 2.4.2
 #define SPELL_ATTR_EX2_TAME_BEAST                 0x00010000            // 16
