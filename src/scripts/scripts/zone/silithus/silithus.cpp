@@ -330,7 +330,7 @@ void SendActionMenu_go_lesser_wind_stone(Player *player, GameObject* _GO, uint32
     switch(action)
     {
     case GOSSIP_ACTION_INFO_DEF:
-        player->CastSpell(player,24762,false);
+        player->CastSpell(player,24745,false);
         player->SummonCreature(RAND(EARTHEN_TEMPLAR, CRIMSON_TEMPLAR, AZURE_TEMPLAR, HOARY_TEMPLAR), _GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
         player->DestroyItemCount(20406, 1, true, true);
         player->DestroyItemCount(20407, 1, true, true);
@@ -438,7 +438,7 @@ void SendActionMenu_go_greater_wind_stone(Player *player, GameObject* _GO, uint3
     switch(action)
     {
     case GOSSIP_ACTION_INFO_DEF:
-        player->CastSpell(player,24762,false);
+        player->CastSpell(player,24785,false);
         player->SummonCreature(RAND(BARON_KAZUM, HIGH_MARSHAL_WHIRLAXIS, LORD_SKWOL, PRINCE_SKALDRENOX),_GO->GetPositionX(),_GO->GetPositionY(),_GO->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
         player->DestroyItemCount(20406, 1, true, true);
         player->DestroyItemCount(20407, 1, true, true);
