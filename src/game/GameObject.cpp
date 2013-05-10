@@ -438,6 +438,11 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                         m_lootState = GO_JUST_DEACTIVATED;
                     break;
                 }
+                default:
+                {
+                    m_lootState = GO_JUST_DEACTIVATED;
+                    break;
+                }
             }
             break;
         }
