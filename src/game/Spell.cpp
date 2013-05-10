@@ -1755,6 +1755,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     target = SearchNearbyTarget(range, SPELL_TARGETS_ALLY);
                     break;
                 case TARGET_UNIT_NEARBY_ENTRY:
+                case TARGET_OBJECT_USE:
                     target = SearchNearbyTarget(range, SPELL_TARGETS_ENTRY);
                     break;
             }
@@ -1985,7 +1986,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             switch (cur)
             {
                 case TARGET_GAMEOBJECT:
-                case TARGET_OBJECT_USE:
                     if (m_targets.getGOTarget())
                         AddGOTarget(m_targets.getGOTarget(), i);
                     break;

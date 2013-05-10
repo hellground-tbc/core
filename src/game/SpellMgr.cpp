@@ -120,6 +120,7 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_NEARBY_ALLY_UNK:
             case TARGET_UNIT_NEARBY_ENTRY:
             case TARGET_UNIT_NEARBY_RAID:
+            case TARGET_OBJECT_USE:
                 SpellTargetType[i] = TARGET_TYPE_UNIT_NEARBY;
                 break;
             case TARGET_UNIT_AREA_ENEMY_SRC:
