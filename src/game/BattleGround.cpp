@@ -301,7 +301,7 @@ void BattleGround::Update(uint32 diff)
         if (GetMapId() == 559 && dct && dct < (time(NULL) - m_progressStart))
         {
             for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_2; i++)
-                DelObject(i, true);
+                DelObject(i, false);
         }
     }
 }
