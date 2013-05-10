@@ -1102,6 +1102,8 @@ void GameObject::Use(Unit* user)
             // triggering linked GO
             if (uint32 trapEntry = GetGOInfo()->spellFocus.linkedTrapId)
                 TriggeringLinkedGameObject(trapEntry, user);
+            Activate();
+            SetGoState(GO_STATE_ACTIVE);
             return;
         case GAMEOBJECT_TYPE_GOOBER:                        //10
         {
