@@ -501,11 +501,13 @@ void GameObject::AddUniqueUse(Player* player)
     m_unique_users.insert(player->GetGUIDLow());
 }
 
-void GameObject::Delete()
+void GameObject::Delete(bool setGoState)
 {
     SendObjectDeSpawnAnim(GetGUID());
 
-    SetGoState(GO_STATE_READY);
+    if (setGoState)
+        SetGoState(GO_STATE_READY);
+
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
 
     uint16 poolid = sPoolMgr.IsPartOfAPool<GameObject>(GetGUIDLow());

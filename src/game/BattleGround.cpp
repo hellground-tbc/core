@@ -301,7 +301,7 @@ void BattleGround::Update(uint32 diff)
         if (GetMapId() == 559 && dct && dct < (time(NULL) - m_progressStart))
         {
             for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_2; i++)
-                DelObject(i);
+                DelObject(i, true);
         }
     }
 }
@@ -1502,7 +1502,7 @@ bool BattleGround::DelCreature(uint32 type)
     return true;
 }
 
-bool BattleGround::DelObject(uint32 type)
+bool BattleGround::DelObject(uint32 type, bool setGoState)
 {
     Map * map = GetMap();
     if (!map)
@@ -1518,7 +1518,7 @@ bool BattleGround::DelObject(uint32 type)
         return false;
     }
     obj->SetRespawnTime(0);                                 // not save respawn time
-    obj->Delete();
+    obj->Delete(setGoState);
     m_BgObjects[type] = 0;
     return true;
 }

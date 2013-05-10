@@ -2489,8 +2489,6 @@ void Spell::EffectTriggerSpell(uint32 i)
         // Vanish
         case 18461:
         {
-            /*m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_ROOT);
-            m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_DECREASE_SPEED);*/
             m_caster->RemoveMovementImpairingAuras();
             m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_STALKED);
 

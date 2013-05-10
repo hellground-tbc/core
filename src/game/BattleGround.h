@@ -475,7 +475,7 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
 //        void SpawnBGCreature(uint32 type, uint32 respawntime);
         Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime = 0);
         bool DelCreature(uint32 type);
-        bool DelObject(uint32 type);
+        bool DelObject(uint32 type, bool setGoState = true);
         bool AddSpiritGuide(uint32 type, float x, float y, float z, float o, uint32 team);
         void AddSpectatorNPC(float x, float y, float z, float o);
         int32 GetObjectType(uint64 guid);
