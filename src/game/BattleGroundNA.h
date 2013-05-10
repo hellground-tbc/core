@@ -49,6 +49,11 @@ enum BattleGroundNACreatures
     BG_NA_CREATURE_MAX      = 1
 };
 
+enum BattleGroundNATimers
+{
+    BG_NA_DOOR_DESPAWN_TIMER = 5
+};
+
 class BattleGroundNAScore : public BattleGroundScore
 {
     public:

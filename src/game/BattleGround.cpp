@@ -297,8 +297,7 @@ void BattleGround::Update(uint32 diff)
 
     if (isArena() && GetStatus() == STATUS_IN_PROGRESS)
     {
-        uint8 dct = 5;
-        if (GetMapId() == 559 && dct && dct < (time(NULL) - m_progressStart))
+        if (GetMapId() == 559 && BG_NA_DOOR_DESPAWN_TIMER < (time(NULL) - m_progressStart))
         {
             for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_2; i++)
                 DelObject(i, false);
