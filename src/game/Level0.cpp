@@ -129,15 +129,11 @@ bool ChatHandler::HandleAccountBattleGroundAnnCommand(const char* args)
             if (session->IsAccountFlagged(ACC_DISABLED_BGANN))
             {
                 session->RemoveAccountFlag(ACC_DISABLED_BGANN);
-
-                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE id = '%u'", ~ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("BattleGround announces have been enabled for this account.");
             }
             else
             {
                 session->AddAccountFlag(ACC_DISABLED_BGANN);
-
-                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE id = '%u'", ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("BattleGround announces have been disabled for this account.");
             }
         }

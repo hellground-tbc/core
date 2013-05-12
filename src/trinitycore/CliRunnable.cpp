@@ -339,9 +339,9 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
         }
 
         if (accFlags & ACC_SPECIAL_LOG)
-            PSendSysMessage("SpecialLog have been disabled for account: %u.", account_id);
-        else
             PSendSysMessage("SpecialLog have been enabled for account: %u.", account_id);
+        else
+            PSendSysMessage("SpecialLog have been disabled for account: %u.", account_id);
     }
     else
     {
@@ -384,9 +384,9 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
         }
 
         if (accFlags & ACC_WHISPER_LOG)
-            PSendSysMessage("WhispLog have been disabled for account: %u.", account_id);
-        else
             PSendSysMessage("WhispLog have been enabled for account: %u.", account_id);
+        else
+            PSendSysMessage("WhispLog have been disabled for account: %u.", account_id);
     }
     else
     {
