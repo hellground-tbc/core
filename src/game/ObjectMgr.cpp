@@ -561,7 +561,7 @@ void ObjectMgr::LoadCreatureTemplates()
         if (cInfo->xpMod < 0)
         {
             sLog.outLog(LOG_DB_ERR, "Table `creature_template` have creature (Entry: %u) with wrong xpMod: %u. Defaulting to 0.0f", cInfo->Entry, cInfo->equipmentId);
-            cInfo->xpMod = 0.0f;
+            const_cast<CreatureInfo*>(cInfo)->xpMod = 0.0f;
         }
     }
 }

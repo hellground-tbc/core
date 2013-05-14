@@ -578,7 +578,7 @@ void Loot::RemoveSavedLootFromDB()
     Creature *pCreature = pMap->GetCreatureOrPet(m_creatureGUID);
     if (!pCreature)
     {
-        sLog.outLog(LOG_BOSS, "Loot::saveLootToDB: pCreature not found !!: player %s(%u)", owner->GetName(),owner->GetGUIDLow());
+        //sLog.outLog(LOG_BOSS, "Loot::saveLootToDB: pCreature not found !!: player %s(%u)", owner->GetName(),owner->GetGUIDLow());
         return;
     }
 
