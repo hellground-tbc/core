@@ -3816,6 +3816,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     if (npcflags & UNIT_NPC_FLAG_TRAINER)
         SendSysMessage(LANG_NPCINFO_TRAINER);
 
+    PSendSysMessage("XpMOD: %f", cInfo->xpMod);
     PSendSysMessage("AIName: %s, ScriptName: %s", target->GetAIName().c_str(), target->GetScriptName().c_str());
     PSendSysMessage("DeadByDefault: %i", (int)target->GetIsDeadByDefault());
 

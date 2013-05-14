@@ -497,8 +497,6 @@ Player::~Player ()
 
     delete m_declinedname;
 
-    sWorldEventProcessor.DestroyEvents(GetGUID());
-
     DeleteCharmAI();
 }
 
