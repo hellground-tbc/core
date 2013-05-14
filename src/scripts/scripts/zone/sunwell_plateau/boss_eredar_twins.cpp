@@ -206,7 +206,7 @@ struct boss_sacrolashAI : public ScriptedAI
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, DONE);
         }
         else
-            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            me->SetLootRecipient(NULL);
 
         pInstance->SetData(DATA_SACROLASH, DONE);
     }
@@ -420,7 +420,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, DONE);
         }
         else
-            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            me->SetLootRecipient(NULL);
 
         pInstance->SetData(DATA_ALYTHESS, DONE);
     }
