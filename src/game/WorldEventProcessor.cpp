@@ -53,7 +53,10 @@ void WorldEventProcessor::ExecuteEvents()
         WorldEvent* event = curr->second;
         _events.erase(curr);
 
-        event->Execute();
+        Player* player = ObjectAccessor::GetPlayer(curr->first);
+        if (player)
+            event->Execute();
+
         delete event;
     }
 }
