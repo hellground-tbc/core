@@ -555,6 +555,36 @@ void Loot::removeItemFromSavedLoot(LootItem *item)
     //CharacterDatabase.CommitTransaction();
 }
 
+void Loot::RemoveSavedLootFromDB(Creature * pCreature)
+{
+    if (!pCreature)
+        return;
+
+    static SqlStatementID deleteCreatureLoot;
+    
+    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCreatureLoot, "DELETE FROM group_saved_loot WHERE creatureId=? AND instanceId=?");
+    stmt.PExecute(pCreature->GetEntry(), pCreature->GetInstanceId());
+}
+
+void Loot::RemoveSavedLootFromDB()
+{
+    if (!m_creatureGUID)
+        return;
+    
+    Map *pMap = sMapMgr.FindMap(m_mapID.nMapId, m_mapID.nInstanceId);
+    if (!pMap || !pMap->Instanceable())
+        return;
+
+    Creature *pCreature = pMap->GetCreatureOrPet(m_creatureGUID);
+    if (!pCreature)
+    {
+        sLog.outLog(LOG_BOSS, "Loot::saveLootToDB: pCreature not found !!: player %s(%u)", owner->GetName(),owner->GetGUIDLow());
+        return;
+    }
+
+    RemoveSavedLootFromDB(pCreature);
+}
+
 void Loot::saveLootToDB(Player *owner)
 {
     if (!m_creatureGUID)
@@ -574,13 +604,11 @@ void Loot::saveLootToDB(Player *owner)
     std::map<uint32, uint32> item_count;
     RealmDataDatabase.BeginTransaction();
 
-    static SqlStatementID deleteCreatureLoot;
     static SqlStatementID updateItemCount;
     static SqlStatementID insertItem;
 
     // delete old saved loot
-    SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteCreatureLoot, "DELETE FROM group_saved_loot WHERE creatureId=? AND instanceId=?");
-    stmt.PExecute(pCreature->GetEntry(), pCreature->GetInstanceId());
+    RemoveSavedLootFromDB(pCreature);
 
     std::stringstream ss;
     ss << "Player's group: " << owner->GetName() << ":(" << owner->GetGUIDLow() << ") " << "LootedItems: ";

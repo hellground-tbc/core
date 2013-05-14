@@ -1246,6 +1246,8 @@ void Creature::SetLootRecipient(Unit *unit)
 
     if (!unit)
     {
+        loot->RemoveSavedLootFromDB();
+
         m_lootRecipient = 0;
         m_playersAllowedToLoot.clear();
 
