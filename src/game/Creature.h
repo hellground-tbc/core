@@ -790,9 +790,9 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
         uint32 m_aiReinitializeCheckTimer;
 
         float m_aggroRange;
-
+    public:
         float m_xpMod;
-
+    private:
         //Formation var
         CreatureGroup *m_formation;
 
