@@ -114,14 +114,14 @@ namespace Hellground
                 (((Creature*)u)->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL)))
                 return 0;
 
-            uint32 xp_gain= BaseGain(pl->getLevel(), u->getLevel(), GetContentLevelsForMapAndZone(u->GetMapId(),u->GetZoneId()));
+            uint32 xp_gain= BaseGain(pl->getLevel(), u->getLevel(), GetContentLevelsForMapAndZone(u->GetMapId(), u->GetZoneId()));
             if (xp_gain == 0)
                 return 0;
 
             if (u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isElite())
                 xp_gain *= 2;
 
-            return (uint32)(xp_gain*pl->GetXPRate(RATE_XP_KILL));
+            return (uint32)(xp_gain * pl->GetXPRate(RATE_XP_KILL) * u->GetXPMod());
         }
 
         inline uint32 xp_Diff(uint32 lvl)

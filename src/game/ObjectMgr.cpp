@@ -557,6 +557,12 @@ void ObjectMgr::LoadCreatureTemplates()
             CreatureDisplayInfoEntry const* ScaleEntry = sCreatureDisplayInfoStore.LookupEntry(modelid);
             const_cast<CreatureInfo*>(cInfo)->scale = ScaleEntry ? ScaleEntry->scale : 1.0f;
         }
+
+        if (cInfo->xpMod < 0)
+        {
+            sLog.outLog(LOG_DB_ERR, "Table `creature_template` have creature (Entry: %u) with wrong xpMod: %u. Defaulting to 0.0f", cInfo->Entry, cInfo->equipmentId);
+            cInfo->xpMod = 0.0f;
+        }
     }
 }
 

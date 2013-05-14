@@ -176,6 +176,7 @@ struct CreatureInfo
     uint32  minmana;
     uint32  maxmana;
     uint32  armor;
+    float   xpMod;
     uint32  faction_A;
     uint32  faction_H;
     uint32  npcflag;
@@ -287,6 +288,7 @@ struct CreatureData
     uint8 movementType;
     uint8 spawnMask;
     bool dbData;
+    float xpMod;
 };
 
 struct CreatureDataAddonAura
@@ -723,6 +725,8 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
 
         void UpdateDeathTimer(uint32 timer) { if(m_deathTimer < timer) m_deathTimer = timer; }
 
+        virtual float GetXPMod() const override { return m_xpMod; }
+
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
@@ -786,6 +790,8 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
         uint32 m_aiReinitializeCheckTimer;
 
         float m_aggroRange;
+
+        float m_xpMod;
 
         //Formation var
         CreatureGroup *m_formation;

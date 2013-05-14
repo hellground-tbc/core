@@ -934,6 +934,8 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         uint32 getClassMask() const { return 1 << (getClass()-1); }
         uint8 getGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, 2); }
 
+        virtual float GetXPMod() const { return 1.0f; }
+
         float GetStat(Stats stat) const { return float(GetUInt32Value(UNIT_FIELD_STAT0+stat)); }
         void SetStat(Stats stat, int32 val) { SetStatInt32Value(UNIT_FIELD_STAT0+stat, val); }
         uint32 GetArmor() const { return GetResistance(SPELL_SCHOOL_NORMAL) ; }
