@@ -4348,7 +4348,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_BAD_TARGETS;
 
                 Player* target = m_targets.getUnitTarget()->ToPlayer();
-                if (!target || m_caster == target || !target->IsInSameGroupWith(pCaster))
+                if (!target || m_caster == target || !target->IsInSameRaidWith(pCaster))
                     return SPELL_FAILED_BAD_TARGETS;
 
                 if (pCaster->GetBattleGround())
