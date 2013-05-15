@@ -590,6 +590,7 @@ extern void AddSC_zangarmarsh();
 
 //Zul'Farrak
 extern void AddSC_zulfarrak();
+extern void AddSC_instance_zul_farrak();
 
 //Zul'Gurub
 extern void AddSC_boss_jeklik();
@@ -1206,6 +1207,7 @@ void AddScripts()
 
     //Zul'Farrak
     AddSC_zulfarrak();
+    AddSC_instance_zul_farrak();
 
     //Zul'Gurub
     AddSC_boss_jeklik();

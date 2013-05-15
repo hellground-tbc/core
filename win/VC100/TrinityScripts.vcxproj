@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_PCH|Win32">
@@ -644,6 +644,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\westfall\westfall.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\wetlands\wetlands.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\winterspring\winterspring.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\zulfarrak\instance_zul_farrak.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\zulfarrak\zulfarrak.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\zulgurub\boss_arlokk.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\zulgurub\boss_gahzranka.cpp" />
@@ -871,6 +872,7 @@
     <ClInclude Include="..\..\src\scripts\scripts\zone\stratholme\def_stratholme.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\temple_of_ahnqiraj\def_temple_of_ahnqiraj.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\wailing_caverns\def_wailing_caverns.h" />
+    <ClInclude Include="..\..\src\scripts\scripts\zone\zulfarrak\def_zul_farrak.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\zulgurub\def_zulgurub.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\aunchindoun\sethekk_halls\def_sethekk_halls.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\aunchindoun\shadow_labyrinth\def_shadow_labyrinth.h" />

@@ -1531,6 +1531,12 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_spire\instance_blackrock_spire.cpp">
       <Filter>Scripts\zone\Blackrock Spire</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\aunchindoun\mana_tombs\mana_tombs.cpp">
+      <Filter>Scripts\zone\Aunchindoun\Mana Tombs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\zulfarrak\instance_zul_farrak.cpp">
+      <Filter>Scripts\zone\Zul%27Farrak</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\scripts\scripts\creature\simple_ai.h">
@@ -1668,6 +1674,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\scripts\scripts\zone\blackrock_spire\def_blackrock_spire.h">
       <Filter>Scripts\zone\Blackrock Spire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\scripts\scripts\zone\zulfarrak\def_zul_farrak.h">
+      <Filter>Scripts\zone\Zul%27Farrak</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

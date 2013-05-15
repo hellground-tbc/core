@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Zulfarrak
-SD%Complete: 50
-SDComment: Consider it temporary, no instance script made for this instance yet.
+SD%Complete: 70
+SDComment: TODO: gossips ; make blastfuse blast the doors with spell
 SDCategory: Zul'Farrak
 EndScriptData */
 
@@ -27,6 +27,7 @@ npc_weegli_blastfuse
 EndContentData */
 
 #include "precompiled.h"
+#include "def_zul_farrak.h"
 
 /*######
 ## npc_sergeant_bly
@@ -42,12 +43,7 @@ EndContentData */
 
 struct npc_sergeant_blyAI : public ScriptedAI
 {
-    npc_sergeant_blyAI(Creature *c) : ScriptedAI(c)
-    {
-        //pInstance = (c->GetInstanceData());
-    }
-
-    //ScriptedInstance* pInstance;
+    npc_sergeant_blyAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 ShieldBash_Timer;
     uint32 Revenge_Timer;                                   //this is wrong, spell should never be used unless m_creature->getVictim() dodge, parry or block attack. Trinity support required.
@@ -58,22 +54,11 @@ struct npc_sergeant_blyAI : public ScriptedAI
         Revenge_Timer = 8000;
 
         m_creature->setFaction(FACTION_FRIENDLY);
-
-        /*if( pInstance )
-            pInstance->SetData(0, NOT_STARTED);*/
     }
 
-    void EnterCombat(Unit *who)
-    {
-        /*if( pInstance )
-            pInstance->SetData(0, IN_PROGRESS);*/
-    }
+    void EnterCombat(Unit *who) {}
 
-    void JustDied(Unit *victim)
-    {
-        /*if( pInstance )
-            pInstance->SetData(0, DONE);*/
-    }
+    void JustDied(Unit *victim) {}
 
     void UpdateAI(const uint32 diff)
     {
@@ -102,22 +87,25 @@ CreatureAI* GetAI_npc_sergeant_bly(Creature *_Creature)
 
 bool GossipHello_npc_sergeant_bly(Player *player, Creature *_Creature )
 {
-    /*if( pInstance->GetData(0) == DONE )
-    {*/
-    player->ADD_GOSSIP_ITEM(1, GOSSIP_BLY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    ScriptedInstance* pInstance = (ScriptedInstance*)_Creature->GetInstanceData();
+    if(!pInstance)
+        return false;
+    if( pInstance->GetData(DATA_PYRAMID_BATTLE) == DONE )
+    {
+    player->ADD_GOSSIP_ITEM(1, GOSSIP_BLY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
     player->SEND_GOSSIP_MENU(1517, _Creature->GetGUID());
-    /*}
-    else if( pInstance->GetData(0) == IN_PROGRESS )
+    }
+    else if( pInstance->GetData(DATA_PYRAMID_BATTLE) == IN_PROGRESS )
         player->SEND_GOSSIP_MENU(1516, _Creature->GetGUID());
     else
-        player->SEND_GOSSIP_MENU(1515, _Creature->GetGUID());*/
+        player->SEND_GOSSIP_MENU(1515, _Creature->GetGUID());
 
     return true;
 }
 
 bool GossipSelect_npc_sergeant_bly(Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
-    if( action == GOSSIP_ACTION_INFO_DEF+1 )
+    if( action == GOSSIP_ACTION_INFO_DEF)
     {
         player->CLOSE_GOSSIP_MENU();
         _Creature->setFaction(FACTION_HOSTILE);
@@ -133,7 +121,7 @@ bool GossipSelect_npc_sergeant_bly(Player *player, Creature *_Creature, uint32 s
 #define SPELL_BOMB                  8858
 #define SPELL_GOBLIN_LAND_MINE      21688
 #define SPELL_SHOOT                 6660
-#define SPELL_WEEGLIS_BARREL        10772
+#define SPELL_WEEGLIS_BARREL        10772 // this one should open door
 
 #define GOSSIP_WEEGLI               "[PH] Please blow up the door."
 
@@ -141,27 +129,34 @@ struct npc_weegli_blastfuseAI : public ScriptedAI
 {
     npc_weegli_blastfuseAI(Creature *c) : ScriptedAI(c)
     {
-        //pInstance = (c->GetInstanceData());
+        pInstance = (c->GetInstanceData());
     }
 
-    //ScriptedInstance* pInstance;
+    ScriptedInstance* pInstance;
 
-    void Reset()
-    {
-        /*if( pInstance )
-            pInstance->SetData(0, NOT_STARTED);*/
-    }
+    void Reset() {}
 
-    void EnterCombat(Unit *who)
+    void EnterCombat(Unit *who) {}
+
+    void MovementInform(uint32 motiontype ,uint32 wpid)
     {
-        /*if( pInstance )
-            pInstance->SetData(0, IN_PROGRESS);*/
+        if (motiontype != POINT_MOTION_TYPE)
+            return;
+
+        if (wpid == 2)
+        {
+            // do things with blowing up the doors
+            m_creature->GetMotionMaster()->MovePoint(3,1876.11,1201.75,8.88);
+        }
+        if (wpid == 3 && pInstance)
+            pInstance->SetData(DATA_DOOR_EVENT,DONE); // after implementing spell remove it
+
     }
 
     void JustDied(Unit *victim)
     {
-        /*if( pInstance )
-            pInstance->SetData(0, DONE);*/
+        if (pInstance)
+            pInstance->SetData(DATA_DOOR_EVENT,FAIL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -179,25 +174,33 @@ CreatureAI* GetAI_npc_weegli_blastfuse(Creature *_Creature)
 
 bool GossipHello_npc_weegli_blastfuse(Player *player, Creature *_Creature )
 {
-    //event not implemented yet, this is only placeholder for future developement
-    /*if( pInstance->GetData(0) == DONE )
+    ScriptedInstance* pInstance = (ScriptedInstance*)_Creature->GetInstanceData();
+    if(!pInstance)
+        return false;
+
+    if( pInstance->GetData(DATA_PYRAMID_BATTLE) == DONE )
     {
-        player->ADD_GOSSIP_ITEM(1, GOSSIP_WEEGLI, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-        player->SEND_GOSSIP_MENU(1514, _Creature->GetGUID());//if event can proceed to end
+        player->ADD_GOSSIP_ITEM(1, GOSSIP_WEEGLI, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->SEND_GOSSIP_MENU(1514, _Creature->GetGUID());
     }
-    else if( pInstance->GetData(0) == IN_PROGRESS )
-        player->SEND_GOSSIP_MENU(1513, _Creature->GetGUID());//if event are in progress
-    else*/
-    player->SEND_GOSSIP_MENU(1511, _Creature->GetGUID());   //if event not started
+    else if( pInstance->GetData(DATA_PYRAMID_BATTLE) == IN_PROGRESS )
+        player->SEND_GOSSIP_MENU(1513, _Creature->GetGUID());
+    else
+    player->SEND_GOSSIP_MENU(1511, _Creature->GetGUID());
     return true;
 }
 
 bool GossipSelect_npc_weegli_blastfuse(Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
-    if( action == GOSSIP_ACTION_INFO_DEF+1 )
+    ScriptedInstance* pInstance = (ScriptedInstance*)_Creature->GetInstanceData();
+    if (!pInstance)
+        return false;
+
+    if( action == GOSSIP_ACTION_INFO_DEF)
     {
         player->CLOSE_GOSSIP_MENU();
-        //here we make him run to door, set the charge and run away off to nowhere
+        pInstance->SetData(DATA_DOOR_EVENT,DONE);
+        _Creature->GetMotionMaster()->MovePoint(2,1856.92,1146.26,15.15);
     }
     return true;
 }
