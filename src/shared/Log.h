@@ -130,6 +130,8 @@ class Log
         bool IsOutCharDump() const { return m_charLog_Dump; }
         bool IsIncludeTime() const { return m_includeTime; }
 
+        bool IsLogEnabled(LogNames log) const { return logFile[log] != NULL; }
+
     private:
         FILE* openLogFile(LogNames log);
         FILE* openGmlogPerAccount(uint32 account);

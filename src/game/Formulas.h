@@ -124,9 +124,13 @@ namespace Hellground
             float expCalc = xp_gain * pl->GetXPRate(RATE_XP_KILL) * u->GetXPMod();
             uint32 exp = (uint32)(expCalc);
 
-            sLog.outLog(LOG_EXP, "Exp calculation for Player %u and Unit %u: xp_gain: %u, plLvl: %u, uLvl: %u, XPRate: %f, XPMod: %f, exp calculated: %f, exp after cast: %u",
-                pl->GetGUIDLow(), u->GetGUIDLow(), xp_gain, pl->getLevel(), u->getLevel(), pl->GetXPRate(RATE_XP_KILL), u->GetXPMod(), expCalc, exp);
-            
+            if (sLog.IsLogEnabled(LOG_EXP))
+            {
+                CreatureInfo * tmpInfo = ObjectMgr::GetCreatureTemplate(u->GetEntry());
+                sLog.outLog(LOG_EXP, "Exp calculation for Player %u and Unit %u (id: %u): xp_gain: %u, plLvl: %u, uLvl: %u, XPRate: %f, XPMod: %f (template: %f), exp calculated: %f, exp after cast: %u",
+                    pl->GetGUIDLow(), u->GetGUIDLow(), xp_gain, pl->getLevel(), u->getLevel(), u->GetEntry(), pl->GetXPRate(RATE_XP_KILL), u->GetXPMod(), tmpInfo ? tmpInfo->xpMod : -1.0f, expCalc, exp);
+            }
+
             return exp;
         }
 
