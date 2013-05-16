@@ -121,7 +121,13 @@ namespace Hellground
             if (u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isElite())
                 xp_gain *= 2;
 
-            return (uint32)(xp_gain * pl->GetXPRate(RATE_XP_KILL) * u->GetXPMod());
+            float expCalc = xp_gain * pl->GetXPRate(RATE_XP_KILL) * u->GetXPMod();
+            uint32 exp = (uint32)(expCalc);
+
+            sLog.outLog(LOG_EXP, "Exp calculation for Player %u and Unit %u: xp_gain: %u, plLvl: %u, uLvl: %u, XPRate: %f, XPMod: %f, exp calculated: %f, exp after cast: %u",
+                pl->GetGUIDLow(), u->GetGUIDLow(), xp_gain, pl->getLevel(), u->getLevel(), pl->GetXPRate(RATE_XP_KILL), u->GetXPMod(), expCalc, exp);
+            
+            return exp;
         }
 
         inline uint32 xp_Diff(uint32 lvl)

@@ -453,6 +453,11 @@ DBDiffLog.LogTime = 10
 #        Default: "parser.prsr"
 #                 "" - Empty name for disable
 #
+#    ExpLogFile
+#        Log file for third party parsers
+#        Default: "exp.log"
+#                 "" - Empty name for disable
+#
 ###################################################################################################################
 
 LogSQL = 1
@@ -488,6 +493,7 @@ CrashLogFile = "crash.log"
 DBDiffFile = "querydiff.log"
 
 StatusParserFile = "parser.prsr"
+ExpLogFile = "exp.log"
 
 ###################################################################################################################
 # SERVER SETTINGS
