@@ -842,7 +842,7 @@ void GameObject::Reset()
     m_usetimes = 0;
     loot.clear();
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
-    SetGoState(GO_STATE_READY);
+    SetGoState(GetGOData() ? GetGOData()->go_state : GO_STATE_READY);
     SetLootState(GO_READY);
 }
 
