@@ -724,7 +724,7 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
 
         void UpdateDeathTimer(uint32 timer) { if(m_deathTimer < timer) m_deathTimer = timer; }
 
-        virtual float GetXPMod() const override { return 1.0f;/*m_xpMod;*/ }
+        virtual float GetXPMod() const override { return m_xpMod; }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);

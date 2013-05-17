@@ -159,6 +159,7 @@ m_tempSummon(false)
 {
     m_regenTimer = 2000;
     m_valuesCount = UNIT_END;
+    m_xpMod = 0;
 
     for (int i =0; i < CREATURE_MAX_SPELLS; ++i)
         m_spells[i] = 0;
