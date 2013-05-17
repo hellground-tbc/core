@@ -17,6 +17,7 @@
  */
 
 #include "WorldEventProcessor.h"
+#include "ObjectAccessor.h"
 
 #include "Player.h"
 
