@@ -10,7 +10,7 @@ EndScriptData */
 
 #define ENCOUNTERS 2
 
-float WPs[10][3] = {
+float ZFWPs[10][3] = {
 {1887.35,1263.67,41.48},
 {1890.87,1263.86,41.41},
 {1883.12,1263.76,41.59},
@@ -163,7 +163,7 @@ struct instance_zul_farrak : public ScriptedInstance
                     if (Creature *c = GetCreature(captives[i]))
                         {
                             c->SetWalk(true);
-                            c->GetMotionMaster()->MovePoint(0,WPs[i][0],WPs[i][1],WPs[i][2]);
+                            c->GetMotionMaster()->MovePoint(0,ZFWPs[i][0],ZFWPs[i][1],ZFWPs[i][2]);
                         }
             if (waves == 0 || waves == 1 || waves == 2)
                 for (uint8 j = 0; j < 4; j++)
@@ -181,8 +181,8 @@ struct instance_zul_farrak : public ScriptedInstance
                 for (uint8 i = 0; i < 5; i++)
                     if (Creature *c = GetCreature(captives[i]))
                     {
-                        c->GetMotionMaster()->MovePoint(1,WPs[i+5][0],WPs[i+5][1],WPs[i+5][2]);
-                        c->SetHomePosition(WPs[i+5][0],WPs[i+5][1],WPs[i+5][2],0);
+                        c->GetMotionMaster()->MovePoint(1,ZFWPs[i+5][0],ZFWPs[i+5][1],ZFWPs[i+5][2]);
+                        c->SetHomePosition(ZFWPs[i+5][0],ZFWPs[i+5][1],ZFWPs[i+5][2],0);
                     }
                 if (Player * p = instance->GetPlayers().begin()->getSource())
                 {
