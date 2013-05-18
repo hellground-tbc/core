@@ -6639,15 +6639,19 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
     if (slot >= INVENTORY_SLOT_BAG_END || !item)
         return;
 
-    // not apply/remove mods for broken item (_ApplyItemMods is used before setting durability to 0 when item
-    // loss durability so there is no need to check for 'apply' (prevent bug abuse by stats stacking))
-    if (item->IsBroken())
-        return;
-
     ItemPrototype const *proto = item->GetProto();
 
     if (!proto)
         return;
+
+    // not apply/remove mods for broken item (_ApplyItemMods is used before setting durability to 0 when item
+    // loss durability so there is no need to check for 'apply' (prevent bug abuse by stats stacking))
+    if (item->IsBroken())
+    {
+        if (proto->Socket[0].Color)	
+            CorrectMetaGemEnchants(slot, apply);
+        return;
+    }
 
     sLog.outDetail("applying mods for item %u ",item->GetGUIDLow());
 
