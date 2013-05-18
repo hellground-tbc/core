@@ -212,6 +212,7 @@ extern void AddSC_serpent_shrine_trash();
 extern void AddSC_boss_lord_ahune();
 extern void AddSC_boss_mennu_the_betrayer();
 extern void AddSC_instance_slave_pens();
+extern void AddSC_slave_pens_trash();
 
 //--Steam Vault
 extern void AddSC_boss_hydromancer_thespia();
@@ -828,6 +829,7 @@ void AddScripts()
     AddSC_boss_lord_ahune();
     AddSC_boss_mennu_the_betrayer();
     AddSC_instance_slave_pens();
+    AddSC_slave_pens_trash();
 
     //--Steam Vault
     AddSC_boss_hydromancer_thespia();

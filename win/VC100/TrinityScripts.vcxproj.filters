@@ -1537,6 +1537,9 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\zulfarrak\instance_zul_farrak.cpp">
       <Filter>Scripts\zone\Zul%27Farrak</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\coilfang_resevoir\slave_pens\slave_pens_trash.cpp">
+      <Filter>Scripts\zone\Coilfang Resevoir\Slave Pens</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\scripts\scripts\creature\simple_ai.h">

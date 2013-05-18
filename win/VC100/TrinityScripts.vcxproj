@@ -500,6 +500,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_depths\boss_theldren.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_spire\instance_blackrock_spire.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\coilfang_resevoir\serpent_shrine\serpent_shrine_trash.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\coilfang_resevoir\slave_pens\slave_pens_trash.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\deadmines\deadmines.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\desolace\desolace.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\dun_morogh\dun_morogh.cpp" />
