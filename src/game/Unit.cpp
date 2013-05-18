@@ -12274,6 +12274,10 @@ void Unit::UpdateVisibilityAndView()
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 {
+    // Prevent double kill the exact unit
+    if (!pVictim->GetHealth())
+        return;
+
     pVictim->SetHealth(0);
 
     // find player: owner of controlled `this` or `this` itself maybe
