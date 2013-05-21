@@ -1115,55 +1115,49 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 
         lowguid = atoi(cId);
 
-        /* FIXME: impossibel without entry
-        if (lowguid)
-            pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(),MAKE_GUID(lowguid,HIGHGUID_UNIT));
-        */
-
         // Attempting creature load from DB data
-        if (!pCreature)
+        CreatureData const* data = sObjectMgr.GetCreatureData(lowguid);
+        if (!data)
         {
-            CreatureData const* data = sObjectMgr.GetCreatureData(lowguid);
-            if (!data)
-            {
-                PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
-                SetSentErrorMessage(true);
-                return false;
-            }
+            PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
+            SetSentErrorMessage(true);
+            return false;
+        }
 
-            uint32 map_id = data->mapid;
-
-            if (m_session->GetPlayer()->GetMapId()!=map_id)
-            {
-                PSendSysMessage(LANG_COMMAND_CREATUREATSAMEMAP, lowguid);
-                SetSentErrorMessage(true);
-                return false;
-            }
+        uint32 map_id = data->mapid;
+        if (m_session->GetPlayer()->GetMapId()!=map_id)
+        {
+            PSendSysMessage(LANG_COMMAND_CREATUREATSAMEMAP, lowguid);
+            SetSentErrorMessage(true);
+            return false;
         }
         else
         {
-            lowguid = pCreature->GetDBTableGUIDLow();
+            Map* pMap = sMapMgr.FindMap(map_id,m_session->GetPlayer()->GetInstanceId());
+            if (pMap)
+                pCreature = pMap->GetCreature(MAKE_NEW_GUID(lowguid,data->id,HIGHGUID_UNIT));
+            //not sure how MAKE_NEW_GUID does what it does, and FIXME: does not work in instances
         }
     }
     else
     {
         lowguid = pCreature->GetDBTableGUIDLow();
     }
-
+    
     float x = m_session->GetPlayer()->GetPositionX();
     float y = m_session->GetPlayer()->GetPositionY();
     float z = m_session->GetPlayer()->GetPositionZ();
     float o = m_session->GetPlayer()->GetOrientation();
 
+    if (CreatureData const* data = sObjectMgr.GetCreatureData(lowguid))
+    {
+        const_cast<CreatureData*>(data)->posX = x;
+        const_cast<CreatureData*>(data)->posY = y;
+        const_cast<CreatureData*>(data)->posZ = z;
+        const_cast<CreatureData*>(data)->orientation = o;
+    }
     if (pCreature)
     {
-        if (CreatureData const* data = sObjectMgr.GetCreatureData(pCreature->GetDBTableGUIDLow()))
-        {
-            const_cast<CreatureData*>(data)->posX = x;
-            const_cast<CreatureData*>(data)->posY = y;
-            const_cast<CreatureData*>(data)->posZ = z;
-            const_cast<CreatureData*>(data)->orientation = o;
-        }
         Map *pMap = pCreature->GetMap();
         pMap->CreatureRelocation(pCreature,x, y, z,o);
         pCreature->GetMotionMaster()->Initialize();
