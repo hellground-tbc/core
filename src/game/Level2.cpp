@@ -1106,6 +1106,8 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 
     Creature* pCreature = getSelectedCreature();
 
+    float o = m_session->GetPlayer()->GetOrientation();
+
     if (!pCreature)
     {
         // number or [name] Shift-click form |color|Hcreature:creature_guid|h[name]|h|r
@@ -1123,6 +1125,8 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
             SetSentErrorMessage(true);
             return false;
         }
+
+        o = data->orientation;// .npc move guid should not change orientation
 
         uint32 map_id = data->mapid;
         if (m_session->GetPlayer()->GetMapId()!=map_id)
@@ -1147,7 +1151,6 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
     float x = m_session->GetPlayer()->GetPositionX();
     float y = m_session->GetPlayer()->GetPositionY();
     float z = m_session->GetPlayer()->GetPositionZ();
-    float o = m_session->GetPlayer()->GetOrientation();
 
     if (CreatureData const* data = sObjectMgr.GetCreatureData(lowguid))
     {
