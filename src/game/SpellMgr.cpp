@@ -2939,6 +2939,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 18141:
             case 18194:
             case 18222:
+            case 22730:
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_TREAT_AS_WELL_FEED;
                 break;
             /* Scrolls - no stack */

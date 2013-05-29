@@ -5231,10 +5231,6 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
 
 void Player::UpdateWeaponSkill (WeaponAttackType attType)
 {
-    // no skill gain in pvp
-    Unit *pVictim = getVictim();
-    if (pVictim && pVictim->isCharmedOwnedByPlayerOrPlayer())
-        return;
 
     if (IsInFeralForm(true))
         return;                                             // always maximized SKILL_FERAL_COMBAT in fact
@@ -5268,9 +5264,12 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
     UpdateAllCritPercentages();
 }
 
-void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool defence)
+void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool defence) //if defense than pVictim == attacker
 {
-    uint32 plevel = getLevel();                             // if defense than pVictim == attacker
+    if (pVictim->isCharmedOwnedByPlayerOrPlayer()) // no skill ups in pvp
+        return;
+
+    uint32 plevel = getLevel();
     uint32 moblevel = pVictim->getLevelForTarget(this);
 
     if (moblevel > plevel + 5)
