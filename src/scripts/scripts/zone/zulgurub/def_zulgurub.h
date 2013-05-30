@@ -24,5 +24,6 @@
 #define DATA_ZATHISDEAD         17
 #define DATA_OHGAN              18
 
+#define GO_GONG_OF_BETHEKK      180526
 #endif
 
