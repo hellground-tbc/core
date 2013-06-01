@@ -2711,12 +2711,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->RemoveAurasDueToSpell(6947);
                 return;
             }
-            case 45934:        // Dark Fiend
-            {
-                if (m_removeMode == AURA_REMOVE_BY_DISPEL)
-                    m_target->Kill(m_target, true);
-                return;
-            }
             case 46308:        // Burning Winds
             {
                 m_target->CastSpell(m_target,47287,true,NULL,this); // casted only at creatures at spawn
