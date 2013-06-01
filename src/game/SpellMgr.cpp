@@ -3250,6 +3250,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 42835: // set visual only
                 spellInfo->Effect[0] = 0;
                 break;
+            case 46041: // Summon Blood Elves Periodic
+                spellInfo->Attributes |= SPELL_ATTR_PASSIVE;
+                break;
             case 47977: // Broom Broom
             case 42679:
             case 42673:
