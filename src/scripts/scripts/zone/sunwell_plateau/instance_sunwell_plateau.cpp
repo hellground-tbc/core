@@ -4,8 +4,8 @@
 
 /* ScriptData
 SDName: Instance_Sunwell_Plateau
-SD%Complete: 20
-SDComment: VERIFY SCRIPT, rename Gates
+SD%Complete: 75
+SDComment: Muru testing
 SDCategory: Sunwell_Plateau
 EndScriptData */
 
@@ -70,11 +70,15 @@ struct instance_sunwell_plateau : public ScriptedInstance
     uint64 FireBarrier;                                     // Brutallus Encounter
     uint64 IceBarrier;                                      // Brutallus Encounter
     uint64 Gate[4];
+    uint64 Rohendor;                                        // Rohendor, the second gate
 
     /*** Misc ***/
     uint32 KalecgosPhase;
     uint32 GauntletProgress;
     uint32 EredarTwinsIntro;
+
+    uint32 MuruCounter;
+    uint32 MuruTesting;
 
     uint32 EredarTwinsAliveInfo[2];
 
@@ -114,6 +118,8 @@ struct instance_sunwell_plateau : public ScriptedInstance
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
         GauntletProgress = NOT_STARTED;
+        MuruCounter = 6;
+        MuruTesting = NOT_STARTED;
 
         requiredEncounterToMobs.clear();
     }
@@ -307,6 +313,14 @@ struct instance_sunwell_plateau : public ScriptedInstance
             case 188118: // door 8 - Muru ramp to Kil'jaeden
                 Gate[3] = gobj->GetGUID();
                 break;
+            case 187764:
+                Rohendor = gobj->GetGUID();
+                if(GetData(DATA_EREDAR_TWINS_EVENT) == DONE && GetData(DATA_MURU_TESTING) != DONE)
+                {
+                    SetData(DATA_MURU_TESTING, IN_PROGRESS);
+                    HandleGameObject(Rohendor, OPEN);
+                }
+                break;
         }
     }
 
@@ -326,6 +340,8 @@ struct instance_sunwell_plateau : public ScriptedInstance
             case DATA_ALYTHESS:                 return EredarTwinsAliveInfo[0];
             case DATA_SACROLASH:                return EredarTwinsAliveInfo[1];
             case DATA_EREDAR_TWINS_INTRO:       return EredarTwinsIntro;
+            case DATA_MURU_TESTING_COUNTER:     return MuruCounter;
+            case DATA_MURU_TESTING:             return MuruTesting;
         }
 
         return 0;
@@ -422,6 +438,12 @@ struct instance_sunwell_plateau : public ScriptedInstance
                         {
                             muru->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             muru->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            muru->SetVisibility(VISIBILITY_ON);
+                        }
+                        if(GetData(DATA_MURU_TESTING) != DONE)
+                        {
+                            SetData(DATA_MURU_TESTING, IN_PROGRESS);
+                            HandleGameObject(Rohendor, OPEN);
                         }
                     }
                 }
@@ -488,6 +510,39 @@ struct instance_sunwell_plateau : public ScriptedInstance
                         pSacrolash->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
                 break;
+            case DATA_MURU_TESTING:
+                if(MuruTesting != DONE)
+                {
+                    if(data == FAIL)
+                    {
+                        if(MuruCounter)
+                        {
+                            --MuruCounter;
+                            SetData(DATA_MURU_TESTING_COUNTER, MuruCounter);
+                            if(!MuruCounter)
+                                data = DONE;
+                        }
+                    }
+                    MuruTesting = data;
+                }
+                break;
+            case DATA_MURU_TESTING_COUNTER:
+                MuruCounter = data;
+                if(data)
+                {
+                    MuruTesting = IN_PROGRESS;
+                    if(Player* pl = GetPlayerInMap())
+                    {
+                        if(Unit* muru = pl->GetUnit(Muru))
+                        {
+                            muru->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                            muru->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            muru->SetVisibility(VISIBILITY_ON);
+                        }
+                    }
+                }
+                SaveToDB();
+                break;
         }
 
         if(data == DONE || data == FAIL)
@@ -525,7 +580,9 @@ struct instance_sunwell_plateau : public ScriptedInstance
         stream << Encounters[3] << " ";
         stream << Encounters[4] << " ";
         stream << Encounters[5] << " ";
-        stream << Encounters[6];
+        stream << Encounters[6] << " ";
+        stream << MuruCounter   << " ";
+        stream << MuruTesting;
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -543,7 +600,7 @@ struct instance_sunwell_plateau : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
         stream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[3]
-            >> Encounters[4] >> Encounters[5] >> Encounters[6];
+            >> Encounters[4] >> Encounters[5] >> Encounters[6] >> MuruCounter >> MuruTesting;
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounters[i] == IN_PROGRESS)                // Do not load an encounter as "In Progress" - reset it instead.
                 Encounters[i] = NOT_STARTED;
