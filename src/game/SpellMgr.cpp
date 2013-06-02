@@ -3265,6 +3265,13 @@ void SpellMgr::LoadSpellCustomAttr()
             case 42835: // set visual only
                 spellInfo->Effect[0] = 0;
                 break;
+            case 46037:
+            case 46040:
+                spellInfo->EffectBasePoints[1] = 1;
+            case 46038:
+            case 46039:
+                spellInfo->EffectImplicitTargetA[1] = TARGET_DST_DB;
+                break;
             case 46041: // Summon Blood Elves Periodic
                 spellInfo->Attributes |= SPELL_ATTR_PASSIVE;
                 break;

@@ -169,6 +169,11 @@ struct boss_muruAI : public Scripted_NoMovementAI
 
     void EnterCombat(Unit *who)
     {
+        if(pInstance->GetData(DATA_MURU_TESTING) == DONE)
+        {
+            EnterEvadeMode();
+            return;
+        }
         uint32 counter = pInstance->GetData(DATA_MURU_TESTING_COUNTER);
         SendMessageAtStart("Welcome testers! You have still: %u boss tries left. Good luck!!", counter);
         DoCast(me, SPELL_NEGATIVE_ENERGY_PERIODIC);
@@ -180,7 +185,9 @@ struct boss_muruAI : public Scripted_NoMovementAI
     {
         if(ResetTimer)
             return;
-        if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+        if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
+            return;
+        if(pInstance->GetData(DATA_MURU_TESTING) == DONE)
             return;
 
         ScriptedAI::MoveInLineOfSight(who);
@@ -525,7 +532,7 @@ struct npc_dark_fiendAI : public ScriptedAI
 
     void IsSummonedBy(Unit* Muru)
     {
-        ((boss_muruAI*)Muru)->JustSummoned(me);
+        Muru->ToCreature()->AI()->JustSummoned(me);
     }
 
     void OnAuraRemove(Aura* aur, bool stackApply)
@@ -639,10 +646,10 @@ struct npc_void_sentinelAI : public ScriptedAI
         me->DisappearAndDie();
     }
 
-    void IsSummonedBy(Unit* Muru)
+    void IsSummonedBy(Unit* summoner)
     {
         if(Unit* Muru = me->GetUnit(pInstance->GetData64(DATA_MURU)))
-            ((boss_muruAI*)Muru)->JustSummoned(me);
+            Muru->ToCreature()->AI()->JustSummoned(me);
     }
 
     void JustDied(Unit* killer)
@@ -894,7 +901,7 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
 
     void Reset()
     {
-        DoZoneInCombat(200.0f);
+        DoZoneInCombat(400.0f);
         SetAutocast(SPELL_FEL_FIREBALL, 2000, true);
         SpellFury = urand(20000, 30000);
     }
@@ -963,7 +970,7 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
 
     void Reset()
     {
-        DoZoneInCombat(200.0f);
+        DoZoneInCombat(400.0f);
         DoCast(me, SPELL_DUAL_WIELD, true);
         Flurry = urand(12000, 18000);
     }

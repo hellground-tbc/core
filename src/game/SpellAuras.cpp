@@ -7851,13 +7851,8 @@ void Aura::PeriodicDummyTick()
             Unit* caster = GetCaster();
             if(!caster)
                 return;
-            for (uint8 i = 0; i < 2; ++i)
-            {
-                caster->CastSpell((Unit*)NULL, 46037, true, 0, this);    // up ramp Berserkers
-                caster->CastSpell((Unit*)NULL, 46040, true, 0, this);    // down ramp Berserkers
-            }
-            caster->CastSpell((Unit*)NULL, 46038, true, 0, this);    // up ramp Fury Mages
-            caster->CastSpell((Unit*)NULL, 46039, true, 0, this);    // down ramp Fury Mages
+            for(uint8 i = 0; i < 4; ++i)
+                caster->CastSpell((Unit*)NULL, 46037+i, true, 0, this);    // up ramp Berserkers
             break;
         }
 //        // Transform Visual Missile Periodic
