@@ -33,6 +33,7 @@
 #include "Player.h"
 #include "Unit.h"
 #include "CreatureAI.h"
+#include "SpellAuras.h"
 
 class Player;
 //class Map;
@@ -1006,7 +1007,7 @@ namespace Hellground
             ObjectAbsZDistanceCheck(WorldObject *source, uint32 dist) : _source(source), _dist(dist) {}
             bool operator()(WorldObject* object)
             {
-                return abs(source->GetPositionZ() - object->GetPositionZ()) > _dist;
+                return abs(_source->GetPositionZ() - object->GetPositionZ()) > _dist;
             }
 
         private:
