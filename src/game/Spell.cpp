@@ -2202,7 +2202,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 46771:     // Flame Sear
                     unitList.remove_if(Hellground::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
-                case 45248:     // Shadow Blades
+                /*case 45248:     // Shadow Blades
                     for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                     {
                         if(Unit* unit = *itr)
@@ -2215,7 +2215,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                             }
                         }
                     }
-                    break;
+                    break;*/
                 case 46230:     // Black Hole Effect
                     for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                     {
