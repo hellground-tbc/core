@@ -2202,36 +2202,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 46771:     // Flame Sear
                     unitList.remove_if(Hellground::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
-                /*case 45248:     // Shadow Blades
-                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
-                    {
-                        if(Unit* unit = *itr)
-                        {
-                            if(abs(m_caster->GetPositionZ()-unit->GetPositionZ()) > 5.0)
-                            {
-                                unitList.remove(unit);
-                                if(unitList.empty()) break;
-                                continue;
-                            }
-                        }
-                    }
-                    break;*/
+                case 45248:     // Shadow Blades
+                    unitList.remove_if(Hellground::ObjectAbsZDistanceCheck(m_caster, 5));
+                    break;
                 case 46230:     // Black Hole Effect
-                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
-                    {
-                        if(Unit* unit = *itr)
-                        {
-                            if(Aura* aur = unit->GetAura(46230, 2))
-                            {
-                                if(aur->GetAuraDuration() > 2500)
-                                {
-                                    unitList.remove(unit);
-                                    if(unitList.empty()) break;
-                                    continue;
-                                }
-                            }
-                        }
-                    }
+                    unitList.remove_if(Hellground::UnitAuraDurationCheck(46230, 2, 2500));
                     break;
                 default:
                     break;

@@ -970,6 +970,22 @@ namespace Hellground
             uint32 _effectIdx;
     };
 
+    class UnitAuraDurationCheck
+    {
+        public:
+            UnitAuraDurationCheck(uint32 spellId, uint32 effectIdx, uint32 duration) : _spellId(spellId), _effectIdx(effectIdx), _duration(duration) {}
+            bool operator()(Unit* unit)
+            {
+                Aura * aur = unit->GetAura(_spellId, _effectIdx);
+                return aur ? aur->GetAuraDuration() > _duration : false;
+            }
+
+        private:
+            uint32 _spellId;
+            uint32 _effectIdx;
+            uint32 _duration;
+    };
+
     class UnitPowerTypeCheck
     {
         public:
@@ -982,6 +998,21 @@ namespace Hellground
         private:
             bool _present;
             uint32 _power;
+    };
+
+    class ObjectAbsZDistanceCheck
+    {
+        public:
+            ObjectAbsZDistanceCheck(WorldObject *source, uint32 dist) : _source(source), _dist(dist) {}
+            bool operator()(WorldObject* object)
+            {
+                return abs(source->GetPositionZ() - object->GetPositionZ()) > _dist;
+            }
+
+        private:
+            WorldObject *_source;
+            uint32 _dist;
+            bool _greater;
     };
 
     class ObjectDistanceCheck
