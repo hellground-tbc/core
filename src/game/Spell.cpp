@@ -2205,26 +2205,30 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 45248:     // Shadow Blades
                     for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                     {
-                        Unit* unit = *itr;
-                        if(abs(m_caster->GetPositionZ()-unit->GetPositionZ()) > 5.0)
+                        if(Unit* unit = *itr)
                         {
-                            unitList.remove(unit);
-                            if(unitList.empty()) break;
-                            continue;
+                            if(abs(m_caster->GetPositionZ()-unit->GetPositionZ()) > 5.0)
+                            {
+                                unitList.remove(unit);
+                                if(unitList.empty()) break;
+                                continue;
+                            }
                         }
                     }
                     break;
                 case 46230:     // Black Hole Effect
                     for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                     {
-                        Unit* unit = *itr;
-                        if(Aura* aur = unit->GetAura(46230, 2))
+                        if(Unit* unit = *itr)
                         {
-                            if(aur->GetAuraDuration() > 2500)
+                            if(Aura* aur = unit->GetAura(46230, 2))
                             {
-                                unitList.remove(unit);
-                                if(unitList.empty()) break;
-                                continue;
+                                if(aur->GetAuraDuration() > 2500)
+                                {
+                                    unitList.remove(unit);
+                                    if(unitList.empty()) break;
+                                    continue;
+                                }
                             }
                         }
                     }
