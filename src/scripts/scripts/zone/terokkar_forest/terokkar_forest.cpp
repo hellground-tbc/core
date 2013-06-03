@@ -1762,7 +1762,7 @@ struct npc_razorthorn_ravagerAI : public ScriptedAI
                 me->GetMotionMaster()->MoveFollow(me->GetCharmer(),PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
                 if(GameObject* go = FindGameObject(GAMEOBJECT_RAZORTHORN_DIRT_MOUND, 15, me))
                 {
-                    if(me->GetCharmer()->GetTypeId() == TYPEID_PLAYER)
+                    if(me->GetCharmer() && me->GetCharmer()->GetTypeId() == TYPEID_PLAYER)
                     {
                         MoundList.push_front(go->GetGUID());
                         //go->DestroyForPlayer(((Player*)me->GetCharmer()));
