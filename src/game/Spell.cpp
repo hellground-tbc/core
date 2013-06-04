@@ -2203,10 +2203,15 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     unitList.remove_if(Hellground::ObjectGUIDCheck(m_caster->getVictimGUID()));
                     break;
                 case 45248:     // Shadow Blades
-                    unitList.remove_if(Hellground::ObjectAbsZDistanceCheck(m_caster, 5));
+                    unitList.remove_if([=](Unit* unit)->bool {return abs(m_caster->GetPositionZ()-unit->GetPositionZ()) > 5.0;});
                     break;
                 case 46230:     // Black Hole Effect
-                    unitList.remove_if(Hellground::UnitAuraDurationCheck(46230, 2, 2500));
+                    unitList.remove_if([](Unit* unit)->bool
+                    {
+                        if(Aura* aur = unit->GetAura(46230, 2))
+                            return aur->GetAuraDuration() > 2500;
+                        else return false;
+                    });
                     break;
                 default:
                     break;
