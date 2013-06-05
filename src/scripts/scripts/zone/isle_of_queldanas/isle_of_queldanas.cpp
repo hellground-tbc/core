@@ -35,7 +35,7 @@ EndContentData */
 #include "GameEvent.h"
 
 /*######
-## npc_archmage_nethul (also used by Vindicator Moorba)
+## npc_archmage_nethul
 ######*/
 
 #define GOSSIP_SWP_STATE "What is the current progress on Sunwell's offensive?"
@@ -54,9 +54,6 @@ bool GossipHello_npc_archmage_nethul(Player *player, Creature *_Creature)
         }
     }
     player->SEND_GOSSIP_MENU(12309,_Creature->GetGUID());
-    // for Vindicator Moorba when gates event in SWP is finished
-    if(isGameEventActive(54) && _Creature->GetEntry() == 25632)
-        player->SEND_GOSSIP_MENU(12403,_Creature->GetGUID());
     return true;
 }
 
@@ -79,6 +76,8 @@ bool GossipSelect_npc_archmage_nethul(Player *player, Creature *_Creature, uint3
         case GOSSIP_ACTION_INFO_DEF+54:
             HandleWorldEventGossip(player, _Creature);
             player->SEND_GOSSIP_MENU(12403, _Creature->GetGUID());
+            break;
+        default:
             break;
     }
     return true;
