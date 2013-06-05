@@ -898,12 +898,14 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
     uint32 SpellFury;
+    uint32 ActivationTimer;
 
     void Reset()
     {
         DoZoneInCombat(400.0f);
         SetAutocast(SPELL_FEL_FIREBALL, 2000, true);
         SpellFury = urand(20000, 30000);
+        ActivationTimer = 6000;
     }
 
     void OnAuraApply(Aura* aur, Unit* caster, bool stackApply)
@@ -937,6 +939,17 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
         }
         else
             SpellFury -= diff;
+
+        if(ActivationTimer)
+        {
+            if(ActivationTimer <= diff)
+            {
+                SetAutocast(SPELL_FEL_FIREBALL, 2000, true);
+                ActivationTimer = 0;
+            }
+            else
+                ActivationTimer - diff;
+        }
 
         CastNextSpellIfAnyAndReady(diff);
         DoMeleeAttackIfReady();
@@ -972,7 +985,7 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
     {
         DoZoneInCombat(400.0f);
         DoCast(me, SPELL_DUAL_WIELD, true);
-        Flurry = urand(12000, 18000);
+        Flurry = urand(18000, 25000);
     }
 
     void UpdateAI(const uint32 diff)
