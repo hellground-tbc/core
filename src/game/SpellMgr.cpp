@@ -2856,12 +2856,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->EffectTriggerSpell[2] = 39897;
                 }   
                 else if (spellInfo->Id == 32592) //mass dispell enemy dispeling, same as above + prevent all enemy targets from becoming source of aoe dispel (causing multiple dispells on every target)
-                {
                     spellInfo->Effect[1] = 0;
-                    spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ANY;
-                }
-                else if (spellInfo->Id == 39897) //mas dispell bubble dispeling, preventing multiple dispells
-                    spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ANY;
                 break;
             }
             case SPELLFAMILY_MAGE:
