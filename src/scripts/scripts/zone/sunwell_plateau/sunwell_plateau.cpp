@@ -57,7 +57,7 @@ enum LiadrinnSpeeches
 ######*/
 
 #define GOSSIP_SWP_STATE "What is the current progress on Sunwell's offensive?"
-#define GOSSIP_TELEPORT_APEX "With Kalecgos freed, cay you provide a teleport up to Apex Point?"
+#define GOSSIP_TELEPORT_APEX "With Kalecgos freed, can you provide a teleport up to Apex Point?"
 #define GOSSIP_TELEPORT_SANCTUM "Now that Lady Sacrolash and Grand Warlock Alythess have been defeated, can you teleport me to the Witch's Sanctum."
 #define GOSSIP_TELEPORT_SUNWELL "We've cleared the way to Kil'jaeden! Can you transport me close to the Sunwell?"
 

@@ -513,16 +513,18 @@ struct npc_dark_fiendAI : public ScriptedAI
     uint32 ActivationTimer;
     uint32 CheckTimer;
     uint32 DespawnTimer;
-    bool despawning;
 
     void Reset()
     {
         ActivationTimer = 2000;
         CheckTimer = 500;
-        DoCast(me, SPELL_DARKFIEND_SKIN);
-        DoZoneInCombat(100);
-        despawning = false;
         DespawnTimer = 0;
+        me->SetRooted(true);
+        DoCast(me, SPELL_DARKFIEND_SKIN);
+        me->SetSpeed(MOVE_RUN, 0.55);
+        me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.8f);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        DoZoneInCombat(100);
     }
 
     void EnterEvadeMode()
@@ -537,21 +539,21 @@ struct npc_dark_fiendAI : public ScriptedAI
 
     void OnAuraRemove(Aura* aur, bool stackApply)
     {
-        if (aur->GetId() == SPELL_DARKFIEND_SKIN)
+        if (ActivationTimer < 2000 && aur->GetId() == SPELL_DARKFIEND_SKIN)
         {
-            despawning = true;
             me->SetRooted(true);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             DoCast(me, SPELL_DARKFIEND_VISUAL);
             DespawnTimer = 3000;
+            ActivationTimer = 0;
         }
     }
 
     void DamageTaken(Unit* /*done_by*/, uint32 &damage)
     {
-        if (damage > me->GetHealth())
+        if(damage > me->GetHealth())
         {
-            despawning = true;
+            damage = 0;
             me->SetRooted(true);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             DoCast(me, SPELL_DARKFIEND_VISUAL);
@@ -567,9 +569,6 @@ struct npc_dark_fiendAI : public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_NEAREST, 0, 100, true))
                 {
-                    me->SetSpeed(MOVE_RUN, 0.55);
-                    me->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.7f);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     me->SetRooted(false);
                     DoStartMovement(target);
                     me->getThreatManager().addThreat(target, 100000);
@@ -578,23 +577,21 @@ struct npc_dark_fiendAI : public ScriptedAI
             }
             else
                 ActivationTimer -= diff;
-        }
-
-        if(ActivationTimer)
             return;
+        }
 
         if(DespawnTimer)
         {
             if(DespawnTimer <= diff)
             {
-            me->DisappearAndDie();
-            DespawnTimer = 0;
+                me->DisappearAndDie();
+                DespawnTimer = 0;
             }
             else
                 DespawnTimer -= diff;
         }
 
-        if (!UpdateVictim() || despawning)
+        if (!UpdateVictim() || DespawnTimer)
             return;
 
         if(CheckTimer < diff)
@@ -602,7 +599,6 @@ struct npc_dark_fiendAI : public ScriptedAI
             if(me->IsWithinDistInMap(me->getVictim(), 1.0))
             {
                 DoCast(((Unit*)NULL), SPELL_DARKFIEND_AOE);
-                despawning = true;
                 me->SetRooted(true);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 DespawnTimer = 500;
@@ -903,7 +899,6 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
     void Reset()
     {
         DoZoneInCombat(400.0f);
-        SetAutocast(SPELL_FEL_FIREBALL, 2000, true);
         SpellFury = urand(20000, 30000);
         ActivationTimer = 6000;
     }
@@ -948,7 +943,7 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
                 ActivationTimer = 0;
             }
             else
-                ActivationTimer - diff;
+                ActivationTimer -= diff;
         }
 
         CastNextSpellIfAnyAndReady(diff);
