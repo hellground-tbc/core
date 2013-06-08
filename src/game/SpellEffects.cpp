@@ -4038,6 +4038,9 @@ void Spell::EffectDispel(uint32 i)
 
     if (unitTarget->IsHostileTo(m_caster))
     {
+        // make this additional immunity check here for mass dispel
+        if (unitTarget->IsImmunedToDamage(SpellMgr::GetSpellSchoolMask(GetSpellInfo()),true))
+            return;
         m_caster->SetInCombatWith(unitTarget);
         unitTarget->SetInCombatWith(m_caster);
     }
